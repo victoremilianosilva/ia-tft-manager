@@ -13,6 +13,7 @@ def test_strategic_planner_audit_groups_insufficient_evidence_reasons():
                     "decision_path_reason": "alternative_below_minimum_adapt_advantage",
                     "candidate_generation_reason": "candidate_generated",
                     "has_anchor_candidate": True,
+                    "current_direction_viable": True,
                     "current_direction_score": 2.0,
                     "best_anchor_score": 2.05,
                     "alternative_advantage": 0.05,
@@ -37,6 +38,7 @@ def test_strategic_planner_audit_groups_insufficient_evidence_reasons():
                     "decision_path_reason": "no_high_cost_anchor_units_seen",
                     "candidate_generation_reason": "no_high_cost_anchor_units_seen",
                     "has_anchor_candidate": False,
+                    "current_direction_viable": False,
                 },
             }},
         },
@@ -48,6 +50,9 @@ def test_strategic_planner_audit_groups_insufficient_evidence_reasons():
     assert metrics["decision_counts"]["INSUFFICIENT_EVIDENCE"] == 2
     assert metrics["insufficient_with_anchor"] == 1
     assert metrics["insufficient_without_anchor"] == 1
+    assert metrics["insufficient_current_viability_counts"] == {
+        "viable": 1, "not_viable": 1,
+    }
     assert metrics["insufficient_reason_counts"] == {
         "alternative_below_minimum_adapt_advantage": 1,
         "no_high_cost_anchor_units_seen": 1,
@@ -71,6 +76,7 @@ def test_strategic_markdown_explains_insufficient_evidence():
                 "required_pivot_advantage": 0.75,
                 "anchor_confidence": 0.91,
                 "current_direction_confidence": 0.90,
+                "current_direction_viable": True,
                 "has_anchor_candidate": True,
                 "anchors_considered": 3,
                 "candidates_generated": 1,
@@ -89,4 +95,6 @@ def test_strategic_markdown_explains_insufficient_evidence():
     strategy = documents["audit_estrategia.md"]
     assert "Auditoria de INSUFFICIENT_EVIDENCE" in strategy
     assert "alternative_below_minimum_adapt_advantage" in strategy
+    assert "Viável atual" in strategy
+    assert "True" in strategy
     assert "Confiança da âncora e confiança da direção atual" in strategy
