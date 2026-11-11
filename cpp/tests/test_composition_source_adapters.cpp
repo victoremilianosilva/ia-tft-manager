@@ -1,4 +1,5 @@
 #include "composition_intelligence/CompositionSourceAdapters.hpp"
+#include "strategy/CompositionPlanner.hpp"
 #include <cassert>
 #include <iostream>
 using namespace tft;
@@ -45,5 +46,30 @@ void opgg_failure_does_not_block_native(){
  NativeCompositionSnapshot input;input.composition_id="native-fallback";input.set_id="18";input.units={{10,true,80},{11,true,100}};
  auto native=NativeCompositionAdapter::adapt(input,pool());assert(opgg.candidates.empty());assert(native.candidates.size()==1);
 }
+
+void native_planner_exports_pre_opgg_candidate(){
+ auto champions=pool();
+ champions[0].traits={"Shepherd","Guardian"};
+ champions[1].traits={"Shepherd","Invoker"};
+ champions[2].traits={"Guardian","Invoker"};
+ champions[3].traits={"Invoker"};
+ for(auto& champion:champions) champion.cost=2;
+ strategy::CompositionPlanner::TraitMilestones milestones{
+  {"Shepherd",{2}},{"Guardian",{2}},{"Invoker",{2}}
+ };
+ strategy::CompositionPlanner::OwnedCopies owned;
+ strategy::CompositionPlanner::AvailableCopies available;
+ for(const auto& champion:champions) available[champion.internal_id]=10;
+ const auto plan=strategy::CompositionPlanner::build(
+  champions,milestones,"Shepherd",{},owned,4,5,available,{});
+ assert(!plan.native_snapshot.composition_id.empty());
+ assert(plan.native_snapshot.set_id=="18");
+ assert(plan.native_snapshot.source_reference=="composition-planner/native-before-opgg");
+ assert(!plan.native_snapshot.units.empty());
+ const auto adapted=NativeCompositionAdapter::adapt(plan.native_snapshot,champions);
+ assert(adapted.candidates.size()==1);
+ assert(adapted.candidates.front().source==CompositionSource::Native);
+ assert(adapted.candidates.front().composition_id==plan.native_snapshot.composition_id);
 }
-int main(){opgg_maps_to_common_contract();opgg_rejects_wrong_set_and_low_coverage();native_adapter_uses_neutral_snapshot();native_adapter_rejects_unknown_or_wrong_set_units();opgg_failure_does_not_block_native();std::cout<<"Composition source adapter tests passed\n";return 0;}
+}
+int main(){opgg_maps_to_common_contract();opgg_rejects_wrong_set_and_low_coverage();native_adapter_uses_neutral_snapshot();native_adapter_rejects_unknown_or_wrong_set_units();opgg_failure_does_not_block_native();native_planner_exports_pre_opgg_candidate();std::cout<<"Composition source adapter tests passed\n";return 0;}
