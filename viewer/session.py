@@ -110,6 +110,7 @@ class ViewerSession:
         self.finished = False
         self._player_log_writer: PlayerJsonLogWriter | None = None
         self._session_dir: Path | None = None
+        self._composition_diagnostics_written = 0
         self._metadata_path: Path | None = None
         self._sequence = 0
         self._rng = torch.Generator(device="cpu")
@@ -154,6 +155,7 @@ class ViewerSession:
         # Refresh on viewer load only when the local snapshot is stale (12h by default).
         # A failed network request must not prevent offline inspection or replay.
         __import__("os").environ.setdefault("TFT_OPGG_META_CATALOG", str(ROOT / "data" / "opgg_tft_meta.json"))
+        __import__("os").environ.setdefault("TFT_COMPOSITION_INTELLIGENCE_SHADOW", "1")
         if __import__("os").environ.get("TFT_OPGG_DISABLE_REFRESH", "").strip().lower() not in {"1", "true", "yes"}:
             import subprocess
             import sys
@@ -216,6 +218,8 @@ class ViewerSession:
             session_dir = out / f"match-{datetime.now().strftime('%Y%m%d-%H%M%S')}-{self.match_id[:8]}"
             session_dir.mkdir(parents=True, exist_ok=False)
             self._session_dir = session_dir
+            self._composition_diagnostics_written = 0
+            self._persist_composition_diagnostics()
             self._metadata_path = session_dir / "metadata.json"
             log_files = [f"player_{player_id + 1}_log.tft" for player_id in range(8)]
             structured_log_files = [f"player_{player_id + 1}_log.json" for player_id in range(8)]
@@ -267,7 +271,20 @@ class ViewerSession:
             except (TypeError, ValueError):
                 continue
             player["strategy_info"] = strategies[player_id] if 0 <= player_id < len(strategies) else {}
+        self._persist_composition_diagnostics()
         return self.audit_snapshot
+
+    def _persist_composition_diagnostics(self):
+        if self.lobby is None or self._session_dir is None:
+            return
+        lines = self.lobby.get_composition_diagnostics_jsonl()
+        if self._composition_diagnostics_written >= len(lines):
+            return
+        path = self._session_dir / "composition_diagnostics.jsonl"
+        with path.open("a", encoding="utf-8") as stream:
+            for line in lines[self._composition_diagnostics_written:]:
+                stream.write(str(line).rstrip("\\n") + "\\n")
+        self._composition_diagnostics_written = len(lines)
 
     def _snapshot_for_event(self):
         return {
@@ -545,6 +562,10 @@ class ViewerSession:
         self.public_state = self.lobby.get_public_state()
         self._refresh_audit_snapshot()
         self.finished = bool(done or self.public_state.get("finished", False))
+        if self.finished:
+            self._flush_close_log()
+            self._persist_composition_diagnostics()
+            self._write_composition_reports()
         # Combat advances the round; the next call starts a fresh 5-second window.
         if any(str(event).strip() == "ROUND_RESOLVED" for event in info.get("events", [])):
             self._preparation_started_at = None
@@ -661,8 +682,78 @@ class ViewerSession:
         self.replay_cursor = max(0, min(int(index), len(self.replay_events) - 1))
         return self.replay_events[self.replay_cursor]
 
+    def _write_composition_reports(self):
+        if self._session_dir is None:
+            return
+        diagnostics_path = self._session_dir / "composition_diagnostics.jsonl"
+        if not diagnostics_path.is_file():
+            return
+        try:
+            from viewer.composition_diagnostics import (
+                audit_diagnostic_records, format_diagnostic_audit, load_diagnostic_jsonl,
+            )
+            records, errors = load_diagnostic_jsonl(diagnostics_path)
+            report = audit_diagnostic_records(records, errors)
+            (self._session_dir / "audit_composition_intelligence.md").write_text(
+                format_diagnostic_audit(records, report) + "\\n", encoding="utf-8"
+            )
+
+            from collections import Counter
+            ppo_actions = Counter()
+            for player_id in range(8):
+                log_path = self._session_dir / f"player_{player_id + 1}_log.json"
+                if not log_path.is_file():
+                    continue
+                try:
+                    document = json.loads(log_path.read_text(encoding="utf-8"))
+                except (OSError, json.JSONDecodeError):
+                    continue
+                for entry in document.get("entries", []):
+                    payload = entry.get("payload") or {}
+                    action = payload.get("action")
+                    if isinstance(action, list) and action:
+                        ppo_actions[ACTION_NAMES.get(int(action[0]), f"UNKNOWN_{action[0]}")] += 1
+
+            composition_actions = Counter()
+            ci_names = {
+                0: "NONE", 1: "BUY_UNIT", 2: "BUY_XP", 3: "REROLL",
+                4: "SELL_UNIT", 5: "DEPLOY_OR_MOVE", 6: "HOLD",
+            }
+            for record in records:
+                action = (record.get("diagnostics") or {}).get("action_recommendation") or {}
+                if action.get("recommended_action") is not None:
+                    value = int(action["recommended_action"])
+                    composition_actions[ci_names.get(value, f"UNKNOWN_{value}")] += 1
+            lines = [
+                "COMPOSITION INTELLIGENCE × PPO · COMPARAÇÃO DESCRITIVA",
+                "=" * 62,
+                f"Snapshots Composition Intelligence: {len(records)}",
+                f"Ações PPO registradas: {sum(ppo_actions.values())}",
+                "",
+                "AÇÕES EXECUTADAS PELO PPO",
+            ]
+            lines.extend(f"  {name}: {count}" for name, count in sorted(ppo_actions.items()) or [("sem dados", 0)])
+            lines.extend(["", "RECOMENDAÇÕES DA COMPOSITION INTELLIGENCE"])
+            lines.extend(f"  {name}: {count}" for name, count in sorted(composition_actions.items()) or [("sem dados", 0)])
+            lines.extend([
+                "",
+                "INTERPRETAÇÃO",
+                "  Esta comparação apresenta distribuições agregadas, não correspondência ação-a-ação.",
+                "  O PPO é a única fonte das ações executadas; recomendações shadow não são executadas.",
+                "  Diferenças não demonstram erro nem causalidade. Considere round, jogador, estado e evidência.",
+            ])
+            (self._session_dir / "audit_composition_vs_ppo.md").write_text(
+                "\\n".join(lines) + "\\n", encoding="utf-8"
+            )
+        except (OSError, ValueError, TypeError, ImportError) as exc:
+            (self._session_dir / "composition_audit_error.txt").write_text(
+                str(exc) + "\\n", encoding="utf-8"
+            )
+
     def close(self):
         self._flush_close_log()
+        self._persist_composition_diagnostics()
+        self._write_composition_reports()
         if self.lobby is not None:
             self.lobby.close()
             self.lobby = None

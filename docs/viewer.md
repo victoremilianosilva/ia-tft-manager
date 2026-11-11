@@ -57,3 +57,20 @@ Wireframes são conceituais; não garantem que a engine entregue todos os campos
 - tests/test_viewer_policy_diagnostics.py
 
 Execute os testes no ambiente do projeto antes de considerar uma alteração validada.
+
+
+## Composition Intelligence — auditoria shadow
+
+A aba **Composition Intelligence** importa snapshots JSONL emitidos pelo CompositionDiagnosticRecorder (arquivo `composition_diagnostics.jsonl`). Ela mostra o resumo agregado, permite selecionar cada snapshot e inspecionar o envelope, a classificação observado/inferido/correlacionado e os diagnósticos.
+
+O Viewer procura automaticamente `composition_diagnostics.jsonl` no diretório da sessão. Se o arquivo ainda não existir, a aba informa isso e permite importar manualmente outro JSONL. A ausência do arquivo não significa que o planner esteja ativo: os planners permanecem isolados em shadow mode e o Viewer não fabrica snapshots a partir dos logs PPO legados.
+
+A auditoria agregada verifica snapshots stale e seus motivos; sequência duplicada/fora de ordem e regressões de versão; distribuição de intenções unitárias; candidatos aceitos, rejeitados e selecionados; qualidade de evidências reportada pelas fontes; transições publicadas e associação com resultados posteriores.
+
+Ferramenta CLI equivalente:
+
+```powershell
+python scripts/audit_composition_diagnostics.py path\\to\\composition_diagnostics.jsonl --output reports\\composition_intelligence_audit.txt
+```
+
+Qualidade permanece como enumeração da fonte, sem interpretação inventada. Confiança é score não calibrado; resultados posteriores são correlações, não causalidade. A aba e o script são read-only e não alimentam decisões na engine.

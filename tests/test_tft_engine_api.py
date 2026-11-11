@@ -533,3 +533,86 @@ def test_buying_third_copy_auto_upgrades_to_two_star():
         assert two_star, "The third 1-star copy should auto-upgrade into a 2-star unit."
     finally:
         engine.close()
+
+
+def test_native_champion_id_map_matches_loaded_units_catalog():
+    """The public mapping must preserve the exact native catalog array indices."""
+    import json
+    from pathlib import Path
+
+    engine = TFTLobby(seed=2026)
+    try:
+        engine.reset()
+        mapping = engine.get_champion_id_map()
+        catalog_path = Path(__file__).resolve().parents[1] / "data" / "units_gerado.json"
+        catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+
+        expected = {
+            champion["apiName"]: index
+            for index, champion in enumerate(catalog)
+            if isinstance(champion, dict) and champion.get("apiName")
+        }
+        assert mapping == expected
+        assert len(mapping) == len(set(mapping.values()))
+        assert all(isinstance(value, int) and value >= 0 for value in mapping.values())
+    finally:
+        engine.close()
+
+
+def test_opgg_adapter_resolves_units_through_native_catalog():
+    """OP.GG keys must become the same internal IDs used by the engine."""
+    import json
+    from pathlib import Path
+
+    engine = TFTLobby(seed=2026)
+    try:
+        engine.reset()
+        root = Path(__file__).resolve().parents[1]
+        opgg = json.loads((root / "data" / "opgg_tft_meta.json").read_text(encoding="utf-8"))
+        adapted = json.loads(engine.adapt_opgg_compositions_json(
+            json.dumps(opgg, ensure_ascii=False)
+        ))
+        assert isinstance(adapted, dict)
+        assert isinstance(adapted.get("candidates"), list)
+        assert isinstance(adapted.get("diagnostics"), list)
+        mapping = engine.get_champion_id_map()
+        for candidate in adapted["candidates"]:
+            assert candidate["units"]
+            assert all(
+                isinstance(unit["champion_id"], int)
+                and unit["champion_id"] in mapping.values()
+                for unit in candidate["units"]
+            )
+    finally:
+        engine.close()
+
+
+def test_composition_intelligence_emits_per_player_shadow_diagnostics(monkeypatch):
+    import json
+    monkeypatch.setenv("TFT_COMPOSITION_INTELLIGENCE_SHADOW", "1")
+
+    engine = TFTLobby(seed=20261111)
+    try:
+        engine.reset()
+        actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        for _ in range(3):
+            engine.step(actions)
+
+        lines = engine.get_composition_diagnostics_jsonl()
+        assert isinstance(lines, list)
+        assert lines, "native shadow runtime must emit diagnostic snapshots"
+        records = [json.loads(line) for line in lines]
+        assert all(record.get("schema_version") == 1 for record in records)
+        sequences = [record["sequence"] for record in records]
+        assert sequences == sorted(sequences)
+        assert len(sequences) == len(set(sequences))
+        assert {record.get("player_id") for record in records} == set(range(8))
+        for record in records:
+            assert isinstance(record.get("round"), int)
+            assert isinstance(record.get("diagnostics"), dict)
+            assert "composition_decision" in record["diagnostics"]
+            assert "unit_intentions" in record["diagnostics"]
+            assert "lineup_plan" in record["diagnostics"]
+            assert "action_recommendation" in record["diagnostics"]
+    finally:
+        engine.close()

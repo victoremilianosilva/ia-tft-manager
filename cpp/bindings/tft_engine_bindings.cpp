@@ -778,6 +778,22 @@ PYBIND11_MODULE(tft_engine, module) {
             py::arg("timer_expired") = false
         )
         .def(
+            "adapt_opgg_compositions_json",
+            &TFTEngine::adapt_opgg_compositions_json,
+            py::arg("catalog_json")
+        )
+        .def(
+            "get_champion_id_map",
+            [](const TFTEngine& self) {
+                py::dict result;
+                for (const auto& [internal_id, api_name] : self.get_champion_api_name_map()) {
+                    result[py::str(api_name)] = internal_id;
+                }
+                return result;
+            }
+        )
+        .def("get_composition_diagnostics_jsonl", &TFTEngine::get_composition_diagnostics_jsonl)
+        .def(
             "get_audit_snapshot",
             [](const TFTEngine& self) {
                 const auto snapshot = self.get_audit_snapshot();

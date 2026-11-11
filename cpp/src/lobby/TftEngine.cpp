@@ -22,6 +22,7 @@
 #include <vector>
 
 #include "lobby/ChampionCatalog.hpp"
+#include "composition_intelligence/CompositionSourceAdapters.hpp"
 #include "lobby/UnitInstanceFactory.hpp"
 #include "lobby/UnitPool.hpp"
 #include "lobby/EconomyEngine.hpp"
@@ -48,6 +49,9 @@
 #include "items/ItemEngine.hpp"
 #include "items/PveLootDistribution.hpp"
 #include "items/CombatItemAdapter.hpp"
+#include "composition_intelligence/CompositionDiagnostics.hpp"
+
+#include <cstdlib>
 
 #ifndef TFT_DEFAULT_ITEM_CATALOG_PATH
 #define TFT_DEFAULT_ITEM_CATALOG_PATH "data/itens.json"
@@ -380,6 +384,13 @@ bool should_buy_unit(
 // IMPLEMENTAÇÃO INTERNA
 // ============================================================
 
+struct CompositionIntelligencePlayerState {
+    tft::composition_intelligence::ActiveCompositionManager active;
+    tft::composition_intelligence::TransitionManager transitions;
+    tft::composition_intelligence::CompositionDiagnosticRecorder recorder;
+    std::vector<nlohmann::json> snapshots;
+};
+
 struct TFTEngine::Impl {
     struct PlayerTransition {
         float action_reward{0.0f};
@@ -493,6 +504,12 @@ struct TFTEngine::Impl {
 
     // Uma instância C++ por jogador; o lobby coordena as oito.
     std::array<PlayerEnv, kPlayersPerLobby> player_envs{};
+    std::array<CompositionIntelligencePlayerState, kPlayersPerLobby> composition_intelligence_players{};
+    std::vector<composition_intelligence::CompositionCandidate> composition_intelligence_candidates;
+    std::vector<std::string> composition_intelligence_catalog_diagnostics;
+    std::uint64_t composition_intelligence_sequence{0};
+    bool composition_intelligence_enabled{false};
+
 
     // Serviços compartilhados pela lobby, não pertencem a um jogador.
     EconomyEngine economy_engine;
@@ -531,6 +548,35 @@ struct TFTEngine::Impl {
         catalog = std::make_unique<ChampionCatalog>(
             resolved_path
         );
+
+        const char* shadow_enabled = std::getenv("TFT_COMPOSITION_INTELLIGENCE_SHADOW");
+        composition_intelligence_enabled = shadow_enabled &&
+            (std::string(shadow_enabled) == "1" ||
+             std::string(shadow_enabled) == "true" ||
+             std::string(shadow_enabled) == "yes");
+
+        if (composition_intelligence_enabled) {
+        try {
+            const char* configured_meta = std::getenv("TFT_OPGG_META_CATALOG");
+            const std::string meta_path = configured_meta && *configured_meta
+                ? configured_meta : "data/opgg_tft_meta.json";
+            std::ifstream meta_file(meta_path);
+            if (!meta_file) {
+                composition_intelligence_catalog_diagnostics.push_back("OP.GG catalog unavailable: " + meta_path);
+            } else {
+                nlohmann::json meta;
+                meta_file >> meta;
+                const auto adapted = composition_intelligence::OppgCompositionAdapter::adapt(meta, catalog->all());
+                composition_intelligence_candidates = adapted.candidates;
+                composition_intelligence_catalog_diagnostics = adapted.diagnostics;
+                if (adapted.candidates.empty())
+                    composition_intelligence_catalog_diagnostics.push_back("No OP.GG composition candidate passed native catalog validation");
+            }
+        } catch (const std::exception& error) {
+            composition_intelligence_catalog_diagnostics.push_back(std::string("OP.GG catalog adaptation failed: ") + error.what());
+            composition_intelligence_candidates.clear();
+        }
+        }
 
         // The generated, versioned active-set catalog is the default. An
         // explicit path still supports controlled fixtures and set-specific runs.
@@ -3501,6 +3547,198 @@ struct TFTEngine::Impl {
             const auto action_decision = action_evaluator.evaluate(
                 strategic_context, economic_decision);
 
+            // New Composition Intelligence pipeline: opt-in Viewer-only shadow state.
+            if (composition_intelligence_enabled) {
+            try {
+            {
+                namespace ci = composition_intelligence;
+                auto& runtime = composition_intelligence_players[i];
+                const auto round_id = static_cast<std::uint32_t>(current_round);
+                const auto active_before = runtime.active.current();
+                ci::CompositionEvaluationContext composition_context;
+                composition_context.round = round_id;
+                composition_context.level = economy.level;
+                composition_context.gold = economy.gold;
+
+                std::unordered_map<std::int32_t, ci::OwnedUnitEvidence> owned_evidence;
+                std::unordered_map<std::int32_t, ci::UnitPriorityOwnedUnit> owned_priority;
+                std::unordered_map<std::int32_t, ci::UnitPriorityEvidence> unit_evidence;
+                std::unordered_set<std::int32_t> on_board_ids;
+                const auto collect_unit = [&](const UnitInstance& unit, bool on_board) {
+                    const auto id = unit.champion_internal_id;
+                    if (id < 0) return;
+                    if (on_board) on_board_ids.insert(id);
+                    auto& observed = owned_evidence[id];
+                    observed.champion_id = id;
+                    observed.copies = copies_by_unit.count(id) ? copies_by_unit.at(id) : 0;
+                    observed.highest_star = std::max(observed.highest_star, unit.star);
+                    for (const auto& item : unit.items)
+                        if (!item.api_name.empty() &&
+                            std::find(observed.equipped_item_ids.begin(), observed.equipped_item_ids.end(), item.api_name) == observed.equipped_item_ids.end())
+                            observed.equipped_item_ids.push_back(item.api_name);
+                    auto& priority = owned_priority[id];
+                    priority.champion_id = id;
+                    priority.copies = observed.copies;
+                    priority.highest_star = std::max(priority.highest_star, unit.star);
+                    priority.on_board = priority.on_board || on_board;
+                    priority.equipped_item_ids = observed.equipped_item_ids;
+                    const auto* definition = catalog->find_by_id(id);
+                    if (definition) {
+                        auto& evidence = unit_evidence[id];
+                        evidence.champion_id = id;
+                        evidence.board_contribution = on_board
+                            ? std::clamp(definition->cost / 5.0 * 0.5 + std::clamp(unit.star, 1, 3) / 3.0 * 0.5, 0.0, 1.0)
+                            : evidence.board_contribution;
+                        std::size_t matching_traits = 0;
+                        for (const auto& trait : definition->traits)
+                            if (std::find(info.core_traits.begin(), info.core_traits.end(), trait) != info.core_traits.end()) ++matching_traits;
+                        evidence.synergy_contribution = std::clamp(static_cast<double>(matching_traits) / 2.0, 0.0, 1.0);
+                        evidence.confidence = 0.75;
+                        evidence.copies_toward_next_star =
+                            observed.highest_star == 1 ? observed.copies % 3 :
+                            (observed.highest_star == 2 ? (observed.copies / 3) % 3 : 0);
+                    }
+                };
+                for (const auto& unit : player_envs[i].board) if (unit) collect_unit(*unit, true);
+                for (const auto& unit : player_envs[i].bench) if (unit) collect_unit(*unit, false);
+                for (const auto& pair : owned_evidence) composition_context.owned_units.push_back(pair.second);
+
+                for (const auto& candidate : composition_intelligence_candidates) {
+                    ci::CandidateEvidence evidence;
+                    evidence.composition_id = candidate.composition_id;
+                    evidence.source = ci::CompositionEvidenceSource::ObservedBoard;
+                    std::size_t board_hits = 0, owned_hits = 0, available_hits = 0, item_bearing_hits = 0;
+                    double estimated_cost = 0.0;
+                    for (const auto& target : candidate.units) {
+                        if (on_board_ids.count(target.champion_id)) ++board_hits;
+                        if (const auto found = owned_evidence.find(target.champion_id); found != owned_evidence.end()) {
+                            ++owned_hits;
+                            if (!found->second.equipped_item_ids.empty()) ++item_bearing_hits;
+                        }
+                        const auto* definition = catalog->find_by_id(target.champion_id);
+                        if (definition) {
+                            if (pool && pool->available(target.champion_id) > 0) ++available_hits;
+                            if (!owned_evidence.count(target.champion_id)) estimated_cost += definition->cost;
+                        }
+                    }
+                    const double size = static_cast<double>(std::max<std::size_t>(1, candidate.units.size()));
+                    evidence.board_fit = static_cast<double>(board_hits) / size;
+                    evidence.availability = static_cast<double>(available_hits) / size;
+                    evidence.item_fit = owned_hits > 0
+                        ? static_cast<double>(item_bearing_hits) / static_cast<double>(owned_hits)
+                        : 0.5;
+                    evidence.economy_feasibility = estimated_cost <= 0.0 ? 1.0 :
+                        std::clamp(static_cast<double>(std::max(0, economy.gold)) / std::max(1.0, estimated_cost), 0.0, 1.0);
+                    evidence.estimated_gold_cost = estimated_cost;
+                    evidence.evidence_confidence = owned_hits > 0 ? 0.75 : 0.55;
+                    composition_context.candidate_evidence.push_back(std::move(evidence));
+                }
+
+                const auto proposal = runtime.transitions.propose(active_before, composition_intelligence_candidates, composition_context);
+                std::optional<ci::CompositionTransition> published_transition;
+                if (proposal.approved && proposal.target) {
+                    const auto published = runtime.transitions.publish_if_approved(proposal, runtime.active);
+                    if (published.has_transition) published_transition = published.transition;
+                }
+                const auto active = runtime.active.current();
+                ci::UnitPriorityContext priority_context;
+                if (active) {
+                    priority_context.composition_id = active->candidate.composition_id;
+                    priority_context.composition_version = active->version;
+                    if (proposal.target) priority_context.transition = proposal.transition;
+                }
+                for (const auto& pair : owned_priority) priority_context.owned_units.push_back(pair.second);
+                for (const auto& pair : unit_evidence) priority_context.evidence.push_back(pair.second);
+                const auto priorities = ci::UnitPriorityPlanner{}.resolve(active, priority_context);
+
+                ci::LineupPlannerContext lineup_context;
+                lineup_context.level = static_cast<std::uint32_t>(std::max(1, economy.level));
+                lineup_context.board_capacity = static_cast<std::uint32_t>(std::clamp(economy.level, 1, 10));
+                lineup_context.current_board_ids.assign(on_board_ids.begin(), on_board_ids.end());
+                const auto lineup = ci::LineupPlanner{}.plan(active, priorities, lineup_context);
+
+                ci::PlannerEvidenceSnapshot evidence;
+                const auto version = active ? active->version : 0;
+                evidence.composition_id = active ? active->candidate.composition_id : "";
+                evidence.composition_version = version;
+                evidence.round = round_id;
+                if (version > 0) {
+                    evidence.economy = ci::PlannerEvidenceAdapters::economic(
+                        strategic_context, economic_decision, version, round_id);
+                    evidence.board = ci::PlannerEvidenceAdapters::board(
+                        board_evaluation(i), version, round_id, round_id);
+                    if (player_envs[i].item_engine) {
+                        items::ItemPlayerState item_state;
+                        item_state.components = player_envs[i].item_engine->components();
+                        item_state.inventory = player_envs[i].item_engine->inventory();
+                        std::vector<ci::ItemUnitBinding> item_bindings;
+                        const auto append_item_binding = [&](const UnitInstance& unit) {
+                            const auto* definition = catalog->find_by_id(unit.champion_internal_id);
+                            if (!definition || unit.uuid.empty()) return;
+                            items::UnitProfile profile;
+                            profile.uuid = unit.uuid;
+                            profile.star = unit.star;
+                            profile.role = definition->combat_profile.role;
+                            profile.frontline = definition->combat_profile.frontline;
+                            profile.backline = definition->combat_profile.backline;
+                            profile.attack_damage = definition->stats.attack_damage;
+                            profile.attack_speed = definition->stats.attack_speed;
+                            profile.ability_power = 0.0;
+                            profile.max_health = definition->stats.max_hp;
+                            profile.composition_fit = active &&
+                                std::any_of(active->candidate.units.begin(), active->candidate.units.end(),
+                                    [&](const auto& target) { return target.champion_id == definition->internal_id; })
+                                ? 1.0 : 0.0;
+                            profile.traits = definition->traits;
+                            profile.preferred_traits = info.core_traits;
+                            item_state.equipped_by_unit_uuid[unit.uuid] =
+                                player_envs[i].item_engine->equipped(unit.uuid);
+                            item_bindings.push_back({definition->internal_id, std::move(profile)});
+                        };
+                        for (const auto& unit : player_envs[i].board) if (unit) append_item_binding(*unit);
+                        for (const auto& unit : player_envs[i].bench) if (unit) append_item_binding(*unit);
+                        evidence.items = ci::PlannerEvidenceAdapters::item(
+                            *player_envs[i].item_engine, item_state, item_bindings,
+                            version, round_id, round_id);
+                    }
+                }
+                ci::CompositionActionEvaluation composition_actions;
+                if (active) {
+                    composition_actions = ci::CompositionActionEvaluator{}.evaluate(
+                        active, priorities, lineup, strategic_context, economic_decision,
+                        action_decision.recommended_action);
+                } else {
+                    composition_actions.stale = true;
+                    composition_actions.stale_reason = "no active composition";
+                    composition_actions.evaluation.shadow_only = true;
+                }
+                const auto diagnostic = runtime.recorder.capture(
+                    round_id, active, proposal, priorities, lineup, evidence,
+                    composition_actions, published_transition);
+                auto diagnostic_json = diagnostic.to_json();
+                diagnostic_json["player_id"] = static_cast<std::int32_t>(i);
+                diagnostic_json["player_sequence"] = diagnostic_json["sequence"];
+                diagnostic_json["sequence"] = ++composition_intelligence_sequence;
+                diagnostic_json["catalog_diagnostics"] = composition_intelligence_catalog_diagnostics;
+                runtime.snapshots.push_back(std::move(diagnostic_json));
+            }
+            } catch (const std::exception& error) {
+                nlohmann::json failed = {
+                    {"schema_version", 1},
+                    {"sequence", ++composition_intelligence_sequence},
+                    {"round", static_cast<std::uint32_t>(current_round)},
+                    {"composition_id", ""},
+                    {"composition_version", 0},
+                    {"stale", true},
+                    {"stale_reason", std::string("shadow_runtime_exception: ") + error.what()},
+                    {"player_id", static_cast<std::int32_t>(i)},
+                    {"diagnostics", {{"runtime_error", error.what()}}},
+                    {"catalog_diagnostics", composition_intelligence_catalog_diagnostics}
+                };
+                composition_intelligence_players[i].snapshots.push_back(std::move(failed));
+            }
+            }
+
             static const std::array<const char*, 7> economic_posture_names{
                 "ACCUMULATE_RESOURCES", "PRESERVE_WIN_STREAK",
                 "PRESERVE_LOSS_STREAK", "INVEST_EXPERIENCE",
@@ -5496,6 +5734,8 @@ ResetResult TFTEngine::reset(
     }
 
     ++impl_->episode_id;
+    impl_->composition_intelligence_players = {};
+    impl_->composition_intelligence_sequence = 0;
 
     impl_->round = 0;
     impl_->stage = 1;
@@ -5884,6 +6124,76 @@ TFTEngine::get_action_masks() const {
 
     std::array<PlayerActionMasks, kPlayersPerLobby> result{};
     for (std::size_t i = 0; i < kPlayersPerLobby; ++i) result[i] = impl_->player_envs[i].action_masks;
+    return result;
+}
+
+std::vector<std::pair<std::int32_t, std::string>>
+TFTEngine::get_champion_api_name_map() const {
+    if (!impl_) {
+        throw std::runtime_error("TFTEngine nao possui estado interno.");
+    }
+    impl_->ensure_open();
+
+    std::vector<std::pair<std::int32_t, std::string>> result;
+    result.reserve(impl_->catalog->size());
+    for (const auto& champion : impl_->catalog->all()) {
+        if (champion.internal_id < 0 || champion.api_name.empty()) continue;
+        result.emplace_back(champion.internal_id, champion.api_name);
+    }
+    return result;
+}
+
+std::string TFTEngine::adapt_opgg_compositions_json(const std::string& catalog_json) const {
+    if (!impl_) {
+        throw std::runtime_error("TFTEngine nao possui estado interno.");
+    }
+    impl_->ensure_open();
+
+    const auto input = nlohmann::json::parse(catalog_json);
+    const auto adapted = composition_intelligence::OppgCompositionAdapter::adapt(
+        input, impl_->catalog->all());
+    nlohmann::json output;
+    output["ok"] = adapted.ok();
+    output["diagnostics"] = adapted.diagnostics;
+    output["candidates"] = nlohmann::json::array();
+    for (const auto& candidate : adapted.candidates) {
+        nlohmann::json units = nlohmann::json::array();
+        for (const auto& unit : candidate.units) {
+            units.push_back({
+                {"champion_id", unit.champion_id},
+                {"role", static_cast<int>(unit.role)},
+                {"core", unit.core},
+                {"priority", unit.priority}
+            });
+        }
+        output["candidates"].push_back({
+            {"composition_id", candidate.composition_id},
+            {"source", "opgg"},
+            {"set_id", candidate.set_id},
+            {"patch", candidate.patch},
+            {"source_score", candidate.source_score},
+            {"source_reference", candidate.source_reference},
+            {"units", std::move(units)},
+            {"main_carry_id", candidate.main_carry_id},
+            {"target_board_size", candidate.target_board_size}
+        });
+    }
+    return output.dump();
+}
+
+
+std::vector<std::string> TFTEngine::get_composition_diagnostics_jsonl() const {
+    if (!impl_) throw std::runtime_error("TFTEngine nao possui estado interno.");
+    impl_->ensure_open();
+    std::vector<nlohmann::json> ordered;
+    for (const auto& player : impl_->composition_intelligence_players)
+        for (const auto& snapshot : player.snapshots) ordered.push_back(snapshot);
+    std::stable_sort(ordered.begin(), ordered.end(), [](const auto& left, const auto& right) {
+        return left.value("sequence", std::uint64_t{0}) < right.value("sequence", std::uint64_t{0});
+    });
+    std::vector<std::string> result;
+    result.reserve(ordered.size());
+    for (const auto& snapshot : ordered) result.push_back(snapshot.dump());
     return result;
 }
 

@@ -21,6 +21,7 @@ from PySide6.QtWidgets import (
 
 from viewer.session import ViewerSession, unit_label, ACTION_NAMES, ROOT
 from viewer.composition_plan import summarize_planned_traits, suggest_initial_positions, is_position_misplaced
+from viewer.composition_diagnostics_widget import CompositionDiagnosticsWidget
 
 APP_STYLE = """
 QMainWindow, QWidget { background: #0b1020; color: #e5e7eb; font-family: 'Segoe UI'; font-size: 10pt; }
@@ -816,6 +817,8 @@ class ViewerWindow(QMainWindow):
         self.events_log.setReadOnly(True)
         logs_layout.addWidget(self.events_log)
         self.tabs.addTab(logs_tab, "Eventos / auditoria")
+        self.composition_diagnostics = CompositionDiagnosticsWidget(self)
+        self.tabs.addTab(self.composition_diagnostics, "Composition Intelligence")
         # Player details are now opened in a modal from the player card.
         # Keep the legacy widgets alive for snapshot updates, but remove the fixed bottom panel.
         self.tabs.removeTab(0)
@@ -987,6 +990,7 @@ class ViewerWindow(QMainWindow):
             self._log("Modo de inferência: " + ("determinístico" if self.deterministic.isChecked() else "estocástico"))
             if self.session._session_dir is not None:
                 self._log(f"Logs individuais por jogador: {self.session._session_dir}")
+                self.composition_diagnostics.set_session_directory(self.session._session_dir)
                 for player_number in range(1, 9):
                     self._log(f"  • player_{player_number}_log.tft")
             self._render_snapshot(snapshot)

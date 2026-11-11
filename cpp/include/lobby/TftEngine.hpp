@@ -571,6 +571,16 @@ public:
     get_action_masks() const;
     AuditSnapshot get_audit_snapshot() const;
 
+    // Read-only identity map from the exact catalog loaded by this engine.
+    // Keys are units_gerado.json apiName values; values are native internal IDs.
+    std::vector<std::pair<std::int32_t, std::string>>
+    get_champion_api_name_map() const;
+
+    // Adapt OP.GG compositions against this engine's loaded native catalog.
+    // Input/output are JSON strings to keep catalog types out of the public API.
+    std::string adapt_opgg_compositions_json(const std::string& catalog_json) const;
+    std::vector<std::string> get_composition_diagnostics_jsonl() const;
+
     // Hooks de fixture determinística para testes de paridade Python/C++.
     // Não alteram o pool compartilhado; usar apenas em cenários de teste.
     bool set_unit_for_testing(

@@ -172,6 +172,16 @@ class CppTFTLobbyWrapper:
         }
         return observations, rewards, bool(result.get("lobby_done", False)), info
 
+    def adapt_opgg_compositions(self, catalog):
+        """Map OP.GG unit keys through the native engine's loaded catalog."""
+        import json
+        raw = json.dumps(catalog, ensure_ascii=False, separators=(",", ":"))
+        return json.loads(self._engine.adapt_opgg_compositions_json(raw))
+
+    def get_champion_id_map(self):
+        """Return apiName -> internal_id from the catalog loaded by native C++."""
+        return dict(self._engine.get_champion_id_map())
+
     def get_action_masks(self):
         masks = self._engine.get_action_masks()
         if os.environ.get("TFT_ABLATE_ITEM_ACTIONS") != "1":
@@ -227,6 +237,9 @@ class CppTFTLobbyWrapper:
     def get_public_state(self):
         """Read-only public lobby snapshot exposed by the native engine."""
         return self._engine.get_public_state()
+
+    def get_composition_diagnostics_jsonl(self):
+        return list(self._engine.get_composition_diagnostics_jsonl())
 
     def get_audit_snapshot(self):
         """Read-only board/bench/shop and mask snapshot for the observer."""
