@@ -96,6 +96,8 @@ def test_audit_deduplicates_repeated_snapshots_into_strategic_reviews_and_unit_i
             "reasons": [{"code": 1, "message": "Core da composição ativa."}],
         }]
 
+    repeated["diagnostics"]["unit_intentions"][0]["priority"] = 9
+    repeated["diagnostics"]["unit_intentions"][0]["confidence_not_probability"] = 0.8
     report = audit_diagnostic_records([first, repeated])
 
     assert report["record_count"] == 2
@@ -105,6 +107,8 @@ def test_audit_deduplicates_repeated_snapshots_into_strategic_reviews_and_unit_i
     assert report["observed_intent_counts"]["KEEP"] == 2
     assert report["unique_intent_count"] == 1
     assert report["unique_intents"][0]["observations"] == 2
+    assert report["unique_intents"][0]["priority"] == 9
+    assert report["unique_intents"][0]["confidence_not_probability"] == 0.8
 
 
 def test_composition_audit_reports_unique_unit_intentions_and_real_line_breaks():
