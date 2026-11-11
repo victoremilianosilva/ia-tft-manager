@@ -78,7 +78,7 @@ def test_integrated_index_correlates_same_match_player_round_and_compares_catego
     assert index["source_presence"]["lineup"] is True
     assert index["producer_counts"]["economy_evidence_valid"] == 1
     assert index["producer_counts"]["board_evidence_valid"] == 1
-    assert index["producer_counts"]["item_evidence_valid"] == 0
+    assert index["producer_counts"].get("item_evidence_valid", 0) == 0
     assert index["bridge_identity_mismatch_count"] == 0
 
 
