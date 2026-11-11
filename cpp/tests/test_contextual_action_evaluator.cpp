@@ -77,8 +77,12 @@ void contextual_path_uses_priority_and_lineup_without_calling_baseline() {
 void stale_identity_disables_contextual_recommendation() {
     StrategicSharedContext context;
     context.alive = true; context.player_id = 1; context.round = 8;
+    PlannerEvidenceSnapshot wrong_player;
+    wrong_player.match_id = 77; wrong_player.player_id = 0;
+    wrong_player.composition_id = "comp-a"; wrong_player.composition_version = 4;
+    wrong_player.round = 8;
     const auto result = ContextualActionEvaluator{}.evaluate(
-        active(), priorities(), lineup(), context, nullptr, 77);
+        active(), priorities(), lineup(), context, &wrong_player, 77);
     assert(result.stale);
     assert(result.recommended_action == StrategicActionKind::Hold);
     assert(result.candidates.empty());
