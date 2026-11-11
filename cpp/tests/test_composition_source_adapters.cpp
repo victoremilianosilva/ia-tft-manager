@@ -29,6 +29,18 @@ void opgg_rejects_wrong_set_and_low_coverage(){
   {{"key","DA_18_Carry"}},{{"key","missing-a"}},{{"key","missing-b"}},{{"key","missing-c"}}})}}})}};
  assert(OppgCompositionAdapter::adapt(partial,pool()).candidates.empty());
 }
+void opgg_rejects_duplicate_composition_ids(){
+ auto first=nlohmann::json{
+  {"id","duplicate-id"},{"team_code","abcTFTSet18"},
+  {"units",nlohmann::json::array({{{"key","DA_18_Carry"}}})}
+ };
+ auto catalog=nlohmann::json{{"patch","18.1"},
+  {"compositions",nlohmann::json::array({first,first})}};
+ const auto result=OppgCompositionAdapter::adapt(catalog,pool(),0.5);
+ assert(result.candidates.size()==1);
+ assert(std::any_of(result.diagnostics.begin(),result.diagnostics.end(),
+  [](const std::string& value){return value.find("duplicate OP.GG composition id")!=std::string::npos;}));
+}
 void native_adapter_uses_neutral_snapshot(){
  NativeCompositionSnapshot input;input.composition_id="native-18";input.set_id="18";input.patch="18.1";
  input.units={{10,true,80},{11,true,100},{12,false,40}};input.target_board_size=8;input.source_score=4.25;
@@ -71,4 +83,4 @@ void native_planner_exports_pre_opgg_candidate(){
  assert(plan.native_candidates.front().composition_id==plan.native_snapshot.composition_id);
 }
 }
-int main(){opgg_maps_to_common_contract();opgg_rejects_wrong_set_and_low_coverage();native_adapter_uses_neutral_snapshot();native_adapter_rejects_unknown_or_wrong_set_units();opgg_failure_does_not_block_native();native_planner_exports_pre_opgg_candidate();std::cout<<"Composition source adapter tests passed\n";return 0;}
+int main(){opgg_maps_to_common_contract();opgg_rejects_wrong_set_and_low_coverage();opgg_rejects_duplicate_composition_ids();native_adapter_uses_neutral_snapshot();native_adapter_rejects_unknown_or_wrong_set_units();opgg_failure_does_not_block_native();native_planner_exports_pre_opgg_candidate();std::cout<<"Composition source adapter tests passed\n";return 0;}
