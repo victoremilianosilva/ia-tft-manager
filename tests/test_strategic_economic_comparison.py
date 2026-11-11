@@ -322,3 +322,21 @@ def test_keep_audit_includes_thresholds_and_temporal_followup():
     assert "Revisões consecutivas bloqueado | 3" in strategy
     assert "Evolução posterior dos KEEP" in strategy
     assert "2-4" in strategy
+
+
+def test_strategic_audit_groups_repeated_snapshots_into_one_review():
+    first = _decision()
+    repeated = _decision()
+    repeated["step"] = 8
+    repeated["state_before"]["gold"] = 27
+    repeated["state_after"]["gold"] = 24
+
+    reports = build_shadow_markdown_reports({
+        "players_seen": ["1"],
+        "decision_timeline": [first, repeated],
+    })
+    strategy = reports["audit_estrategia.md"]
+
+    assert "Revisões estratégicas únicas: **1**." in strategy
+    assert "Snapshots estratégicos observados: **2**" in strategy
+    assert "| 1 | 2-3 | 7–8 | 2 | Invoker | ADAPT | Arcanist |" in strategy

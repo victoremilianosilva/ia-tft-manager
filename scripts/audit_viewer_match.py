@@ -19,6 +19,10 @@ from collections import Counter, defaultdict, deque
 from pathlib import Path
 from typing import Any
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
 try:
     from scripts.strategic_economic_comparison import build_shadow_markdown_reports
 except ImportError:  # Executed directly as scripts/audit_viewer_match.py
@@ -2741,13 +2745,59 @@ def main() -> int:
         evidence_md = "# Evidências detalhadas dos achados" + full_md.split(evidence_marker, 1)[1]
     else:
         evidence_md = "# Evidências detalhadas dos achados\n\nSem evidências adicionais."
-    report_for_json = dict(report)
-    json_path.write_text(json.dumps(report_for_json, ensure_ascii=False, indent=2), encoding="utf-8")
-
     markdown_inputs = dict(report)
     markdown_inputs["_markdown_general"] = general_md
     markdown_inputs["_markdown_evidence"] = evidence_md
     markdown_documents = build_shadow_markdown_reports(markdown_inputs)
+
+    # Composition Intelligence is audited in the same invocation and output
+    # directory as the other session reports. The JSONL is an input artifact,
+    # never rewritten or normalized in place.
+    try:
+        from viewer.composition_diagnostics import (
+            audit_diagnostic_records,
+            format_composition_vs_ppo,
+            format_diagnostic_audit,
+            load_diagnostic_jsonl,
+        )
+    except ImportError:
+        from composition_diagnostics import (
+            audit_diagnostic_records,
+            format_composition_vs_ppo,
+            format_diagnostic_audit,
+            load_diagnostic_jsonl,
+        )
+
+    diagnostics_path = session_root / "composition_diagnostics.jsonl"
+    if diagnostics_path.is_file():
+        composition_records, composition_errors = load_diagnostic_jsonl(diagnostics_path)
+    else:
+        composition_records = []
+        composition_errors = [
+            "Arquivo composition_diagnostics.jsonl não encontrado na pasta da sessão."
+        ]
+    composition_report = audit_diagnostic_records(composition_records, composition_errors)
+    markdown_documents["audit_composition_intelligence.md"] = (
+        format_diagnostic_audit(composition_records, composition_report) + "\n"
+    )
+    markdown_documents["audit_composition_vs_ppo.md"] = (
+        format_composition_vs_ppo(
+            composition_records, report.get("decision_timeline", []),
+            report.get("text_log_metrics", {}),
+        ) + "\n"
+    )
+    report["composition_intelligence_metrics"] = {
+        "source_file": str(diagnostics_path),
+        "source_found": diagnostics_path.is_file(),
+        "snapshots": composition_report["record_count"],
+        "unique_reviews": composition_report["unique_review_count"],
+        "unique_unit_intentions": composition_report["unique_intent_count"],
+        "parse_errors": composition_report["parse_errors"],
+    }
+
+    report_for_json = dict(report)
+    json_path.write_text(json.dumps(report_for_json, ensure_ascii=False, indent=2), encoding="utf-8")
+
     for filename, content in markdown_documents.items():
         (markdown_dir / filename).write_text(content, encoding="utf-8")
 

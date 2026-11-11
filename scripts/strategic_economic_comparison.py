@@ -376,6 +376,60 @@ class OutcomeEvaluator:
         }
 
 
+def _group_strategic_reviews(rows: list[tuple[dict, dict]]) -> list[tuple[dict, dict]]:
+    """Collapse repeated per-action snapshots into one strategic review.
+
+    A review is scoped to player, round, active direction, decision, target,
+    anchor and reason. The latest observation supplies current scores while
+    first/last steps and observation count preserve the audit trail.
+    """
+    grouped = {}
+    for decision, shadow in rows:
+        before = decision.get("state_before") or {}
+        key = (
+            str(decision.get("player", "?")),
+            str(decision.get("round", "?")),
+            str(before.get("comp_direction") or ""),
+            str(shadow.get("strategic_decision_name") or ""),
+            str(shadow.get("strategic_target_direction") or ""),
+            str(shadow.get("strategic_anchor_champion_id") or ""),
+            str(shadow.get("decision_path_reason") or shadow.get("strategic_reason") or ""),
+        )
+        step = decision.get("step")
+        if key not in grouped:
+            grouped[key] = {
+                "decision": decision,
+                "shadow": dict(shadow),
+                "first_step": step,
+                "last_step": step,
+                "observations": 1,
+            }
+            continue
+        item = grouped[key]
+        item["observations"] += 1
+        if isinstance(step, (int, float)):
+            if not isinstance(item["first_step"], (int, float)) or step < item["first_step"]:
+                item["first_step"] = step
+            if not isinstance(item["last_step"], (int, float)) or step > item["last_step"]:
+                item["last_step"] = step
+        # Keep the latest row's diagnostic values and the complete review span.
+        item["decision"] = decision
+        item["shadow"] = dict(shadow)
+    result = []
+    for item in grouped.values():
+        shadow = item["shadow"]
+        shadow["_review_first_step"] = item["first_step"]
+        shadow["_review_last_step"] = item["last_step"]
+        shadow["_review_observations"] = item["observations"]
+        result.append((item["decision"], shadow))
+    result.sort(key=lambda row: (
+        str(row[0].get("player", "?")),
+        str(row[0].get("round", "?")),
+        row[1].get("_review_first_step") or 0,
+    ))
+    return result
+
+
 def build_shadow_markdown_reports(report: dict) -> dict[str, str]:
     """Return Markdown documents; no JSON artifacts are written by this module."""
     decisions = [
@@ -391,7 +445,11 @@ def build_shadow_markdown_reports(report: dict) -> dict[str, str]:
     outcome_summary = OutcomeEvaluator().evaluate(decisions, report.get("round_outcome_timeline", []))
     shadow_rows = [(d, _shadow(d)) for d in decisions]
     available = [(d, s) for d, s in shadow_rows if s]
-    strategy_rows = [(d, s) for d, s in available if s.get("strategic_decision_name") is not None]
+    strategy_observation_count = sum(1 for _, shadow in available if shadow.get("strategic_decision_name") is not None)
+    strategy_rows = _group_strategic_reviews([
+        (d, shadow) for d, shadow in available
+        if shadow.get("strategic_decision_name") is not None
+    ])
     economy_rows = [(d, s) for d, s in available if s.get("economic_posture_name") is not None]
     action_rows = [
         (d, s) for d, s in available
@@ -450,12 +508,14 @@ def build_shadow_markdown_reports(report: dict) -> dict[str, str]:
         "Strategic Planner — recomendações",
         "Direção atual e recomendação do planner são mantidas separadas. O planner não altera o compromisso ativo nesta fase."
     )
-    strategy += ["| Jogador | Round | Step | Direção ativa | Decisão | Direção alvo | Âncora | Confiança | Custo de transição | Preservadas | Substituíveis | Candidatos avaliados (ID/direção/score/resultado) | Motivo |",
-                 "|---|---|---:|---|---|---|---:|---:|---:|---|---|---|---|"]
+    strategy += ["| Jogador | Round | Steps observados | Observações | Direção ativa | Decisão | Direção alvo | Âncora | Confiança | Custo de transição | Preservadas | Substituíveis | Candidatos avaliados (ID/direção/score/resultado) | Motivo |",
+                 "|---|---|---|---:|---|---|---:|---:|---:|---:|---|---|---|---|"]
     for d, s in strategy_rows:
         before = d.get("state_before") or {}
         strategy.append("| " + " | ".join(_cell(x) for x in (
-            d.get("player"), d.get("round"), d.get("step"), before.get("comp_direction"),
+            d.get("player"), d.get("round"),
+            f"{s.get('_review_first_step')}–{s.get('_review_last_step')}",
+            s.get("_review_observations", 1), before.get("comp_direction"),
             s.get("strategic_decision_name"), s.get("strategic_target_direction"),
             s.get("strategic_anchor_champion_id"), s.get("strategic_confidence"),
             s.get("strategic_transition_cost"),
@@ -480,7 +540,8 @@ def build_shadow_markdown_reports(report: dict) -> dict[str, str]:
     )
     strategy += [
         "",
-        f"Decisões com diagnóstico estratégico: **{len(strategy_rows)} / {len(decisions)}**.",
+        f"Revisões estratégicas únicas: **{len(strategy_rows)}**.",
+        f"Snapshots estratégicos observados: **{strategy_observation_count}** (inclui repetições por ação).",
         f"Candidatos de âncora avaliados: **{candidate_rows}**.",
         "",
     ]

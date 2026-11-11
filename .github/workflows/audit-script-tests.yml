@@ -7,14 +7,16 @@ on:
       - 'scripts/strategic_economic_comparison.py'
       - 'tests/test_strategic_economic_comparison.py'
       - 'tests/test_viewer_shadow_planning_logs.py'
+      - 'tests/test_composition_diagnostics.py'
+      - 'tests/test_composition_audit_integration.py'
+      - 'viewer/composition_diagnostics.py'
       - 'viewer/player_logs.py'
+      - 'viewer/session.py'
       - 'tests/test_purchase_sequence_audit.py'
       - 'tests/test_board_quality_audit.py'
       - 'tests/test_audit_metric_reconciliation.py'
       - 'scripts/test_audit_viewer_match.py'
       - 'viewer/audit_window.py'
-      - 'viewer/player_logs.py'
-      - 'viewer/session.py'
       - 'viewer/main.py'
       - '.github/workflows/audit-script-tests.yml'
   pull_request:
@@ -23,7 +25,11 @@ on:
       - 'scripts/strategic_economic_comparison.py'
       - 'tests/test_strategic_economic_comparison.py'
       - 'tests/test_viewer_shadow_planning_logs.py'
+      - 'tests/test_composition_diagnostics.py'
+      - 'tests/test_composition_audit_integration.py'
+      - 'viewer/composition_diagnostics.py'
       - 'viewer/player_logs.py'
+      - 'viewer/session.py'
       - 'tests/test_audit_metric_reconciliation.py'
       - 'tests/test_purchase_sequence_audit.py'
       - 'tests/test_board_quality_audit.py'
@@ -41,10 +47,10 @@ jobs:
         with:
           python-version: '3.12'
       - name: Compile Python
-        run: python -m py_compile scripts/audit_viewer_match.py scripts/strategic_economic_comparison.py scripts/test_audit_viewer_match.py viewer/audit_window.py viewer/main.py viewer/player_logs.py viewer/session.py
+        run: python -m py_compile viewer/composition_diagnostics.py scripts/audit_viewer_match.py scripts/strategic_economic_comparison.py scripts/test_audit_viewer_match.py viewer/audit_window.py viewer/main.py viewer/player_logs.py viewer/session.py
       - name: Install pytest for audit unit tests
         run: python -m pip install pytest
       - name: Run audit regression tests
         run: |
           python -m unittest -v scripts/test_audit_viewer_match.py
-          python -m pytest -q tests/test_purchase_sequence_audit.py tests/test_board_quality_audit.py tests/test_audit_metric_reconciliation.py tests/test_strategic_economic_comparison.py tests/test_viewer_shadow_planning_logs.py
+          python -m pytest -q tests/test_purchase_sequence_audit.py tests/test_board_quality_audit.py tests/test_audit_metric_reconciliation.py tests/test_strategic_economic_comparison.py tests/test_viewer_shadow_planning_logs.py tests/test_composition_diagnostics.py tests/test_composition_audit_integration.py
