@@ -1,7 +1,7 @@
 import json
 
 from viewer.composition_diagnostics import (
-    audit_diagnostic_records, format_diagnostic_audit, load_diagnostic_jsonl,
+    audit_diagnostic_records, format_composition_vs_ppo, format_diagnostic_audit, load_diagnostic_jsonl,
 )
 
 
