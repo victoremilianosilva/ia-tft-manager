@@ -113,7 +113,7 @@ void validated_economy_and_item_evidence_reach_action_evaluator() {
     assert(result.economy_evidence_consumed);
     assert(result.board_evidence_validated);
     assert(result.item_evidence_consumed);
-    assert(result.candidates.size() == 2);
+    assert(result.candidates.size() == 3);
     assert(result.candidates[1].disposition == ActionCandidateDisposition::Rejected);
     assert(result.candidates[1].reason.find("equipped-item") != std::string::npos);
     assert(result.evaluation.candidate_scores[0].opportunity_cost == 2.5);
