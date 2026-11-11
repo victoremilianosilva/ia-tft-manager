@@ -20,7 +20,10 @@ def _composition(match_id="match-a", player_id=0, round_number=3, sequence=10, t
         "round": round_number, "sequence": sequence,
         "timestamp_unix_ms": timestamp, "composition_id": "comp-a",
         "composition_version": 4, "stale": False,
-        "context_bridge": {"economic": {"gold": 30}},
+        "context_bridge": {"recommended": {
+            "economic_posture": {"value": "ACCUMULATE_RESOURCES", "quality": "valid", "origin": "recommended"},
+            "composition_decision": {"value": "KEEP", "quality": "valid", "origin": "recommended"},
+        }},
         "action_evaluator_comparison": {
             "baseline": {"recommended_action": 1, "recommended_champion_id": 10, "stale": False},
             "contextual": {"recommended_action": 3, "recommended_champion_id": 20, "stale": False},
@@ -48,6 +51,7 @@ def test_integrated_index_correlates_same_match_player_round_and_compares_catego
     assert comparison["contextual"]["divergences"] == 1
     assert index["source_presence"]["strategic_planner"] is True
     assert index["source_presence"]["contextual_action_evaluator"] is True
+    assert index["source_presence"]["economic_controller"] is True
 
 
 def test_integrated_index_never_joins_another_match_or_player():
@@ -94,7 +98,7 @@ def test_integrated_index_detects_duplicate_and_out_of_order_per_player_sequence
     assert index["composition_duplicate_count"] == 1
     assert index["duplicate_sequences"] == [{"player_id": 0, "sequence": 4}]
     assert index["out_of_order_sequences"] == [
-        {"player_id": 0, "previous": 4, "current": 3}
+        {"match_id": "match-a", "player_id": 0, "previous": 4, "current": 3}
     ]
 
 
