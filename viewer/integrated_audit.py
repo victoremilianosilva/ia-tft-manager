@@ -130,19 +130,20 @@ def build_integrated_audit_index(
     missing_envelope = []
     duplicate_sequences = []
     out_of_order_sequences = []
-    sequence_by_player: dict[int, list[int]] = defaultdict(list)
+    sequence_by_player: dict[tuple[str | None, int], list[int]] = defaultdict(list)
     seen_comp_keys: set[tuple] = set()
     seen_player_event_keys: set[tuple] = set()
     player_duplicate_count = 0
-    global_sequences: list[int] = []
+    global_sequences_by_match: dict[str, list[int]] = defaultdict(list)
     duplicate_comp_count = 0
     incompatible_schemas = []
 
-    def group_for(pid: int, rnd: int) -> dict:
-        key = (match_id, pid, rnd)
+    def group_for(pid: int, rnd: int, source_match: str | None = None) -> dict:
+        resolved_match = source_match if source_match is not None else match_id
+        key = (resolved_match, pid, rnd)
         return groups.setdefault(key, {
-            "match_id": match_id, "player_id": pid, "round": rnd,
-            "correlation_key": {"match_id": match_id, "player_id": pid, "round": rnd},
+            "match_id": resolved_match, "player_id": pid, "round": rnd,
+            "correlation_key": {"match_id": resolved_match, "player_id": pid, "round": rnd},
             "strategic_reviews": [], "strategic_review_observations": 0,
             "economic_observations": [], "ppo_actions": [], "composition_snapshots": [],
             "composition_versions": [], "action_evaluator_recommendations": [], "outcomes": [],
@@ -163,7 +164,8 @@ def build_integrated_audit_index(
                 player_duplicate_count += 1
                 continue
             seen_player_event_keys.add(event_key)
-        group = group_for(pid, rnd)
+        event_match = event.get("match_id") or match_id
+        group = group_for(pid, rnd, event_match)
         action = str(event.get("action_name") or event.get("raw_action") or "UNKNOWN").upper()
         category = PPO_ACTION_CATEGORIES.get(action)
         state = _state(event)
@@ -205,7 +207,7 @@ def build_integrated_audit_index(
             })
             producer_counts["strategic_planner"] += 1
         group["ppo_actions"].append(decision)
-        player_decisions[(pid, rnd)].append(event)
+        player_decisions[(event_match, pid, rnd)].append(event)
         producer_counts["ppo"] += 1
         if _economy_available(event):
             economy = event.get("economic_diagnostics") or event.get("decision_context") or {}
@@ -247,9 +249,9 @@ def build_integrated_audit_index(
                 duplicate_sequences.append({"player_id": pid, "sequence": sequence})
                 continue
             seen_comp_keys.add(key)
-            sequence_by_player[pid].append(sequence)
-            global_sequences.append(sequence)
-        group = group_for(pid, rnd)
+            sequence_by_player[(str(record_match), pid)].append(sequence)
+            global_sequences_by_match[str(record_match)].append(sequence)
+        group = group_for(pid, rnd, str(record_match))
         recommendations = _recommendations(record)
         item = {
             "source": "composition_intelligence",
@@ -306,10 +308,13 @@ def build_integrated_audit_index(
                 "origin": economic_value.get("origin"),
             })
 
-    for pid, sequences in sequence_by_player.items():
+    for (sequence_match, pid), sequences in sequence_by_player.items():
         for left, right in zip(sequences, sequences[1:]):
             if right < left:
-                out_of_order_sequences.append({"player_id": pid, "previous": left, "current": right})
+                out_of_order_sequences.append({
+                    "match_id": sequence_match, "player_id": pid,
+                    "previous": left, "current": right,
+                })
 
     for outcome in outcome_timeline or []:
         if not isinstance(outcome, dict):
@@ -318,7 +323,8 @@ def build_integrated_audit_index(
         rnd = _round(outcome.get("round"))
         if pid is None or rnd is None:
             continue
-        group = group_for(pid, rnd)
+        outcome_match = outcome.get("match_id") or match_id
+        group = group_for(pid, rnd, outcome_match)
         group["outcomes"].append({
             "source": "round_outcome_timeline",
             "step": outcome.get("step"),
@@ -328,7 +334,7 @@ def build_integrated_audit_index(
             "reward": outcome.get("reward"),
             "interpretation": "correlation_only_not_causation",
         })
-        player_outcomes[(pid, rnd)].append(outcome)
+        player_outcomes[(outcome_match, pid, rnd)].append(outcome)
         producer_counts["outcomes"] += 1
 
     comparison = {
@@ -338,7 +344,7 @@ def build_integrated_audit_index(
         "policy_action_is_not_ground_truth": True,
     }
     for key, events in player_decisions.items():
-        pid, rnd = key
+        event_match, pid, rnd = key
         snapshots = player_compositions.get(key, [])
         usable = []
         for record in snapshots:
@@ -440,7 +446,13 @@ def build_integrated_audit_index(
         "player_log_duplicate_count": player_duplicate_count,
         "duplicate_sequences": duplicate_sequences[:100],
         "out_of_order_sequences": out_of_order_sequences[:100],
-        "sequence_gaps": sorted(set(range(min(global_sequences), max(global_sequences) + 1)) - set(global_sequences))[:100] if global_sequences else [],
+        "sequence_gaps": [
+            {"match_id": sequence_match, "missing": sorted(
+                set(range(min(values), max(values) + 1)) - set(values)
+            )[:100]}
+            for sequence_match, values in sorted(global_sequences_by_match.items())
+            if values and set(range(min(values), max(values) + 1)) - set(values)
+        ],
         "incompatible_schemas": incompatible_schemas[:100],
         "parse_errors": errors,
         "recommendation_vs_ppo": comparison,
