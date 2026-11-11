@@ -2777,7 +2777,7 @@ def main() -> int:
         ]
     composition_report = audit_diagnostic_records(composition_records, composition_errors)
     markdown_documents["audit_composition_intelligence.md"] = (
-        format_diagnostic_audit(composition_records, composition_report) + "\\n"
+        format_diagnostic_audit(composition_records, composition_report) + "\n"
     )
     markdown_documents["audit_composition_vs_ppo.md"] = (
         format_composition_vs_ppo(
