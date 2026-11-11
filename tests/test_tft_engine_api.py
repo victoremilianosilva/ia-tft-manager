@@ -587,8 +587,9 @@ def test_opgg_adapter_resolves_units_through_native_catalog():
         engine.close()
 
 
-def test_composition_intelligence_emits_per_player_shadow_diagnostics():
+def test_composition_intelligence_emits_per_player_shadow_diagnostics(monkeypatch):
     import json
+    monkeypatch.setenv("TFT_COMPOSITION_INTELLIGENCE_SHADOW", "1")
 
     engine = TFTLobby(seed=20261111)
     try:
