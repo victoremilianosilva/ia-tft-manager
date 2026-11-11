@@ -143,9 +143,9 @@ def build_integrated_audit_index(
         return groups.setdefault(key, {
             "match_id": match_id, "player_id": pid, "round": rnd,
             "correlation_key": {"match_id": match_id, "player_id": pid, "round": rnd},
-            "strategic_reviews": [], "economic_observations": [],
-            "ppo_actions": [], "composition_snapshots": [],
-            "action_evaluator_recommendations": [], "outcomes": [],
+            "strategic_reviews": [], "strategic_review_observations": 0,
+            "economic_observations": [], "ppo_actions": [], "composition_snapshots": [],
+            "composition_versions": [], "action_evaluator_recommendations": [], "outcomes": [],
             "correlation_semantics": "same_match_player_round_association_not_causality",
         })
 
@@ -166,9 +166,22 @@ def build_integrated_audit_index(
         group = group_for(pid, rnd)
         action = str(event.get("action_name") or event.get("raw_action") or "UNKNOWN").upper()
         category = PPO_ACTION_CATEGORIES.get(action)
+        state = _state(event)
+        composition_id = state.get("active_composition_id") or state.get("composition_id")
+        composition_version = state.get("active_composition_version", state.get("composition_version"))
+        composition_state = state.get("composition") if isinstance(state.get("composition"), dict) else {}
+        composition_id = composition_id or composition_state.get("composition_id")
+        composition_version = composition_version if composition_version is not None else composition_state.get("composition_version")
         decision = {
             "source": "structured_player_log",
             "sequence_id": event.get("sequence_id"),
+            "composition_id": composition_id,
+            "composition_version": composition_version,
+            "source_reference": {
+                "file": f"player_{pid + 1}_log.json",
+                "sequence_id": event.get("sequence_id"),
+                "step": event.get("step"),
+            },
             "step": event.get("step"),
             "timestamp": event.get("timestamp"),
             "action": action,
@@ -240,6 +253,7 @@ def build_integrated_audit_index(
         recommendations = _recommendations(record)
         item = {
             "source": "composition_intelligence",
+            "source_reference": {"file": "composition_diagnostics.jsonl", "sequence": sequence},
             "schema_version": schema,
             "sequence": sequence,
             "timestamp_unix_ms": record.get("timestamp_unix_ms", corr.get("timestamp_unix_ms")),
@@ -253,6 +267,12 @@ def build_integrated_audit_index(
             "diagnostics": record.get("diagnostics"),
         }
         group["composition_snapshots"].append(item)
+        identity = {
+            "composition_id": item["composition_id"],
+            "composition_version": item["composition_version"],
+        }
+        if identity not in group["composition_versions"]:
+            group["composition_versions"].append(identity)
         group["action_evaluator_recommendations"].append({
             "sequence": sequence, "composition_version": item["composition_version"],
             **recommendations,
@@ -356,7 +376,28 @@ def build_integrated_audit_index(
                     comparison[source]["divergences"] += 1
 
     for group in groups.values():
+        observations = group["strategic_reviews"]
+        unique_reviews = {}
+        for observation in observations:
+            key = (
+                observation.get("source"),
+                observation.get("decision"),
+                observation.get("decision_path_reason"),
+                observation.get("candidate_generation_reason"),
+                observation.get("has_anchor_candidate"),
+                observation.get("current_direction_viable"),
+                observation.get("origin"),
+                observation.get("quality"),
+            )
+            if key not in unique_reviews:
+                unique_reviews[key] = {**observation, "observations": 0}
+            unique_reviews[key]["observations"] += 1
+        group["strategic_review_observations"] = len(observations)
+        group["strategic_reviews"] = list(unique_reviews.values())
         group["strategic_review_count"] = len(group["strategic_reviews"])
+        group["composition_versions"].sort(
+            key=lambda item: (str(item.get("composition_id")), item.get("composition_version") or 0)
+        )
         group["ppo_action_count"] = len(group["ppo_actions"])
         group["composition_snapshot_count"] = len(group["composition_snapshots"])
         group["outcome_count"] = len(group["outcomes"])
