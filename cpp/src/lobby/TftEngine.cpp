@@ -3539,6 +3539,7 @@ struct TFTEngine::Impl {
                 strategic_context, economic_decision);
 
             // New Composition Intelligence pipeline: per-player shadow state only.
+            try {
             {
                 namespace ci = composition_intelligence;
                 auto& runtime = composition_intelligence_players[i];
@@ -3700,6 +3701,21 @@ struct TFTEngine::Impl {
                 diagnostic_json["sequence"] = ++composition_intelligence_sequence;
                 diagnostic_json["catalog_diagnostics"] = composition_intelligence_catalog_diagnostics;
                 runtime.snapshots.push_back(std::move(diagnostic_json));
+            }
+            } catch (const std::exception& error) {
+                nlohmann::json failed = {
+                    {"schema_version", 1},
+                    {"sequence", ++composition_intelligence_sequence},
+                    {"round", static_cast<std::uint32_t>(current_round)},
+                    {"composition_id", ""},
+                    {"composition_version", 0},
+                    {"stale", true},
+                    {"stale_reason", std::string("shadow_runtime_exception: ") + error.what()},
+                    {"player_id", static_cast<std::int32_t>(i)},
+                    {"diagnostics", {{"runtime_error", error.what()}}},
+                    {"catalog_diagnostics", composition_intelligence_catalog_diagnostics}
+                };
+                composition_intelligence_players[i].snapshots.push_back(std::move(failed));
             }
 
             static const std::array<const char*, 7> economic_posture_names{
