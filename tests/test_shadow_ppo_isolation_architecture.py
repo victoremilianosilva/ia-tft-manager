@@ -5,7 +5,8 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 ENGINE = ROOT / "cpp" / "src" / "lobby" / "TftEngine.cpp"
-HEADER = ROOT / "cpp" / "include" / "lobby" / "TftEngine.hpp"
+ENGINE_HEADER = ROOT / "cpp" / "include" / "lobby" / "TftEngine.hpp"
+BOUNDARY_HEADER = ROOT / "cpp" / "include" / "composition_intelligence" / "ShadowFailureBoundary.hpp"
 
 
 def _function_body(source: str, signature: str) -> str:
@@ -59,7 +60,8 @@ class ShadowPpoIsolationArchitectureTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.source = ENGINE.read_text(encoding="utf-8")
-        cls.header = HEADER.read_text(encoding="utf-8")
+        cls.engine_header = ENGINE_HEADER.read_text(encoding="utf-8")
+        cls.boundary_header = BOUNDARY_HEADER.read_text(encoding="utf-8")
         start_marker = "// BEGIN SHADOW-ONLY EVALUATION BOUNDARY."
         end_marker = "// END SHADOW-ONLY EVALUATION BOUNDARY."
         start = cls.source.index(start_marker)
@@ -107,10 +109,11 @@ class ShadowPpoIsolationArchitectureTests(unittest.TestCase):
                 self.assertNotIn(field, body)
 
     def test_shadow_failure_boundary_is_noexcept_and_catches_reporter_failure(self):
-        self.assertIn("bool run_shadow_isolated", self.header)
-        self.assertIn("noexcept", self.header)
-        self.assertIn("catch (...)", self.header)
-        self.assertIn("std::forward<OnFailure>(on_failure)()", self.header)
+        self.assertIn("bool run_shadow_isolated", self.boundary_header)
+        self.assertIn("noexcept", self.boundary_header)
+        self.assertIn("catch (...)", self.boundary_header)
+        self.assertIn("std::forward<OnFailure>(on_failure)()", self.boundary_header)
+        self.assertNotIn("ShadowFailureBoundary", self.engine_header)
 
 
 if __name__ == "__main__":
