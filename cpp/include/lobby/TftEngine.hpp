@@ -571,6 +571,11 @@ public:
     get_action_masks() const;
     AuditSnapshot get_audit_snapshot() const;
 
+    // Read-only identity map from the exact catalog loaded by this engine.
+    // Keys are units_gerado.json apiName values; values are native internal IDs.
+    std::vector<std::pair<std::int32_t, std::string>>
+    get_champion_api_name_map() const;
+
     // Hooks de fixture determinística para testes de paridade Python/C++.
     // Não alteram o pool compartilhado; usar apenas em cenários de teste.
     bool set_unit_for_testing(
