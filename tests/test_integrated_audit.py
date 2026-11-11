@@ -376,3 +376,16 @@ def test_inline_shadow_recommendation_missing_is_explicitly_unavailable():
 def test_evaluator_action_aliases_normalize_to_semantic_categories():
     assert normalize_evaluator_action("BUY_EXPERIENCE")["semantic_category"] == "BUY_XP"
     assert normalize_evaluator_action("REROLL_SHOP")["semantic_category"] == "REROLL"
+
+
+def test_inline_shadow_with_unmapped_ppo_action_is_not_comparable():
+    event = _decision(action="ITEM")
+    event["state_after"]["shadow_planning"]["action_recommendation_name"] = "HOLD"
+    index = build_integrated_audit_index([event], [], [], match_id="match-a")
+
+    comparison = index["recommendation_vs_ppo"]["shadow_action_evaluator"]
+    assert comparison["compared"] == 0
+    assert comparison["unavailable"] == 1
+    assert comparison["matches"] == 0
+    assert comparison["divergences"] == 0
+    assert index["recommendation_vs_ppo"]["semantic_taxonomy"]["shadow_action_evaluator"]["not_comparable"] == 1
