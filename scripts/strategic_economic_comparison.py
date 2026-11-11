@@ -22,6 +22,18 @@ ACTION_ALIASES = {
 }
 
 
+def classify_candidate_selection(candidate_count: int, selected_ids: list, recommended_id: Any) -> str:
+    """Classify selection integrity without treating an empty initial state as a failure."""
+    selected_count = len(selected_ids)
+    if candidate_count == 0 and selected_count == 0:
+        return "NOT_APPLICABLE"
+    if candidate_count == 0 and selected_count > 0:
+        return "INCONSISTENT"
+    if selected_count == 0 or recommended_id is None:
+        return "INCOMPLETE"
+    return "CONSISTENT" if selected_ids == [recommended_id] else "INCONSISTENT"
+
+
 def _cell(value: Any) -> str:
     if value is None or value == "":
         return "—"
@@ -756,20 +768,27 @@ def build_shadow_markdown_reports(report: dict) -> dict[str, str]:
             "selected_count": len(selected),
             "recommended_champion_id": recommended_id,
             "selected_champion_ids": selected_ids,
-            "champion_matches": (
-                selected_ids == [recommended_id] if recommended_id is not None
-                else len(selected) <= 1
+            "integrity_status": classify_candidate_selection(
+                len(candidates), selected_ids, recommended_id,
             ),
         })
+    integrity_counts = Counter(check["integrity_status"] for check in selected_candidate_checks)
     actions += ["", "### Integridade da seleção", ""]
-    actions += ["| Jogador | Round | Step | Candidatos | Selecionados | Campeão recomendado | Campeão selecionado | Consistente |",
+    actions += [
+        f"- Consistentes: **{integrity_counts.get('CONSISTENT', 0)}**",
+        f"- Inconsistentes: **{integrity_counts.get('INCONSISTENT', 0)}**",
+        f"- Incompletos: **{integrity_counts.get('INCOMPLETE', 0)}**",
+        f"- Não aplicáveis (sem candidatos e sem seleção): **{integrity_counts.get('NOT_APPLICABLE', 0)}**",
+        "",
+    ]
+    actions += ["| Jogador | Round | Step | Candidatos | Selecionados | Campeão recomendado | Campeão selecionado | Status |",
                 "|---|---|---:|---:|---:|---:|---|---|"]
     for check, (d, shadow) in zip(selected_candidate_checks, action_rows):
         actions.append("| " + " | ".join(_cell(value) for value in (
             check["player"], check["round"], check["step"],
             len(shadow.get("action_candidate_scores") or []), check["selected_count"],
             check["recommended_champion_id"], check["selected_champion_ids"],
-            check["champion_matches"],
+            check["integrity_status"],
         )) + " |")
     actions += ["", "Board delta, HP e streak são proxies heurísticos, não previsões calibradas. Custo direto, juros perdidos e custo de oportunidade são exibidos separadamente. A integridade verifica a correspondência entre o candidato marcado como selecionado e o campeão recomendado; não recalcula nem altera o score nativo.", ""]
 
