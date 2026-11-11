@@ -65,15 +65,14 @@ def _economy_available(event: dict, composition: dict | None = None) -> bool:
     payload = event.get("economic_diagnostics")
     if isinstance(payload, dict) and payload:
         return True
-    context = event.get("decision_context") or {}
-    if isinstance(context, dict) and any(k in context for k in ("gold", "interest_if_resolved_now", "economic_posture")):
-        return True
     for state in (event.get("state_after"), event.get("state_before")):
         if isinstance(state, dict) and any(k in state for k in ("economic_controller", "economic_decision", "economic_diagnostics")):
             return True
     if composition:
         bridge = composition.get("context_bridge") or {}
-        if isinstance(bridge, dict) and bridge.get("economic") is not None:
+        recommended = bridge.get("recommended") or {} if isinstance(bridge, dict) else {}
+        posture = recommended.get("economic_posture") or {}
+        if isinstance(posture, dict) and posture.get("value") is not None and posture.get("quality") in ("valid", "partial"):
             return True
         diagnostics = composition.get("diagnostics") or {}
         evidence = diagnostics.get("evidence") or {}
@@ -261,8 +260,28 @@ def build_integrated_audit_index(
             producer_counts["action_evaluator_baseline"] += 1
         if recommendations["contextual"] is not None:
             producer_counts["contextual_action_evaluator"] += 1
+        bridge = record.get("context_bridge") or {}
+        recommended_bridge = bridge.get("recommended") or {} if isinstance(bridge, dict) else {}
+        strategic_value = recommended_bridge.get("composition_decision") or {}
+        economic_value = recommended_bridge.get("economic_posture") or {}
+        if isinstance(strategic_value, dict) and strategic_value.get("value") is not None:
+            producer_counts["strategic_planner"] += 1
+            group["strategic_reviews"].append({
+                "source": "context_bridge",
+                "sequence": sequence,
+                "decision": strategic_value.get("value"),
+                "quality": strategic_value.get("quality"),
+                "origin": strategic_value.get("origin"),
+            })
         if _economy_available({}, record):
             producer_counts["economy_evidence"] += 1
+            group["economic_observations"].append({
+                "source": "context_bridge",
+                "sequence": sequence,
+                "posture": economic_value.get("value"),
+                "quality": economic_value.get("quality"),
+                "origin": economic_value.get("origin"),
+            })
 
     for pid, sequences in sequence_by_player.items():
         for left, right in zip(sequences, sequences[1:]):
@@ -418,6 +437,8 @@ def format_integrated_audit_markdown(index: dict) -> str:
         f"- Envelopes de composição incompletos: {index.get('composition_envelope_missing_count', 0)}",
         f"- Sequências duplicadas: {index.get('composition_duplicate_count', 0)}",
         f"- Inversões de sequência: {len(index.get('out_of_order_sequences', []))}",
+        f"- Lacunas de sequência: {len(index.get('sequence_gaps', []))}",
+        f"- Eventos duplicados no log de jogadores: {index.get('player_log_duplicate_count', 0)}",
         f"- Schemas incompatíveis: {len(index.get('incompatible_schemas', []))}",
         f"- Erros de parsing: {len(index.get('parse_errors', []))}",
         "",
