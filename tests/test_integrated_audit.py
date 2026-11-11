@@ -1,4 +1,4 @@
-from viewer.integrated_audit import build_integrated_audit_index, format_integrated_audit_markdown
+from viewer.integrated_audit import (\n    build_integrated_audit_index, format_integrated_audit_markdown,\n    normalize_ppo_action, normalize_evaluator_action, classify_semantic_pair,\n)
 
 
 def _decision(action="BUY", player="Jogador 1", round_number=3, timestamp="2026-11-11T12:00:00+00:00"):
@@ -276,3 +276,56 @@ def test_unrecognized_source_schema_is_reported_as_incompatible():
     assert index["incompatible_schemas"] == [
         {"schema_version": 2, "sequence": 10, "player_id": 0}
     ]
+
+
+
+def test_semantic_taxonomy_maps_direct_partial_and_unmapped_actions():
+    direct_cases = {
+        "BUY": "BUY_UNIT",
+        "SELL": "SELL_UNIT",
+        "BUY_XP": "BUY_XP",
+        "REROLL": "REROLL",
+    }
+    for raw, expected in direct_cases.items():
+        normalized = normalize_ppo_action(raw)
+        assert normalized["original"] == raw
+        assert normalized["semantic_category"] == expected
+        assert normalized["mapping_quality"] == "direct"
+        assert classify_semantic_pair(
+            normalized, normalize_evaluator_action(expected)
+        ) == "direct_match"
+
+    partial_cases = {
+        "MOVE_BOARD": "DEPLOY_OR_MOVE",
+        "MOVE_BENCH": "DEPLOY_OR_MOVE",
+        "PASS": "HOLD",
+    }
+    for raw, expected in partial_cases.items():
+        normalized = normalize_ppo_action(raw)
+        assert normalized["semantic_category"] == expected
+        assert classify_semantic_pair(
+            normalized, normalize_evaluator_action(expected)
+        ) == "partial_compatibility"
+
+    assert normalize_ppo_action("ITEM")["semantic_category"] is None
+    assert classify_semantic_pair(
+        normalize_ppo_action("ITEM"), normalize_evaluator_action("HOLD")
+    ) == "not_comparable"
+    assert classify_semantic_pair(
+        normalize_ppo_action("BUY"), normalize_evaluator_action("SELL_UNIT")
+    ) == "incompatible"
+
+
+def test_integrated_report_preserves_original_and_normalized_taxonomies():
+    record = _composition()
+    record["action_evaluator_comparison"]["baseline"]["recommended_action"] = 6
+    record["action_evaluator_comparison"]["contextual"]["recommended_action"] = 5
+    index = build_integrated_audit_index(
+        [_decision(action="PASS")], [], [record], match_id="match-a"
+    )
+    taxonomy = index["recommendation_vs_ppo"]["semantic_taxonomy"]
+    assert taxonomy["baseline"]["partial_compatibility"] == 1
+    assert taxonomy["contextual"]["incompatible"] == 1
+    markdown = format_integrated_audit_markdown(index)
+    assert "PPO original | PPO normalizado | Evaluator original | Evaluator normalizado" in markdown
+    assert "| PASS | HOLD | HOLD | HOLD | partial_compatibility |" in markdown
