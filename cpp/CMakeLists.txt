@@ -349,6 +349,12 @@ if(BUILD_TESTING)
     enable_tft_test_assertions(test_planner_evidence_adapters)
     add_test(NAME planner_evidence_adapters COMMAND test_planner_evidence_adapters)
 
+    add_executable(test_strategic_context_bridge tests/test_strategic_context_bridge.cpp)
+    configure_tft_module(test_strategic_context_bridge)
+    target_link_libraries(test_strategic_context_bridge PRIVATE nlohmann_json::nlohmann_json)
+    enable_tft_test_assertions(test_strategic_context_bridge)
+    add_test(NAME strategic_context_bridge COMMAND test_strategic_context_bridge)
+
     add_executable(test_composition_action_evaluator tests/test_composition_action_evaluator.cpp)
     configure_tft_module(test_composition_action_evaluator)
     enable_tft_test_assertions(test_composition_action_evaluator)
