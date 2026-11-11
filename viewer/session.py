@@ -315,6 +315,7 @@ class ViewerSession:
                 record["correlation"] = {
                     "schema_version": 1,
                     "match_id": self.match_id,
+                    "match_id_source": "ViewerSession.match_id",
                     "engine_match_id": record.get("engine_match_id"),
                     "player_id": player_id,
                     "round": round_number,
