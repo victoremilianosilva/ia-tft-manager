@@ -192,8 +192,10 @@ public:
                     case strategy::StrategicActionKind::SellUnit:
                         if (!priority || priority->intent != UnitIntent::SellCandidate)
                             reject(score, "sell_candidate_intent_required");
-                        else if (priority->sale_restricted || equipped_item_risk[candidate.champion_id])
-                            reject(score, "sale_restricted_by_item_or_transition_risk");
+                        else if (priority->sale_restricted || priority->copies_owned >= 2 ||
+                            priority->highest_star > 1 || priority->target_star > 0 ||
+                            equipped_item_risk[candidate.champion_id])
+                            reject(score, "sale_restricted_by_pair_star_item_or_transition_risk");
                         else if (target_ids.count(candidate.champion_id) || lineup_ids.count(candidate.champion_id) ||
                             priority->relation == UnitStrategicRelation::Bridge)
                             reject(score, "unit_preserved_by_target_lineup_or_bridge");

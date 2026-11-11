@@ -312,11 +312,26 @@ private:
             out.sale_restricted = true;
             out.priority = 10;
             out.reasons.push_back({UnitReasonCode::EquippedItemRisk, "Risco de itens impede recomendar venda sem avaliação adicional."});
-        } else if (transition && contains(transition->sell_candidate_unit_ids, id)) {
-            out.intent = UnitIntent::SellCandidate;
+        } else if (owned.copies >= 2 || out.highest_star > 1) {
+            out.intent = UnitIntent::Hold;
             out.relation = UnitStrategicRelation::OutsideTarget;
-            out.priority = 5;
-            out.reasons.push_back({UnitReasonCode::NotInActiveTarget, "Transição classificou a unidade como candidata à venda; nenhuma ação é executada."});
+            out.sale_restricted = true;
+            out.priority = 15;
+            out.reasons.push_back({UnitReasonCode::UpgradeProgress,
+                "Unidade possui par ou nível de estrelas concluído; preservar até avaliar explicitamente o custo de quebrar esse progresso."});
+        } else if (transition && contains(transition->sell_candidate_unit_ids, id)) {
+            if (!ev || out.confidence < config_.minimum_evidence_confidence) {
+                out.intent = UnitIntent::Hold;
+                out.relation = UnitStrategicRelation::OutsideTarget;
+                out.priority = 10;
+                out.reasons.push_back({UnitReasonCode::InsufficientEvidence,
+                    "Evidência insuficiente para confirmar que a unidade fora do alvo é dispensável; não recomendar venda."});
+            } else {
+                out.intent = UnitIntent::SellCandidate;
+                out.relation = UnitStrategicRelation::OutsideTarget;
+                out.priority = 5;
+                out.reasons.push_back({UnitReasonCode::NotInActiveTarget, "Transição classificou a unidade como candidata à venda; nenhuma ação é executada."});
+            }
         } else {
             out.intent = UnitIntent::Replace;
             out.relation = UnitStrategicRelation::OutsideTarget;

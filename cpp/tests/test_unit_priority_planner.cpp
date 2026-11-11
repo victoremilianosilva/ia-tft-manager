@@ -89,7 +89,34 @@ void equipped_items_restrict_sale_and_low_evidence_holds() {
     auto result = UnitPriorityPlanner{}.resolve(active, ctx);
     for (const auto& unit : result.units) {
         if (unit.champion_id == 8) assert(unit.intent == UnitIntent::Hold && unit.sale_restricted);
-        if (unit.champion_id == 7) assert(unit.intent == UnitIntent::SellCandidate);
+        if (unit.champion_id == 7) assert(unit.intent == UnitIntent::Hold);
+    }
+}
+
+void pairs_and_star_progress_are_not_sell_candidates() {
+    ActiveCompositionManager manager;
+    manager.publish(comp());
+    const auto active = *manager.current();
+    auto ctx = context(active);
+    CompositionTransitionPlan transition;
+    transition.sell_candidate_unit_ids = {8, 9, 10};
+    ctx.transition = transition;
+    ctx.owned_units = {
+        {8, 2, 1, false, {}},
+        {9, 1, 2, false, {}},
+        {10, 1, 1, false, {}}
+    };
+    ctx.evidence = {{8, 0.0, 0.0, 0.8, 0}, {9, 0.0, 0.0, 0.8, 0}};
+    const auto result = UnitPriorityPlanner{}.resolve(active, ctx);
+    for (const auto& unit : result.units) {
+        if (unit.champion_id == 8 || unit.champion_id == 9) {
+            assert(unit.intent == UnitIntent::Hold);
+            assert(unit.sale_restricted);
+        }
+        if (unit.champion_id == 10) {
+            assert(unit.intent == UnitIntent::Hold);
+            assert(!unit.sale_restricted);
+        }
     }
 }
 
@@ -168,6 +195,7 @@ int main() {
     resolves_keep_upgrade_seek_and_version();
     shared_and_bridge_units_survive_pivot();
     equipped_items_restrict_sale_and_low_evidence_holds();
+    pairs_and_star_progress_are_not_sell_candidates();
     validated_item_snapshot_protects_outside_target_unit();
     board_gap_increases_matching_missing_unit_priority();
     missing_active_is_safe();

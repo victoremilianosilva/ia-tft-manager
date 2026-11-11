@@ -108,8 +108,28 @@ void invalid_candidates_and_equipped_sales_are_rejected() {
         active(), priorities(), lineup(), context, &evidence, 77);
     assert(result.item_evidence_consumed);
     assert(!result.candidates[0].eligible);
-    assert(result.candidates[1].rejection_reason == "sale_restricted_by_item_or_transition_risk");
+    assert(result.candidates[1].rejection_reason == "sale_restricted_by_pair_star_item_or_transition_risk");
 }
+void contextual_sell_rejects_pairs_and_existing_star_progress() {
+    auto p = priorities();
+    p.units.back().copies_owned = 2;
+    StrategicSharedContext context;
+    context.alive = true; context.gold = 10; context.player_id = 0; context.round = 8;
+    context.action_candidates = {candidate(StrategicActionKind::SellUnit,30)};
+    auto result = ContextualActionEvaluator{}.evaluate(
+        active(), p, lineup(), context, nullptr, 77);
+    assert(result.candidates.size() == 1);
+    assert(!result.candidates[0].eligible);
+    assert(result.candidates[0].rejection_reason ==
+        "sale_restricted_by_pair_star_item_or_transition_risk");
+
+    p.units.back().copies_owned = 1;
+    p.units.back().highest_star = 2;
+    result = ContextualActionEvaluator{}.evaluate(
+        active(), p, lineup(), context, nullptr, 77);
+    assert(!result.candidates[0].eligible);
+}
+
 void explicit_hold_is_selected_when_all_actions_score_below_zero() {
     StrategicSharedContext context;
     context.alive = true; context.gold = 200; context.player_id = 0; context.round = 8;
@@ -141,6 +161,7 @@ int main() {
     contextual_path_uses_priority_and_lineup_without_calling_baseline();
     stale_identity_disables_contextual_recommendation();
     invalid_candidates_and_equipped_sales_are_rejected();
+    contextual_sell_rejects_pairs_and_existing_star_progress();
     explicit_hold_is_selected_when_all_actions_score_below_zero();
     json_is_versioned_and_shadow_only();
     std::cout << "ContextualActionEvaluator tests passed\\n";

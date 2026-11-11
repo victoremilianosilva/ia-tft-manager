@@ -64,6 +64,23 @@ void sell_candidate_is_not_automatic_and_restricted_sale_is_rejected() {
     assert(result.candidates[0].disposition == ActionCandidateDisposition::Rejected);
     assert(!result.evaluation.candidate_scores[0].available);
 }
+void sell_rejects_pairs_and_existing_star_progress() {
+    auto p = priorities();
+    p.units.back().copies_owned = 2;
+    p.units.back().highest_star = 1;
+    StrategicSharedContext c; c.alive = true; c.gold = 10;
+    c.action_candidates = {candidate(StrategicActionKind::SellUnit,30)};
+    auto result = CompositionActionEvaluator{}.evaluate(active(),p,lineup(),c,{});
+    assert(result.candidates[0].disposition == ActionCandidateDisposition::Rejected);
+    assert(result.candidates[0].reason.find("pair/star") != std::string::npos);
+    assert(!result.evaluation.candidate_scores[0].available);
+
+    p.units.back().copies_owned = 1;
+    p.units.back().highest_star = 2;
+    result = CompositionActionEvaluator{}.evaluate(active(),p,lineup(),c,{});
+    assert(result.candidates[0].disposition == ActionCandidateDisposition::Rejected);
+}
+
 void duplicate_candidates_keep_single_selection() {
     StrategicSharedContext c; c.alive = true; c.gold = 10;
     c.action_candidates = {candidate(StrategicActionKind::BuyUnit,20),
@@ -133,6 +150,7 @@ int main() {
     stale_snapshots_are_rejected();
     buy_requires_seek_or_upgrade_and_target_membership();
     sell_candidate_is_not_automatic_and_restricted_sale_is_rejected();
+    sell_rejects_pairs_and_existing_star_progress();
     duplicate_candidates_keep_single_selection();
     validated_economy_and_item_evidence_reach_action_evaluator();
     hold_is_a_valid_zero_cost_baseline();

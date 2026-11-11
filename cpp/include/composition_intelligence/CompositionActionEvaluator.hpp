@@ -184,8 +184,10 @@ public:
                 case strategy::StrategicActionKind::SellUnit:
                     if (!priority || priority->intent != UnitIntent::SellCandidate)
                         reject(audit, "SELL_CANDIDATE intent is required; REPLACE is not sale authorization");
-                    else if (priority->sale_restricted || item_risk_by_unit[candidate.champion_id])
-                        reject(audit, "sale restricted by validated equipped-item or transition risk");
+                    else if (priority->sale_restricted || priority->copies_owned >= 2 ||
+                        priority->highest_star > 1 || priority->target_star > 0 ||
+                        item_risk_by_unit[candidate.champion_id])
+                        reject(audit, "sale restricted by pair/star progress, equipped-item or transition risk");
                     else if (endgame_target[candidate.champion_id] || selected_lineup[candidate.champion_id])
                         reject(audit, "unit is part of the active deployable/endgame target");
                     break;
