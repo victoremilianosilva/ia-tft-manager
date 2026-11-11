@@ -143,6 +143,7 @@ def build_integrated_audit_index(
     player_compositions: dict[tuple[str, int, int], list[dict]] = defaultdict(list)
     producer_counts: Counter[str] = Counter()
     missing_envelope = []
+    bridge_identity_mismatches = []
     duplicate_sequences = []
     out_of_order_sequences = []
     sequence_by_player: dict[tuple[str | None, int], list[int]] = defaultdict(list)
@@ -288,6 +289,24 @@ def build_integrated_audit_index(
         # Records from another match are never joined into this session.
         if match_id and str(record_match) != str(match_id):
             continue
+        bridge_snapshot = record.get("context_bridge") or {}
+        bridge_metadata = bridge_snapshot.get("metadata") or {} if isinstance(bridge_snapshot, dict) else {}
+        if isinstance(bridge_metadata, dict):
+            native_identity = {
+                "match_id": record.get("engine_match_id", corr.get("engine_match_id")),
+                "player_id": pid,
+                "round": rnd,
+                "composition_id": record.get("composition_id"),
+                "composition_version": record.get("composition_version"),
+                "timestamp_unix_ms": record.get("timestamp_unix_ms", corr.get("timestamp_unix_ms")),
+            }
+            for field, top_value in native_identity.items():
+                bridge_value = bridge_metadata.get(field)
+                if top_value is not None and bridge_value is not None and str(top_value) != str(bridge_value):
+                    bridge_identity_mismatches.append({
+                        "player_id": pid, "round": rnd, "sequence": sequence,
+                        "field": field, "record_value": top_value, "bridge_value": bridge_value,
+                    })
         if isinstance(sequence, int):
             key = (str(record_match), sequence)
             if key in seen_comp_keys:
@@ -565,6 +584,8 @@ def build_integrated_audit_index(
         "missing_producers": missing_producers,
         "composition_envelope_missing_count": len(missing_envelope),
         "composition_envelope_missing": missing_envelope[:100],
+        "bridge_identity_mismatch_count": len(bridge_identity_mismatches),
+        "bridge_identity_mismatches": bridge_identity_mismatches[:100],
         "composition_duplicate_count": duplicate_comp_count,
         "player_log_duplicate_count": player_duplicate_count,
         "evaluator_comparison_count": evaluator_comparison_count,
@@ -626,6 +647,7 @@ def format_integrated_audit_markdown(index: dict) -> str:
         "## Integridade do stream",
         "",
         f"- Envelopes de composição incompletos: {index.get('composition_envelope_missing_count', 0)}",
+        f"- Divergências de identidade no Context Bridge: {index.get('bridge_identity_mismatch_count', 0)}",
         f"- Sequências duplicadas: {index.get('composition_duplicate_count', 0)}",
         f"- Inversões de sequência: {len(index.get('out_of_order_sequences', []))}",
         f"- Lacunas de sequência: {sum(item.get('count', 0) for item in index.get('sequence_gaps', []))}",
