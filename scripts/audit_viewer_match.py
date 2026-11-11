@@ -2840,12 +2840,12 @@ def main() -> int:
         "player_log_duplicate_count": integrated_index["player_log_duplicate_count"],
         "player_sequence_conflict_count": integrated_index["player_sequence_conflict_count"],
         "composition_sequence_conflict_count": integrated_index["composition_sequence_conflict_count"],
-        "out_of_order_sequence_count": len(integrated_index["out_of_order_sequences"]),
+        "out_of_order_sequence_count": integrated_index["out_of_order_sequence_count"],
         "sequence_gap_count": sum(item["count"] for item in integrated_index["sequence_gaps"]),
         "evaluator_comparison_count": integrated_index["evaluator_comparison_count"],
         "evaluator_divergence_count": integrated_index["evaluator_divergence_count"],
         "legacy_schema_count": integrated_index["legacy_schema_count"],
-        "incompatible_schema_count": len(integrated_index["incompatible_schemas"]),
+        "incompatible_schema_count": integrated_index["incompatible_schema_count"],
         "recommendation_vs_ppo": integrated_index["recommendation_vs_ppo"],
     }
     markdown_documents["audit_integrado.md"] = format_integrated_audit_markdown(integrated_index)
