@@ -2709,6 +2709,25 @@ def add_buy_xp_coverage_report(markdown_documents: dict[str, str]) -> None:
         result = analyze_buy_xp_audit(actions_path, economy_path)
     markdown_documents["audit_buy_xp.md"] = render_markdown(result)
 
+def add_hold_baseline_report(markdown_documents: dict[str, str]) -> None:
+    """Generate the HOLD baseline diagnostic from this run's action/economy reports."""
+    actions_markdown = markdown_documents.get("audit_acoes.md", "")
+    economy_markdown = markdown_documents.get("audit_economia.md", "")
+    try:
+        from scripts.audit_hold_baseline import analyze_hold_audit, render_markdown
+    except ImportError:  # Executed directly as scripts/audit_viewer_match.py
+        from audit_hold_baseline import analyze_hold_audit, render_markdown
+
+    with tempfile.TemporaryDirectory(prefix="tft-hold-audit-") as temp:
+        temp_root = Path(temp)
+        actions_path = temp_root / "audit_acoes.md"
+        economy_path = temp_root / "audit_economia.md"
+        actions_path.write_text(actions_markdown, encoding="utf-8")
+        economy_path.write_text(economy_markdown, encoding="utf-8")
+        result = analyze_hold_audit(actions_path, economy_path)
+    markdown_documents["audit_hold.md"] = render_markdown(result)
+
+
 
 
 def main() -> int:
@@ -2790,6 +2809,7 @@ def main() -> int:
     markdown_documents = build_shadow_markdown_reports(markdown_inputs)
     # BUY_XP coverage is generated from the same in-memory session reports.
     add_buy_xp_coverage_report(markdown_documents)
+    add_hold_baseline_report(markdown_documents)
 
     # Composition Intelligence is audited in the same invocation and output
     # directory as the other session reports. The JSONL is an input artifact,
