@@ -780,12 +780,12 @@ def format_integrated_audit_markdown(index: dict) -> str:
         "## Comparação observacional com PPO",
         "",
         "| Evaluator | Comparáveis | Concordâncias | Divergências | Indisponíveis |",
+        "|---|---:|---:|---:|---:|",
         "",
         "### Comparação com taxonomia semântica normalizada",
         "",
         f"- Versão da taxonomia: v{index.get('recommendation_vs_ppo', {}).get('taxonomy_version', 1)}",
         "| Evaluator | Correspondência direta | Compatibilidade parcial | Incompatibilidade | Não comparável |",
-        "|---|---:|---:|---:|---:|",
         "|---|---:|---:|---:|---:|",
     ]
     for key, label in (("baseline", "Baseline"), ("contextual", "Contextual")):
