@@ -81,6 +81,7 @@ public:
     if(!catalog.is_object()||!catalog.contains("compositions")||!catalog["compositions"].is_array()){out.diagnostics.emplace_back("OP.GG catalog is missing a compositions array");return out;}
     if(!std::isfinite(min_coverage)||min_coverage<0.0||min_coverage>1.0){out.diagnostics.emplace_back("minimum mapping coverage must be between 0 and 1");return out;}
     const auto by_key=adapter_detail::lookup(pool); const auto patch=catalog.value("patch",std::string{});
+    std::unordered_set<std::string> seen_composition_ids;
     for(const auto& comp:catalog["compositions"]){
       if(!comp.is_object()||!comp.contains("units")||!comp["units"].is_array()){out.diagnostics.emplace_back("Skipped OP.GG composition without units");continue;}
       const auto team=comp.value("team_code",std::string{}); const auto set=adapter_detail::set_number(team);
@@ -88,6 +89,7 @@ public:
       CompositionCandidate c; c.composition_id=comp.value("id",std::string{});
       if(c.composition_id.empty())c.composition_id=comp.value("name",std::string{});
       if(c.composition_id.empty()){out.diagnostics.emplace_back("Skipped OP.GG composition without id/name");continue;}
+      if(!seen_composition_ids.insert(c.composition_id).second){out.diagnostics.emplace_back("Skipped duplicate OP.GG composition id "+c.composition_id);continue;}
       c.source=CompositionSource::Oppg;c.set_id=set;c.patch=patch;c.source_score=adapter_detail::score(comp);c.source_reference=comp.value("id",std::string{});
       std::size_t source_count=0;
       for(const auto& unit:comp["units"]){
@@ -115,6 +117,7 @@ public:
  static CompositionAdapterResult adapt(const NativeCompositionSnapshot& input,const std::vector<tft::ChampionDefinition>& pool){
     CompositionAdapterResult out;
     if(input.composition_id.empty()||input.set_id.empty()||input.units.empty()){out.diagnostics.emplace_back("Native input requires composition_id, set_id and units");return out;}
+    if(!adapter_detail::compatible_set(input.set_id,pool)){out.diagnostics.emplace_back("Native composition rejected: missing or incompatible Set "+input.set_id);return out;}
     CompositionCandidate c;c.composition_id=input.composition_id;c.source=CompositionSource::Native;c.set_id=input.set_id;c.patch=input.patch;
     c.main_carry_id=input.main_carry_id;c.target_board_size=input.target_board_size?input.target_board_size:input.units.size();
     c.source_score=input.source_score;c.source_reference=input.source_reference;
