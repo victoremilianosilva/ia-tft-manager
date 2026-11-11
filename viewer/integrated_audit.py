@@ -578,13 +578,15 @@ def build_integrated_audit_index(
                 and (event_comp_version is None or pair[1].get("composition_version") == event_comp_version)
             ]
             if event_time is None or not eligible_snapshots:
-                comparison["baseline"]["unavailable"] += 1
-                comparison["contextual"]["unavailable"] += 1
+                for source in ("baseline", "contextual"):
+                    comparison[source]["unavailable"] += 1
+                    comparison["semantic_taxonomy"][source]["not_comparable"] += 1
                 continue
             nearest_time, record = min(eligible_snapshots, key=lambda pair: abs(pair[0] - event_time))
             if abs(nearest_time - event_time) > 30_000:
-                comparison["baseline"]["unavailable"] += 1
-                comparison["contextual"]["unavailable"] += 1
+                for source in ("baseline", "contextual"):
+                    comparison[source]["unavailable"] += 1
+                    comparison["semantic_taxonomy"][source]["not_comparable"] += 1
                 continue
             recommendations = _recommendations(record)
             ppo_semantic = event.get("semantic_normalization") or normalize_ppo_action(action)
