@@ -602,6 +602,9 @@ def test_composition_intelligence_emits_per_player_shadow_diagnostics():
         assert lines, "native shadow runtime must emit diagnostic snapshots"
         records = [json.loads(line) for line in lines]
         assert all(record.get("schema_version") == 1 for record in records)
+        sequences = [record["sequence"] for record in records]
+        assert sequences == sorted(sequences)
+        assert len(sequences) == len(set(sequences))
         assert {record.get("player_id") for record in records} == set(range(8))
         for record in records:
             assert isinstance(record.get("round"), int)
