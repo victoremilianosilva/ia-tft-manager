@@ -53,7 +53,7 @@ public:
   const strategy::EconomicControlDecision& d,std::uint64_t version,std::uint32_t expected_round,
   std::uint64_t match_id=0,std::int32_t player_id=-1,const std::string& composition_id={}) {
   EconomicPlannerEvidence o;
-  o.metadata=make_metadata("EconomicController",version,c.round,expected_round,c.alive&&d.shadow_only,match_id,player_id,composition_id);
+  o.metadata=make_metadata("EconomicController",version,c.round,expected_round,c.alive&&d.shadow_only&&c.player_id==player_id,match_id,player_id,composition_id);
   if(!o.metadata.available)return o;
   o.gold=c.gold;o.level=c.level;o.xp=c.xp;o.xp_to_next=c.xp_to_next;
   o.interest_if_resolved_now=c.interest_if_resolved_now;o.projected_next_round_income=c.projected_next_round_income;
