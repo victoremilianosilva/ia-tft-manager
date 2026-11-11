@@ -172,6 +172,12 @@ class CppTFTLobbyWrapper:
         }
         return observations, rewards, bool(result.get("lobby_done", False)), info
 
+    def adapt_opgg_compositions(self, catalog):
+        """Map OP.GG unit keys through the native engine's loaded catalog."""
+        import json
+        raw = json.dumps(catalog, ensure_ascii=False, separators=(",", ":"))
+        return json.loads(self._engine.adapt_opgg_compositions_json(raw))
+
     def get_champion_id_map(self):
         """Return apiName -> internal_id from the catalog loaded by native C++."""
         return dict(self._engine.get_champion_id_map())
