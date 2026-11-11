@@ -205,6 +205,16 @@ def build_integrated_audit_index(
             "normalized_category": category,
             "strategy": event.get("strategy"),
             "strategy_reason": event.get("strategy_reason"),
+            "source_payload": {
+                "action": event.get("action"),
+                "state_before": event.get("state_before"),
+                "state_after": event.get("state_after"),
+                "decision_context": event.get("decision_context"),
+                "economic_diagnostics": event.get("economic_diagnostics"),
+                "legal_action_audit": event.get("legal_action_audit"),
+                "policy_diagnostics": event.get("policy_diagnostics"),
+                "reward_components": event.get("reward_components"),
+            },
         }
         shadow = _shadow(event)
         if shadow:
@@ -213,6 +223,7 @@ def build_integrated_audit_index(
                 "source": "shadow_planning",
                 "sequence_id": event.get("sequence_id"),
                 "source_reference": {"file": f"player_{pid + 1}_log.json", "sequence_id": event.get("sequence_id")},
+                "payload": shadow,
                 "step": event.get("step"),
                 "timestamp": event.get("timestamp"),
                 "decision": shadow.get("strategic_decision_name"),
@@ -291,6 +302,7 @@ def build_integrated_audit_index(
             "recommendations": recommendations,
             "context_bridge": record.get("context_bridge"),
             "diagnostics": record.get("diagnostics"),
+            "source_payload": record,
         }
         group["composition_snapshots"].append(item)
         identity = {
@@ -319,6 +331,7 @@ def build_integrated_audit_index(
                 "source": "context_bridge",
                 "sequence": sequence,
                 "source_reference": {"file": "composition_diagnostics.jsonl", "sequence": sequence},
+                "payload": strategic_value,
                 "decision": strategic_value.get("value"),
                 "quality": strategic_value.get("quality"),
                 "origin": strategic_value.get("origin"),
@@ -369,6 +382,12 @@ def build_integrated_audit_index(
             "placement": outcome.get("placement"),
             "combat_reward": outcome.get("combat_reward"),
             "reward": outcome.get("reward"),
+            "source_payload": {
+                "state_after": outcome.get("state_after"),
+                "combat_reward": outcome.get("combat_reward"),
+                "reward": outcome.get("reward"),
+                "placement": outcome.get("placement"),
+            },
             "interpretation": "correlation_only_not_causation",
         })
         player_outcomes[(outcome_match, pid, rnd)].append(outcome)
