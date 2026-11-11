@@ -131,6 +131,18 @@ public:
                             ? planner_evidence->economy.reroll_with_target_opportunity_cost : 0.0);
                 candidate.opportunity_cost = std::max(candidate.opportunity_cost, evidence_cost);
             }
+            if (board_valid && candidate.champion_id >= 0) {
+                const auto target = std::find_if(active->candidate.units.begin(), active->candidate.units.end(),
+                    [&](const auto& unit) { return unit.champion_id == candidate.champion_id; });
+                if (target != active->candidate.units.end()) {
+                    const auto& board = planner_evidence->board;
+                    const bool addresses_gap =
+                        (target->role == UnitRole::Frontline && board.missing_frontline_count > 0) ||
+                        (target->role == UnitRole::MainCarry &&
+                         (board.missing_backline_count > 0 || board.exposed_carry_count > 0));
+                    if (addresses_gap) candidate.composition_fit = std::max(candidate.composition_fit, 0.65);
+                }
+            }
             switch (candidate.kind) {
                 case strategy::StrategicActionKind::BuyUnit:
                     if (!priority || !endgame_target[candidate.champion_id] ||
