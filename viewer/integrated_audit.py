@@ -592,6 +592,20 @@ def build_integrated_audit_index(
                 recommendation = recommendations[source]
                 if actual is None or recommendation is None or not recommendation.get("available"):
                     comparison[source]["unavailable"] += 1
+                    evaluator_semantic = normalize_evaluator_action(
+                        recommendation.get("category") if recommendation else None
+                    )
+                    comparison["semantic_taxonomy"][source]["not_comparable"] += 1
+                    if len(comparison["semantic_examples"][source]) < 20:
+                        comparison["semantic_examples"][source].append({
+                            "player_id": pid, "round": rnd,
+                            "ppo_original": ppo_semantic.get("original"),
+                            "ppo_semantic": ppo_semantic.get("semantic_category"),
+                            "evaluator_original": recommendation.get("category") if recommendation else None,
+                            "evaluator_semantic": evaluator_semantic.get("semantic_category"),
+                            "classification": "not_comparable",
+                            "timestamp_delta_ms": abs(nearest_time - event_time),
+                        })
                     continue
                 comparison[source]["compared"] += 1
                 if actual == recommendation["category"]:
