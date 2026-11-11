@@ -245,7 +245,11 @@ void trait_completion_has_explicit_intermediate_tier() {
         [](const auto& u) { return u.champion_id == 2; });
     const auto flex = std::find_if(result.units.begin(), result.units.end(),
         [](const auto& u) { return u.champion_id == 3; });
+    const auto core = std::find_if(result.units.begin(), result.units.end(),
+        [](const auto& u) { return u.champion_id == 1; });
     assert(trait_piece != result.units.end() && trait_piece->tier == UnitPriorityTier::TraitCompletion);
+    assert(core != result.units.end() && core->tier == UnitPriorityTier::Core);
+    assert(core->priority > trait_piece->priority);
     assert(flex != result.units.end() && trait_piece->priority > flex->priority);
     assert(std::find_if(trait_piece->reasons.begin(), trait_piece->reasons.end(),
         [](const auto& r) { return r.code == UnitReasonCode::TraitCompletionPriority; }) != trait_piece->reasons.end());
