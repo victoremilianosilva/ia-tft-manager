@@ -144,5 +144,29 @@ class UnifiedAuditRegressionTests(unittest.TestCase):
         self.assertIn("Decisões únicas estruturadas: 0", full)
 
 
+    def test_unified_audit_generates_buy_xp_report_from_action_and_economy_docs(self):
+        actions = """| Jogador | Round | Step | PPO executou | Recomendação | Campeão recomendado | Δ board (proxy) | Δ ouro direto | Juros perdidos | Custo oportunidade | Custo econômico líquido | HP (proxy) | Streak (proxy) | Confiança | Motivo |
+|---|---|---:|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| Jogador 1 | 4-2 | 10 | PASS | BUY_XP | — | 0 | 4 | 0 | 0.25 | 4.25 | 0 | 0 | 0.8 | progress |
+
+### Scores dos candidatos
+
+| Jogador | Round | Step | Ação | Campeão | Disponível | Δ ouro direto | Juros perdidos | Oportunidade | Board | Sobrevivência | Streak | Composição | Upgrade | Postura | Score custo direto | Score juros | Score oportunidade | Total | Selecionado |
+|---|---|---:|---|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| Jogador 1 | 4-2 | 10 | BUY_XP | -1 | True | 4 | 0 | 0.25 | 0.36 | 0.1 | 0.02 | 0 | 0.07 | 0.24 | -0.22 | 0 | -0.025 | 0.5 | True |
+| Jogador 1 | 4-2 | 10 | BUY_UNIT | 12 | True | 2 | 0 | 0.35 | 0.2 | 0 | 0 | 0 | 0.1 | 0 | -0.11 | 0 | -0.035 | 0.3 | False |
+"""
+        economy = """| Jogador | Round | Step | Postura | Confiança | Pressão sobrevivência | Pressão board |
+|---|---|---:|---|---:|---:|---:|
+| Jogador 1 | 4-2 | 10 | INVEST_EXPERIENCE | 0.8 | 0.2 | 0.3 |
+"""
+        documents = {"audit_acoes.md": actions, "audit_economia.md": economy}
+        audit.add_buy_xp_coverage_report(documents)
+        self.assertIn("audit_buy_xp.md", documents)
+        self.assertIn("BUY_XP candidates: **1**", documents["audit_buy_xp.md"])
+        self.assertIn("Selected BUY_XP candidates: **1**", documents["audit_buy_xp.md"])
+        self.assertIn("Economic posture context matched: **1**", documents["audit_buy_xp.md"])
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

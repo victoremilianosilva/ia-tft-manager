@@ -15,6 +15,7 @@ import argparse
 import json
 import re
 import sys
+import tempfile
 from collections import Counter, defaultdict, deque
 from pathlib import Path
 from typing import Any
@@ -2687,6 +2688,29 @@ def audit_session_inputs(tft_files: list[Path], json_files: list[Path], report: 
             audit_json(path, doc, report, loop_window, comp_window)
 
 
+
+def add_buy_xp_coverage_report(markdown_documents: dict[str, str]) -> None:
+    """Generate the BUY_XP diagnostic from the action/economy reports in this run."""
+    actions_markdown = markdown_documents.get("audit_acoes.md", "")
+    economy_markdown = markdown_documents.get("audit_economia.md", "")
+    try:
+        from scripts.audit_buy_xp_coverage import (
+            analyze_buy_xp_audit, render_markdown,
+        )
+    except ImportError:  # Executed directly as scripts/audit_viewer_match.py
+        from audit_buy_xp_coverage import analyze_buy_xp_audit, render_markdown
+
+    with tempfile.TemporaryDirectory(prefix="tft-buy-xp-audit-") as temp:
+        temp_root = Path(temp)
+        actions_path = temp_root / "audit_acoes.md"
+        economy_path = temp_root / "audit_economia.md"
+        actions_path.write_text(actions_markdown, encoding="utf-8")
+        economy_path.write_text(economy_markdown, encoding="utf-8")
+        result = analyze_buy_xp_audit(actions_path, economy_path)
+    markdown_documents["audit_buy_xp.md"] = render_markdown(result)
+
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("input", type=Path, help="pasta da sessão ou arquivo player log")
@@ -2764,7 +2788,7 @@ def main() -> int:
     markdown_inputs["_markdown_general"] = general_md
     markdown_inputs["_markdown_evidence"] = evidence_md
     markdown_documents = build_shadow_markdown_reports(markdown_inputs)
-
+    # BUY_XP coverage is generated from the same in-memory session reports.\n    add_buy_xp_coverage_report(markdown_documents)\n
     # Composition Intelligence is audited in the same invocation and output
     # directory as the other session reports. The JSONL is an input artifact,
     # never rewritten or normalized in place.

@@ -883,6 +883,7 @@ def build_shadow_markdown_reports(report: dict) -> dict[str, str]:
         "- [Strategic Planner](audit_estrategia.md)",
         "- [Economic Controller](audit_economia.md)",
         "- [Action Evaluator](audit_acoes.md)",
+        "- [Cobertura de BUY_XP](audit_buy_xp.md)",
         "- [Divergências PPO × Action Evaluator](audit_divergencias.md)",
         "- [Resultados observados / Outcome Evaluator](audit_resultados.md)",
         "- [Evidências detalhadas dos achados](audit_report_achados.md)",
