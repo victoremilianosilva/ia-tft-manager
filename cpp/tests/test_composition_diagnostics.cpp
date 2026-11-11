@@ -20,6 +20,10 @@ int main() {
     auto json = first.to_json();
     assert(json["classification"]["inferred"].size() == 5);
     assert(json["diagnostics"]["action_recommendation"]["shadow_only"] == true);
+    assert(json["diagnostics"]["evidence"]["economy"]["gold"].is_null());
+    assert(json["diagnostics"]["evidence"]["board"]["total_score"].is_null());
+    assert(json["diagnostics"]["evidence"]["items"]["units"].is_null());
+    assert(json["diagnostics"]["lineup_plan"]["board_evidence"]["frontline_count"].is_null());
     std::ostringstream stream;
     first.write_jsonl(stream);
     assert(!stream.str().empty() && stream.str().back() == '\n');
