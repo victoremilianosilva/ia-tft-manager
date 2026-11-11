@@ -22,6 +22,7 @@
 #include <vector>
 
 #include "lobby/ChampionCatalog.hpp"
+#include "composition_intelligence/CompositionSourceAdapters.hpp"
 #include "lobby/UnitInstanceFactory.hpp"
 #include "lobby/UnitPool.hpp"
 #include "lobby/EconomyEngine.hpp"
@@ -5901,6 +5902,44 @@ TFTEngine::get_champion_api_name_map() const {
         result.emplace_back(champion.internal_id, champion.api_name);
     }
     return result;
+}
+
+std::string TFTEngine::adapt_opgg_compositions_json(const std::string& catalog_json) const {
+    if (!impl_) {
+        throw std::runtime_error("TFTEngine nao possui estado interno.");
+    }
+    impl_->ensure_open();
+
+    const auto input = nlohmann::json::parse(catalog_json);
+    const auto adapted = composition_intelligence::OppgCompositionAdapter::adapt(
+        input, impl_->catalog->all());
+    nlohmann::json output;
+    output["ok"] = adapted.ok();
+    output["diagnostics"] = adapted.diagnostics;
+    output["candidates"] = nlohmann::json::array();
+    for (const auto& candidate : adapted.candidates) {
+        nlohmann::json units = nlohmann::json::array();
+        for (const auto& unit : candidate.units) {
+            units.push_back({
+                {"champion_id", unit.champion_id},
+                {"role", static_cast<int>(unit.role)},
+                {"core", unit.core},
+                {"priority", unit.priority}
+            });
+        }
+        output["candidates"].push_back({
+            {"composition_id", candidate.composition_id},
+            {"source", "opgg"},
+            {"set_id", candidate.set_id},
+            {"patch", candidate.patch},
+            {"source_score", candidate.source_score},
+            {"source_reference", candidate.source_reference},
+            {"units", std::move(units)},
+            {"main_carry_id", candidate.main_carry_id},
+            {"target_board_size", candidate.target_board_size}
+        });
+    }
+    return output.dump();
 }
 
 AuditSnapshot TFTEngine::get_audit_snapshot() const {
