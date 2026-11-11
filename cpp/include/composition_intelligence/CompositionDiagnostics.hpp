@@ -253,12 +253,23 @@ private:
                 {"priority", s.priority}, {"currently_on_board", s.currently_on_board}, {"owned", s.owned}});
         return out;
     }
+    static const char* evidence_quality_name(EvidenceQuality quality) {
+        switch (quality) {
+            case EvidenceQuality::Missing: return "missing";
+            case EvidenceQuality::Stale: return "stale";
+            case EvidenceQuality::Partial: return "partial";
+            case EvidenceQuality::Invalid: return "invalid";
+            case EvidenceQuality::Valid: return "valid";
+        }
+        return "unknown";
+    }
     static nlohmann::json metadata_json(const EvidenceSourceMetadata& m) {
         return {{"source", m.source}, {"source_version", m.source_version},
             {"match_id", m.match_id}, {"player_id", m.player_id},
             {"composition_id", m.composition_id},
             {"source_round", m.source_round}, {"expected_round", m.expected_round},
-            {"quality", static_cast<int>(m.quality)}, {"available", m.available}, {"reason", m.reason}};
+            {"quality", static_cast<int>(m.quality)}, {"quality_name", evidence_quality_name(m.quality)},
+            {"available", m.available}, {"reason", m.reason}};
     }
     static nlohmann::json evidence_json(const PlannerEvidenceSnapshot& e) {
         nlohmann::json item_units = nlohmann::json::array();
