@@ -146,6 +146,14 @@ public:
                 auto item = missing_target(target);
                 item.priority = target.priority;
                 item.confidence = 0.35;
+                if (board_evidence_valid) {
+                    const auto& board = accepted_evidence->board;
+                    if (target.role == UnitRole::Frontline && board.missing_frontline_count > 0)
+                        item.priority += 15;
+                    if (target.role == UnitRole::MainCarry &&
+                        (board.missing_backline_count > 0 || board.exposed_carry_count > 0))
+                        item.priority += 15;
+                }
                 item.reasons.push_back({UnitReasonCode::TargetUnitMissing,
                     target.core ? "Core da composição ativa ainda não possuído; procurar a unidade."
                                 : "Slot da composição ativa ainda não possuído; procurar quando viável."});
