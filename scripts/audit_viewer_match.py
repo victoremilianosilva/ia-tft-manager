@@ -1635,6 +1635,7 @@ def audit_decision_context(entries: list[dict], player: str, report: dict) -> No
                 "step": entry.get("step"),
                 "sequence_id": entry.get("sequence_id"),
                 "state_after": p.get("state_after") or {},
+                "source_payload": p,
                 "combat_reward": p.get("combat_reward"),
                 "reward": p.get("reward"),
                 "placement": (p.get("state_after") or {}).get("placement"),
@@ -1696,6 +1697,7 @@ def audit_decision_context(entries: list[dict], player: str, report: dict) -> No
             "action": p.get("action"), "action_name": action_name, "strategy": strategy,
             "strategy_reason": ctx.get("strategy_reason") or before.get("strategy_reason"),
             "decision_context": ctx, "state_before": before, "state_after": after,
+            "source_payload": p,
             "legal_action_audit": mask, "action_mask_before": p.get("action_mask_before"),
             "action_mask_after": p.get("action_mask_after"),
             "policy_diagnostics": p.get("policy_diagnostics") or {},
@@ -1759,7 +1761,20 @@ def audit_json(path: Path, doc: dict, report: dict, loop_window: int, comp_windo
     audit_item_state(entries, player, report)
     audit_positioning_and_composition(entries, player, report)
     audit_team_progression(entries, player, report)
+    timeline_start = len(report.setdefault("decision_timeline", []))
+    outcomes_start = len(report.setdefault("round_outcome_timeline", []))
     audit_decision_context(entries, player, report)
+    document_match_id = doc.get("match_id")
+    for event in report["decision_timeline"][timeline_start:]:
+        event["source_file"] = path.name
+        if document_match_id:
+            event["match_id"] = document_match_id
+    for outcome in report["round_outcome_timeline"][outcomes_start:]:
+        outcome["source_file"] = path.name
+        if document_match_id:
+            outcome["match_id"] = document_match_id
+    if document_match_id:
+        report.setdefault("session_metadata", {}).setdefault("match_id", document_match_id)
     report["log_files"].append(str(path))
 
     entries = sorted(entries, key=lambda e: (e.get("sequence_id", 0), e.get("step", 0)))
@@ -2794,6 +2809,46 @@ def main() -> int:
         "unique_unit_intentions": composition_report["unique_intent_count"],
         "parse_errors": composition_report["parse_errors"],
     }
+
+    # One offline correlation index joins the two generations without invoking
+    # planners, rewriting source logs, or treating correlation as causality.
+    try:
+        from viewer.integrated_audit import (
+            build_integrated_audit_index, format_integrated_audit_markdown,
+        )
+    except ImportError:
+        from integrated_audit import (
+            build_integrated_audit_index, format_integrated_audit_markdown,
+        )
+    session_match_id = (report.get("session_metadata") or {}).get("match_id")
+    integrated_index = build_integrated_audit_index(
+        report.get("decision_timeline", []),
+        report.get("round_outcome_timeline", []),
+        composition_records,
+        composition_errors,
+        match_id=session_match_id,
+    )
+    report["integrated_audit_index"] = integrated_index
+    report["integrated_audit_metrics"] = {
+        "schema_version": integrated_index["schema_version"],
+        "group_count": integrated_index["group_count"],
+        "players": integrated_index["players"],
+        "missing_producers": integrated_index["missing_producers"],
+        "composition_envelope_missing_count": integrated_index["composition_envelope_missing_count"],
+        "bridge_identity_mismatch_count": integrated_index["bridge_identity_mismatch_count"],
+        "composition_duplicate_count": integrated_index["composition_duplicate_count"],
+        "player_log_duplicate_count": integrated_index["player_log_duplicate_count"],
+        "player_sequence_conflict_count": integrated_index["player_sequence_conflict_count"],
+        "composition_sequence_conflict_count": integrated_index["composition_sequence_conflict_count"],
+        "out_of_order_sequence_count": integrated_index["out_of_order_sequence_count"],
+        "sequence_gap_count": sum(item["count"] for item in integrated_index["sequence_gaps"]),
+        "evaluator_comparison_count": integrated_index["evaluator_comparison_count"],
+        "evaluator_divergence_count": integrated_index["evaluator_divergence_count"],
+        "legacy_schema_count": integrated_index["legacy_schema_count"],
+        "incompatible_schema_count": integrated_index["incompatible_schema_count"],
+        "recommendation_vs_ppo": integrated_index["recommendation_vs_ppo"],
+    }
+    markdown_documents["audit_integrado.md"] = format_integrated_audit_markdown(integrated_index)
 
     report_for_json = dict(report)
     json_path.write_text(json.dumps(report_for_json, ensure_ascii=False, indent=2), encoding="utf-8")

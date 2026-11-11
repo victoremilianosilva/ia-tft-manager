@@ -3903,6 +3903,9 @@ struct TFTEngine::Impl {
                 const auto context_bridge =
                     ci::StrategicContextBridge::adapt(bridge_input);
                 diagnostic_json["context_bridge"] = context_bridge.to_json();
+                diagnostic_json["player_id"] = static_cast<std::int32_t>(i);
+                diagnostic_json["timestamp_unix_ms"] = bridge_input.timestamp_unix_ms;
+                diagnostic_json["engine_match_id"] = episode_id;
                 diagnostic_json["sequence"] = composition_intelligence_sequence + 1;
                 diagnostic_json["catalog_diagnostics"] = composition_intelligence_catalog_diagnostics;
                 diagnostic_json["native_source_diagnostics"] =

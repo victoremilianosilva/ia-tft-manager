@@ -104,7 +104,7 @@ class AuditWindow(QMainWindow):
         self._build_empty_tabs()
 
     def _build_empty_tabs(self):
-        for title in ("Visão geral", "Economia", "Estratégia", "Composição", "Tabuleiro", "Itens", "Loops e movimentos", "Qualidade dos dados", "Achados"):
+        for title in ("Visão geral", "Economia", "Estratégia", "Composição", "Correlação integrada", "Tabuleiro", "Itens", "Loops e movimentos", "Qualidade dos dados", "Achados"):
             page = QWidget()
             box = QVBoxLayout(page)
             label = QLabel("Execute a auditoria para carregar os dados desta aba.")
@@ -344,6 +344,157 @@ class AuditWindow(QMainWindow):
             lines.append(f"{player}: compras={data.get('buys')} | vendas={data.get('sells')} | reversões={data.get('reversed_1')} em ≤1 ação / {data.get('reversed_2')} em ≤2 / {data.get('reversed_4')} em ≤4 | ouro perdido={data.get('net_gold_lost_reversed')} | upgrades={data.get('upgrade_completing_buys')} | vendas core/par={data.get('core_or_pair_sales')} | classificação={classes}")
         self._add_chart(layout, "Compras por jogador", [(p, d.get("buys", 0)) for p, d in sorted(purchase.items())])
         self._add_text(layout, "\n".join(lines) or "Sem snapshots suficientes para correlacionar compras e vendas.")
+
+        layout = self._page("Correlação integrada")
+        integrated = report.get("integrated_audit_index") or {}
+        integrated_metrics = report.get("integrated_audit_metrics") or {}
+        producer_labels = {
+            "strategic_planner": "Strategic Planner",
+            "economic_controller": "Economic Controller",
+            "economy_evidence": "Economy evidence records",
+            "economy_evidence_valid": "Economy evidence valid",
+            "board_evidence": "Board evidence records",
+            "board_evidence_valid": "Board evidence valid",
+            "item_evidence": "Item evidence records",
+            "item_evidence_valid": "Item evidence valid",
+            "unit_priority": "Unit Priority",
+            "lineup": "Lineup Planner",
+            "composition_intelligence": "Composition Intelligence",
+            "action_evaluator_baseline": "Action Evaluator baseline",
+            "contextual_action_evaluator": "Contextual Action Evaluator",
+            "ppo": "Ações PPO observadas",
+            "outcomes": "Outcomes",
+        }
+        integrated_lines = [
+            f"Schema: v{integrated.get('schema_version', 'unavailable')} | grupos jogador/round: {integrated.get('group_count', 0)}",
+            f"Produtores ausentes: {', '.join(integrated_metrics.get('missing_producers', [])) or 'nenhum'}",
+            f"Envelopes incompletos: {integrated_metrics.get('composition_envelope_missing_count', 0)} | "
+            f"Context Bridge identity mismatches: {integrated_metrics.get('bridge_identity_mismatch_count', 0)} | "
+            f"duplicatas: {integrated_metrics.get('composition_duplicate_count', 0)} | "
+            f"inversões de sequência: {integrated_metrics.get('out_of_order_sequence_count', 0)} | "
+            f"lacunas: {integrated_metrics.get('sequence_gap_count', 0)} | "
+            f"duplicatas de log: {integrated_metrics.get('player_log_duplicate_count', 0)} | "
+            f"conflitos de sequência: player={integrated_metrics.get('player_sequence_conflict_count', 0)} "
+            f"CI={integrated_metrics.get('composition_sequence_conflict_count', 0)} | "
+            f"schemas legados sem versão: {integrated_metrics.get('legacy_schema_count', 0)} | "
+            f"schemas incompatíveis: {integrated_metrics.get('incompatible_schema_count', 0)}",
+            f"comparações baseline/contextual: {integrated_metrics.get('evaluator_comparison_count', 0)} | "
+            f"divergências entre evaluators: {integrated_metrics.get('evaluator_divergence_count', 0)}",
+            "",
+            "Produtores:",
+        ]
+        presence = integrated.get("source_presence") or {}
+        counts = integrated.get("producer_counts") or {}
+        for key, label in producer_labels.items():
+            integrated_lines.append(
+                f"  {label}: {counts.get(key, 0)} · "
+                f"{'disponível' if presence.get(key) else 'unavailable'}"
+            )
+        comparisons = integrated.get("recommendation_vs_ppo") or {}
+        integrated_lines += ["", "Comparação observacional com PPO (não é métrica de qualidade):"]
+        for key, label in (("baseline", "Baseline"), ("contextual", "Contextual")):
+            data = comparisons.get(key) or {}
+            integrated_lines.append(
+                f"  {label}: comparáveis={data.get('compared', 0)} | "
+                f"concordâncias={data.get('matches', 0)} | "
+                f"divergências={data.get('divergences', 0)} | "
+                f"indisponíveis={data.get('unavailable', 0)}"
+            )
+        integrated_lines += ["", "Timeline por jogador/round:"]
+        for group in integrated.get("groups", [])[:500]:
+            integrated_lines.append(
+                f"  Jogador {group.get('player_id', -1) + 1} · round {group.get('round')} · "
+                f"reviews únicos={group.get('strategic_review_count', 0)} "
+                f"(observações={group.get('strategic_review_observations', 0)}) · "
+                f"PPO={group.get('ppo_action_count', 0)} · "
+                f"CI={group.get('composition_snapshot_count', 0)} · "
+                f"outcomes={group.get('outcome_count', 0)} · "
+                f"{group.get('correlation_quality', 'unavailable')}"
+            )
+            for recommendation in group.get("action_evaluator_recommendations", [])[-1:]:
+                baseline = recommendation.get("baseline") or {}
+                contextual = recommendation.get("contextual") or {}
+                integrated_lines.append(
+                    f"    Evaluators: baseline={baseline.get('category') or 'unavailable'} · "
+                    f"contextual={contextual.get('category') or 'unavailable'}"
+                )
+        integrated_lines += [
+            "",
+            "Associação por match/player/round não demonstra causalidade. "
+            "A ação PPO não é ground truth. Ausências e snapshots antigos sem identidade permanecem unavailable.",
+            "Relatório completo: audit/audit_integrado.md",
+        ]
+        self._add_text(layout, "\n".join(integrated_lines))
+
+        drill_rows = []
+        for group in integrated.get("groups", []):
+            player_number = group.get("player_id", -1) + 1
+            round_number = group.get("round")
+            for review in group.get("strategic_reviews", []):
+                ref = review.get("source_reference") or {}
+                drill_rows.append((
+                    player_number, round_number, "Strategic Planner",
+                    review.get("decision") or "unavailable",
+                    ref.get("sequence_id", review.get("sequence", "—")),
+                    ref.get("file", "composition_diagnostics.jsonl"),
+                    review.get("payload") or review,
+                ))
+            for economy in group.get("economic_observations", []):
+                drill_rows.append((
+                    player_number, round_number, economy.get("source", "Economy"),
+                    economy.get("posture") or "economic evidence",
+                    economy.get("sequence", economy.get("sequence_id", "—")),
+                    "composition_diagnostics.jsonl" if economy.get("sequence") is not None else f"player_{player_number}_log.json",
+                    economy,
+                ))
+            for action in group.get("ppo_actions", []):
+                ref = action.get("source_reference") or {}
+                drill_rows.append((
+                    player_number, round_number, "PPO",
+                    f"{action.get('action')} → {action.get('normalized_category') or 'unavailable'}",
+                    ref.get("sequence_id", "—"), ref.get("file", "unavailable"),
+                    action.get("source_payload") or action,
+                ))
+            for snapshot in group.get("composition_snapshots", []):
+                ref = snapshot.get("source_reference") or {}
+                drill_rows.append((
+                    player_number, round_number, "Composition Intelligence",
+                    f"{snapshot.get('composition_id') or 'unavailable'}@{snapshot.get('composition_version')}",
+                    ref.get("sequence", "—"), ref.get("file", "composition_diagnostics.jsonl"),
+                    snapshot.get("source_payload") or snapshot,
+                ))
+            for outcome in group.get("outcomes", []):
+                ref = outcome.get("source_reference") or {}
+                drill_rows.append((
+                    player_number, round_number, "Outcome",
+                    f"placement={outcome.get('placement')}",
+                    ref.get("sequence_id", "—"), ref.get("file", f"player_{player_number}_log.json"),
+                    outcome.get("source_payload") or outcome,
+                ))
+        detail_table = QTableWidget(len(drill_rows), 6)
+        detail_table.setHorizontalHeaderLabels(["Jogador", "Round", "Fonte", "Resumo", "Sequência", "Arquivo original"])
+        detail_table.setAlternatingRowColors(True)
+        for row, values in enumerate(drill_rows):
+            player, round_value, source_name, summary, sequence, source_file, payload = values
+            cells = [player, round_value, source_name, summary, sequence, source_file]
+            for column, value in enumerate(cells):
+                item = QTableWidgetItem(_fmt(value))
+                item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                if column == 0:
+                    item.setData(Qt.ItemDataRole.UserRole, json.dumps(payload, ensure_ascii=False, indent=2, default=str))
+                detail_table.setItem(row, column, item)
+        detail_table.horizontalHeader().setStretchLastSection(True)
+        detail_table.resizeColumnsToContents()
+        layout.addWidget(QLabel("Drill-down: selecione um evento para inspecionar seu payload original."))
+        layout.addWidget(detail_table, 1)
+        detail_payload = QPlainTextEdit()
+        detail_payload.setReadOnly(True)
+        detail_payload.setPlaceholderText("O payload do evento selecionado aparecerá aqui.")
+        detail_table.cellClicked.connect(
+            lambda row, _column, source_table=detail_table, target=detail_payload:
+                target.setPlainText(source_table.item(row, 0).data(Qt.ItemDataRole.UserRole) or "")
+        )
+        layout.addWidget(detail_payload, 1)
 
         layout = self._page("Tabuleiro")
         board = report.get("board_quality_metrics", {})

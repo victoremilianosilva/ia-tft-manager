@@ -236,6 +236,12 @@ class ViewerSession:
                 "observation_dim": current_obs_dim,
                 "action_dims": list(action_dims),
                 "log_format": "structured JSON sidecar plus legacy UTF-8 TFT text log, one pair per player",
+                "composition_diagnostics": {
+                    "file": "composition_diagnostics.jsonl",
+                    "schema_version": 1,
+                    "correlation_envelope_version": 1,
+                    "match_id_source": "ViewerSession.match_id",
+                },
                 "player_log_files": log_files,
                 "structured_player_log_files": structured_log_files,
                 "decision_audit_fields": [
@@ -282,8 +288,51 @@ class ViewerSession:
             return
         path = self._session_dir / "composition_diagnostics.jsonl"
         with path.open("a", encoding="utf-8") as stream:
-            for line in lines[self._composition_diagnostics_written:]:
-                stream.write(str(line).rstrip("\r\n") + "\n")
+            for raw_line in lines[self._composition_diagnostics_written:]:
+                line = str(raw_line).rstrip("\r\n")
+                try:
+                    record = json.loads(line)
+                except (TypeError, json.JSONDecodeError):
+                    # Preserve malformed native bytes; offline audit reports them.
+                    stream.write(line + "\n")
+                    continue
+                if not isinstance(record, dict):
+                    stream.write(line + "\n")
+                    continue
+                timestamp_ms = record.get("timestamp_unix_ms")
+                timestamp = None
+                if isinstance(timestamp_ms, (int, float)) and not isinstance(timestamp_ms, bool):
+                    try:
+                        timestamp = datetime.fromtimestamp(
+                            float(timestamp_ms) / 1000.0, tz=timezone.utc
+                        ).isoformat()
+                    except (OverflowError, OSError, ValueError):
+                        timestamp = None
+                player_id = record.get("player_id")
+                round_number = record.get("round")
+                sequence = record.get("sequence")
+                record["match_id"] = self.match_id
+                record["correlation"] = {
+                    "schema_version": 1,
+                    "match_id": self.match_id,
+                    "match_id_source": "ViewerSession.match_id",
+                    "engine_match_id": record.get("engine_match_id"),
+                    "player_id": player_id,
+                    "round": round_number,
+                    "timestamp_unix_ms": timestamp_ms,
+                    "timestamp": timestamp,
+                    "sequence_id": sequence,
+                    "composition_id": record.get("composition_id"),
+                    "composition_version": record.get("composition_version"),
+                    "identity_complete": (
+                        isinstance(player_id, int) and isinstance(round_number, int)
+                        and isinstance(sequence, int)
+                    ),
+                    "timestamp_available": timestamp is not None,
+                }
+                if timestamp is not None:
+                    record["timestamp"] = timestamp
+                stream.write(json.dumps(record, ensure_ascii=False, separators=(",", ":")) + "\n")
         self._composition_diagnostics_written = len(lines)
 
     def _snapshot_for_event(self):
