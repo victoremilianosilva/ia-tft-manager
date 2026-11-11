@@ -533,3 +533,27 @@ def test_buying_third_copy_auto_upgrades_to_two_star():
         assert two_star, "The third 1-star copy should auto-upgrade into a 2-star unit."
     finally:
         engine.close()
+
+
+def test_native_champion_id_map_matches_loaded_units_catalog():
+    """The public mapping must preserve the exact native catalog array indices."""
+    import json
+    from pathlib import Path
+
+    engine = TFTLobby(seed=2026)
+    try:
+        engine.reset()
+        mapping = engine.get_champion_id_map()
+        catalog_path = Path(__file__).resolve().parents[1] / "data" / "units_gerado.json"
+        catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+
+        expected = {
+            champion["apiName"]: index
+            for index, champion in enumerate(catalog)
+            if isinstance(champion, dict) and champion.get("apiName")
+        }
+        assert mapping == expected
+        assert len(mapping) == len(set(mapping.values()))
+        assert all(isinstance(value, int) and value >= 0 for value in mapping.values())
+    finally:
+        engine.close()
