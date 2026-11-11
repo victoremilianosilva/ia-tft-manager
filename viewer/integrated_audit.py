@@ -549,7 +549,8 @@ def build_integrated_audit_index(
         # decision event. It is a separate comparison track, not a substitute
         # for the baseline/contextual snapshot tracks below.
         "shadow_action_evaluator": {"compared": 0, "matches": 0, "divergences": 0, "unavailable": 0},
-        "method": "nearest timestamp within same player/round and at most 30 seconds; otherwise unavailable",
+        "method": "baseline/contextual: nearest timestamp within same player/round and at most 30 seconds; otherwise unavailable",
+        "shadow_action_evaluator_method": "recommendation embedded in the exact same PPO decision event",
         "policy_action_is_not_ground_truth": True,
         "semantic_taxonomy": {
             source: {"direct_match": 0, "partial_compatibility": 0, "incompatible": 0, "not_comparable": 0}
@@ -568,22 +569,16 @@ def build_integrated_audit_index(
             ppo_semantic = event.get("semantic_normalization") or normalize_ppo_action(event.get("action"))
             raw_recommendation = shadow.get("action_recommendation_name")
             evaluator_semantic = normalize_evaluator_action(raw_recommendation)
-            if not evaluator_semantic.get("semantic_category"):
+            classification = classify_semantic_pair(ppo_semantic, evaluator_semantic)
+            if classification == "not_comparable":
                 comparison[source]["unavailable"] += 1
                 comparison["semantic_taxonomy"][source]["not_comparable"] += 1
-                classification = "not_comparable"
             else:
-                classification = classify_semantic_pair(ppo_semantic, evaluator_semantic)
                 comparison[source]["compared"] += 1
-                if classification in ("direct_match", "partial_compatibility"):
-                    comparison[source]["matches"] += int(
-                        ppo_semantic.get("semantic_category") == evaluator_semantic.get("semantic_category")
-                    )
-                    comparison[source]["divergences"] += int(
-                        ppo_semantic.get("semantic_category") != evaluator_semantic.get("semantic_category")
-                    )
+                if ppo_semantic.get("semantic_category") == evaluator_semantic.get("semantic_category"):
+                    comparison[source]["matches"] += 1
                 else:
-                    comparison[source]["divergences"] += int(classification == "incompatible")
+                    comparison[source]["divergences"] += 1
                 comparison["semantic_taxonomy"][source][classification] += 1
             if len(comparison["semantic_examples"][source]) < 20:
                 comparison["semantic_examples"][source].append({
