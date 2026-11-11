@@ -241,8 +241,8 @@ private:
     static std::int32_t tier_base(UnitPriorityTier tier) {
         switch (tier) {
             case UnitPriorityTier::Carry: return 500;
-            case UnitPriorityTier::TraitCompletion: return 400;
-            case UnitPriorityTier::Core: return 300;
+            case UnitPriorityTier::Core: return 400;
+            case UnitPriorityTier::TraitCompletion: return 300;
             case UnitPriorityTier::Composition: return 200;
             case UnitPriorityTier::Bridge: return 150;
             case UnitPriorityTier::TemporarySupport: return 100;
@@ -254,8 +254,8 @@ private:
                                           const UnitPriorityEvidence* ev) {
         if (target.role == UnitRole::MainCarry || target.role == UnitRole::SecondaryCarry)
             return UnitPriorityTier::Carry;
-        if (ev && ev->trait_completion) return UnitPriorityTier::TraitCompletion;
         if (target.core) return UnitPriorityTier::Core;
+        if (ev && ev->trait_completion) return UnitPriorityTier::TraitCompletion;
         return UnitPriorityTier::Composition;
     }
     static const UnitPriorityTemporarySupport* find_temporary_support(
