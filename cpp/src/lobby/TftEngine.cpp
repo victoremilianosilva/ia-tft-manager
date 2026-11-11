@@ -3584,7 +3584,9 @@ struct TFTEngine::Impl {
                             if (std::find(info.core_traits.begin(), info.core_traits.end(), trait) != info.core_traits.end()) ++matching_traits;
                         evidence.synergy_contribution = std::clamp(static_cast<double>(matching_traits) / 2.0, 0.0, 1.0);
                         evidence.confidence = 0.75;
-                        evidence.copies_toward_next_star = observed.copies >= 2 ? 2 : 0;
+                        evidence.copies_toward_next_star =
+                            observed.highest_star == 1 ? observed.copies % 3 :
+                            (observed.highest_star == 2 ? (observed.copies / 3) % 3 : 0);
                     }
                 };
                 for (const auto& unit : player_envs[i].board) if (unit) collect_unit(*unit, true);
