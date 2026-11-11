@@ -122,5 +122,5 @@ def test_composition_audit_reports_unique_unit_intentions_and_real_line_breaks()
     assert "| SEEK | 1 | 1 |" in rendered
     assert "Jogador 1" in rendered
     assert "Unidade alvo ainda não possuída." in rendered
-    assert "\\n" in rendered
-    assert "\\\\n" not in rendered
+    assert "\n" in rendered
+    assert "\\n" not in rendered
