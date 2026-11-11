@@ -1,12 +1,31 @@
 #pragma once
 
 #include <cstddef>
+#include <cctype>
 #include <cstdint>
 #include <string>
 #include <unordered_set>
 #include <vector>
 
 namespace tft::composition_intelligence {
+
+// Shared, dependency-free Set parsing used by source adapters and the native
+// planner snapshot exporter. Keep this in contracts to avoid adapter coupling.
+inline std::string composition_set_number(const std::string& value) {
+    const auto marker = value.find("TFTSet");
+    std::size_t begin = marker == std::string::npos ? std::string::npos : marker + 6;
+    if (begin == std::string::npos && value.rfind("DA_", 0) == 0) begin = 3;
+    if (begin == std::string::npos) return {};
+    auto end = begin;
+    while (end < value.size() && std::isdigit(static_cast<unsigned char>(value[end]))) ++end;
+    return end > begin ? value.substr(begin, end - begin) : std::string{};
+}
+
+inline std::string composition_champion_set(const std::string& api_name,
+                                             const std::string& character_name) {
+    auto set = composition_set_number(api_name);
+    return set.empty() ? composition_set_number(character_name) : set;
+}
 
 enum class CompositionSource {
     Oppg,
