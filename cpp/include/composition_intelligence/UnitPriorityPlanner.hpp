@@ -1,6 +1,7 @@
 #pragma once
 
 #include "composition_intelligence/CompositionEvaluation.hpp"
+#include "composition_intelligence/PlannerEvidenceAdapters.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -49,6 +50,10 @@ struct UnitPriorityContext {
     std::optional<CompositionTransitionPlan> transition;
     std::vector<UnitPriorityOwnedUnit> owned_units; // board + bench, aggregated per champion
     std::vector<UnitPriorityEvidence> evidence;
+    const PlannerEvidenceSnapshot* planner_evidence{nullptr};
+    std::uint64_t match_id{0};
+    std::int32_t player_id{-1};
+    std::uint32_t round{0};
 };
 
 struct UnitPriorityConfig {
@@ -80,6 +85,8 @@ struct UnitPrioritySnapshot {
     std::vector<UnitPriority> units; // owned units plus missing target units
     bool stale{false};
     std::string stale_reason;
+    std::vector<std::string> evidence_consumed;
+    std::vector<std::string> evidence_rejected;
 };
 
 class UnitPriorityPlanner {
