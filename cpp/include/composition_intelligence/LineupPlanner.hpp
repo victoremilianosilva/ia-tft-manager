@@ -1,5 +1,6 @@
 #pragma once
 #include "composition_intelligence/ActiveCompositionManager.hpp"
+#include "composition_intelligence/PlannerEvidenceAdapters.hpp"
 #include "composition_intelligence/UnitPriorityPlanner.hpp"
 #include <algorithm>
 #include <cstdint>
