@@ -87,19 +87,6 @@ def _economic_controller_available(event: dict, composition: dict | None = None)
     return False
 
 
-def _economy_evidence_available(composition: dict) -> bool:
-    diagnostics = composition.get("diagnostics") or {}
-    evidence = diagnostics.get("evidence") or {}
-    if not isinstance(evidence, dict):
-        return False
-    economy = evidence.get("economy") or {}
-    metadata = economy.get("metadata") or {} if isinstance(economy, dict) else {}
-    if not isinstance(metadata, dict) or metadata.get("available") is not True:
-        return False
-    quality_name = str(metadata.get("quality_name") or "").lower()
-    return quality_name == "valid" or (not quality_name and metadata.get("quality") == 2)
-
-
 def _recommendations(record: dict) -> dict[str, Any]:
     comparison = record.get("action_evaluator_comparison") or {}
     if not isinstance(comparison, dict):
@@ -151,7 +138,6 @@ def build_integrated_audit_index(
     groups: dict[tuple, dict] = {}
     player_decisions: dict[tuple[str | None, int, int], list[dict]] = defaultdict(list)
     player_compositions: dict[tuple[str, int, int], list[dict]] = defaultdict(list)
-    player_outcomes: dict[tuple[str | None, int, int], list[dict]] = defaultdict(list)
     producer_counts: Counter[str] = Counter()
     missing_envelope = []
     duplicate_sequences = []
@@ -442,7 +428,6 @@ def build_integrated_audit_index(
             },
             "interpretation": "correlation_only_not_causation",
         })
-        player_outcomes[(outcome_match, pid, rnd)].append(outcome)
         producer_counts["outcomes"] += 1
 
     comparison = {
