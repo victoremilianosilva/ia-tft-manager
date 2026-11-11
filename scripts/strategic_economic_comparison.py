@@ -298,7 +298,7 @@ class OutcomeEvaluator:
             decisions_by_player_round.items(),
             key=lambda item: (
                 int(item[0][0]) if item[0][0].isdigit() else 999,
-                self.OutcomeEvaluator._round_order(item[0][1]),
+                self._round_order(item[0][1]),
             ),
         ):
             recommendation_counts, action_counts = Counter(), Counter()
@@ -725,7 +725,7 @@ def build_shadow_markdown_reports(report: dict) -> dict[str, str]:
     ]
     for (player, round_id), coverage in sorted(
         anchor_coverage.items(),
-        key=lambda item: (item[0][0], _round_order(item[0][1])),
+        key=lambda item: (item[0][0], OutcomeEvaluator._round_order(item[0][1])),
     ):
         strategy.append("| " + " | ".join(_cell(value) for value in (
             player, round_id, coverage["observations"], coverage["insufficient"],
