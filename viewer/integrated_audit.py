@@ -795,12 +795,6 @@ def format_integrated_audit_markdown(index: dict) -> str:
         "",
         "| Evaluator | Comparáveis | Concordâncias | Divergências | Indisponíveis |",
         "|---|---:|---:|---:|---:|",
-        "",
-        "### Comparação com taxonomia semântica normalizada",
-        "",
-        f"- Versão da taxonomia: v{index.get('recommendation_vs_ppo', {}).get('taxonomy_version', 1)}",
-        "| Evaluator | Correspondência direta | Compatibilidade parcial | Incompatibilidade | Não comparável |",
-        "|---|---:|---:|---:|---:|",
     ]
     for key, label in (("baseline", "Baseline"), ("contextual", "Contextual")):
         data = index.get("recommendation_vs_ppo", {}).get(key, {})
@@ -808,6 +802,14 @@ def format_integrated_audit_markdown(index: dict) -> str:
             f"| {label} | {data.get('compared', 0)} | {data.get('matches', 0)} | "
             f"{data.get('divergences', 0)} | {data.get('unavailable', 0)} |"
         )
+    lines += [
+        "",
+        "### Comparação com taxonomia semântica normalizada",
+        "",
+        f"- Versão da taxonomia: v{index.get('recommendation_vs_ppo', {}).get('taxonomy_version', 1)}",
+        "| Evaluator | Correspondência direta | Compatibilidade parcial | Incompatibilidade | Não comparável |",
+        "|---|---:|---:|---:|---:|",
+    ]
     for key, label in (("baseline", "Baseline"), ("contextual", "Contextual")):
         data = index.get("recommendation_vs_ppo", {}).get("semantic_taxonomy", {}).get(key, {})
         lines.append(
