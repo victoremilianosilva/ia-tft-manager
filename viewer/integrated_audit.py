@@ -288,7 +288,7 @@ def build_integrated_audit_index(
         schema = record.get("schema_version")
         if schema is None:
             legacy_schema_count += 1
-        elif schema not in (1, 2):
+        elif schema != 1:
             incompatible_schemas.append({"schema_version": schema, "sequence": sequence, "player_id": pid})
         if pid is None or rnd is None or not record_match:
             missing_envelope.append({
