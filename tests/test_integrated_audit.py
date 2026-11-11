@@ -28,7 +28,16 @@ def _composition(match_id="match-a", player_id=0, round_number=3, sequence=10, t
             "contextual": {"recommended_action": 3, "recommended_champion_id": 20, "stale": False},
             "comparison": {"diverged": True},
         },
-        "diagnostics": {"composition_decision": {"decision": "KEEP"}},
+        "diagnostics": {
+            "composition_decision": {"decision": "KEEP"},
+            "unit_intentions": [],
+            "lineup_plan": {"status": "ready"},
+            "evidence": {
+                "economy": {"metadata": {"available": True, "quality_name": "valid", "quality": 2}},
+                "board": {"metadata": {"available": True, "quality_name": "valid", "quality": 2}},
+                "items": {"metadata": {"available": False, "quality_name": "stale", "quality": 1}},
+            },
+        },
     }
 
 
@@ -51,6 +60,14 @@ def test_integrated_index_correlates_same_match_player_round_and_compares_catego
     assert index["source_presence"]["strategic_planner"] is True
     assert index["source_presence"]["contextual_action_evaluator"] is True
     assert index["source_presence"]["economic_controller"] is True
+    assert index["source_presence"]["economy_evidence"] is True
+    assert index["source_presence"]["economy_evidence_valid"] is True
+    assert index["source_presence"]["board_evidence"] is True
+    assert index["source_presence"]["board_evidence_valid"] is True
+    assert index["source_presence"]["item_evidence"] is True
+    assert index["source_presence"]["item_evidence_valid"] is False
+    assert index["source_presence"]["unit_priority"] is True
+    assert index["source_presence"]["lineup"] is True
 
 
 def test_integrated_index_never_joins_another_match_or_player():
