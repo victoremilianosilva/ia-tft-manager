@@ -5661,6 +5661,7 @@ ResetResult TFTEngine::reset(
     }
 
     ++impl_->episode_id;
+    impl_->composition_intelligence_players = {};
 
     impl_->round = 0;
     impl_->stage = 1;
