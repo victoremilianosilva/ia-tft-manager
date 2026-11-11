@@ -2741,9 +2741,6 @@ def main() -> int:
         evidence_md = "# Evidências detalhadas dos achados" + full_md.split(evidence_marker, 1)[1]
     else:
         evidence_md = "# Evidências detalhadas dos achados\n\nSem evidências adicionais."
-    report_for_json = dict(report)
-    json_path.write_text(json.dumps(report_for_json, ensure_ascii=False, indent=2), encoding="utf-8")
-
     markdown_inputs = dict(report)
     markdown_inputs["_markdown_general"] = general_md
     markdown_inputs["_markdown_evidence"] = evidence_md
@@ -2781,7 +2778,8 @@ def main() -> int:
     )
     markdown_documents["audit_composition_vs_ppo.md"] = (
         format_composition_vs_ppo(
-            composition_records, report.get("decision_timeline", [])
+            composition_records, report.get("decision_timeline", []),
+            report.get("text_log_metrics", {}),
         ) + "\n"
     )
     report["composition_intelligence_metrics"] = {
@@ -2792,6 +2790,9 @@ def main() -> int:
         "unique_unit_intentions": composition_report["unique_intent_count"],
         "parse_errors": composition_report["parse_errors"],
     }
+
+    report_for_json = dict(report)
+    json_path.write_text(json.dumps(report_for_json, ensure_ascii=False, indent=2), encoding="utf-8")
 
     for filename, content in markdown_documents.items():
         (markdown_dir / filename).write_text(content, encoding="utf-8")
