@@ -215,3 +215,26 @@ def test_context_bridge_identity_mismatches_are_reported():
     index = build_integrated_audit_index([], [], [record], match_id="match-a")
     assert index["bridge_identity_mismatch_count"] == 1
     assert index["bridge_identity_mismatches"][0]["field"] == "match_id"
+
+
+
+def test_stale_evaluator_recommendations_are_unavailable_not_compared():
+    record = _composition()
+    record["action_evaluator_comparison"]["baseline"]["stale"] = True
+    record["action_evaluator_comparison"]["contextual"]["stale"] = True
+    index = build_integrated_audit_index(
+        [_decision()], [], [record], match_id="match-a"
+    )
+    assert index["recommendation_vs_ppo"]["baseline"]["compared"] == 0
+    assert index["recommendation_vs_ppo"]["baseline"]["unavailable"] == 1
+    assert index["recommendation_vs_ppo"]["contextual"]["compared"] == 0
+    assert index["recommendation_vs_ppo"]["contextual"]["unavailable"] == 1
+
+
+def test_evaluator_snapshot_outside_timestamp_window_is_unavailable():
+    record = _composition(timestamp=1794398460000)
+    index = build_integrated_audit_index(
+        [_decision()], [], [record], match_id="match-a"
+    )
+    assert index["recommendation_vs_ppo"]["baseline"]["compared"] == 0
+    assert index["recommendation_vs_ppo"]["baseline"]["unavailable"] == 1
