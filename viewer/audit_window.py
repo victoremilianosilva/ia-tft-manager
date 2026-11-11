@@ -104,7 +104,7 @@ class AuditWindow(QMainWindow):
         self._build_empty_tabs()
 
     def _build_empty_tabs(self):
-        for title in ("Visão geral", "Economia", "Estratégia", "Composição", "Tabuleiro", "Itens", "Loops e movimentos", "Qualidade dos dados", "Achados"):
+        for title in ("Visão geral", "Economia", "Estratégia", "Composição", "Correlação integrada", "Tabuleiro", "Itens", "Loops e movimentos", "Qualidade dos dados", "Achados"):
             page = QWidget()
             box = QVBoxLayout(page)
             label = QLabel("Execute a auditoria para carregar os dados desta aba.")
@@ -344,6 +344,70 @@ class AuditWindow(QMainWindow):
             lines.append(f"{player}: compras={data.get('buys')} | vendas={data.get('sells')} | reversões={data.get('reversed_1')} em ≤1 ação / {data.get('reversed_2')} em ≤2 / {data.get('reversed_4')} em ≤4 | ouro perdido={data.get('net_gold_lost_reversed')} | upgrades={data.get('upgrade_completing_buys')} | vendas core/par={data.get('core_or_pair_sales')} | classificação={classes}")
         self._add_chart(layout, "Compras por jogador", [(p, d.get("buys", 0)) for p, d in sorted(purchase.items())])
         self._add_text(layout, "\n".join(lines) or "Sem snapshots suficientes para correlacionar compras e vendas.")
+
+        layout = self._page("Correlação integrada")
+        integrated = report.get("integrated_audit_index") or {}
+        integrated_metrics = report.get("integrated_audit_metrics") or {}
+        producer_labels = {
+            "strategic_planner": "Strategic Planner",
+            "economy_observations": "Economy",
+            "composition_intelligence": "Composition Intelligence",
+            "action_evaluator_baseline": "Action Evaluator baseline",
+            "contextual_action_evaluator": "Contextual Action Evaluator",
+            "ppo": "Ações PPO observadas",
+            "outcomes": "Outcomes",
+        }
+        integrated_lines = [
+            f"Schema: v{integrated.get('schema_version', 'unavailable')} | grupos jogador/round: {integrated.get('group_count', 0)}",
+            f"Produtores ausentes: {', '.join(integrated_metrics.get('missing_producers', [])) or 'nenhum'}",
+            f"Envelopes incompletos: {integrated_metrics.get('composition_envelope_missing_count', 0)} | "
+            f"duplicatas: {integrated_metrics.get('composition_duplicate_count', 0)} | "
+            f"inversões de sequência: {integrated_metrics.get('out_of_order_sequence_count', 0)} | "
+            f"schemas incompatíveis: {integrated_metrics.get('incompatible_schema_count', 0)}",
+            "",
+            "Produtores:",
+        ]
+        presence = integrated.get("source_presence") or {}
+        counts = integrated.get("producer_counts") or {}
+        for key, label in producer_labels.items():
+            integrated_lines.append(
+                f"  {label}: {counts.get(key, 0)} · "
+                f"{'disponível' if presence.get(key) else 'unavailable'}"
+            )
+        comparisons = integrated.get("recommendation_vs_ppo") or {}
+        integrated_lines += ["", "Comparação observacional com PPO (não é métrica de qualidade):"]
+        for key, label in (("baseline", "Baseline"), ("contextual", "Contextual")):
+            data = comparisons.get(key) or {}
+            integrated_lines.append(
+                f"  {label}: comparáveis={data.get('compared', 0)} | "
+                f"concordâncias={data.get('matches', 0)} | "
+                f"divergências={data.get('divergences', 0)} | "
+                f"indisponíveis={data.get('unavailable', 0)}"
+            )
+        integrated_lines += ["", "Timeline por jogador/round:"]
+        for group in integrated.get("groups", [])[:500]:
+            integrated_lines.append(
+                f"  Jogador {group.get('player_id', -1) + 1} · round {group.get('round')} · "
+                f"reviews={group.get('strategic_review_count', 0)} · "
+                f"PPO={group.get('ppo_action_count', 0)} · "
+                f"CI={group.get('composition_snapshot_count', 0)} · "
+                f"outcomes={group.get('outcome_count', 0)} · "
+                f"{group.get('correlation_quality', 'unavailable')}"
+            )
+            for recommendation in group.get("action_evaluator_recommendations", [])[-1:]:
+                baseline = recommendation.get("baseline") or {}
+                contextual = recommendation.get("contextual") or {}
+                integrated_lines.append(
+                    f"    Evaluators: baseline={baseline.get('category') or 'unavailable'} · "
+                    f"contextual={contextual.get('category') or 'unavailable'}"
+                )
+        integrated_lines += [
+            "",
+            "Associação por match/player/round não demonstra causalidade. "
+            "A ação PPO não é ground truth. Ausências e snapshots antigos sem identidade permanecem unavailable.",
+            "Relatório completo: audit/audit_integrado.md",
+        ]
+        self._add_text(layout, "\n".join(integrated_lines))
 
         layout = self._page("Tabuleiro")
         board = report.get("board_quality_metrics", {})
