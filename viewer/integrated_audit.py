@@ -131,7 +131,10 @@ def build_integrated_audit_index(
     duplicate_sequences = []
     out_of_order_sequences = []
     sequence_by_player: dict[int, list[int]] = defaultdict(list)
-    seen_comp_keys: set[tuple] = set()\n    seen_player_event_keys: set[tuple] = set()\n    player_duplicate_count = 0\n    global_sequences: list[int] = []
+    seen_comp_keys: set[tuple] = set()
+    seen_player_event_keys: set[tuple] = set()
+    player_duplicate_count = 0
+    global_sequences: list[int] = []
     duplicate_comp_count = 0
     incompatible_schemas = []
 
