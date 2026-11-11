@@ -130,6 +130,34 @@ void validated_item_snapshot_protects_outside_target_unit() {
     assert(!result.evidence_rejected.empty()); // Board evidence was intentionally absent.
 }
 
+void board_gap_increases_matching_missing_unit_priority() {
+    ActiveCompositionManager manager;
+    manager.publish(comp());
+    const auto active = *manager.current();
+    auto ctx = context(active);
+    ctx.match_id = 91; ctx.player_id = 0; ctx.round = 10;
+    ctx.owned_units = {{1, 1, 1, true, {}}};
+    PlannerEvidenceSnapshot evidence;
+    evidence.match_id = 91; evidence.player_id = 0;
+    evidence.composition_id = active.candidate.composition_id;
+    evidence.composition_version = active.version; evidence.round = 10;
+    auto& metadata = evidence.board.metadata;
+    metadata.source = "BoardEvaluation"; metadata.source_version = active.version;
+    metadata.match_id = 91; metadata.player_id = 0;
+    metadata.composition_id = active.candidate.composition_id;
+    metadata.source_round = 10; metadata.expected_round = 10;
+    metadata.quality = EvidenceQuality::Valid; metadata.available = true;
+    evidence.board.missing_frontline_count = 1;
+    ctx.planner_evidence = &evidence;
+    const auto result = UnitPriorityPlanner{}.resolve(active, ctx);
+    const auto frontline = std::find_if(result.units.begin(), result.units.end(),
+        [](const auto& unit) { return unit.champion_id == 2; });
+    assert(frontline != result.units.end());
+    assert(frontline->intent == UnitIntent::Seek);
+    assert(frontline->priority == 105);
+    assert(std::find(result.evidence_consumed.begin(), result.evidence_consumed.end(),
+        "BoardEvaluation:role_gap_priority_context") != result.evidence_consumed.end());
+}
 void missing_active_is_safe() {
     auto result = UnitPriorityPlanner{}.resolve(std::nullopt, {});
     assert(result.stale && result.units.empty());
@@ -140,6 +168,7 @@ int main() {
     shared_and_bridge_units_survive_pivot();
     equipped_items_restrict_sale_and_low_evidence_holds();
     validated_item_snapshot_protects_outside_target_unit();
+    board_gap_increases_matching_missing_unit_priority();
     missing_active_is_safe();
     std::cout << "Unit Priority Planner tests passed\n";
 }
