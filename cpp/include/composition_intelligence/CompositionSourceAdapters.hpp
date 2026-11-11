@@ -17,16 +17,6 @@ struct CompositionAdapterResult {
     std::vector<std::string> diagnostics;
     bool ok() const noexcept { return !candidates.empty(); }
 };
-struct NativeUnitSelection { std::int32_t champion_id{-1}; bool core{false}; int priority{0}; };
-// Neutral input contract: no comp_direction/composition_focus fields or dependencies.
-struct NativeCompositionSnapshot {
-    std::string composition_id, set_id, patch;
-    std::vector<NativeUnitSelection> units;
-    std::int32_t main_carry_id{-1};
-    std::size_t target_board_size{0};
-    double source_score{0.0};
-    std::string source_reference{"native-generator"};
-};
 
 namespace adapter_detail {
 inline std::string set_number(const std::string& value) {
