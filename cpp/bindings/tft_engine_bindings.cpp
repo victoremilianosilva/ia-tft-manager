@@ -792,6 +792,7 @@ PYBIND11_MODULE(tft_engine, module) {
                 return result;
             }
         )
+        .def("get_composition_diagnostics_jsonl", &TFTEngine::get_composition_diagnostics_jsonl)
         .def(
             "get_audit_snapshot",
             [](const TFTEngine& self) {
