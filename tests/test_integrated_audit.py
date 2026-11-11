@@ -19,8 +19,14 @@ def _composition(match_id="match-a", player_id=0, round_number=3, sequence=10, t
         "schema_version": 1, "match_id": match_id, "player_id": player_id,
         "round": round_number, "sequence": sequence,
         "timestamp_unix_ms": timestamp, "composition_id": "comp-a",
-        "composition_version": 4, "stale": False,
-        "context_bridge": {"recommended": {
+        "composition_version": 4, "engine_match_id": 42, "stale": False,
+        "context_bridge": {
+            "metadata": {
+                "match_id": 42, "player_id": player_id, "round": round_number,
+                "composition_id": "comp-a", "composition_version": 4,
+                "timestamp_unix_ms": timestamp,
+            },
+            "recommended": {
             "economic_posture": {"value": "ACCUMULATE_RESOURCES", "quality": "valid", "origin": "recommended"},
         }},
         "action_evaluator_comparison": {
@@ -70,6 +76,7 @@ def test_integrated_index_correlates_same_match_player_round_and_compares_catego
     assert index["source_presence"]["item_evidence_valid"] is False
     assert index["source_presence"]["unit_priority"] is True
     assert index["source_presence"]["lineup"] is True
+    assert index["bridge_identity_mismatch_count"] == 0
 
 
 def test_integrated_index_never_joins_another_match_or_player():
@@ -199,3 +206,12 @@ def test_known_composition_version_mismatch_is_not_correlated_to_other_version()
     )
     assert index["recommendation_vs_ppo"]["baseline"]["unavailable"] == 1
     assert index["recommendation_vs_ppo"]["baseline"]["compared"] == 0
+
+
+
+def test_context_bridge_identity_mismatches_are_reported():
+    record = _composition()
+    record["context_bridge"]["metadata"]["match_id"] = 99
+    index = build_integrated_audit_index([], [], [record], match_id="match-a")
+    assert index["bridge_identity_mismatch_count"] == 1
+    assert index["bridge_identity_mismatches"][0]["field"] == "match_id"
