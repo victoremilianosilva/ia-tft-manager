@@ -148,6 +148,8 @@ def build_integrated_audit_index(
     player_duplicate_count = 0
     global_sequences_by_match: dict[str, list[int]] = defaultdict(list)
     duplicate_comp_count = 0
+    evaluator_comparison_count = 0
+    evaluator_divergence_count = 0
     incompatible_schemas = []
     legacy_schema_count = 0
 
@@ -268,6 +270,12 @@ def build_integrated_audit_index(
             global_sequences_by_match[str(record_match)].append(sequence)
         group = group_for(pid, rnd, str(record_match))
         recommendations = _recommendations(record)
+        evaluator_comparison = record.get("action_evaluator_comparison") or {}
+        evaluator_comparison_meta = evaluator_comparison.get("comparison") or {}
+        if evaluator_comparison_meta.get("comparison_available"):
+            evaluator_comparison_count += 1
+            if evaluator_comparison_meta.get("diverged") is True:
+                evaluator_divergence_count += 1
         item = {
             "source": "composition_intelligence",
             "source_reference": {"file": "composition_diagnostics.jsonl", "sequence": sequence},
@@ -467,6 +475,8 @@ def build_integrated_audit_index(
         "composition_envelope_missing": missing_envelope[:100],
         "composition_duplicate_count": duplicate_comp_count,
         "player_log_duplicate_count": player_duplicate_count,
+        "evaluator_comparison_count": evaluator_comparison_count,
+        "evaluator_divergence_count": evaluator_divergence_count,
         "duplicate_sequences": duplicate_sequences[:100],
         "out_of_order_sequences": out_of_order_sequences[:100],
         "sequence_gaps": [
@@ -527,6 +537,8 @@ def format_integrated_audit_markdown(index: dict) -> str:
         f"- Inversões de sequência: {len(index.get('out_of_order_sequences', []))}",
         f"- Lacunas de sequência: {len(index.get('sequence_gaps', []))}",
         f"- Eventos duplicados no log de jogadores: {index.get('player_log_duplicate_count', 0)}",
+        f"- Comparações baseline/contextual disponíveis: {index.get('evaluator_comparison_count', 0)}",
+        f"- Divergências baseline/contextual: {index.get('evaluator_divergence_count', 0)}",
         f"- Registros sem versão (legado): {index.get('legacy_schema_count', 0)}",
         f"- Schemas incompatíveis: {len(index.get('incompatible_schemas', []))}",
         f"- Erros de parsing: {len(index.get('parse_errors', []))}",
@@ -548,24 +560,36 @@ def format_integrated_audit_markdown(index: dict) -> str:
             f"### Jogador {group['player_id'] + 1} · round {group['round']} "
             f"({group['correlation_quality']})"
         )
+        versions = ", ".join(
+            f"{item.get('composition_id') or 'unavailable'}@{item.get('composition_version') if item.get('composition_version') is not None else 'unavailable'}"
+            for item in group.get("composition_versions", [])
+        ) or "unavailable"
         lines.append(
-            f"- Strategic reviews: {group['strategic_review_count']} · "
+            f"- Strategic reviews únicos: {group['strategic_review_count']} "
+            f"(observações={group['strategic_review_observations']}) · "
             f"PPO actions: {group['ppo_action_count']} · "
             f"Composition snapshots: {group['composition_snapshot_count']} · "
             f"Outcomes: {group['outcome_count']}"
         )
+        lines.append(f"- Composition identity/version: {versions}")
         for decision in group["strategic_reviews"][:10]:
             lines.append(
-                f"- Strategic Planner: {decision.get('decision') or 'unavailable'} "
+                f"- Strategic Planner [{decision.get('source')} seq={decision.get('sequence_id', decision.get('sequence', '—'))}]: "
+                f"{decision.get('decision') or 'unavailable'} "
                 f"({decision.get('decision_path_reason') or 'reason unavailable'})"
             )
         for recommendation in group["action_evaluator_recommendations"][-3:]:
             lines.append(
-                f"- Evaluators: baseline={((recommendation.get('baseline') or {}).get('category') or 'unavailable')} · "
+                f"- Evaluators [composition_diagnostics.jsonl seq={recommendation.get('sequence', '—')}]: "
+                f"baseline={((recommendation.get('baseline') or {}).get('category') or 'unavailable')} · "
                 f"contextual={((recommendation.get('contextual') or {}).get('category') or 'unavailable')}"
             )
         for action in group["ppo_actions"][-5:]:
-            lines.append(f"- PPO observado: {action.get('action')} → {action.get('normalized_category') or 'unavailable'}")
+            lines.append(
+                f"- PPO observado [{(action.get('source_reference') or {}).get('file')} "
+                f"seq={(action.get('source_reference') or {}).get('sequence_id')}]: "
+                f"{action.get('action')} → {action.get('normalized_category') or 'unavailable'}"
+            )
         for outcome in group["outcomes"]:
             lines.append(f"- Outcome observado: placement={outcome.get('placement')} (correlação, não causalidade)")
         lines.append("")
