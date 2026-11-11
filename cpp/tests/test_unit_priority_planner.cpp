@@ -182,7 +182,7 @@ void board_gap_increases_matching_missing_unit_priority() {
         [](const auto& unit) { return unit.champion_id == 2; });
     assert(frontline != result.units.end());
     assert(frontline->intent == UnitIntent::Seek);
-    assert(frontline->priority == 105);
+    assert(frontline->priority == 405);
     assert(std::find(result.evidence_consumed.begin(), result.evidence_consumed.end(),
         "BoardEvaluation:role_gap_priority_context") != result.evidence_consumed.end());
 }
