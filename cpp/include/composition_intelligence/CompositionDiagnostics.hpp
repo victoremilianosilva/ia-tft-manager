@@ -178,6 +178,9 @@ public:
             {"evidence_consumption", {{"economy", actions.economy_evidence_consumed},
                 {"board_validated", actions.board_evidence_validated},
                 {"items", actions.item_evidence_consumed},
+                {"gold", actions.observed_gold}, {"interest", actions.observed_interest},
+                {"projected_next_round_income", actions.projected_next_round_income},
+                {"economic_posture", actions.observed_economic_posture},
                 {"rejected", actions.evidence_rejected}}},
             {"candidates", nlohmann::json::array()}
         };
