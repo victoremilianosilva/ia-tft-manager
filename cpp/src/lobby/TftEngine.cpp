@@ -507,6 +507,7 @@ struct TFTEngine::Impl {
     std::array<CompositionIntelligencePlayerState, kPlayersPerLobby> composition_intelligence_players{};
     std::vector<composition_intelligence::CompositionCandidate> composition_intelligence_candidates;
     std::vector<std::string> composition_intelligence_catalog_diagnostics;
+    std::uint64_t composition_intelligence_sequence{0};
 
 
     // Serviços compartilhados pela lobby, não pertencem a um jogador.
@@ -3662,6 +3663,8 @@ struct TFTEngine::Impl {
                     composition_actions, published_transition);
                 auto diagnostic_json = diagnostic.to_json();
                 diagnostic_json["player_id"] = static_cast<std::int32_t>(i);
+                diagnostic_json["player_sequence"] = diagnostic_json["sequence"];
+                diagnostic_json["sequence"] = ++composition_intelligence_sequence;
                 diagnostic_json["catalog_diagnostics"] = composition_intelligence_catalog_diagnostics;
                 runtime.snapshots.push_back(std::move(diagnostic_json));
             }
@@ -5662,6 +5665,7 @@ ResetResult TFTEngine::reset(
 
     ++impl_->episode_id;
     impl_->composition_intelligence_players = {};
+    impl_->composition_intelligence_sequence = 0;
 
     impl_->round = 0;
     impl_->stage = 1;
@@ -6111,9 +6115,15 @@ std::string TFTEngine::adapt_opgg_compositions_json(const std::string& catalog_j
 std::vector<std::string> TFTEngine::get_composition_diagnostics_jsonl() const {
     if (!impl_) throw std::runtime_error("TFTEngine nao possui estado interno.");
     impl_->ensure_open();
-    std::vector<std::string> result;
+    std::vector<nlohmann::json> ordered;
     for (const auto& player : impl_->composition_intelligence_players)
-        for (const auto& snapshot : player.snapshots) result.push_back(snapshot.dump());
+        for (const auto& snapshot : player.snapshots) ordered.push_back(snapshot);
+    std::stable_sort(ordered.begin(), ordered.end(), [](const auto& left, const auto& right) {
+        return left.value("sequence", std::uint64_t{0}) < right.value("sequence", std::uint64_t{0});
+    });
+    std::vector<std::string> result;
+    result.reserve(ordered.size());
+    for (const auto& snapshot : ordered) result.push_back(snapshot.dump());
     return result;
 }
 
