@@ -394,7 +394,8 @@ class AuditWindow(QMainWindow):
         for group in integrated.get("groups", [])[:500]:
             integrated_lines.append(
                 f"  Jogador {group.get('player_id', -1) + 1} · round {group.get('round')} · "
-                f"reviews={group.get('strategic_review_count', 0)} · "
+                f"reviews únicos={group.get('strategic_review_count', 0)} "
+                f"(observações={group.get('strategic_review_observations', 0)}) · "
                 f"PPO={group.get('ppo_action_count', 0)} · "
                 f"CI={group.get('composition_snapshot_count', 0)} · "
                 f"outcomes={group.get('outcome_count', 0)} · "
