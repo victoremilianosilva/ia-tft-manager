@@ -195,7 +195,7 @@ def build_integrated_audit_index(
             "composition_id": composition_id,
             "composition_version": composition_version,
             "source_reference": {
-                "file": f"player_{pid + 1}_log.json",
+                "file": event.get("source_file") or f"player_{pid + 1}_log.json",
                 "sequence_id": event.get("sequence_id"),
                 "step": event.get("step"),
             },
@@ -224,7 +224,7 @@ def build_integrated_audit_index(
                 "composition_id": composition_id,
                 "composition_version": composition_version,
                 "sequence_id": event.get("sequence_id"),
-                "source_reference": {"file": f"player_{pid + 1}_log.json", "sequence_id": event.get("sequence_id")},
+                "source_reference": {"file": event.get("source_file") or f"player_{pid + 1}_log.json", "sequence_id": event.get("sequence_id")},
                 "payload": shadow,
                 "step": event.get("step"),
                 "timestamp": event.get("timestamp"),
@@ -411,7 +411,7 @@ def build_integrated_audit_index(
         group["outcomes"].append({
             "source": "round_outcome_timeline",
             "source_reference": {
-                "file": f"player_{pid + 1}_log.json",
+                "file": outcome.get("source_file") or f"player_{pid + 1}_log.json",
                 "sequence_id": outcome.get("sequence_id"),
                 "step": outcome.get("step"),
             },
