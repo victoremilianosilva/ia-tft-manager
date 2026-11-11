@@ -3710,10 +3710,14 @@ struct TFTEngine::Impl {
                 evidence.composition_version = version;
                 evidence.round = round_id;
                 if (version > 0) {
+                    evidence.match_id = episode_id;
+                    evidence.player_id = static_cast<std::int32_t>(i);
                     evidence.economy = ci::PlannerEvidenceAdapters::economic(
-                        strategic_context, economic_decision, version, round_id);
+                        strategic_context, economic_decision, version, round_id,
+                        episode_id, static_cast<std::int32_t>(i), evidence.composition_id);
                     evidence.board = ci::PlannerEvidenceAdapters::board(
-                        board_evaluation(i), version, round_id, round_id);
+                        board_evaluation(i), version, round_id, round_id,
+                        episode_id, static_cast<std::int32_t>(i), evidence.composition_id);
                     if (player_envs[i].item_engine) {
                         items::ItemPlayerState item_state;
                         item_state.components = player_envs[i].item_engine->components();
@@ -3746,7 +3750,8 @@ struct TFTEngine::Impl {
                         for (const auto& unit : player_envs[i].bench) if (unit) append_item_binding(*unit);
                         evidence.items = ci::PlannerEvidenceAdapters::item(
                             *player_envs[i].item_engine, item_state, item_bindings,
-                            version, round_id, round_id);
+                            version, round_id, round_id, episode_id,
+                            static_cast<std::int32_t>(i), evidence.composition_id);
                     }
                 }
                 runtime.mark_stage("planner_evidence", version > 0 ? "completed" : "skipped",
