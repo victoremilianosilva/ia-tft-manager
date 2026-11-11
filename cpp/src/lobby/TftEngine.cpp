@@ -2955,10 +2955,15 @@ struct TFTEngine::Impl {
                 available_copies, currently_offered, &live_context,
                 -1, composition_intelligence_enabled);
             if (composition_intelligence_enabled) {
+                // The planner captured this DTO before its optional OP.GG
+                // comparison; the adapter consumes only the Native snapshot.
+                const auto native_adapted =
+                    composition_intelligence::NativeCompositionAdapter::adapt(
+                        plan.native_snapshot, catalog->all());
                 composition_intelligence_native_candidates[i] =
-                    plan.native_candidates;
+                    native_adapted.candidates;
                 composition_intelligence_native_diagnostics[i] =
-                    plan.native_diagnostics;
+                    native_adapted.diagnostics;
             }
             const bool direction_transitioned =
                 info.composition_direction != previous_direction;
