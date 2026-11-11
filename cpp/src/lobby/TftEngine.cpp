@@ -2996,6 +2996,11 @@ struct TFTEngine::Impl {
                 info.planned_composition_score = plan.score;
                 info.planned_acquisition_notes = plan.acquisition_notes;
             }
+        } else if (composition_intelligence_enabled) {
+            composition_intelligence_native_diagnostics[i].push_back(
+                current_round < 9
+                    ? "Native candidate not generated: planner starts at round 9"
+                    : "Native candidate not generated: composition direction is unavailable");
         }
 
         // Strategic Planner shadow evaluation. It reads the same live board,
@@ -5766,6 +5771,8 @@ ResetResult TFTEngine::reset(
         decltype(impl_->composition_intelligence_players){};
     impl_->composition_intelligence_native_candidates =
         decltype(impl_->composition_intelligence_native_candidates){};
+    impl_->composition_intelligence_native_diagnostics =
+        decltype(impl_->composition_intelligence_native_diagnostics){};
     impl_->composition_intelligence_sequence = 0;
 
     impl_->round = 0;
