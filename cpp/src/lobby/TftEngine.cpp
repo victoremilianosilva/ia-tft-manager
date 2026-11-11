@@ -52,6 +52,7 @@
 #include "items/PveLootDistribution.hpp"
 #include "items/CombatItemAdapter.hpp"
 #include "composition_intelligence/CompositionDiagnostics.hpp"
+#include "composition_intelligence/ContextualActionEvaluator.hpp"
 #include "composition_intelligence/CompositionIntelligenceRuntime.hpp"
 
 #include <cstdlib>
@@ -3779,13 +3780,66 @@ struct TFTEngine::Impl {
                 runtime.mark_stage("action_evaluation",
                     composition_actions.stale ? "unavailable" : "completed",
                     composition_actions.stale ? composition_actions.stale_reason :
-                        "composition-aware action evaluation completed in Shadow mode", active);
+                        "frozen #209 baseline action evaluation completed in Shadow mode", active);
+
+                // Independent contextual evaluator: same original context/candidate
+                // list, but separate contracts and scoring. Its failure is isolated
+                // and cannot prevent baseline diagnostics from being recorded.
+                ci::ContextualActionEvaluation contextual_actions;
+                try {
+                    contextual_actions = ci::ContextualActionEvaluator{}.evaluate(
+                        active, priorities, lineup, strategic_context, &evidence, episode_id);
+                } catch (const std::exception& contextual_error) {
+                    contextual_actions.stale = true;
+                    contextual_actions.stale_reason =
+                        std::string("contextual_evaluator_exception: ") + contextual_error.what();
+                    contextual_actions.rationale = "contextual_evaluator_failed_isolated";
+                } catch (...) {
+                    contextual_actions.stale = true;
+                    contextual_actions.stale_reason = "contextual_evaluator_exception: unknown";
+                    contextual_actions.rationale = "contextual_evaluator_failed_isolated";
+                }
+                runtime.mark_stage("contextual_action_evaluation",
+                    contextual_actions.stale ? "unavailable" : "completed",
+                    contextual_actions.stale ? contextual_actions.stale_reason :
+                        "independent contextual evaluator completed in Shadow mode", active);
+
                 const auto diagnostic = runtime.recorder.capture(
                     round_id, active, proposal, priorities, lineup, evidence,
                     composition_actions, published_transition);
                 runtime.mark_stage("diagnostic_recording", "completed",
                     "read-only diagnostic snapshot assembled", active);
                 auto diagnostic_json = diagnostic.to_json();
+                const bool same_initial_candidate_set =
+                    composition_actions.candidates.size() == contextual_actions.candidates.size() &&
+                    composition_actions.candidates.size() == strategic_context.action_candidates.size();
+                const bool evaluator_diverged =
+                    composition_actions.evaluation.recommended_action != contextual_actions.recommended_action ||
+                    composition_actions.evaluation.recommended_champion_id != contextual_actions.recommended_champion_id;
+                diagnostic_json["action_evaluator_comparison"] = {
+                    {"schema_version", 1},
+                    {"baseline", {
+                        {"implementation", "CompositionActionEvaluator#209"},
+                        {"recommended_action", static_cast<int>(composition_actions.evaluation.recommended_action)},
+                        {"recommended_champion_id", composition_actions.evaluation.recommended_champion_id},
+                        {"confidence_not_probability", composition_actions.evaluation.confidence},
+                        {"candidate_count", composition_actions.candidates.size()},
+                        {"stale", composition_actions.stale},
+                        {"stale_reason", composition_actions.stale_reason}
+                    }},
+                    {"contextual", contextual_actions.to_json()},
+                    {"comparison", {
+                        {"same_initial_candidate_set", same_initial_candidate_set},
+                        {"initial_candidate_count", strategic_context.action_candidates.size()},
+                        {"baseline_candidate_count", composition_actions.candidates.size()},
+                        {"contextual_candidate_count", contextual_actions.candidates.size()},
+                        {"diverged", evaluator_diverged},
+                        {"divergence_is_diagnostic_not_error", true},
+                        {"policy_action_is_not_ground_truth", true}
+                    }},
+                    {"shadow_only", true},
+                    {"executor_connected", false}
+                };
 
                 // Correlate strategic/economic context with the active CI version
                 // without feeding recommendations back into either planner.
