@@ -9,7 +9,7 @@
 #include <utility>
 #include <vector>
 namespace tft::composition_intelligence {
-enum class EvidenceQuality { Missing, Stale, Partial, Invalid, Valid };
+enum class EvidenceQuality { Missing, Stale, Valid, Partial, Invalid };
 struct EvidenceSourceMetadata {
  std::string source; std::uint64_t source_version{0}; std::uint64_t match_id{0};
  std::int32_t player_id{-1}; std::string composition_id;
