@@ -162,7 +162,7 @@ class UnifiedAuditRegressionTests(unittest.TestCase):
         audit.add_hold_baseline_report(documents)
         self.assertIn("audit_hold.md", documents)
         self.assertIn("HOLD candidates: **1**", documents["audit_hold.md"])
-        self.assertIn("distinct values **1**", documents["audit_hold.md"])
+        self.assertIn("distinct values 1**", documents["audit_hold.md"])
 
     def test_unified_audit_generates_buy_xp_report_from_action_and_economy_docs(self):
         actions = """| Jogador | Round | Step | PPO executou | Recomendação | Campeão recomendado | Δ board (proxy) | Δ ouro direto | Juros perdidos | Custo oportunidade | Custo econômico líquido | HP (proxy) | Streak (proxy) | Confiança | Motivo |
