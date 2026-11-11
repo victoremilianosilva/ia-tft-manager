@@ -2951,11 +2951,8 @@ struct TFTEngine::Impl {
                 plan_focus, owned_copies, planning_slots, economy.level,
                 available_copies, currently_offered, &live_context);
             if (composition_intelligence_enabled) {
-                const auto native_adapted =
-                    composition_intelligence::NativeCompositionAdapter::adapt(
-                        plan.native_snapshot, catalog->all());
                 composition_intelligence_native_candidates[i] =
-                    native_adapted.candidates;
+                    plan.native_candidates;
             }
             const bool direction_transitioned =
                 info.composition_direction != previous_direction;
