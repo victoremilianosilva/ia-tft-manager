@@ -71,6 +71,7 @@ struct CompositionPlan {
     // Immutable native output captured before optional OP.GG comparison.
     composition_intelligence::NativeCompositionSnapshot native_snapshot;
     std::vector<composition_intelligence::CompositionCandidate> native_candidates;
+    std::vector<std::string> native_diagnostics;
 };
 
 class CompositionPlanner {
@@ -471,6 +472,7 @@ public:
                 composition_intelligence::NativeCompositionAdapter::adapt(
                     native, pool);
             plan.native_candidates = native_result.candidates;
+            plan.native_diagnostics = native_result.diagnostics;
         }
 
         // Optional OP.GG catalog: use it as a candidate, not as a hard constraint.
