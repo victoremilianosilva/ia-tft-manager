@@ -169,8 +169,12 @@ public:
         for (const auto& owned_pair : owned) {
             if (emitted.count(owned_pair.first)) continue;
             const auto* ev = find_evidence(evidence, owned_pair.first);
-            out.units.push_back(resolve_outside_target(
-                owned_pair.first, *owned_pair.second, ev, context));
+            auto owned_with_items = *owned_pair.second;
+            if (accepted_evidence && PlannerEvidenceAdapters::source_matches(accepted_evidence->items.metadata, context.match_id, context.player_id, active->candidate.composition_id, active->version, context.round)) {
+                const auto item_unit = std::find_if(accepted_evidence->items.units.begin(), accepted_evidence->items.units.end(), [&](const auto& item) { return item.champion_id == owned_pair.first && item.has_equipped_items; });
+                if (item_unit != accepted_evidence->items.units.end()) owned_with_items.equipped_item_ids = item_unit->equipped_item_ids;
+            }
+            out.units.push_back(resolve_outside_target(owned_pair.first, owned_with_items, ev, context));
         }
         std::sort(out.units.begin(), out.units.end(), [](const auto& a, const auto& b) {
             if (a.priority != b.priority) return a.priority > b.priority;
