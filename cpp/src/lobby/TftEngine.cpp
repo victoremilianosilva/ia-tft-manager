@@ -5887,6 +5887,22 @@ TFTEngine::get_action_masks() const {
     return result;
 }
 
+std::vector<std::pair<std::int32_t, std::string>>
+TFTEngine::get_champion_api_name_map() const {
+    if (!impl_) {
+        throw std::runtime_error("TFTEngine nao possui estado interno.");
+    }
+    impl_->ensure_open();
+
+    std::vector<std::pair<std::int32_t, std::string>> result;
+    result.reserve(impl_->catalog->size());
+    for (const auto& champion : impl_->catalog->all()) {
+        if (champion.internal_id < 0 || champion.api_name.empty()) continue;
+        result.emplace_back(champion.internal_id, champion.api_name);
+    }
+    return result;
+}
+
 AuditSnapshot TFTEngine::get_audit_snapshot() const {
     if (!impl_) {
         throw std::runtime_error("TFTEngine nao possui estado interno.");
