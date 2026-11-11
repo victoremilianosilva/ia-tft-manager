@@ -22,7 +22,6 @@ def _composition(match_id="match-a", player_id=0, round_number=3, sequence=10, t
         "composition_version": 4, "stale": False,
         "context_bridge": {"recommended": {
             "economic_posture": {"value": "ACCUMULATE_RESOURCES", "quality": "valid", "origin": "recommended"},
-            "composition_decision": {"value": "KEEP", "quality": "valid", "origin": "recommended"},
         }},
         "action_evaluator_comparison": {
             "baseline": {"recommended_action": 1, "recommended_champion_id": 10, "stale": False},
@@ -123,3 +122,61 @@ def test_player_id_normalization_handles_zero_based_and_viewer_labels():
         [_decision(player="Jogador 1")], [], records, match_id="match-a"
     )
     assert index["groups"][0]["player_id"] == 0
+
+
+
+def test_stage_round_labels_are_normalized_to_native_global_rounds():
+    index = build_integrated_audit_index(
+        [_decision(round_number="2-1")],
+        [],
+        [_composition(round_number=5)],
+        match_id="match-a",
+    )
+    assert index["group_count"] == 1
+    assert index["groups"][0]["round"] == 5
+    assert index["groups"][0]["composition_snapshot_count"] == 1
+
+
+def test_repeated_strategic_observations_are_deduplicated_without_dropping_actions():
+    first = _decision()
+    second = _decision()
+    second["sequence_id"] = 8
+    second["step"] = 21
+    index = build_integrated_audit_index(
+        [first, second], [], [], match_id="match-a"
+    )
+    group = index["groups"][0]
+    assert group["ppo_action_count"] == 2
+    assert group["strategic_review_observations"] == 2
+    assert group["strategic_review_count"] == 1
+    assert group["strategic_reviews"][0]["observations"] == 2
+
+
+def test_player_log_duplicate_sequence_does_not_inflate_action_count():
+    event = _decision()
+    index = build_integrated_audit_index(
+        [event, dict(event)], [], [], match_id="match-a"
+    )
+    assert index["player_log_duplicate_count"] == 1
+    assert index["groups"][0]["ppo_action_count"] == 1
+
+
+def test_sequence_gaps_are_reported_per_match():
+    index = build_integrated_audit_index(
+        [], [], [_composition(sequence=1), _composition(sequence=3)],
+        match_id="match-a",
+    )
+    assert index["sequence_gaps"] == [
+        {"match_id": "match-a", "missing": [2]}
+    ]
+
+
+def test_known_composition_version_mismatch_is_not_correlated_to_other_version():
+    event = _decision()
+    event["state_after"]["composition_id"] = "comp-a"
+    event["state_after"]["composition_version"] = 99
+    index = build_integrated_audit_index(
+        [event], [], [_composition()], match_id="match-a"
+    )
+    assert index["recommendation_vs_ppo"]["baseline"]["unavailable"] == 1
+    assert index["recommendation_vs_ppo"]["baseline"]["compared"] == 0
