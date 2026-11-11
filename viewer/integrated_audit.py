@@ -61,7 +61,7 @@ def _shadow(event: dict) -> dict | None:
     return None
 
 
-def _economy_available(event: dict, composition: dict | None = None) -> bool:
+def _economic_controller_available(event: dict, composition: dict | None = None) -> bool:
     payload = event.get("economic_diagnostics")
     if isinstance(payload, dict) and payload:
         return True
@@ -72,12 +72,16 @@ def _economy_available(event: dict, composition: dict | None = None) -> bool:
         bridge = composition.get("context_bridge") or {}
         recommended = bridge.get("recommended") or {} if isinstance(bridge, dict) else {}
         posture = recommended.get("economic_posture") or {}
-        if isinstance(posture, dict) and posture.get("value") is not None and posture.get("quality") in ("valid", "partial"):
-            return True
-        diagnostics = composition.get("diagnostics") or {}
-        evidence = diagnostics.get("evidence") or {}
-        return bool((evidence.get("economy") or {}).get("metadata", {}).get("available"))
+        quality = str(posture.get("quality") or "").lower()
+        return isinstance(posture, dict) and posture.get("value") is not None and quality in ("valid", "partial")
     return False
+
+
+def _economy_evidence_available(composition: dict) -> bool:
+    diagnostics = composition.get("diagnostics") or {}
+    evidence = diagnostics.get("evidence") or {}
+    metadata = (evidence.get("economy") or {}).get("metadata") or {}
+    return metadata.get("available") is True and str(metadata.get("quality_name") or "").lower() == "valid"
 
 
 def _recommendations(record: dict) -> dict[str, Any]:
@@ -209,8 +213,8 @@ def build_integrated_audit_index(
         group["ppo_actions"].append(decision)
         player_decisions[(event_match, pid, rnd)].append(event)
         producer_counts["ppo"] += 1
-        if _economy_available(event):
-            economy = event.get("economic_diagnostics") or event.get("decision_context") or {}
+        if _economic_controller_available(event):
+            economy = event.get("economic_diagnostics") or {}
             group["economic_observations"].append({
                 "source": "structured_player_log",
                 "sequence_id": event.get("sequence_id"),
@@ -218,7 +222,7 @@ def build_integrated_audit_index(
                 "timestamp": event.get("timestamp"),
                 "observed": economy,
             })
-            producer_counts["economy_observations"] += 1
+            producer_counts["economic_controller"] += 1
 
     for record in composition_records or []:
         if not isinstance(record, dict):
@@ -298,14 +302,21 @@ def build_integrated_audit_index(
                 "quality": strategic_value.get("quality"),
                 "origin": strategic_value.get("origin"),
             })
-        if _economy_available({}, record):
-            producer_counts["economy_evidence"] += 1
+        if _economic_controller_available({}, record):
+            producer_counts["economic_controller"] += 1
             group["economic_observations"].append({
                 "source": "context_bridge",
                 "sequence": sequence,
                 "posture": economic_value.get("value"),
                 "quality": economic_value.get("quality"),
                 "origin": economic_value.get("origin"),
+            })
+        if _economy_evidence_available(record):
+            producer_counts["economy_evidence"] += 1
+            group["economic_observations"].append({
+                "source": "planner_evidence",
+                "sequence": sequence,
+                "quality": ((record.get("diagnostics") or {}).get("evidence") or {}).get("economy", {}).get("metadata", {}).get("quality_name"),
             })
 
     for (sequence_match, pid), sequences in sequence_by_player.items():
@@ -422,7 +433,8 @@ def build_integrated_audit_index(
     players = sorted({group["player_id"] for group in groups.values()})
     source_presence = {
         "strategic_planner": producer_counts["strategic_planner"] > 0,
-        "economy_observations": producer_counts["economy_observations"] > 0 or producer_counts["economy_evidence"] > 0,
+        "economic_controller": producer_counts["economic_controller"] > 0,
+        "economy_evidence": producer_counts["economy_evidence"] > 0,
         "composition_intelligence": producer_counts["composition_intelligence"] > 0,
         "action_evaluator_baseline": producer_counts["action_evaluator_baseline"] > 0,
         "contextual_action_evaluator": producer_counts["contextual_action_evaluator"] > 0,
@@ -484,7 +496,8 @@ def format_integrated_audit_markdown(index: dict) -> str:
     ]
     mapping = (
         ("strategic_planner", "Strategic Planner"),
-        ("economy_observations", "Economy"),
+        ("economic_controller", "Economic Controller"),
+        ("economy_evidence", "Economy evidence"),
         ("composition_intelligence", "Composition Intelligence"),
         ("action_evaluator_baseline", "Action Evaluator baseline"),
         ("contextual_action_evaluator", "Contextual Action Evaluator"),
