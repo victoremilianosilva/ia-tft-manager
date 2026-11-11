@@ -2730,6 +2730,76 @@ def add_hold_baseline_report(markdown_documents: dict[str, str]) -> None:
 
 
 
+
+def split_markdown_into_three_parts(markdown: str) -> list[str]:
+    """Split Markdown at section headings, preserving content and table blocks."""
+    import re
+
+    if not markdown:
+        return ["", "", ""]
+    boundaries = [m.start() for m in re.finditer(r"(?m)^#{2,3}\s+.+$", markdown)]
+    if len(boundaries) < 2:
+        raise ValueError("relatório não possui seções suficientes para divisão segura")
+    total = len(markdown)
+    first = min(boundaries, key=lambda point: abs(point - total / 3))
+    later = [point for point in boundaries if point > first]
+    if not later:
+        raise ValueError("não foi possível encontrar três partes não vazias")
+    second = min(later, key=lambda point: abs(point - 2 * total / 3))
+    parts = [markdown[:first], markdown[first:second], markdown[second:]]
+    if any(not part.strip() for part in parts):
+        raise ValueError("a divisão produziria uma parte vazia")
+    return parts
+
+
+def finalize_markdown_documents(markdown_dir: Path, documents: dict[str, str]) -> list[str]:
+    """Persist split reports and all other outputs before deleting old monoliths."""
+    originals = {}
+    for source_name, prefix in (
+        ("audit_report_geral.md", "audit_report_geral_parte_"),
+        ("audit_acoes.md", "audit_acoes_parte_"),
+    ):
+        if source_name in documents:
+            originals[source_name] = documents.pop(source_name)
+            for index, part in enumerate(split_markdown_into_three_parts(originals[source_name]), 1):
+                documents[f"{prefix}{index}.md"] = part
+
+    for index_name in ("audit_report.md", "audit_report_completo.md"):
+        if index_name in documents:
+            text = documents[index_name]
+            text = text.replace(
+                "- [Resumo geral](audit_report_geral.md)",
+                "- [Resumo geral — parte 1](audit_report_geral_parte_1.md)\n"
+                "- [Resumo geral — parte 2](audit_report_geral_parte_2.md)\n"
+                "- [Resumo geral — parte 3](audit_report_geral_parte_3.md)",
+            )
+            text = text.replace(
+                "- [Action Evaluator](audit_acoes.md)",
+                "- [Action Evaluator — parte 1](audit_acoes_parte_1.md)\n"
+                "- [Action Evaluator — parte 2](audit_acoes_parte_2.md)\n"
+                "- [Action Evaluator — parte 3](audit_acoes_parte_3.md)",
+            )
+            documents[index_name] = text
+
+    markdown_dir.mkdir(parents=True, exist_ok=True)
+    pending = []
+    try:
+        for filename, body in documents.items():
+            temporary = markdown_dir / (filename + ".tmp")
+            temporary.write_text(body, encoding="utf-8")
+            pending.append((temporary, markdown_dir / filename))
+        for temporary, destination in pending:
+            temporary.replace(destination)
+    except Exception:
+        for temporary, _ in pending:
+            temporary.unlink(missing_ok=True)
+        raise
+
+    # Delete legacy files only after every report and all six parts were persisted.
+    for source_name in originals:
+        (markdown_dir / source_name).unlink(missing_ok=True)
+    return sorted(documents)
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("input", type=Path, help="pasta da sessão ou arquivo player log")
@@ -2899,12 +2969,11 @@ def main() -> int:
     report_for_json = dict(report)
     json_path.write_text(json.dumps(report_for_json, ensure_ascii=False, indent=2), encoding="utf-8")
 
-    for filename, content in markdown_documents.items():
-        (markdown_dir / filename).write_text(content, encoding="utf-8")
+    written_reports = finalize_markdown_documents(markdown_dir, markdown_documents)
 
     print(general_md)
     print("\nRelatórios Markdown salvos em:")
-    for filename in sorted(markdown_documents):
+    for filename in written_reports:
         print(f"- {markdown_dir / filename}")
     print(f"\nDados estruturados temporários: {json_path}")
     if args.strict and any(x["severity"] in ("CRITICAL", "HIGH") for x in unique):
