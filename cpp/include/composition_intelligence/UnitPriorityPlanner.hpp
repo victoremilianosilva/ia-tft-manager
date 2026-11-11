@@ -38,6 +38,7 @@ struct UnitPriorityEvidence {
     double confidence{0.5}; // evidence confidence, not a calibrated probability
     std::int32_t copies_toward_next_star{0};
     std::int32_t copies_in_shop{0};
+    std::int32_t unit_cost{-1}; // -1 means unknown; never infer affordability.
     bool trait_completion{false};
 };
 
@@ -66,6 +67,7 @@ struct UnitPriorityContext {
     std::uint64_t match_id{0};
     std::int32_t player_id{-1};
     std::uint32_t round{0};
+    std::int32_t gold_available{-1}; // -1 means unavailable/unknown.
 };
 
 struct UnitPriorityConfig {
@@ -160,8 +162,9 @@ public:
                 auto item = missing_target(target);
                 item.tier = priority_tier(target, ev);
                 item.priority = tier_base(item.tier) + std::clamp(target.priority, 0, 49);
-                if (ev && ev->copies_in_shop > 0) {
-                    item.priority += std::min(15, ev->copies_in_shop * 5);
+                const auto affordable_shop = affordable_shop_copies(ev, context);
+                if (affordable_shop > 0) {
+                    item.priority += std::min(15, affordable_shop * 5);
                     item.reasons.push_back({UnitReasonCode::UpgradeProgress,
                         "Oferta na loja contribui para o progresso de evolução desta unidade da composição."});
                 }
@@ -227,6 +230,13 @@ public:
     }
 
 private:
+    static std::int32_t affordable_shop_copies(
+        const UnitPriorityEvidence* ev, const UnitPriorityContext& context) {
+        if (!ev) return 0;
+        if (ev->unit_cost >= 0 && context.gold_available >= 0 &&
+            ev->unit_cost > context.gold_available) return 0;
+        return std::max(0, ev->copies_in_shop);
+    }
     static std::int32_t tier_base(UnitPriorityTier tier) {
         switch (tier) {
             case UnitPriorityTier::Carry: return 500;
@@ -307,7 +317,7 @@ private:
             out.reasons.push_back({UnitReasonCode::SynergyContribution, "Contribuição observada para sinergias acima do limite configurado."});
 
         const auto copies_to_upgrade = ev
-            ? std::max(0, ev->copies_toward_next_star) + std::max(0, ev->copies_in_shop)
+            ? std::max(0, ev->copies_toward_next_star) + affordable_shop_copies(ev, context)
             : 0;
         if (ev && ev->trait_completion)
             out.reasons.push_back({UnitReasonCode::TraitCompletionPriority,
