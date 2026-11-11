@@ -205,9 +205,9 @@ void composition_hierarchy_beats_easy_external_upgrade() {
         {9, 2, 2, true, {}}
     };
     ctx.evidence = {
-        {1, 0.2, 0.2, 0.9, 1, 1, false},
-        {4, 0.2, 0.2, 0.9, 0, 0, false},
-        {9, 1.0, 1.0, 1.0, 0, 0, false}
+        {1, 0.2, 0.2, 0.9, 1, 1, -1, false},
+        {4, 0.2, 0.2, 0.9, 0, 0, -1, false},
+        {9, 1.0, 1.0, 1.0, 0, 0, -1, false}
     };
     const auto result = UnitPriorityPlanner{}.resolve(active, ctx);
     const auto carry = std::find_if(result.units.begin(), result.units.end(),
@@ -236,9 +236,9 @@ void trait_completion_has_explicit_intermediate_tier() {
     auto ctx = context(active);
     ctx.owned_units = {{1, 1, 1, true, {}}, {2, 1, 1, false, {}}, {3, 1, 1, false, {}}};
     ctx.evidence = {
-        {1, 0.7, 0.7, 0.9, 0, 0, false},
-        {2, 0.2, 0.9, 0.9, 0, 0, true},
-        {3, 0.2, 0.2, 0.9, 0, 0, false}
+        {1, 0.7, 0.7, 0.9, 0, 0, -1, false},
+        {2, 0.2, 0.9, 0.9, 0, 0, -1, true},
+        {3, 0.2, 0.2, 0.9, 0, 0, -1, false}
     };
     const auto result = UnitPriorityPlanner{}.resolve(active, ctx);
     const auto trait_piece = std::find_if(result.units.begin(), result.units.end(),
@@ -257,7 +257,7 @@ void shop_copies_advance_two_star_priority_for_core() {
     const auto active = *manager.current();
     auto ctx = context(active);
     ctx.owned_units = {{1, 1, 1, false, {}}};
-    ctx.evidence = {{1, 0.0, 0.0, 0.9, 1, 1, false}};
+    ctx.evidence = {{1, 0.0, 0.0, 0.9, 1, 1, -1, false}};
     const auto result = UnitPriorityPlanner{}.resolve(active, ctx);
     const auto carry = std::find_if(result.units.begin(), result.units.end(),
         [](const auto& u) { return u.champion_id == 1; });
@@ -268,13 +268,30 @@ void shop_copies_advance_two_star_priority_for_core() {
         [](const auto& r) { return r.code == UnitReasonCode::UpgradeProgress; }) != carry->reasons.end());
 }
 
+
+void unaffordable_shop_copy_does_not_create_upgrade_priority() {
+    ActiveCompositionManager manager;
+    manager.publish(comp());
+    const auto active = *manager.current();
+    auto ctx = context(active);
+    ctx.gold_available = 2;
+    ctx.owned_units = {{1, 1, 1, false, {}}};
+    ctx.evidence = {{1, 0.0, 0.0, 0.9, 1, 1, 4, false}};
+    const auto result = UnitPriorityPlanner{}.resolve(active, ctx);
+    const auto carry = std::find_if(result.units.begin(), result.units.end(),
+        [](const auto& u) { return u.champion_id == 1; });
+    assert(carry != result.units.end());
+    assert(carry->intent == UnitIntent::Keep);
+    assert(carry->target_star == 0);
+}
+
 void external_temporary_unit_requires_explicit_reason() {
     ActiveCompositionManager manager;
     manager.publish(comp());
     const auto active = *manager.current();
     auto ctx = context(active);
     ctx.owned_units = {{9, 1, 1, true, {}}};
-    ctx.evidence = {{9, 0.9, 0.8, 0.95, 0, 0, false}};
+    ctx.evidence = {{9, 0.9, 0.8, 0.95, 0, 0, -1, false}};
     auto result = UnitPriorityPlanner{}.resolve(active, ctx);
     auto external = std::find_if(result.units.begin(), result.units.end(),
         [](const auto& u) { return u.champion_id == 9; });
@@ -324,6 +341,7 @@ int main() {
     composition_hierarchy_beats_easy_external_upgrade();
     trait_completion_has_explicit_intermediate_tier();
     shop_copies_advance_two_star_priority_for_core();
+    unaffordable_shop_copy_does_not_create_upgrade_priority();
     external_temporary_unit_requires_explicit_reason();
     priority_ties_are_deterministic_by_champion_id();
     missing_active_is_safe();
