@@ -1,30 +1,31 @@
 # Composition Intelligence × PPO — comparação descritiva
 
-- Snapshots válidos da Composition Intelligence: **1743**
-- Revisões estratégicas únicas: **328**
-- Decisões PPO encontradas na auditoria: **1053** (timeline estruturada)
+- Snapshots válidos da Composition Intelligence: **1787**
+- Revisões estratégicas únicas: **345**
+- Decisões PPO encontradas na auditoria: **1093** (timeline estruturada)
 
 As recomendações são contadas por snapshot; snapshots repetidos não são decisões independentes. As distribuições não representam correspondência ação-a-ação.
 
 ## Ações executadas pelo PPO
 
-- BUY: 436
-- BUY_XP: 47
-- CRAFT_AND_EQUIP: 52
-- EQUIP_FROM_INVENTORY: 17
-- MOVE_BENCH: 130
-- MOVE_BOARD: 107
-- PASS: 61
-- REROLL: 3
-- SELL: 200
+- BUY: 463
+- BUY_XP: 43
+- CRAFT_AND_EQUIP: 54
+- EQUIP_FROM_INVENTORY: 28
+- MOVE_BENCH: 119
+- MOVE_BOARD: 102
+- PASS: 49
+- REROLL: 4
+- SELL: 231
 
 ## Recomendações da Composition Intelligence
 
-- BUY_UNIT: 130
-- BUY_XP: 156
-- DEPLOY_OR_MOVE: 135
-- HOLD: 614
-- NONE: 708
+- BUY_UNIT: 127
+- BUY_XP: 162
+- DEPLOY_OR_MOVE: 185
+- HOLD: 668
+- NONE: 644
+- SELL_UNIT: 1
 
 ## Interpretação
 
