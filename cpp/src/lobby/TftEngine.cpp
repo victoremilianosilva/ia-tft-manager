@@ -3645,8 +3645,41 @@ struct TFTEngine::Impl {
                 evidence.composition_version = version;
                 evidence.round = round_id;
                 if (version > 0) {
-                    evidence.economy = ci::PlannerEvidenceAdapters::economic(strategic_context, economic_decision, version, round_id);
-                    evidence.board = ci::PlannerEvidenceAdapters::board(board_evaluation(i), version, round_id, round_id);
+                    evidence.economy = ci::PlannerEvidenceAdapters::economic(
+                        strategic_context, economic_decision, version, round_id);
+                    evidence.board = ci::PlannerEvidenceAdapters::board(
+                        board_evaluation(i), version, round_id, round_id);
+                    if (player_envs[i].item_engine) {
+                        ci::ItemPlayerState item_state;
+                        item_state.components = player_envs[i].item_engine->components();
+                        item_state.inventory = player_envs[i].item_engine->inventory();
+                        std::vector<ci::ItemUnitBinding> item_bindings;
+                        const auto append_item_binding = [&](const UnitInstance& unit) {
+                            const auto* definition = catalog->find_by_id(unit.champion_internal_id);
+                            if (!definition || unit.uuid.empty()) return;
+                            ci::items::UnitProfile profile;
+                            profile.uuid = unit.uuid;
+                            profile.star = unit.star;
+                            profile.role = definition->combat_profile.role;
+                            profile.frontline = definition->combat_profile.frontline;
+                            profile.backline = definition->combat_profile.backline;
+                            profile.attack_damage = definition->stats.attack_damage;
+                            profile.attack_speed = definition->stats.attack_speed;
+                            profile.ability_power = 0.0;
+                            profile.max_health = definition->stats.max_hp;
+                            profile.composition_fit = 0.5;
+                            profile.traits = definition->traits;
+                            profile.preferred_traits = info.core_traits;
+                            item_state.equipped_by_unit_uuid[unit.uuid] =
+                                player_envs[i].item_engine->equipped(unit.uuid);
+                            item_bindings.push_back({definition->internal_id, std::move(profile)});
+                        };
+                        for (const auto& unit : player_envs[i].board) if (unit) append_item_binding(*unit);
+                        for (const auto& unit : player_envs[i].bench) if (unit) append_item_binding(*unit);
+                        evidence.items = ci::PlannerEvidenceAdapters::item(
+                            *player_envs[i].item_engine, item_state, item_bindings,
+                            version, round_id, round_id);
+                    }
                 }
                 ci::CompositionActionEvaluation composition_actions;
                 if (active) {
