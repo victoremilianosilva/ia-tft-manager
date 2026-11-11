@@ -2782,7 +2782,7 @@ def main() -> int:
     markdown_documents["audit_composition_vs_ppo.md"] = (
         format_composition_vs_ppo(
             composition_records, report.get("decision_timeline", [])
-        ) + "\\n"
+        ) + "\n"
     )
     report["composition_intelligence_metrics"] = {
         "source_file": str(diagnostics_path),
