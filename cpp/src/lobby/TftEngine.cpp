@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <chrono>
 #include <cstdint>
 #include <fstream>
 #include <functional>
@@ -23,6 +24,7 @@
 
 #include "lobby/ChampionCatalog.hpp"
 #include "composition_intelligence/CompositionSourceAdapters.hpp"
+#include "composition_intelligence/StrategicContextBridge.hpp"
 #include "lobby/UnitInstanceFactory.hpp"
 #include "lobby/UnitPool.hpp"
 #include "lobby/EconomyEngine.hpp"
@@ -3749,6 +3751,24 @@ struct TFTEngine::Impl {
                     round_id, active, proposal, priorities, lineup, evidence,
                     composition_actions, published_transition);
                 auto diagnostic_json = diagnostic.to_json();
+
+                // Correlate strategic/economic context with the active CI version
+                // without feeding recommendations back into either planner.
+                ci::ContextBridgeInput bridge_input;
+                bridge_input.strategic = &strategic_context;
+                bridge_input.strategic_decision = &shadow_decision;
+                bridge_input.economic_decision = &economic_decision;
+                bridge_input.active_composition = &active;
+                bridge_input.match_id = episode_id;
+                bridge_input.expected_player_id = static_cast<std::int32_t>(i);
+                bridge_input.expected_round = round_id;
+                bridge_input.timestamp_unix_ms = static_cast<std::uint64_t>(
+                    std::chrono::duration_cast<std::chrono::milliseconds>(
+                        std::chrono::system_clock::now().time_since_epoch()).count());
+                bridge_input.sequence = composition_intelligence_sequence + 1;
+                const auto context_bridge =
+                    ci::StrategicContextBridge::adapt(bridge_input);
+                diagnostic_json["context_bridge"] = context_bridge.to_json();
                 diagnostic_json["player_id"] = static_cast<std::int32_t>(i);
                 diagnostic_json["player_sequence"] = diagnostic_json["sequence"];
                 diagnostic_json["sequence"] = ++composition_intelligence_sequence;
