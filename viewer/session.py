@@ -684,7 +684,6 @@ class ViewerSession:
     def close(self):
         self._flush_close_log()
         self._persist_composition_diagnostics()
-        self._write_composition_reports()
         if self.lobby is not None:
             self.lobby.close()
             self.lobby = None
