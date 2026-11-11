@@ -150,6 +150,13 @@ public:
             {"composition_id", lineup.composition_id}, {"composition_version", lineup.composition_version},
             {"stale", lineup.stale}, {"stale_reason", lineup.stale_reason},
             {"level", lineup.level}, {"board_capacity", lineup.board_capacity},
+            {"board_evidence", {{"available", lineup.board_evidence_available},
+                {"reason", lineup.board_evidence_reason},
+                {"frontline_count", lineup.observed_frontline_count},
+                {"carry_count", lineup.observed_carry_count},
+                {"exposed_carry_count", lineup.observed_exposed_carry_count},
+                {"missing_frontline_count", lineup.observed_missing_frontline_count},
+                {"missing_backline_count", lineup.observed_missing_backline_count}}},
             {"endgame_target_ids", lineup.endgame_target_ids},
             {"selected_board", lineup_json(lineup)},
             {"entries", lineup.entries}, {"exits", lineup.exits},
@@ -164,6 +171,10 @@ public:
             {"confidence_not_probability", actions.evaluation.confidence},
             {"reason_code", static_cast<int>(actions.evaluation.reason)},
             {"shadow_only", actions.evaluation.shadow_only},
+            {"evidence_consumption", {{"economy", actions.economy_evidence_consumed},
+                {"board_validated", actions.board_evidence_validated},
+                {"items", actions.item_evidence_consumed},
+                {"rejected", actions.evidence_rejected}}},
             {"candidates", nlohmann::json::array()}
         };
         for (const auto& a : actions.candidates) {
@@ -240,6 +251,8 @@ private:
     }
     static nlohmann::json metadata_json(const EvidenceSourceMetadata& m) {
         return {{"source", m.source}, {"source_version", m.source_version},
+            {"match_id", m.match_id}, {"player_id", m.player_id},
+            {"composition_id", m.composition_id},
             {"source_round", m.source_round}, {"expected_round", m.expected_round},
             {"quality", static_cast<int>(m.quality)}, {"available", m.available}, {"reason", m.reason}};
     }
@@ -252,7 +265,8 @@ private:
                 {"best_inventory_fit", u.best_inventory_fit},
                 {"has_equipped_items", u.has_equipped_items},
                 {"has_inventory_candidate", u.has_inventory_candidate}});
-        return {{"schema_version", e.schema_version}, {"composition_id", e.composition_id},
+        return {{"schema_version", e.schema_version}, {"match_id", e.match_id},
+            {"player_id", e.player_id}, {"composition_id", e.composition_id},
             {"composition_version", e.composition_version}, {"round", e.round},
             {"economy", {{"metadata", metadata_json(e.economy.metadata)}, {"gold", e.economy.gold},
                 {"level", e.economy.level}, {"xp", e.economy.xp}, {"xp_to_next", e.economy.xp_to_next},
