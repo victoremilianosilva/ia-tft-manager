@@ -28,7 +28,12 @@ def _read_table(path: Path, prefix: str) -> list[dict[str, str]]:
 
 
 def _number(row: dict[str, str], key: str) -> float | None:
-    value = row.get(key, "").strip()
+    raw = row.get(key)
+    if raw is None or raw == "":
+        return None
+    if isinstance(raw, (int, float)):
+        return float(raw)
+    value = str(raw).strip()
     if not value or value in {"—", "-"}:
         return None
     try:
