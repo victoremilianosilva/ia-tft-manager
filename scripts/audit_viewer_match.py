@@ -1765,11 +1765,15 @@ def audit_json(path: Path, doc: dict, report: dict, loop_window: int, comp_windo
     outcomes_start = len(report.setdefault("round_outcome_timeline", []))
     audit_decision_context(entries, player, report)
     document_match_id = doc.get("match_id")
-    if document_match_id:
-        for event in report["decision_timeline"][timeline_start:]:
+    for event in report["decision_timeline"][timeline_start:]:
+        event["source_file"] = path.name
+        if document_match_id:
             event["match_id"] = document_match_id
-        for outcome in report["round_outcome_timeline"][outcomes_start:]:
+    for outcome in report["round_outcome_timeline"][outcomes_start:]:
+        outcome["source_file"] = path.name
+        if document_match_id:
             outcome["match_id"] = document_match_id
+    if document_match_id:
         report.setdefault("session_metadata", {}).setdefault("match_id", document_match_id)
     report["log_files"].append(str(path))
 
