@@ -298,7 +298,7 @@ class OutcomeEvaluator:
             decisions_by_player_round.items(),
             key=lambda item: (
                 int(item[0][0]) if item[0][0].isdigit() else 999,
-                self._round_order(item[0][1]),
+                self.OutcomeEvaluator._round_order(item[0][1]),
             ),
         ):
             recommendation_counts, action_counts = Counter(), Counter()
