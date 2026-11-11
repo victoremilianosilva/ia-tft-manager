@@ -2737,7 +2737,7 @@ def split_markdown_into_three_parts(markdown: str) -> list[str]:
 
     if not markdown:
         return ["", "", ""]
-    boundaries = [m.start() for m in re.finditer(r"(?m)^#{2,3}\\s+.+$", markdown)]
+    boundaries = [m.start() for m in re.finditer(r"(?m)^#{2,3}\s+.+$", markdown)]
     if len(boundaries) < 2:
         raise ValueError("relatório não possui seções suficientes para divisão segura")
     total = len(markdown)
