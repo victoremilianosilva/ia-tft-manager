@@ -332,3 +332,47 @@ def test_integrated_report_preserves_original_and_normalized_taxonomies():
     markdown = format_integrated_audit_markdown(index)
     assert "PPO original | PPO normalizado | Evaluator original | Evaluator normalizado" in markdown
     assert "| PASS | HOLD | HOLD | HOLD | partial_compatibility |" in markdown
+
+
+
+def test_integrated_index_compares_inline_shadow_recommendation_without_temporal_snapshot():
+    event = _decision(action="BUY")
+    event["state_after"]["shadow_planning"].update({
+        "action_recommendation_name": "BUY_UNIT",
+        "action_recommended_champion_id": 42,
+    })
+    index = build_integrated_audit_index([event], [], [], match_id="match-a")
+
+    comparison = index["recommendation_vs_ppo"]["shadow_action_evaluator"]
+    assert comparison["compared"] == 1
+    assert comparison["matches"] == 1
+    assert comparison["divergences"] == 0
+    assert comparison["unavailable"] == 0
+    assert index["recommendation_vs_ppo"]["semantic_taxonomy"]["shadow_action_evaluator"]["direct_match"] == 1
+    assert index["recommendation_vs_ppo"]["semantic_examples"]["shadow_action_evaluator"][0]["correlation"] == "same_decision_event"
+
+
+def test_inline_shadow_recommendation_divergence_is_counted_semantically():
+    event = _decision(action="BUY")
+    event["state_after"]["shadow_planning"]["action_recommendation_name"] = "SELL_UNIT"
+    index = build_integrated_audit_index([event], [], [], match_id="match-a")
+
+    comparison = index["recommendation_vs_ppo"]["shadow_action_evaluator"]
+    assert comparison["compared"] == 1
+    assert comparison["matches"] == 0
+    assert comparison["divergences"] == 1
+    assert index["recommendation_vs_ppo"]["semantic_taxonomy"]["shadow_action_evaluator"]["incompatible"] == 1
+
+
+def test_inline_shadow_recommendation_missing_is_explicitly_unavailable():
+    index = build_integrated_audit_index([_decision(action="BUY")], [], [], match_id="match-a")
+
+    comparison = index["recommendation_vs_ppo"]["shadow_action_evaluator"]
+    assert comparison["compared"] == 0
+    assert comparison["unavailable"] == 1
+    assert index["recommendation_vs_ppo"]["semantic_taxonomy"]["shadow_action_evaluator"]["not_comparable"] == 1
+
+
+def test_evaluator_action_aliases_normalize_to_semantic_categories():
+    assert normalize_evaluator_action("BUY_EXPERIENCE")["semantic_category"] == "BUY_XP"
+    assert normalize_evaluator_action("REROLL_SHOP")["semantic_category"] == "REROLL"
