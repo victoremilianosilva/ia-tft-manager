@@ -9,7 +9,7 @@
 #include <utility>
 #include <vector>
 namespace tft::composition_intelligence {
-enum class EvidenceQuality { Missing, Stale, Valid, Partial };
+enum class EvidenceQuality { Missing, Stale, Partial, Invalid, Valid };
 struct EvidenceSourceMetadata {
  std::string source; std::uint64_t source_version{0}; std::uint64_t match_id{0};
  std::int32_t player_id{-1}; std::string composition_id;
@@ -53,7 +53,9 @@ public:
   const strategy::EconomicControlDecision& d,std::uint64_t version,std::uint32_t expected_round,
   std::uint64_t match_id=0,std::int32_t player_id=-1,const std::string& composition_id={}) {
   EconomicPlannerEvidence o;
-  o.metadata=make_metadata("EconomicController",version,c.round,expected_round,c.alive&&d.shadow_only&&c.player_id==player_id,match_id,player_id,composition_id);
+  o.metadata=make_metadata("EconomicController",version,c.round,expected_round,c.alive&&d.shadow_only,match_id,player_id,composition_id);
+  if(c.player_id!=player_id){o.metadata.available=false;o.metadata.quality=EvidenceQuality::Invalid;o.metadata.reason="player_id_mismatch";return o;}
+  if(!std::isfinite(d.survival_pressure)||!std::isfinite(d.board_pressure)||!std::isfinite(d.economy_pressure)||!std::isfinite(d.confidence)){o.metadata.available=false;o.metadata.quality=EvidenceQuality::Invalid;o.metadata.reason="non_finite_economic_metric";return o;}
   if(!o.metadata.available)return o;
   o.gold=c.gold;o.level=c.level;o.xp=c.xp;o.xp_to_next=c.xp_to_next;
   o.interest_if_resolved_now=c.interest_if_resolved_now;o.projected_next_round_income=c.projected_next_round_income;
@@ -70,6 +72,7 @@ public:
   std::uint64_t match_id=0,std::int32_t player_id=-1,const std::string& composition_id={}) {
   BoardPlannerEvidence o;o.metadata=make_metadata("BoardEvaluation",version,source_round,expected_round,r.unit_count>0,match_id,player_id,composition_id);
   if(!o.metadata.available)return o;
+  if(!std::isfinite(r.positional_score)||!std::isfinite(r.structural_score)||!std::isfinite(r.synergy_score)||!std::isfinite(r.total_score)||!std::isfinite(r.strategic_fit_score)||!std::isfinite(r.unit_quality_score)||!std::isfinite(r.trait_coherence_score)){o.metadata.available=false;o.metadata.quality=EvidenceQuality::Invalid;o.metadata.reason="non_finite_board_metric";return o;}
   o.positional_score=unit(r.positional_score);o.structural_score=unit(r.structural_score);
   o.synergy_score=unit(r.synergy_score);o.total_score=unit(r.total_score);
   o.strategic_fit_score=signed_unit(r.strategic_fit_score);o.unit_quality_score=unit(r.unit_quality_score);
