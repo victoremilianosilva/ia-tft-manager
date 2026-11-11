@@ -2795,6 +2795,38 @@ def main() -> int:
         "parse_errors": composition_report["parse_errors"],
     }
 
+    # One offline correlation index joins the two generations without invoking
+    # planners, rewriting source logs, or treating correlation as causality.
+    try:
+        from viewer.integrated_audit import (
+            build_integrated_audit_index, format_integrated_audit_markdown,
+        )
+    except ImportError:
+        from integrated_audit import (
+            build_integrated_audit_index, format_integrated_audit_markdown,
+        )
+    session_match_id = (report.get("session_metadata") or {}).get("match_id")
+    integrated_index = build_integrated_audit_index(
+        report.get("decision_timeline", []),
+        report.get("round_outcome_timeline", []),
+        composition_records,
+        composition_errors,
+        match_id=session_match_id,
+    )
+    report["integrated_audit_index"] = integrated_index
+    report["integrated_audit_metrics"] = {
+        "schema_version": integrated_index["schema_version"],
+        "group_count": integrated_index["group_count"],
+        "players": integrated_index["players"],
+        "missing_producers": integrated_index["missing_producers"],
+        "composition_envelope_missing_count": integrated_index["composition_envelope_missing_count"],
+        "composition_duplicate_count": integrated_index["composition_duplicate_count"],
+        "out_of_order_sequence_count": len(integrated_index["out_of_order_sequences"]),
+        "incompatible_schema_count": len(integrated_index["incompatible_schemas"]),
+        "recommendation_vs_ppo": integrated_index["recommendation_vs_ppo"],
+    }
+    markdown_documents["audit_integrado.md"] = format_integrated_audit_markdown(integrated_index)
+
     report_for_json = dict(report)
     json_path.write_text(json.dumps(report_for_json, ensure_ascii=False, indent=2), encoding="utf-8")
 
