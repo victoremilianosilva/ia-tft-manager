@@ -2821,7 +2821,9 @@ def main() -> int:
         "missing_producers": integrated_index["missing_producers"],
         "composition_envelope_missing_count": integrated_index["composition_envelope_missing_count"],
         "composition_duplicate_count": integrated_index["composition_duplicate_count"],
+        "player_log_duplicate_count": integrated_index["player_log_duplicate_count"],
         "out_of_order_sequence_count": len(integrated_index["out_of_order_sequences"]),
+        "sequence_gap_count": len(integrated_index["sequence_gaps"]),
         "incompatible_schema_count": len(integrated_index["incompatible_schemas"]),
         "recommendation_vs_ppo": integrated_index["recommendation_vs_ppo"],
     }
