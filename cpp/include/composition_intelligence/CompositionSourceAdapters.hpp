@@ -20,16 +20,10 @@ struct CompositionAdapterResult {
 
 namespace adapter_detail {
 inline std::string set_number(const std::string& value) {
-    auto marker=value.find("TFTSet");
-    std::size_t begin=marker==std::string::npos ? std::string::npos : marker+6;
-    if (begin==std::string::npos && value.rfind("DA_",0)==0) begin=3;
-    if (begin==std::string::npos) return {};
-    auto end=begin;
-    while(end<value.size() && std::isdigit(static_cast<unsigned char>(value[end]))) ++end;
-    return end>begin ? value.substr(begin,end-begin) : std::string{};
+    return composition_set_number(value);
 }
 inline std::string champion_set(const tft::ChampionDefinition& c) {
-    auto s=set_number(c.api_name); return s.empty()?set_number(c.character_name):s;
+    return composition_champion_set(c.api_name, c.character_name);
 }
 inline bool compatible_set(const std::string& set,const std::vector<tft::ChampionDefinition>& pool) {
     if(set.empty()) return false;
