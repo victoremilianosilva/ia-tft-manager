@@ -19,7 +19,7 @@ int main() {
     assert(first.sequence == 1 && first.stale);
     auto json = first.to_json();
     assert(json["classification"]["inferred"].size() == 5);
-    assert(json["diagnostics"]["action_recommendation"]["shadow_only"] == false);
+    assert(json["diagnostics"]["action_recommendation"]["shadow_only"] == true);
     std::ostringstream stream;
     first.write_jsonl(stream);
     assert(!stream.str().empty() && stream.str().back() == '\n');
