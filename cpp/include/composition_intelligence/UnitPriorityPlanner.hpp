@@ -111,6 +111,22 @@ public:
             return out;
         }
 
+        const PlannerEvidenceSnapshot* accepted_evidence = nullptr;
+        if (context.planner_evidence) {
+            const auto& snapshot = *context.planner_evidence;
+            if (PlannerEvidenceAdapters::snapshot_identity_matches(snapshot, context.match_id,
+                    context.player_id, active->candidate.composition_id, active->version, context.round)) {
+                accepted_evidence = &snapshot;
+                if (PlannerEvidenceAdapters::source_matches(snapshot.board.metadata, context.match_id,
+                        context.player_id, active->candidate.composition_id, active->version, context.round))
+                    out.evidence_consumed.push_back("BoardEvaluation:global_board_context");
+                else out.evidence_rejected.push_back("BoardEvaluation:" + snapshot.board.metadata.reason);
+                if (PlannerEvidenceAdapters::source_matches(snapshot.items.metadata, context.match_id,
+                        context.player_id, active->candidate.composition_id, active->version, context.round))
+                    out.evidence_consumed.push_back("ItemEngine:equipped_item_risk");
+                else out.evidence_rejected.push_back("ItemEngine:" + snapshot.items.metadata.reason);
+            } else out.evidence_rejected.push_back("PlannerEvidenceSnapshot:identity_mismatch");
+        }
         std::unordered_map<std::int32_t, const UnitPriorityOwnedUnit*> owned;
         for (const auto& unit : context.owned_units) {
             if (unit.champion_id < 0 || unit.copies <= 0) continue;
