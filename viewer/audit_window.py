@@ -350,7 +350,8 @@ class AuditWindow(QMainWindow):
         integrated_metrics = report.get("integrated_audit_metrics") or {}
         producer_labels = {
             "strategic_planner": "Strategic Planner",
-            "economy_observations": "Economy",
+            "economic_controller": "Economic Controller",
+            "economy_evidence": "Economy evidence",
             "composition_intelligence": "Composition Intelligence",
             "action_evaluator_baseline": "Action Evaluator baseline",
             "contextual_action_evaluator": "Contextual Action Evaluator",
