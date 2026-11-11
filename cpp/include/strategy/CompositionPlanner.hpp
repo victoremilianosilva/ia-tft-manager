@@ -438,7 +438,7 @@ public:
                         return champion.internal_id == id;
                     });
                 if (found != pool.end()) {
-                    native.set_id = composition_intelligence::adapter_detail::champion_set(*found);
+                    native.set_id = composition_intelligence::composition_champion_set(found->api_name, found->character_name);
                     if (!native.set_id.empty()) break;
                 }
             }
