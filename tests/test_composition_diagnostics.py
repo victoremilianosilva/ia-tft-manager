@@ -137,6 +137,6 @@ def test_composition_vs_ppo_falls_back_to_text_log_action_counts():
         {"Jogador 1": {"action_counts": {"BUY": 3, "PASS": 2}}},
     )
 
-    assert "5 (reconstrução dos logs textuais)" in rendered
+    assert "**5** (reconstrução dos logs textuais)" in rendered
     assert "BUY: 3" in rendered
     assert "PASS: 2" in rendered
