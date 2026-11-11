@@ -431,7 +431,6 @@ def build_integrated_audit_index(
                 quality_name == "valid" or (not quality_name and metadata.get("quality") == 2)
             )
             if is_valid:
-                producer_counts[f"{domain}_evidence_valid"] += 1
                 valid_key = "item_evidence_valid" if domain == "items" else f"{domain}_evidence_valid"
                 producer_counts[valid_key] += 1
             if domain == "economy":
