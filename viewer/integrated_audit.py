@@ -33,7 +33,7 @@ def _round(value: Any) -> int | None:
     try:
         return int(value)
     except (TypeError, ValueError):
-        match = re.fullmatch(r"\\s*(\\d+)\\s*-\\s*(\\d+)\\s*", str(value or ""))
+        match = re.fullmatch(r"\s*(\d+)\s*-\s*(\d+)\s*", str(value or ""))
         if not match:
             return None
         stage, round_in_stage = (int(part) for part in match.groups())
