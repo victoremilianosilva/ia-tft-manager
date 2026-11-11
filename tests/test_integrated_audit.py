@@ -238,3 +238,28 @@ def test_evaluator_snapshot_outside_timestamp_window_is_unavailable():
     )
     assert index["recommendation_vs_ppo"]["baseline"]["compared"] == 0
     assert index["recommendation_vs_ppo"]["baseline"]["unavailable"] == 1
+
+
+
+def test_same_player_sequence_with_different_payload_is_preserved_and_flagged():
+    first = _decision(action="BUY")
+    conflicting = _decision(action="SELL")
+    index = build_integrated_audit_index(
+        [first, conflicting], [], [], match_id="match-a"
+    )
+    assert index["player_log_duplicate_count"] == 1
+    assert index["player_sequence_conflict_count"] == 1
+    assert index["groups"][0]["ppo_action_count"] == 2
+
+
+def test_same_composition_sequence_with_different_payload_is_preserved_and_flagged():
+    first = _composition(sequence=1)
+    conflicting = _composition(sequence=1)
+    conflicting["composition_version"] = 5
+    conflicting["context_bridge"]["metadata"]["composition_version"] = 5
+    index = build_integrated_audit_index(
+        [], [], [first, conflicting], match_id="match-a"
+    )
+    assert index["composition_duplicate_count"] == 1
+    assert index["composition_sequence_conflict_count"] == 1
+    assert index["groups"][0]["composition_snapshot_count"] == 2
