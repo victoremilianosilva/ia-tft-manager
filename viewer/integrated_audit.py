@@ -4,6 +4,7 @@ from __future__ import annotations
 from collections import Counter, defaultdict
 from datetime import datetime
 from typing import Any
+import json
 import re
 
 
@@ -147,10 +148,12 @@ def build_integrated_audit_index(
     missing_envelope = []
     bridge_identity_mismatches = []
     duplicate_sequences = []
+    player_sequence_conflicts = []
+    composition_sequence_conflicts = []
     out_of_order_sequences = []
     sequence_by_player: dict[tuple[str | None, int], list[int]] = defaultdict(list)
-    seen_comp_keys: set[tuple] = set()
-    seen_player_event_keys: set[tuple] = set()
+    seen_comp_keys: dict[tuple, str] = {}
+    seen_player_event_keys: dict[tuple, str] = {}
     player_duplicate_count = 0
     global_sequences_by_match: dict[str, list[int]] = defaultdict(list)
     duplicate_comp_count = 0
@@ -182,10 +185,17 @@ def build_integrated_audit_index(
         event_sequence = event.get("sequence_id")
         if isinstance(event_sequence, int):
             event_key = (event_match, pid, event_sequence)
+            signature = json.dumps(event, sort_keys=True, ensure_ascii=False, default=str)
             if event_key in seen_player_event_keys:
                 player_duplicate_count += 1
-                continue
-            seen_player_event_keys.add(event_key)
+                if seen_player_event_keys[event_key] == signature:
+                    continue
+                player_sequence_conflicts.append({
+                    "match_id": event_match, "player_id": pid,
+                    "sequence": event_sequence, "conflict": "same_sequence_different_payload",
+                })
+            else:
+                seen_player_event_keys[event_key] = signature
         group = group_for(pid, rnd, event_match)
         action = str(event.get("action_name") or event.get("raw_action") or "UNKNOWN").upper()
         category = PPO_ACTION_CATEGORIES.get(action)
@@ -311,11 +321,18 @@ def build_integrated_audit_index(
                     })
         if isinstance(sequence, int):
             key = (str(record_match), sequence)
+            signature = json.dumps(record, sort_keys=True, ensure_ascii=False, default=str)
             if key in seen_comp_keys:
                 duplicate_comp_count += 1
                 duplicate_sequences.append({"player_id": pid, "sequence": sequence})
-                continue
-            seen_comp_keys.add(key)
+                if seen_comp_keys[key] == signature:
+                    continue
+                composition_sequence_conflicts.append({
+                    "match_id": str(record_match), "player_id": pid,
+                    "sequence": sequence, "conflict": "same_sequence_different_payload",
+                })
+            else:
+                seen_comp_keys[key] = signature
             sequence_by_player[(str(record_match), pid)].append(sequence)
             global_sequences_by_match[str(record_match)].append(sequence)
         group = group_for(pid, rnd, str(record_match))
@@ -600,6 +617,10 @@ def build_integrated_audit_index(
         "bridge_identity_mismatches": bridge_identity_mismatches[:100],
         "composition_duplicate_count": duplicate_comp_count,
         "player_log_duplicate_count": player_duplicate_count,
+        "player_sequence_conflict_count": len(player_sequence_conflicts),
+        "player_sequence_conflicts": player_sequence_conflicts[:100],
+        "composition_sequence_conflict_count": len(composition_sequence_conflicts),
+        "composition_sequence_conflicts": composition_sequence_conflicts[:100],
         "evaluator_comparison_count": evaluator_comparison_count,
         "evaluator_divergence_count": evaluator_divergence_count,
         "duplicate_sequences": duplicate_sequences[:100],
@@ -664,6 +685,8 @@ def format_integrated_audit_markdown(index: dict) -> str:
         f"- Inversões de sequência: {len(index.get('out_of_order_sequences', []))}",
         f"- Lacunas de sequência: {sum(item.get('count', 0) for item in index.get('sequence_gaps', []))}",
         f"- Eventos duplicados no log de jogadores: {index.get('player_log_duplicate_count', 0)}",
+        f"- Conflitos de sequência no log de jogadores: {index.get('player_sequence_conflict_count', 0)}",
+        f"- Conflitos de sequência Composition Intelligence: {index.get('composition_sequence_conflict_count', 0)}",
         f"- Comparações baseline/contextual disponíveis: {index.get('evaluator_comparison_count', 0)}",
         f"- Divergências baseline/contextual: {index.get('evaluator_divergence_count', 0)}",
         f"- Registros sem versão (legado): {index.get('legacy_schema_count', 0)}",
