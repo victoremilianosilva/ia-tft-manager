@@ -78,9 +78,10 @@ void native_planner_exports_pre_opgg_candidate(){
  assert(plan.native_snapshot.set_id=="18");
  assert(plan.native_snapshot.source_reference=="composition-planner/native-before-opgg");
  assert(!plan.native_snapshot.units.empty());
- assert(plan.native_candidates.size()==1);
- assert(plan.native_candidates.front().source==CompositionSource::Native);
- assert(plan.native_candidates.front().composition_id==plan.native_snapshot.composition_id);
+ const auto adapted=NativeCompositionAdapter::adapt(plan.native_snapshot,champions);
+ assert(adapted.candidates.size()==1);
+ assert(adapted.candidates.front().source==CompositionSource::Native);
+ assert(adapted.candidates.front().composition_id==plan.native_snapshot.composition_id);
 }
 }
 int main(){opgg_maps_to_common_contract();opgg_rejects_wrong_set_and_low_coverage();opgg_rejects_duplicate_composition_ids();native_adapter_uses_neutral_snapshot();native_adapter_rejects_unknown_or_wrong_set_units();opgg_failure_does_not_block_native();native_planner_exports_pre_opgg_candidate();std::cout<<"Composition source adapter tests passed\n";return 0;}
