@@ -104,19 +104,19 @@ public:
   if(bindings.empty()){o.metadata.quality=EvidenceQuality::Partial;o.metadata.reason="inventory_available_but_no_unit_bindings";}
   return o;
  }
- static bool identity_matches(const PlannerEvidenceSnapshot& snapshot,
+ static bool snapshot_identity_matches(const PlannerEvidenceSnapshot& snapshot,
   std::uint64_t match_id,std::int32_t player_id,const std::string& composition_id,
   std::uint64_t composition_version,std::uint32_t round) {
-  if(snapshot.match_id!=match_id||snapshot.player_id!=player_id||
-     snapshot.composition_id!=composition_id||snapshot.composition_version!=composition_version||
-     snapshot.round!=round)return false;
-  const auto source_matches=[&](const EvidenceSourceMetadata& m) {
-   return m.available&&m.match_id==match_id&&m.player_id==player_id&&
-    m.composition_id==composition_id&&m.source_version==composition_version&&
-    m.source_round==round&&m.expected_round==round;
-  };
-  return source_matches(snapshot.economy.metadata)&&
-   source_matches(snapshot.board.metadata)&&source_matches(snapshot.items.metadata);
+  return snapshot.match_id==match_id&&snapshot.player_id==player_id&&
+   snapshot.composition_id==composition_id&&snapshot.composition_version==composition_version&&
+   snapshot.round==round;
+ }
+ static bool source_matches(const EvidenceSourceMetadata& m,
+  std::uint64_t match_id,std::int32_t player_id,const std::string& composition_id,
+  std::uint64_t composition_version,std::uint32_t round) {
+  return m.available&&m.match_id==match_id&&m.player_id==player_id&&
+   m.composition_id==composition_id&&m.source_version==composition_version&&
+   m.source_round==round&&m.expected_round==round&&m.quality==EvidenceQuality::Valid;
  }
  static PlannerEvidenceSnapshot combine(std::string id,std::uint64_t version,std::uint32_t round,
   EconomicPlannerEvidence economy,BoardPlannerEvidence board,ItemPlannerEvidence item) {
