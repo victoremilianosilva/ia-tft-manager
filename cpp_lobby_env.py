@@ -172,6 +172,10 @@ class CppTFTLobbyWrapper:
         }
         return observations, rewards, bool(result.get("lobby_done", False)), info
 
+    def get_champion_id_map(self):
+        """Return apiName -> internal_id from the catalog loaded by native C++."""
+        return dict(self._engine.get_champion_id_map())
+
     def get_action_masks(self):
         masks = self._engine.get_action_masks()
         if os.environ.get("TFT_ABLATE_ITEM_ACTIONS") != "1":
