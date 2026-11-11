@@ -3006,11 +3006,15 @@ struct TFTEngine::Impl {
                     : "Native candidate not generated: composition direction is unavailable");
         }
 
-        // Strategic Planner shadow evaluation. It reads the same live board,
-        // shop, item and composition data but only writes audit diagnostics.
-        // The existing composition direction, planned lineup, PPO observations,
-        // masks, rewards and executed actions remain authoritative and unchanged.
+        // BEGIN SHADOW-ONLY EVALUATION BOUNDARY.
+        // Every operation in this block is diagnostic-only. Exceptions must never
+        // escape update_strategy() into the PPO transition/rollout path.
+        try {
         {
+            // Strategic Planner shadow evaluation. It reads the same live board,
+            // shop, item and composition data but only writes audit diagnostics.
+            // The existing composition direction, planned lineup, PPO observations,
+            // masks, rewards and executed actions remain authoritative and unchanged.
             strategy::StrategicSharedContext strategic_context;
             strategic_context.player_id = static_cast<std::int32_t>(i);
             strategic_context.round = static_cast<std::uint32_t>(current_round);
@@ -4083,6 +4087,17 @@ struct TFTEngine::Impl {
                 strategic_commitment.selected_round;
             info.strategic_shadow_only = shadow_decision.shadow_only;
         }
+        } catch (const std::exception&) {
+            // Keep the primary game/PPO transition alive when a Shadow planner,
+            // adapter or diagnostic dependency fails. These flags are diagnostics
+            // only and are not consumed by observations, masks, rewards or actions.
+            info.strategic_shadow_only = false;
+            info.economic_shadow_only = false;
+        } catch (...) {
+            info.strategic_shadow_only = false;
+            info.economic_shadow_only = false;
+        }
+        // END SHADOW-ONLY EVALUATION BOUNDARY.
 
         // Paridade com StrategyManager.compute_strategy_confidence().
         double state_confidence = 0.5;
