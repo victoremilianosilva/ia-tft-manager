@@ -167,7 +167,7 @@ def test_sequence_gaps_are_reported_per_match():
         match_id="match-a",
     )
     assert index["sequence_gaps"] == [
-        {"match_id": "match-a", "missing": [2]}
+        {"match_id": "match-a", "count": 1, "missing": [2]}
     ]
 
 
