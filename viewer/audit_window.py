@@ -369,6 +369,7 @@ class AuditWindow(QMainWindow):
             f"Schema: v{integrated.get('schema_version', 'unavailable')} | grupos jogador/round: {integrated.get('group_count', 0)}",
             f"Produtores ausentes: {', '.join(integrated_metrics.get('missing_producers', [])) or 'nenhum'}",
             f"Envelopes incompletos: {integrated_metrics.get('composition_envelope_missing_count', 0)} | "
+            f"Context Bridge identity mismatches: {integrated_metrics.get('bridge_identity_mismatch_count', 0)} | "
             f"duplicatas: {integrated_metrics.get('composition_duplicate_count', 0)} | "
             f"inversões de sequência: {integrated_metrics.get('out_of_order_sequence_count', 0)} | "
             f"lacunas: {integrated_metrics.get('sequence_gap_count', 0)} | "
