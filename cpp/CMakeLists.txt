@@ -413,6 +413,14 @@ if(BUILD_TESTING)
         COMMAND test_strategic_planner
     )
 
+    add_executable(test_initial_strategic_direction_discovery tests/test_initial_strategic_direction_discovery.cpp)
+    configure_tft_module(test_initial_strategic_direction_discovery)
+    enable_tft_test_assertions(test_initial_strategic_direction_discovery)
+    add_test(
+        NAME initial_strategic_direction_discovery
+        COMMAND test_initial_strategic_direction_discovery
+    )
+
     add_executable(test_strategic_anchor_contracts tests/test_strategic_anchor_contracts.cpp)
     configure_tft_module(test_strategic_anchor_contracts)
     enable_tft_test_assertions(test_strategic_anchor_contracts)
