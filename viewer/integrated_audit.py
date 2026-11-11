@@ -212,6 +212,7 @@ def build_integrated_audit_index(
             group["strategic_reviews"].append({
                 "source": "shadow_planning",
                 "sequence_id": event.get("sequence_id"),
+                "source_reference": {"file": f"player_{pid + 1}_log.json", "sequence_id": event.get("sequence_id")},
                 "step": event.get("step"),
                 "timestamp": event.get("timestamp"),
                 "decision": shadow.get("strategic_decision_name"),
@@ -317,6 +318,7 @@ def build_integrated_audit_index(
             group["strategic_reviews"].append({
                 "source": "context_bridge",
                 "sequence": sequence,
+                "source_reference": {"file": "composition_diagnostics.jsonl", "sequence": sequence},
                 "decision": strategic_value.get("value"),
                 "quality": strategic_value.get("quality"),
                 "origin": strategic_value.get("origin"),
@@ -357,6 +359,11 @@ def build_integrated_audit_index(
         group = group_for(pid, rnd, outcome_match)
         group["outcomes"].append({
             "source": "round_outcome_timeline",
+            "source_reference": {
+                "file": f"player_{pid + 1}_log.json",
+                "sequence_id": outcome.get("sequence_id"),
+                "step": outcome.get("step"),
+            },
             "step": outcome.get("step"),
             "sequence_id": outcome.get("sequence_id"),
             "placement": outcome.get("placement"),
@@ -449,6 +456,14 @@ def build_integrated_audit_index(
             "same_player_round" if group["correlated"] else "partial_or_unavailable"
         )
 
+    sequence_gap_report = []
+    for sequence_match, values in sorted(global_sequences_by_match.items()):
+        missing = sorted(set(range(1, max(values) + 1)) - set(values)) if values else []
+        if missing:
+            sequence_gap_report.append({
+                "match_id": sequence_match, "count": len(missing), "missing": missing[:100],
+            })
+
     players = sorted({group["player_id"] for group in groups.values()})
     source_presence = {
         "strategic_planner": producer_counts["strategic_planner"] > 0,
@@ -479,13 +494,7 @@ def build_integrated_audit_index(
         "evaluator_divergence_count": evaluator_divergence_count,
         "duplicate_sequences": duplicate_sequences[:100],
         "out_of_order_sequences": out_of_order_sequences[:100],
-        "sequence_gaps": [
-            {"match_id": sequence_match, "missing": sorted(
-                set(range(1, max(values) + 1)) - set(values)
-            )[:100]}
-            for sequence_match, values in sorted(global_sequences_by_match.items())
-            if values and set(range(1, max(values) + 1)) - set(values)
-        ],
+        "sequence_gaps": sequence_gap_report,
         "incompatible_schemas": incompatible_schemas[:100],
         "legacy_schema_count": legacy_schema_count,
         "parse_errors": errors,
@@ -535,7 +544,7 @@ def format_integrated_audit_markdown(index: dict) -> str:
         f"- Envelopes de composição incompletos: {index.get('composition_envelope_missing_count', 0)}",
         f"- Sequências duplicadas: {index.get('composition_duplicate_count', 0)}",
         f"- Inversões de sequência: {len(index.get('out_of_order_sequences', []))}",
-        f"- Lacunas de sequência: {len(index.get('sequence_gaps', []))}",
+        f"- Lacunas de sequência: {sum(item.get('count', 0) for item in index.get('sequence_gaps', []))}",
         f"- Eventos duplicados no log de jogadores: {index.get('player_log_duplicate_count', 0)}",
         f"- Comparações baseline/contextual disponíveis: {index.get('evaluator_comparison_count', 0)}",
         f"- Divergências baseline/contextual: {index.get('evaluator_divergence_count', 0)}",
