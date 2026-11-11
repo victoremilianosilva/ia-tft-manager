@@ -110,6 +110,7 @@ class ViewerSession:
         self.finished = False
         self._player_log_writer: PlayerJsonLogWriter | None = None
         self._session_dir: Path | None = None
+        self._composition_diagnostics_written = 0
         self._metadata_path: Path | None = None
         self._sequence = 0
         self._rng = torch.Generator(device="cpu")
@@ -216,6 +217,8 @@ class ViewerSession:
             session_dir = out / f"match-{datetime.now().strftime('%Y%m%d-%H%M%S')}-{self.match_id[:8]}"
             session_dir.mkdir(parents=True, exist_ok=False)
             self._session_dir = session_dir
+            self._composition_diagnostics_written = 0
+            self._persist_composition_diagnostics()
             self._metadata_path = session_dir / "metadata.json"
             log_files = [f"player_{player_id + 1}_log.tft" for player_id in range(8)]
             structured_log_files = [f"player_{player_id + 1}_log.json" for player_id in range(8)]
@@ -267,7 +270,20 @@ class ViewerSession:
             except (TypeError, ValueError):
                 continue
             player["strategy_info"] = strategies[player_id] if 0 <= player_id < len(strategies) else {}
+        self._persist_composition_diagnostics()
         return self.audit_snapshot
+
+    def _persist_composition_diagnostics(self):
+        if self.lobby is None or self._session_dir is None:
+            return
+        lines = self.lobby.get_composition_diagnostics_jsonl()
+        if self._composition_diagnostics_written >= len(lines):
+            return
+        path = self._session_dir / "composition_diagnostics.jsonl"
+        with path.open("a", encoding="utf-8") as stream:
+            for line in lines[self._composition_diagnostics_written:]:
+                stream.write(str(line).rstrip("\\n") + "\\n")
+        self._composition_diagnostics_written = len(lines)
 
     def _snapshot_for_event(self):
         return {
