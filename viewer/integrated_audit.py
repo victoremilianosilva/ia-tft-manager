@@ -22,6 +22,66 @@ PPO_ACTION_CATEGORIES = {
     "PASS": "HOLD", "HOLD": "HOLD",
 }
 
+# Canonical semantic taxonomy for observational comparisons. Original labels are
+# always retained in the exported records; mappings never change PPO behavior.
+PPO_SEMANTIC_TAXONOMY = {
+    "BUY": ("BUY_UNIT", "direct"),
+    "BUY_UNIT": ("BUY_UNIT", "direct"),
+    "SELL": ("SELL_UNIT", "direct"),
+    "SELL_UNIT": ("SELL_UNIT", "direct"),
+    "BUY_XP": ("BUY_XP", "direct"),
+    "BUY_EXPERIENCE": ("BUY_XP", "direct"),
+    "REROLL": ("REROLL", "direct"),
+    "REROLL_SHOP": ("REROLL", "direct"),
+    "MOVE_BOARD": ("DEPLOY_OR_MOVE", "partial"),
+    "MOVE_BENCH": ("DEPLOY_OR_MOVE", "partial"),
+    "MOVE": ("DEPLOY_OR_MOVE", "partial"),
+    "PASS": ("HOLD", "partial"),
+    "HOLD": ("HOLD", "partial"),
+}
+EVALUATOR_SEMANTIC_TAXONOMY = {
+    "BUY_UNIT": "BUY_UNIT", "BUY": "BUY_UNIT",
+    "SELL": "SELL_UNIT", "SELL_UNIT": "SELL_UNIT",
+    "BUY_XP": "BUY_XP", "REROLL": "REROLL",
+    "MOVE": "DEPLOY_OR_MOVE", "DEPLOY_OR_MOVE": "DEPLOY_OR_MOVE",
+    "HOLD": "HOLD",
+}
+
+
+def normalize_ppo_action(raw_action: Any) -> dict:
+    original = str(raw_action or "UNKNOWN").upper()
+    mapped = PPO_SEMANTIC_TAXONOMY.get(original)
+    return {
+        "original": original,
+        "semantic_category": mapped[0] if mapped else None,
+        "mapping_quality": mapped[1] if mapped else "not_comparable",
+        "comparability": "comparable" if mapped else "not_comparable",
+    }
+
+
+def normalize_evaluator_action(raw_action: Any) -> dict:
+    original = str(raw_action or "UNKNOWN").upper()
+    semantic = EVALUATOR_SEMANTIC_TAXONOMY.get(original)
+    return {
+        "original": original,
+        "semantic_category": semantic,
+        "mapping_quality": "direct" if semantic else "not_comparable",
+        "comparability": "comparable" if semantic else "not_comparable",
+    }
+
+
+def classify_semantic_pair(ppo_normalized: dict, evaluator_normalized: dict) -> str:
+    ppo_category = ppo_normalized.get("semantic_category")
+    evaluator_category = evaluator_normalized.get("semantic_category")
+    if not ppo_category or not evaluator_category:
+        return "not_comparable"
+    if ppo_category != evaluator_category:
+        return "incompatible"
+    if ppo_normalized.get("mapping_quality") != "direct":
+        return "partial_compatibility"
+    return "direct_match"
+
+
 
 def _player_id(value: Any) -> int | None:
     if isinstance(value, int) and not isinstance(value, bool):
@@ -219,6 +279,7 @@ def build_integrated_audit_index(
             "timestamp": event.get("timestamp"),
             "action": action,
             "normalized_category": category,
+            "semantic_normalization": normalize_ppo_action(action),
             "strategy": event.get("strategy"),
             "strategy_reason": event.get("strategy_reason"),
             "source_payload": event.get("source_payload") or {
@@ -485,6 +546,12 @@ def build_integrated_audit_index(
         "contextual": {"compared": 0, "matches": 0, "divergences": 0, "unavailable": 0},
         "method": "nearest timestamp within same player/round and at most 30 seconds; otherwise unavailable",
         "policy_action_is_not_ground_truth": True,
+        "semantic_taxonomy": {
+            source: {"direct_match": 0, "partial_compatibility": 0, "incompatible": 0, "not_comparable": 0}
+            for source in ("baseline", "contextual")
+        },
+        "semantic_examples": {"baseline": [], "contextual": []},
+        "taxonomy_version": 1,
     }
     for key, events in player_decisions.items():
         event_match, pid, rnd = key
@@ -520,6 +587,7 @@ def build_integrated_audit_index(
                 comparison["contextual"]["unavailable"] += 1
                 continue
             recommendations = _recommendations(record)
+            ppo_semantic = event.get("semantic_normalization") or normalize_ppo_action(action)
             for source in ("baseline", "contextual"):
                 recommendation = recommendations[source]
                 if actual is None or recommendation is None or not recommendation.get("available"):
@@ -530,6 +598,20 @@ def build_integrated_audit_index(
                     comparison[source]["matches"] += 1
                 else:
                     comparison[source]["divergences"] += 1
+
+                evaluator_semantic = normalize_evaluator_action(recommendation.get("category"))
+                classification = classify_semantic_pair(ppo_semantic, evaluator_semantic)
+                comparison["semantic_taxonomy"][source][classification] += 1
+                if len(comparison["semantic_examples"][source]) < 20:
+                    comparison["semantic_examples"][source].append({
+                        "player_id": pid, "round": rnd,
+                        "ppo_original": action,
+                        "ppo_semantic": ppo_semantic.get("semantic_category"),
+                        "evaluator_original": recommendation.get("category"),
+                        "evaluator_semantic": evaluator_semantic.get("semantic_category"),
+                        "classification": classification,
+                        "timestamp_delta_ms": abs(nearest_time - event_time),
+                    })
 
     for group in groups.values():
         observations = group["strategic_reviews"]
@@ -635,6 +717,7 @@ def build_integrated_audit_index(
             "Associação por match/player/round não demonstra causalidade.",
             "Comparação com PPO usa a ação observada no log e a recomendação temporalmente mais próxima no mesmo jogador/round.",
             "Ação PPO não é ground truth; concordância não é métrica de qualidade.",
+            "Taxonomia semântica v1 é uma relação diagnóstica; compatibilidade parcial não equivale a execução idêntica.",
             "Snapshots sem identidade ou timestamp suficiente permanecem unavailable e não são reconstruídos.",
             "Sessões antigas podem não conter o envelope completo; são preservadas como dados legados não correlacionáveis.",
             "Fontes ausentes, stale, partial ou invalid não são convertidas em zero nem substituídas por decisões artificiais.",
@@ -697,6 +780,12 @@ def format_integrated_audit_markdown(index: dict) -> str:
         "## Comparação observacional com PPO",
         "",
         "| Evaluator | Comparáveis | Concordâncias | Divergências | Indisponíveis |",
+        "",
+        "### Comparação com taxonomia semântica normalizada",
+        "",
+        f"- Versão da taxonomia: v{index.get('recommendation_vs_ppo', {}).get('taxonomy_version', 1)}",
+        "| Evaluator | Correspondência direta | Compatibilidade parcial | Incompatibilidade | Não comparável |",
+        "|---|---:|---:|---:|---:|",
         "|---|---:|---:|---:|---:|",
     ]
     for key, label in (("baseline", "Baseline"), ("contextual", "Contextual")):
@@ -705,6 +794,24 @@ def format_integrated_audit_markdown(index: dict) -> str:
             f"| {label} | {data.get('compared', 0)} | {data.get('matches', 0)} | "
             f"{data.get('divergences', 0)} | {data.get('unavailable', 0)} |"
         )
+    for key, label in (("baseline", "Baseline"), ("contextual", "Contextual")):
+        data = index.get("recommendation_vs_ppo", {}).get("semantic_taxonomy", {}).get(key, {})
+        lines.append(
+            f"| {label} | {data.get('direct_match', 0)} | {data.get('partial_compatibility', 0)} | "
+            f"{data.get('incompatible', 0)} | {data.get('not_comparable', 0)} |"
+        )
+    for key, label in (("baseline", "Baseline"), ("contextual", "Contextual")):
+        examples = index.get("recommendation_vs_ppo", {}).get("semantic_examples", {}).get(key, [])
+        if examples:
+            lines += ["", f"#### Exemplos — {label}", "",
+                      "| PPO original | PPO normalizado | Evaluator original | Evaluator normalizado | Classificação |",
+                      "|---|---|---|---|---|"]
+            for item in examples[:10]:
+                lines.append(
+                    f"| {item['ppo_original']} | {item['ppo_semantic'] or '—'} | "
+                    f"{item['evaluator_original'] or '—'} | {item['evaluator_semantic'] or '—'} | "
+                    f"{item['classification']} |"
+                )
     lines += ["", "## Timeline correlacionada", ""]
     for group in index.get("groups", []):
         lines.append(
