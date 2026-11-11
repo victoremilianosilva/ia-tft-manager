@@ -18,6 +18,7 @@
 
 #include "lobby/TftEngine.hpp"
 #include "lobby/ShopEngine.hpp"
+#include "composition_intelligence/CompositionSourceAdapters.hpp"
 
 namespace tft::strategy {
 
@@ -67,6 +68,8 @@ struct CompositionPlan {
     std::int32_t main_carry_id{-1};
     double score{0.0};
     std::vector<std::string> acquisition_notes;
+    // Immutable native output captured before optional OP.GG comparison.
+    composition_intelligence::NativeCompositionSnapshot native_snapshot;
 };
 
 class CompositionPlanner {
@@ -423,6 +426,46 @@ public:
                 ++rejected_carries;
             }
         }
+        // Preserve the native generator result before OP.GG is evaluated.
+        // This snapshot does not participate in legacy plan selection below.
+        {
+            auto& native = plan.native_snapshot;
+            for (const auto id : plan.unit_ids) {
+                const auto found = std::find_if(pool.begin(), pool.end(),
+                    [id](const ChampionDefinition& champion) {
+                        return champion.internal_id == id;
+                    });
+                if (found != pool.end()) {
+                    native.set_id = composition_intelligence::adapter_detail::champion_set(*found);
+                    if (!native.set_id.empty()) break;
+                }
+            }
+            if (!native.set_id.empty() && !plan.unit_ids.empty()) {
+                native.composition_id = "native-set-" + native.set_id + "-" +
+                    (direction.empty() ? std::string("neutral") : direction);
+                native.main_carry_id = plan.main_carry_id;
+                native.target_board_size = slots;
+                native.source_score = plan.score;
+                native.source_reference = "composition-planner/native-before-opgg";
+                native.units.reserve(plan.unit_ids.size());
+                for (std::size_t index = 0; index < plan.unit_ids.size(); ++index) {
+                    const auto id = plan.unit_ids[index];
+                    const auto found = std::find_if(pool.begin(), pool.end(),
+                        [id](const ChampionDefinition& champion) {
+                            return champion.internal_id == id;
+                        });
+                    if (found == pool.end()) continue;
+                    const bool core = std::any_of(
+                        found->traits.begin(), found->traits.end(),
+                        [&](const std::string& trait) {
+                            return std::find(plan.core_traits.begin(),
+                                plan.core_traits.end(), trait) != plan.core_traits.end();
+                        });
+                    native.units.push_back({id, core, static_cast<int>(index + 1)});
+                }
+            }
+        }
+
         // Optional OP.GG catalog: use it as a candidate, not as a hard constraint.
         // Emit audit notes through planned_acquisition_notes so existing Viewer logs
         // can explain both selection and fallback.
