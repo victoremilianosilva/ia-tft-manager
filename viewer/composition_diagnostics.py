@@ -250,7 +250,7 @@ def format_diagnostic_audit(records: list[dict[str, Any]], report: dict[str, Any
     )):
         reasons = "; ".join(
             str(reason.get("message") or reason.get("code") or "")
-            for reason in item.get("reasons", []) if isinstance(reason, dict)
+            for reason in (item.get("reasons") or []) if isinstance(reason, dict)
         ) or "sem justificativa registrada"
         lines.append("| " + " | ".join(str(value if value is not None else "—").replace("|", "\\|") for value in (
             f"Jogador {int(item['player_id']) + 1}" if isinstance(item.get("player_id"), int) else item.get("player_id"),
