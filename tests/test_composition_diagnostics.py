@@ -124,3 +124,15 @@ def test_composition_audit_reports_unique_unit_intentions_and_real_line_breaks()
     assert "Unidade alvo ainda não possuída." in rendered
     assert "\n" in rendered
     assert "\\n" not in rendered
+
+
+def test_composition_vs_ppo_falls_back_to_text_log_action_counts():
+    rendered = format_composition_vs_ppo(
+        [],
+        [],
+        {"Jogador 1": {"action_counts": {"BUY": 3, "PASS": 2}}},
+    )
+
+    assert "5 (reconstrução dos logs textuais)" in rendered
+    assert "BUY: 3" in rendered
+    assert "PASS: 2" in rendered
