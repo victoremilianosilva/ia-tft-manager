@@ -80,7 +80,6 @@ struct UnitPriorityConfig {
 struct UnitPriority {
     std::int32_t champion_id{-1};
     UnitIntent intent{UnitIntent::Hold};
-    UnitPriorityTier tier{UnitPriorityTier::OutsideTarget};
     UnitStrategicRelation relation{UnitStrategicRelation::OutsideTarget};
     std::int32_t copies_owned{0};
     std::int32_t highest_star{1};
@@ -92,6 +91,8 @@ struct UnitPriority {
     double board_contribution{0.0};
     double synergy_contribution{0.0};
     std::vector<UnitPriorityReason> reasons;
+    // Appended to preserve positional aggregate initialization in existing consumers.
+    UnitPriorityTier tier{UnitPriorityTier::OutsideTarget};
 };
 
 struct UnitPrioritySnapshot {
