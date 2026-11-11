@@ -14,7 +14,7 @@ def _decision(action="BUY", player="Jogador 1", round_number=3, timestamp="2026-
     }
 
 
-def _composition(match_id="match-a", player_id=0, round_number=3, sequence=10, timestamp=1794408000000):
+def _composition(match_id="match-a", player_id=0, round_number=3, sequence=10, timestamp=1794398400000):
     return {
         "schema_version": 1, "match_id": match_id, "player_id": player_id,
         "round": round_number, "sequence": sequence,
@@ -59,9 +59,12 @@ def test_integrated_index_never_joins_another_match_or_player():
         [_decision()], [], records, match_id="match-a"
     )
 
-    assert index["group_count"] == 1
-    assert index["groups"][0]["player_id"] == 0
-    assert index["groups"][0]["composition_snapshot_count"] == 0
+    assert index["group_count"] == 2
+    by_player = {group["player_id"]: group for group in index["groups"]}
+    assert by_player[0]["composition_snapshot_count"] == 0
+    assert by_player[1]["composition_snapshot_count"] == 1
+    assert by_player[0]["ppo_action_count"] == 1
+    assert by_player[1]["ppo_action_count"] == 0
 
 
 def test_integrated_index_preserves_unavailable_legacy_envelopes_without_synthetic_records():
