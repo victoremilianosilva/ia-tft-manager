@@ -3619,7 +3619,7 @@ struct TFTEngine::Impl {
                 std::optional<ci::CompositionTransition> published_transition;
                 if (proposal.approved && proposal.target) {
                     const auto published = runtime.transitions.publish_if_approved(proposal, runtime.active);
-                    if (published.published) published_transition = published.transition;
+                    if (published.has_transition) published_transition = published.transition;
                 }
                 const auto active = runtime.active.current();
                 ci::UnitPriorityContext priority_context;
