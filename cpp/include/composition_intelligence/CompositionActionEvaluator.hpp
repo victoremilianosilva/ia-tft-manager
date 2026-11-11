@@ -31,6 +31,10 @@ struct CompositionActionEvaluation {
     bool stale{false};
     std::string stale_reason;
     std::vector<CompositionActionCandidateAudit> candidates;
+    bool economy_evidence_consumed{false};
+    bool board_evidence_validated{false};
+    bool item_evidence_consumed{false};
+    std::vector<std::string> evidence_rejected;
 };
 
 // Shadow-only bridge: enriches and filters diagnostic candidates, then delegates
@@ -43,7 +47,9 @@ public:
         const LineupPlan& lineup,
         const strategy::StrategicSharedContext& context,
         const strategy::EconomicControlDecision& posture,
-        strategy::StrategicActionKind policy_action = strategy::StrategicActionKind::None) const {
+        strategy::StrategicActionKind policy_action = strategy::StrategicActionKind::None,
+        const PlannerEvidenceSnapshot* planner_evidence = nullptr,
+        std::uint64_t match_id = 0) const {
         CompositionActionEvaluation out;
         out.evaluation.recommended_action = strategy::StrategicActionKind::Hold;
         out.evaluation.shadow_only = true;
@@ -62,6 +68,33 @@ public:
                 "lineup composition identity/version mismatch");
         }
 
+        const bool snapshot_identity_valid = planner_evidence &&
+            PlannerEvidenceAdapters::snapshot_identity_matches(*planner_evidence, match_id,
+                context.player_id, out.composition_id, active->version, context.round);
+        const bool economy_valid = snapshot_identity_valid &&
+            PlannerEvidenceAdapters::source_matches(planner_evidence->economy.metadata, match_id,
+                context.player_id, out.composition_id, active->version, context.round);
+        const bool board_valid = snapshot_identity_valid &&
+            PlannerEvidenceAdapters::source_matches(planner_evidence->board.metadata, match_id,
+                context.player_id, out.composition_id, active->version, context.round);
+        const bool items_valid = snapshot_identity_valid &&
+            PlannerEvidenceAdapters::source_matches(planner_evidence->items.metadata, match_id,
+                context.player_id, out.composition_id, active->version, context.round);
+        out.economy_evidence_consumed = economy_valid;
+        out.board_evidence_validated = board_valid;
+        if (planner_evidence && !snapshot_identity_valid)
+            out.evidence_rejected.push_back("PlannerEvidenceSnapshot:identity_mismatch");
+        else if (planner_evidence) {
+            if (!economy_valid) out.evidence_rejected.push_back("EconomicController:" + planner_evidence->economy.metadata.reason);
+            if (!board_valid) out.evidence_rejected.push_back("BoardEvaluation:" + planner_evidence->board.metadata.reason);
+            if (!items_valid) out.evidence_rejected.push_back("ItemEngine:" + planner_evidence->items.metadata.reason);
+        }
+        std::unordered_map<std::int32_t, bool> item_risk_by_unit;
+        if (items_valid) {
+            for (const auto& item : planner_evidence->items.units)
+                if (item.champion_id >= 0 && item.has_equipped_items)
+                    item_risk_by_unit[item.champion_id] = true;
+        }
         std::unordered_map<std::int32_t, const UnitPriority*> by_id;
         bool has_upgrade_target = false;
         for (const auto& unit : priorities.units) {
@@ -90,6 +123,14 @@ public:
 
             const auto found = by_id.find(candidate.champion_id);
             const UnitPriority* priority = found == by_id.end() ? nullptr : found->second;
+            if (economy_valid) {
+                const double evidence_cost =
+                    candidate.kind == strategy::StrategicActionKind::BuyUnit
+                        ? planner_evidence->economy.buy_unit_opportunity_cost
+                        : (candidate.kind == strategy::StrategicActionKind::RerollShop
+                            ? planner_evidence->economy.reroll_with_target_opportunity_cost : 0.0);
+                candidate.opportunity_cost = std::max(candidate.opportunity_cost, evidence_cost);
+            }
             switch (candidate.kind) {
                 case strategy::StrategicActionKind::BuyUnit:
                     if (!priority || !endgame_target[candidate.champion_id] ||
@@ -114,8 +155,8 @@ public:
                 case strategy::StrategicActionKind::SellUnit:
                     if (!priority || priority->intent != UnitIntent::SellCandidate)
                         reject(audit, "SELL_CANDIDATE intent is required; REPLACE is not sale authorization");
-                    else if (priority->sale_restricted)
-                        reject(audit, "sale restricted by equipped-item or transition risk");
+                    else if (priority->sale_restricted || item_risk_by_unit[candidate.champion_id])
+                        reject(audit, "sale restricted by validated equipped-item or transition risk");
                     else if (endgame_target[candidate.champion_id] || selected_lineup[candidate.champion_id])
                         reject(audit, "unit is part of the active deployable/endgame target");
                     break;
@@ -143,6 +184,7 @@ public:
             out.candidates.push_back(std::move(audit));
         }
 
+        out.item_evidence_consumed = items_valid && !item_risk_by_unit.empty();
         out.evaluation = strategy::ActionEvaluator{}.evaluate(enriched, posture, policy_action);
         out.evaluation.shadow_only = true;
         for (auto& audit : out.candidates) {
