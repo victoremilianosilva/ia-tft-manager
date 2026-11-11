@@ -366,6 +366,7 @@ class AuditWindow(QMainWindow):
             f"inversões de sequência: {integrated_metrics.get('out_of_order_sequence_count', 0)} | "
             f"lacunas: {integrated_metrics.get('sequence_gap_count', 0)} | "
             f"duplicatas de log: {integrated_metrics.get('player_log_duplicate_count', 0)} | "
+            f"schemas legados sem versão: {integrated_metrics.get('legacy_schema_count', 0)} | "
             f"schemas incompatíveis: {integrated_metrics.get('incompatible_schema_count', 0)}",
             "",
             "Produtores:",
