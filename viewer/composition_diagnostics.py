@@ -308,8 +308,10 @@ def format_composition_vs_ppo(
         name = str(decision.get("action_name") or "").strip()
         if name:
             ppo_actions[name] += 1
-    ppo_source = "timeline estruturada"
-    if not ppo_actions and text_log_metrics:
+    ppo_source = "sem fonte disponível"
+    if ppo_actions:
+        ppo_source = "timeline estruturada"
+    elif text_log_metrics:
         ppo_source = "reconstrução dos logs textuais"
         for metrics in text_log_metrics.values():
             ppo_actions.update(metrics.get("action_counts") or {})
@@ -326,13 +328,15 @@ def format_composition_vs_ppo(
             except (TypeError, ValueError):
                 continue
             composition_actions[ci_names.get(value, f"UNKNOWN_{value}")] += 1
+    unique_reviews = audit_diagnostic_records(records)["unique_review_count"]
     lines = [
         "# Composition Intelligence × PPO — comparação descritiva",
         "",
         f"- Snapshots válidos da Composition Intelligence: **{len(records)}**",
+        f"- Revisões estratégicas únicas: **{unique_reviews}**",
         f"- Decisões PPO encontradas na auditoria: **{sum(ppo_actions.values())}** ({ppo_source})",
         "",
-        "As distribuições são agregadas e não representam correspondência ação-a-ação.",
+        "As recomendações são contadas por snapshot; snapshots repetidos não são decisões independentes. As distribuições não representam correspondência ação-a-ação.",
         "",
         "## Ações executadas pelo PPO",
         "",
