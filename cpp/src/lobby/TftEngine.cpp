@@ -511,6 +511,8 @@ struct TFTEngine::Impl {
     std::vector<composition_intelligence::CompositionCandidate> composition_intelligence_candidates;
     std::array<std::vector<composition_intelligence::CompositionCandidate>, kPlayersPerLobby>
         composition_intelligence_native_candidates{};
+    std::array<std::vector<std::string>, kPlayersPerLobby>
+        composition_intelligence_native_diagnostics{};
     std::vector<std::string> composition_intelligence_catalog_diagnostics;
     std::uint64_t composition_intelligence_sequence{0};
     bool composition_intelligence_enabled{false};
@@ -2889,6 +2891,7 @@ struct TFTEngine::Impl {
         // deliberately reserves room for a carry, frontline and bridge/support
         // traits instead of forcing every slot into one trait.
         composition_intelligence_native_candidates[i].clear();
+        composition_intelligence_native_diagnostics[i].clear();
         if (current_round >= 9 && !info.composition_direction.empty()) {
             strategy::CompositionPlanner::OwnedCopies owned_copies;
             for (const auto& [unit_id, copies] : copies_by_unit)
@@ -2953,6 +2956,8 @@ struct TFTEngine::Impl {
             if (composition_intelligence_enabled) {
                 composition_intelligence_native_candidates[i] =
                     plan.native_candidates;
+                composition_intelligence_native_diagnostics[i] =
+                    plan.native_diagnostics;
             }
             const bool direction_transitioned =
                 info.composition_direction != previous_direction;
@@ -3737,6 +3742,12 @@ struct TFTEngine::Impl {
                 diagnostic_json["player_sequence"] = diagnostic_json["sequence"];
                 diagnostic_json["sequence"] = ++composition_intelligence_sequence;
                 diagnostic_json["catalog_diagnostics"] = composition_intelligence_catalog_diagnostics;
+                diagnostic_json["native_source_diagnostics"] =
+                    composition_intelligence_native_diagnostics[i];
+                diagnostic_json["source_candidate_counts"] = {
+                    {"opgg", composition_intelligence_candidates.size()},
+                    {"native", composition_intelligence_native_candidates[i].size()}
+                };
                 runtime.snapshots.push_back(std::move(diagnostic_json));
             }
             } catch (const std::exception& error) {
