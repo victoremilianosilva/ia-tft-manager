@@ -778,6 +778,11 @@ PYBIND11_MODULE(tft_engine, module) {
             py::arg("timer_expired") = false
         )
         .def(
+            "adapt_opgg_compositions_json",
+            &TFTEngine::adapt_opgg_compositions_json,
+            py::arg("catalog_json")
+        )
+        .def(
             "get_champion_id_map",
             [](const TFTEngine& self) {
                 py::dict result;
