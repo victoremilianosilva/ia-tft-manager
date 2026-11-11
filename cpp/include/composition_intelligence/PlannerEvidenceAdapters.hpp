@@ -9,10 +9,11 @@
 #include <utility>
 #include <vector>
 namespace tft::composition_intelligence {
-enum class EvidenceQuality { Missing, Stale, Valid, Partial };
+enum class EvidenceQuality { Missing, Stale, Valid, Partial, Invalid };
 struct EvidenceSourceMetadata {
- std::string source; std::uint64_t source_version{0}; std::uint32_t source_round{0};
- std::uint32_t expected_round{0}; EvidenceQuality quality{EvidenceQuality::Missing};
+ std::string source; std::uint64_t source_version{0}; std::uint64_t match_id{0};
+ std::int32_t player_id{-1}; std::string composition_id;
+ std::uint32_t source_round{0}; std::uint32_t expected_round{0}; EvidenceQuality quality{EvidenceQuality::Missing};
  std::string reason{"not_provided"}; bool available{false};
 };
 struct EconomicPlannerEvidence {
@@ -42,16 +43,19 @@ struct ItemPlannerEvidence {
  std::vector<ItemUnitPlannerEvidence> units;
 };
 struct PlannerEvidenceSnapshot {
- std::uint32_t schema_version{1}; std::string composition_id;
- std::uint64_t composition_version{0}; std::uint32_t round{0};
+ std::uint32_t schema_version{1}; std::uint64_t match_id{0}; std::int32_t player_id{-1};
+ std::string composition_id; std::uint64_t composition_version{0}; std::uint32_t round{0};
  EconomicPlannerEvidence economy; BoardPlannerEvidence board; ItemPlannerEvidence items;
 };
 class PlannerEvidenceAdapters {
 public:
  static EconomicPlannerEvidence economic(const strategy::StrategicSharedContext& c,
-  const strategy::EconomicControlDecision& d,std::uint64_t version,std::uint32_t expected_round) {
+  const strategy::EconomicControlDecision& d,std::uint64_t version,std::uint32_t expected_round,
+  std::uint64_t match_id=0,std::int32_t player_id=-1,const std::string& composition_id={}) {
   EconomicPlannerEvidence o;
-  o.metadata=make_metadata("EconomicController",version,c.round,expected_round,c.alive&&d.shadow_only);
+  o.metadata=make_metadata("EconomicController",version,c.round,expected_round,c.alive&&d.shadow_only,match_id,player_id,composition_id);
+  if(c.player_id!=player_id){o.metadata.available=false;o.metadata.quality=EvidenceQuality::Invalid;o.metadata.reason="player_id_mismatch";return o;}
+  if(!std::isfinite(d.survival_pressure)||!std::isfinite(d.board_pressure)||!std::isfinite(d.economy_pressure)||!std::isfinite(d.confidence)){o.metadata.available=false;o.metadata.quality=EvidenceQuality::Invalid;o.metadata.reason="non_finite_economic_metric";return o;}
   if(!o.metadata.available)return o;
   o.gold=c.gold;o.level=c.level;o.xp=c.xp;o.xp_to_next=c.xp_to_next;
   o.interest_if_resolved_now=c.interest_if_resolved_now;o.projected_next_round_income=c.projected_next_round_income;
@@ -64,9 +68,11 @@ public:
   o.buy_unit_opportunity_cost=strategy::action_opportunity_cost::kBuyUnit;return o;
  }
  static BoardPlannerEvidence board(const strategy::BoardEvaluationResult& r,
-  std::uint64_t version,std::uint32_t source_round,std::uint32_t expected_round) {
-  BoardPlannerEvidence o;o.metadata=make_metadata("BoardEvaluation",version,source_round,expected_round,r.unit_count>0);
+  std::uint64_t version,std::uint32_t source_round,std::uint32_t expected_round,
+  std::uint64_t match_id=0,std::int32_t player_id=-1,const std::string& composition_id={}) {
+  BoardPlannerEvidence o;o.metadata=make_metadata("BoardEvaluation",version,source_round,expected_round,r.unit_count>0,match_id,player_id,composition_id);
   if(!o.metadata.available)return o;
+  if(!std::isfinite(r.positional_score)||!std::isfinite(r.structural_score)||!std::isfinite(r.synergy_score)||!std::isfinite(r.total_score)||!std::isfinite(r.strategic_fit_score)||!std::isfinite(r.unit_quality_score)||!std::isfinite(r.trait_coherence_score)){o.metadata.available=false;o.metadata.quality=EvidenceQuality::Invalid;o.metadata.reason="non_finite_board_metric";return o;}
   o.positional_score=unit(r.positional_score);o.structural_score=unit(r.structural_score);
   o.synergy_score=unit(r.synergy_score);o.total_score=unit(r.total_score);
   o.strategic_fit_score=signed_unit(r.strategic_fit_score);o.unit_quality_score=unit(r.unit_quality_score);
@@ -77,8 +83,9 @@ public:
  }
  static ItemPlannerEvidence item(const items::ItemEngine& engine,const items::ItemPlayerState& state,
   const std::vector<ItemUnitBinding>& bindings,std::uint64_t version,
-  std::uint32_t source_round,std::uint32_t expected_round) {
-  ItemPlannerEvidence o;o.metadata=make_metadata("ItemEngine",version,source_round,expected_round,true);
+  std::uint32_t source_round,std::uint32_t expected_round,
+  std::uint64_t match_id=0,std::int32_t player_id=-1,const std::string& composition_id={}) {
+  ItemPlannerEvidence o;o.metadata=make_metadata("ItemEngine",version,source_round,expected_round,true,match_id,player_id,composition_id);
   if(!o.metadata.available)return o;
   o.inventory_count=state.inventory.size();o.component_count=state.components.size();
   for(const auto& b:bindings) {
@@ -100,6 +107,20 @@ public:
   if(bindings.empty()){o.metadata.quality=EvidenceQuality::Partial;o.metadata.reason="inventory_available_but_no_unit_bindings";}
   return o;
  }
+ static bool snapshot_identity_matches(const PlannerEvidenceSnapshot& snapshot,
+  std::uint64_t match_id,std::int32_t player_id,const std::string& composition_id,
+  std::uint64_t composition_version,std::uint32_t round) {
+  return snapshot.match_id==match_id&&snapshot.player_id==player_id&&
+   snapshot.composition_id==composition_id&&snapshot.composition_version==composition_version&&
+   snapshot.round==round;
+ }
+ static bool source_matches(const EvidenceSourceMetadata& m,
+  std::uint64_t match_id,std::int32_t player_id,const std::string& composition_id,
+  std::uint64_t composition_version,std::uint32_t round) {
+  return m.available&&m.match_id==match_id&&m.player_id==player_id&&
+   m.composition_id==composition_id&&m.source_version==composition_version&&
+   m.source_round==round&&m.expected_round==round&&m.quality==EvidenceQuality::Valid;
+ }
  static PlannerEvidenceSnapshot combine(std::string id,std::uint64_t version,std::uint32_t round,
   EconomicPlannerEvidence economy,BoardPlannerEvidence board,ItemPlannerEvidence item) {
   PlannerEvidenceSnapshot o;o.composition_id=std::move(id);o.composition_version=version;o.round=round;
@@ -107,9 +128,10 @@ public:
  }
 private:
  static EvidenceSourceMetadata make_metadata(std::string source,std::uint64_t version,
-  std::uint32_t source_round,std::uint32_t expected_round,bool available) {
-  EvidenceSourceMetadata o;o.source=std::move(source);o.source_version=version;
-  o.source_round=source_round;o.expected_round=expected_round;o.available=available&&version>0;
+  std::uint32_t source_round,std::uint32_t expected_round,bool available,
+  std::uint64_t match_id,std::int32_t player_id,const std::string& composition_id) {
+  EvidenceSourceMetadata o;o.source=std::move(source);o.source_version=version;o.match_id=match_id;
+  o.player_id=player_id;o.composition_id=composition_id;o.source_round=source_round;o.expected_round=expected_round;o.available=available&&version>0;
   if(!o.available){o.quality=EvidenceQuality::Missing;o.reason="source_unavailable_or_unversioned";}
   else if(source_round!=expected_round){o.available=false;o.quality=EvidenceQuality::Stale;o.reason="round_mismatch";}
   else{o.quality=EvidenceQuality::Valid;o.reason="validated_read_only_snapshot";}return o;

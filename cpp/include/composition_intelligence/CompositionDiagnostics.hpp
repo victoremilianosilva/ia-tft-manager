@@ -130,6 +130,10 @@ public:
             };
         } else p["published_transition"] = nullptr;
 
+        p["unit_priority_evidence_consumption"] = {
+            {"consumed", priorities.evidence_consumed},
+            {"rejected", priorities.evidence_rejected}
+        };
         p["unit_intentions"] = nlohmann::json::array();
         for (const auto& u : priorities.units) {
             nlohmann::json reasons = nlohmann::json::array();
@@ -150,6 +154,13 @@ public:
             {"composition_id", lineup.composition_id}, {"composition_version", lineup.composition_version},
             {"stale", lineup.stale}, {"stale_reason", lineup.stale_reason},
             {"level", lineup.level}, {"board_capacity", lineup.board_capacity},
+            {"board_evidence", {{"available", lineup.board_evidence_available},
+                {"reason", lineup.board_evidence_reason},
+                {"frontline_count", lineup.board_evidence_available ? nlohmann::json(lineup.observed_frontline_count) : nlohmann::json(nullptr)},
+                {"carry_count", lineup.board_evidence_available ? nlohmann::json(lineup.observed_carry_count) : nlohmann::json(nullptr)},
+                {"exposed_carry_count", lineup.board_evidence_available ? nlohmann::json(lineup.observed_exposed_carry_count) : nlohmann::json(nullptr)},
+                {"missing_frontline_count", lineup.board_evidence_available ? nlohmann::json(lineup.observed_missing_frontline_count) : nlohmann::json(nullptr)},
+                {"missing_backline_count", lineup.board_evidence_available ? nlohmann::json(lineup.observed_missing_backline_count) : nlohmann::json(nullptr)}}},
             {"endgame_target_ids", lineup.endgame_target_ids},
             {"selected_board", lineup_json(lineup)},
             {"entries", lineup.entries}, {"exits", lineup.exits},
@@ -164,6 +175,14 @@ public:
             {"confidence_not_probability", actions.evaluation.confidence},
             {"reason_code", static_cast<int>(actions.evaluation.reason)},
             {"shadow_only", actions.evaluation.shadow_only},
+            {"evidence_consumption", {{"economy", actions.economy_evidence_consumed},
+                {"board_validated", actions.board_evidence_validated},
+                {"items", actions.item_evidence_consumed},
+                {"gold", actions.economy_evidence_consumed ? nlohmann::json(actions.observed_gold) : nlohmann::json(nullptr)},
+                {"interest", actions.economy_evidence_consumed ? nlohmann::json(actions.observed_interest) : nlohmann::json(nullptr)},
+                {"projected_next_round_income", actions.economy_evidence_consumed ? nlohmann::json(actions.projected_next_round_income) : nlohmann::json(nullptr)},
+                {"economic_posture", actions.economy_evidence_consumed ? nlohmann::json(actions.observed_economic_posture) : nlohmann::json(nullptr)},
+                {"rejected", actions.evidence_rejected}}},
             {"candidates", nlohmann::json::array()}
         };
         for (const auto& a : actions.candidates) {
@@ -238,12 +257,28 @@ private:
                 {"priority", s.priority}, {"currently_on_board", s.currently_on_board}, {"owned", s.owned}});
         return out;
     }
+    static const char* evidence_quality_name(EvidenceQuality quality) {
+        switch (quality) {
+            case EvidenceQuality::Missing: return "missing";
+            case EvidenceQuality::Stale: return "stale";
+            case EvidenceQuality::Partial: return "partial";
+            case EvidenceQuality::Invalid: return "invalid";
+            case EvidenceQuality::Valid: return "valid";
+        }
+        return "unknown";
+    }
     static nlohmann::json metadata_json(const EvidenceSourceMetadata& m) {
         return {{"source", m.source}, {"source_version", m.source_version},
+            {"match_id", m.match_id}, {"player_id", m.player_id},
+            {"composition_id", m.composition_id},
             {"source_round", m.source_round}, {"expected_round", m.expected_round},
-            {"quality", static_cast<int>(m.quality)}, {"available", m.available}, {"reason", m.reason}};
+            {"quality", static_cast<int>(m.quality)}, {"quality_name", evidence_quality_name(m.quality)},
+            {"available", m.available}, {"reason", m.reason}};
     }
     static nlohmann::json evidence_json(const PlannerEvidenceSnapshot& e) {
+        const auto value_or_null = [](bool available, const auto& value) {
+            return available ? nlohmann::json(value) : nlohmann::json(nullptr);
+        };
         nlohmann::json item_units = nlohmann::json::array();
         for (const auto& u : e.items.units)
             item_units.push_back({{"champion_id", u.champion_id},
@@ -252,32 +287,49 @@ private:
                 {"best_inventory_fit", u.best_inventory_fit},
                 {"has_equipped_items", u.has_equipped_items},
                 {"has_inventory_candidate", u.has_inventory_candidate}});
-        return {{"schema_version", e.schema_version}, {"composition_id", e.composition_id},
+        const bool economy_available = e.economy.metadata.available;
+        const bool board_available = e.board.metadata.available;
+        const bool items_available = e.items.metadata.available;
+        return {{"schema_version", e.schema_version}, {"match_id", e.match_id},
+            {"player_id", e.player_id}, {"composition_id", e.composition_id},
             {"composition_version", e.composition_version}, {"round", e.round},
-            {"economy", {{"metadata", metadata_json(e.economy.metadata)}, {"gold", e.economy.gold},
-                {"level", e.economy.level}, {"xp", e.economy.xp}, {"xp_to_next", e.economy.xp_to_next},
-                {"interest", e.economy.interest_if_resolved_now},
-                {"projected_income", e.economy.projected_next_round_income},
-                {"win_streak", e.economy.win_streak}, {"loss_streak", e.economy.loss_streak},
-                {"posture", static_cast<int>(e.economy.posture)}, {"reason", static_cast<int>(e.economy.reason)},
-                {"survival_pressure", e.economy.survival_pressure}, {"board_pressure", e.economy.board_pressure},
-                {"economy_pressure", e.economy.economy_pressure}, {"confidence_not_probability", e.economy.confidence},
-                {"buy_xp_opportunity_cost", e.economy.buy_experience_opportunity_cost},
-                {"reroll_with_target_opportunity_cost", e.economy.reroll_with_target_opportunity_cost},
-                {"reroll_without_target_opportunity_cost", e.economy.reroll_without_target_opportunity_cost},
-                {"buy_unit_opportunity_cost", e.economy.buy_unit_opportunity_cost}}},
+            {"economy", {{"metadata", metadata_json(e.economy.metadata)},
+                {"gold", value_or_null(economy_available, e.economy.gold)},
+                {"level", value_or_null(economy_available, e.economy.level)},
+                {"xp", value_or_null(economy_available, e.economy.xp)},
+                {"xp_to_next", value_or_null(economy_available, e.economy.xp_to_next)},
+                {"interest", value_or_null(economy_available, e.economy.interest_if_resolved_now)},
+                {"projected_income", value_or_null(economy_available, e.economy.projected_next_round_income)},
+                {"win_streak", value_or_null(economy_available, e.economy.win_streak)},
+                {"loss_streak", value_or_null(economy_available, e.economy.loss_streak)},
+                {"posture", value_or_null(economy_available, static_cast<int>(e.economy.posture))},
+                {"reason", value_or_null(economy_available, static_cast<int>(e.economy.reason))},
+                {"survival_pressure", value_or_null(economy_available, e.economy.survival_pressure)},
+                {"board_pressure", value_or_null(economy_available, e.economy.board_pressure)},
+                {"economy_pressure", value_or_null(economy_available, e.economy.economy_pressure)},
+                {"confidence_not_probability", value_or_null(economy_available, e.economy.confidence)},
+                {"buy_xp_opportunity_cost", value_or_null(economy_available, e.economy.buy_experience_opportunity_cost)},
+                {"reroll_with_target_opportunity_cost", value_or_null(economy_available, e.economy.reroll_with_target_opportunity_cost)},
+                {"reroll_without_target_opportunity_cost", value_or_null(economy_available, e.economy.reroll_without_target_opportunity_cost)},
+                {"buy_unit_opportunity_cost", value_or_null(economy_available, e.economy.buy_unit_opportunity_cost)}}},
             {"board", {{"metadata", metadata_json(e.board.metadata)},
-                {"positional_score", e.board.positional_score}, {"structural_score", e.board.structural_score},
-                {"synergy_score", e.board.synergy_score}, {"total_score", e.board.total_score},
-                {"strategic_fit_score", e.board.strategic_fit_score}, {"unit_quality_score", e.board.unit_quality_score},
-                {"trait_coherence_score", e.board.trait_coherence_score}, {"unit_count", e.board.unit_count},
-                {"frontline_count", e.board.frontline_count}, {"carry_count", e.board.carry_count},
-                {"exposed_carry_count", e.board.exposed_carry_count},
-                {"missing_frontline_count", e.board.missing_frontline_count},
-                {"missing_backline_count", e.board.missing_backline_count}}},
+                {"positional_score", value_or_null(board_available, e.board.positional_score)},
+                {"structural_score", value_or_null(board_available, e.board.structural_score)},
+                {"synergy_score", value_or_null(board_available, e.board.synergy_score)},
+                {"total_score", value_or_null(board_available, e.board.total_score)},
+                {"strategic_fit_score", value_or_null(board_available, e.board.strategic_fit_score)},
+                {"unit_quality_score", value_or_null(board_available, e.board.unit_quality_score)},
+                {"trait_coherence_score", value_or_null(board_available, e.board.trait_coherence_score)},
+                {"unit_count", value_or_null(board_available, e.board.unit_count)},
+                {"frontline_count", value_or_null(board_available, e.board.frontline_count)},
+                {"carry_count", value_or_null(board_available, e.board.carry_count)},
+                {"exposed_carry_count", value_or_null(board_available, e.board.exposed_carry_count)},
+                {"missing_frontline_count", value_or_null(board_available, e.board.missing_frontline_count)},
+                {"missing_backline_count", value_or_null(board_available, e.board.missing_backline_count)}}},
             {"items", {{"metadata", metadata_json(e.items.metadata)},
-                {"inventory_count", e.items.inventory_count}, {"component_count", e.items.component_count},
-                {"units", item_units}}}};
+                {"inventory_count", value_or_null(items_available, e.items.inventory_count)},
+                {"component_count", value_or_null(items_available, e.items.component_count)},
+                {"units", value_or_null(items_available, item_units)}}}};
     }
     std::uint64_t next_sequence_{1};
 };

@@ -1,5 +1,6 @@
 #pragma once
 #include "composition_intelligence/ActiveCompositionManager.hpp"
+#include "composition_intelligence/PlannerEvidenceAdapters.hpp"
 #include "composition_intelligence/UnitPriorityPlanner.hpp"
 #include <algorithm>
 #include <cstdint>
@@ -20,6 +21,10 @@ struct LineupPlannerContext {
     std::uint32_t level{1};
     std::uint32_t board_capacity{0};
     std::vector<std::int32_t> current_board_ids;
+    const PlannerEvidenceSnapshot* planner_evidence{nullptr};
+    std::uint64_t match_id{0};
+    std::int32_t player_id{-1};
+    std::uint32_t round{0};
 };
 struct LineupPlannerConfig {
     bool preserve_bridge_units{true};
@@ -39,6 +44,13 @@ struct LineupPlan {
     bool stale{false};
     std::string stale_reason;
     std::string status;
+    bool board_evidence_available{false};
+    std::int32_t observed_frontline_count{-1};
+    std::int32_t observed_carry_count{-1};
+    std::int32_t observed_exposed_carry_count{-1};
+    std::int32_t observed_missing_frontline_count{-1};
+    std::int32_t observed_missing_backline_count{-1};
+    std::string board_evidence_reason{"not_provided"};
 };
 class LineupPlanner {
 public:
@@ -58,6 +70,24 @@ public:
             out.stale_reason = priorities.stale ? "unit priority snapshot is stale" :
                 "unit priority composition identity/version mismatch";
             return out;
+        }
+        if (context.planner_evidence &&
+            PlannerEvidenceAdapters::snapshot_identity_matches(*context.planner_evidence,
+                context.match_id, context.player_id, active->candidate.composition_id,
+                active->version, context.round)) {
+            const auto& board = context.planner_evidence->board;
+            if (PlannerEvidenceAdapters::source_matches(board.metadata, context.match_id,
+                    context.player_id, active->candidate.composition_id, active->version, context.round)) {
+                out.board_evidence_available = true;
+                out.observed_frontline_count = board.frontline_count;
+                out.observed_carry_count = board.carry_count;
+                out.observed_exposed_carry_count = board.exposed_carry_count;
+                out.observed_missing_frontline_count = board.missing_frontline_count;
+                out.observed_missing_backline_count = board.missing_backline_count;
+                out.board_evidence_reason = "validated_current_round_board_snapshot";
+            } else out.board_evidence_reason = board.metadata.reason;
+        } else if (context.planner_evidence) {
+            out.board_evidence_reason = "planner_evidence_identity_mismatch";
         }
         if (context.board_capacity == 0 || context.board_capacity > 10) {
             out.stale = true; out.stale_reason = "board_capacity must be between 1 and 10"; return out;
@@ -83,8 +113,12 @@ public:
                 continue;
             }
             const auto& p = *found->second;
+            const auto role_gap_priority = out.board_evidence_available &&
+                ((target_unit.role == UnitRole::Frontline && out.observed_missing_frontline_count > 0) ||
+                 (target_unit.role == UnitRole::MainCarry &&
+                  (out.observed_missing_backline_count > 0 || out.observed_exposed_carry_count > 0))) ? 25 : 0;
             candidates.push_back({target_unit.champion_id, LineupSlotKind::ActiveTarget,
-                p.priority + (target_unit.core ? 1000 : 0),
+                p.priority + role_gap_priority + (target_unit.core ? 1000 : 0),
                 current.count(target_unit.champion_id) != 0, true});
         }
         for (const auto& p : priorities.units) {

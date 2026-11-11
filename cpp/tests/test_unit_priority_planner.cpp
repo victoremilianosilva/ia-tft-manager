@@ -1,5 +1,6 @@
 #include "composition_intelligence/UnitPriorityPlanner.hpp"
 
+#include <algorithm>
 #include <cassert>
 #include <iostream>
 
@@ -91,6 +92,73 @@ void equipped_items_restrict_sale_and_low_evidence_holds() {
         if (unit.champion_id == 7) assert(unit.intent == UnitIntent::SellCandidate);
     }
 }
+
+void validated_item_snapshot_protects_outside_target_unit() {
+    ActiveCompositionManager manager;
+    manager.publish(comp());
+    const auto active = *manager.current();
+    auto ctx = context(active);
+    ctx.match_id = 99;
+    ctx.player_id = 0;
+    ctx.round = 12;
+    ctx.owned_units = {{8, 1, 1, false, {}}};
+    CompositionTransitionPlan transition;
+    transition.sell_candidate_unit_ids = {8};
+    ctx.transition = transition;
+    PlannerEvidenceSnapshot evidence;
+    evidence.match_id = 99;
+    evidence.player_id = 0;
+    evidence.composition_id = active.candidate.composition_id;
+    evidence.composition_version = active.version;
+    evidence.round = 12;
+    evidence.items.metadata.source = "ItemEngine";
+    evidence.items.metadata.source_version = active.version;
+    evidence.items.metadata.match_id = 99;
+    evidence.items.metadata.player_id = 0;
+    evidence.items.metadata.composition_id = active.candidate.composition_id;
+    evidence.items.metadata.source_round = 12;
+    evidence.items.metadata.expected_round = 12;
+    evidence.items.metadata.quality = EvidenceQuality::Valid;
+    evidence.items.metadata.available = true;
+    evidence.items.units.push_back({8, {"equipped-item"}, {}, 0.0, 0.0, true, false});
+    ctx.planner_evidence = &evidence;
+    auto result = UnitPriorityPlanner{}.resolve(active, ctx);
+    bool protected_unit = false;
+    for (const auto& unit : result.units)
+        if (unit.champion_id == 8)
+            protected_unit = unit.intent == UnitIntent::Hold && unit.sale_restricted;
+    assert(protected_unit);
+    assert(!result.evidence_rejected.empty()); // Board evidence was intentionally absent.
+}
+
+void board_gap_increases_matching_missing_unit_priority() {
+    ActiveCompositionManager manager;
+    manager.publish(comp());
+    const auto active = *manager.current();
+    auto ctx = context(active);
+    ctx.match_id = 91; ctx.player_id = 0; ctx.round = 10;
+    ctx.owned_units = {{1, 1, 1, true, {}}};
+    PlannerEvidenceSnapshot evidence;
+    evidence.match_id = 91; evidence.player_id = 0;
+    evidence.composition_id = active.candidate.composition_id;
+    evidence.composition_version = active.version; evidence.round = 10;
+    auto& metadata = evidence.board.metadata;
+    metadata.source = "BoardEvaluation"; metadata.source_version = active.version;
+    metadata.match_id = 91; metadata.player_id = 0;
+    metadata.composition_id = active.candidate.composition_id;
+    metadata.source_round = 10; metadata.expected_round = 10;
+    metadata.quality = EvidenceQuality::Valid; metadata.available = true;
+    evidence.board.missing_frontline_count = 1;
+    ctx.planner_evidence = &evidence;
+    const auto result = UnitPriorityPlanner{}.resolve(active, ctx);
+    const auto frontline = std::find_if(result.units.begin(), result.units.end(),
+        [](const auto& unit) { return unit.champion_id == 2; });
+    assert(frontline != result.units.end());
+    assert(frontline->intent == UnitIntent::Seek);
+    assert(frontline->priority == 105);
+    assert(std::find(result.evidence_consumed.begin(), result.evidence_consumed.end(),
+        "BoardEvaluation:role_gap_priority_context") != result.evidence_consumed.end());
+}
 void missing_active_is_safe() {
     auto result = UnitPriorityPlanner{}.resolve(std::nullopt, {});
     assert(result.stale && result.units.empty());
@@ -100,6 +168,8 @@ int main() {
     resolves_keep_upgrade_seek_and_version();
     shared_and_bridge_units_survive_pivot();
     equipped_items_restrict_sale_and_low_evidence_holds();
+    validated_item_snapshot_protects_outside_target_unit();
+    board_gap_increases_matching_missing_unit_priority();
     missing_active_is_safe();
     std::cout << "Unit Priority Planner tests passed\n";
 }

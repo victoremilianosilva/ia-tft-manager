@@ -3683,37 +3683,20 @@ struct TFTEngine::Impl {
                     published_transition ? "approved transition published" :
                         (proposal.approved ? "publication rejected or stale" : "proposal not approved"),
                     active);
-                ci::UnitPriorityContext priority_context;
-                if (active) {
-                    priority_context.composition_id = active->candidate.composition_id;
-                    priority_context.composition_version = active->version;
-                    if (proposal.target) priority_context.transition = proposal.transition;
-                }
-                for (const auto& pair : owned_priority) priority_context.owned_units.push_back(pair.second);
-                for (const auto& pair : unit_evidence) priority_context.evidence.push_back(pair.second);
-                const auto priorities = ci::UnitPriorityPlanner{}.resolve(active, priority_context);
-                runtime.mark_stage("unit_priorities", priorities.stale ? "unavailable" : "completed",
-                    priorities.stale ? priorities.stale_reason : "priorities resolved against active version",
-                    active);
-
-                ci::LineupPlannerContext lineup_context;
-                lineup_context.level = static_cast<std::uint32_t>(std::max(1, economy.level));
-                lineup_context.board_capacity = static_cast<std::uint32_t>(std::clamp(economy.level, 1, 10));
-                lineup_context.current_board_ids.assign(on_board_ids.begin(), on_board_ids.end());
-                const auto lineup = ci::LineupPlanner{}.plan(active, priorities, lineup_context);
-                runtime.mark_stage("lineup", lineup.stale ? "unavailable" : "completed",
-                    lineup.stale ? lineup.stale_reason : lineup.status, active);
-
                 ci::PlannerEvidenceSnapshot evidence;
                 const auto version = active ? active->version : 0;
                 evidence.composition_id = active ? active->candidate.composition_id : "";
                 evidence.composition_version = version;
                 evidence.round = round_id;
                 if (version > 0) {
+                    evidence.match_id = episode_id;
+                    evidence.player_id = static_cast<std::int32_t>(i);
                     evidence.economy = ci::PlannerEvidenceAdapters::economic(
-                        strategic_context, economic_decision, version, round_id);
+                        strategic_context, economic_decision, version, round_id,
+                        episode_id, static_cast<std::int32_t>(i), evidence.composition_id);
                     evidence.board = ci::PlannerEvidenceAdapters::board(
-                        board_evaluation(i), version, round_id, round_id);
+                        board_evaluation(i), version, round_id, round_id,
+                        episode_id, static_cast<std::int32_t>(i), evidence.composition_id);
                     if (player_envs[i].item_engine) {
                         items::ItemPlayerState item_state;
                         item_state.components = player_envs[i].item_engine->components();
@@ -3746,17 +3729,48 @@ struct TFTEngine::Impl {
                         for (const auto& unit : player_envs[i].bench) if (unit) append_item_binding(*unit);
                         evidence.items = ci::PlannerEvidenceAdapters::item(
                             *player_envs[i].item_engine, item_state, item_bindings,
-                            version, round_id, round_id);
+                            version, round_id, round_id, episode_id,
+                            static_cast<std::int32_t>(i), evidence.composition_id);
                     }
                 }
                 runtime.mark_stage("planner_evidence", version > 0 ? "completed" : "skipped",
                     version > 0 ? "economy/board/item evidence bound to active version" : "no active composition version",
                     active);
+
+                ci::UnitPriorityContext priority_context;
+                priority_context.planner_evidence = &evidence;
+                priority_context.match_id = episode_id;
+                priority_context.player_id = static_cast<std::int32_t>(i);
+                priority_context.round = round_id;
+                if (active) {
+                    priority_context.composition_id = active->candidate.composition_id;
+                    priority_context.composition_version = active->version;
+                    if (proposal.target) priority_context.transition = proposal.transition;
+                }
+                for (const auto& pair : owned_priority) priority_context.owned_units.push_back(pair.second);
+                for (const auto& pair : unit_evidence) priority_context.evidence.push_back(pair.second);
+                const auto priorities = ci::UnitPriorityPlanner{}.resolve(active, priority_context);
+                runtime.mark_stage("unit_priorities", priorities.stale ? "unavailable" : "completed",
+                    priorities.stale ? priorities.stale_reason : "priorities resolved against active version",
+                    active);
+
+                ci::LineupPlannerContext lineup_context;
+                lineup_context.level = static_cast<std::uint32_t>(std::max(1, economy.level));
+                lineup_context.board_capacity = static_cast<std::uint32_t>(std::clamp(economy.level, 1, 10));
+                lineup_context.current_board_ids.assign(on_board_ids.begin(), on_board_ids.end());
+                lineup_context.planner_evidence = &evidence;
+                lineup_context.match_id = episode_id;
+                lineup_context.player_id = static_cast<std::int32_t>(i);
+                lineup_context.round = round_id;
+                const auto lineup = ci::LineupPlanner{}.plan(active, priorities, lineup_context);
+                runtime.mark_stage("lineup", lineup.stale ? "unavailable" : "completed",
+                    lineup.stale ? lineup.stale_reason : lineup.status, active);
+
                 ci::CompositionActionEvaluation composition_actions;
                 if (active) {
                     composition_actions = ci::CompositionActionEvaluator{}.evaluate(
                         active, priorities, lineup, strategic_context, economic_decision,
-                        action_decision.recommended_action);
+                        action_decision.recommended_action, &evidence, episode_id);
                 } else {
                     composition_actions.stale = true;
                     composition_actions.stale_reason = "no active composition";

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "composition_intelligence/CompositionEvaluation.hpp"
+#include "composition_intelligence/PlannerEvidenceAdapters.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -9,6 +10,7 @@
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 namespace tft::composition_intelligence {
@@ -49,6 +51,10 @@ struct UnitPriorityContext {
     std::optional<CompositionTransitionPlan> transition;
     std::vector<UnitPriorityOwnedUnit> owned_units; // board + bench, aggregated per champion
     std::vector<UnitPriorityEvidence> evidence;
+    const PlannerEvidenceSnapshot* planner_evidence{nullptr};
+    std::uint64_t match_id{0};
+    std::int32_t player_id{-1};
+    std::uint32_t round{0};
 };
 
 struct UnitPriorityConfig {
@@ -80,6 +86,8 @@ struct UnitPrioritySnapshot {
     std::vector<UnitPriority> units; // owned units plus missing target units
     bool stale{false};
     std::string stale_reason;
+    std::vector<std::string> evidence_consumed;
+    std::vector<std::string> evidence_rejected;
 };
 
 class UnitPriorityPlanner {
@@ -104,6 +112,25 @@ public:
             return out;
         }
 
+        const PlannerEvidenceSnapshot* accepted_evidence = nullptr;
+        bool board_evidence_valid = false;
+        if (context.planner_evidence) {
+            const auto& snapshot = *context.planner_evidence;
+            if (PlannerEvidenceAdapters::snapshot_identity_matches(snapshot, context.match_id,
+                    context.player_id, active->candidate.composition_id, active->version, context.round)) {
+                accepted_evidence = &snapshot;
+                if (PlannerEvidenceAdapters::source_matches(snapshot.board.metadata, context.match_id,
+                        context.player_id, active->candidate.composition_id, active->version, context.round)) {
+                    board_evidence_valid = true;
+                    out.evidence_consumed.push_back("BoardEvaluation:role_gap_priority_context");
+                }
+                else out.evidence_rejected.push_back("BoardEvaluation:" + snapshot.board.metadata.reason);
+                if (PlannerEvidenceAdapters::source_matches(snapshot.items.metadata, context.match_id,
+                        context.player_id, active->candidate.composition_id, active->version, context.round))
+                    out.evidence_consumed.push_back("ItemEngine:equipped_item_risk");
+                else out.evidence_rejected.push_back("ItemEngine:" + snapshot.items.metadata.reason);
+            } else out.evidence_rejected.push_back("PlannerEvidenceSnapshot:identity_mismatch");
+        }
         std::unordered_map<std::int32_t, const UnitPriorityOwnedUnit*> owned;
         for (const auto& unit : context.owned_units) {
             if (unit.champion_id < 0 || unit.copies <= 0) continue;
@@ -120,6 +147,14 @@ public:
                 auto item = missing_target(target);
                 item.priority = target.priority;
                 item.confidence = 0.35;
+                if (board_evidence_valid) {
+                    const auto& board = accepted_evidence->board;
+                    if (target.role == UnitRole::Frontline && board.missing_frontline_count > 0)
+                        item.priority += 15;
+                    if (target.role == UnitRole::MainCarry &&
+                        (board.missing_backline_count > 0 || board.exposed_carry_count > 0))
+                        item.priority += 15;
+                }
                 item.reasons.push_back({UnitReasonCode::TargetUnitMissing,
                     target.core ? "Core da composição ativa ainda não possuído; procurar a unidade."
                                 : "Slot da composição ativa ainda não possuído; procurar quando viável."});
@@ -128,15 +163,39 @@ public:
                 continue;
             }
             const auto* ev = find_evidence(evidence, target.champion_id);
-            out.units.push_back(resolve_owned(target, *found->second, ev, context));
+            auto owned_with_items = *found->second;
+            if (accepted_evidence && PlannerEvidenceAdapters::source_matches(
+                    accepted_evidence->items.metadata, context.match_id, context.player_id,
+                    active->candidate.composition_id, active->version, context.round)) {
+                const auto item_unit = std::find_if(accepted_evidence->items.units.begin(),
+                    accepted_evidence->items.units.end(), [&](const auto& item) {
+                        return item.champion_id == target.champion_id;
+                    });
+                if (item_unit != accepted_evidence->items.units.end())
+                    owned_with_items.equipped_item_ids = item_unit->equipped_item_ids;
+            }
+            auto resolved = resolve_owned(target, owned_with_items, ev, context);
+            if (board_evidence_valid) {
+                const auto& board = accepted_evidence->board;
+                if (target.role == UnitRole::Frontline && board.missing_frontline_count > 0)
+                    resolved.priority += 15;
+                if (target.role == UnitRole::MainCarry &&
+                    (board.missing_backline_count > 0 || board.exposed_carry_count > 0))
+                    resolved.priority += 15;
+            }
+            out.units.push_back(std::move(resolved));
             emitted.insert(target.champion_id);
         }
 
         for (const auto& owned_pair : owned) {
             if (emitted.count(owned_pair.first)) continue;
             const auto* ev = find_evidence(evidence, owned_pair.first);
-            out.units.push_back(resolve_outside_target(
-                owned_pair.first, *owned_pair.second, ev, context));
+            auto owned_with_items = *owned_pair.second;
+            if (accepted_evidence && PlannerEvidenceAdapters::source_matches(accepted_evidence->items.metadata, context.match_id, context.player_id, active->candidate.composition_id, active->version, context.round)) {
+                const auto item_unit = std::find_if(accepted_evidence->items.units.begin(), accepted_evidence->items.units.end(), [&](const auto& item) { return item.champion_id == owned_pair.first; });
+                if (item_unit != accepted_evidence->items.units.end()) owned_with_items.equipped_item_ids = item_unit->equipped_item_ids;
+            }
+            out.units.push_back(resolve_outside_target(owned_pair.first, owned_with_items, ev, context));
         }
         std::sort(out.units.begin(), out.units.end(), [](const auto& a, const auto& b) {
             if (a.priority != b.priority) return a.priority > b.priority;
