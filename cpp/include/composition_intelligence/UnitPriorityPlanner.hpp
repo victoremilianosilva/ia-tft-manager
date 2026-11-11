@@ -163,11 +163,11 @@ public:
                 if (ev && ev->copies_in_shop > 0) {
                     item.priority += std::min(15, ev->copies_in_shop * 5);
                     item.reasons.push_back({UnitReasonCode::UpgradeProgress,
-                        "Oferta na loja contribui para o progresso de evolução desta unidade da composição.");
+                        "Oferta na loja contribui para o progresso de evolução desta unidade da composição."});
                 }
                 if (ev && ev->trait_completion)
                     item.reasons.push_back({UnitReasonCode::TraitCompletionPriority,
-                        "Unidade necessária para completar ou ativar trait relevante da composição.");
+                        "Unidade necessária para completar ou ativar trait relevante da composição."});
                 item.confidence = 0.35;
                 if (board_evidence_valid) {
                     const auto& board = accepted_evidence->board;
@@ -368,12 +368,6 @@ private:
             out.confidence = clamp01(temporary->confidence);
             out.reasons.push_back({UnitReasonCode::TemporarySupportJustification,
                 "Retenção temporária explicitamente justificada: " + temporary->reason});
-        } else if (ev && out.confidence >= config_.minimum_evidence_confidence &&
-                   out.board_contribution >= config_.keep_contribution_threshold) {
-            out.intent = UnitIntent::Hold;
-            out.relation = UnitStrategicRelation::OutsideTarget;
-            out.priority = 20;
-            out.reasons.push_back({UnitReasonCode::BoardContribution, "Contribuição atual no board justifica retenção temporária apesar de não pertencer ao alvo."});
         } else if (!owned.equipped_item_ids.empty() ||
                    (transition && contains(transition->item_risk_unit_ids, id))) {
             out.intent = UnitIntent::Hold;
