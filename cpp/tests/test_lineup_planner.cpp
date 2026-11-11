@@ -52,6 +52,49 @@ void pivot_keeps_bridge_only_as_temporary_capacity_fill() {
     assert(r.deferred_target_ids.size()==1 && r.deferred_target_ids[0]==5);
     assert(r.exits.size()==1 && r.exits[0]==9);
 }
+
+void valid_board_evidence_is_bound_to_lineup_version() {
+    ActiveCompositionManager manager;
+    manager.publish(comp());
+    const auto active = *manager.current();
+    UnitPrioritySnapshot p;
+    p.composition_id = active.candidate.composition_id;
+    p.composition_version = active.version;
+    LineupPlannerContext c;
+    c.level = 6;
+    c.board_capacity = 6;
+    c.planner_evidence = new PlannerEvidenceSnapshot{};
+    auto* evidence = const_cast<PlannerEvidenceSnapshot*>(c.planner_evidence);
+    evidence->match_id = 123;
+    evidence->player_id = 2;
+    evidence->composition_id = active.candidate.composition_id;
+    evidence->composition_version = active.version;
+    evidence->round = 14;
+    evidence->board.metadata.source = "BoardEvaluation";
+    evidence->board.metadata.source_version = active.version;
+    evidence->board.metadata.match_id = 123;
+    evidence->board.metadata.player_id = 2;
+    evidence->board.metadata.composition_id = active.candidate.composition_id;
+    evidence->board.metadata.source_round = 14;
+    evidence->board.metadata.expected_round = 14;
+    evidence->board.metadata.quality = EvidenceQuality::Valid;
+    evidence->board.metadata.available = true;
+    evidence->board.frontline_count = 3;
+    evidence->board.carry_count = 2;
+    evidence->board.exposed_carry_count = 1;
+    evidence->board.missing_frontline_count = 0;
+    evidence->board.missing_backline_count = 1;
+    c.match_id = 123;
+    c.player_id = 2;
+    c.round = 14;
+    const auto result = LineupPlanner{}.plan(active, p, c);
+    assert(!result.stale && result.board_evidence_available);
+    assert(result.observed_frontline_count == 3);
+    assert(result.observed_exposed_carry_count == 1);
+    assert(result.observed_missing_backline_count == 1);
+    delete evidence;
+}
+
 void stale_snapshot_is_rejected() {
     ActiveCompositionManager manager; manager.publish(comp()); const auto active=*manager.current();
     UnitPrioritySnapshot p; p.composition_id=active.candidate.composition_id; p.composition_version=active.version+1;
@@ -63,6 +106,7 @@ int main() {
     capacity_and_missing_units_are_separated_from_endgame();
     owned_target_can_be_deferred_by_capacity();
     pivot_keeps_bridge_only_as_temporary_capacity_fill();
+    valid_board_evidence_is_bound_to_lineup_version();
     stale_snapshot_is_rejected();
     std::cout << "Lineup planner tests passed\n";
 }
