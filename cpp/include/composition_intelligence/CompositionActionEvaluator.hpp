@@ -184,7 +184,7 @@ public:
             out.candidates.push_back(std::move(audit));
         }
 
-        out.item_evidence_consumed = items_valid && !item_risk_by_unit.empty();
+        out.item_evidence_consumed = items_valid;
         out.evaluation = strategy::ActionEvaluator{}.evaluate(enriched, posture, policy_action);
         out.evaluation.shadow_only = true;
         for (auto& audit : out.candidates) {
