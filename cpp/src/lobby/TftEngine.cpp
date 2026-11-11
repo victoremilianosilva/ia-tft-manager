@@ -3597,11 +3597,14 @@ struct TFTEngine::Impl {
                     ci::CandidateEvidence evidence;
                     evidence.composition_id = candidate.composition_id;
                     evidence.source = ci::CompositionEvidenceSource::ObservedBoard;
-                    std::size_t board_hits = 0, owned_hits = 0, available_hits = 0;
+                    std::size_t board_hits = 0, owned_hits = 0, available_hits = 0, item_bearing_hits = 0;
                     double estimated_cost = 0.0;
                     for (const auto& target : candidate.units) {
                         if (on_board_ids.count(target.champion_id)) ++board_hits;
-                        if (owned_evidence.count(target.champion_id)) ++owned_hits;
+                        if (const auto found = owned_evidence.find(target.champion_id); found != owned_evidence.end()) {
+                            ++owned_hits;
+                            if (!found->second.equipped_item_ids.empty()) ++item_bearing_hits;
+                        }
                         const auto* definition = catalog->find_by_id(target.champion_id);
                         if (definition) {
                             if (pool && pool->available(target.champion_id) > 0) ++available_hits;
@@ -3611,7 +3614,9 @@ struct TFTEngine::Impl {
                     const double size = static_cast<double>(std::max<std::size_t>(1, candidate.units.size()));
                     evidence.board_fit = static_cast<double>(board_hits) / size;
                     evidence.availability = static_cast<double>(available_hits) / size;
-                    evidence.item_fit = 0.5;
+                    evidence.item_fit = owned_hits > 0
+                        ? static_cast<double>(item_bearing_hits) / static_cast<double>(owned_hits)
+                        : 0.5;
                     evidence.economy_feasibility = estimated_cost <= 0.0 ? 1.0 :
                         std::clamp(static_cast<double>(std::max(0, economy.gold)) / std::max(1.0, estimated_cost), 0.0, 1.0);
                     evidence.estimated_gold_cost = estimated_cost;
