@@ -387,12 +387,16 @@ def build_integrated_audit_index(
             if not isinstance(metadata, dict) or not metadata:
                 continue
             producer_counts[f"{domain}_evidence_records"] += 1
+            evidence_key = "item_evidence" if domain == "items" else f"{domain}_evidence"
+            producer_counts[evidence_key] += 1
             quality_name = str(metadata.get("quality_name") or "").lower()
             is_valid = metadata.get("available") is True and (
                 quality_name == "valid" or (not quality_name and metadata.get("quality") == 2)
             )
             if is_valid:
                 producer_counts[f"{domain}_evidence_valid"] += 1
+                valid_key = "item_evidence_valid" if domain == "items" else f"{domain}_evidence_valid"
+                producer_counts[valid_key] += 1
             if domain == "economy":
                 group["economic_observations"].append({
                     "source": "planner_evidence",
@@ -550,8 +554,8 @@ def build_integrated_audit_index(
         "economy_evidence_valid": producer_counts["economy_evidence_valid"] > 0,
         "board_evidence": producer_counts["board_evidence_records"] > 0,
         "board_evidence_valid": producer_counts["board_evidence_valid"] > 0,
-        "item_evidence": producer_counts["items_evidence_records"] > 0,
-        "item_evidence_valid": producer_counts["items_evidence_valid"] > 0,
+        "item_evidence": producer_counts["item_evidence"] > 0,
+        "item_evidence_valid": producer_counts["item_evidence_valid"] > 0,
         "unit_priority": producer_counts["unit_priority"] > 0,
         "lineup": producer_counts["lineup"] > 0,
         "composition_intelligence": producer_counts["composition_intelligence"] > 0,
