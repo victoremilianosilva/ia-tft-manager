@@ -112,14 +112,17 @@ public:
         }
 
         const PlannerEvidenceSnapshot* accepted_evidence = nullptr;
+        bool board_evidence_valid = false;
         if (context.planner_evidence) {
             const auto& snapshot = *context.planner_evidence;
             if (PlannerEvidenceAdapters::snapshot_identity_matches(snapshot, context.match_id,
                     context.player_id, active->candidate.composition_id, active->version, context.round)) {
                 accepted_evidence = &snapshot;
                 if (PlannerEvidenceAdapters::source_matches(snapshot.board.metadata, context.match_id,
-                        context.player_id, active->candidate.composition_id, active->version, context.round))
-                    out.evidence_consumed.push_back("BoardEvaluation:global_board_context");
+                        context.player_id, active->candidate.composition_id, active->version, context.round)) {
+                    board_evidence_valid = true;
+                    out.evidence_consumed.push_back("BoardEvaluation:role_gap_priority_context");
+                }
                 else out.evidence_rejected.push_back("BoardEvaluation:" + snapshot.board.metadata.reason);
                 if (PlannerEvidenceAdapters::source_matches(snapshot.items.metadata, context.match_id,
                         context.player_id, active->candidate.composition_id, active->version, context.round))
@@ -162,7 +165,16 @@ public:
                 if (item_unit != accepted_evidence->items.units.end())
                     owned_with_items.equipped_item_ids = item_unit->equipped_item_ids;
             }
-            out.units.push_back(resolve_owned(target, owned_with_items, ev, context));
+            auto resolved = resolve_owned(target, owned_with_items, ev, context);
+            if (board_evidence_valid) {
+                const auto& board = accepted_evidence->board;
+                if (target.role == UnitRole::Frontline && board.missing_frontline_count > 0)
+                    resolved.priority += 15;
+                if (target.role == UnitRole::MainCarry &&
+                    (board.missing_backline_count > 0 || board.exposed_carry_count > 0))
+                    resolved.priority += 15;
+            }
+            out.units.push_back(std::move(resolved));
             emitted.insert(target.champion_id);
         }
 
