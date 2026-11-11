@@ -3675,7 +3675,10 @@ struct TFTEngine::Impl {
                             profile.attack_speed = definition->stats.attack_speed;
                             profile.ability_power = 0.0;
                             profile.max_health = definition->stats.max_hp;
-                            profile.composition_fit = 0.5;
+                            profile.composition_fit = active &&
+                                std::any_of(active->candidate.units.begin(), active->candidate.units.end(),
+                                    [&](const auto& target) { return target.champion_id == definition->internal_id; })
+                                ? 1.0 : 0.0;
                             profile.traits = definition->traits;
                             profile.preferred_traits = info.core_traits;
                             item_state.equipped_by_unit_uuid[unit.uuid] =
