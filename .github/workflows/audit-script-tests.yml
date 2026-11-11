@@ -36,6 +36,8 @@ on:
       - 'tests/test_strategic_economic_comparison.py'
       - 'scripts/audit_buy_xp_coverage.py'
       - 'tests/test_buy_xp_coverage_audit.py'
+      - 'scripts/audit_hold_baseline.py'
+      - 'tests/test_hold_baseline_audit.py'
       - 'tests/test_viewer_shadow_planning_logs.py'
       - 'tests/test_composition_diagnostics.py'
       - 'tests/test_composition_audit_integration.py'
