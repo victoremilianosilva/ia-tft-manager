@@ -123,9 +123,9 @@ def build_integrated_audit_index(
     """Correlate only by explicit session/player/round identity; never infer missing data."""
     errors = list(composition_errors or [])
     groups: dict[tuple, dict] = {}
-    player_decisions: dict[tuple[int, int], list[dict]] = defaultdict(list)
-    player_compositions: dict[tuple[int, int], list[dict]] = defaultdict(list)
-    player_outcomes: dict[tuple[int, int], list[dict]] = defaultdict(list)
+    player_decisions: dict[tuple[str | None, int, int], list[dict]] = defaultdict(list)
+    player_compositions: dict[tuple[str, int, int], list[dict]] = defaultdict(list)
+    player_outcomes: dict[tuple[str | None, int, int], list[dict]] = defaultdict(list)
     producer_counts: Counter[str] = Counter()
     missing_envelope = []
     duplicate_sequences = []
@@ -157,14 +157,14 @@ def build_integrated_audit_index(
         rnd = _round(event.get("round"))
         if pid is None or rnd is None:
             continue
+        event_match = event.get("match_id") or match_id
         event_sequence = event.get("sequence_id")
         if isinstance(event_sequence, int):
-            event_key = (pid, event_sequence)
+            event_key = (event_match, pid, event_sequence)
             if event_key in seen_player_event_keys:
                 player_duplicate_count += 1
                 continue
             seen_player_event_keys.add(event_key)
-        event_match = event.get("match_id") or match_id
         group = group_for(pid, rnd, event_match)
         action = str(event.get("action_name") or event.get("raw_action") or "UNKNOWN").upper()
         category = PPO_ACTION_CATEGORIES.get(action)
@@ -279,7 +279,7 @@ def build_integrated_audit_index(
             "sequence": sequence, "composition_version": item["composition_version"],
             **recommendations,
         })
-        player_compositions[(pid, rnd)].append(record)
+        player_compositions[(str(record_match), pid, rnd)].append(record)
         producer_counts["composition_intelligence"] += 1
         if recommendations["baseline"] is not None:
             producer_counts["action_evaluator_baseline"] += 1
