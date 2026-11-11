@@ -5734,7 +5734,8 @@ ResetResult TFTEngine::reset(
     }
 
     ++impl_->episode_id;
-    impl_->composition_intelligence_players = {};
+    impl_->composition_intelligence_players =
+        decltype(impl_->composition_intelligence_players){};
     impl_->composition_intelligence_sequence = 0;
 
     impl_->round = 0;
