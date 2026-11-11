@@ -62,12 +62,13 @@ struct UnitPriorityContext {
     std::optional<CompositionTransitionPlan> transition;
     std::vector<UnitPriorityOwnedUnit> owned_units; // board + bench, aggregated per champion
     std::vector<UnitPriorityEvidence> evidence;
-    std::vector<UnitPriorityTemporarySupport> temporary_support;
     const PlannerEvidenceSnapshot* planner_evidence{nullptr};
     std::uint64_t match_id{0};
     std::int32_t player_id{-1};
     std::uint32_t round{0};
     std::int32_t gold_available{-1}; // -1 means unavailable/unknown.
+    // Appended to preserve positional aggregate initialization in existing consumers.
+    std::vector<UnitPriorityTemporarySupport> temporary_support;
 };
 
 struct UnitPriorityConfig {
