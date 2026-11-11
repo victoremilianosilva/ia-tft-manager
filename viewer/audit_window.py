@@ -368,6 +368,8 @@ class AuditWindow(QMainWindow):
             f"duplicatas de log: {integrated_metrics.get('player_log_duplicate_count', 0)} | "
             f"schemas legados sem versão: {integrated_metrics.get('legacy_schema_count', 0)} | "
             f"schemas incompatíveis: {integrated_metrics.get('incompatible_schema_count', 0)}",
+            f"comparações baseline/contextual: {integrated_metrics.get('evaluator_comparison_count', 0)} | "
+            f"divergências entre evaluators: {integrated_metrics.get('evaluator_divergence_count', 0)}",
             "",
             "Produtores:",
         ]
