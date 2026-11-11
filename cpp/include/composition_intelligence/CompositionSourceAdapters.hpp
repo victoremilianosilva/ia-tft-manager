@@ -17,29 +17,13 @@ struct CompositionAdapterResult {
     std::vector<std::string> diagnostics;
     bool ok() const noexcept { return !candidates.empty(); }
 };
-struct NativeUnitSelection { std::int32_t champion_id{-1}; bool core{false}; int priority{0}; };
-// Neutral input contract: no comp_direction/composition_focus fields or dependencies.
-struct NativeCompositionSnapshot {
-    std::string composition_id, set_id, patch;
-    std::vector<NativeUnitSelection> units;
-    std::int32_t main_carry_id{-1};
-    std::size_t target_board_size{0};
-    double source_score{0.0};
-    std::string source_reference{"native-generator"};
-};
 
 namespace adapter_detail {
 inline std::string set_number(const std::string& value) {
-    auto marker=value.find("TFTSet");
-    std::size_t begin=marker==std::string::npos ? std::string::npos : marker+6;
-    if (begin==std::string::npos && value.rfind("DA_",0)==0) begin=3;
-    if (begin==std::string::npos) return {};
-    auto end=begin;
-    while(end<value.size() && std::isdigit(static_cast<unsigned char>(value[end]))) ++end;
-    return end>begin ? value.substr(begin,end-begin) : std::string{};
+    return composition_set_number(value);
 }
 inline std::string champion_set(const tft::ChampionDefinition& c) {
-    auto s=set_number(c.api_name); return s.empty()?set_number(c.character_name):s;
+    return composition_champion_set(c.api_name, c.character_name);
 }
 inline bool compatible_set(const std::string& set,const std::vector<tft::ChampionDefinition>& pool) {
     if(set.empty()) return false;
@@ -81,6 +65,7 @@ public:
     if(!catalog.is_object()||!catalog.contains("compositions")||!catalog["compositions"].is_array()){out.diagnostics.emplace_back("OP.GG catalog is missing a compositions array");return out;}
     if(!std::isfinite(min_coverage)||min_coverage<0.0||min_coverage>1.0){out.diagnostics.emplace_back("minimum mapping coverage must be between 0 and 1");return out;}
     const auto by_key=adapter_detail::lookup(pool); const auto patch=catalog.value("patch",std::string{});
+    std::unordered_set<std::string> seen_composition_ids;
     for(const auto& comp:catalog["compositions"]){
       if(!comp.is_object()||!comp.contains("units")||!comp["units"].is_array()){out.diagnostics.emplace_back("Skipped OP.GG composition without units");continue;}
       const auto team=comp.value("team_code",std::string{}); const auto set=adapter_detail::set_number(team);
@@ -88,6 +73,7 @@ public:
       CompositionCandidate c; c.composition_id=comp.value("id",std::string{});
       if(c.composition_id.empty())c.composition_id=comp.value("name",std::string{});
       if(c.composition_id.empty()){out.diagnostics.emplace_back("Skipped OP.GG composition without id/name");continue;}
+      if(!seen_composition_ids.insert(c.composition_id).second){out.diagnostics.emplace_back("Skipped duplicate OP.GG composition id "+c.composition_id);continue;}
       c.source=CompositionSource::Oppg;c.set_id=set;c.patch=patch;c.source_score=adapter_detail::score(comp);c.source_reference=comp.value("id",std::string{});
       std::size_t source_count=0;
       for(const auto& unit:comp["units"]){
@@ -115,6 +101,7 @@ public:
  static CompositionAdapterResult adapt(const NativeCompositionSnapshot& input,const std::vector<tft::ChampionDefinition>& pool){
     CompositionAdapterResult out;
     if(input.composition_id.empty()||input.set_id.empty()||input.units.empty()){out.diagnostics.emplace_back("Native input requires composition_id, set_id and units");return out;}
+    if(!adapter_detail::compatible_set(input.set_id,pool)){out.diagnostics.emplace_back("Native composition rejected: missing or incompatible Set "+input.set_id);return out;}
     CompositionCandidate c;c.composition_id=input.composition_id;c.source=CompositionSource::Native;c.set_id=input.set_id;c.patch=input.patch;
     c.main_carry_id=input.main_carry_id;c.target_board_size=input.target_board_size?input.target_board_size:input.units.size();
     c.source_score=input.source_score;c.source_reference=input.source_reference;
