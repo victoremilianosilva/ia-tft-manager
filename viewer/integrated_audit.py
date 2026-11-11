@@ -235,6 +235,8 @@ def build_integrated_audit_index(
             decision["strategic_planner"] = shadow
             group["strategic_reviews"].append({
                 "source": "shadow_planning",
+                "composition_id": composition_id,
+                "composition_version": composition_version,
                 "sequence_id": event.get("sequence_id"),
                 "source_reference": {"file": f"player_{pid + 1}_log.json", "sequence_id": event.get("sequence_id")},
                 "payload": shadow,
@@ -355,6 +357,8 @@ def build_integrated_audit_index(
             producer_counts["strategic_planner"] += 1
             group["strategic_reviews"].append({
                 "source": "context_bridge",
+                "composition_id": record.get("composition_id"),
+                "composition_version": record.get("composition_version"),
                 "sequence": sequence,
                 "source_reference": {"file": "composition_diagnostics.jsonl", "sequence": sequence},
                 "payload": strategic_value,
@@ -476,6 +480,8 @@ def build_integrated_audit_index(
         for observation in observations:
             key = (
                 observation.get("source"),
+                observation.get("composition_id"),
+                observation.get("composition_version"),
                 observation.get("decision"),
                 observation.get("decision_path_reason"),
                 observation.get("candidate_generation_reason"),
