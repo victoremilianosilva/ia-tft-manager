@@ -113,7 +113,8 @@ public:
         const AvailableCopies& available_copies = {},
         const std::unordered_set<std::int32_t>& currently_offered = {},
         const LiveUnitContext* live_context = nullptr,
-        std::int32_t required_unit_id = -1) {
+        std::int32_t required_unit_id = -1,
+        bool export_native_shadow = false) {
         CompositionPlan plan;
         if (pool.empty() || requested_slots == 0) return plan;
         const LiveUnitContext empty_live_context{};
@@ -428,6 +429,7 @@ public:
                 ++rejected_carries;
             }
         }
+        if (export_native_shadow) {
         // Preserve the native generator result before OP.GG is evaluated.
         // This snapshot does not participate in legacy plan selection below.
         {
@@ -473,6 +475,7 @@ public:
                     native, pool);
             plan.native_candidates = native_result.candidates;
             plan.native_diagnostics = native_result.diagnostics;
+        }
         }
 
         // Optional OP.GG catalog: use it as a candidate, not as a hard constraint.
