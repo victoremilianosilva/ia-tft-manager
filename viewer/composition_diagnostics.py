@@ -147,6 +147,14 @@ def audit_diagnostic_records(records: list[dict[str, Any]], errors: list[str] | 
                 "observations": 0,
             })
             item["observations"] += 1
+            # The latest observation is the current resolved intent for this
+            # review; retain the first/last sequence range and latest evidence.
+            for field in (
+                "relation", "priority", "confidence_not_probability",
+                "copies_owned", "highest_star", "target_star", "on_board",
+                "sale_restricted", "reasons",
+            ):
+                item[field] = unit.get(field)
             if isinstance(record.get("sequence"), int):
                 if not isinstance(item.get("first_sequence"), int) or record["sequence"] < item["first_sequence"]:
                     item["first_sequence"] = record["sequence"]
