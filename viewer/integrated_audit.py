@@ -79,23 +79,37 @@ def _economic_controller_available(event: dict, composition: dict | None = None)
     if composition:
         bridge = composition.get("context_bridge") or {}
         recommended = bridge.get("recommended") or {} if isinstance(bridge, dict) else {}
-        posture = recommended.get("economic_posture") or {}
+        posture = recommended.get("economic_posture") or {} if isinstance(recommended, dict) else {}
+        if not isinstance(posture, dict):
+            posture = {}
         quality = str(posture.get("quality") or "").lower()
-        return isinstance(posture, dict) and posture.get("value") is not None and quality in ("valid", "partial")
+        return posture.get("value") is not None and quality in ("valid", "partial")
     return False
 
 
 def _economy_evidence_available(composition: dict) -> bool:
     diagnostics = composition.get("diagnostics") or {}
     evidence = diagnostics.get("evidence") or {}
-    metadata = (evidence.get("economy") or {}).get("metadata") or {}
-    return metadata.get("available") is True and str(metadata.get("quality_name") or "").lower() == "valid"
+    if not isinstance(evidence, dict):
+        return False
+    economy = evidence.get("economy") or {}
+    metadata = economy.get("metadata") or {} if isinstance(economy, dict) else {}
+    if not isinstance(metadata, dict) or metadata.get("available") is not True:
+        return False
+    quality_name = str(metadata.get("quality_name") or "").lower()
+    return quality_name == "valid" or (not quality_name and metadata.get("quality") == 2)
 
 
 def _recommendations(record: dict) -> dict[str, Any]:
     comparison = record.get("action_evaluator_comparison") or {}
+    if not isinstance(comparison, dict):
+        comparison = {}
     baseline = comparison.get("baseline") or {}
     contextual = comparison.get("contextual") or {}
+    if not isinstance(baseline, dict):
+        baseline = {}
+    if not isinstance(contextual, dict):
+        contextual = {}
     if not baseline:
         old = (record.get("diagnostics") or {}).get("action_recommendation") or {}
         if old:
@@ -252,9 +266,12 @@ def build_integrated_audit_index(
             continue
         corr = record.get("correlation") if isinstance(record.get("correlation"), dict) else {}
         record_match = record.get("match_id") or corr.get("match_id")
-        pid = _player_id(record.get("player_id", corr.get("player_id")))
-        rnd = _round(record.get("round", corr.get("round")))
-        sequence = record.get("sequence", corr.get("sequence_id"))
+        raw_player_id = record.get("player_id")
+        raw_round = record.get("round")
+        sequence = record.get("sequence")
+        pid = _player_id(raw_player_id if raw_player_id is not None else corr.get("player_id"))
+        rnd = _round(raw_round if raw_round is not None else corr.get("round"))
+        sequence = sequence if sequence is not None else corr.get("sequence_id")
         schema = record.get("schema_version")
         if schema is None:
             legacy_schema_count += 1
