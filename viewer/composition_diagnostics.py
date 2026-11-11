@@ -290,12 +290,21 @@ def format_diagnostic_audit(records: list[dict[str, Any]], report: dict[str, Any
     return "\n".join(lines)
 
 
-def format_composition_vs_ppo(records: list[dict[str, Any]], decision_timeline: list[dict[str, Any]]) -> str:
+def format_composition_vs_ppo(
+    records: list[dict[str, Any]],
+    decision_timeline: list[dict[str, Any]],
+    text_log_metrics: dict[str, Any] | None = None,
+) -> str:
     ppo_actions: Counter[str] = Counter()
     for decision in decision_timeline:
         name = str(decision.get("action_name") or "").strip()
         if name:
             ppo_actions[name] += 1
+    ppo_source = "timeline estruturada"
+    if not ppo_actions and text_log_metrics:
+        ppo_source = "reconstrução dos logs textuais"
+        for metrics in text_log_metrics.values():
+            ppo_actions.update(metrics.get("action_counts") or {})
     ci_names = {
         0: "NONE", 1: "BUY_UNIT", 2: "BUY_XP", 3: "REROLL",
         4: "SELL_UNIT", 5: "DEPLOY_OR_MOVE", 6: "HOLD",
@@ -313,7 +322,7 @@ def format_composition_vs_ppo(records: list[dict[str, Any]], decision_timeline: 
         "# Composition Intelligence × PPO — comparação descritiva",
         "",
         f"- Snapshots válidos da Composition Intelligence: **{len(records)}**",
-        f"- Decisões PPO encontradas na auditoria: **{sum(ppo_actions.values())}**",
+        f"- Decisões PPO encontradas na auditoria: **{sum(ppo_actions.values())}** ({ppo_source})",
         "",
         "As distribuições são agregadas e não representam correspondência ação-a-ação.",
         "",
