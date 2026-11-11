@@ -263,3 +263,13 @@ def test_same_composition_sequence_with_different_payload_is_preserved_and_flagg
     assert index["composition_duplicate_count"] == 1
     assert index["composition_sequence_conflict_count"] == 1
     assert index["groups"][0]["composition_snapshot_count"] == 2
+
+
+
+def test_unrecognized_source_schema_is_reported_as_incompatible():
+    record = _composition()
+    record["schema_version"] = 2
+    index = build_integrated_audit_index([], [], [record], match_id="match-a")
+    assert index["incompatible_schemas"] == [
+        {"schema_version": 2, "sequence": 10, "player_id": 0}
+    ]
