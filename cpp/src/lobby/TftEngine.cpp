@@ -3810,25 +3810,70 @@ struct TFTEngine::Impl {
                 runtime.mark_stage("diagnostic_recording", "completed",
                     "read-only diagnostic snapshot assembled", active);
                 auto diagnostic_json = diagnostic.to_json();
-                const bool same_initial_candidate_set =
+                nlohmann::json baseline_candidate_scores = nlohmann::json::array();
+                for (std::size_t score_index = 0;
+                     score_index < composition_actions.evaluation.candidate_scores.size(); ++score_index) {
+                    const auto& score = composition_actions.evaluation.candidate_scores[score_index];
+                    baseline_candidate_scores.push_back({
+                        {"candidate_index", score_index},
+                        {"kind", static_cast<int>(score.kind)},
+                        {"champion_id", score.champion_id},
+                        {"available", score.available},
+                        {"selected", score.selected},
+                        {"components", {
+                            {"board", score.board_component},
+                            {"survival", score.survival_component},
+                            {"streak", score.streak_component},
+                            {"composition", score.composition_component},
+                            {"upgrade", score.upgrade_component},
+                            {"posture", score.posture_component},
+                            {"direct_cost", score.direct_cost_component},
+                            {"lost_interest", score.lost_interest_component},
+                            {"opportunity_cost", score.opportunity_cost_component},
+                            {"total", score.total_score}
+                        }}
+                    });
+                }
+                bool same_initial_candidate_set =
                     composition_actions.candidates.size() == contextual_actions.candidates.size() &&
                     composition_actions.candidates.size() == strategic_context.action_candidates.size();
-                const bool evaluator_diverged =
-                    composition_actions.evaluation.recommended_action != contextual_actions.recommended_action ||
-                    composition_actions.evaluation.recommended_champion_id != contextual_actions.recommended_champion_id;
+                if (same_initial_candidate_set) {
+                    for (std::size_t candidate_index = 0;
+                         candidate_index < strategic_context.action_candidates.size(); ++candidate_index) {
+                        const auto& source = strategic_context.action_candidates[candidate_index];
+                        const auto& baseline_candidate = composition_actions.candidates[candidate_index];
+                        const auto& contextual_candidate = contextual_actions.candidates[candidate_index];
+                        if (baseline_candidate.candidate_index != candidate_index ||
+                            contextual_candidate.candidate_index != candidate_index ||
+                            baseline_candidate.kind != source.kind ||
+                            baseline_candidate.champion_id != source.champion_id ||
+                            contextual_candidate.kind != source.kind ||
+                            contextual_candidate.champion_id != source.champion_id) {
+                            same_initial_candidate_set = false;
+                            break;
+                        }
+                    }
+                }
+                const bool comparison_available = !composition_actions.stale && !contextual_actions.stale;
+                const bool evaluator_diverged = comparison_available &&
+                    (composition_actions.evaluation.recommended_action != contextual_actions.recommended_action ||
+                     composition_actions.evaluation.recommended_champion_id != contextual_actions.recommended_champion_id);
                 diagnostic_json["action_evaluator_comparison"] = {
                     {"schema_version", 1},
                     {"baseline", {
                         {"implementation", "CompositionActionEvaluator#209"},
                         {"recommended_action", static_cast<int>(composition_actions.evaluation.recommended_action)},
                         {"recommended_champion_id", composition_actions.evaluation.recommended_champion_id},
+                        {"reason_code", static_cast<int>(composition_actions.evaluation.reason)},
                         {"confidence_not_probability", composition_actions.evaluation.confidence},
                         {"candidate_count", composition_actions.candidates.size()},
+                        {"candidate_scores", baseline_candidate_scores},
                         {"stale", composition_actions.stale},
                         {"stale_reason", composition_actions.stale_reason}
                     }},
                     {"contextual", contextual_actions.to_json()},
                     {"comparison", {
+                        {"comparison_available", comparison_available},
                         {"same_initial_candidate_set", same_initial_candidate_set},
                         {"initial_candidate_count", strategic_context.action_candidates.size()},
                         {"baseline_candidate_count", composition_actions.candidates.size()},
