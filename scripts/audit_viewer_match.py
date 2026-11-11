@@ -1759,7 +1759,16 @@ def audit_json(path: Path, doc: dict, report: dict, loop_window: int, comp_windo
     audit_item_state(entries, player, report)
     audit_positioning_and_composition(entries, player, report)
     audit_team_progression(entries, player, report)
+    timeline_start = len(report.setdefault("decision_timeline", []))
+    outcomes_start = len(report.setdefault("round_outcome_timeline", []))
     audit_decision_context(entries, player, report)
+    document_match_id = doc.get("match_id")
+    if document_match_id:
+        for event in report["decision_timeline"][timeline_start:]:
+            event["match_id"] = document_match_id
+        for outcome in report["round_outcome_timeline"][outcomes_start:]:
+            outcome["match_id"] = document_match_id
+        report.setdefault("session_metadata", {}).setdefault("match_id", document_match_id)
     report["log_files"].append(str(path))
 
     entries = sorted(entries, key=lambda e: (e.get("sequence_id", 0), e.get("step", 0)))
