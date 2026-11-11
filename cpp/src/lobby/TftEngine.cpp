@@ -2952,7 +2952,8 @@ struct TFTEngine::Impl {
             const auto plan = strategy::CompositionPlanner::build(
                 catalog->all(), trait_milestones, info.composition_direction,
                 plan_focus, owned_copies, planning_slots, economy.level,
-                available_copies, currently_offered, &live_context);
+                available_copies, currently_offered, &live_context,
+                -1, composition_intelligence_enabled);
             if (composition_intelligence_enabled) {
                 composition_intelligence_native_candidates[i] =
                     plan.native_candidates;
