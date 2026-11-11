@@ -107,7 +107,7 @@ def _recommendations(record: dict) -> dict[str, Any]:
             "raw_action": raw,
             "champion_id": item.get("recommended_champion_id"),
             "stale": bool(item.get("stale", False)),
-            "available": not bool(item.get("stale", False)) and category is not None,
+            "available": not bool(item.get("stale", False)) and category not in (None, "NONE"),
         }
     return result
 
@@ -354,11 +354,18 @@ def build_integrated_audit_index(
             event_time = _timestamp_ms(event.get("timestamp"))
             action = str(event.get("action_name") or event.get("raw_action") or "UNKNOWN").upper()
             actual = PPO_ACTION_CATEGORIES.get(action)
-            if event_time is None or not usable:
+            event_comp_id = event.get("composition_id")
+            event_comp_version = event.get("composition_version")
+            eligible_snapshots = [
+                pair for pair in usable
+                if (event_comp_id is None or pair[1].get("composition_id") == event_comp_id)
+                and (event_comp_version is None or pair[1].get("composition_version") == event_comp_version)
+            ]
+            if event_time is None or not eligible_snapshots:
                 comparison["baseline"]["unavailable"] += 1
                 comparison["contextual"]["unavailable"] += 1
                 continue
-            nearest_time, record = min(usable, key=lambda pair: abs(pair[0] - event_time))
+            nearest_time, record = min(eligible_snapshots, key=lambda pair: abs(pair[0] - event_time))
             if abs(nearest_time - event_time) > 30_000:
                 comparison["baseline"]["unavailable"] += 1
                 comparison["contextual"]["unavailable"] += 1
