@@ -132,7 +132,7 @@ def build_integrated_audit_index(
     duplicate_sequences = []
     out_of_order_sequences = []
     sequence_by_player: dict[int, list[int]] = defaultdict(list)
-    seen_comp_keys: set[tuple] = set()
+    seen_comp_keys: set[tuple] = set()\n    seen_player_event_keys: set[tuple] = set()\n    player_duplicate_count = 0\n    global_sequences: list[int] = []
     duplicate_comp_count = 0
     incompatible_schemas = []
 
@@ -154,6 +154,13 @@ def build_integrated_audit_index(
         rnd = _round(event.get("round"))
         if pid is None or rnd is None:
             continue
+        event_sequence = event.get("sequence_id")
+        if isinstance(event_sequence, int):
+            event_key = (pid, event_sequence)
+            if event_key in seen_player_event_keys:
+                player_duplicate_count += 1
+                continue
+            seen_player_event_keys.add(event_key)
         group = group_for(pid, rnd)
         action = str(event.get("action_name") or event.get("raw_action") or "UNKNOWN").upper()
         category = PPO_ACTION_CATEGORIES.get(action)
@@ -219,13 +226,14 @@ def build_integrated_audit_index(
         if match_id and str(record_match) != str(match_id):
             continue
         if isinstance(sequence, int):
-            key = (str(record_match), pid, sequence)
+            key = (str(record_match), sequence)
             if key in seen_comp_keys:
                 duplicate_comp_count += 1
                 duplicate_sequences.append({"player_id": pid, "sequence": sequence})
                 continue
             seen_comp_keys.add(key)
             sequence_by_player[pid].append(sequence)
+            global_sequences.append(sequence)
         group = group_for(pid, rnd)
         recommendations = _recommendations(record)
         item = {
@@ -284,7 +292,7 @@ def build_integrated_audit_index(
     comparison = {
         "baseline": {"compared": 0, "matches": 0, "divergences": 0, "unavailable": 0},
         "contextual": {"compared": 0, "matches": 0, "divergences": 0, "unavailable": 0},
-        "method": "nearest timestamp within same player and round; no timestamp means unavailable",
+        "method": "nearest timestamp within same player/round and at most 30 seconds; otherwise unavailable",
         "policy_action_is_not_ground_truth": True,
     }
     for key, events in player_decisions.items():
@@ -296,6 +304,8 @@ def build_integrated_audit_index(
             if rec_time is None:
                 corr = record.get("correlation") or {}
                 rec_time = _timestamp_ms(corr.get("timestamp_unix_ms"))
+            if rec_time is None:
+                rec_time = _timestamp_ms(record.get("timestamp"))
             if rec_time is not None:
                 usable.append((rec_time, record))
         for event in events:
@@ -306,7 +316,11 @@ def build_integrated_audit_index(
                 comparison["baseline"]["unavailable"] += 1
                 comparison["contextual"]["unavailable"] += 1
                 continue
-            _, record = min(usable, key=lambda pair: abs(pair[0] - event_time))
+            nearest_time, record = min(usable, key=lambda pair: abs(pair[0] - event_time))
+            if abs(nearest_time - event_time) > 30_000:
+                comparison["baseline"]["unavailable"] += 1
+                comparison["contextual"]["unavailable"] += 1
+                continue
             recommendations = _recommendations(record)
             for source in ("baseline", "contextual"):
                 recommendation = recommendations[source]
@@ -353,8 +367,10 @@ def build_integrated_audit_index(
         "composition_envelope_missing_count": len(missing_envelope),
         "composition_envelope_missing": missing_envelope[:100],
         "composition_duplicate_count": duplicate_comp_count,
+        "player_log_duplicate_count": player_duplicate_count,
         "duplicate_sequences": duplicate_sequences[:100],
         "out_of_order_sequences": out_of_order_sequences[:100],
+        "sequence_gaps": sorted(set(range(min(global_sequences), max(global_sequences) + 1)) - set(global_sequences))[:100] if global_sequences else [],
         "incompatible_schemas": incompatible_schemas[:100],
         "parse_errors": errors,
         "recommendation_vs_ppo": comparison,
