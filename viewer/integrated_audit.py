@@ -249,7 +249,7 @@ def build_integrated_audit_index(
             })
             producer_counts["strategic_planner"] += 1
         group["ppo_actions"].append(decision)
-        player_decisions[(event_match, pid, rnd)].append(event)
+        player_decisions[(event_match, pid, rnd)].append(decision)
         producer_counts["ppo"] += 1
         if _economic_controller_available(event):
             economy = event.get("economic_diagnostics") or {}
@@ -473,8 +473,8 @@ def build_integrated_audit_index(
                 usable.append((rec_time, record))
         for event in events:
             event_time = _timestamp_ms(event.get("timestamp"))
-            action = str(event.get("action_name") or event.get("raw_action") or "UNKNOWN").upper()
-            actual = PPO_ACTION_CATEGORIES.get(action)
+            action = str(event.get("action") or "UNKNOWN").upper()
+            actual = event.get("normalized_category") or PPO_ACTION_CATEGORIES.get(action)
             event_comp_id = event.get("composition_id")
             event_comp_version = event.get("composition_version")
             eligible_snapshots = [
