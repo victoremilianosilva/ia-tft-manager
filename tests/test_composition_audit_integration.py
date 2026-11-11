@@ -55,3 +55,12 @@ def test_session_audit_generates_composition_reports_in_audit_directory(tmp_path
     assert "Alvo da composição ainda não possuído." in composition
     assert "Recomendações da Composition Intelligence" in comparison
     assert "PASS" in comparison
+
+    integrated = (audit_dir / "audit_integrado.md").read_text(encoding="utf-8")
+    assert "Índice integrado de auditoria" in integrated
+    assert "Envelopes de composição incompletos: 1" in integrated
+    report = json.loads((audit_dir / "audit_report.json").read_text(encoding="utf-8"))
+    index = report["integrated_audit_index"]
+    assert index["composition_envelope_missing_count"] == 1
+    assert index["groups"][0]["ppo_action_count"] == 1
+    assert index["groups"][0]["composition_snapshot_count"] == 0
