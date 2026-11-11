@@ -111,7 +111,7 @@ int main() {
     cost_aware.units = {
         unit(70, {"LowCost"}, 1, true, false, false, false, true, 1.0, 1),
         unit(71, {"LowCost"}, 1, false, true, false, false, false, 0.0, 1),
-        unit(72, {"HighCost"}, 1, true, false, false, true, true, 1.0, 5),
+        unit(72, {"HighCost"}, 1, true, false, false, false, true, 1.0, 5),
         unit(73, {"HighCost"}, 1, false, true, false, false, false, 0.0, 5)
     };
     result = discovery.evaluate(cost_aware);
