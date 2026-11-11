@@ -236,6 +236,12 @@ class ViewerSession:
                 "observation_dim": current_obs_dim,
                 "action_dims": list(action_dims),
                 "log_format": "structured JSON sidecar plus legacy UTF-8 TFT text log, one pair per player",
+                "composition_diagnostics": {
+                    "file": "composition_diagnostics.jsonl",
+                    "schema_version": 1,
+                    "correlation_envelope_version": 1,
+                    "match_id_source": "ViewerSession.match_id",
+                },
                 "player_log_files": log_files,
                 "structured_player_log_files": structured_log_files,
                 "decision_audit_fields": [
@@ -295,10 +301,13 @@ class ViewerSession:
                     continue
                 timestamp_ms = record.get("timestamp_unix_ms")
                 timestamp = None
-                if isinstance(timestamp_ms, (int, float)):
-                    timestamp = datetime.fromtimestamp(
-                        float(timestamp_ms) / 1000.0, tz=timezone.utc
-                    ).isoformat()
+                if isinstance(timestamp_ms, (int, float)) and not isinstance(timestamp_ms, bool):
+                    try:
+                        timestamp = datetime.fromtimestamp(
+                            float(timestamp_ms) / 1000.0, tz=timezone.utc
+                        ).isoformat()
+                    except (OverflowError, OSError, ValueError):
+                        timestamp = None
                 player_id = record.get("player_id")
                 round_number = record.get("round")
                 sequence = record.get("sequence")
