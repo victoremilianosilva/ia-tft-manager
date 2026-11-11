@@ -63,8 +63,8 @@ void valid_board_evidence_is_bound_to_lineup_version() {
     LineupPlannerContext c;
     c.level = 6;
     c.board_capacity = 6;
-    c.planner_evidence = new PlannerEvidenceSnapshot{};
-    auto* evidence = const_cast<PlannerEvidenceSnapshot*>(c.planner_evidence);
+    PlannerEvidenceSnapshot evidence;
+    c.planner_evidence = &evidence;
     evidence->match_id = 123;
     evidence->player_id = 2;
     evidence->composition_id = active.candidate.composition_id;
@@ -92,7 +92,6 @@ void valid_board_evidence_is_bound_to_lineup_version() {
     assert(result.observed_frontline_count == 3);
     assert(result.observed_exposed_carry_count == 1);
     assert(result.observed_missing_backline_count == 1);
-    delete evidence;
 }
 
 void stale_snapshot_is_rejected() {
