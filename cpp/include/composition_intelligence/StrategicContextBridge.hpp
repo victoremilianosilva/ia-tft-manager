@@ -5,6 +5,7 @@
 #include <optional>
 #include <string>
 #include <utility>
+#include <vector>
 #include <nlohmann/json.hpp>
 
 namespace tft::composition_intelligence {
@@ -37,13 +38,15 @@ struct StrategicContextBridgeSnapshot {
     ContextBridgeValue<double> hp,board_power,relative_board_power,direction_score,strategic_confidence,economic_confidence;
     ContextBridgeValue<std::int32_t> gold,level,xp,xp_to_next,win_streak,loss_streak;
     ContextBridgeValue<bool> composition_locked,direction_viable;
-    ContextBridgeValue<std::string> observed_direction,recommended_direction,composition_decision,economic_posture;
+    ContextBridgeValue<std::string> observed_direction,observed_focus,progression_plan,recommended_direction,composition_decision,economic_posture;
+    ContextBridgeValue<std::vector<std::string>> core_traits;
+    ContextBridgeValue<std::uint32_t> stage;
     nlohmann::json to_json() const {
         const auto field=[](const auto& v){nlohmann::json j={{"origin",context_value_origin_name(v.origin)},{"quality",context_bridge_quality_name(v.quality)},{"source",v.source},{"reason",v.reason}};j["value"]=v.value?nlohmann::json(*v.value):nlohmann::json(nullptr);return j;};
         return {
           {"metadata",{{"schema_version",metadata.schema_version},{"match_id",metadata.match_id},{"player_id",metadata.player_id},{"round",metadata.round},{"timestamp_unix_ms",metadata.timestamp_unix_ms},{"sequence",metadata.sequence},{"composition_id",metadata.composition_id},{"composition_version",metadata.composition_version},{"quality",context_bridge_quality_name(metadata.quality)},{"reason",metadata.reason}}},
-          {"observed",{{"hp",field(hp)},{"gold",field(gold)},{"level",field(level)},{"xp",field(xp)},{"xp_to_next",field(xp_to_next)},{"win_streak",field(win_streak)},{"loss_streak",field(loss_streak)},{"composition_locked",field(composition_locked)},{"direction",field(observed_direction)}}},
-          {"derived",{{"board_power",field(board_power)},{"relative_board_power",field(relative_board_power)},{"direction_score",field(direction_score)},{"direction_viable",field(direction_viable)}}},
+          {"observed",{{"hp",field(hp)},{"gold",field(gold)},{"level",field(level)},{"xp",field(xp)},{"xp_to_next",field(xp_to_next)},{"win_streak",field(win_streak)},{"loss_streak",field(loss_streak)},{"composition_locked",field(composition_locked)},{"direction",field(observed_direction)},{"focus",field(observed_focus)},{"core_traits",field(core_traits)}}},
+          {"derived",{{"board_power",field(board_power)},{"relative_board_power",field(relative_board_power)},{"direction_score",field(direction_score)},{"direction_viable",field(direction_viable)},{"stage",field(stage)},{"progression_plan",field(progression_plan)}}},
           {"recommended",{{"direction",field(recommended_direction)},{"composition_decision",field(composition_decision)},{"economic_posture",field(economic_posture)},{"strategic_confidence",field(strategic_confidence)},{"economic_confidence",field(economic_confidence)}}}
         };
     }
@@ -78,6 +81,10 @@ public:
         set(out.loss_streak,c.loss_streak,ContextValueOrigin::Observed,"StrategicSharedContext","live_economy_state");
         set(out.composition_locked,c.composition_locked,ContextValueOrigin::Observed,"StrategicSharedContext","live_composition_state");
         set(out.observed_direction,c.current_composition_direction,ContextValueOrigin::Observed,"StrategicSharedContext","live_composition_state");
+        set(out.observed_focus,c.current_composition_focus,ContextValueOrigin::Observed,"StrategicSharedContext","live_composition_state");
+        set(out.core_traits,c.current_core_traits,ContextValueOrigin::Observed,"StrategicSharedContext","live_composition_state");
+        set(out.stage,c.stage,ContextValueOrigin::Derived,"StrategicSharedContext","round_stage_mapping");
+        set(out.progression_plan,progression_name(c.progression_plan),ContextValueOrigin::Derived,"StrategicSharedContext","current_economic_strategy_mapping");
         set(out.board_power,c.board_power,ContextValueOrigin::Derived,"StrategicSharedContext","board_power_estimate");
         set(out.relative_board_power,c.relative_board_power,ContextValueOrigin::Derived,"StrategicSharedContext","relative_to_lobby_average");
         set(out.direction_score,c.current_direction_score,ContextValueOrigin::Derived,"StrategicSharedContext","planner_direction_score");
@@ -93,6 +100,9 @@ public:
         return out;
     }
 private:
+    static const char* progression_name(strategy::ProgressionPlan v) noexcept {
+        switch(v){case strategy::ProgressionPlan::Flexible:return "FLEXIBLE";case strategy::ProgressionPlan::StandardLeveling:return "STANDARD_LEVELING";case strategy::ProgressionPlan::LevelToEight:return "LEVEL_TO_EIGHT";case strategy::ProgressionPlan::LevelToNine:return "LEVEL_TO_NINE";case strategy::ProgressionPlan::RerollForThreeStar:return "REROLL_FOR_THREE_STAR";}return "UNKNOWN";
+    }
     static const char* decision_name(strategy::CompositionDecision v) noexcept {
         switch(v){case strategy::CompositionDecision::Keep:return "KEEP";case strategy::CompositionDecision::Adapt:return "ADAPT";case strategy::CompositionDecision::Pivot:return "PIVOT";case strategy::CompositionDecision::Abandon:return "ABANDON";case strategy::CompositionDecision::InitialSelection:return "INITIAL_SELECTION";case strategy::CompositionDecision::InsufficientEvidence:return "INSUFFICIENT_EVIDENCE";}return "UNKNOWN";
     }
