@@ -3650,14 +3650,14 @@ struct TFTEngine::Impl {
                     evidence.board = ci::PlannerEvidenceAdapters::board(
                         board_evaluation(i), version, round_id, round_id);
                     if (player_envs[i].item_engine) {
-                        ci::ItemPlayerState item_state;
+                        items::ItemPlayerState item_state;
                         item_state.components = player_envs[i].item_engine->components();
                         item_state.inventory = player_envs[i].item_engine->inventory();
                         std::vector<ci::ItemUnitBinding> item_bindings;
                         const auto append_item_binding = [&](const UnitInstance& unit) {
                             const auto* definition = catalog->find_by_id(unit.champion_internal_id);
                             if (!definition || unit.uuid.empty()) return;
-                            ci::items::UnitProfile profile;
+                            items::UnitProfile profile;
                             profile.uuid = unit.uuid;
                             profile.star = unit.star;
                             profile.role = definition->combat_profile.role;
