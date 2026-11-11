@@ -69,3 +69,58 @@ def test_report_labels_confidence_and_outcome_as_non_probabilistic_and_correlati
     rendered = format_diagnostic_audit([_record()], report)
     assert "não uma probabilidade" in rendered
     assert "não prova de causalidade" in rendered
+
+
+def test_loader_recovers_legacy_literal_backslash_n_separators(tmp_path):
+    path = tmp_path / "composition_diagnostics.jsonl"
+    path.write_text(json.dumps(_record(1)) + r"\n" + json.dumps(_record(2)), encoding="utf-8")
+
+    records, errors = load_diagnostic_jsonl(path)
+
+    assert len(records) == 2
+    assert errors == []
+
+
+def test_audit_deduplicates_repeated_snapshots_into_strategic_reviews_and_unit_intents():
+    first = _record(1, round_number=5, version=3)
+    repeated = _record(2, round_number=5, version=3)
+    for record in (first, repeated):
+        record["player_id"] = 2
+        record["diagnostics"]["unit_intentions"] = [{
+            "champion_id": 44,
+            "intent": "KEEP",
+            "relation": "ACTIVE_CORE",
+            "priority": 8,
+            "confidence_not_probability": 0.75,
+            "target_star": 2,
+            "reasons": [{"code": 1, "message": "Core da composição ativa."}],
+        }]
+
+    report = audit_diagnostic_records([first, repeated])
+
+    assert report["record_count"] == 2
+    assert report["unique_review_count"] == 1
+    assert report["reviews"][0]["observations"] == 2
+    assert report["intent_counts"]["KEEP"] == 1
+    assert report["observed_intent_counts"]["KEEP"] == 2
+    assert report["unique_intent_count"] == 1
+    assert report["unique_intents"][0]["observations"] == 2
+
+
+def test_composition_audit_reports_unique_unit_intentions_and_real_line_breaks():
+    record = _record()
+    record["player_id"] = 0
+    record["diagnostics"]["unit_intentions"] = [{
+        "champion_id": 10, "intent": "SEEK", "relation": "MISSING_TARGET",
+        "priority": 4, "confidence_not_probability": 0.4,
+        "reasons": [{"code": 2, "message": "Unidade alvo ainda não possuída."}],
+    }]
+    report = audit_diagnostic_records([record])
+    rendered = format_diagnostic_audit([record], report)
+
+    assert "Revisões estratégicas únicas" in rendered
+    assert "| SEEK | 1 | 1 |" in rendered
+    assert "Jogador 1" in rendered
+    assert "Unidade alvo ainda não possuída." in rendered
+    assert "\\n" in rendered
+    assert "\\\\n" not in rendered
