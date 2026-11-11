@@ -508,6 +508,7 @@ struct TFTEngine::Impl {
     std::vector<composition_intelligence::CompositionCandidate> composition_intelligence_candidates;
     std::vector<std::string> composition_intelligence_catalog_diagnostics;
     std::uint64_t composition_intelligence_sequence{0};
+    bool composition_intelligence_enabled{false};
 
 
     // Serviços compartilhados pela lobby, não pertencem a um jogador.
@@ -547,6 +548,12 @@ struct TFTEngine::Impl {
         catalog = std::make_unique<ChampionCatalog>(
             resolved_path
         );
+
+        const char* shadow_enabled = std::getenv("TFT_COMPOSITION_INTELLIGENCE_SHADOW");
+        composition_intelligence_enabled = shadow_enabled &&
+            (std::string(shadow_enabled) == "1" ||
+             std::string(shadow_enabled) == "true" ||
+             std::string(shadow_enabled) == "yes");
 
         try {
             const char* configured_meta = std::getenv("TFT_OPGG_META_CATALOG");
@@ -3538,7 +3545,8 @@ struct TFTEngine::Impl {
             const auto action_decision = action_evaluator.evaluate(
                 strategic_context, economic_decision);
 
-            // New Composition Intelligence pipeline: per-player shadow state only.
+            // New Composition Intelligence pipeline: opt-in Viewer-only shadow state.
+            if (composition_intelligence_enabled) {
             try {
             {
                 namespace ci = composition_intelligence;
@@ -3726,6 +3734,7 @@ struct TFTEngine::Impl {
                     {"catalog_diagnostics", composition_intelligence_catalog_diagnostics}
                 };
                 composition_intelligence_players[i].snapshots.push_back(std::move(failed));
+            }
             }
 
             static const std::array<const char*, 7> economic_posture_names{
