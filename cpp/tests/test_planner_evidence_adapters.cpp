@@ -43,4 +43,26 @@ void combine_test(){
  auto s=PlannerEvidenceAdapters::combine("comp-X",9,15,{},{},{});
  assert(s.composition_id=="comp-X"&&s.composition_version==9&&s.round==15);
 }
-int main(){economy_test();board_test();item_test();combine_test();std::cout<<"Planner evidence adapter tests passed\n";}
+
+void identity_and_source_freshness_are_enforced() {
+ PlannerEvidenceSnapshot snapshot;
+ snapshot.match_id=77;snapshot.player_id=2;snapshot.composition_id="comp-A";
+ snapshot.composition_version=5;snapshot.round=16;
+ const auto set_valid=[&](EvidenceSourceMetadata& m,const std::string& source) {
+  m.source=source;m.source_version=5;m.match_id=77;m.player_id=2;
+  m.composition_id="comp-A";m.source_round=16;m.expected_round=16;
+  m.quality=EvidenceQuality::Valid;m.available=true;
+ };
+ set_valid(snapshot.economy.metadata,"EconomicController");
+ set_valid(snapshot.board.metadata,"BoardEvaluation");
+ set_valid(snapshot.items.metadata,"ItemEngine");
+ assert(PlannerEvidenceAdapters::snapshot_identity_matches(snapshot,77,2,"comp-A",5,16));
+ assert(PlannerEvidenceAdapters::source_matches(snapshot.economy.metadata,77,2,"comp-A",5,16));
+ assert(!PlannerEvidenceAdapters::snapshot_identity_matches(snapshot,77,1,"comp-A",5,16));
+ assert(!PlannerEvidenceAdapters::snapshot_identity_matches(snapshot,77,2,"comp-A",6,16));
+ assert(!PlannerEvidenceAdapters::source_matches(snapshot.board.metadata,77,2,"comp-A",5,17));
+ snapshot.items.metadata.quality=EvidenceQuality::Partial;
+ assert(!PlannerEvidenceAdapters::source_matches(snapshot.items.metadata,77,2,"comp-A",5,16));
+}
+
+int main(){economy_test();board_test();item_test();combine_test();identity_and_source_freshness_are_enforced();std::cout<<"Planner evidence adapter tests passed\n";}
