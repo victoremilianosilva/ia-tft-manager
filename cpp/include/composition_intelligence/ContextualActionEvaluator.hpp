@@ -164,6 +164,7 @@ public:
 
         double best_score = 0.0; // HOLD remains the explicit zero-value option.
         std::size_t selected_index = std::numeric_limits<std::size_t>::max();
+        std::size_t hold_candidate_index = std::numeric_limits<std::size_t>::max();
         out.candidates.reserve(context.action_candidates.size());
         for (std::size_t i = 0; i < context.action_candidates.size(); ++i) {
             const auto& candidate = context.action_candidates[i];
@@ -244,8 +245,11 @@ public:
                     (lost_interest * 0.12) + (std::max(opportunity, evidence_cost) * 0.14);
                 score.total_score = score.board_value + score.unit_priority_value +
                     score.lineup_value + score.upgrade_value - score.economy_cost;
-                if (candidate.kind == strategy::StrategicActionKind::Hold)
+                if (candidate.kind == strategy::StrategicActionKind::Hold) {
                     score.total_score = 0.0;
+                    if (hold_candidate_index == std::numeric_limits<std::size_t>::max())
+                        hold_candidate_index = i;
+                }
                 if (score.total_score > best_score) {
                     best_score = score.total_score;
                     selected_index = i;
@@ -255,6 +259,11 @@ public:
                 }
             }
             out.candidates.push_back(std::move(score));
+        }
+        if (selected_index == std::numeric_limits<std::size_t>::max() &&
+            hold_candidate_index != std::numeric_limits<std::size_t>::max()) {
+            selected_index = hold_candidate_index;
+            out.rationale = "no_positive_contextual_candidate";
         }
         if (selected_index != std::numeric_limits<std::size_t>::max()) {
             out.candidates[selected_index].selected = true;
