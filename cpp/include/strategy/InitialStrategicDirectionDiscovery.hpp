@@ -46,6 +46,8 @@ struct DirectionDiscoveryTrait {
 
 struct DirectionDiscoveryInput {
     std::uint32_t round{0};
+    // -1 means the economy snapshot did not provide a trustworthy gold value.
+    std::int32_t gold_available{-1};
     bool composition_defined{false};
     std::string active_composition_identity;
     std::vector<DirectionDiscoveryUnit> units;
@@ -107,6 +109,7 @@ public:
             bool pair{false};
             bool carry{false};
             bool core{false};
+            std::int32_t cheapest_cost{0};
         };
         std::map<std::string, Aggregate> by_trait;
         std::set<std::int32_t> seen_ids;
@@ -137,6 +140,8 @@ public:
                     a.pair = a.pair || unit.copies_owned >= 2;
                     a.carry = a.carry || unit.carry_potential;
                     a.core = a.core || unit.core_potential;
+                    if (a.cheapest_cost == 0 || unit.cost < a.cheapest_cost)
+                        a.cheapest_cost = unit.cost;
                 }
                 if (unit.in_shop) {
                     a.shop_units.insert(unit.champion_id);
@@ -170,8 +175,17 @@ public:
             const double carry_score = a.carry ? 1.0 : 0.0;
             const double core_score = a.core ? 0.75 : 0.0;
             const double board_score = std::min(0.5, a.board_value * 0.1);
+            const auto missing_for_synergy = std::max(0, threshold - reachable);
+            const double estimated_pursuit_cost =
+                static_cast<double>(missing_for_synergy * a.cheapest_cost);
+            const double cost_penalty = std::min(0.75, a.cheapest_cost * 0.08);
+            const double affordability_penalty =
+                input.gold_available >= 0 && estimated_pursuit_cost > input.gold_available
+                    ? std::min(1.0, (estimated_pursuit_cost - input.gold_available) * 0.1)
+                    : 0.0;
             const double score = pair_score + support_score + synergy_score +
-                shop_score + carry_score + core_score + board_score;
+                shop_score + carry_score + core_score + board_score -
+                cost_penalty - affordability_penalty;
 
             // Convert the explainable heuristic score to a ranking confidence,
             // not a calibrated probability.
@@ -212,7 +226,10 @@ public:
                 ";shop=" + std::to_string(shop_score) +
                 ";carry=" + std::to_string(carry_score) +
                 ";core=" + std::to_string(core_score) +
-                ";board=" + std::to_string(board_score);
+                ";board=" + std::to_string(board_score) +
+                ";estimated_pursuit_cost=" + std::to_string(estimated_pursuit_cost) +
+                ";cost_penalty=" + std::to_string(cost_penalty) +
+                ";affordability_penalty=" + std::to_string(affordability_penalty);
             out.hypotheses.push_back(std::move(h));
         }
 
