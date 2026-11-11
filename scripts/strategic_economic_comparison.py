@@ -692,6 +692,57 @@ def build_shadow_markdown_reports(report: dict) -> dict[str, str]:
         "",
     ]
 
+    # Candidate coverage is reported per player/round. These are action-level
+    # observations, not independent strategic reviews; repeated snapshots are
+    # intentionally labelled as observations.
+    anchor_coverage = defaultdict(lambda: {
+        "observations": 0, "insufficient": 0, "anchors_considered": 0,
+        "candidates_generated": 0, "rejected_cost_below_four": 0,
+        "no_cost_four_or_five_anchor": 0, "no_high_cost_anchor_units_seen": 0,
+    })
+    for decision, shadow in available:
+        coverage_key = (str(decision.get("player", "?")), str(decision.get("round", "?")))
+        bucket = anchor_coverage[coverage_key]
+        bucket["observations"] += 1
+        bucket["insufficient"] += int(
+            shadow.get("strategic_decision_name") == "INSUFFICIENT_EVIDENCE"
+        )
+        for metric in ("anchors_considered", "candidates_generated", "rejected_cost_below_four"):
+            try:
+                bucket[metric] += int(shadow.get(metric) or 0)
+            except (TypeError, ValueError):
+                pass
+        generation_reason = str(shadow.get("candidate_generation_reason") or "")
+        if generation_reason == "no_cost_four_or_five_anchor":
+            bucket["no_cost_four_or_five_anchor"] += 1
+        elif generation_reason == "no_high_cost_anchor_units_seen":
+            bucket["no_high_cost_anchor_units_seen"] += 1
+
+    strategy += [
+        "", "### Cobertura de âncoras por jogador/round", "",
+        "| Jogador | Round | Observações | INSUFFICIENT_EVIDENCE | Âncoras consideradas | Candidatos gerados | Rejeitados por custo < 4 | Sem âncora custo 4/5 | Sem unidades âncora |",
+        "|---|---|---:|---:|---:|---:|---:|---:|---:|",
+    ]
+    for (player, round_id), coverage in sorted(
+        anchor_coverage.items(),
+        key=lambda item: (item[0][0], OutcomeEvaluator._round_order(item[0][1])),
+    ):
+        strategy.append("| " + " | ".join(_cell(value) for value in (
+            player, round_id, coverage["observations"], coverage["insufficient"],
+            coverage["anchors_considered"], coverage["candidates_generated"],
+            coverage["rejected_cost_below_four"], coverage["no_cost_four_or_five_anchor"],
+            coverage["no_high_cost_anchor_units_seen"],
+        )) + " |")
+    if not anchor_coverage:
+        strategy.append("| — | — | 0 | 0 | 0 | 0 | 0 | 0 | 0 |")
+    strategy += [
+        "",
+        "As contagens são observações por ação, não revisões independentes. "
+        "A rejeição por custo inferior a 4 reflete o filtro atual da geração de âncoras; "
+        "nenhuma direção inicial é inferida a partir desses candidatos rejeitados.",
+        "",
+    ]
+
     economy = header(
         "Economic Controller — posturas recomendadas",
         "A postura descreve a orientação econômica sugerida no instante anterior à ação do PPO."

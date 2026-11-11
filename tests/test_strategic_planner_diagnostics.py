@@ -98,3 +98,47 @@ def test_strategic_markdown_explains_insufficient_evidence():
     assert "Viável atual" in strategy
     assert "True" in strategy
     assert "Confiança da âncora e confiança da direção atual" in strategy
+
+
+
+def test_strategic_markdown_reports_anchor_coverage_per_player_round():
+    decisions = [
+        {
+            "event_type": "action", "player": "Jogador 1", "round": "2-1", "step": 10,
+            "state_after": {"shadow_planning": {
+                "strategic_decision_name": "INSUFFICIENT_EVIDENCE",
+                "candidate_generation_reason": "no_cost_four_or_five_anchor",
+                "anchors_considered": 8, "candidates_generated": 0,
+                "rejected_cost_below_four": 8,
+            }},
+        },
+        {
+            "event_type": "action", "player": "Jogador 1", "round": "2-1", "step": 11,
+            "state_after": {"shadow_planning": {
+                "strategic_decision_name": "INSUFFICIENT_EVIDENCE",
+                "candidate_generation_reason": "no_cost_four_or_five_anchor",
+                "anchors_considered": 9, "candidates_generated": 0,
+                "rejected_cost_below_four": 9,
+            }},
+        },
+        {
+            "event_type": "action", "player": "Jogador 1", "round": "2-2", "step": 20,
+            "state_after": {"shadow_planning": {
+                "strategic_decision_name": "KEEP",
+                "candidate_generation_reason": "candidate_generated",
+                "anchors_considered": 5, "candidates_generated": 1,
+                "rejected_cost_below_four": 2,
+            }},
+        },
+    ]
+    documents = build_shadow_markdown_reports({
+        "decision_timeline": decisions,
+        "round_outcome_timeline": [],
+        "players_seen": ["1"],
+    })
+    strategy = documents["audit_estrategia.md"]
+    assert "Cobertura de âncoras por jogador/round" in strategy
+    assert "| Jogador 1 | 2-1 | 2 | 2 | 17 | 0 | 17 | 2 | 0 |" in strategy
+    assert "| Jogador 1 | 2-2 | 1 | 0 | 5 | 1 | 2 | 0 | 0 |" in strategy
+    assert "revisões independentes" in strategy
+    assert "nenhuma direção inicial é inferida" in strategy
