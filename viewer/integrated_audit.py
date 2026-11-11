@@ -22,7 +22,7 @@ PPO_ACTION_CATEGORIES = {
 def _player_id(value: Any) -> int | None:
     if isinstance(value, int) and not isinstance(value, bool):
         return value
-    match = re.search(r"(?:Jogador\\s*)?(\\d+)", str(value or ""), re.IGNORECASE)
+    match = re.search(r"(?:Jogador\s*)?(\d+)", str(value or ""), re.IGNORECASE)
     if not match:
         return None
     number = int(match.group(1))
