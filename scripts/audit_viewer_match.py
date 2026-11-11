@@ -2788,7 +2788,9 @@ def main() -> int:
     markdown_inputs["_markdown_general"] = general_md
     markdown_inputs["_markdown_evidence"] = evidence_md
     markdown_documents = build_shadow_markdown_reports(markdown_inputs)
-    # BUY_XP coverage is generated from the same in-memory session reports.\n    add_buy_xp_coverage_report(markdown_documents)\n
+    # BUY_XP coverage is generated from the same in-memory session reports.
+    add_buy_xp_coverage_report(markdown_documents)
+
     # Composition Intelligence is audited in the same invocation and output
     # directory as the other session reports. The JSONL is an input artifact,
     # never rewritten or normalized in place.
