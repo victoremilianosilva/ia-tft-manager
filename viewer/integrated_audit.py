@@ -33,7 +33,15 @@ def _round(value: Any) -> int | None:
     try:
         return int(value)
     except (TypeError, ValueError):
-        return None
+        match = re.fullmatch(r"\\s*(\\d+)\\s*-\\s*(\\d+)\\s*", str(value or ""))
+        if not match:
+            return None
+        stage, round_in_stage = (int(part) for part in match.groups())
+        if stage < 1 or round_in_stage < 1:
+            return None
+        if stage == 1:
+            return round_in_stage
+        return 5 + (stage - 2) * 7 + (round_in_stage - 1)
 
 
 def _timestamp_ms(value: Any) -> int | None:
