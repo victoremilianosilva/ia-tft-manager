@@ -1,4 +1,7 @@
-from viewer.integrated_audit import (\n    build_integrated_audit_index, format_integrated_audit_markdown,\n    normalize_ppo_action, normalize_evaluator_action, classify_semantic_pair,\n)
+from viewer.integrated_audit import (
+    build_integrated_audit_index, format_integrated_audit_markdown,
+    normalize_ppo_action, normalize_evaluator_action, classify_semantic_pair,
+)
 
 
 def _decision(action="BUY", player="Jogador 1", round_number=3, timestamp="2026-11-11T12:00:00+00:00"):
