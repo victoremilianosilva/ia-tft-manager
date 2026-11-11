@@ -130,6 +130,10 @@ public:
             };
         } else p["published_transition"] = nullptr;
 
+        p["unit_priority_evidence_consumption"] = {
+            {"consumed", priorities.evidence_consumed},
+            {"rejected", priorities.evidence_rejected}
+        };
         p["unit_intentions"] = nlohmann::json::array();
         for (const auto& u : priorities.units) {
             nlohmann::json reasons = nlohmann::json::array();
