@@ -3683,27 +3683,6 @@ struct TFTEngine::Impl {
                     published_transition ? "approved transition published" :
                         (proposal.approved ? "publication rejected or stale" : "proposal not approved"),
                     active);
-                ci::UnitPriorityContext priority_context;
-                if (active) {
-                    priority_context.composition_id = active->candidate.composition_id;
-                    priority_context.composition_version = active->version;
-                    if (proposal.target) priority_context.transition = proposal.transition;
-                }
-                for (const auto& pair : owned_priority) priority_context.owned_units.push_back(pair.second);
-                for (const auto& pair : unit_evidence) priority_context.evidence.push_back(pair.second);
-                const auto priorities = ci::UnitPriorityPlanner{}.resolve(active, priority_context);
-                runtime.mark_stage("unit_priorities", priorities.stale ? "unavailable" : "completed",
-                    priorities.stale ? priorities.stale_reason : "priorities resolved against active version",
-                    active);
-
-                ci::LineupPlannerContext lineup_context;
-                lineup_context.level = static_cast<std::uint32_t>(std::max(1, economy.level));
-                lineup_context.board_capacity = static_cast<std::uint32_t>(std::clamp(economy.level, 1, 10));
-                lineup_context.current_board_ids.assign(on_board_ids.begin(), on_board_ids.end());
-                const auto lineup = ci::LineupPlanner{}.plan(active, priorities, lineup_context);
-                runtime.mark_stage("lineup", lineup.stale ? "unavailable" : "completed",
-                    lineup.stale ? lineup.stale_reason : lineup.status, active);
-
                 ci::PlannerEvidenceSnapshot evidence;
                 const auto version = active ? active->version : 0;
                 evidence.composition_id = active ? active->candidate.composition_id : "";
@@ -3757,6 +3736,28 @@ struct TFTEngine::Impl {
                 runtime.mark_stage("planner_evidence", version > 0 ? "completed" : "skipped",
                     version > 0 ? "economy/board/item evidence bound to active version" : "no active composition version",
                     active);
+
+                ci::UnitPriorityContext priority_context;
+                if (active) {
+                    priority_context.composition_id = active->candidate.composition_id;
+                    priority_context.composition_version = active->version;
+                    if (proposal.target) priority_context.transition = proposal.transition;
+                }
+                for (const auto& pair : owned_priority) priority_context.owned_units.push_back(pair.second);
+                for (const auto& pair : unit_evidence) priority_context.evidence.push_back(pair.second);
+                const auto priorities = ci::UnitPriorityPlanner{}.resolve(active, priority_context);
+                runtime.mark_stage("unit_priorities", priorities.stale ? "unavailable" : "completed",
+                    priorities.stale ? priorities.stale_reason : "priorities resolved against active version",
+                    active);
+
+                ci::LineupPlannerContext lineup_context;
+                lineup_context.level = static_cast<std::uint32_t>(std::max(1, economy.level));
+                lineup_context.board_capacity = static_cast<std::uint32_t>(std::clamp(economy.level, 1, 10));
+                lineup_context.current_board_ids.assign(on_board_ids.begin(), on_board_ids.end());
+                const auto lineup = ci::LineupPlanner{}.plan(active, priorities, lineup_context);
+                runtime.mark_stage("lineup", lineup.stale ? "unavailable" : "completed",
+                    lineup.stale ? lineup.stale_reason : lineup.status, active);
+
                 ci::CompositionActionEvaluation composition_actions;
                 if (active) {
                     composition_actions = ci::CompositionActionEvaluator{}.evaluate(
