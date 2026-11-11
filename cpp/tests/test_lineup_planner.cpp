@@ -66,7 +66,7 @@ void valid_board_evidence_is_bound_to_lineup_version() {
     PlannerEvidenceSnapshot evidence;
     c.planner_evidence = &evidence;
     evidence.match_id = 123;
-    evidence->player_id = 2;
+    evidence.player_id = 2;
     evidence->composition_id = active.candidate.composition_id;
     evidence->composition_version = active.version;
     evidence->round = 14;
