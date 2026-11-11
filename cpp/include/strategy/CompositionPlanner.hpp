@@ -18,7 +18,7 @@
 
 #include "lobby/TftEngine.hpp"
 #include "lobby/ShopEngine.hpp"
-#include "composition_intelligence/CompositionSourceAdapters.hpp"
+#include "composition_intelligence/contracts/CompositionContracts.hpp"
 
 namespace tft::strategy {
 
@@ -70,8 +70,6 @@ struct CompositionPlan {
     std::vector<std::string> acquisition_notes;
     // Immutable native output captured before optional OP.GG comparison.
     composition_intelligence::NativeCompositionSnapshot native_snapshot;
-    std::vector<composition_intelligence::CompositionCandidate> native_candidates;
-    std::vector<std::string> native_diagnostics;
 };
 
 class CompositionPlanner {
@@ -468,13 +466,6 @@ public:
                     native.units.push_back({id, core, static_cast<int>(index + 1)});
                 }
             }
-            // Adapt immediately, while the planner is still on the native-only
-            // branch. OP.GG is not read or consulted to create this candidate.
-            const auto native_result =
-                composition_intelligence::NativeCompositionAdapter::adapt(
-                    native, pool);
-            plan.native_candidates = native_result.candidates;
-            plan.native_diagnostics = native_result.diagnostics;
         }
         }
 
