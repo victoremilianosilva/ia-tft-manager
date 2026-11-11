@@ -238,6 +238,9 @@ class CppTFTLobbyWrapper:
         """Read-only public lobby snapshot exposed by the native engine."""
         return self._engine.get_public_state()
 
+    def get_composition_diagnostics_jsonl(self):
+        return list(self._engine.get_composition_diagnostics_jsonl())
+
     def get_audit_snapshot(self):
         """Read-only board/bench/shop and mask snapshot for the observer."""
         return self._engine.get_audit_snapshot()
