@@ -144,6 +144,26 @@ class UnifiedAuditRegressionTests(unittest.TestCase):
         self.assertIn("Decisões únicas estruturadas: 0", full)
 
 
+
+    def test_unified_audit_generates_hold_baseline_report(self):
+        actions = """| Jogador | Round | Step | PPO executou | Recomendação |
+|---|---|---:|---|---|
+| Jogador 1 | 4-2 | 10 | PASS | HOLD |
+
+| Jogador | Round | Step | Ação | Campeão | Disponível | Δ ouro direto | Juros perdidos | Oportunidade | Board | Sobrevivência | Streak | Composição | Upgrade | Postura | Score custo direto | Score juros | Score oportunidade | Total | Selecionado |
+|---|---|---:|---|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| Jogador 1 | 4-2 | 10 | HOLD | -1 | True | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0.24 | 0 | 0 | 0 | 0.24 | True |
+"""
+        economy = """| Jogador | Round | Step | Postura | Confiança |
+|---|---|---:|---|---:|
+| Jogador 1 | 4-2 | 10 | ACCUMULATE_RESOURCES | 0.8 |
+"""
+        documents = {"audit_acoes.md": actions, "audit_economia.md": economy}
+        audit.add_hold_baseline_report(documents)
+        self.assertIn("audit_hold.md", documents)
+        self.assertIn("HOLD candidates: **1**", documents["audit_hold.md"])
+        self.assertIn("distinct values **1**", documents["audit_hold.md"])
+
     def test_unified_audit_generates_buy_xp_report_from_action_and_economy_docs(self):
         actions = """| Jogador | Round | Step | PPO executou | Recomendação | Campeão recomendado | Δ board (proxy) | Δ ouro direto | Juros perdidos | Custo oportunidade | Custo econômico líquido | HP (proxy) | Streak (proxy) | Confiança | Motivo |
 |---|---|---:|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---|
