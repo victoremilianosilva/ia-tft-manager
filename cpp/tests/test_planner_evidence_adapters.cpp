@@ -2,6 +2,7 @@
 #include <cassert>
 #include <cmath>
 #include <iostream>
+#include <limits>
 using namespace tft::composition_intelligence;
 void economy_test(){
  tft::strategy::StrategicSharedContext c;c.round=12;c.gold=38;c.level=7;c.xp=4;c.xp_to_next=8;
@@ -65,4 +66,13 @@ void identity_and_source_freshness_are_enforced() {
  assert(!PlannerEvidenceAdapters::source_matches(snapshot.items.metadata,77,2,"comp-A",5,16));
 }
 
-int main(){economy_test();board_test();item_test();combine_test();identity_and_source_freshness_are_enforced();std::cout<<"Planner evidence adapter tests passed\n";}
+void invalid_source_values_are_not_silently_zeroed(){
+ tft::strategy::StrategicSharedContext c;c.player_id=4;c.round=3;c.alive=true;
+ tft::strategy::EconomicControlDecision d;d.shadow_only=true;
+ auto mismatch=PlannerEvidenceAdapters::economic(c,d,2,3,90,5,"comp");
+ assert(!mismatch.metadata.available&&mismatch.metadata.quality==EvidenceQuality::Invalid);
+ tft::strategy::BoardEvaluationResult b;b.unit_count=2;b.total_score=std::numeric_limits<double>::quiet_NaN();
+ auto invalid=PlannerEvidenceAdapters::board(b,2,3,3,90,4,"comp");
+ assert(!invalid.metadata.available&&invalid.metadata.quality==EvidenceQuality::Invalid);
+}
+int main(){economy_test();board_test();item_test();combine_test();identity_and_source_freshness_are_enforced();invalid_source_values_are_not_silently_zeroed();std::cout<<"Planner evidence adapter tests passed\n";}
