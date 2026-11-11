@@ -378,6 +378,20 @@ if(BUILD_TESTING)
     enable_tft_test_assertions(test_composition_diagnostics)
     add_test(NAME composition_diagnostics COMMAND test_composition_diagnostics)
 
+    # The Shadow failure boundary is a standalone, no-throw guard. Its test
+    # injects planner and diagnostic-recorder failures without constructing
+    # or mutating a game engine.
+    add_executable(
+        test_shadow_failure_boundary
+        tests/test_shadow_failure_boundary.cpp
+    )
+    configure_tft_module(test_shadow_failure_boundary)
+    enable_tft_test_assertions(test_shadow_failure_boundary)
+    add_test(
+        NAME shadow_failure_boundary
+        COMMAND test_shadow_failure_boundary
+    )
+
     add_executable(test_combat_engine
         tests/test_combat_engine.cpp
         src/combat/CombatEngine.cpp
