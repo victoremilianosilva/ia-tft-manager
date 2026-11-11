@@ -585,3 +585,30 @@ def test_opgg_adapter_resolves_units_through_native_catalog():
             )
     finally:
         engine.close()
+
+
+def test_composition_intelligence_emits_per_player_shadow_diagnostics():
+    import json
+
+    engine = TFTLobby(seed=20261111)
+    try:
+        engine.reset()
+        actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        for _ in range(3):
+            engine.step(actions)
+
+        lines = engine.get_composition_diagnostics_jsonl()
+        assert isinstance(lines, list)
+        assert lines, "native shadow runtime must emit diagnostic snapshots"
+        records = [json.loads(line) for line in lines]
+        assert all(record.get("schema_version") == 1 for record in records)
+        assert {record.get("player_id") for record in records} == set(range(8))
+        for record in records:
+            assert isinstance(record.get("round"), int)
+            assert isinstance(record.get("diagnostics"), dict)
+            assert "composition_decision" in record["diagnostics"]
+            assert "unit_intentions" in record["diagnostics"]
+            assert "lineup_plan" in record["diagnostics"]
+            assert "action_recommendation" in record["diagnostics"]
+    finally:
+        engine.close()
