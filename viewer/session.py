@@ -562,6 +562,10 @@ class ViewerSession:
         self.public_state = self.lobby.get_public_state()
         self._refresh_audit_snapshot()
         self.finished = bool(done or self.public_state.get("finished", False))
+        if self.finished:
+            self._flush_close_log()
+            self._persist_composition_diagnostics()
+            self._write_composition_reports()
         # Combat advances the round; the next call starts a fresh 5-second window.
         if any(str(event).strip() == "ROUND_RESOLVED" for event in info.get("events", [])):
             self._preparation_started_at = None
