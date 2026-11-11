@@ -102,6 +102,8 @@ def _recommendations(record: dict) -> dict[str, Any]:
         contextual = {}
     if not baseline:
         old = (record.get("diagnostics") or {}).get("action_recommendation") or {}
+        if not isinstance(old, dict):
+            old = {}
         if old:
             baseline = {
                 "recommended_action": old.get("recommended_action"),
@@ -319,7 +321,9 @@ def build_integrated_audit_index(
         group = group_for(pid, rnd, str(record_match))
         recommendations = _recommendations(record)
         evaluator_comparison = record.get("action_evaluator_comparison") or {}
-        evaluator_comparison_meta = evaluator_comparison.get("comparison") or {}
+        evaluator_comparison_meta = evaluator_comparison.get("comparison") or {} if isinstance(evaluator_comparison, dict) else {}
+        if not isinstance(evaluator_comparison_meta, dict):
+            evaluator_comparison_meta = {}
         if evaluator_comparison_meta.get("comparison_available"):
             evaluator_comparison_count += 1
             if evaluator_comparison_meta.get("diverged") is True:
@@ -359,8 +363,14 @@ def build_integrated_audit_index(
             producer_counts["contextual_action_evaluator"] += 1
         bridge = record.get("context_bridge") or {}
         recommended_bridge = bridge.get("recommended") or {} if isinstance(bridge, dict) else {}
+        if not isinstance(recommended_bridge, dict):
+            recommended_bridge = {}
         strategic_value = recommended_bridge.get("composition_decision") or {}
         economic_value = recommended_bridge.get("economic_posture") or {}
+        if not isinstance(strategic_value, dict):
+            strategic_value = {}
+        if not isinstance(economic_value, dict):
+            economic_value = {}
         if isinstance(strategic_value, dict) and strategic_value.get("value") is not None:
             producer_counts["strategic_planner"] += 1
             group["strategic_reviews"].append({
@@ -389,6 +399,8 @@ def build_integrated_audit_index(
         if isinstance(diagnostics.get("lineup_plan"), dict):
             producer_counts["lineup"] += 1
         evidence = diagnostics.get("evidence") or {}
+        if not isinstance(evidence, dict):
+            evidence = {}
         for domain in ("economy", "board", "items"):
             domain_evidence = evidence.get(domain) or {}
             metadata = domain_evidence.get("metadata") or {} if isinstance(domain_evidence, dict) else {}
