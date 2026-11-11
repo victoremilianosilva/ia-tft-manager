@@ -34,6 +34,10 @@ struct CompositionActionEvaluation {
     bool economy_evidence_consumed{false};
     bool board_evidence_validated{false};
     bool item_evidence_consumed{false};
+    std::int32_t observed_gold{-1};
+    std::int32_t observed_interest{-1};
+    std::int32_t projected_next_round_income{-1};
+    std::int32_t observed_economic_posture{-1};
     std::vector<std::string> evidence_rejected;
 };
 
@@ -82,6 +86,12 @@ public:
                 context.player_id, out.composition_id, active->version, context.round);
         out.economy_evidence_consumed = economy_valid;
         out.board_evidence_validated = board_valid;
+        if (economy_valid) {
+            out.observed_gold = planner_evidence->economy.gold;
+            out.observed_interest = planner_evidence->economy.interest_if_resolved_now;
+            out.projected_next_round_income = planner_evidence->economy.projected_next_round_income;
+            out.observed_economic_posture = static_cast<std::int32_t>(planner_evidence->economy.posture);
+        }
         if (planner_evidence && !snapshot_identity_valid)
             out.evidence_rejected.push_back("PlannerEvidenceSnapshot:identity_mismatch");
         else if (planner_evidence) {
@@ -124,11 +134,15 @@ public:
             const auto found = by_id.find(candidate.champion_id);
             const UnitPriority* priority = found == by_id.end() ? nullptr : found->second;
             if (economy_valid) {
-                const double evidence_cost =
-                    candidate.kind == strategy::StrategicActionKind::BuyUnit
-                        ? planner_evidence->economy.buy_unit_opportunity_cost
-                        : (candidate.kind == strategy::StrategicActionKind::RerollShop
-                            ? planner_evidence->economy.reroll_with_target_opportunity_cost : 0.0);
+                double evidence_cost = 0.0;
+                if (candidate.kind == strategy::StrategicActionKind::BuyUnit)
+                    evidence_cost = planner_evidence->economy.buy_unit_opportunity_cost;
+                else if (candidate.kind == strategy::StrategicActionKind::BuyExperience)
+                    evidence_cost = planner_evidence->economy.buy_experience_opportunity_cost;
+                else if (candidate.kind == strategy::StrategicActionKind::RerollShop)
+                    evidence_cost = has_upgrade_target
+                        ? planner_evidence->economy.reroll_with_target_opportunity_cost
+                        : planner_evidence->economy.reroll_without_target_opportunity_cost;
                 candidate.opportunity_cost = std::max(candidate.opportunity_cost, evidence_cost);
             }
             if (board_valid && candidate.champion_id >= 0) {
