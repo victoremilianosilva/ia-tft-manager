@@ -375,13 +375,31 @@ def build_integrated_audit_index(
                 "quality": economic_value.get("quality"),
                 "origin": economic_value.get("origin"),
             })
-        if _economy_evidence_available(record):
-            producer_counts["economy_evidence"] += 1
-            group["economic_observations"].append({
-                "source": "planner_evidence",
-                "sequence": sequence,
-                "quality": ((record.get("diagnostics") or {}).get("evidence") or {}).get("economy", {}).get("metadata", {}).get("quality_name"),
-            })
+        diagnostics = record.get("diagnostics") or {}
+        if "unit_intentions" in diagnostics:
+            producer_counts["unit_priority"] += 1
+        if isinstance(diagnostics.get("lineup_plan"), dict):
+            producer_counts["lineup"] += 1
+        evidence = diagnostics.get("evidence") or {}
+        for domain in ("economy", "board", "items"):
+            domain_evidence = evidence.get(domain) or {}
+            metadata = domain_evidence.get("metadata") or {} if isinstance(domain_evidence, dict) else {}
+            if not isinstance(metadata, dict) or not metadata:
+                continue
+            producer_counts[f"{domain}_evidence_records"] += 1
+            quality_name = str(metadata.get("quality_name") or "").lower()
+            is_valid = metadata.get("available") is True and (
+                quality_name == "valid" or (not quality_name and metadata.get("quality") == 2)
+            )
+            if is_valid:
+                producer_counts[f"{domain}_evidence_valid"] += 1
+            if domain == "economy":
+                group["economic_observations"].append({
+                    "source": "planner_evidence",
+                    "sequence": sequence,
+                    "quality": metadata.get("quality_name") or metadata.get("quality"),
+                    "available": metadata.get("available"),
+                })
 
     for (sequence_match, pid), sequences in sequence_by_player.items():
         for left, right in zip(sequences, sequences[1:]):
@@ -528,7 +546,14 @@ def build_integrated_audit_index(
     source_presence = {
         "strategic_planner": producer_counts["strategic_planner"] > 0,
         "economic_controller": producer_counts["economic_controller"] > 0,
-        "economy_evidence": producer_counts["economy_evidence"] > 0,
+        "economy_evidence": producer_counts["economy_evidence_records"] > 0,
+        "economy_evidence_valid": producer_counts["economy_evidence_valid"] > 0,
+        "board_evidence": producer_counts["board_evidence_records"] > 0,
+        "board_evidence_valid": producer_counts["board_evidence_valid"] > 0,
+        "item_evidence": producer_counts["items_evidence_records"] > 0,
+        "item_evidence_valid": producer_counts["items_evidence_valid"] > 0,
+        "unit_priority": producer_counts["unit_priority"] > 0,
+        "lineup": producer_counts["lineup"] > 0,
         "composition_intelligence": producer_counts["composition_intelligence"] > 0,
         "action_evaluator_baseline": producer_counts["action_evaluator_baseline"] > 0,
         "contextual_action_evaluator": producer_counts["contextual_action_evaluator"] > 0,
@@ -588,7 +613,14 @@ def format_integrated_audit_markdown(index: dict) -> str:
     mapping = (
         ("strategic_planner", "Strategic Planner"),
         ("economic_controller", "Economic Controller"),
-        ("economy_evidence", "Economy evidence"),
+        ("economy_evidence", "Economy evidence records"),
+        ("economy_evidence_valid", "Economy evidence valid"),
+        ("board_evidence", "Board evidence records"),
+        ("board_evidence_valid", "Board evidence valid"),
+        ("item_evidence", "Item evidence records"),
+        ("item_evidence_valid", "Item evidence valid"),
+        ("unit_priority", "Unit Priority"),
+        ("lineup", "Lineup Planner"),
         ("composition_intelligence", "Composition Intelligence"),
         ("action_evaluator_baseline", "Action Evaluator baseline"),
         ("contextual_action_evaluator", "Contextual Action Evaluator"),
