@@ -219,7 +219,7 @@ def build_integrated_audit_index(
             "normalized_category": category,
             "strategy": event.get("strategy"),
             "strategy_reason": event.get("strategy_reason"),
-            "source_payload": {
+            "source_payload": event.get("source_payload") or {
                 "action": event.get("action"),
                 "state_before": event.get("state_before"),
                 "state_after": event.get("state_after"),
@@ -399,7 +399,7 @@ def build_integrated_audit_index(
             "placement": outcome.get("placement"),
             "combat_reward": outcome.get("combat_reward"),
             "reward": outcome.get("reward"),
-            "source_payload": {
+            "source_payload": outcome.get("source_payload") or {
                 "state_after": outcome.get("state_after"),
                 "combat_reward": outcome.get("combat_reward"),
                 "reward": outcome.get("reward"),
