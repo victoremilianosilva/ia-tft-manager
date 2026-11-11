@@ -149,6 +149,7 @@ def build_integrated_audit_index(
     global_sequences_by_match: dict[str, list[int]] = defaultdict(list)
     duplicate_comp_count = 0
     incompatible_schemas = []
+    legacy_schema_count = 0
 
     def group_for(pid: int, rnd: int, source_match: str | None = None) -> dict:
         resolved_match = source_match if source_match is not None else match_id
@@ -241,7 +242,9 @@ def build_integrated_audit_index(
         rnd = _round(record.get("round", corr.get("round")))
         sequence = record.get("sequence", corr.get("sequence_id"))
         schema = record.get("schema_version")
-        if schema not in (1, 2):
+        if schema is None:
+            legacy_schema_count += 1
+        elif schema not in (1, 2):
             incompatible_schemas.append({"schema_version": schema, "sequence": sequence, "player_id": pid})
         if pid is None or rnd is None or not record_match:
             missing_envelope.append({
@@ -468,12 +471,13 @@ def build_integrated_audit_index(
         "out_of_order_sequences": out_of_order_sequences[:100],
         "sequence_gaps": [
             {"match_id": sequence_match, "missing": sorted(
-                set(range(min(values), max(values) + 1)) - set(values)
+                set(range(1, max(values) + 1)) - set(values)
             )[:100]}
             for sequence_match, values in sorted(global_sequences_by_match.items())
-            if values and set(range(min(values), max(values) + 1)) - set(values)
+            if values and set(range(1, max(values) + 1)) - set(values)
         ],
         "incompatible_schemas": incompatible_schemas[:100],
+        "legacy_schema_count": legacy_schema_count,
         "parse_errors": errors,
         "recommendation_vs_ppo": comparison,
         "limitations": [
@@ -523,6 +527,7 @@ def format_integrated_audit_markdown(index: dict) -> str:
         f"- Inversões de sequência: {len(index.get('out_of_order_sequences', []))}",
         f"- Lacunas de sequência: {len(index.get('sequence_gaps', []))}",
         f"- Eventos duplicados no log de jogadores: {index.get('player_log_duplicate_count', 0)}",
+        f"- Registros sem versão (legado): {index.get('legacy_schema_count', 0)}",
         f"- Schemas incompatíveis: {len(index.get('incompatible_schemas', []))}",
         f"- Erros de parsing: {len(index.get('parse_errors', []))}",
         "",
