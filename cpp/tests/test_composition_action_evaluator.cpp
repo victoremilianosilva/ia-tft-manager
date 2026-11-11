@@ -49,7 +49,7 @@ void buy_requires_seek_or_upgrade_and_target_membership() {
     c.action_candidates = {candidate(StrategicActionKind::BuyUnit,20),
                            candidate(StrategicActionKind::BuyUnit,30)};
     auto result = CompositionActionEvaluator{}.evaluate(active(),priorities(),lineup(),c,{});
-    assert(result.candidates.size() == 2);
+    assert(result.candidates.size() == 3);
     assert(result.candidates[0].disposition == ActionCandidateDisposition::Accepted);
     assert(result.candidates[1].disposition == ActionCandidateDisposition::Rejected);
     assert(result.evaluation.candidate_scores.size() == 2);
@@ -82,7 +82,8 @@ void validated_economy_and_item_evidence_reach_action_evaluator() {
     c.player_id = 0;
     c.round = 9;
     c.action_candidates = {candidate(StrategicActionKind::BuyUnit, 20),
-                           candidate(StrategicActionKind::SellUnit, 30)};
+                           candidate(StrategicActionKind::SellUnit, 30),
+                           candidate(StrategicActionKind::DeployOrMove, 20)};
     PlannerEvidenceSnapshot evidence;
     evidence.match_id = 55;
     evidence.player_id = 0;
@@ -104,6 +105,7 @@ void validated_economy_and_item_evidence_reach_action_evaluator() {
     set_valid(evidence.board.metadata, "BoardEvaluation");
     set_valid(evidence.items.metadata, "ItemEngine");
     evidence.economy.buy_unit_opportunity_cost = 2.5;
+    evidence.board.missing_frontline_count = 1;
     evidence.items.units.push_back({30, {"equipped-item"}, {}, 0.0, 0.0, true, false});
     const auto result = CompositionActionEvaluator{}.evaluate(
         active(), p, lineup(), c, {}, StrategicActionKind::None, &evidence, 55);
@@ -115,6 +117,7 @@ void validated_economy_and_item_evidence_reach_action_evaluator() {
     assert(result.candidates[1].disposition == ActionCandidateDisposition::Rejected);
     assert(result.candidates[1].reason.find("equipped-item") != std::string::npos);
     assert(result.evaluation.candidate_scores[0].opportunity_cost == 2.5);
+    assert(result.evaluation.candidate_scores[2].composition_component > 0.0);
 }
 
 void hold_is_a_valid_zero_cost_baseline() {
