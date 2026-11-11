@@ -110,6 +110,21 @@ void invalid_candidates_and_equipped_sales_are_rejected() {
     assert(!result.candidates[0].eligible);
     assert(result.candidates[1].rejection_reason == "sale_restricted_by_item_or_transition_risk");
 }
+void explicit_hold_is_selected_when_all_actions_score_below_zero() {
+    StrategicSharedContext context;
+    context.alive = true; context.gold = 200; context.player_id = 0; context.round = 8;
+    auto expensive_xp = candidate(StrategicActionKind::BuyExperience);
+    expensive_xp.direct_gold_cost = 100.0;
+    expensive_xp.expected_board_delta = 0.0;
+    context.action_candidates = {expensive_xp, candidate(StrategicActionKind::Hold)};
+    const auto result = ContextualActionEvaluator{}.evaluate(
+        active(), priorities(), lineup(), context, nullptr, 77);
+    assert(result.recommended_action == StrategicActionKind::Hold);
+    assert(result.candidates.size() == 2);
+    assert(!result.candidates[0].selected);
+    assert(result.candidates[1].selected);
+}
+
 void json_is_versioned_and_shadow_only() {
     StrategicSharedContext context; context.alive=true; context.player_id=0; context.round=8;
     const auto result = ContextualActionEvaluator{}.evaluate(
@@ -126,6 +141,7 @@ int main() {
     contextual_path_uses_priority_and_lineup_without_calling_baseline();
     stale_identity_disables_contextual_recommendation();
     invalid_candidates_and_equipped_sales_are_rejected();
+    explicit_hold_is_selected_when_all_actions_score_below_zero();
     json_is_versioned_and_shadow_only();
     std::cout << "ContextualActionEvaluator tests passed\\n";
 }
