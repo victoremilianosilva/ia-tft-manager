@@ -97,7 +97,7 @@ int main() {
     competing.units = {
         unit(50, {"Bruiser"}, 2, true, false, false, false, true, 2.0),
         unit(51, {"Bruiser"}, 1, false, true),
-        unit(52, {"Invoker"}, 2, true, false, false, true, true, 2.0),
+        unit(52, {"Invoker"}, 2, true, false, false, false, true, 5.0),
         unit(53, {"Invoker"}, 1, false, true)
     };
     result = discovery.evaluate(competing);
