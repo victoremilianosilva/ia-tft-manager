@@ -83,6 +83,6 @@ int main() {
     rejected_pivot.lifecycle = StrategicAnchorLifecycle::Rejected;
     assert(!rejected_pivot.is_valid());
 
-    std::cout << "strategic anchor contract tests passed\\n";
+    std::cout << "strategic anchor contract tests passed\n";
     return 0;
 }
