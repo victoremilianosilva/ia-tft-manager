@@ -145,7 +145,9 @@ public:
                         : planner_evidence->economy.reroll_without_target_opportunity_cost;
                 candidate.opportunity_cost = std::max(candidate.opportunity_cost, evidence_cost);
             }
-            if (board_valid && candidate.champion_id >= 0) {
+            if (board_valid && candidate.champion_id >= 0 &&
+                (candidate.kind == strategy::StrategicActionKind::BuyUnit ||
+                 candidate.kind == strategy::StrategicActionKind::DeployOrMove)) {
                 const auto target = std::find_if(active->candidate.units.begin(), active->candidate.units.end(),
                     [&](const auto& unit) { return unit.champion_id == candidate.champion_id; });
                 if (target != active->candidate.units.end()) {
