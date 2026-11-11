@@ -49,7 +49,7 @@ void buy_requires_seek_or_upgrade_and_target_membership() {
     c.action_candidates = {candidate(StrategicActionKind::BuyUnit,20),
                            candidate(StrategicActionKind::BuyUnit,30)};
     auto result = CompositionActionEvaluator{}.evaluate(active(),priorities(),lineup(),c,{});
-    assert(result.candidates.size() == 3);
+    assert(result.candidates.size() == 2);
     assert(result.candidates[0].disposition == ActionCandidateDisposition::Accepted);
     assert(result.candidates[1].disposition == ActionCandidateDisposition::Rejected);
     assert(result.evaluation.candidate_scores.size() == 2);
