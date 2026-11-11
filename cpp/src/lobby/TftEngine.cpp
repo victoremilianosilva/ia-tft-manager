@@ -555,6 +555,7 @@ struct TFTEngine::Impl {
              std::string(shadow_enabled) == "true" ||
              std::string(shadow_enabled) == "yes");
 
+        if (composition_intelligence_enabled) {
         try {
             const char* configured_meta = std::getenv("TFT_OPGG_META_CATALOG");
             const std::string meta_path = configured_meta && *configured_meta
@@ -574,6 +575,7 @@ struct TFTEngine::Impl {
         } catch (const std::exception& error) {
             composition_intelligence_catalog_diagnostics.push_back(std::string("OP.GG catalog adaptation failed: ") + error.what());
             composition_intelligence_candidates.clear();
+        }
         }
 
         // The generated, versioned active-set catalog is the default. An
