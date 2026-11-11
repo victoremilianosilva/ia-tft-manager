@@ -30,6 +30,23 @@ struct CompositionUnit {
     bool operator==(const CompositionUnit&) const = default;
 };
 
+struct NativeUnitSelection {
+    std::int32_t champion_id{-1};
+    bool core{false};
+    int priority{0};
+};
+
+struct NativeCompositionSnapshot {
+    std::string composition_id;
+    std::string set_id;
+    std::string patch;
+    std::vector<NativeUnitSelection> units;
+    std::int32_t main_carry_id{-1};
+    std::size_t target_board_size{0};
+    double source_score{0.0};
+    std::string source_reference{"native-generator"};
+};
+
 struct CompositionCandidate {
     std::string composition_id;
     CompositionSource source{CompositionSource::Native};
