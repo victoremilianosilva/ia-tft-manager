@@ -73,7 +73,7 @@ void native_planner_exports_pre_opgg_candidate(){
  strategy::CompositionPlanner::AvailableCopies available;
  for(const auto& champion:champions) available[champion.internal_id]=10;
  const auto plan=strategy::CompositionPlanner::build(
-  champions,milestones,"Shepherd",{},owned,4,5,available,{});
+  champions,milestones,"Shepherd",{},owned,4,5,available,{},nullptr,-1,true);
  assert(!plan.native_snapshot.composition_id.empty());
  assert(plan.native_snapshot.set_id=="18");
  assert(plan.native_snapshot.source_reference=="composition-planner/native-before-opgg");
