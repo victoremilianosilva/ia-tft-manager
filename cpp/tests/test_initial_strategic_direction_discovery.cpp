@@ -104,6 +104,31 @@ int main() {
     assert(result.hypotheses.size() == 2);
     assert(result.hypotheses.front().anchor.direction == "Bruiser");
 
+    // Cost is part of the opportunity-cost estimate, but expensive units
+    // are not categorically excluded from early direction discovery.
+    DirectionDiscoveryInput cost_aware;
+    cost_aware.gold_available = 2;
+    cost_aware.units = {
+        unit(70, {"LowCost"}, 1, true, false, false, false, true, 1.0, 1),
+        unit(71, {"LowCost"}, 1, false, true, false, false, false, 0.0, 1),
+        unit(72, {"HighCost"}, 1, true, false, false, true, true, 1.0, 5),
+        unit(73, {"HighCost"}, 1, false, true, false, false, false, 0.0, 5)
+    };
+    result = discovery.evaluate(cost_aware);
+    assert(result.hypotheses.size() == 2);
+    const auto low_cost = std::find_if(result.hypotheses.begin(),
+        result.hypotheses.end(), [](const auto& h) {
+            return h.anchor.direction == "LowCost";
+        });
+    const auto high_cost = std::find_if(result.hypotheses.begin(),
+        result.hypotheses.end(), [](const auto& h) {
+            return h.anchor.direction == "HighCost";
+        });
+    assert(low_cost != result.hypotheses.end());
+    assert(high_cost != result.hypotheses.end());
+    assert(low_cost->score > high_cost->score);
+    assert(low_cost->score_explanation.find("cost_penalty=") != std::string::npos);
+
     // A defined composition suppresses free exploration entirely.
     competing.composition_defined = true;
     competing.active_composition_identity = "composition:active";
