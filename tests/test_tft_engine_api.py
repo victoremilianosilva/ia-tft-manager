@@ -557,3 +557,31 @@ def test_native_champion_id_map_matches_loaded_units_catalog():
         assert all(isinstance(value, int) and value >= 0 for value in mapping.values())
     finally:
         engine.close()
+
+
+def test_opgg_adapter_resolves_units_through_native_catalog():
+    """OP.GG keys must become the same internal IDs used by the engine."""
+    import json
+    from pathlib import Path
+
+    engine = TFTLobby(seed=2026)
+    try:
+        engine.reset()
+        root = Path(__file__).resolve().parents[1]
+        opgg = json.loads((root / "data" / "opgg_tft_meta.json").read_text(encoding="utf-8"))
+        adapted = json.loads(engine.adapt_opgg_compositions_json(
+            json.dumps(opgg, ensure_ascii=False)
+        ))
+        assert isinstance(adapted, dict)
+        assert isinstance(adapted.get("candidates"), list)
+        assert isinstance(adapted.get("diagnostics"), list)
+        mapping = engine.get_champion_id_map()
+        for candidate in adapted["candidates"]:
+            assert candidate["units"]
+            assert all(
+                isinstance(unit["champion_id"], int)
+                and unit["champion_id"] in mapping.values()
+                for unit in candidate["units"]
+            )
+    finally:
+        engine.close()
