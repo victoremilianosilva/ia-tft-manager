@@ -385,6 +385,9 @@ bool should_buy_unit(
 // ============================================================
 
 struct CompositionIntelligencePlayerState {
+    CompositionIntelligencePlayerState()
+        : transitions(tft::composition_intelligence::CompositionEvaluationConfig{}) {}
+
     tft::composition_intelligence::ActiveCompositionManager active;
     tft::composition_intelligence::TransitionManager transitions;
     tft::composition_intelligence::CompositionDiagnosticRecorder recorder;
