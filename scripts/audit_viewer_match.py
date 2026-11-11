@@ -2769,14 +2769,14 @@ def finalize_markdown_documents(markdown_dir: Path, documents: dict[str, str]) -
             text = documents[index_name]
             text = text.replace(
                 "- [Resumo geral](audit_report_geral.md)",
-                "- [Resumo geral — parte 1](audit_report_geral_parte_1.md)\\n"
-                "- [Resumo geral — parte 2](audit_report_geral_parte_2.md)\\n"
+                "- [Resumo geral — parte 1](audit_report_geral_parte_1.md)\n"
+                "- [Resumo geral — parte 2](audit_report_geral_parte_2.md)\n"
                 "- [Resumo geral — parte 3](audit_report_geral_parte_3.md)",
             )
             text = text.replace(
                 "- [Action Evaluator](audit_acoes.md)",
-                "- [Action Evaluator — parte 1](audit_acoes_parte_1.md)\\n"
-                "- [Action Evaluator — parte 2](audit_acoes_parte_2.md)\\n"
+                "- [Action Evaluator — parte 1](audit_acoes_parte_1.md)\n"
+                "- [Action Evaluator — parte 2](audit_acoes_parte_2.md)\n"
                 "- [Action Evaluator — parte 3](audit_acoes_parte_3.md)",
             )
             documents[index_name] = text
@@ -2972,7 +2972,7 @@ def main() -> int:
     written_reports = finalize_markdown_documents(markdown_dir, markdown_documents)
 
     print(general_md)
-    print("\\nRelatórios Markdown salvos em:")
+    print("\nRelatórios Markdown salvos em:")
     for filename in written_reports:
         print(f"- {markdown_dir / filename}")
     print(f"\nDados estruturados temporários: {json_path}")
