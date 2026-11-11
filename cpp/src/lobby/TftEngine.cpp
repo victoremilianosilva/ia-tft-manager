@@ -3009,7 +3009,7 @@ struct TFTEngine::Impl {
 
         // BEGIN SHADOW-ONLY EVALUATION BOUNDARY.
         // Every operation in this block is diagnostic-only. Exceptions must never
-        // escape update_strategy() into the PPO transition/rollout path.
+        // escape update_strategy() into the PPO-facing engine path.
         const bool shadow_evaluation_completed =
             composition_intelligence::run_shadow_isolated([&]() {
         {
