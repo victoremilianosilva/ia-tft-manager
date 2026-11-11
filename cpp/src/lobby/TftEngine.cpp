@@ -509,6 +509,8 @@ struct TFTEngine::Impl {
     std::array<PlayerEnv, kPlayersPerLobby> player_envs{};
     std::array<CompositionIntelligencePlayerState, kPlayersPerLobby> composition_intelligence_players{};
     std::vector<composition_intelligence::CompositionCandidate> composition_intelligence_candidates;
+    std::array<std::vector<composition_intelligence::CompositionCandidate>, kPlayersPerLobby>
+        composition_intelligence_native_candidates{};
     std::vector<std::string> composition_intelligence_catalog_diagnostics;
     std::uint64_t composition_intelligence_sequence{0};
     bool composition_intelligence_enabled{false};
@@ -2886,6 +2888,7 @@ struct TFTEngine::Impl {
         // direction exists. The anchor trait guides selection, but the planner
         // deliberately reserves room for a carry, frontline and bridge/support
         // traits instead of forcing every slot into one trait.
+        composition_intelligence_native_candidates[i].clear();
         if (current_round >= 9 && !info.composition_direction.empty()) {
             strategy::CompositionPlanner::OwnedCopies owned_copies;
             for (const auto& [unit_id, copies] : copies_by_unit)
@@ -2947,6 +2950,13 @@ struct TFTEngine::Impl {
                 catalog->all(), trait_milestones, info.composition_direction,
                 plan_focus, owned_copies, planning_slots, economy.level,
                 available_copies, currently_offered, &live_context);
+            if (composition_intelligence_enabled) {
+                const auto native_adapted =
+                    composition_intelligence::NativeCompositionAdapter::adapt(
+                        plan.native_snapshot, catalog->all());
+                composition_intelligence_native_candidates[i] =
+                    native_adapted.candidates;
+            }
             const bool direction_transitioned =
                 info.composition_direction != previous_direction;
             const bool keep_previous_plan = !direction_transitioned &&
@@ -3606,7 +3616,14 @@ struct TFTEngine::Impl {
                 for (const auto& unit : player_envs[i].bench) if (unit) collect_unit(*unit, false);
                 for (const auto& pair : owned_evidence) composition_context.owned_units.push_back(pair.second);
 
-                for (const auto& candidate : composition_intelligence_candidates) {
+                // Adapt each source independently, then combine only validated candidates.
+                auto source_candidates = composition_intelligence_candidates;
+                const auto& native_candidates =
+                    composition_intelligence_native_candidates[i];
+                source_candidates.insert(source_candidates.end(),
+                    native_candidates.begin(), native_candidates.end());
+
+                for (const auto& candidate : source_candidates) {
                     ci::CandidateEvidence evidence;
                     evidence.composition_id = candidate.composition_id;
                     evidence.source = ci::CompositionEvidenceSource::ObservedBoard;
@@ -3637,7 +3654,7 @@ struct TFTEngine::Impl {
                     composition_context.candidate_evidence.push_back(std::move(evidence));
                 }
 
-                const auto proposal = runtime.transitions.propose(active_before, composition_intelligence_candidates, composition_context);
+                const auto proposal = runtime.transitions.propose(active_before, source_candidates, composition_context);
                 std::optional<ci::CompositionTransition> published_transition;
                 if (proposal.approved && proposal.target) {
                     const auto published = runtime.transitions.publish_if_approved(proposal, runtime.active);
@@ -5739,6 +5756,8 @@ ResetResult TFTEngine::reset(
     ++impl_->episode_id;
     impl_->composition_intelligence_players =
         decltype(impl_->composition_intelligence_players){};
+    impl_->composition_intelligence_native_candidates =
+        decltype(impl_->composition_intelligence_native_candidates){};
     impl_->composition_intelligence_sequence = 0;
 
     impl_->round = 0;
