@@ -165,6 +165,15 @@ int main() {
     };
     pivot_input.evaluation_sequence = 1;
     pivot_result = pivot_runtime.refresh(pivot_context, pivot_input);
+    if (pivot_result.phase != StrategicCyclePhase::PivotEvaluation) {
+        std::cerr << "pivot runtime phase=" << phase_name(pivot_result.phase)
+                  << " reason=" << pivot_result.diagnostics.transition_reason;
+        if (pivot_result.diagnostics.pivot_feasibility)
+            std::cerr << " feasibility=" << pivot_result.diagnostics.pivot_feasibility->reason;
+        if (pivot_result.diagnostics.pivot_confirmation)
+            std::cerr << " confirmation=" << pivot_result.diagnostics.pivot_confirmation->reason;
+        std::cerr << '\\n';
+    }
     assert(pivot_result.phase == StrategicCyclePhase::PivotEvaluation);
     assert(pivot_result.diagnostics.pivot_confirmation->consecutive_viable_evaluations == 1);
 
