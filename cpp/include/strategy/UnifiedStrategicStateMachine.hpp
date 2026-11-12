@@ -77,7 +77,7 @@ public:
 struct StrategicCycleInput {
     // Existing active composition, if a composition source already selected it.
     // The orchestrator takes a value snapshot and never mutates the source.
-    std::optional<composition_intelligence::CompositionCandidate> active_composition;
+    std::optional<composition_intelligence::ActiveComposition> active_composition;
 
     // Candidate generated from the selected discovery hypothesis.
     std::optional<composition_intelligence::CompositionCandidate> initial_composition_candidate;
@@ -137,7 +137,7 @@ public:
         const bool had_active = pivot_coordinator_.active_composition().has_value();
         if (input.active_composition.has_value()) {
             discovery_input.composition_defined = true;
-            discovery_input.active_composition_identity = input.active_composition->composition_id;
+            discovery_input.active_composition_identity = input.active_composition->candidate.composition_id;
         } else if (had_active) {
             discovery_input.composition_defined = true;
             discovery_input.active_composition_identity =
@@ -146,9 +146,8 @@ public:
         out.diagnostics.discovery = discovery_.evaluate(discovery_input);
 
         if (!had_active && input.active_composition.has_value()) {
-            const composition_intelligence::ActiveComposition seed{
-                *input.active_composition, 1};
-            const auto projected = CompositionBoundDirectionAnchor::from_active_composition(seed);
+            const auto projected = CompositionBoundDirectionAnchor::from_active_composition(
+                *input.active_composition);
             if (!projected) {
                 phase_ = StrategicCyclePhase::NoEvidence;
                 out.diagnostics.transition_reason = "active_composition_cannot_form_valid_direction_anchor";
@@ -290,8 +289,9 @@ private:
         bool has_comparison = false;
         if (input.active_composition.has_value()) {
             has_comparison = true;
-            if (input.active_composition->composition_id !=
-                pivot_coordinator_.active_composition()->candidate.composition_id) {
+            if (input.active_composition->candidate.composition_id !=
+                pivot_coordinator_.active_composition()->candidate.composition_id ||
+                input.active_composition->version != pivot_coordinator_.active_composition()->version) {
                 out.diagnostics.divergence_reasons.push_back(
                     "external_active_composition_snapshot_disagrees_with_unified_authority");
             }
