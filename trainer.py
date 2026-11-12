@@ -3,6 +3,7 @@ import torch.optim as optim
 import numpy as np
 import os
 import json
+import hashlib
 
 from rich.console import Console
 from rich.progress import (
@@ -29,6 +30,8 @@ from ppo import PPOTrainer, exponential_schedule_value
 
 from engine_contracts import Strategy
 from engine_contracts import ActionType
+from ppo_protection.reference_guard import snapshot_parameters, project_to_reference
+from ppo_protection.replay_buffer import ReferenceReplayBuffer
 
 def refresh_opgg_meta_catalog() -> None:
     """Refresh at the training entrypoint, never when Trainer is imported or constructed in tests."""
@@ -261,6 +264,92 @@ class Trainer:
             print("⚠️ Checkpoint migrado; optimizer/scheduler serão reiniciados." if migrated_checkpoint
                   else "✅ Pesos da policy carregados.")
 
+        # Fine-tuned checkpoints activate fail-closed retention protection.
+        protection_metadata = (checkpoint or {}).get("reference_protection") or {}
+        if protection_metadata:
+            if not self.config.reference_replay_path:
+                self.config.reference_replay_path = protection_metadata.get("replay_path", "")
+            if not os.environ.get("TFT_REFERENCE_REPLAY_COEF"):
+                self.config.reference_replay_coef = float(
+                    protection_metadata.get("replay_coef", self.config.reference_replay_coef)
+                )
+            if not os.environ.get("TFT_REFERENCE_MAX_DRIFT"):
+                self.config.reference_max_relative_drift = float(
+                    protection_metadata.get("max_relative_drift", self.config.reference_max_relative_drift)
+                )
+        self.reference_guard_enabled = bool(
+            checkpoint and (checkpoint.get("fine_tuning") or protection_metadata)
+        )
+        self.reference_parameters = None
+        self.reference_replay = None
+        self.reference_anchor_path = None
+        self.reference_anchor_sha256 = None
+        if self.reference_guard_enabled:
+            # First return to general PPO with a conservative learning-rate/KL envelope.
+            # Explicit environment settings remain authoritative for deliberate experiments.
+            if not os.environ.get("TFT_PPO_LR"):
+                self.config.learning_rate = min(self.config.learning_rate, 5e-5)
+                self.config.min_learning_rate = min(self.config.min_learning_rate, 1e-5)
+            if not os.environ.get("TFT_PPO_TARGET_KL"):
+                self.config.target_kl = min(float(self.config.target_kl or 0.01), 0.01)
+            if not os.environ.get("TFT_PPO_CLIP_COEF"):
+                self.config.clip_coef = min(self.config.clip_coef, 0.10)
+            self.reference_anchor_path = protection_metadata.get("anchor_checkpoint_path") or checkpoint_path
+            anchor_path = os.path.abspath(os.path.expanduser(self.reference_anchor_path))
+            self.reference_anchor_path = anchor_path
+            if not os.path.isfile(anchor_path):
+                raise FileNotFoundError(f"Checkpoint âncora imutável não encontrado: {anchor_path}")
+            digest = hashlib.sha256()
+            with open(anchor_path, "rb") as anchor_stream:
+                for chunk in iter(lambda: anchor_stream.read(1024 * 1024), b""):
+                    digest.update(chunk)
+            self.reference_anchor_sha256 = digest.hexdigest()
+            expected_hash = protection_metadata.get("anchor_checkpoint_sha256")
+            if expected_hash and expected_hash != self.reference_anchor_sha256:
+                raise RuntimeError("Hash do checkpoint âncora mudou; treinamento protegido bloqueado.")
+            anchor_payload = torch.load(anchor_path, map_location=self.device, weights_only=False)
+            anchor_state = anchor_payload.get("policy", anchor_payload)
+            anchor_policy = TFTPolicy(self.obs_dim, self.ACTION_DIMS).to(self.device)
+            anchor_policy.load_compatible_state_dict(anchor_state)
+            self.reference_parameters = snapshot_parameters(anchor_policy)
+            del anchor_policy
+            if not self.config.reference_replay_path:
+                raise RuntimeError(
+                    "Checkpoint fine-tuned detectado. Antes do PPO normal, gere o replay com "
+                    "python -m ppo_protection.collect_reference_replay --checkpoint <checkpoint_final> "
+                    "e configure TFT_REFERENCE_REPLAY_PATH."
+                )
+            self.reference_replay = ReferenceReplayBuffer.load(
+                self.config.reference_replay_path, self.device
+            )
+            if self.reference_replay.observations.shape[1] != self.obs_dim:
+                raise RuntimeError(
+                    "Dimensão das observações do replay não corresponde à engine/Policy atual."
+                )
+            if (
+                self.reference_replay.source_checkpoint_sha256
+                and self.reference_replay.source_checkpoint_sha256 != self.reference_anchor_sha256
+            ):
+                raise RuntimeError(
+                    "O replay não foi coletado do checkpoint âncora carregado; "
+                    "gere novamente o replay com o modelo correto."
+                )
+            print(
+                f"🛡️ Proteção PPO ativa | âncora={anchor_path} | "
+                f"replay={self.config.reference_replay_path} | "
+                f"drift máximo={self.config.reference_max_relative_drift:.3%}"
+            )
+
+        self.checkpoint_output_path = (
+            self.config.checkpoint_output_path.strip() or checkpoint_path
+        )
+        if self.reference_guard_enabled and os.path.abspath(self.checkpoint_output_path) == os.path.abspath(checkpoint_path):
+            raise RuntimeError(
+                "O checkpoint fine-tuned/âncora não pode ser sobrescrito. Configure "
+                "TFT_CHECKPOINT_OUTPUT_PATH com um arquivo novo."
+            )
+        os.makedirs(os.path.dirname(os.path.abspath(self.checkpoint_output_path)), exist_ok=True)
+
         self.optimizer = optim.Adam(
             self.policy.parameters(),
             lr=self.config.learning_rate,
@@ -334,6 +423,9 @@ class Trainer:
             vf_coef=self.config.vf_coef,
             max_grad_norm=self.config.max_grad_norm,
             target_kl=self.config.target_kl,
+            reference_replay=self.reference_replay,
+            reference_replay_coef=self.config.reference_replay_coef,
+            reference_replay_batch_size=self.config.reference_replay_batch_size,
         )
         self.ppo.update_step = self.start_update
         self.writer.add_text(
@@ -1591,6 +1683,20 @@ class Trainer:
                 batch_size=self.config.batch_size,
                 epochs=self.config.ppo_epochs,
             ) or {}
+
+            if self.reference_guard_enabled:
+                guard_metrics = project_to_reference(
+                    self.policy,
+                    self.reference_parameters,
+                    self.config.reference_max_relative_drift,
+                )
+                for metric_name, metric_value in guard_metrics.items():
+                    if isinstance(metric_value, (int, float, bool)):
+                        self.writer.add_scalar(f"reference_guard/{metric_name}", float(metric_value), update)
+                self.writer.add_scalar(
+                    "reference_guard/replay_loss",
+                    float(ppo_metrics.get("reference_replay_loss", 0.0)), update,
+                )
             self.writer.add_scalar("training/optimizer_steps", ppo_metrics.get("optimizer_steps", 0), update)
             self.writer.add_scalar("training/grad_norm_mean", ppo_metrics.get("grad_norm_mean", 0.0), update)
             self.writer.add_scalar("training/grad_norm_max", ppo_metrics.get("grad_norm_max", 0.0), update)
@@ -1598,6 +1704,7 @@ class Trainer:
             self.writer.add_scalar("training/processed_minibatches", ppo_metrics.get("batches_processed", 0), update)
             self.writer.add_scalar("training/early_stop", float(ppo_metrics.get("early_stop", False)), update)
             self.writer.add_scalar("training/early_stop_kl", ppo_metrics.get("early_stop_kl", 0.0), update)
+            self.writer.add_scalar("reference_replay/loss", ppo_metrics.get("reference_replay_loss", 0.0), update)
             self.writer.add_scalar("training/approx_kl_max", ppo_metrics.get("approx_kl_max", 0.0), update)
 
             # ========================================================
@@ -1896,8 +2003,16 @@ class Trainer:
                             self.config.to_dict(),
                         "scheduler_type":
                             "cosine_clamped",
+                        "reference_protection": ({
+                            "enabled": True,
+                            "anchor_checkpoint_path": self.reference_anchor_path,
+                            "anchor_checkpoint_sha256": self.reference_anchor_sha256,
+                            "max_relative_drift": self.config.reference_max_relative_drift,
+                            "replay_path": self.config.reference_replay_path,
+                            "replay_coef": self.config.reference_replay_coef,
+                        } if self.reference_guard_enabled else None),
                     },
-                    self.config.checkpoint_path
+                    self.checkpoint_output_path
                 )
 
                 print(
@@ -1930,8 +2045,16 @@ class Trainer:
                 "update": end - 1,
                 "training_config": self.config.to_dict(),
                 "scheduler_type": "cosine_clamped",
+                "reference_protection": ({
+                    "enabled": True,
+                    "anchor_checkpoint_path": self.reference_anchor_path,
+                    "anchor_checkpoint_sha256": self.reference_anchor_sha256,
+                    "max_relative_drift": self.config.reference_max_relative_drift,
+                    "replay_path": self.config.reference_replay_path,
+                    "replay_coef": self.config.reference_replay_coef,
+                } if self.reference_guard_enabled else None),
             },
-            self.config.checkpoint_path,
+            self.checkpoint_output_path,
         )
         print(f"💾 Checkpoint final salvo | update={end - 1}")
 
