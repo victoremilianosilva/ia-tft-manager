@@ -38,6 +38,12 @@ public:
             std::lock_guard<std::mutex> lock(mutex_);
             const auto next_sequence = sequences_[context.player_id] + 1;
             const auto record = make_record(context, input, result, next_sequence);
+            auto fingerprint_record = record;
+            fingerprint_record.erase("sequence");
+            const auto fingerprint = fingerprint_record.dump();
+            const auto previous = last_fingerprints_.find(context.player_id);
+            if (previous != last_fingerprints_.end() && previous->second == fingerprint)
+                return false;
             if (!output_.parent_path().empty())
                 std::filesystem::create_directories(output_.parent_path());
             std::ofstream stream(output_, std::ios::out | std::ios::app);
@@ -46,6 +52,7 @@ public:
             stream.flush();
             if (!stream.good()) return false;
             sequences_[context.player_id] = next_sequence;
+            last_fingerprints_[context.player_id] = fingerprint;
             return true;
         } catch (...) {
             return false;
@@ -58,6 +65,7 @@ public:
         try {
             std::lock_guard<std::mutex> lock(mutex_);
             sequences_.clear();
+            last_fingerprints_.clear();
         } catch (...) {
         }
     }
@@ -273,6 +281,10 @@ private:
             {"round", context.round ? context.round :
                 (input.exploration.round ? input.exploration.round : 0)},
             {"phase", phase_name(result.phase)},
+            {"observed_context", {
+                {"gold_available", input.exploration.gold_available},
+                {"evaluation_sequence", input.evaluation_sequence}
+            }},
             {"active_composition", active},
             {"direction_anchor", direction_json},
             {"pivot_candidate", pivot_json},
@@ -289,6 +301,7 @@ private:
     std::filesystem::path output_;
     std::mutex mutex_;
     std::map<std::int32_t, std::uint64_t> sequences_;
+    std::map<std::int32_t, std::string> last_fingerprints_;
 };
 
 } // namespace tft::strategy
