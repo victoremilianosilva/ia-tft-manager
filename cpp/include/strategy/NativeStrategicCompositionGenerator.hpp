@@ -194,12 +194,30 @@ public:
                 candidate.score += unit.score;
                 if (unit.owned) {
                     ++candidate.reusable_owned_units;
-                    candidate.evidence.push_back("owned_unit:" +
-                        std::to_string(unit.definition->champion_id));
+                    const auto id = unit.definition->champion_id;
+                    candidate.evidence.push_back("owned_unit:" + std::to_string(id));
+                    const auto& observed = owned.at(id);
+                    if (observed.copies >= 2)
+                        candidate.evidence.push_back("owned_pair:" + std::to_string(id));
+                    if (observed.star >= 2)
+                        candidate.evidence.push_back("star_progress:" +
+                            std::to_string(observed.star) + ":" + std::to_string(id));
+                    if (observed.item_fit > 0.0)
+                        candidate.evidence.push_back("item_fit:" + std::to_string(id));
                 }
                 if (unit.shop)
                     candidate.evidence.push_back("shop_offer:" +
                         std::to_string(unit.definition->champion_id));
+                const auto pool_fact = input.pool_remaining.find(
+                    unit.definition->champion_id);
+                if (pool_fact == input.pool_remaining.end() || pool_fact->second < 0) {
+                    candidate.evidence.push_back("pool_unknown:" +
+                        std::to_string(unit.definition->champion_id));
+                } else {
+                    candidate.evidence.push_back("pool_remaining:" +
+                        std::to_string(pool_fact->second) + ":" +
+                        std::to_string(unit.definition->champion_id));
+                }
                 if (unit.definition->carry && !has_carry) {
                     candidate.main_carry_id = unit.definition->champion_id;
                     has_carry = true;
