@@ -103,29 +103,32 @@ void exploration_waits_for_composition_and_then_binds_direction() {
     assert(result.anchors.direction_anchor.lifecycle == StrategicAnchorLifecycle::Active);
 }
 
-void active_composition_has_authority_over_legacy_outputs() {
+void machine_owns_exploratory_direction_history_without_legacy_inputs() {
     UnifiedStrategicStateMachine machine;
     StrategicCycleInput input;
-    input.active_composition = ActiveComposition{composition(
-        "composition-current", 1,
-        {{1, UnitRole::MainCarry, true, 100},
-         {2, UnitRole::Frontline, true, 80}}), 7};
-    CompositionDirectionState legacy_direction;
-    legacy_direction.direction = "Bruiser";
-    legacy_direction.locked = true;
-    input.legacy_direction = legacy_direction;
-    StrategicPlanDecision legacy_plan;
-    legacy_plan.target_composition_direction = "composition-other";
-    input.legacy_plan = legacy_plan;
+    input.exploration.units = {
+        {10, 2, 2, 1, true, false, false, false, true, 0.0, {"Bruiser"}},
+        {11, 2, 1, 1, false, true, false, false, false, 0.0, {"Bruiser"}},
+        {20, 2, 2, 1, true, false, false, false, false, 0.0, {"Invoker"}},
+        {21, 2, 1, 1, false, true, false, false, false, 0.0, {"Invoker"}}
+    };
+    input.exploration.trait_thresholds = {{"Bruiser", 2}, {"Invoker", 2}};
+    // This caller-supplied hint resembles an old direction, but the machine
+    // must ignore it and establish its own continuity from observed evidence.
+    input.exploration.previous_direction = "Invoker";
 
-    const auto result = machine.refresh(input);
-    assert(result.phase == StrategicCyclePhase::CompositionActive);
-    assert(result.active_composition->candidate.composition_id == "composition-current");
-    assert(result.active_composition->version == 7);
-    assert(result.anchors.direction_anchor.direction == "composition-current");
-    assert(result.anchors.direction_anchor.composition_version == 7);
-    assert(result.diagnostics.legacy_consistency == LegacyConsistency::Divergent);
-    assert(result.diagnostics.divergence_reasons.size() == 2);
+    auto result = machine.refresh(input);
+    assert(result.phase == StrategicCyclePhase::Exploration);
+    assert(result.diagnostics.discovery.hypotheses.size() == 2);
+    assert(result.diagnostics.discovery.hypotheses.front().anchor.direction == "Bruiser");
+
+    // Invoker gains a small evidence advantage. The machine retains its own
+    // viable Bruiser hypothesis; the caller cannot steer it through a hint.
+    input.exploration.units[2].board_contribution = 1.0;
+    input.exploration.previous_direction = "Invoker";
+    result = machine.refresh(input);
+    assert(result.phase == StrategicCyclePhase::Exploration);
+    assert(result.diagnostics.discovery.hypotheses.front().anchor.direction == "Bruiser");
 }
 
 void pivot_evaluation_does_not_mutate_then_confirms_synchronized_state() {
@@ -242,7 +245,7 @@ void insufficient_evidence_clears_pivot_and_keeps_active_composition() {
 
 int main() {
     exploration_waits_for_composition_and_then_binds_direction();
-    active_composition_has_authority_over_legacy_outputs();
+    machine_owns_exploratory_direction_history_without_legacy_inputs();
     pivot_evaluation_does_not_mutate_then_confirms_synchronized_state();
     invalidated_candidate_is_removed_and_old_direction_is_preserved();
     missing_candidate_invalidates_pending_pivot_without_mutation();
