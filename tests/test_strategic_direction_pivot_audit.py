@@ -89,6 +89,7 @@ def test_confirmed_pivot_flags_unsynchronized_anchor_and_retained_candidate():
         "composition_identity": "comp-current",
         "composition_version": 4,
     }
+    record["pivot_candidate"]["target_composition_identity"] = "comp-other"
     report = audit_direction_pivot_records([record])
     codes = {item["code"] for item in report["conflicts"]}
     assert "CONFIRMED_PIVOT_DIRECTION_NOT_SYNCHRONIZED" in codes
