@@ -4354,7 +4354,6 @@ struct TFTEngine::Impl {
                         {"win_streak", economy.win_streak},
                         {"loss_streak", economy.loss_streak},
                         {"board_power", power},
-                        {"core_traits", info.core_traits},
                         {"active_composition", cycle_input.active_composition
                             ? cycle_input.active_composition->candidate.composition_id
                             : std::string{}},
@@ -4379,9 +4378,7 @@ struct TFTEngine::Impl {
                             {"star", owned.star},
                             {"board", owned.on_board},
                             {"bench", owned.on_bench},
-                            {"core", owned.is_core},
                             {"board_contribution", owned.board_contribution},
-                            {"composition_fit", owned.composition_fit},
                             {"item_fit", owned.item_fit},
                             {"traits", owned.traits}
                         });
