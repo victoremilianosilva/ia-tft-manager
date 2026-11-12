@@ -61,6 +61,21 @@ def test_keep_is_persistence_associated_when_only_investment_and_lock_are_observ
     assert result["investment_only_unit_count"] == 1
 
 
+def test_board_presence_without_directional_alignment_is_not_positive_keep_support():
+    result = classify_keep_evidence(
+        {"comp_direction": "Arcanist"},
+        {"current_direction_viable": None},
+        [{
+            "strategic_signals": ["currently_contributes_to_board"],
+            "investment_indicators": [],
+        }],
+    )
+
+    assert result["classification"] == INCONCLUSIVE
+    assert result["strategically_aligned_unit_count"] == 0
+    assert result["board_contribution_only_unit_count"] == 1
+
+
 def test_keep_is_inconclusive_when_current_support_and_persistence_are_unavailable():
     result = classify_keep_evidence(
         {"comp_direction": "Arcanist"},
