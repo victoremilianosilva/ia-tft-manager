@@ -36,6 +36,44 @@ enum class LegacyConsistency : std::uint8_t {
     Divergent = 2
 };
 
+struct LegacyStrategicSnapshot {
+    bool has_direction_policy{false};
+    std::string direction;
+    std::string candidate_direction;
+    bool direction_locked{false};
+    double direction_strength{0.0};
+    bool has_strategic_plan{false};
+    std::string planner_target_direction;
+    CompositionDecision planner_decision{CompositionDecision::InsufficientEvidence};
+    StrategicReason planner_reason{StrategicReason::InsufficientEvidence};
+};
+
+// Captures legacy outputs by value. No policy update/evaluation method is
+// exposed here, so the unified machine cannot write back into legacy state.
+class LegacyStrategicReadOnlyAdapter {
+public:
+    static LegacyStrategicSnapshot capture(
+        const std::optional<CompositionDirectionState>& direction,
+        const std::optional<StrategicPlanDecision>& plan
+    ) {
+        LegacyStrategicSnapshot snapshot;
+        if (direction) {
+            snapshot.has_direction_policy = true;
+            snapshot.direction = direction->direction;
+            snapshot.candidate_direction = direction->candidate_direction;
+            snapshot.direction_locked = direction->locked;
+            snapshot.direction_strength = direction->strength;
+        }
+        if (plan) {
+            snapshot.has_strategic_plan = true;
+            snapshot.planner_target_direction = plan->target_composition_direction;
+            snapshot.planner_decision = plan->composition_decision;
+            snapshot.planner_reason = plan->reason;
+        }
+        return snapshot;
+    }
+};
+
 struct StrategicCycleInput {
     // Existing active composition, if a composition source already selected it.
     // The orchestrator takes a value snapshot and never mutates the source.
@@ -63,6 +101,7 @@ struct StrategicCycleDiagnostics {
     std::optional<PivotFeasibilityResult> pivot_feasibility;
     std::optional<PivotConfirmationResult> pivot_confirmation;
     LegacyConsistency legacy_consistency{LegacyConsistency::NotAvailable};
+    LegacyStrategicSnapshot legacy_snapshot;
     std::vector<std::string> divergence_reasons;
     std::string transition_reason{"not_evaluated"};
     std::string previous_phase;
@@ -245,6 +284,9 @@ private:
             return;
         }
         const auto& active_direction = pivot_coordinator_.anchors().direction_anchor.direction;
+        out.diagnostics.legacy_snapshot =
+            LegacyStrategicReadOnlyAdapter::capture(input.legacy_direction, input.legacy_plan);
+        const auto& legacy = out.diagnostics.legacy_snapshot;
         bool has_comparison = false;
         if (input.active_composition.has_value()) {
             has_comparison = true;
@@ -254,16 +296,15 @@ private:
                     "external_active_composition_snapshot_disagrees_with_unified_authority");
             }
         }
-        if (input.legacy_direction && !input.legacy_direction->direction.empty()) {
+        if (legacy.has_direction_policy && !legacy.direction.empty()) {
             has_comparison = true;
-            if (input.legacy_direction->direction != active_direction)
+            if (legacy.direction != active_direction)
                 out.diagnostics.divergence_reasons.push_back(
                     "legacy_composition_direction_policy_disagrees_with_active_anchor");
         }
-        if (input.legacy_plan &&
-            !input.legacy_plan->target_composition_direction.empty()) {
+        if (legacy.has_strategic_plan && !legacy.planner_target_direction.empty()) {
             has_comparison = true;
-            if (input.legacy_plan->target_composition_direction != active_direction)
+            if (legacy.planner_target_direction != active_direction)
                 out.diagnostics.divergence_reasons.push_back(
                     "legacy_strategic_planner_target_disagrees_with_active_anchor");
         }
