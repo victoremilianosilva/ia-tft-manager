@@ -57,6 +57,32 @@ int main() {
     assert(first.at("feasibility").at("status") == "UNAVAILABLE");
     assert(first.at("shadow_only") == true);
 
+    // A live candidate remains auditable even when feasibility is incomplete;
+    // the recorder must not silently erase the observed target.
+    const auto candidate_output = root / "candidate" / "strategic_direction_pivot.jsonl";
+    StrategicDirectionPivotAuditRecorder candidate_recorder(candidate_output);
+    StrategicCycleInput candidate_input;
+    candidate_input.exploration.round = 8;
+    candidate_input.pivot_candidate = StrategicPivotAnchorCandidate{};
+    candidate_input.pivot_candidate->identity = "pivot:source:target";
+    candidate_input.pivot_candidate->target_direction = "TargetTrait";
+    candidate_input.pivot_candidate->target_composition_identity = "target-composition";
+    candidate_input.pivot_candidate->source_direction_anchor_identity = "direction:source:v1";
+    candidate_input.pivot_candidate->source_composition_version = 1;
+    candidate_input.pivot_candidate->reference_unit_ids = {12};
+    candidate_input.pivot_candidate->lifecycle = StrategicAnchorLifecycle::Evaluating;
+    StrategicCycleResult incomplete_result;
+    incomplete_result.phase = StrategicCyclePhase::NoEvidence;
+    incomplete_result.diagnostics.transition_reason = "transition_economic_cost_missing";
+    assert(candidate_recorder.append(
+        StrategicCycleAuditContext{99, 4, 8}, candidate_input, incomplete_result));
+    std::ifstream candidate_stream(candidate_output);
+    assert(static_cast<bool>(std::getline(candidate_stream, line)));
+    const auto candidate_record = nlohmann::json::parse(line);
+    assert(candidate_record.at("pivot_candidate").at("identity") == "pivot:source:target");
+    assert(candidate_record.at("pivot_candidate").at("target_direction") == "TargetTrait");
+    assert(candidate_record.at("feasibility").at("status") == "UNAVAILABLE");
+
     // The runtime-facing bridge executes the real state machine and emits its
     // resulting phase without requiring a game/PPO action or mutating input.
     const auto runtime_output = root / "runtime" / "strategic_direction_pivot.jsonl";
