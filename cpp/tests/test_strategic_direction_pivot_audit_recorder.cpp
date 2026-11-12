@@ -131,7 +131,7 @@ int main() {
     pivot_input.pivot_candidate->target_direction = "composition-next";
     pivot_input.pivot_candidate->target_composition_identity = "composition-next";
     pivot_input.pivot_candidate->source_direction_anchor_identity =
-        "direction:composition-current:v1";
+        "direction:composition:composition-current:1";
     pivot_input.pivot_candidate->source_composition_version = 1;
     pivot_input.pivot_candidate->reference_unit_ids = {1, 2, 3};
     pivot_input.pivot_candidate->evidence = {
@@ -148,7 +148,7 @@ int main() {
     pivot_input.pivot_feasibility = PivotFeasibilityInput{};
     pivot_input.pivot_feasibility->candidate_composition_identity = "composition-next";
     pivot_input.pivot_feasibility->source_direction_anchor_identity =
-        "direction:composition-current:v1";
+        "direction:composition:composition-current:1";
     pivot_input.pivot_feasibility->source_composition_version = 1;
     pivot_input.pivot_feasibility->gold_available = 40;
     pivot_input.pivot_feasibility->protected_gold_floor = 20;
