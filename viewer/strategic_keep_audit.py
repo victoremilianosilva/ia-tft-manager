@@ -49,14 +49,21 @@ def classify_keep_evidence(
     shadow = shadow if isinstance(shadow, dict) else {}
     units = [item for item in (unit_evidence or []) if isinstance(item, dict)]
 
+    # Board presence alone is useful context, but it does not establish that
+    # the unit supports the chosen composition direction.
+    directional_signals = {"core_unit", "current_direction_or_core_trait"}
     strategically_aligned = [
         item for item in units
-        if isinstance(item.get("strategic_signals"), list)
-        and bool(item["strategic_signals"])
+        if directional_signals.intersection(item.get("strategic_signals") or [])
+    ]
+    board_only = [
+        item for item in units
+        if "currently_contributes_to_board" in (item.get("strategic_signals") or [])
+        and not directional_signals.intersection(item.get("strategic_signals") or [])
     ]
     investment_only = [
         item for item in units
-        if not (item.get("strategic_signals") or [])
+        if not directional_signals.intersection(item.get("strategic_signals") or [])
         and bool(item.get("investment_indicators") or [])
     ]
 
@@ -151,7 +158,9 @@ def classify_keep_evidence(
         "current_direction_score_available": score_available,
         "strategically_aligned_unit_count": len(strategically_aligned),
         "investment_only_unit_count": len(investment_only),
+        "board_contribution_only_unit_count": len(board_only),
         "strategic_unit_evidence": strategically_aligned,
+        "board_contribution_only_evidence": board_only,
         "investment_only_unit_evidence": investment_only,
         "persistence": persistence,
         "alternative_status": alternative_status,
