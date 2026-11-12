@@ -28,8 +28,10 @@ int main() {
     const StrategicCycleAuditContext player_one{77, 1, 4};
     const StrategicCycleAuditContext player_two{77, 2, 4};
     assert(recorder.append(player_one, input, result));
-    assert(!recorder.append(player_one, input, result)); // unchanged snapshot is deduplicated
+    input.evaluation_sequence = 2; // a new emission sequence is not new evidence
+    assert(!recorder.append(player_one, input, result));
     input.exploration.gold_available = 10; // a real observed change is retained
+    input.evaluation_sequence = 3;
     assert(recorder.append(player_one, input, result));
     assert(recorder.append(player_two, input, result));
 
