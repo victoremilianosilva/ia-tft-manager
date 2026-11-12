@@ -48,7 +48,7 @@ struct NativeCompositionGenerationInput {
     std::unordered_set<std::int32_t> shop_ids;
     std::unordered_map<std::int32_t, std::int32_t> pool_remaining;
     std::vector<NativeCompositionTraitThreshold> trait_thresholds;
-    std::vector<std::int32_t> current_lineup_ids;
+    std::vector<std::int32_t> currently_owned_unit_ids;
     std::int32_t level{1};
     std::int32_t gold{0};
     std::int32_t target_slots{8};
@@ -255,7 +255,7 @@ public:
 
             std::size_t overlap = 0;
             std::unordered_set<std::int32_t> current(
-                input.current_lineup_ids.begin(), input.current_lineup_ids.end());
+                input.currently_owned_unit_ids.begin(), input.currently_owned_unit_ids.end());
             for (const auto id : candidate.unit_ids)
                 if (current.count(id)) ++overlap;
             const auto union_size = current.size() + candidate.unit_ids.size() - overlap;
