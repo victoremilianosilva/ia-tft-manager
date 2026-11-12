@@ -6712,7 +6712,7 @@ void TFTEngine::set_strategic_audit_path(
     impl_->strategic_audit_path = path;
     impl_->strategic_audit_match_id = path.empty() ? 0 : match_id;
     impl_->strategic_evaluation_sequences.fill(0);
-    impl_->strategic_last_snapshot_fingerprints.fill({});
+    impl_->strategic_last_snapshot_fingerprints.fill(std::string{});
     for (auto& runtime : impl_->strategic_shadow_runtimes) {
         runtime.reset();
         if (!path.empty() && match_id != 0) {
