@@ -1044,6 +1044,9 @@ int main(int argc, char** argv) {
         require(strategic_runtime_engine.set_unit_for_testing(
                     0, true, 0, strategic_fixture->api_name, 1),
                 "Nao foi possivel acionar o produtor real de snapshot estrategico.");
+        require(strategic_runtime_engine.set_unit_for_testing(
+                    0, false, 0, strategic_fixture->api_name, 1),
+                "Nao foi possivel gerar uma segunda atualizacao do snapshot estrategico.");
         std::ifstream strategic_audit_stream(strategic_audit_path);
         require(strategic_audit_stream.is_open(),
                 "Runtime estrategico nao criou o sidecar configurado.");
@@ -1053,6 +1056,11 @@ int main(int argc, char** argv) {
                     strategic_audit_line.find("\"shadow_only\":true") != std::string::npos &&
                     strategic_audit_line.find("\"player_id\":0") != std::string::npos,
                 "Sidecar nao contem evento real identificado como Shadow por jogador.");
+        require(static_cast<bool>(std::getline(strategic_audit_stream, strategic_audit_line)) &&
+                    strategic_audit_line.find("\\\"sequence\\\":2") != std::string::npos,
+                "Atualizacao sucessiva do produtor real nao gerou o segundo evento da sequencia.");
+        require(!std::getline(strategic_audit_stream, strategic_audit_line),
+                "Snapshots repetidos/inalterados foram gravados indevidamente.");
         strategic_audit_stream.close();
         std::filesystem::remove(strategic_audit_path, strategic_remove_error);
 
