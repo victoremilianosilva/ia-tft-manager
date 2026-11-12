@@ -3174,7 +3174,7 @@ struct TFTEngine::Impl {
                 if (unit) append_generation_owned(*unit, false);
             for (const auto& [id, observed] : observed_owned) {
                 generation_input.owned.push_back(observed);
-                generation_input.current_lineup_ids.push_back(id);
+                generation_input.currently_owned_unit_ids.push_back(id);
             }
 
             if (strategic_shop) {
