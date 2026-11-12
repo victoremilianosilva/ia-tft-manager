@@ -89,7 +89,11 @@ def audit_direction_pivot_records(records: list[dict[str, Any]], errors: list[st
         direction = record.get("direction_anchor")
         pivot = record.get("pivot_candidate")
         feasibility = record.get("feasibility") or {}
+        if not isinstance(feasibility, dict):
+            feasibility = {}
         carry = record.get("carry_gate") or {}
+        if not isinstance(carry, dict):
+            carry = {}
         status = str(feasibility.get("status") or record.get("pivot_status") or "UNAVAILABLE").upper()
         if phase == "PIVOT_EVALUATION":
             pivot_counts[status] += 1
@@ -224,7 +228,10 @@ def audit_direction_pivot_records(records: list[dict[str, Any]], errors: list[st
                          "Candidata de pivot ainda está presente após a confirmação.",
                          {"pivot_candidate": pivot})
 
-    duplicate_sequences = sorted(value for value, count in Counter(sequence_values).items() if count > 1)
+    duplicate_sequences = {
+        player: sorted(value for value, count in Counter(values).items() if count > 1)
+        for player, values in sequence_by_player.items()
+    }
     out_of_order = {
         player: sum(1 for left, right in zip(values, values[1:]) if right < left)
         for player, values in sequence_by_player.items()
@@ -309,7 +316,7 @@ def format_direction_pivot_audit(report: dict[str, Any], source_found: bool = Tr
         lines.append("- Nenhum campo ausente detectado nos registros fornecidos.")
     lines.extend(["", "## Amostras por jogador/round", "",
                   "| Jogador | Round | Fase | Composição ativa | Âncora de direção | Pivot | Carry | Loja (evidência) | Unidades (cópias/estrelas) | Motivo |",
-                  "|---|---|---|---|---|---|---|---:|---|"])
+                  "|---|---|---|---|---|---|---|---|---|---|"])
     for player, player_data in sorted(report["players"].items()):
         for sample in player_data["samples"]:
             active = sample["active_composition"]
