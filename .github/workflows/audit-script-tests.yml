@@ -44,6 +44,8 @@ on:
       - 'tests/test_composition_diagnostics.py'
       - 'tests/test_composition_audit_integration.py'
       - 'viewer/composition_diagnostics.py'
+      - 'viewer/strategic_direction_pivot_audit.py'
+      - 'tests/test_strategic_direction_pivot_audit.py'
       - 'viewer/player_logs.py'
       - 'viewer/session.py'
       - 'tests/test_audit_metric_reconciliation.py'
