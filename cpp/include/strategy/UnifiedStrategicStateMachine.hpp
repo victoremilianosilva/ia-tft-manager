@@ -9,7 +9,6 @@
 #include "strategy/InitialStrategicDirectionDiscovery.hpp"
 #include "strategy/PivotFeasibilityEvaluator.hpp"
 #include "strategy/StrategicPivotTransitionCoordinator.hpp"
-#include "strategy/StrategicPlanning.hpp"
 
 #include <algorithm>
 #include <cstdint>
