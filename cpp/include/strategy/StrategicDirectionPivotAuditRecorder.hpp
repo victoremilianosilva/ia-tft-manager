@@ -36,15 +36,17 @@ public:
         try {
             if (context.player_id < 0 || context.match_id == 0) return false;
             std::lock_guard<std::mutex> lock(mutex_);
-            const auto record = make_record(context, input, result,
-                                             ++sequences_[context.player_id]);
+            const auto next_sequence = sequences_[context.player_id] + 1;
+            const auto record = make_record(context, input, result, next_sequence);
             if (!output_.parent_path().empty())
                 std::filesystem::create_directories(output_.parent_path());
             std::ofstream stream(output_, std::ios::out | std::ios::app);
             if (!stream.is_open()) return false;
             stream << record.dump() << '\n';
             stream.flush();
-            return stream.good();
+            if (!stream.good()) return false;
+            sequences_[context.player_id] = next_sequence;
+            return true;
         } catch (...) {
             return false;
         }
@@ -217,11 +219,9 @@ private:
         nlohmann::json transition = nullptr;
         if (result.diagnostics.pivot_confirmation &&
             result.diagnostics.pivot_confirmation->status == PivotConfirmationStatus::Confirmed &&
-            !result.diagnostics.pivot_confirmation->state_changed == false &&
-            !result.active_composition == false &&
+            result.diagnostics.pivot_confirmation->state_changed &&
+            result.active_composition.has_value() &&
             !result.anchors.direction_anchor.identity.empty()) {
-            const auto& history = result.anchors;
-            (void)history;
             transition = {
                 {"source_direction_anchor_identity",
                     input.pivot_candidate ? input.pivot_candidate->source_direction_anchor_identity : ""},
