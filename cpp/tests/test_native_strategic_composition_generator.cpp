@@ -49,6 +49,47 @@ int main() {
     assert(std::find(invoker->unit_ids.begin(), invoker->unit_ids.end(), 7) ==
            invoker->unit_ids.end());
 
+    // Level controls target capacity, not the identity or source of strategy.
+    auto lower_level = input;
+    lower_level.target_slots = 2;
+    const auto lower_level_result =
+        NativeStrategicCompositionGenerator{}.generate(lower_level);
+    assert(std::all_of(lower_level_result.candidates.begin(),
+        lower_level_result.candidates.end(), [](const auto& candidate) {
+            return candidate.unit_ids.size() <= 2;
+        }));
+
+    // Gold, star progress and item fit contribute to candidate estimates.
+    auto poor_economy = input;
+    poor_economy.gold = 0;
+    const auto poor_economy_result =
+        NativeStrategicCompositionGenerator{}.generate(poor_economy);
+    const auto poor_invoker = std::find_if(
+        poor_economy_result.candidates.begin(), poor_economy_result.candidates.end(),
+        [](const auto& candidate) { return candidate.direction == "Invoker"; });
+    assert(poor_invoker != poor_economy_result.candidates.end());
+    assert(poor_invoker->score < invoker->score);
+
+    auto upgraded = input;
+    upgraded.owned[0].star = 2;
+    const auto upgraded_result =
+        NativeStrategicCompositionGenerator{}.generate(upgraded);
+    const auto upgraded_bruiser = std::find_if(
+        upgraded_result.candidates.begin(), upgraded_result.candidates.end(),
+        [](const auto& candidate) { return candidate.direction == "Bruiser"; });
+    assert(upgraded_bruiser != upgraded_result.candidates.end());
+    assert(upgraded_bruiser->score > bruiser->score);
+
+    auto without_items = input;
+    without_items.owned[1].item_fit = 0.0;
+    const auto without_items_result =
+        NativeStrategicCompositionGenerator{}.generate(without_items);
+    const auto no_item_bruiser = std::find_if(
+        without_items_result.candidates.begin(), without_items_result.candidates.end(),
+        [](const auto& candidate) { return candidate.direction == "Bruiser"; });
+    assert(no_item_bruiser != without_items_result.candidates.end());
+    assert(no_item_bruiser->score < bruiser->score);
+
     // Missing pool data is not interpreted as an exhausted pool.
     input.pool_remaining.erase(4);
     const auto missing_pool = NativeStrategicCompositionGenerator{}.generate(input);
