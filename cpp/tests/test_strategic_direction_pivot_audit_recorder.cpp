@@ -92,6 +92,101 @@ int main() {
     assert(resynchronized_record.at("observed_context").at("gold_available") == 25);
     assert(!std::getline(runtime_stream, line));
 
+    // Repeated live observations must not advance pivot hysteresis, even
+    // when the producer's emission sequence changes.
+    const auto pivot_runtime_path = root / "pivot-runtime" / "events.jsonl";
+    UnifiedStrategicShadowRuntime pivot_runtime(pivot_runtime_path,
+        PivotConfirmationPolicy{3, 60.0, 5});
+    const auto make_composition = [](const std::string& id, int carry,
+                                     std::vector<composition_intelligence::CompositionUnit> units) {
+        composition_intelligence::CompositionCandidate candidate;
+        candidate.composition_id = id;
+        candidate.source = composition_intelligence::CompositionSource::Native;
+        candidate.set_id = "18";
+        candidate.patch = "18.1";
+        candidate.units = std::move(units);
+        candidate.main_carry_id = carry;
+        candidate.target_board_size = 8;
+        candidate.source_score = 80.0;
+        candidate.source_reference = "runtime-dedup-test";
+        return candidate;
+    };
+    StrategicCycleInput pivot_input;
+    pivot_input.exploration.round = 4;
+    pivot_input.active_composition = composition_intelligence::ActiveComposition{
+        make_composition("composition-current", 1,
+            {{1, composition_intelligence::UnitRole::MainCarry, true, 100},
+             {2, composition_intelligence::UnitRole::Frontline, true, 80}}), 1};
+    const StrategicCycleAuditContext pivot_context{101, 0, 4};
+    auto pivot_result = pivot_runtime.refresh(pivot_context, pivot_input);
+    assert(pivot_result.phase == StrategicCyclePhase::CompositionActive);
+
+    pivot_input.active_composition.reset();
+    pivot_input.pivot_candidate = StrategicPivotAnchorCandidate{};
+    pivot_input.pivot_candidate->identity = "pivot-next";
+    pivot_input.pivot_candidate->target_direction = "composition-next";
+    pivot_input.pivot_candidate->target_composition_identity = "composition-next";
+    pivot_input.pivot_candidate->source_direction_anchor_identity =
+        "direction:composition-current:v1";
+    pivot_input.pivot_candidate->source_composition_version = 1;
+    pivot_input.pivot_candidate->reference_unit_ids = {1, 2, 3};
+    pivot_input.pivot_candidate->evidence = {
+        StrategicAnchorEvidenceKind::OwnedUnit,
+        StrategicAnchorEvidenceKind::TraitCompletion
+    };
+    pivot_input.pivot_candidate->confidence = 0.9;
+    pivot_input.pivot_candidate->reason = "observed_owned_core";
+    pivot_input.pivot_candidate->lifecycle = StrategicAnchorLifecycle::Evaluating;
+    pivot_input.pivot_destination = make_composition("composition-next", 1,
+        {{1, composition_intelligence::UnitRole::MainCarry, true, 100},
+         {2, composition_intelligence::UnitRole::Frontline, true, 80},
+         {3, composition_intelligence::UnitRole::Support, false, 40}});
+    pivot_input.pivot_feasibility = PivotFeasibilityInput{};
+    pivot_input.pivot_feasibility->candidate_composition_identity = "composition-next";
+    pivot_input.pivot_feasibility->source_direction_anchor_identity =
+        "direction:composition-current:v1";
+    pivot_input.pivot_feasibility->source_composition_version = 1;
+    pivot_input.pivot_feasibility->gold_available = 40;
+    pivot_input.pivot_feasibility->protected_gold_floor = 20;
+    pivot_input.pivot_feasibility->transition_economic_cost = 12.0;
+    pivot_input.pivot_feasibility->required_units = {
+        {1, 4, true, true, {"Invoker", "Arcanist"}},
+        {2, 3, true, false, {"Invoker"}},
+        {3, 2, false, false, {"Arcanist"}}
+    };
+    pivot_input.pivot_feasibility->observed_units = {
+        {1, 1, 1, 1, 8}, {2, 1, 1, 0, 7}, {3, 0, 1, 1, 9}
+    };
+    pivot_input.pivot_feasibility->required_traits = {
+        {"Invoker", 2}, {"Arcanist", 2}
+    };
+    pivot_input.evaluation_sequence = 1;
+    pivot_result = pivot_runtime.refresh(pivot_context, pivot_input);
+    assert(pivot_result.phase == StrategicCyclePhase::PivotEvaluation);
+    assert(pivot_result.diagnostics.pivot_confirmation->consecutive_viable_evaluations == 1);
+
+    pivot_input.evaluation_sequence = 2;
+    const auto duplicate_pivot_result =
+        pivot_runtime.refresh(pivot_context, pivot_input);
+    assert(duplicate_pivot_result.diagnostics.pivot_confirmation->consecutive_viable_evaluations == 1);
+
+    pivot_input.pivot_feasibility->gold_available = 39;
+    pivot_input.evaluation_sequence = 3;
+    pivot_result = pivot_runtime.refresh(pivot_context, pivot_input);
+    assert(pivot_result.diagnostics.pivot_confirmation->consecutive_viable_evaluations == 2);
+
+    pivot_input.pivot_feasibility->gold_available = 38;
+    pivot_input.evaluation_sequence = 4;
+    pivot_result = pivot_runtime.refresh(pivot_context, pivot_input);
+    assert(pivot_result.phase == StrategicCyclePhase::PivotConfirmed);
+
+    {
+        std::ifstream pivot_stream(pivot_runtime_path);
+        std::size_t pivot_records = 0;
+        while (std::getline(pivot_stream, line)) ++pivot_records;
+        assert(pivot_records == 4);
+    }
+
     // A failed append is contained and does not escape into the caller.
     StrategicDirectionPivotAuditRecorder failing(root);
     assert(!failing.append(player_one, input, result));
