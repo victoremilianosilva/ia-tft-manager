@@ -2901,10 +2901,13 @@ struct TFTEngine::Impl {
         composition_intelligence_native_candidates[i].clear();
         composition_intelligence_native_diagnostics[i].clear();
 
-        // The CompositionIntelligence native source is now produced by the
-        // independent strategic generator. The legacy plan below is retained
-        // only for its existing PPO/Viewer-facing compatibility path.
-        if (composition_intelligence_enabled) {
+        // Generate once from raw facts and reuse the same result for the new
+        // strategic planner and CompositionIntelligence. The legacy plan below
+        // remains isolated to the existing PPO/Viewer compatibility path.
+        strategy::NativeCompositionGenerationResult strategic_native_generation;
+        std::unordered_map<std::int32_t, strategy::NativeCompositionOwnedUnit>
+            strategic_native_owned;
+        {
             strategy::NativeCompositionGenerationInput native_input;
             native_input.level = economy.level;
             native_input.gold = economy.gold;
@@ -2920,14 +2923,12 @@ struct TFTEngine::Impl {
                     definition.combat_profile.is_support
                 });
             }
-            std::unordered_map<std::int32_t, strategy::NativeCompositionOwnedUnit>
-                native_owned;
             const auto append_native_owned = [&](const UnitInstance& unit,
                                                   bool on_board) {
                 const auto* definition = catalog->find_by_id(
                     unit.champion_internal_id);
                 if (!definition) return;
-                auto& observed = native_owned[definition->internal_id];
+                auto& observed = strategic_native_owned[definition->internal_id];
                 observed.champion_id = definition->internal_id;
                 const auto copies = copies_by_unit.find(definition->internal_id);
                 observed.copies = copies == copies_by_unit.end() ? 0 : copies->second;
@@ -2947,7 +2948,7 @@ struct TFTEngine::Impl {
                 if (unit) append_native_owned(*unit, true);
             for (const auto& unit : player_envs[i].bench)
                 if (unit) append_native_owned(*unit, false);
-            for (const auto& [id, observed] : native_owned) {
+            for (const auto& [id, observed] : strategic_native_owned) {
                 native_input.owned.push_back(observed);
                 native_input.currently_owned_unit_ids.push_back(id);
             }
@@ -2969,12 +2970,14 @@ struct TFTEngine::Impl {
                     });
                 }
             }
-
-            const auto native_generated =
+            strategic_native_generation =
                 strategy::NativeStrategicCompositionGenerator{}.generate(native_input);
+        }
+
+        if (composition_intelligence_enabled) {
             composition_intelligence_native_diagnostics[i].push_back(
-                native_generated.reason);
-            for (const auto& generated : native_generated.candidates) {
+                strategic_native_generation.reason);
+            for (const auto& generated : strategic_native_generation.candidates) {
                 composition_intelligence::CompositionCandidate candidate;
                 candidate.composition_id = generated.identity;
                 candidate.source = composition_intelligence::CompositionSource::Native;
@@ -3227,92 +3230,16 @@ struct TFTEngine::Impl {
             for (const auto& unit : player_envs[i].bench)
                 if (unit) append_owned_candidate(*unit, false);
 
-            // Generate independent composition candidates from observed facts.
-            // This service proposes lineups only; pivot feasibility and promotion
-            // remain separate stages of the unified strategic state machine.
-            // The new strategic architecture owns its candidate and lineup
-            // generation. Inputs below are raw catalog, board, bench, shop,
-            // pool, level and economy facts; no legacy plan/focus/direction is read.
-            strategy::NativeCompositionGenerationInput generation_input;
-            generation_input.level = economy.level;
-            generation_input.gold = economy.gold;
-            generation_input.target_slots = std::clamp(economy.level, 1, 10);
-            generation_input.maximum_candidates = 8;
-            generation_input.catalog.reserve(catalog->all().size());
-            for (const auto& definition : catalog->all()) {
-                strategy::NativeCompositionUnitDefinition unit;
-                unit.champion_id = definition.internal_id;
-                unit.key = definition.api_name;
-                unit.cost = definition.cost;
-                unit.traits = definition.traits;
-                unit.carry = definition.combat_profile.is_carry;
-                unit.frontline = definition.combat_profile.frontline ||
-                    definition.combat_profile.is_tank;
-                unit.support = definition.combat_profile.is_support;
-                generation_input.catalog.push_back(std::move(unit));
-            }
-
-            std::unordered_map<std::int32_t, strategy::NativeCompositionOwnedUnit>
-                observed_owned;
-            const auto append_generation_owned = [&](const UnitInstance& unit,
-                                                      bool on_board) {
-                const auto* definition = catalog->find_by_id(
-                    unit.champion_internal_id);
-                if (!definition) return;
-                auto& observed = observed_owned[definition->internal_id];
-                observed.champion_id = definition->internal_id;
-                const auto copies = copies_by_unit.find(definition->internal_id);
-                observed.copies = copies == copies_by_unit.end() ? 0 : copies->second;
-                observed.star = std::max(observed.star, unit.star);
-                observed.on_board = observed.on_board || on_board;
-                observed.on_bench = observed.on_bench || !on_board;
-                observed.board_contribution = std::max(
-                    observed.board_contribution, on_board
-                        ? std::clamp(definition->cost / 5.0 * 0.5 +
-                            std::clamp(unit.star, 1, 3) / 3.0 * 0.5, 0.0, 1.0)
-                        : 0.0);
-                observed.item_fit = std::max(observed.item_fit,
-                    std::clamp(static_cast<double>(unit.items.size()) / 3.0,
-                               0.0, 1.0));
-            };
-            for (const auto& unit : player_envs[i].board)
-                if (unit) append_generation_owned(*unit, true);
-            for (const auto& unit : player_envs[i].bench)
-                if (unit) append_generation_owned(*unit, false);
-            for (const auto& [id, observed] : observed_owned) {
-                generation_input.owned.push_back(observed);
-                generation_input.currently_owned_unit_ids.push_back(id);
-            }
-
-            if (strategic_shop) {
-                for (const auto& offer : strategic_shop->offers()) {
-                    if (offer) generation_input.shop_ids.insert(
-                        offer->champion_internal_id);
-                }
-            }
-            if (pool) {
-                for (const auto& definition : catalog->all())
-                    generation_input.pool_remaining[definition.internal_id] =
-                        pool->available(definition.internal_id);
-            }
-            for (const auto& [trait, milestones] : trait_milestones) {
-                if (!milestones.empty()) {
-                    generation_input.trait_thresholds.push_back({
-                        trait, *std::min_element(milestones.begin(), milestones.end())
-                    });
-                }
-            }
-
-            const auto generated =
-                strategy::NativeStrategicCompositionGenerator{}.generate(
-                    generation_input);
+            // Reuse the independently generated lineups above; do not regenerate
+            // from or adapt any legacy CompositionPlanner output.
             auto& generation = strategic_context.candidate_generation;
-            generation.anchors_considered = generated.directions_considered;
+            generation.anchors_considered =
+                strategic_native_generation.directions_considered;
             generation.candidates_generated = static_cast<std::uint32_t>(
-                generated.candidates.size());
-            generation.no_candidate_reason = generated.reason;
+                strategic_native_generation.candidates.size());
+            generation.no_candidate_reason = strategic_native_generation.reason;
 
-            for (const auto& composition : generated.candidates) {
+            for (const auto& composition : strategic_native_generation.candidates) {
                 const auto* definition = catalog->find_by_id(
                     composition.anchor_champion_id);
                 if (!definition) {
@@ -3337,8 +3264,8 @@ struct TFTEngine::Impl {
                 anchor.reusable_owned_units = composition.reusable_owned_units;
                 anchor.shop_available = composition.anchor_available_in_shop;
 
-                const auto observed = observed_owned.find(definition->internal_id);
-                if (observed != observed_owned.end()) {
+                const auto observed = strategic_native_owned.find(definition->internal_id);
+                if (observed != strategic_native_owned.end()) {
                     anchor.unit.star = observed->second.star;
                     anchor.unit.copies_owned = observed->second.copies;
                     anchor.unit.on_board = observed->second.on_board;
