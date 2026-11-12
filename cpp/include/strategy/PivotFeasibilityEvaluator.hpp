@@ -72,6 +72,8 @@ struct PivotUnitEvidence {
     bool carry{false};
     bool available{false};
     bool availability_unknown{false};
+    std::int32_t copies_to_two_star{0};
+    bool two_star_reachable{false};
 };
 
 struct PivotFeasibilityResult {
@@ -151,23 +153,25 @@ public:
             const bool unknown = owned == 0 && shop == 0 && pool < 0;
             const bool available = owned > 0 || shop > 0 || pool > 0;
 
+            const std::int32_t copies_to_two_star = evidence && evidence->star >= 2
+                ? 0 : std::max(0, 3 - owned - shop);
+            const bool two_star_reachable = evidence && evidence->star >= 2
+                ? true : (owned + shop >= 3);
             out.units.push_back({required.champion_id, owned, shop, pool,
-                required.core, required.carry, available, unknown});
+                required.core, required.carry, available, unknown,
+                copies_to_two_star, two_star_reachable});
+            if (owned > 0 && owned < 3 && shop > 0 && two_star_reachable)
+                out.favorable_evidence.push_back(
+                    "shop_completes_two_star_progress_for_unit_" +
+                    std::to_string(required.champion_id));
 
             if (owned > 0) {
                 owned_support += 1.0;
                 for (const auto& trait : required.traits) ++owned_traits[trait];
             }
-            if (shop > 0) {
-                shop_support += 1.0;
-                if (owned == 0) {
-                    for (const auto& trait : required.traits) ++reachable_traits[trait];
-                }
-            }
-            if (owned > 0 || shop > 0) {
-                for (const auto& trait : required.traits) {
-                    if (owned == 0) ++reachable_traits[trait];
-                }
+            if (shop > 0) shop_support += 1.0;
+            if (owned == 0 && shop > 0) {
+                for (const auto& trait : required.traits) ++reachable_traits[trait];
             }
 
             if (required.core && reachable) ++core_reachable;
