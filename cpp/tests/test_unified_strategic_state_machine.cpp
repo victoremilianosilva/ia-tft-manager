@@ -38,7 +38,7 @@ StrategicPivotAnchorCandidate pivot_candidate() {
     value.identity = "pivot-next";
     value.target_direction = "composition-next";
     value.target_composition_identity = "composition-next";
-    value.source_direction_anchor_identity = "direction:composition-current:1";
+    value.source_direction_anchor_identity = "direction:composition:composition-current:1";
     value.source_composition_version = 1;
     value.reference_unit_ids = {1, 2, 3};
     value.evidence = {StrategicAnchorEvidenceKind::OwnedUnit,
@@ -59,7 +59,7 @@ CompositionCandidate next_composition() {
 PivotFeasibilityInput viable_pivot_input() {
     PivotFeasibilityInput input;
     input.candidate_composition_identity = "composition-next";
-    input.source_direction_anchor_identity = "direction:composition-current:1";
+    input.source_direction_anchor_identity = "direction:composition:composition-current:1";
     input.source_composition_version = 1;
     input.gold_available = 40;
     input.protected_gold_floor = 20;
