@@ -1,4 +1,4 @@
-#include "strategy/StrategicDirectionPivotAuditRecorder.hpp"
+#include "strategy/UnifiedStrategicShadowRuntime.hpp"
 
 #include <cassert>
 #include <filesystem>
@@ -56,6 +56,23 @@ int main() {
     assert(first.at("pivot_candidate").is_null());
     assert(first.at("feasibility").at("status") == "UNAVAILABLE");
     assert(first.at("shadow_only") == true);
+
+    // The runtime-facing bridge executes the real state machine and emits its
+    // resulting phase without requiring a game/PPO action or mutating input.
+    const auto runtime_output = root / "runtime" / "strategic_direction_pivot.jsonl";
+    UnifiedStrategicShadowRuntime runtime(runtime_output);
+    StrategicCycleInput runtime_input;
+    runtime_input.exploration.round = 6;
+    const auto runtime_result = runtime.refresh(
+        StrategicCycleAuditContext{88, 3, 6}, runtime_input);
+    assert(runtime_result.shadow_only);
+    std::ifstream runtime_stream(runtime_output);
+    assert(runtime_stream.good());
+    assert(static_cast<bool>(std::getline(runtime_stream, line)));
+    const auto runtime_record = nlohmann::json::parse(line);
+    assert(runtime_record.at("match_id") == 88);
+    assert(runtime_record.at("player_id") == 3);
+    assert(runtime_record.at("phase") == "NO_EVIDENCE");
 
     // A failed append is contained and does not escape into the caller.
     StrategicDirectionPivotAuditRecorder failing(root);
