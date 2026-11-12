@@ -153,6 +153,33 @@ private:
             {"missing_data", nlohmann::json::array()}
         };
 
+        if (!input.pivot_feasibility) {
+            for (const auto& unit : input.exploration.units) {
+                support.push_back({
+                    {"champion_id", unit.champion_id},
+                    {"relation", unit.core_potential ? "core" : "composition"},
+                    {"copies_owned", unit.copies_owned},
+                    {"highest_star", unit.star},
+                    {"target_star", 2},
+                    {"cost", unit.cost},
+                    {"on_board", unit.on_board},
+                    {"on_bench", unit.on_bench},
+                    {"in_shop", unit.in_shop},
+                    {"carry_potential", unit.carry_potential},
+                    {"core_potential", unit.core_potential},
+                    {"traits", unit.traits}
+                });
+                if (unit.in_shop) {
+                    shop.push_back({
+                        {"champion_id", unit.champion_id},
+                        {"cost", unit.cost},
+                        {"copies", 1},
+                        {"source_sequence", input.evaluation_sequence}
+                    });
+                }
+            }
+        }
+
         if (input.pivot_feasibility) {
             const auto& evidence = *input.pivot_feasibility;
             const auto* evaluated = result.diagnostics.pivot_feasibility
@@ -226,6 +253,12 @@ private:
                 {"source_direction_anchor_identity",
                     input.pivot_candidate ? input.pivot_candidate->source_direction_anchor_identity : ""},
                 {"destination_direction_anchor_identity", result.anchors.direction_anchor.identity},
+                {"previous_composition_identity", input.active_composition
+                    ? nlohmann::json(input.active_composition->candidate.composition_id)
+                    : nlohmann::json(nullptr)},
+                {"previous_composition_version", input.pivot_candidate
+                    ? nlohmann::json(input.pivot_candidate->source_composition_version)
+                    : nlohmann::json(nullptr)},
                 {"destination_composition_identity", result.anchors.direction_anchor.composition_identity},
                 {"new_composition_version", result.anchors.direction_anchor.composition_version},
                 {"evaluation_sequence", input.evaluation_sequence}
