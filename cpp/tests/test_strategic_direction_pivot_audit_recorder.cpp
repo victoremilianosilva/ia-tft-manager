@@ -11,6 +11,7 @@
 
 using namespace tft::strategy;
 namespace ci = tft::composition_intelligence;
+namespace ci = tft::composition_intelligence;
 
 int main() {
     const auto root = std::filesystem::temp_directory_path() /
