@@ -94,9 +94,17 @@ public:
     StrategicCycleResult refresh(const StrategicCycleInput& input) {
         StrategicCycleResult out;
         out.diagnostics.previous_phase = phase_name(phase_);
-        out.diagnostics.discovery = discovery_.evaluate(input.exploration);
-
+        auto discovery_input = input.exploration;
         const bool had_active = pivot_coordinator_.active_composition().has_value();
+        if (input.active_composition.has_value()) {
+            discovery_input.composition_defined = true;
+            discovery_input.active_composition_identity = input.active_composition->composition_id;
+        } else if (had_active) {
+            discovery_input.composition_defined = true;
+            discovery_input.active_composition_identity =
+                pivot_coordinator_.active_composition()->candidate.composition_id;
+        }
+        out.diagnostics.discovery = discovery_.evaluate(discovery_input);
 
         if (!had_active && input.active_composition.has_value()) {
             const composition_intelligence::ActiveComposition seed{
@@ -138,8 +146,18 @@ public:
         if (pivot_coordinator_.active_composition()) {
             if (input.pivot_candidate.has_value()) {
                 if (!input.pivot_destination || !input.pivot_feasibility) {
-                    phase_ = StrategicCyclePhase::NoEvidence;
-                    out.diagnostics.transition_reason = "pivot_candidate_missing_destination_or_feasibility_snapshot";
+                    auto invalidated = *input.pivot_candidate;
+                    invalidated.lifecycle = StrategicAnchorLifecycle::Invalidated;
+                    PivotFeasibilityInput empty_input;
+                    PivotFeasibilityResult empty_result;
+                    const composition_intelligence::CompositionCandidate empty_destination;
+                    const auto confirmation = pivot_coordinator_.observe_and_confirm(
+                        invalidated, empty_destination, empty_input, empty_result,
+                        input.evaluation_sequence);
+                    out.diagnostics.pivot_confirmation = confirmation;
+                    phase_ = StrategicCyclePhase::Invalidated;
+                    out.diagnostics.transition_reason =
+                        "pivot_candidate_missing_destination_or_feasibility_snapshot";
                 } else {
                     const auto evaluated = pivot_evaluator_.evaluate(*input.pivot_feasibility);
                     out.diagnostics.pivot_feasibility = evaluated;
@@ -228,6 +246,14 @@ private:
         }
         const auto& active_direction = pivot_coordinator_.anchors().direction_anchor.direction;
         bool has_comparison = false;
+        if (input.active_composition.has_value()) {
+            has_comparison = true;
+            if (input.active_composition->composition_id !=
+                pivot_coordinator_.active_composition()->candidate.composition_id) {
+                out.diagnostics.divergence_reasons.push_back(
+                    "external_active_composition_snapshot_disagrees_with_unified_authority");
+            }
+        }
         if (input.legacy_direction && !input.legacy_direction->direction.empty()) {
             has_comparison = true;
             if (input.legacy_direction->direction != active_direction)
