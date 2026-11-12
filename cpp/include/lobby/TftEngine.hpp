@@ -641,8 +641,6 @@ public:
     bool is_core_unit(std::int32_t player_id, const std::string& champion_api_name) const;
     bool is_core_trait(std::int32_t player_id, const std::string& trait) const;
 
-    std::array<AntiLoopMetrics, kPlayersPerLobby>
-    get_anti_loop_metrics() const;
 
     PublicState get_public_state() const;
 
