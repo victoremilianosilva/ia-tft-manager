@@ -4064,10 +4064,7 @@ struct TFTEngine::Impl {
                 shadow_decision.replaceable_unit_ids;
             info.strategic_candidate_diagnostics.clear();
             for (const auto& candidate : shadow_decision.candidate_diagnostics) {
-                info.strategic_candidate_diagnostics.push_back({
-                    candidate.champion_id, candidate.target_composition_direction,
-                    candidate.score, candidate.accepted, candidate.evaluation_reason
-                });
+                info.strategic_candidate_diagnostics.push_back(candidate);
             }
             info.strategic_candidate_direction =
                 strategic_commitment.candidate_composition_direction;
