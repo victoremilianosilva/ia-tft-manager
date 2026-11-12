@@ -40,6 +40,14 @@ int main() {
     assert(!result.hypotheses.empty());
     assert(result.hypotheses.front().anchor.direction == "Bruiser");
     assert(result.hypotheses.front().anchor.confidence > 0.0);
+    assert(std::find(result.hypotheses.front().anchor.evidence.begin(),
+        result.hypotheses.front().anchor.evidence.end(),
+        StrategicAnchorEvidenceKind::BoardUnit) !=
+        result.hypotheses.front().anchor.evidence.end());
+    assert(std::find(result.hypotheses.front().anchor.evidence.begin(),
+        result.hypotheses.front().anchor.evidence.end(),
+        StrategicAnchorEvidenceKind::BenchUnit) !=
+        result.hypotheses.front().anchor.evidence.end());
 
     // A potential carry need not already be two-star, but needs owned support.
     DirectionDiscoveryInput carry;
@@ -128,6 +136,7 @@ int main() {
     assert(high_cost != result.hypotheses.end());
     assert(low_cost->score > high_cost->score);
     assert(low_cost->score_explanation.find("cost_penalty=") != std::string::npos);
+    assert(low_cost->score_explanation.find("star_progress=") != std::string::npos);
 
     // A defined composition suppresses free exploration entirely.
     competing.composition_defined = true;
