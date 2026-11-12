@@ -39,7 +39,8 @@ int main() {
         [](const auto& candidate) { return candidate.direction == "Invoker"; });
     assert(bruiser != result.candidates.end());
     assert(invoker != result.candidates.end());
-    assert(bruiser->identity.find("native:Bruiser:") == 0);\n    assert(bruiser->main_carry_id == 2);
+    assert(bruiser->identity.find("native:Bruiser:") == 0);
+    assert(bruiser->main_carry_id == 2);
     assert(bruiser->reusable_owned_units >= 2);
     assert(bruiser->transition_cost > 0.0 && bruiser->transition_cost < 1.0);
     assert(std::find(bruiser->completed_traits.begin(), bruiser->completed_traits.end(),
