@@ -1033,6 +1033,7 @@ int main(int argc, char** argv) {
         std::error_code strategic_remove_error;
         std::filesystem::remove(strategic_audit_path, strategic_remove_error);
         tft::TFTEngine strategic_runtime_engine(20261112, json_path);
+        (void)strategic_runtime_engine.reset(20261112);
         strategic_runtime_engine.set_strategic_direction_pivot_audit_path(
             strategic_audit_path.string());
         const auto strategic_fixture = std::find_if(
