@@ -3947,12 +3947,13 @@ struct TFTEngine::Impl {
                             auto& unit = discovery_units[owned.champion_id];
                             unit.champion_id = owned.champion_id;
                             unit.cost = owned.cost;
-                            unit.copies_owned = owned.copies_owned;
-                            unit.star = owned.star;
-                            unit.on_board = owned.on_board;
-                            unit.on_bench = owned.on_bench;
-                            unit.core_potential = owned.is_core;
-                            unit.board_contribution = owned.board_contribution;
+                            unit.copies_owned = std::max(unit.copies_owned, owned.copies_owned);
+                            unit.star = std::max(unit.star, owned.star);
+                            unit.on_board = unit.on_board || owned.on_board;
+                            unit.on_bench = unit.on_bench || owned.on_bench;
+                            unit.core_potential = unit.core_potential || owned.is_core;
+                            unit.board_contribution = std::max(
+                                unit.board_contribution, owned.board_contribution);
                             unit.traits = owned.traits;
                             const auto* definition = catalog->find_by_id(owned.champion_id);
                             unit.carry_potential = definition &&
