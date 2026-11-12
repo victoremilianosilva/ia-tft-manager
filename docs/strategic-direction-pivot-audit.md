@@ -33,9 +33,17 @@ Each line is one immutable observation emitted by the shadow strategic-cycle pro
 - Conflicts are evidence for investigation, not automatic proof of a strategic mistake.
 - PPO actions/rewards are contextual only and never treated as strategic ground truth.
 
-## Current integration boundary
+## Live Viewer integration
 
-The Viewer audit generator always writes `audit_direcao_pivot.md`. If the session sidecar is absent, the report explicitly marks the producer data as unavailable. This avoids fabricating state from legacy logs. The current unified state machine remains shadow/read-only; wiring a live event producer is a separate integration step and must preserve PPO, training, observations, masks, rewards, checkpoints, rules, Viewer behavior and action execution.
+When a Viewer session is created with recording enabled, `viewer/session.py` configures the native engine with the session path for `strategic_direction_pivot.jsonl`. The native `TFTEngine::update_strategy` path then feeds its actual per-player board, bench, shop, economy, champion catalog, legacy strategic diagnostics and Composition Intelligence active snapshot into one `UnifiedStrategicShadowRuntime` per player. The sidecar is appended automatically during the existing Shadow update; no reconstruction from PPO actions or offline logs is used.
+
+The session metadata records the sidecar filename and the correlation key. The recorder uses the first 64 bits of the Viewer UUID as its numeric `match_id`. The sidecar is opt-in: it is configured only for recorded Viewer sessions and is disabled on session close. Ordinary training/engine use does not create a recorder unless a caller explicitly configures one.
+
+The integration emits exploration evidence from observed owned units and shop offers, imports the versioned active composition when available, and generates pivot destinations from the native CompositionPlanner output around observed owned/shop anchors. Partial evidence remains explicit. In particular, the current engine does not yet expose a complete monetary opportunity-cost calculation for a full composition transition. Therefore `transition_economic_cost` is deliberately left unavailable in this integration, the evaluator reports `INSUFFICIENT_EVIDENCE`, and the unified machine must not confirm a pivot from that incomplete cost. The candidate and missing-data reason are still recorded for audit.
+
+The native integration test configures the sidecar, triggers the actual engine `update_strategy` path through a native player snapshot change, and verifies that the JSONL record contains the configured match/player identity and `shadow_only=true`. CI builds and runs this engine-level test in addition to the isolated recorder tests.
+
+The Viewer audit generator continues to write `audit_direcao_pivot.md`. If the session sidecar is absent, the report explicitly marks producer data as unavailable. The unified state machine and recorder remain shadow/read-only; no recommendation is connected to PPO, training, observations, masks, rewards, checkpoints, rules, Viewer decisions or action execution.
 
 
 ## Shadow producer API
