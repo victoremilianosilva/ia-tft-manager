@@ -2894,10 +2894,10 @@ struct TFTEngine::Impl {
                 info.core_traits.push_back(trait);
         }
 
-        // Build a concrete target lineup from the entire champion pool once a
-        // direction exists. The anchor trait guides selection, but the planner
-        // deliberately reserves room for a carry, frontline and bridge/support
-        // traits instead of forcing every slot into one trait.
+        // Legacy compatibility lineup: this result continues to populate only
+        // the existing PPO/Viewer-facing planned-unit fields. The new strategic
+        // and CompositionIntelligence candidate paths consume the independent
+        // NativeStrategicCompositionGenerator output assembled above.
         composition_intelligence_native_candidates[i].clear();
         composition_intelligence_native_diagnostics[i].clear();
 
