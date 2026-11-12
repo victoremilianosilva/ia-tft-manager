@@ -55,7 +55,8 @@ int main() {
 
     // Level controls target capacity, not the identity or source of strategy.
     auto lower_level = input;
-    lower_level.target_slots = 2;
+    lower_level.level = 2;
+    lower_level.target_slots = 8;
     const auto lower_level_result =
         NativeStrategicCompositionGenerator{}.generate(lower_level);
     assert(std::all_of(lower_level_result.candidates.begin(),
