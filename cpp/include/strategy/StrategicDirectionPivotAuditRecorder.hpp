@@ -43,14 +43,20 @@ public:
             // Review sequence numbers identify emissions, not new evidence.
             // Exclude them so an unchanged game snapshot cannot advance pivot
             // hysteresis merely because the engine called update_strategy again.
-            if (fingerprint_record.contains("observed_context"))
+            if (fingerprint_record.contains("observed_context") &&
+                fingerprint_record["observed_context"].is_object()) {
                 fingerprint_record["observed_context"].erase("evaluation_sequence");
-            if (fingerprint_record.contains("shop_evidence")) {
-                for (auto& offer : fingerprint_record["shop_evidence"])
-                    offer.erase("source_sequence");
             }
-            if (fingerprint_record.contains("transition"))
+            if (fingerprint_record.contains("shop_evidence") &&
+                fingerprint_record["shop_evidence"].is_array()) {
+                for (auto& offer : fingerprint_record["shop_evidence"]) {
+                    if (offer.is_object()) offer.erase("source_sequence");
+                }
+            }
+            if (fingerprint_record.contains("transition") &&
+                fingerprint_record["transition"].is_object()) {
                 fingerprint_record["transition"].erase("evaluation_sequence");
+            }
             const auto fingerprint = fingerprint_record.dump();
             const auto previous = last_fingerprints_.find(context.player_id);
             if (previous != last_fingerprints_.end() && previous->second == fingerprint)
