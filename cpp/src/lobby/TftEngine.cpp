@@ -4154,7 +4154,7 @@ struct TFTEngine::Impl {
                         };
                         (void)strategic_shadow_runtimes[i]->refresh(audit_context, unified_input);
                         runtime.mark_stage("unified_strategic_cycle", "completed",
-                            "live normalized snapshot evaluated and direction/pivot sidecar emitted", active);
+                            "live normalized snapshot evaluated or deduplicated; changed evidence is emitted to the sidecar", active);
                     } catch (const std::exception& unified_error) {
                         runtime.mark_stage("unified_strategic_cycle", "failed",
                             unified_error.what(), active);
