@@ -6,6 +6,8 @@
 #include <iostream>
 #include <nlohmann/json.hpp>
 #include <string>
+#include <utility>
+#include <vector>
 
 using namespace tft::strategy;
 
