@@ -7,6 +7,7 @@
 #include <chrono>
 #include <cstdint>
 #include <fstream>
+#include <filesystem>
 #include <functional>
 #include <map>
 #include <limits>
@@ -41,6 +42,7 @@
 #include "strategy/StrategicPlanner.hpp"
 #include "strategy/EconomicController.hpp"
 #include "strategy/ActionEvaluator.hpp"
+#include "strategy/UnifiedStrategicShadowRuntime.hpp"
 
 #include "decision/ActionMaskEngine.hpp"
 #include "decision/DecisionState.hpp"
@@ -514,6 +516,9 @@ struct TFTEngine::Impl {
     std::vector<std::string> composition_intelligence_catalog_diagnostics;
     std::uint64_t composition_intelligence_sequence{0};
     bool composition_intelligence_enabled{false};
+    std::array<std::unique_ptr<strategy::UnifiedStrategicShadowRuntime>, kPlayersPerLobby>
+        strategic_shadow_runtimes{};
+    std::string strategic_shadow_audit_path;
 
 
     // Serviços compartilhados pela lobby, não pertencem a um jogador.
@@ -3908,6 +3913,213 @@ struct TFTEngine::Impl {
                 bridge_input.sequence = runtime.next_player_sequence();
                 const auto context_bridge =
                     ci::StrategicContextBridge::adapt(bridge_input);
+
+                // Feed the exact normalized per-player snapshot into the unified
+                // strategic state machine. This remains inside the existing
+                // Shadow failure boundary and never publishes into PPO state.
+                if (strategic_shadow_runtimes[i]) {
+                    try {
+                        strategy::StrategicCycleInput unified_input;
+                        unified_input.active_composition = active;
+                        unified_input.evaluation_sequence = bridge_input.sequence;
+                        auto& discovery = unified_input.exploration;
+                        discovery.round = round_id;
+                        discovery.gold_available = economy.gold;
+                        discovery.composition_defined = active.has_value();
+                        discovery.active_composition_identity = active
+                            ? active->candidate.composition_id : std::string{};
+                        discovery.previous_direction = info.composition_direction;
+
+                        std::map<std::int32_t, strategy::DirectionDiscoveryUnit> discovery_units;
+                        for (const auto& owned : strategic_context.owned_units) {
+                            auto& unit = discovery_units[owned.champion_id];
+                            unit.champion_id = owned.champion_id;
+                            unit.cost = owned.cost;
+                            unit.copies_owned = owned.copies_owned;
+                            unit.star = owned.star;
+                            unit.on_board = owned.on_board;
+                            unit.on_bench = owned.on_bench;
+                            unit.core_potential = owned.is_core;
+                            unit.board_contribution = owned.board_contribution;
+                            unit.traits = owned.traits;
+                            const auto* definition = catalog->find_by_id(owned.champion_id);
+                            unit.carry_potential = definition &&
+                                definition->combat_profile.is_carry;
+                        }
+                        if (strategic_shop) {
+                            for (const auto& offer : strategic_shop->offers()) {
+                                if (!offer) continue;
+                                const auto* definition = catalog->find_by_id(
+                                    offer->champion_internal_id);
+                                if (!definition) continue;
+                                auto& unit = discovery_units[definition->internal_id];
+                                unit.champion_id = definition->internal_id;
+                                unit.cost = definition->cost;
+                                unit.copies_owned = copies_by_unit.count(definition->internal_id)
+                                    ? copies_by_unit.at(definition->internal_id) : 0;
+                                unit.in_shop = true;
+                                unit.traits = definition->traits;
+                                unit.carry_potential = definition->combat_profile.is_carry;
+                                unit.core_potential = std::find(
+                                    info.core_unit_ids.begin(), info.core_unit_ids.end(),
+                                    definition->internal_id) != info.core_unit_ids.end();
+                                const auto owned = owned_evidence.find(definition->internal_id);
+                                if (owned != owned_evidence.end()) unit.star = owned->second.highest_star;
+                            }
+                        }
+                        for (const auto& [id, unit] : discovery_units) {
+                            (void)id;
+                            discovery.units.push_back(unit);
+                        }
+                        for (const auto& [trait, milestones] : trait_milestones) {
+                            if (milestones.empty()) continue;
+                            const auto first = std::min_element(
+                                milestones.begin(), milestones.end());
+                            if (first != milestones.end() && *first > 0)
+                                discovery.trait_thresholds.push_back({trait, *first});
+                        }
+
+                        // A pivot is only evaluated against a separately observed
+                        // alternative source candidate and an existing direction
+                        // anchor. Unknown transition-cost/reserve-floor data stays
+                        // explicitly missing, so it can never approve a pivot.
+                        const auto& current_anchor =
+                            strategic_shadow_runtimes[i]->machine().anchors().direction_anchor;
+                        if (active && !current_anchor.identity.empty()) {
+                            const ci::CompositionCandidate* alternative = nullptr;
+                            std::size_t best_support = 0;
+                            for (const auto& candidate : source_candidates) {
+                                if (candidate.composition_id == active->candidate.composition_id)
+                                    continue;
+                                std::size_t support_count = 0;
+                                for (const auto& target : candidate.units) {
+                                    const auto owned = copies_by_unit.find(target.champion_id);
+                                    const bool owned_unit = owned != copies_by_unit.end() &&
+                                        owned->second > 0;
+                                    bool shop_unit = false;
+                                    if (strategic_shop) {
+                                        for (const auto& offer : strategic_shop->offers())
+                                            if (offer && offer->champion_internal_id == target.champion_id) {
+                                                shop_unit = true;
+                                                break;
+                                            }
+                                    }
+                                    const bool pool_unit = pool &&
+                                        pool->available(target.champion_id) > 0;
+                                    if (owned_unit || shop_unit || pool_unit) ++support_count;
+                                }
+                                if (support_count > best_support) {
+                                    best_support = support_count;
+                                    alternative = &candidate;
+                                }
+                            }
+                            if (alternative && best_support > 0) {
+                                strategy::StrategicPivotAnchorCandidate pivot;
+                                pivot.identity = "pivot:" + alternative->composition_id +
+                                    ":from:" + std::to_string(active->version);
+                                pivot.target_direction = alternative->composition_id;
+                                pivot.target_composition_identity = alternative->composition_id;
+                                pivot.source_direction_anchor_identity = current_anchor.identity;
+                                pivot.source_composition_version = active->version;
+                                pivot.confidence = 0.0;
+                                pivot.reason = "alternative_observed_in_native_or_opgg_source_pipeline";
+                                pivot.lifecycle = strategy::StrategicAnchorLifecycle::Proposed;
+
+                                strategy::PivotFeasibilityInput feasibility;
+                                feasibility.candidate_composition_identity =
+                                    alternative->composition_id;
+                                feasibility.source_direction_anchor_identity = current_anchor.identity;
+                                feasibility.source_composition_version = active->version;
+                                feasibility.gold_available = economy.gold;
+                                // The live pipeline does not currently expose a
+                                // protected reserve floor or complete transition
+                                // opportunity-cost estimate. Preserve both as missing.
+                                feasibility.protected_gold_floor = -1;
+                                feasibility.transition_economic_cost = -1.0;
+
+                                std::map<std::string, std::int32_t> target_trait_counts;
+                                for (const auto& target : alternative->units) {
+                                    pivot.reference_unit_ids.push_back(target.champion_id);
+                                    const auto* definition = catalog->find_by_id(target.champion_id);
+                                    if (!definition) continue;
+                                    strategy::PivotRequiredUnit required;
+                                    required.champion_id = target.champion_id;
+                                    required.cost = definition->cost;
+                                    required.core = target.core;
+                                    required.carry = target.champion_id == alternative->main_carry_id;
+                                    required.traits = definition->traits;
+                                    for (const auto& trait : definition->traits)
+                                        ++target_trait_counts[trait];
+                                    feasibility.required_units.push_back(required);
+
+                                    const auto owned = copies_by_unit.find(target.champion_id);
+                                    const std::int32_t owned_copies = owned == copies_by_unit.end()
+                                        ? 0 : owned->second;
+                                    std::int32_t shop_copies = 0;
+                                    if (strategic_shop) {
+                                        for (const auto& offer : strategic_shop->offers())
+                                            if (offer && offer->champion_internal_id == target.champion_id)
+                                                ++shop_copies;
+                                    }
+                                    const std::int32_t pool_remaining = pool
+                                        ? pool->available(target.champion_id) : -1;
+                                    if (owned_copies > 0 || shop_copies > 0 || pool_remaining >= 0) {
+                                        const auto observed = owned_evidence.find(target.champion_id);
+                                        const std::int32_t star = observed == owned_evidence.end()
+                                            ? 1 : observed->second.highest_star;
+                                        feasibility.observed_units.push_back({
+                                            target.champion_id, owned_copies, star,
+                                            shop_copies, pool_remaining
+                                        });
+                                    }
+                                    if (owned_copies > 0)
+                                        pivot.evidence.push_back(
+                                            strategy::StrategicAnchorEvidenceKind::OwnedUnit);
+                                    if (shop_copies > 0)
+                                        pivot.evidence.push_back(
+                                            strategy::StrategicAnchorEvidenceKind::ShopOffer);
+                                }
+                                for (const auto& [trait, count] : target_trait_counts) {
+                                    const auto thresholds = trait_milestones.find(trait);
+                                    if (thresholds == trait_milestones.end()) continue;
+                                    const auto milestone = std::find_if(
+                                        thresholds->second.begin(), thresholds->second.end(),
+                                        [&](int value) { return value > 0 && value <= count; });
+                                    if (milestone != thresholds->second.end())
+                                        feasibility.required_traits.push_back({trait, *milestone});
+                                }
+                                std::sort(pivot.reference_unit_ids.begin(),
+                                          pivot.reference_unit_ids.end());
+                                pivot.reference_unit_ids.erase(
+                                    std::unique(pivot.reference_unit_ids.begin(),
+                                                pivot.reference_unit_ids.end()),
+                                    pivot.reference_unit_ids.end());
+                                if (!pivot.reference_unit_ids.empty() &&
+                                    feasibility.required_units.size() == alternative->units.size()) {
+                                    unified_input.pivot_candidate = std::move(pivot);
+                                    unified_input.pivot_destination = *alternative;
+                                    unified_input.pivot_feasibility = std::move(feasibility);
+                                }
+                            }
+                        }
+
+                        const strategy::StrategicCycleAuditContext audit_context{
+                            episode_id, static_cast<std::int32_t>(i), round_id
+                        };
+                        (void)strategic_shadow_runtimes[i]->refresh(audit_context, unified_input);
+                        runtime.mark_stage("unified_strategic_cycle", "completed",
+                            "live normalized snapshot evaluated and direction/pivot sidecar emitted", active);
+                    } catch (const std::exception& unified_error) {
+                        runtime.mark_stage("unified_strategic_cycle", "failed",
+                            unified_error.what(), active);
+                    } catch (...) {
+                        runtime.mark_stage("unified_strategic_cycle", "failed",
+                            "unknown unified strategic runtime failure", active);
+                    }
+                } else {
+                    runtime.mark_stage("unified_strategic_cycle", "skipped",
+                        "strategic audit sidecar path not configured for this session", active);
+                }
                 diagnostic_json["context_bridge"] = context_bridge.to_json();
                 diagnostic_json["player_id"] = static_cast<std::int32_t>(i);
                 diagnostic_json["timestamp_unix_ms"] = bridge_input.timestamp_unix_ms;
