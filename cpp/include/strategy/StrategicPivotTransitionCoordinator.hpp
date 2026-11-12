@@ -89,6 +89,33 @@ public:
                 0, published.active.version, true};
     }
 
+    PivotConfirmationResult initialize(
+        const composition_intelligence::ActiveComposition& composition,
+        const StrategicDirectionAnchor& direction
+    ) {
+        if (composition_manager_.current())
+            return {PivotConfirmationStatus::Rejected, "already_initialized"};
+        if (composition.version == 0 ||
+            !composition_intelligence::ActiveCompositionManager::validate(
+                composition.candidate).empty()) {
+            return {PivotConfirmationStatus::Rejected, "initial_composition_snapshot_invalid"};
+        }
+        if (!direction.is_valid() || !direction.composition_bound ||
+            direction.composition_identity != composition.candidate.composition_id ||
+            direction.composition_version != composition.version ||
+            direction.lifecycle != StrategicAnchorLifecycle::Active) {
+            return {PivotConfirmationStatus::Rejected, "initial_direction_not_bound_to_composition"};
+        }
+        auto staged_manager = composition_manager_;
+        if (!staged_manager.restore(composition))
+            return {PivotConfirmationStatus::Rejected, "initial_composition_snapshot_restore_failed"};
+        composition_manager_ = std::move(staged_manager);
+        anchors_.direction_anchor = direction;
+        anchors_.pivot_candidate = {};
+        return {PivotConfirmationStatus::Initialized, "versioned_initial_state_restored",
+                0, composition.version, true};
+    }
+
     PivotConfirmationResult observe_and_confirm(
         const StrategicPivotAnchorCandidate& pivot,
         const composition_intelligence::CompositionCandidate& destination,
@@ -118,6 +145,7 @@ public:
             anchors_.direction_anchor.composition_identity != active->candidate.composition_id ||
             anchors_.direction_anchor.composition_version != active->version) {
             reset_streak();
+            anchors_.pivot_candidate = {};
             return rejected("pivot_candidate_conflicts_with_active_source");
         }
         if (destination.composition_id != pivot.target_composition_identity ||
@@ -125,10 +153,12 @@ public:
             feasibility_input.source_direction_anchor_identity != pivot.source_direction_anchor_identity ||
             feasibility_input.source_composition_version != pivot.source_composition_version) {
             reset_streak();
+            anchors_.pivot_candidate = {};
             return rejected("destination_or_feasibility_identity_mismatch");
         }
         if (feasibility.status == PivotFeasibilityStatus::Rejected) {
             reset_streak();
+            anchors_.pivot_candidate = {};
             return {PivotConfirmationStatus::Rejected, "pivot_feasibility_rejected",
                     0, active->version, false};
         }
@@ -136,6 +166,7 @@ public:
             !feasibility.shadow_only || !std::isfinite(feasibility.score) ||
             feasibility.score < policy_.minimum_viable_score) {
             reset_streak();
+            anchors_.pivot_candidate = {};
             return {PivotConfirmationStatus::InsufficientEvidence,
                     "pivot_not_stably_viable_or_score_below_threshold",
                     0, active->version, false};
@@ -168,6 +199,7 @@ public:
         if (published.status != composition_intelligence::PublishStatus::Published ||
             published.active.version != active->version + 1) {
             reset_streak();
+            anchors_.pivot_candidate = {};
             return rejected("destination_publish_failed_or_version_conflict");
         }
 
@@ -189,6 +221,7 @@ public:
         next_direction.evidence.push_back(StrategicAnchorEvidenceKind::CompositionCore);
         if (!next_direction.is_valid()) {
             reset_streak();
+            anchors_.pivot_candidate = {};
             return rejected("synchronized_direction_anchor_invalid");
         }
 

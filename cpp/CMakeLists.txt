@@ -447,6 +447,11 @@ if(BUILD_TESTING)
     enable_tft_test_assertions(test_strategic_pivot_transition_coordinator)
     add_test(NAME strategic_pivot_transition_coordinator COMMAND test_strategic_pivot_transition_coordinator)
 
+    add_executable(test_unified_strategic_state_machine tests/test_unified_strategic_state_machine.cpp)
+    configure_tft_module(test_unified_strategic_state_machine)
+    enable_tft_test_assertions(test_unified_strategic_state_machine)
+    add_test(NAME unified_strategic_state_machine COMMAND test_unified_strategic_state_machine)
+
     add_executable(
         test_composition_direction_policy
         tests/test_composition_direction_policy.cpp
