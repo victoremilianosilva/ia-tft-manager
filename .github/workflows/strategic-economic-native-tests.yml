@@ -9,6 +9,8 @@ on:
       - 'cpp/src/lobby/TftEngine.cpp'
       - 'cpp/bindings/tft_engine_bindings.cpp'
       - 'cpp/tests/test_strategic_planner.cpp'
+      - 'cpp/tests/test_strategic_direction_pivot_audit_recorder.cpp'
+      - 'cpp/tests/test_tft_engine_pool.cpp'
       - 'cpp/include/composition_intelligence/ShadowFailureBoundary.hpp'
       - 'cpp/tests/test_shadow_failure_boundary.cpp'
       - 'tests/test_shadow_ppo_isolation_architecture.py'
@@ -22,6 +24,8 @@ on:
       - 'cpp/src/lobby/TftEngine.cpp'
       - 'cpp/bindings/tft_engine_bindings.cpp'
       - 'cpp/tests/test_strategic_planner.cpp'
+      - 'cpp/tests/test_strategic_direction_pivot_audit_recorder.cpp'
+      - 'cpp/tests/test_tft_engine_pool.cpp'
       - '.github/workflows/strategic-economic-native-tests.yml'
 
 jobs:
