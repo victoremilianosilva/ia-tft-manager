@@ -28,6 +28,8 @@ int main() {
     const StrategicCycleAuditContext player_one{77, 1, 4};
     const StrategicCycleAuditContext player_two{77, 2, 4};
     assert(recorder.append(player_one, input, result));
+    assert(!recorder.append(player_one, input, result)); // unchanged snapshot is deduplicated
+    input.exploration.gold_available = 10; // a real observed change is retained
     assert(recorder.append(player_one, input, result));
     assert(recorder.append(player_two, input, result));
 
@@ -50,6 +52,7 @@ int main() {
     assert(first.at("phase") == "EXPLORATION");
     assert(first.at("sequence") == 1);
     assert(second.at("sequence") == 2);
+    assert(second.at("observed_context").at("gold_available") == 10);
     assert(third.at("player_id") == 2);
     assert(third.at("sequence") == 1);
     assert(first.at("active_composition").is_null());
@@ -63,9 +66,11 @@ int main() {
     UnifiedStrategicShadowRuntime runtime(runtime_output);
     StrategicCycleInput runtime_input;
     runtime_input.exploration.round = 6;
-    const auto runtime_result = runtime.refresh(
-        StrategicCycleAuditContext{88, 3, 6}, runtime_input);
+    const StrategicCycleAuditContext runtime_context{88, 3, 6};
+    const auto runtime_result = runtime.refresh(runtime_context, runtime_input);
+    const auto duplicate_runtime_result = runtime.refresh(runtime_context, runtime_input);
     assert(runtime_result.shadow_only);
+    assert(duplicate_runtime_result.shadow_only);
     std::ifstream runtime_stream(runtime_output);
     assert(runtime_stream.good());
     assert(static_cast<bool>(std::getline(runtime_stream, line)));
@@ -73,6 +78,7 @@ int main() {
     assert(runtime_record.at("match_id") == 88);
     assert(runtime_record.at("player_id") == 3);
     assert(runtime_record.at("phase") == "NO_EVIDENCE");
+    assert(!std::getline(runtime_stream, line));
 
     // A failed append is contained and does not escape into the caller.
     StrategicDirectionPivotAuditRecorder failing(root);
