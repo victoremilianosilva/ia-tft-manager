@@ -218,6 +218,10 @@ class ViewerSession:
             session_dir = out / f"match-{datetime.now().strftime('%Y%m%d-%H%M%S')}-{self.match_id[:8]}"
             session_dir.mkdir(parents=True, exist_ok=False)
             self._session_dir = session_dir
+            strategic_match_id = int(self.match_id.replace("-", "")[:16], 16)
+            self.lobby.set_strategic_audit_path(
+                str(session_dir / "strategic_direction_pivot.jsonl"), strategic_match_id
+            )
             self._composition_diagnostics_written = 0
             self._persist_composition_diagnostics()
             self._metadata_path = session_dir / "metadata.json"
@@ -241,6 +245,12 @@ class ViewerSession:
                     "schema_version": 1,
                     "correlation_envelope_version": 1,
                     "match_id_source": "ViewerSession.match_id",
+                },
+                "strategic_direction_pivot_audit": {
+                    "file": "strategic_direction_pivot.jsonl",
+                    "schema_version": 1,
+                    "mode": "shadow_read_only",
+                    "match_id_source": "ViewerSession.match_id (first 64 bits, hex)",
                 },
                 "player_log_files": log_files,
                 "structured_player_log_files": structured_log_files,
@@ -707,6 +717,10 @@ class ViewerSession:
 
         self._flush_close_log()
         if self.lobby is not None:
+            try:
+                self.lobby.set_strategic_audit_path("", 0)
+            except (AttributeError, RuntimeError):
+                pass
             self.lobby.close()
             self.lobby = None
         self.policy = None
