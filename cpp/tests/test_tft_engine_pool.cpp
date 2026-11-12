@@ -1048,9 +1048,9 @@ int main(int argc, char** argv) {
                 "Runtime estrategico nao criou o sidecar configurado.");
         std::string strategic_audit_line;
         require(static_cast<bool>(std::getline(strategic_audit_stream, strategic_audit_line)) &&
-                    strategic_audit_line.find("\\"phase\\"") != std::string::npos &&
-                    strategic_audit_line.find("\\"shadow_only\\":true") != std::string::npos &&
-                    strategic_audit_line.find("\\"player_id\\":0") != std::string::npos,
+                    strategic_audit_line.find("\"phase\"") != std::string::npos &&
+                    strategic_audit_line.find("\"shadow_only\":true") != std::string::npos &&
+                    strategic_audit_line.find("\"player_id\":0") != std::string::npos,
                 "Sidecar nao contem evento real identificado como Shadow por jogador.");
         strategic_audit_stream.close();
         std::filesystem::remove(strategic_audit_path, strategic_remove_error);
