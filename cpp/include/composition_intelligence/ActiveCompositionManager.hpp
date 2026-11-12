@@ -63,6 +63,16 @@ public:
         return {PublishStatus::Published, {}, *active_, true, std::move(transition)};
     }
 
+    // Hydrates an already-versioned snapshot into an empty manager. This is
+    // intentionally separate from publish(): importing a snapshot must
+    // preserve its source version rather than silently resetting it to v1.
+    bool restore(const ActiveComposition& snapshot) {
+        if (active_ || snapshot.version == 0 || !validate(snapshot.candidate).empty())
+            return false;
+        active_ = snapshot;
+        return true;
+    }
+
     const std::optional<ActiveComposition>& current() const noexcept {
         return active_;
     }
