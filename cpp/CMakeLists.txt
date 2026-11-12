@@ -274,6 +274,22 @@ else()
         "src/lobby/TftEngine.cpp nao existe. "
         "Implemente a API declarada em include/lobby/TftEngine.hpp."
     )
+
+    add_executable(
+        test_strategic_direction_pivot_audit_recorder
+        tests/test_strategic_direction_pivot_audit_recorder.cpp
+    )
+    configure_tft_module(test_strategic_direction_pivot_audit_recorder)
+    target_link_libraries(
+        test_strategic_direction_pivot_audit_recorder
+        PRIVATE nlohmann_json::nlohmann_json
+    )
+    enable_tft_test_assertions(test_strategic_direction_pivot_audit_recorder)
+    add_test(
+        NAME strategic_direction_pivot_audit_recorder
+        COMMAND test_strategic_direction_pivot_audit_recorder
+    )
+
 endif()
 
 # =========================================================
