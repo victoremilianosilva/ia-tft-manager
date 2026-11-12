@@ -4350,8 +4350,6 @@ struct TFTEngine::Impl {
                         {"gold", economy.gold},
                         {"level", economy.level},
                         {"hp", player.hp},
-                        {"direction", info.composition_direction},
-                        {"focus", info.composition_focus},
                         {"active_composition", cycle_input.active_composition
                             ? cycle_input.active_composition->candidate.composition_id
                             : std::string{}},
