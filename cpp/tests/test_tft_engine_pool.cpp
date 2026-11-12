@@ -5,6 +5,8 @@
 
 #include <algorithm>
 #include <cmath>
+#include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <limits>
 #include <map>
@@ -59,6 +61,15 @@ int main(int argc, char** argv) {
         tft::ChampionCatalog catalog(json_path);
         tft::TFTEngine engine(12345, json_path);
 
+        const auto strategic_audit_path =
+            std::filesystem::temp_directory_path() /
+            "tft_strategic_runtime_snapshot_integration.jsonl";
+        std::filesystem::remove(strategic_audit_path);
+        const auto observations_before_audit = engine.get_observations();
+        engine.set_strategic_audit_path(strategic_audit_path.string(), 424242);
+        require(engine.get_observations() == observations_before_audit,
+                "Configurar o recorder Shadow nao pode alterar observacoes PPO.");
+
         const auto initial_state = engine.get_public_state();
         const auto initial_observations = engine.get_observations();
         require(engine.observation_dim() > 248,
@@ -103,6 +114,20 @@ int main(int argc, char** argv) {
         require(engine.set_unit_for_testing(
                     0, true, 0, comp_champion->api_name, 1),
                 "Nao foi possivel configurar unidade de teste para composicao.");
+
+        {
+            std::ifstream strategic_audit(strategic_audit_path);
+            require(strategic_audit.good(),
+                    "Snapshot nativo real nao gerou o sidecar estratégico.");
+            std::string record;
+            std::getline(strategic_audit, record);
+            require(record.find("\"match_id\":424242") != std::string::npos &&
+                    record.find("\"player_id\":0") != std::string::npos &&
+                    record.find("\"shadow_only\":true") != std::string::npos,
+                    "Sidecar estratégico não preservou identidade e limite Shadow.");
+        }
+        std::filesystem::remove(strategic_audit_path);
+        engine.set_strategic_audit_path("", 0);
 
         tft::CombatItem fixture_item{};
         fixture_item.api_name = "fixture_blade";
