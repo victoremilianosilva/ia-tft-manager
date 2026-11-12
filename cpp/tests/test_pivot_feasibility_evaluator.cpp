@@ -69,7 +69,13 @@ int main() {
 
     {
         auto input = viable_input();
+        // Zero pool means unavailable only when no copies are already owned
+        // and none are currently offered in the shop.
+        input.observed_units[0].owned_copies = 0;
+        input.observed_units[0].shop_copies = 0;
         input.observed_units[0].pool_remaining = 0;
+        input.required_traits[0].minimum_units = 1;
+        input.required_traits[1].minimum_units = 1;
         const auto result = evaluator.evaluate(input);
         assert(result.status == PivotFeasibilityStatus::Rejected);
         assert(!result.blockers.empty());
