@@ -131,6 +131,7 @@ private:
         if (!pivot.identity.empty()) {
             pivot_json = {
                 {"identity", pivot.identity},
+                {"target_direction", pivot.target_direction},
                 {"target_composition_identity", pivot.target_composition_identity},
                 {"source_direction_anchor_identity", pivot.source_direction_anchor_identity},
                 {"source_composition_version", pivot.source_composition_version},
