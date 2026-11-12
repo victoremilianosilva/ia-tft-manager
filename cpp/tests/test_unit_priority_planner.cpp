@@ -319,7 +319,9 @@ void priority_ties_are_deterministic_by_champion_id() {
         {7, UnitRole::Flex, false, 50},
         {6, UnitRole::Flex, false, 50}
     };
-    manager.publish(candidate);
+    candidate.main_carry_id = 6; // Keep the fixture valid while both priorities remain tied.
+    const auto publish = manager.publish(candidate);
+    assert(publish.status == PublishStatus::Published);
     const auto active = *manager.current();
     auto ctx = context(active);
     ctx.owned_units = {{7, 1, 1, false, {}}, {6, 1, 1, false, {}}};
