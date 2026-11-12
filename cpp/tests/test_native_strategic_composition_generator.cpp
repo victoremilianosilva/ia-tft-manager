@@ -1,0 +1,70 @@
+#include "strategy/NativeStrategicCompositionGenerator.hpp"
+
+#include <algorithm>
+#include <cassert>
+#include <iostream>
+
+using namespace tft::strategy;
+
+int main() {
+    NativeCompositionGenerationInput input;
+    input.level = 6;
+    input.gold = 20;
+    input.target_slots = 4;
+    input.maximum_candidates = 4;
+    input.catalog = {
+        {1, "BruiserTank", 2, {"Bruiser"}, false, true, false},
+        {2, "BruiserCarry", 3, {"Bruiser"}, true, false, false},
+        {3, "BruiserSupport", 2, {"Bruiser", "Invoker"}, false, false, true},
+        {4, "InvokerCarry", 4, {"Invoker"}, true, false, false},
+        {5, "InvokerFront", 3, {"Invoker"}, false, true, false},
+        {6, "InvokerSupport", 2, {"Invoker"}, false, false, true},
+        {7, "Unavailable", 5, {"Invoker"}, true, false, false}
+    };
+    input.owned = {
+        {1, 2, 1, true, false, 0.8, 0.0},
+        {2, 1, 1, false, true, 0.0, 0.6}
+    };
+    input.shop_ids = {4, 6};
+    input.pool_remaining = {{1, 10}, {2, 8}, {3, 12}, {4, 5}, {5, 7}, {6, 9}, {7, 0}};
+    input.trait_thresholds = {{"Bruiser", 2}, {"Invoker", 2}};
+    input.current_lineup_ids = {1, 2};
+
+    const auto result = NativeStrategicCompositionGenerator{}.generate(input);
+    assert(result.reason == "native_candidates_generated");
+    assert(result.candidates.size() == 2);
+    const auto bruiser = std::find_if(result.candidates.begin(), result.candidates.end(),
+        [](const auto& candidate) { return candidate.direction == "Bruiser"; });
+    const auto invoker = std::find_if(result.candidates.begin(), result.candidates.end(),
+        [](const auto& candidate) { return candidate.direction == "Invoker"; });
+    assert(bruiser != result.candidates.end());
+    assert(invoker != result.candidates.end());
+    assert(bruiser->main_carry_id == 2);
+    assert(bruiser->reusable_owned_units >= 2);
+    assert(bruiser->transition_cost == 0.0);
+    assert(std::find(bruiser->completed_traits.begin(), bruiser->completed_traits.end(),
+                     "Bruiser") != bruiser->completed_traits.end());
+    assert(invoker->anchor_available_in_shop);
+    assert(std::find(invoker->unit_ids.begin(), invoker->unit_ids.end(), 7) ==
+           invoker->unit_ids.end());
+
+    // Missing pool data is not interpreted as an exhausted pool.
+    input.pool_remaining.erase(4);
+    const auto missing_pool = NativeStrategicCompositionGenerator{}.generate(input);
+    assert(std::any_of(missing_pool.candidates.begin(), missing_pool.candidates.end(),
+        [](const auto& candidate) {
+            return candidate.direction == "Invoker" &&
+                std::find(candidate.unit_ids.begin(), candidate.unit_ids.end(), 4) !=
+                    candidate.unit_ids.end();
+        }));
+
+    // A catalog without observed trait evidence cannot invent a direction.
+    NativeCompositionGenerationInput empty;
+    empty.catalog = input.catalog;
+    const auto no_evidence = NativeStrategicCompositionGenerator{}.generate(empty);
+    assert(no_evidence.candidates.empty());
+    assert(no_evidence.reason == "no_candidate_from_observed_traits");
+
+    std::cout << "native strategic composition generator tests passed\n";
+    return 0;
+}
