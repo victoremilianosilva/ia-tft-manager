@@ -630,8 +630,8 @@ def build_shadow_markdown_reports(report: dict) -> dict[str, str]:
         f"- KEEP associado principalmente à persistência/investimento: **{keep_audit_summary['classification_counts'].get('KEEP_ASSOCIATED_WITH_PERSISTENCE', 0)}**",
         f"- KEEP inconclusivo por falta de evidência: **{keep_audit_summary['classification_counts'].get('KEEP_INCONCLUSIVE', 0)}**",
         "",
-        "| Jogador | Round | Step | Classificação | Viabilidade atual | Score atual | Unidades alinhadas | Somente investimento | Lock | Candidato pendente | Alternativa | Motivos observados |",
-        "|---|---|---:|---|---|---:|---:|---:|---|---|---|---|",
+        "| Jogador | Round | Step | Classificação | Viabilidade atual | Score atual | Unidades alinhadas | Board-only | Somente investimento | Lock | Candidato pendente | Alternativa | Motivos observados |",
+        "|---|---|---:|---|---|---:|---:|---:|---:|---|---|---|---|",
     ]
     for item in keep_audit_records:
         persistence = item.get("persistence") or {}
@@ -639,12 +639,13 @@ def build_shadow_markdown_reports(report: dict) -> dict[str, str]:
             item.get("player"), item.get("round"), item.get("step"),
             item.get("classification"), item.get("current_direction_viable"),
             item.get("current_direction_score"), item.get("strategically_aligned_unit_count"),
-            item.get("investment_only_unit_count"), persistence.get("composition_locked"),
+            item.get("board_contribution_only_unit_count"), item.get("investment_only_unit_count"),
+            persistence.get("composition_locked"),
             persistence.get("composition_candidate_direction") or persistence.get("planner_candidate_direction"),
             item.get("alternative_status"), item.get("classification_reasons"),
         )) + " |")
     if not keep_audit_records:
-        strategy.append("| — | — | — | Sem revisões KEEP | — | — | — | — | — | — | — | — |")
+        strategy.append("| — | — | — | Sem revisões KEEP | — | — | — | — | — | — | — | — | — |")
     strategy += [
         "",
         "A classificação exige viabilidade explícita ou sinais estratégicos atuais observados para considerar KEEP fundamentado. "
