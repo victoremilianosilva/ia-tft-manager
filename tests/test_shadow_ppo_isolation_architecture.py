@@ -149,7 +149,7 @@ class ShadowPpoIsolationArchitectureTests(unittest.TestCase):
             source = module.read_text(encoding="utf-8")
             self.assertNotRegex(
                 source,
-                r"(?im)^\\s*(?:from|import)\\s+.*(?:shadow|strategic_runtime)",
+                r"(?im)^\s*(?:from|import)\s+.*(?:shadow|strategic_runtime)",
             )
 
     def test_native_shadow_failure_test_is_registered_in_ctest(self):
@@ -157,7 +157,7 @@ class ShadowPpoIsolationArchitectureTests(unittest.TestCase):
         self.assertIn("test_shadow_failure_boundary", cmake)
         self.assertRegex(
             cmake,
-            r"add_test\\s*\\(\\s*NAME\\s+shadow_failure_boundary",
+            r"add_test\s*\(\s*NAME\s+shadow_failure_boundary",
         )
 
 
