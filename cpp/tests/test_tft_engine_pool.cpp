@@ -126,6 +126,17 @@ int main(int argc, char** argv) {
                     record.find("\"shadow_only\":true") != std::string::npos,
                     "Sidecar estratégico não preservou identidade e limite Shadow.");
         }
+        require(engine.set_unit_for_testing(
+                    0, true, 0, comp_champion->api_name, 1),
+                "Nao foi possivel repetir o snapshot de teste.");
+        {
+            std::ifstream strategic_audit(strategic_audit_path);
+            std::string record;
+            std::size_t record_count = 0;
+            while (std::getline(strategic_audit, record)) ++record_count;
+            require(record_count == 1,
+                    "Snapshot estratégico idêntico foi gravado como nova revisão.");
+        }
         std::filesystem::remove(strategic_audit_path);
         engine.set_strategic_audit_path("", 0);
 
