@@ -442,6 +442,11 @@ if(BUILD_TESTING)
     enable_tft_test_assertions(test_pivot_feasibility_evaluator)
     add_test(NAME pivot_feasibility_evaluator COMMAND test_pivot_feasibility_evaluator)
 
+    add_executable(test_strategic_pivot_transition_coordinator tests/test_strategic_pivot_transition_coordinator.cpp)
+    configure_tft_module(test_strategic_pivot_transition_coordinator)
+    enable_tft_test_assertions(test_strategic_pivot_transition_coordinator)
+    add_test(NAME strategic_pivot_transition_coordinator COMMAND test_strategic_pivot_transition_coordinator)
+
     add_executable(
         test_composition_direction_policy
         tests/test_composition_direction_policy.cpp
