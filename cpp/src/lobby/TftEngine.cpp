@@ -3970,11 +3970,6 @@ struct TFTEngine::Impl {
                         discovery.composition_defined = source_active != nullptr;
                         discovery.active_composition_identity = source_active
                             ? source_active->candidate.composition_id : std::string{};
-                        discovery.previous_direction =
-                            strategic_shadow_runtimes[i]->machine().anchors().direction_anchor.direction;
-                        if (discovery.previous_direction.empty())
-                            discovery.previous_direction = info.composition_direction;
-
                         std::map<std::int32_t, strategy::DirectionDiscoveryUnit> discovery_units;
                         for (const auto& owned : strategic_context.owned_units) {
                             auto& unit = discovery_units[owned.champion_id];
@@ -3984,7 +3979,6 @@ struct TFTEngine::Impl {
                             unit.star = std::max(unit.star, owned.star);
                             unit.on_board = unit.on_board || owned.on_board;
                             unit.on_bench = unit.on_bench || owned.on_bench;
-                            unit.core_potential = unit.core_potential || owned.is_core;
                             unit.board_contribution = std::max(
                                 unit.board_contribution, owned.board_contribution);
                             unit.traits = owned.traits;
@@ -4006,9 +4000,6 @@ struct TFTEngine::Impl {
                                 unit.in_shop = true;
                                 unit.traits = definition->traits;
                                 unit.carry_potential = definition->combat_profile.is_carry;
-                                unit.core_potential = std::find(
-                                    info.core_unit_ids.begin(), info.core_unit_ids.end(),
-                                    definition->internal_id) != info.core_unit_ids.end();
                                 const auto owned = owned_evidence.find(definition->internal_id);
                                 if (owned != owned_evidence.end()) unit.star = owned->second.highest_star;
                             }
