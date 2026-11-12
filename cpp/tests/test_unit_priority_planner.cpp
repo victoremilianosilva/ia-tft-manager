@@ -336,18 +336,44 @@ void missing_active_is_safe() {
 }
 }
 int main() {
+    std::cerr << "RUN resolves_keep_upgrade_seek_and_version\n";
     resolves_keep_upgrade_seek_and_version();
+    std::cerr << "PASS resolves_keep_upgrade_seek_and_version\n";
+    std::cerr << "RUN shared_and_bridge_units_survive_pivot\n";
     shared_and_bridge_units_survive_pivot();
+    std::cerr << "PASS shared_and_bridge_units_survive_pivot\n";
+    std::cerr << "RUN equipped_items_restrict_sale_and_low_evidence_holds\n";
     equipped_items_restrict_sale_and_low_evidence_holds();
+    std::cerr << "PASS equipped_items_restrict_sale_and_low_evidence_holds\n";
+    std::cerr << "RUN pairs_and_star_progress_are_not_sell_candidates\n";
     pairs_and_star_progress_are_not_sell_candidates();
+    std::cerr << "PASS pairs_and_star_progress_are_not_sell_candidates\n";
+    std::cerr << "RUN validated_item_snapshot_protects_outside_target_unit\n";
     validated_item_snapshot_protects_outside_target_unit();
+    std::cerr << "PASS validated_item_snapshot_protects_outside_target_unit\n";
+    std::cerr << "RUN board_gap_increases_matching_missing_unit_priority\n";
     board_gap_increases_matching_missing_unit_priority();
+    std::cerr << "PASS board_gap_increases_matching_missing_unit_priority\n";
+    std::cerr << "RUN composition_hierarchy_beats_easy_external_upgrade\n";
     composition_hierarchy_beats_easy_external_upgrade();
+    std::cerr << "PASS composition_hierarchy_beats_easy_external_upgrade\n";
+    std::cerr << "RUN trait_completion_has_explicit_intermediate_tier\n";
     trait_completion_has_explicit_intermediate_tier();
+    std::cerr << "PASS trait_completion_has_explicit_intermediate_tier\n";
+    std::cerr << "RUN shop_copies_advance_two_star_priority_for_core\n";
     shop_copies_advance_two_star_priority_for_core();
+    std::cerr << "PASS shop_copies_advance_two_star_priority_for_core\n";
+    std::cerr << "RUN unaffordable_shop_copy_does_not_create_upgrade_priority\n";
     unaffordable_shop_copy_does_not_create_upgrade_priority();
+    std::cerr << "PASS unaffordable_shop_copy_does_not_create_upgrade_priority\n";
+    std::cerr << "RUN external_temporary_unit_requires_explicit_reason\n";
     external_temporary_unit_requires_explicit_reason();
+    std::cerr << "PASS external_temporary_unit_requires_explicit_reason\n";
+    std::cerr << "RUN priority_ties_are_deterministic_by_champion_id\n";
     priority_ties_are_deterministic_by_champion_id();
+    std::cerr << "PASS priority_ties_are_deterministic_by_champion_id\n";
+    std::cerr << "RUN missing_active_is_safe\n";
     missing_active_is_safe();
+    std::cerr << "PASS missing_active_is_safe\n";
     std::cout << "Unit Priority Planner tests passed\n";
 }
