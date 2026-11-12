@@ -52,6 +52,7 @@
 #include "items/PveLootDistribution.hpp"
 #include "items/CombatItemAdapter.hpp"
 #include "composition_intelligence/CompositionDiagnostics.hpp"
+#include "composition_intelligence/CompositionSourceAdapters.hpp"
 #include "composition_intelligence/ContextualActionEvaluator.hpp"
 #include "composition_intelligence/CompositionIntelligenceRuntime.hpp"
 #include "composition_intelligence/ShadowFailureBoundary.hpp"
@@ -4350,6 +4351,10 @@ struct TFTEngine::Impl {
                         {"gold", economy.gold},
                         {"level", economy.level},
                         {"hp", player.hp},
+                        {"win_streak", economy.win_streak},
+                        {"loss_streak", economy.loss_streak},
+                        {"board_power", power},
+                        {"core_traits", info.core_traits},
                         {"active_composition", cycle_input.active_composition
                             ? cycle_input.active_composition->candidate.composition_id
                             : std::string{}},
@@ -4366,6 +4371,22 @@ struct TFTEngine::Impl {
                         });
                     }
                     fingerprint["units"] = std::move(fingerprint_units);
+                    nlohmann::json fingerprint_owned = nlohmann::json::array();
+                    for (const auto& owned : strategic_context.owned_units) {
+                        fingerprint_owned.push_back({
+                            {"id", owned.champion_id},
+                            {"copies", owned.copies_owned},
+                            {"star", owned.star},
+                            {"board", owned.on_board},
+                            {"bench", owned.on_bench},
+                            {"core", owned.is_core},
+                            {"board_contribution", owned.board_contribution},
+                            {"composition_fit", owned.composition_fit},
+                            {"item_fit", owned.item_fit},
+                            {"traits", owned.traits}
+                        });
+                    }
+                    fingerprint["owned_evidence"] = std::move(fingerprint_owned);
                     if (cycle_input.pivot_candidate) {
                         fingerprint["pivot_candidate"] = {
                             {"identity", cycle_input.pivot_candidate->identity},
