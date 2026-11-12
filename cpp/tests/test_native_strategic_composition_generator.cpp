@@ -42,6 +42,10 @@ int main() {
     assert(bruiser->identity.find("native:Bruiser:") == 0);
     assert(bruiser->main_carry_id == 2);
     assert(bruiser->reusable_owned_units >= 2);
+    assert(std::any_of(bruiser->evidence.begin(), bruiser->evidence.end(),
+        [](const auto& item) { return item == "owned_pair:1"; }));
+    assert(std::any_of(bruiser->evidence.begin(), bruiser->evidence.end(),
+        [](const auto& item) { return item == "item_fit:2"; }));
     assert(bruiser->transition_cost > 0.0 && bruiser->transition_cost < 1.0);
     assert(std::find(bruiser->completed_traits.begin(), bruiser->completed_traits.end(),
                      "Bruiser") != bruiser->completed_traits.end());
