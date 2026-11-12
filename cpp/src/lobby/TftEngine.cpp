@@ -6167,6 +6167,14 @@ ResetResult TFTEngine::reset(
     impl_->composition_intelligence_native_diagnostics =
         decltype(impl_->composition_intelligence_native_diagnostics){};
     impl_->composition_intelligence_sequence = 0;
+    if (!impl_->strategic_shadow_audit_path.empty()) {
+        std::error_code remove_error;
+        std::filesystem::remove(impl_->strategic_shadow_audit_path, remove_error);
+        for (auto& runtime : impl_->strategic_shadow_runtimes) {
+            runtime = std::make_unique<strategy::UnifiedStrategicShadowRuntime>(
+                impl_->strategic_shadow_audit_path);
+        }
+    }
 
     impl_->round = 0;
     impl_->stage = 1;
@@ -6612,6 +6620,21 @@ std::string TFTEngine::adapt_opgg_compositions_json(const std::string& catalog_j
     return output.dump();
 }
 
+
+void TFTEngine::set_strategic_direction_pivot_audit_path(const std::string& path) {
+    if (!impl_) throw std::runtime_error("TFTEngine nao possui estado interno.");
+    impl_->ensure_open();
+    impl_->strategic_shadow_audit_path = path;
+    if (path.empty()) {
+        for (auto& runtime : impl_->strategic_shadow_runtimes) runtime.reset();
+        return;
+    }
+    std::error_code remove_error;
+    std::filesystem::remove(path, remove_error);
+    for (auto& runtime : impl_->strategic_shadow_runtimes) {
+        runtime = std::make_unique<strategy::UnifiedStrategicShadowRuntime>(path);
+    }
+}
 
 std::vector<std::string> TFTEngine::get_composition_diagnostics_jsonl() const {
     if (!impl_) throw std::runtime_error("TFTEngine nao possui estado interno.");
