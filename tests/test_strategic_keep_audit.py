@@ -105,6 +105,23 @@ def test_keep_alternative_audit_distinguishes_score_rejection_and_threshold():
     assert below_threshold["alternative_status"] == "ALTERNATIVE_BELOW_ADAPT_THRESHOLD"
 
 
+def test_alternative_pending_under_lock_is_reported_as_persistence_block():
+    result = classify_keep_evidence(
+        {
+            "composition_locked": True,
+            "composition_candidate_direction": "Bruiser",
+            "composition_candidate_streak": 1,
+        },
+        {
+            "strategic_candidate_direction": "Bruiser",
+            "strategic_candidate_streak": 1,
+        },
+        [],
+    )
+
+    assert result["alternative_status"] == "ALTERNATIVE_BLOCKED_OR_HELD_BY_PERSISTENCE"
+
+
 def test_keep_aggregation_groups_unique_reviews_by_player_and_round():
     report = aggregate_keep_evidence([
         {"player": "Jogador 1", "round": "3-2", "classification": SUPPORTED,
