@@ -250,6 +250,11 @@ struct StrategicCandidateDiagnosticInfo {
     double score{0.0};
     bool accepted{false};
     std::string evaluation_reason;
+    std::string composition_identity;
+    std::vector<std::int32_t> candidate_unit_ids;
+    std::int32_t main_carry_id{-1};
+    std::vector<std::string> candidate_traits;
+    std::vector<std::string> evidence;
 };
 
 struct ActionCandidateScoreInfo {
