@@ -3985,6 +3985,8 @@ struct TFTEngine::Impl {
                             const auto* definition = catalog->find_by_id(owned.champion_id);
                             unit.carry_potential = definition &&
                                 definition->combat_profile.is_carry;
+                            unit.pool_remaining = pool
+                                ? pool->available(owned.champion_id) : -1;
                         }
                         if (strategic_shop) {
                             for (const auto& offer : strategic_shop->offers()) {
@@ -4000,6 +4002,8 @@ struct TFTEngine::Impl {
                                 unit.in_shop = true;
                                 unit.traits = definition->traits;
                                 unit.carry_potential = definition->combat_profile.is_carry;
+                                unit.pool_remaining = pool
+                                    ? pool->available(definition->internal_id) : -1;
                                 const auto owned = owned_evidence.find(definition->internal_id);
                                 if (owned != owned_evidence.end()) unit.star = owned->second.highest_star;
                             }
