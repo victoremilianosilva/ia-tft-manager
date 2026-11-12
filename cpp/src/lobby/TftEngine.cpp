@@ -518,6 +518,10 @@ struct TFTEngine::Impl {
     bool composition_intelligence_enabled{false};
     std::array<std::unique_ptr<strategy::UnifiedStrategicShadowRuntime>, kPlayersPerLobby>
         strategic_shadow_runtimes{};
+    std::array<std::string, kPlayersPerLobby>
+        strategic_shadow_external_active_identity{};
+    std::array<std::uint64_t, kPlayersPerLobby>
+        strategic_shadow_external_active_version{};
     std::string strategic_shadow_audit_path;
 
 
@@ -3919,28 +3923,57 @@ struct TFTEngine::Impl {
                 // Shadow failure boundary and never publishes into PPO state.
                 if (strategic_shadow_runtimes[i]) {
                     try {
+                        // Re-anchor only when the external Composition Intelligence
+                        // snapshot itself advances. Do not overwrite a pivot already
+                        // confirmed inside this independent Shadow machine merely
+                        // because its active composition now differs from the external
+                        // source snapshot.
+                        if (active) {
+                            const auto& last_external_identity =
+                                strategic_shadow_external_active_identity[i];
+                            const auto last_external_version =
+                                strategic_shadow_external_active_version[i];
+                            const bool external_snapshot_changed =
+                                last_external_identity != active->candidate.composition_id ||
+                                last_external_version != active->version;
+                            if (external_snapshot_changed) {
+                                const auto& tracked =
+                                    strategic_shadow_runtimes[i]->machine().active_composition();
+                                if (!tracked ||
+                                    tracked->candidate.composition_id !=
+                                        active->candidate.composition_id ||
+                                    tracked->version != active->version) {
+                                    strategic_shadow_runtimes[i]->reset_machine();
+                                }
+                                strategic_shadow_external_active_identity[i] =
+                                    active->candidate.composition_id;
+                                strategic_shadow_external_active_version[i] =
+                                    active->version;
+                            }
+                        }
                         const auto& tracked_active =
                             strategic_shadow_runtimes[i]->machine().active_composition();
-                        if (active && tracked_active &&
-                            (active->candidate.composition_id !=
-                                 tracked_active->candidate.composition_id ||
-                             active->version != tracked_active->version)) {
-                            // Composition Intelligence may publish an independently
-                            // approved refinement. Re-anchor the unified shadow
-                            // machine to that exact version without resetting the
-                            // recorder's per-player sequence or truncating the file.
-                            strategic_shadow_runtimes[i]->reset_machine();
-                        }
+                        const auto* source_active = tracked_active
+                            ? &*tracked_active : (active ? &*active : nullptr);
+
                         strategy::StrategicCycleInput unified_input;
-                        unified_input.active_composition = active;
+                        // Supply an external active snapshot only to initialize or
+                        // re-anchor an empty unified machine. Afterwards its own
+                        // confirmed Shadow state remains authoritative for subsequent
+                        // pivot evaluations, without publishing back to CI/PPO.
+                        if (!tracked_active && active)
+                            unified_input.active_composition = active;
                         unified_input.evaluation_sequence = bridge_input.sequence;
                         auto& discovery = unified_input.exploration;
                         discovery.round = round_id;
                         discovery.gold_available = economy.gold;
-                        discovery.composition_defined = active.has_value();
-                        discovery.active_composition_identity = active
-                            ? active->candidate.composition_id : std::string{};
-                        discovery.previous_direction = info.composition_direction;
+                        discovery.composition_defined = source_active != nullptr;
+                        discovery.active_composition_identity = source_active
+                            ? source_active->candidate.composition_id : std::string{};
+                        discovery.previous_direction =
+                            strategic_shadow_runtimes[i]->machine().anchors().direction_anchor.direction;
+                        if (discovery.previous_direction.empty())
+                            discovery.previous_direction = info.composition_direction;
 
                         std::map<std::int32_t, strategy::DirectionDiscoveryUnit> discovery_units;
                         for (const auto& owned : strategic_context.owned_units) {
@@ -3998,11 +4031,11 @@ struct TFTEngine::Impl {
                         // explicitly missing, so it can never approve a pivot.
                         const auto& current_anchor =
                             strategic_shadow_runtimes[i]->machine().anchors().direction_anchor;
-                        if (active && !current_anchor.identity.empty()) {
+                        if (source_active && !current_anchor.identity.empty()) {
                             const ci::CompositionCandidate* alternative = nullptr;
                             std::size_t best_support = 0;
                             for (const auto& candidate : source_candidates) {
-                                if (candidate.composition_id == active->candidate.composition_id)
+                                if (candidate.composition_id == source_active->candidate.composition_id)
                                     continue;
                                 std::size_t support_count = 0;
                                 for (const auto& target : candidate.units) {
@@ -4029,11 +4062,11 @@ struct TFTEngine::Impl {
                             if (alternative && best_support > 0) {
                                 strategy::StrategicPivotAnchorCandidate pivot;
                                 pivot.identity = "pivot:" + alternative->composition_id +
-                                    ":from:" + std::to_string(active->version);
+                                    ":from:" + std::to_string(source_active->version);
                                 pivot.target_direction = alternative->composition_id;
                                 pivot.target_composition_identity = alternative->composition_id;
                                 pivot.source_direction_anchor_identity = current_anchor.identity;
-                                pivot.source_composition_version = active->version;
+                                pivot.source_composition_version = source_active->version;
                                 pivot.confidence = 0.0;
                                 pivot.reason = "alternative_observed_in_native_or_opgg_source_pipeline";
                                 pivot.lifecycle = strategy::StrategicAnchorLifecycle::Proposed;
@@ -4042,7 +4075,7 @@ struct TFTEngine::Impl {
                                 feasibility.candidate_composition_identity =
                                     alternative->composition_id;
                                 feasibility.source_direction_anchor_identity = current_anchor.identity;
-                                feasibility.source_composition_version = active->version;
+                                feasibility.source_composition_version = source_active->version;
                                 feasibility.gold_available = economy.gold;
                                 // The live pipeline does not currently expose a
                                 // protected reserve floor or complete transition
@@ -6180,6 +6213,8 @@ ResetResult TFTEngine::reset(
     impl_->composition_intelligence_native_diagnostics =
         decltype(impl_->composition_intelligence_native_diagnostics){};
     impl_->composition_intelligence_sequence = 0;
+    impl_->strategic_shadow_external_active_identity.fill(std::string{});
+    impl_->strategic_shadow_external_active_version.fill(0);
     if (!impl_->strategic_shadow_audit_path.empty()) {
         std::error_code remove_error;
         std::filesystem::remove(impl_->strategic_shadow_audit_path, remove_error);
@@ -6638,6 +6673,8 @@ void TFTEngine::set_strategic_direction_pivot_audit_path(const std::string& path
     if (!impl_) throw std::runtime_error("TFTEngine nao possui estado interno.");
     impl_->ensure_open();
     impl_->strategic_shadow_audit_path = path;
+    impl_->strategic_shadow_external_active_identity.fill(std::string{});
+    impl_->strategic_shadow_external_active_version.fill(0);
     if (path.empty()) {
         for (auto& runtime : impl_->strategic_shadow_runtimes) runtime.reset();
         return;
