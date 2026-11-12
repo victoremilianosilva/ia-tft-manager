@@ -185,6 +185,8 @@ private:
                     {"relation", unit.core_potential ? "core" : "composition"},
                     {"copies_owned", unit.copies_owned},
                     {"highest_star", unit.star},
+                    {"pool_remaining", unit.pool_remaining >= 0
+                        ? nlohmann::json(unit.pool_remaining) : nlohmann::json(nullptr)},
                     {"target_star", 2},
                     {"cost", unit.cost},
                     {"on_board", unit.on_board},
