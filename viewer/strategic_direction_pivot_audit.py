@@ -156,6 +156,8 @@ def audit_direction_pivot_records(records: list[dict[str, Any]], errors: list[st
                 "missing_data": feasibility.get("missing_data"),
                 "carry_gate": carry if isinstance(carry, dict) else None,
                 "shop_evidence_count": len(shop) if isinstance(shop, list) else None,
+                "shop_evidence": shop if isinstance(shop, list) else None,
+                "unit_support": support if isinstance(support, list) else None,
             })
 
         active_id, active_version = _identity(active), _version(active)
@@ -306,7 +308,7 @@ def format_direction_pivot_audit(report: dict[str, Any], source_found: bool = Tr
     if not report["missing_data_counts"]:
         lines.append("- Nenhum campo ausente detectado nos registros fornecidos.")
     lines.extend(["", "## Amostras por jogador/round", "",
-                  "| Jogador | Round | Fase | Composição ativa | Âncora de direção | Pivot | Carry | Loja | Motivo |",
+                  "| Jogador | Round | Fase | Composição ativa | Âncora de direção | Pivot | Carry | Loja (evidência) | Unidades (cópias/estrelas) | Motivo |",
                   "|---|---|---|---|---|---|---|---:|---|"])
     for player, player_data in sorted(report["players"].items()):
         for sample in player_data["samples"]:
@@ -315,14 +317,22 @@ def format_direction_pivot_audit(report: dict[str, Any], source_found: bool = Tr
             pivot_sample = sample["pivot_candidate"]
             carry_sample = sample["carry_gate"] or {}
             safe = lambda value: str(value if value is not None else "—").replace("|", "\\|")
+            shop_text = ", ".join(
+                f"{offer.get('champion_id', '?')} cost={offer.get('cost', '?')} copies={offer.get('copies', '?')}"
+                for offer in (sample.get("shop_evidence") or []) if isinstance(offer, dict)
+            ) or ("sem ofertas registradas" if sample["shop_evidence_count"] is not None else "indisponível")
+            unit_text = ", ".join(
+                f"{unit.get('champion_id', '?')}:{unit.get('relation', unit.get('classification', '?'))} "
+                f"copies={unit.get('copies_owned', '?')}★{unit.get('highest_star', '?')}→{unit.get('target_star', '?')}★"
+                for unit in (sample.get("unit_support") or []) if isinstance(unit, dict)
+            ) or "indisponível"
             lines.append(
                 f"| {player} | {safe(sample['round'])} | {sample['phase']} | "
                 f"{safe(active['identity'])} v{safe(active['version'])} | "
                 f"{safe(direction['identity'])} ({safe(direction['composition_identity'])} v{safe(direction['composition_version'])}) | "
                 f"{safe(pivot_sample['identity'])} → {safe(pivot_sample['target'])} | "
                 f"{safe(carry_sample.get('eligible'))}: {safe(carry_sample.get('reason'))} | "
-                f"{sample['shop_evidence_count'] if sample['shop_evidence_count'] is not None else '—'} | "
-                f"{safe(sample['pivot_reason'])} |"
+                f"{safe(shop_text)} | {safe(unit_text)} | {safe(sample['pivot_reason'])} |"
             )
     if not any(value["samples"] for value in report["players"].values()):
         lines.append("| — | — | — | — | — | — | — | — | Sem snapshots |")
