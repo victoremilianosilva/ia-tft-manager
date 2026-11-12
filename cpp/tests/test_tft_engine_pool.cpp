@@ -137,7 +137,44 @@ int main(int argc, char** argv) {
             require(record_count == 1,
                     "Snapshot estratégico idêntico foi gravado como nova revisão.");
         }
+        require(engine.set_unit_for_testing(
+                    1, true, 0, comp_champion->api_name, 1),
+                "Nao foi possivel gerar snapshot para o segundo jogador.");
+        {
+            std::ifstream strategic_audit(strategic_audit_path);
+            std::string record;
+            std::size_t record_count = 0;
+            bool player_one_sequence = false;
+            while (std::getline(strategic_audit, record)) {
+                ++record_count;
+                if (record.find("\"player_id\":1") != std::string::npos &&
+                    record.find("\"sequence\":1") != std::string::npos)
+                    player_one_sequence = true;
+            }
+            require(record_count == 2 && player_one_sequence,
+                    "Snapshots multi-player não mantiveram sequência isolada.");
+        }
+
+        const auto next_session_path =
+            std::filesystem::temp_directory_path() /
+            "tft_strategic_runtime_snapshot_next_session.jsonl";
+        std::filesystem::remove(next_session_path);
+        engine.set_strategic_audit_path(next_session_path.string(), 525252);
+        require(engine.set_unit_for_testing(
+                    0, true, 0, comp_champion->api_name, 1),
+                "Nao foi possivel iniciar o segundo ciclo de sessão.");
+        {
+            std::ifstream next_session(next_session_path);
+            require(next_session.good(),
+                    "Nova sessão não iniciou um sidecar estratégico.");
+            std::string record;
+            std::getline(next_session, record);
+            require(record.find("\"match_id\":525252") != std::string::npos &&
+                    record.find("\"sequence\":1") != std::string::npos,
+                    "Nova sessão não resetou identidade/sequência do recorder.");
+        }
         std::filesystem::remove(strategic_audit_path);
+        std::filesystem::remove(next_session_path);
         engine.set_strategic_audit_path("", 0);
 
         tft::CombatItem fixture_item{};
