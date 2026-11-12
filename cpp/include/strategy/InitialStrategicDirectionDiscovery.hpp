@@ -37,6 +37,8 @@ struct DirectionDiscoveryUnit {
     bool core_potential{false};
     double board_contribution{0.0};
     std::vector<std::string> traits;
+    // -1 means the native pool snapshot is unavailable.
+    std::int32_t pool_remaining{-1};
 };
 
 struct DirectionDiscoveryTrait {
@@ -107,6 +109,11 @@ public:
             std::int32_t shop_copies{0};
             double board_value{0.0};
             bool pair{false};
+            bool board{false};
+            bool bench{false};
+            std::int32_t highest_star{1};
+            std::int32_t pool_remaining{0};
+            bool pool_known{false};
             bool carry{false};
             bool core{false};
             std::int32_t cheapest_cost{0};
@@ -116,7 +123,8 @@ public:
 
         for (const auto& unit : input.units) {
             if (unit.champion_id < 0 || unit.copies_owned < 0 ||
-                unit.cost < 0 || unit.star < 1 ||
+                unit.cost < 0 || unit.star < 1 || unit.star > 3 ||
+                unit.pool_remaining < -1 ||
                 !std::isfinite(unit.board_contribution)) {
                 out.status = DirectionDiscoveryStatus::InvalidInput;
                 out.reason = "invalid_unit_evidence";
@@ -138,10 +146,17 @@ public:
                     a.copies += std::max(unit.copies_owned, 1);
                     a.board_value += std::max(0.0, unit.board_contribution);
                     a.pair = a.pair || unit.copies_owned >= 2;
+                    a.board = a.board || unit.on_board;
+                    a.bench = a.bench || unit.on_bench;
+                    a.highest_star = std::max(a.highest_star, unit.star);
                     a.carry = a.carry || unit.carry_potential;
                     a.core = a.core || unit.core_potential;
                     if (a.cheapest_cost == 0 || unit.cost < a.cheapest_cost)
                         a.cheapest_cost = unit.cost;
+                }
+                if (unit.pool_remaining >= 0) {
+                    a.pool_known = true;
+                    a.pool_remaining += unit.pool_remaining;
                 }
                 if (unit.in_shop) {
                     a.shop_units.insert(unit.champion_id);
@@ -169,6 +184,12 @@ public:
             // Shop contributes only when there is already owned support.
             const double pair_score = a.pair ? 2.0 : 0.0;
             const double support_score = std::min(2.0, owned_count * 0.75);
+            const double star_progress_score = a.highest_star >= 3 ? 0.75 :
+                (a.highest_star == 2 ? 0.50 : 0.0);
+            // A known available pool modestly supports continued pursuit.
+            // Unknown pool data is neutral, never interpreted as exhaustion.
+            const double pool_score = a.pool_known
+                ? std::min(0.50, a.pool_remaining * 0.025) : 0.0;
             const double synergy_score = synergy_owned ? 1.5 :
                 (synergy_reachable && !a.shop_units.empty() ? 0.75 : 0.0);
             const double shop_score = std::min(0.5, a.shop_units.size() * 0.25);
@@ -183,8 +204,8 @@ public:
                 input.gold_available >= 0 && estimated_pursuit_cost > input.gold_available
                     ? std::min(1.0, (estimated_pursuit_cost - input.gold_available) * 0.1)
                     : 0.0;
-            const double score = pair_score + support_score + synergy_score +
-                shop_score + carry_score + core_score + board_score -
+            const double score = pair_score + support_score + star_progress_score +
+                pool_score + synergy_score + shop_score + carry_score + core_score + board_score -
                 cost_penalty - affordability_penalty;
 
             // Convert the explainable heuristic score to a ranking confidence,
@@ -203,6 +224,10 @@ public:
             h.anchor.reference_unit_ids.assign(a.owned_units.begin(), a.owned_units.end());
             if (!a.owned_units.empty())
                 h.anchor.evidence.push_back(StrategicAnchorEvidenceKind::OwnedUnit);
+            if (a.board)
+                h.anchor.evidence.push_back(StrategicAnchorEvidenceKind::BoardUnit);
+            if (a.bench)
+                h.anchor.evidence.push_back(StrategicAnchorEvidenceKind::BenchUnit);
             if (a.pair)
                 h.anchor.evidence.push_back(StrategicAnchorEvidenceKind::PairProgress);
             if (!a.shop_units.empty())
@@ -222,6 +247,9 @@ public:
             h.score_explanation =
                 "pair=" + std::to_string(pair_score) +
                 ";owned_support=" + std::to_string(support_score) +
+                ";star_progress=" + std::to_string(star_progress_score) +
+                ";pool_remaining=" + (a.pool_known ? std::to_string(a.pool_remaining) : "unknown") +
+                ";pool_score=" + std::to_string(pool_score) +
                 ";synergy=" + std::to_string(synergy_score) +
                 ";shop=" + std::to_string(shop_score) +
                 ";carry=" + std::to_string(carry_score) +

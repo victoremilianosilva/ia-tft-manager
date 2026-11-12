@@ -1,6 +1,8 @@
 #include "strategy/UnifiedStrategicStateMachine.hpp"
+#include "strategy/UnifiedStrategicShadowRuntime.hpp"
 
 #include <cassert>
+#include <filesystem>
 #include <iostream>
 
 using namespace tft::strategy;
@@ -30,6 +32,21 @@ DirectionDiscoveryInput discovery_input() {
         {2, 2, 1, 1, true, false, false, false, false, 3.0, {"Bruiser"}}
     };
     input.trait_thresholds = {{"Bruiser", 2}};
+    return input;
+}
+
+DirectionDiscoveryInput competing_discovery_input(double bruiser_board, double invoker_board) {
+    DirectionDiscoveryInput input;
+    input.round = 3;
+    input.units = {
+        {10, 2, 2, 1, true, false, false, false, false, bruiser_board, {"Bruiser"}},
+        {11, 2, 1, 1, false, true, false, false, false, 0.0, {"Bruiser"}},
+        {20, 2, 2, 1, true, false, false, false, false, invoker_board, {"Invoker"}},
+        {21, 2, 1, 1, false, true, false, false, false, 0.0, {"Invoker"}}
+    };
+    input.trait_thresholds = {{"Bruiser", 2}, {"Invoker", 2}};
+    // This external hint must not influence the runtime-owned discovery state.
+    input.previous_direction = "LegacyDirection";
     return input;
 }
 
@@ -103,29 +120,73 @@ void exploration_waits_for_composition_and_then_binds_direction() {
     assert(result.anchors.direction_anchor.lifecycle == StrategicAnchorLifecycle::Active);
 }
 
-void active_composition_has_authority_over_legacy_outputs() {
+void machine_owns_exploratory_direction_history_without_legacy_inputs() {
     UnifiedStrategicStateMachine machine;
     StrategicCycleInput input;
-    input.active_composition = ActiveComposition{composition(
-        "composition-current", 1,
-        {{1, UnitRole::MainCarry, true, 100},
-         {2, UnitRole::Frontline, true, 80}}), 7};
-    CompositionDirectionState legacy_direction;
-    legacy_direction.direction = "Bruiser";
-    legacy_direction.locked = true;
-    input.legacy_direction = legacy_direction;
-    StrategicPlanDecision legacy_plan;
-    legacy_plan.target_composition_direction = "composition-other";
-    input.legacy_plan = legacy_plan;
+    input.exploration.units = {
+        {10, 2, 2, 1, true, false, false, false, true, 0.0, {"Bruiser"}},
+        {11, 2, 1, 1, false, true, false, false, false, 0.0, {"Bruiser"}},
+        {20, 2, 2, 1, true, false, false, false, false, 0.0, {"Invoker"}},
+        {21, 2, 1, 1, false, true, false, false, false, 0.0, {"Invoker"}}
+    };
+    input.exploration.trait_thresholds = {{"Bruiser", 2}, {"Invoker", 2}};
+    // This caller-supplied hint resembles an old direction, but the machine
+    // must ignore it and establish its own continuity from observed evidence.
+    input.exploration.previous_direction = "Invoker";
 
-    const auto result = machine.refresh(input);
-    assert(result.phase == StrategicCyclePhase::CompositionActive);
-    assert(result.active_composition->candidate.composition_id == "composition-current");
-    assert(result.active_composition->version == 7);
-    assert(result.anchors.direction_anchor.direction == "composition-current");
-    assert(result.anchors.direction_anchor.composition_version == 7);
-    assert(result.diagnostics.legacy_consistency == LegacyConsistency::Divergent);
-    assert(result.diagnostics.divergence_reasons.size() == 2);
+    auto result = machine.refresh(input);
+    assert(result.phase == StrategicCyclePhase::Exploration);
+    assert(result.diagnostics.discovery.hypotheses.size() == 2);
+    assert(result.diagnostics.discovery.hypotheses.front().anchor.direction == "Bruiser");
+
+    // Invoker gains a small evidence advantage. The machine retains its own
+    // viable Bruiser hypothesis; the caller cannot steer it through a hint.
+    input.exploration.units[2].board_contribution = 1.0;
+    input.exploration.previous_direction = "Invoker";
+    result = machine.refresh(input);
+    assert(result.phase == StrategicCyclePhase::Exploration);
+    assert(result.diagnostics.discovery.hypotheses.front().anchor.direction == "Bruiser");
+}
+
+void shadow_runtime_isolates_players_and_resets_its_own_direction_history() {
+    const auto base = std::filesystem::temp_directory_path();
+    const auto player_zero_path = base / "tft-direction-discovery-player-zero.jsonl";
+    const auto player_one_path = base / "tft-direction-discovery-player-one.jsonl";
+    std::error_code ignored;
+    std::filesystem::remove(player_zero_path, ignored);
+    std::filesystem::remove(player_one_path, ignored);
+
+    UnifiedStrategicShadowRuntime player_zero(player_zero_path);
+    UnifiedStrategicShadowRuntime player_one(player_one_path);
+    const StrategicCycleAuditContext context_zero{42, 0, 3};
+    const StrategicCycleAuditContext context_one{42, 1, 3};
+
+    StrategicCycleInput zero_input;
+    zero_input.exploration = competing_discovery_input(0.0, 0.0);
+    auto zero_result = player_zero.refresh(context_zero, zero_input);
+    assert(zero_result.diagnostics.discovery.hypotheses.front().anchor.direction == "Bruiser");
+
+    StrategicCycleInput one_input;
+    one_input.exploration = competing_discovery_input(0.0, 1.0);
+    auto one_result = player_one.refresh(context_one, one_input);
+    assert(one_result.diagnostics.discovery.hypotheses.front().anchor.direction == "Invoker");
+
+    // Each player retains only its own prior hypothesis when the ranking shifts.
+    zero_input.exploration = competing_discovery_input(0.0, 1.0);
+    zero_result = player_zero.refresh(context_zero, zero_input);
+    assert(zero_result.diagnostics.discovery.hypotheses.front().anchor.direction == "Bruiser");
+
+    one_input.exploration = competing_discovery_input(1.0, 0.0);
+    one_result = player_one.refresh(context_one, one_input);
+    assert(one_result.diagnostics.discovery.hypotheses.front().anchor.direction == "Invoker");
+
+    // A new machine lifecycle starts without the previous player's/session's hint.
+    player_zero.reset_machine();
+    zero_result = player_zero.refresh(context_zero, zero_input);
+    assert(zero_result.diagnostics.discovery.hypotheses.front().anchor.direction == "Invoker");
+
+    std::filesystem::remove(player_zero_path, ignored);
+    std::filesystem::remove(player_one_path, ignored);
 }
 
 void pivot_evaluation_does_not_mutate_then_confirms_synchronized_state() {
@@ -242,7 +303,8 @@ void insufficient_evidence_clears_pivot_and_keeps_active_composition() {
 
 int main() {
     exploration_waits_for_composition_and_then_binds_direction();
-    active_composition_has_authority_over_legacy_outputs();
+    machine_owns_exploratory_direction_history_without_legacy_inputs();
+    shadow_runtime_isolates_players_and_resets_its_own_direction_history();
     pivot_evaluation_does_not_mutate_then_confirms_synchronized_state();
     invalidated_candidate_is_removed_and_old_direction_is_preserved();
     missing_candidate_invalidates_pending_pivot_without_mutation();

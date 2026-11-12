@@ -467,6 +467,10 @@ if(BUILD_TESTING)
 
     add_executable(test_unified_strategic_state_machine tests/test_unified_strategic_state_machine.cpp)
     configure_tft_module(test_unified_strategic_state_machine)
+    # The runtime includes the JSONL audit recorder, so this test target must
+    # inherit the same header-only JSON dependency as the runtime consumer.
+    target_link_libraries(test_unified_strategic_state_machine
+        PRIVATE nlohmann_json::nlohmann_json)
     enable_tft_test_assertions(test_unified_strategic_state_machine)
     add_test(NAME unified_strategic_state_machine COMMAND test_unified_strategic_state_machine)
 
