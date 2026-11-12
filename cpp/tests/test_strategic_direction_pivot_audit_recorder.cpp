@@ -78,6 +78,16 @@ int main() {
     assert(runtime_record.at("match_id") == 88);
     assert(runtime_record.at("player_id") == 3);
     assert(runtime_record.at("phase") == "NO_EVIDENCE");
+
+    // Re-anchoring the machine after an external composition publication must
+    // preserve the recorder sequence for this player/session.
+    runtime.reset_machine();
+    runtime_input.exploration.gold_available = 25;
+    (void)runtime.refresh(runtime_context, runtime_input);
+    assert(static_cast<bool>(std::getline(runtime_stream, line)));
+    const auto resynchronized_record = nlohmann::json::parse(line);
+    assert(resynchronized_record.at("sequence") == 2);
+    assert(resynchronized_record.at("observed_context").at("gold_available") == 25);
     assert(!std::getline(runtime_stream, line));
 
     // A failed append is contained and does not escape into the caller.
