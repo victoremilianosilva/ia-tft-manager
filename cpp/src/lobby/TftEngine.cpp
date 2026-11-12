@@ -3919,6 +3919,18 @@ struct TFTEngine::Impl {
                 // Shadow failure boundary and never publishes into PPO state.
                 if (strategic_shadow_runtimes[i]) {
                     try {
+                        const auto& tracked_active =
+                            strategic_shadow_runtimes[i]->machine().active_composition();
+                        if (active && tracked_active &&
+                            (active->candidate.composition_id !=
+                                 tracked_active->candidate.composition_id ||
+                             active->version != tracked_active->version)) {
+                            // Composition Intelligence may publish an independently
+                            // approved refinement. Re-anchor the unified shadow
+                            // machine to that exact version without resetting the
+                            // recorder's per-player sequence or truncating the file.
+                            strategic_shadow_runtimes[i]->reset_machine();
+                        }
                         strategy::StrategicCycleInput unified_input;
                         unified_input.active_composition = active;
                         unified_input.evaluation_sequence = bridge_input.sequence;
