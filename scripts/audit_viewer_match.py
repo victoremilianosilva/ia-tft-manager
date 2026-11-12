@@ -2926,6 +2926,60 @@ def main() -> int:
         "parse_errors": composition_report["parse_errors"],
     }
 
+    # Unified strategic direction/pivot stream is optional until its runtime
+    # producer is wired. Always emit the audit so missing instrumentation is
+    # visible rather than silently inferred from legacy PPO/composition fields.
+    try:
+        from viewer.strategic_direction_pivot_audit import (
+            audit_direction_pivot_records,
+            format_direction_pivot_audit,
+            load_direction_pivot_jsonl,
+        )
+    except ImportError:
+        from strategic_direction_pivot_audit import (
+            audit_direction_pivot_records,
+            format_direction_pivot_audit,
+            load_direction_pivot_jsonl,
+        )
+
+    strategic_cycle_path = session_root / "strategic_direction_pivot.jsonl"
+    if strategic_cycle_path.is_file():
+        strategic_cycle_records, strategic_cycle_errors = load_direction_pivot_jsonl(
+            strategic_cycle_path
+        )
+    else:
+        strategic_cycle_records = []
+        strategic_cycle_errors = [
+            "Arquivo strategic_direction_pivot.jsonl não encontrado na pasta da sessão."
+        ]
+    strategic_cycle_report = audit_direction_pivot_records(
+        strategic_cycle_records, strategic_cycle_errors
+    )
+    markdown_documents["audit_direcao_pivot.md"] = (
+        format_direction_pivot_audit(
+            strategic_cycle_report, source_found=strategic_cycle_path.is_file()
+        ) + "\\n"
+    )
+    report["strategic_direction_pivot_metrics"] = {
+        "source_file": str(strategic_cycle_path),
+        "source_found": strategic_cycle_path.is_file(),
+        "data_status": strategic_cycle_report["data_status"],
+        "snapshots": strategic_cycle_report["record_count"],
+        "phase_counts": strategic_cycle_report["phase_counts"],
+        "pivot_status_counts": strategic_cycle_report["pivot_status_counts"],
+        "carry_gate_counts": strategic_cycle_report["carry_gate_counts"],
+        "missing_data_counts": strategic_cycle_report["missing_data_counts"],
+        "conflict_count": strategic_cycle_report["conflict_count"],
+        "duplicate_sequences": strategic_cycle_report["duplicate_sequences"],
+        "parse_errors": strategic_cycle_report["parse_errors"],
+    }
+    if not strategic_cycle_path.is_file():
+        report.setdefault("notes", []).append(
+            "A sessão não contém strategic_direction_pivot.jsonl; "
+            "a auditoria final foi gerada, mas os eventos da máquina unificada "
+            "ainda não são produzidos pelo runtime desta sessão."
+        )
+
     # One offline correlation index joins the two generations without invoking
     # planners, rewriting source logs, or treating correlation as causality.
     try:
