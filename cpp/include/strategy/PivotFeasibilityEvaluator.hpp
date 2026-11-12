@@ -126,6 +126,7 @@ public:
         std::unordered_map<std::string, std::int32_t> reachable_traits;
         std::int32_t core_total = 0;
         std::int32_t core_reachable = 0;
+        std::int32_t core_unknown = 0;
         bool carry_defined = false;
         bool carry_found = false;
         double owned_support = 0.0;
@@ -175,6 +176,7 @@ public:
             }
 
             if (required.core && reachable) ++core_reachable;
+            if (required.core && unknown) ++core_unknown;
             if (unknown) out.missing_data.push_back(
                 "pool_availability_unknown_for_unit_" + std::to_string(required.champion_id));
             if (pool == 0 && owned == 0 && shop == 0) {
@@ -215,6 +217,8 @@ public:
 
         if (core_total == 0) {
             out.missing_data.push_back("core_unit_requirements_missing");
+        } else if (core_reachable < core_total && core_unknown > 0) {
+            out.missing_data.push_back("core_unit_coverage_unknown");
         } else if (core_reachable < core_total) {
             out.blockers.push_back("core_unit_coverage_incomplete");
         } else {
