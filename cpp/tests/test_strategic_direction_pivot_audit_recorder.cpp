@@ -171,11 +171,13 @@ int main() {
     assert(duplicate_pivot_result.diagnostics.pivot_confirmation->consecutive_viable_evaluations == 1);
 
     pivot_input.pivot_feasibility->gold_available = 39;
+    pivot_input.exploration.gold_available = 39;
     pivot_input.evaluation_sequence = 3;
     pivot_result = pivot_runtime.refresh(pivot_context, pivot_input);
     assert(pivot_result.diagnostics.pivot_confirmation->consecutive_viable_evaluations == 2);
 
     pivot_input.pivot_feasibility->gold_available = 38;
+    pivot_input.exploration.gold_available = 38;
     pivot_input.evaluation_sequence = 4;
     pivot_result = pivot_runtime.refresh(pivot_context, pivot_input);
     assert(pivot_result.phase == StrategicCyclePhase::PivotConfirmed);
