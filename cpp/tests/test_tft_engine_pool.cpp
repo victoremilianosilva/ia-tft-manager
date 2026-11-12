@@ -1057,7 +1057,7 @@ int main(int argc, char** argv) {
                     strategic_audit_line.find("\"player_id\":0") != std::string::npos,
                 "Sidecar nao contem evento real identificado como Shadow por jogador.");
         require(static_cast<bool>(std::getline(strategic_audit_stream, strategic_audit_line)) &&
-                    strategic_audit_line.find("\\\"sequence\\\":2") != std::string::npos,
+                    strategic_audit_line.find("\"sequence\":2") != std::string::npos,
                 "Atualizacao sucessiva do produtor real nao gerou o segundo evento da sequencia.");
         require(!std::getline(strategic_audit_stream, strategic_audit_line),
                 "Snapshots repetidos/inalterados foram gravados indevidamente.");
