@@ -240,7 +240,7 @@ public:
             if (candidate.anchor_champion_id < 0)
                 candidate.anchor_champion_id = candidate.unit_ids.front();
 
-            std::unordered_set<std::string> active_traits;
+            std::set<std::string> active_traits;
             for (const auto id : candidate.unit_ids) {
                 const auto found = definitions.find(id);
                 if (found == definitions.end()) continue;
