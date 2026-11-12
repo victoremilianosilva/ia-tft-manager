@@ -57,6 +57,9 @@ int main() {
         input.observed_units[0].shop_copies = 0;
         input.observed_units[0].owned_copies = 0;
         input.observed_units[0].pool_remaining = -1;
+        // Keep the remaining owned Invoker sufficient so this case isolates
+        // unknown carry availability rather than also failing trait coverage.
+        input.required_traits[0].minimum_units = 1;
         const auto result = evaluator.evaluate(input);
         assert(result.status == PivotFeasibilityStatus::InsufficientEvidence);
         assert(!result.missing_data.empty());
