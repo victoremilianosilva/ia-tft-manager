@@ -10,6 +10,7 @@
 #include <vector>
 
 using namespace tft::strategy;
+namespace ci = tft::composition_intelligence;
 
 int main() {
     const auto root = std::filesystem::temp_directory_path() /
@@ -100,10 +101,10 @@ int main() {
     UnifiedStrategicShadowRuntime pivot_runtime(pivot_runtime_path,
         PivotConfirmationPolicy{3, 60.0, 5});
     const auto make_composition = [](const std::string& id, int carry,
-                                     std::vector<composition_intelligence::CompositionUnit> units) {
-        composition_intelligence::CompositionCandidate candidate;
+                                     std::vector<ci::CompositionUnit> units) {
+        ci::CompositionCandidate candidate;
         candidate.composition_id = id;
-        candidate.source = composition_intelligence::CompositionSource::Native;
+        candidate.source = ci::CompositionSource::Native;
         candidate.set_id = "18";
         candidate.patch = "18.1";
         candidate.units = std::move(units);
@@ -115,10 +116,10 @@ int main() {
     };
     StrategicCycleInput pivot_input;
     pivot_input.exploration.round = 4;
-    pivot_input.active_composition = composition_intelligence::ActiveComposition{
+    pivot_input.active_composition = ci::ActiveComposition{
         make_composition("composition-current", 1,
-            {{1, composition_intelligence::UnitRole::MainCarry, true, 100},
-             {2, composition_intelligence::UnitRole::Frontline, true, 80}}), 1};
+            {{1, ci::UnitRole::MainCarry, true, 100},
+             {2, ci::UnitRole::Frontline, true, 80}}), 1};
     const StrategicCycleAuditContext pivot_context{101, 0, 4};
     auto pivot_result = pivot_runtime.refresh(pivot_context, pivot_input);
     assert(pivot_result.phase == StrategicCyclePhase::CompositionActive);
@@ -140,9 +141,9 @@ int main() {
     pivot_input.pivot_candidate->reason = "observed_owned_core";
     pivot_input.pivot_candidate->lifecycle = StrategicAnchorLifecycle::Evaluating;
     pivot_input.pivot_destination = make_composition("composition-next", 1,
-        {{1, composition_intelligence::UnitRole::MainCarry, true, 100},
-         {2, composition_intelligence::UnitRole::Frontline, true, 80},
-         {3, composition_intelligence::UnitRole::Support, false, 40}});
+        {{1, ci::UnitRole::MainCarry, true, 100},
+         {2, ci::UnitRole::Frontline, true, 80},
+         {3, ci::UnitRole::Support, false, 40}});
     pivot_input.pivot_feasibility = PivotFeasibilityInput{};
     pivot_input.pivot_feasibility->candidate_composition_identity = "composition-next";
     pivot_input.pivot_feasibility->source_direction_anchor_identity =
