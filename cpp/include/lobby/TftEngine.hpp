@@ -580,6 +580,9 @@ public:
     // Input/output are JSON strings to keep catalog types out of the public API.
     std::string adapt_opgg_compositions_json(const std::string& catalog_json) const;
     std::vector<std::string> get_composition_diagnostics_jsonl() const;
+    // Opt-in read-only strategic sidecar for Viewer/runtime observation.
+    // An empty path disables recording; match_id is the session correlation key.
+    void set_strategic_audit_path(const std::string& path, std::uint64_t match_id);
 
     // Hooks de fixture determinística para testes de paridade Python/C++.
     // Não alteram o pool compartilhado; usar apenas em cenários de teste.
