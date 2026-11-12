@@ -633,6 +633,22 @@ def build_shadow_markdown_reports(report: dict) -> dict[str, str]:
         f"- KEEP fundamentado por evidência atual: **{keep_audit_summary['classification_counts'].get('KEEP_SUPPORTED_BY_CURRENT_EVIDENCE', 0)}**",
         f"- KEEP associado principalmente à persistência/investimento: **{keep_audit_summary['classification_counts'].get('KEEP_ASSOCIATED_WITH_PERSISTENCE', 0)}**",
         f"- KEEP inconclusivo por falta de evidência: **{keep_audit_summary['classification_counts'].get('KEEP_INCONCLUSIVE', 0)}**",
+        "- Resultados das alternativas: " + _cell(keep_audit_summary["alternative_status_counts"]),
+        "",
+        "#### Distribuição por jogador/round", "",
+        "| Jogador | Round | Fundamentados | Persistência/investimento | Inconclusivos |",
+        "|---|---|---:|---:|---:|",
+    ]
+    for bucket in keep_audit_summary["by_player_round"]:
+        strategy.append("| " + " | ".join(_cell(value) for value in (
+            bucket.get("player"), bucket.get("round"),
+            bucket.get("KEEP_SUPPORTED_BY_CURRENT_EVIDENCE", 0),
+            bucket.get("KEEP_ASSOCIATED_WITH_PERSISTENCE", 0),
+            bucket.get("KEEP_INCONCLUSIVE", 0),
+        )) + " |")
+    if not keep_audit_summary["by_player_round"]:
+        strategy.append("| — | — | 0 | 0 | 0 |")
+    strategy += [
         "",
         "| Jogador | Round | Step | Classificação | Viabilidade atual | Score atual | Unidades alinhadas | Board-only | Somente investimento | Lock | Candidato pendente | Alternativa | Motivos observados |",
         "|---|---|---:|---|---|---:|---:|---:|---:|---|---|---|---|",
