@@ -275,20 +275,7 @@ else()
         "Implemente a API declarada em include/lobby/TftEngine.hpp."
     )
 
-    add_executable(
-        test_strategic_direction_pivot_audit_recorder
-        tests/test_strategic_direction_pivot_audit_recorder.cpp
-    )
-    configure_tft_module(test_strategic_direction_pivot_audit_recorder)
-    target_link_libraries(
-        test_strategic_direction_pivot_audit_recorder
-        PRIVATE nlohmann_json::nlohmann_json
-    )
-    enable_tft_test_assertions(test_strategic_direction_pivot_audit_recorder)
-    add_test(
-        NAME strategic_direction_pivot_audit_recorder
-        COMMAND test_strategic_direction_pivot_audit_recorder
-    )
+
 
 endif()
 
@@ -462,6 +449,21 @@ if(BUILD_TESTING)
     configure_tft_module(test_strategic_pivot_transition_coordinator)
     enable_tft_test_assertions(test_strategic_pivot_transition_coordinator)
     add_test(NAME strategic_pivot_transition_coordinator COMMAND test_strategic_pivot_transition_coordinator)
+
+    add_executable(
+        test_strategic_direction_pivot_audit_recorder
+        tests/test_strategic_direction_pivot_audit_recorder.cpp
+    )
+    configure_tft_module(test_strategic_direction_pivot_audit_recorder)
+    target_link_libraries(
+        test_strategic_direction_pivot_audit_recorder
+        PRIVATE nlohmann_json::nlohmann_json
+    )
+    enable_tft_test_assertions(test_strategic_direction_pivot_audit_recorder)
+    add_test(
+        NAME strategic_direction_pivot_audit_recorder
+        COMMAND test_strategic_direction_pivot_audit_recorder
+    )
 
     add_executable(test_unified_strategic_state_machine tests/test_unified_strategic_state_machine.cpp)
     configure_tft_module(test_unified_strategic_state_machine)
