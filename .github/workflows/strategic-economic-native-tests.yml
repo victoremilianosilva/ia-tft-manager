@@ -20,6 +20,7 @@ on:
   pull_request:
     paths:
       - 'cpp/CMakeLists.txt'
+      - 'cpp/tests/test_native_strategic_composition_generator.cpp'
       - 'cpp/include/strategy/**'
       - 'cpp/include/lobby/TftEngine.hpp'
       - 'cpp/src/lobby/TftEngine.cpp'
