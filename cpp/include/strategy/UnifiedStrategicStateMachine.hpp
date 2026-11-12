@@ -6,7 +6,6 @@
 
 #include "composition_intelligence/contracts/CompositionContracts.hpp"
 #include "strategy/CompositionBoundDirectionAnchor.hpp"
-#include "strategy/CompositionDirectionPolicy.hpp"
 #include "strategy/InitialStrategicDirectionDiscovery.hpp"
 #include "strategy/PivotFeasibilityEvaluator.hpp"
 #include "strategy/StrategicPivotTransitionCoordinator.hpp"
@@ -30,50 +29,6 @@ enum class StrategicCyclePhase : std::uint8_t {
     Invalidated = 5
 };
 
-enum class LegacyConsistency : std::uint8_t {
-    NotAvailable = 0,
-    Consistent = 1,
-    Divergent = 2
-};
-
-struct LegacyStrategicSnapshot {
-    bool has_direction_policy{false};
-    std::string direction;
-    std::string candidate_direction;
-    bool direction_locked{false};
-    double direction_strength{0.0};
-    bool has_strategic_plan{false};
-    std::string planner_target_direction;
-    CompositionDecision planner_decision{CompositionDecision::InsufficientEvidence};
-    StrategicReason planner_reason{StrategicReason::InsufficientEvidence};
-};
-
-// Captures legacy outputs by value. No policy update/evaluation method is
-// exposed here, so the unified machine cannot write back into legacy state.
-class LegacyStrategicReadOnlyAdapter {
-public:
-    static LegacyStrategicSnapshot capture(
-        const std::optional<CompositionDirectionState>& direction,
-        const std::optional<StrategicPlanDecision>& plan
-    ) {
-        LegacyStrategicSnapshot snapshot;
-        if (direction) {
-            snapshot.has_direction_policy = true;
-            snapshot.direction = direction->direction;
-            snapshot.candidate_direction = direction->candidate_direction;
-            snapshot.direction_locked = direction->locked;
-            snapshot.direction_strength = direction->strength;
-        }
-        if (plan) {
-            snapshot.has_strategic_plan = true;
-            snapshot.planner_target_direction = plan->target_composition_direction;
-            snapshot.planner_decision = plan->composition_decision;
-            snapshot.planner_reason = plan->reason;
-        }
-        return snapshot;
-    }
-};
-
 struct StrategicCycleInput {
     // Existing active composition, if a composition source already selected it.
     // The orchestrator takes a value snapshot and never mutates the source.
@@ -89,10 +44,6 @@ struct StrategicCycleInput {
     std::optional<composition_intelligence::CompositionCandidate> pivot_destination;
     std::optional<PivotFeasibilityInput> pivot_feasibility;
 
-    // Legacy outputs are diagnostic-only. They never write the unified state.
-    std::optional<CompositionDirectionState> legacy_direction;
-    std::optional<StrategicPlanDecision> legacy_plan;
-
     std::uint64_t evaluation_sequence{0};
 };
 
@@ -100,9 +51,6 @@ struct StrategicCycleDiagnostics {
     DirectionDiscoveryResult discovery;
     std::optional<PivotFeasibilityResult> pivot_feasibility;
     std::optional<PivotConfirmationResult> pivot_confirmation;
-    LegacyConsistency legacy_consistency{LegacyConsistency::NotAvailable};
-    LegacyStrategicSnapshot legacy_snapshot;
-    std::vector<std::string> divergence_reasons;
     std::string transition_reason{"not_evaluated"};
     std::string previous_phase;
     std::string current_phase;
@@ -134,6 +82,9 @@ public:
         StrategicCycleResult out;
         out.diagnostics.previous_phase = phase_name(phase_);
         auto discovery_input = input.exploration;
+        // Exploratory continuity is owned by this machine. Caller-provided hints
+        // are ignored so legacy direction state cannot bias the new discovery.
+        discovery_input.previous_direction = previous_discovery_direction_;
         const bool had_active = pivot_coordinator_.active_composition().has_value();
         if (input.active_composition.has_value()) {
             discovery_input.composition_defined = true;
@@ -144,6 +95,11 @@ public:
                 pivot_coordinator_.active_composition()->candidate.composition_id;
         }
         out.diagnostics.discovery = discovery_.evaluate(discovery_input);
+        if (out.diagnostics.discovery.status == DirectionDiscoveryStatus::HypothesesFound &&
+            !out.diagnostics.discovery.hypotheses.empty()) {
+            previous_discovery_direction_ =
+                out.diagnostics.discovery.hypotheses.front().anchor.direction;
+        }
 
         if (!had_active && input.active_composition.has_value()) {
             const auto projected = CompositionBoundDirectionAnchor::from_active_composition(
@@ -260,7 +216,6 @@ public:
             }
         }
 
-        compare_legacy_outputs(input, out);
         return finish(std::move(out));
     }
 
@@ -333,46 +288,6 @@ private:
         std::sort(anchor.reference_unit_ids.begin(), anchor.reference_unit_ids.end());
     }
 
-    void compare_legacy_outputs(
-        const StrategicCycleInput& input,
-        StrategicCycleResult& out
-    ) const {
-        if (!pivot_coordinator_.active_composition()) {
-            out.diagnostics.legacy_consistency = LegacyConsistency::NotAvailable;
-            return;
-        }
-        const auto& active_direction = pivot_coordinator_.anchors().direction_anchor.direction;
-        out.diagnostics.legacy_snapshot =
-            LegacyStrategicReadOnlyAdapter::capture(input.legacy_direction, input.legacy_plan);
-        const auto& legacy = out.diagnostics.legacy_snapshot;
-        bool has_comparison = false;
-        if (input.active_composition.has_value()) {
-            has_comparison = true;
-            if (input.active_composition->candidate.composition_id !=
-                pivot_coordinator_.active_composition()->candidate.composition_id ||
-                input.active_composition->version != pivot_coordinator_.active_composition()->version) {
-                out.diagnostics.divergence_reasons.push_back(
-                    "external_active_composition_snapshot_disagrees_with_unified_authority");
-            }
-        }
-        if (legacy.has_direction_policy && !legacy.direction.empty()) {
-            has_comparison = true;
-            if (legacy.direction != active_direction)
-                out.diagnostics.divergence_reasons.push_back(
-                    "legacy_composition_direction_policy_disagrees_with_active_anchor");
-        }
-        if (legacy.has_strategic_plan && !legacy.planner_target_direction.empty()) {
-            has_comparison = true;
-            if (legacy.planner_target_direction != active_direction)
-                out.diagnostics.divergence_reasons.push_back(
-                    "legacy_strategic_planner_target_disagrees_with_active_anchor");
-        }
-        out.diagnostics.legacy_consistency = !has_comparison
-            ? LegacyConsistency::NotAvailable
-            : out.diagnostics.divergence_reasons.empty()
-                ? LegacyConsistency::Consistent : LegacyConsistency::Divergent;
-    }
-
     static const char* phase_name(StrategicCyclePhase phase) {
         switch (phase) {
             case StrategicCyclePhase::Exploration: return "EXPLORATION";
@@ -396,6 +311,7 @@ private:
     }
 
     InitialStrategicDirectionDiscovery discovery_;
+    std::string previous_discovery_direction_;
     PivotFeasibilityEvaluator pivot_evaluator_;
     StrategicPivotTransitionCoordinator pivot_coordinator_;
     StrategicCyclePhase phase_{StrategicCyclePhase::Exploration};
