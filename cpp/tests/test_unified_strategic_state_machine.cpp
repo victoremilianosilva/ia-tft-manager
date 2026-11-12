@@ -40,7 +40,7 @@ StrategicPivotAnchorCandidate pivot_candidate() {
     value.target_composition_identity = "composition-next";
     value.source_direction_anchor_identity = "direction:composition-current:1";
     value.source_composition_version = 1;
-    value.reference_unit_ids = {3, 4, 5};
+    value.reference_unit_ids = {1, 2, 3};
     value.evidence = {StrategicAnchorEvidenceKind::OwnedUnit,
                       StrategicAnchorEvidenceKind::TraitCompletion};
     value.confidence = 0.9;
@@ -52,7 +52,8 @@ StrategicPivotAnchorCandidate pivot_candidate() {
 CompositionCandidate next_composition() {
     return composition("composition-next", 1,
         {{1, UnitRole::MainCarry, true, 100},
-         {2, UnitRole::Frontline, true, 80}});
+         {2, UnitRole::Frontline, true, 80},
+         {3, UnitRole::Support, false, 40}});
 }
 
 PivotFeasibilityInput viable_pivot_input() {
