@@ -437,6 +437,11 @@ if(BUILD_TESTING)
     enable_tft_test_assertions(test_strategic_anchor_contracts)
     add_test(NAME strategic_anchor_contracts COMMAND test_strategic_anchor_contracts)
 
+    add_executable(test_pivot_feasibility_evaluator tests/test_pivot_feasibility_evaluator.cpp)
+    configure_tft_module(test_pivot_feasibility_evaluator)
+    enable_tft_test_assertions(test_pivot_feasibility_evaluator)
+    add_test(NAME pivot_feasibility_evaluator COMMAND test_pivot_feasibility_evaluator)
+
     add_executable(
         test_composition_direction_policy
         tests/test_composition_direction_policy.cpp
