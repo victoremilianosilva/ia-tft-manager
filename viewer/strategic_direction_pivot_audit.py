@@ -275,8 +275,9 @@ def format_direction_pivot_audit(report: dict[str, Any], source_found: bool = Tr
                   "|---|---|---|---|---|"])
     for item in report["conflicts"]:
         evidence = json.dumps(item["evidence"], ensure_ascii=False, sort_keys=True)
+        safe_evidence = evidence.replace("|", "\\\\|")
         lines.append(f"| {item['player_id']} | {item['round'] or '—'} | {item['phase']} | "
-                     f"{item['code']} | {evidence.replace('|', r'\\|')} |")
+                     f"{item['code']} | {safe_evidence} |")
     if not report["conflicts"]:
         lines.append("| — | — | — | Nenhum conflito observado | — |")
     lines.extend(["", "## Integridade dos dados", ""])
