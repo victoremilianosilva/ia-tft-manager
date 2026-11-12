@@ -28,7 +28,7 @@ int main() {
     input.shop_ids = {4, 6};
     input.pool_remaining = {{1, 10}, {2, 8}, {3, 12}, {4, 5}, {5, 7}, {6, 9}, {7, 0}};
     input.trait_thresholds = {{"Bruiser", 2}, {"Invoker", 2}};
-    input.current_lineup_ids = {1, 2};
+    input.currently_owned_unit_ids = {1, 2};
 
     const auto result = NativeStrategicCompositionGenerator{}.generate(input);
     assert(result.reason == "native_candidates_generated");
