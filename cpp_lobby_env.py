@@ -241,6 +241,10 @@ class CppTFTLobbyWrapper:
     def get_composition_diagnostics_jsonl(self):
         return list(self._engine.get_composition_diagnostics_jsonl())
 
+    def set_strategic_direction_pivot_audit_path(self, path):
+        """Configure the session-local unified strategic Shadow JSONL sidecar."""
+        self._engine.set_strategic_direction_pivot_audit_path(str(path))
+
     def get_audit_snapshot(self):
         """Read-only board/bench/shop and mask snapshot for the observer."""
         return self._engine.get_audit_snapshot()
