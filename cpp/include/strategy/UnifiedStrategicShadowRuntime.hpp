@@ -29,9 +29,13 @@ public:
         return result;
     }
 
+    void reset_machine() noexcept {
+        machine_ = UnifiedStrategicStateMachine{};
+    }
+
     void reset_session() noexcept {
         recorder_.reset_session();
-        machine_ = UnifiedStrategicStateMachine{};
+        reset_machine();
     }
 
     const UnifiedStrategicStateMachine& machine() const noexcept { return machine_; }
