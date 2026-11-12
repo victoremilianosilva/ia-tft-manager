@@ -89,6 +89,33 @@ public:
                 0, published.active.version, true};
     }
 
+    PivotConfirmationResult initialize(
+        const composition_intelligence::ActiveComposition& composition,
+        const StrategicDirectionAnchor& direction
+    ) {
+        if (composition_manager_.current())
+            return {PivotConfirmationStatus::Rejected, "already_initialized"};
+        if (composition.version == 0 ||
+            !composition_intelligence::ActiveCompositionManager::validate(
+                composition.candidate).empty()) {
+            return {PivotConfirmationStatus::Rejected, "initial_composition_snapshot_invalid"};
+        }
+        if (!direction.is_valid() || !direction.composition_bound ||
+            direction.composition_identity != composition.candidate.composition_id ||
+            direction.composition_version != composition.version ||
+            direction.lifecycle != StrategicAnchorLifecycle::Active) {
+            return {PivotConfirmationStatus::Rejected, "initial_direction_not_bound_to_composition"};
+        }
+        auto staged_manager = composition_manager_;
+        if (!staged_manager.restore(composition))
+            return {PivotConfirmationStatus::Rejected, "initial_composition_snapshot_restore_failed"};
+        composition_manager_ = std::move(staged_manager);
+        anchors_.direction_anchor = direction;
+        anchors_.pivot_candidate = {};
+        return {PivotConfirmationStatus::Initialized, "versioned_initial_state_restored",
+                0, composition.version, true};
+    }
+
     PivotConfirmationResult observe_and_confirm(
         const StrategicPivotAnchorCandidate& pivot,
         const composition_intelligence::CompositionCandidate& destination,
