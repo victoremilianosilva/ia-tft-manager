@@ -66,6 +66,7 @@ jobs:
           tests/test_action_dimensions.py
           tests/test_action_mask_validation.py
           tests/test_ppo_mask_consistency.py
+          tests/test_shadow_ppo_isolation_architecture.py
           tests/test_policy_bench_target_conditioning.py
           tests/test_policy_item_conditioning.py
           tests/test_strategic_policy.py
