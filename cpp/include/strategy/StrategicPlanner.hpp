@@ -211,6 +211,11 @@ private:
             diagnostic.champion_id = unit.champion_id;
             diagnostic.target_composition_direction =
                 candidate.target_composition_direction;
+            diagnostic.composition_identity = candidate.composition_identity;
+            diagnostic.candidate_unit_ids = candidate.candidate_unit_ids;
+            diagnostic.main_carry_id = candidate.main_carry_id;
+            diagnostic.candidate_traits = candidate.candidate_traits;
+            diagnostic.evidence = candidate.evidence;
             const bool finite = unit.champion_id >= 0 &&
                 !candidate.target_composition_direction.empty() &&
                 std::isfinite(candidate.anchor_value) &&
