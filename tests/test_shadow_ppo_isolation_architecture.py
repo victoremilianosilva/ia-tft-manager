@@ -116,5 +116,50 @@ class ShadowPpoIsolationArchitectureTests(unittest.TestCase):
         self.assertNotIn("ShadowFailureBoundary", self.engine_header)
 
 
+    def test_shadow_diagnostics_are_absent_from_python_ppo_training_contract(self):
+        # These are the complete production modules that construct observations,
+        # select actions, store rollouts and optimize PPO. Shadow diagnostics
+        # must remain outside all four paths, not merely outside C++ observations.
+        training_modules = (
+            ROOT / "trainer.py",
+            ROOT / "ppo.py",
+            ROOT / "policy.py",
+            ROOT / "rollout.py",
+        )
+        forbidden_shadow_tokens = (
+            "strategic_shadow",
+            "economic_shadow",
+            "strategic_composition_decision",
+            "strategic_action_recommendation",
+            "economic_posture",
+            "UnifiedStrategicShadowRuntime",
+            "StrategicCycleResult",
+        )
+        for module in training_modules:
+            source = module.read_text(encoding="utf-8")
+            for token in forbidden_shadow_tokens:
+                with self.subTest(module=module.name, token=token):
+                    self.assertNotIn(token, source)
+
+    def test_shadow_boundary_is_not_imported_by_ppo_or_training_modules(self):
+        # No Python training component may import the native Shadow runtime or
+        # receive its diagnostics through a side-channel import.
+        for module in (ROOT / "trainer.py", ROOT / "ppo.py",
+                       ROOT / "policy.py", ROOT / "rollout.py"):
+            source = module.read_text(encoding="utf-8")
+            self.assertNotRegex(
+                source,
+                r"(?im)^\s*(?:from|import)\s+.*(?:shadow|strategic_runtime)",
+            )
+
+    def test_native_shadow_failure_test_is_registered_in_ctest(self):
+        cmake = (ROOT / "cpp" / "CMakeLists.txt").read_text(encoding="utf-8")
+        self.assertIn("test_shadow_failure_boundary", cmake)
+        self.assertRegex(
+            cmake,
+            r"add_test\s*\(\s*NAME\s+shadow_failure_boundary",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
