@@ -37,6 +37,8 @@ Each line is one immutable observation emitted by the shadow strategic-cycle pro
 
 The live producer is connected in `cpp/src/lobby/TftEngine.cpp`, inside the existing per-player `update_strategy()` Shadow block and its `run_shadow_isolated` failure boundary. For each player, the engine adapts the normalized state already assembled for Composition Intelligence: active composition/version, owned board and bench units, shop offers, catalog traits, gold, and observed source candidates.
 
+**Runtime scope:** this producer is the native `TFTEngine`/Viewer simulation session in this repository. It does not yet consume Overwolf GEP snapshots from an external live TFT client; that separate GEP-to-IA-ready-snapshot integration remains outside this PR.
+
 The Viewer configures the sidecar after creating the match session directory. The native engine writes directly to:
 
 `<session_dir>/strategic_direction_pivot.jsonl`
