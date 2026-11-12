@@ -36,3 +36,14 @@ Each line is one immutable observation emitted by the shadow strategic-cycle pro
 ## Current integration boundary
 
 The Viewer audit generator always writes `audit_direcao_pivot.md`. If the session sidecar is absent, the report explicitly marks the producer data as unavailable. This avoids fabricating state from legacy logs. The current unified state machine remains shadow/read-only; wiring a live event producer is a separate integration step and must preserve PPO, training, observations, masks, rewards, checkpoints, rules, Viewer behavior and action execution.
+
+
+## Shadow producer API
+
+The C++ producer is exposed through cpp/include/strategy/UnifiedStrategicShadowRuntime.hpp. A session owner constructs one UnifiedStrategicShadowRuntime with the session sidecar path, then calls refresh(context, input) for each normalized strategic snapshot. The bridge executes the unified state machine, emits its returned value to strategic_direction_pivot.jsonl, and returns the same strategic result. Recorder I/O and serialization errors are contained and never change the returned result.
+
+StrategicCycleAuditContext supplies the match and player identity plus the round. Sequence numbers are monotonic per player for the lifetime of the runtime instance; call reset_session() only when starting a new match/session. The recorder creates the parent directory and appends one JSON object per line. One runtime/recorder instance should be owned per session; do not share it between unrelated match sessions.
+
+The recorder serializes only evidence present in the normalized input/result. Unknown active composition, pivot, carry or shop information remains null, empty, or explicitly unavailable. It does not consult PPO actions, rewards, legacy action logs, or infer pool/shop availability.
+
+The integration is deliberately opt-in at the runtime boundary. The repository currently exposes the unified state machine as a shadow component; the owner of the live normalized strategic snapshot must instantiate this bridge and pass the session sidecar path. The Viewer audit will consume the sidecar automatically when it is placed in the session directory. No autonomous action or PPO path is connected by this API.
