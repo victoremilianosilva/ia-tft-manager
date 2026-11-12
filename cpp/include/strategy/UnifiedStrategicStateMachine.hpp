@@ -204,7 +204,10 @@ private:
         StrategicDirectionAnchor& anchor,
         const composition_intelligence::CompositionCandidate& composition
     ) {
+        const auto discovered_direction = anchor.direction;
         anchor.identity = "direction:" + composition.composition_id + ":v1";
+        anchor.direction = composition.composition_id;
+        anchor.reason = "initial_composition_selected_from_discovery:" + discovered_direction;
         anchor.composition_identity = composition.composition_id;
         anchor.composition_version = 1;
         anchor.composition_bound = true;
