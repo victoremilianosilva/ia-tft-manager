@@ -62,7 +62,8 @@ def audit_direction_pivot_records(records: list[dict[str, Any]], errors: list[st
         "records": 0, "rounds": set(), "phase_counts": Counter(),
         "pivot_counts": Counter(), "carry_gate_counts": Counter(),
         "support_units": Counter(), "shop_evidence_records": 0,
-        "conflicts": [], "confirmed_transitions": [],
+        "conflicts": [], "confirmed_transitions": [], "samples": [],
+        "pivot_reason_counts": Counter(),
     })
     conflicts: list[dict[str, Any]] = []
     transitions: list[dict[str, Any]] = []
@@ -90,9 +91,20 @@ def audit_direction_pivot_records(records: list[dict[str, Any]], errors: list[st
         feasibility = record.get("feasibility") or {}
         carry = record.get("carry_gate") or {}
         status = str(feasibility.get("status") or record.get("pivot_status") or "UNAVAILABLE").upper()
-        if phase == "PIVOT_EVALUATION" or pivot:
+        if phase == "PIVOT_EVALUATION":
             pivot_counts[status] += 1
             item["pivot_counts"][status] += 1
+            reason = str(feasibility.get("reason") or record.get("reason") or "UNAVAILABLE")
+            item["pivot_reason_counts"][reason] += 1
+        elif phase == "PIVOT_CONFIRMED":
+            pivot_counts["CONFIRMED"] += 1
+            item["pivot_counts"]["CONFIRMED"] += 1
+        elif phase == "INVALIDATED":
+            pivot_counts["INVALIDATED"] += 1
+            item["pivot_counts"]["INVALIDATED"] += 1
+        elif phase == "NO_EVIDENCE":
+            pivot_counts["INSUFFICIENT_EVIDENCE"] += 1
+            item["pivot_counts"]["INSUFFICIENT_EVIDENCE"] += 1
         if carry.get("eligible") is True:
             carry_gate_counts["eligible"] += 1
             item["carry_gate_counts"]["eligible"] += 1
@@ -122,6 +134,29 @@ def audit_direction_pivot_records(records: list[dict[str, Any]], errors: list[st
             item["shop_evidence_records"] += 1
         else:
             missing_counts["shop_evidence"] += 1
+
+        if len(item["samples"]) < 100:
+            item["samples"].append({
+                "round": round_id, "sequence": sequence, "phase": phase,
+                "active_composition": {"identity": _identity(active), "version": _version(active)},
+                "direction_anchor": {
+                    "identity": _identity(direction),
+                    "composition_identity": direction.get("composition_identity") if isinstance(direction, dict) else None,
+                    "composition_version": _version(direction),
+                    "lifecycle": direction.get("lifecycle") if isinstance(direction, dict) else None,
+                },
+                "pivot_candidate": {
+                    "identity": pivot.get("identity") if isinstance(pivot, dict) else None,
+                    "target": (pivot.get("target_composition_identity") or pivot.get("target_direction")) if isinstance(pivot, dict) else None,
+                    "source_direction_anchor_identity": pivot.get("source_direction_anchor_identity") if isinstance(pivot, dict) else None,
+                },
+                "pivot_status": status,
+                "pivot_reason": feasibility.get("reason") or record.get("reason"),
+                "blockers": feasibility.get("blockers"),
+                "missing_data": feasibility.get("missing_data"),
+                "carry_gate": carry if isinstance(carry, dict) else None,
+                "shop_evidence_count": len(shop) if isinstance(shop, list) else None,
+            })
 
         active_id, active_version = _identity(active), _version(active)
         direction_comp = direction.get("composition_identity") if isinstance(direction, dict) else None
@@ -201,6 +236,8 @@ def audit_direction_pivot_records(records: list[dict[str, Any]], errors: list[st
             "pivot_counts": dict(value["pivot_counts"]),
             "carry_gate_counts": dict(value["carry_gate_counts"]),
             "support_units": dict(value["support_units"]),
+            "pivot_reason_counts": dict(value["pivot_reason_counts"]),
+            "samples": value["samples"],
             "conflicts": value["conflicts"],
             "confirmed_transitions": value["confirmed_transitions"],
         }
@@ -255,12 +292,40 @@ def format_direction_pivot_audit(report: dict[str, Any], source_found: bool = Tr
     lines.extend(f"| {status} | {count} |" for status, count in sorted(report["pivot_status_counts"].items()))
     if not report["pivot_status_counts"]:
         lines.append("| sem dados | 0 |")
+    lines.extend(["", "## Motivos de avaliação", ""])
+    reason_totals = Counter()
+    for player_data in report["players"].values():
+        reason_totals.update(player_data["pivot_reason_counts"])
+    lines.extend(f"- {reason}: {count}" for reason, count in sorted(reason_totals.items()))
+    if not reason_totals:
+        lines.append("- Sem motivos de pivot disponíveis.")
     lines.extend(["", "## Critério de carry", "", "| Estado | Snapshots |", "|---|---:|"])
     lines.extend(f"| {status} | {count} |" for status, count in sorted(report["carry_gate_counts"].items()))
     lines.extend(["", "## Dados ausentes", ""])
     lines.extend(f"- {field}: {count}" for field, count in sorted(report["missing_data_counts"].items()))
     if not report["missing_data_counts"]:
         lines.append("- Nenhum campo ausente detectado nos registros fornecidos.")
+    lines.extend(["", "## Amostras por jogador/round", "",
+                  "| Jogador | Round | Fase | Composição ativa | Âncora de direção | Pivot | Carry | Loja | Motivo |",
+                  "|---|---|---|---|---|---|---|---:|---|"])
+    for player, player_data in sorted(report["players"].items()):
+        for sample in player_data["samples"]:
+            active = sample["active_composition"]
+            direction = sample["direction_anchor"]
+            pivot_sample = sample["pivot_candidate"]
+            carry_sample = sample["carry_gate"] or {}
+            safe = lambda value: str(value if value is not None else "—").replace("|", "\\|")
+            lines.append(
+                f"| {player} | {safe(sample['round'])} | {sample['phase']} | "
+                f"{safe(active['identity'])} v{safe(active['version'])} | "
+                f"{safe(direction['identity'])} ({safe(direction['composition_identity'])} v{safe(direction['composition_version'])}) | "
+                f"{safe(pivot_sample['identity'])} → {safe(pivot_sample['target'])} | "
+                f"{safe(carry_sample.get('eligible'))}: {safe(carry_sample.get('reason'))} | "
+                f"{sample['shop_evidence_count'] if sample['shop_evidence_count'] is not None else '—'} | "
+                f"{safe(sample['pivot_reason'])} |"
+            )
+    if not any(value["samples"] for value in report["players"].values()):
+        lines.append("| — | — | — | — | — | — | — | — | Sem snapshots |")
     lines.extend(["", "## Transições confirmadas", "",
                   "| Jogador | Round | Origem | Destino | Versão anterior → nova | Âncora final |",
                   "|---|---|---|---|---|---|"])
