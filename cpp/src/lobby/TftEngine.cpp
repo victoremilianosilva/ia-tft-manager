@@ -521,6 +521,7 @@ struct TFTEngine::Impl {
     std::array<std::unique_ptr<strategy::UnifiedStrategicShadowRuntime>, kPlayersPerLobby>
         strategic_shadow_runtimes{};
     std::array<std::uint64_t, kPlayersPerLobby> strategic_evaluation_sequences{};
+    std::array<std::string, kPlayersPerLobby> strategic_last_snapshot_fingerprints{};
     std::uint64_t strategic_audit_match_id{0};
     std::string strategic_audit_path;
 
@@ -4118,8 +4119,7 @@ struct TFTEngine::Impl {
             if (strategic_shadow_runtimes[i]) {
                 try {
                     strategy::StrategicCycleInput cycle_input;
-                    cycle_input.evaluation_sequence =
-                        ++strategic_evaluation_sequences[i];
+                    cycle_input.evaluation_sequence = 0;
                     cycle_input.legacy_plan = shadow_decision;
 
                     auto& ci_runtime = composition_intelligence_players[i];
@@ -4342,12 +4342,52 @@ struct TFTEngine::Impl {
                         }
                     }
 
-                    strategy::StrategicCycleAuditContext audit_context;
-                    audit_context.match_id = strategic_audit_match_id;
-                    audit_context.player_id = static_cast<std::int32_t>(i);
-                    audit_context.round = static_cast<std::uint32_t>(current_round);
-                    (void)strategic_shadow_runtimes[i]->refresh(
-                        audit_context, cycle_input);
+                    // Fingerprint only observed strategic inputs. A repeated
+                    // unchanged snapshot must not count as another viable pivot
+                    // review or create another JSONL event.
+                    nlohmann::json fingerprint = {
+                        {"round", current_round},
+                        {"gold", economy.gold},
+                        {"level", economy.level},
+                        {"hp", player.hp},
+                        {"direction", info.composition_direction},
+                        {"focus", info.composition_focus},
+                        {"active_composition", cycle_input.active_composition
+                            ? cycle_input.active_composition->candidate.composition_id
+                            : std::string{}},
+                        {"active_version", cycle_input.active_composition
+                            ? cycle_input.active_composition->version : 0}
+                    };
+                    nlohmann::json fingerprint_units = nlohmann::json::array();
+                    for (const auto& unit : exploration.units) {
+                        fingerprint_units.push_back({
+                            {"id", unit.champion_id}, {"cost", unit.cost},
+                            {"copies", unit.copies_owned}, {"star", unit.star},
+                            {"board", unit.on_board}, {"bench", unit.on_bench},
+                            {"shop", unit.in_shop}, {"traits", unit.traits}
+                        });
+                    }
+                    fingerprint["units"] = std::move(fingerprint_units);
+                    if (cycle_input.pivot_candidate) {
+                        fingerprint["pivot_candidate"] = {
+                            {"identity", cycle_input.pivot_candidate->identity},
+                            {"target", cycle_input.pivot_candidate->target_composition_identity},
+                            {"source_version", cycle_input.pivot_candidate->source_composition_version}
+                        };
+                    }
+                    const auto fingerprint_value = fingerprint.dump();
+                    if (fingerprint_value !=
+                        strategic_last_snapshot_fingerprints[i]) {
+                        strategic_last_snapshot_fingerprints[i] = fingerprint_value;
+                        cycle_input.evaluation_sequence =
+                            ++strategic_evaluation_sequences[i];
+                        strategy::StrategicCycleAuditContext audit_context;
+                        audit_context.match_id = strategic_audit_match_id;
+                        audit_context.player_id = static_cast<std::int32_t>(i);
+                        audit_context.round = static_cast<std::uint32_t>(current_round);
+                        (void)strategic_shadow_runtimes[i]->refresh(
+                            audit_context, cycle_input);
+                    }
                 } catch (...) {
                     // The recorder is best-effort and must never escape the
                     // existing Shadow failure boundary into the PPO path.
@@ -6674,6 +6714,7 @@ void TFTEngine::set_strategic_audit_path(
     impl_->strategic_audit_path = path;
     impl_->strategic_audit_match_id = path.empty() ? 0 : match_id;
     impl_->strategic_evaluation_sequences.fill(0);
+    impl_->strategic_last_snapshot_fingerprints.fill({});
     for (auto& runtime : impl_->strategic_shadow_runtimes) {
         runtime.reset();
         if (!path.empty() && match_id != 0) {
