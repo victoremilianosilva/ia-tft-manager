@@ -25,8 +25,9 @@ For each player update, the Shadow block executes the following order:
 6. Build a lineup against the same identity/version.
 7. Attach economy, board, and item evidence to that version.
 8. Evaluate eligible action candidates in Shadow mode.
-9. Record the diagnostic snapshot and its per-stage execution trace.
+9. Assemble the diagnostic snapshot and per-stage execution trace.
 10. Feed the same normalized per-player state to `UnifiedStrategicShadowRuntime` and append direction/pivot events to the session sidecar when the Viewer has configured its path.
+11. Append the Composition Intelligence diagnostic snapshot to the per-player history.
 
 A stage can be marked completed, skipped, unavailable, or failed. Each trace
 entry carries match/episode, player, round, stage sequence, and the active
