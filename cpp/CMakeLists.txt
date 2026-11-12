@@ -498,6 +498,17 @@ if(BUILD_TESTING)
         COMMAND test_composition_direction_policy
     )
 
+    add_executable(
+        test_native_strategic_composition_generator
+        tests/test_native_strategic_composition_generator.cpp
+    )
+    configure_tft_module(test_native_strategic_composition_generator)
+    enable_tft_test_assertions(test_native_strategic_composition_generator)
+    add_test(
+        NAME native_strategic_composition_generator
+        COMMAND test_native_strategic_composition_generator
+    )
+
     add_executable(test_composition_planner tests/test_composition_planner.cpp)
     configure_tft_module(test_composition_planner)
     target_link_libraries(test_composition_planner PRIVATE nlohmann_json::nlohmann_json)
