@@ -219,6 +219,9 @@ class ViewerSession:
             session_dir.mkdir(parents=True, exist_ok=False)
             self._session_dir = session_dir
             self._composition_diagnostics_written = 0
+            self.lobby.set_strategic_direction_pivot_audit_path(
+                session_dir / "strategic_direction_pivot.jsonl"
+            )
             self._persist_composition_diagnostics()
             self._metadata_path = session_dir / "metadata.json"
             log_files = [f"player_{player_id + 1}_log.tft" for player_id in range(8)]
@@ -241,6 +244,12 @@ class ViewerSession:
                     "schema_version": 1,
                     "correlation_envelope_version": 1,
                     "match_id_source": "ViewerSession.match_id",
+                },
+                "strategic_direction_pivot_audit": {
+                    "file": "strategic_direction_pivot.jsonl",
+                    "schema_version": 1,
+                    "producer": "TFTEngine UnifiedStrategicShadowRuntime",
+                    "shadow_only": True,
                 },
                 "player_log_files": log_files,
                 "structured_player_log_files": structured_log_files,
