@@ -108,6 +108,7 @@ private:
                 {"cost", unit.cost},
                 {"copies_owned", unit.copies_owned},
                 {"star", unit.star},
+                {"pool_remaining", unit.pool_remaining},
                 {"on_board", unit.on_board},
                 {"on_bench", unit.on_bench},
                 {"in_shop", unit.in_shop},
