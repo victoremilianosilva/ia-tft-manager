@@ -3220,6 +3220,11 @@ struct TFTEngine::Impl {
                 anchor.unit.composition_fit = 1.0;
                 anchor.unit.traits = definition->traits;
                 anchor.target_composition_direction = composition.direction;
+                anchor.composition_identity = composition.identity;
+                anchor.candidate_unit_ids = composition.unit_ids;
+                anchor.main_carry_id = composition.main_carry_id;
+                anchor.candidate_traits = composition.completed_traits;
+                anchor.evidence = composition.evidence;
                 anchor.anchor_value = composition.score;
                 anchor.transition_cost = composition.transition_cost;
                 anchor.reusable_owned_units = composition.reusable_owned_units;
