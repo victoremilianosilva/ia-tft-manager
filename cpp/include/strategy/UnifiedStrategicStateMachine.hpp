@@ -12,6 +12,7 @@
 #include "strategy/StrategicPivotTransitionCoordinator.hpp"
 #include "strategy/StrategicPlanning.hpp"
 
+#include <algorithm>
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -40,8 +41,8 @@ struct StrategicCycleInput {
     // The orchestrator takes a value snapshot and never mutates the source.
     std::optional<composition_intelligence::CompositionCandidate> active_composition;
 
-    // Used only while no composition is active. A discovery hypothesis is not
-    // promoted until a matching composition candidate is supplied.
+    // Candidate generated from the selected discovery hypothesis.
+    std::optional<composition_intelligence::CompositionCandidate> initial_composition_candidate;
     DirectionDiscoveryInput exploration;
 
     // Optional independent pivot candidate and the exact normalized evidence
@@ -115,30 +116,18 @@ public:
             if (out.diagnostics.discovery.status == DirectionDiscoveryStatus::HypothesesFound &&
                 !out.diagnostics.discovery.hypotheses.empty()) {
                 const auto& hypothesis = out.diagnostics.discovery.hypotheses.front();
-                if (input.active_composition.has_value()) {
-                    // Kept for clarity; the active-composition path above is authoritative.
-                    phase_ = StrategicCyclePhase::NoEvidence;
-                    out.diagnostics.transition_reason = "ambiguous_initial_composition_source";
-                } else if (input.pivot_destination.has_value()) {
-                    // A destination supplied without an active source is not a
-                    // valid pivot. It may be used as the initial composition
-                    // only when its identity explicitly matches the proposal.
-                    if (input.pivot_destination->composition_id != hypothesis.anchor.direction) {
-                        phase_ = StrategicCyclePhase::Exploration;
-                        out.diagnostics.transition_reason = "initial_composition_does_not_match_discovered_direction";
-                    } else {
-                        auto initial_direction = hypothesis.anchor;
-                        bind_initial_direction(initial_direction, *input.pivot_destination);
-                        const auto initialized = pivot_coordinator_.initialize(
-                            *input.pivot_destination, initial_direction);
-                        out.state_changed = initialized.state_changed;
-                        out.diagnostics.transition_reason = initialized.reason;
-                        phase_ = initialized.status == PivotConfirmationStatus::Initialized
-                            ? StrategicCyclePhase::CompositionActive : StrategicCyclePhase::NoEvidence;
-                    }
-                } else {
+                if (!input.initial_composition_candidate.has_value()) {
                     phase_ = StrategicCyclePhase::Exploration;
                     out.diagnostics.transition_reason = "direction_hypothesis_waiting_for_composition_candidate";
+                } else {
+                    auto initial_direction = hypothesis.anchor;
+                    bind_initial_direction(initial_direction, *input.initial_composition_candidate);
+                    const auto initialized = pivot_coordinator_.initialize(
+                        *input.initial_composition_candidate, initial_direction);
+                    out.state_changed = initialized.state_changed;
+                    out.diagnostics.transition_reason = initialized.reason;
+                    phase_ = initialized.status == PivotConfirmationStatus::Initialized
+                        ? StrategicCyclePhase::CompositionActive : StrategicCyclePhase::NoEvidence;
                 }
             } else {
                 phase_ = StrategicCyclePhase::NoEvidence;
@@ -188,7 +177,7 @@ public:
                 out.diagnostics.pivot_confirmation = confirmation;
                 phase_ = StrategicCyclePhase::Invalidated;
                 out.diagnostics.transition_reason = "pending_pivot_missing_from_new_snapshot";
-            } else if (phase_ != StrategicCyclePhase::PivotConfirmed) {
+            } else {
                 phase_ = StrategicCyclePhase::CompositionActive;
                 out.diagnostics.transition_reason = "active_composition_retained";
             }
