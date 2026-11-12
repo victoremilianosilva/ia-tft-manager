@@ -5,6 +5,7 @@
 #include "strategy/StrategicAnchorContracts.hpp"
 
 #include <algorithm>
+#include <cmath>
 #include <cstdint>
 #include <string>
 #include <utility>
