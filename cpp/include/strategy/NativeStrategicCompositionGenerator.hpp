@@ -126,6 +126,9 @@ public:
                 return lhs < rhs;
             });
 
+        const auto effective_target_slots = static_cast<std::size_t>(
+            std::clamp(std::min(input.target_slots, input.level), 1, 10));
+
         struct ScoredUnit {
             const NativeCompositionUnitDefinition* definition{nullptr};
             double score{0.0};
@@ -188,8 +191,7 @@ public:
             bool has_frontline = false;
             bool has_support = false;
             for (const auto& unit : scored) {
-                if (candidate.unit_ids.size() >=
-                    static_cast<std::size_t>(std::min(input.target_slots, 10))) break;
+                if (candidate.unit_ids.size() >= effective_target_slots) break;
                 candidate.unit_ids.push_back(unit.definition->champion_id);
                 candidate.score += unit.score;
                 if (unit.owned) {
