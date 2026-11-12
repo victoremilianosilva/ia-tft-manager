@@ -16,12 +16,14 @@
 namespace tft::composition_intelligence {
 
 enum class UnitIntent { Keep, Seek, Upgrade, Replace, Hold, SellCandidate };
+enum class UnitPriorityTier { Carry, TraitCompletion, Core, Composition, Bridge, TemporarySupport, OutsideTarget };
 enum class UnitStrategicRelation { ActiveCore, ActiveFlex, SharedCore, SharedFlex, Bridge, OutsideTarget, MissingTarget };
 enum class UnitReasonCode {
     RequiredByActiveComposition, CorePriority, BoardContribution, SynergyContribution,
     UpgradeProgress, TargetUnitMissing, BridgeDuringTransition, EquippedItemRisk,
     NotInActiveTarget, InsufficientEvidence, InvestmentIsNotStrategicValue,
-    CompositionSnapshotStale, NoActiveComposition
+    CompositionSnapshotStale, NoActiveComposition, TraitCompletionPriority,
+    TemporarySupportJustification
 };
 
 struct UnitPriorityReason {
@@ -35,6 +37,9 @@ struct UnitPriorityEvidence {
     double synergy_contribution{0.5}; // normalized [0,1], supplied by caller
     double confidence{0.5}; // evidence confidence, not a calibrated probability
     std::int32_t copies_toward_next_star{0};
+    std::int32_t copies_in_shop{0};
+    std::int32_t unit_cost{-1}; // -1 means unknown; never infer affordability.
+    bool trait_completion{false};
 };
 
 struct UnitPriorityOwnedUnit {
@@ -43,6 +48,12 @@ struct UnitPriorityOwnedUnit {
     std::int32_t highest_star{1};
     bool on_board{false};
     std::vector<std::string> equipped_item_ids;
+};
+
+struct UnitPriorityTemporarySupport {
+    std::int32_t champion_id{-1};
+    std::string reason;
+    double confidence{0.0};
 };
 
 struct UnitPriorityContext {
@@ -55,6 +66,9 @@ struct UnitPriorityContext {
     std::uint64_t match_id{0};
     std::int32_t player_id{-1};
     std::uint32_t round{0};
+    std::int32_t gold_available{-1}; // -1 means unavailable/unknown.
+    // Appended to preserve positional aggregate initialization in existing consumers.
+    std::vector<UnitPriorityTemporarySupport> temporary_support;
 };
 
 struct UnitPriorityConfig {
@@ -78,6 +92,8 @@ struct UnitPriority {
     double board_contribution{0.0};
     double synergy_contribution{0.0};
     std::vector<UnitPriorityReason> reasons;
+    // Appended to preserve positional aggregate initialization in existing consumers.
+    UnitPriorityTier tier{UnitPriorityTier::OutsideTarget};
 };
 
 struct UnitPrioritySnapshot {
@@ -144,8 +160,19 @@ public:
         for (const auto& target : active->candidate.units) {
             const auto found = owned.find(target.champion_id);
             if (found == owned.end()) {
+                const auto* ev = find_evidence(evidence, target.champion_id);
                 auto item = missing_target(target);
-                item.priority = target.priority;
+                item.tier = priority_tier(target, ev);
+                item.priority = tier_base(item.tier) + std::clamp(target.priority, 0, 49);
+                const auto affordable_shop = affordable_shop_copies(ev, context);
+                if (affordable_shop > 0) {
+                    item.priority += std::min(15, affordable_shop * 5);
+                    item.reasons.push_back({UnitReasonCode::UpgradeProgress,
+                        "Oferta na loja contribui para o progresso de evolução desta unidade da composição."});
+                }
+                if (ev && ev->trait_completion)
+                    item.reasons.push_back({UnitReasonCode::TraitCompletionPriority,
+                        "Unidade necessária para completar ou ativar trait relevante da composição."});
                 item.confidence = 0.35;
                 if (board_evidence_valid) {
                     const auto& board = accepted_evidence->board;
@@ -205,6 +232,40 @@ public:
     }
 
 private:
+    static std::int32_t affordable_shop_copies(
+        const UnitPriorityEvidence* ev, const UnitPriorityContext& context) {
+        if (!ev) return 0;
+        if (ev->unit_cost >= 0 && context.gold_available >= 0 &&
+            ev->unit_cost > context.gold_available) return 0;
+        return std::max(0, ev->copies_in_shop);
+    }
+    static std::int32_t tier_base(UnitPriorityTier tier) {
+        switch (tier) {
+            case UnitPriorityTier::Carry: return 500;
+            case UnitPriorityTier::Core: return 400;
+            case UnitPriorityTier::TraitCompletion: return 300;
+            case UnitPriorityTier::Composition: return 200;
+            case UnitPriorityTier::Bridge: return 150;
+            case UnitPriorityTier::TemporarySupport: return 100;
+            case UnitPriorityTier::OutsideTarget: return 0;
+        }
+        return 0;
+    }
+    static UnitPriorityTier priority_tier(const CompositionUnit& target,
+                                          const UnitPriorityEvidence* ev) {
+        if (target.role == UnitRole::MainCarry || target.role == UnitRole::SecondaryCarry)
+            return UnitPriorityTier::Carry;
+        if (target.core) return UnitPriorityTier::Core;
+        if (ev && ev->trait_completion) return UnitPriorityTier::TraitCompletion;
+        return UnitPriorityTier::Composition;
+    }
+    static const UnitPriorityTemporarySupport* find_temporary_support(
+        const UnitPriorityContext& context, std::int32_t id) {
+        const auto it = std::find_if(context.temporary_support.begin(), context.temporary_support.end(),
+            [&](const auto& item) { return item.champion_id == id && !item.reason.empty() &&
+                std::isfinite(item.confidence) && item.confidence >= 0.25; });
+        return it == context.temporary_support.end() ? nullptr : &*it;
+    }
     static double clamp01(double v) {
         return std::isfinite(v) ? std::clamp(v, 0.0, 1.0) : 0.0;
     }
@@ -239,6 +300,7 @@ private:
         const UnitPriorityEvidence* ev, const UnitPriorityContext& context) const {
         UnitPriority out;
         out.champion_id = target.champion_id;
+        out.tier = priority_tier(target, ev);
         out.relation = relation(target, context);
         out.copies_owned = owned.copies;
         out.highest_star = std::clamp(owned.highest_star, 1, 3);
@@ -246,7 +308,7 @@ private:
         out.board_contribution = ev ? clamp01(ev->board_contribution) : 0.5;
         out.synergy_contribution = ev ? clamp01(ev->synergy_contribution) : 0.5;
         out.confidence = ev ? clamp01(ev->confidence) : 0.25;
-        out.priority = target.priority + (target.core ? 20 : 0);
+        out.priority = tier_base(out.tier) + std::clamp(target.priority, 0, 49);
         out.reasons.push_back({UnitReasonCode::RequiredByActiveComposition,
             target.core ? "Unidade core da composição ativa." : "Unidade prevista na composição ativa."});
         if (target.core)
@@ -256,17 +318,26 @@ private:
         if (ev && out.synergy_contribution >= config_.keep_contribution_threshold)
             out.reasons.push_back({UnitReasonCode::SynergyContribution, "Contribuição observada para sinergias acima do limite configurado."});
 
-        const auto copies_to_upgrade = ev ? std::max(0, ev->copies_toward_next_star) : 0;
-        if (out.confidence < config_.minimum_evidence_confidence && !target.core) {
+        const auto copies_to_upgrade = ev
+            ? std::max(0, ev->copies_toward_next_star) + affordable_shop_copies(ev, context)
+            : 0;
+        if (ev && ev->trait_completion)
+            out.reasons.push_back({UnitReasonCode::TraitCompletionPriority,
+                "Unidade completa ou ativa trait relevante da composição; prioridade acima das demais peças flexíveis."});
+        if (out.confidence < config_.minimum_evidence_confidence && !target.core &&
+            target.role != UnitRole::MainCarry && target.role != UnitRole::SecondaryCarry &&
+            !(ev && ev->trait_completion)) {
             out.intent = UnitIntent::Hold;
             out.priority = std::max(0, target.priority);
             out.reasons.push_back({UnitReasonCode::InsufficientEvidence, "Evidência insuficiente para promover upgrade ou substituição; manter em observação."});
         } else if (out.highest_star < 3 &&
                    copies_to_upgrade >= std::max(1, config_.copies_to_next_star_threshold) &&
-                   out.board_contribution >= config_.upgrade_contribution_threshold) {
+                   (out.board_contribution >= config_.upgrade_contribution_threshold || target.core ||
+                    target.role == UnitRole::MainCarry || target.role == UnitRole::SecondaryCarry ||
+                    (ev && ev->trait_completion))) {
             out.intent = UnitIntent::Upgrade;
-            out.target_star = out.highest_star + 1;
-            out.priority += 15;
+            out.target_star = out.highest_star < 2 ? 2 : out.highest_star + 1;
+            out.priority += 20;
             out.reasons.push_back({UnitReasonCode::UpgradeProgress, "Há cópias em progresso para o próximo nível de estrelas e contribuição suficiente."});
         } else {
             out.intent = UnitIntent::Keep;
@@ -294,17 +365,21 @@ private:
         out.confidence = ev ? clamp01(ev->confidence) : 0.2;
         out.priority = 0;
         const auto* transition = context.transition ? &*context.transition : nullptr;
+        out.tier = UnitPriorityTier::OutsideTarget;
         if (transition && contains(transition->bridge_unit_ids, id)) {
+            out.tier = UnitPriorityTier::Bridge;
             out.intent = UnitIntent::Hold;
             out.relation = UnitStrategicRelation::Bridge;
-            out.priority = 35;
+            out.priority = tier_base(out.tier);
             out.reasons.push_back({UnitReasonCode::BridgeDuringTransition, "Unidade fora do alvo final, mas identificada como ponte na transição ativa."});
-        } else if (ev && out.confidence >= config_.minimum_evidence_confidence &&
-                   out.board_contribution >= config_.keep_contribution_threshold) {
+        } else if (const auto* temporary = find_temporary_support(context, id)) {
             out.intent = UnitIntent::Hold;
             out.relation = UnitStrategicRelation::OutsideTarget;
-            out.priority = 20;
-            out.reasons.push_back({UnitReasonCode::BoardContribution, "Contribuição atual no board justifica retenção temporária apesar de não pertencer ao alvo."});
+            out.tier = UnitPriorityTier::TemporarySupport;
+            out.priority = tier_base(out.tier);
+            out.confidence = clamp01(temporary->confidence);
+            out.reasons.push_back({UnitReasonCode::TemporarySupportJustification,
+                "Retenção temporária explicitamente justificada: " + temporary->reason});
         } else if (!owned.equipped_item_ids.empty() ||
                    (transition && contains(transition->item_risk_unit_ids, id))) {
             out.intent = UnitIntent::Hold;

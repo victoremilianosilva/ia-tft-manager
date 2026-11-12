@@ -323,6 +323,17 @@ if(BUILD_TESTING)
     )
 
     add_executable(
+        test_composition_bound_direction_anchor
+        tests/test_composition_bound_direction_anchor.cpp
+    )
+    configure_tft_module(test_composition_bound_direction_anchor)
+    enable_tft_test_assertions(test_composition_bound_direction_anchor)
+    add_test(
+        NAME composition_bound_direction_anchor
+        COMMAND test_composition_bound_direction_anchor
+    )
+
+    add_executable(
         test_unit_priority_planner
         tests/test_unit_priority_planner.cpp
     )

@@ -182,22 +182,200 @@ void board_gap_increases_matching_missing_unit_priority() {
         [](const auto& unit) { return unit.champion_id == 2; });
     assert(frontline != result.units.end());
     assert(frontline->intent == UnitIntent::Seek);
-    assert(frontline->priority == 105);
+    assert(frontline->priority == 464);
     assert(std::find(result.evidence_consumed.begin(), result.evidence_consumed.end(),
         "BoardEvaluation:role_gap_priority_context") != result.evidence_consumed.end());
 }
+
+void composition_hierarchy_beats_easy_external_upgrade() {
+    ActiveCompositionManager manager;
+    auto candidate = comp();
+    candidate.units = {
+        {1, UnitRole::MainCarry, true, 100},
+        {2, UnitRole::Frontline, true, 90},
+        {3, UnitRole::Support, false, 60},
+        {4, UnitRole::Flex, false, 40}
+    };
+    manager.publish(candidate);
+    const auto active = *manager.current();
+    auto ctx = context(active);
+    ctx.owned_units = {
+        {1, 1, 1, true, {}},
+        {4, 1, 1, false, {}},
+        {9, 2, 2, true, {}}
+    };
+    ctx.evidence = {
+        {1, 0.2, 0.2, 0.9, 1, 1, -1, false},
+        {4, 0.2, 0.2, 0.9, 0, 0, -1, false},
+        {9, 1.0, 1.0, 1.0, 0, 0, -1, false}
+    };
+    const auto result = UnitPriorityPlanner{}.resolve(active, ctx);
+    const auto carry = std::find_if(result.units.begin(), result.units.end(),
+        [](const auto& u) { return u.champion_id == 1; });
+    const auto flex = std::find_if(result.units.begin(), result.units.end(),
+        [](const auto& u) { return u.champion_id == 4; });
+    const auto external = std::find_if(result.units.begin(), result.units.end(),
+        [](const auto& u) { return u.champion_id == 9; });
+    assert(carry != result.units.end() && carry->tier == UnitPriorityTier::Carry);
+    assert(carry->intent == UnitIntent::Upgrade && carry->target_star == 2);
+    assert(flex != result.units.end() && flex->tier == UnitPriorityTier::Composition);
+    assert(external != result.units.end() && external->priority < flex->priority);
+    assert(external->intent == UnitIntent::Hold); // Pair protected, but not promoted above target units.
+}
+
+void trait_completion_has_explicit_intermediate_tier() {
+    ActiveCompositionManager manager;
+    auto candidate = comp();
+    candidate.units = {
+        {1, UnitRole::Frontline, true, 90},
+        {2, UnitRole::Support, false, 70},
+        {3, UnitRole::Flex, false, 50}
+    };
+    manager.publish(candidate);
+    const auto active = *manager.current();
+    auto ctx = context(active);
+    ctx.owned_units = {{1, 1, 1, true, {}}, {2, 1, 1, false, {}}, {3, 1, 1, false, {}}};
+    ctx.evidence = {
+        {1, 0.7, 0.7, 0.9, 0, 0, -1, false},
+        {2, 0.2, 0.9, 0.9, 0, 0, -1, true},
+        {3, 0.2, 0.2, 0.9, 0, 0, -1, false}
+    };
+    const auto result = UnitPriorityPlanner{}.resolve(active, ctx);
+    const auto trait_piece = std::find_if(result.units.begin(), result.units.end(),
+        [](const auto& u) { return u.champion_id == 2; });
+    const auto flex = std::find_if(result.units.begin(), result.units.end(),
+        [](const auto& u) { return u.champion_id == 3; });
+    const auto core = std::find_if(result.units.begin(), result.units.end(),
+        [](const auto& u) { return u.champion_id == 1; });
+    assert(trait_piece != result.units.end() && trait_piece->tier == UnitPriorityTier::TraitCompletion);
+    assert(core != result.units.end() && core->tier == UnitPriorityTier::Core);
+    assert(core->priority > trait_piece->priority);
+    assert(flex != result.units.end() && trait_piece->priority > flex->priority);
+    assert(std::find_if(trait_piece->reasons.begin(), trait_piece->reasons.end(),
+        [](const auto& r) { return r.code == UnitReasonCode::TraitCompletionPriority; }) != trait_piece->reasons.end());
+}
+
+void shop_copies_advance_two_star_priority_for_core() {
+    ActiveCompositionManager manager;
+    manager.publish(comp());
+    const auto active = *manager.current();
+    auto ctx = context(active);
+    ctx.owned_units = {{1, 1, 1, false, {}}};
+    ctx.evidence = {{1, 0.0, 0.0, 0.9, 1, 1, -1, false}};
+    const auto result = UnitPriorityPlanner{}.resolve(active, ctx);
+    const auto carry = std::find_if(result.units.begin(), result.units.end(),
+        [](const auto& u) { return u.champion_id == 1; });
+    assert(carry != result.units.end());
+    assert(carry->intent == UnitIntent::Upgrade);
+    assert(carry->target_star == 2);
+    assert(std::find_if(carry->reasons.begin(), carry->reasons.end(),
+        [](const auto& r) { return r.code == UnitReasonCode::UpgradeProgress; }) != carry->reasons.end());
+}
+
+
+void unaffordable_shop_copy_does_not_create_upgrade_priority() {
+    ActiveCompositionManager manager;
+    manager.publish(comp());
+    const auto active = *manager.current();
+    auto ctx = context(active);
+    ctx.gold_available = 2;
+    ctx.owned_units = {{1, 1, 1, false, {}}};
+    ctx.evidence = {{1, 0.0, 0.0, 0.9, 1, 1, 4, false}};
+    const auto result = UnitPriorityPlanner{}.resolve(active, ctx);
+    const auto carry = std::find_if(result.units.begin(), result.units.end(),
+        [](const auto& u) { return u.champion_id == 1; });
+    assert(carry != result.units.end());
+    assert(carry->intent == UnitIntent::Keep);
+    assert(carry->target_star == 0);
+}
+
+void external_temporary_unit_requires_explicit_reason() {
+    ActiveCompositionManager manager;
+    manager.publish(comp());
+    const auto active = *manager.current();
+    auto ctx = context(active);
+    ctx.owned_units = {{9, 1, 1, true, {}}};
+    ctx.evidence = {{9, 0.9, 0.8, 0.95, 0, 0, -1, false}};
+    auto result = UnitPriorityPlanner{}.resolve(active, ctx);
+    auto external = std::find_if(result.units.begin(), result.units.end(),
+        [](const auto& u) { return u.champion_id == 9; });
+    assert(external != result.units.end() && external->intent == UnitIntent::Replace);
+
+    ctx.temporary_support = {{9, "sustenta a frontline enquanto a peça core não aparece", 0.9}};
+    result = UnitPriorityPlanner{}.resolve(active, ctx);
+    external = std::find_if(result.units.begin(), result.units.end(),
+        [](const auto& u) { return u.champion_id == 9; });
+    assert(external != result.units.end());
+    assert(external->intent == UnitIntent::Hold);
+    assert(external->tier == UnitPriorityTier::TemporarySupport);
+    assert(std::find_if(external->reasons.begin(), external->reasons.end(),
+        [](const auto& r) { return r.code == UnitReasonCode::TemporarySupportJustification; }) != external->reasons.end());
+}
+
+void priority_ties_are_deterministic_by_champion_id() {
+    ActiveCompositionManager manager;
+    auto candidate = comp();
+    candidate.units = {
+        {7, UnitRole::Flex, false, 50},
+        {6, UnitRole::Flex, false, 50}
+    };
+    candidate.main_carry_id = 6; // Keep the fixture valid while both priorities remain tied.
+    const auto publish = manager.publish(candidate);
+    assert(publish.status == PublishStatus::Published);
+    const auto active = *manager.current();
+    auto ctx = context(active);
+    ctx.owned_units = {{7, 1, 1, false, {}}, {6, 1, 1, false, {}}};
+    const auto result = UnitPriorityPlanner{}.resolve(active, ctx);
+    assert(result.units.size() == 2);
+    assert(result.units[0].priority == result.units[1].priority);
+    assert(result.units[0].champion_id == 6);
+    assert(result.units[1].champion_id == 7);
+}
+
 void missing_active_is_safe() {
     auto result = UnitPriorityPlanner{}.resolve(std::nullopt, {});
     assert(result.stale && result.units.empty());
 }
 }
 int main() {
+    std::cerr << "RUN resolves_keep_upgrade_seek_and_version\n";
     resolves_keep_upgrade_seek_and_version();
+    std::cerr << "PASS resolves_keep_upgrade_seek_and_version\n";
+    std::cerr << "RUN shared_and_bridge_units_survive_pivot\n";
     shared_and_bridge_units_survive_pivot();
+    std::cerr << "PASS shared_and_bridge_units_survive_pivot\n";
+    std::cerr << "RUN equipped_items_restrict_sale_and_low_evidence_holds\n";
     equipped_items_restrict_sale_and_low_evidence_holds();
+    std::cerr << "PASS equipped_items_restrict_sale_and_low_evidence_holds\n";
+    std::cerr << "RUN pairs_and_star_progress_are_not_sell_candidates\n";
     pairs_and_star_progress_are_not_sell_candidates();
+    std::cerr << "PASS pairs_and_star_progress_are_not_sell_candidates\n";
+    std::cerr << "RUN validated_item_snapshot_protects_outside_target_unit\n";
     validated_item_snapshot_protects_outside_target_unit();
+    std::cerr << "PASS validated_item_snapshot_protects_outside_target_unit\n";
+    std::cerr << "RUN board_gap_increases_matching_missing_unit_priority\n";
     board_gap_increases_matching_missing_unit_priority();
+    std::cerr << "PASS board_gap_increases_matching_missing_unit_priority\n";
+    std::cerr << "RUN composition_hierarchy_beats_easy_external_upgrade\n";
+    composition_hierarchy_beats_easy_external_upgrade();
+    std::cerr << "PASS composition_hierarchy_beats_easy_external_upgrade\n";
+    std::cerr << "RUN trait_completion_has_explicit_intermediate_tier\n";
+    trait_completion_has_explicit_intermediate_tier();
+    std::cerr << "PASS trait_completion_has_explicit_intermediate_tier\n";
+    std::cerr << "RUN shop_copies_advance_two_star_priority_for_core\n";
+    shop_copies_advance_two_star_priority_for_core();
+    std::cerr << "PASS shop_copies_advance_two_star_priority_for_core\n";
+    std::cerr << "RUN unaffordable_shop_copy_does_not_create_upgrade_priority\n";
+    unaffordable_shop_copy_does_not_create_upgrade_priority();
+    std::cerr << "PASS unaffordable_shop_copy_does_not_create_upgrade_priority\n";
+    std::cerr << "RUN external_temporary_unit_requires_explicit_reason\n";
+    external_temporary_unit_requires_explicit_reason();
+    std::cerr << "PASS external_temporary_unit_requires_explicit_reason\n";
+    std::cerr << "RUN priority_ties_are_deterministic_by_champion_id\n";
+    priority_ties_are_deterministic_by_champion_id();
+    std::cerr << "PASS priority_ties_are_deterministic_by_champion_id\n";
+    std::cerr << "RUN missing_active_is_safe\n";
     missing_active_is_safe();
+    std::cerr << "PASS missing_active_is_safe\n";
     std::cout << "Unit Priority Planner tests passed\n";
 }
