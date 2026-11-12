@@ -26,6 +26,7 @@ For each player update, the Shadow block executes the following order:
 7. Attach economy, board, and item evidence to that version.
 8. Evaluate eligible action candidates in Shadow mode.
 9. Record the diagnostic snapshot and its per-stage execution trace.
+10. Feed the same normalized per-player state to `UnifiedStrategicShadowRuntime` and append direction/pivot events to the session sidecar when the Viewer has configured its path.
 
 A stage can be marked completed, skipped, unavailable, or failed. Each trace
 entry carries match/episode, player, round, stage sequence, and the active
@@ -61,3 +62,20 @@ refinement therefore makes outputs from the previous version stale.
 The runtime is opt-in, read-only, and Shadow-only. Its recommendations are
 diagnostics and are not fed into PPO observations, action masks, legal actions,
 rewards, training, checkpoints, rules, or the executor.
+
+
+## Unified direction/pivot sidecar
+
+When the Viewer creates a recorded session, it configures
+`strategic_direction_pivot.jsonl` on the native engine. The same per-player
+update boundary that produces Composition Intelligence snapshots feeds the
+unified direction/pivot runtime. This is a read-only observer: it does not
+publish recommendations back into the active-composition manager, PPO, masks,
+rewards, or executor.
+
+Unchanged logical events are deduplicated by the recorder. The unified machine
+is re-anchored if the observed active composition identity/version changes.
+Pivot feasibility preserves missing reserve-floor and full transition-cost
+inputs as unavailable; it must not approve a pivot from assumed economic data.
+See [Strategic direction/pivot audit](strategic-direction-pivot-audit.md) for
+the event contract and current integration limits.
