@@ -262,6 +262,11 @@ public:
             candidate.transition_cost = union_size == 0 ? 0.0 :
                 1.0 - static_cast<double>(overlap) /
                     static_cast<double>(union_size);
+            candidate.identity += ":";
+            for (std::size_t index = 0; index < candidate.unit_ids.size(); ++index) {
+                if (index != 0) candidate.identity += ",";
+                candidate.identity += std::to_string(candidate.unit_ids[index]);
+            }
             result.candidates.push_back(std::move(candidate));
         }
 
