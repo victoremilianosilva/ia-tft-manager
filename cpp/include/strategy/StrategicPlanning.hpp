@@ -73,6 +73,11 @@ struct StrategicUnitCandidate {
 struct StrategicAnchorCandidate {
     StrategicUnitCandidate unit;
     std::string target_composition_direction;
+    std::string composition_identity;
+    std::vector<std::int32_t> candidate_unit_ids;
+    std::int32_t main_carry_id{-1};
+    std::vector<std::string> candidate_traits;
+    std::vector<std::string> evidence;
     double anchor_value{0.0};
     double transition_cost{0.0};
     double contestation{0.0};
@@ -183,6 +188,11 @@ struct StrategicCandidateDiagnostic {
     double score{0.0};
     bool accepted{false};
     std::string evaluation_reason;
+    std::string composition_identity;
+    std::vector<std::int32_t> candidate_unit_ids;
+    std::int32_t main_carry_id{-1};
+    std::vector<std::string> candidate_traits;
+    std::vector<std::string> evidence;
 };
 
 struct StrategicPlanDecision {
