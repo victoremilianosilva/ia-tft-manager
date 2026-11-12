@@ -793,6 +793,8 @@ PYBIND11_MODULE(tft_engine, module) {
             }
         )
         .def("get_composition_diagnostics_jsonl", &TFTEngine::get_composition_diagnostics_jsonl)
+        .def("set_strategic_audit_path", &TFTEngine::set_strategic_audit_path,
+            py::arg("path"), py::arg("match_id"))
         .def(
             "get_audit_snapshot",
             [](const TFTEngine& self) {
