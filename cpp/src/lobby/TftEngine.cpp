@@ -3127,6 +3127,9 @@ struct TFTEngine::Impl {
                     : "Native candidate not generated: composition direction is unavailable");
         }
 
+        // Raw shop snapshot shared by the independent shadow composition pipeline.
+        const auto& strategic_shop = player_envs[i].shop;
+
         // BEGIN SHADOW-ONLY EVALUATION BOUNDARY.
         // Every operation in this block is diagnostic-only. Exceptions must never
         // escape update_strategy() into the PPO-facing engine path.
