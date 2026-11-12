@@ -30,8 +30,6 @@ struct DirectionDiscoveryUnit {
     std::int32_t cost{0};
     std::int32_t copies_owned{0};
     std::int32_t star{1};
-    // -1 means the native pool snapshot is unavailable.
-    std::int32_t pool_remaining{-1};
     bool on_board{false};
     bool on_bench{false};
     bool in_shop{false};
@@ -39,6 +37,8 @@ struct DirectionDiscoveryUnit {
     bool core_potential{false};
     double board_contribution{0.0};
     std::vector<std::string> traits;
+    // -1 means the native pool snapshot is unavailable.
+    std::int32_t pool_remaining{-1};
 };
 
 struct DirectionDiscoveryTrait {
