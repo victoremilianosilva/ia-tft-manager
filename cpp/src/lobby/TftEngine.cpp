@@ -2900,6 +2900,124 @@ struct TFTEngine::Impl {
         // traits instead of forcing every slot into one trait.
         composition_intelligence_native_candidates[i].clear();
         composition_intelligence_native_diagnostics[i].clear();
+
+        // The CompositionIntelligence native source is now produced by the
+        // independent strategic generator. The legacy plan below is retained
+        // only for its existing PPO/Viewer-facing compatibility path.
+        if (composition_intelligence_enabled) {
+            strategy::NativeCompositionGenerationInput native_input;
+            native_input.level = economy.level;
+            native_input.gold = economy.gold;
+            native_input.target_slots = std::clamp(economy.level, 1, 10);
+            native_input.maximum_candidates = 8;
+            native_input.catalog.reserve(catalog->all().size());
+            for (const auto& definition : catalog->all()) {
+                native_input.catalog.push_back({
+                    definition.internal_id, definition.api_name, definition.cost,
+                    definition.traits, definition.combat_profile.is_carry,
+                    definition.combat_profile.frontline ||
+                        definition.combat_profile.is_tank,
+                    definition.combat_profile.is_support
+                });
+            }
+            std::unordered_map<std::int32_t, strategy::NativeCompositionOwnedUnit>
+                native_owned;
+            const auto append_native_owned = [&](const UnitInstance& unit,
+                                                  bool on_board) {
+                const auto* definition = catalog->find_by_id(
+                    unit.champion_internal_id);
+                if (!definition) return;
+                auto& observed = native_owned[definition->internal_id];
+                observed.champion_id = definition->internal_id;
+                const auto copies = copies_by_unit.find(definition->internal_id);
+                observed.copies = copies == copies_by_unit.end() ? 0 : copies->second;
+                observed.star = std::max(observed.star, unit.star);
+                observed.on_board = observed.on_board || on_board;
+                observed.on_bench = observed.on_bench || !on_board;
+                observed.board_contribution = std::max(
+                    observed.board_contribution, on_board
+                        ? std::clamp(definition->cost / 5.0 * 0.5 +
+                            std::clamp(unit.star, 1, 3) / 3.0 * 0.5, 0.0, 1.0)
+                        : 0.0);
+                observed.item_fit = std::max(observed.item_fit,
+                    std::clamp(static_cast<double>(unit.items.size()) / 3.0,
+                               0.0, 1.0));
+            };
+            for (const auto& unit : player_envs[i].board)
+                if (unit) append_native_owned(*unit, true);
+            for (const auto& unit : player_envs[i].bench)
+                if (unit) append_native_owned(*unit, false);
+            for (const auto& [id, observed] : native_owned) {
+                native_input.owned.push_back(observed);
+                native_input.currently_owned_unit_ids.push_back(id);
+            }
+            const auto& native_shop = player_envs[i].shop;
+            if (native_shop) {
+                for (const auto& offer : native_shop->offers())
+                    if (offer) native_input.shop_ids.insert(
+                        offer->champion_internal_id);
+            }
+            if (pool) {
+                for (const auto& definition : catalog->all())
+                    native_input.pool_remaining[definition.internal_id] =
+                        pool->available(definition.internal_id);
+            }
+            for (const auto& [trait, milestones] : trait_milestones) {
+                if (!milestones.empty()) {
+                    native_input.trait_thresholds.push_back({
+                        trait, *std::min_element(milestones.begin(), milestones.end())
+                    });
+                }
+            }
+
+            const auto native_generated =
+                strategy::NativeStrategicCompositionGenerator{}.generate(native_input);
+            composition_intelligence_native_diagnostics[i].push_back(
+                native_generated.reason);
+            for (const auto& generated : native_generated.candidates) {
+                composition_intelligence::CompositionCandidate candidate;
+                candidate.composition_id = generated.identity;
+                candidate.source = composition_intelligence::CompositionSource::Native;
+                candidate.source_reference = "native-strategic-composition-generator";
+                candidate.source_score = generated.score;
+                candidate.main_carry_id = generated.main_carry_id;
+                candidate.target_board_size = generated.unit_ids.size();
+                if (!generated.unit_ids.empty()) {
+                    const auto* first = catalog->find_by_id(generated.unit_ids.front());
+                    if (first) candidate.set_id =
+                        composition_intelligence::composition_champion_set(
+                            first->api_name, first->character_name);
+                }
+                for (std::size_t unit_index = 0;
+                     unit_index < generated.unit_ids.size(); ++unit_index) {
+                    const auto id = generated.unit_ids[unit_index];
+                    const auto* definition = catalog->find_by_id(id);
+                    if (!definition) continue;
+                    composition_intelligence::CompositionUnit unit;
+                    unit.champion_id = id;
+                    unit.core = id == generated.main_carry_id;
+                    unit.priority = static_cast<int>(generated.unit_ids.size() -
+                        unit_index);
+                    if (id == generated.main_carry_id) {
+                        unit.role = composition_intelligence::UnitRole::MainCarry;
+                    } else if (definition->combat_profile.frontline ||
+                               definition->combat_profile.is_tank) {
+                        unit.role = composition_intelligence::UnitRole::Frontline;
+                    } else if (definition->combat_profile.is_carry) {
+                        unit.role = composition_intelligence::UnitRole::SecondaryCarry;
+                    } else if (definition->combat_profile.is_support) {
+                        unit.role = composition_intelligence::UnitRole::Support;
+                    } else {
+                        unit.role = composition_intelligence::UnitRole::Flex;
+                    }
+                    candidate.units.push_back(std::move(unit));
+                }
+                if (!candidate.units.empty())
+                    composition_intelligence_native_candidates[i].push_back(
+                        std::move(candidate));
+            }
+        }
+
         if (current_round >= 9 && !info.composition_direction.empty()) {
             strategy::CompositionPlanner::OwnedCopies owned_copies;
             for (const auto& [unit_id, copies] : copies_by_unit)
@@ -2962,17 +3080,6 @@ struct TFTEngine::Impl {
                 plan_focus, owned_copies, planning_slots, economy.level,
                 available_copies, currently_offered, &live_context,
                 -1, composition_intelligence_enabled);
-            if (composition_intelligence_enabled) {
-                // The planner captured this DTO before its optional OP.GG
-                // comparison; the adapter consumes only the Native snapshot.
-                const auto native_adapted =
-                    composition_intelligence::NativeCompositionAdapter::adapt(
-                        plan.native_snapshot, catalog->all());
-                composition_intelligence_native_candidates[i] =
-                    native_adapted.candidates;
-                composition_intelligence_native_diagnostics[i] =
-                    native_adapted.diagnostics;
-            }
             const bool direction_transitioned =
                 info.composition_direction != previous_direction;
             const bool keep_previous_plan = !direction_transitioned &&
