@@ -581,6 +581,9 @@ public:
     std::string adapt_opgg_compositions_json(const std::string& catalog_json) const;
     std::vector<std::string> get_composition_diagnostics_jsonl() const;
 
+    // Configures the optional session sidecar for unified strategic Shadow events.
+    void set_strategic_direction_pivot_audit_path(const std::string& path);
+
     // Hooks de fixture determinística para testes de paridade Python/C++.
     // Não alteram o pool compartilhado; usar apenas em cenários de teste.
     bool set_unit_for_testing(

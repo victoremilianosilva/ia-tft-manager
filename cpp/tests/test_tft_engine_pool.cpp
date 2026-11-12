@@ -4,6 +4,9 @@
 #include "CombatEngine.hpp"
 
 #include <algorithm>
+#include <cstdlib>
+#include <filesystem>
+#include <fstream>
 #include <cmath>
 #include <iostream>
 #include <limits>
@@ -1017,6 +1020,70 @@ int main(int argc, char** argv) {
                     "A rodada 6-7 nao concedeu item completo diretamente.");
             require_no_pending_choice();
         }
+
+        // Prove that the real TFTEngine per-player snapshot producer invokes
+        // the unified strategic runtime and writes the session sidecar.
+#ifdef _WIN32
+        _putenv_s("TFT_COMPOSITION_INTELLIGENCE_SHADOW", "1");
+#else
+        setenv("TFT_COMPOSITION_INTELLIGENCE_SHADOW", "1", 1);
+#endif
+        const auto strategic_audit_path =
+            std::filesystem::temp_directory_path() / "tft_strategic_direction_pivot_runtime_test.jsonl";
+        std::error_code strategic_remove_error;
+        std::filesystem::remove(strategic_audit_path, strategic_remove_error);
+        tft::TFTEngine strategic_runtime_engine(20261112, json_path);
+        (void)strategic_runtime_engine.reset(20261112);
+        strategic_runtime_engine.set_strategic_direction_pivot_audit_path(
+            strategic_audit_path.string());
+        const auto strategic_fixture = std::find_if(
+            catalog.all().begin(), catalog.all().end(),
+            [](const auto& champion) { return !champion.traits.empty(); });
+        require(strategic_fixture != catalog.all().end(),
+                "Catalogo nao possui unidade com trait para auditoria estrategica.");
+        require(strategic_runtime_engine.set_unit_for_testing(
+                    0, true, 0, strategic_fixture->api_name, 1),
+                "Nao foi possivel acionar o produtor real de snapshot estrategico.");
+        require(strategic_runtime_engine.set_unit_for_testing(
+                    0, false, 0, strategic_fixture->api_name, 1),
+                "Nao foi possivel gerar uma segunda atualizacao do snapshot estrategico.");
+        require(strategic_runtime_engine.set_unit_for_testing(
+                    1, true, 0, strategic_fixture->api_name, 1),
+                "Nao foi possivel gerar snapshot estrategico para o segundo jogador.");
+        std::ifstream strategic_audit_stream(strategic_audit_path);
+        require(strategic_audit_stream.is_open(),
+                "Runtime estrategico nao criou o sidecar configurado.");
+        std::string strategic_audit_line;
+        require(static_cast<bool>(std::getline(strategic_audit_stream, strategic_audit_line)) &&
+                    strategic_audit_line.find("\"phase\"") != std::string::npos &&
+                    strategic_audit_line.find("\"shadow_only\":true") != std::string::npos &&
+                    strategic_audit_line.find("\"player_id\":0") != std::string::npos,
+                "Sidecar nao contem evento real identificado como Shadow por jogador.");
+        require(static_cast<bool>(std::getline(strategic_audit_stream, strategic_audit_line)) &&
+                    strategic_audit_line.find("\"sequence\":2") != std::string::npos,
+                "Atualizacao sucessiva do produtor real nao gerou o segundo evento da sequencia.");
+        require(static_cast<bool>(std::getline(strategic_audit_stream, strategic_audit_line)) &&
+                    strategic_audit_line.find("\"player_id\":1") != std::string::npos &&
+                    strategic_audit_line.find("\"sequence\":1") != std::string::npos,
+                "Sequencia do segundo jogador nao foi isolada no produtor real.");
+        require(!std::getline(strategic_audit_stream, strategic_audit_line),
+                "Snapshots repetidos/inalterados foram gravados indevidamente.");
+        strategic_audit_stream.close();
+
+        // Reset starts a fresh match/session sequence without carrying the
+        // previous player's machine or recorder state forward.
+        (void)strategic_runtime_engine.reset(20261113);
+        require(strategic_runtime_engine.set_unit_for_testing(
+                    0, true, 0, strategic_fixture->api_name, 1),
+                "Nao foi possivel iniciar a sessao estrategica seguinte.");
+        {
+            std::ifstream next_session_stream(strategic_audit_path);
+            require(next_session_stream.is_open() &&
+                        static_cast<bool>(std::getline(next_session_stream, strategic_audit_line)) &&
+                        strategic_audit_line.find("\"sequence\":1") != std::string::npos,
+                    "Reset de partida nao reiniciou a sequencia do sidecar.");
+        }
+        std::filesystem::remove(strategic_audit_path, strategic_remove_error);
 
         std::cout << "TFTEngine + loja/economia/ActionMask/AntiLoop/CompLock: OK\n";
         return 0;

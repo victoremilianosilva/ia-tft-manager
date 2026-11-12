@@ -33,17 +33,26 @@ Each line is one immutable observation emitted by the shadow strategic-cycle pro
 - Conflicts are evidence for investigation, not automatic proof of a strategic mistake.
 - PPO actions/rewards are contextual only and never treated as strategic ground truth.
 
-## Current integration boundary
+## Runtime integration
 
-The Viewer audit generator always writes `audit_direcao_pivot.md`. If the session sidecar is absent, the report explicitly marks the producer data as unavailable. This avoids fabricating state from legacy logs. The current unified state machine remains shadow/read-only; wiring a live event producer is a separate integration step and must preserve PPO, training, observations, masks, rewards, checkpoints, rules, Viewer behavior and action execution.
+The live producer is connected in `cpp/src/lobby/TftEngine.cpp`, inside the existing per-player `update_strategy()` Shadow block and its `run_shadow_isolated` failure boundary. For each player, the engine adapts the normalized state already assembled for Composition Intelligence: active composition/version, owned board and bench units, shop offers, catalog traits, gold, and observed source candidates.
 
+**Runtime scope:** this producer is the native `TFTEngine`/Viewer simulation session in this repository. It does not yet consume Overwolf GEP snapshots from an external live TFT client; that separate GEP-to-IA-ready-snapshot integration remains outside this PR.
 
-## Shadow producer API
+The Viewer configures the sidecar after creating the match session directory. The native engine writes directly to:
 
-The C++ producer is exposed through cpp/include/strategy/UnifiedStrategicShadowRuntime.hpp. A session owner constructs one UnifiedStrategicShadowRuntime with the session sidecar path, then calls refresh(context, input) for each normalized strategic snapshot. The bridge executes the unified state machine, emits its returned value to strategic_direction_pivot.jsonl, and returns the same strategic result. Recorder I/O and serialization errors are contained and never change the returned result.
+`<session_dir>/strategic_direction_pivot.jsonl`
 
-StrategicCycleAuditContext supplies the match and player identity plus the round. Sequence numbers are monotonic per player for the lifetime of the runtime instance; call reset_session() only when starting a new match/session. The recorder creates the parent directory and appends one JSON object per line. One runtime/recorder instance should be owned per session; do not share it between unrelated match sessions.
+The path is exposed through `TFTEngine::set_strategic_direction_pivot_audit_path` and the Python lobby wrapper. The session metadata declares the sidecar and schema. Each player owns an independent `UnifiedStrategicShadowRuntime`; records share the session JSONL file but have player-local sequence numbers and state. A new match resets the machine and recorder state.
 
-The recorder serializes only evidence present in the normalized input/result. Unknown active composition, pivot, carry or shop information remains null, empty, or explicitly unavailable. It does not consult PPO actions, rewards, legacy action logs, or infer pool/shop availability.
+The producer deduplicates unchanged logical snapshots per player. Changes in observed gold, units, shop evidence, composition identity/version, pivot evidence, phase, or round remain recordable. Recorder I/O and serialization failures are contained and do not interrupt the existing snapshot producer.
 
-The integration is deliberately opt-in at the runtime boundary. The repository currently exposes the unified state machine as a shadow component; the owner of the live normalized strategic snapshot must instantiate this bridge and pass the session sidecar path. The Viewer audit will consume the sidecar automatically when it is placed in the session directory. No autonomous action or PPO path is connected by this API.
+## Evidence and remaining limits
+
+The runtime uses only normalized values available in the engine. It does not reconstruct evidence from PPO actions, rewards, or legacy action logs. Missing values remain explicit.
+
+The current live snapshot does not yet provide a configured protected-gold reserve floor or a complete transition opportunity-cost estimate. Those fields are deliberately left unavailable in `PivotFeasibilityInput`; therefore a pivot that depends on those missing economic inputs remains `INSUFFICIENT_EVIDENCE` and cannot be confirmed by fabricated defaults. This integration proves real event production and current-state direction synchronization, not full economic approval of pivots.
+
+The producer tracks the last externally published Composition Intelligence identity/version separately from the unified machine state. It re-anchors only when that external snapshot itself advances; it does not reset the unified machine merely because a Shadow-confirmed pivot differs from the external source. After a Shadow pivot confirmation, subsequent evaluations use the unified machine's new internal composition/direction, without publishing that recommendation back to Composition Intelligence, PPO, or the executor. A later external identity/version change is treated as a new observed source snapshot and re-anchored explicitly.
+
+The Viewer audit generator always writes `audit_direcao_pivot.md`. If the session sidecar is absent, the report explicitly marks producer data as unavailable. No autonomous action or PPO path is connected.
