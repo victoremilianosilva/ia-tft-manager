@@ -118,6 +118,7 @@ public:
             anchors_.direction_anchor.composition_identity != active->candidate.composition_id ||
             anchors_.direction_anchor.composition_version != active->version) {
             reset_streak();
+            anchors_.pivot_candidate = {};
             return rejected("pivot_candidate_conflicts_with_active_source");
         }
         if (destination.composition_id != pivot.target_composition_identity ||
@@ -125,10 +126,12 @@ public:
             feasibility_input.source_direction_anchor_identity != pivot.source_direction_anchor_identity ||
             feasibility_input.source_composition_version != pivot.source_composition_version) {
             reset_streak();
+            anchors_.pivot_candidate = {};
             return rejected("destination_or_feasibility_identity_mismatch");
         }
         if (feasibility.status == PivotFeasibilityStatus::Rejected) {
             reset_streak();
+            anchors_.pivot_candidate = {};
             return {PivotConfirmationStatus::Rejected, "pivot_feasibility_rejected",
                     0, active->version, false};
         }
@@ -136,6 +139,7 @@ public:
             !feasibility.shadow_only || !std::isfinite(feasibility.score) ||
             feasibility.score < policy_.minimum_viable_score) {
             reset_streak();
+            anchors_.pivot_candidate = {};
             return {PivotConfirmationStatus::InsufficientEvidence,
                     "pivot_not_stably_viable_or_score_below_threshold",
                     0, active->version, false};
@@ -168,6 +172,7 @@ public:
         if (published.status != composition_intelligence::PublishStatus::Published ||
             published.active.version != active->version + 1) {
             reset_streak();
+            anchors_.pivot_candidate = {};
             return rejected("destination_publish_failed_or_version_conflict");
         }
 
@@ -189,6 +194,7 @@ public:
         next_direction.evidence.push_back(StrategicAnchorEvidenceKind::CompositionCore);
         if (!next_direction.is_valid()) {
             reset_streak();
+            anchors_.pivot_candidate = {};
             return rejected("synchronized_direction_anchor_invalid");
         }
 
