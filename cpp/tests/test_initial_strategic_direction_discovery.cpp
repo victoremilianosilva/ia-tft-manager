@@ -122,6 +122,10 @@ int main() {
         unit(72, {"HighCost"}, 1, true, false, false, false, true, 1.0, 5),
         unit(73, {"HighCost"}, 1, false, true, false, false, false, 0.0, 5)
     };
+    cost_aware.units[0].pool_remaining = 20;
+    cost_aware.units[1].pool_remaining = 20;
+    cost_aware.units[2].pool_remaining = 0;
+    cost_aware.units[3].pool_remaining = 0;
     result = discovery.evaluate(cost_aware);
     assert(result.hypotheses.size() == 2);
     const auto low_cost = std::find_if(result.hypotheses.begin(),
@@ -137,6 +141,8 @@ int main() {
     assert(low_cost->score > high_cost->score);
     assert(low_cost->score_explanation.find("cost_penalty=") != std::string::npos);
     assert(low_cost->score_explanation.find("star_progress=") != std::string::npos);
+    assert(low_cost->score_explanation.find("pool_remaining=40") != std::string::npos);
+    assert(high_cost->score_explanation.find("pool_remaining=0") != std::string::npos);
 
     // A defined composition suppresses free exploration entirely.
     competing.composition_defined = true;
