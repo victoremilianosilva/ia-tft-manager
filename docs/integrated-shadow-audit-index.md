@@ -55,6 +55,17 @@ Repeated Composition Intelligence sequence IDs are deduplicated by
 match/sequence. Repeated strategic observations are summarized as one semantic
 review with an observation count; changed decisions/reasons remain distinct.
 
+## Strategic Planner KEEP confidence
+
+The `audit_estrategia.md` report classifies each deduplicated KEEP review as
+supported by current directional evidence, associated mainly with persistence
+or investment proxies, or inconclusive. It separately reports alternative
+evaluation outcomes and groups examples by player/round within the match
+session. Board presence alone and the absence of a better alternative are not
+treated as positive evidence. See
+[Strategic Planner KEEP confidence audit](strategic-keep-confidence-audit.md)
+for the classification rules and limitations.
+
 ## PPO comparison
 
 PPO actions are normalized to categories:

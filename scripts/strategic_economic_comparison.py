@@ -11,6 +11,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+from viewer.strategic_keep_audit import aggregate_keep_evidence, classify_keep_evidence
+
 ACTION_ALIASES = {
     "BUY": "BUY_UNIT", "BUY_UNIT": "BUY_UNIT",
     "BUY_XP": "BUY_EXPERIENCE", "BUY_EXPERIENCE": "BUY_EXPERIENCE",
@@ -47,11 +49,15 @@ def _cell(value: Any) -> str:
 
 
 def _shadow(decision: dict) -> dict:
-    before = decision.get("state_before") or {}
-    value = before.get("shadow_planning")
-    if not isinstance(value, dict):
-        return {}
-    return value if any(item is not None for item in value.values()) else {}
+    # Prefer the pre-action snapshot, but accept state_after for logs/tests
+    # whose producer only persists the post-action diagnostic envelope.
+    for state in (decision.get("state_before"), decision.get("state_after")):
+        if not isinstance(state, dict):
+            continue
+        value = state.get("shadow_planning")
+        if isinstance(value, dict) and any(item is not None for item in value.values()):
+            return value
+    return {}
 
 
 
@@ -586,12 +592,22 @@ def build_shadow_markdown_reports(report: dict) -> dict[str, str]:
     keep_evidence = []
     outcomes_by_round = {(str(x.get("player")), str(x.get("round"))): x
                          for x in outcome_summary["recommendation_rounds"]}
+    keep_audit_records = []
     for d, s in keep_rows:
         confidence = s.get("current_direction_confidence")
         confidence_buckets["unavailable" if confidence is None else
                            "zero" if float(confidence or 0.0) == 0.0 else "positive"] += 1
-        keep_evidence.append((d, s, _strategic_unit_evidence(d.get("state_before") or {}, s),
+        state = d.get("state_before") or {}
+        units = _strategic_unit_evidence(state, s)
+        classification = classify_keep_evidence(state, s, units)
+        keep_audit_records.append({
+            "player": d.get("player"), "round": d.get("round"), "step": d.get("step"),
+            "direction": state.get("comp_direction"),
+            **classification,
+        })
+        keep_evidence.append((d, s, units,
                               outcomes_by_round.get((str(d.get("player")), str(d.get("round"))), {})))
+    keep_audit_summary = aggregate_keep_evidence(keep_audit_records)
     strategy += [
         "", "### Auditoria de KEEP — continuidade fundamentada versus persistência", "",
         f"- KEEP auditados: **{len(keep_rows)}**",
@@ -613,7 +629,50 @@ def build_shadow_markdown_reports(report: dict) -> dict[str, str]:
             s.get("required_pivot_advantage"),
         )) + " |")
     strategy += [
-        "", "### Unidades preservadas — sinais estratégicos versus investimento", "",
+        "", "#### Classificação da sustentação do KEEP", "",
+        f"- KEEP fundamentado por evidência atual: **{keep_audit_summary['classification_counts'].get('KEEP_SUPPORTED_BY_CURRENT_EVIDENCE', 0)}**",
+        f"- KEEP associado principalmente à persistência/investimento: **{keep_audit_summary['classification_counts'].get('KEEP_ASSOCIATED_WITH_PERSISTENCE', 0)}**",
+        f"- KEEP inconclusivo por falta de evidência: **{keep_audit_summary['classification_counts'].get('KEEP_INCONCLUSIVE', 0)}**",
+        "- Resultados das alternativas: " + _cell(keep_audit_summary["alternative_status_counts"]),
+        "",
+        "#### Distribuição por jogador/round", "",
+        "| Jogador | Round | Fundamentados | Persistência/investimento | Inconclusivos |",
+        "|---|---|---:|---:|---:|",
+    ]
+    for bucket in keep_audit_summary["by_player_round"]:
+        strategy.append("| " + " | ".join(_cell(value) for value in (
+            bucket.get("player"), bucket.get("round"),
+            bucket.get("KEEP_SUPPORTED_BY_CURRENT_EVIDENCE", 0),
+            bucket.get("KEEP_ASSOCIATED_WITH_PERSISTENCE", 0),
+            bucket.get("KEEP_INCONCLUSIVE", 0),
+        )) + " |")
+    if not keep_audit_summary["by_player_round"]:
+        strategy.append("| — | — | 0 | 0 | 0 |")
+    strategy += [
+        "",
+        "| Jogador | Round | Step | Classificação | Viabilidade atual | Score atual | Unidades alinhadas | Board-only | Somente investimento | Lock | Candidato pendente | Alternativa | Motivos observados |",
+        "|---|---|---:|---|---|---:|---:|---:|---:|---|---|---|---|",
+    ]
+    for item in keep_audit_records:
+        persistence = item.get("persistence") or {}
+        strategy.append("| " + " | ".join(_cell(value) for value in (
+            item.get("player"), item.get("round"), item.get("step"),
+            item.get("classification"), item.get("current_direction_viable"),
+            item.get("current_direction_score"), item.get("strategically_aligned_unit_count"),
+            item.get("board_contribution_only_unit_count"), item.get("investment_only_unit_count"),
+            persistence.get("composition_locked"),
+            persistence.get("composition_candidate_direction") or persistence.get("planner_candidate_direction"),
+            item.get("alternative_status"), item.get("classification_reasons"),
+        )) + " |")
+    if not keep_audit_records:
+        strategy.append("| — | — | — | Sem revisões KEEP | — | — | — | — | — | — | — | — | — |")
+    strategy += [
+        "",
+        "A classificação exige viabilidade explícita ou sinais estratégicos atuais observados para considerar KEEP fundamentado. "
+        "Lock, streak e proxies de investimento são reportados separadamente; não demonstram causalidade. "
+        "A ausência de alternativa gerada nunca é contada como evidência positiva da composição atual.",
+        "",
+        "### Unidades preservadas — sinais estratégicos versus investimento", "",
         "| Jogador | Round | Unidade | Área | Estrelas | Classificação | Sinais estratégicos | Indicadores de investimento |",
         "|---|---|---|---|---:|---|---|---|",
     ]
