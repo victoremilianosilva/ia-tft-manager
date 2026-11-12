@@ -123,7 +123,10 @@ private:
             };
         }
 
-        const auto& pivot = result.anchors.pivot_candidate;
+        const auto& pivot = !result.anchors.pivot_candidate.identity.empty()
+            ? result.anchors.pivot_candidate
+            : (input.pivot_candidate ? *input.pivot_candidate
+                                     : StrategicPivotAnchorCandidate{});
         nlohmann::json pivot_json = nullptr;
         if (!pivot.identity.empty()) {
             pivot_json = {
