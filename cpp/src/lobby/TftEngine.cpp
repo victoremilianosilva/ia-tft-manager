@@ -3120,10 +3120,9 @@ struct TFTEngine::Impl {
             for (const auto& unit : player_envs[i].bench)
                 if (unit) append_owned_candidate(*unit, false);
 
-            // A cost-4/5 shop unit is only an anchor candidate, never an
-            // automatic pivot. Build alternative lineups around its traits and
-            // let the planner account for retained owned units and transition
-            // overlap before recommending a gradual change.
+            // Generate independent composition candidates from observed facts.
+            // This service proposes lineups only; pivot feasibility and promotion
+            // remain separate stages of the unified strategic state machine.
             // The new strategic architecture owns its candidate and lineup
             // generation. Inputs below are raw catalog, board, bench, shop,
             // pool, level and economy facts; no legacy plan/focus/direction is read.
