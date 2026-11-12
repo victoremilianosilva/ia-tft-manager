@@ -155,6 +155,37 @@ void mismatched_or_invalidated_source_is_rejected_without_mutation() {
     assert(coordinator.anchors().direction_anchor.composition_version == 1);
 }
 
+void invalidated_candidate_is_cleared_without_changing_active_direction() {
+    auto coordinator = initialized_coordinator();
+    auto pivot = make_pivot();
+    const auto destination = make_composition("composition-b", 3,
+        {{3, UnitRole::MainCarry, true, 100}});
+    const auto input = make_feasibility_input();
+    auto result = coordinator.observe_and_confirm(
+        pivot, destination, input, viable_result(), 1);
+    assert(result.status == PivotConfirmationStatus::ObservedPending);
+    assert(coordinator.anchors().pivot_candidate.identity == "pivot-b");
+
+    pivot.lifecycle = StrategicAnchorLifecycle::Invalidated;
+    result = coordinator.observe_and_confirm(
+        pivot, destination, input, viable_result(), 2);
+    assert(result.status == PivotConfirmationStatus::Rejected);
+    assert(coordinator.anchors().pivot_candidate.identity.empty());
+    assert(coordinator.anchors().direction_anchor.identity == "direction-a-v1");
+    assert(coordinator.active_composition()->candidate.composition_id == "composition-a");
+    assert(coordinator.history().empty());
+}
+
+void rejects_incomplete_initial_state() {
+    StrategicPivotTransitionCoordinator coordinator;
+    auto invalid_direction = make_direction("direction-a-v1", "composition-a", 99, 1);
+    const auto result = coordinator.initialize(
+        make_composition("composition-a", 1, {{1, UnitRole::MainCarry, true, 100}}),
+        invalid_direction);
+    assert(result.status == PivotConfirmationStatus::Rejected);
+    assert(!coordinator.active_composition().has_value());
+}
+
 void destination_conflict_and_out_of_order_updates_are_rejected() {
     auto coordinator = initialized_coordinator();
     auto pivot = make_pivot();
@@ -223,6 +254,8 @@ int main() {
     confirms_and_synchronizes_both_identities_atomically();
     insufficient_or_rejected_evaluation_never_changes_direction();
     mismatched_or_invalidated_source_is_rejected_without_mutation();
+    invalidated_candidate_is_cleared_without_changing_active_direction();
+    rejects_incomplete_initial_state();
     destination_conflict_and_out_of_order_updates_are_rejected();
     cooldown_prevents_rapid_reverse_pivots();
     std::cout << "Strategic pivot transition coordinator tests passed\n";
