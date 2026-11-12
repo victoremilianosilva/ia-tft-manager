@@ -238,6 +238,10 @@ class CppTFTLobbyWrapper:
         """Read-only public lobby snapshot exposed by the native engine."""
         return self._engine.get_public_state()
 
+    def set_strategic_audit_path(self, path: str, match_id: int):
+        """Enable or disable the native read-only strategic JSONL sidecar."""
+        self._engine.set_strategic_audit_path(str(path), int(match_id))
+
     def get_composition_diagnostics_jsonl(self):
         return list(self._engine.get_composition_diagnostics_jsonl())
 
