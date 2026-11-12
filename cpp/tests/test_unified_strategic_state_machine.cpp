@@ -105,10 +105,10 @@ void exploration_waits_for_composition_and_then_binds_direction() {
 void active_composition_has_authority_over_legacy_outputs() {
     UnifiedStrategicStateMachine machine;
     StrategicCycleInput input;
-    input.active_composition = composition(
+    input.active_composition = ActiveComposition{composition(
         "composition-current", 1,
         {{1, UnitRole::MainCarry, true, 100},
-         {2, UnitRole::Frontline, true, 80}});
+         {2, UnitRole::Frontline, true, 80}}), 7};
     CompositionDirectionState legacy_direction;
     legacy_direction.direction = "Bruiser";
     legacy_direction.locked = true;
@@ -120,7 +120,9 @@ void active_composition_has_authority_over_legacy_outputs() {
     const auto result = machine.refresh(input);
     assert(result.phase == StrategicCyclePhase::CompositionActive);
     assert(result.active_composition->candidate.composition_id == "composition-current");
+    assert(result.active_composition->version == 7);
     assert(result.anchors.direction_anchor.direction == "composition-current");
+    assert(result.anchors.direction_anchor.composition_version == 7);
     assert(result.diagnostics.legacy_consistency == LegacyConsistency::Divergent);
     assert(result.diagnostics.divergence_reasons.size() == 2);
 }
@@ -128,10 +130,10 @@ void active_composition_has_authority_over_legacy_outputs() {
 void pivot_evaluation_does_not_mutate_then_confirms_synchronized_state() {
     UnifiedStrategicStateMachine machine({3, 60.0, 5});
     StrategicCycleInput input;
-    input.active_composition = composition(
+    input.active_composition = ActiveComposition{composition(
         "composition-current", 1,
         {{1, UnitRole::MainCarry, true, 100},
-         {2, UnitRole::Frontline, true, 80}});
+         {2, UnitRole::Frontline, true, 80}}), 1};
     auto result = machine.refresh(input);
     assert(result.phase == StrategicCyclePhase::CompositionActive);
 
@@ -166,9 +168,9 @@ void pivot_evaluation_does_not_mutate_then_confirms_synchronized_state() {
 void invalidated_candidate_is_removed_and_old_direction_is_preserved() {
     UnifiedStrategicStateMachine machine({3, 60.0, 5});
     StrategicCycleInput input;
-    input.active_composition = composition(
+    input.active_composition = ActiveComposition{composition(
         "composition-current", 1,
-        {{1, UnitRole::MainCarry, true, 100}});
+        {{1, UnitRole::MainCarry, true, 100}}), 1};
     auto result = machine.refresh(input);
 
     input.active_composition.reset();
@@ -191,9 +193,9 @@ void invalidated_candidate_is_removed_and_old_direction_is_preserved() {
 void missing_candidate_invalidates_pending_pivot_without_mutation() {
     UnifiedStrategicStateMachine machine({3, 60.0, 5});
     StrategicCycleInput input;
-    input.active_composition = composition(
+    input.active_composition = ActiveComposition{composition(
         "composition-current", 1,
-        {{1, UnitRole::MainCarry, true, 100}});
+        {{1, UnitRole::MainCarry, true, 100}}), 1};
     machine.refresh(input);
 
     input.active_composition.reset();
@@ -217,9 +219,9 @@ void missing_candidate_invalidates_pending_pivot_without_mutation() {
 void insufficient_evidence_clears_pivot_and_keeps_active_composition() {
     UnifiedStrategicStateMachine machine({3, 60.0, 5});
     StrategicCycleInput input;
-    input.active_composition = composition(
+    input.active_composition = ActiveComposition{composition(
         "composition-current", 1,
-        {{1, UnitRole::MainCarry, true, 100}});
+        {{1, UnitRole::MainCarry, true, 100}}), 1};
     machine.refresh(input);
 
     input.active_composition.reset();
