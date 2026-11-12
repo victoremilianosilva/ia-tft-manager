@@ -49,11 +49,15 @@ def _cell(value: Any) -> str:
 
 
 def _shadow(decision: dict) -> dict:
-    before = decision.get("state_before") or {}
-    value = before.get("shadow_planning")
-    if not isinstance(value, dict):
-        return {}
-    return value if any(item is not None for item in value.values()) else {}
+    # Prefer the pre-action snapshot, but accept state_after for logs/tests
+    # whose producer only persists the post-action diagnostic envelope.
+    for state in (decision.get("state_before"), decision.get("state_after")):
+        if not isinstance(state, dict):
+            continue
+        value = state.get("shadow_planning")
+        if isinstance(value, dict) and any(item is not None for item in value.values()):
+            return value
+    return {}
 
 
 
