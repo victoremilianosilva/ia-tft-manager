@@ -1047,6 +1047,9 @@ int main(int argc, char** argv) {
         require(strategic_runtime_engine.set_unit_for_testing(
                     0, false, 0, strategic_fixture->api_name, 1),
                 "Nao foi possivel gerar uma segunda atualizacao do snapshot estrategico.");
+        require(strategic_runtime_engine.set_unit_for_testing(
+                    1, true, 0, strategic_fixture->api_name, 1),
+                "Nao foi possivel gerar snapshot estrategico para o segundo jogador.");
         std::ifstream strategic_audit_stream(strategic_audit_path);
         require(strategic_audit_stream.is_open(),
                 "Runtime estrategico nao criou o sidecar configurado.");
@@ -1059,9 +1062,27 @@ int main(int argc, char** argv) {
         require(static_cast<bool>(std::getline(strategic_audit_stream, strategic_audit_line)) &&
                     strategic_audit_line.find("\"sequence\":2") != std::string::npos,
                 "Atualizacao sucessiva do produtor real nao gerou o segundo evento da sequencia.");
+        require(static_cast<bool>(std::getline(strategic_audit_stream, strategic_audit_line)) &&
+                    strategic_audit_line.find("\"player_id\":1") != std::string::npos &&
+                    strategic_audit_line.find("\"sequence\":1") != std::string::npos,
+                "Sequencia do segundo jogador nao foi isolada no produtor real.");
         require(!std::getline(strategic_audit_stream, strategic_audit_line),
                 "Snapshots repetidos/inalterados foram gravados indevidamente.");
         strategic_audit_stream.close();
+
+        // Reset starts a fresh match/session sequence without carrying the
+        // previous player's machine or recorder state forward.
+        (void)strategic_runtime_engine.reset(20261113);
+        require(strategic_runtime_engine.set_unit_for_testing(
+                    0, true, 0, strategic_fixture->api_name, 1),
+                "Nao foi possivel iniciar a sessao estrategica seguinte.");
+        {
+            std::ifstream next_session_stream(strategic_audit_path);
+            require(next_session_stream.is_open() &&
+                        static_cast<bool>(std::getline(next_session_stream, strategic_audit_line)) &&
+                        strategic_audit_line.find("\"sequence\":1") != std::string::npos,
+                    "Reset de partida nao reiniciou a sequencia do sidecar.");
+        }
         std::filesystem::remove(strategic_audit_path, strategic_remove_error);
 
         std::cout << "TFTEngine + loja/economia/ActionMask/AntiLoop/CompLock: OK\n";
