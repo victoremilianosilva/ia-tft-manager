@@ -165,6 +165,12 @@ public:
                 if (!input.initial_composition_candidate.has_value()) {
                     phase_ = StrategicCyclePhase::Exploration;
                     out.diagnostics.transition_reason = "direction_hypothesis_waiting_for_composition_candidate";
+                } else if (!composition_contains_units(
+                               *input.initial_composition_candidate,
+                               hypothesis.anchor.reference_unit_ids)) {
+                    phase_ = StrategicCyclePhase::Exploration;
+                    out.diagnostics.transition_reason =
+                        "initial_composition_does_not_contain_discovered_support_units";
                 } else {
                     auto initial_direction = hypothesis.anchor;
                     bind_initial_direction(initial_direction, *input.initial_composition_candidate);
@@ -196,6 +202,21 @@ public:
                     phase_ = StrategicCyclePhase::Invalidated;
                     out.diagnostics.transition_reason =
                         "pivot_candidate_missing_destination_or_feasibility_snapshot";
+                } else if (!pivot_candidate_matches_destination(
+                               *input.pivot_candidate, *input.pivot_destination,
+                               *input.pivot_feasibility)) {
+                    auto invalidated = *input.pivot_candidate;
+                    invalidated.lifecycle = StrategicAnchorLifecycle::Invalidated;
+                    PivotFeasibilityInput empty_input;
+                    PivotFeasibilityResult empty_result;
+                    const composition_intelligence::CompositionCandidate empty_destination;
+                    const auto confirmation = pivot_coordinator_.observe_and_confirm(
+                        invalidated, empty_destination, empty_input, empty_result,
+                        input.evaluation_sequence);
+                    out.diagnostics.pivot_confirmation = confirmation;
+                    phase_ = StrategicCyclePhase::Invalidated;
+                    out.diagnostics.transition_reason =
+                        "pivot_candidate_destination_units_or_carry_contract_mismatch";
                 } else {
                     const auto evaluated = pivot_evaluator_.evaluate(*input.pivot_feasibility);
                     out.diagnostics.pivot_feasibility = evaluated;
@@ -256,6 +277,44 @@ public:
     }
 
 private:
+    static bool composition_contains_units(
+        const composition_intelligence::CompositionCandidate& composition,
+        const std::vector<std::int32_t>& unit_ids
+    ) {
+        if (unit_ids.empty()) return false;
+        for (const auto id : unit_ids) {
+            const auto found = std::find_if(composition.units.begin(), composition.units.end(),
+                [&](const auto& unit) { return unit.champion_id == id; });
+            if (found == composition.units.end()) return false;
+        }
+        return true;
+    }
+
+    static bool pivot_candidate_matches_destination(
+        const StrategicPivotAnchorCandidate& pivot,
+        const composition_intelligence::CompositionCandidate& destination,
+        const PivotFeasibilityInput& feasibility
+    ) {
+        if (destination.composition_id != pivot.target_composition_identity ||
+            feasibility.candidate_composition_identity != destination.composition_id ||
+            !composition_contains_units(destination, pivot.reference_unit_ids) ||
+            destination.units.size() != feasibility.required_units.size()) {
+            return false;
+        }
+        std::size_t carry_count = 0;
+        for (const auto& unit : destination.units) {
+            const auto required = std::find_if(
+                feasibility.required_units.begin(), feasibility.required_units.end(),
+                [&](const auto& item) { return item.champion_id == unit.champion_id; });
+            if (required == feasibility.required_units.end() || required->core != unit.core)
+                return false;
+            const bool is_carry = unit.champion_id == destination.main_carry_id;
+            if (required->carry != is_carry) return false;
+            if (is_carry) ++carry_count;
+        }
+        return destination.main_carry_id < 0 ? carry_count == 0 : carry_count == 1;
+    }
+
     static void bind_initial_direction(
         StrategicDirectionAnchor& anchor,
         const composition_intelligence::CompositionCandidate& composition
