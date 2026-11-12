@@ -105,6 +105,13 @@ public:
                     viable_streak_, active->version, false};
         last_evaluation_sequence_ = evaluation_sequence;
 
+        if (pivot.lifecycle == StrategicAnchorLifecycle::Invalidated ||
+            pivot.lifecycle == StrategicAnchorLifecycle::Rejected ||
+            pivot.lifecycle == StrategicAnchorLifecycle::Empty) {
+            reset_streak();
+            anchors_.pivot_candidate = {};
+            return rejected("pivot_candidate_invalidated_before_confirmation");
+        }
         if (!pivot.is_valid() ||
             pivot.source_direction_anchor_identity != anchors_.direction_anchor.identity ||
             pivot.source_composition_version != active->version ||
