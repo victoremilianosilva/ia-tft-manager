@@ -176,4 +176,6 @@ def test_strategy_report_exposes_keep_classification_without_changing_decision()
     assert "KEEP associado principalmente à persistência/investimento: **0**" in strategy
     assert "KEEP inconclusivo por falta de evidência: **0**" in strategy
     assert "KEEP_SUPPORTED_BY_CURRENT_EVIDENCE" in strategy
+    assert "Distribuição por jogador/round" in strategy
+    assert "| Jogador 1 | 3-2 | 1 | 0 | 0 |" in strategy
     assert "A ausência de alternativa gerada nunca é contada como evidência positiva" in strategy
