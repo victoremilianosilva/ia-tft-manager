@@ -452,6 +452,19 @@ if(BUILD_TESTING)
     enable_tft_test_assertions(test_unified_strategic_state_machine)
     add_test(NAME unified_strategic_state_machine COMMAND test_unified_strategic_state_machine)
 
+    # Deterministic end-to-end scenarios spanning discovery, unit priorities,
+    # pivot feasibility and atomic direction/composition transitions.
+    add_executable(
+        test_strategic_direction_pivot_e2e
+        tests/test_strategic_direction_pivot_e2e.cpp
+    )
+    configure_tft_module(test_strategic_direction_pivot_e2e)
+    enable_tft_test_assertions(test_strategic_direction_pivot_e2e)
+    add_test(
+        NAME strategic_direction_pivot_e2e
+        COMMAND test_strategic_direction_pivot_e2e
+    )
+
     add_executable(
         test_composition_direction_policy
         tests/test_composition_direction_policy.cpp
