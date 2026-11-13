@@ -4146,6 +4146,9 @@ struct TFTEngine::Impl {
                     candidate.evidence
                 });
             }
+            // Diagnostic-only compatibility mirror for existing telemetry.
+            // The planner never reads these fields back; its authority is the
+            // per-player strategic_planner_commitments array above.
             info.strategic_candidate_direction =
                 strategic_commitment.candidate_composition_direction;
             info.strategic_candidate_anchor_id =
