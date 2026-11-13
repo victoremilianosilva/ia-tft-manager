@@ -1,4 +1,5 @@
 #include "strategy/StrategicEvidenceContext.hpp"
+#include "strategy/StrategicPlanner.hpp"
 
 #include <cassert>
 #include <iostream>
@@ -81,6 +82,10 @@ int main() {
     assert(first.planner_context.owned_units.size() ==
            second.planner_context.owned_units.size());
 
+    StrategicCommitment commitment;
+    const auto planned = StrategicPlanner{}.evaluate(first, commitment);
+    assert(planned.target_composition_direction == "Bruiser");
+
     // Missing new direction evidence remains unknown; no historical fallback.
     auto incomplete_input = observed_input();
     incomplete_input.direction.clear();
@@ -89,6 +94,12 @@ int main() {
     assert(incomplete.quality == StrategicEvidenceQuality::Partial);
     assert(incomplete.planner_context.current_composition_direction.empty());
     assert(!incomplete.planner_context.current_direction_viable);
+    StrategicCommitment empty_commitment;
+    const auto no_fallback = StrategicPlanner{}.evaluate(
+        incomplete, empty_commitment);
+    assert(no_fallback.target_composition_direction.empty());
+    assert(no_fallback.composition_decision ==
+           CompositionDecision::InsufficientEvidence);
 
     // A stale or mismatched player/round cannot be consumed as current context.
     assert(!first.valid_for(7002, 2, 9));
