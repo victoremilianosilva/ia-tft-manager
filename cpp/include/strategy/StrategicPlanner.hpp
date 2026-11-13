@@ -1,6 +1,7 @@
 #pragma once
 
 #include "strategy/StrategicPlanning.hpp"
+#include "strategy/StrategicEvidenceContext.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -24,6 +25,23 @@ class StrategicPlanner {
 public:
     explicit StrategicPlanner(StrategicPlannerConfig config = {})
         : config_(config) {}
+
+    StrategicPlanDecision evaluate(
+        const StrategicEvidenceContext& evidence,
+        StrategicCommitment& commitment) const {
+        if (!evidence.valid_for(
+                evidence.match_id, evidence.player_id, evidence.round)) {
+            StrategicPlanDecision out;
+            out.shadow_only = true;
+            out.reason = StrategicReason::InsufficientEvidence;
+            out.composition_decision = CompositionDecision::InsufficientEvidence;
+            out.decision_path_reason = evidence.quality_reason.empty()
+                ? "strategic_evidence_context_invalid"
+                : evidence.quality_reason;
+            return out;
+        }
+        return evaluate(evidence.planner_context, commitment);
+    }
 
     StrategicPlanDecision evaluate(
         const StrategicSharedContext& context,
