@@ -281,6 +281,9 @@ private:
     }
 
     std::unordered_set<std::string> consumed_recommendations_;
+
+public:
+    void reset() { consumed_recommendations_.clear(); }
 };
 
 } // namespace tft::composition_intelligence
