@@ -132,6 +132,19 @@ int main() {
     assert(invalid.quality == StrategicEvidenceQuality::Incompatible);
     assert(!invalid.valid_for(7001, 2, 9));
 
+    auto shop_only_input = observed_input();
+    shop_only_input.observed_context.owned_units.clear();
+    shop_only_input.direction.clear();
+    shop_only_input.direction_identity.clear();
+    StrategicAnchorCandidate shop_candidate;
+    shop_candidate.unit.champion_id = 44;
+    shop_candidate.target_composition_direction = "Invoker";
+    shop_candidate.anchor_value = 1.5;
+    shop_only_input.observed_context.anchor_candidates.push_back(shop_candidate);
+    const auto shop_only = builder.build(std::move(shop_only_input));
+    assert(shop_only.quality == StrategicEvidenceQuality::Partial);
+    assert(shop_only.valid_for(7001, 2, 9));
+
     auto missing_input = observed_input();
     missing_input.observed_context.owned_units.clear();
     missing_input.direction.clear();
