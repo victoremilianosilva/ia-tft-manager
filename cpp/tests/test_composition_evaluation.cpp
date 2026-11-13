@@ -147,14 +147,21 @@ void transition_hysteresis_is_isolated_by_match_and_player() {
     assert(proposal.evidence_streak == 1);
     assert(!proposal.approved);
 
-    other_player.round = 12;
+    // Interleave the original player: their own prior evidence must still exist.
+    auto original_player = first;
+    original_player.round = 12;
+    proposal = transitions.propose(active.current(), {current, alternative}, original_player);
+    assert(proposal.evidence_streak == 2);
+    assert(proposal.approved);
+
+    other_player.round = 13;
     proposal = transitions.propose(active.current(), {current, alternative}, other_player);
     assert(proposal.evidence_streak == 2);
     assert(proposal.approved);
 
     auto other_match = other_player;
     other_match.match_id = 7002;
-    other_match.round = 13;
+    other_match.round = 14;
     proposal = transitions.propose(active.current(), {current, alternative}, other_match);
     assert(proposal.evidence_streak == 1);
     assert(!proposal.approved);
