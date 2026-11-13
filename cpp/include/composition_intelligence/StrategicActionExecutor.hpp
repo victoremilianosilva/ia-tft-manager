@@ -221,34 +221,32 @@ public:
                 if (target->target_board_slot < 0 ||
                     target->target_board_slot >= static_cast<std::int32_t>(decision::BOARD_SIZE))
                     return reject(std::move(out), "positioning_target_out_of_range", "invalid_move_target");
-                {
-                    std::int32_t bench_slot = -1;
-                    for (std::size_t i = 0; i < state.bench_champion_ids.size(); ++i)
-                        if (state.bench_champion_ids[i] == selected->champion_id) {
-                            if (bench_slot >= 0)
-                                return reject(std::move(out), "multiple_bench_copies_require_explicit_instance", "ambiguous_unit_instance");
-                            bench_slot = static_cast<std::int32_t>(i);
-                        }
-                    if (bench_slot >= 0) {
-                        if (!type_enabled(decision::ActionType::MOVE_BENCH) ||
-                            state.masks.bench_to_board_target_masks[
-                                static_cast<std::size_t>(bench_slot) * decision::BOARD_SIZE +
-                                static_cast<std::size_t>(target->target_board_slot)] != decision::MASK_ENABLED)
-                            return reject(std::move(out), "bench_to_board_move_disabled_by_native_mask", "native_move_mask_rejected");
-                        values[0] = static_cast<std::int32_t>(decision::ActionType::MOVE_BENCH);
-                        values[2] = bench_slot;
-                        values[3] = target->target_board_slot;
-                        break;
+                std::int32_t bench_slot = -1;
+                std::int32_t board_slot = -1;
+                for (std::size_t i = 0; i < state.bench_champion_ids.size(); ++i)
+                    if (state.bench_champion_ids[i] == selected->champion_id) {
+                        if (bench_slot >= 0)
+                            return reject(std::move(out), "multiple_bench_copies_require_explicit_instance", "ambiguous_unit_instance");
+                        bench_slot = static_cast<std::int32_t>(i);
                     }
-                }
-                {
-                    std::int32_t board_slot = -1;
-                    for (std::size_t i = 0; i < state.board_champion_ids.size(); ++i)
-                        if (state.board_champion_ids[i] == selected->champion_id) {
-                            if (board_slot >= 0)
-                                return reject(std::move(out), "multiple_board_copies_require_explicit_instance", "ambiguous_unit_instance");
-                            board_slot = static_cast<std::int32_t>(i);
-                        }
+                for (std::size_t i = 0; i < state.board_champion_ids.size(); ++i)
+                    if (state.board_champion_ids[i] == selected->champion_id) {
+                        if (board_slot >= 0)
+                            return reject(std::move(out), "multiple_board_copies_require_explicit_instance", "ambiguous_unit_instance");
+                        board_slot = static_cast<std::int32_t>(i);
+                    }
+                if (bench_slot >= 0 && board_slot >= 0)
+                    return reject(std::move(out), "champion_has_multiple_owned_instances_require_explicit_instance", "ambiguous_unit_instance");
+                if (bench_slot >= 0) {
+                    if (!type_enabled(decision::ActionType::MOVE_BENCH) ||
+                        state.masks.bench_to_board_target_masks[
+                            static_cast<std::size_t>(bench_slot) * decision::BOARD_SIZE +
+                            static_cast<std::size_t>(target->target_board_slot)] != decision::MASK_ENABLED)
+                        return reject(std::move(out), "bench_to_board_move_disabled_by_native_mask", "native_move_mask_rejected");
+                    values[0] = static_cast<std::int32_t>(decision::ActionType::MOVE_BENCH);
+                    values[2] = bench_slot;
+                    values[3] = target->target_board_slot;
+                } else {
                     if (board_slot < 0)
                         return reject(std::move(out), "move_unit_not_owned", "unit_not_found");
                     if (!type_enabled(decision::ActionType::MOVE_BOARD) ||
