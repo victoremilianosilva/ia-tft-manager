@@ -3320,7 +3320,7 @@ struct TFTEngine::Impl {
             evidence_input.player_id = static_cast<std::int32_t>(i);
             evidence_input.round = static_cast<std::uint32_t>(current_round);
             evidence_input.sequence = ++strategic_context_sequences[i];
-            evidence_input.observed_context = std::move(strategic_context);
+            evidence_input.observed_context = strategic_context;
             evidence_input.direction =
                 strategic_planner_commitments[i].composition_direction;
             evidence_input.direction_identity =
@@ -3398,9 +3398,9 @@ struct TFTEngine::Impl {
             static const strategy::EconomicController economic_controller{};
             static const strategy::ActionEvaluator action_evaluator{};
             const auto economic_decision =
-                economic_controller.evaluate(strategic_context);
+                economic_controller.evaluate(evidence_context.planner_context);
             const auto action_decision = action_evaluator.evaluate(
-                strategic_context, economic_decision);
+                evidence_context.planner_context, economic_decision);
 
             // New Composition Intelligence pipeline: opt-in Viewer-only shadow state.
             if (composition_intelligence_enabled) {
