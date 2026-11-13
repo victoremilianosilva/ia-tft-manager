@@ -162,7 +162,7 @@ void transition_hysteresis_is_isolated_by_match_and_player() {
 
 void removed_units_need_explicit_low_value_evidence_before_sell_candidate() {
     ActiveCompositionManager active;
-    auto current = comp("current", {1, 2, 3});
+    auto current = comp("current", {1, 2, 3, 8});
     active.publish(current);
     auto target = comp("target", {2, 3, 4});
     auto ctx = context(4);
@@ -178,9 +178,9 @@ void removed_units_need_explicit_low_value_evidence_before_sell_candidate() {
     config.required_consecutive_rounds = 1;
     TransitionManager transitions(config);
     const auto proposal = transitions.propose(active.current(), {current, target}, ctx);
-    assert(proposal.transition.replaceable_unit_ids.size() == 1);
+    assert(proposal.transition.replaceable_unit_ids.size() == 2);
     assert(proposal.transition.sell_candidate_unit_ids.empty());
-    assert(proposal.transition.item_risk_unit_ids.empty());
+    assert(proposal.transition.item_risk_unit_ids.size() == 1);
 }
 
 void rejects_stale_or_unapproved_publication() {
