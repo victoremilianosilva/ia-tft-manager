@@ -4150,19 +4150,19 @@ struct TFTEngine::Impl {
             // The planner never reads these fields back; its authority is the
             // per-player strategic_planner_commitments array above.
             info.strategic_candidate_direction =
-                strategic_commitment.candidate_composition_direction;
+                strategic_planner_commitments[i].candidate_composition_direction;
             info.strategic_candidate_anchor_id =
-                strategic_commitment.candidate_anchor_id;
+                strategic_planner_commitments[i].candidate_anchor_id;
             info.strategic_candidate_score =
-                strategic_commitment.candidate_score;
+                strategic_planner_commitments[i].candidate_score;
             info.strategic_candidate_streak =
-                strategic_commitment.consecutive_reviews;
+                strategic_planner_commitments[i].consecutive_reviews;
             info.strategic_candidate_last_review_round =
-                strategic_commitment.last_review_round;
+                strategic_planner_commitments[i].last_review_round;
             info.strategic_committed_direction =
-                strategic_commitment.composition_direction;
+                strategic_planner_commitments[i].composition_direction;
             info.strategic_selected_round =
-                strategic_commitment.selected_round;
+                strategic_planner_commitments[i].selected_round;
             info.strategic_shadow_only = shadow_decision.shadow_only;
         }
         }, [&]() noexcept {
