@@ -277,7 +277,7 @@ private:
         out.accepted = false;
         out.resolution_reason = std::move(resolution_reason);
         out.validation_reason = std::move(validation_reason);
-        out.native_action = PlayerAction{};
+        out.native_action.values.fill(-1); // Rejected resolution is not a fallback PASS.
         return out;
     }
 
