@@ -6089,6 +6089,7 @@ ResetResult TFTEngine::reset(
     impl_->strategic_shadow_external_active_identity.fill(std::string{});
     impl_->strategic_shadow_external_active_version.fill(0);
     impl_->strategic_planner_commitments = {};
+    for (auto& executor : impl_->strategic_action_executors) executor.reset();
     impl_->strategic_context_sequences.fill(0);
     if (!impl_->strategic_shadow_audit_path.empty()) {
         std::error_code remove_error;
