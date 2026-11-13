@@ -106,6 +106,26 @@ int main() {
     assert(!first.valid_for(7001, 3, 9));
     assert(!first.valid_for(7001, 2, 10));
 
+    auto other_player_input = observed_input();
+    other_player_input.player_id = 3;
+    other_player_input.observed_context.player_id = 3;
+    other_player_input.direction = "Invoker";
+    other_player_input.direction_identity = "direction:v2:Invoker";
+    const auto other_player = builder.build(std::move(other_player_input));
+    assert(other_player.valid_for(7001, 3, 9));
+    assert(other_player.proposed_or_confirmed_direction == "Invoker");
+    assert(first.proposed_or_confirmed_direction == "Bruiser");
+
+    // A new match starts a fresh sequence and carries no previous direction.
+    auto next_match_input = observed_input();
+    next_match_input.match_id = 7002;
+    next_match_input.sequence = 1;
+    next_match_input.direction.clear();
+    next_match_input.direction_identity.clear();
+    const auto next_match = builder.build(std::move(next_match_input));
+    assert(next_match.valid_for(7002, 2, 9));
+    assert(next_match.proposed_or_confirmed_direction.empty());
+
     auto invalid_input = observed_input();
     invalid_input.observed_context.round = 8;
     const auto invalid = builder.build(std::move(invalid_input));
