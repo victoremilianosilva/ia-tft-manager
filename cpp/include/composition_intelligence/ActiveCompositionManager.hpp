@@ -46,18 +46,32 @@ public:
 
         const auto next_units = unit_ids(candidate);
         for (const auto id : next_units) {
-            if (previous_units.count(id) != 0)
+            if (previous_units.count(id) != 0) {
                 transition.shared_unit_ids.push_back(id);
-            else
+                transition.unit_evidence.push_back({
+                    id, CompositionUnitDisposition::RetainedInDestination,
+                    "unit_remains_required_by_destination_composition"});
+            } else {
                 transition.added_unit_ids.push_back(id);
+                transition.unit_evidence.push_back({
+                    id, CompositionUnitDisposition::AddedForDestination,
+                    "unit_is_required_by_destination_composition"});
+            }
         }
-        for (const auto id : previous_units)
-            if (next_units.count(id) == 0)
+        for (const auto id : previous_units) {
+            if (next_units.count(id) == 0) {
                 transition.removed_unit_ids.push_back(id);
+                transition.unit_evidence.push_back({
+                    id, CompositionUnitDisposition::NoLongerRequiredByDestination,
+                    "unit_is_not_in_destination_target_and_requires_individual_utility_review"});
+            }
+        }
 
         sort_ids(transition.shared_unit_ids);
         sort_ids(transition.added_unit_ids);
         sort_ids(transition.removed_unit_ids);
+        std::sort(transition.unit_evidence.begin(), transition.unit_evidence.end(),
+            [](const auto& lhs, const auto& rhs) { return lhs.champion_id < rhs.champion_id; });
 
         active_ = next;
         return {PublishStatus::Published, {}, *active_, true, std::move(transition)};
