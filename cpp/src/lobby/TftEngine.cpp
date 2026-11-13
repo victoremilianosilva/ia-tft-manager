@@ -3657,6 +3657,8 @@ struct TFTEngine::Impl {
                 // instead of trusting a cached mask from an earlier action/round.
                 try {
                     const auto native_decision_state = build_decision_state(i);
+                    native_action_state.gold = native_decision_state.economy.gold;
+                    native_action_state.alive = native_decision_state.is_alive;
                     const auto native_mask_batch = action_mask_engine.generate_masks(
                         native_decision_state, player_envs[i].anti_loop);
                     native_action_state.masks.type_mask = native_mask_batch.type_mask;
