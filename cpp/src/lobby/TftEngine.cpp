@@ -57,6 +57,7 @@
 #include "items/CombatItemAdapter.hpp"
 #include "composition_intelligence/CompositionDiagnostics.hpp"
 #include "composition_intelligence/ContextualActionEvaluator.hpp"
+#include "composition_intelligence/StrategicActionExecutor.hpp"
 #include "composition_intelligence/CompositionIntelligenceRuntime.hpp"
 #include "composition_intelligence/ShadowFailureBoundary.hpp"
 
@@ -520,6 +521,9 @@ struct TFTEngine::Impl {
     bool composition_intelligence_enabled{false};
     std::array<std::unique_ptr<strategy::UnifiedStrategicShadowRuntime>, kPlayersPerLobby>
         strategic_shadow_runtimes{};
+    // Per-player idempotency ledgers for the read-only strategic action resolver.
+    std::array<composition_intelligence::StrategicActionExecutor, kPlayersPerLobby>
+        strategic_action_executors{};
     // Independent per-player planner commitment; never mirrored back as input
     // from StrategyInfo. Reset with the match lifecycle.
     std::array<strategy::StrategicCommitment, kPlayersPerLobby>
@@ -3636,6 +3640,54 @@ struct TFTEngine::Impl {
                     contextual_actions.stale ? contextual_actions.stale_reason :
                         "independent contextual evaluator completed in Shadow mode", active);
 
+                // Resolve the independent recommendation against the exact current
+                // native slots and masks. The result is audit-only: it is never fed
+                // into step(), PPO, the action queue, or game-state mutation.
+                ci::StrategicActionNativeSnapshot native_action_state;
+                native_action_state.match_id = episode_id;
+                native_action_state.player_id = static_cast<std::int32_t>(i);
+                native_action_state.round = round_id;
+                native_action_state.sequence = strategic_context_sequences[i];
+                native_action_state.composition_id = active
+                    ? active->candidate.composition_id : std::string{};
+                native_action_state.composition_version = active ? active->version : 0;
+                native_action_state.gold = strategic_context.gold;
+                native_action_state.alive = strategic_context.alive;
+                native_action_state.masks = player_envs[i].action_masks;
+                native_action_state.shop_champion_ids.fill(-1);
+                native_action_state.bench_champion_ids.fill(-1);
+                native_action_state.board_champion_ids.fill(-1);
+                for (std::size_t slot = 0; slot < kShopSlots; ++slot) {
+                    const auto* unit = player_envs[i].shop
+                        ? player_envs[i].shop->get_unit(static_cast<std::int32_t>(slot)) : nullptr;
+                    if (unit) native_action_state.shop_champion_ids[slot] = unit->champion_internal_id;
+                }
+                for (std::size_t slot = 0; slot < kBenchSlots; ++slot)
+                    if (player_envs[i].bench[slot])
+                        native_action_state.bench_champion_ids[slot] =
+                            player_envs[i].bench[slot]->champion_internal_id;
+                for (std::size_t slot = 0; slot < kBoardSlots; ++slot)
+                    if (player_envs[i].board[slot])
+                        native_action_state.board_champion_ids[slot] =
+                            player_envs[i].board[slot]->champion_internal_id;
+
+                const auto recommendation_id = std::to_string(episode_id) + ":" +
+                    std::to_string(i) + ":" + std::to_string(strategic_context_sequences[i]) + ":" +
+                    (active ? active->candidate.composition_id : std::string("no-composition"));
+                ci::StrategicActionResolutionRequest resolution_request;
+                resolution_request.recommendation_id = recommendation_id;
+                resolution_request.expected_snapshot_sequence = strategic_context_sequences[i];
+                resolution_request.recommendation = &contextual_actions;
+                resolution_request.source_context = &strategic_context;
+                resolution_request.current_state = &native_action_state;
+                const auto action_resolution =
+                    strategic_action_executors[i].resolve(resolution_request);
+                runtime.mark_stage("native_action_resolution",
+                    action_resolution.accepted ? "completed" : "unavailable",
+                    action_resolution.accepted ? action_resolution.resolution_reason :
+                        action_resolution.resolution_reason + ":" + action_resolution.validation_reason,
+                    active);
+
                 const auto diagnostic = runtime.recorder.capture(
                     round_id, active, proposal, priorities, lineup, evidence,
                     composition_actions, published_transition);
@@ -3704,6 +3756,7 @@ struct TFTEngine::Impl {
                         {"stale_reason", composition_actions.stale_reason}
                     }},
                     {"contextual", contextual_actions.to_json()},
+                    {"native_action_resolution", action_resolution.to_json()},
                     {"comparison", {
                         {"comparison_available", comparison_available},
                         {"same_initial_candidate_set", same_initial_candidate_set},
@@ -3715,7 +3768,9 @@ struct TFTEngine::Impl {
                         {"policy_action_is_not_ground_truth", true}
                     }},
                     {"shadow_only", true},
-                    {"executor_connected", false}
+                    {"executor_connected", true},
+                    {"execution_enabled", false},
+                    {"native_action_applied", false}
                 };
 
                 // Correlate strategic/economic context with the active CI version
