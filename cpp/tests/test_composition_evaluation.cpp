@@ -35,6 +35,8 @@ CompositionEvaluationContext context(std::uint32_t round = 1) {
     c.round = round;
     c.level = 8;
     c.gold = 50;
+    c.match_id = 7001;
+    c.player_id = 0;
     return c;
 }
 void selects_initial_complete_candidate() {
@@ -96,14 +98,15 @@ void pivot_requires_consecutive_rounds_and_complete_target() {
 }
 void classifies_shared_bridge_replaceable_and_item_risk() {
     ActiveCompositionManager active;
-    auto current = comp("current", {1, 2, 3});
+    auto current = comp("current", {1, 2, 3, 6});
     active.publish(current);
     auto target = comp("target", {2, 3, 4, 5});
     auto ctx = context(3);
     ctx.gold = 100;
     ctx.owned_units = {
         {2, 1, 1, {}}, {3, 2, 2, {}}, {4, 1, 1, {}},
-        {1, 1, 2, {"item-sword"}}
+        {1, 1, 2, {"item-sword"}},
+        {6, 1, 1, {}, 0.1, 0.1, false, true}
     };
     ctx.candidate_evidence = {
         evidence("current", 0.4), evidence("target", 0.95, 0.9, 0.9, 0.9, 3.0)
@@ -114,10 +117,79 @@ void classifies_shared_bridge_replaceable_and_item_risk() {
     auto proposal = transitions.propose(active.current(), {current, target}, ctx);
     assert(proposal.transition.shared_unit_ids.size() == 2);
     assert(proposal.transition.bridge_unit_ids.size() == 1);
-    assert(proposal.transition.replaceable_unit_ids.size() == 1);
+    assert(proposal.transition.replaceable_unit_ids.size() == 2);
     assert(proposal.transition.sell_candidate_unit_ids.size() == 1);
+    assert(proposal.transition.sell_candidate_unit_ids.front() == 6);
     assert(proposal.transition.item_risk_unit_ids.size() == 1);
 }
+void transition_hysteresis_is_isolated_by_match_and_player() {
+    auto current = comp("current", {1, 2, 3});
+    auto alternative = comp("alternative", {7, 8, 9});
+    ActiveCompositionManager active;
+    active.publish(current);
+    CompositionEvaluationConfig config;
+    config.required_consecutive_rounds = 2;
+    TransitionManager transitions(config);
+
+    auto first = context(10);
+    first.gold = 100;
+    first.candidate_evidence = {
+        evidence("current", 0.35), evidence("alternative", 0.95, 0.9, 0.9, 0.9, 0.0)
+    };
+    auto proposal = transitions.propose(active.current(), {current, alternative}, first);
+    assert(proposal.evidence_streak == 1);
+    assert(!proposal.approved);
+
+    auto other_player = first;
+    other_player.player_id = 1;
+    other_player.round = 11;
+    proposal = transitions.propose(active.current(), {current, alternative}, other_player);
+    assert(proposal.evidence_streak == 1);
+    assert(!proposal.approved);
+
+    // Interleave the original player: their own prior evidence must still exist.
+    auto original_player = first;
+    original_player.round = 12;
+    proposal = transitions.propose(active.current(), {current, alternative}, original_player);
+    assert(proposal.evidence_streak == 2);
+    assert(proposal.approved);
+
+    other_player.round = 13;
+    proposal = transitions.propose(active.current(), {current, alternative}, other_player);
+    assert(proposal.evidence_streak == 2);
+    assert(proposal.approved);
+
+    auto other_match = other_player;
+    other_match.match_id = 7002;
+    other_match.round = 14;
+    proposal = transitions.propose(active.current(), {current, alternative}, other_match);
+    assert(proposal.evidence_streak == 1);
+    assert(!proposal.approved);
+}
+
+void removed_units_need_explicit_low_value_evidence_before_sell_candidate() {
+    ActiveCompositionManager active;
+    auto current = comp("current", {1, 2, 3, 8});
+    active.publish(current);
+    auto target = comp("target", {2, 3, 4});
+    auto ctx = context(4);
+    ctx.gold = 100;
+    ctx.owned_units = {
+        {1, 1, 2, {}},
+        {8, 1, 1, {"item-risk"}, 0.0, 0.0, false, true}
+    };
+    ctx.candidate_evidence = {
+        evidence("current", 0.35), evidence("target", 0.95, 0.9, 0.9, 0.9, 0.0)
+    };
+    CompositionEvaluationConfig config;
+    config.required_consecutive_rounds = 1;
+    TransitionManager transitions(config);
+    const auto proposal = transitions.propose(active.current(), {current, target}, ctx);
+    assert(proposal.transition.replaceable_unit_ids.size() == 2);
+    assert(proposal.transition.sell_candidate_unit_ids.empty());
+    assert(proposal.transition.item_risk_unit_ids.size() == 1);
+}
+
 void rejects_stale_or_unapproved_publication() {
     ActiveCompositionManager active;
     auto current = comp("current", {1, 2, 3});
@@ -177,6 +249,8 @@ int main() {
     keeps_active_when_advantage_is_below_margin();
     pivot_requires_consecutive_rounds_and_complete_target();
     classifies_shared_bridge_replaceable_and_item_risk();
+    transition_hysteresis_is_isolated_by_match_and_player();
+    removed_units_need_explicit_low_value_evidence_before_sell_candidate();
     rejects_stale_or_unapproved_publication();
     rejects_cross_set_candidates_and_invalid_evidence_is_bounded();
     abandons_only_when_both_sides_lack_evidence();

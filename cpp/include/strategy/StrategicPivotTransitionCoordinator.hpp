@@ -151,7 +151,10 @@ public:
         if (destination.composition_id != pivot.target_composition_identity ||
             feasibility_input.candidate_composition_identity != pivot.target_composition_identity ||
             feasibility_input.source_direction_anchor_identity != pivot.source_direction_anchor_identity ||
-            feasibility_input.source_composition_version != pivot.source_composition_version) {
+            feasibility_input.source_composition_version != pivot.source_composition_version ||
+            feasibility.candidate_composition_identity != feasibility_input.candidate_composition_identity ||
+            feasibility.source_direction_anchor_identity != feasibility_input.source_direction_anchor_identity ||
+            feasibility.source_composition_version != feasibility_input.source_composition_version) {
             reset_streak();
             anchors_.pivot_candidate = {};
             return rejected("destination_or_feasibility_identity_mismatch");
@@ -178,7 +181,7 @@ public:
         }
         ++viable_streak_;
         anchors_.pivot_candidate = pivot;
-        anchors_.pivot_candidate.lifecycle = StrategicAnchorLifecycle::Evaluating;
+        anchors_.pivot_candidate.lifecycle = StrategicAnchorLifecycle::Evaluated;
 
         if (viable_streak_ < policy_.required_consecutive_viable_evaluations) {
             return {PivotConfirmationStatus::ObservedPending,
@@ -238,11 +241,18 @@ public:
         record.reason = next_direction.reason;
         record.evidence = pivot.evidence;
 
-        // Commit both related states only after every validation succeeds.
+        // Prepare the complete next snapshot before publishing either side.
+        // Readers of this coordinator only observe state between calls, so the
+        // grouped move-commit prevents partially validated state from escaping.
+        auto staged_anchors = anchors_;
+        staged_anchors.direction_anchor = std::move(next_direction);
+        staged_anchors.pivot_candidate = {};
+        auto staged_history = history_;
+        staged_history.push_back(std::move(record));
+
         composition_manager_ = std::move(staged_manager);
-        anchors_.direction_anchor = std::move(next_direction);
-        anchors_.pivot_candidate = {};
-        history_.push_back(std::move(record));
+        anchors_ = std::move(staged_anchors);
+        history_ = std::move(staged_history);
         last_confirmed_sequence_ = evaluation_sequence;
         reset_streak();
         return {PivotConfirmationStatus::Confirmed, "composition_and_direction_committed_atomically",

@@ -18,7 +18,9 @@ enum class StrategicAnchorLifecycle : std::uint8_t {
     Evaluating = 3,
     Confirmed = 4,
     Rejected = 5,
-    Invalidated = 6
+    Invalidated = 6,
+    // A proposed destination whose feasibility evidence was evaluated and retained.
+    Evaluated = 7
 };
 
 enum class StrategicAnchorEvidenceKind : std::uint8_t {
@@ -83,7 +85,8 @@ struct StrategicPivotAnchorCandidate {
             !reference_unit_ids.empty() && std::isfinite(confidence) &&
             confidence >= 0.0 && confidence <= 1.0 &&
             (lifecycle == StrategicAnchorLifecycle::Proposed ||
-             lifecycle == StrategicAnchorLifecycle::Evaluating);
+             lifecycle == StrategicAnchorLifecycle::Evaluating ||
+             lifecycle == StrategicAnchorLifecycle::Evaluated);
     }
 };
 

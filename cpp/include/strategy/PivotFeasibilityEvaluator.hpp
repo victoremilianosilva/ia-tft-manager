@@ -87,6 +87,10 @@ struct PivotFeasibilityResult {
     double score{0.0};
     double transition_economic_cost{0.0};
     bool carry_eligible{false};
+    // Bind the result to the exact candidate/source snapshot that was evaluated.
+    std::string candidate_composition_identity;
+    std::string source_direction_anchor_identity;
+    std::uint64_t source_composition_version{0};
     bool shadow_only{true};
 };
 
@@ -94,6 +98,9 @@ class PivotFeasibilityEvaluator {
 public:
     PivotFeasibilityResult evaluate(const PivotFeasibilityInput& input) const {
         PivotFeasibilityResult out;
+        out.candidate_composition_identity = input.candidate_composition_identity;
+        out.source_direction_anchor_identity = input.source_direction_anchor_identity;
+        out.source_composition_version = input.source_composition_version;
         if (input.candidate_composition_identity.empty() ||
             input.source_direction_anchor_identity.empty() ||
             input.source_composition_version == 0) {
@@ -124,6 +131,7 @@ public:
         std::unordered_set<std::int32_t> required_ids;
         std::unordered_map<std::string, std::int32_t> owned_traits;
         std::unordered_map<std::string, std::int32_t> reachable_traits;
+        std::unordered_map<std::string, std::int32_t> unknown_traits;
         std::int32_t core_total = 0;
         std::int32_t core_reachable = 0;
         std::int32_t core_unknown = 0;
@@ -174,6 +182,9 @@ public:
             if (owned == 0 && shop > 0) {
                 for (const auto& trait : required.traits) ++reachable_traits[trait];
             }
+            if (unknown) {
+                for (const auto& trait : required.traits) ++unknown_traits[trait];
+            }
 
             if (required.core && reachable) ++core_reachable;
             if (required.core && unknown) ++core_unknown;
@@ -210,6 +221,10 @@ public:
                 owned, reachable, satisfied});
             if (satisfied) {
                 out.favorable_evidence.push_back("trait_reachable_" + requirement.trait);
+            } else if (reachable + unknown_traits[requirement.trait] >=
+                       requirement.minimum_units) {
+                // Unknown pool evidence is not proof that a trait is impossible.
+                out.missing_data.push_back("trait_reachability_unknown_" + requirement.trait);
             } else {
                 out.blockers.push_back("trait_not_reachable_" + requirement.trait);
             }

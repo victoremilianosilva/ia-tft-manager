@@ -90,6 +90,19 @@ enum class CompositionTransitionReason {
     Refinement
 };
 
+enum class CompositionUnitDisposition : std::uint8_t {
+    RetainedInDestination = 0,
+    AddedForDestination = 1,
+    NoLongerRequiredByDestination = 2
+};
+
+struct CompositionUnitTransitionEvidence {
+    std::int32_t champion_id{-1};
+    CompositionUnitDisposition disposition{CompositionUnitDisposition::RetainedInDestination};
+    // Removal from the target is not an instruction to sell or bench the unit.
+    std::string reason;
+};
+
 struct CompositionTransition {
     std::uint64_t previous_version{0};
     std::uint64_t new_version{0};
@@ -99,6 +112,7 @@ struct CompositionTransition {
     std::vector<std::int32_t> shared_unit_ids;
     std::vector<std::int32_t> added_unit_ids;
     std::vector<std::int32_t> removed_unit_ids;
+    std::vector<CompositionUnitTransitionEvidence> unit_evidence;
 };
 
 enum class PublishStatus {

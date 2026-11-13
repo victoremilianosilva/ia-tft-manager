@@ -101,6 +101,20 @@ void pivot_publishes_new_version_and_classifies_units() {
     assert((result.transition.shared_unit_ids == std::vector<std::int32_t>{1}));
     assert((result.transition.added_unit_ids == std::vector<std::int32_t>{3}));
     assert((result.transition.removed_unit_ids == std::vector<std::int32_t>{2}));
+    assert(result.transition.unit_evidence.size() == 3);
+    const auto retained = std::find_if(result.transition.unit_evidence.begin(),
+        result.transition.unit_evidence.end(), [](const auto& item) { return item.champion_id == 1; });
+    const auto added = std::find_if(result.transition.unit_evidence.begin(),
+        result.transition.unit_evidence.end(), [](const auto& item) { return item.champion_id == 3; });
+    const auto removed = std::find_if(result.transition.unit_evidence.begin(),
+        result.transition.unit_evidence.end(), [](const auto& item) { return item.champion_id == 2; });
+    assert(retained != result.transition.unit_evidence.end());
+    assert(retained->disposition == CompositionUnitDisposition::RetainedInDestination);
+    assert(added != result.transition.unit_evidence.end());
+    assert(added->disposition == CompositionUnitDisposition::AddedForDestination);
+    assert(removed != result.transition.unit_evidence.end());
+    assert(removed->disposition == CompositionUnitDisposition::NoLongerRequiredByDestination);
+    assert(removed->reason.find("requires_individual_utility_review") != std::string::npos);
 }
 
 void invalid_candidate_does_not_mutate_active_composition() {

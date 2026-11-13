@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
+#include <map>
 #include <optional>
 #include <string>
 #include <unordered_map>
@@ -34,6 +35,11 @@ struct OwnedUnitEvidence {
     std::int32_t copies{0};
     std::int32_t highest_star{1};
     std::vector<std::string> equipped_item_ids;
+    // Appended evidence keeps existing aggregate initializers source-compatible.
+    double board_contribution{0.5};
+    double synergy_contribution{0.5};
+    bool completes_active_trait{false};
+    bool explicit_sell_candidate{false};
 };
 
 struct CandidateEvidence {
@@ -56,6 +62,10 @@ struct CompositionEvaluationContext {
     std::int32_t gold{0};
     std::vector<OwnedUnitEvidence> owned_units;
     std::vector<CandidateEvidence> candidate_evidence;
+    // Identity scopes hysteresis so evidence from one player/match cannot
+    // accumulate toward another player's transition.
+    std::uint64_t match_id{0};
+    std::int32_t player_id{-1};
 };
 
 struct CompositionScoreBreakdown {
@@ -286,10 +296,11 @@ public:
         const std::vector<CompositionCandidate>& candidates,
         const CompositionEvaluationContext& context) {
         auto proposal = evaluator_.evaluate(active, candidates, context);
+        const auto scope = std::make_pair(context.match_id, context.player_id);
         if (!proposal.target || (proposal.decision != CompositionDecision::Pivot &&
             proposal.decision != CompositionDecision::Refine &&
             proposal.decision != CompositionDecision::SelectInitial)) {
-            reset_hysteresis();
+            pending_transitions_.erase(scope);
             return proposal;
         }
 
@@ -298,17 +309,18 @@ public:
             proposal.hysteresis_satisfied = true;
             proposal.evidence_streak = 1;
         } else {
-            if (target.composition_id != pending_candidate_id_) {
-                pending_candidate_id_ = target.composition_id;
-                evidence_streak_ = 1;
-                last_evidence_round_ = context.round;
-            } else if (context.round > last_evidence_round_) {
-                ++evidence_streak_;
-                last_evidence_round_ = context.round;
+            auto& pending = pending_transitions_[scope];
+            if (target.composition_id != pending.candidate_id) {
+                pending.candidate_id = target.composition_id;
+                pending.evidence_streak = 1;
+                pending.last_evidence_round = context.round;
+            } else if (context.round > pending.last_evidence_round) {
+                ++pending.evidence_streak;
+                pending.last_evidence_round = context.round;
             }
-            proposal.evidence_streak = evidence_streak_;
+            proposal.evidence_streak = pending.evidence_streak;
             proposal.hysteresis_satisfied =
-                evidence_streak_ >= std::max<std::uint32_t>(1, config_.required_consecutive_rounds);
+                pending.evidence_streak >= std::max<std::uint32_t>(1, config_.required_consecutive_rounds);
         }
 
         build_transition_plan(proposal, active, context);
@@ -393,9 +405,17 @@ private:
                 if (target_ids.count(id)) continue;
                 plan.replaceable_unit_ids.push_back(id);
                 if (const auto* unit = owned(id, context)) {
-                    plan.sell_candidate_unit_ids.push_back(id);
                     if (!unit->equipped_item_ids.empty())
                         plan.item_risk_unit_ids.push_back(id);
+                    const bool low_board_value = std::isfinite(unit->board_contribution) &&
+                        unit->board_contribution < 0.25;
+                    const bool low_synergy_value = std::isfinite(unit->synergy_contribution) &&
+                        unit->synergy_contribution < 0.25;
+                    if (unit->explicit_sell_candidate && low_board_value &&
+                        low_synergy_value && !unit->completes_active_trait &&
+                        unit->equipped_item_ids.empty()) {
+                        plan.sell_candidate_unit_ids.push_back(id);
+                    }
                 }
             }
         }
@@ -421,17 +441,16 @@ private:
         plan.transition_cost += 0.25 * (1.0 - plan.overlap_ratio) * target_size;
     }
 
-    void reset_hysteresis() noexcept {
-        pending_candidate_id_.clear();
-        evidence_streak_ = 0;
-        last_evidence_round_ = 0;
-    }
+    struct PendingTransitionState {
+        std::string candidate_id;
+        std::uint32_t evidence_streak{0};
+        std::uint32_t last_evidence_round{0};
+    };
 
     CompositionEvaluationConfig config_;
     CompositionEvaluator evaluator_;
-    std::string pending_candidate_id_;
-    std::uint32_t evidence_streak_{0};
-    std::uint32_t last_evidence_round_{0};
+    std::map<std::pair<std::uint64_t, std::int32_t>, PendingTransitionState>
+        pending_transitions_;
 };
 
 } // namespace tft::composition_intelligence
