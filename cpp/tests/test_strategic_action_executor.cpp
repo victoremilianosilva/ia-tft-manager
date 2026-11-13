@@ -117,6 +117,7 @@ void sell_does_not_resolve_board_only_unit() {
 void movement_requires_explicit_target_and_conditioned_native_mask() {
     auto s = native_state(); s.bench_champion_ids[2] = 77;
     s.masks.type_mask[3] = 1;
+    s.masks.bench_move_source_mask[2] = 1;
     s.masks.bench_to_board_target_masks[2 * 28 + 9] = 1;
     auto c = source_context(StrategicActionKind::DeployOrMove, 77);
     auto r = recommendation(StrategicActionKind::DeployOrMove, 77);
@@ -144,6 +145,7 @@ void movement_requires_explicit_target_and_conditioned_native_mask() {
 void board_move_uses_exact_source_and_destination_mask() {
     auto s = native_state(); s.board_champion_ids[12] = 77;
     s.masks.type_mask[4] = 1;
+    s.masks.board_source_mask[12] = 1;
     s.masks.board_move_target_masks[12 * 28 + 15] = 1;
     s.requested_move_targets.push_back({77,15});
     auto c = source_context(StrategicActionKind::DeployOrMove,77);
@@ -153,6 +155,31 @@ void board_move_uses_exact_source_and_destination_mask() {
     assert(result.accepted);
     assert((result.native_action.values == std::array<std::int32_t,6>{4,0,0,0,12,15}));
 }
+void conditional_mask_fallback_rows_are_not_treated_as_legal_moves() {
+    auto s = native_state();
+    s.bench_champion_ids[2] = 77;
+    s.masks.type_mask[3] = 1; // Another bench unit has a real legal move.
+    s.masks.bench_to_board_target_masks[2 * 28] = 1; // Dummy fallback for this source.
+    auto c = source_context(StrategicActionKind::DeployOrMove, 77);
+    auto r = recommendation(StrategicActionKind::DeployOrMove, 77);
+    s.requested_move_targets.push_back({77,0});
+    StrategicActionExecutor bench_executor;
+    auto result = resolve(bench_executor, r, c, s, "bench-fallback");
+    assert(!result.accepted && result.validation_reason == "native_move_mask_rejected");
+
+    auto board_state = native_state();
+    board_state.board_champion_ids[4] = 77;
+    board_state.masks.type_mask[4] = 1;
+    board_state.masks.board_move_target_masks[4 * 28] = 1; // Dummy row fallback.
+    board_state.requested_move_targets.push_back({77,0});
+    auto board_context = source_context(StrategicActionKind::DeployOrMove,77);
+    auto board_recommendation = recommendation(StrategicActionKind::DeployOrMove,77);
+    StrategicActionExecutor board_executor;
+    result = resolve(board_executor, board_recommendation, board_context,
+        board_state, "board-fallback");
+    assert(!result.accepted && result.validation_reason == "native_move_mask_rejected");
+}
+
 void unavailable_native_mask_generation_is_rejected_explicitly() {
     auto s = native_state();
     s.mask_generation_error = "invalid_economy_snapshot";
@@ -244,6 +271,7 @@ int main() {
     sell_does_not_resolve_board_only_unit();
     movement_requires_explicit_target_and_conditioned_native_mask();
     board_move_uses_exact_source_and_destination_mask();
+    conditional_mask_fallback_rows_are_not_treated_as_legal_moves();
     stale_context_and_sequence_are_rejected();
     unavailable_native_mask_generation_is_rejected_explicitly();
     recommendation_summary_must_match_selected_candidate();
