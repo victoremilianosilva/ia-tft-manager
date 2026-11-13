@@ -58,6 +58,7 @@
 #include "composition_intelligence/CompositionDiagnostics.hpp"
 #include "composition_intelligence/ContextualActionEvaluator.hpp"
 #include "composition_intelligence/StrategicActionExecutor.hpp"
+#include "composition_intelligence/StrategicPositionPlanner.hpp"
 #include "composition_intelligence/CompositionIntelligenceRuntime.hpp"
 #include "composition_intelligence/ShadowFailureBoundary.hpp"
 
@@ -3713,6 +3714,58 @@ struct TFTEngine::Impl {
                         native_action_state.board_champion_ids[slot] =
                             player_envs[i].board[slot]->champion_internal_id;
 
+                // Produce a concrete, role-aware destination only for the
+                // selected DeployOrMove recommendation. This remains a pure
+                // Shadow proposal and uses the exact masks from this snapshot.
+                ci::StrategicPositionProposal positioning_proposal;
+                if (contextual_actions.recommended_action == strategy::StrategicActionKind::DeployOrMove &&
+                    !contextual_actions.stale && active) {
+                    try {
+                        ci::StrategicPositionSnapshot position_snapshot;
+                        position_snapshot.match_id = native_action_state.match_id;
+                        position_snapshot.player_id = native_action_state.player_id;
+                        position_snapshot.round = native_action_state.round;
+                        position_snapshot.sequence = native_action_state.sequence;
+                        position_snapshot.composition_id = native_action_state.composition_id;
+                        position_snapshot.composition_version = native_action_state.composition_version;
+                        position_snapshot.alive = native_action_state.alive;
+                        position_snapshot.requested_champion_id = contextual_actions.recommended_champion_id;
+                        position_snapshot.board_ids = native_action_state.board_champion_ids;
+                        position_snapshot.bench_ids = native_action_state.bench_champion_ids;
+                        position_snapshot.masks = native_action_state.masks;
+                        for (const auto& unit : active->candidate.units) {
+                            ci::StrategicPositionRole role = ci::StrategicPositionRole::Flex;
+                            switch (unit.role) {
+                                case ci::UnitRole::MainCarry:
+                                    role = ci::StrategicPositionRole::MainCarry; break;
+                                case ci::UnitRole::SecondaryCarry:
+                                    role = ci::StrategicPositionRole::SecondaryCarry; break;
+                                case ci::UnitRole::Frontline:
+                                    role = ci::StrategicPositionRole::Frontline; break;
+                                case ci::UnitRole::Support:
+                                    role = ci::StrategicPositionRole::Support; break;
+                                case ci::UnitRole::Flex:
+                                    role = ci::StrategicPositionRole::Flex; break;
+                            }
+                            position_snapshot.composition_units.push_back(
+                                {unit.champion_id, role, unit.priority});
+                        }
+                        positioning_proposal = ci::StrategicPositionPlanner{}.plan(position_snapshot);
+                        if (positioning_proposal.available()) {
+                            native_action_state.requested_move_targets.push_back({
+                                positioning_proposal.champion_id,
+                                positioning_proposal.target_board_slot});
+                        }
+                    } catch (const std::exception& positioning_error) {
+                        positioning_proposal.reason =
+                            std::string("position_planner_exception: ") + positioning_error.what();
+                    } catch (...) {
+                        positioning_proposal.reason = "position_planner_exception: unknown";
+                    }
+                } else {
+                    positioning_proposal.reason = "no_selected_deploy_or_move_recommendation";
+                }
+
                 const auto recommendation_id = std::to_string(episode_id) + ":" +
                     std::to_string(i) + ":" + std::to_string(strategic_context_sequences[i]) + ":" +
                     (active ? active->candidate.composition_id : std::string("no-composition"));
@@ -3798,6 +3851,7 @@ struct TFTEngine::Impl {
                         {"stale_reason", composition_actions.stale_reason}
                     }},
                     {"contextual", contextual_actions.to_json()},
+                    {"strategic_positioning", positioning_proposal.to_json()},
                     {"native_action_resolution", action_resolution.to_json()},
                     {"comparison", {
                         {"comparison_available", comparison_available},
