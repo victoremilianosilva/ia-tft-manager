@@ -64,11 +64,14 @@ PivotFeasibilityInput make_feasibility_input() {
     return value;
 }
 
-PivotFeasibilityResult viable_result() {
+PivotFeasibilityResult viable_result(const PivotFeasibilityInput& input) {
     PivotFeasibilityResult value;
     value.status = PivotFeasibilityStatus::Viable;
     value.reason = "all_gates_satisfied";
     value.score = 90.0;
+    value.candidate_composition_identity = input.candidate_composition_identity;
+    value.source_direction_anchor_identity = input.source_direction_anchor_identity;
+    value.source_composition_version = input.source_composition_version;
     value.shadow_only = true;
     return value;
 }
@@ -96,14 +99,14 @@ void confirms_and_synchronizes_both_identities_atomically() {
 
     for (std::uint64_t sequence = 1; sequence <= 2; ++sequence) {
         const auto pending = coordinator.observe_and_confirm(
-            pivot, destination, input, viable_result(), sequence);
+            pivot, destination, input, viable_result(input), sequence);
         assert(pending.status == PivotConfirmationStatus::ObservedPending);
         assert(coordinator.active_composition()->candidate.composition_id == "composition-a");
         assert(coordinator.anchors().direction_anchor.identity == "direction-a-v1");
     }
 
     const auto confirmed = coordinator.observe_and_confirm(
-        pivot, destination, input, viable_result(), 3);
+        pivot, destination, input, viable_result(input), 3);
     assert(confirmed.status == PivotConfirmationStatus::Confirmed);
     assert(confirmed.state_changed);
     assert(coordinator.active_composition()->candidate.composition_id == "composition-b");
@@ -126,7 +129,7 @@ void insufficient_or_rejected_evaluation_never_changes_direction() {
     const auto input = make_feasibility_input();
     const auto destination = make_composition("composition-b", 3,
         {{3, UnitRole::MainCarry, true, 100}});
-    auto insufficient = viable_result();
+    auto insufficient = viable_result(input);
     insufficient.status = PivotFeasibilityStatus::InsufficientEvidence;
 
     auto result = coordinator.observe_and_confirm(pivot, destination, input, insufficient, 1);
@@ -134,7 +137,7 @@ void insufficient_or_rejected_evaluation_never_changes_direction() {
     assert(coordinator.active_composition()->candidate.composition_id == "composition-a");
     assert(coordinator.anchors().direction_anchor.identity == "direction-a-v1");
 
-    auto rejected = viable_result();
+    auto rejected = viable_result(input);
     rejected.status = PivotFeasibilityStatus::Rejected;
     result = coordinator.observe_and_confirm(pivot, destination, input, rejected, 2);
     assert(result.status == PivotConfirmationStatus::Rejected);
@@ -149,7 +152,7 @@ void mismatched_or_invalidated_source_is_rejected_without_mutation() {
     const auto result = coordinator.observe_and_confirm(
         pivot,
         make_composition("composition-b", 3, {{3, UnitRole::MainCarry, true, 100}}),
-        make_feasibility_input(), viable_result(), 1);
+        make_feasibility_input(), viable_result(make_feasibility_input()), 1);
     assert(result.status == PivotConfirmationStatus::Rejected);
     assert(coordinator.active_composition()->candidate.composition_id == "composition-a");
     assert(coordinator.anchors().direction_anchor.composition_version == 1);
@@ -162,13 +165,13 @@ void invalidated_candidate_is_cleared_without_changing_active_direction() {
         {{3, UnitRole::MainCarry, true, 100}});
     const auto input = make_feasibility_input();
     auto result = coordinator.observe_and_confirm(
-        pivot, destination, input, viable_result(), 1);
+        pivot, destination, input, viable_result(input), 1);
     assert(result.status == PivotConfirmationStatus::ObservedPending);
     assert(coordinator.anchors().pivot_candidate.identity == "pivot-b");
 
     pivot.lifecycle = StrategicAnchorLifecycle::Invalidated;
     result = coordinator.observe_and_confirm(
-        pivot, destination, input, viable_result(), 2);
+        pivot, destination, input, viable_result(input), 2);
     assert(result.status == PivotConfirmationStatus::Rejected);
     assert(coordinator.anchors().pivot_candidate.identity.empty());
     assert(coordinator.anchors().direction_anchor.identity == "direction-a-v1");
@@ -194,19 +197,19 @@ void destination_conflict_and_out_of_order_updates_are_rejected() {
     auto result = coordinator.observe_and_confirm(
         pivot,
         make_composition("composition-b", 3, {{3, UnitRole::MainCarry, true, 100}}),
-        input, viable_result(), 1);
+        input, viable_result(input), 1);
     assert(result.status == PivotConfirmationStatus::Rejected);
 
     input = make_feasibility_input();
     result = coordinator.observe_and_confirm(
         pivot,
         make_composition("composition-b", 3, {{3, UnitRole::MainCarry, true, 100}}),
-        input, viable_result(), 2);
+        input, viable_result(input), 2);
     assert(result.status == PivotConfirmationStatus::ObservedPending);
     result = coordinator.observe_and_confirm(
         pivot,
         make_composition("composition-b", 3, {{3, UnitRole::MainCarry, true, 100}}),
-        input, viable_result(), 2);
+        input, viable_result(input), 2);
     assert(result.status == PivotConfirmationStatus::OutOfOrder);
     assert(coordinator.active_composition()->version == 1);
 }
@@ -222,7 +225,7 @@ void cooldown_prevents_rapid_reverse_pivots() {
     auto input = make_feasibility_input();
     auto result = coordinator.observe_and_confirm(
         pivot, make_composition("composition-b", 3, {{3, UnitRole::MainCarry, true, 100}}),
-        input, viable_result(), 10);
+        input, viable_result(input), 10);
     assert(result.status == PivotConfirmationStatus::Confirmed);
 
     // A reverse candidate based on the new version is viable, but the minimum
@@ -243,7 +246,7 @@ void cooldown_prevents_rapid_reverse_pivots() {
     reverse_input.source_composition_version = 2;
     result = coordinator.observe_and_confirm(
         reverse, make_composition("composition-a", 1, {{1, UnitRole::MainCarry, true, 100}}),
-        reverse_input, viable_result(), 11);
+        reverse_input, viable_result(reverse_input), 11);
     assert(result.status == PivotConfirmationStatus::Cooldown);
     assert(coordinator.active_composition()->candidate.composition_id == "composition-b");
     assert(coordinator.anchors().direction_anchor.composition_version == 2);
