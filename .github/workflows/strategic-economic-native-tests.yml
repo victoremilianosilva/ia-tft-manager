@@ -9,6 +9,7 @@ on:
       - 'cpp/src/lobby/TftEngine.cpp'
       - 'cpp/bindings/tft_engine_bindings.cpp'
       - 'cpp/tests/test_strategic_planner.cpp'
+      - 'tests/test_strategic_evidence_context_architecture.py'
       - 'cpp/tests/test_native_strategic_composition_generator.cpp'
       - 'cpp/tests/test_strategic_evidence_context.cpp'
       - 'cpp/tests/test_strategic_direction_pivot_audit_recorder.cpp'
@@ -16,6 +17,7 @@ on:
       - 'cpp/include/composition_intelligence/ShadowFailureBoundary.hpp'
       - 'cpp/tests/test_shadow_failure_boundary.cpp'
       - 'tests/test_shadow_ppo_isolation_architecture.py'
+      - 'tests/test_strategic_evidence_context_architecture.py'
       - 'docs/shadow-ppo-isolation-contract.md'
       - '.github/workflows/strategic-economic-native-tests.yml'
   pull_request:
@@ -50,3 +52,5 @@ jobs:
         run: ctest --test-dir build -R 'tft_engine_pool|strategic_planner_shadow|shadow_failure_boundary|strategic_direction_pivot_audit_recorder|native_strategic_composition_generator|strategic_evidence_context' --output-on-failure
       - name: Verify PPO Shadow architecture boundary
         run: python tests/test_shadow_ppo_isolation_architecture.py
+      - name: Verify strategic evidence context isolation
+        run: python tests/test_strategic_evidence_context_architecture.py
