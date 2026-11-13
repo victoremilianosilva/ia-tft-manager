@@ -134,6 +134,12 @@ void movement_requires_explicit_target_and_conditioned_native_mask() {
     StrategicActionExecutor blocked_executor;
     result = resolve(blocked_executor, r, c, s, "blocked-move");
     assert(!result.accepted && result.validation_reason == "native_move_mask_rejected");
+
+    s.masks.bench_to_board_target_masks[2 * 28 + 9] = 1;
+    s.board_champion_ids[4] = 77;
+    StrategicActionExecutor ambiguous_zone_executor;
+    result = resolve(ambiguous_zone_executor, r, c, s, "ambiguous-zone");
+    assert(!result.accepted && result.validation_reason == "ambiguous_unit_instance");
 }
 void board_move_uses_exact_source_and_destination_mask() {
     auto s = native_state(); s.board_champion_ids[12] = 77;
