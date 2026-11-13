@@ -3353,7 +3353,7 @@ struct TFTEngine::Impl {
             }
             static const strategy::StrategicPlanner strategic_planner{};
             const auto shadow_decision = strategic_planner.evaluate(
-                evidence_context.planner_context, strategic_planner_commitments[i]);
+                evidence_context, strategic_planner_commitments[i]);
             info.strategic_decision_path_reason =
                 shadow_decision.decision_path_reason;
             info.strategic_current_direction_score =
