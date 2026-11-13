@@ -23,6 +23,13 @@ struct StrategicActionMoveTarget {
     std::int32_t target_board_slot{-1};
 };
 
+template <std::size_t N>
+inline std::array<std::int32_t, N> empty_champion_slots() {
+    std::array<std::int32_t, N> slots{};
+    slots.fill(-1);
+    return slots;
+}
+
 struct StrategicActionNativeSnapshot {
     std::uint64_t match_id{0};
     std::int32_t player_id{-1};
@@ -32,9 +39,12 @@ struct StrategicActionNativeSnapshot {
     std::uint64_t composition_version{0};
     std::int32_t gold{-1};
     bool alive{false};
-    std::array<std::int32_t, decision::SHOP_SIZE> shop_champion_ids{};
-    std::array<std::int32_t, decision::BENCH_SIZE> bench_champion_ids{};
-    std::array<std::int32_t, decision::BOARD_SIZE> board_champion_ids{};
+    std::array<std::int32_t, decision::SHOP_SIZE> shop_champion_ids =
+        empty_champion_slots<decision::SHOP_SIZE>();
+    std::array<std::int32_t, decision::BENCH_SIZE> bench_champion_ids =
+        empty_champion_slots<decision::BENCH_SIZE>();
+    std::array<std::int32_t, decision::BOARD_SIZE> board_champion_ids =
+        empty_champion_slots<decision::BOARD_SIZE>();
     PlayerActionMasks masks{};
     std::string mask_generation_error;
     std::vector<StrategicActionMoveTarget> requested_move_targets;
