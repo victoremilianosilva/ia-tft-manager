@@ -153,6 +153,29 @@ void board_move_uses_exact_source_and_destination_mask() {
     assert(result.accepted);
     assert((result.native_action.values == std::array<std::int32_t,6>{4,0,0,0,12,15}));
 }
+void unavailable_native_mask_generation_is_rejected_explicitly() {
+    auto s = native_state();
+    s.mask_generation_error = "invalid_economy_snapshot";
+    auto c = source_context(StrategicActionKind::RerollShop);
+    auto r = recommendation(StrategicActionKind::RerollShop);
+    StrategicActionExecutor executor;
+    const auto result = resolve(executor, r, c, s, "mask-error");
+    assert(!result.accepted);
+    assert(result.validation_reason == "native_legality_unavailable");
+    assert(result.resolution_reason.find("native_mask_generation_failed") != std::string::npos);
+}
+
+void recommendation_summary_must_match_selected_candidate() {
+    auto s = native_state(); s.masks.type_mask[1] = 1;
+    auto c = source_context(StrategicActionKind::RerollShop);
+    auto r = recommendation(StrategicActionKind::RerollShop);
+    r.recommended_action = StrategicActionKind::BuyExperience;
+    StrategicActionExecutor executor;
+    const auto result = resolve(executor, r, c, s, "tampered-summary");
+    assert(!result.accepted);
+    assert(result.validation_reason == "recommendation_integrity_mismatch");
+}
+
 void stale_context_and_sequence_are_rejected() {
     auto s = native_state(); s.masks.type_mask[1] = 1;
     auto c = source_context(StrategicActionKind::RerollShop);
@@ -222,6 +245,8 @@ int main() {
     movement_requires_explicit_target_and_conditioned_native_mask();
     board_move_uses_exact_source_and_destination_mask();
     stale_context_and_sequence_are_rejected();
+    unavailable_native_mask_generation_is_rejected_explicitly();
+    recommendation_summary_must_match_selected_candidate();
     recommendation_idempotency_is_scoped_by_match_and_player();
     missing_candidate_and_unsupported_intent_are_rejected();
     failed_resolution_is_audited_without_execution();
