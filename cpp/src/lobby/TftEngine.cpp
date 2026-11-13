@@ -39,6 +39,7 @@
 #include "strategy/CompositionDirectionPolicy.hpp"
 #include "strategy/StrategyPolicy.hpp"
 #include "strategy/CompositionPlanner.hpp"
+#include "strategy/NativeStrategicCompositionGenerator.hpp"
 #include "strategy/StrategicPlanner.hpp"
 #include "strategy/EconomicController.hpp"
 #include "strategy/ActionEvaluator.hpp"
@@ -2893,12 +2894,133 @@ struct TFTEngine::Impl {
                 info.core_traits.push_back(trait);
         }
 
-        // Build a concrete target lineup from the entire champion pool once a
-        // direction exists. The anchor trait guides selection, but the planner
-        // deliberately reserves room for a carry, frontline and bridge/support
-        // traits instead of forcing every slot into one trait.
+        // Legacy compatibility lineup: this result continues to populate only
+        // the existing PPO/Viewer-facing planned-unit fields. The new strategic
+        // and CompositionIntelligence candidate paths consume the independent
+        // NativeStrategicCompositionGenerator output assembled above.
         composition_intelligence_native_candidates[i].clear();
         composition_intelligence_native_diagnostics[i].clear();
+
+        // Generate once from raw facts and reuse the same result for the new
+        // strategic planner and CompositionIntelligence. The legacy plan below
+        // remains isolated to the existing PPO/Viewer compatibility path.
+        strategy::NativeCompositionGenerationResult strategic_native_generation;
+        std::unordered_map<std::int32_t, strategy::NativeCompositionOwnedUnit>
+            strategic_native_owned;
+        {
+            strategy::NativeCompositionGenerationInput native_input;
+            native_input.level = economy.level;
+            native_input.gold = economy.gold;
+            native_input.target_slots = std::clamp(economy.level, 1, 10);
+            native_input.maximum_candidates = 8;
+            native_input.catalog.reserve(catalog->all().size());
+            for (const auto& definition : catalog->all()) {
+                native_input.catalog.push_back({
+                    definition.internal_id, definition.api_name, definition.cost,
+                    definition.traits, definition.combat_profile.is_carry,
+                    definition.combat_profile.frontline ||
+                        definition.combat_profile.is_tank,
+                    definition.combat_profile.is_support
+                });
+            }
+            const auto append_native_owned = [&](const UnitInstance& unit,
+                                                  bool on_board) {
+                const auto* definition = catalog->find_by_id(
+                    unit.champion_internal_id);
+                if (!definition) return;
+                auto& observed = strategic_native_owned[definition->internal_id];
+                observed.champion_id = definition->internal_id;
+                const auto copies = copies_by_unit.find(definition->internal_id);
+                observed.copies = copies == copies_by_unit.end() ? 0 : copies->second;
+                observed.star = std::max(observed.star, unit.star);
+                observed.on_board = observed.on_board || on_board;
+                observed.on_bench = observed.on_bench || !on_board;
+                observed.board_contribution = std::max(
+                    observed.board_contribution, on_board
+                        ? std::clamp(definition->cost / 5.0 * 0.5 +
+                            std::clamp(unit.star, 1, 3) / 3.0 * 0.5, 0.0, 1.0)
+                        : 0.0);
+                observed.item_fit = std::max(observed.item_fit,
+                    std::clamp(static_cast<double>(unit.items.size()) / 3.0,
+                               0.0, 1.0));
+            };
+            for (const auto& unit : player_envs[i].board)
+                if (unit) append_native_owned(*unit, true);
+            for (const auto& unit : player_envs[i].bench)
+                if (unit) append_native_owned(*unit, false);
+            for (const auto& [id, observed] : strategic_native_owned) {
+                native_input.owned.push_back(observed);
+                native_input.currently_owned_unit_ids.push_back(id);
+            }
+            const auto& native_shop = player_envs[i].shop;
+            if (native_shop) {
+                for (const auto& offer : native_shop->offers())
+                    if (offer) native_input.shop_ids.insert(
+                        offer->champion_internal_id);
+            }
+            if (pool) {
+                for (const auto& definition : catalog->all())
+                    native_input.pool_remaining[definition.internal_id] =
+                        pool->available(definition.internal_id);
+            }
+            for (const auto& [trait, milestones] : trait_milestones) {
+                if (!milestones.empty()) {
+                    native_input.trait_thresholds.push_back({
+                        trait, *std::min_element(milestones.begin(), milestones.end())
+                    });
+                }
+            }
+            strategic_native_generation =
+                strategy::NativeStrategicCompositionGenerator{}.generate(native_input);
+        }
+
+        if (composition_intelligence_enabled) {
+            composition_intelligence_native_diagnostics[i].push_back(
+                strategic_native_generation.reason);
+            for (const auto& generated : strategic_native_generation.candidates) {
+                composition_intelligence::CompositionCandidate candidate;
+                candidate.composition_id = generated.identity;
+                candidate.source = composition_intelligence::CompositionSource::Native;
+                candidate.source_reference = "native-strategic-composition-generator";
+                candidate.source_score = generated.score;
+                candidate.main_carry_id = generated.main_carry_id;
+                candidate.target_board_size = generated.unit_ids.size();
+                if (!generated.unit_ids.empty()) {
+                    const auto* first = catalog->find_by_id(generated.unit_ids.front());
+                    if (first) candidate.set_id =
+                        composition_intelligence::composition_champion_set(
+                            first->api_name, first->character_name);
+                }
+                for (std::size_t unit_index = 0;
+                     unit_index < generated.unit_ids.size(); ++unit_index) {
+                    const auto id = generated.unit_ids[unit_index];
+                    const auto* definition = catalog->find_by_id(id);
+                    if (!definition) continue;
+                    composition_intelligence::CompositionUnit unit;
+                    unit.champion_id = id;
+                    unit.core = id == generated.main_carry_id;
+                    unit.priority = static_cast<int>(generated.unit_ids.size() -
+                        unit_index);
+                    if (id == generated.main_carry_id) {
+                        unit.role = composition_intelligence::UnitRole::MainCarry;
+                    } else if (definition->combat_profile.frontline ||
+                               definition->combat_profile.is_tank) {
+                        unit.role = composition_intelligence::UnitRole::Frontline;
+                    } else if (definition->combat_profile.is_carry) {
+                        unit.role = composition_intelligence::UnitRole::SecondaryCarry;
+                    } else if (definition->combat_profile.is_support) {
+                        unit.role = composition_intelligence::UnitRole::Support;
+                    } else {
+                        unit.role = composition_intelligence::UnitRole::Flex;
+                    }
+                    candidate.units.push_back(std::move(unit));
+                }
+                if (!candidate.units.empty())
+                    composition_intelligence_native_candidates[i].push_back(
+                        std::move(candidate));
+            }
+        }
+
         if (current_round >= 9 && !info.composition_direction.empty()) {
             strategy::CompositionPlanner::OwnedCopies owned_copies;
             for (const auto& [unit_id, copies] : copies_by_unit)
@@ -2961,17 +3083,6 @@ struct TFTEngine::Impl {
                 plan_focus, owned_copies, planning_slots, economy.level,
                 available_copies, currently_offered, &live_context,
                 -1, composition_intelligence_enabled);
-            if (composition_intelligence_enabled) {
-                // The planner captured this DTO before its optional OP.GG
-                // comparison; the adapter consumes only the Native snapshot.
-                const auto native_adapted =
-                    composition_intelligence::NativeCompositionAdapter::adapt(
-                        plan.native_snapshot, catalog->all());
-                composition_intelligence_native_candidates[i] =
-                    native_adapted.candidates;
-                composition_intelligence_native_diagnostics[i] =
-                    native_adapted.diagnostics;
-            }
             const bool direction_transitioned =
                 info.composition_direction != previous_direction;
             const bool keep_previous_plan = !direction_transitioned &&
@@ -3015,6 +3126,9 @@ struct TFTEngine::Impl {
                     ? "Native candidate not generated: planner starts at round 9"
                     : "Native candidate not generated: composition direction is unavailable");
         }
+
+        // Raw shop snapshot shared by the independent shadow composition pipeline.
+        const auto& strategic_shop = player_envs[i].shop;
 
         // BEGIN SHADOW-ONLY EVALUATION BOUNDARY.
         // Every operation in this block is diagnostic-only. Exceptions must never
@@ -3119,403 +3233,69 @@ struct TFTEngine::Impl {
             for (const auto& unit : player_envs[i].bench)
                 if (unit) append_owned_candidate(*unit, false);
 
-            // A cost-4/5 shop unit is only an anchor candidate, never an
-            // automatic pivot. Build alternative lineups around its traits and
-            // let the planner account for retained owned units and transition
-            // overlap before recommending a gradual change.
-            strategy::CompositionPlanner::OwnedCopies strategic_owned_copies;
-            for (const auto& [unit_id, copies] : copies_by_unit)
-                strategic_owned_copies[unit_id] = copies;
-            strategy::CompositionPlanner::AvailableCopies strategic_available;
-            std::unordered_set<std::int32_t> strategic_offered;
-            for (const auto& champion : catalog->all())
-                strategic_available[champion.internal_id] = pool
-                    ? pool->available(champion.internal_id) : 0;
-            const auto& strategic_shop = player_envs[i].shop;
-            if (strategic_shop) {
-                for (const auto& offer : strategic_shop->offers()) {
-                    if (!offer) continue;
-                    strategic_offered.insert(offer->champion_internal_id);
-                    strategic_available[offer->champion_internal_id] =
-                        std::max(1, strategic_available[offer->champion_internal_id]);
-                }
-            }
-
-            // Candidate actions are estimates only. The live action path remains
-            // authoritative; all costs and benefits below are explicitly heuristic.
-            strategy::StrategicActionCandidate hold_candidate;
-            hold_candidate.kind = strategy::StrategicActionKind::Hold;
-            strategic_context.action_candidates.push_back(hold_candidate);
-
-            const auto lost_interest_for = [&](int cost) {
-                if (cost <= 0 || economy.gold < cost) return 0.0;
-                return static_cast<double>(std::max(
-                    0, economy_engine.get_interest(economy.gold) -
-                       economy_engine.get_interest(economy.gold - cost)));
-            };
-            const auto add_economic_candidate = [&](
-                strategy::StrategicActionKind kind, int cost,
-                double board_delta, double fit, double upgrade,
-                double opportunity_cost) {
-                if (cost < 0 || economy.gold < cost) return;
-                strategy::StrategicActionCandidate candidate;
-                candidate.kind = kind;
-                candidate.gold_cost = cost;
-                candidate.direct_gold_cost = static_cast<double>(cost);
-                candidate.lost_interest_cost = lost_interest_for(cost);
-                candidate.opportunity_cost = opportunity_cost;
-                candidate.expected_economy_cost = candidate.direct_gold_cost +
-                    candidate.lost_interest_cost + candidate.opportunity_cost;
-                candidate.expected_board_delta = board_delta;
-                candidate.composition_fit = fit;
-                candidate.upgrade_value = upgrade;
-                strategic_context.action_candidates.push_back(candidate);
-            };
-
-            if (economy.level < EconomyEngine::MAX_LEVEL) {
-                const bool likely_level_up =
-                    strategic_context.xp_to_next > 0 &&
-                    economy.xp + EconomyEngine::XP_PER_BUY >=
-                        strategic_context.xp_to_next;
-                add_economic_candidate(
-                    strategy::StrategicActionKind::BuyExperience,
-                    EconomyEngine::BUY_XP_COST,
-                    likely_level_up ? 0.48 : 0.16, 0.0,
-                    likely_level_up ? 0.25 : 0.05,
-                    strategy::action_opportunity_cost::kBuyExperience);
-            }
-
-            bool has_upgrade_targets = false;
-            for (const auto& [unit_id, copies] : copies_by_unit) {
-                (void)unit_id;
-                if (copies >= 2) { has_upgrade_targets = true; break; }
-            }
-            // Reroll has a larger search/opportunity premium than XP: it spends
-            // a shop action without guaranteeing a unit or level progression.
-            add_economic_candidate(
-                strategy::StrategicActionKind::RerollShop,
-                EconomyEngine::REROLL_COST,
-                has_upgrade_targets ? 0.12 : 0.015,
-                has_upgrade_targets ? 0.25 : 0.02,
-                has_upgrade_targets ? 0.25 : 0.0,
-                has_upgrade_targets
-                    ? strategy::action_opportunity_cost::kRerollWithUpgradeTarget
-                    : strategy::action_opportunity_cost::kRerollWithoutUpgradeTarget);
-
-            if (strategic_shop) {
-                for (const auto& offer : strategic_shop->offers()) {
-                    if (!offer) continue;
-                    const auto* definition = catalog->find_by_id(
-                        offer->champion_internal_id);
-                    if (!definition || economy.gold < definition->cost) continue;
-                    double fit = 0.0;
-                    for (const auto& trait : definition->traits) {
-                        if (std::find(info.core_traits.begin(), info.core_traits.end(),
-                                      trait) != info.core_traits.end())
-                            fit += 1.0;
-                        else if (!info.composition_direction.empty() &&
-                                 trait == info.composition_direction)
-                            fit += 0.75;
-                    }
-                    fit = std::clamp(fit / 2.0, 0.0, 1.0);
-                    const auto copies = copies_by_unit.find(definition->internal_id);
-                    const int owned_copies = copies == copies_by_unit.end()
-                        ? 0 : copies->second;
-                    const double upgrade = owned_copies >= 2 ? 1.0
-                        : (owned_copies == 1 ? 0.30 : 0.0);
-                    const double board_delta = std::clamp(
-                        0.08 + definition->cost * 0.045 +
-                        fit * 0.22 + upgrade * 0.30, 0.0, 0.85);
-                    add_economic_candidate(
-                        strategy::StrategicActionKind::BuyUnit,
-                        definition->cost, board_delta, fit, upgrade,
-                        strategy::action_opportunity_cost::kBuyUnit);
-                    if (!strategic_context.action_candidates.empty())
-                        strategic_context.action_candidates.back().champion_id =
-                            definition->internal_id;
-                }
-            }
-
-            // Selling is considered only for clearly expendable units: no core
-            // membership, no equipped items, and no active pair/upgrade path.
-            const auto append_sell_candidate = [&](const UnitInstance& unit,
-                                                    bool on_board) {
-                const auto* definition = catalog->find_by_id(
-                    unit.champion_internal_id);
-                if (!definition) return;
-                const auto copies = copies_by_unit.find(definition->internal_id);
-                const int owned = copies == copies_by_unit.end() ? 0 : copies->second;
-                const bool core = std::find(info.core_unit_ids.begin(),
-                    info.core_unit_ids.end(), definition->internal_id) !=
-                    info.core_unit_ids.end();
-                if (core || owned >= 2 || !unit.items.empty()) return;
-                const int sale_multiplier = unit.star >= 3 ? 9 :
-                    (unit.star == 2 ? 3 : 1);
-                strategy::StrategicActionCandidate candidate;
-                candidate.kind = strategy::StrategicActionKind::SellUnit;
-                candidate.champion_id = definition->internal_id;
-                candidate.direct_gold_cost = -static_cast<double>(
-                    definition->cost * sale_multiplier);
-                candidate.expected_economy_cost = candidate.direct_gold_cost;
-                candidate.expected_board_delta = on_board
-                    ? -std::clamp(0.10 + definition->cost * 0.035, 0.10, 0.35)
-                    : 0.0;
-                // For a sale, composition_fit means how expendable the
-                // unit is: off-direction pieces score higher, active-direction
-                // pieces receive no sale-fit bonus.
-                candidate.composition_fit = std::find(
-                    definition->traits.begin(), definition->traits.end(),
-                    info.composition_direction) != definition->traits.end()
-                    ? 0.0 : 1.0;
-                candidate.opportunity_cost = on_board ? 0.75 : 0.10;
-                strategic_context.action_candidates.push_back(candidate);
-            };
-            for (const auto& unit : player_envs[i].board)
-                if (unit) append_sell_candidate(*unit, true);
-            for (const auto& unit : player_envs[i].bench)
-                if (unit) append_sell_candidate(*unit, false);
-
-            int occupied_board_slots = 0;
-            for (const auto& unit : player_envs[i].board)
-                if (unit) ++occupied_board_slots;
-            if (occupied_board_slots < economy.level) {
-                for (const auto& unit : player_envs[i].bench) {
-                    if (!unit) continue;
-                    const auto* definition = catalog->find_by_id(
-                        unit->champion_internal_id);
-                    if (!definition) continue;
-                    double fit = 0.0;
-                    for (const auto& trait : definition->traits) {
-                        if (std::find(info.core_traits.begin(), info.core_traits.end(),
-                                      trait) != info.core_traits.end())
-                            fit += 1.0;
-                        else if (!info.composition_direction.empty() &&
-                                 trait == info.composition_direction)
-                            fit += 0.75;
-                    }
-                    fit = std::clamp(fit / 2.0, 0.0, 1.0);
-                    strategy::StrategicActionCandidate candidate;
-                    candidate.kind = strategy::StrategicActionKind::DeployOrMove;
-                    candidate.champion_id = definition->internal_id;
-                    candidate.expected_board_delta = std::clamp(
-                        0.15 + definition->cost / 5.0 * 0.35 +
-                        std::clamp(unit->star, 1, 3) / 3.0 * 0.30 +
-                        fit * 0.15, 0.0, 0.90);
-                    candidate.composition_fit = fit;
-                    candidate.available = true;
-                    strategic_context.action_candidates.push_back(candidate);
-                }
-            }
-            strategy::CompositionPlanner::LiveUnitContext strategic_live_context;
-            const auto collect_strategic_live_unit = [&](const UnitInstance& unit,
-                                                         int board_slot) {
-                auto& equipped =
-                    strategic_live_context.equipped_items_by_champion[
-                        unit.champion_internal_id];
-                if (player_envs[i].item_engine) {
-                    for (const auto& item_id :
-                         player_envs[i].item_engine->equipped(unit.uuid))
-                        equipped.push_back(item_id);
-                }
-                for (const auto& item : unit.items)
-                    if (!item.api_name.empty()) equipped.push_back(item.api_name);
-                if (board_slot >= 0)
-                    strategic_live_context.board_slot_by_champion[
-                        unit.champion_internal_id] = board_slot;
-            };
-            for (std::size_t slot = 0; slot < player_envs[i].board.size(); ++slot)
-                if (player_envs[i].board[slot])
-                    collect_strategic_live_unit(*player_envs[i].board[slot],
-                                                static_cast<int>(slot));
-            for (const auto& unit : player_envs[i].bench)
-                if (unit) collect_strategic_live_unit(*unit, -1);
-            if (player_envs[i].item_engine) {
-                for (const auto& item_id :
-                     player_envs[i].item_engine->inventory())
-                    strategic_live_context.inventory_item_ids.insert(item_id);
-            }
-
-            const strategy::CompositionPlanner::FocusWeights strategic_focus(
-                focus.begin(), focus.end());
-            std::unordered_set<std::string> evaluated_anchor_directions;
-            const auto evaluate_anchor = [&](const ChampionDefinition& definition,
-                                             std::int32_t star,
-                                             bool on_board,
-                                             bool shop_available,
-                                             double item_fit) {
-                ++strategic_context.candidate_generation.anchors_considered;
-                if (definition.cost < 4) {
-                    ++strategic_context.candidate_generation.rejected_cost_below_four;
-                    return;
-                }
-                for (const auto& trait : definition.traits) {
-                    if (evaluated_anchor_directions.size() >= 2) {
-                        ++strategic_context.candidate_generation.rejected_direction_limit;
-                        break;
-                    }
-                    if (trait.empty()) {
-                        ++strategic_context.candidate_generation.rejected_empty_trait;
-                        continue;
-                    }
-                    if (!evaluated_anchor_directions.insert(trait).second) {
-                        ++strategic_context.candidate_generation.rejected_duplicate_direction;
-                        continue;
-                    }
-                    const auto alternative = strategy::CompositionPlanner::build(
-                        catalog->all(), trait_milestones, trait, strategic_focus,
-                        strategic_owned_copies,
-                        strategy::CompositionPlanner::target_slots_for_level(
-                            economy.level),
-                        economy.level, strategic_available, strategic_offered,
-                        &strategic_live_context, definition.internal_id);
-                    if (alternative.unit_ids.empty()) {
-                        ++strategic_context.candidate_generation.rejected_empty_plan;
-                        continue;
-                    }
-                    if (std::find(alternative.unit_ids.begin(),
-                                  alternative.unit_ids.end(),
-                                  definition.internal_id) ==
-                            alternative.unit_ids.end()) {
-                        ++strategic_context.candidate_generation.rejected_anchor_not_in_plan;
-                        continue;
-                    }
-
-                    std::unordered_set<std::int32_t> current_ids(
-                        info.planned_unit_ids.begin(), info.planned_unit_ids.end());
-                    std::size_t reusable = 0;
-                    std::size_t intersection = 0;
-                    for (const auto id : alternative.unit_ids) {
-                        if (strategic_owned_copies.count(id) != 0) ++reusable;
-                        if (current_ids.count(id) != 0) ++intersection;
-                    }
-                    const std::size_t union_size =
-                        current_ids.size() + alternative.unit_ids.size() -
-                        intersection;
-                    const double overlap = union_size == 0 ? 0.0 :
-                        static_cast<double>(intersection) /
-                        static_cast<double>(union_size);
-
-                    strategy::StrategicAnchorCandidate anchor;
-                    anchor.unit.champion_id = definition.internal_id;
-                    anchor.unit.champion_key = definition.api_name;
-                    anchor.unit.cost = definition.cost;
-                    anchor.unit.star = star;
-                    anchor.unit.on_board = on_board;
-                    anchor.unit.on_bench = !on_board && !shop_available;
-                    anchor.unit.composition_fit = 1.0;
-                    anchor.unit.board_contribution = on_board
-                        ? std::clamp(
-                            definition.cost / 5.0 * 0.5 +
-                            std::clamp(star, 1, 3) / 3.0 * 0.5,
-                            0.0, 1.0)
-                        : 0.0;
-                    anchor.unit.item_fit = item_fit;
-                    const auto owned_anchor = strategic_owned_copies.find(
-                        definition.internal_id);
-                    anchor.unit.copies_owned = owned_anchor ==
-                        strategic_owned_copies.end() ? 0 : owned_anchor->second;
-                    anchor.unit.traits = definition.traits;
-                    anchor.target_composition_direction = trait;
-                    anchor.anchor_value = alternative.score;
-                    anchor.transition_cost = 1.0 - overlap;
-                    anchor.reusable_owned_units = static_cast<std::int32_t>(
-                        std::min<std::size_t>(reusable, 5));
-                    // Count exact opponent-owned copies from live board/bench
-                    // state. Shop reservations are excluded because they are
-                    // not confirmed composition investment.
-                    for (std::size_t opponent = 0;
-                         opponent < kPlayersPerLobby; ++opponent) {
-                        if (opponent == i ||
-                            !player_envs[opponent].info.alive) continue;
-                        const auto count_contested = [&](const UnitInstance& unit) {
-                            if (unit.champion_internal_id == definition.internal_id)
-                                anchor.contestation += star_copies(unit.star);
-                        };
-                        for (const auto& unit : player_envs[opponent].board)
-                            if (unit) count_contested(*unit);
-                        for (const auto& unit : player_envs[opponent].bench)
-                            if (unit) count_contested(*unit);
-                    }
-                    anchor.shop_available = shop_available;
-                    strategic_context.anchor_candidates.push_back(
-                        std::move(anchor));
-                    ++strategic_context.candidate_generation.candidates_generated;
-                }
-            };
-
-            // Shop opportunities are evaluated first so an actually available
-            // anchor is not hidden by an already-owned copy of the same trait.
-
-            if (strategic_shop) {
-                for (const auto& offer : strategic_shop->offers()) {
-                    if (!offer) continue;
-                    const auto* definition = catalog->find_by_id(
-                        offer->champion_internal_id);
-                    if (!definition) {
-                        ++strategic_context.candidate_generation.rejected_missing_champion_definition;
-                        continue;
-                    }
-                    evaluate_anchor(*definition, 1, false, true, 0.0);
-                }
-            }
-
-            // High-cost units already owned are also valid anchors. This lets
-            // the planner adapt around strong pieces instead of treating a
-            // shop purchase as the only way to discover a viable direction.
-            for (const auto& unit : player_envs[i].board) {
-                if (!unit) continue;
-                if (evaluated_anchor_directions.size() >= 2) {
-                    ++strategic_context.candidate_generation.rejected_direction_limit;
-                    continue;
-                }
-                const auto* definition = catalog->find_by_id(
-                    unit->champion_internal_id);
-                if (definition) {
-                    evaluate_anchor(*definition, unit->star, true, false,
-                        std::clamp(static_cast<double>(unit->items.size()) / 3.0,
-                                   0.0, 1.0));
-                } else {
-                    ++strategic_context.candidate_generation.rejected_missing_champion_definition;
-                }
-            }
-            for (const auto& unit : player_envs[i].bench) {
-                if (!unit) continue;
-                if (evaluated_anchor_directions.size() >= 2) {
-                    ++strategic_context.candidate_generation.rejected_direction_limit;
-                    continue;
-                }
-                const auto* definition = catalog->find_by_id(
-                    unit->champion_internal_id);
-                if (definition) {
-                    evaluate_anchor(*definition, unit->star, false, false,
-                        std::clamp(static_cast<double>(unit->items.size()) / 3.0,
-                                   0.0, 1.0));
-                } else {
-                    ++strategic_context.candidate_generation.rejected_missing_champion_definition;
-                }
-            }
-
+            // Reuse the independently generated lineups above; do not regenerate
+            // from or adapt any legacy CompositionPlanner output.
             auto& generation = strategic_context.candidate_generation;
-            if (generation.candidates_generated > 0) {
-                generation.no_candidate_reason = "candidate_generated";
-            } else if (generation.rejected_missing_champion_definition > 0) {
-                generation.no_candidate_reason = "anchor_missing_from_champion_catalog";
-            } else if (generation.anchors_considered == 0) {
-                generation.no_candidate_reason = "no_high_cost_anchor_units_seen";
-            } else if (generation.rejected_empty_plan > 0) {
-                generation.no_candidate_reason = "composition_planner_returned_empty_plan";
-            } else if (generation.rejected_anchor_not_in_plan > 0) {
-                generation.no_candidate_reason = "anchor_not_in_generated_plan";
-            } else if (generation.rejected_cost_below_four > 0 &&
-                       generation.rejected_cost_below_four == generation.anchors_considered) {
-                generation.no_candidate_reason = "no_cost_four_or_five_anchor";
-            } else if (generation.rejected_direction_limit > 0) {
-                generation.no_candidate_reason = "two_direction_evaluation_limit_reached";
-            } else if (generation.rejected_empty_trait > 0 ||
-                       generation.rejected_duplicate_direction > 0) {
-                generation.no_candidate_reason = "no_new_eligible_anchor_trait";
-            } else {
-                generation.no_candidate_reason = "no_candidate_passed_generation_filters";
+            generation.anchors_considered =
+                strategic_native_generation.directions_considered;
+            generation.candidates_generated = static_cast<std::uint32_t>(
+                strategic_native_generation.candidates.size());
+            generation.no_candidate_reason = strategic_native_generation.reason;
+
+            for (const auto& composition : strategic_native_generation.candidates) {
+                const auto* definition = catalog->find_by_id(
+                    composition.anchor_champion_id);
+                if (!definition) {
+                    ++generation.rejected_missing_champion_definition;
+                    continue;
+                }
+
+                strategy::StrategicAnchorCandidate anchor;
+                anchor.unit.champion_id = definition->internal_id;
+                anchor.unit.champion_key = definition->api_name;
+                anchor.unit.cost = definition->cost;
+                anchor.unit.composition_fit = 1.0;
+                anchor.unit.traits = definition->traits;
+                anchor.target_composition_direction = composition.direction;
+                anchor.composition_identity = composition.identity;
+                anchor.candidate_unit_ids = composition.unit_ids;
+                anchor.main_carry_id = composition.main_carry_id;
+                anchor.candidate_traits = composition.completed_traits;
+                anchor.evidence = composition.evidence;
+                anchor.anchor_value = composition.score;
+                anchor.transition_cost = composition.transition_cost;
+                anchor.reusable_owned_units = composition.reusable_owned_units;
+                anchor.shop_available = composition.anchor_available_in_shop;
+
+                const auto observed = strategic_native_owned.find(definition->internal_id);
+                if (observed != strategic_native_owned.end()) {
+                    anchor.unit.star = observed->second.star;
+                    anchor.unit.copies_owned = observed->second.copies;
+                    anchor.unit.on_board = observed->second.on_board;
+                    anchor.unit.on_bench = observed->second.on_bench;
+                    anchor.unit.board_contribution =
+                        observed->second.board_contribution;
+                    anchor.unit.item_fit = observed->second.item_fit;
+                } else {
+                    anchor.unit.star = 1;
+                }
+
+                // Contestation is derived from opponents' observed board/bench
+                // copies, not from a legacy strategic plan.
+                for (std::size_t opponent = 0;
+                     opponent < kPlayersPerLobby; ++opponent) {
+                    if (opponent == i || !player_envs[opponent].info.alive)
+                        continue;
+                    const auto count_contested = [&](const UnitInstance& unit) {
+                        if (unit.champion_internal_id == definition->internal_id)
+                            anchor.contestation += star_copies(unit.star);
+                    };
+                    for (const auto& unit : player_envs[opponent].board)
+                        if (unit) count_contested(*unit);
+                    for (const auto& unit : player_envs[opponent].bench)
+                        if (unit) count_contested(*unit);
+                }
+                strategic_context.anchor_candidates.push_back(std::move(anchor));
             }
 
             strategy::StrategicCommitment strategic_commitment;
@@ -4323,7 +4103,10 @@ struct TFTEngine::Impl {
             for (const auto& candidate : shadow_decision.candidate_diagnostics) {
                 info.strategic_candidate_diagnostics.push_back({
                     candidate.champion_id, candidate.target_composition_direction,
-                    candidate.score, candidate.accepted, candidate.evaluation_reason
+                    candidate.score, candidate.accepted, candidate.evaluation_reason,
+                    candidate.composition_identity, candidate.candidate_unit_ids,
+                    candidate.main_carry_id, candidate.candidate_traits,
+                    candidate.evidence
                 });
             }
             info.strategic_candidate_direction =
