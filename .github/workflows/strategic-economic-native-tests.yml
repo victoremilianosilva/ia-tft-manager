@@ -18,6 +18,7 @@ on:
       - 'cpp/tests/test_shadow_failure_boundary.cpp'
       - 'tests/test_shadow_ppo_isolation_architecture.py'
       - 'tests/test_strategic_evidence_context_architecture.py'
+      - 'tests/test_strategic_evidence_context_architecture.py'
       - 'docs/shadow-ppo-isolation-contract.md'
       - '.github/workflows/strategic-economic-native-tests.yml'
   pull_request:
