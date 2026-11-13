@@ -54,7 +54,8 @@ struct StrategicEvidenceContext {
     bool valid_for(std::uint64_t expected_match_id,
                    std::int32_t expected_player_id,
                    std::uint32_t expected_round) const noexcept {
-        return schema_version == kSchemaVersion &&
+        return schema_version == kSchemaVersion && sequence > 0 &&
+            quality != StrategicEvidenceQuality::Missing &&
             quality != StrategicEvidenceQuality::Stale &&
             quality != StrategicEvidenceQuality::Incompatible &&
             match_id == expected_match_id &&
