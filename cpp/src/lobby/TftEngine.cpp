@@ -3653,7 +3653,33 @@ struct TFTEngine::Impl {
                 native_action_state.composition_version = active ? active->version : 0;
                 native_action_state.gold = strategic_context.gold;
                 native_action_state.alive = strategic_context.alive;
-                native_action_state.masks = player_envs[i].action_masks;
+                // Regenerate masks from the exact same native state snapshot
+                // instead of trusting a cached mask from an earlier action/round.
+                try {
+                    const auto native_decision_state = build_decision_state(i);
+                    const auto native_mask_batch = action_mask_engine.generate_masks(
+                        native_decision_state, player_envs[i].anti_loop);
+                    native_action_state.masks.type_mask = native_mask_batch.type_mask;
+                    native_action_state.masks.shop_mask = native_mask_batch.shop_mask;
+                    native_action_state.masks.bench_source_mask = native_mask_batch.bench_source_mask;
+                    native_action_state.masks.board_target_mask = native_mask_batch.board_target_mask;
+                    native_action_state.masks.board_source_mask = native_mask_batch.board_source_mask;
+                    native_action_state.masks.bench_move_source_mask = native_mask_batch.bench_move_source_mask;
+                    for (std::size_t source = 0; source < kBoardSlots; ++source)
+                        for (std::size_t target = 0; target < kBoardSlots; ++target)
+                            native_action_state.masks.board_move_target_masks[
+                                source * kBoardSlots + target] =
+                                    native_mask_batch.board_move_target_masks[source][target];
+                    for (std::size_t source = 0; source < kBenchSlots; ++source)
+                        for (std::size_t target = 0; target < kBoardSlots; ++target)
+                            native_action_state.masks.bench_to_board_target_masks[
+                                source * kBoardSlots + target] =
+                                    native_mask_batch.bench_to_board_target_masks[source][target];
+                } catch (const std::exception& mask_error) {
+                    native_action_state.mask_generation_error = mask_error.what();
+                } catch (...) {
+                    native_action_state.mask_generation_error = "unknown_native_mask_error";
+                }
                 native_action_state.shop_champion_ids.fill(-1);
                 native_action_state.bench_champion_ids.fill(-1);
                 native_action_state.board_champion_ids.fill(-1);
