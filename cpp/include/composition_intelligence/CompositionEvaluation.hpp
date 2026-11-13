@@ -34,6 +34,11 @@ struct OwnedUnitEvidence {
     std::int32_t copies{0};
     std::int32_t highest_star{1};
     std::vector<std::string> equipped_item_ids;
+    // Appended evidence keeps existing aggregate initializers source-compatible.
+    double board_contribution{0.5};
+    double synergy_contribution{0.5};
+    bool completes_active_trait{false};
+    bool explicit_sell_candidate{false};
 };
 
 struct CandidateEvidence {
@@ -56,6 +61,10 @@ struct CompositionEvaluationContext {
     std::int32_t gold{0};
     std::vector<OwnedUnitEvidence> owned_units;
     std::vector<CandidateEvidence> candidate_evidence;
+    // Identity scopes hysteresis so evidence from one player/match cannot
+    // accumulate toward another player's transition.
+    std::uint64_t match_id{0};
+    std::int32_t player_id{-1};
 };
 
 struct CompositionScoreBreakdown {
@@ -294,6 +303,12 @@ public:
         }
 
         const auto& target = *proposal.target;
+        if (pending_match_id_ != context.match_id ||
+            pending_player_id_ != context.player_id) {
+            reset_hysteresis();
+            pending_match_id_ = context.match_id;
+            pending_player_id_ = context.player_id;
+        }
         if (proposal.decision == CompositionDecision::SelectInitial) {
             proposal.hysteresis_satisfied = true;
             proposal.evidence_streak = 1;
@@ -393,9 +408,17 @@ private:
                 if (target_ids.count(id)) continue;
                 plan.replaceable_unit_ids.push_back(id);
                 if (const auto* unit = owned(id, context)) {
-                    plan.sell_candidate_unit_ids.push_back(id);
                     if (!unit->equipped_item_ids.empty())
                         plan.item_risk_unit_ids.push_back(id);
+                    const bool low_board_value = std::isfinite(unit->board_contribution) &&
+                        unit->board_contribution < 0.25;
+                    const bool low_synergy_value = std::isfinite(unit->synergy_contribution) &&
+                        unit->synergy_contribution < 0.25;
+                    if (unit->explicit_sell_candidate && low_board_value &&
+                        low_synergy_value && !unit->completes_active_trait &&
+                        unit->equipped_item_ids.empty()) {
+                        plan.sell_candidate_unit_ids.push_back(id);
+                    }
                 }
             }
         }
@@ -430,6 +453,8 @@ private:
     CompositionEvaluationConfig config_;
     CompositionEvaluator evaluator_;
     std::string pending_candidate_id_;
+    std::uint64_t pending_match_id_{0};
+    std::int32_t pending_player_id_{-1};
     std::uint32_t evidence_streak_{0};
     std::uint32_t last_evidence_round_{0};
 };
