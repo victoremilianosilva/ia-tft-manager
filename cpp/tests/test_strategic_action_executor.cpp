@@ -189,7 +189,7 @@ void missing_candidate_and_unsupported_intent_are_rejected() {
     auto unsupported_context = source_context(StrategicActionKind::None);
     auto unsupported_recommendation = recommendation(StrategicActionKind::None);
     StrategicActionExecutor unsupported;
-    result = resolve(unsupported,r,unsupported_context,s,"unsupported");
+    result = resolve(unsupported,unsupported_recommendation,unsupported_context,s,"unsupported");
     assert(!result.accepted && result.validation_reason == "unsupported_semantic_action");
 }
 void failed_resolution_is_audited_without_execution() {
