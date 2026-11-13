@@ -136,6 +136,9 @@ public:
         }
         if (!selected || !selected->eligible)
             return reject(std::move(out), "no_eligible_selected_candidate", "recommendation_not_accepted");
+        if (recommendation.recommended_action != selected->kind ||
+            recommendation.recommended_champion_id != selected->champion_id)
+            return reject(std::move(out), "selected_candidate_disagrees_with_recommendation_summary", "recommendation_integrity_mismatch");
         if (selected->candidate_index >= source.action_candidates.size())
             return reject(std::move(out), "candidate_index_out_of_range", "source_candidate_mismatch");
         const auto& source_candidate = source.action_candidates[selected->candidate_index];
