@@ -36,6 +36,7 @@ struct StrategicPositionSnapshot {
     std::string composition_id;
     std::uint64_t composition_version{0};
     bool alive{false};
+    std::int32_t requested_champion_id{-1}; // -1 evaluates all active-composition units.
     std::array<std::int32_t, decision::BOARD_SIZE> board_ids{};
     std::array<std::int32_t, decision::BENCH_SIZE> bench_ids{};
     PlayerActionMasks masks{};
@@ -139,6 +140,7 @@ public:
         double best_score = -1.0e9;
         std::int32_t best_priority = -1;
         for (const auto& [champion_id, role] : roles) {
+            if (snapshot.requested_champion_id >= 0 && champion_id != snapshot.requested_champion_id) continue;
             const auto source = owned.find(champion_id);
             if (source == owned.end() || ambiguous.count(champion_id)) continue;
             const auto zone = source->second.first;
