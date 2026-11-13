@@ -132,6 +132,14 @@ int main() {
     assert(invalid.quality == StrategicEvidenceQuality::Incompatible);
     assert(!invalid.valid_for(7001, 2, 9));
 
+    auto missing_input = observed_input();
+    missing_input.observed_context.owned_units.clear();
+    missing_input.direction.clear();
+    missing_input.direction_identity.clear();
+    const auto missing = builder.build(std::move(missing_input));
+    assert(missing.quality == StrategicEvidenceQuality::Missing);
+    assert(!missing.valid_for(7001, 2, 9));
+
     auto no_sequence_input = observed_input();
     no_sequence_input.sequence = 0;
     const auto no_sequence = builder.build(std::move(no_sequence_input));
