@@ -1,8 +1,8 @@
 #pragma once
 
 // Versioned, player-scoped context for the new strategic planner.
-// This contract intentionally has no dependency on StrategyInfo,
-// CompositionDirectionPolicy, or CompositionPlanner.
+// This contract intentionally has no dependency on legacy strategic state,
+// direction policies, or composition planning implementations.
 
 #include "strategy/StrategicPlanning.hpp"
 
