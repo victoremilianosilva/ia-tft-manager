@@ -103,6 +103,7 @@ void confirms_and_synchronizes_both_identities_atomically() {
         assert(pending.status == PivotConfirmationStatus::ObservedPending);
         assert(coordinator.active_composition()->candidate.composition_id == "composition-a");
         assert(coordinator.anchors().direction_anchor.identity == "direction-a-v1");
+        assert(coordinator.anchors().pivot_candidate.lifecycle == StrategicAnchorLifecycle::Evaluated);
     }
 
     const auto confirmed = coordinator.observe_and_confirm(
@@ -156,6 +157,23 @@ void mismatched_or_invalidated_source_is_rejected_without_mutation() {
     assert(result.status == PivotConfirmationStatus::Rejected);
     assert(coordinator.active_composition()->candidate.composition_id == "composition-a");
     assert(coordinator.anchors().direction_anchor.composition_version == 1);
+}
+
+void stale_feasibility_result_cannot_confirm_a_different_candidate() {
+    auto coordinator = initialized_coordinator();
+    const auto pivot = make_pivot();
+    const auto input = make_feasibility_input();
+    auto stale_result = viable_result(input);
+    stale_result.candidate_composition_identity = "composition-old";
+    const auto result = coordinator.observe_and_confirm(
+        pivot,
+        make_composition("composition-b", 3, {{3, UnitRole::MainCarry, true, 100}}),
+        input, stale_result, 1);
+    assert(result.status == PivotConfirmationStatus::Rejected);
+    assert(result.reason == "destination_or_feasibility_identity_mismatch");
+    assert(coordinator.active_composition()->candidate.composition_id == "composition-a");
+    assert(coordinator.anchors().direction_anchor.identity == "direction-a-v1");
+    assert(coordinator.history().empty());
 }
 
 void invalidated_candidate_is_cleared_without_changing_active_direction() {
@@ -258,6 +276,7 @@ int main() {
     insufficient_or_rejected_evaluation_never_changes_direction();
     mismatched_or_invalidated_source_is_rejected_without_mutation();
     invalidated_candidate_is_cleared_without_changing_active_direction();
+    stale_feasibility_result_cannot_confirm_a_different_candidate();
     rejects_incomplete_initial_state();
     destination_conflict_and_out_of_order_updates_are_rejected();
     cooldown_prevents_rapid_reverse_pivots();
