@@ -107,6 +107,30 @@ int main() {
 
     {
         auto input = viable_input();
+        // One required trait member is neither observed nor known to be absent
+        // from the pool. This must remain unknown, not become a false rejection.
+        input.observed_units[2].pool_remaining = -1;
+        input.observed_units[2].owned_copies = 0;
+        input.observed_units[2].shop_copies = 0;
+        input.required_traits = {{"Arcanist", 2}};
+        const auto result = evaluator.evaluate(input);
+        assert(result.status == PivotFeasibilityStatus::InsufficientEvidence);
+        assert(std::find(result.missing_data.begin(), result.missing_data.end(),
+            "trait_reachability_unknown_Arcanist") != result.missing_data.end());
+        assert(std::find(result.blockers.begin(), result.blockers.end(),
+            "trait_not_reachable_Arcanist") == result.blockers.end());
+    }
+
+    {
+        const auto input = viable_input();
+        const auto result = evaluator.evaluate(input);
+        assert(result.candidate_composition_identity == input.candidate_composition_identity);
+        assert(result.source_direction_anchor_identity == input.source_direction_anchor_identity);
+        assert(result.source_composition_version == input.source_composition_version);
+    }
+
+    {
+        auto input = viable_input();
         input.source_composition_version = 0;
         const auto result = evaluator.evaluate(input);
         assert(result.status == PivotFeasibilityStatus::InsufficientEvidence);
