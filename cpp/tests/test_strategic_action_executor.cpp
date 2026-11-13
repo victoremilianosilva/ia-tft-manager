@@ -209,6 +209,7 @@ void failed_resolution_is_audited_without_execution() {
     assert(json["execution"]["status"] == "not_attempted_shadow_only");
     assert(json["shadow_only"] == true);
     assert(json["resolution"]["accepted"] == false);
+    for (const auto value : result.native_action.values) assert(value == -1);
 }
 }
 
