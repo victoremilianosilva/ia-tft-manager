@@ -250,6 +250,7 @@ public:
                     return reject(std::move(out), "champion_has_multiple_owned_instances_require_explicit_instance", "ambiguous_unit_instance");
                 if (bench_slot >= 0) {
                     if (!type_enabled(decision::ActionType::MOVE_BENCH) ||
+                        state.masks.bench_move_source_mask[static_cast<std::size_t>(bench_slot)] != decision::MASK_ENABLED ||
                         state.masks.bench_to_board_target_masks[
                             static_cast<std::size_t>(bench_slot) * decision::BOARD_SIZE +
                             static_cast<std::size_t>(target->target_board_slot)] != decision::MASK_ENABLED)
@@ -261,6 +262,7 @@ public:
                     if (board_slot < 0)
                         return reject(std::move(out), "move_unit_not_owned", "unit_not_found");
                     if (!type_enabled(decision::ActionType::MOVE_BOARD) ||
+                        state.masks.board_source_mask[static_cast<std::size_t>(board_slot)] != decision::MASK_ENABLED ||
                         state.masks.board_move_target_masks[
                             static_cast<std::size_t>(board_slot) * decision::BOARD_SIZE +
                             static_cast<std::size_t>(target->target_board_slot)] != decision::MASK_ENABLED)
