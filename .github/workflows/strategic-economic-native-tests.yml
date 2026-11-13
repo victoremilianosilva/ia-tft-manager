@@ -10,6 +10,7 @@ on:
       - 'cpp/bindings/tft_engine_bindings.cpp'
       - 'cpp/tests/test_strategic_planner.cpp'
       - 'cpp/tests/test_native_strategic_composition_generator.cpp'
+      - 'cpp/tests/test_strategic_evidence_context.cpp'
       - 'cpp/tests/test_strategic_direction_pivot_audit_recorder.cpp'
       - 'cpp/tests/test_tft_engine_pool.cpp'
       - 'cpp/include/composition_intelligence/ShadowFailureBoundary.hpp'
@@ -21,6 +22,7 @@ on:
     paths:
       - 'cpp/CMakeLists.txt'
       - 'cpp/tests/test_native_strategic_composition_generator.cpp'
+      - 'cpp/tests/test_strategic_evidence_context.cpp'
       - 'cpp/include/strategy/**'
       - 'cpp/include/lobby/TftEngine.hpp'
       - 'cpp/src/lobby/TftEngine.cpp'
@@ -43,8 +45,8 @@ jobs:
       - name: Configure CMake
         run: cmake -S cpp -B build -DBUILD_TESTING=ON -DCMAKE_BUILD_TYPE=Release
       - name: Build native engine and strategic planner tests
-        run: cmake --build build --target tft_engine test_tft_engine_pool test_strategic_planner test_shadow_failure_boundary test_strategic_direction_pivot_audit_recorder test_native_strategic_composition_generator --config Release --parallel 2
+        run: cmake --build build --target tft_engine test_tft_engine_pool test_strategic_planner test_shadow_failure_boundary test_strategic_direction_pivot_audit_recorder test_native_strategic_composition_generator test_strategic_evidence_context --config Release --parallel 2
       - name: Run strategic planner regression tests
-        run: ctest --test-dir build -R 'tft_engine_pool|strategic_planner_shadow|shadow_failure_boundary|strategic_direction_pivot_audit_recorder|native_strategic_composition_generator' --output-on-failure
+        run: ctest --test-dir build -R 'tft_engine_pool|strategic_planner_shadow|shadow_failure_boundary|strategic_direction_pivot_audit_recorder|native_strategic_composition_generator|strategic_evidence_context' --output-on-failure
       - name: Verify PPO Shadow architecture boundary
         run: python tests/test_shadow_ppo_isolation_architecture.py
