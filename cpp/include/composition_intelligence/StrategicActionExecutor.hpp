@@ -35,6 +35,7 @@ struct StrategicActionNativeSnapshot {
     std::array<std::int32_t, decision::BENCH_SIZE> bench_champion_ids{};
     std::array<std::int32_t, decision::BOARD_SIZE> board_champion_ids{};
     PlayerActionMasks masks{};
+    std::string mask_generation_error;
     std::vector<StrategicActionMoveTarget> requested_move_targets;
 };
 
@@ -115,6 +116,8 @@ public:
             return reject(std::move(out), "recommendation_id_missing", "not_validated");
         if (recommendation.stale)
             return reject(std::move(out), "recommendation_stale:" + recommendation.stale_reason, "stale_recommendation");
+        if (!state.mask_generation_error.empty())
+            return reject(std::move(out), "native_mask_generation_failed:" + state.mask_generation_error, "native_legality_unavailable");
         if (!state.alive)
             return reject(std::move(out), "player_not_alive", "player_not_alive");
         if (state.sequence == 0 || request.expected_snapshot_sequence == 0 ||
