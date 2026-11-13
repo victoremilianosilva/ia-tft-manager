@@ -386,6 +386,12 @@ if(BUILD_TESTING)
     enable_tft_test_assertions(test_contextual_action_evaluator)
     add_test(NAME contextual_action_evaluator COMMAND test_contextual_action_evaluator)
 
+    add_executable(test_strategic_action_executor tests/test_strategic_action_executor.cpp)
+    configure_tft_module(test_strategic_action_executor)
+    target_link_libraries(test_strategic_action_executor PRIVATE nlohmann_json::nlohmann_json)
+    enable_tft_test_assertions(test_strategic_action_executor)
+    add_test(NAME strategic_action_executor COMMAND test_strategic_action_executor)
+
     add_executable(test_composition_diagnostics tests/test_composition_diagnostics.cpp)
     configure_tft_module(test_composition_diagnostics)
     target_link_libraries(test_composition_diagnostics PRIVATE nlohmann_json::nlohmann_json)
