@@ -117,12 +117,14 @@ public:
         if (out.proposed_or_confirmed_direction.empty()) {
             out.planner_context.current_direction_score = 0.0;
             out.planner_context.current_direction_viable = false;
-            out.quality = out.observed_units.empty()
-                ? StrategicEvidenceQuality::Missing
-                : StrategicEvidenceQuality::Partial;
-            out.quality_reason = out.observed_units.empty()
-                ? "no_observed_units_or_direction_evidence"
-                : "observed_units_available_direction_not_established";
+            const bool has_new_evidence = !out.observed_units.empty() ||
+                !out.planner_context.anchor_candidates.empty();
+            out.quality = has_new_evidence
+                ? StrategicEvidenceQuality::Partial
+                : StrategicEvidenceQuality::Missing;
+            out.quality_reason = has_new_evidence
+                ? "new_game_evidence_available_direction_not_established"
+                : "no_observed_units_or_generated_candidates";
         } else {
             out.quality = StrategicEvidenceQuality::Complete;
             out.quality_reason = "new_evidence_context_built";
