@@ -1,5 +1,7 @@
 # Avaliação de checkpoints e ferramentas
 
+> **Ferramentas existentes, não protocolo normativo de promoção da nova linhagem.** O script head-to-head e os benchmarks abaixo documentam utilitários atuais. Experimentos da nova linhagem devem seguir o [PPO Evaluation Protocol v1](ppo-evaluation-protocol.v1.draft.md), incluindo identidade semântica/manifestos, seeds pareadas, rotação determinística, splits, incerteza, ablações e critérios de promoção. Resultados deste script isoladamente não satisfazem esse protocolo.
+
 ## Head-to-head
 
 scripts/evaluate_checkpoints.py compara dois checkpoints sem treinar nenhum deles. Em cada partida, quatro vagas usam a policy candidata e quatro a baseline; as vagas candidatas rotacionam entre partidas para reduzir viés de assento. A avaliação é determinística e usa seeds diferentes por partida.
@@ -16,7 +18,7 @@ Ajuste os caminhos aos checkpoints disponíveis no ambiente local.
 
 O CSV mantém os resultados por jogador. O JSON adicional agrega baseline e candidata, calcula deltas pareados por seed para colocação média, taxa de vitória e top 4, e inclui intervalos de confiança de 95% por bootstrap das seeds. Uma diferença negativa em colocação média favorece a candidata; diferenças positivas em vitória/top 4 favorecem a candidata. Esses intervalos descrevem a variação observada entre seeds e não provam causalidade.
 
-Para comparações futuras, mantenha o mesmo --seed inicial, a mesma quantidade de partidas, a mesma versão da engine e a mesma configuração de avaliação. Use checkpoints compatíveis com a dimensão atual da observação e com a arquitetura de TFTPolicy; o script falha em vez de migrar silenciosamente pesos incompatíveis.
+Para uso deste utilitário legado, mantenha o mesmo --seed inicial, quantidade de partidas, versão da engine e configuração. A checagem estrutural de dimensão/arquitetura do script não prova compatibilidade semântica. Para comparações da nova linhagem, exija manifestos e compatibilidade dos contratos conforme o PPO Evaluation Protocol v1; checkpoints legados permanecem baselines imutáveis.
 
 ## Outras ferramentas
 
