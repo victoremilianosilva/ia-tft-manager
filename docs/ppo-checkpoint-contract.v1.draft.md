@@ -305,3 +305,5 @@ A future checkpoint manifest must bind the reviewed semantic consumer decision m
 ## Structured entity manifest lineage (proposal)
 
 A future checkpoint manifest must bind the reviewed structured-entity/temporal contract identity and hash independently from the semantic consumer matrix, Observation Schema, concrete tensor projection, normalization/formula manifests, architecture and catalogs. A shape-compatible checkpoint is not semantically compatible if entity identity, ownership, completeness or temporal scope changes. The current draft contract is not runtime-approved.
+
+The manifest path is `spec/observation-structured-entity-temporal-contract.v1.draft.json`; its current draft version/hash must be recorded independently from tensor projection and checkpoint architecture identities.
