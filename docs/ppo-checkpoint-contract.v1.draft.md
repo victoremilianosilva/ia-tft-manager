@@ -62,7 +62,7 @@ The canonical v1 architecture must be designed from the approved Observation Sch
 
 The following constraints are normative for the future architecture:
 
-1. **Projection first:** freeze a deterministic tensor projection before freezing encoder dimensions. It must declare every feature ID, source field, provenance/status handling, units, normalization, offset/shape, formula version, and consumer (board encoder, global/context encoder, candidate scorer, actor, critic, or diagnostics). A schema field is not automatically a PPO tensor feature.
+1. **Projection first:** freeze a deterministic tensor projection before freezing encoder dimensions, following [Observation Tensor Projection Contract v1 — Design Requirements](observation-tensor-projection-contract.v1.draft.md). It must declare every feature ID, source field, provenance/status handling, units, normalization, offset/shape, formula version, and consumer (board encoder, global/context encoder, candidate scorer, actor, critic, or diagnostics). A schema field is not automatically a PPO tensor feature. The current schema projection envelope and source/legacy maps do not constitute a populated target projection.
 2. **Canonical strategic/economic context:** future PPO inputs may include validated factual/evidence fields from the canonical owners, including direction/commitment and active-composition context, unit/pair/upgrade evidence, progression, economic posture, opportunity costs, survival/pressure and uncertainty. Each field must preserve owner, identity/version and exact source sequence. Distinct concepts remain distinct; direction, active composition, pivot candidate, focus, core traits, posture and progression must not be collapsed into a legacy strategy enum.
 3. **No recommendation imitation:** exclude `shadow_recommendations`, evaluator scores/rankings/confidence, baseline recommendations, executor resolutions, and the diagnostic-only `unified_state_machine` from PPO observation features, labels, reward targets and imitation losses. Canonical owner-produced evidence may be consumed as context after provenance/sequence validation; Shadow recommendations remain diagnostics.
 4. **Actor and action contract:** retain the independent Action Contract boundary. The actor may use an autoregressive/conditional factorization, but every output distribution and argument mapping must be explicitly identified against the action catalog. Item heads remain separately identified from the six-integer transport record. Observation projection changes must not silently alter action IDs, argument meanings or dimensions.
@@ -203,7 +203,9 @@ If weights are intentionally imported only as an initialization for new training
 
 The observation manifest must reference both:
 - the semantic Observation Schema (field identities, provenance, status, units, catalog references); and
-- the tensor projection (ordered feature IDs, offsets, dimensions, normalization, missingness encoding, and consumer/head alignment).
+- the tensor projection (ordered feature IDs, offsets, dimensions, normalization, missingness encoding, and consumer/head alignment), as specified by [Observation Tensor Projection Contract v1 — Design Requirements](observation-tensor-projection-contract.v1.draft.md).
+
+The current schema's `schema.projection` object is an identity-bearing envelope, not a complete feature-level tensor manifest. The source map documents current producers and availability; the legacy feature map and migration map document historical behavior and semantic disposition. None of these artifacts approves target offsets, dimensions, encodings, or normalization.
 
 The projection must not collapse `missing`, `unknown`, `stale`, or `incompatible` into a valid zero without an explicit field-level encoding rule.
 
@@ -256,7 +258,7 @@ Before runtime implementation can be considered complete, tests and reports must
 **Documentary work in this draft:** current architecture and checkpoint payload audited; proposed manifest, compatibility classes, resume policy, legacy policy, and acceptance matrix specified.
 
 **Still pending before Gate 4 can be accepted as a complete contract:**
-- final Observation Schema/projection approval and exact feature manifest/hash generation;
+- final Observation Schema approval (documentary schema approved) and concrete tensor projection approval, including exact feature manifest/hash generation;
 - final Action Contract identity/hash and head-order mapping;
 - final Reward Contract approval and temporal attribution identity;
 - a complete architecture manifest with stable encoder/head IDs and deterministic serialization;

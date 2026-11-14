@@ -7,6 +7,7 @@ Esta documentação descreve o código presente no repositório, separando arqui
 Para decisões de arquitetura e implementação da nova linhagem, use primeiro os contratos aprovados e os artefatos versionados abaixo. Os documentos de comportamento atual/legado continuam úteis como evidência histórica, mas não substituem esses contratos.
 
 - [Observation Schema v1 (machine-readable)](../spec/observation-schema.v1.draft.json), com mapas de origem, migração e disponibilidade.
+- [Observation Tensor Projection Contract v1 — Design Requirements](observation-tensor-projection-contract.v1.draft.md) — requisitos documentais para a projeção concreta; o layout tensorial alvo permanece não aprovado.
 - [Action / Mask Contract v1](action-mask-contract.v1.draft.md) — especificação documental aprovada; execução/aceitação runtime pendente.
 - [Reward Contract v1](reward-contract.v1.draft.md) — especificação documental aprovada; migração runtime pendente.
 - [PPO Architecture and Checkpoint Contract v1](ppo-checkpoint-contract.v1.draft.md) — especificação documental aprovada; loader/migração runtime pendentes.
