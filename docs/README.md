@@ -13,6 +13,7 @@ Para decisões de arquitetura e implementação da nova linhagem, use primeiro o
 - [Strategic Ownership and Integration Contract v1](strategic-ownership-integration.v1.draft.md) — ownership canônico aprovado; integração executável pendente.
 - [Economic Evidence and Progression Contract v1](economic-evidence-and-progression-contract.v1.draft.md), [Strategic Action Candidate Contract v1](strategic-action-candidate-contract.v1.draft.md), [Unit Ownership and Star Progress Contract v1](unit-ownership-and-star-progress-contract.v1.draft.md) e [Strategic Shadow Integrated Replay Contract v1](strategic-shadow-integrated-replay-contract.v1.draft.md) — especificações documentais aprovadas; execução pendente.
 - [PPO Evaluation Protocol v1](ppo-evaluation-protocol.v1.draft.md) — protocolo documental aprovado; avaliação executável pendente.
+- [Legacy strategic consumer and shutdown matrix](legacy-strategic-consumer-migration-matrix.md) — inventário estático consolidado, destinos por consumidor, ordem de migração e critérios de desligamento; não autoriza remoção do legado.
 
 **Regra de leitura:** contratos aprovados definem semântica e autoridade futuras; documentação de código descreve o comportamento observado no snapshot auditado; issues registram lacunas e trabalho de aceitação. Nenhuma aprovação documental libera implementação antes do Gate 8 e autorização explícita.
 
