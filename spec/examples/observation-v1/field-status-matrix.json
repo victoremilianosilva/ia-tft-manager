@@ -8,7 +8,8 @@
       "provenance": {
         "source": "fixture",
         "source_path": "economy.xp",
-        "source_sequence": 1
+        "source_sequence": 1,
+        "nature": "observed"
       }
     },
     "missing": {
@@ -17,7 +18,8 @@
       "reason": "source_not_produced",
       "provenance": {
         "source": "fixture",
-        "source_path": "economy.projected_next_round_income"
+        "source_path": "economy.projected_next_round_income",
+        "nature": "observed"
       }
     },
     "unknown": {
@@ -26,7 +28,8 @@
       "reason": "insufficient_evidence",
       "provenance": {
         "source": "fixture",
-        "source_path": "strategic.direction"
+        "source_path": "strategic.direction",
+        "nature": "inferred"
       }
     },
     "not_applicable": {
@@ -35,7 +38,8 @@
       "reason": "no_pending_anvil",
       "provenance": {
         "source": "fixture",
-        "source_path": "items.pending_anvil"
+        "source_path": "items.pending_anvil",
+        "nature": "observed"
       }
     },
     "stale": {
@@ -45,7 +49,8 @@
       "provenance": {
         "source": "fixture",
         "source_path": "strategic.anchor_candidates",
-        "source_sequence": 4
+        "source_sequence": 4,
+        "nature": "derived"
       }
     },
     "incompatible": {
@@ -54,7 +59,8 @@
       "reason": "catalog_fingerprint_mismatch",
       "provenance": {
         "source": "fixture",
-        "source_path": "traits.counts"
+        "source_path": "traits.counts",
+        "nature": "derived"
       }
     },
     "partial": {
@@ -67,7 +73,8 @@
       "reason": "some_opponent_snapshots_unavailable",
       "provenance": {
         "source": "fixture",
-        "source_path": "lobby.contestation"
+        "source_path": "lobby.contestation",
+        "nature": "derived"
       }
     },
     "estimated": {
@@ -78,7 +85,8 @@
         "source": "fixture",
         "source_path": "action_candidate.opportunity_cost",
         "formula_id": "opportunity-cost-v1",
-        "formula_version": "1.0.0"
+        "formula_version": "1.0.0",
+        "nature": "estimated"
       },
       "confidence": 0.65
     }
