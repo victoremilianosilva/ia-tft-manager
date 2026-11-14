@@ -6,7 +6,7 @@
     "schema_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
     "hash_algorithm": "SHA-256",
     "hash_canonicalization": "RFC8785",
-    "hash_scope": "Canonical RFC8785 form of normative schema content (field definitions, types, constraints, requiredness, semantics, catalog references and projection identity); excludes descriptions, examples and schema_hash itself",
+    "hash_scope": "Canonical RFC8785 form of normative schema content (field definitions, types, constraints, requiredness, semantics, catalog references and projection identity); excludes title, description, examples, default, $comment, deprecated annotations and the instance schema_hash value",
     "compatibility_policy": "new_training_lineage_required",
     "projection": {
       "projection_id": "tft.ppo.structured.v1",
