@@ -69,6 +69,14 @@ def verify_provenance_nature(value: object, path: str = "$") -> None:
             verify_provenance_nature(item, f"{path}.{key}")
 
 
+def decision_identity_hash(identity: dict) -> str:
+    payload = {key: identity[key] for key in (
+        "match_id", "engine_match_id", "player_id", "round",
+        "decision_sequence", "snapshot_sequence"
+    )}
+    return digest(payload)
+
+
 def verify_snapshot_hashes(snapshot: dict, schema: dict) -> None:
     if snapshot["schema"]["schema_hash"] != schema_contract_hash(schema):
         raise ValueError("observation schema hash mismatch")
@@ -76,6 +84,15 @@ def verify_snapshot_hashes(snapshot: dict, schema: dict) -> None:
     actual = projection.pop("projection_hash", None)
     if actual != digest(projection):
         raise ValueError("projection hash mismatch")
+    identity = snapshot["identity"]
+    if identity["status"] == "complete":
+        expected_identity_hash = decision_identity_hash(identity)
+        if identity["decision_identity_hash"] != expected_identity_hash:
+            raise ValueError("decision identity hash mismatch")
+        if snapshot["legal_state_context"]["mask_reference"]["decision_identity_hash"] != expected_identity_hash:
+            raise ValueError("mask/observation decision identity mismatch")
+    elif identity["decision_identity_hash"] is not None:
+        raise ValueError("incomplete identity must not expose a decision identity hash")
 
 
 def field(value: object, nature: str = "observed") -> dict:
@@ -214,6 +231,8 @@ def main() -> None:
     snapshot = json.loads((examples / "valid-minimal.json").read_text(encoding="utf-8"))
     expected_schema_hash = schema_contract_hash(schema)
     snapshot["schema"]["schema_hash"] = expected_schema_hash
+    snapshot["identity"]["decision_identity_hash"] = decision_identity_hash(snapshot["identity"])
+    snapshot["legal_state_context"]["mask_reference"]["decision_identity_hash"] = snapshot["identity"]["decision_identity_hash"]
     projection = snapshot["schema"]["projection"]
     projection.pop("projection_hash", None)
     projection["projection_hash"] = digest(projection)
@@ -228,6 +247,8 @@ def main() -> None:
 
     invalid = json.loads((examples / "invalid-missing-reason.json").read_text(encoding="utf-8"))
     invalid["schema"]["schema_hash"] = expected_schema_hash
+    invalid["identity"]["decision_identity_hash"] = decision_identity_hash(invalid["identity"])
+    invalid["legal_state_context"]["mask_reference"]["decision_identity_hash"] = invalid["identity"]["decision_identity_hash"]
     invalid_projection = invalid["schema"]["projection"]
     invalid_projection.pop("projection_hash", None)
     invalid_projection["projection_hash"] = digest(invalid_projection)
@@ -274,6 +295,11 @@ def main() -> None:
         "match_id": None, "engine_match_id": None, "player_id": None,
         "round": None, "decision_sequence": None, "snapshot_sequence": None,
         "status": "missing", "reason": "identity source unavailable",
+        "decision_identity_hash": None,
+    })
+    incomplete_identity["legal_state_context"]["mask_reference"].update({
+        "status": "unknown", "decision_identity_hash": None,
+        "reason": "no complete decision identity",
     })
     assert not list(validator.iter_errors(incomplete_identity))
 
@@ -293,6 +319,15 @@ def main() -> None:
         pass
     else:
         raise AssertionError("schema hash mismatch was not rejected")
+
+    mismatched_mask_identity = copy.deepcopy(snapshot)
+    mismatched_mask_identity["legal_state_context"]["mask_reference"]["decision_identity_hash"] = "sha256:" + "0" * 64
+    try:
+        verify_snapshot_hashes(mismatched_mask_identity, schema)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("mask/observation identity mismatch was not rejected")
 
     invalid_projection_hash = copy.deepcopy(snapshot)
     invalid_projection_hash["schema"]["projection"]["projection_hash"] = "sha256:" + "0" * 64
