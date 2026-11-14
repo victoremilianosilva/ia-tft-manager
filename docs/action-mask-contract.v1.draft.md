@@ -47,14 +47,33 @@ Os argumentos são condicionais ao tipo; as seis cabeças não representam seis 
 | `bench_to_board_target_masks` | [9,28] | destino condicionado à origem do banco |
 | `board_source_mask` | [28] | origem de MOVE_BOARD |
 | `board_move_target_masks` | [28,28] | destino condicionado à origem do tabuleiro |
+| `board_target_mask` | [28] | máscara unidimensional agregada/legada de destinos do tabuleiro; não substitui a matriz condicional de MOVE_BENCH |
 | `item_inventory_mask` | [9] | item selecionável |
 | `item_component_first_mask` | [10] | primeiro componente |
 | `item_component_pair_masks` | [10,10] | segundo componente condicionado ao primeiro |
 | `item_target_mask` | [37] | alvo de equipamento |
 
+**Contagem e semântica do transporte:** o contrato Python ativo declara exatamente 12 campos em `Trainer.MASK_SHAPES`; a tabela acima enumera os 12. `board_target_mask` é transportada pelo binding, mas não é a autoridade para validar o par origem→destino de `MOVE_BENCH`: esse papel pertence a `bench_move_source_mask` + `bench_to_board_target_masks[source, target]`. Da mesma forma, `MOVE_BOARD` usa `board_source_mask` + `board_move_target_masks[source, target]`. O caminho nativo `refresh_masks` chama `generate_masks(..., include_board_target=false)`; nesse caminho, `board_target_mask` não agrega os destinos reais de banco→tabuleiro e pode conter apenas fallback categórico. Portanto, consumidores não podem inferir legalidade de movimento a partir dessa máscara agregada.
+
+A estrutura C++ também possui `conditioned_board_target_mask`, uma máscara interna agregada para diagnóstico/uso nativo. Ela é distinta de `board_target_mask` e não integra os 12 campos do dicionário de masks entregue ao fluxo PPO pelo binding de `tft_engine_bindings.cpp`.
+
 A implementação C++ separa fallbacks categóricos de disponibilidade real. Um fallback de índice zero em uma cabeça condicional **não** torna BUY/MOVE/SELL legal. `type_mask` continua sendo a máscara da ação principal. Para movimento, destino é condicionado à origem; não se pode validar cada eixo de forma independente.
 
 A geração de masks deve ser pura em relação ao histórico: calcular masks não registra movimentos nem altera AntiLoop. A Engine revalida a ação no momento da execução.
+
+## Evidências de auditoria e rastreabilidade
+
+A revisão cruzou os seguintes pontos da implementação na branch `new-arquiteture`:
+
+- `policy.py`: `ACTION_DIMS`, `get_action_and_value`, `_get_action_and_value_impl`, `get_value` e `evaluate_actions`.
+- `trainer.py`: `MASK_SHAPES`, `_flatten_masks`, validação das ações contra as masks e a chamada de geração/consumo de masks.
+- `rollout.py`: alocação, persistência e recuperação das máscaras por transição/minibatch.
+- `cpp/include/decision/ActionMaskEngine.hpp` e `cpp/src/decision/ActionMaskEngine.cpp`: catálogo de campos nativos, máscaras condicionais, fallbacks e parâmetro `include_board_target`.
+- `cpp/src/lobby/TftEngine.cpp`: `populate_strategic_action_masks` e `refresh_masks`; este último usa `generate_masks(..., false)`.
+- `cpp/bindings/tft_engine_bindings.cpp`: serialização dos 12 campos públicos de máscara.
+- `tests/test_action_mask_validation.py`, `tests/test_policy_bench_target_conditioning.py`, `tests/test_policy_item_conditioning.py` e `tests/test_ppo_mask_consistency.py`: cobertura existente de sampling, condicionais, log-probability e preservação das masks no rollout.
+
+A revisão documental não executou novamente esses testes nem transforma sua existência em evidência de cobertura para cenários ainda não implementados. A matriz da seção 7 separa explicitamente cobertura atual de requisitos futuros.
 
 ## 4. Auditoria do fluxo existente
 
