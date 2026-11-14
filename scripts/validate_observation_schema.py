@@ -217,6 +217,8 @@ def main() -> None:
     projection = snapshot["schema"]["projection"]
     projection.pop("projection_hash", None)
     projection["projection_hash"] = digest(projection)
+    verify_snapshot_hashes(snapshot, schema)
+    verify_provenance_nature(snapshot)
 
     errors = sorted(validator.iter_errors(snapshot), key=lambda e: list(e.absolute_path))
     if errors:
@@ -239,6 +241,7 @@ def main() -> None:
         if case_errors:
             raise SystemExit(f"field-status case {case_name!r} rejected: " +
                              "; ".join(e.message for e in case_errors))
+        verify_provenance_nature(candidate)
 
     # Zero is a real observed value; missing is a distinct status with a reason
     # and must not carry a fabricated numeric value.
@@ -284,6 +287,15 @@ def main() -> None:
     invalid_schema_hash["schema"]["schema_hash"] = "sha256:" + "0" * 64
     assert list(validator.iter_errors(invalid_schema_hash)) == []  # JSON Schema checks format; hash identity is checked here.
     assert invalid_schema_hash["schema"]["schema_hash"] != schema_contract_hash(schema)\n    try:\n        verify_snapshot_hashes(invalid_schema_hash, schema)\n    except ValueError:\n        pass\n    else:\n        raise AssertionError("schema hash mismatch was not rejected")
+
+    invalid_projection_hash = copy.deepcopy(snapshot)
+    invalid_projection_hash["schema"]["projection"]["projection_hash"] = "sha256:" + "0" * 64
+    try:
+        verify_snapshot_hashes(invalid_projection_hash, schema)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("projection hash mismatch was not rejected")
 
     print("Observation Schema Draft 2020-12: OK")
     print("Valid/invalid fixtures, field-state matrix, identity, slot, hash and source-map coverage checks: OK")
