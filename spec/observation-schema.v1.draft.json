@@ -347,7 +347,9 @@
         "round",
         "decision_sequence",
         "snapshot_sequence",
-        "status"
+        "status",
+        "decision_identity_hash",
+        "decision_identity_hash_scope"
       ],
       "properties": {
         "match_id": {
@@ -425,6 +427,17 @@
         },
         "reason": {
           "type": "string"
+        },
+        "decision_identity_hash": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "description": "Hash of the decision identity scope below; null unless identity status is complete."
+        },
+        "decision_identity_hash_scope": {
+          "const": "Canonical RFC8785 SHA-256 over match_id, engine_match_id, player_id, round, decision_sequence and snapshot_sequence; excludes this hash and session/episode/event metadata."
         }
       },
       "allOf": [
@@ -441,7 +454,8 @@
           },
           "then": {
             "required": [
-              "engine_match_id"
+              "engine_match_id",
+              "decision_identity_hash"
             ],
             "properties": {
               "engine_match_id": {
@@ -467,6 +481,10 @@
               "snapshot_sequence": {
                 "type": "integer",
                 "minimum": 0
+              },
+              "decision_identity_hash": {
+                "type": "string",
+                "pattern": "^sha256:[a-f0-9]{64}$"
               }
             }
           }
@@ -491,7 +509,12 @@
           "then": {
             "required": [
               "reason"
-            ]
+            ],
+            "properties": {
+              "decision_identity_hash": {
+                "type": "null"
+              }
+            }
           }
         }
       ]
@@ -1707,7 +1730,12 @@
               ]
             },
             "decision_identity_hash": {
-              "$ref": "#/$defs/sha256"
+              "type": [
+                "string",
+                "null"
+              ],
+              "pattern": "^sha256:[a-f0-9]{64}$",
+              "description": "Must equal identity.decision_identity_hash for a valid mask reference; null when no complete decision identity exists."
             },
             "reason": {
               "type": "string"
@@ -1734,7 +1762,13 @@
                   "mask_contract_version",
                   "mask_contract_hash",
                   "mask_snapshot_hash"
-                ]
+                ],
+                "properties": {
+                  "decision_identity_hash": {
+                    "type": "string",
+                    "pattern": "^sha256:[a-f0-9]{64}$"
+                  }
+                }
               }
             },
             {
@@ -1757,7 +1791,12 @@
               "then": {
                 "required": [
                   "reason"
-                ]
+                ],
+                "properties": {
+                  "decision_identity_hash": {
+                    "type": "null"
+                  }
+                }
               }
             }
           ]
@@ -1830,7 +1869,8 @@
                 ]
               }
             }
-          ]
+          ],
+          "description": "The critic receives exact action masks as a separate, identity-bound side input owned by the independent Action Contract. This object declares representation and freshness only; it never redefines legality."
         }
       }
     },
