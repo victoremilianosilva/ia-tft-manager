@@ -1,0 +1,446 @@
+{
+  "manifest_id": "tft.observation.structured-entity-temporal-contract",
+  "version": "1.0.0-draft",
+  "status": "proposed_semantic_contract_not_runtime_approved",
+  "schema_basis": "spec/observation-schema.v2.draft.json",
+  "consumer_matrix_basis": "spec/observation-projection-consumer-matrix.v1.draft.json",
+  "invariants": [
+    "Physical unit instance identity is distinct from champion/catalog identity.",
+    "Board, bench, shop and pool are distinct ownership/availability domains.",
+    "Observed empty is distinct from missing, unknown, stale and incompatible.",
+    "Shop offers are snapshot-scoped opportunities, not owned unit instances.",
+    "Item catalog identity is distinct from physical item-instance identity.",
+    "Derived and estimated values retain formula, provenance, validity, quality and source sequence.",
+    "Candidate and anchor records are evidence proposals, not commands or confirmed active state.",
+    "Collection completeness is explicit; absent or empty arrays never silently imply a complete empty set.",
+    "Ordering is semantic and stable, never incidental container iteration or mutable catalog order.",
+    "Exact action masks remain separate identity-correlated side inputs; history never overrides legality.",
+    "Shadow recommendations, evaluator scores, baseline outputs, executor resolutions and diagnostic Unified Shadow state are not PPO observations or targets."
+  ],
+  "collection_status": {
+    "complete": "Producer attests all members in the declared scope were observed for this exact source sequence.",
+    "partial": "Some members are known, but completeness is not guaranteed.",
+    "empty": "Complete collection with zero members, explicitly observed.",
+    "unknown": "Producer cannot determine membership or completeness.",
+    "missing": "Collection was not supplied by the source.",
+    "stale": "Collection belongs to an earlier source sequence.",
+    "incompatible": "Schema, catalog or identity is incompatible with the consumer.",
+    "not_applicable": "Collection does not apply in this game state or phase."
+  },
+  "entities": [
+    {
+      "kind": "unit_instance",
+      "paths": [
+        "entities.board[].unit",
+        "entities.bench[].unit"
+      ],
+      "identity": "unit.instance_id",
+      "scope": [
+        "engine_match_id",
+        "player_id"
+      ],
+      "domain": [
+        "board",
+        "bench"
+      ],
+      "relationships": [
+        "occupies one owned slot at a source sequence",
+        "groups by champion_id only for catalog/upgrade analysis",
+        "has attached item relationships"
+      ],
+      "gaps": [
+        "Unit.items currently contains catalog strings, not physical item-instance references."
+      ]
+    },
+    {
+      "kind": "champion_catalog_entry",
+      "paths": [
+        "entities.*[].unit.champion_id"
+      ],
+      "identity": "champion_id + catalog fingerprint",
+      "scope": [
+        "catalog version"
+      ],
+      "domain": [
+        "catalog"
+      ],
+      "invariant": "Grouping/catalog key only; never a physical owned-copy identity."
+    },
+    {
+      "kind": "board_slot",
+      "paths": [
+        "entities.board[]"
+      ],
+      "identity": "slot_index",
+      "scope": [
+        "match",
+        "player",
+        "board domain",
+        "snapshot sequence"
+      ],
+      "domain": [
+        "board"
+      ],
+      "presence": [
+        "occupied",
+        "empty",
+        "unknown",
+        "stale",
+        "incompatible"
+      ],
+      "gap": "Canonical coordinate/orientation mapping is not yet specified."
+    },
+    {
+      "kind": "bench_slot",
+      "paths": [
+        "entities.bench[]"
+      ],
+      "identity": "slot_index",
+      "scope": [
+        "match",
+        "player",
+        "bench domain",
+        "snapshot sequence"
+      ],
+      "domain": [
+        "bench"
+      ],
+      "presence": [
+        "occupied",
+        "empty",
+        "unknown",
+        "stale",
+        "incompatible"
+      ],
+      "invariant": "Preserve stable native slot order; do not compact empty slots."
+    },
+    {
+      "kind": "shop_offer",
+      "paths": [
+        "entities.shop[]"
+      ],
+      "identity": "composite(match,player,shop_snapshot_sequence,slot_index,offer_revision)",
+      "scope": [
+        "exact shop snapshot"
+      ],
+      "domain": [
+        "shop_opportunity"
+      ],
+      "invariant": "Offer is not an owned unit instance or pool copy.",
+      "gaps": [
+        "No explicit offer_id/revision/reroll generation or observed price field."
+      ]
+    },
+    {
+      "kind": "pool_availability",
+      "paths": [],
+      "identity": "(catalog,champion_id,source_sequence)",
+      "scope": [
+        "shared pool"
+      ],
+      "domain": [
+        "shared_pool"
+      ],
+      "status": "unavailable_until_authoritative_producer",
+      "invariant": "Never infer pool count from local board, bench or shop."
+    },
+    {
+      "kind": "item_instance",
+      "paths": [
+        "entities.items.inventory[]",
+        "entities.board[].unit.items[]",
+        "entities.bench[].unit.items[]"
+      ],
+      "identity": "future item_instance_id",
+      "scope": [
+        "match",
+        "player",
+        "owner"
+      ],
+      "domain": [
+        "inventory",
+        "unit_attachment"
+      ],
+      "gaps": [
+        "Inventory has item_id and slot but no physical item_instance_id.",
+        "Unit attachment arrays contain catalog strings without instance identity or explicit owner reference.",
+        "Schema revision is required before claiming lossless item-instance representation."
+      ]
+    },
+    {
+      "kind": "item_catalog_entry",
+      "paths": [
+        "entities.items.inventory[].item_id",
+        "entities.items.anvil_options[].item_id"
+      ],
+      "identity": "item_id + item catalog fingerprint",
+      "scope": [
+        "catalog version"
+      ],
+      "domain": [
+        "catalog"
+      ],
+      "invariant": "Catalog identity is not physical item-instance identity."
+    },
+    {
+      "kind": "component_inventory",
+      "paths": [
+        "entities.items.components[]"
+      ],
+      "identity": "component_id",
+      "scope": [
+        "match",
+        "player",
+        "component catalog"
+      ],
+      "domain": [
+        "inventory_aggregate"
+      ],
+      "invariant": "Current count is an aggregate, not a list of physical component instances."
+    },
+    {
+      "kind": "anvil_option",
+      "paths": [
+        "entities.items.anvil_options[]"
+      ],
+      "identity": "option_id",
+      "scope": [
+        "match",
+        "player",
+        "pending decision sequence"
+      ],
+      "domain": [
+        "pending_choice"
+      ],
+      "gaps": [
+        "Option-set completeness and source sequence must be explicit.",
+        "target_fits scores require estimated nature, formula and validity."
+      ]
+    },
+    {
+      "kind": "trait",
+      "paths": [
+        "derived_context.trait_counts",
+        "entities.board[].unit.traits",
+        "entities.bench[].unit.traits"
+      ],
+      "identity": "trait_id + trait catalog fingerprint",
+      "scope": [
+        "catalog version"
+      ],
+      "domain": [
+        "catalog",
+        "derived_player_state"
+      ],
+      "invariant": "Observed unit trait membership differs from active count, completed trait, core trait and strategic focus."
+    },
+    {
+      "kind": "position",
+      "paths": [
+        "entities.board[].unit.position",
+        "derived_context.positioning"
+      ],
+      "identity": "(match,player,board_slot,source_sequence)",
+      "scope": [
+        "one board snapshot"
+      ],
+      "domain": [
+        "board_spatial_state"
+      ],
+      "gaps": [
+        "Position map has no explicit coordinate, orientation, row/column/front-back contract."
+      ]
+    },
+    {
+      "kind": "unit_assessment",
+      "paths": [
+        "strategic_evidence.owned_unit_assessments[]"
+      ],
+      "identity": "unit_instance_id",
+      "scope": [
+        "match",
+        "player",
+        "composition version",
+        "source sequence"
+      ],
+      "domain": [
+        "derived_assessment"
+      ],
+      "invariant": "is_core, board_contribution, composition_fit and item_fit are derived/estimated, not observed unit facts."
+    },
+    {
+      "kind": "anchor_candidate",
+      "paths": [
+        "strategic_evidence.anchor_candidates[]"
+      ],
+      "identity": "candidate_id",
+      "scope": [
+        "match",
+        "player",
+        "direction",
+        "composition version",
+        "source sequence"
+      ],
+      "domain": [
+        "strategic_candidate"
+      ],
+      "invariant": "Evidence proposal only; not an active composition, accepted pivot or command."
+    },
+    {
+      "kind": "action_opportunity_candidate",
+      "paths": [
+        "derived_context.action_opportunity.items[]"
+      ],
+      "identity": "candidate_id",
+      "scope": [
+        "match",
+        "player",
+        "decision sequence",
+        "candidate_set_id"
+      ],
+      "domain": [
+        "decision_opportunity"
+      ],
+      "status": "withheld_until_complete_authoritative_producer",
+      "invariant": "Child sell_value/affordability does not prove a complete parent candidate set exists."
+    },
+    {
+      "kind": "temporal_decision_history",
+      "paths": [
+        "derived_context.decision_history"
+      ],
+      "identity": "source_decision_sequence",
+      "scope": [
+        "match",
+        "player",
+        "round",
+        "episode"
+      ],
+      "domain": [
+        "decision_history"
+      ],
+      "invariant": "Descriptive context only; never a mask or legality override."
+    },
+    {
+      "kind": "anti_loop_history",
+      "paths": [
+        "legal_state_context.anti_loop_state"
+      ],
+      "identity": "(match,player,decision_sequence)",
+      "scope": [
+        "episode"
+      ],
+      "domain": [
+        "diagnostic_or_critic_context"
+      ],
+      "invariant": "Critic-only candidate per consumer matrix; never an Actor legality rule."
+    }
+  ],
+  "relationships": [
+    {
+      "from": "unit_instance",
+      "relation": "occupies",
+      "to": "board_slot|bench_slot",
+      "cardinality": "exactly_one_per_owned_unit_at_snapshot",
+      "temporal": "source-sequence scoped"
+    },
+    {
+      "from": "unit_instance",
+      "relation": "groups_by",
+      "to": "champion_catalog_entry",
+      "cardinality": "many_to_one",
+      "temporal": "catalog scoped"
+    },
+    {
+      "from": "shop_offer",
+      "relation": "offers",
+      "to": "champion_catalog_entry",
+      "cardinality": "many_to_one",
+      "temporal": "shop-snapshot scoped"
+    },
+    {
+      "from": "item_instance",
+      "relation": "attached_to_or_stored_in",
+      "to": "unit_instance|inventory_slot",
+      "cardinality": "at_most_one_owner_at_snapshot",
+      "temporal": "source-sequence scoped"
+    },
+    {
+      "from": "anvil_option",
+      "relation": "fits",
+      "to": "unit_instance",
+      "cardinality": "many_to_many",
+      "temporal": "pending-choice scoped"
+    },
+    {
+      "from": "unit_assessment",
+      "relation": "assesses",
+      "to": "unit_instance",
+      "cardinality": "many_to_one",
+      "temporal": "composition-version and source-sequence scoped"
+    },
+    {
+      "from": "anchor_candidate",
+      "relation": "references",
+      "to": "unit_instance",
+      "cardinality": "one_or_more",
+      "temporal": "candidate/source-sequence scoped"
+    },
+    {
+      "from": "action_opportunity_candidate",
+      "relation": "references_exact_parameters",
+      "to": "unit_instance|shop_offer|board_slot|item_instance",
+      "cardinality": "action-kind dependent",
+      "temporal": "decision-sequence scoped"
+    }
+  ],
+  "derived_field_requirements": [
+    "nature",
+    "producer",
+    "source_path",
+    "source_sequence",
+    "formula_id",
+    "formula_version",
+    "input_paths",
+    "unit",
+    "status",
+    "reason_when_unavailable",
+    "input_completeness",
+    "quality_or_uncertainty_when_estimated"
+  ],
+  "temporal_rules": [
+    "Every snapshot entity collection binds to exact observation snapshot sequence and match/player identity.",
+    "Decision-local history binds to exact decision sequence and episode; reset at declared episode boundary.",
+    "Shop offer identity expires when shop snapshot or reroll generation changes.",
+    "Unit instance identity persists across slot movement but not sale, elimination or new match.",
+    "Stale/cross-sequence records are rejected or marked stale; no latest-value fallback.",
+    "Partial collections preserve known records and explicit incompleteness; never treat as complete."
+  ],
+  "unresolved_schema_gaps": [
+    "Shop has no explicit offer_id, offer revision/reroll generation or observed price field.",
+    "Inventory and unit attachments lack physical item_instance_id and explicit attachment owner references.",
+    "Pool availability has no authoritative producer or schema field.",
+    "Board slot index lacks documented coordinate/orientation mapping.",
+    "Positioning and trait aggregates use open maps without complete typed key/catalog contracts.",
+    "Unit assessments and anchor candidates need explicit collection completeness and source-sequence contracts.",
+    "Action-opportunity producer is not populated; candidate rows remain withheld."
+  ],
+  "non_goals": [
+    "tensor shapes",
+    "feature offsets/order",
+    "padding limits",
+    "normalization/clipping",
+    "categorical vocabularies",
+    "neural encoder family",
+    "runtime implementation"
+  ],
+  "validation_requirements": [
+    "Every structured schema path maps to an entity kind or explicit aggregate/gap.",
+    "Every entity has identity, scope, ownership domain and source-sequence semantics.",
+    "No champion/catalog key is used as physical instance identity.",
+    "Empty, missing, unknown, partial, stale, incompatible and not-applicable are distinguishable.",
+    "Every derived/estimated field retains formula/provenance/quality requirements.",
+    "Every temporal collection has reset and stale rules.",
+    "All schema gaps are explicit and require versioned review before runtime use."
+  ]
+}
