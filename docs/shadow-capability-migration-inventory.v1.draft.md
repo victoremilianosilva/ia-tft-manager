@@ -320,3 +320,29 @@ There is also a stale comment in `TftEngine.hpp` saying effective UUID generatio
 The inspected public state DTOs are focused on champion definitions/instances, board/bench/shop slots, action masks, economy, and player health/alive/placement/opponent identity. `DecisionState::PlayerState` has explicit board, bench, and shop arrays, but no dedicated augment, portal/encounter, artifact, consumable, armory, tactician-equipment, or scouting-evidence collection. `PlayerInfo` likewise exposes basic player/combat/lobby status rather than those domains.
 
 This strengthens the finding that those capabilities are not currently first-class in the inspected native state contract. It still does not establish what an external live GEP feed may provide or whether some metadata exists in uninspected raw catalog blobs. Treat them as **not represented in the inspected native DTOs**, pending Overwolf/GEP source verification.
+
+
+### 9.14 Live Overwolf GEP source boundary (cross-repository inspection)
+
+The integration branch `feat/tft-gep-snapshot-foundation` in `victoremilianosilva/tft-manager-ow` was inspected to distinguish simulated Engine capabilities from the external live source currently selected by the adapter. This is source/configuration evidence, not proof that every field is emitted by the installed GEP provider during a real match.
+
+The current capture allowlist subscribes to `gep_internal`, `game_flow`, `game_info`, `me`, `match_info`, `roster`, `store`, `board`, `bench`, `carousel`, `match_stats`, and `end_game`, intersected at runtime with the features reported by `getFeatures(gameId)`. The adapter deliberately does not subscribe to `live_client_data` as a source of TFT board/economy state.
+
+The integration documentation describes these useful but bounded domains:
+- `me`: player XP/level, health, rank, and gold.
+- `match_info`: match/battle state, round, opponent, previous-round outcome, item selection, and round events.
+- `roster`: lobby/match players and their public status.
+- `store`: shop pieces and shop-visibility events.
+- `board`: own board and opponent board when supported by the installed provider.
+- `bench`: own bench units and item bench, with availability dependent on GEP version.
+- `carousel`: carousel units and item components.
+- `match_stats`: historical board snapshots by stage on GEP 308+.
+- `end_game`: end-of-game statistics.
+
+**Augments are explicitly excluded.** The OW integration documentation cites Overwolf's TFT feature guidance warning third-party apps not to include or display augment data under Riot's Terms of Service. The current feature allowlist excludes `augments`; do not add augment ingestion or expose augment recommendations without a fresh compliance review. This is a product/compliance boundary, not merely an unimplemented DTO field.
+
+**Opponent visibility remains bounded.** The documented feed can include opponent board data when supported and public roster status. It does not establish guaranteed access to opponent bench, private shop, or all opponent state. The local simulator's full-lobby contestation inputs must therefore not be mapped to assumed live scouting facts.
+
+**Capture completeness remains unproven.** Feature availability is provider-version-dependent and determined at runtime. The OW documentation itself requires real-match comparison of the first reconciled `getInfo()` snapshot and subsequent deltas; absent fields must remain unknown, not zero. The existence of the allowlist and snapshot manager does not prove patch-level field parity, cadence, reset semantics, or availability for every GEP version.
+
+**Cross-repository review note:** the OW snapshot manager filters selected combat/identity fields, while the recorder separately redacts augment keys before persistence. The current allowlist excludes augments, but the IA integration contract should consume only the approved, sanitized IA-ready snapshot and should preserve this exclusion at the producer boundary—not rely solely on the JSONL recorder's redaction. This is a verification item for the OW↔IA adapter, not authorization to modify runtime in this audit.
