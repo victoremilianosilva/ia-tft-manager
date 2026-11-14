@@ -40,9 +40,17 @@ Replay ordering must be deterministic. Given the same fixture, seed, config, cat
 
 The replay must exercise this chain where the relevant feature is enabled:
 
-`observed snapshot → evidence/provenance validation → candidate generation → candidate set → canonical direction commitment → active composition transition → unit evidence/priorities → lineup → economic posture/progression → baseline and contextual evaluation → position proposal → Shadow executor resolution → diagnostics → later observed outcome`
+`observed snapshot → evidence/provenance validation → candidate generation → candidate set → canonical direction commitment → active composition transition → unit evidence/priorities → lineup → economic posture/progression → baseline and contextual evaluation → position proposal → Shadow executor validation/resolution → diagnostics → later observed outcome`
 
 The chain must preserve exact input/output identities and sequence references at every boundary. Missing capabilities are recorded as unavailable; a replay must not silently substitute legacy state or fabricated defaults.
+
+The executor stage is a read-only validation/resolution boundary, not game-action execution. It must not issue input, mutate Engine state, or perform a move/buy/sell. If the runtime handoff is disconnected, the replay records `executor_unavailable/not_connected`; it must not fabricate an executor result or mark the chain complete.
+
+### Economic evidence availability within the chain
+
+Economic posture and progression are distinct outputs and must retain separate owner, version, provenance, quality, and source-sequence references. Replay records each economic field as observed, derived, estimated, missing, stale, partial, invalid, or unavailable, as applicable.
+
+Projected next-round income remains unavailable until a validated producer and explicit horizon exist. Its presence in a diagnostic payload is not proof that an evaluator consumed it. Each replay report must identify the exact fields consumed by the baseline evaluator and separately identify fields consumed by the contextual evaluator. Do not infer that the contextual evaluator consumes the baseline's EconomicControlDecision. A missing projection is never encoded as zero or used as a fabricated cost/benefit.
 
 ## 4. Scenario coverage
 
@@ -78,7 +86,10 @@ The replay records separate fields for:
 - actual PPO-selected action, if available for the exact same match/player/round/sequence;
 - baseline ActionEvaluator recommendation;
 - contextual ContextualActionEvaluator proposal;
-- Shadow executor resolution.
+- Shadow executor connection/availability status;
+- Shadow executor resolution or explicit unavailable/rejected result.
+
+A contextual proposal does not imply an executor handoff. The current evaluator diagnostic records `executor_connected=false`; until a connected runtime path is proven, the replay must report executor resolution as unavailable/not connected.
 
 If no actual PPO action is available, PPO comparison is unavailable. A baseline recommendation must never be substituted for PPO output. Divergence from PPO is diagnostic and is not a failure by itself.
 
@@ -129,6 +140,7 @@ The replay must assert:
 - Planner direction, CI active composition, and Unified diagnostic state remain separate authorities;
 - Unified divergence is diagnostic, never last-writer-wins;
 - focus, core traits, lock, economic posture, and progression retain distinct semantics;
+- economic fields retain field-level provenance and evaluator-specific consumer attribution; projected next-round income remains unavailable until a validated producer and horizon exist;
 - field-level provenance never labels inference/commitment/default as observed;
 - lock unknown is not false;
 - composition versions are scoped to match/player/composition lineage;
@@ -166,6 +178,7 @@ Artifacts must be deterministic and suitable for CI comparison. Do not include c
 | Outcomes | Delayed/missing/pivoted outcomes correlated without causal claims |
 | Feature flag | Enabled and disabled paths both correctly reported |
 | Determinism | Same fixture/seed/config produces reproducible artifacts |
+| Executor boundary | Connected handoff proven, or explicit unavailable/not-connected status; no fabricated resolution |
 | Read-only | No action execution; native masks/rules unchanged |
 
 ## 12. Gate status and implementation boundary
@@ -173,3 +186,20 @@ Artifacts must be deterministic and suitable for CI comparison. Do not include c
 This document defines the replay acceptance contract. Issue #289 remains open until replay fixtures, integration tests, deterministic artifacts, and all post-Gate-8 acceptance proofs exist.
 
 No runtime code/tests, PPO, observations, rewards, checkpoints, masks, Engine rules, Viewer behavior, or game actions are changed. Gate 8 and explicit implementation authorization remain mandatory.
+
+
+## 13. Current integration evidence boundary (2026-11-14)
+
+The dual-evaluator diagnostic contract currently records `executor_connected=false`. The replay contract therefore distinguishes the intended executor stage from the runtime integration status. The chain is not considered end-to-end complete until the actual handoff is proven with correlated records; otherwise executor resolution remains unavailable/not connected.
+
+**Prior problem:** the chain diagram could be read as asserting a connected executor path and did not fully bind evaluator-specific economic consumption to the approved economic availability contract.
+
+**Technical rationale:** a replay must validate actual call paths and field-level consumers, not infer them from component ownership, diagnostic serialization, or a conceptual sequence diagram.
+
+**Ownership:** each economic source owner publishes its own versioned evidence; each evaluator declares its own consumed fields; ContextualActionEvaluator owns the proposal; StrategicActionExecutor owns read-only resolution when connected; replay owns correlation and proof only.
+
+**Invariants:** projected income remains unavailable absent a validated producer/horizon; baseline and contextual input sets remain distinct; disconnected executor is unavailable, not accepted; no live action execution; no fabricated HOLD or zero; native masks remain final legality authority.
+
+**Cross-component impact:** #281/#282/#289/#294, economic evidence, candidate, dual-evaluator, ownership and action/mask contracts.
+
+**Validation:** documentary reconciliation against `dual-action-evaluator-shadow.md`, the Economic Evidence and Progression Contract, Strategic Action Candidate Contract and Action/Mask Contract. Executable acceptance after Gate 8 must prove evaluator-specific field consumption, connected handoff or explicit unavailable status, exact candidate/sequence correlation, stale rejection and read-only behavior.
