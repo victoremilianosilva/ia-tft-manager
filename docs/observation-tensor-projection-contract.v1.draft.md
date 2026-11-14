@@ -134,12 +134,12 @@ Only after this review may the projection be frozen and used to choose encoder d
 
 ## 9. Current audit disposition
 
-The current repository provides a strong semantic foundation and legacy migration evidence, but it does not yet provide the concrete target projection required by this contract:
+The current repository provides a strong semantic foundation and legacy migration evidence, but it does not yet provide the concrete target projection required by this contract. Inventory correction: the current source map contains 77 entries (50 available, 17 not produced, 2 not available, 1 available but not projected, 1 not correlated, 4 available Shadow-only, and 2 marked derived); the prior 97-entry count was incorrect. These are source-map entry statuses, not a count of all schema leaf fields.
 
 | Artifact | What it establishes | What it does not establish |
 |---|---|---|
 | Observation Schema v1 | Typed semantic fields, identity, provenance, status, catalog references | Tensor feature list, offsets, normalization, model consumers |
-| Source map (97 typed-field references) | Current source, availability, nature, units, current-scale notes, intended semantic consumer | Final tensor encoding or a guarantee that every source is runtime-valid |
+| Source map (77 field entries) | Current source, availability, nature, units, current-scale notes, intended semantic consumer | Final tensor encoding or a guarantee that every source is runtime-valid |
 | Legacy feature map (66 inventoried features) | Historical tensor blocks, offsets, encodings, legacy consumers | New-lineage offsets, feature order, or target architecture |
 | Migration map (66/66 legacy features) | Preserve/rebuild/split/drop decisions and semantic destinations | Tensor layout or normalization parameters |
 | Schema projection envelope | Projection identity, hash, dtype, blocks, shape/encoding hooks | Complete per-feature manifest and concrete projection approval |
@@ -154,5 +154,5 @@ The current repository provides a strong semantic foundation and legacy migratio
 3. **New responsibility:** this document defines the minimum design and acceptance requirements for a concrete tensor projection. Observation Schema owns semantic meaning; the projection manifest owns tensor representation; PPO architecture owns encoder/actor/critic structure; Action / Mask owns masks and legality; checkpoint manifest records the complete identities.
 4. **Contract and invariants:** no legacy offsets or encodings are inherited by default; every feature has stable identity, source, validity, unit, encoding, normalization, shape/order, and consumer; missingness is distinct from zero; masks remain separate; Shadow recommendations never become PPO targets.
 5. **Cross-component impact:** Observation Schema and source/migration maps, PPO actor/critic, Action / Mask, Reward/GAE, checkpoint lineage, replay, and evaluation. Documentary only; no runtime wiring or architecture family is selected.
-6. **Objective validation:** compared the machine-readable schema's projection envelope, 97-entry source map, 66-feature legacy map, 66/66 migration crosswalk, and PPO checkpoint requirements. Confirmed that these artifacts do not contain a populated target tensor layout. Concrete projection and executable validation remain pending.
+6. **Objective validation:** compared the machine-readable schema's projection envelope, 77-entry source map, 66-feature legacy map, 66/66 migration crosswalk, and PPO checkpoint requirements. Confirmed that these artifacts do not contain a populated target tensor layout. Concrete projection and executable validation remain pending.
 
