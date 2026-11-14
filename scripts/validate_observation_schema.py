@@ -32,6 +32,15 @@ def schema_contract_hash(schema: dict) -> str:
     return digest(normative_schema(schema))
 
 
+def verify_snapshot_hashes(snapshot: dict, schema: dict) -> None:
+    if snapshot["schema"]["schema_hash"] != schema_contract_hash(schema):
+        raise ValueError("observation schema hash mismatch")
+    projection = copy.deepcopy(snapshot["schema"]["projection"])
+    actual = projection.pop("projection_hash", None)
+    if actual != digest(projection):
+        raise ValueError("projection hash mismatch")
+
+
 def field(value: object, nature: str = "observed") -> dict:
     return {
         "value": value,
@@ -218,10 +227,10 @@ def main() -> None:
     invalid_schema_hash = copy.deepcopy(snapshot)
     invalid_schema_hash["schema"]["schema_hash"] = "sha256:" + "0" * 64
     assert list(validator.iter_errors(invalid_schema_hash)) == []  # JSON Schema checks format; hash identity is checked here.
-    assert invalid_schema_hash["schema"]["schema_hash"] != schema_contract_hash(schema)
+    assert invalid_schema_hash["schema"]["schema_hash"] != schema_contract_hash(schema)\n    try:\n        verify_snapshot_hashes(invalid_schema_hash, schema)\n    except ValueError:\n        pass\n    else:\n        raise AssertionError("schema hash mismatch was not rejected")
 
     print("Observation Schema Draft 2020-12: OK")
-    print("Valid/invalid fixtures, zero-vs-missing, occupied-slot and schema-hash checks: OK")
+    print("Valid/invalid fixtures, field-state matrix, identity, slot and hash integrity checks: OK")
 
 
 if __name__ == "__main__":
