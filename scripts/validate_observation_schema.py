@@ -131,16 +131,35 @@ def main() -> None:
     validator = jsonschema.Draft202012Validator(
         schema, format_checker=jsonschema.FormatChecker()
     )
-    snapshot = valid_snapshot(schema)
-    assert snapshot["schema"]["schema_hash"] == digest(schema)
-    projection_without_hash = copy.deepcopy(snapshot["schema"]["projection"])
-    projection_hash = projection_without_hash.pop("projection_hash")
-    assert projection_hash == digest(projection_without_hash)
+    examples = ROOT / "spec" / "examples" / "observation-v1"
+    snapshot = json.loads((examples / "valid-minimal.json").read_text(encoding="utf-8"))
+    expected_schema_hash = digest(schema)
+    snapshot["schema"]["schema_hash"] = expected_schema_hash
+    projection = snapshot["schema"]["projection"]
+    projection.pop("projection_hash", None)
+    projection["projection_hash"] = digest(projection)
+
     errors = sorted(validator.iter_errors(snapshot), key=lambda e: list(e.absolute_path))
     if errors:
-        raise SystemExit("valid fixture rejected:\n" + "\n".join(
+        raise SystemExit("valid-minimal.json rejected:\\n" + "\\n".join(
             f"{list(e.absolute_path)}: {e.message}" for e in errors
         ))
+
+    invalid = json.loads((examples / "invalid-missing-reason.json").read_text(encoding="utf-8"))
+    invalid["schema"]["schema_hash"] = expected_schema_hash
+    invalid_projection = invalid["schema"]["projection"]
+    invalid_projection.pop("projection_hash", None)
+    invalid_projection["projection_hash"] = digest(invalid_projection)
+    assert list(validator.iter_errors(invalid)), "invalid-missing-reason.json unexpectedly passed"
+
+    matrix = json.loads((examples / "field-status-matrix.json").read_text(encoding="utf-8"))
+    for case_name, case in matrix["cases"].items():
+        candidate = copy.deepcopy(snapshot)
+        candidate["player"]["economy"]["gold"] = case
+        case_errors = list(validator.iter_errors(candidate))
+        if case_errors:
+            raise SystemExit(f"field-status case {case_name!r} rejected: " +
+                             "; ".join(e.message for e in case_errors))
 
     # Zero is a real observed value; missing is a distinct status with a reason
     # and must not carry a fabricated numeric value.
