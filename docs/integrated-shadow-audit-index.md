@@ -107,3 +107,31 @@ create decisions, modify original logs, or connect to the executor. It does not
 change PPO, training, observations, masks, legal actions, rewards, checkpoints,
 game rules, or action execution. Correlation with later outcomes is explicitly
 labelled correlation-only, never causal attribution.
+
+
+## Current architecture reconciliation (2026-11-14)
+
+This index is an **offline audit and correlation artifact**. Its “observed PPO
+action and player state” classification and evaluator comparison do not mean
+that the index is a live PPO input, that evaluator agreement is a quality
+target, or that the PPO action is ground truth.
+
+The future observation contract may project validated canonical state/evidence
+from approved source owners into PPO, but this audit index is not that
+projection. It must not synthesize observations from logs or promote Shadow
+recommendations, scores, confidence, candidate rankings, or outcomes into PPO
+labels/rewards. The action, baseline recommendation, contextual proposal and
+executor resolution remain separate data sources; unavailable correlation
+stays unavailable.
+
+**Prior limitation:** the index described its current data classes but did not
+explicitly state its non-role in the future PPO observation pipeline.
+**Reason for clarification:** offline correlation and online model input have
+different ownership, freshness, and validation contracts.
+**Ownership/contract:** this index owns only audit presentation/correlation;
+the versioned observation adapter is a separate future consumer of approved
+source contracts.
+**Cross-component impact:** #286/#289/#293/#294 and the approved candidate,
+ownership, replay and evaluation contracts. No logs or runtime behavior change.
+**Validation:** documentary consistency now; post-Gate-8 acceptance must prove
+that audit artifacts cannot become training labels or runtime observations.
