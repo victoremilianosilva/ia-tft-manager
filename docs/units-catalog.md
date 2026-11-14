@@ -18,7 +18,7 @@ Uma definição é compartilhada; cada cópia deve ter identidade própria. O n�
 
 ## Fonte de dados
 
-O catálogo consumido pela engine é `data/units_gerado.json`. O arquivo `data/traits.json` fica ao lado dele e fornece os marcos de sinergia; o catálogo de itens fica em `data/item_catalog_set17.json`. A pasta `tests/diagnostico/` contém dados e ferramentas de inspeção separados, que não são os catálogos carregados pelo runtime. O catálogo precisa incluir os campos que a engine desserializa. O viewer também lê esse catálogo para associar IDs das unidades a nomes, traits, roles e ícones.
+O catálogo consumido pela engine é `data/units_gerado.json`. O arquivo `data/traits.json` fica ao lado dele e fornece os marcos de sinergia; o catálogo ativo de itens do Set 18 fica em `data/itens.json`, com metadados específicos em `data/item_effects.json`. Catálogos de outros sets devem usar arquivos versionados próprios, gerados explicitamente para o set selecionado. A pasta `tests/diagnostico/` contém dados e ferramentas de inspeção separados, que não são os catálogos carregados pelo runtime. O catálogo ativo deve sempre ser identificado pelo `set_id` e pelo caminho efetivamente configurado; não inferir o set pelo nome de um arquivo histórico. O catálogo precisa incluir os campos que a engine desserializa. O viewer também lê esse catálogo para associar IDs das unidades a nomes, traits, roles e ícones.
 
 Não trate traits.json como substituto de units_gerado.json: são catálogos com formatos e finalidades diferentes.
 

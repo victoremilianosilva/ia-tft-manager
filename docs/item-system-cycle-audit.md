@@ -1,5 +1,7 @@
 # Auditoria do ciclo de itens — PR #149
 
+> **Escopo histórico.** Esta auditoria registra o estado e as evidências da fase em que foi produzida. Ela não substitui os contratos canônicos da nova linhagem PPO/Shadow nem comprova aceitação executável atual. Para catálogo Set 18 e integração de runtime posterior, consulte `item-system-integration-contract.md`; para semântica de ações, máscaras, rewards, checkpoints e unidades, prevalecem os contratos aprovados em `docs/README.md`.
+
 **Escopo:** rastrear componente, receita, item, inventário, unidade, equipamento e combate.  
 **Branch auditada:** `fix/purchase-sale-classification`.  
 **Status:** diagnóstico estático; nenhuma partida ou treinamento foi executado para esta auditoria.

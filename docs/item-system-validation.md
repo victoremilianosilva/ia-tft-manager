@@ -1,5 +1,7 @@
 # Validação do sistema de itens — Fase 6
 
+> **Guia histórico de validação.** Os comandos, shapes, IDs de ação, migrações de checkpoint e critérios descritos aqui pertencem ao runtime PPO existente no momento da fase documentada. Não são contrato normativo nem prova de compatibilidade semântica para a nova linhagem. Use os contratos aprovados em `docs/README.md`; qualquer execução atual precisa registrar commit, catálogo/set, checkpoint imutável, hashes de contrato e evidência reproduzível.
+
 Esta fase valida separadamente o contrato dos itens, o caminho nativo, a integração com PPO e os resultados de política. Não considerar a fase concluída apenas porque testes unitários passaram.
 
 ## 1. Testes unitários e de contrato

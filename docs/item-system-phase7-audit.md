@@ -1,5 +1,7 @@
 # Auditoria ponta a ponta do sistema de itens — Fase 7
 
+> **Guia histórico de validação.** Os comandos, shapes, IDs de ação, migrações de checkpoint e critérios descritos aqui pertencem ao runtime PPO existente no momento da fase documentada. Não são contrato normativo nem prova de compatibilidade semântica para a nova linhagem. Use os contratos aprovados em `docs/README.md`; qualquer execução atual precisa registrar commit, catálogo/set, checkpoint imutável, hashes de contrato e evidência reproduzível.
+
 A Fase 7 verifica compatibilidade do checkpoint, contrato de máscaras, passagem das seis posições de ação, execução na engine C++ nativa e encerramento de uma partida real. Os relatórios não substituem uma comparação estratégica antes/depois do treinamento.
 
 ## Executar com a engine e o checkpoint reais
