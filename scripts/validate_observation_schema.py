@@ -60,6 +60,9 @@ def schema_path_exists(schema: dict, path: str) -> bool:
 def verify_context_identity(snapshot: dict) -> None:
     identity = snapshot["identity"]
     if identity["status"] != "complete":
+        legal = snapshot["legal_state_context"]
+        if any(legal[key]["status"] == "valid" for key in ("anti_loop_state", "mask_reference", "critic_context")):
+            raise ValueError("incomplete identity cannot carry valid mask/critic/history context")
         return
     expected_sequence = identity["decision_sequence"]
     anti_loop = snapshot["legal_state_context"]["anti_loop_state"]
@@ -314,7 +317,21 @@ def main() -> None:
         "status": "unknown", "decision_identity_hash": None,
         "reason": "no complete decision identity",
     })
+    incomplete_identity["legal_state_context"]["critic_context"].update({
+        "status": "unknown", "reason": "no complete decision identity",
+    })
     assert not list(validator.iter_errors(incomplete_identity))
+    invalid_incomplete_context = copy.deepcopy(incomplete_identity)
+    invalid_incomplete_context["legal_state_context"]["critic_context"].update({
+        "status": "valid", "representation": "exact_masks", "source_decision_sequence": 1,
+    })
+    assert list(validator.iter_errors(invalid_incomplete_context))
+    try:
+        verify_context_identity(invalid_incomplete_context)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("valid critic context with incomplete identity was not rejected")
 
     complete_anti_loop = copy.deepcopy(snapshot)
     anti_loop = complete_anti_loop["legal_state_context"]["anti_loop_state"]
