@@ -1,6 +1,6 @@
-# Strategic Action Candidate Contract v1 — Draft
+# Strategic Action Candidate Contract v1
 
-**Status:** documentary specification; runtime implementation and executable acceptance blocked until Gate 8  
+**Status:** approved documentary specification; runtime implementation and executable acceptance blocked until Gate 8  
 **Contract ID:** `tft.strategic-action-candidates.v1`  
 **Target:** `new-arquiteture`  
 **Related:** #281, #282, #283, #284, #289; Action/legality #294; Observation #293; PPO/checkpoint #288
