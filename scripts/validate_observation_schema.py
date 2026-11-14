@@ -326,6 +326,8 @@ def main() -> None:
         "blocked_move_records": [{"round": 1, "decision_sequence": 1, "move_type": "board_move", "reason": "repeated_state"}],
         "state_visits": [{"state_hash": "sha256:" + "4" * 64, "visit_count": 1, "last_seen_round": 1, "last_seen_sequence": 1}],
     })
+    complete_anti_loop["legal_state_context"]["status"] = "valid"
+    complete_anti_loop["legal_state_context"].pop("reason", None)
     assert not list(validator.iter_errors(complete_anti_loop))
     verify_context_identity(complete_anti_loop)
 
