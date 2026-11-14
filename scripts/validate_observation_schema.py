@@ -32,6 +32,24 @@ def schema_contract_hash(schema: dict) -> str:
     return digest(normative_schema(schema))
 
 
+def schema_path_exists(schema: dict, path: str) -> bool:
+    current = schema
+    for part in path.split("."):
+        if "$ref" in current:
+            ref = current["$ref"]
+            if not ref.startswith("#/"):
+                return False
+            current = schema
+            for token in ref[2:].split("/"):
+                current = current.get(token.replace("~1", "/").replace("~0", "~"), {})
+        if current.get("type") == "array":
+            current = current.get("items", {})
+        current = current.get("properties", {}).get(part)
+        if not isinstance(current, dict):
+            return False
+    return True
+
+
 def verify_snapshot_hashes(snapshot: dict, schema: dict) -> None:
     if snapshot["schema"]["schema_hash"] != schema_contract_hash(schema):
         raise ValueError("observation schema hash mismatch")
@@ -230,7 +248,7 @@ def main() -> None:
     assert invalid_schema_hash["schema"]["schema_hash"] != schema_contract_hash(schema)\n    try:\n        verify_snapshot_hashes(invalid_schema_hash, schema)\n    except ValueError:\n        pass\n    else:\n        raise AssertionError("schema hash mismatch was not rejected")
 
     print("Observation Schema Draft 2020-12: OK")
-    print("Valid/invalid fixtures, field-state matrix, identity, slot and hash integrity checks: OK")
+    print("Valid/invalid fixtures, field-state matrix, identity, slot, hash and source-map coverage checks: OK")
 
 
 if __name__ == "__main__":
