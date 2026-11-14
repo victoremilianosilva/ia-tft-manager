@@ -11,7 +11,8 @@ Para decisões de arquitetura e implementação da nova linhagem, use primeiro o
 - [Sequence Namespace Registry v2](../spec/sequence-namespace-registry.v2.draft.json) — namespaces observados versus propostos, owners, escopos e disponibilidade.
 - [Decision Identity v2 hash vectors](../spec/decision-identity-v2-hash-vectors.draft.json) — vetores RFC 8785/SHA-256 sintéticos para validação determinística.
 - [Observation identity v1→v2 crosswalk](observation-identity-v1-v2-crosswalk.md) — migração sem reinterpretar hashes ou artefatos históricos.
-- [Observation Tensor Projection Contract v1 — Design Requirements](observation-tensor-projection-contract.v1.draft.md) — requisitos documentais para a projeção concreta; o layout tensorial alvo permanece não aprovado.
+- [Observation Tensor Projection Contract v1 — Design Requirements](observation-tensor-projection-contract.v1.draft.md)
+- [Observation Projection Consumer Matrix v1 — Draft](observation-projection-consumer-matrix.v1.draft.md) — 77 semantic fields classified by Actor/Critic/control/diagnostic availability, plus the 66-feature legacy crosswalk; no tensor layout approved. — requisitos documentais para a projeção concreta; o layout tensorial alvo permanece não aprovado.
 - [Decision Identity and Mask Correlation Contract v1 — Design Proposal](decision-identity-mask-correlation-contract.v1.draft.md) — rationale e invariantes de correlação entre observação, masks, critic, rollout e replay.
 - [Decision Identity Schema v2 — Versioning Boundary and Migration Design](decision-identity-schema-v2-design.v1.draft.md) — proposta para versionar namespaces tipados sem alterar o schema v1 histórico; ainda aguarda revisão/aprovação documental.
 - [Action / Mask Contract v1](action-mask-contract.v1.draft.md) — especificação documental aprovada; execução/aceitação runtime pendente.
