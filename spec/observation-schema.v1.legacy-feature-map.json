@@ -98,6 +98,11 @@
           "5 zeros",
           "reserved; not missing indicator"
         ]
+      ],
+      "consumers": [
+        "TFTPolicy._economic_context_features",
+        "TFTPolicy.global_mlp",
+        "TFTPolicy.value_head"
       ]
     },
     {
@@ -143,6 +148,11 @@
           "min(1,cost/5*0.5 + star/3*0.5)",
           "proxy, not combat power"
         ]
+      ],
+      "consumers": [
+        "TFTPolicy.board_cnn",
+        "TFTPolicy.fusion",
+        "TFTPolicy.value_head"
       ]
     },
     {
@@ -188,6 +198,11 @@
           "same as board",
           "proxy"
         ]
+      ],
+      "consumers": [
+        "TFTPolicy.global_mlp",
+        "TFTPolicy.fusion",
+        "TFTPolicy.value_head"
       ]
     },
     {
@@ -233,6 +248,11 @@
           "0",
           "not comparable to board/bench strength"
         ]
+      ],
+      "consumers": [
+        "TFTPolicy.global_mlp",
+        "TFTPolicy.fusion",
+        "TFTPolicy.value_head"
       ]
     },
     {
@@ -277,6 +297,11 @@
           "/100",
           "duplicates core"
         ]
+      ],
+      "consumers": [
+        "TFTPolicy.global_mlp",
+        "TFTPolicy.fusion",
+        "TFTPolicy.value_head"
       ]
     },
     {
@@ -293,6 +318,11 @@
           "count /5 clipped 1",
           "slot identity changes with insertion order; no trait IDs"
         ]
+      ],
+      "consumers": [
+        "TFTPolicy.global_mlp",
+        "TFTPolicy.fusion",
+        "TFTPolicy.value_head"
       ]
     },
     {
@@ -330,6 +360,11 @@
           "ratio clipped 1",
           ""
         ]
+      ],
+      "consumers": [
+        "TFTPolicy.global_mlp",
+        "TFTPolicy.fusion",
+        "TFTPolicy.value_head"
       ]
     },
     {
@@ -346,6 +381,11 @@
           "count /5 clipped 1",
           "catalog-derived first-occurrence order; no IDs in tensor"
         ]
+      ],
+      "consumers": [
+        "TFTPolicy.global_mlp",
+        "TFTPolicy.fusion",
+        "TFTPolicy.value_head"
       ]
     },
     {
@@ -369,6 +409,11 @@
           "/9",
           ""
         ]
+      ],
+      "consumers": [
+        "TFTPolicy.global_mlp",
+        "TFTPolicy.fusion",
+        "TFTPolicy.value_head"
       ]
     },
     {
@@ -385,6 +430,12 @@
           "one-hot",
           "missing StrategyInfo becomes default ECON; direction identity not explicit"
         ]
+      ],
+      "consumers": [
+        "TFTPolicy.global_mlp",
+        "TFTPolicy._economic_context_features",
+        "TFTPolicy.fusion",
+        "TFTPolicy.value_head"
       ]
     },
     {
@@ -401,6 +452,11 @@
           "0/1",
           "missing StrategyInfo yields all zero"
         ]
+      ],
+      "consumers": [
+        "TFTPolicy.global_mlp",
+        "TFTPolicy.fusion",
+        "TFTPolicy.value_head"
       ]
     },
     {
@@ -417,6 +473,11 @@
           "score /32.5 clipped 1",
           "28 board + 9 bench + 5 shop; missing candidate/definition becomes zero"
         ]
+      ],
+      "consumers": [
+        "TFTPolicy.global_mlp",
+        "TFTPolicy.fusion",
+        "TFTPolicy.value_head"
       ]
     },
     {
@@ -440,6 +501,11 @@
           "min(age,10)/10",
           "28 slots; no explicit source action ID/sequence"
         ]
+      ],
+      "consumers": [
+        "TFTPolicy.global_mlp",
+        "TFTPolicy.fusion",
+        "TFTPolicy.value_head"
       ]
     },
     {
@@ -456,6 +522,11 @@
           "weight /10 clipped 1",
           "zero conflates no focus with missing"
         ]
+      ],
+      "consumers": [
+        "TFTPolicy.global_mlp",
+        "TFTPolicy.fusion",
+        "TFTPolicy.value_head"
       ]
     },
     {
@@ -479,6 +550,11 @@
           "strength /10 clipped 1",
           "nominal scale; provenance absent"
         ]
+      ],
+      "consumers": [
+        "TFTPolicy.global_mlp",
+        "TFTPolicy.fusion",
+        "TFTPolicy.value_head"
       ]
     },
     {
@@ -516,6 +592,12 @@
           "9x11",
           "last feature is best fit across owned units; missing options zero"
         ]
+      ],
+      "consumers": [
+        "TFTPolicy._item_state_features",
+        "item option scorer",
+        "TFTPolicy.global_mlp",
+        "TFTPolicy.value_head"
       ]
     },
     {
@@ -567,6 +649,12 @@
           "100x37 score /50 clipped 1",
           "zero if recipe unavailable or target absent"
         ]
+      ],
+      "consumers": [
+        "TFTPolicy._item_state_features",
+        "item component/target scorers",
+        "TFTPolicy.global_mlp",
+        "TFTPolicy.value_head"
       ]
     },
     {
@@ -633,6 +721,12 @@
           "context-dependent",
           "same feature index has different meaning for bench and shop"
         ]
+      ],
+      "consumers": [
+        "TFTPolicy._candidate_features",
+        "bench/shop candidate scorers",
+        "TFTPolicy.global_mlp",
+        "TFTPolicy.value_head"
       ]
     }
   ],
@@ -660,6 +754,14 @@
     {
       "consumer": "Trainer/RolloutBuffer",
       "behavior": "stores observation and action masks separately; no shared decision identity in current tensor contract"
+    },
+    {
+      "consumer": "TFTPolicy.actor/action heads",
+      "behavior": "consume shared fused embedding plus local candidate/item features; masks condition action distributions"
+    },
+    {
+      "consumer": "TFTPolicy.value_head",
+      "behavior": "consumes shared fused embedding; current implementation ignores masks"
     }
   ],
   "global_gaps": [
