@@ -1,6 +1,6 @@
-# PPO Architecture and Checkpoint Contract v1 — Draft
+# PPO Architecture and Checkpoint Contract v1
 
-**Status:** documentary specification; not approved for runtime implementation  
+**Status:** approved documentary specification; loader migration and executable acceptance remain blocked until Gate 8 and explicit authorization  
 **Contract ID:** `tft.ppo-checkpoint.v1`  
 **Target architecture:** `new-arquiteture`  
 **Related issues:** #286, #288, #287, #294, #295  
