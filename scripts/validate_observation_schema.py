@@ -57,6 +57,38 @@ def schema_path_exists(schema: dict, path: str) -> bool:
     return True
 
 
+def collect_field_paths(schema: dict) -> set[str]:
+    paths: set[str] = set()
+
+    def visit(node: object, path: str, seen: set[str]) -> None:
+        if not isinstance(node, dict):
+            return
+        ref = node.get("$ref")
+        if ref:
+            if ref == "#/$defs/field":
+                paths.add(path)
+                return
+            if isinstance(ref, str) and ref.startswith("#/") and ref not in seen:
+                target: object = schema
+                for token in ref[2:].split("/"):
+                    target = target.get(token.replace("~1", "/").replace("~0", "~"), {}) if isinstance(target, dict) else {}
+                visit(target, path, seen | {ref})
+            return
+        if node.get("type") == "array":
+            visit(node.get("items"), path + "[]", seen)
+        for key, child in node.get("properties", {}).items():
+            visit(child, f"{path}.{key}" if path else key, seen)
+        additional = node.get("additionalProperties")
+        if isinstance(additional, dict):
+            visit(additional, path + ".*", seen)
+        for keyword in ("allOf", "anyOf", "oneOf"):
+            for child in node.get(keyword, []):
+                visit(child, path, seen)
+
+    visit(schema, "", set())
+    return paths
+
+
 def verify_catalog_fingerprints(snapshot: dict, expected: dict) -> None:
     for catalog_name, fingerprints in expected.items():
         actual = snapshot["catalogs"][catalog_name]
@@ -172,6 +204,17 @@ def main() -> None:
             assert not mapping["destination_paths"], "constant legacy feature unexpectedly has a destination"
 
     source_paths = [entry["field"] for entry in source_map["entries"]]
+    normalized_source_paths = [path.replace("[]", "").replace(".*", "") for path in source_paths]
+    field_paths = collect_field_paths(schema)
+    uncovered_fields = [
+        path for path in field_paths
+        if not any(
+            path.replace("[]", "").replace(".*", "") == mapped
+            or path.replace("[]", "").replace(".*", "").startswith(mapped + ".")
+            for mapped in normalized_source_paths
+        )
+    ]
+    assert not uncovered_fields, f"schema fields without source/availability mapping: {sorted(uncovered_fields)}"
     assert len(source_paths) == len(set(source_paths)), "duplicate source-map field paths"
     required_source_metadata = {
         "current_source", "availability", "nature", "intended_consumer",
