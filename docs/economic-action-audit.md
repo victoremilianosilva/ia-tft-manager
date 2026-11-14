@@ -125,3 +125,33 @@ Potential interest lost is an opportunity indicator computed from the engine's
 current-interest snapshots; it is not a claim that the player definitely would
 have received that exact amount at the next round. Strategic outcomes require
 multi-seed comparisons of placements, HP, board power, and final gold.
+
+
+## Historical reward-behavior boundary (2026-11-14)
+
+The descriptions above of “native PPO shaping”, retention cost, sale cost,
+low-fit purchase penalties, and gold-potential reward are an audit of the
+**existing legacy reward behavior**. They are not approved formulas,
+coefficients, or semantic requirements for the new Reward Contract v1.
+
+The new reward design is specified independently in
+[Reward Contract v1](reward-contract.v1.draft.md). It evaluates realized game
+consequences and opportunity costs, prohibits strategy-ID defaults and
+Shadow-derived reward targets, and requires explicit attribution/validity.
+Legacy formulas may remain immutable comparison baselines, but may be
+preserved or replaced only through the approved reconstruction process and
+empirical evaluation. No legacy shaping rule is normative merely because it
+appears in this historical audit.
+
+**Prior limitation:** the document mixed diagnostic interpretation with
+descriptions of active legacy PPO reward shaping without an explicit
+non-normative label.
+**Reason for clarification:** readers could mistake observed legacy behavior
+for the target reward design.
+**Ownership/contract:** Reward Contract v1 owns the future reward semantics;
+this audit owns historical/source-behavior evidence only.
+**Cross-component impact:** #287/#288/#295 and the reconstruction review
+standard; no reward code, training, checkpoints or runtime behavior changes.
+**Validation:** documentary consistency now; post-Gate-8 acceptance must
+trace each new reward component to realized events, prove no double counting,
+and verify isolation from Shadow outputs and legacy strategy defaults.
