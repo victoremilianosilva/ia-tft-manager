@@ -200,3 +200,7 @@ Não substituir ação ausente/rejeitada por PASS para fins de comparação PPO-
 **Impacto:** apenas a referência cruzada deste contrato e o índice `docs/README.md`; nenhum runtime ou guia histórico foi alterado.
 
 **Validação:** cabeçalho do documento histórico e contrato Action/Mask comparados; correção documental apenas.
+
+## Decision Identity v2 alignment (proposal; not runtime-approved)
+
+Observation Schema v1 and Action/Mask Contract v1 remain immutable documentary contracts. The proposed Observation Schema v2 / Decision Identity Envelope v2 adds typed sequence references and makes namespace part of the decision hash. For the future v2 lineage, every mask payload must bind the exact same decision identity as its observation plus an independent ordered mask payload hash and Action/Mask contract identities. Actor and Critic receive that exact mask snapshot as a separate side input. The current implementation does not yet transport this envelope or mask hash; separate mask retrieval and equal shapes do not prove correlation. Do not reinterpret v1 integer sequence values or v1 hashes as v2. See `docs/decision-identity-schema-v2-design.v1.draft.md`, `spec/sequence-namespace-registry.v2.draft.json`, and `spec/decision-identity-v2-hash-vectors.draft.json`.
