@@ -1,0 +1,124 @@
+{
+  "registry_id": "tft.sequence-namespace-registry",
+  "version": "2.0.0-draft",
+  "identity_envelope": "tft.decision-identity.v2",
+  "status": "proposed_not_approved_for_runtime",
+  "entries": [
+    {
+      "namespace": "tft.engine.decision",
+      "producer": "Native Engine",
+      "owner": "Native Engine",
+      "scope": "per_player_within_engine_match_id",
+      "counter_meaning": "canonical player decision sequence",
+      "monotonicity": "strictly_increasing_within_scope_no_wrap",
+      "reset_boundary": "new_engine_match_id",
+      "availability": "proposed_not_implemented",
+      "canonical_decision_eligible": false,
+      "evidence": "Current native-to-Python audit does not find a typed canonical decision counter transported to PPO."
+    },
+    {
+      "namespace": "tft.engine.observation-snapshot",
+      "producer": "Native Engine observation producer",
+      "owner": "Native Engine",
+      "scope": "per_player_within_engine_match_id",
+      "counter_meaning": "exact observation snapshot sequence",
+      "monotonicity": "strictly_increasing_within_scope_no_wrap",
+      "reset_boundary": "new_engine_match_id",
+      "availability": "proposed_not_implemented",
+      "canonical_decision_eligible": false,
+      "evidence": "Current wrapper returns observations without typed identity envelope."
+    },
+    {
+      "namespace": "tft.engine.action-mask-snapshot",
+      "producer": "Native ActionMaskEngine",
+      "owner": "Native ActionMaskEngine",
+      "scope": "per_player_within_engine_match_id",
+      "counter_meaning": "exact ordered mask snapshot sequence",
+      "monotonicity": "strictly_increasing_within_scope_no_wrap",
+      "reset_boundary": "new_engine_match_id",
+      "availability": "proposed_not_implemented",
+      "canonical_decision_eligible": false,
+      "evidence": "Current masks are retrieved separately and have no typed identity or payload hash envelope."
+    },
+    {
+      "namespace": "tft.composition-intelligence.player-sequence",
+      "producer": "Composition Intelligence player runtime",
+      "owner": "CompositionIntelligencePlayerRuntime",
+      "scope": "player_local_runtime_sequence",
+      "counter_meaning": "CI player-local runtime progression",
+      "monotonicity": "requires_runtime_verification",
+      "reset_boundary": "CI runtime reset on Engine reset is documented; exact counter restart/continuity needs runtime proof",
+      "availability": "observed_in_audit_requires_runtime_verification",
+      "canonical_decision_eligible": false,
+      "evidence": "Audit identifies player-local CI sequence; it is not the Engine decision counter."
+    },
+    {
+      "namespace": "tft.shadow.native-strategic-snapshot",
+      "producer": "Native strategic snapshot producer",
+      "owner": "Native strategic snapshot producer",
+      "scope": "producer_defined_snapshot_stream",
+      "counter_meaning": "native strategic snapshot sequence",
+      "monotonicity": "requires_runtime_verification",
+      "reset_boundary": "requires_runtime_verification",
+      "availability": "observed_in_audit_requires_runtime_verification",
+      "canonical_decision_eligible": false,
+      "evidence": "Distinct sequence domain identified by replay/producer-binding audits."
+    },
+    {
+      "namespace": "tft.shadow.context-bridge.player-sequence",
+      "producer": "ContextBridge/player adapter",
+      "owner": "ContextBridge/player adapter",
+      "scope": "player_scoped_bridge_stream",
+      "counter_meaning": "ContextBridge player sequence",
+      "monotonicity": "requires_runtime_verification",
+      "reset_boundary": "requires_runtime_verification",
+      "availability": "observed_in_audit_requires_runtime_verification",
+      "canonical_decision_eligible": false,
+      "evidence": "Distinct bridge/player sequence domain; not interchangeable with Engine or CI sequences."
+    },
+    {
+      "namespace": "tft.shadow.diagnostic-jsonl-append",
+      "producer": "Diagnostic recorder / JSONL writer",
+      "owner": "Diagnostic recorder",
+      "scope": "one_recorder_stream_or_file",
+      "counter_meaning": "append order in diagnostic JSONL",
+      "monotonicity": "append_order_only",
+      "reset_boundary": "recorder_file_lifecycle",
+      "availability": "observed_in_audit_requires_runtime_verification",
+      "canonical_decision_eligible": false,
+      "evidence": "Global append ordering is recorder metadata, not a game decision counter."
+    },
+    {
+      "namespace": "tft.viewer.session-sequence",
+      "producer": "Viewer session/replay adapter",
+      "owner": "Viewer session/replay adapter",
+      "scope": "viewer_session",
+      "counter_meaning": "session-local display/replay ordering",
+      "monotonicity": "session_local",
+      "reset_boundary": "new_viewer_session",
+      "availability": "observed_in_audit",
+      "canonical_decision_eligible": false,
+      "evidence": "Viewer/session sequence is for correlation only and never replaces Engine identity."
+    },
+    {
+      "namespace": "tft.ppo.rollout-timestep",
+      "producer": "PPO collector/rollout",
+      "owner": "PPO collector/rollout",
+      "scope": "rollout_collection_stream",
+      "counter_meaning": "training transition position",
+      "monotonicity": "rollout_order_only",
+      "reset_boundary": "new_rollout_or_collector_lifecycle",
+      "availability": "observed_in_audit",
+      "canonical_decision_eligible": false,
+      "evidence": "Rollout timestep is training metadata, not source decision identity."
+    }
+  ],
+  "promotion_requirements": [
+    "producer implementation and owner verification",
+    "scope, monotonicity, duplicate-delivery and reset semantics proven",
+    "typed serialization at source and every transport boundary",
+    "stale, mismatch, reset and conflict tests",
+    "exact observation-mask decision correlation evidence",
+    "registry version increment and architecture reconstruction review"
+  ]
+}
