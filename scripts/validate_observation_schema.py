@@ -57,6 +57,19 @@ def schema_path_exists(schema: dict, path: str) -> bool:
     return True
 
 
+def verify_context_identity(snapshot: dict) -> None:
+    identity = snapshot["identity"]
+    if identity["status"] != "complete":
+        return
+    expected_sequence = identity["decision_sequence"]
+    anti_loop = snapshot["legal_state_context"]["anti_loop_state"]
+    if anti_loop["status"] == "valid" and anti_loop.get("source_decision_sequence") != expected_sequence:
+        raise ValueError("anti-loop history sequence does not match observation identity")
+    critic = snapshot["legal_state_context"]["critic_context"]
+    if critic["status"] == "valid" and critic.get("source_decision_sequence") != expected_sequence:
+        raise ValueError("critic context sequence does not match observation identity")
+
+
 def verify_provenance_nature(value: object, path: str = "$") -> None:
     if isinstance(value, list):
         for index, item in enumerate(value):
@@ -262,7 +275,7 @@ def main() -> None:
         if case_errors:
             raise SystemExit(f"field-status case {case_name!r} rejected: " +
                              "; ".join(e.message for e in case_errors))
-        verify_provenance_nature(candidate)
+        verify_provenance_nature(candidate)\n        verify_context_identity(candidate)
 
     # Zero is a real observed value; missing is a distinct status with a reason
     # and must not carry a fabricated numeric value.
@@ -303,6 +316,28 @@ def main() -> None:
     })
     assert not list(validator.iter_errors(incomplete_identity))
 
+    complete_anti_loop = copy.deepcopy(snapshot)
+    anti_loop = complete_anti_loop["legal_state_context"]["anti_loop_state"]
+    anti_loop.update({
+        "status": "valid",
+        "source_decision_sequence": 1,
+        "position_history": [{"state_hash": "sha256:" + "4" * 64, "round": 1, "decision_sequence": 1}],
+        "move_history": [{"round": 1, "decision_sequence": 1, "move_type": "board_move", "source_slot": 0, "target_slot": 1}],
+        "blocked_move_records": [{"round": 1, "decision_sequence": 1, "move_type": "board_move", "reason": "repeated_state"}],
+        "state_visits": [{"state_hash": "sha256:" + "4" * 64, "visit_count": 1, "last_seen_round": 1, "last_seen_sequence": 1}],
+    })
+    assert not list(validator.iter_errors(complete_anti_loop))
+    verify_context_identity(complete_anti_loop)
+
+    stale_anti_loop = copy.deepcopy(complete_anti_loop)
+    stale_anti_loop["legal_state_context"]["anti_loop_state"]["source_decision_sequence"] = 0
+    try:
+        verify_context_identity(stale_anti_loop)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("stale anti-loop history was not rejected")
+
     invalid_occupied_slot = copy.deepcopy(snapshot)
     invalid_occupied_slot["entities"]["board"][0] = {
         "slot_index": 0, "presence": "occupied", "unit": None
@@ -339,7 +374,7 @@ def main() -> None:
         raise AssertionError("projection hash mismatch was not rejected")
 
     print("Observation Schema Draft 2020-12: OK")
-    print("Valid/invalid fixtures, field-state matrix, identity, slot, hash and source-map coverage checks: OK")
+    print("Valid/invalid fixtures, field-state matrix, anti-loop/critic identity, hashes and 66-feature crosswalk: OK")
 
 
 if __name__ == "__main__":
