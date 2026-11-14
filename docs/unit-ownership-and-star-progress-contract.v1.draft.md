@@ -1,6 +1,6 @@
-# Unit Ownership and Star Progress Contract v1 — Draft
+# Unit Ownership and Star Progress Contract v1
 
-**Status:** documentary specification; runtime implementation and executable acceptance blocked until Gate 8  
+**Status:** approved documentary specification; runtime implementation and executable acceptance blocked until Gate 8  
 **Contract ID:** `tft.unit-evidence.v1`  
 **Target:** `new-arquiteture`  
 **Related:** #283, #281, #282, #284, #289, #291; Observation #293
