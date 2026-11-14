@@ -34,6 +34,8 @@ It does **not** select tensor dimensions, offsets, shapes, axes, ordering, paddi
 | unresolved | 5 |
 | critic_only_candidate | 5 |
 
+No semantic source-map field is currently classified as permanently excluded; diagnostic outputs and metadata have their own explicit dispositions. Candidate means proposed eligibility, not runtime approval.
+
 Every source-map field has exactly one primary disposition in the machine-readable matrix. The legacy crosswalk separately classifies all 66 historical features; its counts are not additive to the 77 semantic fields.
 
 ## 4. Key consumer decisions
@@ -82,7 +84,7 @@ The action-opportunity parent collection is not populated. Sell-value and afford
 
 ## 6. Legacy crosswalk
 
-The JSON matrix contains all 66 migration entries with their original migration decision and rationale plus the new projection crosswalk disposition and target consumers.
+The JSON matrix contains all 66 migration entries with their original migration decision and rationale plus the new projection crosswalk disposition, destination resolution and target consumers. Current crosswalk result: 45 rebuild from semantic destinations, 9 control/catalog/identity metadata, 6 excluded or deduplicated, 3 blocked by unavailable semantic sources, 1 diagnostic-only/excluded, and 2 unresolved semantic mappings. All destination paths are classified; none remains unmapped.
 
 Historical positional features are not copied mechanically. Constants and duplicates are excluded/deduplicated; ratios and heuristic proxies are rebuilt from semantic facts; merged legacy features are split where they combined distinct concepts; unavailable destinations remain blocked; catalog-order encodings are replaced by stable IDs and catalog fingerprints.
 
