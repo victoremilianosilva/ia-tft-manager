@@ -1679,13 +1679,11 @@
       "destination_resolution": [
         {
           "destination_path": "identity.round",
-          "semantic_parent_path": null,
+          "semantic_parent_path": "identity metadata",
           "primary_disposition": "control_metadata_only"
         }
       ],
-      "unmapped_destination_paths": [
-        "identity.round"
-      ]
+      "unmapped_destination_paths": []
     },
     {
       "legacy_block": "core",
@@ -1885,7 +1883,7 @@
       "destination_resolution": [
         {
           "destination_path": "catalogs.champions",
-          "semantic_parent_path": null,
+          "semantic_parent_path": "catalog metadata",
           "primary_disposition": "control_metadata_only"
         },
         {
@@ -1894,9 +1892,7 @@
           "primary_disposition": "shared_actor_critic_candidate"
         }
       ],
-      "unmapped_destination_paths": [
-        "catalogs.champions"
-      ]
+      "unmapped_destination_paths": []
     },
     {
       "legacy_block": "board",
@@ -2028,7 +2024,7 @@
       "destination_resolution": [
         {
           "destination_path": "catalogs.champions",
-          "semantic_parent_path": null,
+          "semantic_parent_path": "catalog metadata",
           "primary_disposition": "control_metadata_only"
         },
         {
@@ -2037,9 +2033,7 @@
           "primary_disposition": "shared_actor_critic_candidate"
         }
       ],
-      "unmapped_destination_paths": [
-        "catalogs.champions"
-      ]
+      "unmapped_destination_paths": []
     },
     {
       "legacy_block": "bench",
@@ -2171,7 +2165,7 @@
       "destination_resolution": [
         {
           "destination_path": "catalogs.champions",
-          "semantic_parent_path": null,
+          "semantic_parent_path": "catalog metadata",
           "primary_disposition": "control_metadata_only"
         },
         {
@@ -2180,9 +2174,7 @@
           "primary_disposition": "shared_actor_critic_candidate"
         }
       ],
-      "unmapped_destination_paths": [
-        "catalogs.champions"
-      ]
+      "unmapped_destination_paths": []
     },
     {
       "legacy_block": "shop",
@@ -3005,13 +2997,11 @@
         },
         {
           "destination_path": "catalogs.items",
-          "semantic_parent_path": null,
+          "semantic_parent_path": "catalog metadata",
           "primary_disposition": "control_metadata_only"
         }
       ],
-      "unmapped_destination_paths": [
-        "catalogs.items"
-      ]
+      "unmapped_destination_paths": []
     },
     {
       "legacy_block": "item_state",
@@ -3029,13 +3019,11 @@
       "destination_resolution": [
         {
           "destination_path": "catalogs.recipes",
-          "semantic_parent_path": null,
+          "semantic_parent_path": "catalog metadata",
           "primary_disposition": "control_metadata_only"
         }
       ],
-      "unmapped_destination_paths": [
-        "catalogs.recipes"
-      ]
+      "unmapped_destination_paths": []
     },
     {
       "legacy_block": "item_state",
@@ -3179,13 +3167,11 @@
       "destination_resolution": [
         {
           "destination_path": "catalogs.champions",
-          "semantic_parent_path": null,
+          "semantic_parent_path": "catalog metadata",
           "primary_disposition": "control_metadata_only"
         }
       ],
-      "unmapped_destination_paths": [
-        "catalogs.champions"
-      ]
+      "unmapped_destination_paths": []
     },
     {
       "legacy_block": "candidate_tail",
