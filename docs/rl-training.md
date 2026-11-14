@@ -1,5 +1,7 @@
 # Treinamento PPO
 
+> **Guia do trainer/runtime atual, não especificação normativa da nova linhagem.** Os arquivos, shapes, buffer e checkpoint descritos abaixo são o comportamento do pipeline implementado no snapshot auditado. A nova linhagem deve obedecer ao Observation Schema, Action/Mask, Reward e PPO Checkpoint Contracts v1. Compatibilidade de shape, carregamento pelo trainer atual ou presença de um checkpoint não demonstram compatibilidade semântica.
+
 ## Arquivos centrais
 
 - `trainer.py`: orquestra ambientes, policy, buffer, otimizador, scheduler, métricas e checkpoints.
@@ -24,7 +26,7 @@ O buffer valida shapes e sincronização de transições. Armazena observações
 
 ## Checkpoint e retomada
 
-O trainer persiste os pesos da policy e, quando aplicável, estados de otimizador/scheduler e número de update. O viewer é somente leitura e não restaura o otimizador. A arquitetura do checkpoint precisa corresponder à versão de `TFTPolicy`, às dimensões das ações e à dimensão da observação.
+O trainer persiste os pesos da policy e, quando aplicável, estados de otimizador/scheduler e número de update. O viewer é somente leitura e não restaura o otimizador. No runtime atual, o loader exige compatibilidade estrutural com `TFTPolicy`, as dimensões de ação e a observação. Para a nova linhagem, isso é apenas uma condição estrutural necessária: a aceitação também exige identidade/hash dos contratos e compatibilidade semântica conforme [PPO Checkpoint Contract v1](ppo-checkpoint-contract.v1.draft.md).
 
 ## Métricas
 
