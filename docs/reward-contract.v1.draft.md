@@ -132,7 +132,7 @@ Rules:
 
 - Board power, frontline/backline structure, synergy, and positioning scores are currently heuristic state evaluators, not ground-truth outcomes.
 - They may be diagnostics or candidates for a bounded potential function only after calibration against combat outcomes and explicit validity checks.
-- If used as shaping, use a potential difference of the form (F_t = gamma Phi(s_{t+1}) - Phi(s_t)), with bounded/versioned (Phi), terminal handling, and tests against reward farming.
+- If used as shaping, use a potential difference of the form `F_t = gamma * Phi(s[t+1]) - Phi(s[t])`, with bounded/versioned `Phi`, terminal handling, and tests against reward farming.
 - Do not pay the same board gain as both purchase quality, board-power delta, synergy delta, positioning delta, and a later combat bonus without a demonstrated non-overlap.
 - A board move that only changes a heuristic score is not proof of combat improvement.
 
@@ -176,7 +176,7 @@ Defaults are configuration defaults, not immutable contract constants. The actua
 ### 5.2 What GAE does and does not guarantee
 
 - GAE propagates later reward information backward through the sampled per-player trajectory; it does not establish a causal mapping from a specific combat result to one purchase.
-- The influence of distant rewards decays with (gammalambda) per step; long-delayed outcomes may have weak or noisy influence.
+- The influence of distant rewards decays with `gamma * lambda` per step; long-delayed outcomes may have weak or noisy influence.
 - At a non-terminal rollout boundary, the value estimate bootstraps the next state, but recursive GAE does not continue through data that has not yet been collected.
 - At a true terminal state, bootstrap and recursion stop for that player.
 - A player's elimination must not stop or leak into another player's trajectory.
