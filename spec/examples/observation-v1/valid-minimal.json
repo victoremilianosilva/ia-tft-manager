@@ -30,6 +30,27 @@
             "rollout",
             "replay"
           ]
+        },
+        {
+          "name": "variable_anchor_candidates",
+          "source_paths": [
+            "strategic_evidence.anchor_candidates"
+          ],
+          "encoding": "candidate_entity_encoder",
+          "shape": [
+            14,
+            8
+          ],
+          "padding_policy": "zero_value_with_presence_mask",
+          "variable_cardinality": true,
+          "presence_mask_path": "projection_masks.anchor_candidates",
+          "length_path": "projection_lengths.anchor_candidates",
+          "consumers": [
+            "actor",
+            "critic",
+            "rollout",
+            "replay"
+          ]
         }
       ]
     },
