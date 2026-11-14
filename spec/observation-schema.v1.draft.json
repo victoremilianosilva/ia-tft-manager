@@ -1,0 +1,2562 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:tft:ppo:observation-schema:v1-draft",
+  "title": "TFT PPO Observation Snapshot — Draft v1",
+  "description": "DRAFT, NOT APPROVED. Semantic source contract for observations consumed by PPO. The tensor projection is separately versioned and generated/validated from this contract. Action values and action masks remain in the independent Action Contract.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "identity",
+    "catalogs",
+    "player",
+    "entities",
+    "derived_context",
+    "strategic_evidence",
+    "legal_state_context"
+  ],
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "identityStatus": {
+      "type": "string",
+      "enum": [
+        "complete",
+        "partial",
+        "session_only",
+        "missing",
+        "stale",
+        "incompatible"
+      ]
+    },
+    "fieldStatus": {
+      "type": "string",
+      "enum": [
+        "valid",
+        "partial",
+        "missing",
+        "unknown",
+        "not_applicable",
+        "stale",
+        "incompatible"
+      ]
+    },
+    "fieldNature": {
+      "type": "string",
+      "enum": [
+        "observed",
+        "derived",
+        "estimated",
+        "inferred",
+        "recommended"
+      ]
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source",
+        "source_path",
+        "nature"
+      ],
+      "properties": {
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "formula_id": {
+          "type": "string"
+        },
+        "formula_version": {
+          "type": "string"
+        },
+        "catalog_id": {
+          "type": "string"
+        },
+        "catalog_hash": {
+          "$ref": "#/$defs/sha256"
+        },
+        "source_sequence": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "nature": {
+          "$ref": "#/$defs/fieldNature"
+        }
+      }
+    },
+    "field": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "nature",
+        "provenance"
+      ],
+      "properties": {
+        "value": {
+          "type": [
+            "number",
+            "integer",
+            "string",
+            "boolean",
+            "object",
+            "array",
+            "null"
+          ]
+        },
+        "status": {
+          "$ref": "#/$defs/fieldStatus"
+        },
+        "nature": {
+          "$ref": "#/$defs/fieldNature"
+        },
+        "unit": {
+          "type": "string"
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "reason": {
+          "type": "string"
+        },
+        "provenance": {
+          "$ref": "#/$defs/provenance"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "valid",
+                  "partial"
+                ]
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "required": [
+              "value"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "missing",
+                  "unknown",
+                  "not_applicable",
+                  "stale",
+                  "incompatible"
+                ]
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "required": [
+              "reason"
+            ],
+            "not": {
+              "required": [
+                "value"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "catalog": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "catalog_id",
+        "version",
+        "content_hash",
+        "order_hash"
+      ],
+      "properties": {
+        "catalog_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "content_hash": {
+          "$ref": "#/$defs/sha256"
+        },
+        "order_hash": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "unit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "instance_id",
+        "champion_id",
+        "star",
+        "position",
+        "items",
+        "traits"
+      ],
+      "properties": {
+        "instance_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "champion_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "star": {
+          "$ref": "#/$defs/field"
+        },
+        "position": {
+          "$ref": "#/$defs/field"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "traits": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "combat_stats": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/field"
+          }
+        }
+      }
+    },
+    "slot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "slot_index",
+        "presence"
+      ],
+      "properties": {
+        "slot_index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "presence": {
+          "type": "string",
+          "enum": [
+            "occupied",
+            "empty",
+            "unknown",
+            "stale",
+            "incompatible"
+          ]
+        },
+        "unit": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/unit"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Required when presence=occupied; null for empty/unknown slots."
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "presence": {
+                "const": "occupied"
+              }
+            },
+            "required": [
+              "presence"
+            ]
+          },
+          "then": {
+            "required": [
+              "unit"
+            ],
+            "properties": {
+              "unit": {
+                "$ref": "#/$defs/unit"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "presence": {
+                "enum": [
+                  "empty",
+                  "unknown",
+                  "stale",
+                  "incompatible"
+                ]
+              }
+            },
+            "required": [
+              "presence"
+            ]
+          },
+          "then": {
+            "properties": {
+              "unit": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "sequenceIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "match_id",
+        "player_id",
+        "round",
+        "decision_sequence",
+        "snapshot_sequence",
+        "status",
+        "decision_identity_hash",
+        "decision_identity_hash_scope"
+      ],
+      "properties": {
+        "match_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "engine_match_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "session_match_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "episode_id": {
+          "type": [
+            "integer",
+            "string",
+            "null"
+          ]
+        },
+        "player_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "round": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "decision_sequence": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "snapshot_sequence": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "player_sequence": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "event_sequence": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "captured_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "status": {
+          "$ref": "#/$defs/identityStatus"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "decision_identity_hash": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "description": "Hash of the decision identity scope below; null unless identity status is complete."
+        },
+        "decision_identity_hash_scope": {
+          "const": "Canonical RFC8785 SHA-256 over match_id, engine_match_id, player_id, round, decision_sequence and snapshot_sequence; excludes this hash and session/episode/event metadata."
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "complete"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "required": [
+              "engine_match_id",
+              "decision_identity_hash"
+            ],
+            "properties": {
+              "engine_match_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "match_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "player_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "round": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "decision_sequence": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "snapshot_sequence": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "decision_identity_hash": {
+                "type": "string",
+                "pattern": "^sha256:[a-f0-9]{64}$"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "partial",
+                  "session_only",
+                  "missing",
+                  "stale",
+                  "incompatible"
+                ]
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "required": [
+              "reason"
+            ],
+            "properties": {
+              "decision_identity_hash": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "projection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "projection_id",
+        "version",
+        "projection_hash",
+        "dtype",
+        "blocks",
+        "canonicalization",
+        "hash_scope"
+      ],
+      "properties": {
+        "projection_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projection_hash": {
+          "$ref": "#/$defs/sha256"
+        },
+        "dtype": {
+          "type": "string",
+          "enum": [
+            "float32",
+            "float16",
+            "bfloat16",
+            "structured"
+          ]
+        },
+        "blocks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "source_paths",
+              "encoding",
+              "consumers"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "source_paths": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1
+              },
+              "encoding": {
+                "type": "string"
+              },
+              "shape": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "padding_policy": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "zero_value_with_presence_mask",
+                  "sentinel_with_presence_mask",
+                  "packed_sequence"
+                ]
+              },
+              "presence_mask_path": {
+                "type": "string",
+                "minLength": 1
+              },
+              "consumers": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1
+              },
+              "variable_cardinality": {
+                "type": "boolean",
+                "description": "True when this block represents a variable-size set padded or packed for tensor projection."
+              },
+              "length_path": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "variable_cardinality": {
+                      "const": true
+                    }
+                  },
+                  "required": [
+                    "variable_cardinality"
+                  ]
+                },
+                "then": {
+                  "required": [
+                    "padding_policy",
+                    "presence_mask_path"
+                  ]
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "variable_cardinality": {
+                      "const": false
+                    }
+                  },
+                  "required": [
+                    "variable_cardinality"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "padding_policy": {
+                      "const": "none"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "canonicalization": {
+          "const": "RFC8785"
+        },
+        "output_shape": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "hash_scope": {
+          "const": "Canonical projection definition excluding projection_hash"
+        }
+      }
+    },
+    "unitAssessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "unit_instance_id"
+      ],
+      "properties": {
+        "unit_instance_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "is_core": {
+          "$ref": "#/$defs/field"
+        },
+        "board_contribution": {
+          "$ref": "#/$defs/field"
+        },
+        "composition_fit": {
+          "$ref": "#/$defs/field"
+        },
+        "item_fit": {
+          "$ref": "#/$defs/field"
+        }
+      }
+    },
+    "anchorCandidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_id",
+        "direction_id",
+        "composition_id",
+        "anchor_unit_id",
+        "candidate_unit_ids",
+        "evidence"
+      ],
+      "properties": {
+        "candidate_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "direction_id": {
+          "$ref": "#/$defs/field"
+        },
+        "composition_id": {
+          "$ref": "#/$defs/field"
+        },
+        "anchor_unit_id": {
+          "$ref": "#/$defs/field"
+        },
+        "candidate_unit_ids": {
+          "$ref": "#/$defs/field"
+        },
+        "main_carry_id": {
+          "$ref": "#/$defs/field"
+        },
+        "candidate_traits": {
+          "$ref": "#/$defs/field"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "anchor_value": {
+          "$ref": "#/$defs/field"
+        },
+        "transition_cost": {
+          "$ref": "#/$defs/field"
+        },
+        "contestation": {
+          "$ref": "#/$defs/field"
+        },
+        "reusable_owned_units": {
+          "$ref": "#/$defs/field"
+        },
+        "shop_available": {
+          "$ref": "#/$defs/field"
+        }
+      }
+    },
+    "actionOpportunityCandidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_id",
+        "action_kind",
+        "available"
+      ],
+      "properties": {
+        "candidate_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "action_kind": {
+          "type": "string",
+          "enum": [
+            "buy_unit",
+            "buy_experience",
+            "reroll_shop",
+            "sell_unit",
+            "deploy_or_move",
+            "hold"
+          ]
+        },
+        "champion_id": {
+          "$ref": "#/$defs/field"
+        },
+        "unit_instance_id": {
+          "$ref": "#/$defs/field"
+        },
+        "gold_cost": {
+          "$ref": "#/$defs/field"
+        },
+        "direct_gold_cost": {
+          "$ref": "#/$defs/field"
+        },
+        "lost_interest_cost": {
+          "$ref": "#/$defs/field"
+        },
+        "opportunity_cost": {
+          "$ref": "#/$defs/field"
+        },
+        "expected_economy_cost": {
+          "$ref": "#/$defs/field"
+        },
+        "expected_board_delta": {
+          "$ref": "#/$defs/field"
+        },
+        "composition_fit": {
+          "$ref": "#/$defs/field"
+        },
+        "upgrade_value": {
+          "$ref": "#/$defs/field"
+        },
+        "available": {
+          "$ref": "#/$defs/field"
+        },
+        "evaluation_horizon": {
+          "$ref": "#/$defs/field"
+        },
+        "sell_value": {
+          "$ref": "#/$defs/field"
+        },
+        "affordability": {
+          "$ref": "#/$defs/field"
+        }
+      }
+    }
+  },
+  "properties": {
+    "schema": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_id",
+        "semantic_version",
+        "structural_revision",
+        "schema_hash",
+        "projection",
+        "hash_algorithm",
+        "hash_canonicalization",
+        "hash_scope",
+        "evolution_policy"
+      ],
+      "properties": {
+        "schema_id": {
+          "const": "tft.ppo.observation"
+        },
+        "semantic_version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "structural_revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "schema_hash": {
+          "$ref": "#/$defs/sha256"
+        },
+        "projection": {
+          "$ref": "#/$defs/projection"
+        },
+        "compatibility_policy": {
+          "type": "string",
+          "enum": [
+            "compatible",
+            "semantic_break",
+            "structural_break",
+            "explicit_migration_required",
+            "new_training_lineage_required"
+          ],
+          "default": "new_training_lineage_required"
+        },
+        "hash_algorithm": {
+          "const": "SHA-256"
+        },
+        "hash_canonicalization": {
+          "const": "RFC8785"
+        },
+        "hash_scope": {
+          "const": "Canonical RFC8785 form of normative schema content (field definitions, types, constraints, requiredness, semantics, catalog references and projection identity); excludes title, description, examples, default, $comment, deprecated annotations and the instance schema_hash value"
+        },
+        "evolution_policy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "patch",
+            "minor",
+            "major",
+            "projection_change",
+            "catalog_change",
+            "migration",
+            "training_lineage"
+          ],
+          "properties": {
+            "patch": {
+              "const": "Editorial metadata/examples/provenance clarification only; no field meaning, constraints, projection or catalog identity changes."
+            },
+            "minor": {
+              "const": "Additive optional fields only; existing fields retain identical meaning and consumers may ignore additions only when their declared profile does not require them."
+            },
+            "major": {
+              "const": "Any field rename/removal/reinterpretation, unit/scale/range/ordering/requiredness change, or identity-semantic change."
+            },
+            "projection_change": {
+              "const": "Any tensor block/order/shape/dtype/encoder grouping/normalization change increments projection version and projection hash, even if semantic schema version is unchanged."
+            },
+            "catalog_change": {
+              "const": "Content and order fingerprints are independent; any used vocabulary or ordering change updates its fingerprint, and a changed interpretation is semantically incompatible."
+            },
+            "migration": {
+              "const": "Migration requires an explicit versioned manifest and contract tests; positional zero-padding/remapping is not evidence of semantic compatibility."
+            },
+            "training_lineage": {
+              "const": "Semantic or projection incompatibility starts a new training lineage unless an explicitly approved and tested partial transfer is recorded."
+            }
+          }
+        }
+      },
+      "description": "Hash is computed over RFC 8785 canonical JSON excluding schema_hash to avoid self-reference. Any semantic/structural/catalog/projection change that affects interpretation must change the corresponding identity."
+    },
+    "identity": {
+      "$ref": "#/$defs/sequenceIdentity"
+    },
+    "catalogs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "champions",
+        "traits",
+        "items",
+        "components",
+        "recipes"
+      ],
+      "properties": {
+        "champions": {
+          "$ref": "#/$defs/catalog"
+        },
+        "traits": {
+          "$ref": "#/$defs/catalog"
+        },
+        "items": {
+          "$ref": "#/$defs/catalog"
+        },
+        "components": {
+          "$ref": "#/$defs/catalog"
+        },
+        "recipes": {
+          "$ref": "#/$defs/catalog"
+        },
+        "trait_milestones": {
+          "$ref": "#/$defs/catalog"
+        }
+      }
+    },
+    "player": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "lifecycle",
+        "health",
+        "economy"
+      ],
+      "properties": {
+        "lifecycle": {
+          "$ref": "#/$defs/field"
+        },
+        "health": {
+          "$ref": "#/$defs/field"
+        },
+        "economy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "gold",
+            "level",
+            "xp"
+          ],
+          "properties": {
+            "gold": {
+              "$ref": "#/$defs/field"
+            },
+            "level": {
+              "$ref": "#/$defs/field"
+            },
+            "xp": {
+              "$ref": "#/$defs/field"
+            },
+            "xp_to_next": {
+              "$ref": "#/$defs/field"
+            },
+            "income": {
+              "$ref": "#/$defs/field"
+            },
+            "interest": {
+              "$ref": "#/$defs/field"
+            },
+            "streak_bonus": {
+              "$ref": "#/$defs/field"
+            },
+            "shop_cost": {
+              "$ref": "#/$defs/field"
+            }
+          }
+        },
+        "streaks": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "win_streak": {
+              "$ref": "#/$defs/field"
+            },
+            "loss_streak": {
+              "$ref": "#/$defs/field"
+            }
+          }
+        }
+      }
+    },
+    "entities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "board",
+        "bench",
+        "shop"
+      ],
+      "properties": {
+        "board": {
+          "type": "array",
+          "minItems": 28,
+          "maxItems": 28,
+          "items": {
+            "$ref": "#/$defs/slot"
+          }
+        },
+        "bench": {
+          "type": "array",
+          "minItems": 9,
+          "maxItems": 9,
+          "items": {
+            "$ref": "#/$defs/slot"
+          }
+        },
+        "shop": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5,
+          "items": {
+            "$ref": "#/$defs/slot"
+          }
+        },
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "components": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "component_id",
+                  "count"
+                ],
+                "properties": {
+                  "component_id": {
+                    "type": "string"
+                  },
+                  "count": {
+                    "$ref": "#/$defs/field"
+                  }
+                }
+              }
+            },
+            "inventory": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "item_id",
+                  "slot"
+                ],
+                "properties": {
+                  "item_id": {
+                    "type": "string"
+                  },
+                  "slot": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              }
+            },
+            "pending_anvil": {
+              "$ref": "#/$defs/field"
+            },
+            "anvil_options": {
+              "type": "array",
+              "description": "Explicit pending anvil options; option identity and item/component identity are preserved instead of positional one-hot features.",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "option_id",
+                  "kind"
+                ],
+                "properties": {
+                  "option_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "component",
+                      "completed_item"
+                    ]
+                  },
+                  "component_id": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "item_id": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "stats": {
+                    "$ref": "#/$defs/field"
+                  },
+                  "target_fits": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "target_instance_id",
+                        "score"
+                      ],
+                      "properties": {
+                        "target_instance_id": {
+                          "type": "string"
+                        },
+                        "score": {
+                          "$ref": "#/$defs/field"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "derived_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "positioning": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/field"
+          }
+        },
+        "trait_counts": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/field"
+          }
+        },
+        "capacity": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/field"
+          }
+        },
+        "unit_roles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "instance_id",
+              "role"
+            ],
+            "properties": {
+              "instance_id": {
+                "type": "string"
+              },
+              "role": {
+                "$ref": "#/$defs/field"
+              }
+            }
+          }
+        },
+        "item_target_fit": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "item_id",
+              "target_instance_id",
+              "score"
+            ],
+            "properties": {
+              "item_id": {
+                "type": "string"
+              },
+              "target_instance_id": {
+                "type": "string"
+              },
+              "score": {
+                "$ref": "#/$defs/field"
+              }
+            }
+          }
+        },
+        "economic_context": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "stage": {
+              "$ref": "#/$defs/field"
+            },
+            "interest_if_resolved_now": {
+              "$ref": "#/$defs/field"
+            },
+            "projected_next_round_income": {
+              "$ref": "#/$defs/field"
+            },
+            "board_power": {
+              "$ref": "#/$defs/field"
+            },
+            "lobby_average_board_power": {
+              "$ref": "#/$defs/field"
+            },
+            "relative_board_power": {
+              "$ref": "#/$defs/field"
+            },
+            "estimated_incoming_damage": {
+              "$ref": "#/$defs/field"
+            },
+            "elimination_risk": {
+              "$ref": "#/$defs/field"
+            },
+            "survival_pressure": {
+              "$ref": "#/$defs/field"
+            },
+            "board_pressure": {
+              "$ref": "#/$defs/field"
+            },
+            "economy_pressure": {
+              "$ref": "#/$defs/field"
+            }
+          }
+        },
+        "action_opportunity": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "items"
+          ],
+          "properties": {
+            "status": {
+              "$ref": "#/$defs/fieldStatus"
+            },
+            "items": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/actionOpportunityCandidate"
+              }
+            },
+            "source_sequence": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "status": {
+                    "enum": [
+                      "missing",
+                      "unknown",
+                      "not_applicable",
+                      "stale",
+                      "incompatible"
+                    ]
+                  }
+                },
+                "required": [
+                  "status"
+                ]
+              },
+              "then": {
+                "required": [
+                  "reason"
+                ]
+              }
+            }
+          ]
+        },
+        "decision_history": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status"
+          ],
+          "description": "Decision-local history for temporal context. This is descriptive input, not an action mask or legality override.",
+          "properties": {
+            "status": {
+              "$ref": "#/$defs/fieldStatus"
+            },
+            "actions_taken_this_round": {
+              "$ref": "#/$defs/field"
+            },
+            "remaining_action_budget": {
+              "$ref": "#/$defs/field"
+            },
+            "board_move_age_by_slot": {
+              "type": "array",
+              "minItems": 28,
+              "maxItems": 28,
+              "items": {
+                "$ref": "#/$defs/field"
+              }
+            },
+            "source_decision_sequence": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "status": {
+                    "enum": [
+                      "missing",
+                      "unknown",
+                      "not_applicable",
+                      "stale",
+                      "incompatible"
+                    ]
+                  }
+                },
+                "required": [
+                  "status"
+                ]
+              },
+              "then": {
+                "required": [
+                  "reason"
+                ]
+              }
+            }
+          ]
+        },
+        "recipe_target_fit": {
+          "type": "array",
+          "description": "Heuristic recipe-to-unit fit, distinct from owned inventory item fit.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "recipe_id",
+              "target_instance_id",
+              "score"
+            ],
+            "properties": {
+              "recipe_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "target_instance_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "score": {
+                "$ref": "#/$defs/field"
+              }
+            }
+          }
+        }
+      }
+    },
+    "strategic_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "composition_hypotheses": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "hypothesis_id",
+              "evidence"
+            ],
+            "properties": {
+              "hypothesis_id": {
+                "type": "string"
+              },
+              "direction_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "composition_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "anchor_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "evidence": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "quality": {
+                "$ref": "#/$defs/fieldStatus"
+              }
+            }
+          }
+        },
+        "priorities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "entity_id",
+              "priority"
+            ],
+            "properties": {
+              "entity_id": {
+                "type": "string"
+              },
+              "priority": {
+                "$ref": "#/$defs/field"
+              }
+            }
+          }
+        },
+        "progression": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/field"
+          }
+        },
+        "pressure": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/field"
+          }
+        },
+        "uncertainty": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/field"
+          }
+        },
+        "owned_unit_assessments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/unitAssessment"
+          }
+        },
+        "anchor_candidates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/anchorCandidate"
+          }
+        },
+        "candidate_generation": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "status": {
+              "$ref": "#/$defs/fieldStatus"
+            },
+            "anchors_considered": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "candidates_generated": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "rejected_cost_below_four": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "rejected_missing_champion_definition": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "rejected_empty_trait": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "rejected_duplicate_direction": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "rejected_direction_limit": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "rejected_empty_plan": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "rejected_anchor_not_in_plan": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "no_candidate_reason": {
+              "type": "string"
+            }
+          }
+        },
+        "commitment_context": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "direction_id": {
+              "$ref": "#/$defs/field"
+            },
+            "direction_identity": {
+              "$ref": "#/$defs/field"
+            },
+            "progression_plan": {
+              "$ref": "#/$defs/field"
+            },
+            "core_unit_ids": {
+              "$ref": "#/$defs/field"
+            },
+            "flexible_unit_ids": {
+              "$ref": "#/$defs/field"
+            },
+            "selected_round": {
+              "$ref": "#/$defs/field"
+            },
+            "last_review_round": {
+              "$ref": "#/$defs/field"
+            },
+            "selection_reason": {
+              "$ref": "#/$defs/field"
+            },
+            "revision_condition": {
+              "$ref": "#/$defs/field"
+            },
+            "confidence": {
+              "$ref": "#/$defs/field"
+            },
+            "consecutive_reviews": {
+              "$ref": "#/$defs/field"
+            },
+            "direction_source": {
+              "$ref": "#/$defs/field"
+            },
+            "composition_identity": {
+              "$ref": "#/$defs/field"
+            },
+            "current_direction_score": {
+              "$ref": "#/$defs/field"
+            },
+            "current_direction_viable": {
+              "$ref": "#/$defs/field"
+            },
+            "composition_locked": {
+              "$ref": "#/$defs/field",
+              "description": "Lock state from its authoritative new-architecture owner only. The current evidence builder hardcodes false, so the field must be missing/unknown until a real owner/source is wired."
+            }
+          }
+        },
+        "completed_traits": {
+          "$ref": "#/$defs/field",
+          "description": "Full set of completed traits derived from the active native direction. Preserve stable trait IDs; list order has no semantic priority and must not be interpreted as core/focus ranking."
+        },
+        "focus_weights": {
+          "$ref": "#/$defs/field",
+          "description": "Independent trait-keyed strategic focus weights. The current producer does not provide this signal; serialize missing/unknown with provenance and reason, never copy legacy DTO defaults."
+        },
+        "owner_snapshots": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "planner_commitment",
+            "composition_intelligence",
+            "unified_state_machine"
+          ],
+          "description": "Independent snapshots from the three existing strategic state owners. This envelope deliberately does not select a global authority or force synchronization; ownership/transition authority is decided in #284/#300.",
+          "properties": {
+            "planner_commitment": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "status",
+                "owner_id",
+                "payload_path"
+              ],
+              "properties": {
+                "status": {
+                  "$ref": "#/$defs/fieldStatus"
+                },
+                "owner_id": {
+                  "const": "strategic_planner_commitments"
+                },
+                "payload_path": {
+                  "const": "strategic_evidence.commitment_context"
+                },
+                "source_decision_sequence": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "reason": {
+                  "type": "string"
+                }
+              },
+              "allOf": [
+                {
+                  "if": {
+                    "properties": {
+                      "status": {
+                        "const": "valid"
+                      }
+                    },
+                    "required": [
+                      "status"
+                    ]
+                  },
+                  "then": {
+                    "required": [
+                      "source_decision_sequence"
+                    ]
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "status": {
+                        "enum": [
+                          "partial",
+                          "missing",
+                          "unknown",
+                          "not_applicable",
+                          "stale",
+                          "incompatible"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "status"
+                    ]
+                  },
+                  "then": {
+                    "required": [
+                      "reason"
+                    ]
+                  }
+                }
+              ]
+            },
+            "composition_intelligence": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "status",
+                "owner_id"
+              ],
+              "properties": {
+                "status": {
+                  "$ref": "#/$defs/fieldStatus"
+                },
+                "owner_id": {
+                  "const": "CompositionIntelligencePlayerRuntime.active"
+                },
+                "source_decision_sequence": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "active_composition": {
+                  "$ref": "#/$defs/field"
+                },
+                "composition_identity": {
+                  "$ref": "#/$defs/field"
+                },
+                "composition_version": {
+                  "$ref": "#/$defs/field"
+                },
+                "transition_state": {
+                  "$ref": "#/$defs/field"
+                },
+                "reason": {
+                  "type": "string"
+                }
+              },
+              "allOf": [
+                {
+                  "if": {
+                    "properties": {
+                      "status": {
+                        "const": "valid"
+                      }
+                    },
+                    "required": [
+                      "status"
+                    ]
+                  },
+                  "then": {
+                    "required": [
+                      "source_decision_sequence",
+                      "active_composition",
+                      "composition_identity",
+                      "composition_version"
+                    ]
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "status": {
+                        "enum": [
+                          "partial",
+                          "missing",
+                          "unknown",
+                          "not_applicable",
+                          "stale",
+                          "incompatible"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "status"
+                    ]
+                  },
+                  "then": {
+                    "required": [
+                      "reason"
+                    ]
+                  }
+                }
+              ]
+            },
+            "unified_state_machine": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "status",
+                "owner_id"
+              ],
+              "properties": {
+                "status": {
+                  "$ref": "#/$defs/fieldStatus"
+                },
+                "owner_id": {
+                  "const": "UnifiedStrategicStateMachine"
+                },
+                "source_decision_sequence": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "machine_state": {
+                  "$ref": "#/$defs/field"
+                },
+                "active_composition": {
+                  "$ref": "#/$defs/field"
+                },
+                "pending_transition": {
+                  "$ref": "#/$defs/field"
+                },
+                "reason": {
+                  "type": "string"
+                }
+              },
+              "allOf": [
+                {
+                  "if": {
+                    "properties": {
+                      "status": {
+                        "const": "valid"
+                      }
+                    },
+                    "required": [
+                      "status"
+                    ]
+                  },
+                  "then": {
+                    "required": [
+                      "source_decision_sequence",
+                      "machine_state"
+                    ]
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "status": {
+                        "enum": [
+                          "partial",
+                          "missing",
+                          "unknown",
+                          "not_applicable",
+                          "stale",
+                          "incompatible"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "status"
+                    ]
+                  },
+                  "then": {
+                    "required": [
+                      "reason"
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "required": [
+        "owner_snapshots"
+      ]
+    },
+    "legal_state_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "anti_loop_state",
+        "mask_reference",
+        "critic_context",
+        "description"
+      ],
+      "properties": {
+        "status": {
+          "$ref": "#/$defs/fieldStatus"
+        },
+        "anti_loop_state": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status"
+          ],
+          "properties": {
+            "status": {
+              "$ref": "#/$defs/fieldStatus"
+            },
+            "history_size": {
+              "$ref": "#/$defs/field"
+            },
+            "move_history_size": {
+              "$ref": "#/$defs/field"
+            },
+            "blocked_moves": {
+              "$ref": "#/$defs/field"
+            },
+            "known_states": {
+              "$ref": "#/$defs/field"
+            },
+            "last_move": {
+              "$ref": "#/$defs/field"
+            },
+            "state_window_rounds": {
+              "$ref": "#/$defs/field"
+            },
+            "cross_round_move_window": {
+              "$ref": "#/$defs/field"
+            },
+            "blocked_move_size": {
+              "$ref": "#/$defs/field"
+            },
+            "loop_threshold": {
+              "$ref": "#/$defs/field"
+            },
+            "source_decision_sequence": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "reason": {
+              "type": "string"
+            },
+            "position_history": {
+              "type": "array",
+              "description": "Recent board-state identities retained by AntiLoopEngine.",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "state_hash",
+                  "round",
+                  "decision_sequence"
+                ],
+                "properties": {
+                  "state_hash": {
+                    "$ref": "#/$defs/sha256"
+                  },
+                  "round": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "decision_sequence": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              }
+            },
+            "move_history": {
+              "type": "array",
+              "description": "Recent attempted/executed movement history used by anti-loop evaluation.",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "round",
+                  "decision_sequence",
+                  "move_type",
+                  "source_slot",
+                  "target_slot"
+                ],
+                "properties": {
+                  "round": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "decision_sequence": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "move_type": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "source_slot": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 0
+                  },
+                  "target_slot": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 0
+                  },
+                  "result_state_hash": {
+                    "$ref": "#/$defs/sha256"
+                  }
+                }
+              }
+            },
+            "blocked_move_records": {
+              "type": "array",
+              "description": "Movement candidates blocked by anti-loop logic, with explicit reason and originating decision.",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "round",
+                  "decision_sequence",
+                  "move_type",
+                  "reason"
+                ],
+                "properties": {
+                  "round": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "decision_sequence": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "move_type": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "source_slot": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 0
+                  },
+                  "target_slot": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 0
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "state_hash": {
+                    "$ref": "#/$defs/sha256"
+                  }
+                }
+              }
+            },
+            "state_visits": {
+              "type": "array",
+              "description": "Visited-state counters used to detect repeated states.",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "state_hash",
+                  "visit_count",
+                  "last_seen_round",
+                  "last_seen_sequence"
+                ],
+                "properties": {
+                  "state_hash": {
+                    "$ref": "#/$defs/sha256"
+                  },
+                  "visit_count": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "last_seen_round": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "last_seen_sequence": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              }
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "status": {
+                    "enum": [
+                      "missing",
+                      "unknown",
+                      "not_applicable",
+                      "stale",
+                      "incompatible"
+                    ]
+                  }
+                },
+                "required": [
+                  "status"
+                ]
+              },
+              "then": {
+                "required": [
+                  "reason"
+                ]
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "status": {
+                    "const": "valid"
+                  }
+                },
+                "required": [
+                  "status"
+                ]
+              },
+              "then": {
+                "required": [
+                  "position_history",
+                  "move_history",
+                  "blocked_move_records",
+                  "state_visits",
+                  "source_decision_sequence"
+                ]
+              }
+            }
+          ]
+        },
+        "source_decision_sequence": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "reason": {
+          "type": "string"
+        },
+        "description": {
+          "const": "Descriptive state/history context only. Actual action masks and action legality are defined by the independent Action Contract."
+        },
+        "mask_reference": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "decision_identity_hash"
+          ],
+          "properties": {
+            "status": {
+              "$ref": "#/$defs/fieldStatus"
+            },
+            "action_contract_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "action_contract_version": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "action_contract_hash": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/sha256"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "mask_contract_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "mask_contract_version": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "mask_contract_hash": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/sha256"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "mask_snapshot_hash": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/sha256"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "decision_identity_hash": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "pattern": "^sha256:[a-f0-9]{64}$",
+              "description": "Must equal identity.decision_identity_hash for a valid mask reference; null when no complete decision identity exists."
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "status": {
+                    "const": "valid"
+                  }
+                },
+                "required": [
+                  "status"
+                ]
+              },
+              "then": {
+                "required": [
+                  "action_contract_id",
+                  "action_contract_version",
+                  "action_contract_hash",
+                  "mask_contract_id",
+                  "mask_contract_version",
+                  "mask_contract_hash",
+                  "mask_snapshot_hash"
+                ],
+                "properties": {
+                  "decision_identity_hash": {
+                    "type": "string",
+                    "pattern": "^sha256:[a-f0-9]{64}$"
+                  }
+                }
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "status": {
+                    "enum": [
+                      "missing",
+                      "unknown",
+                      "not_applicable",
+                      "stale",
+                      "incompatible"
+                    ]
+                  }
+                },
+                "required": [
+                  "status"
+                ]
+              },
+              "then": {
+                "required": [
+                  "reason"
+                ],
+                "properties": {
+                  "decision_identity_hash": {
+                    "type": "null"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "critic_context": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status"
+          ],
+          "properties": {
+            "status": {
+              "$ref": "#/$defs/fieldStatus"
+            },
+            "representation": {
+              "type": "string",
+              "enum": [
+                "exact_masks",
+                "lossless_mask_encoding",
+                "markov_sufficient_state"
+              ]
+            },
+            "source_decision_sequence": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "status": {
+                    "enum": [
+                      "missing",
+                      "unknown",
+                      "not_applicable",
+                      "stale",
+                      "incompatible"
+                    ]
+                  }
+                },
+                "required": [
+                  "status"
+                ]
+              },
+              "then": {
+                "required": [
+                  "reason"
+                ]
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "status": {
+                    "const": "valid"
+                  }
+                },
+                "required": [
+                  "status"
+                ]
+              },
+              "then": {
+                "required": [
+                  "representation",
+                  "source_decision_sequence"
+                ]
+              }
+            }
+          ],
+          "description": "The critic receives exact action masks as a separate, identity-bound side input owned by the independent Action Contract. This object declares representation and freshness only; it never redefines legality."
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "valid"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "properties": {
+              "anti_loop_state": {
+                "properties": {
+                  "status": {
+                    "const": "valid"
+                  }
+                }
+              },
+              "mask_reference": {
+                "properties": {
+                  "status": {
+                    "const": "valid"
+                  }
+                }
+              },
+              "critic_context": {
+                "properties": {
+                  "status": {
+                    "const": "valid"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "partial",
+                  "missing",
+                  "unknown",
+                  "not_applicable",
+                  "stale",
+                  "incompatible"
+                ]
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "required": [
+              "reason"
+            ]
+          }
+        }
+      ]
+    },
+    "shadow_recommendations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "policy_input_eligible",
+        "items"
+      ],
+      "properties": {
+        "policy_input_eligible": {
+          "const": false
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "recommendation_id",
+              "action",
+              "source_sequence"
+            ],
+            "properties": {
+              "recommendation_id": {
+                "type": "string"
+              },
+              "action": {
+                "type": "string"
+              },
+              "source_sequence": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "score": {
+                "$ref": "#/$defs/field"
+              },
+              "reason": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "required": [
+          "identity"
+        ],
+        "properties": {
+          "identity": {
+            "required": [
+              "status"
+            ],
+            "properties": {
+              "status": {
+                "enum": [
+                  "partial",
+                  "session_only",
+                  "missing",
+                  "stale",
+                  "incompatible"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "legal_state_context": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "partial",
+                  "missing",
+                  "unknown",
+                  "not_applicable",
+                  "stale",
+                  "incompatible"
+                ]
+              },
+              "anti_loop_state": {
+                "properties": {
+                  "status": {
+                    "enum": [
+                      "partial",
+                      "missing",
+                      "unknown",
+                      "not_applicable",
+                      "stale",
+                      "incompatible"
+                    ]
+                  }
+                }
+              },
+              "mask_reference": {
+                "properties": {
+                  "status": {
+                    "enum": [
+                      "partial",
+                      "missing",
+                      "unknown",
+                      "not_applicable",
+                      "stale",
+                      "incompatible"
+                    ]
+                  }
+                }
+              },
+              "critic_context": {
+                "properties": {
+                  "status": {
+                    "enum": [
+                      "partial",
+                      "missing",
+                      "unknown",
+                      "not_applicable",
+                      "stale",
+                      "incompatible"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "strategic_evidence": {
+            "properties": {
+              "owner_snapshots": {
+                "properties": {
+                  "planner_commitment": {
+                    "properties": {
+                      "status": {
+                        "enum": [
+                          "partial",
+                          "missing",
+                          "unknown",
+                          "not_applicable",
+                          "stale",
+                          "incompatible"
+                        ]
+                      }
+                    }
+                  },
+                  "composition_intelligence": {
+                    "properties": {
+                      "status": {
+                        "enum": [
+                          "partial",
+                          "missing",
+                          "unknown",
+                          "not_applicable",
+                          "stale",
+                          "incompatible"
+                        ]
+                      }
+                    }
+                  },
+                  "unified_state_machine": {
+                    "properties": {
+                      "status": {
+                        "enum": [
+                          "partial",
+                          "missing",
+                          "unknown",
+                          "not_applicable",
+                          "stale",
+                          "incompatible"
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

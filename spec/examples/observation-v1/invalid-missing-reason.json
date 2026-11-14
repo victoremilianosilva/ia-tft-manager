@@ -1,0 +1,410 @@
+{
+  "schema": {
+    "schema_id": "tft.ppo.observation",
+    "semantic_version": "1.0.0",
+    "structural_revision": 1,
+    "schema_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+    "hash_algorithm": "SHA-256",
+    "hash_canonicalization": "RFC8785",
+    "hash_scope": "Canonical RFC8785 form of normative schema content (field definitions, types, constraints, requiredness, semantics, catalog references and projection identity); excludes title, description, examples, default, $comment, deprecated annotations and the instance schema_hash value",
+    "compatibility_policy": "new_training_lineage_required",
+    "projection": {
+      "projection_id": "tft.ppo.structured.v1",
+      "version": "1.0.0",
+      "projection_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "canonicalization": "RFC8785",
+      "hash_scope": "Canonical projection definition excluding projection_hash",
+      "dtype": "structured",
+      "output_shape": [],
+      "blocks": [
+        {
+          "name": "player_core",
+          "source_paths": [
+            "player.health",
+            "player.economy"
+          ],
+          "encoding": "typed_fields",
+          "consumers": [
+            "actor",
+            "critic",
+            "rollout",
+            "replay"
+          ]
+        }
+      ]
+    },
+    "evolution_policy": {
+      "patch": "Editorial metadata/examples/provenance clarification only; no field meaning, constraints, projection or catalog identity changes.",
+      "minor": "Additive optional fields only; existing fields retain identical meaning and consumers may ignore additions only when their declared profile does not require them.",
+      "major": "Any field rename/removal/reinterpretation, unit/scale/range/ordering/requiredness change, or identity-semantic change.",
+      "projection_change": "Any tensor block/order/shape/dtype/encoder grouping/normalization change increments projection version and projection hash, even if semantic schema version is unchanged.",
+      "catalog_change": "Content and order fingerprints are independent; any used vocabulary or ordering change updates its fingerprint, and a changed interpretation is semantically incompatible.",
+      "migration": "Migration requires an explicit versioned manifest and contract tests; positional zero-padding/remapping is not evidence of semantic compatibility.",
+      "training_lineage": "Semantic or projection incompatibility starts a new training lineage unless an explicitly approved and tested partial transfer is recorded."
+    }
+  },
+  "identity": {
+    "match_id": "match-0001",
+    "engine_match_id": "engine-episode-0001",
+    "session_match_id": null,
+    "episode_id": 1,
+    "player_id": "player-0",
+    "round": 1,
+    "decision_sequence": 1,
+    "snapshot_sequence": 1,
+    "player_sequence": 1,
+    "event_sequence": 1,
+    "captured_at": "2026-11-13T12:00:00Z",
+    "status": "complete",
+    "decision_identity_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+    "decision_identity_hash_scope": "Canonical RFC8785 SHA-256 over match_id, engine_match_id, player_id, round, decision_sequence and snapshot_sequence; excludes this hash and session/episode/event metadata."
+  },
+  "catalogs": {
+    "champions": {
+      "catalog_id": "champions",
+      "version": "set-test-1",
+      "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "order_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "traits": {
+      "catalog_id": "traits",
+      "version": "set-test-1",
+      "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "order_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "items": {
+      "catalog_id": "items",
+      "version": "set-test-1",
+      "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "order_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "components": {
+      "catalog_id": "components",
+      "version": "set-test-1",
+      "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "order_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "recipes": {
+      "catalog_id": "recipes",
+      "version": "set-test-1",
+      "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "order_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  },
+  "player": {
+    "lifecycle": {
+      "value": "alive",
+      "status": "valid",
+      "nature": "observed",
+      "provenance": {
+        "source": "tft_engine",
+        "source_path": "player.alive"
+      }
+    },
+    "health": {
+      "status": "missing",
+      "nature": "observed",
+      "provenance": {
+        "source": "tft_engine",
+        "source_path": "player.hp"
+      }
+    },
+    "economy": {
+      "gold": {
+        "value": 10,
+        "status": "valid",
+        "nature": "observed",
+        "unit": "gold",
+        "provenance": {
+          "source": "tft_engine",
+          "source_path": "economy.gold"
+        }
+      },
+      "level": {
+        "value": 3,
+        "status": "valid",
+        "nature": "observed",
+        "unit": "level",
+        "provenance": {
+          "source": "tft_engine",
+          "source_path": "economy.level"
+        }
+      },
+      "xp": {
+        "value": 0,
+        "status": "valid",
+        "nature": "observed",
+        "unit": "xp",
+        "provenance": {
+          "source": "tft_engine",
+          "source_path": "economy.xp"
+        }
+      }
+    }
+  },
+  "entities": {
+    "board": [
+      {
+        "slot_index": 0,
+        "presence": "occupied",
+        "unit": {
+          "instance_id": "unit-instance-1",
+          "champion_id": "champion-example",
+          "star": {
+            "value": 1,
+            "status": "valid",
+            "nature": "observed",
+            "unit": "stars",
+            "provenance": {
+              "source": "tft_engine",
+              "source_path": "board[0].star",
+              "nature": "observed"
+            }
+          },
+          "position": {
+            "value": 0,
+            "status": "valid",
+            "nature": "observed",
+            "unit": "board_slot",
+            "provenance": {
+              "source": "tft_engine",
+              "source_path": "board[0].position",
+              "nature": "observed"
+            }
+          },
+          "items": [],
+          "traits": [
+            "trait-example"
+          ]
+        }
+      },
+      {
+        "slot_index": 0,
+        "presence": "empty"
+      },
+      {
+        "slot_index": 1,
+        "presence": "empty"
+      },
+      {
+        "slot_index": 2,
+        "presence": "empty"
+      },
+      {
+        "slot_index": 3,
+        "presence": "empty"
+      },
+      {
+        "slot_index": 4,
+        "presence": "empty"
+      },
+      {
+        "slot_index": 5,
+        "presence": "empty"
+      },
+      {
+        "slot_index": 6,
+        "presence": "empty"
+      },
+      {
+        "slot_index": 7,
+        "presence": "empty"
+      },
+      {
+        "slot_index": 8,
+        "presence": "empty"
+      },
+      {
+        "slot_index": 9,
+        "presence": "empty"
+      },
+      {
+        "slot_index": 10,
+        "presence": "empty"
+      },
+      {
+        "slot_index": 11,
+        "presence": "empty"
+      },
+      {
+        "slot_index": 12,
+        "presence": "empty"
+      },
+      {
+        "slot_index": 13,
+        "presence": "empty"
+      },
+      {
+        "slot_index": 14,
+        "presence": "empty"
+      },
+      {
+        "slot_index": 15,
+        "presence": "empty"
+      },
+      {
+        "slot_index": 16,
+        "presence": "empty"
+      },
+      {
+        "slot_index": 17,
+        "presence": "empty"
+      },
+      {
+        "slot_index": 18,
+        "presence": "empty"
+      },
+      {
+        "slot_index": 19,
+        "presence": "empty"
+      },
+      {
+        "slot_index": 20,
+        "presence": "empty"
+      },
+      {
+        "slot_index": 21,
+        "presence": "empty"
+      },
+      {
+        "slot_index": 22,
+        "presence": "empty"
+      },
+      {
+        "slot_index": 23,
+        "presence": "empty"
+      },
+      {
+        "slot_index": 24,
+        "presence": "empty"
+      },
+      {
+        "slot_index": 25,
+        "presence": "empty"
+      },
+      {
+        "slot_index": 26,
+        "presence": "empty"
+      }
+    ],
+    "bench": [
+      {
+        "slot_index": 0,
+        "presence": "empty"
+      },
+      {
+        "slot_index": 1,
+        "presence": "empty"
+      },
+      {
+        "slot_index": 2,
+        "presence": "empty"
+      },
+      {
+        "slot_index": 3,
+        "presence": "empty"
+      },
+      {
+        "slot_index": 4,
+        "presence": "empty"
+      },
+      {
+        "slot_index": 5,
+        "presence": "empty"
+      },
+      {
+        "slot_index": 6,
+        "presence": "empty"
+      },
+      {
+        "slot_index": 7,
+        "presence": "empty"
+      },
+      {
+        "slot_index": 8,
+        "presence": "empty"
+      }
+    ],
+    "shop": [
+      {
+        "slot_index": 0,
+        "presence": "empty"
+      },
+      {
+        "slot_index": 1,
+        "presence": "empty"
+      },
+      {
+        "slot_index": 2,
+        "presence": "empty"
+      },
+      {
+        "slot_index": 3,
+        "presence": "empty"
+      },
+      {
+        "slot_index": 4,
+        "presence": "empty"
+      }
+    ]
+  },
+  "derived_context": {
+    "positioning": {},
+    "trait_counts": {},
+    "capacity": {},
+    "unit_roles": [],
+    "item_target_fit": [],
+    "economic_context": {}
+  },
+  "strategic_evidence": {
+    "composition_hypotheses": [],
+    "priorities": [],
+    "progression": {},
+    "pressure": {},
+    "uncertainty": {},
+    "owner_snapshots": {
+      "planner_commitment": {
+        "status": "valid",
+        "owner_id": "strategic_planner_commitments",
+        "payload_path": "strategic_evidence.commitment_context",
+        "source_decision_sequence": 1
+      },
+      "composition_intelligence": {
+        "status": "unknown",
+        "owner_id": "CompositionIntelligencePlayerRuntime.active",
+        "reason": "Composition Intelligence is feature-gated and disabled in the minimal fixture."
+      },
+      "unified_state_machine": {
+        "status": "unknown",
+        "owner_id": "UnifiedStrategicStateMachine",
+        "reason": "Unified shadow runtime is unavailable without the audit path in the minimal fixture."
+      }
+    }
+  },
+  "legal_state_context": {
+    "status": "partial",
+    "anti_loop_state": {
+      "status": "missing",
+      "reason": "Minimal fixture intentionally omits anti-loop runtime details."
+    },
+    "mask_reference": {
+      "action_contract_id": "tft.ppo.action",
+      "action_contract_version": "1.0.0",
+      "action_contract_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "mask_contract_id": "tft.ppo.action-mask",
+      "mask_contract_version": "1.0.0",
+      "mask_contract_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "mask_snapshot_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "decision_identity_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "status": "valid"
+    },
+    "critic_context": {
+      "status": "valid",
+      "representation": "exact_masks",
+      "source_decision_sequence": 1
+    },
+    "source_decision_sequence": 1,
+    "description": "Descriptive state/history context only. Actual action masks and action legality are defined by the independent Action Contract.",
+    "reason": "Anti-loop runtime history is intentionally unavailable in this minimal fixture."
+  }
+}
