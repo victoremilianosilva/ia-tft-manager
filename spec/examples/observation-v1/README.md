@@ -6,6 +6,8 @@ These files are examples for the draft under `spec/observation-schema.v1.draft.j
 - `invalid-missing-reason.json`: intentionally invalid because `player.health.status=missing` has no `reason`.
 - `field-status-matrix.json`: examples of the `$defs.field` value states, including zero observed, missing, unknown, not applicable, stale, incompatible, partial, and estimated.
 
-**Hash note:** the `sha256:000...` and `sha256:111...` strings are syntactically valid placeholders used to demonstrate the shape only. They are not computed hashes for the example payloads or catalogs. A real producer/loader must compute and verify canonical hashes according to the schema's hash scope and RFC 8785 rules.
+**Hash note:** fixture hash strings are placeholders. The contract validation script replaces the schema and projection placeholders with RFC 8785 canonical SHA-256 values before validating the fixture. Catalog fingerprints remain externally supplied identifiers; their content/order must be verified by the catalog owner at runtime.
 
-**Validation note:** the fixtures have been parsed as JSON and checked with basic structural assertions. They have not yet been run through an official JSON Schema Draft 2020-12 validator or the C++/Python contract tests. Do not treat this draft as approved or production-ready.
+**Validation:** `scripts/validate_observation_schema.py` is run by the dedicated GitHub Actions workflow. It checks the Draft 2020-12 meta-schema, validates the valid and invalid snapshots, exercises every field-status case, and tests zero-versus-missing, incomplete identity, occupied-slot constraints, and schema/projection hash integrity. A green CI run is required before this draft can be approved.
+
+This remains a draft: CI proves the machine-readable contract and its fixtures, not runtime producer/consumer alignment or architectural approval.
