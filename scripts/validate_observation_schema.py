@@ -104,6 +104,9 @@ def verify_context_identity(snapshot: dict) -> None:
         legal = snapshot["legal_state_context"]
         if any(legal[key]["status"] == "valid" for key in ("anti_loop_state", "mask_reference", "critic_context")):
             raise ValueError("incomplete identity cannot carry valid mask/critic/history context")
+        owners = snapshot["strategic_evidence"]["owner_snapshots"]
+        if any(owners[key]["status"] == "valid" for key in owners):
+            raise ValueError("incomplete identity cannot carry a valid strategic owner snapshot")
         return
     expected_sequence = identity["decision_sequence"]
     anti_loop = snapshot["legal_state_context"]["anti_loop_state"]
@@ -112,6 +115,10 @@ def verify_context_identity(snapshot: dict) -> None:
     critic = snapshot["legal_state_context"]["critic_context"]
     if critic["status"] == "valid" and critic.get("source_decision_sequence") != expected_sequence:
         raise ValueError("critic context sequence does not match observation identity")
+    owners = snapshot["strategic_evidence"]["owner_snapshots"]
+    for owner_name, owner in owners.items():
+        if owner["status"] == "valid" and owner.get("source_decision_sequence") != expected_sequence:
+            raise ValueError(f"{owner_name} sequence does not match observation identity")
 
 
 def verify_provenance_nature(value: object, path: str = "$") -> None:
@@ -310,12 +317,20 @@ def main() -> None:
     incomplete_identity["legal_state_context"]["critic_context"].update({
         "status": "unknown", "reason": "no complete decision identity",
     })
+    incomplete_identity["strategic_evidence"]["owner_snapshots"]["planner_commitment"].update({
+        "status": "unknown", "reason": "no complete decision identity",
+    })
     assert not list(validator.iter_errors(incomplete_identity))
     invalid_incomplete_context = copy.deepcopy(incomplete_identity)
     invalid_incomplete_context["legal_state_context"]["critic_context"].update({
         "status": "valid", "representation": "exact_masks", "source_decision_sequence": 1,
     })
     assert list(validator.iter_errors(invalid_incomplete_context))
+    invalid_incomplete_owner = copy.deepcopy(incomplete_identity)
+    invalid_incomplete_owner["strategic_evidence"]["owner_snapshots"]["planner_commitment"].update({
+        "status": "valid", "source_decision_sequence": 1,
+    })
+    assert list(validator.iter_errors(invalid_incomplete_owner))
     try:
         verify_context_identity(invalid_incomplete_context)
     except ValueError:
@@ -338,6 +353,14 @@ def main() -> None:
     complete_anti_loop["legal_state_context"].pop("reason", None)
     assert not list(validator.iter_errors(complete_anti_loop))
     verify_context_identity(complete_anti_loop)
+    stale_owner = copy.deepcopy(complete_anti_loop)
+    stale_owner["strategic_evidence"]["owner_snapshots"]["planner_commitment"]["source_decision_sequence"] = 0
+    try:
+        verify_context_identity(stale_owner)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("stale planner commitment snapshot was not rejected")
     stale_anti_loop = copy.deepcopy(complete_anti_loop)
     stale_anti_loop["legal_state_context"]["anti_loop_state"]["source_decision_sequence"] = 0
     try:
