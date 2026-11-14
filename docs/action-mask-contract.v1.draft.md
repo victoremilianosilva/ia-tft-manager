@@ -34,7 +34,7 @@ A Policy ativa declara `ACTION_DIMS = [9, 5, 9, 28, 28, 28]`; o enum C++ declara
 
 **Dimensões versus cabeças condicionais:** `ACTION_DIMS = [9, 5, 9, 28, 28, 28]` descreve as seis posições do registro PPO legado e suas cabeças-base; não é o inventário completo de todas as distribuições categóricas internas da Policy. As ações de item usam cabeças dedicadas adicionais com dimensões 9, 10, 10 e 37, e empacotam os índices escolhidos nas posições já existentes do registro de seis inteiros. Assim, por exemplo, o alvo de item pode chegar a 36 e os componentes a 9, embora as posições legadas `board_target` e `shop_slot` tenham dimensões-base 28 e 5. Não validar argumentos de item usando apenas os limites das cabeças-base; a validação deve ser condicionada ao tipo e às cabeças/masks de item correspondentes.
 
-**Atenção à documentação legada:** `docs/decisions-masks-antiloop.md` ainda descreve sete tipos e dimensões `[7,5,9,28,28,28]`. Isso diverge da Policy e do enum C++ atuais. A documentação deve ser corrigida/explicitamente arquivada como histórica antes de servir de fonte normativa.
+**Documentação histórica:** `docs/decisions-masks-antiloop.md` descreve sete tipos e dimensões `[7,5,9,28,28,28]`. O arquivo agora está explicitamente marcado como histórico e não normativo; seus IDs, dimensões e descrições não são fonte do contrato atual. O contrato vigente para a nova linhagem é este documento, sujeito à aceitação runtime pós-Gate 8.
 
 Os argumentos são condicionais ao tipo; as seis cabeças não representam seis escolhas independentes. Os IDs e dimensões atuais são inventário, não proposta de expansão ou alteração.
 
@@ -185,3 +185,18 @@ Não substituir ação ausente/rejeitada por PASS para fins de comparação PPO-
 - A auditoria #297 é inventário estático; não substitui testes executáveis.
 
 **Não fazer nesta fase:** mudar `ACTION_DIMS`, IDs, parâmetros, masks, Engine, regras, Policy, critic, rollout, replay, treinamento ou checkpoints. Este draft documenta a fronteira e os gaps; a implementação e seus testes ficam bloqueados até Gate 8 e aprovação explícita.
+
+
+## Reconciliação documental (2026-11-14)
+
+**Problema anterior:** a nota de auditoria dizia que `decisions-masks-antiloop.md` ainda precisava ser arquivado, embora seu cabeçalho já o identificasse como documento histórico e não normativo.
+
+**Justificativa:** manter uma pendência já resolvida cria ruído e pode levar revisores a pensar que o guia histórico ainda é uma fonte normativa concorrente.
+
+**Responsabilidade:** este contrato define a semântica documental aprovada da nova linhagem; `decisions-masks-antiloop.md` permanece apenas registro histórico do catálogo antigo.
+
+**Invariantes:** nove tipos e dimensões atuais são inventário da implementação auditada, não autorização de alteração; as masks nativas e a Engine continuam autoridade final de legalidade; implementação e aceitação executável continuam pós-Gate 8.
+
+**Impacto:** apenas a referência cruzada deste contrato e o índice `docs/README.md`; nenhum runtime ou guia histórico foi alterado.
+
+**Validação:** cabeçalho do documento histórico e contrato Action/Mask comparados; correção documental apenas.
