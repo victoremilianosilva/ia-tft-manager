@@ -293,3 +293,7 @@ Before runtime implementation can be considered complete, tests and reports must
 **Cross-component impact:** Observation Schema/projection, PPO policy/critic, Action/Mask, Reward/GAE, checkpoint loader/manifest, replay and evaluation. This change is documentary only.
 
 **Objective validation:** audited `policy.py` encoder, derived economic features, autoregressive action branches, item-specific heads, value head and mask consumption; cross-checked the six-integer record and mask shapes against `trainer.py` and Action/Mask Contract v1. The audit records current behavior separately from normative target constraints. No runtime behavior was changed.
+
+## Decision Identity v2 lineage (proposal; not runtime-approved)
+
+The proposed next observation lineage is Observation Schema v2 with \`tft.decision-identity.v2\`. A future checkpoint manifest must bind the schema version/hash and decision-identity envelope version/hash independently from projection, action/mask, reward, architecture and catalog identities. A v1 checkpoint remains a v1 historical artifact; it is not made v2-compatible by matching tensor shapes or reconstructing an untyped sequence namespace. The v2 schema and registry remain draft until approved, and no checkpoint file or loader is changed by this note.
