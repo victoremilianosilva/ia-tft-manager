@@ -148,9 +148,9 @@ The strategic planner/economic/action Shadow evaluation block is separately isol
 
 The bridge emits separate observed, derived, and recommended sections with match/player/round/sequence and composition identity metadata. This is useful as a diagnostic contract, but current assignments require correction before it can be a PPO projection source:
 
-- `composition_locked` is set as Observed from `StrategicSharedContext`, while the audited engine construction currently initializes `strategic_context.composition_locked = false` rather than obtaining an authoritative lock producer. This is **unknown/unavailable**, not observed false.
-- `observed_direction` is populated from `strategic_planner_commitments[i].composition_direction`; that is a canonical commitment state, not a raw observed game fact. Its origin must identify the commitment owner/state semantics.
-- `observed_focus` and `core_traits` are derived from the selected native generated direction candidate's completed traits. They must not be labelled raw observed composition facts.
+- `composition_locked` is set as Observed from `StrategicSharedContext`, while the audited Shadow context construction currently initializes `strategic_context.composition_locked = false` and does not source the canonical active-composition owner's lock state. The legacy `StrategyInfo` pipeline has its own lock heuristic, but that is not proof of an authoritative Shadow lock producer. For this bridge snapshot, lock is **unknown/unavailable**, not observed false.
+- `observed_direction` is populated from `strategic_planner_commitments[i].composition_direction`; that is a canonical StrategicPlanner commitment, not a raw observed game fact. Its origin must identify the commitment owner/state semantics (a derived/committed strategic state).
+- `observed_focus` and `core_traits` are derived from the selected native generated direction candidate's completed traits. They must be labelled Derived, with the generator/candidate identity as source, not raw observed composition facts.
 - stage, board power, relative power, direction score, and viability are derived and require formula/source identity.
 - recommended direction, composition decision, economic posture, and confidence are correctly marked Recommended and remain excluded from PPO input.
 
@@ -188,15 +188,7 @@ The current native diagnostic serialization reports:
 - `execution_enabled = false`;
 - `native_action_applied = false`.
 
-The engine also calls the read-only resolver's `resolve()` method and records its resolution result. This is stronger evidence of a wired resolver call than the older documentation statement that the executor was not connected. However, the boolean is serialized as a constant and does not itself prove that a particular proposal was accepted or resolved successfully.
-
-Reconcile the older executor-boundary documentation with current runtime evidence. The correct distinction is:
-- resolver code path invoked/connected;
-- per-request resolution accepted or rejected;
-- game-action execution disabled;
-- native game action not applied.
-
-Do not conflate these states.
+The engine invokes the read-only resolver's `resolve()` method and records its per-request result. The constant `executor_connected` flag means the call path is wired/invoked; it does not prove that a particular proposal was accepted. Per-request `accepted` and validation/resolution reasons carry that outcome. Execution remains disabled and no native game action is applied. These lifecycle states must remain distinct.
 
 ## 8. Producer-to-consumer disposition
 
@@ -320,4 +312,38 @@ This table prevents the source-map `availability` value from being misread as â€
 | `strategic_evidence.owner_snapshots.planner_commitment` | available | derived | `strategic_planner_commitments[i]` | Not delivered as canonical Shadow evidence; legacy proxies, where present, are not equivalent |
 | `strategic_evidence.owner_snapshots.composition_intelligence` | available_shadow_only | derived | `composition_intelligence_players[i].active` | Shadow diagnostic only; excluded from PPO |
 | `strategic_evidence.owner_snapshots.unified_state_machine` | available_shadow_only | derived | `UnifiedStrategicShadowRuntime.machine()` | Shadow diagnostic only; excluded from PPO |
+
+
+
+## Appendix B â€” Corrective provenance and resolver findings (source reconciliation)
+
+### ContextBridge provenance
+
+The current bridge adapter assigns `ContextValueOrigin::Observed` to all of
+`composition_locked`, `observed_direction`, `observed_focus`, and
+`core_traits`. The native Shadow context construction shows why this is not
+valid field-level provenance:
+
+- `composition_locked` is explicitly initialized to `false` in the Shadow
+  context and is not populated from the active-composition owner's lock state.
+  This is not evidence of an unlocked composition. The legacy `StrategyInfo`
+  lock heuristic is a separate pipeline and cannot be silently substituted.
+- `observed_direction` comes from the StrategicPlanner commitment.
+- `observed_focus` and `core_traits` come from the selected native generated
+  direction candidate's completed traits.
+
+The current bridge representation should therefore be treated as diagnostic
+only until a post-Gate-8 correction can preserve: lock = unavailable/unknown;
+direction = canonical commitment with explicit owner/revision; focus and core
+traits = derived from a named generator candidate with identity/provenance.
+No runtime changes are made by this audit.
+
+### Resolver integration
+
+The current engine invokes `StrategicActionExecutor::resolve()`. The
+comparison diagnostic serializes `executor_connected=true`,
+`execution_enabled=false`, and `native_action_applied=false`. This corrects
+the older `executor_connected=false` wording. Per-request acceptance remains
+separate from resolver connectivity; the resolver is read-only and cannot
+execute an action.
 
