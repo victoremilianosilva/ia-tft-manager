@@ -41,6 +41,39 @@ The current `TFTPolicy.load_compatible_state_dict()` supports selected shape mig
 
 The current trainer checkpoint payload contains `policy`, `optimizer`, `scheduler`, `update`, `training_config`, and `scheduler_type`. The loader currently restores policy weights first, conditionally restores Adam state when the shape loader reports no migration, and restores the scheduler only when scheduler type and selected LR schedule values match. These are observed legacy mechanics, not the approved v1 compatibility policy.
 
+### 2.1 Detailed encoder, actor, and critic audit
+
+The audited implementation has the following additional properties:
+
+- `TFTPolicy.encode()` slices the board from the flat observation at offset 22 and reshapes 140 values into a `(5, 4, 7)` spatial tensor. Two convolution layers (5→32→64 channels) flatten to 1,792 values.
+- The remaining global input is assembled from the prefix, item/other middle blocks, five policy-derived economic features, and the 112-value candidate tail (14 slots × 8 features). A two-layer 256-wide MLP encodes this input; a fusion MLP maps the concatenated board/global representation to the default 512-wide shared latent.
+- The item compatibility matrix block (109 × 37 values) is separated from the global MLP and consumed by slot/target-local item scorers. Item inventory, recipe, target, component, anvil and compatibility data feed additional conditional scoring paths.
+- The actor is autoregressive: action type is sampled first, then only the argument distributions required by that action are evaluated. BUY/SELL and candidate-conditioned item decisions use slot-local features; movement and item targets are conditioned on previously selected arguments.
+- The six-integer action record remains `[type, shop_slot, bench_slot, board_target, board_source, board_move_target]`. Item operations use dedicated internal categorical heads (9, 10, 10 and 37 choices) and pack their selected indices into existing record positions. The six base dimensions are therefore not the complete internal head inventory.
+- The critic is currently a single `value_head` over the same fused latent used by the actor. `get_value()` does not currently consume action masks as a side input. This differs from the approved future Action/Mask Contract, which requires the critic to receive the exact correlated masks separately from the observation.
+- The five derived economic features are computed inside `policy.py` from HP, gold, level, round and the legacy strategy one-hot at `obs[10:17]`. Their target-level, reserve, spendable-gold and phase-pressure rules are hard-coded policy-side derivations, not outputs of the canonical `EconomicController` or a validated projection of Shadow strategic ownership.
+- The current encoder treats most non-board fields as a positional flat vector. The eight candidate features per bench/shop slot are consumed by their position in the tail; their semantic identity, provenance, missingness encoding and stable feature manifest are not carried by the policy itself.
+
+These are facts about the audited baseline only. They are not architecture decisions for the canonical v1 lineage.
+
+### 2.2 Canonical PPO architecture decision boundary
+
+The canonical v1 architecture must be designed from the approved Observation Schema and its separately versioned tensor projection. It must not inherit the current flat offsets, hard-coded strategy labels, or compatibility loader's insertion heuristics by default.
+
+The following constraints are normative for the future architecture:
+
+1. **Projection first:** freeze a deterministic tensor projection before freezing encoder dimensions. It must declare every feature ID, source field, provenance/status handling, units, normalization, offset/shape, formula version, and consumer (board encoder, global/context encoder, candidate scorer, actor, critic, or diagnostics). A schema field is not automatically a PPO tensor feature.
+2. **Canonical strategic/economic context:** future PPO inputs may include validated factual/evidence fields from the canonical owners, including direction/commitment and active-composition context, unit/pair/upgrade evidence, progression, economic posture, opportunity costs, survival/pressure and uncertainty. Each field must preserve owner, identity/version and exact source sequence. Distinct concepts remain distinct; direction, active composition, pivot candidate, focus, core traits, posture and progression must not be collapsed into a legacy strategy enum.
+3. **No recommendation imitation:** exclude `shadow_recommendations`, evaluator scores/rankings/confidence, baseline recommendations, executor resolutions, and the diagnostic-only `unified_state_machine` from PPO observation features, labels, reward targets and imitation losses. Canonical owner-produced evidence may be consumed as context after provenance/sequence validation; Shadow recommendations remain diagnostics.
+4. **Actor and action contract:** retain the independent Action Contract boundary. The actor may use an autoregressive/conditional factorization, but every output distribution and argument mapping must be explicitly identified against the action catalog. Item heads remain separately identified from the six-integer transport record. Observation projection changes must not silently alter action IDs, argument meanings or dimensions.
+5. **Mask side inputs:** the actor must use the exact decision-correlated masks at every conditional head. The future critic must receive the exact masks as a separate correlated side input/context, as required by Action/Mask Contract v1; masks are not copied into the observation tensor or treated as game strategy. The Engine remains final legality authority.
+6. **Critic/value semantics:** declare whether actor and critic share an encoder, partially share encoders, or use separate encoders. Declare value-head inputs, reward/return semantics, mask context, and any recurrent/history state. Do not infer this choice from the current shared latent.
+7. **Architecture choice remains open:** board CNN retention, structured entity encoders, candidate-set encoders, attention/set aggregation, global MLP width, shared-vs-separate actor/critic encoders, and any recurrence require an explicit feature-to-consumer analysis and controlled ablations under PPO Evaluation Protocol v1. No architecture family is approved solely because it matches legacy tensor shapes or is convenient to migrate.
+8. **Lineage identity:** architecture, encoder, projection, actor-head layout, critic layout, action catalog, mask contract, reward/temporal contract, and relevant catalogs each require independent immutable IDs/versions/hashes in the checkpoint manifest.
+
+**Gate implication:** PPO architecture identity and encoder/head manifest cannot be frozen until the complete Observation Schema → tensor projection → consumer/head map is reviewed. This is a documentary dependency, not authorization to implement or train.
+
+
 ## 3. Architecture identity
 
 Every new policy lineage must have an explicit, immutable architecture identity. At minimum it records:
@@ -244,3 +277,17 @@ Before runtime implementation can be considered complete, tests and reports must
 **Cross-component impact:** Reward Contract, RolloutBuffer, GAE, PPO loss selection, checkpoint manifest, replay and evaluation. This is a documentary reconciliation only.
 
 **Objective validation:** the dependency text and migration sequence were compared with Reward Contract v1 sections 5.3–5.4 and the audited legacy checkpoint behavior. Runtime proof remains explicitly post-Gate 8.
+
+## 13. Architecture reconstruction review — encoder/actor/critic boundary
+
+**Prior problem:** the baseline description listed the CNN, MLP, fusion, action heads and value head, but did not make explicit which behaviors were legacy implementation details versus which choices remained open for the canonical PPO lineage. This risked treating positional observation slicing, strategy-derived economic heuristics, a shared actor/critic latent, or shape-compatible heads as approved target architecture.
+
+**Technical rationale:** the new Observation Schema contains richer typed strategic/economic evidence than the legacy flat vector. Its semantic fields must be projected deliberately to consumers. The actor's conditional action distributions and the critic's value context have different contracts; exact masks and provenance must remain correlated without becoming duplicated observation features or Shadow imitation targets.
+
+**New responsibility:** the Observation Schema and tensor projection define semantic input identity; the PPO architecture contract defines encoder, actor, critic and head identities; Action/Mask Contract defines action and mask semantics; Reward Contract defines value targets and temporal attribution. The checkpoint manifest records the complete combination.
+
+**Contract and invariants:** no legacy offset, strategy enum, hard-coded reserve formula, candidate slot index, or shared latent is automatically normative. Canonical owner-produced evidence may be used only with identity/provenance/sequence validation. Shadow recommendations, evaluator outputs and diagnostic Unified Shadow state are excluded from PPO inputs and targets. Actor and critic mask requirements follow the independent Action/Mask Contract. The exact architecture family remains undecided until projection and controlled ablations are complete.
+
+**Cross-component impact:** Observation Schema/projection, PPO policy/critic, Action/Mask, Reward/GAE, checkpoint loader/manifest, replay and evaluation. This change is documentary only.
+
+**Objective validation:** audited `policy.py` encoder, derived economic features, autoregressive action branches, item-specific heads, value head and mask consumption; cross-checked the six-integer record and mask shapes against `trainer.py` and Action/Mask Contract v1. The audit records current behavior separately from normative target constraints. No runtime behavior was changed.
