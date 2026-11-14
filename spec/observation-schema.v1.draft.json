@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:tft:ppo:observation-schema:v1-draft",
   "title": "TFT PPO Observation Snapshot — Draft v1",
-  "description": "DRAFT, NOT APPROVED. Semantic source contract for observations consumed by PPO. The tensor projection is separately versioned and generated/validated from this contract. Action values and action masks remain in the independent Action Contract.",
+  "description": "APPROVED DOCUMENTARY SPECIFICATION; runtime producer/consumer migration and executable acceptance remain pending until Gate 8 and explicit authorization. Semantic source contract for observations consumed by PPO. The tensor projection is separately versioned and generated/validated from this contract. Action values and action masks remain in the independent Action Contract.",
   "type": "object",
   "additionalProperties": false,
   "required": [

@@ -176,7 +176,7 @@ The projection must not collapse `missing`, `unknown`, `stale`, or `incompatible
 
 Derived policy features must be versioned by formula and inputs. In particular, the currently audited five economic-context features are derived from legacy strategy one-hot columns; their present formulas are not approved as the new architecture's semantic definition. The new projection must reconstruct context from approved factual/evidence sources and must not reintroduce ECON/FAST8/SLOWROLL/ALL_IN nominal strategy defaults.
 
-Reward metadata must reference the Reward Contract and temporal attribution version. The reward contract draft currently records an unresolved GAE validity concern: `valid` is applied during normalization/batch selection, but is not consulted by the backward GAE recurrence. It also requires explicit terminal-versus-truncation semantics. These must be resolved and tested before a new training lineage is declared reproducible.
+Reward metadata must reference the Reward Contract and temporal attribution version. Reward Contract v1 now distinguishes `trajectory_valid` from `optimization_valid`, and specifies separate bootstrap/continuation semantics for termination, rollout truncation, and invalid/interrupted data. A new training lineage is not reproducible until the runtime carries these distinctions and executable tests prove that GAE cannot cross invalid gaps or episode boundaries.
 
 ## 8. Legacy checkpoint handling
 
@@ -210,7 +210,7 @@ Before runtime implementation can be considered complete, tests and reports must
 
 1. Approve Observation Schema and tensor projection, including complete feature/source/consumer maps.
 2. Approve Action Contract and its relationship to action-head ordering/dimensions.
-3. Approve Reward Contract and temporal attribution; resolve GAE validity and terminal/truncation gaps.
+3. Freeze Reward Contract and temporal-attribution identities; implement and test the specified trajectory-validity, optimization-eligibility, and terminal/truncation semantics after Gate 8.
 4. Freeze policy architecture identity and encoder/head manifest.
 5. Define checkpoint manifest schema and compatibility classifier.
 6. Implement manifest emission and validation behind tests; do not mutate historical artifacts.
@@ -230,3 +230,17 @@ Before runtime implementation can be considered complete, tests and reports must
 - review of the migration policy against every existing checkpoint-loading path.
 
 **Runtime work is explicitly deferred.** No policy, trainer, loader, optimizer, scheduler, rollout, PPO, Engine, action mask, reward, Viewer, or checkpoint file is changed by this document. Gate 8 approval is required before implementation begins.
+
+## 12. Contract reconciliation — Reward/GAE dependency
+
+**Prior problem:** the checkpoint contract described GAE validity and terminal/truncation semantics as unresolved, while Reward Contract v1 had documented the gaps without defining distinct normative signals.
+
+**Technical rationale:** checkpoint lineage must identify the exact temporal semantics used to generate returns and advantages; otherwise identical tensors and hyperparameters can represent different training targets.
+
+**New responsibility:** Reward Contract v1 owns reward and trajectory semantics; PPO/rollout owns optimizer eligibility and loss consumption; the checkpoint manifest records both contract identities and the implementation lineage. No checkpoint loader infers compatibility from tensor shape.
+
+**Contract and invariants:** the manifest must identify Reward Contract and temporal-attribution versions; runtime acceptance must verify trajectory/optimization validity separation, terminal bootstrap suppression, valid truncation bootstrap, and GAE boundaries. Legacy checkpoints remain immutable and unverified unless their semantic provenance is established.
+
+**Cross-component impact:** Reward Contract, RolloutBuffer, GAE, PPO loss selection, checkpoint manifest, replay and evaluation. This is a documentary reconciliation only.
+
+**Objective validation:** the dependency text and migration sequence were compared with Reward Contract v1 sections 5.3–5.4 and the audited legacy checkpoint behavior. Runtime proof remains explicitly post-Gate 8.
