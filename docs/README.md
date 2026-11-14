@@ -25,7 +25,7 @@ Para decisões de arquitetura e implementação da nova linhagem, use primeiro o
 - [Engine de lobby](lobby-engine.md) — ciclo de partida e estado dos oito jogadores.
 - [Catálogo e instâncias de unidades](units-catalog.md) — definições estáticas, cópias, estrelas e pool.
 - [Economia e loja](economy-shop.md) — ouro, XP, juros, reroll e ofertas.
-- [Ações, máscaras e anti-loop](decisions-masks-antiloop.md) — contrato da policy e validação.
+- [Ações, máscaras e anti-loop (histórico)](decisions-masks-antiloop.md) — snapshot do catálogo antigo de sete ações; não normativo. Para a nova linhagem, consulte o [Action / Mask Contract v1](action-mask-contract.v1.draft.md).
 - [Combate](combat.md) — entradas, simulação e eventos.
 - [Recompensas e observações](rewards-observations.md) — sinais de treino e estado observado.
 - [Estratégia, sinergias e posicionamento](strategy-synergies-positioning.md).
