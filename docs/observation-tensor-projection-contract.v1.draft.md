@@ -159,3 +159,9 @@ The current repository provides a strong semantic foundation and legacy migratio
 ## Decision identity v2 input boundary (proposal; not runtime-approved)
 
 A future concrete tensor projection may consume only an Observation Schema v2 snapshot whose decision identity is complete, namespace-validated and correlated with its exact mask snapshot. Decision identity and payload hashes are control/compatibility metadata, not scalar neural features. The projection manifest must bind schema version/hash and identity-envelope version/hash; Actor and Critic must receive the exact correlated masks through their declared side-input contract. Missing/unknown namespace, stale/mismatch/conflict or unavailable producer identity blocks canonical projection. The proposed v2 schema and namespace registry do not establish that the current runtime emits these values.
+
+## Semantic consumer decision layer — draft
+
+The proposed [Observation Projection Consumer Matrix v1](observation-projection-consumer-matrix.v1.draft.md) and its machine-readable companion define a primary semantic disposition for each of the 77 audited source-map fields and reconcile all 66 historical feature mappings. It separates shared Actor/Critic candidates, Critic-only history candidates, control metadata, diagnostic-only outputs, unavailable sources and unresolved semantics.
+
+This matrix is a design input, not an approved tensor projection. It does not define feature order, shapes, offsets, normalization, vocabulary IDs or encoder families. A candidate is eligible only after every source/provenance/identity/missingness blocker is resolved. The projection manifest must later bind the reviewed matrix version/hash so consumer intent cannot drift silently.
