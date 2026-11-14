@@ -1,5 +1,7 @@
 # Item system integration contract — Phase 2
 
+> **Registro histórico de integração do sistema de itens no runtime PPO atual.** Os contratos de ação/máscaras e ownership de unidades aprovados para a nova linhagem prevalecem. Este documento é evidência de implementação e testes existentes, não autorização para preservar automaticamente shapes, cabeças, reward ou migração de checkpoints.
+
 Status: **Set18 catalog, PvE loot/anvil flow, unified policy actions, equipment lifecycle, and combat projection are implemented. This PR extends passive-aware compatibility/reward scoring, validates supported combat effect contracts, and records acquisition/equipment telemetry. Full CI and a later eight-player end-to-end run are still required.**
 
 This branch continues from the item contract already merged to `main`. It does not use the rejected PR #85 or introduce a separate item policy.
@@ -58,6 +60,6 @@ The C++ item-engine and lobby integration tests use normalized catalogs to verif
 
 The native lobby emits `ITEM_ANVIL_CHOSEN`, `ITEM_ACTION_APPLIED`, and `COMBAT_ITEM_INPUT` events. The end-to-end audit aggregates component loot, anvil grants/choices, successful equipment transitions, and items actually projected into combat. Its cycle status distinguishes acquisition without use from equipment that reached combat.
 
-Python tests verify the nine-way type mask, item masks, action sampling, and parity between collected and reevaluated PPO log-probabilities. Old seven-row type-head checkpoints are migrated by copying the original seven rows and initializing the two new rows; new item heads use their module initialization when loading an older checkpoint.
+Python tests verify the current nine-way type mask, item masks, action sampling, and parity between collected and reevaluated PPO log-probabilities. The historical loader has supported structural row-copy initialization for some seven-row type heads; this is not semantic migration, does not establish observation/reward/catalog compatibility, and is not approved as the migration policy for the new lineage. Existing checkpoints remain immutable historical baselines unless an explicitly authorized, manifest-backed transfer is later specified.
 
 Phase 2 should not be marked complete until CI passes and the active-set catalog is supplied/validated. The missing production loot/drop resolver remains a dependency for end-to-end item acquisition; it must not be replaced with invented drop rates or recipes.
