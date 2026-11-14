@@ -109,13 +109,32 @@ O hash da observação e a identidade da mask devem coincidir. Ausência, mismat
 
 ### 5.3 Falha fechada e PASS
 
+- Jogador ativo: PASS também é uma ação legítima e a implementação nativa atual a mantém habilitada junto das demais ações legais. Portanto, a presença de PASS não identifica eliminação nem deve ser usada como fallback para ocultar erro.
 - Jogador explicitamente eliminado: PASS é o único tipo real permitido, acompanhado de estado de eliminação explícito e válido.
-- Jogador ativo com `type_mask` vazia: erro de contrato/producer; rejeitar a decisão, não sintetizar PASS.
-- Máscara condicional vazia para uma ação cujo tipo está habilitado: erro de consistência; não inventar slot zero.
+- Jogador ativo com `type_mask` vazia: erro de contrato/producer; rejeitar a decisão. O fallback atual do Trainer para PASS não é evidência de eliminação e deve ser removido/substituído por tratamento fail-closed na implementação futura.
+- Máscaras condicionais: a fatia correspondente a um prefixo/origem selecionado e habilitado deve conter ao menos uma continuação legal. Linhas de origens/primeiros componentes desabilitados podem legitimamente estar vazias; não exigir que toda linha de uma matriz condicional seja não vazia.
 - Máscara ausente, stale, hash/identity divergente ou contrato incompatível: rejeitar antes de sampling/critic/replay.
 - A execução continua protegida pela validação final da Engine, mesmo que a Policy/Shadow esteja defeituosa.
 
-### 5.4 Registro da ação e da transição
+### 5.4 Fluxo auditado da ação (callgraph)
+
+```mermaid
+flowchart TD
+    A["Engine: estado + action masks nativas"] --> B["Wrapper / Trainer: flatten e validação de masks"]
+    B --> C["TFTPolicy: amostragem autorregressiva + log-prob"]
+    C --> D["Trainer: codifica tupla de 6 inteiros"]
+    D --> E["Binding Python/C++"]
+    E --> F["TFTEngine / PlayerEnv: preflight e revalidação nativa"]
+    F --> G["Execução ou rejeição pela Engine"]
+    G --> H["StepResult / observação, reward, done e info"]
+    H --> I["Trainer: próxima observação e masks"]
+    I --> J["RolloutBuffer: transição, ação, log-prob e masks"]
+    J --> K["PPO update / evaluate_actions com masks do rollout"]
+```
+
+O fluxo acima descreve a integração atual em alto nível. A implementação ainda não produz, em um envelope único e correlacionado, todos os campos `sampled/requested/effective/executed_action`, status/motivo e hashes de identidade/contrato. Esse é um requisito de evolução, não uma capacidade que este draft afirma já existir. A Engine continua sendo a validação final; uma mask anterior não autoriza execução.
+
+## 5.4 Registro da ação e da transição
 
 Persistir separadamente:
 - `sampled_action`: tupla amostrada pela Policy;
