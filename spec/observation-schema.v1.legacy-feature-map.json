@@ -1,0 +1,677 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Legacy PPO Observation Feature Map — Audit Draft",
+  "description": "Field/block inventory for migration planning only. This is not the new canonical Observation Schema and does not authorize preserving legacy offsets.",
+  "audited_branch": "new-arquiteture",
+  "audited_commit": "3575d21cc0f7dbb5544d75526bd96939b37f5c96",
+  "dimension_formula": "7097 + 4*T",
+  "T_definition": "number of unique observation_trait_names generated from ChampionCatalog iteration order",
+  "blocks": [
+    {
+      "id": "core",
+      "range": "[0,22)",
+      "shape": [
+        22
+      ],
+      "fields": [
+        [
+          "hp",
+          "player.hp",
+          "observed",
+          "ratio /100",
+          "player health; no explicit validity bit"
+        ],
+        [
+          "gold",
+          "economy.gold",
+          "observed",
+          "gold /50",
+          "duplicated in extra block"
+        ],
+        [
+          "level",
+          "economy.level",
+          "observed",
+          "level /9",
+          "duplicated in extra block"
+        ],
+        [
+          "xp_to_next_ratio",
+          "economy.xp / max(1,xp_to_next)",
+          "derived",
+          "ratio",
+          "xp_to_next denominator is implicit"
+        ],
+        [
+          "win_streak",
+          "economy.win_streak",
+          "observed",
+          "/10",
+          "streak"
+        ],
+        [
+          "loss_streak",
+          "economy.loss_streak",
+          "observed",
+          "/10",
+          "streak"
+        ],
+        [
+          "round_fraction",
+          "round+1",
+          "derived",
+          "r/(r+10)",
+          "policy inverses this to estimate round"
+        ],
+        [
+          "board_count_over_level",
+          "board_count / max(1,level)",
+          "derived",
+          "ratio",
+          "can exceed 1 if board over capacity"
+        ],
+        [
+          "bench_count_ratio",
+          "bench_count / bench_slots",
+          "derived",
+          "ratio",
+          "bench occupancy"
+        ],
+        [
+          "shop_present",
+          "constant 1",
+          "synthetic",
+          "1.0",
+          "does not encode actual per-slot presence"
+        ],
+        [
+          "legacy_strategy_one_hot",
+          "StrategyInfo.strategy",
+          "legacy_decision",
+          "7-way one-hot [10:17]",
+          "missing StrategyInfo defaults to ECON; Python derives nominal strategy with argmax"
+        ],
+        [
+          "reserved_core_tail",
+          "constant zeros",
+          "synthetic_padding",
+          "5 zeros",
+          "reserved; not missing indicator"
+        ]
+      ]
+    },
+    {
+      "id": "board",
+      "range": "[22,162)",
+      "shape": [
+        28,
+        5
+      ],
+      "fields": [
+        [
+          "occupied",
+          "board slot presence",
+          "observed",
+          "0/1",
+          "zero when empty"
+        ],
+        [
+          "champion_cost",
+          "ChampionCatalog.cost",
+          "observed",
+          "cost /5",
+          "requires catalog mapping"
+        ],
+        [
+          "star",
+          "UnitInstance.star",
+          "observed",
+          "star /3",
+          "requires slot identity"
+        ],
+        [
+          "role",
+          "UnitCombatClassifier.classify",
+          "derived",
+          "role_state_value",
+          "comment in policy.py documents a different channel order"
+        ],
+        [
+          "strength_proxy",
+          "champion cost + star",
+          "estimated",
+          "min(1,cost/5*0.5 + star/3*0.5)",
+          "proxy, not combat power"
+        ]
+      ]
+    },
+    {
+      "id": "bench",
+      "range": "[162,207)",
+      "shape": [
+        9,
+        5
+      ],
+      "fields": [
+        [
+          "occupied",
+          "bench slot presence",
+          "observed",
+          "0/1",
+          "zero when empty"
+        ],
+        [
+          "champion_cost",
+          "ChampionCatalog.cost",
+          "observed",
+          "cost /5",
+          "requires catalog mapping"
+        ],
+        [
+          "star",
+          "UnitInstance.star",
+          "observed",
+          "star /3",
+          "requires slot identity"
+        ],
+        [
+          "role",
+          "UnitCombatClassifier.classify",
+          "derived",
+          "role_state_value",
+          ""
+        ],
+        [
+          "strength_proxy",
+          "champion cost + star",
+          "estimated",
+          "same as board",
+          "proxy"
+        ]
+      ]
+    },
+    {
+      "id": "shop",
+      "range": "[207,232)",
+      "shape": [
+        5,
+        5
+      ],
+      "fields": [
+        [
+          "occupied",
+          "shop slot presence",
+          "observed",
+          "0/1",
+          ""
+        ],
+        [
+          "champion_cost",
+          "ChampionCatalog.cost",
+          "observed",
+          "cost /5",
+          ""
+        ],
+        [
+          "star",
+          "shop unit",
+          "synthetic",
+          "constant 1",
+          "shop offer assumed 1-star"
+        ],
+        [
+          "role",
+          "UnitCombatClassifier.classify",
+          "derived",
+          "role_state_value",
+          ""
+        ],
+        [
+          "strength",
+          "constant zero",
+          "synthetic_padding",
+          "0",
+          "not comparable to board/bench strength"
+        ]
+      ]
+    },
+    {
+      "id": "extra",
+      "range": "[232,237)",
+      "shape": [
+        5
+      ],
+      "fields": [
+        [
+          "board_count",
+          "board occupancy",
+          "derived",
+          "/28",
+          "duplicates board-derived count"
+        ],
+        [
+          "bench_count",
+          "bench occupancy",
+          "derived",
+          "/9",
+          "duplicates bench-derived count"
+        ],
+        [
+          "gold",
+          "economy.gold",
+          "observed",
+          "/50",
+          "duplicates core"
+        ],
+        [
+          "level",
+          "economy.level",
+          "observed",
+          "/9",
+          "duplicates core"
+        ],
+        [
+          "hp",
+          "player.hp",
+          "observed",
+          "/100",
+          "duplicates core"
+        ]
+      ]
+    },
+    {
+      "id": "synergy_top_five",
+      "range": "[237,242)",
+      "shape": [
+        5
+      ],
+      "fields": [
+        [
+          "active_trait_count_slot_0_to_4",
+          "traits discovered while scanning board then bench",
+          "derived",
+          "count /5 clipped 1",
+          "slot identity changes with insertion order; no trait IDs"
+        ]
+      ]
+    },
+    {
+      "id": "positioning",
+      "range": "[242,246)",
+      "shape": [
+        4
+      ],
+      "fields": [
+        [
+          "board_evaluation_score",
+          "board_evaluation.total_score",
+          "estimated",
+          "native evaluator scale",
+          "heuristic score, not calibrated probability"
+        ],
+        [
+          "frontline_fraction",
+          "frontline / board_count",
+          "derived",
+          "ratio",
+          ""
+        ],
+        [
+          "backline_fraction",
+          "backline / board_count",
+          "derived",
+          "ratio",
+          ""
+        ],
+        [
+          "unique_role_count",
+          "unique roles /5",
+          "derived",
+          "ratio clipped 1",
+          ""
+        ]
+      ]
+    },
+    {
+      "id": "trait_counts",
+      "range": "[246,246+T)",
+      "shape": [
+        "T"
+      ],
+      "fields": [
+        [
+          "trait_count_by_catalog_order",
+          "trait_counts and observation_trait_names",
+          "derived",
+          "count /5 clipped 1",
+          "catalog-derived first-occurrence order; no IDs in tensor"
+        ]
+      ]
+    },
+    {
+      "id": "capacity",
+      "range": "[246+T,248+T)",
+      "shape": [
+        2
+      ],
+      "fields": [
+        [
+          "board_capacity_remaining",
+          "max(0,level-board_count)",
+          "derived",
+          "/9",
+          ""
+        ],
+        [
+          "bench_capacity_remaining",
+          "bench_slots-bench_count",
+          "derived",
+          "/9",
+          ""
+        ]
+      ]
+    },
+    {
+      "id": "composition_direction",
+      "range": "[248+T,248+2T)",
+      "shape": [
+        "T"
+      ],
+      "fields": [
+        [
+          "direction_one_hot_by_catalog_trait",
+          "StrategyInfo.composition_direction",
+          "legacy_decision",
+          "one-hot",
+          "missing StrategyInfo becomes default ECON; direction identity not explicit"
+        ]
+      ]
+    },
+    {
+      "id": "core_traits",
+      "range": "[248+2T,248+3T)",
+      "shape": [
+        "T"
+      ],
+      "fields": [
+        [
+          "core_trait_flag_by_catalog_order",
+          "StrategyInfo.core_traits",
+          "legacy_decision",
+          "0/1",
+          "missing StrategyInfo yields all zero"
+        ]
+      ]
+    },
+    {
+      "id": "composition_fit",
+      "range": "[248+3T,290+3T)",
+      "shape": [
+        42
+      ],
+      "fields": [
+        [
+          "unit_fit_board_bench_shop",
+          "unit_composition_score(StrategyInfo, ChampionDefinition, star)",
+          "estimated",
+          "score /32.5 clipped 1",
+          "28 board + 9 bench + 5 shop; missing candidate/definition becomes zero"
+        ]
+      ]
+    },
+    {
+      "id": "action_memory",
+      "range": "[290+3T,319+3T)",
+      "shape": [
+        29
+      ],
+      "fields": [
+        [
+          "remaining_actions_in_horizon",
+          "actions_taken_this_round",
+          "derived",
+          "(10-min(actions,10))/10",
+          "bounded recent action count"
+        ],
+        [
+          "board_slot_move_age",
+          "board_move_age per slot",
+          "derived",
+          "min(age,10)/10",
+          "28 slots; no explicit source action ID/sequence"
+        ]
+      ]
+    },
+    {
+      "id": "composition_focus",
+      "range": "[319+3T,319+4T)",
+      "shape": [
+        "T"
+      ],
+      "fields": [
+        [
+          "focus_weight_by_catalog_trait",
+          "StrategyInfo.composition_focus_weights",
+          "legacy_decision",
+          "weight /10 clipped 1",
+          "zero conflates no focus with missing"
+        ]
+      ]
+    },
+    {
+      "id": "composition_control",
+      "range": "[319+4T,321+4T)",
+      "shape": [
+        2
+      ],
+      "fields": [
+        [
+          "composition_locked",
+          "StrategyInfo.composition_locked",
+          "legacy_decision",
+          "0/1",
+          "missing StrategyInfo becomes false"
+        ],
+        [
+          "composition_strength",
+          "StrategyInfo.composition_strength",
+          "legacy_decision",
+          "strength /10 clipped 1",
+          "nominal scale; provenance absent"
+        ]
+      ]
+    },
+    {
+      "id": "anvil",
+      "range": "[321+4T,423+4T)",
+      "shape": [
+        102
+      ],
+      "fields": [
+        [
+          "pending",
+          "ItemEngine.pending_anvil",
+          "observed",
+          "0/1",
+          ""
+        ],
+        [
+          "kind_component",
+          "pending anvil kind",
+          "observed",
+          "0/1",
+          ""
+        ],
+        [
+          "kind_completed_item",
+          "pending anvil kind",
+          "observed",
+          "0/1",
+          ""
+        ],
+        [
+          "option_features",
+          "ItemCatalog component one-hot or completed-item stats",
+          "derived",
+          "9x11",
+          "last feature is best fit across owned units; missing options zero"
+        ]
+      ]
+    },
+    {
+      "id": "item_state",
+      "range": "[423+4T,6985+4T)",
+      "shape": [
+        6562
+      ],
+      "fields": [
+        [
+          "component_counts",
+          "ItemEngine.components + ItemCatalog.components order",
+          "observed",
+          "10 values count /6 clipped 1",
+          "component identity absent from tensor"
+        ],
+        [
+          "inventory_item_stats",
+          "ItemEngine.inventory order + ItemDefinition",
+          "derived",
+          "9x17",
+          "item ID absent; empty/missing definition zero"
+        ],
+        [
+          "recipe_item_stats",
+          "recipe_observation_features indexed first_component*10+second",
+          "derived",
+          "100x17",
+          "symmetric recipe matrix; catalog order determines component axes"
+        ],
+        [
+          "target_profiles",
+          "board+bench UnitInstance + ChampionDefinition",
+          "derived",
+          "37x18",
+          "28 board + 9 bench; target UUID/champion ID absent"
+        ],
+        [
+          "inventory_target_compatibility",
+          "ItemFitCache.get(item_id, UnitProfile)",
+          "estimated",
+          "9x37 score /50 clipped 1",
+          "heuristic compatibility"
+        ],
+        [
+          "recipe_target_compatibility",
+          "ItemFitCache.get(recipe_id, UnitProfile)",
+          "estimated",
+          "100x37 score /50 clipped 1",
+          "zero if recipe unavailable or target absent"
+        ]
+      ]
+    },
+    {
+      "id": "candidate_tail",
+      "range": "[6985+4T,7097+4T)",
+      "shape": [
+        14,
+        8
+      ],
+      "fields": [
+        [
+          "composition_fit",
+          "unit_composition_score",
+          "estimated",
+          "/22.5 clipped 1",
+          "legacy StrategyInfo-dependent"
+        ],
+        [
+          "cost",
+          "ChampionDefinition.cost",
+          "observed",
+          "/5",
+          ""
+        ],
+        [
+          "star",
+          "UnitInstance.star or shop offer",
+          "observed_or_synthetic",
+          "/3",
+          ""
+        ],
+        [
+          "role",
+          "observation_role",
+          "derived",
+          "role_state_value",
+          ""
+        ],
+        [
+          "core_or_planned",
+          "StrategyInfo core/planned IDs",
+          "legacy_decision",
+          "0/1",
+          "merges two concepts"
+        ],
+        [
+          "owned_copies",
+          "owned copies incl star-equivalent",
+          "derived",
+          "min(copies,9)/9",
+          ""
+        ],
+        [
+          "upgrade_path",
+          "reward_model.upgrade_path_strength",
+          "estimated",
+          "clipped 0..1",
+          ""
+        ],
+        [
+          "sell_value_or_affordability",
+          "sell value /50 for bench; affordability flag for shop",
+          "mixed_semantics",
+          "context-dependent",
+          "same feature index has different meaning for bench and shop"
+        ]
+      ]
+    }
+  ],
+  "global_consumers": [
+    {
+      "consumer": "TFTPolicy.encode",
+      "behavior": "fixed prefix/board/middle/candidate-tail slicing; board CNN plus global MLP"
+    },
+    {
+      "consumer": "TFTPolicy._economic_context_features",
+      "behavior": "derives five extra economic features from core fields and legacy strategy one-hot"
+    },
+    {
+      "consumer": "TFTPolicy._candidate_features",
+      "behavior": "decodes final 14*8 values as bench and shop candidates"
+    },
+    {
+      "consumer": "TFTPolicy._item_state_features",
+      "behavior": "decodes item block immediately before candidate tail"
+    },
+    {
+      "consumer": "TFTPolicy.get_value",
+      "behavior": "ignores masks; critic sees encoded observation only"
+    },
+    {
+      "consumer": "Trainer/RolloutBuffer",
+      "behavior": "stores observation and action masks separately; no shared decision identity in current tensor contract"
+    }
+  ],
+  "global_gaps": [
+    "No schema ID/version/hash in observation payload.",
+    "No champion/trait/item/component/recipe catalog fingerprints or order hashes.",
+    "No explicit match/player/round/decision/snapshot identity in PPO observation.",
+    "Missing, unknown, not-applicable, padding, empty and zero observed are not consistently distinct.",
+    "Eliminated players receive an all-zero vector.",
+    "No final producer assertion verifies written offset equals observation_dim().",
+    "Trait synergy top-five slots are state-order dependent.",
+    "Legacy strategy and composition blocks still depend on StrategyInfo.",
+    "Board channel documentation in policy.py differs from producer order.",
+    "Masks are separate and not correlated to observation identity; critic ignores masks."
+  ]
+}
