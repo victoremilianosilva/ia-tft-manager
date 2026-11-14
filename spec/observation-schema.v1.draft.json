@@ -1414,45 +1414,122 @@
           "type": "object",
           "additionalProperties": false,
           "required": [
-            "action_contract_id",
-            "action_contract_version",
-            "action_contract_hash",
-            "mask_contract_id",
-            "mask_contract_version",
-            "mask_contract_hash",
-            "mask_snapshot_hash",
+            "status",
             "decision_identity_hash"
           ],
           "properties": {
+            "status": {
+              "$ref": "#/$defs/fieldStatus"
+            },
             "action_contract_id": {
-              "type": "string",
-              "minLength": 1
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "action_contract_version": {
-              "type": "string",
-              "minLength": 1
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "action_contract_hash": {
-              "$ref": "#/$defs/sha256"
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/sha256"
+                },
+                {
+                  "type": "null"
+                }
+              ]
             },
             "mask_contract_id": {
-              "type": "string",
-              "minLength": 1
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "mask_contract_version": {
-              "type": "string",
-              "minLength": 1
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "mask_contract_hash": {
-              "$ref": "#/$defs/sha256"
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/sha256"
+                },
+                {
+                  "type": "null"
+                }
+              ]
             },
             "mask_snapshot_hash": {
-              "$ref": "#/$defs/sha256"
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/sha256"
+                },
+                {
+                  "type": "null"
+                }
+              ]
             },
             "decision_identity_hash": {
               "$ref": "#/$defs/sha256"
+            },
+            "reason": {
+              "type": "string"
             }
-          }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "status": {
+                    "const": "valid"
+                  }
+                },
+                "required": [
+                  "status"
+                ]
+              },
+              "then": {
+                "required": [
+                  "action_contract_id",
+                  "action_contract_version",
+                  "action_contract_hash",
+                  "mask_contract_id",
+                  "mask_contract_version",
+                  "mask_contract_hash",
+                  "mask_snapshot_hash"
+                ]
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "status": {
+                    "enum": [
+                      "missing",
+                      "unknown",
+                      "not_applicable",
+                      "stale",
+                      "incompatible"
+                    ]
+                  }
+                },
+                "required": [
+                  "status"
+                ]
+              },
+              "then": {
+                "required": [
+                  "reason"
+                ]
+              }
+            }
+          ]
         },
         "critic_context": {
           "type": "object",
