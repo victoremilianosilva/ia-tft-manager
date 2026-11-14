@@ -182,22 +182,48 @@ Defaults are configuration defaults, not immutable contract constants. The actua
 - A player's elimination must not stop or leak into another player's trajectory.
 - The rollout horizon, episode boundary, and terminal semantics must be recorded with the experiment.
 
-### 5.3 Validity gap requiring explicit resolution
+### 5.3 Transition validity, optimization eligibility, and GAE boundaries
 
-The audited `compute_returns_and_advantages()` recurrence does not consult `valid`; validity is applied later during advantage normalization and batch selection. Therefore, an invalid transition can still participate in the backward GAE recurrence and influence an earlier valid transition if the corresponding done boundary does not stop propagation.
+The audit found that the current `valid` field has a narrower meaning than its name suggests:
 
-**Required resolution before runtime acceptance:** define whether invalid rows are impossible in a contiguous trajectory, must break the recurrence, or must be represented by a separate validity/boundary mask. Add a regression test where an invalid row sits between valid rows and prove it cannot contaminate a valid advantage. Do not silently assume batch filtering alone solves this.
+- `Trainer` snapshots `active_agents` into `transition_valid` before collecting the step.
+- This currently marks whether the player was active and eligible to produce a training transition; it is not a general integrity/provenance verdict for observation, action, reward, or next state.
+- `RolloutBuffer.valid` is used by advantage normalization and minibatch selection. `compute_returns_and_advantages()` does not consult it.
+- The current trainer marks an eliminated player's transition as terminal through the per-player `done` signal. Later inactive rows are excluded by `valid`, and the preceding terminal boundary stops GAE propagation. Lobby completion also marks every player done before the next episode begins.
 
-### 5.4 Termination versus truncation
+Therefore, the audited normal collection path does not establish a generic invalid-data row between two otherwise continuous valid transitions. However, the current implementation does not protect against such a row if a future producer uses `valid` for data-quality failures or if a wrapper introduces a gap without a terminal boundary.
 
-The current buffer API exposes `done` and rollout-end bootstrap inputs, but the audit does not establish a separate, explicit terminal-versus-time-limit truncation contract for every wrapper.
+**Normative v1 distinction:**
 
-The v1 data contract must distinguish:
-- true terminal (elimination/final placement): no bootstrap beyond terminal;
-- rollout truncation with a valid next state: bootstrap from that next state, but stop recursion at the collected boundary;
-- environment interruption/data loss without a valid next state: mark the sample invalid or fail collection; do not fabricate a value.
+1. **`trajectory_valid`** — the transition has a coherent, identity-correlated observation, action/result, reward, and next-state record. It determines whether the row may participate in TD/GAE and whether temporal credit may continue through it.
+2. **`optimization_valid`** — the transition is eligible for PPO optimization under the relevant loss inputs. It controls minibatch/loss inclusion and advantage normalization, but does not by itself define trajectory continuity.
+3. A transition may be `trajectory_valid=true` and `optimization_valid=false`: its realized reward and state transition may still carry temporal information for neighboring valid decisions, even though the row itself is excluded from the optimizer.
+4. A transition with `trajectory_valid=false` contributes no TD error or advantage and is a hard GAE continuation boundary. It must never be silently converted to a zero-reward valid row.
+5. The preceding valid transition may bootstrap from its next state only when that next-state value is independently valid and correlated to the same episode/sequence. GAE recursion must not cross the invalid row.
+6. `optimization_valid` must be a subset of `trajectory_valid`. If actor and critic eligibility later differ, they must be represented by explicit loss-specific masks rather than overloading either field.
 
-A single ambiguous boolean must not encode both terminal and truncation if their bootstrap semantics differ.
+The current legacy `valid` maps most closely to optimization eligibility for active-player rows. It must not be reused as the sole v1 trajectory-integrity signal.
+
+### 5.4 Termination, truncation, and bootstrap semantics
+
+The current per-player `done` signal represents actual episode termination (player elimination or lobby completion). The end of a collected rollout is handled separately by evaluating `next_value` and passing `next_done`; it is not an environment terminal event. The current API does not provide a universal explicit truncation/interruption envelope.
+
+The v1 contract distinguishes:
+
+- **Terminated:** the player's episode truly ended (elimination/final placement). Bootstrap is zero and GAE continuation stops.
+- **Truncated:** collection stopped at a valid boundary while the episode itself may continue (for example, rollout horizon). Bootstrap from the identity-correlated valid next state; do not recurse into uncollected future transitions.
+- **Interrupted/invalid:** the next state or transition identity is unavailable, stale, or inconsistent. Do not fabricate a value or bridge the gap; mark the affected trajectory sample invalid and stop GAE continuation.
+- **Ordinary continuation:** the next transition is present, trajectory-valid, and belongs to the same player episode. Bootstrap and recursive GAE may continue.
+
+The recurrence must use separate bootstrap and continuation predicates:
+
+`delta_t = r_t + gamma * bootstrap_valid_t * V(s_{t+1}) - V(s_t)`
+
+`A_t = delta_t + gamma * lambda * continuation_valid_t * A_{t+1}`
+
+`bootstrap_valid_t` requires a valid next state and a non-terminal transition. `continuation_valid_t` additionally requires a collected, trajectory-valid next transition in the same episode and no terminal, truncation, or data-gap boundary. At the end of a rollout, bootstrap may be valid while continuation is false.
+
+A single ambiguous boolean must not encode termination, truncation, trajectory integrity, and optimizer eligibility.
 
 ### 5.5 Delayed-event attribution policy
 
@@ -315,3 +341,17 @@ Tests must assert component values and event counts, not only final episode retu
 - [ ] Retraining and evaluation completed under #295.
 
 **Gate status:** documentary Reward Contract v1 is specified; runtime migration and empirical acceptance remain blocked until Gate 8 and subsequent implementation/evaluation issues.
+
+## 12. Contract reconciliation — validity and temporal boundaries
+
+**Prior problem:** the former wording combined optimizer eligibility, transition integrity, and temporal continuity under a single `valid` flag, while the audited implementation only uses that flag for active-agent eligibility, normalization, and minibatch selection.
+
+**Technical rationale:** GAE needs to know whether a real transition and its next state are trustworthy; PPO optimization separately needs to know whether a row is eligible for a loss. Termination and rollout truncation also have different bootstrap semantics. Keeping these concepts separate prevents data gaps from leaking credit and prevents valid-but-not-optimized rows from silently breaking a real trajectory.
+
+**New responsibility:** the Reward Contract owns reward-event validity, trajectory continuity, terminal/truncation semantics, and temporal attribution. The PPO/rollout contract consumes the resulting trajectory and optimization eligibility signals. The Engine remains the source of realized game outcomes; no Shadow recommendation becomes a reward target.
+
+**Contract and invariants:** `trajectory_valid` controls TD/GAE participation and continuation; `optimization_valid` controls optimizer inclusion and is a subset of trajectory validity; termination disables bootstrap; truncation permits bootstrap only from a valid correlated next state but stops recursion; invalid/interrupted data never becomes a synthetic zero-reward transition.
+
+**Cross-component impact:** future producer/wrapper, RolloutBuffer, GAE, PPO loss selection, checkpoint manifest, replay, and evaluation must carry the distinct semantics. Current legacy behavior is documented as evidence only; no runtime change is made here.
+
+**Objective validation:** traced `Trainer.transition_valid`, `RolloutBuffer.valid`, GAE recurrence, per-player `done`, and rollout-end `next_value/next_done`; the documented mapping matches the audited call path. Executable boundary tests remain post-Gate 8.
