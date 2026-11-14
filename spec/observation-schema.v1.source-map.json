@@ -13,7 +13,10 @@
       "formula_or_version": null,
       "intended_consumer": "player lifecycle field",
       "owner_issue": "#293",
-      "notes": "Current PPO tensor uses all-zero vector for eliminated player; new snapshot must retain terminal lifecycle explicitly."
+      "notes": "Current PPO tensor uses all-zero vector for eliminated player; new snapshot must retain terminal lifecycle explicitly.",
+      "unit": "enum(alive, eliminated, unknown)",
+      "normalization_or_scale": "no normalization",
+      "validity_rule": "valid only when source exists, provenance is present, and match/player/round/sequence are aligned"
     },
     {
       "field": "player.health",
@@ -23,7 +26,10 @@
       "formula_or_version": null,
       "intended_consumer": "player/economy encoder",
       "owner_issue": "#293",
-      "notes": "Raw HP available."
+      "notes": "Raw HP available.",
+      "unit": "hp",
+      "normalization_or_scale": "raw integer/float; normalize only in projection",
+      "validity_rule": "valid only when source exists, provenance is present, and match/player/round/sequence are aligned"
     },
     {
       "field": "player.economy.gold",
@@ -33,7 +39,10 @@
       "formula_or_version": null,
       "intended_consumer": "player/economy encoder",
       "owner_issue": "#293",
-      "notes": "Current tensor normalizes /50."
+      "notes": "Current tensor normalizes /50.",
+      "unit": "gold",
+      "normalization_or_scale": "raw integer; projection scale declared separately",
+      "validity_rule": "valid only when source exists, provenance is present, and match/player/round/sequence are aligned"
     },
     {
       "field": "player.economy.level",
@@ -43,7 +52,10 @@
       "formula_or_version": null,
       "intended_consumer": "player/economy encoder",
       "owner_issue": "#293",
-      "notes": "Current tensor normalizes /9."
+      "notes": "Current tensor normalizes /9.",
+      "unit": "level",
+      "normalization_or_scale": "raw integer",
+      "validity_rule": "valid only when source exists, provenance is present, and match/player/round/sequence are aligned"
     },
     {
       "field": "player.economy.xp",
@@ -53,7 +65,10 @@
       "formula_or_version": null,
       "intended_consumer": "player/economy encoder",
       "owner_issue": "#293",
-      "notes": "Current tensor stores XP divided by XP-to-next."
+      "notes": "Current tensor stores XP divided by XP-to-next.",
+      "unit": "xp",
+      "normalization_or_scale": "raw integer",
+      "validity_rule": "valid only when source exists, provenance is present, and match/player/round/sequence are aligned"
     },
     {
       "field": "player.economy.xp_to_next",
@@ -63,7 +78,10 @@
       "formula_or_version": null,
       "intended_consumer": "player/economy encoder",
       "owner_issue": "#293",
-      "notes": "Exact integer needed alongside normalized progress."
+      "notes": "Exact integer needed alongside normalized progress.",
+      "unit": "xp",
+      "normalization_or_scale": "raw integer; zero only when level cap is confirmed",
+      "validity_rule": "valid only when source exists, provenance is present, and match/player/round/sequence are aligned"
     },
     {
       "field": "player.streaks.win_streak",
@@ -73,7 +91,10 @@
       "formula_or_version": null,
       "intended_consumer": "player/economy encoder",
       "owner_issue": "#293",
-      "notes": ""
+      "notes": "",
+      "unit": "wins",
+      "normalization_or_scale": "raw integer",
+      "validity_rule": "valid only when source exists, provenance is present, and match/player/round/sequence are aligned"
     },
     {
       "field": "player.streaks.loss_streak",
@@ -83,7 +104,10 @@
       "formula_or_version": null,
       "intended_consumer": "player/economy encoder",
       "owner_issue": "#293",
-      "notes": ""
+      "notes": "",
+      "unit": "losses",
+      "normalization_or_scale": "raw integer",
+      "validity_rule": "valid only when source exists, provenance is present, and match/player/round/sequence are aligned"
     },
     {
       "field": "derived_context.stage",
@@ -93,7 +117,10 @@
       "formula_or_version": "stage_for_round-v1",
       "intended_consumer": "player/economy encoder",
       "owner_issue": "#293",
-      "notes": "Round-stage mapping must be versioned."
+      "notes": "Round-stage mapping must be versioned.",
+      "unit": "stage",
+      "normalization_or_scale": "integer enum; mapping versioned",
+      "validity_rule": "valid only when source exists, provenance is present, and match/player/round/sequence are aligned"
     },
     {
       "field": "derived_context.economic_context.interest_if_resolved_now",
@@ -103,7 +130,10 @@
       "formula_or_version": "interest-v1",
       "intended_consumer": "economic context encoder",
       "owner_issue": "#287/#293",
-      "notes": ""
+      "notes": "",
+      "unit": "gold per round",
+      "normalization_or_scale": "exact integer from economy engine",
+      "validity_rule": "valid only when source exists, provenance is present, and match/player/round/sequence are aligned"
     },
     {
       "field": "derived_context.economic_context.projected_next_round_income",
@@ -113,7 +143,10 @@
       "formula_or_version": null,
       "intended_consumer": "economic context encoder",
       "owner_issue": "#300/#287",
-      "notes": "Runtime callsite leaves default 0; serialize missing with reason."
+      "notes": "Runtime callsite leaves default 0; serialize missing with reason.",
+      "unit": "gold per round",
+      "normalization_or_scale": "estimated; missing until producer wired",
+      "validity_rule": "status=missing/unknown with explicit reason; never serialize the DTO default as observed zero/false"
     },
     {
       "field": "derived_context.economic_context.board_power",
@@ -123,7 +156,10 @@
       "formula_or_version": "board-power-v1",
       "intended_consumer": "economic context encoder",
       "owner_issue": "#300/#293",
-      "notes": "Score-derived power, not raw observation."
+      "notes": "Score-derived power, not raw observation.",
+      "unit": "engine board-score units",
+      "normalization_or_scale": "heuristic; formula version required",
+      "validity_rule": "valid only when source exists, provenance is present, and match/player/round/sequence are aligned"
     },
     {
       "field": "derived_context.economic_context.lobby_average_board_power",
@@ -133,7 +169,10 @@
       "formula_or_version": "lobby-board-power-v1",
       "intended_consumer": "economic context encoder",
       "owner_issue": "#300/#293",
-      "notes": "Must include opponent sample count/completeness."
+      "notes": "Must include opponent sample count/completeness.",
+      "unit": "engine board-score units",
+      "normalization_or_scale": "mean over observed alive opponents; include sample count",
+      "validity_rule": "valid only when source exists, provenance is present, and match/player/round/sequence are aligned"
     },
     {
       "field": "derived_context.economic_context.relative_board_power",
@@ -143,7 +182,10 @@
       "formula_or_version": "relative-board-power-v1",
       "intended_consumer": "economic context encoder",
       "owner_issue": "#300/#293",
-      "notes": ""
+      "notes": "",
+      "unit": "ratio",
+      "normalization_or_scale": "board_power / lobby_average_board_power; missing if denominator unavailable",
+      "validity_rule": "valid only when source exists, provenance is present, and match/player/round/sequence are aligned"
     },
     {
       "field": "derived_context.economic_context.estimated_incoming_damage",
@@ -153,7 +195,10 @@
       "formula_or_version": null,
       "intended_consumer": "economic/critic context encoder",
       "owner_issue": "#300/#293",
-      "notes": "Default 0 in callsite; no valid incoming-damage model wired here."
+      "notes": "Default 0 in callsite; no valid incoming-damage model wired here.",
+      "unit": "HP",
+      "normalization_or_scale": "estimated; missing until model wired",
+      "validity_rule": "status=missing/unknown with explicit reason; never serialize the DTO default as observed zero/false"
     },
     {
       "field": "derived_context.economic_context.elimination_risk",
@@ -163,7 +208,10 @@
       "formula_or_version": null,
       "intended_consumer": "economic/critic context encoder",
       "owner_issue": "#300/#293",
-      "notes": "Default 0 in callsite."
+      "notes": "Default 0 in callsite.",
+      "unit": "probability-like estimate [0,1]",
+      "normalization_or_scale": "not a calibrated probability unless separately calibrated; missing in current callsite",
+      "validity_rule": "status=missing/unknown with explicit reason; never serialize the DTO default as observed zero/false"
     },
     {
       "field": "entities.board",
@@ -173,7 +221,10 @@
       "formula_or_version": null,
       "intended_consumer": "entity-set encoder",
       "owner_issue": "#293",
-      "notes": "Current PPO vector loses champion ID/instance UUID; structured schema should preserve them."
+      "notes": "Current PPO vector loses champion ID/instance UUID; structured schema should preserve them.",
+      "unit": "unit entity collection",
+      "normalization_or_scale": "28 fixed board slots; presence + stable unit identity",
+      "validity_rule": "valid only when source exists, provenance is present, and match/player/round/sequence are aligned"
     },
     {
       "field": "entities.bench",
@@ -183,7 +234,10 @@
       "formula_or_version": null,
       "intended_consumer": "entity-set encoder",
       "owner_issue": "#293",
-      "notes": ""
+      "notes": "",
+      "unit": "unit entity collection",
+      "normalization_or_scale": "9 fixed bench slots; presence + stable unit identity",
+      "validity_rule": "valid only when source exists, provenance is present, and match/player/round/sequence are aligned"
     },
     {
       "field": "entities.shop",
@@ -193,7 +247,10 @@
       "formula_or_version": null,
       "intended_consumer": "entity-set encoder",
       "owner_issue": "#293",
-      "notes": "Current StrategicSharedContext owned_units omits shop offers; shop_available only exists on anchor candidate."
+      "notes": "Current StrategicSharedContext owned_units omits shop offers; shop_available only exists on anchor candidate.",
+      "unit": "offer entity collection",
+      "normalization_or_scale": "5 fixed shop slots; presence + stable offer identity",
+      "validity_rule": "valid only when source exists, provenance is present, and match/player/round/sequence are aligned"
     },
     {
       "field": "entities.items",
@@ -203,7 +260,10 @@
       "formula_or_version": null,
       "intended_consumer": "item/entity relation encoder",
       "owner_issue": "#293",
-      "notes": "Stable item/component/recipe IDs and catalog fingerprints required."
+      "notes": "Stable item/component/recipe IDs and catalog fingerprints required.",
+      "unit": "item/component/recipe entities",
+      "normalization_or_scale": "stable catalog IDs; inventory/availability and target relations",
+      "validity_rule": "valid only when source exists, provenance is present, and match/player/round/sequence are aligned"
     },
     {
       "field": "derived_context.positioning",
@@ -213,7 +273,10 @@
       "formula_or_version": "board-evaluation-v1",
       "intended_consumer": "positioning/entity encoder",
       "owner_issue": "#293",
-      "notes": "Current scalar board score is heuristic; retain per-unit/position evidence where available."
+      "notes": "Current scalar board score is heuristic; retain per-unit/position evidence where available.",
+      "unit": "mixed typed fields",
+      "normalization_or_scale": "per-field units/scales; board score is heuristic",
+      "validity_rule": "valid only when source exists, provenance is present, and match/player/round/sequence are aligned"
     },
     {
       "field": "strategic_evidence.commitment_context.direction_id",
@@ -223,7 +286,10 @@
       "formula_or_version": "native-commitment-v2",
       "intended_consumer": "strategic evidence encoder",
       "owner_issue": "#284/#293",
-      "notes": "Per-player commitment owner, not legacy StrategyInfo."
+      "notes": "Per-player commitment owner, not legacy StrategyInfo.",
+      "unit": "stable direction/trait identifier",
+      "normalization_or_scale": "categorical ID; not legacy strategy enum",
+      "validity_rule": "valid only when source exists, provenance is present, and match/player/round/sequence are aligned"
     },
     {
       "field": "strategic_evidence.commitment_context.direction_identity",
@@ -233,7 +299,10 @@
       "formula_or_version": "direction-identity-v2",
       "intended_consumer": "strategic evidence encoder",
       "owner_issue": "#284/#293",
-      "notes": "Identity should remain separate from direction label."
+      "notes": "Identity should remain separate from direction label.",
+      "unit": "direction identity/version key",
+      "normalization_or_scale": "opaque stable identity; distinct from direction label",
+      "validity_rule": "valid only when source exists, provenance is present, and match/player/round/sequence are aligned"
     },
     {
       "field": "strategic_evidence.commitment_context.progression_plan",
@@ -243,7 +312,10 @@
       "formula_or_version": null,
       "intended_consumer": "strategic/economic context encoder",
       "owner_issue": "#300/#293",
-      "notes": "Callsite leaves Flexible default; ContextBridge mapping from current_economic_strategy is telemetry and must not be assumed authoritative."
+      "notes": "Callsite leaves Flexible default; ContextBridge mapping from current_economic_strategy is telemetry and must not be assumed authoritative.",
+      "unit": "progression enum",
+      "normalization_or_scale": "must be sourced from new commitment owner; current default Flexible is missing",
+      "validity_rule": "status=missing/unknown with explicit reason; never serialize the DTO default as observed zero/false"
     },
     {
       "field": "strategic_evidence.owned_unit_assessments",
@@ -253,7 +325,10 @@
       "formula_or_version": "owned-unit-assessment-v1",
       "intended_consumer": "strategic/entity encoder",
       "owner_issue": "#300/#293",
-      "notes": "core, board contribution, composition fit and item fit are heuristics; item_fit currently item count /3."
+      "notes": "core, board contribution, composition fit and item fit are heuristics; item_fit currently item count /3.",
+      "unit": "unit-keyed derived attributes",
+      "normalization_or_scale": "score ranges/formulas declared per field; item_fit currently proxy",
+      "validity_rule": "valid only when source exists, provenance is present, and match/player/round/sequence are aligned"
     },
     {
       "field": "strategic_evidence.anchor_candidates",
@@ -263,7 +338,10 @@
       "formula_or_version": "native-anchor-generation-v1",
       "intended_consumer": "strategic evidence encoder",
       "owner_issue": "#300/#293",
-      "notes": "Anchor value/transition cost/contestation are heuristic estimates and need provenance/uncertainty."
+      "notes": "Anchor value/transition cost/contestation are heuristic estimates and need provenance/uncertainty.",
+      "unit": "candidate entities",
+      "normalization_or_scale": "anchor/transition scores are heuristic; include confidence/quality and source sequence",
+      "validity_rule": "valid only when source exists, provenance is present, and match/player/round/sequence are aligned"
     },
     {
       "field": "strategic_evidence.candidate_generation",
@@ -273,7 +351,10 @@
       "formula_or_version": "native-generation-diagnostics-v1",
       "intended_consumer": "strategic evidence encoder",
       "owner_issue": "#300/#293",
-      "notes": "Counts and no_candidate_reason can explain empty candidate sets."
+      "notes": "Counts and no_candidate_reason can explain empty candidate sets.",
+      "unit": "integer counters + reason code",
+      "normalization_or_scale": "non-negative counts; reason is categorical diagnostic",
+      "validity_rule": "valid only when source exists, provenance is present, and match/player/round/sequence are aligned"
     },
     {
       "field": "strategic_evidence.completed_traits",
@@ -283,7 +364,10 @@
       "formula_or_version": "native-completed-traits-v1",
       "intended_consumer": "strategic evidence encoder",
       "owner_issue": "#284/#293",
-      "notes": "Full vector of completed traits. EvidenceContextBuilder currently assigns this vector to current_core_traits and takes only the first item as current_composition_focus; these are not proven equivalent concepts."
+      "notes": "Full vector of completed traits. EvidenceContextBuilder currently assigns this vector to current_core_traits and takes only the first item as current_composition_focus; these are not proven equivalent concepts.",
+      "unit": "trait identifier set",
+      "normalization_or_scale": "catalog IDs; set/list order must not encode meaning",
+      "validity_rule": "valid only when source exists, provenance is present, and match/player/round/sequence are aligned"
     },
     {
       "field": "strategic_evidence.core_unit_ids",
@@ -293,7 +377,10 @@
       "formula_or_version": "native-active-composition-v1",
       "intended_consumer": "strategic evidence encoder",
       "owner_issue": "#284/#293",
-      "notes": "Core units from native candidate; preserve IDs."
+      "notes": "Core units from native candidate; preserve IDs.",
+      "unit": "champion identifier set",
+      "normalization_or_scale": "stable champion IDs",
+      "validity_rule": "valid only when source exists, provenance is present, and match/player/round/sequence are aligned"
     },
     {
       "field": "strategic_evidence.composition_locked",
@@ -303,7 +390,10 @@
       "formula_or_version": null,
       "intended_consumer": "strategic evidence encoder",
       "owner_issue": "#284/#293",
-      "notes": "Explicitly hardcoded false; do not serialize false as evidence."
+      "notes": "Explicitly hardcoded false; do not serialize false as evidence.",
+      "unit": "boolean commitment state",
+      "normalization_or_scale": "missing while producer/builder hardcodes false",
+      "validity_rule": "status=missing/unknown with explicit reason; never serialize the DTO default as observed zero/false"
     },
     {
       "field": "derived_context.action_opportunity.items",
@@ -313,7 +403,10 @@
       "formula_or_version": null,
       "intended_consumer": "action candidate context encoder",
       "owner_issue": "#300/#287/#293",
-      "notes": "Vector not populated in current callsite; no per-action cost breakdown delivered yet."
+      "notes": "Vector not populated in current callsite; no per-action cost breakdown delivered yet.",
+      "unit": "typed field; declare unit in canonical schema",
+      "normalization_or_scale": "no implicit normalization; projection must declare formula and scale",
+      "validity_rule": "status=missing/unknown with explicit reason; never serialize the DTO default as observed zero/false"
     },
     {
       "field": "legal_state_context.anti_loop_state",
@@ -323,7 +416,10 @@
       "formula_or_version": null,
       "intended_consumer": "critic legal-context encoder",
       "owner_issue": "#294/#293",
-      "notes": "History summary exists but current PPO observation does not include it."
+      "notes": "History summary exists but current PPO observation does not include it.",
+      "unit": "history counters and last-move record",
+      "normalization_or_scale": "counts + source decision sequence; stale if sequence differs",
+      "validity_rule": "source may be valid, but do not claim PPO currently consumes it; projection is a separate decision"
     },
     {
       "field": "legal_state_context.mask_reference",
@@ -333,7 +429,10 @@
       "formula_or_version": null,
       "intended_consumer": "actor and critic legal-context encoders",
       "owner_issue": "#294/#293",
-      "notes": "No shared decision identity/hash currently attached to both payloads."
+      "notes": "No shared decision identity/hash currently attached to both payloads.",
+      "unit": "contract IDs and hashes",
+      "normalization_or_scale": "SHA-256 hashes; must match exact decision identity",
+      "validity_rule": "reject or mark stale/incompatible when decision identity/hash differs"
     },
     {
       "field": "shadow_recommendations",
@@ -343,7 +442,10 @@
       "formula_or_version": "shadow-planner-v1",
       "intended_consumer": "diagnostic channel only",
       "owner_issue": "#300/#293",
-      "notes": "Scores/confidence are heuristic and not calibrated; never auto-feed as imitation target."
+      "notes": "Scores/confidence are heuristic and not calibrated; never auto-feed as imitation target.",
+      "unit": "diagnostic recommendation objects",
+      "normalization_or_scale": "score/confidence is heuristic, not calibrated; excluded from PPO input/target",
+      "validity_rule": "diagnostic-only; never auto-feed as PPO input or imitation target"
     },
     {
       "field": "strategic_evidence.primary_focus_trait",
@@ -353,7 +455,10 @@
       "formula_or_version": "first-completed-trait-v1",
       "intended_consumer": "strategic evidence encoder",
       "owner_issue": "#284/#293",
-      "notes": "Only first completed trait is projected as current_composition_focus; not a learned focus weight."
+      "notes": "Only first completed trait is projected as current_composition_focus; not a learned focus weight.",
+      "unit": "trait identifier",
+      "normalization_or_scale": "currently first completed trait only; partial semantics",
+      "validity_rule": "status=partial with explicit reason and known subset"
     },
     {
       "field": "strategic_evidence.focus_weights",
@@ -363,7 +468,10 @@
       "formula_or_version": null,
       "intended_consumer": "strategic evidence encoder",
       "owner_issue": "#284/#293",
-      "notes": "Do not copy StrategyInfo.composition_focus_weights."
+      "notes": "Do not copy StrategyInfo.composition_focus_weights.",
+      "unit": "trait-keyed weight map",
+      "normalization_or_scale": "not available from current new evidence callsite",
+      "validity_rule": "status=missing/unknown with explicit reason; never serialize the DTO default as observed zero/false"
     },
     {
       "field": "strategic_evidence.core_traits",
@@ -373,7 +481,10 @@
       "formula_or_version": "builder-alias-v1",
       "intended_consumer": "strategic evidence encoder",
       "owner_issue": "#284/#293",
-      "notes": "Current builder aliases the full completed_traits vector as core traits; ownership/semantics need correction before canonical use."
+      "notes": "Current builder aliases the full completed_traits vector as core traits; ownership/semantics need correction before canonical use.",
+      "unit": "trait identifier set",
+      "normalization_or_scale": "currently aliased to completed_traits; partial until ownership corrected",
+      "validity_rule": "status=partial with explicit reason and known subset"
     },
     {
       "field": "strategic_evidence.core_unit_ids",
@@ -383,7 +494,10 @@
       "formula_or_version": "native-active-composition-v1",
       "intended_consumer": "strategic/entity encoder",
       "owner_issue": "#284/#293",
-      "notes": "Stable champion IDs; preserve separately from trait lists."
+      "notes": "Stable champion IDs; preserve separately from trait lists.",
+      "unit": "champion identifier set",
+      "normalization_or_scale": "stable champion IDs",
+      "validity_rule": "valid only when source exists, provenance is present, and match/player/round/sequence are aligned"
     },
     {
       "field": "strategic_evidence.commitment_context.composition_identity",
@@ -393,7 +507,10 @@
       "formula_or_version": "native-composition-identity-v1",
       "intended_consumer": "strategic evidence encoder",
       "owner_issue": "#284/#293",
-      "notes": "Keep distinct from direction label and anchor identity."
+      "notes": "Keep distinct from direction label and anchor identity.",
+      "unit": "typed field; declare unit in canonical schema",
+      "normalization_or_scale": "no implicit normalization; projection must declare formula and scale",
+      "validity_rule": "valid only when source exists, provenance is present, and match/player/round/sequence are aligned"
     },
     {
       "field": "strategic_evidence.commitment_context.current_direction_score",
@@ -403,7 +520,10 @@
       "formula_or_version": "native-direction-score-v1",
       "intended_consumer": "strategic evidence encoder",
       "owner_issue": "#284/#293",
-      "notes": "Heuristic score; not a calibrated probability."
+      "notes": "Heuristic score; not a calibrated probability.",
+      "unit": "typed field; declare unit in canonical schema",
+      "normalization_or_scale": "no implicit normalization; projection must declare formula and scale",
+      "validity_rule": "valid only when source exists, provenance is present, and match/player/round/sequence are aligned"
     },
     {
       "field": "strategic_evidence.commitment_context.current_direction_viable",
@@ -413,7 +533,10 @@
       "formula_or_version": "native-direction-viability-v1",
       "intended_consumer": "strategic evidence encoder",
       "owner_issue": "#284/#293",
-      "notes": "Boolean evidence of candidate presence, not confidence."
+      "notes": "Boolean evidence of candidate presence, not confidence.",
+      "unit": "typed field; declare unit in canonical schema",
+      "normalization_or_scale": "no implicit normalization; projection must declare formula and scale",
+      "validity_rule": "valid only when source exists, provenance is present, and match/player/round/sequence are aligned"
     },
     {
       "field": "strategic_evidence.commitment_context.direction_source",
@@ -423,7 +546,10 @@
       "formula_or_version": "commitment-source-v1",
       "intended_consumer": "strategic evidence encoder",
       "owner_issue": "#284/#293",
-      "notes": "Explicit provenance source label."
+      "notes": "Explicit provenance source label.",
+      "unit": "typed field; declare unit in canonical schema",
+      "normalization_or_scale": "no implicit normalization; projection must declare formula and scale",
+      "validity_rule": "valid only when source exists, provenance is present, and match/player/round/sequence are aligned"
     }
   ],
   "availability_legend": {
