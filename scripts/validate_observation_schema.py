@@ -146,10 +146,24 @@ def main() -> None:
     examples = ROOT / "spec" / "examples" / "observation-v1"
     source_map = json.loads((ROOT / "spec" / "observation-schema.v1.source-map.json").read_text(encoding="utf-8"))
     migration_map = json.loads((ROOT / "spec" / "observation-schema.v1.migration-map.json").read_text(encoding="utf-8"))
+    legacy_map = json.loads((ROOT / "spec" / "observation-schema.v1.legacy-feature-map.json").read_text(encoding="utf-8"))
     snapshot = json.loads((examples / "valid-minimal.json").read_text(encoding="utf-8"))
 
     # Legacy coverage and source-map completeness.
-    assert len(migration_map["mappings"]) == migration_map["source_feature_count"] == 66
+    legacy_fields = {
+        f"{block['id']}|{feature['name']}": feature
+        for block in legacy_map["blocks"] for feature in block["fields"]
+    }
+    migration_fields = {
+        f"{mapping['legacy_block']}|{mapping['legacy_field']}": mapping
+        for mapping in migration_map["mappings"]
+    }
+    assert len(legacy_fields) == len(migration_fields) == migration_map["source_feature_count"] == 66
+    assert set(legacy_fields) == set(migration_fields), "migration crosswalk does not cover the exact legacy feature inventory"
+    for key, feature in legacy_fields.items():
+        assert feature.get("source") and feature.get("nature") and feature.get("encoding")
+        assert feature.get("consumers"), f"legacy feature has no consumer mapping: {key}"
+        assert migration_fields[key]["legacy_source"] == feature["source"], f"legacy source drift: {key}"
     for mapping in migration_map["mappings"]:
         assert mapping["decision"] in migration_map["decision_vocabulary"]
         for destination in mapping["destination_paths"]:
@@ -161,7 +175,7 @@ def main() -> None:
     assert len(source_paths) == len(set(source_paths)), "duplicate source-map field paths"
     required_source_metadata = {
         "current_source", "availability", "nature", "intended_consumer",
-        "owner_issue", "unit", "normalization_or_scale", "validity_rule", "notes"
+        "owner_issue", "unit", "normalization_or_scale", "validity_rule", "notes", "formula_or_version"
     }
     for entry in source_map["entries"]:
         missing_metadata = required_source_metadata - set(entry)
