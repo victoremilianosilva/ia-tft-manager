@@ -1,6 +1,6 @@
-# Strategic Ownership and Integration Contract v1 — Draft
+# Strategic Ownership and Integration Contract v1
 
-**Status:** strategic ownership decisions approved for the documentary contract; runtime acceptance remains pending  
+**Status:** approved documentary ownership and integration contract; runtime acceptance remains pending  
 **Contract ID:** `tft.strategic-ownership.v1`  
 **Target architecture:** `new-arquiteture`  
 **Related issues:** #281, #282, #283, #284, #289, #300  
