@@ -56,3 +56,35 @@ All adapters and consumers are read-only. This work does not alter the
 Economic Controller, Board Evaluation, ItemEngine, action execution, PPO,
 training, observations, masks, legal actions, rewards, checkpoints, or game
 rules. Composition Intelligence remains opt-in and Shadow-only.
+
+
+## Current architecture reconciliation (2026-11-14)
+
+This document describes the current Shadow planner evidence adapters and their
+read-only consumers. Its statement that the current work does not alter PPO
+observations is an implementation-scope fact, not a decision that canonical
+strategic evidence must remain unavailable to PPO forever.
+
+For the target architecture, any future PPO context projection must consume
+only the approved, versioned source contracts and preserve field-level
+provenance, quality, identity, source sequence, and unavailable/missing states.
+The projection is downstream and read-only. It must not write back into
+StrategicPlanner, ActiveCompositionManager / TransitionManager,
+EconomicController, UnitPriorityPlanner, or LineupPlanner.
+
+The evaluator outputs, bounded score adjustments, recommendations, and
+confidence proxies remain diagnostics/proposals; they are not PPO labels,
+reward targets, or action authority. Unified Shadow state remains diagnostic
+and isolated. The Engine and native masks remain the final legality authority.
+
+**Prior limitation:** the old isolation paragraph did not distinguish current
+runtime non-integration from future canonical-context consumption.
+**Reason for clarification:** the observation migration must replace legacy
+StrategyInfo dependencies without learning to imitate Shadow recommendations.
+**Ownership/contract:** each source owner publishes its own versioned state;
+the observation adapter only projects validated inputs.
+**Cross-component impact:** coordinate with #285/#286/#290/#291/#293 and the
+approved ownership, unit, economic, action and checkpoint contracts.
+**Validation:** documentary consistency now; post-Gate-8 tests must prove
+source-to-tensor traceability, stale rejection, missingness preservation,
+read-only behavior and absence of recommendation-to-label/reward coupling.

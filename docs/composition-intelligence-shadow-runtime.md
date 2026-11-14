@@ -80,3 +80,48 @@ Pivot feasibility preserves missing reserve-floor and full transition-cost
 inputs as unavailable; it must not approve a pivot from assumed economic data.
 See [Strategic direction/pivot audit](strategic-direction-pivot-audit.md) for
 the event contract and current integration limits.
+
+
+## Current architecture reconciliation (2026-11-14)
+
+The safety-boundary statements above describe the **audited runtime at the time
+this document was written**: Composition Intelligence recommendations and
+diagnostics are not currently projected into PPO observations. They must not
+be read as a permanent prohibition against the canonical Shadow architecture
+supplying strategic **context/evidence** to a future PPO observation contract.
+
+The approved target keeps these concepts separate:
+
+- A future PPO observation may consume versioned, provenance-bearing facts and
+  canonical state/evidence published by the approved owners (StrategicPlanner
+  direction commitment, accepted active composition, EconomicController
+  posture/progression, and validated unit/lineup evidence), once the dedicated
+  observation migration contract and implementation are approved.
+- Shadow recommendations, candidate rankings, evaluator scores, confidence
+  proxies, UnifiedStrategicStateMachine state, and executor resolutions are
+  not PPO labels, imitation targets, reward targets, or substitutes for PPO
+  action selection.
+- UnifiedStrategicStateMachine / UnifiedStrategicShadowRuntime remains
+  diagnostic-only and cannot publish its parallel state into canonical owners
+  or PPO.
+- Engine rules and native action masks remain final legality authority.
+  Shadow remains read-only; no live action execution is authorized.
+
+This reconciliation resolves the ambiguity in the older phrase “not fed into
+PPO observations”: it records current implementation isolation, not the
+approved future boundary for canonical context. It does not claim that such
+projection exists today.
+
+**Prior limitation:** this document described the existing runtime boundary
+without distinguishing canonical strategic evidence from recommendations.
+**Reason for clarification:** the approved Observation Schema and ownership
+contracts require contextual inputs while explicitly prohibiting imitation
+coupling.
+**Ownership/contract:** source owners retain their approved authority; the PPO
+observation projection is a separate versioned consumer and cannot mutate
+source state.
+**Cross-component impact:** #286/#293, #288, #294 and the ownership contract
+must remain aligned; no change is made to current runtime behavior.
+**Validation:** documentary consistency only now. Producer/consumer lineage,
+provenance, identity/sequence, missingness and no-imitation tests are
+executable acceptance after Gate 8 and explicit authorization.
