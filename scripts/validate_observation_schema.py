@@ -18,6 +18,20 @@ def digest(value: object) -> str:
     return "sha256:" + hashlib.sha256(rfc8785.dumps(value)).hexdigest()
 
 
+def normative_schema(value: object) -> object:
+    """Remove non-normative JSON Schema annotations before identity hashing."""
+    excluded = {"title", "description", "examples", "default", "$comment", "deprecated"}
+    if isinstance(value, dict):
+        return {k: normative_schema(v) for k, v in value.items() if k not in excluded}
+    if isinstance(value, list):
+        return [normative_schema(v) for v in value]
+    return value
+
+
+def schema_contract_hash(schema: dict) -> str:
+    return digest(normative_schema(schema))
+
+
 def field(value: object, nature: str = "observed") -> dict:
     return {
         "value": value,
@@ -47,7 +61,7 @@ def valid_snapshot(schema: dict) -> dict:
     }
     projection.pop("projection_hash")
     projection["projection_hash"] = digest(projection)
-    schema_hash = digest(schema)
+    schema_hash = schema_contract_hash(schema)
     empty_catalog = {
         "catalog_id": "fixture.catalog",
         "version": "1",
@@ -133,7 +147,7 @@ def main() -> None:
     )
     examples = ROOT / "spec" / "examples" / "observation-v1"
     snapshot = json.loads((examples / "valid-minimal.json").read_text(encoding="utf-8"))
-    expected_schema_hash = digest(schema)
+    expected_schema_hash = schema_contract_hash(schema)
     snapshot["schema"]["schema_hash"] = expected_schema_hash
     projection = snapshot["schema"]["projection"]
     projection.pop("projection_hash", None)
@@ -204,7 +218,7 @@ def main() -> None:
     invalid_schema_hash = copy.deepcopy(snapshot)
     invalid_schema_hash["schema"]["schema_hash"] = "sha256:" + "0" * 64
     assert list(validator.iter_errors(invalid_schema_hash)) == []  # JSON Schema checks format; hash identity is checked here.
-    assert invalid_schema_hash["schema"]["schema_hash"] != digest(schema)
+    assert invalid_schema_hash["schema"]["schema_hash"] != schema_contract_hash(schema)
 
     print("Observation Schema Draft 2020-12: OK")
     print("Valid/invalid fixtures, zero-vs-missing, occupied-slot and schema-hash checks: OK")
