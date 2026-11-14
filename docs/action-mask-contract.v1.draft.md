@@ -136,7 +136,7 @@ flowchart TD
 
 O fluxo acima descreve a integração atual em alto nível. A implementação ainda não produz, em um envelope único e correlacionado, todos os campos `sampled/requested/effective/executed_action`, status/motivo e hashes de identidade/contrato. Esse é um requisito de evolução, não uma capacidade que este draft afirma já existir. A Engine continua sendo a validação final; uma mask anterior não autoriza execução.
 
-## 5.4 Registro da ação e da transição
+## 5.5 Registro da ação e da transição
 
 Persistir separadamente:
 - `sampled_action`: tupla amostrada pela Policy;
