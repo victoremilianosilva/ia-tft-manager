@@ -131,6 +131,10 @@ def main() -> None:
         schema, format_checker=jsonschema.FormatChecker()
     )
     snapshot = valid_snapshot(schema)
+    assert snapshot["schema"]["schema_hash"] == digest(schema)
+    projection_without_hash = copy.deepcopy(snapshot["schema"]["projection"])
+    projection_hash = projection_without_hash.pop("projection_hash")
+    assert projection_hash == digest(projection_without_hash)
     errors = sorted(validator.iter_errors(snapshot), key=lambda e: list(e.absolute_path))
     if errors:
         raise SystemExit("valid fixture rejected:\n" + "\n".join(
@@ -159,6 +163,17 @@ def main() -> None:
     invalid_missing_reason = copy.deepcopy(missing)
     del invalid_missing_reason["player"]["economy"]["gold"]["reason"]
     assert list(validator.iter_errors(invalid_missing_reason))
+    invalid_missing_with_value = copy.deepcopy(missing)
+    invalid_missing_with_value["player"]["economy"]["gold"]["value"] = 0
+    assert list(validator.iter_errors(invalid_missing_with_value))
+
+    incomplete_identity = copy.deepcopy(snapshot)
+    incomplete_identity["identity"].update({
+        "match_id": None, "engine_match_id": None, "player_id": None,
+        "round": None, "decision_sequence": None, "snapshot_sequence": None,
+        "status": "missing", "reason": "identity source unavailable",
+    })
+    assert not list(validator.iter_errors(incomplete_identity))
 
     invalid_occupied_slot = copy.deepcopy(snapshot)
     invalid_occupied_slot["entities"]["board"][0] = {
@@ -168,7 +183,7 @@ def main() -> None:
 
     invalid_schema_hash = copy.deepcopy(snapshot)
     invalid_schema_hash["schema"]["schema_hash"] = "sha256:" + "0" * 64
-    assert list(validator.iter_errors(invalid_schema_hash)) == []  # format is valid
+    assert list(validator.iter_errors(invalid_schema_hash)) == []  # JSON Schema checks format; hash identity is checked here.
     assert invalid_schema_hash["schema"]["schema_hash"] != digest(schema)
 
     print("Observation Schema Draft 2020-12: OK")
