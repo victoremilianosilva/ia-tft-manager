@@ -203,3 +203,7 @@ The dual-evaluator diagnostic contract currently records `executor_connected=fal
 **Cross-component impact:** #281/#282/#289/#294, economic evidence, candidate, dual-evaluator, ownership and action/mask contracts.
 
 **Validation:** documentary reconciliation against `dual-action-evaluator-shadow.md`, the Economic Evidence and Progression Contract, Strategic Action Candidate Contract and Action/Mask Contract. Executable acceptance after Gate 8 must prove evaluator-specific field consumption, connected handoff or explicit unavailable status, exact candidate/sequence correlation, stale rejection and read-only behavior.
+
+## Decision Identity v2 replay binding (proposal; not runtime-approved)
+
+Future replay artifacts in the v2 lineage must preserve the original typed Engine decision and snapshot references, plus each owner-local evidence sequence and explicit mapping to replay/Viewer session sequences. Same numeric values in different namespaces are never directly comparable. Replay must verify the exact observation identity, mask identity and payload hashes, reject stale/conflicting references, and retain reset boundaries. The proposed canonical Engine namespaces are not current runtime capabilities; replay fixtures must distinguish unavailable producer identity from a complete correlation. Existing v1 artifacts and hashes remain historical and immutable.
