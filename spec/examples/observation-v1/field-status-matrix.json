@@ -1,0 +1,86 @@
+{
+  "description": "Examples for semantic field states. Zero is a valid observed value; all unavailable states carry a reason and provenance.",
+  "cases": {
+    "zero_observed": {
+      "value": 0,
+      "status": "valid",
+      "nature": "observed",
+      "provenance": {
+        "source": "fixture",
+        "source_path": "economy.xp",
+        "source_sequence": 1
+      }
+    },
+    "missing": {
+      "status": "missing",
+      "nature": "observed",
+      "reason": "source_not_produced",
+      "provenance": {
+        "source": "fixture",
+        "source_path": "economy.projected_next_round_income"
+      }
+    },
+    "unknown": {
+      "status": "unknown",
+      "nature": "inferred",
+      "reason": "insufficient_evidence",
+      "provenance": {
+        "source": "fixture",
+        "source_path": "strategic.direction"
+      }
+    },
+    "not_applicable": {
+      "status": "not_applicable",
+      "nature": "observed",
+      "reason": "no_pending_anvil",
+      "provenance": {
+        "source": "fixture",
+        "source_path": "items.pending_anvil"
+      }
+    },
+    "stale": {
+      "status": "stale",
+      "nature": "derived",
+      "reason": "source_sequence_older_than_decision",
+      "provenance": {
+        "source": "fixture",
+        "source_path": "strategic.anchor_candidates",
+        "source_sequence": 4
+      }
+    },
+    "incompatible": {
+      "status": "incompatible",
+      "nature": "derived",
+      "reason": "catalog_fingerprint_mismatch",
+      "provenance": {
+        "source": "fixture",
+        "source_path": "traits.counts"
+      }
+    },
+    "partial": {
+      "value": {
+        "known": 3,
+        "total": null
+      },
+      "status": "partial",
+      "nature": "derived",
+      "reason": "some_opponent_snapshots_unavailable",
+      "provenance": {
+        "source": "fixture",
+        "source_path": "lobby.contestation"
+      }
+    },
+    "estimated": {
+      "value": 0.62,
+      "status": "valid",
+      "nature": "estimated",
+      "provenance": {
+        "source": "fixture",
+        "source_path": "action_candidate.opportunity_cost",
+        "formula_id": "opportunity-cost-v1",
+        "formula_version": "1.0.0"
+      },
+      "confidence": 0.65
+    }
+  }
+}
