@@ -305,3 +305,18 @@ Before declaring this static inventory complete, the remaining review is now foc
 2. Search generic DTOs/data adapters for the in-game domains not found by path name (augments, portals/encounters, artifacts, armory/consumables, tactician equipment, scouting), and decide whether each is unsupported, out of scope, or represented indirectly.
 3. Confirm whether the active-set catalog and live GEP/Overwolf source can supply item/augment/portal/opponent facts; repository simulation fixtures are not evidence of live source availability.
 4. Finish callsite/test mapping for economy update and outcome capture; no runtime tests are part of this audit.
+
+
+### 9.12 Unit UUID scope and episode identity
+
+`UnitInstanceFactory` generates UUID-shaped identifiers from its seeded PRNG. `TFTEngine::reset()` recreates the factory using `impl_->seed` before initializing the next episode. With the same Engine seed, the factory's UUID sequence restarts; therefore a unit UUID must not be treated as globally unique across episodes solely because it has UUID syntax.
+
+This does not by itself imply an in-match collision: the intended identity scope must be explicit. The strategic ownership contract already separates match/episode identity from player and source sequence; unit-instance references in the new architecture should likewise be scoped by match/episode (and player where ownership requires it), or use a generator whose uniqueness scope is explicitly guaranteed.
+
+There is also a stale comment in `TftEngine.hpp` saying effective UUID generation will be implemented later, while `UnitInstanceFactory.cpp` already implements UUID-shaped generation. This is documentation drift, not a runtime defect, and is recorded here without changing source.
+
+### 9.13 Existing generic state coverage for unmodeled domains
+
+The inspected public state DTOs are focused on champion definitions/instances, board/bench/shop slots, action masks, economy, and player health/alive/placement/opponent identity. `DecisionState::PlayerState` has explicit board, bench, and shop arrays, but no dedicated augment, portal/encounter, artifact, consumable, armory, tactician-equipment, or scouting-evidence collection. `PlayerInfo` likewise exposes basic player/combat/lobby status rather than those domains.
+
+This strengthens the finding that those capabilities are not currently first-class in the inspected native state contract. It still does not establish what an external live GEP feed may provide or whether some metadata exists in uninspected raw catalog blobs. Treat them as **not represented in the inspected native DTOs**, pending Overwolf/GEP source verification.
