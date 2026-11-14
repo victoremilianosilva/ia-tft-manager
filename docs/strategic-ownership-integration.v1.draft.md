@@ -1,6 +1,6 @@
-# Strategic Ownership and Integration Contract v1 — Draft
+# Strategic Ownership and Integration Contract v1
 
-**Status:** strategic ownership decisions approved for the documentary contract; runtime acceptance remains pending  
+**Status:** approved documentary ownership and integration contract; runtime acceptance remains pending  
 **Contract ID:** `tft.strategic-ownership.v1`  
 **Target architecture:** `new-arquiteture`  
 **Related issues:** #281, #282, #283, #284, #289, #300  
@@ -16,7 +16,7 @@ This contract establishes:
 - distinct meanings for observed facts, derived evidence, commitments, hypotheses, active composition, and recommendations;
 - the current ownership map and boundaries;
 - integration invariants for identity, version, sequence, provenance, and stale data;
-- explicit gaps that must be resolved before Gate 5 can be approved;
+- approved ownership decisions and cross-contract requirements, with executable acceptance explicitly deferred until after Gate 8;
 - replay and acceptance evidence required after Gate 8.
 
 ## 2. Normative principles
@@ -38,8 +38,8 @@ This contract establishes:
 |---|---|---|
 | Engine snapshot and native masks | Source of observed game facts and final action legality | A strategic recommendation cannot override them |
 | NativeStrategicCompositionGenerator | Generates candidate composition hypotheses from current evidence | A generated candidate is not an accepted active composition |
-| StrategicPlanner | Produces strategic commitments/direction and reasons from StrategicEvidenceContext | Must retain commitment/inference provenance; does not automatically own CI active composition |
-| CompositionIntelligencePlayerRuntime + ActiveCompositionManager / TransitionManager | Per-player CI runtime owns active composition, transition hysteresis, recorder, history, player sequence; publishes approved transitions | This is the active composition used by the CI planning chain; final architecture-wide ownership of direction vs composition is still unresolved |
+| StrategicPlanner | Owns the canonical product-facing direction commitment and reasons from StrategicEvidenceContext | Commitment remains distinct from the CI-owned active composition; preserve commitment/inference provenance |
+| CompositionIntelligencePlayerRuntime + ActiveCompositionManager / TransitionManager | Sole canonical owner/commit path for active composition, transition hysteresis, recorder, history, and player sequence | Direction commitment remains owned by StrategicPlanner; immutable transition records correlate the two authorities |
 | EconomicController | Produces contextual economic posture/decision and diagnostics | Posture is not a fixed strategy ID or executable action |
 | UnitPriorityPlanner | Resolves unit priorities against active composition identity/version | Depends on canonical copy/progress evidence and fresh source snapshots |
 | LineupPlanner | Produces a deployable lineup from active composition and priorities | Its output is not currently the direct source for the position snapshot in the audited callsite |
@@ -47,7 +47,7 @@ This contract establishes:
 | ContextualActionEvaluator | Independent contextual evaluation using board, priority, lineup, upgrade and economic evidence | Does not consume EconomicControlDecision directly; its score is not interchangeable with baseline score |
 | StrategicPositionPlanner | Produces a constrained physical position proposal using owned units, legal masks and snapshot evidence | Must be tied to the exact deployable lineup and same sequence |
 | StrategicActionExecutor | Resolves Shadow proposal against native state/masks and snapshot sequence | Does not execute a real game action |
-| UnifiedStrategicStateMachine / UnifiedStrategicShadowRuntime | Separate Shadow state machine used for comparison/audit and pivot transitions | Maintains parallel state; must not silently publish back to CI/PPO or be treated as canonical without explicit decision |
+| UnifiedStrategicStateMachine / UnifiedStrategicShadowRuntime | Separate diagnostic-only Shadow state machine for comparison/audit and isolated pivot transitions | Maintains its own namespace; must not publish canonical state to CI, Planner, PPO, Engine, or Viewer |
 | Viewer/JSONL diagnostics | Persists provenance, correlation, sequences and diagnostic results | Telemetry is not a state authority |
 
 ### 3.1 Authority boundary — approved decision
@@ -224,7 +224,7 @@ The audit identified the following unresolved integration gaps; they are not imp
 - SELL evidence fields are not populated in the audited builder, preventing the current SELL eligibility chain from producing a valid candidate.
 - Baseline and contextual HOLD score/confidence semantics differ; their scores are not directly comparable.
 
-Required decision: define candidate identity/physical parameters and the relationship between baseline evaluator and contextual evaluator. A no-candidate state must be explicit, not a valid comparison or confident HOLD recommendation.
+Contract decision recorded in #312: candidate identity/physical parameters and baseline-vs-contextual evaluator roles are specified. Remaining work is runtime producer integration and executable proof after Gate 8. A no-candidate state is explicit, never a valid comparison or confident HOLD recommendation.
 
 ### 7.2 Economic evidence (#282)
 
@@ -234,7 +234,7 @@ Required decision: define candidate identity/physical parameters and the relatio
 - Plausible numeric defaults (HP 100, gold 0, level 1, risk/damage 0, relative board power 0) can be mistaken for observed values.
 - ContextualActionEvaluator does not directly consume EconomicControlDecision, unlike CompositionActionEvaluator's baseline path.
 
-Required decision: source/horizon/quality for each economic estimate; evidence sufficiency rules; which economic signals reach each evaluator and why; marginal cost vs HOLD without double counting.
+Contract decision recorded in #313: source/horizon/quality, evidence sufficiency, consumer mapping, and marginal cost vs HOLD requirements are specified. Runtime source validation, consumer wiring, and executable proof remain post-Gate-8 work.
 
 ### 7.3 Unit-copy and upgrade evidence (#283)
 
@@ -242,7 +242,7 @@ Required decision: source/horizon/quality for each economic estimate; evidence s
 - `copies_in_shop`, `unit_cost`, and `gold_available` were not populated in the audited UnitPriority builder/context.
 - Board/bench ownership, shop opportunity, and pool availability must remain distinct.
 
-Required decision: canonical per-star-tier progress representation shared by generator, priority, pivot feasibility, lineup and evaluators, with tests for mixed stars, affordable/unaffordable offers and unknown pool.
+Contract decision recorded in #314: lossless unit instances, tier-specific progress, shop/pool separation, and shared consumer semantics are specified. Runtime migration and executable proof remain post-Gate-8 work.
 
 ### 7.4 State ownership and synchronization (#284)
 
@@ -252,7 +252,7 @@ Required decision: canonical per-star-tier progress representation shared by gen
 - CompositionEvaluationContext identity fields are not explicitly filled in the audited callsite.
 - The bridge provenance and lock issues above remain unresolved.
 
-Required decision: approved owner per concept, transition protocol, external identity validation, sequence binding, stale handling and reset proof.
+Ownership and transition decisions are approved in sections 3.1–3.6 and PR #311. Runtime identity validation, sequence binding, stale handling, and reset regression proof remain post-Gate-8 acceptance work.
 
 ### 7.5 Lineup to positioning (#289)
 
@@ -271,7 +271,7 @@ Required evidence: integrated replay with capacity, bridge units, entries/exits,
 
 ## 8. Replay and acceptance matrix
 
-Before Gate 5 can be accepted, executable evidence after Gate 8 must cover:
+After Gate 8, executable acceptance evidence must cover:
 
 1. One approved owner per strategic concept and explicit non-authoritative/diagnostic components.
 2. Candidate pivot does not mutate active state; rejected/confirmed transitions have correct version changes.
@@ -286,11 +286,11 @@ Before Gate 5 can be accepted, executable evidence after Gate 8 must cover:
 11. Per-star-tier copies, shop offers, affordability and pool uncertainty are consistent across all consumers.
 12. Lineup selected board and deferred targets constrain position proposals in the same sequence/version.
 13. Recommendation sequence mismatch is rejected even within the same round and composition version; sequence comparisons require matching scope/component or an explicit validated cross-scope correlation.
-17. Pre-composition and candidate-only records are valid without an active composition ID/version; composition-dependent records require both. Candidate revisions cannot masquerade as active-composition versions.
-18. Composition versions are monotonic only within the declared match/player/composition lineage; reset and pivot tests prove namespace changes and prevent cross-lineage comparisons.
-14. Outcome correlation handles delayed outcomes, pivots, missing data and match end without causal/reward claims.
-15. Multi-round deterministic replay covers early game, stable composition, economy pressure, upgrade, pivot, incomplete evidence and match reset.
-16. All behavior remains Shadow/read-only; Engine masks/rules remain final legality authority.
+14. Pre-composition and candidate-only records are valid without an active composition ID/version; composition-dependent records require both. Candidate revisions cannot masquerade as active-composition versions.
+15. Composition versions are monotonic only within the declared match/player/composition lineage; reset and pivot tests prove namespace changes and prevent cross-lineage comparisons.
+16. Outcome correlation handles delayed outcomes, pivots, missing data and match end without causal/reward claims.
+17. Multi-round deterministic replay covers early game, stable composition, economy pressure, upgrade, pivot, incomplete evidence and match reset.
+18. All behavior remains Shadow/read-only; Engine masks/rules remain final legality authority.
 
 ## 9. Gate status and implementation boundary
 
@@ -298,6 +298,6 @@ Before Gate 5 can be accepted, executable evidence after Gate 8 must cover:
 
 **Documentary status:** the ownership decisions in sections 3.1–3.6 are approved and normative. The remaining issues #281, #282, #283, #284 and #289 track contract elaboration and executable acceptance evidence; they are not permission to begin runtime work.
 
-**Gate 5 is not complete.** The authority-decision subgate is complete. Remaining work is to resolve the candidate/economic/unit/lineup/replay contract gaps, update the affected documentary artifacts, and define the post-Gate-8 executable acceptance plan. Runtime implementation/tests remain blocked until Gate 8 and explicit user approval.
+**Gate 5 documentary status:** the authority decisions and candidate, economic, unit, and integrated replay contracts are now merged. The remaining Gate 5 work is the post-merge consistency review and any resulting documentary clarification; the executable acceptance matrix below is deferred until after Gate 8. Runtime implementation/tests remain blocked until Gate 8 and explicit user approval.
 
 No runtime files, PPO, observations, rewards, checkpoints, masks, Engine rules, Viewer, or game actions are changed by this document.
