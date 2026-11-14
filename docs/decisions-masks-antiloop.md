@@ -1,3 +1,7 @@
+> **Documento histórico — não normativo.** Este texto registra o catálogo anterior de 7 tipos de ação e dimensões `[7, 5, 9, 28, 28, 28]`. A implementação ativa evoluiu para 9 tipos e dimensões `[9, 5, 9, 28, 28, 28]`, incluindo ações de itens. Não use os IDs, dimensões ou descrições abaixo como contrato atual. Consulte a [proposta Action / Mask Contract v1](action-mask-contract.v1.draft.md) e valide sempre o contrato aprovado contra a implementação. Este arquivo foi preservado como histórico; não representa autorização para alterar runtime.
+
+---
+
 # Decisões, validação, máscaras e anti-loop
 
 ## Contrato da ação
