@@ -110,7 +110,7 @@
       "validity_rule": "valid only when source exists, provenance is present, and match/player/round/sequence are aligned"
     },
     {
-      "field": "derived_context.stage",
+      "field": "derived_context.economic_context.stage",
       "current_source": "current_stage / stage_for_round",
       "availability": "available",
       "nature": "derived",
@@ -377,13 +377,13 @@
       "formula_or_version": "native-active-composition-v1",
       "intended_consumer": "strategic evidence encoder",
       "owner_issue": "#284/#293",
-      "notes": "Core units from native candidate; preserve IDs.",
+      "notes": "Stable champion IDs from active_native_direction.unit_ids, propagated through StrategicEvidenceContextInput.core_unit_ids. Preserve once; do not duplicate the same entity set.",
       "unit": "champion identifier set",
       "normalization_or_scale": "stable champion IDs",
       "validity_rule": "valid only when source exists, provenance is present, and match/player/round/sequence are aligned"
     },
     {
-      "field": "strategic_evidence.composition_locked",
+      "field": "strategic_evidence.commitment_context.composition_locked",
       "current_source": "StrategicSharedContext.composition_locked",
       "availability": "not_available",
       "nature": "unknown",
@@ -448,19 +448,6 @@
       "validity_rule": "diagnostic-only; never auto-feed as PPO input or imitation target"
     },
     {
-      "field": "strategic_evidence.primary_focus_trait",
-      "current_source": "StrategicEvidenceContextBuilder: derived_focus_traits.front()",
-      "availability": "partial",
-      "nature": "derived",
-      "formula_or_version": "first-completed-trait-v1",
-      "intended_consumer": "strategic evidence encoder",
-      "owner_issue": "#284/#293",
-      "notes": "Only first completed trait is projected as current_composition_focus; not a learned focus weight.",
-      "unit": "trait identifier",
-      "normalization_or_scale": "currently first completed trait only; partial semantics",
-      "validity_rule": "status=partial with explicit reason and known subset"
-    },
-    {
       "field": "strategic_evidence.focus_weights",
       "current_source": "No independent focus-weight source in new evidence callsite",
       "availability": "not_produced",
@@ -472,32 +459,6 @@
       "unit": "trait-keyed weight map",
       "normalization_or_scale": "not available from current new evidence callsite",
       "validity_rule": "status=missing/unknown with explicit reason; never serialize the DTO default as observed zero/false"
-    },
-    {
-      "field": "strategic_evidence.core_traits",
-      "current_source": "StrategicEvidenceContextBuilder: planner_context.current_core_traits = derived_focus_traits",
-      "availability": "partial",
-      "nature": "derived",
-      "formula_or_version": "builder-alias-v1",
-      "intended_consumer": "strategic evidence encoder",
-      "owner_issue": "#284/#293",
-      "notes": "Current builder aliases the full completed_traits vector as core traits; ownership/semantics need correction before canonical use.",
-      "unit": "trait identifier set",
-      "normalization_or_scale": "currently aliased to completed_traits; partial until ownership corrected",
-      "validity_rule": "status=partial with explicit reason and known subset"
-    },
-    {
-      "field": "strategic_evidence.core_unit_ids",
-      "current_source": "active_native_direction.unit_ids → StrategicEvidenceContextInput.core_unit_ids",
-      "availability": "available",
-      "nature": "derived",
-      "formula_or_version": "native-active-composition-v1",
-      "intended_consumer": "strategic/entity encoder",
-      "owner_issue": "#284/#293",
-      "notes": "Stable champion IDs; preserve separately from trait lists.",
-      "unit": "champion identifier set",
-      "normalization_or_scale": "stable champion IDs",
-      "validity_rule": "valid only when source exists, provenance is present, and match/player/round/sequence are aligned"
     },
     {
       "field": "strategic_evidence.commitment_context.composition_identity",
@@ -560,5 +521,17 @@
     "available_but_not_projected": "Source exists but is not included in the PPO observation/critic payload.",
     "not_correlated": "Payloads exist but lack a shared decision identity/hash.",
     "available_shadow_only": "Diagnostic recommendation exists but is not an observed fact or PPO target."
-  }
+  },
+  "excluded_legacy_projections": [
+    {
+      "legacy_projection": "StrategicEvidenceContextBuilder.current_composition_focus = derived_focus_traits.front()",
+      "source": "active_native_direction.completed_traits",
+      "reason": "The first element is an order-dependent alias, not an independently evidenced focus signal. The canonical schema keeps the full completed_traits set and does not encode its first item as a priority/focus."
+    },
+    {
+      "legacy_projection": "StrategicEvidenceContextBuilder.current_core_traits = derived_focus_traits",
+      "source": "active_native_direction.completed_traits",
+      "reason": "The current builder aliases completed traits into core traits without proving semantic equivalence. The canonical schema represents completed_traits once; core_traits is excluded until an independent authoritative definition exists."
+    }
+  ]
 }
