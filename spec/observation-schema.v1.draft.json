@@ -343,8 +343,10 @@
       ],
       "properties": {
         "match_id": {
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "engine_match_id": {
           "type": [
@@ -366,8 +368,10 @@
           ]
         },
         "player_id": {
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "round": {
           "type": "integer",
@@ -405,7 +409,75 @@
         "reason": {
           "type": "string"
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "complete"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "required": [
+              "engine_match_id"
+            ],
+            "properties": {
+              "engine_match_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "match_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "player_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "round": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "decision_sequence": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "snapshot_sequence": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "partial",
+                  "session_only",
+                  "missing",
+                  "stale",
+                  "incompatible"
+                ]
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "required": [
+              "reason"
+            ]
+          }
+        }
+      ]
     },
     "projection": {
       "type": "object",
@@ -416,7 +488,8 @@
         "projection_hash",
         "dtype",
         "blocks",
-        "canonicalization"
+        "canonicalization",
+        "hash_scope"
       ],
       "properties": {
         "projection_id": {
@@ -489,6 +562,16 @@
         },
         "canonicalization": {
           "const": "RFC8785"
+        },
+        "output_shape": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "hash_scope": {
+          "const": "Canonical projection definition excluding projection_hash"
         }
       }
     }
@@ -533,7 +616,8 @@
             "structural_break",
             "explicit_migration_required",
             "new_training_lineage_required"
-          ]
+          ],
+          "default": "new_training_lineage_required"
         },
         "hash_algorithm": {
           "const": "SHA-256"
@@ -542,7 +626,7 @@
           "const": "RFC8785"
         },
         "hash_scope": {
-          "const": "Canonical schema document excluding schema_hash itself"
+          "const": "Canonical schema document excluding schema_hash itself; projection_hash is computed over canonical projection definition excluding projection_hash"
         }
       },
       "description": "Hash is computed over RFC 8785 canonical JSON excluding schema_hash to avoid self-reference. Any semantic/structural/catalog/projection change that affects interpretation must change the corresponding identity."
