@@ -70,9 +70,6 @@
           "type": "string",
           "minLength": 1
         },
-        "nature": {
-          "$ref": "#/$defs/fieldNature"
-        },
         "formula_id": {
           "type": "string"
         },
@@ -133,6 +130,26 @@
         }
       },
       "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "valid",
+                  "partial"
+                ]
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "required": [
+              "value"
+            ]
+          }
+        },
         {
           "if": {
             "properties": {
@@ -263,7 +280,55 @@
           ],
           "description": "Required when presence=occupied; null for empty/unknown slots."
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "presence": {
+                "const": "occupied"
+              }
+            },
+            "required": [
+              "presence"
+            ]
+          },
+          "then": {
+            "required": [
+              "unit"
+            ],
+            "properties": {
+              "unit": {
+                "$ref": "#/$defs/unit"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "presence": {
+                "enum": [
+                  "empty",
+                  "unknown",
+                  "stale",
+                  "incompatible"
+                ]
+              }
+            },
+            "required": [
+              "presence"
+            ]
+          },
+          "then": {
+            "properties": {
+              "unit": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
     },
     "sequenceIdentity": {
       "type": "object",
@@ -350,7 +415,8 @@
         "version",
         "projection_hash",
         "dtype",
-        "blocks"
+        "blocks",
+        "canonicalization"
       ],
       "properties": {
         "projection_id": {
@@ -420,6 +486,9 @@
               }
             }
           }
+        },
+        "canonicalization": {
+          "const": "RFC8785"
         }
       }
     }
@@ -433,7 +502,10 @@
         "semantic_version",
         "structural_revision",
         "schema_hash",
-        "projection"
+        "projection",
+        "hash_algorithm",
+        "hash_canonicalization",
+        "hash_scope"
       ],
       "properties": {
         "schema_id": {
@@ -462,8 +534,18 @@
             "explicit_migration_required",
             "new_training_lineage_required"
           ]
+        },
+        "hash_algorithm": {
+          "const": "SHA-256"
+        },
+        "hash_canonicalization": {
+          "const": "RFC8785"
+        },
+        "hash_scope": {
+          "const": "Canonical schema document excluding schema_hash itself"
         }
-      }
+      },
+      "description": "Hash is computed over RFC 8785 canonical JSON excluding schema_hash to avoid self-reference. Any semantic/structural/catalog/projection change that affects interpretation must change the corresponding identity."
     },
     "identity": {
       "$ref": "#/$defs/sequenceIdentity"
@@ -516,14 +598,49 @@
         },
         "economy": {
           "type": "object",
-          "additionalProperties": {
-            "$ref": "#/$defs/field"
+          "additionalProperties": false,
+          "required": [
+            "gold",
+            "level",
+            "xp"
+          ],
+          "properties": {
+            "gold": {
+              "$ref": "#/$defs/field"
+            },
+            "level": {
+              "$ref": "#/$defs/field"
+            },
+            "xp": {
+              "$ref": "#/$defs/field"
+            },
+            "xp_to_next": {
+              "$ref": "#/$defs/field"
+            },
+            "income": {
+              "$ref": "#/$defs/field"
+            },
+            "interest": {
+              "$ref": "#/$defs/field"
+            },
+            "streak_bonus": {
+              "$ref": "#/$defs/field"
+            },
+            "shop_cost": {
+              "$ref": "#/$defs/field"
+            }
           }
         },
         "streaks": {
           "type": "object",
-          "additionalProperties": {
-            "$ref": "#/$defs/field"
+          "additionalProperties": false,
+          "properties": {
+            "win_streak": {
+              "$ref": "#/$defs/field"
+            },
+            "loss_streak": {
+              "$ref": "#/$defs/field"
+            }
           }
         }
       }
