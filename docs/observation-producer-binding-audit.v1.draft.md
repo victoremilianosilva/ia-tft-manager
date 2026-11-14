@@ -354,3 +354,7 @@ The producer-binding audit remains the evidence for current behavior: native obs
 ## Projection consumer matrix boundary
 
 The proposed [Observation Projection Consumer Matrix v1](observation-projection-consumer-matrix.v1.draft.md) classifies semantic eligibility and intended Actor/Critic/control/diagnostic consumers. It does not upgrade source availability: every entry remains subject to this producer-binding audit, and all fields marked candidate retain their producer, provenance, sequence-correlation and missingness blockers. In particular, an intended consumer is not proof that the current native→Python PPO path delivers the field.
+
+## Structured entity producer requirements — draft
+
+The proposed [Structured Entity and Temporal Evidence Contract v1](observation-structured-entity-temporal-contract.v1.draft.md) records the identity, ownership, completeness and source-sequence requirements that producers must satisfy. In particular, shop offer identity, physical item-instance identity, pool availability, board coordinates, and candidate collection completeness remain explicit gaps; this contract does not claim that current native or Python producers deliver them.
