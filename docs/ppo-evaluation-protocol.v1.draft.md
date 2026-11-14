@@ -175,3 +175,7 @@ The separate strategic replay contract in #315/#289 is complementary: it validat
 ## Semantic consumer decision lineage (proposal)
 
 Evaluation manifests for the new PPO lineage must record the semantic projection consumer matrix identity/version/hash in addition to the Observation Schema, concrete projection, normalization, architecture, Action/Mask, reward and catalog identities. Ablations must identify which semantic consumer blocks are enabled for Actor, Critic or both. The current consumer matrix is a documentary proposal only; this note does not approve a feature layout or runtime behavior.
+
+## Structured entity evaluation lineage (proposal)
+
+Evaluation manifests should record the structured-entity/temporal contract identity and hash alongside schema, semantic consumer matrix, concrete projection, normalization, architecture, Action/Mask, reward and catalog identities. Replay and evaluation fixtures must preserve entity identity, ownership domains, completeness and temporal reset semantics. This is a documentation requirement, not proof of runtime coverage.
