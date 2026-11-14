@@ -1,6 +1,6 @@
-# PPO Evaluation Protocol v1 (Draft)
+# PPO Evaluation Protocol v1
 
-**Status:** documentary specification for review.  
+**Status:** approved documentary specification; executable evaluation and training acceptance remain blocked until Gate 8.  
 **Scope:** experimental protocol for future PPO lineages after Gate 8.  
 **Non-goals:** this document does not authorize training, retraining, checkpoint mutation, PPO/Engine changes, Viewer changes, or runtime migration.
 
