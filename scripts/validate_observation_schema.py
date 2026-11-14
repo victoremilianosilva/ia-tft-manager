@@ -57,6 +57,18 @@ def schema_path_exists(schema: dict, path: str) -> bool:
     return True
 
 
+def verify_provenance_nature(value: object, path: str = "$") -> None:
+    if isinstance(value, list):
+        for index, item in enumerate(value):
+            verify_provenance_nature(item, f"{path}[{index}]")
+    elif isinstance(value, dict):
+        if "provenance" in value and "nature" in value:
+            if value["provenance"].get("nature") != value["nature"]:
+                raise ValueError(f"provenance nature mismatch at {path}")
+        for key, item in value.items():
+            verify_provenance_nature(item, f"{path}.{key}")
+
+
 def verify_snapshot_hashes(snapshot: dict, schema: dict) -> None:
     if snapshot["schema"]["schema_hash"] != schema_contract_hash(schema):
         raise ValueError("observation schema hash mismatch")
