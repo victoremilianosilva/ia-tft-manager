@@ -8,7 +8,8 @@ Para decisões de arquitetura e implementação da nova linhagem, use primeiro o
 
 - [Observation Schema v1 (machine-readable)](../spec/observation-schema.v1.draft.json), com mapas de origem, migração e disponibilidade.
 - [Observation Tensor Projection Contract v1 — Design Requirements](observation-tensor-projection-contract.v1.draft.md) — requisitos documentais para a projeção concreta; o layout tensorial alvo permanece não aprovado.
-- [Decision Identity and Mask Correlation Contract v1 — Design Proposal](decision-identity-mask-correlation-contract.v1.draft.md) — identidade tipada da decisão e correlação exata entre observação, masks, critic, rollout e replay; proposta documental, sem runtime.
+- [Decision Identity and Mask Correlation Contract v1 — Design Proposal](decision-identity-mask-correlation-contract.v1.draft.md) — rationale e invariantes de correlação entre observação, masks, critic, rollout e replay.
+- [Decision Identity Schema v2 — Versioning Boundary and Migration Design](decision-identity-schema-v2-design.v1.draft.md) — proposta para versionar namespaces tipados sem alterar o schema v1 histórico; ainda aguarda revisão/aprovação documental.
 - [Action / Mask Contract v1](action-mask-contract.v1.draft.md) — especificação documental aprovada; execução/aceitação runtime pendente.
 - [Reward Contract v1](reward-contract.v1.draft.md) — especificação documental aprovada; migração runtime pendente.
 - [PPO Architecture and Checkpoint Contract v1](ppo-checkpoint-contract.v1.draft.md) — especificação documental aprovada; loader/migração runtime pendentes.
