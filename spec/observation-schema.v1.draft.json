@@ -1577,12 +1577,6 @@
         "status": {
           "$ref": "#/$defs/fieldStatus"
         },
-        "history_summary": {
-          "type": "object",
-          "additionalProperties": {
-            "$ref": "#/$defs/field"
-          }
-        },
         "anti_loop_state": {
           "type": "object",
           "additionalProperties": false,
@@ -1626,6 +1620,158 @@
             },
             "reason": {
               "type": "string"
+            },
+            "position_history": {
+              "type": "array",
+              "description": "Recent board-state identities retained by AntiLoopEngine.",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "state_hash",
+                  "round",
+                  "decision_sequence"
+                ],
+                "properties": {
+                  "state_hash": {
+                    "$ref": "#/$defs/sha256"
+                  },
+                  "round": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "decision_sequence": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              }
+            },
+            "move_history": {
+              "type": "array",
+              "description": "Recent attempted/executed movement history used by anti-loop evaluation.",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "round",
+                  "decision_sequence",
+                  "move_type",
+                  "source_slot",
+                  "target_slot"
+                ],
+                "properties": {
+                  "round": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "decision_sequence": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "move_type": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "source_slot": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 0
+                  },
+                  "target_slot": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 0
+                  },
+                  "result_state_hash": {
+                    "$ref": "#/$defs/sha256"
+                  }
+                }
+              }
+            },
+            "blocked_move_records": {
+              "type": "array",
+              "description": "Movement candidates blocked by anti-loop logic, with explicit reason and originating decision.",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "round",
+                  "decision_sequence",
+                  "move_type",
+                  "reason"
+                ],
+                "properties": {
+                  "round": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "decision_sequence": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "move_type": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "source_slot": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 0
+                  },
+                  "target_slot": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 0
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "state_hash": {
+                    "$ref": "#/$defs/sha256"
+                  }
+                }
+              }
+            },
+            "state_visits": {
+              "type": "array",
+              "description": "Visited-state counters used to detect repeated states.",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "state_hash",
+                  "visit_count",
+                  "last_seen_round",
+                  "last_seen_sequence"
+                ],
+                "properties": {
+                  "state_hash": {
+                    "$ref": "#/$defs/sha256"
+                  },
+                  "visit_count": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "last_seen_round": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "last_seen_sequence": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              }
             }
           },
           "allOf": [
@@ -1649,6 +1795,27 @@
               "then": {
                 "required": [
                   "reason"
+                ]
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "status": {
+                    "const": "valid"
+                  }
+                },
+                "required": [
+                  "status"
+                ]
+              },
+              "then": {
+                "required": [
+                  "position_history",
+                  "move_history",
+                  "blocked_move_records",
+                  "state_visits",
+                  "source_decision_sequence"
                 ]
               }
             }
