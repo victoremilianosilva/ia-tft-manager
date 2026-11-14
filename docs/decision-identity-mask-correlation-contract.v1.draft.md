@@ -26,7 +26,7 @@ A canonical decision identity is scoped to one player decision in one Engine mat
 - typed decision sequence reference: `(namespace, value)`;
 - typed source snapshot sequence reference: `(namespace, value)`.
 
-The canonical Engine match identity is mandatory for a complete decision identity. External match/session identifiers remain separate correlation metadata; they must not silently replace `engine_match_id`. The existing `match_id`, `session_match_id`, and `episode_id` fields retain their distinct meanings until a separately reviewed schema revision defines any mapping.
+The canonical Engine match identity is mandatory for a complete decision identity. Preserve both existing `match_id` and `engine_match_id` in the identity envelope and hash, because the current v1 scope includes both; do not assume they are aliases or silently substitute one for the other. `session_match_id` and `episode_id` remain separate correlation metadata until a separately reviewed schema revision defines any mapping.
 
 ### 2.1 Typed sequence reference
 
@@ -54,6 +54,7 @@ Producer-local counters remain producer-local. A correlation record must preserv
 
 The next versioned identity definition must compute a deterministic SHA-256 over RFC 8785 canonical JSON containing, at minimum:
 
+- `match_id`;
 - `engine_match_id`;
 - `player_id`;
 - `round`;
