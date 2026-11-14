@@ -1,5 +1,7 @@
 # Contratos, enums e formatos de dados
 
+> **Snapshot do runtime atual/legado:** os formatos descritos aqui documentam bindings e dados implementados no snapshot auditado. Eles não substituem os contratos semânticos aprovados da nova linhagem. O contrato PPO ativo usa nove tipos de ação e registro de seis inteiros com dimensões-base `[9, 5, 9, 28, 28, 28]`; ações de item usam cabeças/máscaras condicionais adicionais. Para semântica normativa, consulte [Action / Mask Contract v1](action-mask-contract.v1.draft.md) e [Observation Schema v1](../spec/observation-schema.v1.draft.json).
+
 ## Contrato de ação
 
 engine_contracts.py mantém IDs Python estáveis para tipos de ação e estratégia. O C++ possui contratos correspondentes em DecisionTypes.hpp e TftEngine.hpp. Qualquer alteração precisa ser refletida em policy, máscaras, conversores, buffer, bindings e testes.
@@ -11,7 +13,9 @@ engine_contracts.py mantém IDs Python estáveis para tipos de ação e estraté
 | Slots de banco | 9 |
 | Slots de loja | 5 |
 | Componentes da ação | 6 |
-| Dimensões das cabeças | [7, 5, 9, 28, 28, 28] |
+| Dimensões-base do registro PPO | [9, 5, 9, 28, 28, 28] |
+
+As dimensões-base não são o inventário completo das cabeças condicionais de item; veja o contrato Action/Mask v1 para as máscaras dedicadas e os limites condicionados por tipo.
 
 ## Máscaras
 

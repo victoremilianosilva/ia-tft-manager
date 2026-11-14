@@ -1,5 +1,7 @@
 # Economia e loja
 
+> **Descrição do runtime econômico atual.** As mecânicas nativas de ouro/loja e os testes continuam sendo fatos de implementação do snapshot auditado. As afirmações sobre shaping, features por slot ou comportamento aprendido não definem o novo Reward Contract nem a nova política econômica. A nova semântica deve seguir Economic Evidence and Progression Contract v1 e Reward Contract v1, sem defaults estratégicos herdados.
+
 ## EconomyEngine
 
 `cpp/include/lobby/EconomyEngine.hpp` define o estado econômico mutável por jogador: ouro, nível, XP, sequências e decomposição do ouro recebido na rodada. A classe fornece operações de gasto/crédito, juros, bônus de sequência, compra de XP, XP passivo, registro de vitória/derrota, resolução da economia por rodada e valor de venda.

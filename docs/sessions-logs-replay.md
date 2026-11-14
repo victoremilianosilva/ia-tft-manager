@@ -1,5 +1,7 @@
 # Sessões, logs e replay
 
+> Este documento descreve o formato de sessão/replay do Viewer atualmente implementado. Ele é distinto do [Strategic Shadow Integrated Replay Contract v1](strategic-shadow-integrated-replay-contract.v1.draft.md), que define a futura prova determinística integrada entre produtores/consumidores Shadow, PPO e outcomes. Um replay de logs do Viewer não comprova a cadeia integrada nem substitui fixtures/artefatos exigidos pelo contrato.
+
 ## Diretório de sessão
 
 Ao iniciar uma partida com gravação habilitada, ViewerSession cria uma pasta match-YYYYMMDD-HHMMSS-id dentro do diretório escolhido, por padrão viewer/sessions/. Ela contém:
