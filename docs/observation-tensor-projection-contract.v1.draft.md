@@ -165,3 +165,7 @@ A future concrete tensor projection may consume only an Observation Schema v2 sn
 The proposed [Observation Projection Consumer Matrix v1](observation-projection-consumer-matrix.v1.draft.md) and its machine-readable companion define a primary semantic disposition for each of the 77 audited source-map fields and reconcile all 66 historical feature mappings. It separates shared Actor/Critic candidates, Critic-only history candidates, control metadata, diagnostic-only outputs, unavailable sources and unresolved semantics.
 
 This matrix is a design input, not an approved tensor projection. It does not define feature order, shapes, offsets, normalization, vocabulary IDs or encoder families. A candidate is eligible only after every source/provenance/identity/missingness blocker is resolved. The projection manifest must later bind the reviewed matrix version/hash so consumer intent cannot drift silently.
+
+## Structured entity and temporal evidence layer — draft
+
+The proposed [Structured Entity and Temporal Evidence Contract v1](observation-structured-entity-temporal-contract.v1.draft.md) defines lossless entity identity, ownership domains, relationships, collection completeness, temporal scope and schema gaps before any tensor layout is selected. Its machine-readable manifest is `spec/observation-structured-entity-temporal-contract.v1.draft.json`. It does not approve tensor shapes, padding, feature order, normalization or encoders.
