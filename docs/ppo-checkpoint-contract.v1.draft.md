@@ -297,3 +297,7 @@ Before runtime implementation can be considered complete, tests and reports must
 ## Decision Identity v2 lineage (proposal; not runtime-approved)
 
 The proposed next observation lineage is Observation Schema v2 with `tft.decision-identity.v2`. A future checkpoint manifest must bind the schema version/hash and decision-identity envelope version/hash independently from projection, action/mask, reward, architecture and catalog identities. A v1 checkpoint remains a v1 historical artifact; it is not made v2-compatible by matching tensor shapes or reconstructing an untyped sequence namespace. The v2 schema and registry remain draft until approved, and no checkpoint file or loader is changed by this note.
+
+## Projection consumer decision lineage (proposal)
+
+A future checkpoint manifest must bind the reviewed semantic consumer decision matrix identity/version/hash independently from the Observation Schema, concrete tensor projection, normalization/formula manifests, architecture and catalogs. This prevents a checkpoint from being treated as semantically compatible when Actor/Critic eligibility or feature ownership changes while tensor shapes happen to remain equal. The current draft matrix is not approved for runtime use and no checkpoint or loader is changed by this note.
