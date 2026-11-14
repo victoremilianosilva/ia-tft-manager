@@ -20,7 +20,7 @@ trainer.py / scripts de avaliação / viewer
        estado público, snapshots e eventos
 ```
 
-O caminho principal de execução passa pela engine nativa. `engine_contracts.py` mantém enums estáveis entre Python e C++; não implementa as regras do jogo.
+**Escopo:** este diagrama descreve o runtime de treino/inferência atualmente presente no repositório, não a arquitetura semântica alvo da nova linhagem PPO. Para a arquitetura canônica, prevalecem os contratos listados em [README](README.md). O caminho principal de execução passa pela engine nativa. `engine_contracts.py` mantém enums estáveis entre Python e C++; não implementa as regras do jogo.
 
 ## Responsabilidades
 
@@ -45,7 +45,7 @@ O caminho principal de execução passa pela engine nativa. `engine_contracts.py
 
 - Uma lobby contém 8 jogadores.
 - Tabuleiro: 28 posições (4 × 7); banco: 9 slots; loja: 5 slots.
-- A ação é um vetor de 6 componentes, com dimensões `[7, 5, 9, 28, 28, 28]`.
+- O registro PPO legado contém seis inteiros e usa dimensões-base `[9, 5, 9, 28, 28, 28]`. As ações de item têm cabeças condicionais dedicadas adicionais; essas dimensões-base não descrevem todas as distribuições internas. Consulte [Action / Mask Contract v1](action-mask-contract.v1.draft.md).
 - As máscaras condicionais de movimento têm formato `[origem, destino]`.
 - O estado terminal precisa preservar ranking/colocações antes de qualquer reset automático do ambiente vetorizado.
 
