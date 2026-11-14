@@ -1593,6 +1593,245 @@
         "focus_weights": {
           "$ref": "#/$defs/field",
           "description": "Independent trait-keyed strategic focus weights. The current producer does not provide this signal; serialize missing/unknown with provenance and reason, never copy legacy DTO defaults."
+        },
+        "owner_snapshots": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "planner_commitment",
+            "composition_intelligence",
+            "unified_state_machine"
+          ],
+          "description": "Independent snapshots from the three existing strategic state owners. This envelope deliberately does not select a global authority or force synchronization; ownership/transition authority is decided in #284/#300.",
+          "properties": {
+            "planner_commitment": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "status",
+                "owner_id",
+                "payload_path"
+              ],
+              "properties": {
+                "status": {
+                  "$ref": "#/$defs/fieldStatus"
+                },
+                "owner_id": {
+                  "const": "strategic_planner_commitments"
+                },
+                "payload_path": {
+                  "const": "strategic_evidence.commitment_context"
+                },
+                "source_decision_sequence": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "reason": {
+                  "type": "string"
+                }
+              },
+              "allOf": [
+                {
+                  "if": {
+                    "properties": {
+                      "status": {
+                        "const": "valid"
+                      }
+                    },
+                    "required": [
+                      "status"
+                    ]
+                  },
+                  "then": {
+                    "required": [
+                      "source_decision_sequence"
+                    ]
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "status": {
+                        "enum": [
+                          "partial",
+                          "missing",
+                          "unknown",
+                          "not_applicable",
+                          "stale",
+                          "incompatible"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "status"
+                    ]
+                  },
+                  "then": {
+                    "required": [
+                      "reason"
+                    ]
+                  }
+                }
+              ]
+            },
+            "composition_intelligence": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "status",
+                "owner_id"
+              ],
+              "properties": {
+                "status": {
+                  "$ref": "#/$defs/fieldStatus"
+                },
+                "owner_id": {
+                  "const": "CompositionIntelligencePlayerRuntime.active"
+                },
+                "source_decision_sequence": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "active_composition": {
+                  "$ref": "#/$defs/field"
+                },
+                "composition_identity": {
+                  "$ref": "#/$defs/field"
+                },
+                "composition_version": {
+                  "$ref": "#/$defs/field"
+                },
+                "transition_state": {
+                  "$ref": "#/$defs/field"
+                },
+                "reason": {
+                  "type": "string"
+                }
+              },
+              "allOf": [
+                {
+                  "if": {
+                    "properties": {
+                      "status": {
+                        "const": "valid"
+                      }
+                    },
+                    "required": [
+                      "status"
+                    ]
+                  },
+                  "then": {
+                    "required": [
+                      "source_decision_sequence",
+                      "active_composition",
+                      "composition_identity",
+                      "composition_version"
+                    ]
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "status": {
+                        "enum": [
+                          "partial",
+                          "missing",
+                          "unknown",
+                          "not_applicable",
+                          "stale",
+                          "incompatible"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "status"
+                    ]
+                  },
+                  "then": {
+                    "required": [
+                      "reason"
+                    ]
+                  }
+                }
+              ]
+            },
+            "unified_state_machine": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "status",
+                "owner_id"
+              ],
+              "properties": {
+                "status": {
+                  "$ref": "#/$defs/fieldStatus"
+                },
+                "owner_id": {
+                  "const": "UnifiedStrategicStateMachine"
+                },
+                "source_decision_sequence": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "machine_state": {
+                  "$ref": "#/$defs/field"
+                },
+                "active_composition": {
+                  "$ref": "#/$defs/field"
+                },
+                "pending_transition": {
+                  "$ref": "#/$defs/field"
+                },
+                "reason": {
+                  "type": "string"
+                }
+              },
+              "allOf": [
+                {
+                  "if": {
+                    "properties": {
+                      "status": {
+                        "const": "valid"
+                      }
+                    },
+                    "required": [
+                      "status"
+                    ]
+                  },
+                  "then": {
+                    "required": [
+                      "source_decision_sequence",
+                      "machine_state"
+                    ]
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "status": {
+                        "enum": [
+                          "partial",
+                          "missing",
+                          "unknown",
+                          "not_applicable",
+                          "stale",
+                          "incompatible"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "status"
+                    ]
+                  },
+                  "then": {
+                    "required": [
+                      "reason"
+                    ]
+                  }
+                }
+              ]
+            }
+          }
         }
       }
     },
