@@ -173,7 +173,12 @@
           "then": {
             "required": [
               "reason"
-            ]
+            ],
+            "not": {
+              "required": [
+                "value"
+              ]
+            }
           }
         }
       ]
@@ -377,15 +382,24 @@
           ]
         },
         "round": {
-          "type": "integer",
+          "type": [
+            "integer",
+            "null"
+          ],
           "minimum": 0
         },
         "decision_sequence": {
-          "type": "integer",
+          "type": [
+            "integer",
+            "null"
+          ],
           "minimum": 0
         },
         "snapshot_sequence": {
-          "type": "integer",
+          "type": [
+            "integer",
+            "null"
+          ],
           "minimum": 0
         },
         "player_sequence": {
