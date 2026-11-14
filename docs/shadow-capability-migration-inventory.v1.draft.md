@@ -207,3 +207,75 @@ However, **existence is not migration readiness**. The highest-risk gaps are:
 8. Active-set data and live TFT source parity.
 
 This document is a first static inventory based on repository source/docs at the baseline commit. It intentionally marks unresolved implementation paths as partial or unknown rather than filling gaps with assumptions. Follow-up source/callsite/test tracing is required before declaring the audit complete.
+
+
+## 9. Source-to-consumer trace — second static pass
+
+This section records callsite-level findings from the baseline source. It narrows several earlier "needs trace" items and corrects any overly broad interpretation.
+
+### 9.1 Unit evidence and lineup identity
+
+- `TFTEngine.cpp` builds `copies_by_unit` by champion definition ID and adds `star_copies(unit.star)` across board and bench. It separately tracks the highest star, then the CI evidence builder computes `copies_toward_next_star` from the aggregate total and highest star. The mixed-tier ambiguity is therefore in the actual producer path, not only a theoretical concern.
+- The same collection reduces multiple physical instances into one champion-keyed `OwnedUnitEvidence`, `UnitPriorityOwnedUnit`, and `UnitPriorityEvidence`. Equipped item IDs are deduplicated at champion level for strategic evidence. This is suitable for some composition-level heuristics but is not a lossless ownership/instance snapshot.
+- `LineupPlanner` keys priorities, current board membership, selected slots, entries, exits, and deferred targets by champion ID. It selects at most one `LineupSlot` per champion ID. It therefore describes a composition-level target lineup, not an exact physical deployment plan when multiple copies of the same champion exist.
+- `StrategicPositionPlanner` receives board/bench champion IDs, not UUIDs. It explicitly rejects duplicate champion IDs as ambiguous and does not propose implicit swaps. This is a safe failure mode, but it means exact instance-level positioning is not yet represented end-to-end.
+- Native composition generation does ingest owned board/bench summaries, shop champion IDs, and pool counts. Those are separate inputs at generation time, but the CI unit-priority evidence path is less complete. Do not generalize the CI evidence gap to every native strategic subsystem.
+
+**Migration conclusion:** retain a lossless list of unit instances (UUID, champion definition, star tier, zone, slot, equipment) and derive champion-level aggregates as separate views. Lineup plans must either reference exact instance IDs or explicitly declare that they are abstract champion-level targets awaiting instance resolution.
+
+### 9.2 Shop, pool, and uncertainty
+
+- `ShopEngine` has exactly five offer slots, a lock state, reroll behavior, and returns prior offers to the pool before drawing replacements. Offer slots and shop lock are part of the observed state and must not be reduced to a set of champion IDs.
+- `UnitPool` exposes per-champion available count and a reset operation. In this local simulator, pool count is known from the modeled pool. A live external snapshot may not expose this value; the new DTO must preserve unknown/unavailable separately from numeric zero.
+- Native composition generation consumes `shop_ids` and `pool_remaining`; the CI priority evidence builder does not populate `copies_in_shop` or `unit_cost` in the inspected callsite. A champion present in shop is represented as a boolean/set in some strategic flows, losing duplicate offer slots.
+- The strategic pivot discovery path also sees shop presence and pool count, but its feasibility input deliberately leaves protected reserve floor and transition economic cost at missing sentinels. Do not treat a proposed pivot as economically approved.
+
+**Migration conclusion:** model each shop slot as an offer record (slot, champion, cost, availability/lock context), pool evidence as a separate optional source, and owned copies as instances. Include freshness and confidence/availability; never infer pool count from absence in shop.
+
+### 9.3 Economy and progression input completeness
+
+The inspected `StrategicSharedContext` producer explicitly fills gold, level, XP, XP-to-next, current interest, win/loss streak, board power, relative board power, direction, and alive state. In the inspected producer path, it does not assign `progression_plan`, `projected_next_round_income`, `estimated_incoming_damage`, or `elimination_risk`; these retain struct defaults. Consequently, `EconomicController` reads zero/default incoming-damage and elimination pressure and the default `Flexible` progression plan in that path. This is a concrete producer/consumer contract gap, not proof those values are unavailable elsewhere in the Engine.
+
+The action-evaluation path consumes an independently built `EconomicControlDecision` and `PlannerEvidenceSnapshot`. The CI priority context does not receive shop-copy count, unit cost, or populated gold-available evidence in the inspected builder. The `UnitPriorityContext` default for unavailable gold is a sentinel, not an observed zero.
+
+**Migration conclusion:** each field needs source, observed/derived classification, validity, and explicit unknown. The DTO must not make a default value look like a real observation. Progression plan and economic posture remain derived hypotheses with their own evidence and horizon.
+
+### 9.4 Action candidates and evaluator comparison
+
+- `StrategicSharedContext` defines `action_candidates`, and both evaluators consume that vector.
+- In the inspected `TFTEngine.cpp` producer, the strategic context is populated with owned units and anchor candidates, but no action-candidate records are appended or assigned before the evaluators run. The source file only reads the vector for evaluation/comparison. On this path, the candidate set therefore remains empty unless another producer mutates it outside the inspected flow.
+- The baseline `CompositionActionEvaluator` and independent `ContextualActionEvaluator` both explicitly handle an empty candidate list; their default/hold behavior can still yield a non-stale evaluator result. Therefore `comparison_available = true` is not equivalent to "real candidates were compared." The emitted `same_initial_candidate_set` and three candidate counts must be interpreted together.
+- Candidate DTOs primarily identify action kind and champion ID with coarse cost/value fields; they do not consistently encode physical source slot, exact UnitInstance UUID, destination slot, offer slot, or a complete executable parameter set.
+- The policy action is explicitly labeled as not ground truth in the comparison diagnostic. Evaluator recommendations are Shadow diagnostics and are not PPO actions.
+
+**Migration conclusion:** represent candidate-set status separately (not-produced, empty, populated, rejected), require physical parameters where an action targets an instance/slot, and make "comparison available" require a non-empty, identity-matched candidate set if the product intends a meaningful comparison.
+
+### 9.5 Outcomes and replay capture
+
+- `CompositionDiagnosticRecorder::capture` accepts an optional `CompositionOutcomeObservation` and serializes either the supplied observation or explicit null.
+- The inspected runtime call in `TFTEngine.cpp` calls `runtime.recorder.capture(..., published_transition)` without an outcome argument. No later outcome is passed in this capture call.
+- The diagnostic payload classifies outcome as observed and recommendation-to-later-outcome as correlated, but those fields remain null when the runtime does not supply the optional outcome. The schema capability is present; the runtime outcome producer/correlation chain is not demonstrated.
+
+**Migration conclusion:** separate schema support from runtime capture. Require an outcome producer, explicit later-round window, match/player identity, and typed source sequences before calling this a functioning recommendation-to-outcome replay.
+
+### 9.6 Item lifecycle and reset trace
+
+- `ItemEngine::reset()` clears components, inventory, equipped ownership, anvils, and metrics while retaining the configured item/component catalog.
+- Unit sale returns champion copies to the pool, returns equipment to inventory, removes the bench instance, and credits sale gold only when the pool/equipment return path succeeds.
+- Unit merge transfers equipped items from consumed instance UUIDs to the upgraded instance UUID; excess items beyond the target capacity return to inventory.
+- `TFTEngine::reset()` increments episode ID, clears CI/native candidate/diagnostic collections and strategic sequences/commitments, resets strategic executors, returns shop offers before pool reset, recreates the unit factory, and calls player initialization. Player initialization clears board/bench, resets economy, resets the ItemEngine, resets anti-loop state, clears recent purchases and round/action state, and deals a new starting unit.
+- This is meaningful static reset coverage. It still does not prove that every future subsystem or external recorder has no cross-episode leakage; a same-engine two-episode regression remains runtime evidence for after Gate 8.
+
+### 9.7 Scope of domain discovery
+
+A repository path search at the audited baseline found no dedicated modules/tests with names for augments, portals/encounters, consumables, armory, tactician equipment, or opponent scouting. The path "artifacts" match is only a cross-language parity XML artifact, not a TFT in-game artifact subsystem. These are **not found in dedicated paths in this pass**, not confirmed absent from all generic state or data sources.
+
+### 9.8 Revised highest-risk findings
+
+1. Unit instance identity is lost in composition-level aggregation; mixed-star progress is calculated from aggregate equivalent copies and highest star.
+2. Lineup and positioning are champion-ID-based; exact duplicate-instance deployment is not represented, with positioning safely rejecting ambiguity.
+3. Shop slots/lock and pool availability are separate facts; some strategic paths preserve them, while CI priority evidence omits shop copies and unit cost.
+4. Economic controller receives defaults for progression plan, projected income, incoming damage, and elimination risk in the inspected producer path.
+5. Action evaluators consume a candidate vector that the inspected producer path does not populate; empty comparison can still be non-stale.
+6. Outcome schema supports later outcomes, but the inspected runtime capture passes no outcome.
+7. Reset has substantial explicit cleanup, but same-instance multi-episode isolation is not runtime-proven.
