@@ -171,3 +171,7 @@ The separate strategic replay contract in #315/#289 is complementary: it validat
 - No requirement to load legacy PPO checkpoints into the new architecture.
 - No claim that Shadow recommendations are ground truth, causal interventions, or PPO reward targets.
 - No promotion based solely on internal reward, training curves, or a small unpaired sample.
+
+## Semantic consumer decision lineage (proposal)
+
+Evaluation manifests for the new PPO lineage must record the semantic projection consumer matrix identity/version/hash in addition to the Observation Schema, concrete projection, normalization, architecture, Action/Mask, reward and catalog identities. Ablations must identify which semantic consumer blocks are enabled for Actor, Critic or both. The current consumer matrix is a documentary proposal only; this note does not approve a feature layout or runtime behavior.
