@@ -298,6 +298,6 @@ After Gate 8, executable acceptance evidence must cover:
 
 **Documentary status:** the ownership decisions in sections 3.1–3.6 are approved and normative. The remaining issues #281, #282, #283, #284 and #289 track contract elaboration and executable acceptance evidence; they are not permission to begin runtime work.
 
-**Gate 5 documentary status:** the authority decisions and candidate, economic, unit, and integrated replay contracts are now merged. The remaining Gate 5 work is the post-merge consistency review and any resulting documentary clarification; the executable acceptance matrix below is deferred until after Gate 8. Runtime implementation/tests remain blocked until Gate 8 and explicit user approval.
+**Gate 5 documentary status:** the authority decisions and candidate, economic, unit, and integrated replay contracts are merged, and the post-merge consistency clarification was completed in PR #316. Gate 5 documentary specification is therefore complete. The executable acceptance matrix below remains deferred until after Gate 8. Runtime implementation/tests remain blocked until Gate 8 and explicit user approval.
 
 No runtime files, PPO, observations, rewards, checkpoints, masks, Engine rules, Viewer, or game actions are changed by this document.
