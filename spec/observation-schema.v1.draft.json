@@ -85,6 +85,9 @@
         "source_sequence": {
           "type": "integer",
           "minimum": 0
+        },
+        "nature": {
+          "$ref": "#/$defs/fieldNature"
         }
       }
     },
