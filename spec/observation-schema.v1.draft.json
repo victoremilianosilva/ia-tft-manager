@@ -733,6 +733,12 @@
         },
         "evaluation_horizon": {
           "$ref": "#/$defs/field"
+        },
+        "sell_value": {
+          "$ref": "#/$defs/field"
+        },
+        "affordability": {
+          "$ref": "#/$defs/field"
         }
       }
     }
@@ -1003,6 +1009,65 @@
             },
             "pending_anvil": {
               "$ref": "#/$defs/field"
+            },
+            "anvil_options": {
+              "type": "array",
+              "description": "Explicit pending anvil options; option identity and item/component identity are preserved instead of positional one-hot features.",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "option_id",
+                  "kind"
+                ],
+                "properties": {
+                  "option_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "component",
+                      "completed_item"
+                    ]
+                  },
+                  "component_id": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "item_id": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "stats": {
+                    "$ref": "#/$defs/field"
+                  },
+                  "target_fits": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "target_instance_id",
+                        "score"
+                      ],
+                      "properties": {
+                        "target_instance_id": {
+                          "type": "string"
+                        },
+                        "score": {
+                          "$ref": "#/$defs/field"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
             }
           }
         }
@@ -1177,6 +1242,91 @@
               }
             }
           ]
+        },
+        "decision_history": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status"
+          ],
+          "description": "Decision-local history for temporal context. This is descriptive input, not an action mask or legality override.",
+          "properties": {
+            "status": {
+              "$ref": "#/$defs/fieldStatus"
+            },
+            "actions_taken_this_round": {
+              "$ref": "#/$defs/field"
+            },
+            "remaining_action_budget": {
+              "$ref": "#/$defs/field"
+            },
+            "board_move_age_by_slot": {
+              "type": "array",
+              "minItems": 28,
+              "maxItems": 28,
+              "items": {
+                "$ref": "#/$defs/field"
+              }
+            },
+            "source_decision_sequence": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "status": {
+                    "enum": [
+                      "missing",
+                      "unknown",
+                      "not_applicable",
+                      "stale",
+                      "incompatible"
+                    ]
+                  }
+                },
+                "required": [
+                  "status"
+                ]
+              },
+              "then": {
+                "required": [
+                  "reason"
+                ]
+              }
+            }
+          ]
+        },
+        "recipe_target_fit": {
+          "type": "array",
+          "description": "Heuristic recipe-to-unit fit, distinct from owned inventory item fit.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "recipe_id",
+              "target_instance_id",
+              "score"
+            ],
+            "properties": {
+              "recipe_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "target_instance_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "score": {
+                "$ref": "#/$defs/field"
+              }
+            }
+          }
         }
       }
     },
