@@ -207,3 +207,7 @@ The dual-evaluator diagnostic contract currently records `executor_connected=fal
 ## Decision Identity v2 replay binding (proposal; not runtime-approved)
 
 Future replay artifacts in the v2 lineage must preserve the original typed Engine decision and snapshot references, plus each owner-local evidence sequence and explicit mapping to replay/Viewer session sequences. Same numeric values in different namespaces are never directly comparable. Replay must verify the exact observation identity, mask identity and payload hashes, reject stale/conflicting references, and retain reset boundaries. The proposed canonical Engine namespaces are not current runtime capabilities; replay fixtures must distinguish unavailable producer identity from a complete correlation. Existing v1 artifacts and hashes remain historical and immutable.
+
+## Structured entity and temporal replay identity — proposal
+
+Replay fixtures and artifacts should preserve the entity/temporal semantics in the [Structured Entity and Temporal Evidence Contract v1](observation-structured-entity-temporal-contract.v1.draft.md): physical unit instance identity, board/bench/shop ownership domains, snapshot-scoped offers, item relationships, collection completeness, source sequences and episode resets. This is a documentary requirement only; it does not assert that the current replay runtime records all these fields.
