@@ -44,6 +44,13 @@ def schema_path_exists(schema: dict, path: str) -> bool:
                 current = current.get(token.replace("~1", "/").replace("~0", "~"), {})
         if current.get("type") == "array":
             current = current.get("items", {})
+        if "$ref" in current:
+            ref = current["$ref"]
+            if not ref.startswith("#/"):
+                return False
+            current = schema
+            for token in ref[2:].split("/"):
+                current = current.get(token.replace("~1", "/").replace("~0", "~"), {})
         current = current.get("properties", {}).get(part)
         if not isinstance(current, dict):
             return False
