@@ -732,7 +732,8 @@
         "projection",
         "hash_algorithm",
         "hash_canonicalization",
-        "hash_scope"
+        "hash_scope",
+        "evolution_policy"
       ],
       "properties": {
         "schema_id": {
@@ -770,7 +771,43 @@
           "const": "RFC8785"
         },
         "hash_scope": {
-          "const": "Canonical schema document excluding schema_hash itself; projection_hash is computed over canonical projection definition excluding projection_hash"
+          "const": "Canonical RFC8785 form of normative schema content (field definitions, types, constraints, requiredness, semantics, catalog references and projection identity); excludes descriptions, examples and schema_hash itself"
+        },
+        "evolution_policy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "patch",
+            "minor",
+            "major",
+            "projection_change",
+            "catalog_change",
+            "migration",
+            "training_lineage"
+          ],
+          "properties": {
+            "patch": {
+              "const": "Editorial metadata/examples/provenance clarification only; no field meaning, constraints, projection or catalog identity changes."
+            },
+            "minor": {
+              "const": "Additive optional fields only; existing fields retain identical meaning and consumers may ignore additions only when their declared profile does not require them."
+            },
+            "major": {
+              "const": "Any field rename/removal/reinterpretation, unit/scale/range/ordering/requiredness change, or identity-semantic change."
+            },
+            "projection_change": {
+              "const": "Any tensor block/order/shape/dtype/encoder grouping/normalization change increments projection version and projection hash, even if semantic schema version is unchanged."
+            },
+            "catalog_change": {
+              "const": "Content and order fingerprints are independent; any used vocabulary or ordering change updates its fingerprint, and a changed interpretation is semantically incompatible."
+            },
+            "migration": {
+              "const": "Migration requires an explicit versioned manifest and contract tests; positional zero-padding/remapping is not evidence of semantic compatibility."
+            },
+            "training_lineage": {
+              "const": "Semantic or projection incompatibility starts a new training lineage unless an explicitly approved and tested partial transfer is recorded."
+            }
+          }
         }
       },
       "description": "Hash is computed over RFC 8785 canonical JSON excluding schema_hash to avoid self-reference. Any semantic/structural/catalog/projection change that affects interpretation must change the corresponding identity."
