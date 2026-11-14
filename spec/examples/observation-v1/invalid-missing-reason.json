@@ -355,8 +355,25 @@
   },
   "legal_state_context": {
     "status": "valid",
-    "history_summary": {},
-    "anti_loop_state": {},
+    "anti_loop_state": {
+      "status": "missing",
+      "reason": "Minimal fixture intentionally omits anti-loop runtime details."
+    },
+    "mask_reference": {
+      "action_contract_id": "tft.ppo.action",
+      "action_contract_version": "1.0.0",
+      "action_contract_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "mask_contract_id": "tft.ppo.action-mask",
+      "mask_contract_version": "1.0.0",
+      "mask_contract_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "mask_snapshot_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "decision_identity_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "critic_context": {
+      "status": "valid",
+      "representation": "exact_masks",
+      "source_decision_sequence": 1
+    },
     "source_decision_sequence": 1,
     "description": "Descriptive state/history context only. Actual action masks and action legality are defined by the independent Action Contract."
   }
