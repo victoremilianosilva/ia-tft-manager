@@ -585,10 +585,17 @@
                 }
               },
               "padding_policy": {
-                "type": "string"
+                "type": "string",
+                "enum": [
+                  "none",
+                  "zero_value_with_presence_mask",
+                  "sentinel_with_presence_mask",
+                  "packed_sequence"
+                ]
               },
               "presence_mask_path": {
-                "type": "string"
+                "type": "string",
+                "minLength": 1
               },
               "consumers": {
                 "type": "array",
@@ -596,8 +603,55 @@
                   "type": "string"
                 },
                 "minItems": 1
+              },
+              "variable_cardinality": {
+                "type": "boolean",
+                "description": "True when this block represents a variable-size set padded or packed for tensor projection."
+              },
+              "length_path": {
+                "type": "string",
+                "minLength": 1
               }
-            }
+            },
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "variable_cardinality": {
+                      "const": true
+                    }
+                  },
+                  "required": [
+                    "variable_cardinality"
+                  ]
+                },
+                "then": {
+                  "required": [
+                    "padding_policy",
+                    "presence_mask_path"
+                  ]
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "variable_cardinality": {
+                      "const": false
+                    }
+                  },
+                  "required": [
+                    "variable_cardinality"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "padding_policy": {
+                      "const": "none"
+                    }
+                  }
+                }
+              }
+            ]
           }
         },
         "canonicalization": {
