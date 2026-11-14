@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Legacy PPO Observation Feature Map — Audit Draft",
-  "description": "Field/block inventory for migration planning only. This is not the new canonical Observation Schema and does not authorize preserving legacy offsets.",
+  "description": "Field/block inventory for migration planning only. Each field entry is named and machine-readable; this is not the new canonical Observation Schema and does not authorize preserving legacy offsets.",
   "audited_branch": "new-arquiteture",
   "audited_commit": "3575d21cc0f7dbb5544d75526bd96939b37f5c96",
   "dimension_formula": "7097 + 4*T",
@@ -14,90 +14,150 @@
         22
       ],
       "fields": [
-        [
-          "hp",
-          "player.hp",
-          "observed",
-          "ratio /100",
-          "player health; no explicit validity bit"
-        ],
-        [
-          "gold",
-          "economy.gold",
-          "observed",
-          "gold /50",
-          "duplicated in extra block"
-        ],
-        [
-          "level",
-          "economy.level",
-          "observed",
-          "level /9",
-          "duplicated in extra block"
-        ],
-        [
-          "xp_to_next_ratio",
-          "economy.xp / max(1,xp_to_next)",
-          "derived",
-          "ratio",
-          "xp_to_next denominator is implicit"
-        ],
-        [
-          "win_streak",
-          "economy.win_streak",
-          "observed",
-          "/10",
-          "streak"
-        ],
-        [
-          "loss_streak",
-          "economy.loss_streak",
-          "observed",
-          "/10",
-          "streak"
-        ],
-        [
-          "round_fraction",
-          "round+1",
-          "derived",
-          "r/(r+10)",
-          "policy inverses this to estimate round"
-        ],
-        [
-          "board_count_over_level",
-          "board_count / max(1,level)",
-          "derived",
-          "ratio",
-          "can exceed 1 if board over capacity"
-        ],
-        [
-          "bench_count_ratio",
-          "bench_count / bench_slots",
-          "derived",
-          "ratio",
-          "bench occupancy"
-        ],
-        [
-          "shop_present",
-          "constant 1",
-          "synthetic",
-          "1.0",
-          "does not encode actual per-slot presence"
-        ],
-        [
-          "legacy_strategy_one_hot",
-          "StrategyInfo.strategy",
-          "legacy_decision",
-          "7-way one-hot [10:17]",
-          "missing StrategyInfo defaults to ECON; Python derives nominal strategy with argmax"
-        ],
-        [
-          "reserved_core_tail",
-          "constant zeros",
-          "synthetic_padding",
-          "5 zeros",
-          "reserved; not missing indicator"
-        ]
+        {
+          "name": "hp",
+          "source": "player.hp",
+          "nature": "observed",
+          "encoding": "ratio /100",
+          "notes": "player health; no explicit validity bit",
+          "consumers": [
+            "TFTPolicy._economic_context_features",
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "gold",
+          "source": "economy.gold",
+          "nature": "observed",
+          "encoding": "gold /50",
+          "notes": "duplicated in extra block",
+          "consumers": [
+            "TFTPolicy._economic_context_features",
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "level",
+          "source": "economy.level",
+          "nature": "observed",
+          "encoding": "level /9",
+          "notes": "duplicated in extra block",
+          "consumers": [
+            "TFTPolicy._economic_context_features",
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "xp_to_next_ratio",
+          "source": "economy.xp / max(1,xp_to_next)",
+          "nature": "derived",
+          "encoding": "ratio",
+          "notes": "xp_to_next denominator is implicit",
+          "consumers": [
+            "TFTPolicy._economic_context_features",
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "win_streak",
+          "source": "economy.win_streak",
+          "nature": "observed",
+          "encoding": "/10",
+          "notes": "streak",
+          "consumers": [
+            "TFTPolicy._economic_context_features",
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "loss_streak",
+          "source": "economy.loss_streak",
+          "nature": "observed",
+          "encoding": "/10",
+          "notes": "streak",
+          "consumers": [
+            "TFTPolicy._economic_context_features",
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "round_fraction",
+          "source": "round+1",
+          "nature": "derived",
+          "encoding": "r/(r+10)",
+          "notes": "policy inverses this to estimate round",
+          "consumers": [
+            "TFTPolicy._economic_context_features",
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "board_count_over_level",
+          "source": "board_count / max(1,level)",
+          "nature": "derived",
+          "encoding": "ratio",
+          "notes": "can exceed 1 if board over capacity",
+          "consumers": [
+            "TFTPolicy._economic_context_features",
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "bench_count_ratio",
+          "source": "bench_count / bench_slots",
+          "nature": "derived",
+          "encoding": "ratio",
+          "notes": "bench occupancy",
+          "consumers": [
+            "TFTPolicy._economic_context_features",
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "shop_present",
+          "source": "constant 1",
+          "nature": "synthetic",
+          "encoding": "1.0",
+          "notes": "does not encode actual per-slot presence",
+          "consumers": [
+            "TFTPolicy._economic_context_features",
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "legacy_strategy_one_hot",
+          "source": "StrategyInfo.strategy",
+          "nature": "legacy_decision",
+          "encoding": "7-way one-hot [10:17]",
+          "notes": "missing StrategyInfo defaults to ECON; Python derives nominal strategy with argmax",
+          "consumers": [
+            "TFTPolicy._economic_context_features",
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "reserved_core_tail",
+          "source": "constant zeros",
+          "nature": "synthetic_padding",
+          "encoding": "5 zeros",
+          "notes": "reserved; not missing indicator",
+          "consumers": [
+            "TFTPolicy._economic_context_features",
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.value_head"
+          ]
+        }
       ],
       "consumers": [
         "TFTPolicy._economic_context_features",
@@ -113,41 +173,66 @@
         5
       ],
       "fields": [
-        [
-          "occupied",
-          "board slot presence",
-          "observed",
-          "0/1",
-          "zero when empty"
-        ],
-        [
-          "champion_cost",
-          "ChampionCatalog.cost",
-          "observed",
-          "cost /5",
-          "requires catalog mapping"
-        ],
-        [
-          "star",
-          "UnitInstance.star",
-          "observed",
-          "star /3",
-          "requires slot identity"
-        ],
-        [
-          "role",
-          "UnitCombatClassifier.classify",
-          "derived",
-          "role_state_value",
-          "comment in policy.py documents a different channel order"
-        ],
-        [
-          "strength_proxy",
-          "champion cost + star",
-          "estimated",
-          "min(1,cost/5*0.5 + star/3*0.5)",
-          "proxy, not combat power"
-        ]
+        {
+          "name": "occupied",
+          "source": "board slot presence",
+          "nature": "observed",
+          "encoding": "0/1",
+          "notes": "zero when empty",
+          "consumers": [
+            "TFTPolicy.board_cnn",
+            "TFTPolicy.fusion",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "champion_cost",
+          "source": "ChampionCatalog.cost",
+          "nature": "observed",
+          "encoding": "cost /5",
+          "notes": "requires catalog mapping",
+          "consumers": [
+            "TFTPolicy.board_cnn",
+            "TFTPolicy.fusion",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "star",
+          "source": "UnitInstance.star",
+          "nature": "observed",
+          "encoding": "star /3",
+          "notes": "requires slot identity",
+          "consumers": [
+            "TFTPolicy.board_cnn",
+            "TFTPolicy.fusion",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "role",
+          "source": "UnitCombatClassifier.classify",
+          "nature": "derived",
+          "encoding": "role_state_value",
+          "notes": "comment in policy.py documents a different channel order",
+          "consumers": [
+            "TFTPolicy.board_cnn",
+            "TFTPolicy.fusion",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "strength_proxy",
+          "source": "champion cost + star",
+          "nature": "estimated",
+          "encoding": "min(1,cost/5*0.5 + star/3*0.5)",
+          "notes": "proxy, not combat power",
+          "consumers": [
+            "TFTPolicy.board_cnn",
+            "TFTPolicy.fusion",
+            "TFTPolicy.value_head"
+          ]
+        }
       ],
       "consumers": [
         "TFTPolicy.board_cnn",
@@ -163,41 +248,66 @@
         5
       ],
       "fields": [
-        [
-          "occupied",
-          "bench slot presence",
-          "observed",
-          "0/1",
-          "zero when empty"
-        ],
-        [
-          "champion_cost",
-          "ChampionCatalog.cost",
-          "observed",
-          "cost /5",
-          "requires catalog mapping"
-        ],
-        [
-          "star",
-          "UnitInstance.star",
-          "observed",
-          "star /3",
-          "requires slot identity"
-        ],
-        [
-          "role",
-          "UnitCombatClassifier.classify",
-          "derived",
-          "role_state_value",
-          ""
-        ],
-        [
-          "strength_proxy",
-          "champion cost + star",
-          "estimated",
-          "same as board",
-          "proxy"
-        ]
+        {
+          "name": "occupied",
+          "source": "bench slot presence",
+          "nature": "observed",
+          "encoding": "0/1",
+          "notes": "zero when empty",
+          "consumers": [
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.fusion",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "champion_cost",
+          "source": "ChampionCatalog.cost",
+          "nature": "observed",
+          "encoding": "cost /5",
+          "notes": "requires catalog mapping",
+          "consumers": [
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.fusion",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "star",
+          "source": "UnitInstance.star",
+          "nature": "observed",
+          "encoding": "star /3",
+          "notes": "requires slot identity",
+          "consumers": [
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.fusion",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "role",
+          "source": "UnitCombatClassifier.classify",
+          "nature": "derived",
+          "encoding": "role_state_value",
+          "notes": "",
+          "consumers": [
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.fusion",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "strength_proxy",
+          "source": "champion cost + star",
+          "nature": "estimated",
+          "encoding": "same as board",
+          "notes": "proxy",
+          "consumers": [
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.fusion",
+            "TFTPolicy.value_head"
+          ]
+        }
       ],
       "consumers": [
         "TFTPolicy.global_mlp",
@@ -213,41 +323,66 @@
         5
       ],
       "fields": [
-        [
-          "occupied",
-          "shop slot presence",
-          "observed",
-          "0/1",
-          ""
-        ],
-        [
-          "champion_cost",
-          "ChampionCatalog.cost",
-          "observed",
-          "cost /5",
-          ""
-        ],
-        [
-          "star",
-          "shop unit",
-          "synthetic",
-          "constant 1",
-          "shop offer assumed 1-star"
-        ],
-        [
-          "role",
-          "UnitCombatClassifier.classify",
-          "derived",
-          "role_state_value",
-          ""
-        ],
-        [
-          "strength",
-          "constant zero",
-          "synthetic_padding",
-          "0",
-          "not comparable to board/bench strength"
-        ]
+        {
+          "name": "occupied",
+          "source": "shop slot presence",
+          "nature": "observed",
+          "encoding": "0/1",
+          "notes": "",
+          "consumers": [
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.fusion",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "champion_cost",
+          "source": "ChampionCatalog.cost",
+          "nature": "observed",
+          "encoding": "cost /5",
+          "notes": "",
+          "consumers": [
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.fusion",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "star",
+          "source": "shop unit",
+          "nature": "synthetic",
+          "encoding": "constant 1",
+          "notes": "shop offer assumed 1-star",
+          "consumers": [
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.fusion",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "role",
+          "source": "UnitCombatClassifier.classify",
+          "nature": "derived",
+          "encoding": "role_state_value",
+          "notes": "",
+          "consumers": [
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.fusion",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "strength",
+          "source": "constant zero",
+          "nature": "synthetic_padding",
+          "encoding": "0",
+          "notes": "not comparable to board/bench strength",
+          "consumers": [
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.fusion",
+            "TFTPolicy.value_head"
+          ]
+        }
       ],
       "consumers": [
         "TFTPolicy.global_mlp",
@@ -262,41 +397,66 @@
         5
       ],
       "fields": [
-        [
-          "board_count",
-          "board occupancy",
-          "derived",
-          "/28",
-          "duplicates board-derived count"
-        ],
-        [
-          "bench_count",
-          "bench occupancy",
-          "derived",
-          "/9",
-          "duplicates bench-derived count"
-        ],
-        [
-          "gold",
-          "economy.gold",
-          "observed",
-          "/50",
-          "duplicates core"
-        ],
-        [
-          "level",
-          "economy.level",
-          "observed",
-          "/9",
-          "duplicates core"
-        ],
-        [
-          "hp",
-          "player.hp",
-          "observed",
-          "/100",
-          "duplicates core"
-        ]
+        {
+          "name": "board_count",
+          "source": "board occupancy",
+          "nature": "derived",
+          "encoding": "/28",
+          "notes": "duplicates board-derived count",
+          "consumers": [
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.fusion",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "bench_count",
+          "source": "bench occupancy",
+          "nature": "derived",
+          "encoding": "/9",
+          "notes": "duplicates bench-derived count",
+          "consumers": [
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.fusion",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "gold",
+          "source": "economy.gold",
+          "nature": "observed",
+          "encoding": "/50",
+          "notes": "duplicates core",
+          "consumers": [
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.fusion",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "level",
+          "source": "economy.level",
+          "nature": "observed",
+          "encoding": "/9",
+          "notes": "duplicates core",
+          "consumers": [
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.fusion",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "hp",
+          "source": "player.hp",
+          "nature": "observed",
+          "encoding": "/100",
+          "notes": "duplicates core",
+          "consumers": [
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.fusion",
+            "TFTPolicy.value_head"
+          ]
+        }
       ],
       "consumers": [
         "TFTPolicy.global_mlp",
@@ -311,13 +471,18 @@
         5
       ],
       "fields": [
-        [
-          "active_trait_count_slot_0_to_4",
-          "traits discovered while scanning board then bench",
-          "derived",
-          "count /5 clipped 1",
-          "slot identity changes with insertion order; no trait IDs"
-        ]
+        {
+          "name": "active_trait_count_slot_0_to_4",
+          "source": "traits discovered while scanning board then bench",
+          "nature": "derived",
+          "encoding": "count /5 clipped 1",
+          "notes": "slot identity changes with insertion order; no trait IDs",
+          "consumers": [
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.fusion",
+            "TFTPolicy.value_head"
+          ]
+        }
       ],
       "consumers": [
         "TFTPolicy.global_mlp",
@@ -332,34 +497,54 @@
         4
       ],
       "fields": [
-        [
-          "board_evaluation_score",
-          "board_evaluation.total_score",
-          "estimated",
-          "native evaluator scale",
-          "heuristic score, not calibrated probability"
-        ],
-        [
-          "frontline_fraction",
-          "frontline / board_count",
-          "derived",
-          "ratio",
-          ""
-        ],
-        [
-          "backline_fraction",
-          "backline / board_count",
-          "derived",
-          "ratio",
-          ""
-        ],
-        [
-          "unique_role_count",
-          "unique roles /5",
-          "derived",
-          "ratio clipped 1",
-          ""
-        ]
+        {
+          "name": "board_evaluation_score",
+          "source": "board_evaluation.total_score",
+          "nature": "estimated",
+          "encoding": "native evaluator scale",
+          "notes": "heuristic score, not calibrated probability",
+          "consumers": [
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.fusion",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "frontline_fraction",
+          "source": "frontline / board_count",
+          "nature": "derived",
+          "encoding": "ratio",
+          "notes": "",
+          "consumers": [
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.fusion",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "backline_fraction",
+          "source": "backline / board_count",
+          "nature": "derived",
+          "encoding": "ratio",
+          "notes": "",
+          "consumers": [
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.fusion",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "unique_role_count",
+          "source": "unique roles /5",
+          "nature": "derived",
+          "encoding": "ratio clipped 1",
+          "notes": "",
+          "consumers": [
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.fusion",
+            "TFTPolicy.value_head"
+          ]
+        }
       ],
       "consumers": [
         "TFTPolicy.global_mlp",
@@ -374,13 +559,18 @@
         "T"
       ],
       "fields": [
-        [
-          "trait_count_by_catalog_order",
-          "trait_counts and observation_trait_names",
-          "derived",
-          "count /5 clipped 1",
-          "catalog-derived first-occurrence order; no IDs in tensor"
-        ]
+        {
+          "name": "trait_count_by_catalog_order",
+          "source": "trait_counts and observation_trait_names",
+          "nature": "derived",
+          "encoding": "count /5 clipped 1",
+          "notes": "catalog-derived first-occurrence order; no IDs in tensor",
+          "consumers": [
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.fusion",
+            "TFTPolicy.value_head"
+          ]
+        }
       ],
       "consumers": [
         "TFTPolicy.global_mlp",
@@ -395,20 +585,30 @@
         2
       ],
       "fields": [
-        [
-          "board_capacity_remaining",
-          "max(0,level-board_count)",
-          "derived",
-          "/9",
-          ""
-        ],
-        [
-          "bench_capacity_remaining",
-          "bench_slots-bench_count",
-          "derived",
-          "/9",
-          ""
-        ]
+        {
+          "name": "board_capacity_remaining",
+          "source": "max(0,level-board_count)",
+          "nature": "derived",
+          "encoding": "/9",
+          "notes": "",
+          "consumers": [
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.fusion",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "bench_capacity_remaining",
+          "source": "bench_slots-bench_count",
+          "nature": "derived",
+          "encoding": "/9",
+          "notes": "",
+          "consumers": [
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.fusion",
+            "TFTPolicy.value_head"
+          ]
+        }
       ],
       "consumers": [
         "TFTPolicy.global_mlp",
@@ -423,13 +623,19 @@
         "T"
       ],
       "fields": [
-        [
-          "direction_one_hot_by_catalog_trait",
-          "StrategyInfo.composition_direction",
-          "legacy_decision",
-          "one-hot",
-          "missing StrategyInfo becomes default ECON; direction identity not explicit"
-        ]
+        {
+          "name": "direction_one_hot_by_catalog_trait",
+          "source": "StrategyInfo.composition_direction",
+          "nature": "legacy_decision",
+          "encoding": "one-hot",
+          "notes": "missing StrategyInfo becomes default ECON; direction identity not explicit",
+          "consumers": [
+            "TFTPolicy.global_mlp",
+            "TFTPolicy._economic_context_features",
+            "TFTPolicy.fusion",
+            "TFTPolicy.value_head"
+          ]
+        }
       ],
       "consumers": [
         "TFTPolicy.global_mlp",
@@ -445,13 +651,18 @@
         "T"
       ],
       "fields": [
-        [
-          "core_trait_flag_by_catalog_order",
-          "StrategyInfo.core_traits",
-          "legacy_decision",
-          "0/1",
-          "missing StrategyInfo yields all zero"
-        ]
+        {
+          "name": "core_trait_flag_by_catalog_order",
+          "source": "StrategyInfo.core_traits",
+          "nature": "legacy_decision",
+          "encoding": "0/1",
+          "notes": "missing StrategyInfo yields all zero",
+          "consumers": [
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.fusion",
+            "TFTPolicy.value_head"
+          ]
+        }
       ],
       "consumers": [
         "TFTPolicy.global_mlp",
@@ -466,13 +677,18 @@
         42
       ],
       "fields": [
-        [
-          "unit_fit_board_bench_shop",
-          "unit_composition_score(StrategyInfo, ChampionDefinition, star)",
-          "estimated",
-          "score /32.5 clipped 1",
-          "28 board + 9 bench + 5 shop; missing candidate/definition becomes zero"
-        ]
+        {
+          "name": "unit_fit_board_bench_shop",
+          "source": "unit_composition_score(StrategyInfo, ChampionDefinition, star)",
+          "nature": "estimated",
+          "encoding": "score /32.5 clipped 1",
+          "notes": "28 board + 9 bench + 5 shop; missing candidate/definition becomes zero",
+          "consumers": [
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.fusion",
+            "TFTPolicy.value_head"
+          ]
+        }
       ],
       "consumers": [
         "TFTPolicy.global_mlp",
@@ -487,20 +703,30 @@
         29
       ],
       "fields": [
-        [
-          "remaining_actions_in_horizon",
-          "actions_taken_this_round",
-          "derived",
-          "(10-min(actions,10))/10",
-          "bounded recent action count"
-        ],
-        [
-          "board_slot_move_age",
-          "board_move_age per slot",
-          "derived",
-          "min(age,10)/10",
-          "28 slots; no explicit source action ID/sequence"
-        ]
+        {
+          "name": "remaining_actions_in_horizon",
+          "source": "actions_taken_this_round",
+          "nature": "derived",
+          "encoding": "(10-min(actions,10))/10",
+          "notes": "bounded recent action count",
+          "consumers": [
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.fusion",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "board_slot_move_age",
+          "source": "board_move_age per slot",
+          "nature": "derived",
+          "encoding": "min(age,10)/10",
+          "notes": "28 slots; no explicit source action ID/sequence",
+          "consumers": [
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.fusion",
+            "TFTPolicy.value_head"
+          ]
+        }
       ],
       "consumers": [
         "TFTPolicy.global_mlp",
@@ -515,13 +741,18 @@
         "T"
       ],
       "fields": [
-        [
-          "focus_weight_by_catalog_trait",
-          "StrategyInfo.composition_focus_weights",
-          "legacy_decision",
-          "weight /10 clipped 1",
-          "zero conflates no focus with missing"
-        ]
+        {
+          "name": "focus_weight_by_catalog_trait",
+          "source": "StrategyInfo.composition_focus_weights",
+          "nature": "legacy_decision",
+          "encoding": "weight /10 clipped 1",
+          "notes": "zero conflates no focus with missing",
+          "consumers": [
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.fusion",
+            "TFTPolicy.value_head"
+          ]
+        }
       ],
       "consumers": [
         "TFTPolicy.global_mlp",
@@ -536,20 +767,30 @@
         2
       ],
       "fields": [
-        [
-          "composition_locked",
-          "StrategyInfo.composition_locked",
-          "legacy_decision",
-          "0/1",
-          "missing StrategyInfo becomes false"
-        ],
-        [
-          "composition_strength",
-          "StrategyInfo.composition_strength",
-          "legacy_decision",
-          "strength /10 clipped 1",
-          "nominal scale; provenance absent"
-        ]
+        {
+          "name": "composition_locked",
+          "source": "StrategyInfo.composition_locked",
+          "nature": "legacy_decision",
+          "encoding": "0/1",
+          "notes": "missing StrategyInfo becomes false",
+          "consumers": [
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.fusion",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "composition_strength",
+          "source": "StrategyInfo.composition_strength",
+          "nature": "legacy_decision",
+          "encoding": "strength /10 clipped 1",
+          "notes": "nominal scale; provenance absent",
+          "consumers": [
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.fusion",
+            "TFTPolicy.value_head"
+          ]
+        }
       ],
       "consumers": [
         "TFTPolicy.global_mlp",
@@ -564,34 +805,58 @@
         102
       ],
       "fields": [
-        [
-          "pending",
-          "ItemEngine.pending_anvil",
-          "observed",
-          "0/1",
-          ""
-        ],
-        [
-          "kind_component",
-          "pending anvil kind",
-          "observed",
-          "0/1",
-          ""
-        ],
-        [
-          "kind_completed_item",
-          "pending anvil kind",
-          "observed",
-          "0/1",
-          ""
-        ],
-        [
-          "option_features",
-          "ItemCatalog component one-hot or completed-item stats",
-          "derived",
-          "9x11",
-          "last feature is best fit across owned units; missing options zero"
-        ]
+        {
+          "name": "pending",
+          "source": "ItemEngine.pending_anvil",
+          "nature": "observed",
+          "encoding": "0/1",
+          "notes": "",
+          "consumers": [
+            "TFTPolicy._item_state_features",
+            "item option scorer",
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "kind_component",
+          "source": "pending anvil kind",
+          "nature": "observed",
+          "encoding": "0/1",
+          "notes": "",
+          "consumers": [
+            "TFTPolicy._item_state_features",
+            "item option scorer",
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "kind_completed_item",
+          "source": "pending anvil kind",
+          "nature": "observed",
+          "encoding": "0/1",
+          "notes": "",
+          "consumers": [
+            "TFTPolicy._item_state_features",
+            "item option scorer",
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "option_features",
+          "source": "ItemCatalog component one-hot or completed-item stats",
+          "nature": "derived",
+          "encoding": "9x11",
+          "notes": "last feature is best fit across owned units; missing options zero",
+          "consumers": [
+            "TFTPolicy._item_state_features",
+            "item option scorer",
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.value_head"
+          ]
+        }
       ],
       "consumers": [
         "TFTPolicy._item_state_features",
@@ -607,48 +872,84 @@
         6562
       ],
       "fields": [
-        [
-          "component_counts",
-          "ItemEngine.components + ItemCatalog.components order",
-          "observed",
-          "10 values count /6 clipped 1",
-          "component identity absent from tensor"
-        ],
-        [
-          "inventory_item_stats",
-          "ItemEngine.inventory order + ItemDefinition",
-          "derived",
-          "9x17",
-          "item ID absent; empty/missing definition zero"
-        ],
-        [
-          "recipe_item_stats",
-          "recipe_observation_features indexed first_component*10+second",
-          "derived",
-          "100x17",
-          "symmetric recipe matrix; catalog order determines component axes"
-        ],
-        [
-          "target_profiles",
-          "board+bench UnitInstance + ChampionDefinition",
-          "derived",
-          "37x18",
-          "28 board + 9 bench; target UUID/champion ID absent"
-        ],
-        [
-          "inventory_target_compatibility",
-          "ItemFitCache.get(item_id, UnitProfile)",
-          "estimated",
-          "9x37 score /50 clipped 1",
-          "heuristic compatibility"
-        ],
-        [
-          "recipe_target_compatibility",
-          "ItemFitCache.get(recipe_id, UnitProfile)",
-          "estimated",
-          "100x37 score /50 clipped 1",
-          "zero if recipe unavailable or target absent"
-        ]
+        {
+          "name": "component_counts",
+          "source": "ItemEngine.components + ItemCatalog.components order",
+          "nature": "observed",
+          "encoding": "10 values count /6 clipped 1",
+          "notes": "component identity absent from tensor",
+          "consumers": [
+            "TFTPolicy._item_state_features",
+            "item component/target scorers",
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "inventory_item_stats",
+          "source": "ItemEngine.inventory order + ItemDefinition",
+          "nature": "derived",
+          "encoding": "9x17",
+          "notes": "item ID absent; empty/missing definition zero",
+          "consumers": [
+            "TFTPolicy._item_state_features",
+            "item component/target scorers",
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "recipe_item_stats",
+          "source": "recipe_observation_features indexed first_component*10+second",
+          "nature": "derived",
+          "encoding": "100x17",
+          "notes": "symmetric recipe matrix; catalog order determines component axes",
+          "consumers": [
+            "TFTPolicy._item_state_features",
+            "item component/target scorers",
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "target_profiles",
+          "source": "board+bench UnitInstance + ChampionDefinition",
+          "nature": "derived",
+          "encoding": "37x18",
+          "notes": "28 board + 9 bench; target UUID/champion ID absent",
+          "consumers": [
+            "TFTPolicy._item_state_features",
+            "item component/target scorers",
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "inventory_target_compatibility",
+          "source": "ItemFitCache.get(item_id, UnitProfile)",
+          "nature": "estimated",
+          "encoding": "9x37 score /50 clipped 1",
+          "notes": "heuristic compatibility",
+          "consumers": [
+            "TFTPolicy._item_state_features",
+            "item component/target scorers",
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "recipe_target_compatibility",
+          "source": "ItemFitCache.get(recipe_id, UnitProfile)",
+          "nature": "estimated",
+          "encoding": "100x37 score /50 clipped 1",
+          "notes": "zero if recipe unavailable or target absent",
+          "consumers": [
+            "TFTPolicy._item_state_features",
+            "item component/target scorers",
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.value_head"
+          ]
+        }
       ],
       "consumers": [
         "TFTPolicy._item_state_features",
@@ -665,62 +966,110 @@
         8
       ],
       "fields": [
-        [
-          "composition_fit",
-          "unit_composition_score",
-          "estimated",
-          "/22.5 clipped 1",
-          "legacy StrategyInfo-dependent"
-        ],
-        [
-          "cost",
-          "ChampionDefinition.cost",
-          "observed",
-          "/5",
-          ""
-        ],
-        [
-          "star",
-          "UnitInstance.star or shop offer",
-          "observed_or_synthetic",
-          "/3",
-          ""
-        ],
-        [
-          "role",
-          "observation_role",
-          "derived",
-          "role_state_value",
-          ""
-        ],
-        [
-          "core_or_planned",
-          "StrategyInfo core/planned IDs",
-          "legacy_decision",
-          "0/1",
-          "merges two concepts"
-        ],
-        [
-          "owned_copies",
-          "owned copies incl star-equivalent",
-          "derived",
-          "min(copies,9)/9",
-          ""
-        ],
-        [
-          "upgrade_path",
-          "reward_model.upgrade_path_strength",
-          "estimated",
-          "clipped 0..1",
-          ""
-        ],
-        [
-          "sell_value_or_affordability",
-          "sell value /50 for bench; affordability flag for shop",
-          "mixed_semantics",
-          "context-dependent",
-          "same feature index has different meaning for bench and shop"
-        ]
+        {
+          "name": "composition_fit",
+          "source": "unit_composition_score",
+          "nature": "estimated",
+          "encoding": "/22.5 clipped 1",
+          "notes": "legacy StrategyInfo-dependent",
+          "consumers": [
+            "TFTPolicy._candidate_features",
+            "bench/shop candidate scorers",
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "cost",
+          "source": "ChampionDefinition.cost",
+          "nature": "observed",
+          "encoding": "/5",
+          "notes": "",
+          "consumers": [
+            "TFTPolicy._candidate_features",
+            "bench/shop candidate scorers",
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "star",
+          "source": "UnitInstance.star or shop offer",
+          "nature": "observed_or_synthetic",
+          "encoding": "/3",
+          "notes": "",
+          "consumers": [
+            "TFTPolicy._candidate_features",
+            "bench/shop candidate scorers",
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "role",
+          "source": "observation_role",
+          "nature": "derived",
+          "encoding": "role_state_value",
+          "notes": "",
+          "consumers": [
+            "TFTPolicy._candidate_features",
+            "bench/shop candidate scorers",
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "core_or_planned",
+          "source": "StrategyInfo core/planned IDs",
+          "nature": "legacy_decision",
+          "encoding": "0/1",
+          "notes": "merges two concepts",
+          "consumers": [
+            "TFTPolicy._candidate_features",
+            "bench/shop candidate scorers",
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "owned_copies",
+          "source": "owned copies incl star-equivalent",
+          "nature": "derived",
+          "encoding": "min(copies,9)/9",
+          "notes": "",
+          "consumers": [
+            "TFTPolicy._candidate_features",
+            "bench/shop candidate scorers",
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "upgrade_path",
+          "source": "reward_model.upgrade_path_strength",
+          "nature": "estimated",
+          "encoding": "clipped 0..1",
+          "notes": "",
+          "consumers": [
+            "TFTPolicy._candidate_features",
+            "bench/shop candidate scorers",
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.value_head"
+          ]
+        },
+        {
+          "name": "sell_value_or_affordability",
+          "source": "sell value /50 for bench; affordability flag for shop",
+          "nature": "mixed_semantics",
+          "encoding": "context-dependent",
+          "notes": "same feature index has different meaning for bench and shop",
+          "consumers": [
+            "TFTPolicy._candidate_features",
+            "bench/shop candidate scorers",
+            "TFTPolicy.global_mlp",
+            "TFTPolicy.value_head"
+          ]
+        }
       ],
       "consumers": [
         "TFTPolicy._candidate_features",
