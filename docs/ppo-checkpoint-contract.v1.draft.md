@@ -1,10 +1,10 @@
-# PPO Architecture and Checkpoint Contract v1 — Draft
+# PPO Architecture and Checkpoint Contract v1
 
-**Status:** documentary specification; not approved for runtime implementation  
+**Status:** approved documentary specification; loader migration and executable acceptance remain blocked until Gate 8 and explicit authorization  
 **Contract ID:** `tft.ppo-checkpoint.v1`  
 **Target architecture:** `new-arquiteture`  
 **Related issues:** #286, #288, #287, #294, #295  
-**Depends on:** Observation Schema v1 draft, Action Contract, Reward Contract v1 draft
+**Depends on:** approved Observation Schema v1, Action / Mask Contract v1, and Reward Contract v1 documentary specifications
 
 > This document records the proposed architecture identity, checkpoint metadata, compatibility classes, and migration policy for the new PPO lineage. It does not change policy, training, rollout, Engine, action legality, reward formulas, or existing checkpoint files.
 

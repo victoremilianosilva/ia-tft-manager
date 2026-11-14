@@ -1,6 +1,6 @@
-# Reward Contract v1 — Draft
+# Reward Contract v1
 
-**Status:** documentary specification; not approved for runtime implementation  
+**Status:** approved documentary specification; runtime migration and executable acceptance remain blocked until Gate 8 and explicit authorization  
 **Contract ID:** `tft.reward.v1`  
 **Target architecture:** `new-arquiteture`  
 **Related issues:** #287, #288, #295, #286, #294  

@@ -2,6 +2,20 @@
 
 Esta documentação descreve o código presente no repositório, separando arquitetura, contratos e funcionalidades. Os diagramas do viewer foram movidos para [assets](assets/).
 
+## Fonte normativa da arquitetura canônica
+
+Para decisões de arquitetura e implementação da nova linhagem, use primeiro os contratos aprovados e os artefatos versionados abaixo. Os documentos de comportamento atual/legado continuam úteis como evidência histórica, mas não substituem esses contratos.
+
+- [Observation Schema v1 (machine-readable)](../spec/observation-schema.v1.draft.json), com mapas de origem, migração e disponibilidade.
+- [Action / Mask Contract v1](action-mask-contract.v1.draft.md) — especificação documental aprovada; execução/aceitação runtime pendente.
+- [Reward Contract v1](reward-contract.v1.draft.md) — especificação documental aprovada; migração runtime pendente.
+- [PPO Architecture and Checkpoint Contract v1](ppo-checkpoint-contract.v1.draft.md) — especificação documental aprovada; loader/migração runtime pendentes.
+- [Strategic Ownership and Integration Contract v1](strategic-ownership-integration.v1.draft.md) — ownership canônico aprovado; integração executável pendente.
+- [Economic Evidence and Progression Contract v1](economic-evidence-and-progression-contract.v1.draft.md), [Strategic Action Candidate Contract v1](strategic-action-candidate-contract.v1.draft.md), [Unit Ownership and Star Progress Contract v1](unit-ownership-and-star-progress-contract.v1.draft.md) e [Strategic Shadow Integrated Replay Contract v1](strategic-shadow-integrated-replay-contract.v1.draft.md) — especificações documentais aprovadas; execução pendente.
+- [PPO Evaluation Protocol v1](ppo-evaluation-protocol.v1.draft.md) — protocolo documental aprovado; avaliação executável pendente.
+
+**Regra de leitura:** contratos aprovados definem semântica e autoridade futuras; documentação de código descreve o comportamento observado no snapshot auditado; issues registram lacunas e trabalho de aceitação. Nenhuma aprovação documental libera implementação antes do Gate 8 e autorização explícita.
+
 ## Comece por aqui
 
 - [Arquitetura geral](architecture.md) — componentes e fluxo de dados.
