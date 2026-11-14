@@ -431,7 +431,25 @@
     "priorities": [],
     "progression": {},
     "pressure": {},
-    "uncertainty": {}
+    "uncertainty": {},
+    "owner_snapshots": {
+      "planner_commitment": {
+        "status": "valid",
+        "owner_id": "strategic_planner_commitments",
+        "payload_path": "strategic_evidence.commitment_context",
+        "source_decision_sequence": 1
+      },
+      "composition_intelligence": {
+        "status": "unknown",
+        "owner_id": "CompositionIntelligencePlayerRuntime.active",
+        "reason": "Composition Intelligence is feature-gated and disabled in the minimal fixture."
+      },
+      "unified_state_machine": {
+        "status": "unknown",
+        "owner_id": "UnifiedStrategicStateMachine",
+        "reason": "Unified shadow runtime is unavailable without the audit path in the minimal fixture."
+      }
+    }
   },
   "legal_state_context": {
     "status": "partial",
