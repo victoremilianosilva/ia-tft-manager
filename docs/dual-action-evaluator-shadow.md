@@ -61,3 +61,32 @@ Each Composition Intelligence JSONL record adds
 - candidate-set parity/counts and explicit divergence flag;
 - `divergence_is_diagnostic_not_error=true`, `policy_action_is_not_ground_truth=true`,
   `shadow_only=true`, and `executor_connected=false`.
+
+
+## Current architecture reconciliation (2026-11-14)
+
+The evaluator isolation described above remains normative for **recommendations
+and evaluator outputs**: neither baseline nor contextual evaluator output is
+fed to PPO as a label, reward target, or replacement action. The statement
+about not feeding recommendations into observations must not be broadened to
+mean that PPO can never receive canonical strategic context.
+
+A future observation projection may consume approved source-owner state and
+validated evidence under #286/#293, but it must not consume evaluator scores,
+rankings, confidence proxies, or recommendation outcomes as supervision.
+PPO action, baseline recommendation, contextual proposal, and executor
+resolution remain distinct records. Divergence is diagnostic, not an error
+criterion. Engine rules and masks remain final legality authority.
+
+**Prior limitation:** the original wording grouped recommendations and all
+possible strategic context under a single “not fed into observations” phrase.
+**Reason for clarification:** context is useful input; evaluator outputs are
+not ground truth. Conflating them would either starve PPO of approved context
+or introduce imitation coupling.
+**Ownership/contract:** evaluators own only their proposal/diagnostic outputs;
+the versioned observation adapter is a separate read-only consumer.
+**Cross-component impact:** #281/#286/#293/#294/#288 and the ownership
+contract; no evaluator scoring or runtime behavior changes here.
+**Validation:** documentary consistency now; executable acceptance after
+Gate 8 must prove separate provenance and no evaluator-output-to-label/reward
+path.
