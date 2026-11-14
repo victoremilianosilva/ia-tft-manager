@@ -574,6 +574,150 @@
           "const": "Canonical projection definition excluding projection_hash"
         }
       }
+    },
+    "unitAssessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "unit_instance_id"
+      ],
+      "properties": {
+        "unit_instance_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "is_core": {
+          "$ref": "#/$defs/field"
+        },
+        "board_contribution": {
+          "$ref": "#/$defs/field"
+        },
+        "composition_fit": {
+          "$ref": "#/$defs/field"
+        },
+        "item_fit": {
+          "$ref": "#/$defs/field"
+        }
+      }
+    },
+    "anchorCandidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_id",
+        "direction_id",
+        "composition_id",
+        "anchor_unit_id",
+        "candidate_unit_ids",
+        "evidence"
+      ],
+      "properties": {
+        "candidate_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "direction_id": {
+          "$ref": "#/$defs/field"
+        },
+        "composition_id": {
+          "$ref": "#/$defs/field"
+        },
+        "anchor_unit_id": {
+          "$ref": "#/$defs/field"
+        },
+        "candidate_unit_ids": {
+          "$ref": "#/$defs/field"
+        },
+        "main_carry_id": {
+          "$ref": "#/$defs/field"
+        },
+        "candidate_traits": {
+          "$ref": "#/$defs/field"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "anchor_value": {
+          "$ref": "#/$defs/field"
+        },
+        "transition_cost": {
+          "$ref": "#/$defs/field"
+        },
+        "contestation": {
+          "$ref": "#/$defs/field"
+        },
+        "reusable_owned_units": {
+          "$ref": "#/$defs/field"
+        },
+        "shop_available": {
+          "$ref": "#/$defs/field"
+        }
+      }
+    },
+    "actionOpportunityCandidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_id",
+        "action_kind",
+        "available"
+      ],
+      "properties": {
+        "candidate_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "action_kind": {
+          "type": "string",
+          "enum": [
+            "buy_unit",
+            "buy_experience",
+            "reroll_shop",
+            "sell_unit",
+            "deploy_or_move",
+            "hold"
+          ]
+        },
+        "champion_id": {
+          "$ref": "#/$defs/field"
+        },
+        "unit_instance_id": {
+          "$ref": "#/$defs/field"
+        },
+        "gold_cost": {
+          "$ref": "#/$defs/field"
+        },
+        "direct_gold_cost": {
+          "$ref": "#/$defs/field"
+        },
+        "lost_interest_cost": {
+          "$ref": "#/$defs/field"
+        },
+        "opportunity_cost": {
+          "$ref": "#/$defs/field"
+        },
+        "expected_economy_cost": {
+          "$ref": "#/$defs/field"
+        },
+        "expected_board_delta": {
+          "$ref": "#/$defs/field"
+        },
+        "composition_fit": {
+          "$ref": "#/$defs/field"
+        },
+        "upgrade_value": {
+          "$ref": "#/$defs/field"
+        },
+        "available": {
+          "$ref": "#/$defs/field"
+        },
+        "evaluation_horizon": {
+          "$ref": "#/$defs/field"
+        }
+      }
     }
   },
   "properties": {
@@ -892,9 +1036,93 @@
         },
         "economic_context": {
           "type": "object",
-          "additionalProperties": {
-            "$ref": "#/$defs/field"
+          "additionalProperties": false,
+          "properties": {
+            "stage": {
+              "$ref": "#/$defs/field"
+            },
+            "interest_if_resolved_now": {
+              "$ref": "#/$defs/field"
+            },
+            "projected_next_round_income": {
+              "$ref": "#/$defs/field"
+            },
+            "board_power": {
+              "$ref": "#/$defs/field"
+            },
+            "lobby_average_board_power": {
+              "$ref": "#/$defs/field"
+            },
+            "relative_board_power": {
+              "$ref": "#/$defs/field"
+            },
+            "estimated_incoming_damage": {
+              "$ref": "#/$defs/field"
+            },
+            "elimination_risk": {
+              "$ref": "#/$defs/field"
+            },
+            "survival_pressure": {
+              "$ref": "#/$defs/field"
+            },
+            "board_pressure": {
+              "$ref": "#/$defs/field"
+            },
+            "economy_pressure": {
+              "$ref": "#/$defs/field"
+            }
           }
+        },
+        "action_opportunity": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "items"
+          ],
+          "properties": {
+            "status": {
+              "$ref": "#/$defs/fieldStatus"
+            },
+            "items": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/actionOpportunityCandidate"
+              }
+            },
+            "source_sequence": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "status": {
+                    "enum": [
+                      "missing",
+                      "unknown",
+                      "not_applicable",
+                      "stale",
+                      "incompatible"
+                    ]
+                  }
+                },
+                "required": [
+                  "status"
+                ]
+              },
+              "then": {
+                "required": [
+                  "reason"
+                ]
+              }
+            }
+          ]
         }
       }
     },
@@ -978,6 +1206,105 @@
           "type": "object",
           "additionalProperties": {
             "$ref": "#/$defs/field"
+          }
+        },
+        "owned_unit_assessments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/unitAssessment"
+          }
+        },
+        "anchor_candidates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/anchorCandidate"
+          }
+        },
+        "candidate_generation": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "status": {
+              "$ref": "#/$defs/fieldStatus"
+            },
+            "anchors_considered": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "candidates_generated": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "rejected_cost_below_four": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "rejected_missing_champion_definition": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "rejected_empty_trait": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "rejected_duplicate_direction": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "rejected_direction_limit": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "rejected_empty_plan": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "rejected_anchor_not_in_plan": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "no_candidate_reason": {
+              "type": "string"
+            }
+          }
+        },
+        "commitment_context": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "direction_id": {
+              "$ref": "#/$defs/field"
+            },
+            "direction_identity": {
+              "$ref": "#/$defs/field"
+            },
+            "progression_plan": {
+              "$ref": "#/$defs/field"
+            },
+            "core_unit_ids": {
+              "$ref": "#/$defs/field"
+            },
+            "flexible_unit_ids": {
+              "$ref": "#/$defs/field"
+            },
+            "selected_round": {
+              "$ref": "#/$defs/field"
+            },
+            "last_review_round": {
+              "$ref": "#/$defs/field"
+            },
+            "selection_reason": {
+              "$ref": "#/$defs/field"
+            },
+            "revision_condition": {
+              "$ref": "#/$defs/field"
+            },
+            "confidence": {
+              "$ref": "#/$defs/field"
+            },
+            "consecutive_reviews": {
+              "$ref": "#/$defs/field"
+            }
           }
         }
       }
