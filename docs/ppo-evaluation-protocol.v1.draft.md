@@ -179,3 +179,5 @@ Evaluation manifests for the new PPO lineage must record the semantic projection
 ## Structured entity evaluation lineage (proposal)
 
 Evaluation manifests should record the structured-entity/temporal contract identity and hash alongside schema, semantic consumer matrix, concrete projection, normalization, architecture, Action/Mask, reward and catalog identities. Replay and evaluation fixtures must preserve entity identity, ownership domains, completeness and temporal reset semantics. This is a documentation requirement, not proof of runtime coverage.
+
+The manifest path is `spec/observation-structured-entity-temporal-contract.v1.draft.json`; evaluation artifacts must bind its reviewed version/hash independently from the concrete tensor projection.
