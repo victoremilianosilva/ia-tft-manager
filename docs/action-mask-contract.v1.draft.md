@@ -1,6 +1,6 @@
-# Action / Mask Contract v1 — auditoria e proposta (draft)
+# Action / Mask Contract v1 — especificação documental aprovada
 
-**Status:** proposta documental para Gate 2. Não é contrato aprovado nem autorização de implementação.  
+**Status:** especificação documental aprovada para Gate 2; implementação runtime, migração e aceitação executável permanecem pendentes após Gate 8. Esta aprovação não autoriza implementação.  
 **Base auditada:** branch `new-arquiteture`, commit de base `046c9300882ebb7fb0003436f39d91eb4a2a75e5`.  
 **Issue:** [#294 — PPO Action Contract](https://github.com/victoremilianosilva/ia-tft-manager/issues/294)
 
