@@ -1,5 +1,7 @@
 # Relatório final — sistema de itens da engine TFT (Fase 8)
 
+> **Status documental — snapshot histórico de 2026-10-24.** As afirmações abaixo sobre ausência de catálogo autoritativo e de integração do loot descrevem aquele snapshot e foram superadas pela implementação posterior documentada em `item-system-integration-contract.md` e `item-system-cycle-audit.md` (catálogo Set 18, fluxo PvE/anvil, equipagem e projeção para combate). Este relatório permanece evidência histórica de critérios e limitações da fase, não retrato do runtime atual nem contrato normativo para a nova linhagem PPO/Shadow. Os contratos canônicos listados em `docs/README.md` prevalecem para semântica, ownership, actions/masks, rewards e checkpoints.
+
 **Data do relatório:** 2026-10-24  
 **Escopo:** integração de itens na engine C++ e no caminho de ação/PPO, recompensas, validação e auditoria.  
 **Status geral:** infraestrutura e testes de integração implementados e PRs das fases 2–7 mesclados; a integração de dados reais do set e a validação estratégica ponta a ponta ainda não estão concluídas.
