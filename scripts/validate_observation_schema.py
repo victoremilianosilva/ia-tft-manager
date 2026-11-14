@@ -104,7 +104,7 @@ def valid_snapshot(schema: dict) -> dict:
             "projection": projection,
             "hash_algorithm": "SHA-256",
             "hash_canonicalization": "RFC8785",
-            "hash_scope": "Canonical RFC8785 form of normative schema content (field definitions, types, constraints, requiredness, semantics, catalog references and projection identity); excludes descriptions, examples and schema_hash itself",
+            "hash_scope": "Canonical RFC8785 form of normative schema content (field definitions, types, constraints, requiredness, semantics, catalog references and projection identity); excludes title, description, examples, default, $comment, deprecated annotations and the instance schema_hash value",
             "evolution_policy": {
                 "patch": "Editorial metadata/examples/provenance clarification only; no field meaning, constraints, projection or catalog identity changes.",
                 "minor": "Additive optional fields only; existing fields retain identical meaning and consumers may ignore additions only when their declared profile does not require them.",
