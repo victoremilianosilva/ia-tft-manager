@@ -22,7 +22,7 @@ Any material architectural/documentary change, including a decision to preserve,
 
 1. **Prior problem:** the concrete defect, limitation, ambiguity, coupling, missing behavior, or risk in the previous solution. If no legacy equivalent exists, state that the capability is newly introduced and why.
 2. **Technical rationale:** why the proposed solution is technically preferable and which alternatives or trade-offs were considered when material.
-3. **New responsibility:** the single accountable owner, producer, consumer, and authority boundary, including what the component must not own.
+3. **New responsibility:** the single accountable owner, all relevant producers and consumers, and each authority boundary, including what the component must not own.
 4. **Contract and invariants:** inputs, outputs, identity, provenance, freshness, lifecycle, failure/missing behavior, versioning, and invariants necessary to prevent ambiguity or invalid state.
 5. **Cross-component impact:** affected contracts, components, data flows, issues, Viewer/telemetry, replay, training/inference, migration dependencies, and compatibility implications. Explicitly state when there is no impact.
 6. **Objective validation:** observable acceptance criteria, negative cases, tests/replay evidence, artifacts, and conditions that prove success or failure. Documentary approval must be distinguished from executable acceptance.
@@ -36,7 +36,7 @@ For each material decision, use this structure:
 - **Decision and classification:** preserve / improve / redesign / discard / new capability.
 - **Prior solution and problem:** evidence-backed description, or explicit statement that no prior capability existed.
 - **Technical rationale:** chosen design and material trade-offs.
-- **New owner and boundaries:** accountable owner, producers, consumers, and prohibited responsibilities.
+- **New owner and boundaries:** one accountable owner, all relevant producers/consumers, and prohibited responsibilities.
 - **Contract and invariants:** normative semantics and failure behavior.
 - **Impact analysis:** upstream/downstream contracts, migration, compatibility, telemetry, and training/inference effects.
 - **Validation:** documentary checks now and executable criteria at the authorized implementation phase.
