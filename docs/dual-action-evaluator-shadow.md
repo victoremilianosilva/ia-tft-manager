@@ -60,7 +60,7 @@ Each Composition Intelligence JSONL record adds
   per-candidate eligibility and score decomposition;
 - candidate-set parity/counts and explicit divergence flag;
 - `divergence_is_diagnostic_not_error=true`, `policy_action_is_not_ground_truth=true`,
-  `shadow_only=true`, and `executor_connected=false`.
+  `shadow_only=true`, and `executor_connected=true` (the read-only resolver call path is wired; this does not mean a proposal was accepted or a game action executed).
 
 
 ## Current architecture reconciliation (2026-11-14)
@@ -90,3 +90,51 @@ contract; no evaluator scoring or runtime behavior changes here.
 **Validation:** documentary consistency now; executable acceptance after
 Gate 8 must prove separate provenance and no evaluator-output-to-label/reward
 path.
+
+
+## Read-only resolver integration reconciliation (2026-11-14)
+
+The current native engine invokes `StrategicActionExecutor::resolve()` for the
+contextual evaluation and records the resulting resolution diagnostic. The
+serialized comparison currently reports:
+
+- `executor_connected=true`: the resolver call path is wired and invoked;
+- per-request `accepted` plus resolution/validation reasons: whether this
+  particular proposal passed read-only validation;
+- `shadow_only=true` and `execution_enabled=false`: execution remains
+  disabled;
+- `native_action_applied=false`: no game action is applied by this path.
+
+These are separate facts. The constant `executor_connected` flag is not proof
+that a specific recommendation was accepted. A rejected resolution is still
+a connected resolver call. The resolver only produces a native action
+representation for diagnostics; it has no authority to mutate the Engine or
+execute a game action.
+
+**Prior problem:** the diagnostic contract said `executor_connected=false`,
+while the current native engine invokes the resolver and serializes
+`executor_connected=true`.
+
+**Technical rationale:** connection, per-request acceptance, execution
+enablement, and native action application are distinct lifecycle states.
+Collapsing them obscures whether the read-only validation boundary is actually
+being exercised.
+
+**New responsibility:** the evaluator diagnostic reports proposal comparison;
+the read-only resolver reports per-request validation; Engine execution remains
+disabled and outside this path.
+
+**Contract/invariants:** `executor_connected=true` means only that the resolver
+path is wired/invoked. `accepted` is request-specific. Execution remains
+disabled, `native_action_applied=false`, and no resolver output mutates game
+state, PPO, masks, rewards, or training.
+
+**Cross-component impact:** StrategicActionExecutor, TftEngine diagnostic
+serialization, evaluator comparison JSONL, Viewer consumers, and replay
+diagnostics.
+
+**Validation:** source inspection confirms the native engine calls
+`strategic_action_executors[i].resolve(resolution_request)` and separately
+serializes `executor_connected=true`, `execution_enabled=false`, and
+`native_action_applied=false`. Runtime behavior remains unchanged; executable
+acceptance is still subject to Gate 8.
