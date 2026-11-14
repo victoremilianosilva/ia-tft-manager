@@ -346,3 +346,21 @@ The integration documentation describes these useful but bounded domains:
 **Capture completeness remains unproven.** Feature availability is provider-version-dependent and determined at runtime. The OW documentation itself requires real-match comparison of the first reconciled `getInfo()` snapshot and subsequent deltas; absent fields must remain unknown, not zero. The existence of the allowlist and snapshot manager does not prove patch-level field parity, cadence, reset semantics, or availability for every GEP version.
 
 **Cross-repository review note:** the OW snapshot manager filters selected combat/identity fields, while the recorder separately redacts augment keys before persistence. The current allowlist excludes augments, but the IA integration contract should consume only the approved, sanitized IA-ready snapshot and should preserve this exclusion at the producer boundary—not rely solely on the JSONL recorder's redaction. This is a verification item for the OW↔IA adapter, not authorization to modify runtime in this audit.
+
+
+### 9.15 Action-candidate producer search — confirmed within the production source scope
+
+A repository-wide symbol search was completed against base commit `0794040c24b5558918a0d7b2298b31b8eabd8344` (the PR #309 base), not the default branch. The scan covered all 77 C++ production headers/sources under `cpp/include` and `cpp/src`, plus all 34 non-test Python files outside test, Viewer, and finetuning-only directories. GitHub's code-search API returned `incomplete_results=true` and zero items, so it was not used as evidence; files were enumerated from the commit's recursive Git tree and inspected directly.
+
+**Result:** no production callsite was found that populates `StrategicSharedContext::action_candidates` with source candidates.
+
+The inspected data path is:
+1. `TFTEngine.cpp` creates a fresh default `StrategicSharedContext` at line 3195 and fills player/economy/board context. It appends owned-unit evidence and `anchor_candidates`, but does not append to or assign `action_candidates`.
+2. The same context is copied/moved into `StrategicEvidenceContextInput::observed_context` at line 3368. `StrategicEvidenceContextBuilder::build()` moves that context into `planner_context`; it does not generate action candidates.
+3. The legacy strategic `ActionEvaluator` iterates `c.action_candidates`. Its input therefore remains empty on this inspected `TFTEngine::update_strategy()` path.
+4. The Composition Intelligence `CompositionActionEvaluator` and `ContextualActionEvaluator` both iterate the same source `context.action_candidates`; neither creates source candidates. The baseline evaluator copies each input candidate into an enriched context for scoring, which is filtering/enrichment, not generation.
+5. `StrategicActionExecutor` resolves a selected contextual candidate against the source context; it is a consumer/validator, not a producer.
+
+The repository also contains a distinct `StrategicAnchorCandidate` / `anchor_candidates` pipeline generated from `NativeStrategicCompositionGenerator`. These are composition/anchor candidates, not executable `StrategicActionCandidate` records, and must not be conflated with the action-candidate set.
+
+**Conclusion and qualification:** for the audited production source scope and base commit, the earlier finding is confirmed: the native strategic action-candidate vector is not populated by the inspected Engine path, so evaluator candidate counts can remain zero even while composition-anchor candidates exist. This does not prove that no external consumer or out-of-repository producer exists; none was found in the scanned production source files. Tests may construct candidate vectors directly to test evaluators, but that is not a runtime producer.
