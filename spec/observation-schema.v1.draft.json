@@ -1372,21 +1372,18 @@
               "$ref": "#/$defs/field"
             },
             "composition_locked": {
-              "$ref": "#/$defs/field"
+              "$ref": "#/$defs/field",
+              "description": "Lock state from its authoritative new-architecture owner only. The current evidence builder hardcodes false, so the field must be missing/unknown until a real owner/source is wired."
             }
           }
         },
         "completed_traits": {
-          "$ref": "#/$defs/field"
-        },
-        "focus_traits": {
-          "$ref": "#/$defs/field"
+          "$ref": "#/$defs/field",
+          "description": "Full set of completed traits derived from the active native direction. Preserve stable trait IDs; list order has no semantic priority and must not be interpreted as core/focus ranking."
         },
         "focus_weights": {
-          "$ref": "#/$defs/field"
-        },
-        "core_traits": {
-          "$ref": "#/$defs/field"
+          "$ref": "#/$defs/field",
+          "description": "Independent trait-keyed strategic focus weights. The current producer does not provide this signal; serialize missing/unknown with provenance and reason, never copy legacy DTO defaults."
         },
         "core_unit_ids": {
           "$ref": "#/$defs/field"
