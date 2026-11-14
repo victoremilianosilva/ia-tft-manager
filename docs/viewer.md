@@ -1,5 +1,7 @@
 # TFT Viewer desktop
 
+> **Comportamento do Viewer atualmente implementado.** O carregamento flexível de payloads e a inferência de `obs_dim` descritos abaixo são mecanismos históricos de leitura do runtime atual, não o loader normativo da nova linhagem. O novo loader deve validar o manifesto e os hashes semânticos do [PPO Checkpoint Contract v1](ppo-checkpoint-contract.v1.draft.md); aceitar um formato de state dict ou inferir dimensão por shape não prova compatibilidade.
+
 ## Implementação real
 
 O viewer é uma aplicação PySide6 em viewer/main.py, com lógica de sessão em viewer/session.py e persistência por jogador em viewer/player_logs.py. O comando canônico é python -m viewer.main. A entrada antiga viwer/main.py foi consolidada em viewer/main.py para manter a interface e a lógica de sessão no mesmo pacote.
