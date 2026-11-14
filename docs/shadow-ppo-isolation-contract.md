@@ -1,5 +1,13 @@
 # PPO / Shadow isolation contract
 
+## Scope clarification: current isolation vs future canonical context
+
+This contract protects the **currently implemented Shadow runtime boundary**. Its statement that Shadow planner/evaluator outputs are not policy inputs is not a permanent prohibition on PPO consuming validated strategic context.
+
+The approved Observation Schema may, after Gate 8 and explicit authorization, receive a separate read-only projection of canonical source state from its declared owners (including StrategicPlanner commitments, the accepted active composition, EconomicController outputs, and validated unit/lineup evidence). That projection is not a Shadow recommendation, score, ranking, confidence proxy, candidate evaluation, Unified Shadow state, or executor resolution.
+
+Any future projection must preserve field-level provenance, quality/missingness, match/player identity, typed source-sequence references, owner/version and freshness checks. It must not create a write-back path from PPO to strategic owners. The current CI architecture check remains valid for the current runtime: Shadow diagnostic outputs are not read by `build_observations()`. A future separately owned projection requires an explicit contract/test update rather than weakening this isolation check implicitly.
+
 ## Purpose
 
 This contract makes Shadow isolation a continuously checked architecture
