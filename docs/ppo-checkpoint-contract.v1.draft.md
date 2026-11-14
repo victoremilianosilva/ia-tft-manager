@@ -301,3 +301,7 @@ The proposed next observation lineage is Observation Schema v2 with `tft.decisio
 ## Projection consumer decision lineage (proposal)
 
 A future checkpoint manifest must bind the reviewed semantic consumer decision matrix identity/version/hash independently from the Observation Schema, concrete tensor projection, normalization/formula manifests, architecture and catalogs. This prevents a checkpoint from being treated as semantically compatible when Actor/Critic eligibility or feature ownership changes while tensor shapes happen to remain equal. The current draft matrix is not approved for runtime use and no checkpoint or loader is changed by this note.
+
+## Structured entity manifest lineage (proposal)
+
+A future checkpoint manifest must bind the reviewed structured-entity/temporal contract identity and hash independently from the semantic consumer matrix, Observation Schema, concrete tensor projection, normalization/formula manifests, architecture and catalogs. A shape-compatible checkpoint is not semantically compatible if entity identity, ownership, completeness or temporal scope changes. The current draft contract is not runtime-approved.
