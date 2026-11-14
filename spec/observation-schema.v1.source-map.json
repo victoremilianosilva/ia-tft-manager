@@ -370,7 +370,7 @@
       "validity_rule": "valid only when source exists, provenance is present, and match/player/round/sequence are aligned"
     },
     {
-      "field": "strategic_evidence.core_unit_ids",
+      "field": "strategic_evidence.commitment_context.core_unit_ids",
       "current_source": "active_native_direction.unit_ids",
       "availability": "available",
       "nature": "derived",
