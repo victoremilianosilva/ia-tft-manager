@@ -676,7 +676,7 @@
       "formula_or_version": "critic-exact-mask-side-input-v1",
       "intended_consumer": "PPO critic/value head",
       "owner_issue": "#294/#293/#286",
-      "notes": "Chosen interface: critic receives exact masks as a separate identity-bound side input; the Observation Schema carries reference/identity only. Current TFTPolicy.get_value ignores masks, so runtime wiring is future work.",
+      "notes": "Chosen interface: critic receives exact masks as a separate identity-bound side input; the Observation Schema carries reference/identity only. Any Markov-sufficient state/history representation selected by the PPO architecture contract is additional critic context and never a substitute for exact masks. Current TFTPolicy.get_value ignores masks, so runtime wiring is future work.",
       "unit": "separate mask tensor + decision identity",
       "normalization_or_scale": "Action/Mask Contract owns exact shapes, ordering and hash",
       "validity_rule": "valid only when mask and observation decision_identity_hash and source sequence match"
