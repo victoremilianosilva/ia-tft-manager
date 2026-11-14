@@ -2257,9 +2257,9 @@
               "type": "string",
               "enum": [
                 "exact_masks",
-                "lossless_mask_encoding",
-                "markov_sufficient_state"
-              ]
+                "lossless_mask_encoding"
+              ],
+              "description": "Describes only how the exact decision-correlated action masks are supplied to the critic. A lossless encoding must preserve every mask value and its ordering. A Markov-sufficient state/history representation, if selected by the PPO architecture contract, is additional critic state context and never replaces these masks."
             },
             "source_decision_sequence": {
               "type": "integer",
