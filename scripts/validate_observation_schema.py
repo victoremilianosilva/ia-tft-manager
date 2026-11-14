@@ -116,8 +116,11 @@ def verify_snapshot_hashes(snapshot: dict, schema: dict) -> None:
             raise ValueError("decision identity hash mismatch")
         if snapshot["legal_state_context"]["mask_reference"]["decision_identity_hash"] != expected_identity_hash:
             raise ValueError("mask/observation decision identity mismatch")
-    elif identity["decision_identity_hash"] is not None:
-        raise ValueError("incomplete identity must not expose a decision identity hash")
+    else:
+        if identity["decision_identity_hash"] is not None:
+            raise ValueError("incomplete identity must not expose a decision identity hash")
+        if snapshot["legal_state_context"]["mask_reference"]["decision_identity_hash"] is not None:
+            raise ValueError("incomplete identity must not expose a mask decision identity hash")
 
 
 def field(value: object, nature: str = "observed") -> dict:
@@ -129,100 +132,6 @@ def field(value: object, nature: str = "observed") -> dict:
             "source": "contract-fixture",
             "source_path": "fixture.value",
             "nature": nature,
-        },
-    }
-
-
-def empty_slots(count: int) -> list[dict]:
-    return [{"slot_index": i, "presence": "empty", "unit": None} for i in range(count)]
-
-
-def valid_snapshot(schema: dict) -> dict:
-    projection = {
-        "projection_id": "tft.ppo.structured.v1",
-        "version": "1.0.0",
-        "projection_hash": "",
-        "dtype": "structured",
-        "blocks": [],
-        "canonicalization": "RFC8785",
-        "hash_scope": "Canonical projection definition excluding projection_hash",
-    }
-    projection.pop("projection_hash")
-    projection["projection_hash"] = digest(projection)
-    schema_hash = schema_contract_hash(schema)
-    empty_catalog = {
-        "catalog_id": "fixture.catalog",
-        "version": "1",
-        "content_hash": "sha256:" + "1" * 64,
-        "order_hash": "sha256:" + "2" * 64,
-    }
-    return {
-        "schema": {
-            "schema_id": "tft.ppo.observation",
-            "semantic_version": "1.0.0",
-            "structural_revision": 1,
-            "schema_hash": schema_hash,
-            "projection": projection,
-            "hash_algorithm": "SHA-256",
-            "hash_canonicalization": "RFC8785",
-            "hash_scope": "Canonical RFC8785 form of normative schema content (field definitions, types, constraints, requiredness, semantics, catalog references and projection identity); excludes title, description, examples, default, $comment, deprecated annotations and the instance schema_hash value",
-            "evolution_policy": {
-                "patch": "Editorial metadata/examples/provenance clarification only; no field meaning, constraints, projection or catalog identity changes.",
-                "minor": "Additive optional fields only; existing fields retain identical meaning and consumers may ignore additions only when their declared profile does not require them.",
-                "major": "Any field rename/removal/reinterpretation, unit/scale/range/ordering/requiredness change, or identity-semantic change.",
-                "projection_change": "Any tensor block/order/shape/dtype/encoder grouping/normalization change increments projection version and projection hash, even if semantic schema version is unchanged.",
-                "catalog_change": "Content and order fingerprints are independent; any used vocabulary or ordering change updates its fingerprint, and a changed interpretation is semantically incompatible.",
-                "migration": "Migration requires an explicit versioned manifest and contract tests; positional zero-padding/remapping is not evidence of semantic compatibility.",
-                "training_lineage": "Semantic or projection incompatibility starts a new training lineage unless an explicitly approved and tested partial transfer is recorded.",
-            },
-        },
-        "identity": {
-            "match_id": "fixture-match",
-            "engine_match_id": "fixture-engine-match",
-            "session_match_id": "fixture-session-match",
-            "player_id": "player-1",
-            "round": 1,
-            "decision_sequence": 1,
-            "snapshot_sequence": 1,
-            "status": "complete",
-            "captured_at": "2026-01-01T00:00:00Z",
-        },
-        "catalogs": {
-            "champions": dict(empty_catalog, catalog_id="champions"),
-            "traits": dict(empty_catalog, catalog_id="traits"),
-            "items": dict(empty_catalog, catalog_id="items"),
-            "components": dict(empty_catalog, catalog_id="components"),
-            "recipes": dict(empty_catalog, catalog_id="recipes"),
-        },
-        "player": {
-            "lifecycle": field("active"),
-            "health": field(100, "observed"),
-            "economy": {
-                "gold": field(10),
-                "level": field(4),
-                "xp": field(0),
-            },
-        },
-        "entities": {
-            "board": empty_slots(28),
-            "bench": empty_slots(9),
-            "shop": empty_slots(5),
-        },
-        "derived_context": {},
-        "strategic_evidence": {},
-        "legal_state_context": {
-            "status": "unknown",
-            "anti_loop_state": {"status": "unknown", "reason": "not supplied by fixture"},
-            "mask_reference": {
-                "status": "unknown",
-                "decision_identity_hash": "sha256:" + "3" * 64,
-                "reason": "mask belongs to the independent Action Contract",
-            },
-            "critic_context": {
-                "status": "unknown",
-                "reason": "critic representation is specified independently",
-            },
-            "description": "Descriptive state/history context only. Actual action masks and action legality are defined by the independent Action Contract.",
         },
     }
 
