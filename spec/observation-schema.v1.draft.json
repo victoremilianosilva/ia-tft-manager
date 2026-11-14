@@ -2146,5 +2146,92 @@
         }
       }
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "required": [
+          "identity"
+        ],
+        "properties": {
+          "identity": {
+            "required": [
+              "status"
+            ],
+            "properties": {
+              "status": {
+                "enum": [
+                  "partial",
+                  "session_only",
+                  "missing",
+                  "stale",
+                  "incompatible"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "legal_state_context": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "partial",
+                  "missing",
+                  "unknown",
+                  "not_applicable",
+                  "stale",
+                  "incompatible"
+                ]
+              },
+              "anti_loop_state": {
+                "properties": {
+                  "status": {
+                    "enum": [
+                      "partial",
+                      "missing",
+                      "unknown",
+                      "not_applicable",
+                      "stale",
+                      "incompatible"
+                    ]
+                  }
+                }
+              },
+              "mask_reference": {
+                "properties": {
+                  "status": {
+                    "enum": [
+                      "partial",
+                      "missing",
+                      "unknown",
+                      "not_applicable",
+                      "stale",
+                      "incompatible"
+                    ]
+                  }
+                }
+              },
+              "critic_context": {
+                "properties": {
+                  "status": {
+                    "enum": [
+                      "partial",
+                      "missing",
+                      "unknown",
+                      "not_applicable",
+                      "stale",
+                      "incompatible"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
 }
