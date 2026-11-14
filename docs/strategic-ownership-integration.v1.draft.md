@@ -25,7 +25,7 @@ This contract establishes:
 2. **Inference is not observation.** Direction discovery, focus, core traits, priorities, economic posture, lineup, and risk estimates must retain derived/estimated/committed provenance.
 3. **A hypothesis is not an active composition.** Pivot candidates and planner recommendations cannot replace the current active composition before an explicit transition is accepted by its owner.
 4. **One concept, one declared authority.** Parallel components may exist for comparison, but their state must be labeled experimental/diagnostic and must not silently overwrite the canonical state.
-5. **Identity is end-to-end.** Every decision/evidence chain must preserve match/episode, player, round, sequence, composition ID, and composition version as applicable.
+5. **Identity is end-to-end and typed.** Every decision/evidence chain must preserve the match/episode and player identity, round, and a typed source-sequence reference. Composition identity/version are additionally required only for composition-dependent records; candidate-only and pre-composition records must remain valid without an active composition.
 6. **Freshness is stronger than internal consistency.** A snapshot must be checked against the identity/sequence expected by the receiving runtime, not only against values copied from the snapshot itself.
 7. **Missing is not zero.** Unknown, unavailable, stale, partial, invalid, and observed zero remain distinct.
 8. **Shadow stays read-only.** The strategic architecture may recommend and resolve diagnostic proposals, but Engine legality/masks remain final and no action is executed.
@@ -77,7 +77,7 @@ The following identifiers and concepts must remain separate:
 - **Direction:** strategic archetype/category or directional hypothesis; not a composition ID.
 - **Composition ID:** identity of a concrete active/candidate composition.
 - **Anchor identity:** identity of the unit/trait/evidence anchoring a composition hypothesis.
-- **Composition version:** monotonic version of an accepted composition state.
+- **Composition version:** revision of an accepted active-composition state, monotonic within one `(engine_match_id, player_id, composition_id)` lineage. It is not a global counter and is not comparable across matches, players, or different composition IDs. A new match starts a new version namespace; a pivot to a different composition ID starts a new lineage. Candidate revisions use candidate identity/revision and must not be presented as active-composition versions.
 - **Focus:** ranked/weighted priorities; not automatically identical to core traits.
 - **Core traits:** trait set satisfying a defined composition/core criterion.
 - **Lock:** explicit authoritative state with source and version; unavailable when no authority exists.
@@ -93,8 +93,8 @@ Each field/source must carry enough metadata to distinguish:
 - origin: observed, derived, inferred, committed, recommended, estimated, or unknown;
 - quality: valid, partial, missing, stale, invalid, or unavailable;
 - source/component and source version;
-- match/episode, player, round, sequence;
-- composition ID/version when composition-dependent;
+- match/episode, player, round, and a typed source-sequence reference;
+- composition ID/version when composition-dependent; candidate identity/revision when candidate-dependent;
 - reason and horizon for estimates.
 
 Audited provenance gaps:
@@ -108,9 +108,21 @@ No consumer may promote a recommendation, inferred direction, or default value t
 
 ## 6. Identity, version, sequence, and lifecycle
 
-The minimum correlation identity for a decision chain is:
+The base correlation identity for every decision/evidence record is:
 
-`engine_match_id + player_id + round + source_sequence + composition_id + composition_version`
+`engine_match_id + player_id + round + source_sequence_ref`
+
+The typed `source_sequence_ref` must identify both the sequence namespace/scope and its producing component, for example:
+
+`{ scope: "player_local_ci", source_component: "CompositionIntelligencePlayerRuntime", value: 42 }`
+
+The scope and component names above are illustrative; implementations must use the canonical identifiers declared by the runtime contract. A bare integer named `source_sequence` is insufficient at cross-component boundaries.
+
+Composition-dependent records additionally require:
+
+`composition_id + composition_version`
+
+Candidate-dependent records that do not yet belong to an accepted active composition instead carry `candidate_id + candidate_revision`; they must not fabricate an active `composition_id` or `composition_version`. Records that are not composition-dependent omit those fields and explicitly declare that dependency as absent/not-applicable, rather than using empty IDs or zero versions as sentinels.
 
 Session IDs and Engine episode IDs are different namespaces and must be linked explicitly, not compared as if they were the same value.
 
@@ -121,7 +133,9 @@ Sequence fields with different scopes must remain distinct:
 - ContextBridge/player sequence;
 - Viewer/session correlation sequence.
 
-A recommendation must carry the exact source sequence of its context and candidate set. Executor-side validation against a separately supplied current sequence is insufficient if the recommendation itself does not record its origin sequence.
+Each sequence reference must retain its namespace/scope, producing component, and value. Conversion or propagation between scopes requires an explicit mapping/correlation; values from different scopes must never be compared directly.
+
+A recommendation must carry the exact typed source-sequence reference(s) for its context and candidate set. If those inputs originate from multiple sequence domains, preserve each reference and the validated correlation between them. Executor-side validation against a separately supplied current sequence is insufficient if the recommendation itself does not record its origin sequence.
 
 Lifecycle audit:
 - `TFTEngine::reset()` recreates per-player Composition Intelligence runtimes, clears candidates/diagnostics/sequences/commitments, and resets the optional Unified Shadow runtimes at episode boundaries.
@@ -208,7 +222,9 @@ Before Gate 5 can be accepted, executable evidence after Gate 8 must cover:
 10. Economic evidence source/horizon/quality and cost-vs-HOLD decomposition are auditable without double counting.
 11. Per-star-tier copies, shop offers, affordability and pool uncertainty are consistent across all consumers.
 12. Lineup selected board and deferred targets constrain position proposals in the same sequence/version.
-13. Recommendation sequence mismatch is rejected even within the same round and composition version.
+13. Recommendation sequence mismatch is rejected even within the same round and composition version; sequence comparisons require matching scope/component or an explicit validated cross-scope correlation.
+17. Pre-composition and candidate-only records are valid without an active composition ID/version; composition-dependent records require both. Candidate revisions cannot masquerade as active-composition versions.
+18. Composition versions are monotonic only within the declared match/player/composition lineage; reset and pivot tests prove namespace changes and prevent cross-lineage comparisons.
 14. Outcome correlation handles delayed outcomes, pivots, missing data and match end without causal/reward claims.
 15. Multi-round deterministic replay covers early game, stable composition, economy pressure, upgrade, pivot, incomplete evidence and match reset.
 16. All behavior remains Shadow/read-only; Engine masks/rules remain final legality authority.
