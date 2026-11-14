@@ -286,11 +286,11 @@ After Gate 8, executable acceptance evidence must cover:
 11. Per-star-tier copies, shop offers, affordability and pool uncertainty are consistent across all consumers.
 12. Lineup selected board and deferred targets constrain position proposals in the same sequence/version.
 13. Recommendation sequence mismatch is rejected even within the same round and composition version; sequence comparisons require matching scope/component or an explicit validated cross-scope correlation.
-17. Pre-composition and candidate-only records are valid without an active composition ID/version; composition-dependent records require both. Candidate revisions cannot masquerade as active-composition versions.
-18. Composition versions are monotonic only within the declared match/player/composition lineage; reset and pivot tests prove namespace changes and prevent cross-lineage comparisons.
-14. Outcome correlation handles delayed outcomes, pivots, missing data and match end without causal/reward claims.
-15. Multi-round deterministic replay covers early game, stable composition, economy pressure, upgrade, pivot, incomplete evidence and match reset.
-16. All behavior remains Shadow/read-only; Engine masks/rules remain final legality authority.
+14. Pre-composition and candidate-only records are valid without an active composition ID/version; composition-dependent records require both. Candidate revisions cannot masquerade as active-composition versions.
+15. Composition versions are monotonic only within the declared match/player/composition lineage; reset and pivot tests prove namespace changes and prevent cross-lineage comparisons.
+16. Outcome correlation handles delayed outcomes, pivots, missing data and match end without causal/reward claims.
+17. Multi-round deterministic replay covers early game, stable composition, economy pressure, upgrade, pivot, incomplete evidence and match reset.
+18. All behavior remains Shadow/read-only; Engine masks/rules remain final legality authority.
 
 ## 9. Gate status and implementation boundary
 
