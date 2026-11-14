@@ -18,6 +18,8 @@ Para decisões de arquitetura e implementação da nova linhagem, use primeiro o
 
 ## Comece por aqui
 
+- [Limite de integração live Overwolf/GEP](overwolf-live-state-integration-boundary.md) — ownership entre captura GEP, estado canônico, importação nativa, inferência PPO e evidência necessária para declarar integração live.
+
 - [Arquitetura geral](architecture.md) — componentes e fluxo de dados.
 - [Engine de lobby](lobby-engine.md) — ciclo de partida e estado dos oito jogadores.
 - [Catálogo e instâncias de unidades](units-catalog.md) — definições estáticas, cópias, estrelas e pool.
