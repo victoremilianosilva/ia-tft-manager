@@ -1,12 +1,12 @@
 # Strategic Ownership and Integration Contract v1 — Draft
 
-**Status:** documentary specification; authority decisions and runtime acceptance remain pending  
+**Status:** strategic ownership decisions approved for the documentary contract; runtime acceptance remains pending  
 **Contract ID:** `tft.strategic-ownership.v1`  
 **Target architecture:** `new-arquiteture`  
 **Related issues:** #281, #282, #283, #284, #289, #300  
 **Coordinates with:** Observation #293, Action #294, PPO/checkpoint #288
 
-> This document consolidates the static integration audit. It does not select an unapproved runtime owner, change strategic behavior, generate/execute actions, or modify PPO, rewards, observations, checkpoints, masks, Engine rules, or Viewer behavior.
+> This document consolidates the static integration audit and the approved Gate 5 authority decisions. It does not authorize runtime implementation, change strategic behavior, generate/execute actions, or modify PPO, rewards, observations, checkpoints, masks, Engine rules, or Viewer behavior.
 
 ## 1. Purpose
 
@@ -50,45 +50,38 @@ This contract establishes:
 | UnifiedStrategicStateMachine / UnifiedStrategicShadowRuntime | Separate Shadow state machine used for comparison/audit and pivot transitions | Maintains parallel state; must not silently publish back to CI/PPO or be treated as canonical without explicit decision |
 | Viewer/JSONL diagnostics | Persists provenance, correlation, sequences and diagnostic results | Telemetry is not a state authority |
 
-### 3.1 Authority decision still required
+### 3.1 Authority boundary — approved decision
 
 The audit establishes that at least three strategic states coexist:
 - `strategic_planner_commitments[i]`;
 - `composition_intelligence_players[i].active`;
 - `strategic_shadow_runtimes[i].machine().active_composition()`.
 
-They are not one shared state. Current runtime re-anchors the Unified Shadow machine when the external CI identity/version changes, then keeps its own state for isolated comparison. This is acceptable only while it is explicitly diagnostic.
+They are not one shared state. The canonical production-facing direction is the `StrategicPlanner` commitment. The canonical active composition is owned and committed only by the Composition Intelligence transition path (`CompositionIntelligencePlayerRuntime` through `ActiveCompositionManager` / `TransitionManager`). These are related but distinct authorities: the planner owns its direction commitment; the composition owner owns the accepted concrete composition and its composition-scoped state. A transition record correlates them without one component silently overwriting the other.
 
-**Gate 5 cannot be marked complete until the intended production authority is explicitly approved for each distinct concept**, at minimum:
-- strategic direction / commitment;
-- active composition identity and version;
-- pivot candidate;
-- confirmed transition;
-- focus and core traits;
-- composition lock;
-- economic posture / progression hypothesis.
+`UnifiedStrategicStateMachine` and `UnifiedStrategicShadowRuntime` are diagnostic-only parallel state. They may independently evaluate/record candidate transitions in their own namespace, but cannot publish canonical direction, active composition, lock, or progression state to CI, Planner, PPO, Engine, or Viewer. Divergence is diagnostic evidence, not a last-writer-wins conflict.
 
-Do not solve this by copying all fields into one class or by allowing one machine to overwrite another. Define event/transition ownership and synchronization rules per concept.
+This authority decision is approved for the documentary contract. It does not authorize runtime migration or prove that the existing runtime already conforms.
 
-## 3.2 Proposed Gate 5 ownership decision matrix — pending approval
+## 3.2 Approved Gate 5 ownership decision matrix
 
-This matrix is a **documentary proposal**, not an approved runtime migration. It turns the existing owner map into explicit decision rights. It deliberately distinguishes the component that discovers/proposes a value from the component that commits authoritative state.
+This matrix records the approved documentary ownership decisions; it is not runtime migration authorization. It distinguishes the component that discovers/proposes a value from the component that commits authoritative state.
 
-| Concept | Proposed canonical owner | Proposal / evidence producers | Mutation authority | Consumers and synchronization rule | Decision status |
+| Concept | Canonical owner | Proposal / evidence producers | Mutation authority | Consumers and synchronization rule | Decision status |
 |---|---|---|---|---|---|
-| Strategic direction / commitment | `StrategicPlanner` commitment state, scoped to match/player | `NativeStrategicCompositionGenerator` supplies direction hypotheses; evidence adapters supply validated facts | Only the planner may create, revise, or withdraw its commitment. Consumers cannot write it back. | Publish a versioned commitment record with provenance and source-sequence refs. Active composition owner may accept/reject a related transition but cannot silently rewrite the planner commitment. | Proposed; confirm whether planner commitment is the product-facing canonical direction or remains advisory. |
-| Active composition ID / version | `CompositionIntelligencePlayerRuntime` through `ActiveCompositionManager` / `TransitionManager` | Native composition generator and CI evaluators produce candidate compositions | Only the active-composition transition path may activate, replace, or version the active composition. Candidate generation/evaluation is non-mutating. | Publish an accepted transition event carrying match/player, composition ID/version, typed source sequence, and prior identity. Consumers accept only matching lineage and freshness. | Proposed; strongest existing active-composition owner in the audited runtime. |
-| Pivot candidate | Candidate record owned by the component coordinating pivot evaluation; `StrategicPivotTransitionCoordinator` for Unified Shadow diagnostics, CI candidate state for CI transitions | Composition generator, pivot discovery, feasibility/economic evidence | Candidate producer may create/revise/withdraw its own candidate revision; it cannot mutate active composition or confirmed direction. | Candidate identity/revision and evidence refs travel separately from active composition version. Candidate rejection/expiry is explicit. | Partially resolved; CI and Unified Shadow candidate paths must not be conflated. |
-| Confirmed transition | The same active-composition transition authority that owns the target active composition; Unified Shadow machine remains diagnostic unless separately approved | Pivot coordinator proposes; transition validator checks identity, evidence, feasibility, and expected prior version | Only the active-composition owner may commit the transition. The Unified Shadow machine may confirm only its isolated diagnostic state and must not publish to CI/PPO. | Commit is atomic at the contract level: accepted transition links prior and next composition lineage, direction association, reason, source sequences, and resulting version. Rejected transitions leave active state unchanged. | Proposed; confirmation authority must be explicitly approved for the canonical architecture. |
-| Focus | Active composition owner stores the accepted focus snapshot; generator/planner may propose it | Composition generator and trait/evidence analysis | Proposal producers may revise candidate focus; only accepted composition transition may publish active focus. | Preserve ranked/weighted focus separately from core traits; include provenance, identity/version, and sequence. | Open semantic decision: confirm focus schema and whether it is composition-scoped or direction-scoped. |
-| Core traits | Active composition owner stores the accepted core-trait set; generator computes candidate traits | Native composition generator and trait evaluation | Generator owns candidate calculation; active-composition transition authority owns the accepted active set. | Do not derive core traits by copying focus or taking its first element. Keep criterion, source, identity/version, and sequence explicit. | Open semantic decision: define the core-trait criterion before approval. |
-| Composition lock | No canonical owner approved yet. Proposed destination: active-composition owner, only if lock is a property of the active composition lifecycle | A dedicated policy/evidence evaluator may recommend lock/unlock; no hardcoded default is authoritative | Until a real authority and transition rule are approved, lock is **unavailable**, not false. Once approved, only its owner may change it through an explicit versioned event. | Planner and evaluators consume the lock only when identity/version and provenance match. Missing/stale lock must not be interpreted as unlocked. | Unresolved; current builder hardcodes false and bridge provenance is incorrect. |
-| Economic posture | `EconomicController` decision for the current player snapshot | Engine economy facts plus explicitly sourced estimates and progression evidence | EconomicController owns its derived posture decision; it does not mutate active composition, direction, or lock. | Emit posture as a derived, time-bounded decision with evidence refs, horizon, quality, and sequence. Strategic components consume it read-only. | Proposed; evidence completeness and evaluator integration remain open under #282. |
-| Progression hypothesis / plan | `EconomicController` (or a separately named progression planner only if a future design explicitly introduces one) | Economy, board strength, level/XP, round, projected income/damage and risk evidence | The designated progression decision producer may revise its hypothesis; consumers cannot promote defaults into a plan. | Keep plan distinct from posture and action recommendation. Missing projected values remain unknown; include horizon and provenance. | Proposed; current producer path leaves several inputs at defaults. |
+| Strategic direction / commitment | `StrategicPlanner` commitment state, scoped to match/player | `NativeStrategicCompositionGenerator` supplies direction hypotheses; evidence adapters supply validated facts | Only the planner may create, revise, or withdraw its commitment. Consumers cannot write it back. | Publish a versioned commitment record with provenance and source-sequence refs. Active composition owner may accept/reject a related transition but cannot silently rewrite the planner commitment. | **Approved:** canonical product-facing direction commitment. |
+| Active composition ID / version | `CompositionIntelligencePlayerRuntime` through `ActiveCompositionManager` / `TransitionManager` | Native composition generator and CI evaluators produce candidate compositions | Only the active-composition transition path may activate, replace, or version the active composition. Candidate generation/evaluation is non-mutating. | Publish an accepted transition event carrying match/player, composition ID/version, typed source sequence, and prior identity. Consumers accept only matching lineage and freshness. | **Approved:** sole canonical active-composition commit authority. |
+| Pivot candidate | Candidate record owned by the component coordinating pivot evaluation; `StrategicPivotTransitionCoordinator` for Unified Shadow diagnostics, CI candidate state for CI transitions | Composition generator, pivot discovery, feasibility/economic evidence | Candidate producer may create/revise/withdraw its own candidate revision; it cannot mutate active composition or confirmed direction. | Candidate identity/revision and evidence refs travel separately from active composition version. Candidate rejection/expiry is explicit. | **Approved:** separate CI and Unified diagnostic streams; shared schema, isolated state. |
+| Confirmed transition | The same active-composition transition authority that owns the target active composition; Unified Shadow machine remains diagnostic unless separately approved | Pivot coordinator proposes; transition validator checks identity, evidence, feasibility, and expected prior version | Only the active-composition owner may commit the transition. The Unified Shadow machine may confirm only its isolated diagnostic state and must not publish to CI/PPO. | Commit is atomic at the contract level: accepted transition links prior and next composition lineage, direction association, reason, source sequences, and resulting version. Rejected transitions leave active state unchanged. | **Approved:** CI transition path is canonical; Unified Shadow is diagnostic-only. |
+| Focus | Active composition owner stores the accepted focus snapshot; generator/planner may propose it | Composition generator and trait/evidence analysis | Proposal producers may revise candidate focus; only accepted composition transition may publish active focus. | Preserve ranked/weighted focus separately from core traits; include provenance, identity/version, and sequence. | **Approved:** composition-scoped ranked/weighted priorities. |
+| Core traits | Active composition owner stores the accepted core-trait set; generator computes candidate traits | Native composition generator and trait evaluation | Generator owns candidate calculation; active-composition transition authority owns the accepted active set. | Do not derive core traits by copying focus or taking its first element. Keep criterion, source, identity/version, and sequence explicit. | **Approved:** distinct composition membership set; criterion must be explicit in each composition definition. |
+| Composition lock | Active-composition owner (`ActiveCompositionManager` / `TransitionManager`) | A dedicated policy/evidence evaluator may recommend lock/unlock; no hardcoded default is authoritative | Until a real authority and transition rule are approved, lock is **unavailable**, not false. Once approved, only its owner may change it through an explicit versioned event. | Planner and evaluators consume the lock only when identity/version and provenance match. Missing/stale lock must not be interpreted as unlocked. | **Approved:** active composition owner; tri-state; policy decision required before changing from unknown. |
+| Economic posture | `EconomicController` decision for the current player snapshot | Engine economy facts plus explicitly sourced estimates and progression evidence | EconomicController owns its derived posture decision; it does not mutate active composition, direction, or lock. | Emit posture as a derived, time-bounded decision with evidence refs, horizon, quality, and sequence. Strategic components consume it read-only. | **Approved:** canonical economic posture producer; evidence completeness remains tracked by #282. |
+| Progression hypothesis / plan | `EconomicController` (or a separately named progression planner only if a future design explicitly introduces one) | Economy, board strength, level/XP, round, projected income/damage and risk evidence | The designated progression decision producer may revise its hypothesis; consumers cannot promote defaults into a plan. | Keep plan distinct from posture and action recommendation. Missing projected values remain unknown; include horizon and provenance. | **Approved:** same producer, distinct decision contracts; evidence completeness remains tracked by #282. |
 
 ### 3.3 Mutation and synchronization protocol
 
-The following protocol is proposed for all canonical strategic state changes:
+The following protocol is normative for all canonical strategic state changes:
 
 1. **Read one correlated input set.** A decision cycle captures the expected engine match/episode, player, round, and all typed source-sequence refs. Facts from different sequence scopes require an explicit validated correlation; bare integers from different namespaces are not comparable.
 2. **Validate before evaluation.** Reject or mark unavailable any input with mismatched match/player, stale round/sequence, invalid quality, or incompatible composition/candidate lineage. Internal snapshot consistency is not a substitute for validation against the receiving runtime's expected identity.
@@ -111,19 +104,34 @@ The following protocol is proposed for all canonical strategic state changes:
 - Every recommendation carries the exact source-sequence refs of its context and candidate set. Executor validation must compare those refs against the expected current snapshot.
 - Shadow remains read-only: no proposal or transition record executes an in-game action, changes Engine legality, or overrides native masks.
 
-### 3.5 Decisions still requiring explicit product approval
+### 3.5 Approved authority decisions
 
-This proposal narrows the remaining Gate 5 decisions; it does not silently settle them:
+The following decisions are normative for the new architecture's documentary contract:
 
-1. Confirm whether `StrategicPlanner` commitment is the canonical product-facing direction or an advisory commitment consumed by the active-composition owner.
-2. Confirm `ActiveCompositionManager/TransitionManager` as the sole canonical active-composition commit authority, and define the exact boundary between CI transitions and Unified Shadow diagnostics.
-3. Decide whether pivot candidate coordination is one shared candidate contract or two explicitly isolated CI/Unified diagnostic candidate streams.
-4. Define the semantic schema and derivation criteria for focus versus core traits.
-5. Select a real composition-lock authority and policy; until then lock remains unavailable.
-6. Confirm `EconomicController` as owner of both posture and progression hypothesis, or split progression into a separately specified producer without granting it composition mutation rights.
-7. Approve the transition-event envelope and cross-component sequence-correlation rules as the only synchronization mechanism.
+1. **Direction:** `StrategicPlanner` owns the canonical product-facing direction commitment. It may revise or withdraw only its own commitment; the composition owner references the applicable commitment revision but cannot rewrite it.
+2. **Active composition:** `ActiveCompositionManager` / `TransitionManager`, through `CompositionIntelligencePlayerRuntime`, is the sole canonical active-composition commit authority. `UnifiedStrategicStateMachine` remains diagnostic-only and isolated.
+3. **Pivot candidates:** CI and Unified Shadow use separate candidate streams with a shared typed envelope schema. Candidate IDs/revisions are namespaced by producer; no candidate stream mutates canonical active state.
+4. **Focus and core traits:** focus is a composition-scoped ordered/weighted priority set; core traits are a separate set derived only from explicit composition criteria. Missing criteria yield unavailable evidence, never a guessed set.
+5. **Composition lock:** the active-composition owner owns the lock lifecycle. The contract is tri-state (`locked`, `unlocked`, `unknown`); initial/unsupported/missing state is unknown. A separately specified evidence policy must propose changes, and only the active-composition transition path may commit them.
+6. **Economy:** `EconomicController` owns both economic posture and progression hypothesis as separate, independently versioned outputs with their own evidence/horizon. Neither can mutate strategic direction, active composition, or lock.
+7. **Synchronization:** all cross-component canonical changes use the immutable transition-event envelope defined below. Typed source-sequence references and explicit correlation are mandatory; direct field copying and last-writer-wins synchronization are prohibited.
 
-No item above authorizes runtime changes. Runtime implementation and executable integrated proof remain blocked until Gate 8 and explicit user authorization.
+### 3.6 Canonical transition-event envelope
+
+Every accepted canonical transition must publish an immutable record containing, at minimum:
+
+- `event_id` and idempotency key;
+- `owner_component` and transition type;
+- engine match/episode identity and player identity;
+- round plus every typed source-sequence reference used, including explicit cross-scope correlation metadata where required;
+- expected prior state identity/version and resulting state identity/version;
+- planner commitment identity/revision when direction is affected;
+- candidate identity/revision and candidate producer namespace when applicable;
+- accepted/rejected outcome, reason, provenance, evidence quality, and decision horizon where relevant.
+
+The receiver must validate expected prior state and all identity/sequence references before applying an event. Duplicate event IDs are idempotent. Stale, conflicting, incomplete, or out-of-lineage events are rejected with an explicit diagnostic and cannot partially mutate canonical state. A confirmed pivot is one logical transition: direction association and active composition become visible as one correlated committed result. The CI owner publishes canonical events; Unified Shadow publishes only diagnostic events in its own namespace.
+
+This event contract is normative for future implementation. It does not authorize implementation before Gate 8.
 
 ## 4. Semantic distinctions
 
@@ -288,8 +296,8 @@ Before Gate 5 can be accepted, executable evidence after Gate 8 must cover:
 
 **Audit status:** Audit E (#300) is closed as a static audit deliverable; the related implementation issues #281–#284 and replay issue #289 remain open.
 
-**Documentary status:** this draft consolidates the known ownership map, integration gaps, semantic boundaries and required evidence. It deliberately does not choose between parallel state owners where the product authority decision has not yet been approved.
+**Documentary status:** the ownership decisions in sections 3.1–3.6 are approved and normative. The remaining issues #281, #282, #283, #284 and #289 track contract elaboration and executable acceptance evidence; they are not permission to begin runtime work.
 
-**Gate 5 is not complete.** Approval requires an explicit owner decision per concept and closure of the remaining documentary ambiguities. Runtime implementation/tests remain blocked until Gate 8 and explicit user approval.
+**Gate 5 is not complete.** The authority-decision subgate is complete. Remaining work is to resolve the candidate/economic/unit/lineup/replay contract gaps, update the affected documentary artifacts, and define the post-Gate-8 executable acceptance plan. Runtime implementation/tests remain blocked until Gate 8 and explicit user approval.
 
 No runtime files, PPO, observations, rewards, checkpoints, masks, Engine rules, Viewer, or game actions are changed by this document.
