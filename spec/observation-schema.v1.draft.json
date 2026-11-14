@@ -1190,24 +1190,6 @@
             }
           }
         },
-        "unit_fit": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "required": [
-              "instance_id",
-              "score"
-            ],
-            "properties": {
-              "instance_id": {
-                "type": "string"
-              },
-              "score": {
-                "$ref": "#/$defs/field"
-              }
-            }
-          }
-        },
         "item_target_fit": {
           "type": "array",
           "items": {
@@ -1611,9 +1593,6 @@
         "focus_weights": {
           "$ref": "#/$defs/field",
           "description": "Independent trait-keyed strategic focus weights. The current producer does not provide this signal; serialize missing/unknown with provenance and reason, never copy legacy DTO defaults."
-        },
-        "core_unit_ids": {
-          "$ref": "#/$defs/field"
         }
       }
     },
