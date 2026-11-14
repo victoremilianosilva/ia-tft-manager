@@ -78,15 +78,7 @@ A versioned namespace registry must declare for each namespace:
 - reset boundary;
 - whether it can be used as canonical decision sequence or only as a source reference.
 
-Initial required domains:
-- `tft.engine.decision`: canonical per-player decision sequence owned by the native Engine;
-- `tft.engine.observation-snapshot`: native observation/source snapshot sequence;
-- `tft.engine.action-mask-snapshot`: mask snapshot sequence, if independently produced;
-- separate namespace IDs for each strategic/economic owner sequence actually consumed;
-- replay/recorder and Viewer/session namespaces for correlation only;
-- Overwolf/GEP source namespace when a source sequence is available.
-
-These identifiers are proposed registry entries, not claims that every producer currently emits such counters. A namespace cannot be registered as available until its producer, scope and reset behavior are verified.
+Proposed namespace identifiers and current availability are defined in [Sequence Namespace Registry v2](../spec/sequence-namespace-registry.v2.draft.json) and its human-readable companion. In particular, `tft.engine.decision`, `tft.engine.observation-snapshot`, and `tft.engine.action-mask-snapshot` are **proposed_not_implemented**: the current producer-binding audit does not prove that these counters are emitted or transported. Existing CI, native strategic snapshot, ContextBridge, diagnostic JSONL, Viewer and PPO rollout sequence domains remain owner-local references and are not canonical decision identity. A namespace cannot be promoted to canonical eligibility until its producer, scope, monotonicity, reset behavior and exact correlation are proven.
 
 ### 3.3 Reset and rollover
 
@@ -215,4 +207,4 @@ This design does not approve a concrete tensor projection, PPO encoder, action-s
 
 ## 12. Status
 
-**Proposed decision:** Observation Schema v2 plus Decision Identity Envelope v2. This proposal requires review and approval before the machine-readable v2 schema is created or any implementation begins. Issue #338 tracks that review. Gate 8 and explicit authorization remain mandatory for runtime work.
+**Proposed decision:** Observation Schema v2 plus Decision Identity Envelope v2. The machine-readable `spec/observation-schema.v2.draft.json`, namespace registry, hash vectors and v1→v2 crosswalk are now draft review artifacts under issue #340. They are not approved for runtime use. Issue #338 tracks the versioning-boundary decision; issue #340 tracks the detailed v2 schema/registry/hash specification. Gate 8 and explicit authorization remain mandatory for runtime work.
