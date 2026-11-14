@@ -45,6 +45,7 @@ def valid_snapshot(schema: dict) -> dict:
         "canonicalization": "RFC8785",
         "hash_scope": "Canonical projection definition excluding projection_hash",
     }
+    projection.pop("projection_hash")
     projection["projection_hash"] = digest(projection)
     schema_hash = digest(schema)
     empty_catalog = {
