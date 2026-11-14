@@ -1,5 +1,7 @@
 # Configuração do treinamento PPO
 
+> **Referência operacional do trainer atual.** As regras de retomada e scheduler descritas aqui documentam a implementação legada auditada. Não definem a política de resume/transfer da nova linhagem; prevalecem o [PPO Architecture and Checkpoint Contract v1](ppo-checkpoint-contract.v1.draft.md) e o [PPO Evaluation Protocol v1](ppo-evaluation-protocol.v1.draft.md). Não use este guia para inferir compatibilidade semântica de checkpoints.
+
 A configuração efetiva é centralizada em `TrainingConfig` (`training_config.py`).
 Ela pode ser fornecida diretamente ao construtor:
 
