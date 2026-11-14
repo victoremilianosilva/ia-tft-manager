@@ -233,21 +233,27 @@ def main() -> None:
     validator = jsonschema.Draft202012Validator(
         schema, format_checker=jsonschema.FormatChecker()
     )
+
+    examples = ROOT / "spec" / "examples" / "observation-v1"
     source_map = json.loads((ROOT / "spec" / "observation-schema.v1.source-map.json").read_text(encoding="utf-8"))
     migration_map = json.loads((ROOT / "spec" / "observation-schema.v1.migration-map.json").read_text(encoding="utf-8"))
+    snapshot = json.loads((examples / "valid-minimal.json").read_text(encoding="utf-8"))
+
+    # Legacy coverage and source-map completeness.
     assert len(migration_map["mappings"]) == migration_map["source_feature_count"] == 66
     for mapping in migration_map["mappings"]:
         assert mapping["decision"] in migration_map["decision_vocabulary"]
         for destination in mapping["destination_paths"]:
             assert schema_path_exists(schema, destination), f"migration destination not in schema: {destination}"
         if mapping["decision"] == "drop_constant":
-            assert not mapping["destination_paths"], f"constant legacy feature unexpectedly has a destination: {mapping}"
+            assert not mapping["destination_paths"], "constant legacy feature unexpectedly has a destination"
+
     source_paths = [entry["field"] for entry in source_map["entries"]]
     assert len(source_paths) == len(set(source_paths)), "duplicate source-map field paths"
-    required_source_metadata = {"current_source", "availability", "nature", "intended_consumer", "owner_issue", "unit", "normalization_or_scale", "validity_rule", "notes"}
-    for block in snapshot["schema"]["projection"]["blocks"]:
-        for source_path in block["source_paths"]:
-            assert schema_path_exists(schema, source_path), f"projection source path not in schema: {source_path}"
+    required_source_metadata = {
+        "current_source", "availability", "nature", "intended_consumer",
+        "owner_issue", "unit", "normalization_or_scale", "validity_rule", "notes"
+    }
     for entry in source_map["entries"]:
         missing_metadata = required_source_metadata - set(entry)
         assert not missing_metadata, f"{entry['field']} missing source metadata: {sorted(missing_metadata)}"
@@ -255,8 +261,8 @@ def main() -> None:
         assert schema_path_exists(schema, entry["field"]), f"source-map path not present in schema: {entry['field']}"
     for excluded in source_map.get("excluded_legacy_projections", []):
         assert excluded.get("legacy_projection") and excluded.get("reason"), "excluded projection needs a reason"
-    examples = ROOT / "spec" / "examples" / "observation-v1"
-    snapshot = json.loads((examples / "valid-minimal.json").read_text(encoding="utf-8"))
+
+    # Materialize the fixture's normative schema, projection and decision hashes.
     expected_schema_hash = schema_contract_hash(schema)
     snapshot["schema"]["schema_hash"] = expected_schema_hash
     snapshot["identity"]["decision_identity_hash"] = decision_identity_hash(snapshot["identity"])
@@ -264,15 +270,25 @@ def main() -> None:
     projection = snapshot["schema"]["projection"]
     projection.pop("projection_hash", None)
     projection["projection_hash"] = digest(projection)
+
+    for block in projection["blocks"]:
+        for source_path in block["source_paths"]:
+            assert schema_path_exists(schema, source_path), f"projection source path not in schema: {source_path}"
+
+    expected_catalogs = {
+        name: {"content_hash": item["content_hash"], "order_hash": item["order_hash"]}
+        for name, item in snapshot["catalogs"].items()
+    }
     verify_snapshot_hashes(snapshot, schema)
+    verify_catalog_fingerprints(snapshot, expected_catalogs)
     verify_provenance_nature(snapshot)
+    verify_context_identity(snapshot)
 
     errors = sorted(validator.iter_errors(snapshot), key=lambda e: list(e.absolute_path))
     if errors:
-        raise SystemExit("valid-minimal.json rejected:\\n" + "\\n".join(
-            f"{list(e.absolute_path)}: {e.message}" for e in errors
-        ))
+        raise SystemExit("valid-minimal.json rejected: " + "; ".join(e.message for e in errors))
 
+    # A deliberately invalid fixture must be rejected for its missing reason.
     invalid = json.loads((examples / "invalid-missing-reason.json").read_text(encoding="utf-8"))
     invalid["schema"]["schema_hash"] = expected_schema_hash
     invalid["identity"]["decision_identity_hash"] = decision_identity_hash(invalid["identity"])
@@ -282,18 +298,18 @@ def main() -> None:
     invalid_projection["projection_hash"] = digest(invalid_projection)
     assert list(validator.iter_errors(invalid)), "invalid-missing-reason.json unexpectedly passed"
 
+    # Every field-status example must validate and retain provenance nature.
     matrix = json.loads((examples / "field-status-matrix.json").read_text(encoding="utf-8"))
     for case_name, case in matrix["cases"].items():
         candidate = copy.deepcopy(snapshot)
         candidate["player"]["economy"]["gold"] = case
         case_errors = list(validator.iter_errors(candidate))
         if case_errors:
-            raise SystemExit(f"field-status case {case_name!r} rejected: " +
-                             "; ".join(e.message for e in case_errors))
-        verify_provenance_nature(candidate)\n        verify_context_identity(candidate)
+            raise SystemExit(f"field-status case {case_name!r} rejected: " + "; ".join(e.message for e in case_errors))
+        verify_provenance_nature(candidate)
+        verify_context_identity(candidate)
 
-    # Zero is a real observed value; missing is a distinct status with a reason
-    # and must not carry a fabricated numeric value.
+    # Zero is observed data; unavailable states carry no fabricated value.
     zero = copy.deepcopy(snapshot)
     zero["player"]["economy"]["gold"] = field(0)
     assert not list(validator.iter_errors(zero))
@@ -303,14 +319,9 @@ def main() -> None:
         "status": "missing",
         "nature": "observed",
         "reason": "source did not provide gold",
-        "provenance": {
-            "source": "fixture",
-            "source_path": "fixture.gold",
-            "nature": "observed",
-        },
+        "provenance": {"source": "fixture", "source_path": "fixture.gold", "nature": "observed"},
     }
     assert not list(validator.iter_errors(missing))
-
     invalid_missing_reason = copy.deepcopy(missing)
     del invalid_missing_reason["player"]["economy"]["gold"]["reason"]
     assert list(validator.iter_errors(invalid_missing_reason))
@@ -318,6 +329,7 @@ def main() -> None:
     invalid_missing_with_value["player"]["economy"]["gold"]["value"] = 0
     assert list(validator.iter_errors(invalid_missing_with_value))
 
+    # Incomplete identity cannot be combined with valid mask/critic context.
     incomplete_identity = copy.deepcopy(snapshot)
     incomplete_identity["identity"].update({
         "match_id": None, "engine_match_id": None, "player_id": None,
@@ -345,6 +357,7 @@ def main() -> None:
     else:
         raise AssertionError("valid critic context with incomplete identity was not rejected")
 
+    # Complete anti-loop context requires exact histories and matching sequence.
     complete_anti_loop = copy.deepcopy(snapshot)
     anti_loop = complete_anti_loop["legal_state_context"]["anti_loop_state"]
     anti_loop.update({
@@ -359,7 +372,6 @@ def main() -> None:
     complete_anti_loop["legal_state_context"].pop("reason", None)
     assert not list(validator.iter_errors(complete_anti_loop))
     verify_context_identity(complete_anti_loop)
-
     stale_anti_loop = copy.deepcopy(complete_anti_loop)
     stale_anti_loop["legal_state_context"]["anti_loop_state"]["source_decision_sequence"] = 0
     try:
@@ -370,15 +382,13 @@ def main() -> None:
         raise AssertionError("stale anti-loop history was not rejected")
 
     invalid_occupied_slot = copy.deepcopy(snapshot)
-    invalid_occupied_slot["entities"]["board"][0] = {
-        "slot_index": 0, "presence": "occupied", "unit": None
-    }
+    invalid_occupied_slot["entities"]["board"][0] = {"slot_index": 0, "presence": "occupied", "unit": None}
     assert list(validator.iter_errors(invalid_occupied_slot))
 
+    # Hashes, catalog ordering, schema evolution and projection padding.
     invalid_schema_hash = copy.deepcopy(snapshot)
     invalid_schema_hash["schema"]["schema_hash"] = "sha256:" + "0" * 64
-    assert list(validator.iter_errors(invalid_schema_hash)) == []  # JSON Schema checks format; hash identity is checked here.
-    assert invalid_schema_hash["schema"]["schema_hash"] != schema_contract_hash(schema)
+    assert not list(validator.iter_errors(invalid_schema_hash))  # Format is valid; semantic hash check must reject.
     try:
         verify_snapshot_hashes(invalid_schema_hash, schema)
     except ValueError:
@@ -396,10 +406,10 @@ def main() -> None:
         raise AssertionError("mask/observation identity mismatch was not rejected")
 
     mismatched_catalog = copy.deepcopy(snapshot)
-    expected_catalogs = {name: {"content_hash": item["content_hash"], "order_hash": item["order_hash"]} for name, item in snapshot["catalogs"].items()}
-    expected_catalogs["traits"]["order_hash"] = "sha256:" + "f" * 64
+    wrong_catalogs = copy.deepcopy(expected_catalogs)
+    wrong_catalogs["traits"]["order_hash"] = "sha256:" + "f" * 64
     try:
-        verify_catalog_fingerprints(mismatched_catalog, expected_catalogs)
+        verify_catalog_fingerprints(mismatched_catalog, wrong_catalogs)
     except ValueError:
         pass
     else:
@@ -429,8 +439,7 @@ def main() -> None:
         raise AssertionError("projection hash mismatch was not rejected")
 
     print("Observation Schema Draft 2020-12: OK")
-    print("Valid/invalid fixtures, field-state matrix, anti-loop/critic identity, hashes and 66-feature crosswalk: OK")
-
+    print("Fixtures, provenance, identity, masks, anti-loop history, catalog/order, padding and 66-feature crosswalk: OK")
 
 if __name__ == "__main__":
     main()
