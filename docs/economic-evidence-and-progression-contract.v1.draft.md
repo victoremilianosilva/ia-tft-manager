@@ -1,6 +1,6 @@
-# Economic Evidence and Progression Contract v1 — Draft
+# Economic Evidence and Progression Contract v1
 
-**Status:** documentary specification; runtime implementation and executable acceptance blocked until Gate 8  
+**Status:** approved documentary specification; runtime implementation and executable acceptance blocked until Gate 8  
 **Contract ID:** `tft.economic-evidence.v1`  
 **Target:** `new-arquiteture`  
 **Related:** #282, #281, #283, #284, #289; Observation #293; Reward #287
