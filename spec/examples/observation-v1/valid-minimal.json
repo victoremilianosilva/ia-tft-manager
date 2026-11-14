@@ -55,7 +55,9 @@
     "player_sequence": 1,
     "event_sequence": 1,
     "captured_at": "2026-11-13T12:00:00Z",
-    "status": "complete"
+    "status": "complete",
+    "decision_identity_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+    "decision_identity_hash_scope": "Canonical RFC8785 SHA-256 over match_id, engine_match_id, player_id, round, decision_sequence and snapshot_sequence; excludes this hash and session/episode/event metadata."
   },
   "catalogs": {
     "champions": {
