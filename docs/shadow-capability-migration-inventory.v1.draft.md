@@ -279,3 +279,29 @@ A repository path search at the audited baseline found no dedicated modules/test
 5. Action evaluators consume a candidate vector that the inspected producer path does not populate; empty comparison can still be non-stale.
 6. Outcome schema supports later outcomes, but the inspected runtime capture passes no outcome.
 7. Reset has substantial explicit cleanup, but same-instance multi-episode isolation is not runtime-proven.
+
+
+### 9.9 Test-coverage interpretation and remaining proof gaps
+
+The static test inventory was refined against test bodies (not executed):
+
+- `test_unit_priority_planner.cpp` covers planner-level pair/star-progress rules and a shop-copy upgrade-priority scenario. It does not exercise the `TFTEngine.cpp` producer's mixed 1★/2★ aggregation path, nor prove the producer populates the missing shop/cost/gold fields.
+- `test_lineup_planner.cpp` validates abstract champion-ID lineup selection, board capacity, role gaps, and stale evidence. It does not assert exact UnitInstance UUID selection when duplicate champion copies exist; the current LineupPlan DTO has no UUID field.
+- `test_strategic_position_planner.cpp` explicitly asserts that duplicate champion instances are not guessed. This proves safe rejection, not successful UUID-aware positioning.
+- `test_composition_diagnostics.cpp` supplies an outcome directly to the recorder in a unit test and verifies correlation-only labeling. It does not prove the runtime producer supplies outcomes; the inspected runtime call does not.
+- `test_item_engine.cpp` covers catalog validation, compatibility, selected combat passives, and item behavior. The final item-system report still states that some stats (including deferred attack speed/omnivamp paths) are not computed by the combat simulator and that real active-set catalog/loot parity remains outstanding.
+- `BoardEvaluation.hpp` explicitly computes frontline counts/lanes, carry exposure, fragile/isolated frontline, missing frontline/backline, trait coherence and role adjacency. `PositioningEngine.hpp` provides role-placement/protection heuristics on a 4×7 board. These are heuristic evaluations, not tactical pathfinding or proof of live combat outcomes.
+
+### 9.10 Item-effect and opponent-information boundaries
+
+The item catalog validates a finite set of supported effect operations, triggers, and condition combinations; unsupported effect operations/triggers are rejected at catalog load. `CombatItemAdapter` deliberately maps stats listed as deferred (currently including attack speed and omnivamp in the adapter) to zero in the combat projection. This is a useful explicit limitation and must survive migration as unsupported/deferred metadata rather than being silently interpreted as zero observed value.
+
+The local simulator's strategic context computes contestation by scanning other simulated players' board and bench copies. That is simulated full-lobby state, not a dedicated live opponent-scouting feed with visibility, freshness, scouting scope, and uncertainty. The new architecture must not assume it can observe every opponent's bench or private shop in a real match.
+
+### 9.11 Audit closure criteria refinement
+
+Before declaring this static inventory complete, the remaining review is now focused on:
+1. Confirm whether any non-`TFTEngine.cpp` producer populates `StrategicSharedContext.action_candidates` in the production Shadow path; the inspected Engine producer does not.
+2. Search generic DTOs/data adapters for the in-game domains not found by path name (augments, portals/encounters, artifacts, armory/consumables, tactician equipment, scouting), and decide whether each is unsupported, out of scope, or represented indirectly.
+3. Confirm whether the active-set catalog and live GEP/Overwolf source can supply item/augment/portal/opponent facts; repository simulation fixtures are not evidence of live source availability.
+4. Finish callsite/test mapping for economy update and outcome capture; no runtime tests are part of this audit.
