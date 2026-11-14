@@ -286,7 +286,9 @@ def main() -> None:
     invalid_schema_hash = copy.deepcopy(snapshot)
     invalid_schema_hash["schema"]["schema_hash"] = "sha256:" + "0" * 64
     assert list(validator.iter_errors(invalid_schema_hash)) == []  # JSON Schema checks format; hash identity is checked here.
-    assert invalid_schema_hash["schema"]["schema_hash"] != schema_contract_hash(schema)\n    try:\n        verify_snapshot_hashes(invalid_schema_hash, schema)\n    except ValueError:\n        pass\n    else:\n        raise AssertionError("schema hash mismatch was not rejected")
+    assert invalid_schema_hash["schema"]["schema_hash"] != schema_contract_hash(schema)
+    try:
+        verify_snapshot_hashes(invalid_schema_hash, schema)\n    except ValueError:\n        pass\n    else:\n        raise AssertionError("schema hash mismatch was not rejected")
 
     invalid_projection_hash = copy.deepcopy(snapshot)
     invalid_projection_hash["schema"]["projection"]["projection_hash"] = "sha256:" + "0" * 64
