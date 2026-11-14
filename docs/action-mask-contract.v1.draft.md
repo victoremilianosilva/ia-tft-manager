@@ -29,8 +29,10 @@ A Policy ativa declara `ACTION_DIMS = [9, 5, 9, 28, 28, 28]`; o enum C++ declara
 | 4 | MOVE_BOARD | `board_source` (0–27), `board_move_target` (0–27) |
 | 5 | SELL | `bench_slot` (0–8) |
 | 6 | PASS | nenhum |
-| 7 | EQUIP_FROM_INVENTORY | `bench_slot` é reutilizado como índice de inventário (0–8); `board_target` como alvo (0–36) |
-| 8 | CRAFT_AND_EQUIP | `shop_slot` e `bench_slot` são reutilizados como componentes (0–9); `board_target` como alvo (0–36) |
+| 7 | EQUIP_FROM_INVENTORY | `item_inventory_head` (9 opções) é empacotada em `bench_slot` (0–8); `item_target_head` (37 opções) em `board_target` (0–36) |
+| 8 | CRAFT_AND_EQUIP | `item_component_first_head` (10 opções) é empacotada em `shop_slot` (0–9); `item_component_second_head` (10 opções) em `bench_slot` (0–9); `item_target_head` (37 opções) em `board_target` (0–36) |
+
+**Dimensões versus cabeças condicionais:** `ACTION_DIMS = [9, 5, 9, 28, 28, 28]` descreve as seis posições do registro PPO legado e suas cabeças-base; não é o inventário completo de todas as distribuições categóricas internas da Policy. As ações de item usam cabeças dedicadas adicionais com dimensões 9, 10, 10 e 37, e empacotam os índices escolhidos nas posições já existentes do registro de seis inteiros. Assim, por exemplo, o alvo de item pode chegar a 36 e os componentes a 9, embora as posições legadas `board_target` e `shop_slot` tenham dimensões-base 28 e 5. Não validar argumentos de item usando apenas os limites das cabeças-base; a validação deve ser condicionada ao tipo e às cabeças/masks de item correspondentes.
 
 **Atenção à documentação legada:** `docs/decisions-masks-antiloop.md` ainda descreve sete tipos e dimensões `[7,5,9,28,28,28]`. Isso diverge da Policy e do enum C++ atuais. A documentação deve ser corrigida/explicitamente arquivada como histórica antes de servir de fonte normativa.
 
@@ -163,7 +165,7 @@ Não substituir ação ausente/rejeitada por PASS para fins de comparação PPO-
 | Catálogo | cada ID 0–8, dimensão e argumentos condicionais | mapeamento Python/C++ idêntico |
 | Condicionais | cada ação com slot/índice válido e inválido | inválido rejeitado antes da execução |
 | Máscaras | cada cabeça e matriz origem→destino | sampling respeita exatamente a máscara |
-| Empty masks | ativo com type mask vazia; eliminado com PASS explícito; tipo habilitado com máscara condicional vazia | ativo/condicional falham; eliminado permite somente PASS |
+| Empty masks | jogador ativo com type mask vazia; eliminado com PASS explícito; prefixo/origem selecionado e habilitado sem continuação condicional | ativo falha; eliminado permite somente PASS; prefixo inconsistente falha |
 | Missing/stale | mask ausente, snapshot anterior, sequência divergente | fail-closed antes de sampling/critic/replay |
 | Hash/version | hash de ação/mask/schema ausente, desconhecido ou incompatível | rejeição explícita |
 | PPO consistency | collection vs evaluate/update com a mesma mask | log-probabilities coincidem |
