@@ -179,6 +179,25 @@ def main() -> None:
     validator = jsonschema.Draft202012Validator(
         schema, format_checker=jsonschema.FormatChecker()
     )
+    source_map = json.loads((ROOT / "spec" / "observation-schema.v1.source-map.json").read_text(encoding="utf-8"))
+    migration_map = json.loads((ROOT / "spec" / "observation-schema.v1.migration-map.json").read_text(encoding="utf-8"))
+    assert len(migration_map["mappings"]) == migration_map["source_feature_count"] == 66
+    for mapping in migration_map["mappings"]:
+        assert mapping["decision"] in migration_map["decision_vocabulary"]
+        for destination in mapping["destination_paths"]:
+            assert schema_path_exists(schema, destination), f"migration destination not in schema: {destination}"
+        if mapping["decision"] == "drop_constant":
+            assert not mapping["destination_paths"], f"constant legacy feature unexpectedly has a destination: {mapping}"
+    source_paths = [entry["field"] for entry in source_map["entries"]]
+    assert len(source_paths) == len(set(source_paths)), "duplicate source-map field paths"
+    required_source_metadata = {"current_source", "availability", "nature", "intended_consumer", "owner_issue", "unit", "normalization_or_scale", "validity_rule", "notes"}
+    for entry in source_map["entries"]:
+        missing_metadata = required_source_metadata - set(entry)
+        assert not missing_metadata, f"{entry['field']} missing source metadata: {sorted(missing_metadata)}"
+        assert entry["nature"] in {"observed", "derived", "estimated", "inferred", "recommended"}
+        assert schema_path_exists(schema, entry["field"]), f"source-map path not present in schema: {entry['field']}"
+    for excluded in source_map.get("excluded_legacy_projections", []):
+        assert excluded.get("legacy_projection") and excluded.get("reason"), "excluded projection needs a reason"
     examples = ROOT / "spec" / "examples" / "observation-v1"
     snapshot = json.loads((examples / "valid-minimal.json").read_text(encoding="utf-8"))
     expected_schema_hash = schema_contract_hash(schema)
