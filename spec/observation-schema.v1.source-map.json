@@ -276,14 +276,14 @@
       "notes": "Counts and no_candidate_reason can explain empty candidate sets."
     },
     {
-      "field": "strategic_evidence.focus_traits",
-      "current_source": "active_native_direction.completed_traits.front()",
-      "availability": "partial",
+      "field": "strategic_evidence.completed_traits",
+      "current_source": "active_native_direction.completed_traits → StrategicEvidenceContextInput.focus_traits",
+      "availability": "available",
       "nature": "derived",
       "formula_or_version": "native-completed-traits-v1",
       "intended_consumer": "strategic evidence encoder",
       "owner_issue": "#284/#293",
-      "notes": "Only first completed trait is focus; builder currently aliases full focus_traits vector to core traits."
+      "notes": "Full vector of completed traits. EvidenceContextBuilder currently assigns this vector to current_core_traits and takes only the first item as current_composition_focus; these are not proven equivalent concepts."
     },
     {
       "field": "strategic_evidence.core_unit_ids",
@@ -344,6 +344,86 @@
       "intended_consumer": "diagnostic channel only",
       "owner_issue": "#300/#293",
       "notes": "Scores/confidence are heuristic and not calibrated; never auto-feed as imitation target."
+    },
+    {
+      "field": "strategic_evidence.primary_focus_trait",
+      "current_source": "StrategicEvidenceContextBuilder: derived_focus_traits.front()",
+      "availability": "partial",
+      "nature": "derived",
+      "formula_or_version": "first-completed-trait-v1",
+      "intended_consumer": "strategic evidence encoder",
+      "owner_issue": "#284/#293",
+      "notes": "Only first completed trait is projected as current_composition_focus; not a learned focus weight."
+    },
+    {
+      "field": "strategic_evidence.focus_weights",
+      "current_source": "No independent focus-weight source in new evidence callsite",
+      "availability": "not_produced",
+      "nature": "inferred",
+      "formula_or_version": null,
+      "intended_consumer": "strategic evidence encoder",
+      "owner_issue": "#284/#293",
+      "notes": "Do not copy StrategyInfo.composition_focus_weights."
+    },
+    {
+      "field": "strategic_evidence.core_traits",
+      "current_source": "StrategicEvidenceContextBuilder: planner_context.current_core_traits = derived_focus_traits",
+      "availability": "partial",
+      "nature": "derived",
+      "formula_or_version": "builder-alias-v1",
+      "intended_consumer": "strategic evidence encoder",
+      "owner_issue": "#284/#293",
+      "notes": "Current builder aliases the full completed_traits vector as core traits; ownership/semantics need correction before canonical use."
+    },
+    {
+      "field": "strategic_evidence.core_unit_ids",
+      "current_source": "active_native_direction.unit_ids → StrategicEvidenceContextInput.core_unit_ids",
+      "availability": "available",
+      "nature": "derived",
+      "formula_or_version": "native-active-composition-v1",
+      "intended_consumer": "strategic/entity encoder",
+      "owner_issue": "#284/#293",
+      "notes": "Stable champion IDs; preserve separately from trait lists."
+    },
+    {
+      "field": "strategic_evidence.commitment_context.composition_identity",
+      "current_source": "active_native_direction.identity / anchor.composition_identity",
+      "availability": "available",
+      "nature": "derived",
+      "formula_or_version": "native-composition-identity-v1",
+      "intended_consumer": "strategic evidence encoder",
+      "owner_issue": "#284/#293",
+      "notes": "Keep distinct from direction label and anchor identity."
+    },
+    {
+      "field": "strategic_evidence.commitment_context.current_direction_score",
+      "current_source": "active_native_direction.score",
+      "availability": "available",
+      "nature": "estimated",
+      "formula_or_version": "native-direction-score-v1",
+      "intended_consumer": "strategic evidence encoder",
+      "owner_issue": "#284/#293",
+      "notes": "Heuristic score; not a calibrated probability."
+    },
+    {
+      "field": "strategic_evidence.commitment_context.current_direction_viable",
+      "current_source": "active_native_direction candidate exists",
+      "availability": "available",
+      "nature": "derived",
+      "formula_or_version": "native-direction-viability-v1",
+      "intended_consumer": "strategic evidence encoder",
+      "owner_issue": "#284/#293",
+      "notes": "Boolean evidence of candidate presence, not confidence."
+    },
+    {
+      "field": "strategic_evidence.commitment_context.direction_source",
+      "current_source": "literal per_player_strategic_commitment",
+      "availability": "available",
+      "nature": "derived",
+      "formula_or_version": "commitment-source-v1",
+      "intended_consumer": "strategic evidence encoder",
+      "owner_issue": "#284/#293",
+      "notes": "Explicit provenance source label."
     }
   ],
   "availability_legend": {
