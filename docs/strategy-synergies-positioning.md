@@ -1,5 +1,7 @@
 # Estratégia, sinergias e posicionamento
 
+> **Auditoria do comportamento estratégico legado/runtime atual — não normativa para a nova arquitetura.** `StrategyInfo`, `CompositionPlanner`, foco/lock, heurísticas de posicionamento e as regras de recompensa descritas aqui são evidências do pipeline auditado. A nova arquitetura usa os owners e contratos canônicos de Strategic Ownership, Unit Evidence, Economic Evidence, Observation e Reward v1. Não transportar automaticamente os algoritmos, defaults ou semânticas deste documento; cada capacidade deve passar pelo padrão de reconstrução.
+
 ## Posicionamento
 
 `PositioningEngine` avalia a formação no tabuleiro 4 × 7 usando perfis/roles e posições. A linha 0 é tratada como frontline e a linha 3 como backline. A avaliação considera proteção de carries: tanques oferecem a proteção mais forte; fighters à frente contam como proteção parcial. O classificador de papéis usa fighter como desempate quando faltam sinais, evitando que um perfil sem dados vire tank por ordem do enum. O resultado alimenta observações e recompensas; não é o motor que simula ataques e movimentação durante o combate.
@@ -18,7 +20,9 @@ A estratégia não substitui as regras legais da engine. Ela informa estado/heur
 
 Testes relacionados: `cpp/tests/test_synergy_counter.cpp`, `tests/test_action_mask_validation.py` e testes de paridade de sinergia, quando aplicáveis.
 
-## Upgrade retention and bench policy
+## Upgrade retention and bench policy — evidência de reward legado
+
+As regras abaixo descrevem comportamento/shaping observado no runtime legado. Não são coeficientes nem requisitos normativos do Reward Contract v1; qualquer capacidade útil deve ser reconstruída e validada por consequências realizadas, opportunity cost e atribuição explícita.
 
 - Buying the second matching 1-star copy receives a meaningful option-value reward even before the pair changes the board; composition fit still affects its value.
 - Selling a copy that protects an upgrade receives a stronger penalty. The penalty is intentionally larger than the small reward for freeing a bench slot, so clearing space does not casually erase a pair.
