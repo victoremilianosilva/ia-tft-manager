@@ -413,7 +413,7 @@
     "uncertainty": {}
   },
   "legal_state_context": {
-    "status": "valid",
+    "status": "partial",
     "anti_loop_state": {
       "status": "missing",
       "reason": "Minimal fixture intentionally omits anti-loop runtime details."
@@ -435,6 +435,7 @@
       "source_decision_sequence": 1
     },
     "source_decision_sequence": 1,
-    "description": "Descriptive state/history context only. Actual action masks and action legality are defined by the independent Action Contract."
+    "description": "Descriptive state/history context only. Actual action masks and action legality are defined by the independent Action Contract.",
+    "reason": "Anti-loop runtime history is intentionally unavailable in this minimal fixture."
   }
 }
