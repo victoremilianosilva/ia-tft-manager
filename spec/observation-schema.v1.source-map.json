@@ -578,7 +578,7 @@
       "validity_rule": "valid only while pending anvil identity and snapshot sequence remain current"
     },
     {
-      "field": "derived_context.action_opportunity.items[].sell_value",
+      "field": "derived_context.action_opportunity.items.sell_value",
       "current_source": "UnitInstance sell value / sell rules",
       "availability": "available",
       "nature": "derived",
@@ -591,7 +591,7 @@
       "validity_rule": "valid only for current unit identity and rules version"
     },
     {
-      "field": "derived_context.action_opportunity.items[].affordability",
+      "field": "derived_context.action_opportunity.items.affordability",
       "current_source": "player gold compared with candidate cost",
       "availability": "available",
       "nature": "derived",
