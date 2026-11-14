@@ -1,6 +1,6 @@
-# Strategic Shadow Integrated Replay Contract v1 — Draft
+# Strategic Shadow Integrated Replay Contract v1
 
-**Status:** documentary specification; executable replay and runtime integration blocked until Gate 8  
+**Status:** approved documentary specification; executable replay and runtime integration blocked until Gate 8  
 **Contract ID:** `tft.strategic-shadow-replay.v1`  
 **Target:** `new-arquiteture`  
 **Related:** #289, #281, #282, #283, #284, #294; Observation #293; Reward #287
