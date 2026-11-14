@@ -1313,7 +1313,11 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "status"
+        "status",
+        "anti_loop_state",
+        "mask_reference",
+        "critic_context",
+        "description"
       ],
       "properties": {
         "status": {
@@ -1327,9 +1331,74 @@
         },
         "anti_loop_state": {
           "type": "object",
-          "additionalProperties": {
-            "$ref": "#/$defs/field"
-          }
+          "additionalProperties": false,
+          "required": [
+            "status"
+          ],
+          "properties": {
+            "status": {
+              "$ref": "#/$defs/fieldStatus"
+            },
+            "history_size": {
+              "$ref": "#/$defs/field"
+            },
+            "move_history_size": {
+              "$ref": "#/$defs/field"
+            },
+            "blocked_moves": {
+              "$ref": "#/$defs/field"
+            },
+            "known_states": {
+              "$ref": "#/$defs/field"
+            },
+            "last_move": {
+              "$ref": "#/$defs/field"
+            },
+            "state_window_rounds": {
+              "$ref": "#/$defs/field"
+            },
+            "cross_round_move_window": {
+              "$ref": "#/$defs/field"
+            },
+            "blocked_move_size": {
+              "$ref": "#/$defs/field"
+            },
+            "loop_threshold": {
+              "$ref": "#/$defs/field"
+            },
+            "source_decision_sequence": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "status": {
+                    "enum": [
+                      "missing",
+                      "unknown",
+                      "not_applicable",
+                      "stale",
+                      "incompatible"
+                    ]
+                  }
+                },
+                "required": [
+                  "status"
+                ]
+              },
+              "then": {
+                "required": [
+                  "reason"
+                ]
+              }
+            }
+          ]
         },
         "source_decision_sequence": {
           "type": "integer",
@@ -1340,6 +1409,120 @@
         },
         "description": {
           "const": "Descriptive state/history context only. Actual action masks and action legality are defined by the independent Action Contract."
+        },
+        "mask_reference": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "action_contract_id",
+            "action_contract_version",
+            "action_contract_hash",
+            "mask_contract_id",
+            "mask_contract_version",
+            "mask_contract_hash",
+            "mask_snapshot_hash",
+            "decision_identity_hash"
+          ],
+          "properties": {
+            "action_contract_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "action_contract_version": {
+              "type": "string",
+              "minLength": 1
+            },
+            "action_contract_hash": {
+              "$ref": "#/$defs/sha256"
+            },
+            "mask_contract_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "mask_contract_version": {
+              "type": "string",
+              "minLength": 1
+            },
+            "mask_contract_hash": {
+              "$ref": "#/$defs/sha256"
+            },
+            "mask_snapshot_hash": {
+              "$ref": "#/$defs/sha256"
+            },
+            "decision_identity_hash": {
+              "$ref": "#/$defs/sha256"
+            }
+          }
+        },
+        "critic_context": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status"
+          ],
+          "properties": {
+            "status": {
+              "$ref": "#/$defs/fieldStatus"
+            },
+            "representation": {
+              "type": "string",
+              "enum": [
+                "exact_masks",
+                "lossless_mask_encoding",
+                "markov_sufficient_state"
+              ]
+            },
+            "source_decision_sequence": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "status": {
+                    "enum": [
+                      "missing",
+                      "unknown",
+                      "not_applicable",
+                      "stale",
+                      "incompatible"
+                    ]
+                  }
+                },
+                "required": [
+                  "status"
+                ]
+              },
+              "then": {
+                "required": [
+                  "reason"
+                ]
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "status": {
+                    "const": "valid"
+                  }
+                },
+                "required": [
+                  "status"
+                ]
+              },
+              "then": {
+                "required": [
+                  "representation",
+                  "source_decision_sequence"
+                ]
+              }
+            }
+          ]
         }
       }
     },
