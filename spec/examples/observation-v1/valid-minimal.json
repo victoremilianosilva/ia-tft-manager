@@ -87,8 +87,7 @@
       "nature": "observed",
       "provenance": {
         "source": "tft_engine",
-        "source_path": "player.alive",
-        "nature": "observed"
+        "source_path": "player.alive"
       }
     },
     "health": {
@@ -98,8 +97,7 @@
       "unit": "hp",
       "provenance": {
         "source": "tft_engine",
-        "source_path": "player.hp",
-        "nature": "observed"
+        "source_path": "player.hp"
       }
     },
     "economy": {
@@ -110,8 +108,7 @@
         "unit": "gold",
         "provenance": {
           "source": "tft_engine",
-          "source_path": "economy.gold",
-          "nature": "observed"
+          "source_path": "economy.gold"
         }
       },
       "level": {
@@ -121,8 +118,7 @@
         "unit": "level",
         "provenance": {
           "source": "tft_engine",
-          "source_path": "economy.level",
-          "nature": "observed"
+          "source_path": "economy.level"
         }
       },
       "xp": {
@@ -132,8 +128,7 @@
         "unit": "xp",
         "provenance": {
           "source": "tft_engine",
-          "source_path": "economy.xp",
-          "nature": "observed"
+          "source_path": "economy.xp"
         }
       }
     }
