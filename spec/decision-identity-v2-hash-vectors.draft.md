@@ -35,7 +35,7 @@ Expected digest: `sha256:db10775d5ce64a663a883591ba0303cf5da362b5b7719577216c0a0
 
 ## Mutation vectors
 
-Each vector changes exactly one identity property from the baseline. Canonical bytes are included to make the digest independently reproducible.
+Each vector changes exactly one identity property from the baseline. The machine-readable companion `decision-identity-v2-hash-vectors.draft.json` includes the exact canonical UTF-8 bytes and expected digest for every vector, making each result independently reproducible.
 
 | Case | Mutation | Expected digest |
 |---|---|---|
