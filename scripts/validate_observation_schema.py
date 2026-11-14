@@ -57,6 +57,15 @@ def schema_path_exists(schema: dict, path: str) -> bool:
     return True
 
 
+def verify_catalog_fingerprints(snapshot: dict, expected: dict) -> None:
+    for catalog_name, fingerprints in expected.items():
+        actual = snapshot["catalogs"][catalog_name]
+        if actual["content_hash"] != fingerprints["content_hash"]:
+            raise ValueError(f"{catalog_name} content fingerprint mismatch")
+        if actual["order_hash"] != fingerprints["order_hash"]:
+            raise ValueError(f"{catalog_name} order fingerprint mismatch")
+
+
 def verify_context_identity(snapshot: dict) -> None:
     identity = snapshot["identity"]
     if identity["status"] != "complete":
@@ -236,6 +245,9 @@ def main() -> None:
     source_paths = [entry["field"] for entry in source_map["entries"]]
     assert len(source_paths) == len(set(source_paths)), "duplicate source-map field paths"
     required_source_metadata = {"current_source", "availability", "nature", "intended_consumer", "owner_issue", "unit", "normalization_or_scale", "validity_rule", "notes"}
+    for block in snapshot["schema"]["projection"]["blocks"]:
+        for source_path in block["source_paths"]:
+            assert schema_path_exists(schema, source_path), f"projection source path not in schema: {source_path}"
     for entry in source_map["entries"]:
         missing_metadata = required_source_metadata - set(entry)
         assert not missing_metadata, f"{entry['field']} missing source metadata: {sorted(missing_metadata)}"
@@ -382,6 +394,30 @@ def main() -> None:
         pass
     else:
         raise AssertionError("mask/observation identity mismatch was not rejected")
+
+    mismatched_catalog = copy.deepcopy(snapshot)
+    expected_catalogs = {name: {"content_hash": item["content_hash"], "order_hash": item["order_hash"]} for name, item in snapshot["catalogs"].items()}
+    expected_catalogs["traits"]["order_hash"] = "sha256:" + "f" * 64
+    try:
+        verify_catalog_fingerprints(mismatched_catalog, expected_catalogs)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("catalog order mismatch was not rejected")
+
+    changed_normative_schema = copy.deepcopy(schema)
+    changed_normative_schema["$defs"]["field"]["properties"]["status"]["type"] = "string"
+    assert schema_contract_hash(changed_normative_schema) != schema_contract_hash(schema)
+    changed_annotation_only = copy.deepcopy(schema)
+    changed_annotation_only["description"] = "non-normative wording change"
+    assert schema_contract_hash(changed_annotation_only) == schema_contract_hash(schema)
+
+    invalid_padding = copy.deepcopy(snapshot)
+    del invalid_padding["schema"]["projection"]["blocks"][1]["presence_mask_path"]
+    assert list(validator.iter_errors(invalid_padding))
+    invalid_shape = copy.deepcopy(snapshot)
+    invalid_shape["schema"]["projection"]["blocks"][1]["shape"] = [14, -1]
+    assert list(validator.iter_errors(invalid_shape))
 
     invalid_projection_hash = copy.deepcopy(snapshot)
     invalid_projection_hash["schema"]["projection"]["projection_hash"] = "sha256:" + "0" * 64
