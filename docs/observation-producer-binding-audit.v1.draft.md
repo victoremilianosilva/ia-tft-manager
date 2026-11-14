@@ -235,3 +235,89 @@ Do not conflate these states.
 4. **Contract/invariants:** no runtime mutation; no Shadow recommendations/scores/rankings/confidence as PPO features or targets; exact masks remain separate and decision-correlated; unknown is not false/zero; fixed bench/shop PPO candidate rows are not StrategicActionCandidate records; actor and critic consumers are declared independently.
 5. **Cross-component impact:** TFTEngine observation builder, StrategicPlanner/commitments, CompositionIntelligence runtime, StrategicContextBridge, ActionMaskEngine, pybind bindings, Python environment wrapper, trainer, policy, rollout, checkpoint, replay, and evaluation.
 6. **Objective validation:** inspected the canonical branch tree and exact source files for native observation construction, pybind reset/step/getters, Python wrapper, trainer mask/observation flow, policy Actor/Critic paths, rollout storage, Shadow context construction, bridge serialization, candidate evaluator callsites, and diagnostic sidecar exposure. Confirmed 77 semantic source-map entries. No runtime files changed.
+
+
+## Appendix A — All 77 semantic source-map entries against the current PPO path
+
+This table prevents the source-map `availability` value from being misread as “already delivered to PPO.” The `current_source` column is taken from the canonical source map; the final column is the audited current binding result. “Partially delivered” means a lossy/derived legacy encoding exists, not that the canonical typed field is present.
+
+| Semantic field | Source-map availability | Nature | Declared current source | Current PPO binding result |
+|---|---|---|---|---|
+| `player.lifecycle` | available | observed | `player_envs[i].info.alive` | Delivered in current flat PPO observation; normalized legacy encoding |
+| `player.health` | available | observed | `player_envs[i].info.hp` | Delivered in current flat PPO observation; normalized legacy encoding |
+| `player.economy.gold` | available | observed | `player_envs[i].economy.gold` | Delivered in current flat PPO observation; normalized legacy encoding |
+| `player.economy.level` | available | observed | `player_envs[i].economy.level` | Delivered in current flat PPO observation; normalized legacy encoding |
+| `player.economy.xp` | available | observed | `player_envs[i].economy.xp` | Partially delivered: XP is divided by XP-to-next; raw XP and denominator are not separate tensor fields |
+| `player.economy.xp_to_next` | available | derived | `economy_engine.get_xp_to_next(economy)` | Folded into normalized XP ratio; not separately delivered |
+| `player.streaks.win_streak` | available | observed | `player_envs[i].economy.win_streak` | Delivered in current flat PPO observation; normalized legacy encoding |
+| `player.streaks.loss_streak` | available | observed | `player_envs[i].economy.loss_streak` | Delivered in current flat PPO observation; normalized legacy encoding |
+| `derived_context.economic_context.stage` | available | derived | `current_stage / stage_for_round` | Partially represented through round fraction; typed stage is not separately delivered |
+| `derived_context.economic_context.interest_if_resolved_now` | available | derived | `economy_engine.get_interest(economy.gold)` | Not delivered as this typed field; only gold and legacy derived context reach PPO |
+| `derived_context.economic_context.projected_next_round_income` | not_produced | estimated | `StrategicSharedContext.projected_next_round_income` | Not delivered as a distinct typed feature; source-map status remains authoritative |
+| `derived_context.economic_context.board_power` | available | estimated | `power / board_power(i)` | Not delivered as these typed fields; other board/positioning heuristics are not equivalent |
+| `derived_context.economic_context.lobby_average_board_power` | available | estimated | `average board_power(other) over alive opponents` | Not delivered as these typed fields; other board/positioning heuristics are not equivalent |
+| `derived_context.economic_context.relative_board_power` | available | derived | `board_power / lobby_average_board_power` | Not delivered as these typed fields; other board/positioning heuristics are not equivalent |
+| `derived_context.economic_context.estimated_incoming_damage` | not_produced | estimated | `StrategicSharedContext.estimated_incoming_damage` | Not delivered as a distinct typed feature; source-map status remains authoritative |
+| `derived_context.economic_context.elimination_risk` | not_produced | estimated | `StrategicSharedContext.elimination_risk` | Not delivered as a distinct typed feature; source-map status remains authoritative |
+| `entities.board` | available | observed | `player_envs[i].board + ChampionCatalog` | Partially delivered as fixed slot features/aggregates; not a lossless typed entity set |
+| `entities.bench` | available | observed | `player_envs[i].bench + ChampionCatalog` | Partially delivered as fixed slot features/aggregates; not a lossless typed entity set |
+| `entities.shop` | available | observed | `player_envs[i].shop + ChampionCatalog` | Partially delivered as fixed slot features/aggregates; not a lossless typed entity set |
+| `entities.items` | available | observed | `ItemEngine + ItemCatalog + UnitInstance.items` | Partially delivered through item semantic blocks; exact item/unit-instance relation still needs lossless contract |
+| `derived_context.positioning` | available | estimated | `BoardEvaluation + UnitCombatClassifier` | Partially delivered as aggregate positioning score, row ratios, and role features; not full typed positioning evidence |
+| `strategic_evidence.commitment_context.direction_id` | available | derived | `strategic_planner_commitments[i].composition_direction` | Not delivered as canonical Shadow evidence; legacy proxies, where present, are not equivalent |
+| `strategic_evidence.commitment_context.direction_identity` | available | derived | `direction:v2:<direction>` | Not delivered as canonical Shadow evidence; legacy proxies, where present, are not equivalent |
+| `strategic_evidence.commitment_context.progression_plan` | not_produced | inferred | `StrategicSharedContext.progression_plan` | Not delivered as canonical Shadow evidence; legacy proxies, where present, are not equivalent |
+| `strategic_evidence.owned_unit_assessments` | available | derived | `StrategicSharedContext.owned_units built from board/bench` | Not delivered as canonical Shadow evidence; legacy proxies, where present, are not equivalent |
+| `strategic_evidence.anchor_candidates` | available | estimated | `strategic_native_generation.candidates` | Not delivered as canonical Shadow evidence; legacy proxies, where present, are not equivalent |
+| `strategic_evidence.candidate_generation` | available | observed | `strategic_native_generation diagnostics` | Not delivered as canonical Shadow evidence; legacy proxies, where present, are not equivalent |
+| `strategic_evidence.completed_traits` | available | derived | `active_native_direction.completed_traits → StrategicEvidenceContextInput.focus_traits` | Not delivered as canonical Shadow evidence; legacy proxies, where present, are not equivalent |
+| `strategic_evidence.commitment_context.core_unit_ids` | available | derived | `active_native_direction.unit_ids` | Not delivered as canonical Shadow evidence; legacy proxies, where present, are not equivalent |
+| `strategic_evidence.commitment_context.composition_locked` | not_available | derived | `StrategicSharedContext.composition_locked` | Not delivered as canonical Shadow evidence; legacy proxies, where present, are not equivalent |
+| `derived_context.action_opportunity.items` | not_produced | estimated | `StrategicSharedContext.action_candidates` | Not produced; strategic action-candidate set is empty in audited engine construction |
+| `legal_state_context.anti_loop_state` | available_but_not_projected | observed | `AntiLoopEngine.get_state() / AntiLoopHistory` | Not delivered to PPO; available through native anti-loop diagnostics/state |
+| `legal_state_context.mask_reference` | not_correlated | observed | `Trainer observations + get_action_masks() separate calls` | Masks are fetched separately and stored in rollout; no typed decision-identity/hash correlation |
+| `shadow_recommendations` | available_shadow_only | recommended | `StrategicPlanner/EconomicController/ActionEvaluator` | Shadow diagnostic only; excluded from PPO |
+| `strategic_evidence.focus_weights` | not_produced | inferred | `No independent focus-weight source in new evidence callsite` | Not delivered as canonical Shadow evidence; legacy proxies, where present, are not equivalent |
+| `strategic_evidence.commitment_context.composition_identity` | available | derived | `active_native_direction.identity / anchor.composition_identity` | Not delivered as canonical Shadow evidence; legacy proxies, where present, are not equivalent |
+| `strategic_evidence.commitment_context.current_direction_score` | available | estimated | `active_native_direction.score` | Not delivered as canonical Shadow evidence; legacy proxies, where present, are not equivalent |
+| `strategic_evidence.commitment_context.current_direction_viable` | available | derived | `active_native_direction candidate exists` | Not delivered as canonical Shadow evidence; legacy proxies, where present, are not equivalent |
+| `strategic_evidence.commitment_context.direction_source` | available | derived | `literal per_player_strategic_commitment` | Not delivered as canonical Shadow evidence; legacy proxies, where present, are not equivalent |
+| `derived_context.decision_history.actions_taken_this_round` | available | derived | `player_envs[i].actions_taken_this_round` | Partially delivered as normalized remaining-action count; raw count/decision identity not preserved |
+| `derived_context.decision_history.remaining_action_budget` | available | derived | `max(0, configured_action_horizon - actions_taken_this_round)` | Partially delivered through normalized remaining-action feature; horizon identity is implicit |
+| `derived_context.decision_history.board_move_age_by_slot` | available | derived | `board_move_age per board slot` | Delivered as normalized per-board-slot age; requires explicit slot/decision reset semantics |
+| `derived_context.recipe_target_fit` | available | estimated | `ItemFitCache.get(recipe_id, UnitProfile)` | Delivered in item recipe-target fit block; heuristic score, catalog/profile identity required |
+| `entities.items.anvil_options` | available | derived | `ItemEngine.pending_anvil + ItemCatalog` | Delivered in item anvil option block; only current pending anvil snapshot |
+| `derived_context.action_opportunity.items.sell_value` | available | derived | `UnitInstance sell value / sell rules` | Delivered in legacy bench candidate tail, normalized; tied to physical bench slot |
+| `derived_context.action_opportunity.items.affordability` | available | derived | `player gold compared with candidate cost` | Delivered in legacy shop candidate tail, binary; tied to shop slot and same gold snapshot |
+| `identity.decision_identity_hash` | derived | derived | `Canonical identity tuple in observation envelope` | Not delivered in observation/rollout envelope |
+| `legal_state_context.anti_loop_state.position_history` | available | observed | `AntiLoopEngine position_history` | Not delivered to PPO; available through native anti-loop diagnostics/state |
+| `legal_state_context.anti_loop_state.move_history` | available | observed | `AntiLoopEngine move_history` | Not delivered to PPO; available through native anti-loop diagnostics/state |
+| `legal_state_context.anti_loop_state.blocked_move_records` | available | derived | `AntiLoopEngine blocked_moves` | Not delivered to PPO; available through native anti-loop diagnostics/state |
+| `legal_state_context.anti_loop_state.state_visits` | available | derived | `AntiLoopEngine state_visits/state_visit_index` | Not delivered to PPO; available through native anti-loop diagnostics/state |
+| `legal_state_context.critic_context` | not_available | derived | `Action Contract mask side-input boundary` | Not delivered; current value path ignores masks |
+| `derived_context.capacity` | derived | derived | `board occupancy + player level + bench slot count` | Delivered as two aggregate capacity features; not full capacity state |
+| `derived_context.trait_counts` | available | derived | `trait_counts + observation_trait_names` | Delivered as catalog-ordered aggregate trait counts; requires catalog fingerprint |
+| `derived_context.unit_roles` | available | derived | `UnitCombatClassifier.classify` | Partially delivered through board/bench/shop role features and item-target role encodings |
+| `derived_context.item_target_fit` | available | estimated | `ItemFitCache.get(item_id, UnitProfile)` | Delivered in item compatibility block; heuristic score, item/target identity required |
+| `player.economy.income` | not_produced | derived | `EconomyEngine income calculation` | Not delivered as a distinct typed feature; source-map status remains authoritative |
+| `player.economy.interest` | not_produced | derived | `EconomyEngine interest calculation` | Not delivered as a distinct typed feature; source-map status remains authoritative |
+| `player.economy.streak_bonus` | not_produced | derived | `EconomyEngine streak income calculation` | Not delivered as a distinct typed feature; source-map status remains authoritative |
+| `player.economy.shop_cost` | not_produced | observed | `TFT rules/catalog reroll cost` | Not delivered as a distinct typed feature; source-map status remains authoritative |
+| `derived_context.economic_context.board_pressure` | not_produced | estimated | `No populated source in current StrategicSharedContext callsite` | Not delivered as a distinct typed feature; source-map status remains authoritative |
+| `derived_context.economic_context.economy_pressure` | not_produced | estimated | `No populated source in current StrategicSharedContext callsite` | Not delivered as a distinct typed feature; source-map status remains authoritative |
+| `derived_context.economic_context.survival_pressure` | not_produced | estimated | `No populated source in current StrategicSharedContext callsite` | Not delivered as a distinct typed feature; source-map status remains authoritative |
+| `strategic_evidence.priorities` | available_shadow_only | recommended | `Composition Intelligence UnitPriorityPlanner (feature-gated)` | Shadow diagnostic only; excluded from PPO |
+| `strategic_evidence.progression` | not_produced | inferred | `StrategicSharedContext.current_economic_strategy / commitment progression` | Not delivered as canonical Shadow evidence; legacy proxies, where present, are not equivalent |
+| `strategic_evidence.pressure` | not_produced | estimated | `No populated source in current StrategicSharedContext callsite` | Not delivered as canonical Shadow evidence; legacy proxies, where present, are not equivalent |
+| `strategic_evidence.uncertainty` | not_produced | estimated | `No explicit uncertainty map in current evidence callsite` | Not delivered as canonical Shadow evidence; legacy proxies, where present, are not equivalent |
+| `strategic_evidence.commitment_context.confidence` | available | estimated | `strategic_planner_commitments[i].confidence` | Not delivered as canonical Shadow evidence; legacy proxies, where present, are not equivalent |
+| `strategic_evidence.commitment_context.consecutive_reviews` | available | derived | `strategic_planner_commitments[i].consecutive_reviews` | Not delivered as canonical Shadow evidence; legacy proxies, where present, are not equivalent |
+| `strategic_evidence.commitment_context.last_review_round` | available | derived | `strategic_planner_commitments[i].last_review_round` | Not delivered as canonical Shadow evidence; legacy proxies, where present, are not equivalent |
+| `strategic_evidence.commitment_context.selected_round` | available | derived | `strategic_planner_commitments[i].selected_round` | Not delivered as canonical Shadow evidence; legacy proxies, where present, are not equivalent |
+| `strategic_evidence.commitment_context.selection_reason` | available | derived | `strategic_planner_commitments[i].selection_reason` | Not delivered as canonical Shadow evidence; legacy proxies, where present, are not equivalent |
+| `strategic_evidence.commitment_context.revision_condition` | available | derived | `strategic_planner_commitments[i].revision_condition` | Not delivered as canonical Shadow evidence; legacy proxies, where present, are not equivalent |
+| `strategic_evidence.commitment_context.flexible_unit_ids` | not_produced | inferred | `No independently populated flexible-unit list in current commitment bridge` | Not delivered as canonical Shadow evidence; legacy proxies, where present, are not equivalent |
+| `strategic_evidence.owner_snapshots.planner_commitment` | available | derived | `strategic_planner_commitments[i]` | Not delivered as canonical Shadow evidence; legacy proxies, where present, are not equivalent |
+| `strategic_evidence.owner_snapshots.composition_intelligence` | available_shadow_only | derived | `composition_intelligence_players[i].active` | Shadow diagnostic only; excluded from PPO |
+| `strategic_evidence.owner_snapshots.unified_state_machine` | available_shadow_only | derived | `UnifiedStrategicShadowRuntime.machine()` | Shadow diagnostic only; excluded from PPO |
+
