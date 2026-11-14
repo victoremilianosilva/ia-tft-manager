@@ -26,15 +26,22 @@ invalid rather than silently normalized into usable evidence.
 | UnitPriorityPlanner | BoardEvaluation | Adds a bounded role-priority adjustment when the observed board reports a missing frontline or backline/exposed carry. |
 | UnitPriorityPlanner | ItemEngine | Uses the current per-unit equipped-item snapshot to restrict sale/substitution recommendations, including units outside the target composition. |
 | LineupPlanner | BoardEvaluation | Adds a bounded priority adjustment to target frontline/carry roles that address observed structural gaps; emits the exact observed counts and evidence status. |
-| CompositionActionEvaluator | EconomicController | Supplies action-specific opportunity-cost proxies for buy unit, buy XP, and reroll; reroll selects the with-target or without-target cost according to actual upgrade targets. Gold, interest, projected income, and posture are exposed in the diagnostic. |
+| CompositionActionEvaluator (baseline path) | EconomicController decision | Receives the decision/policy context for action-specific opportunity-cost evaluation of buy unit, buy XP and reroll. Only fields present, valid and actually consumed by this path may influence its score. Diagnostic serialization of a field is not proof that the field affects the score. |
+| CompositionActionEvaluator (baseline path) | Economic diagnostics | Exposes gold, interest, projected-income availability and posture for audit. Projected next-round income is currently unavailable because no validated producer populates it; it must not be treated as zero or as a scoring input. |
 | CompositionActionEvaluator | BoardEvaluation | Uses observed frontline/backline/exposed-carry gaps to enrich composition fit for matching target roles; it does not recalculate board scores. |
 | CompositionActionEvaluator | ItemEngine | Rejects a sale candidate when the current validated item snapshot shows equipped items, in addition to existing transition/sale restrictions. |
+| ContextualActionEvaluator | EconomicControlDecision | No direct consumption is established in the audited callsite. Do not infer a dependency from the baseline evaluator or shared diagnostics. |
 
 The board role adjustments are bounded tie-breaker signals. They do not
 override core-unit priority, create missing champion data, or mutate board
 state. Economy opportunity costs are used only when the candidate does not
 already carry a higher opportunity-cost value. Item evidence never causes an
 equip, unequip, sale, purchase, or movement.
+
+The baseline `CompositionActionEvaluator` and independent
+`ContextualActionEvaluator` are not interchangeable. Their score semantics,
+inputs and evidence consumption differ. Divergence is diagnostic; this
+document does not establish a shared score scale or require agreement.
 
 ## Diagnostics
 
@@ -47,8 +54,10 @@ The JSONL snapshot exposes:
 - Evidence consumed/rejected by Unit Priority and Action Evaluation.
 - Observed board counts and the board evidence availability/reason used by
   Lineup.
-- Economic gold, interest, projected next-round income, and posture consumed
-  by Action Evaluation.
+- Economic source values and their availability/provenance, including gold,
+  interest, projected next-round income and posture. Projected income remains
+  unavailable until a validated producer and horizon exist; diagnostic
+  presence does not make it a consumed scoring feature.
 
 ## Isolation
 
@@ -56,7 +65,6 @@ All adapters and consumers are read-only. This work does not alter the
 Economic Controller, Board Evaluation, ItemEngine, action execution, PPO,
 training, observations, masks, legal actions, rewards, checkpoints, or game
 rules. Composition Intelligence remains opt-in and Shadow-only.
-
 
 ## Current architecture reconciliation (2026-11-14)
 
@@ -77,14 +85,27 @@ confidence proxies remain diagnostics/proposals; they are not PPO labels,
 reward targets, or action authority. Unified Shadow state remains diagnostic
 and isolated. The Engine and native masks remain the final legality authority.
 
-**Prior limitation:** the old isolation paragraph did not distinguish current
-runtime non-integration from future canonical-context consumption.
-**Reason for clarification:** the observation migration must replace legacy
-StrategyInfo dependencies without learning to imitate Shadow recommendations.
-**Ownership/contract:** each source owner publishes its own versioned state;
-the observation adapter only projects validated inputs.
-**Cross-component impact:** coordinate with #285/#286/#290/#291/#293 and the
-approved ownership, unit, economic, action and checkpoint contracts.
-**Validation:** documentary consistency now; post-Gate-8 tests must prove
-source-to-tensor traceability, stale rejection, missingness preservation,
-read-only behavior and absence of recommendation-to-label/reward coupling.
+**Prior limitation:** the previous consumer map could be read as claiming that
+projected next-round income was a validated input consumed by Action
+Evaluation, and did not state the distinct baseline/contextual evaluator
+boundary strongly enough.
+
+**Reason for clarification:** the approved Economic Evidence Contract requires
+field-level producer, availability, horizon and consumer mapping. An absent
+projection must not be treated as zero or as a scoring input, and the baseline
+evaluator's inputs must not be attributed to the independent contextual path.
+
+**Ownership/contract:** EconomicController owns posture/progression outputs;
+a future income projection requires its own validated producer and horizon.
+Each evaluator owns only its declared input set. The diagnostic recorder
+reports availability/consumption but does not create a dependency.
+
+**Cross-component impact:** coordinate with #282/#284/#289/#290 and the
+approved economic evidence, strategic ownership, action candidate and replay
+contracts.
+
+**Validation:** documentary reconciliation against the approved Economic
+Evidence and Strategic Ownership contracts and the audited evaluator callsites.
+Post-Gate-8 tests must prove per-field consumer attribution, unavailable
+projected income, source freshness, read-only behavior, and independent
+baseline/contextual evaluator semantics.
