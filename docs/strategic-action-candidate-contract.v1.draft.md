@@ -84,7 +84,9 @@ The audited paths are distinct:
 - **Baseline:** `CompositionActionEvaluator` filters/enriches candidates and delegates to `strategy::ActionEvaluator`, receiving `EconomicControlDecision` and baseline recommendation input.
 - **Contextual:** `ContextualActionEvaluator` independently scores contextual evidence and is currently forwarded to `StrategicActionExecutor` for Shadow resolution.
 
-For the new architecture's read-only Shadow pipeline, `ContextualActionEvaluator` is the canonical producer of the contextual proposal forwarded to the Shadow executor. `CompositionActionEvaluator`/`ActionEvaluator` remains an independent baseline comparator. Baseline output never silently replaces contextual output. Disagreement is preserved with independent score semantics and provenance. If no valid contextual candidate exists, result is `unavailable/no_candidates`, not an invented HOLD.
+For the target architecture's read-only Shadow pipeline, `ContextualActionEvaluator` is the canonical producer of the contextual proposal that the Shadow executor is intended to validate. `CompositionActionEvaluator`/`ActionEvaluator` remains an independent baseline comparator. Baseline output never silently replaces contextual output. Disagreement is preserved with independent score semantics and provenance. If no valid contextual candidate exists, result is `unavailable/no_candidates`, not an invented HOLD.
+
+**Current integration status:** the evaluator diagnostic contract records `executor_connected=false`. This ownership decision defines the intended producer/consumer boundary; it does not claim that a runtime handoff or end-to-end executor connection currently exists. A candidate proposal may be recorded diagnostically without reaching executor resolution. Any future integration claim requires a correlated candidate-set ID, exact source sequences, executor input/output records, and the integrated replay proof in #289. Until those exist, report executor resolution as unavailable/not connected rather than implying a completed handoff.
 
 This does not imply legality: native masks and executor validation remain final. The contextual evaluator's lack of direct `EconomicControlDecision` consumption is not silently changed here. #282 must decide which economic signals should affect contextual scoring. Until then, posture may be recorded separately but must not be described as affecting a score that does not consume it.
 
@@ -96,7 +98,9 @@ Keep separately typed: actual PPO-selected action (if available for same match/p
 
 Comparison is available only when there is at least one shared valid candidate identity, the candidate set is non-empty and ready (or has an explicitly defined comparable subset), both evaluators received the same candidate-set identity and correlated snapshot, and both outputs are valid under their own semantics. Two empty lists are never comparable; `same_initial_candidate_set` cannot make them comparable. Partial sets compare only an explicit shared valid subset with exclusions explained.
 
-The executor receives the contextual proposal, originating candidate set, and exact sequence refs. It validates match/player/round/sequences against the independently supplied current Engine snapshot; validates candidate revision and physical parameters; resolves against current native masks without modifying them; and explicitly rejects stale, ambiguous, malformed, or illegal candidates. It never issues input or mutates Engine state. A relevant sequence change within the same round and composition version can stale a candidate.
+When the executor integration is implemented and proven, it must receive the contextual proposal, originating candidate set, and exact sequence refs. It validates match/player/round/sequences against the independently supplied current Engine snapshot; validates candidate revision and physical parameters; resolves against current native masks without modifying them; and explicitly rejects stale, ambiguous, malformed, or illegal candidates. It never issues input or mutates Engine state. A relevant sequence change within the same round and composition version can stale a candidate.
+
+Until the handoff is demonstrated, the executor stage is `unavailable/not_connected`; evaluator diagnostics alone do not count as executor resolution.
 
 ## 9. Acceptance matrix — after Gate 8
 
@@ -124,3 +128,20 @@ Integrated replay also covers shop refresh, gold/board/bench changes, upgrade pr
 This specification closes only the documentary candidate-contract design when reviewed and merged. #281 remains open for a real producer populating `action_candidates` and executable end-to-end proof after Gate 8 and explicit implementation authorization.
 
 No runtime code/tests, PPO, observations, rewards, checkpoints, masks, Engine rules, Viewer behavior, or game actions are changed.
+
+
+## 11. Current integration evidence boundary (2026-11-14)
+
+The evaluator documentation currently records `executor_connected=false`. The canonical role of ContextualActionEvaluator as proposal producer is approved, but the runtime connection to Shadow executor is not established by that role assignment. Do not describe the proposal as forwarded, resolved, or executor-accepted without correlated runtime evidence.
+
+**Prior problem:** the earlier wording could be read as claiming an existing handoff while the evaluator diagnostic explicitly says the executor is disconnected.
+
+**Technical rationale:** ownership defines who should produce/consume a contract; integration status requires evidence of an actual connected call path and correlated records.
+
+**Ownership:** ContextualActionEvaluator owns contextual proposals; StrategicActionExecutor owns read-only validation/resolution when connected; diagnostics report connection/availability and must not synthesize resolution.
+
+**Invariants:** disconnected is not accepted; unavailable is not HOLD; candidate proposal is not execution; no live input or Engine mutation; native masks remain final legality authority.
+
+**Cross-component impact:** #281/#289/#294 and the dual-evaluator, replay, and ownership contracts.
+
+**Validation:** reconciled against `dual-action-evaluator-shadow.md` (`executor_connected=false`) and this candidate contract. Post-Gate-8 acceptance requires an integrated call-path test and replay records proving proposal → executor input → resolution/rejection with identical candidate-set and typed sequence references.
