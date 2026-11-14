@@ -1,3 +1,7 @@
+> **Snapshot histórico do pipeline legado — não normativo para a nova linhagem PPO.** Este documento descreve campos, fórmulas, dimensões e mecanismos observados em implementações anteriores/auditadas. Não use suas descrições de direção, core traits, composição, economia, rewards, migração de pesos ou compatibilidade de checkpoints como definição do Observation Schema, Reward Contract ou Checkpoint Contract v1. Para a nova linhagem, prevalecem os contratos aprovados: `spec/observation-schema.v1.draft.json`, [Reward Contract v1](reward-contract.v1.draft.md) e [PPO Architecture and Checkpoint Contract v1](ppo-checkpoint-contract.v1.draft.md). A possibilidade de carregar um checkpoint legado por compatibilidade de shape não implica compatibilidade semântica nem obrigação de migração. Toda execução/aceitação permanece bloqueada até Gate 8 e autorização explícita.
+
+---
+
 # Recompensas e observações
 
 ## Recompensas
