@@ -1,0 +1,358 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Observation Schema v1 — Current Source and Availability Map",
+  "description": "Static audit map of current runtime sources against the proposed semantic schema. 'not_produced' and 'not_available' must remain missing/unknown, not numeric defaults.",
+  "branch": "new-arquiteture",
+  "commit": "3575d21cc0f7dbb5544d75526bd96939b37f5c96",
+  "entries": [
+    {
+      "field": "player.lifecycle",
+      "current_source": "player_envs[i].info.alive",
+      "availability": "available",
+      "nature": "observed",
+      "formula_or_version": null,
+      "intended_consumer": "player lifecycle field",
+      "owner_issue": "#293",
+      "notes": "Current PPO tensor uses all-zero vector for eliminated player; new snapshot must retain terminal lifecycle explicitly."
+    },
+    {
+      "field": "player.health",
+      "current_source": "player_envs[i].info.hp",
+      "availability": "available",
+      "nature": "observed",
+      "formula_or_version": null,
+      "intended_consumer": "player/economy encoder",
+      "owner_issue": "#293",
+      "notes": "Raw HP available."
+    },
+    {
+      "field": "player.economy.gold",
+      "current_source": "player_envs[i].economy.gold",
+      "availability": "available",
+      "nature": "observed",
+      "formula_or_version": null,
+      "intended_consumer": "player/economy encoder",
+      "owner_issue": "#293",
+      "notes": "Current tensor normalizes /50."
+    },
+    {
+      "field": "player.economy.level",
+      "current_source": "player_envs[i].economy.level",
+      "availability": "available",
+      "nature": "observed",
+      "formula_or_version": null,
+      "intended_consumer": "player/economy encoder",
+      "owner_issue": "#293",
+      "notes": "Current tensor normalizes /9."
+    },
+    {
+      "field": "player.economy.xp",
+      "current_source": "player_envs[i].economy.xp",
+      "availability": "available",
+      "nature": "observed",
+      "formula_or_version": null,
+      "intended_consumer": "player/economy encoder",
+      "owner_issue": "#293",
+      "notes": "Current tensor stores XP divided by XP-to-next."
+    },
+    {
+      "field": "player.economy.xp_to_next",
+      "current_source": "economy_engine.get_xp_to_next(economy)",
+      "availability": "available",
+      "nature": "derived",
+      "formula_or_version": null,
+      "intended_consumer": "player/economy encoder",
+      "owner_issue": "#293",
+      "notes": "Exact integer needed alongside normalized progress."
+    },
+    {
+      "field": "player.streaks.win_streak",
+      "current_source": "player_envs[i].economy.win_streak",
+      "availability": "available",
+      "nature": "observed",
+      "formula_or_version": null,
+      "intended_consumer": "player/economy encoder",
+      "owner_issue": "#293",
+      "notes": ""
+    },
+    {
+      "field": "player.streaks.loss_streak",
+      "current_source": "player_envs[i].economy.loss_streak",
+      "availability": "available",
+      "nature": "observed",
+      "formula_or_version": null,
+      "intended_consumer": "player/economy encoder",
+      "owner_issue": "#293",
+      "notes": ""
+    },
+    {
+      "field": "derived_context.stage",
+      "current_source": "current_stage / stage_for_round",
+      "availability": "available",
+      "nature": "derived",
+      "formula_or_version": "stage_for_round-v1",
+      "intended_consumer": "player/economy encoder",
+      "owner_issue": "#293",
+      "notes": "Round-stage mapping must be versioned."
+    },
+    {
+      "field": "derived_context.economic_context.interest_if_resolved_now",
+      "current_source": "economy_engine.get_interest(economy.gold)",
+      "availability": "available",
+      "nature": "derived",
+      "formula_or_version": "interest-v1",
+      "intended_consumer": "economic context encoder",
+      "owner_issue": "#287/#293",
+      "notes": ""
+    },
+    {
+      "field": "derived_context.economic_context.projected_next_round_income",
+      "current_source": "StrategicSharedContext.projected_next_round_income",
+      "availability": "not_produced",
+      "nature": "estimated",
+      "formula_or_version": null,
+      "intended_consumer": "economic context encoder",
+      "owner_issue": "#300/#287",
+      "notes": "Runtime callsite leaves default 0; serialize missing with reason."
+    },
+    {
+      "field": "derived_context.economic_context.board_power",
+      "current_source": "power / board_power(i)",
+      "availability": "available",
+      "nature": "estimated",
+      "formula_or_version": "board-power-v1",
+      "intended_consumer": "economic context encoder",
+      "owner_issue": "#300/#293",
+      "notes": "Score-derived power, not raw observation."
+    },
+    {
+      "field": "derived_context.economic_context.lobby_average_board_power",
+      "current_source": "average board_power(other) over alive opponents",
+      "availability": "available",
+      "nature": "estimated",
+      "formula_or_version": "lobby-board-power-v1",
+      "intended_consumer": "economic context encoder",
+      "owner_issue": "#300/#293",
+      "notes": "Must include opponent sample count/completeness."
+    },
+    {
+      "field": "derived_context.economic_context.relative_board_power",
+      "current_source": "board_power / lobby_average_board_power",
+      "availability": "available",
+      "nature": "derived",
+      "formula_or_version": "relative-board-power-v1",
+      "intended_consumer": "economic context encoder",
+      "owner_issue": "#300/#293",
+      "notes": ""
+    },
+    {
+      "field": "derived_context.economic_context.estimated_incoming_damage",
+      "current_source": "StrategicSharedContext.estimated_incoming_damage",
+      "availability": "not_produced",
+      "nature": "estimated",
+      "formula_or_version": null,
+      "intended_consumer": "economic/critic context encoder",
+      "owner_issue": "#300/#293",
+      "notes": "Default 0 in callsite; no valid incoming-damage model wired here."
+    },
+    {
+      "field": "derived_context.economic_context.elimination_risk",
+      "current_source": "StrategicSharedContext.elimination_risk",
+      "availability": "not_produced",
+      "nature": "estimated",
+      "formula_or_version": null,
+      "intended_consumer": "economic/critic context encoder",
+      "owner_issue": "#300/#293",
+      "notes": "Default 0 in callsite."
+    },
+    {
+      "field": "entities.board",
+      "current_source": "player_envs[i].board + ChampionCatalog",
+      "availability": "available",
+      "nature": "observed",
+      "formula_or_version": null,
+      "intended_consumer": "entity-set encoder",
+      "owner_issue": "#293",
+      "notes": "Current PPO vector loses champion ID/instance UUID; structured schema should preserve them."
+    },
+    {
+      "field": "entities.bench",
+      "current_source": "player_envs[i].bench + ChampionCatalog",
+      "availability": "available",
+      "nature": "observed",
+      "formula_or_version": null,
+      "intended_consumer": "entity-set encoder",
+      "owner_issue": "#293",
+      "notes": ""
+    },
+    {
+      "field": "entities.shop",
+      "current_source": "player_envs[i].shop + ChampionCatalog",
+      "availability": "available",
+      "nature": "observed",
+      "formula_or_version": null,
+      "intended_consumer": "entity-set encoder",
+      "owner_issue": "#293",
+      "notes": "Current StrategicSharedContext owned_units omits shop offers; shop_available only exists on anchor candidate."
+    },
+    {
+      "field": "entities.items",
+      "current_source": "ItemEngine + ItemCatalog + UnitInstance.items",
+      "availability": "available",
+      "nature": "observed",
+      "formula_or_version": null,
+      "intended_consumer": "item/entity relation encoder",
+      "owner_issue": "#293",
+      "notes": "Stable item/component/recipe IDs and catalog fingerprints required."
+    },
+    {
+      "field": "derived_context.positioning",
+      "current_source": "BoardEvaluation + UnitCombatClassifier",
+      "availability": "available",
+      "nature": "estimated",
+      "formula_or_version": "board-evaluation-v1",
+      "intended_consumer": "positioning/entity encoder",
+      "owner_issue": "#293",
+      "notes": "Current scalar board score is heuristic; retain per-unit/position evidence where available."
+    },
+    {
+      "field": "strategic_evidence.commitment_context.direction_id",
+      "current_source": "strategic_planner_commitments[i].composition_direction",
+      "availability": "available",
+      "nature": "derived",
+      "formula_or_version": "native-commitment-v2",
+      "intended_consumer": "strategic evidence encoder",
+      "owner_issue": "#284/#293",
+      "notes": "Per-player commitment owner, not legacy StrategyInfo."
+    },
+    {
+      "field": "strategic_evidence.commitment_context.direction_identity",
+      "current_source": "direction:v2:<direction>",
+      "availability": "available",
+      "nature": "derived",
+      "formula_or_version": "direction-identity-v2",
+      "intended_consumer": "strategic evidence encoder",
+      "owner_issue": "#284/#293",
+      "notes": "Identity should remain separate from direction label."
+    },
+    {
+      "field": "strategic_evidence.commitment_context.progression_plan",
+      "current_source": "StrategicSharedContext.progression_plan",
+      "availability": "not_produced",
+      "nature": "inferred",
+      "formula_or_version": null,
+      "intended_consumer": "strategic/economic context encoder",
+      "owner_issue": "#300/#293",
+      "notes": "Callsite leaves Flexible default; ContextBridge mapping from current_economic_strategy is telemetry and must not be assumed authoritative."
+    },
+    {
+      "field": "strategic_evidence.owned_unit_assessments",
+      "current_source": "StrategicSharedContext.owned_units built from board/bench",
+      "availability": "available",
+      "nature": "derived",
+      "formula_or_version": "owned-unit-assessment-v1",
+      "intended_consumer": "strategic/entity encoder",
+      "owner_issue": "#300/#293",
+      "notes": "core, board contribution, composition fit and item fit are heuristics; item_fit currently item count /3."
+    },
+    {
+      "field": "strategic_evidence.anchor_candidates",
+      "current_source": "strategic_native_generation.candidates",
+      "availability": "available",
+      "nature": "estimated",
+      "formula_or_version": "native-anchor-generation-v1",
+      "intended_consumer": "strategic evidence encoder",
+      "owner_issue": "#300/#293",
+      "notes": "Anchor value/transition cost/contestation are heuristic estimates and need provenance/uncertainty."
+    },
+    {
+      "field": "strategic_evidence.candidate_generation",
+      "current_source": "strategic_native_generation diagnostics",
+      "availability": "available",
+      "nature": "observed",
+      "formula_or_version": "native-generation-diagnostics-v1",
+      "intended_consumer": "strategic evidence encoder",
+      "owner_issue": "#300/#293",
+      "notes": "Counts and no_candidate_reason can explain empty candidate sets."
+    },
+    {
+      "field": "strategic_evidence.focus_traits",
+      "current_source": "active_native_direction.completed_traits.front()",
+      "availability": "partial",
+      "nature": "derived",
+      "formula_or_version": "native-completed-traits-v1",
+      "intended_consumer": "strategic evidence encoder",
+      "owner_issue": "#284/#293",
+      "notes": "Only first completed trait is focus; builder currently aliases full focus_traits vector to core traits."
+    },
+    {
+      "field": "strategic_evidence.core_unit_ids",
+      "current_source": "active_native_direction.unit_ids",
+      "availability": "available",
+      "nature": "derived",
+      "formula_or_version": "native-active-composition-v1",
+      "intended_consumer": "strategic evidence encoder",
+      "owner_issue": "#284/#293",
+      "notes": "Core units from native candidate; preserve IDs."
+    },
+    {
+      "field": "strategic_evidence.composition_locked",
+      "current_source": "StrategicSharedContext.composition_locked",
+      "availability": "not_available",
+      "nature": "unknown",
+      "formula_or_version": null,
+      "intended_consumer": "strategic evidence encoder",
+      "owner_issue": "#284/#293",
+      "notes": "Explicitly hardcoded false; do not serialize false as evidence."
+    },
+    {
+      "field": "derived_context.action_opportunity.items",
+      "current_source": "StrategicSharedContext.action_candidates",
+      "availability": "not_produced",
+      "nature": "estimated",
+      "formula_or_version": null,
+      "intended_consumer": "action candidate context encoder",
+      "owner_issue": "#300/#287/#293",
+      "notes": "Vector not populated in current callsite; no per-action cost breakdown delivered yet."
+    },
+    {
+      "field": "legal_state_context.anti_loop_state",
+      "current_source": "AntiLoopEngine.get_state() / AntiLoopHistory",
+      "availability": "available_but_not_projected",
+      "nature": "observed",
+      "formula_or_version": null,
+      "intended_consumer": "critic legal-context encoder",
+      "owner_issue": "#294/#293",
+      "notes": "History summary exists but current PPO observation does not include it."
+    },
+    {
+      "field": "legal_state_context.mask_reference",
+      "current_source": "Trainer observations + get_action_masks() separate calls",
+      "availability": "not_correlated",
+      "nature": "observed",
+      "formula_or_version": null,
+      "intended_consumer": "actor and critic legal-context encoders",
+      "owner_issue": "#294/#293",
+      "notes": "No shared decision identity/hash currently attached to both payloads."
+    },
+    {
+      "field": "shadow_recommendations",
+      "current_source": "StrategicPlanner/EconomicController/ActionEvaluator",
+      "availability": "available_shadow_only",
+      "nature": "recommended",
+      "formula_or_version": "shadow-planner-v1",
+      "intended_consumer": "diagnostic channel only",
+      "owner_issue": "#300/#293",
+      "notes": "Scores/confidence are heuristic and not calibrated; never auto-feed as imitation target."
+    }
+  ],
+  "availability_legend": {
+    "available": "Source is populated in the current inspected callsite.",
+    "partial": "Only a partial representation is populated.",
+    "not_produced": "Field exists in a DTO but current callsite leaves default or does not construct it.",
+    "not_available": "Current value is explicitly forced/defaulted and is not evidence.",
+    "available_but_not_projected": "Source exists but is not included in the PPO observation/critic payload.",
+    "not_correlated": "Payloads exist but lack a shared decision identity/hash.",
+    "available_shadow_only": "Diagnostic recommendation exists but is not an observed fact or PPO target."
+  }
+}
