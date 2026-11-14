@@ -1341,8 +1341,38 @@
             },
             "consecutive_reviews": {
               "$ref": "#/$defs/field"
+            },
+            "direction_source": {
+              "$ref": "#/$defs/field"
+            },
+            "composition_identity": {
+              "$ref": "#/$defs/field"
+            },
+            "current_direction_score": {
+              "$ref": "#/$defs/field"
+            },
+            "current_direction_viable": {
+              "$ref": "#/$defs/field"
+            },
+            "composition_locked": {
+              "$ref": "#/$defs/field"
             }
           }
+        },
+        "completed_traits": {
+          "$ref": "#/$defs/field"
+        },
+        "focus_traits": {
+          "$ref": "#/$defs/field"
+        },
+        "focus_weights": {
+          "$ref": "#/$defs/field"
+        },
+        "core_traits": {
+          "$ref": "#/$defs/field"
+        },
+        "core_unit_ids": {
+          "$ref": "#/$defs/field"
         }
       }
     },
