@@ -189,3 +189,7 @@ Catalog IDs, content hashes, and order hashes bind categorical/entity vocabulari
 4. **Contract/invariants:** no offsets/shapes/normalization selected; masks remain independent side inputs; diagnostic recommendations and Unified Shadow outputs are excluded; unavailable values remain unavailable.
 5. **Cross-component impact:** Observation Schema/source map, strategic/economic producers, Engine bindings, PPO Actor/Critic, Action/Mask, checkpoint lineage, replay, and evaluation.
 6. **Objective validation:** parsed all 77 source-map entries; reconciled 66 legacy feature definitions across 18 blocks and the 66-entry migration crosswalk; checked the current projection and Action/Mask boundaries. No runtime files changed.
+
+## Follow-up decision matrix
+
+The proposed [Observation Projection Consumer Matrix v1](observation-projection-consumer-matrix.v1.draft.md) refines this audit into one primary disposition for each of the 77 semantic source-map fields and extends the 66-entry legacy crosswalk with target consumer intent. This follow-up remains a proposal: it does not approve tensor encoding, normalization, shape, offsets or architecture. The current audit remains the evidence inventory; the matrix is the proposed semantic consumer decision layer.
