@@ -966,6 +966,45 @@
       "unit": "champion identifier set",
       "normalization_or_scale": "stable champion IDs",
       "validity_rule": "missing/unknown until authoritative owner populates it"
+    },
+    {
+      "field": "strategic_evidence.owner_snapshots.planner_commitment",
+      "current_source": "strategic_planner_commitments[i]",
+      "availability": "available",
+      "nature": "derived",
+      "formula_or_version": "strategic-planner-commitment-v1",
+      "intended_consumer": "planner-local strategic evidence encoder and replay",
+      "owner_issue": "#284/#293",
+      "notes": "Planner-local commitment snapshot only; not asserted as the global authority over Composition Intelligence or UnifiedStrategicStateMachine.",
+      "unit": "owner identity + decision sequence",
+      "normalization_or_scale": "owner ID and source decision sequence; payload path points to commitment_context",
+      "validity_rule": "valid only when owner snapshot sequence matches the observation decision identity"
+    },
+    {
+      "field": "strategic_evidence.owner_snapshots.composition_intelligence",
+      "current_source": "composition_intelligence_players[i].active",
+      "availability": "available_shadow_only",
+      "nature": "derived",
+      "formula_or_version": "composition-intelligence-owner-v1",
+      "intended_consumer": "diagnostic strategic evidence encoder/replay",
+      "owner_issue": "#284/#293/#300",
+      "notes": "Independent active-composition owner; available only when TFT_COMPOSITION_INTELLIGENCE_SHADOW is enabled. Do not overwrite planner commitment or infer it from missing values.",
+      "unit": "active composition identity/version/state",
+      "normalization_or_scale": "preserve owner identity, composition identity, version and source sequence",
+      "validity_rule": "unknown/missing when feature gate is disabled; valid only with matching match/player/round/sequence"
+    },
+    {
+      "field": "strategic_evidence.owner_snapshots.unified_state_machine",
+      "current_source": "UnifiedStrategicShadowRuntime.machine()",
+      "availability": "available_shadow_only",
+      "nature": "derived",
+      "formula_or_version": "unified-strategic-state-machine-v1",
+      "intended_consumer": "diagnostic strategic evidence encoder/replay",
+      "owner_issue": "#284/#293/#300",
+      "notes": "Independent state-machine owner; current path additionally requires the audit recorder/path. Keep state/pivot transitions separate from Composition Intelligence and planner commitment.",
+      "unit": "machine state + active composition + pending transition",
+      "normalization_or_scale": "typed state and identity/version/sequence; no implicit synchronization",
+      "validity_rule": "unknown/missing when audit runtime is not enabled; valid only with matching match/player/round/sequence"
     }
   ],
   "availability_legend": {
