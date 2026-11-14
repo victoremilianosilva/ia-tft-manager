@@ -1,3 +1,7 @@
+> **Plano histórico de rollout — não é o plano de implementação vigente.** Este documento registra a sequência inicial de cinco PRs e os limites da fase em que foi escrito. Decisões posteriores de ownership, identidade, provenance, candidatos, economia, unidades, replay e integração PPO foram consolidadas nos contratos aprovados, especialmente [Strategic Ownership and Integration Contract v1](strategic-ownership-integration.v1.draft.md), [Economic Evidence and Progression Contract v1](economic-evidence-and-progression-contract.v1.draft.md), [Strategic Action Candidate Contract v1](strategic-action-candidate-contract.v1.draft.md) e [Strategic Shadow Integrated Replay Contract v1](strategic-shadow-integrated-replay-contract.v1.draft.md). Em caso de divergência, os contratos aprovados prevalecem; os detalhes deste plano servem como evidência histórica do rollout, não como autorização ou sequência normativa atual.
+
+---
+
 # Strategic and Economic Planning Architecture
 
 ## Goal
