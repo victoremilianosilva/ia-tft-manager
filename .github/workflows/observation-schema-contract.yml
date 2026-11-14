@@ -1,0 +1,24 @@
+name: Observation Schema Contract
+
+on:
+  push:
+    branches:
+      - "spec/observation-schema-v1-draft"
+  pull_request:
+    paths:
+      - "spec/observation-schema.v1.draft.json"
+      - "scripts/validate_observation_schema.py"
+      - ".github/workflows/observation-schema-contract.yml"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned contract validators
+        run: python -m pip install jsonschema==4.23.0 rfc8785==0.1.4
+      - name: Validate Observation Schema and semantic fixtures
+        run: python scripts/validate_observation_schema.py
