@@ -13,7 +13,6 @@ Para decisões de arquitetura e implementação da nova linhagem, use primeiro o
 - [Observation identity v1→v2 crosswalk](observation-identity-v1-v2-crosswalk.md) — migração sem reinterpretar hashes ou artefatos históricos.
 - [Observation Tensor Projection Contract v1 — Design Requirements](observation-tensor-projection-contract.v1.draft.md)
 - [Observation Projection Consumer Matrix v1 — Draft](observation-projection-consumer-matrix.v1.draft.md)
-- [Structured Entity and Temporal Evidence Contract v1 — Draft](observation-structured-entity-temporal-contract.v1.draft.md)
 - [Structured Entity and Temporal Evidence Contract v1 — Draft](observation-structured-entity-temporal-contract.v1.draft.md) — entity identity, ownership, collection completeness, temporal scope and schema gaps before tensor encoding.
 - [Structured Entity Producer Evidence Audit — Identity Slice v1 — Draft](observation-structured-entity-producer-audit.v1.draft.md) — source-backed correction: native UnitInstance UUID generation and lifecycle remain unverified.
 - [Decision Identity and Mask Correlation Contract v1 — Design Proposal](decision-identity-mask-correlation-contract.v1.draft.md) — rationale e invariantes de correlação entre observação, masks, critic, rollout e replay.
