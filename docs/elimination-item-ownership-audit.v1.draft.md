@@ -182,3 +182,15 @@ Its limits for this audit:
 - A full match completing does not prove that a dead player's pending-anvil state is consumed; alive-player progression can continue independently.
 
 This confirms that normal full-match elimination and ranking are covered, while elimination-specific equipment ownership and dead-player forced-action semantics remain uncovered by this integration test.
+
+
+## 12. Pending-anvil reachability qualification — 2026-11-15
+
+The conditional mask/executor mismatch above must be qualified by the producer audit:
+
+- The native gameplay-source audit found no production call to `ItemEngine::grant_component_anvil()` or `grant_completed_item_anvil()` across the inspected `cpp/src/**/*.cpp` implementation translation units.
+- The audited real PvE reward path grants components/completed items directly to ItemEngine inventory; it does not enqueue an anvil.
+- `tft_engine_bindings.cpp` exposes pending-anvil diagnostic fields and ordinary direct item grant/test helpers, but does not expose either anvil enqueue API as a TFTEngine/Python runtime operation.
+- The anvil enqueue APIs are exercised by direct ItemEngine tests; that does not establish a production TFTEngine path.
+
+Therefore, the dead-player pending-anvil mask/executor mismatch is **not currently shown reachable through the audited main-repository gameplay path**. Keep it as a defensive conditional contract requirement for any future producer or external injection, not as a current gameplay defect. If a producer is later added, it must prove it cannot leave an eliminated player with an unresolved forced action, or define a terminal resolution policy.
