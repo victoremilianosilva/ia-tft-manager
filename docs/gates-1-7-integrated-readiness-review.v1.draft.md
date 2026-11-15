@@ -286,3 +286,8 @@ This is a diagnostic/selection boundary, not proof of cross-player leakage or po
 ### Conditional eliminated-player pending-anvil contract risk — 2026-11-15
 
 A source trace found that pending-anvil state overrides masks to a forced type-7 choice and Engine effective-action preparation preserves that choice for a finished player. But `PlayerEnv::step()` returns `acted=false` immediately for `info.alive == false`, before item dispatch. If a pending anvil survives into elimination, the mask advertises a choice that the executor ignores. Alive-player completion does not appear to stall on this no-op. Normal-gameplay reachability is not proven; classify this as a conditional mask/executor contract risk, not a reproduced defect. Gate acceptance requires either a deterministic reachable scenario with an explicit terminal policy or a proof/test that the state cannot occur.
+
+
+### Full-match elimination test coverage refinement — 2026-11-15
+
+The Python integration test `tests/test_full_match_terminal_ranking.py` does drive a real lobby through combat/elimination and validates terminal ranking and placement rewards while selecting actions from masks for all eight seats. It does not prove elimination-time equipment cleanup, post-elimination pending-anvil consumption, dead-player `acted` status, or an inactive-only mask contract. It also records but does not assert completed-item loot. Thus the remaining gap is not “no elimination integration test”; it is the specific interaction among elimination, item ownership, forced masks and typed execution outcome.
