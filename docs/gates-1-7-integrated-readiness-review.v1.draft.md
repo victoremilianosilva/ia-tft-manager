@@ -184,6 +184,7 @@ Relevant evidence:
 
 Relevant evidence:
 - `docs/strategic-shadow-integrated-replay-contract.v1.draft.md`
+- `docs/current-replay-correlation-evaluation-gap-audit.v1.draft.md`
 - `docs/ppo-evaluation-protocol.v1.draft.md`
 - `docs/evaluation-tooling.md`
 - Issues #289 and #295; documentary PRs #315 and #317.
@@ -197,7 +198,7 @@ Relevant evidence:
 - Evaluate outcome, behavior, legality, stability and uncertainty separately; do not promote based on internal reward alone.
 - Produce replay and evaluation artifacts that can be independently reproduced.
 
-**Current blocking fact:** the replay/evaluation documents are approved contracts, not executable acceptance. No multi-round integrated replay or new-lineage PPO evaluation is accepted by this review.
+**Current blocking facts:** the replay/evaluation documents are approved contracts, not executable acceptance. Viewer log playback does not re-execute Engine/policy; the cross-language fixture covers only round barriers and BUY_XP; rollout has no decision identity; masks are separately fetched; Viewer `identity_complete` does not require Engine match ID. No full multi-round integrated replay or new-lineage PPO evaluation is accepted by this review.
 
 ## 10. Gate 8 decision
 
