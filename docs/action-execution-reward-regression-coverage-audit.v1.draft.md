@@ -91,3 +91,17 @@ This is a scoped negative finding for these two relevant test files, not a claim
 7. Assert a diagnostic snapshot clearly separates active equipment from terminal/orphaned records.
 
 These are future acceptance criteria; no tests or runtime code were changed.
+
+
+## 8. Conditional dead-player pending-anvil mask versus executor coverage — 2026-11-15
+
+Source tracing across `refresh_masks()`, `TFTEngine::step()`, and `PlayerEnv::step()` identifies a conditional contract edge:
+
+- A pending anvil overrides masks to type 7 only and uses the special anvil option-index head.
+- Engine effective-action preparation preserves the submitted action for a finished player while a pending anvil exists.
+- PlayerEnv then returns `acted=false` with zero reward immediately when `info.alive == false`, before item action dispatch.
+- Preparation completion is computed from alive players, so this path does not establish a deadlock by itself.
+
+If an eliminated player can retain a pending anvil, the mask/effective-action path advertises and preserves a choice that the dead-player executor path ignores. Reachability has not yet been proven from normal gameplay; no runtime defect is asserted.
+
+Add a deterministic acceptance case that injects/reaches pending anvil before elimination, verifies the post-elimination mask, submitted/effective action, executor resolution, pending queue disposition, alive-player completion, and rollout record. If the state is unreachable by invariant, add a test proving that invariant and keep the branch unreachable by construction.
