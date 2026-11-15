@@ -1,8 +1,8 @@
 # Implementation Issue Roadmap v1
 
-**Status:** approved to begin Gate 8 Stage 0; runtime work remains gated by Stage 0 acceptance.  
+**Status:** Gate 8 authorized; Stage 0 design is in progress, and runtime work remains gated by Stage 0 acceptance.  
 **Canonical branch:** `new-arquiteture`.  
-**Canonical architecture:** Shadow supplies strategic context and recommendations; PPO remains the learning and action-selection algorithm. Native Engine rules and exact action masks remain the final legality authority.  
+**Canonical architecture:** TFT Strategic Engine supplies validated strategic context; PPO remains the learning and action-selection algorithm. Native Engine rules and exact action masks remain the final legality authority.  
 **Scope:** main repository `ia-tft-manager`. Overwolf/GEP validation is deferred to Stage 7.
 
 ## 1. Purpose and planning rule
@@ -49,7 +49,7 @@ The current open issue inventory is #281–#295 (excluding #296–#301, already 
 
 **Exit:** native tests prove unique Engine scope, reset/move behavior, monotonic typed sequences, exact mask-observation correlation and stale/mismatch rejection.
 
-### Stage 2 — Native structured evidence and Shadow strategic integration
+### Stage 2 — Native structured evidence and TFT Strategic Engine strategic integration
 
 **Issues:** #281, #282, #283, #284, #291, #346.
 
@@ -68,7 +68,7 @@ Recommended implementation order:
 - SELL must respect copies, star progress, items, active traits and bridge/transition value.
 - Deploy/move must use an explicit destination producer.
 - Eliminated-player items are terminally discarded: no transfer, return or redistribution to any player, inventory, pool, shop or PvE source.
-- Shadow remains read-only; no candidate executes gameplay actions.
+- TFT Strategic Engine remains read-only; no candidate executes gameplay actions.
 
 **Exit:** producer and integration tests prove valid evidence, explicit unknown/partial states, synchronized owners, real candidate sets, and no item transfer/redistribution.
 
@@ -103,7 +103,7 @@ Recommended implementation order:
 Order:
 1. #290 consumer-by-consumer migration map is the shutdown control ledger; refresh it against actual code before each removal.
 2. #287 migrate reward inputs to authoritative consequence events, preserving immediate/combat/placement distinctions, temporal attribution, deduplication and per-player GAE boundaries.
-3. #285 remove old strategic leakage from Shadow/Composition Intelligence once factual replacements are proven; do not remove shared legacy fields while external consumers still need them.
+3. #285 remove old strategic leakage from TFT Strategic Engine/Composition Intelligence once factual replacements are proven; do not remove shared legacy fields while external consumers still need them.
 4. Retire active StrategyInfo/CompositionDirectionPolicy/CompositionPlanner-derived PPO/reward consumers only after replacements and regression evidence exist.
 
 **Exit:** reward regression suite passes; event identity/temporal attribution and GAE are proven; no active decision/reward path depends on retired strategic semantics. Historical readers/checkpoints remain intact where required.
@@ -116,7 +116,7 @@ Order:
 - #289 execute deterministic multi-round replay across evidence → candidates → transitions → units/lineup → economy → evaluator → positioning → executor diagnostics. Include incomplete/stale snapshots, empty candidates and consecutive matches.
 - #295 run baseline comparisons, paired seeds, seat rotation, held-out test sets, uncertainty, ablations and promotion/rollback gates only after Stage 5 reward migration is accepted.
 
-**Exit:** integrated replay and evaluation reports are reproducible; Gates 1–7 have runtime acceptance evidence. No claim of improvement from reward curves or Shadow agreement alone.
+**Exit:** integrated replay and evaluation reports are reproducible; Gates 1–7 have runtime acceptance evidence. No claim of improvement from reward curves or TFT Strategic Engine agreement alone.
 
 ### Stage 7 — Overwolf/GEP live integration (deferred)
 
@@ -159,7 +159,7 @@ A completed documentation issue does not imply runtime acceptance. An open issue
 
 ## 5. Cross-stage invariants and stop conditions
 
-- No second AI; PPO remains the learning algorithm; Shadow remains canonical strategic context and read-only.
+- No second AI; PPO remains the learning algorithm; TFT Strategic Engine remains the canonical strategic-intelligence architecture and read-only.
 - Native Engine rules and exact masks remain final legality authority.
 - No automatic gameplay execution.
 - No fabricated identities, candidates, offers, items, pool counts, positions, history, income, damage or risk.
