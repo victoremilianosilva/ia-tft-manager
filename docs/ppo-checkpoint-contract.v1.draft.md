@@ -257,12 +257,14 @@ Before runtime implementation can be considered complete, tests and reports must
 
 **Documentary work in this draft:** current architecture and checkpoint payload audited; proposed manifest, compatibility classes, resume policy, legacy policy, and acceptance matrix specified.
 
-**Still pending before Gate 4 can be accepted as a complete contract:**
-- final Observation Schema approval (documentary schema approved) and concrete tensor projection approval, including exact feature manifest/hash generation;
-- final Action Contract identity/hash and head-order mapping;
-- final Reward Contract approval and temporal attribution identity;
-- a complete architecture manifest with stable encoder/head IDs and deterministic serialization;
-- review of the migration policy against every existing checkpoint-loading path.
+**Pre-PPO-implementation design deliverables (Stage 0 of the Gate 8 preflight):**
+- domain-owner review/approval of Schema v2 and Decision Identity v2 documentary artifacts; v1 remains immutable;
+- concrete tensor projection manifest and exact feature/source/consumer/hash generation;
+- immutable Action/Mask and Reward/temporal contract identities, with action-head mapping derived from the approved projection and Action Contract rather than guessed from legacy dimensions;
+- architecture manifest with stable encoder/head IDs and deterministic serialization, selected only after projection and consumer review;
+- migration-policy review against every checkpoint save/load/inference path.
+
+These are deliberately sequenced before any PPO runtime implementation. Gate 8 authorization may begin Stage 0 design/review; it does not authorize bypassing Stage 0 or writing PPO code before its projection and architecture artifacts are approved.
 
 **Runtime work is explicitly deferred.** No policy, trainer, loader, optimizer, scheduler, rollout, PPO, Engine, action mask, reward, Viewer, or checkpoint file is changed by this document. Gate 8 approval is required before implementation begins.
 
@@ -307,3 +309,10 @@ A future checkpoint manifest must bind the reviewed semantic consumer decision m
 A future checkpoint manifest must bind the reviewed structured-entity/temporal contract identity and hash independently from the semantic consumer matrix, Observation Schema, concrete tensor projection, normalization/formula manifests, architecture and catalogs. A shape-compatible checkpoint is not semantically compatible if entity identity, ownership, completeness or temporal scope changes. The current draft contract is not runtime-approved.
 
 The manifest path is `spec/observation-structured-entity-temporal-contract.v1.draft.json`; its current draft version/hash must be recorded independently from tensor projection and checkpoint architecture identities.
+
+
+## 14. Initial Actor/Critic consumer decisions — Gate 8 preflight
+
+For the first new lineage, the exact same decision-correlated native action-mask snapshot is a mandatory separate input to Actor and Critic; current `get_value()` behavior is a known migration gap. Underlying factual item/component inventory and unit target-profile evidence are shared semantic inputs. The current 9×37 inventory-fit and 100×37 recipe-fit matrices remain Actor-specific action-conditioning structures and are not required raw Critic inputs. Any Critic-side derived summary must use the same validated evidence and a separately identified formula. Untyped AntiLoopEngine history is excluded from the initial projection; a future temporal context requires typed source sequence, reset/replay proof and ablation.
+
+This resolves consumer-intent ambiguity without selecting tensor dimensions, offsets, normalization, encoder family or shared/separate encoder topology.
