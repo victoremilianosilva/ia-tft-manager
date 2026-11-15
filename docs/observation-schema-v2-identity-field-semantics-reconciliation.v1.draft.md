@@ -39,7 +39,7 @@ The existing Engine episode counter is not sufficient for dimension 2 because it
 | engine_match_id | Canonical Engine-episode scope distinguishing Engine object lifetime + episode | No Engine-instance token exists in audited paths; native episode_id is only Impl-local | Required; incomplete until a scoped producer exists |
 | session_match_id | Viewer recording/session UUID | ViewerSession creates UUID via uuid.uuid4() | Correlation only; excluded from canonical decision hash |
 | episode_id | Native numeric episode counter within one TFTEngine::Impl lifetime | Native reset/step results and pybind preserve it; Python wrapper drops it from training-facing reset/step outputs | Metadata only; excluded from canonical decision hash |
-| player_id | Participant seat/index within the canonical Engine episode | Native lobby and Python wrapper use eight-player array indices | Episode-local; not a persistent player UUID |
+| player_id | Episode-local seat token encoded as player-0 through player-7 | Native lobby and Python wrapper use integer array indices 0–7 | Deterministic seat representation; not a persistent player UUID |
 
 ### 3.1 match_id
 
@@ -73,7 +73,7 @@ The existing Viewer JSONL/metadata shape may retain legacy match_id for historic
 
 Keep native episode_id as metadata so diagnostics can preserve the counter value, but never use it alone as a globally unique Engine match key.
 
-Keep player_id as the seat/index within the scoped Engine episode unless a separate authoritative participant identity is later introduced. It must be interpreted together with engine_match_id; seat 0 in one Engine episode is not the same participant identity as seat 0 in another episode.
+Keep player_id as the episode-local seat token. Because the v2 JSON Schema represents it as a string, serialize native seat index N as the exact token player-N, where N is 0 through 7; do not use leading zeros or another inferred ID format. This is a deterministic encoding of an existing array position, not a persistent participant UUID. It must be interpreted together with engine_match_id; player-0 in one Engine episode is not the same participant identity as player-0 in another episode.
 
 ## 4. Hash and namespace consequences
 
@@ -103,7 +103,7 @@ The three proposed canonical Engine namespaces (tft.engine.decision, tft.engine.
 | Future authoritative Engine episode identity | identity.engine_match_id | Copy exact producer value; must encode Engine instance + episode semantics |
 | Native episode_id | identity.episode_id | Preserve as metadata; do not promote to engine_match_id |
 | ViewerSession.match_id | identity.session_match_id | Copy as Viewer session correlation with explicit source label |
-| Native player array index | identity.player_id | Preserve as episode-local seat/index |
+| Native player array index N (0–7) | identity.player_id | Serialize deterministically as player-N; retain episode-local semantics |
 | Viewer sequence_id | Typed Viewer/session source reference only | Preserve Viewer namespace; never use as Engine decision/snapshot sequence |
 | CI, ContextBridge, native strategic, JSONL append sequences | Their own typed source-reference fields | Preserve producer namespace and scope; never substitute for canonical Engine sequences |
 
@@ -124,7 +124,7 @@ The schema's required fields and hash scope are not weakened. The JSON changes a
 1. **Prior problem:** v2 identity field names were required but the current Viewer record used match_id for a Viewer UUID and engine_match_id for a local numeric episode counter.
 2. **Technical justification:** these values have different owners and uniqueness scopes; direct copying would create false canonical identity and invalid cross-Engine joins.
 3. **New responsibility:** this note owns the normative source meaning and mapping rule for the v2 match, Engine, session, episode and player fields.
-4. **Contract and invariants:** match_id is authoritative game-match identity; engine_match_id is Engine-instance + episode scope; Viewer UUID maps only to session_match_id; episode counter and player seat remain local metadata.
+4. **Contract and invariants:** match_id is authoritative game-match identity; engine_match_id is Engine-instance + episode scope; Viewer UUID maps only to session_match_id; episode counter remains local metadata; player_id is player-N seat token scoped by engine_match_id.
 5. **Cross-component impacts:** Observation Schema v2, identity hash, sequence registry, Viewer JSONL, native Engine lifecycle, Overwolf/GEP source audit, pybind, Python wrapper, PPO rollout and replay.
 6. **Objective validation:** the schema and crosswalk descriptions agree; current producers are classified as missing/metadata/session-only where appropriate; no source field is promoted without proof; no runtime or tensor behavior changes.
 

@@ -4,6 +4,8 @@
 **Canonicalization:** RFC 8785 JSON Canonicalization Scheme (JCS), UTF-8 bytes, then SHA-256.  
 **Prefix:** lowercase hexadecimal digest prefixed by `sha256:`.
 
+The fixture values `player-2` and `player-3` encode episode-local seat indices 2 and 3; they are not persistent participant IDs.
+
 The hash input contains exactly:
 `identity_version`, `match_id`, `engine_match_id`, `player_id`, `round`, `decision_sequence.namespace`, `decision_sequence.value`, `snapshot_sequence.namespace`, `snapshot_sequence.value`.
 

@@ -24,9 +24,9 @@ The other identity fields have separate owners and meanings:
 | `engine_match_id` | Canonical Engine-instance + episode scope | Not currently produced; `episode_id` alone is insufficient |
 | `session_match_id` | ViewerSession recording/session UUID | Produced by Viewer; correlation only |
 | `episode_id` | Native counter local to one `TFTEngine::Impl` lifetime | Produced by native Engine and pybind; wrapper drops it from training-facing reset/step |
-| `player_id` | Participant seat/index within the Engine episode | Episode-local; not a persistent player UUID |
+| `player_id` | Native seat index encoded as `player-0` through `player-7` | Episode-local token; not a persistent player UUID |
 
-The current Viewer logger writes its own UUID into the legacy `match_id` property and separately carries native `episode_id` as `engine_match_id`. This is a session-correlation record, not a valid source for populating the v2 canonical fields. A v2 adapter must place the Viewer UUID in `session_match_id`; if authoritative `match_id` or scoped `engine_match_id` is missing, identity status remains incomplete.
+The current Viewer logger writes its own UUID into the legacy `match_id` property and separately carries native `episode_id` as `engine_match_id`. This is a session-correlation record, not a valid source for populating the v2 canonical fields. A v2 adapter must place the Viewer UUID in `session_match_id`; if authoritative `match_id` or scoped `engine_match_id` is missing, identity status remains incomplete. Native player seat N is serialized as the canonical string `player-N` (N=0…7) because the v2 field is a string; this does not imply a persistent participant identity.
 
 ## Registry
 
