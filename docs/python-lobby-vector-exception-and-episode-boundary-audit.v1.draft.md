@@ -65,7 +65,7 @@ The same ordering is used when:
 - Flattening masks by lobby then player.
 - Updating per-agent activity and episode-return arrays.
 
-`CppTFTLobbyWrapper` rebuilds its compatibility `players` list from the native `players` array in enumeration order, assigning each entry its reported `player_id`. `LobbyVectorEnv` derives dones by iterating that list's order. The inspected code assumes that native observations, rewards, dones, masks, action slots, and player records all share the same stable player-index order. The audit did not independently prove the native producer's ordering contract across every reset/terminal path.
+`CppTFTLobbyWrapper` rebuilds its compatibility `players` list from the native `players` array in enumeration order, assigning each entry its reported `player_id`. `LobbyVectorEnv` derives dones by iterating that list's order. The native ordering contract is source-backed for the inspected reset/step path. TFTEngine::Impl::player_envs is a fixed std::array<PlayerEnv, 8> indexed by player seat; initialize_players() assigns PlayerInfo::player_id = i; build_observations() writes row i from player_envs[i]; TFTEngine::step() writes dones, masks, and StepResult::players[i] from that same index; get_action_masks() preserves the index; and pybind serializes the std::array in iteration order. CppTFTLobbyWrapper.step() enumerates the returned player list without sorting, and LobbyVectorEnv derives dones in that same order. Thus the current native→Python positional mapping is supported for the inspected path, including reset initialization and terminal step result construction. This proves stable seat ordering, not a durable player identity across episodes or Engine instances.
 
 This positional mapping is adequate as an in-memory collection convention only while that ordering invariant holds. It is not a durable player identity and cannot independently correlate an experience to a native Engine instance, episode, round, or decision.
 
@@ -99,7 +99,7 @@ A lobby reset is therefore represented in PPO by positional continuity plus done
 | Terminal reward/dones pair with reset observation in returned vector tuple | Direct source evidence |
 | All eight done flags stop GAE at lobby completion | Direct source evidence from vector dones + Trainer GAE call |
 | Player flattening is positional | Direct source evidence |
-| Native player ordering is stable across all relevant paths | Not independently proven here |
+| Native player ordering across the inspected reset/step→pybind→wrapper path | Direct source evidence: fixed index i is used for observations, masks, dones and PlayerInfo::player_id; wrapper preserves list order |
 | Rollout stores no typed Engine/episode/player/decision identity | Direct source evidence |
 | Current terminal GAE necessarily crosses episodes | Not supported; code sets done=true |
 
@@ -141,3 +141,27 @@ This documentation audit is complete when reviewers can trace the control flow a
 - Masks/action/observation remain correlated at each decision boundary.
 
 No runtime code, PPO tensors, reward behavior, masks, checkpoints, or historical artifacts are changed by this audit.
+
+## 10. Native player-order proof and remaining identity boundary
+
+The earlier draft left native player ordering as unverified. A follow-up source trace closes that specific question:
+
+- TFTEngine::Impl::player_envs is std::array<PlayerEnv, kPlayersPerLobby> and all relevant loops use the same index i.
+- initialize_players() assigns player_envs[i].info.player_id = i before producing the initial observations and masks.
+- build_observations() writes each player's observation into row i from player_envs[i].
+- TFTEngine::step() writes dones[i], action_masks[i] and players[i] from player_envs[i]; get_action_masks() uses the same index.
+- StepResult::players and action masks are fixed-size arrays. The pybind conversion iterates these arrays in order, and CppTFTLobbyWrapper.step() enumerates the returned player list without sorting or remapping it.
+- LobbyVectorEnv derives each done flag by iterating env.players, preserving the wrapper's list order. Trainer flattening uses lobby_idx * 8 + player_idx consistently for observations, rewards, dones, masks and action batches.
+
+**Disposition:** stable positional seat ordering is proven for the inspected native reset/step and Python adapter path. The remaining gap is not ordering; it is durable identity/correlation. player_id is a seat index in the lobby, while native Engine-instance scope, episode ID and decision sequence are not retained in RolloutBuffer. The proof also does not replace deterministic multi-lobby failure-injection tests.
+
+## 11. Architecture reconstruction review
+
+1. **Prior problem:** the initial audit correctly identified positional flattening but left the native ordering invariant unresolved, and did not explicitly separate stable seat order from durable player identity.
+2. **Technical justification:** a stable array order supports correct in-memory flattening, but cannot by itself identify an experience across resets, separate Engine objects or replay sessions.
+3. **New responsibility:** this addendum owns the source proof for seat-order preservation across native result arrays, pybind, wrapper and vector flattening; Engine/player identity contracts remain owned by their respective identity specifications.
+4. **Contract and invariants:** index i must refer to the same seat across observations, masks, rewards, dones and player records within a lobby step; player seat index is not a cross-episode identity; no implicit sorting or reindexing is permitted.
+5. **Cross-component impacts:** TFTEngine::Impl, ResetResult, StepResult, pybind conversion, CppTFTLobbyWrapper, LobbyVectorEnv, Trainer flattening and RolloutBuffer identity.
+6. **Objective validation:** source trace confirms the same index through the inspected native reset/step and Python conversion path; runtime acceptance still requires tests that compare every player's returned identity/order across normal steps, terminal results, auto-reset and multiple independent lobbies.
+
+No runtime code, tests, observations, masks, rewards, PPO tensors, checkpoints or historical artifacts are changed by this correction.
