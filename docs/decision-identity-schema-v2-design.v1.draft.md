@@ -43,7 +43,7 @@ The v2 schema must define the following exact envelope. This is a normative desi
   "status": "complete",
   "match_id": "match-identity",
   "engine_match_id": "engine-match-identity",
-  "player_id": "player-identity",
+  "player_id": "player-2",
   "round": 12,
   "decision_sequence": {
     "namespace": "tft.engine.decision",
@@ -60,6 +60,7 @@ The v2 schema must define the following exact envelope. This is a normative desi
 ### 3.1 Field rules
 
 - `identity_version` is required and equals `tft.decision-identity.v2`.
+- `player_id` is the episode-local seat token encoded as `player-0` through `player-7`; it is not a persistent user/player UUID.
 - `status` is required. A complete identity requires non-empty `match_id`, `engine_match_id`, `player_id`, a non-negative `round`, and both typed sequence references.
 - `match_id` and `engine_match_id` remain distinct required identifiers. Neither is silently derived from or substituted for the other.
 - `decision_sequence` and `snapshot_sequence` are objects with exactly `namespace` and `value`; additional properties are rejected.
@@ -78,7 +79,7 @@ The field names are not interchangeable. Their canonical meanings for v2 are:
 | `engine_match_id` | Canonical Engine-episode scope, uniquely distinguishing one Engine object lifetime and one episode within it | Not currently produced; native `episode_id` alone is only Impl-local and collides across independent Engine objects | Future producer must bind Engine-instance scope + native episode; exact wire encoding remains a separate decision |
 | `session_match_id` | Viewer recording/session UUID | Produced by `ViewerSession` | Correlation/display metadata only; excluded from canonical identity and hash |
 | `episode_id` | Native numeric episode counter within one `TFTEngine::Impl` lifetime | Produced by native reset/step results and pybind; dropped by the Python training wrapper | Preserve as diagnostic/correlation metadata; never use alone as `engine_match_id` |
-| `player_id` | Participant seat/index within the canonical Engine episode | Native eight-player arrays and wrappers use seat positions | Episode-local only; not a persistent user/player UUID |
+| `player_id` | Episode-local seat token encoded as `player-{seat_index}` (`player-0`…`player-7`) | Native eight-player arrays and wrappers use integer seat positions | Deterministic representation only; not a persistent user/player UUID |
 
 The current Viewer correlation path writes the Viewer UUID into the record's `match_id` field and separately copies native `episode_id` into `engine_match_id`. That is a **legacy/session correlation shape**, not proof that those values satisfy the v2 canonical field meanings above. A v2 adapter must map the Viewer UUID to `session_match_id`; it must not promote it into `match_id`. Likewise, the current numeric native episode value cannot populate the v2 `engine_match_id` until an Engine-instance scope is included.
 
