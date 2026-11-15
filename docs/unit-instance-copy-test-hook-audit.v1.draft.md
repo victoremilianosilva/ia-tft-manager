@@ -6,7 +6,7 @@
 
 ## 1. Purpose and prior gap
 
-The existing UnitInstance lifecycle audit established that UUIDs are generated from a seeded factory and can repeat after a same-seed Engine reset. It also listed external copy/test-hook enumeration as unfinished.
+The existing UnitInstance lifecycle audit established that UUIDs are generated from a seeded factory and can repeat after a same-seed Engine reset. Follow-up inventories have now inspected all 125 tracked Python files and all 127 tracked C++ files for explicit identity and test-hook references. Implicit C++ value-copy/assignment/destruction lifecycle proof remains unfinished.
 
 This follow-up records:
 - the actual C++ value/copy semantics of UnitInstance;

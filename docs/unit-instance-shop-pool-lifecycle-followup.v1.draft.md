@@ -93,7 +93,7 @@ The pool's internal PvE component-drop pool is a separate resource and must not 
 | `cpp/tests/test_unit_pool.cpp` | Counts, take/give-back bounds, reset and weighted draws | Sequence-bound per-decision pool snapshot or PPO delivery |
 | `cpp/tests/test_tft_engine_pool.cpp` | Engine pool accounting across reset; purchase/sale recent-purchase identity and item-target UUID diagnostics | Same-seed cross-episode UUID uniqueness; complete move/merge/elimination identity and equipment lifecycle matrix |
 
-The source/test review is targeted, not a claim that every repository-wide copy site and external test hook has been exhaustively enumerated. The stale comment in `UnitInstance::uuid` saying UUID generation will be implemented later is inconsistent with the current factory implementation; no code-comment edit is made in this documentation-only slice.
+The tracked-source reference inventory is now complete for explicit identity/test-hook terms across all 125 Python files and all 127 C++ files. This does not prove every implicit value-copy/assignment/destruction path or formal ownership invariant. The stale comment in `UnitInstance::uuid` saying UUID generation will be implemented later is inconsistent with the current factory implementation; no code-comment edit is made in this documentation-only slice.
 
 ## 7. Field-family dispositions
 
