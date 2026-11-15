@@ -136,3 +136,31 @@ The C++ test-hook caller inventory is closed for the tracked test tree. The full
 Issue #346 remains open. Gate 7 executable replay/evaluation remains pending. Gate 8 remains blocked pending integrated review of Gates 1–7 and explicit user authorization.
 
 No runtime, test, action, mask, reward, observation, PPO, Viewer, checkpoint, or tensor behavior is changed by this document.
+
+
+## Full tracked C++ source/header inventory follow-up — 2026-11-15
+
+After the initial test-caller audit, the complete recursive C++ tree was enumerated again and all 127 tracked C++ files were inspected for explicit occurrences of:
+
+- `UnitInstance`;
+- `uuid` and `generate_uuid`;
+- `episode_id`;
+- the five Engine fixture-hook names.
+
+Coverage comprised 48 C++ test files and 79 production headers, implementation files and bindings. The exact source references were reviewed in context, distinguishing declarations, method definitions, binding exposure, test callers, and runtime identity consumers.
+
+### Consolidated explicit-reference result
+
+1. The only direct C++ test-hook callers remain in `cpp/tests/test_tft_engine_pool.cpp`.
+2. The three pybind-exposed fixture hooks remain `set_unit_for_testing`, `set_shop_offer_for_testing`, and `set_next_shop_roll_for_testing`.
+3. `set_unit_items_for_testing` and `get_combat_team_for_testing` remain native C++ fixture APIs and are not exposed in the inspected pybind binding.
+4. No production C++ call site invokes an Engine fixture hook as part of ordinary gameplay; the production implementation contains the method definitions and the binding contains the exposed test API entries.
+5. The authoritative UnitInstance UUID producer remains `UnitInstanceFactory::create/generate_uuid`; the Engine factory is shared by player initialization and shop creation and is reconstructed from the base seed on reset.
+6. The Engine episode counter remains `TFTEngine::Impl::episode_id`; it is incremented by reset, exposed in native reset/step results and pybind, and is not an Engine-instance token.
+7. UUID consumers include ShopEngine offer retention/transfer, ItemEngine equipped-item ownership, DecisionState/AntiLoop identity comparison, strategic/item profile adapters, native audit snapshots and Viewer diagnostic paths. These are scoped consumers; none supplies cross-Engine uniqueness.
+
+### Scope boundary
+
+This closes the **explicit tracked-source reference inventory** for the current 127-file C++ tree. It does not prove every implicit C++ value copy/assignment/destruction site solely from token matches, nor does it establish a formal uniqueness registry or a complete executable lifecycle invariant. Those semantic gaps remain open. The source-level value semantics and specific lifecycle paths documented in the UnitInstance Copy/Test Hook Audit, shop lifecycle audit, elimination/item audit and reset reconciliation remain the detailed evidence.
+
+No code or test files were changed. This addendum updates the inventory scope, not the identity acceptance status.
