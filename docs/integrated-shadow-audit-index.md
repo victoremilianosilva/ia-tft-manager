@@ -16,20 +16,17 @@ Output:
 
 ## Correlation envelope
 
-New Viewer sessions write `correlation` schema v1 into each valid Composition
-Intelligence JSONL record:
-- `match_id`: Viewer session UUID, not the native engine episode ID;
-- `player_id`: zero-based player seat;
-- `round`: native global round ID;
-- `timestamp_unix_ms`: source timestamp from the C++ snapshot;
-- `sequence_id`: existing Composition Intelligence sequence;
+New Viewer sessions write `correlation` schema v1 into each valid Composition Intelligence JSONL record. This is a **legacy Viewer/diagnostic correlation envelope**, not the canonical Decision Identity v2 envelope:
+- `match_id`: legacy field containing the Viewer session UUID; maps to v2 `session_match_id`, never canonical v2 `match_id`;
+- `engine_match_id`: legacy diagnostic field copied from native `episode_id`, a counter local to one `TFTEngine::Impl`; not canonical v2 `engine_match_id` because Engine-instance scope is absent;
+- `player_id`: zero-based player seat; v2 serialization is `player-0` through `player-7`, scoped by canonical Engine episode identity;
+- `round`: native global round ID, not a typed decision sequence;
+- `timestamp_unix_ms`: source timestamp from the C++ snapshot, audit metadata only;
+- `sequence_id`: existing Composition Intelligence sequence, a separate producer namespace;
 - `composition_id` and `composition_version`;
-- `identity_complete` and `timestamp_available`.
+- `identity_complete` and `timestamp_available` are legacy diagnostic predicates, not proof of canonical v2 completeness.
 
-The record also retains `engine_match_id`, the original diagnostic fields,
-and all existing schema fields. The C++ producer now exports `player_id` and
-the source timestamp for successful snapshots. The Viewer adds the session
-UUID when persisting the new session's JSONL.
+The C++ producer exports `player_id` and source timestamp for successful snapshots. The Viewer adds its session UUID when persisting the JSONL. The explicit Viewer-to-Engine mapping is useful for diagnostics but does not manufacture missing canonical match or Engine scope.
 
 Player log events retain their own per-player `sequence_id`, timestamp, round,
 and match ID. The audit normalizes Viewer stage-round labels (for example
