@@ -982,9 +982,11 @@
       "decision_rationale": "Additional temporal/history context candidate for value estimation. It does not define legality, suppress actions, or replace exact decision-correlated action masks. Actor inclusion is not approved.",
       "blocking_conditions": [
         "require match/player/round/decision-sequence correlation and explicit missingness/status encoding",
-        "history is context only; never convert blocked moves into legality masks or an execution rule"
+        "history is context only; never convert blocked moves into legality masks or an execution rule",
+        "current Python binding does not expose this ordered history record; get_anti_loop_metrics exports aggregate counters only",
+        "current records do not carry match/player/decision-sequence identity; last-seen round is not a decision sequence"
       ],
-      "source_notes": "Retain ordered state hashes, round and decision sequence; bounded by the engine's configured history window."
+      "source_notes": "Retain ordered state hashes, round and decision sequence; bounded by the engine's configured history window. Current delivery is internal native state only; Critic-only is a future consumer candidate, not actual PPO delivery."
     },
     {
       "feature_id": "tft.obs.legal_state_context/anti_loop_state/move_history",
@@ -1002,9 +1004,11 @@
       "decision_rationale": "Additional temporal/history context candidate for value estimation. It does not define legality, suppress actions, or replace exact decision-correlated action masks. Actor inclusion is not approved.",
       "blocking_conditions": [
         "require match/player/round/decision-sequence correlation and explicit missingness/status encoding",
-        "history is context only; never convert blocked moves into legality masks or an execution rule"
+        "history is context only; never convert blocked moves into legality masks or an execution rule",
+        "current Python binding does not expose this ordered history record; get_anti_loop_metrics exports aggregate counters only",
+        "current records do not carry match/player/decision-sequence identity; last-seen round is not a decision sequence"
       ],
-      "source_notes": "Keep move type and source/target slot identities; preserve null source/target where action kind has no such slot."
+      "source_notes": "Keep move type and source/target slot identities; preserve null source/target where action kind has no such slot. Current delivery is internal native state only; Critic-only is a future consumer candidate, not actual PPO delivery."
     },
     {
       "feature_id": "tft.obs.legal_state_context/anti_loop_state/blocked_move_records",
@@ -1023,9 +1027,11 @@
       "blocking_conditions": [
         "require explicit formula identity/version, exact input paths, units and validity propagation",
         "require match/player/round/decision-sequence correlation and explicit missingness/status encoding",
-        "history is context only; never convert blocked moves into legality masks or an execution rule"
+        "history is context only; never convert blocked moves into legality masks or an execution rule",
+        "current Python binding does not expose this ordered history record; get_anti_loop_metrics exports aggregate counters only",
+        "current records do not carry match/player/decision-sequence identity; last-seen round is not a decision sequence"
       ],
-      "source_notes": "A blocked candidate is diagnostic context, not an executed action or an action mask replacement."
+      "source_notes": "A blocked candidate is diagnostic context, not an executed action or an action mask replacement. Current delivery is internal native state only; Critic-only is a future consumer candidate, not actual PPO delivery."
     },
     {
       "feature_id": "tft.obs.legal_state_context/anti_loop_state/state_visits",
@@ -1044,9 +1050,11 @@
       "blocking_conditions": [
         "require explicit formula identity/version, exact input paths, units and validity propagation",
         "require match/player/round/decision-sequence correlation and explicit missingness/status encoding",
-        "history is context only; never convert blocked moves into legality masks or an execution rule"
+        "history is context only; never convert blocked moves into legality masks or an execution rule",
+        "current Python binding does not expose this ordered history record; get_anti_loop_metrics exports aggregate counters only",
+        "current records do not carry match/player/decision-sequence identity; last-seen round is not a decision sequence"
       ],
-      "source_notes": "Retain visit counts and last-seen sequence by state hash; do not reduce to a single count if state identity matters."
+      "source_notes": "Retain visit counts and last-seen sequence by state hash; do not reduce to a single count if state identity matters. Current delivery is internal native state only; Critic-only is a future consumer candidate, not actual PPO delivery."
     },
     {
       "feature_id": "tft.obs.legal_state_context/critic_context",
