@@ -358,3 +358,16 @@ The proposed [Observation Projection Consumer Matrix v1](observation-projection-
 ## Structured entity producer requirements — draft
 
 The proposed [Structured Entity and Temporal Evidence Contract v1](observation-structured-entity-temporal-contract.v1.draft.md) records the identity, ownership, completeness and source-sequence requirements that producers must satisfy. In particular, shop offer identity, physical item-instance identity, pool availability, board coordinates, and candidate collection completeness remain explicit gaps; this contract does not claim that current native or Python producers deliver them.
+## Producer-backed identity correction — 2026-11-14
+
+The previous draft described unit.instance_id as the canonical native identity. That claim was premature and is corrected here.
+
+Source inspection of cpp/include/lobby/TftEngine.hpp finds UnitInstance::uuid, but the declaration's own comment states that effective UUID generation will be implemented later. The presence of a string member is therefore not evidence that a value is generated, non-empty, unique, stable across board/bench movement, or scoped to a match/player. cpp/src/lobby/TftEngine.cpp consumes unit.uuid in several paths and includes guards that skip some processing when it is empty; this still does not prove a valid identity lifecycle.
+
+- Native physical-unit identity producer status is **unverified**.
+- Schema v2's required instance_id is a semantic contract field, not a demonstrated alias for UnitInstance::uuid.
+- Do not map instance_id = uuid until UUID generation, uniqueness, lifecycle, ownership transfer and reset semantics are proven.
+- Champion ID and slot index remain invalid substitutes.
+- Unit-instance projection remains blocked until the source audit establishes an authoritative identity or proposes a versioned producer/schema correction.
+
+This correction does not alter runtime code or claim that UUID generation is implemented.
