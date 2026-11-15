@@ -19,7 +19,7 @@ The CSV is deliberately a separate artifact so it can be consumed by scripts or 
 ## Inventory
 
 - 17 entity kinds covered.
-- 20 field-family rows.
+- 31 field-family rows.
 - 15 columns per row.
 - All rows distinguish native availability from Python diagnostic exposure and PPO delivery.
 - No row implies that structured entity records are currently delivered to PPO merely because a diagnostic snapshot or flat numeric feature exists.
