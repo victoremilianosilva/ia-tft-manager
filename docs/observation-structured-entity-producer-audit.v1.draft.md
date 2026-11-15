@@ -337,3 +337,119 @@ These semantics must remain separate. In particular, catalog membership != item-
 5. **Cross-component impact:** ChampionCatalog, TraitMilestones, UnitInstance and item emblems, PPO observation builder, SynergyCounter/reward, StrategyInfo, StrategicPositionSnapshot/Planner, native action state, masks, executor resolution, Viewer diagnostics, replay and checkpoint lineage.
 6. **Objective validation:** compare board/bench/catalog/item-emblem trait fixtures against each producer independently; verify duplicate-copy behavior and milestone boundaries; bind catalog order/version; test every 4×7 slot mapping and reject unsupported hex claims; exercise duplicate champion copies, bench→board and board→board proposals, exact mask rejection, stale sequence rejection, and integrated lineup→position→executor replay.
 
+
+
+## Strategic evidence, anchor candidates, action opportunities and temporal history — source-backed slice
+
+**Audit status:** source-backed partial coverage for the remaining strategic and temporal entity families in #346. This section distinguishes native per-instance facts, champion-keyed derived assessments, generated strategic candidates, empty action-candidate collections, flat PPO action-memory features, and internal anti-loop history. It does not authorize runtime changes or tensor projection.
+
+### Owned-unit assessments
+
+#### Native strategic evidence builder
+
+TFTEngine::Impl::update_strategy() builds StrategicSharedContext::owned_units by iterating each occupied board and bench UnitInstance and appending one StrategicUnitCandidate per occupied instance. The record contains champion/catalog ID, cost, star, aggregate copies owned, board/bench flags, core membership, board contribution, composition fit, item fit and traits. It does **not** copy UnitInstance::uuid, board/bench slot, or a per-instance identity into the candidate.
+
+The current derived values are not observed facts:
+
+- board_contribution is a bounded heuristic based on champion cost and star tier for board units; bench units receive zero.
+- composition_fit is a binary trait-membership check against the current direction string, not a calibrated composition-fit measure.
+- item_fit is the equipped-item count divided by three, not the ItemEngine's item-to-unit compatibility score.
+- Traits combine catalog traits with non-empty item-granted traits.
+- copies_owned is aggregated by champion ID, so repeated physical copies share the same aggregate count.
+
+StrategicEvidenceContextBuilder copies this vector into observed_units; the name does not convert its derived fields into observed facts.
+
+#### Separate Composition Intelligence priority view
+
+The Composition Intelligence path separately aggregates board/bench ownership into maps keyed by champion ID. UnitPriorityOwnedUnit, UnitPriorityEvidence, and UnitPrioritySnapshot::units therefore represent champion-level assessments, including missing composition targets, rather than exact physical unit instances. The TftEngine callsite derives board contribution from cost/star, synergy contribution from matching core traits, confidence as a fixed heuristic value, and copies-toward-next-star from champion-level copy counts.
+
+UnitPriorityPlanner binds these records to active composition identity/version and the current match/player/round context. Its records do not carry UnitInstance UUID or exact source slot identity. The two paths must not be collapsed: StrategicSharedContext::owned_units is per occupied slot but champion-keyed; UnitPrioritySnapshot is aggregated by champion.
+
+**Unit-assessment status:** native derived assessment data exists in Shadow, but the schema's unit_instance_id identity is not produced. Duplicate physical copies cannot be joined unambiguously. No typed per-instance assessment with UUID, exact slot, field-level formula/version, or PPO delivery is established.
+
+### Anchor candidates and direction/pivot anchors
+
+#### Native composition candidates
+
+NativeStrategicCompositionGenerator produces composition candidates. TftEngine.cpp maps each generated composition into StrategicAnchorCandidate, carrying champion/catalog identity for the anchor, target direction, composition identity, candidate champion IDs, main-carry champion ID, completed traits, evidence strings, heuristic anchor value, transition cost, reusable owned-unit count and shop availability. Opponent board/bench copies contribute to the derived contestation estimate.
+
+The candidate object has no dedicated candidate_id, candidate revision, or producer-local source sequence. The containing StrategicEvidenceContext supplies match/player/round/sequence metadata, but that parent sequence is not a stable candidate identity. composition_identity identifies the proposed composition, not a proven immutable candidate-set identity.
+
+#### Distinct initial direction discovery and active direction anchor
+
+UnifiedStrategicStateMachine::refresh() invokes InitialStrategicDirectionDiscovery using aggregated DirectionDiscoveryUnit records assembled from the current strategic context and shop. Early hypotheses use champion IDs, trait-based direction identity and round-scoped evidence; they are not physical-unit references. The state machine separately projects an active composition into StrategicDirectionAnchor through CompositionBoundDirectionAnchor, binding the active composition identity/version.
+
+These are three different concepts and must remain distinct:
+1. generated composition/anchor candidate;
+2. exploratory direction hypothesis or active direction anchor;
+3. separately evaluated pivot candidate.
+
+#### Pivot candidate and diagnostic delivery
+
+The TftEngine pivot path selects an alternative composition source candidate using observed owned/shop/pool support, then builds StrategicPivotAnchorCandidate with an identity string, target composition, source direction-anchor identity, source composition version, champion-ID references, evidence kinds and lifecycle. Its confidence is initialized to zero. The associated feasibility input explicitly leaves protected gold floor and transition economic cost unavailable (-1 / -1.0) rather than fabricating values.
+
+UnifiedStrategicStateMachine validates the candidate against its destination and feasibility snapshot. UnifiedStrategicShadowRuntime serializes pivot and exploration details to its diagnostic sidecar. These records are Shadow diagnostics, not PPO observations or action targets. No physical UnitInstance UUID is carried in the candidate references.
+
+**Anchor status:** native/derived Shadow candidates and pivot hypotheses exist, but a stable candidate ID/revision and complete candidate-set envelope are not emitted. Candidate identity remains champion/composition-level; it is not physical-unit identity and is not delivered to PPO as a structured entity.
+
+### Action-opportunity candidates and evaluator/executor boundary
+
+StrategicSharedContext::action_candidates is declared as a vector, but the audited TftEngine construction path does not populate it before invoking CompositionActionEvaluator and ContextualActionEvaluator. Both evaluators consume the same empty source vector in this path. The legacy observation may still contain child values such as sell value or shop affordability; those values do not establish a complete parent candidate set with stable identity, exact physical parameters, provenance and sequence.
+
+The current diagnostics have an additional semantic gap:
+- same_initial_candidate_set can be true when all three candidate counts are zero;
+- comparison_available is currently computed from evaluator staleness alone, so it can be true even when the source candidate set is empty;
+- the approved candidate contract requires a non-empty shared valid candidate set before comparison is available.
+
+Therefore, an empty-set diagnostic must be interpreted as no_candidates / comparison unavailable, regardless of those current booleans. This is a documentation finding; no runtime correction is made in this audit.
+
+#### Resolver connectivity is not execution
+
+The current TftEngine path calls StrategicActionExecutor::resolve() with the contextual recommendation, source context and current native snapshot. The diagnostic correctly reports executor_connected=true, execution_enabled=false, and native_action_applied=false. executor_connected means the read-only resolver call path is wired; it does not mean the recommendation was accepted. Per-request acceptance and validation reasons are separate. The resolver returns a proposed native action vector but never applies it to the Engine or game.
+
+Native masks remain the final legality authority. The empty candidate source means this call path does not establish a valid action opportunity or successful resolution.
+
+**Action-opportunity status:** no authoritative candidate producer or complete candidate set is populated in the audited TftEngine path. Child sell/affordability values remain insufficient. Resolver connectivity is proven, execution is disabled, and empty candidate sets are not comparable.
+
+### Temporal decision history and anti-loop history
+
+#### Flat temporal action memory delivered to PPO
+
+TFTEngine::Impl::build_observations() emits a temporal action-memory block containing:
+- normalized remaining action horizon derived from actions_taken_this_round;
+- one normalized board_move_age value per board slot, using the configured action-memory horizon and a capped age.
+
+These are numeric flat observation features and therefore reach the PPO observation vector. They are not a structured decision-history collection: there is no per-event action identity, decision ID, typed source sequence, action outcome record, or per-field provenance envelope. Board-move age is slot-scoped and must not be mistaken for physical-unit identity or a full decision timeline.
+
+#### Internal AntiLoopHistory
+
+DecisionHistory.hpp defines AntiLoopHistory with position signatures, move records, blocked moves, state visits, last board signature/last move, execution metrics and a current-round/window counter. MoveRecord carries move type, source/target slots, optional unit identity and optional displaced-unit identity; it does not carry match/player/decision-sequence identity. StateVisit records a last-seen round, not a source decision sequence.
+
+AntiLoopEngine is owned per PlayerEnv. Its episode reset clears the histories while preserving accumulated metrics. begin_round() clears position history, retains at most the last six movement records, clears blocked-move records, and expires state visits outside the configured eight-round window. These are bounded operational anti-loop histories, not a globally or decision-sequence-scoped event ledger.
+
+The class exposes get_state() and get_metrics(), but the audited TftEngine path consumes get_metrics() for get_anti_loop_metrics(); it does not serialize the full history through get_audit_snapshot() or the PPO reset/step payload. The pybind get_anti_loop_metrics endpoint exports aggregate counters, not the ordered position/move/blocked/state-visit records. The PPO observation contains the separate flat action-memory block described above.
+
+Anti-loop logic also participates in native move validation and mask generation. That legality effect must remain separate from any proposed history feature: history is not an Actor legality rule, does not replace exact masks, and must not be reconstructed from blocked masks.
+
+**Temporal-history status:** flat action-memory scalars are delivered to PPO; a typed sequence-bound decision-history collection is not produced. Anti-loop records exist internally with bounded round/episode lifecycle, but are not exposed as structured Python/PPO entities and lack match/player/decision-sequence fields. The proposed Critic-only classification is future consumer intent, not current Critic delivery.
+
+### Strategic/temporal entity disposition
+
+| Entity family | Current source-backed status | Identity/delivery boundary |
+|---|---|---|
+| Unit assessment | native_derived_champion_aggregate_only | No UUID-backed per-instance assessment; Shadow only, not PPO |
+| Anchor candidate | native_derived_shadow_candidate_without_candidate_id | Parent match/player/round/sequence exists; no stable candidate ID/revision or complete set |
+| Action opportunity candidate | not_produced | Source vector remains empty; child values do not prove parent set |
+| Temporal decision history | native_derived_flat_memory_only | Numeric action count/slot ages reach PPO; no typed event history or decision sequence |
+| Anti-loop history | native_internal_history_not_exposed | Internal bounded records; aggregate metrics diagnostic only; masks remain separate legality inputs |
+
+### Architecture reconstruction review
+
+1. **Prior problem:** schema paths implied per-instance unit assessments, stable candidate identities, complete action opportunities and sequence-bound histories without proving that the Engine produced those exact records.
+2. **Technical rationale:** champion IDs, parent snapshot sequences, slot ages, diagnostic counters and physical instance identities are different semantic keys; conflating them would make joins and replay ambiguous. Empty action sets can also produce misleading comparison flags.
+3. **New responsibility:** this slice records the actual Shadow producers, derived scopes, candidate/anchor lifecycle, temporal feature projection, anti-loop retention/reset behavior and native-to-Python delivery boundary.
+4. **Contracts/invariants:** no synthetic UUID or candidate ID; no calibrated-probability claim for heuristic scores; no candidate comparison for empty sets; resolver connectivity != acceptance != execution; action memory != full history; masks remain the independent final legality side input.
+5. **Cross-component impact:** StrategicSharedContext, StrategicEvidenceContextBuilder, NativeStrategicCompositionGenerator, InitialStrategicDirectionDiscovery, UnifiedStrategicStateMachine, Composition Intelligence UnitPriorityPlanner, contextual/baseline evaluators, StrategicActionExecutor, AntiLoopEngine, DecisionHistory, TftEngine observation builder, pybind, PPO rollout, replay and checkpoint lineage.
+6. **Objective validation:** source paths and callsites were traced for the five entity families; entity count remains 17; no runtime file, PPO input, mask, reward, checkpoint or tensor layout was changed.
+
+**Next required proof:** reconcile these findings with the source-map and projection matrix, complete repository-wide producer/copy/sequence callsite checks, and verify each field's Python/Trainer exposure independently. #346 remains open until every entity field is classified and all required identity, completeness, provenance, sequence and reset criteria are evidenced.
