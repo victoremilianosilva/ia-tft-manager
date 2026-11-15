@@ -31,7 +31,7 @@ The CSV is deliberately a separate artifact so it can be consumed by scripts or 
 | Unit instance | UUID is generated, but is not canonical cross-episode identity | UUID is available in diagnostic snapshot; absent from PPO tensor/rollout | Seed reset repeats UUID; no match/player namespace or collision registry |
 | Board/bench slots | Fixed 28/9 slot arrays and occupancy are native | Diagnostic snapshot plus slot-aligned flat PPO features | No typed source sequence or structured entity delivery; board geometry is not canonical hex |
 | Shop offer | Five fixed offers and reroll/purchase lifecycle are native | Diagnostic snapshot plus fixed slot features | No stable offer ID/revision/reroll generation |
-| Pool availability | No authoritative per-champion remaining-count producer identified | Not delivered | Must remain unavailable |
+| Pool availability | `UnitPool::available()` is an authoritative shared-lobby per-champion count query | Direct pybind query only; not in wrapper observation or PPO vector | No immutable decision-correlated pool snapshot or source sequence |
 | Item instance | No physical item-instance object or ID; catalog IDs and multiplicity only | Diagnostic catalog IDs and flat item semantics | No per-copy identity, typed owner relation or item event sequence |
 | Component inventory | Native aggregate/multiplicity exists | Diagnostic IDs and aggregate PPO counts | No component instance identity/acquisition sequence |
 | Anvil option | ItemEngine queue API exists, but audited gameplay reward path does not produce it | Not delivered | No gameplay producer, stable anvil/option IDs or decision sequence |
@@ -82,3 +82,10 @@ The [Schema v2 Field-to-Source Crosswalk](observation-schema-v2-field-source-cro
 ## Unmapped field dispositions — 2026-11-15
 
 The [Schema v2 Unmapped Field Dispositions](observation-schema-v2-unmapped-field-dispositions.v1.draft.md) classifies all 16 paths without a source-map match as not-produced, Shadow-only, diagnostic-only, unverified, not-correlated or static contract metadata. This classification supplements but does not rewrite the mechanical match result.
+
+
+## Unit identity, shop and shared pool lifecycle follow-up — 2026-11-15
+
+The [Unit Instance, Shop Offer and Shared Pool Lifecycle Follow-up](unit-instance-shop-pool-lifecycle-followup.v1.draft.md) refines the ownership lifecycle and corrects the pool-availability row. It traces shop → bench → board moves, merge identity retention/consumption, sale and elimination cleanup, same-seed reset UUID repetition, implicit value-copy behavior, and the direct TFTEngine/pybind pool-count query.
+
+**Correction:** the previous matrix wording that no authoritative per-champion pool count producer existed was too broad. `UnitPool::available()` and `TFTEngine::pool_available()` provide authoritative native queries, and pybind exposes them. The count is still not part of the immutable observation snapshot or PPO vector, and has no decision-sequence correlation. The shared champion pool is lobby-scoped, not player-owned.
