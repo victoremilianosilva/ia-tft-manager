@@ -38,14 +38,25 @@ The first source-backed field-level pass is now recorded in the CSV for 31 paths
 
 Current crosswalk status after these passes:
 - 223 total Schema v2 data paths.
-- 31 unit/item paths have field-level producer and delivery dispositions.
+- 31 board/bench/shop/component/inventory paths have field-level producer and delivery dispositions.
+- 19 additional combat-stat, anvil, unit-role, item-fit and recipe-fit paths have field-level dispositions.
 - 16 previously unmapped paths have explicit source-backed dispositions (including not-produced, Shadow-only, diagnostic-only, unverified and static contract metadata).
 - 43 exact source-map matches still require callsite/provenance/sequence/Python/PPO validation.
-- 133 ancestor-only paths still require nested field-level proof.
+- 114 ancestor-only paths still require nested field-level proof.
 
 The 31 unit/item pass deliberately distinguishes diagnostic snapshot delivery from PPO delivery. Structured UUID/champion/item identifiers in the audit snapshot are not treated as PPO tensor inputs. The 16 unmapped dispositions preserve unavailable/not-produced distinctions rather than manufacturing data.
 
-Next work: continue the remaining 133 ancestor-only paths and validate the 43 exact matches at callsite level, then trace Python/vector-environment/rollout-buffer/Actor/Critic delivery. Issue #346 remains open.
+Next work: continue the remaining 114 ancestor-only paths and validate the 43 exact matches at callsite level, then trace Python/vector-environment/rollout-buffer/Actor/Critic delivery. Issue #346 remains open.
+
+### Additional field-level proof — 2026-11-15
+
+The [Item Fit, Anvil and Unit Role Field Proof](observation-schema-v2-item-fit-anvil-role-field-proof.v1.draft.md) reconciles 19 further paths. It distinguishes:
+- selected combat-stat features from a complete per-unit `combat_stats{}` map;
+- ItemEngine's anvil queue API and TftEngine's conditional option consumer from an actual gameplay grant producer (none found in the audited TftEngine path);
+- positional option IDs and aggregate anvil fit from stable option identity and per-target fit records;
+- slot-aligned role/item/recipe feature matrices from typed unit, item, recipe and target identities.
+
+Cumulative ancestor-path progress: 50 of 164 ancestor-mapped paths now have field-level dispositions; 114 remain. The 43 exact matches and 16 no-match paths are unchanged. This is a documentation audit, not an Actor/Critic leaf-delivery proof.
 
 ## 4. The 16 paths without a source-map entry
 
