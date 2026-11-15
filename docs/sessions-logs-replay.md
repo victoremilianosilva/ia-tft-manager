@@ -11,6 +11,14 @@ Ao iniciar uma partida com gravação habilitada, ViewerSession cria uma pasta m
 
 As entradas incluem IDs sequenciais, timestamp, rodada/estágio, tipo de evento, texto legível e payload estruturado. Snapshots podem incluir recursos, tabuleiro, banco, loja, traits contadas, ação, recompensa, diagnóstico de policy e eventos retornados pela engine.
 
+## Correlação com a identidade nativa
+
+O `match_id` dos eventos do Viewer é um UUID gerado por `ViewerSession`; ele não é o ID numérico do episódio do TFTEngine. Ao persistir diagnósticos de Composition Intelligence, o Viewer acrescenta um envelope que contém os dois IDs, jogador, rodada, timestamp e sequência do diagnóstico. O Unified strategic sidecar permanece com o Engine match ID e sequência própria; a correlação depende desse envelope de Composition Intelligence.
+
+A validação atual de `identity_complete` verifica player_id, round e sequence, mas não exige engine_match_id. Portanto, esse booleano não é prova suficiente de correlação Engine↔sessão. Consulte [Current Replay, Correlation and Evaluation Gap Audit](current-replay-correlation-evaluation-gap-audit.v1.draft.md).
+
+O PPO RolloutBuffer guarda observações e máscaras em tensores separados, sem match/episode/player/round/decision ID ou sequência. O replay do Viewer continua sendo navegação de logs; não reexecuta Engine ou policy.
+
 ## Persistência
 
 PlayerJsonLogWriter atualiza os arquivos JSON periodicamente e em pontos importantes do ciclo; ao terminar ou fechar a sessão, faz flush e encerra o writer. O formato novo não gera events.jsonl. O leitor ainda aceita JSONL antigo para compatibilidade.
@@ -25,7 +33,7 @@ Ao abrir uma pasta de sessão, o leitor procura primeiro events.jsonl legado e, 
 
 ## Integridade e limites
 
-- match_id associa eventos à partida.
+- ViewerSession.match_id associa eventos à sessão do Viewer; a correlação com o Engine episode ID é um envelope separado nos diagnósticos de Composition Intelligence.
 - checkpoint_sha256 identifica os pesos usados.
 - seed e deterministic registram a configuração de inferência.
 - Logs são dados de auditoria, não substituem os vetores de observação do PPO.
