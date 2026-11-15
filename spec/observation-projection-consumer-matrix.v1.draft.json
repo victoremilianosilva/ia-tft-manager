@@ -533,9 +533,12 @@
       "blocking_conditions": [
         "require explicit formula identity/version, exact input paths, units and validity propagation",
         "require match/player/round/decision-sequence correlation and explicit missingness/status encoding",
-        "heuristic fields such as item_fit/board_contribution need per-field formula identity and must not be treated as facts"
+        "heuristic fields such as item_fit/board_contribution need per-field formula identity and must not be treated as facts",
+        "current StrategicSharedContext records do not carry UnitInstance::uuid or exact slot identity; duplicate physical copies cannot be joined by champion_id",
+        "UnitPrioritySnapshot is champion-aggregated and must not be represented as a per-instance assessment",
+        "Shadow availability does not imply structured PPO delivery"
       ],
-      "source_notes": "core, board contribution, composition fit and item fit are heuristics; item_fit currently item count /3."
+      "source_notes": "core, board contribution, composition fit and item fit are heuristics; item_fit currently item count /3. Current records are Shadow-only: StrategicSharedContext appends per occupied slot but has champion_id only; UnitPrioritySnapshot aggregates by champion. No physical UUID or structured PPO entity is delivered."
     },
     {
       "feature_id": "tft.obs.strategic_evidence/anchor_candidates",
@@ -555,9 +558,12 @@
       "blocking_conditions": [
         "retain estimated nature; require formula/version, input provenance, validity, uncertainty/quality and sample completeness; never treat as calibrated probability",
         "require match/player/round/decision-sequence correlation and explicit missingness/status encoding",
-        "candidate records are proposals/evidence, not commands or confirmed active composition; preserve candidate-set status, identity, source sequence, uncertainty and physical evidence"
+        "candidate records are proposals/evidence, not commands or confirmed active composition; preserve candidate-set status, identity, source sequence, uncertainty and physical evidence",
+        "no dedicated candidate_id, candidate_revision or immutable complete candidate_set_id is emitted",
+        "generated composition candidates, early direction hypotheses, active direction anchors and pivot candidates have distinct producers and lifecycles",
+        "champion references are not physical UnitInstance identities"
       ],
-      "source_notes": "Anchor value/transition cost/contestation are heuristic estimates and need provenance/uncertainty."
+      "source_notes": "Anchor value/transition cost/contestation are heuristic estimates and need provenance/uncertainty. NativeStrategicCompositionGenerator output is Shadow-only; parent context sequence does not create a stable candidate identity or candidate-set completeness contract."
     },
     {
       "feature_id": "tft.obs.strategic_evidence/candidate_generation",
@@ -639,9 +645,10 @@
       "target_consumers": [],
       "decision_rationale": "No explicit consumer decision is approved; retain as unresolved until source semantics and intended use are justified.",
       "blocking_conditions": [
-        "parent action_candidates collection is not populated; child values do not create a complete candidate set"
+        "parent action_candidates collection is not populated; child values do not create a complete candidate set",
+        "evaluator comparison flags may currently report equality/availability for empty candidate vectors; require non-empty shared valid candidate identity before comparison"
       ],
-      "source_notes": "Vector not populated in current callsite; no per-action cost breakdown delivered yet."
+      "source_notes": "Vector not populated in current callsite; no per-action cost breakdown delivered yet. Current StrategicSharedContext.action_candidates remains empty in the audited TftEngine construction path."
     },
     {
       "feature_id": "tft.obs.legal_state_context/anti_loop_state",
@@ -659,9 +666,11 @@
       "decision_rationale": "Additional temporal/history context candidate for value estimation. It does not define legality, suppress actions, or replace exact decision-correlated action masks. Actor inclusion is not approved.",
       "blocking_conditions": [
         "require match/player/round/decision-sequence correlation and explicit missingness/status encoding",
-        "history is context only; never convert blocked moves into legality masks or an execution rule"
+        "history is context only; never convert blocked moves into legality masks or an execution rule",
+        "AntiLoopEngine::get_state is not called or serialized by the audited TftEngine/pybind path; Python exposes aggregate get_anti_loop_metrics only",
+        "internal history records lack match/player/decision-sequence fields and require explicit lifecycle correlation before any Critic projection"
       ],
-      "source_notes": "History summary exists but current PPO observation does not include it."
+      "source_notes": "History summary exists but current PPO observation does not include it. Ordered AntiLoopHistory remains internal; Critic-only is target intent, not current PPO delivery. Anti-loop legality effects remain in native validation/masks."
     },
     {
       "feature_id": "tft.obs.legal_state_context/mask_reference",
@@ -808,9 +817,11 @@
       "decision_rationale": "Candidate input for both policy and value estimation because it describes decision-relevant game state or canonical strategic/economic evidence. This is a consumer-intent decision only; provenance, formula, missingness and semantic validation remain mandatory.",
       "blocking_conditions": [
         "require explicit formula identity/version, exact input paths, units and validity propagation",
-        "require match/player/round/decision-sequence correlation and explicit missingness/status encoding"
+        "require match/player/round/decision-sequence correlation and explicit missingness/status encoding",
+        "current PPO delivery is limited to flat normalized action-memory scalars, not a typed ordered decision event collection",
+        "no source_decision_sequence or per-event provenance is carried; board_move_age is slot-scoped rather than physical-unit scoped"
       ],
-      "source_notes": "Decision-local count, not a legality constraint."
+      "source_notes": "Decision-local count, not a legality constraint. The action-memory block is delivered in build_observations, but does not prove a structured decision_history entity or event ledger."
     },
     {
       "feature_id": "tft.obs.derived_context/decision_history/remaining_action_budget",
@@ -829,9 +840,11 @@
       "decision_rationale": "Candidate input for both policy and value estimation because it describes decision-relevant game state or canonical strategic/economic evidence. This is a consumer-intent decision only; provenance, formula, missingness and semantic validation remain mandatory.",
       "blocking_conditions": [
         "require explicit formula identity/version, exact input paths, units and validity propagation",
-        "require match/player/round/decision-sequence correlation and explicit missingness/status encoding"
+        "require match/player/round/decision-sequence correlation and explicit missingness/status encoding",
+        "current PPO delivery is limited to flat normalized action-memory scalars, not a typed ordered decision event collection",
+        "no source_decision_sequence or per-event provenance is carried; board_move_age is slot-scoped rather than physical-unit scoped"
       ],
-      "source_notes": "Replaces the legacy normalized remaining-actions scalar with an explicit count."
+      "source_notes": "Replaces the legacy normalized remaining-actions scalar with an explicit count. The action-memory block is delivered in build_observations, but does not prove a structured decision_history entity or event ledger."
     },
     {
       "feature_id": "tft.obs.derived_context/decision_history/board_move_age_by_slot",
@@ -850,9 +863,11 @@
       "decision_rationale": "Candidate input for both policy and value estimation because it describes decision-relevant game state or canonical strategic/economic evidence. This is a consumer-intent decision only; provenance, formula, missingness and semantic validation remain mandatory.",
       "blocking_conditions": [
         "require explicit formula identity/version, exact input paths, units and validity propagation",
-        "require match/player/round/decision-sequence correlation and explicit missingness/status encoding"
+        "require match/player/round/decision-sequence correlation and explicit missingness/status encoding",
+        "current PPO delivery is limited to flat normalized action-memory scalars, not a typed ordered decision event collection",
+        "no source_decision_sequence or per-event provenance is carried; board_move_age is slot-scoped rather than physical-unit scoped"
       ],
-      "source_notes": "Age is descriptive history; does not itself authorize or reject a move."
+      "source_notes": "Age is descriptive history; does not itself authorize or reject a move. The action-memory block is delivered in build_observations, but does not prove a structured decision_history entity or event ledger."
     },
     {
       "feature_id": "tft.obs.derived_context/recipe_target_fit",
@@ -910,9 +925,10 @@
       "target_consumers": [],
       "decision_rationale": "A source or semantic bridge exists, but the meaning/producer chain is not sufficiently proven for a PPO input. Keep withheld until the named gap is resolved.",
       "blocking_conditions": [
-        "parent action_candidates collection is not populated; child values do not create a complete candidate set"
+        "parent action_candidates collection is not populated; child values do not create a complete candidate set",
+        "evaluator comparison flags may currently report equality/availability for empty candidate vectors; require non-empty shared valid candidate identity before comparison"
       ],
-      "source_notes": "Keep distinct from affordability."
+      "source_notes": "Keep distinct from affordability. Current StrategicSharedContext.action_candidates remains empty in the audited TftEngine construction path."
     },
     {
       "feature_id": "tft.obs.derived_context/action_opportunity/items/affordability",
@@ -927,9 +943,10 @@
       "target_consumers": [],
       "decision_rationale": "A source or semantic bridge exists, but the meaning/producer chain is not sufficiently proven for a PPO input. Keep withheld until the named gap is resolved.",
       "blocking_conditions": [
-        "parent action_candidates collection is not populated; child values do not create a complete candidate set"
+        "parent action_candidates collection is not populated; child values do not create a complete candidate set",
+        "evaluator comparison flags may currently report equality/availability for empty candidate vectors; require non-empty shared valid candidate identity before comparison"
       ],
-      "source_notes": "Keep distinct from sell value."
+      "source_notes": "Keep distinct from sell value. Current StrategicSharedContext.action_candidates remains empty in the audited TftEngine construction path."
     },
     {
       "feature_id": "tft.obs.identity/decision_identity_hash",
@@ -965,9 +982,11 @@
       "decision_rationale": "Additional temporal/history context candidate for value estimation. It does not define legality, suppress actions, or replace exact decision-correlated action masks. Actor inclusion is not approved.",
       "blocking_conditions": [
         "require match/player/round/decision-sequence correlation and explicit missingness/status encoding",
-        "history is context only; never convert blocked moves into legality masks or an execution rule"
+        "history is context only; never convert blocked moves into legality masks or an execution rule",
+        "current Python binding does not expose this ordered history record; get_anti_loop_metrics exports aggregate counters only",
+        "current records do not carry match/player/decision-sequence identity; last-seen round is not a decision sequence"
       ],
-      "source_notes": "Retain ordered state hashes, round and decision sequence; bounded by the engine's configured history window."
+      "source_notes": "Retain ordered state hashes, round and decision sequence; bounded by the engine's configured history window. Current delivery is internal native state only; Critic-only is a future consumer candidate, not actual PPO delivery."
     },
     {
       "feature_id": "tft.obs.legal_state_context/anti_loop_state/move_history",
@@ -985,9 +1004,11 @@
       "decision_rationale": "Additional temporal/history context candidate for value estimation. It does not define legality, suppress actions, or replace exact decision-correlated action masks. Actor inclusion is not approved.",
       "blocking_conditions": [
         "require match/player/round/decision-sequence correlation and explicit missingness/status encoding",
-        "history is context only; never convert blocked moves into legality masks or an execution rule"
+        "history is context only; never convert blocked moves into legality masks or an execution rule",
+        "current Python binding does not expose this ordered history record; get_anti_loop_metrics exports aggregate counters only",
+        "current records do not carry match/player/decision-sequence identity; last-seen round is not a decision sequence"
       ],
-      "source_notes": "Keep move type and source/target slot identities; preserve null source/target where action kind has no such slot."
+      "source_notes": "Keep move type and source/target slot identities; preserve null source/target where action kind has no such slot. Current delivery is internal native state only; Critic-only is a future consumer candidate, not actual PPO delivery."
     },
     {
       "feature_id": "tft.obs.legal_state_context/anti_loop_state/blocked_move_records",
@@ -1006,9 +1027,11 @@
       "blocking_conditions": [
         "require explicit formula identity/version, exact input paths, units and validity propagation",
         "require match/player/round/decision-sequence correlation and explicit missingness/status encoding",
-        "history is context only; never convert blocked moves into legality masks or an execution rule"
+        "history is context only; never convert blocked moves into legality masks or an execution rule",
+        "current Python binding does not expose this ordered history record; get_anti_loop_metrics exports aggregate counters only",
+        "current records do not carry match/player/decision-sequence identity; last-seen round is not a decision sequence"
       ],
-      "source_notes": "A blocked candidate is diagnostic context, not an executed action or an action mask replacement."
+      "source_notes": "A blocked candidate is diagnostic context, not an executed action or an action mask replacement. Current delivery is internal native state only; Critic-only is a future consumer candidate, not actual PPO delivery."
     },
     {
       "feature_id": "tft.obs.legal_state_context/anti_loop_state/state_visits",
@@ -1027,9 +1050,11 @@
       "blocking_conditions": [
         "require explicit formula identity/version, exact input paths, units and validity propagation",
         "require match/player/round/decision-sequence correlation and explicit missingness/status encoding",
-        "history is context only; never convert blocked moves into legality masks or an execution rule"
+        "history is context only; never convert blocked moves into legality masks or an execution rule",
+        "current Python binding does not expose this ordered history record; get_anti_loop_metrics exports aggregate counters only",
+        "current records do not carry match/player/decision-sequence identity; last-seen round is not a decision sequence"
       ],
-      "source_notes": "Retain visit counts and last-seen sequence by state hash; do not reduce to a single count if state identity matters."
+      "source_notes": "Retain visit counts and last-seen sequence by state hash; do not reduce to a single count if state identity matters. Current delivery is internal native state only; Critic-only is a future consumer candidate, not actual PPO delivery."
     },
     {
       "feature_id": "tft.obs.legal_state_context/critic_context",

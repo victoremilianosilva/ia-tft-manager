@@ -9,7 +9,7 @@
 
 ## 1. Purpose and normative principles
 
-The audited `TftEngine.cpp` path invokes existing baseline and contextual evaluators, but does not populate `StrategicSharedContext::action_candidates`. Both can therefore receive empty sets, while comparison logic can report availability for two empty lists. The missing capability is a trustworthy source of concrete, snapshot-bound alternatives—not another evaluator or legality system.
+The audited TftEngine.cpp path invokes existing baseline and contextual evaluators, but does not populate StrategicSharedContext::action_candidates. Both therefore receive an empty source set in this path. The current comparison_available flag is based on evaluator staleness, and same_initial_candidate_set can be true for three empty lists; these booleans can therefore report availability/equality without any comparable candidate. The missing capability is a trustworthy source of concrete, snapshot-bound alternatives—not another evaluator or legality system.
 
 1. A candidate describes an alternative; it is never a command or game action.
 2. Native Engine rules and masks remain the sole final legality authority. Candidate prechecks cannot redefine legality.
@@ -86,7 +86,7 @@ The audited paths are distinct:
 
 For the target architecture's read-only Shadow pipeline, `ContextualActionEvaluator` is the canonical producer of the contextual proposal that the Shadow executor is intended to validate. `CompositionActionEvaluator`/`ActionEvaluator` remains an independent baseline comparator. Baseline output never silently replaces contextual output. Disagreement is preserved with independent score semantics and provenance. If no valid contextual candidate exists, result is `unavailable/no_candidates`, not an invented HOLD.
 
-**Current integration status:** the evaluator diagnostic contract records `executor_connected=false`. This ownership decision defines the intended producer/consumer boundary; it does not claim that a runtime handoff or end-to-end executor connection currently exists. A candidate proposal may be recorded diagnostically without reaching executor resolution. Any future integration claim requires a correlated candidate-set ID, exact source sequences, executor input/output records, and the integrated replay proof in #289. Until those exist, report executor resolution as unavailable/not connected rather than implying a completed handoff.
+**Current integration status:** TftEngine invokes StrategicActionExecutor::resolve(), and the current diagnostic reports executor_connected=true, execution_enabled=false, and native_action_applied=false. Connectivity proves the read-only resolver call path is wired; it does not prove per-request acceptance or game execution. The current source candidate set is empty, so no valid candidate comparison or accepted action is established. Any future end-to-end claim still requires a non-empty correlated candidate set, exact source sequences, executor input/output records, and integrated replay proof in #289.
 
 This does not imply legality: native masks and executor validation remain final. The contextual evaluator's lack of direct `EconomicControlDecision` consumption is not silently changed here. #282 must decide which economic signals should affect contextual scoring. Until then, posture may be recorded separately but must not be described as affecting a score that does not consume it.
 
@@ -98,9 +98,9 @@ Keep separately typed: actual PPO-selected action (if available for same match/p
 
 Comparison is available only when there is at least one shared valid candidate identity, the candidate set is non-empty and ready (or has an explicitly defined comparable subset), both evaluators received the same candidate-set identity and correlated snapshot, and both outputs are valid under their own semantics. Two empty lists are never comparable; `same_initial_candidate_set` cannot make them comparable. Partial sets compare only an explicit shared valid subset with exclusions explained.
 
-When the executor integration is implemented and proven, it must receive the contextual proposal, originating candidate set, and exact sequence refs. It validates match/player/round/sequences against the independently supplied current Engine snapshot; validates candidate revision and physical parameters; resolves against current native masks without modifying them; and explicitly rejects stale, ambiguous, malformed, or illegal candidates. It never issues input or mutates Engine state. A relevant sequence change within the same round and composition version can stale a candidate.
+The current TftEngine call path invokes the read-only resolver with the contextual recommendation, source StrategicSharedContext and current native snapshot. In the audited path, however, the source candidate set is empty, so no valid selected candidate can be resolved. For a future non-empty candidate set, the resolver must validate match/player/round/sequences against the independently supplied current Engine snapshot; validate candidate revision and exact physical parameters; resolve against current native masks without modifying them; and explicitly reject stale, ambiguous, malformed, or illegal candidates. It never issues input or mutates Engine state. A relevant sequence change within the same round and composition version can stale a candidate.
 
-Until the handoff is demonstrated, the executor stage is `unavailable/not_connected`; evaluator diagnostics alone do not count as executor resolution.
+The resolver call path is connected, but per-request resolution remains unavailable/rejected when there is no valid selected candidate. Evaluator diagnostics alone do not establish candidate validity, resolver acceptance, or execution.
 
 ## 9. Acceptance matrix — after Gate 8
 
@@ -132,16 +132,41 @@ No runtime code/tests, PPO, observations, rewards, checkpoints, masks, Engine ru
 
 ## 11. Current integration evidence boundary (2026-11-14)
 
-The evaluator documentation currently records `executor_connected=false`. The canonical role of ContextualActionEvaluator as proposal producer is approved, but the runtime connection to Shadow executor is not established by that role assignment. Do not describe the proposal as forwarded, resolved, or executor-accepted without correlated runtime evidence.
+The current source establishes the resolver call path: TftEngine invokes StrategicActionExecutor::resolve(), and the diagnostic reports executor_connected=true. The resolver is read-only; execution_enabled=false and native_action_applied=false. Per-request acceptance remains separate and is not implied by connectivity. The current action-candidate source vector is empty, so no valid candidate comparison or accepted action is established.
 
-**Prior problem:** the earlier wording could be read as claiming an existing handoff while the evaluator diagnostic explicitly says the executor is disconnected.
+**Prior problem:** the earlier wording understated the existing read-only resolver call path and did not clearly separate resolver connectivity from per-request acceptance.
 
 **Technical rationale:** ownership defines who should produce/consume a contract; integration status requires evidence of an actual connected call path and correlated records.
 
 **Ownership:** ContextualActionEvaluator owns contextual proposals; StrategicActionExecutor owns read-only validation/resolution when connected; diagnostics report connection/availability and must not synthesize resolution.
 
-**Invariants:** disconnected is not accepted; unavailable is not HOLD; candidate proposal is not execution; no live input or Engine mutation; native masks remain final legality authority.
+**Invariants:** connected is not accepted; unavailable is not HOLD; candidate proposal is not execution; no live input or Engine mutation; native masks remain final legality authority.
 
 **Cross-component impact:** #281/#289/#294 and the dual-evaluator, replay, and ownership contracts.
 
-**Validation:** reconciled against `dual-action-evaluator-shadow.md` (`executor_connected=false`) and this candidate contract. Post-Gate-8 acceptance requires an integrated call-path test and replay records proving proposal → executor input → resolution/rejection with identical candidate-set and typed sequence references.
+**Validation:** reconciled against the current TftEngine callsite, StrategicActionExecutor read-only contract, and dual-action-evaluator-shadow.md (executor_connected=true; execution remains disabled). Post-Gate-8 acceptance requires an integrated call-path test and replay records proving proposal → executor input → resolution/rejection with identical candidate-set and typed sequence references.
+
+
+## 12. Current producer and comparison integration correction (2026-11-15)
+
+A source-backed recheck of cpp/src/lobby/TftEngine.cpp and StrategicActionExecutor.hpp establishes that the resolver call path is currently wired and invoked. The diagnostic values are:
+
+- executor_connected=true: the read-only resolver is called;
+- execution_enabled=false: no action execution is enabled;
+- native_action_applied=false: the resolver does not mutate/apply a native action.
+
+This supersedes the earlier executor_connected=false wording. It does not supersede the requirement for per-request acceptance evidence.
+
+A second mismatch remains: the current comparison_available diagnostic is derived from evaluator staleness, while same_initial_candidate_set can be true when all candidate counts are zero. The audited StrategicSharedContext::action_candidates vector is not populated. Therefore, the current booleans can describe an empty-set comparison as available/equal even though this contract requires at least one shared valid candidate identity. Until a source producer and runtime correction are proven, consumers must treat an empty source set as no_candidates and comparison as unavailable. This is a documentation finding only; no runtime behavior is changed.
+
+**Prior problem:** the earlier documentation understated resolver connectivity and did not clearly separate empty-set diagnostics from valid comparison.
+
+**Technical rationale:** a wired resolver, a valid candidate set, a selected proposal, per-request acceptance, and applied execution are separate states.
+
+**Ownership:** ContextualActionEvaluator remains the contextual proposal producer; StrategicActionExecutor remains the read-only resolver; native masks/rules remain final legality authority.
+
+**Invariants:** resolver connectivity is not acceptance; acceptance is not execution; empty candidate sets are not comparable; no action is applied; PPO action, baseline recommendation, contextual proposal and resolver output remain distinct.
+
+**Cross-component impact:** TftEngine, StrategicSharedContext, both action evaluators, StrategicActionExecutor, action candidate contract, producer-binding audit, replay and #281/#289/#294.
+
+**Validation:** verified the TftEngine callsite, diagnostic booleans, executor read-only contract and candidate vector population path. Post-Gate-8 acceptance must test empty candidate sets, non-empty shared sets, stale identity, native mask rejection and explicit non-execution.

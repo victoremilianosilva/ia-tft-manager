@@ -259,14 +259,14 @@ This table prevents the source-map `availability` value from being misread as �
 | `strategic_evidence.commitment_context.direction_id` | available | derived | `strategic_planner_commitments[i].composition_direction` | Not delivered as canonical Shadow evidence; legacy proxies, where present, are not equivalent |
 | `strategic_evidence.commitment_context.direction_identity` | available | derived | `direction:v2:<direction>` | Not delivered as canonical Shadow evidence; legacy proxies, where present, are not equivalent |
 | `strategic_evidence.commitment_context.progression_plan` | not_produced | inferred | `StrategicSharedContext.progression_plan` | Not delivered as canonical Shadow evidence; legacy proxies, where present, are not equivalent |
-| `strategic_evidence.owned_unit_assessments` | available | derived | `StrategicSharedContext.owned_units built from board/bench` | Not delivered as canonical Shadow evidence; legacy proxies, where present, are not equivalent |
-| `strategic_evidence.anchor_candidates` | available | estimated | `strategic_native_generation.candidates` | Not delivered as canonical Shadow evidence; legacy proxies, where present, are not equivalent |
+| `strategic_evidence.owned_unit_assessments` | available_shadow_only | derived | per-slot `StrategicSharedContext.owned_units` plus champion-aggregated `UnitPrioritySnapshot` | Shadow-only; no UUID/per-instance identity, duplicate copies ambiguous, no structured PPO delivery |
+| `strategic_evidence.anchor_candidates` | available_shadow_only | estimated | `NativeStrategicCompositionGenerator → StrategicSharedContext.anchor_candidates`; separate Unified direction/pivot records | Shadow-only; no stable candidate_id/revision or complete candidate-set envelope; not delivered to PPO |
 | `strategic_evidence.candidate_generation` | available | observed | `strategic_native_generation diagnostics` | Not delivered as canonical Shadow evidence; legacy proxies, where present, are not equivalent |
 | `strategic_evidence.completed_traits` | available | derived | `active_native_direction.completed_traits → StrategicEvidenceContextInput.focus_traits` | Not delivered as canonical Shadow evidence; legacy proxies, where present, are not equivalent |
 | `strategic_evidence.commitment_context.core_unit_ids` | available | derived | `active_native_direction.unit_ids` | Not delivered as canonical Shadow evidence; legacy proxies, where present, are not equivalent |
 | `strategic_evidence.commitment_context.composition_locked` | not_available | derived | `StrategicSharedContext.composition_locked` | Not delivered as canonical Shadow evidence; legacy proxies, where present, are not equivalent |
 | `derived_context.action_opportunity.items` | not_produced | estimated | `StrategicSharedContext.action_candidates` | Not produced; strategic action-candidate set is empty in audited engine construction |
-| `legal_state_context.anti_loop_state` | available_but_not_projected | observed | `AntiLoopEngine.get_state() / AntiLoopHistory` | Not delivered to PPO; available through native anti-loop diagnostics/state |
+| `legal_state_context.anti_loop_state` | available_but_not_projected | observed | internal `AntiLoopHistory`; `get_state()` summary is not called/serialized by audited TftEngine path | Python exposes aggregate `get_anti_loop_metrics()` only; ordered history is not delivered to PPO |
 | `legal_state_context.mask_reference` | not_correlated | observed | `Trainer observations + get_action_masks() separate calls` | Masks are fetched separately and stored in rollout; no typed decision-identity/hash correlation |
 | `shadow_recommendations` | available_shadow_only | recommended | `StrategicPlanner/EconomicController/ActionEvaluator` | Shadow diagnostic only; excluded from PPO |
 | `strategic_evidence.focus_weights` | not_produced | inferred | `No independent focus-weight source in new evidence callsite` | Not delivered as canonical Shadow evidence; legacy proxies, where present, are not equivalent |
@@ -274,18 +274,18 @@ This table prevents the source-map `availability` value from being misread as �
 | `strategic_evidence.commitment_context.current_direction_score` | available | estimated | `active_native_direction.score` | Not delivered as canonical Shadow evidence; legacy proxies, where present, are not equivalent |
 | `strategic_evidence.commitment_context.current_direction_viable` | available | derived | `active_native_direction candidate exists` | Not delivered as canonical Shadow evidence; legacy proxies, where present, are not equivalent |
 | `strategic_evidence.commitment_context.direction_source` | available | derived | `literal per_player_strategic_commitment` | Not delivered as canonical Shadow evidence; legacy proxies, where present, are not equivalent |
-| `derived_context.decision_history.actions_taken_this_round` | available | derived | `player_envs[i].actions_taken_this_round` | Partially delivered as normalized remaining-action count; raw count/decision identity not preserved |
-| `derived_context.decision_history.remaining_action_budget` | available | derived | `max(0, configured_action_horizon - actions_taken_this_round)` | Partially delivered through normalized remaining-action feature; horizon identity is implicit |
-| `derived_context.decision_history.board_move_age_by_slot` | available | derived | `board_move_age per board slot` | Delivered as normalized per-board-slot age; requires explicit slot/decision reset semantics |
+| `derived_context.decision_history.actions_taken_this_round` | available | derived | `PlayerEnv::actions_taken_this_round → Impl::build_observations` | Normalized remaining-action horizon reaches PPO; no typed decision ID/event history or source sequence |
+| `derived_context.decision_history.remaining_action_budget` | available | derived | configured action-memory horizon minus `actions_taken_this_round` | Normalized remaining-action horizon reaches PPO; horizon identity is implicit and no typed decision sequence is emitted |
+| `derived_context.decision_history.board_move_age_by_slot` | available | derived | `PlayerEnv::board_move_age → Impl::build_observations` | Normalized 28-slot age values reach PPO; slot-scoped recency is not physical-unit history and has no typed decision sequence |
 | `derived_context.recipe_target_fit` | available | estimated | `ItemFitCache.get(recipe_id, UnitProfile)` | Delivered in item recipe-target fit block; heuristic score, catalog/profile identity required |
 | `entities.items.anvil_options` | available | derived | `ItemEngine.pending_anvil + ItemCatalog` | Delivered in item anvil option block; only current pending anvil snapshot |
 | `derived_context.action_opportunity.items.sell_value` | available | derived | `UnitInstance sell value / sell rules` | Delivered in legacy bench candidate tail, normalized; tied to physical bench slot |
 | `derived_context.action_opportunity.items.affordability` | available | derived | `player gold compared with candidate cost` | Delivered in legacy shop candidate tail, binary; tied to shop slot and same gold snapshot |
 | `identity.decision_identity_hash` | derived | derived | `Canonical identity tuple in observation envelope` | Not delivered in observation/rollout envelope |
-| `legal_state_context.anti_loop_state.position_history` | available | observed | `AntiLoopEngine position_history` | Not delivered to PPO; available through native anti-loop diagnostics/state |
-| `legal_state_context.anti_loop_state.move_history` | available | observed | `AntiLoopEngine move_history` | Not delivered to PPO; available through native anti-loop diagnostics/state |
-| `legal_state_context.anti_loop_state.blocked_move_records` | available | derived | `AntiLoopEngine blocked_moves` | Not delivered to PPO; available through native anti-loop diagnostics/state |
-| `legal_state_context.anti_loop_state.state_visits` | available | derived | `AntiLoopEngine state_visits/state_visit_index` | Not delivered to PPO; available through native anti-loop diagnostics/state |
+| `legal_state_context.anti_loop_state.position_history` | available_but_not_projected | observed | internal AntiLoopHistory; no ordered-history Python binding | Not delivered to PPO; only aggregate metrics are exposed; sequence identity is missing; exact masks remain separate |
+| `legal_state_context.anti_loop_state.move_history` | available_but_not_projected | observed | internal AntiLoopHistory; no ordered-history Python binding | Not delivered to PPO; only aggregate metrics are exposed; sequence identity is missing; exact masks remain separate |
+| `legal_state_context.anti_loop_state.blocked_move_records` | available_but_not_projected | derived | internal AntiLoopHistory; no ordered-history Python binding | Not delivered to PPO; only aggregate metrics are exposed; sequence identity is missing; exact masks remain separate |
+| `legal_state_context.anti_loop_state.state_visits` | available_but_not_projected | derived | internal AntiLoopHistory; no ordered-history Python binding | Not delivered to PPO; only aggregate metrics are exposed; sequence identity is missing; exact masks remain separate |
 | `legal_state_context.critic_context` | not_available | derived | `Action Contract mask side-input boundary` | Not delivered; current value path ignores masks |
 | `derived_context.capacity` | derived | derived | `board occupancy + player level + bench slot count` | Delivered as two aggregate capacity features; not full capacity state |
 | `derived_context.trait_counts` | available | derived | `trait_counts + observation_trait_names` | Delivered as catalog-ordered aggregate trait counts; requires catalog fingerprint |
@@ -371,3 +371,16 @@ Source inspection of cpp/include/lobby/TftEngine.hpp finds UnitInstance::uuid, b
 - Unit-instance projection remains blocked until the source audit establishes an authoritative identity or proposes a versioned producer/schema correction.
 
 This correction does not alter runtime code or claim that UUID generation is implemented.
+
+
+## 9. Strategic and temporal producer corrections — source-backed follow-up
+
+The structured entity producer audit now distinguishes the actual new-architecture callsites:
+
+- owned_unit_assessments is not a UUID-keyed physical-unit assessment. StrategicSharedContext::owned_units is appended per occupied slot but carries champion identity only; UnitPrioritySnapshot is aggregated by champion. Both are Shadow-derived records, not PPO structured entities.
+- anchor_candidates is produced from NativeStrategicCompositionGenerator, while early direction hypotheses, active direction anchors and pivot candidates have separate owners/lifecycles. No stable candidate ID/revision or complete candidate-set envelope is emitted.
+- action_candidates remains empty in the audited TftEngine construction path. The current diagnostic booleans can label two empty sets as equal and mark comparison available from non-stale evaluators; this does not satisfy the non-empty candidate comparison contract.
+- The resolver is wired and invoked (executor_connected=true), but it is read-only (execution_enabled=false, native_action_applied=false). Connectivity is not per-request acceptance.
+- PPO receives flat temporal action-memory scalars, not a typed decision history. Anti-loop history remains internal; Python exposes aggregate anti-loop metrics only. Exact action masks remain separate legality inputs.
+
+These findings supersede any interpretation that champion-keyed assessments are physical-unit entities, that composition identity is a candidate-set identity, or that anti-loop metrics constitute delivery of ordered history.
