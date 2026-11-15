@@ -149,8 +149,25 @@
       "domain": [
         "shared_pool"
       ],
-      "status": "unavailable_until_authoritative_producer",
-      "invariant": "Never infer pool count from local board, bench or shop."
+      "status": "native_query_only_not_in_observation_snapshot",
+      "invariant": "Never infer pool count from local board, bench or shop.",
+      "producer_paths": [
+        "cpp/include/lobby/UnitPool.hpp::UnitPool::available/initial_count",
+        "cpp/src/lobby/UnitPool.cpp::available/initial_count",
+        "cpp/include/lobby/TftEngine.hpp::TFTEngine::pool_available/pool_initial_count",
+        "cpp/src/lobby/TftEngine.cpp::TFTEngine::pool_available/pool_initial_count/pool_total_available",
+        "cpp/bindings/tft_engine_bindings.cpp::pool_available/pool_initial_count/pool_total_available"
+      ],
+      "delivery": {
+        "native": "Authoritative shared-lobby per-champion current and initial count queries.",
+        "python": "Direct pybind query methods only; not included in CppTFTLobbyWrapper reset/step payload or immutable observation snapshot.",
+        "ppo": "Not delivered to PPO observations or RolloutBuffer."
+      },
+      "gaps": [
+        "No immutable pool snapshot bound to the exact observation/mask/action decision sequence.",
+        "No source-decision sequence or snapshot identity accompanies the direct query.",
+        "No dedicated Schema v2 pool-availability field is currently declared; any future field requires versioned contract review."
+      ]
     },
     {
       "kind": "item_instance",
@@ -611,7 +628,7 @@
   "unresolved_schema_gaps": [
     "Shop has no explicit offer_id, offer revision/reroll generation or observed price field.",
     "Inventory and unit attachments lack physical item_instance_id and explicit attachment owner references.",
-    "Pool availability has no authoritative producer or schema field.",
+    "Pool availability has an authoritative shared-lobby native query and direct pybind surface, but no immutable decision-correlated snapshot, source sequence, wrapper observation delivery, PPO projection or dedicated Schema v2 field.",
     "Board slot index lacks documented coordinate/orientation mapping.",
     "Positioning and trait aggregates use open maps without complete typed key/catalog contracts.",
     "Unit assessments and anchor candidates need explicit collection completeness and source-sequence contracts.",
@@ -664,5 +681,25 @@
     "Action comparison is unavailable for an empty candidate set even when evaluator objects are non-stale or candidate counts happen to match at zero.",
     "Flat action-memory scalars remain distinct from typed decision history; board move age is slot-scoped, not physical-unit scoped.",
     "Anti-loop history identity, retention/reset, Python exposure and mask relationship are explicit; exact native action masks remain independent final legality inputs."
-  ]
+  ],
+  "architecture_reconstruction_review": {
+    "prior_problem": "The manifest classified pool availability as unavailable until an authoritative producer existed, but later source audits established UnitPool::available()/initial_count(), TFTEngine query methods and direct pybind exposure.",
+    "technical_justification": "An authoritative point query is not an immutable pool snapshot correlated with the exact observation, masks and action. Treating the query as full observation delivery would overstate the current contract.",
+    "new_responsibility": "The pool-availability entity entry records the native shared-lobby query capability and its delivery boundary; the Engine observation adapter and schema remain responsible for any future decision-bound snapshot.",
+    "contract_and_invariants": [
+      "Pool counts remain shared-lobby state keyed by champion catalog identity.",
+      "Never infer pool availability from player-owned board, bench or shop state.",
+      "No decision sequence or PPO availability is claimed without an immutable correlated payload."
+    ],
+    "cross_component_impacts": [
+      "UnitPool",
+      "TFTEngine",
+      "pybind query methods",
+      "CppTFTLobbyWrapper",
+      "Observation Schema v2",
+      "producer coverage CSV",
+      "future replay and observation correlation"
+    ],
+    "objective_validation": "The manifest agrees with the producer coverage CSV and lifecycle follow-up: native query exists, delivery is direct-pybind-only, and PPO/snapshot delivery remains absent. No runtime, schema field, tensor or training behavior changes."
+  }
 }
