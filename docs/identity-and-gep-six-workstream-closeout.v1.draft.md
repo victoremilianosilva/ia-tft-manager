@@ -69,7 +69,7 @@ The exact source leaf and conversion are now proven at mapper level, but only ag
 
 No GEP path mapping is moved into Python or C++; Overwolf/Electron remains the sole GEP interpreter. The native live importer and transport remain unimplemented; capture-only JSONL and the Python loopback receiver do not prove live inference.
 
-Source records: `docs/overwolf-live-state-integration-boundary.md`, plus the cross-repository `GEP_MAPPING.md`, `NATIVE_ENGINE_LIVE_IMPORT_AUDIT.md`, and `CANONICAL_TFT_LIVE_STATE.md`.
+Source records: `docs/overwolf-live-state-integration-boundary.md`, `docs/gep-match-id-source-path-and-lifecycle-audit.v1.draft.md`, plus the cross-repository `GEP_MAPPING.md`, `NATIVE_ENGINE_LIVE_IMPORT_AUDIT.md`, and `CANONICAL_TFT_LIVE_STATE.md`.
 
 ## 5. Schema v2 and machine-readable reconciliation
 
