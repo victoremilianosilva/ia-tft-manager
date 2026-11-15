@@ -185,3 +185,84 @@ Continue #346 with a repository-wide identity callsite/test audit, then continue
 4. **Contracts/invariants:** no champion/slot substitute; no standalone cross-match UUID; schema fields are not runtime evidence; diagnostic delivery is not PPO delivery.
 5. **Cross-component impact:** UnitInstance, UnitInstanceFactory, PlayerEnv, ShopEngine, UnitPool, ItemEngine, board/bench transfer, pybind, Python wrapper, PPO rollout, replay and checkpoint lineage.
 6. **Objective validation:** test UUID generation, within-episode uniqueness, reset collision, movement stability, merge/sale semantics, match/player scoping and Python exposure before accepting the field.
+
+
+## Item, component and anvil producer audit — source-backed slice
+
+**Audit status:** partial source audit for #346. Findings below describe the inspected native Engine path; they do not authorize runtime changes or projection layout.
+
+### Item catalog identity versus physical item identity
+
+**Native owners and paths**
+
+- `cpp/include/items/ItemEngine.hpp::ItemDefinition` stores a catalog `id`, recipe component catalog IDs, normalized stats/effects and `unit_equipable`. `ItemCatalog.hpp::load_item_catalog()` loads the active-set catalog.
+- `ItemEngine` stores loose components as `std::vector<std::string> components_`, completed inventory as `std::vector<std::string> inventory_`, and equipped catalog IDs as `std::unordered_map<std::string, std::vector<std::string>> equipped_` keyed by unit UUID.
+- Adding, crafting, equipping, detaching and merge transfer move catalog ID strings between those containers. No physical item-instance object, generated item-instance ID, copy identity, or item-level creation sequence is produced.
+- Repeated component IDs in the vector preserve multiplicity as repeated values, not independently identified component instances. Repeated completed-item IDs likewise represent copies without physical identity.
+- `UnitInstance::items` is synchronized from ItemEngine equipment through `sync_unit_items_from_engine()`; it stores combat item definitions/catalog API names, not item-instance references.
+
+**Ownership/lifecycle**
+
+- Equip consumes one matching catalog ID from inventory and appends it to the target unit UUID's equipped list.
+- Sale returns every catalog ID from the sold unit's equipped list to inventory before removing the unit.
+- Merge transfers equipped catalog IDs from consumed unit UUIDs to the surviving purchased unit UUID; overflow beyond the three-item cap returns to inventory.
+- Engine reset clears components, inventory, equipped mappings, queued anvils and metrics. No item-instance identity survives or needs to be correlated across reset because none is produced.
+
+**Snapshot and PPO delivery**
+
+- `TFTEngine::get_audit_snapshot()` exposes loose component IDs, inventory item IDs, component catalog IDs, and unit attachment catalog IDs (via `UnitInstance::items`). These are diagnostic snapshot values, not physical item-instance records.
+- The pybind `get_audit_snapshot` dictionary forwards those arrays/strings. It does not expose an explicit item-instance identity or typed item-owner relationship.
+- The live PPO observation is not this diagnostic JSON. `build_observations()` emits fixed numeric blocks: component counts by catalog position (count divided by six and clamped), up to nine inventory item semantic feature rows, catalog-derived recipe features, board/bench target features, inventory-to-target fit values, and recipe-to-target fit values.
+- Consequently PPO receives item semantics and derived compatibility values, but not raw physical item IDs, item-instance IDs, per-copy provenance, or typed source-sequence records. The inventory's numeric row position is a transient slot in the current vector, not a persistent item identity.
+- The target-fit blocks are estimated/heuristic values from `ItemFitCache`; they must retain formula/provenance/uncertainty and must not be represented as observed facts.
+
+**Disposition:** `item_catalog_entry` is native catalog metadata; `item_instance` is **not produced**. The schema's future `item_instance_id` cannot be populated from current catalog strings. A versioned producer/contract change is required before lossless item-instance projection.
+
+### Component inventory
+
+- The authoritative live component state is a vector of catalog IDs in `ItemEngine::components_`; duplicate IDs are separate owned copies by multiplicity only.
+- PvE component drops are drawn from `Set18ComponentPool` and added through `ItemEngine::add_component()`. The pool's remaining count is internal loot-generation state; it is not a player-owned component-instance identity or shared champion-pool availability.
+- The audit snapshot exposes the component ID vector. The PPO observation aggregates it into one count per catalog component, preserving multiplicity only as a count and applying `clamp(count / 6, 0, 1)`.
+- No component instance ID, acquisition event ID, owner transition record or per-copy sequence is produced. Catalog order determines the current numeric feature positions and therefore requires catalog fingerprint/order binding.
+
+**Disposition:** component catalog identity and aggregate counts are native; physical component instances are **not produced**. A repeated string is not an instance identifier. Count saturation at the current observation normalization ceiling must be explicit in any future projection contract.
+
+### Anvil option production and pending-choice lifecycle
+
+**Available ItemEngine capability**
+
+- `ItemEngine::grant_component_anvil()` and `grant_completed_item_anvil()` can enqueue a typed `ItemAnvil` containing a kind and a vector of catalog-ID strings.
+- `grant_anvil()` validates one to nine unique known options. It rejects empty, duplicate or unknown choices.
+- `pending_anvil()` exposes only the front queued anvil. `choose_anvil_option(index)` grants exactly the selected component/item and consumes the queue entry only after a successful grant. Invalid indices leave the pending anvil intact.
+- The choice is positional: the implementation has no stable `option_id`, anvil ID, revision, source sequence, producer event ID or explicit completeness metadata.
+
+**Actual audited gameplay reward path**
+
+- `TFTEngine::Impl::grant_round_pve_item_rewards()` currently grants component drops directly with `add_component()` and completed items directly with `add_completed_item()`.
+- In the audited `TftEngine.cpp` production path, no call to either `grant_component_anvil()` or `grant_completed_item_anvil()` was found. The anvil grant methods are exercised by `cpp/tests/test_item_engine.cpp`, but the inspected round reward path does not create pending anvils.
+- The action/mask/observation code contains a pending-anvil branch, but that consumer capability is not evidence that the normal game path produces pending anvils. Until a production caller is identified, pending-anvil availability is **not produced in the audited runtime path**.
+- If an anvil is injected through a future authoritative producer, masks reuse the existing item-choice action head: action type 7 is enabled, option positions occupy the item-inventory mask, and target index zero is a masked sentinel. The PPO anvil block emits pending/kind flags and up to nine option feature rows.
+- For each option, the current observation computes one `best_fit` maximum across all current unit profiles (and, for components, across catalog items that can use the component). It is not a per-target fit relation. The schema's `target_fits[]` records with `target_instance_id` therefore have no matching producer in this path.
+
+**Disposition:** the anvil data structure and choice consumer exist, but a live authoritative producer is **not established**. Option IDs, option-set completeness, pending-decision sequence, per-target fit records and source provenance are **not produced**. Keep these fields unavailable; do not infer an anvil from direct PvE item/component grants.
+
+### Item-family status matrix
+
+| Family/field | Native status | Diagnostic exposure | PPO delivery | Required correction |
+|---|---|---|---|---|
+| Item catalog entry | Native catalog ID + catalog definition | Catalog IDs in item/unit snapshots | Catalog-derived numeric semantics | Bind catalog fingerprint/order; not physical identity |
+| Loose item inventory | Catalog ID strings in ordered vector; no copy ID | ID vector | Up to 9 numeric semantic rows and derived target-fit matrix | Explicit collection completeness/slot semantics; no item-instance claim |
+| Equipped item | Catalog ID strings keyed internally by unit UUID; mirrored into UnitInstance combat items | Nested item catalog IDs in unit snapshot | Target equipped count and compatibility features; no physical IDs | Explicit owner relation and item-instance identity unavailable |
+| Component inventory | Repeated catalog IDs in vector; multiplicity only | ID vector | Per-catalog count, normalized/clamped | Aggregate count semantics; no physical component IDs |
+| Pending anvil | Queue-capable API; no production caller found in audited gameplay path | Pending flag/kind/options if state exists | Pending/kind flags and up to 9 option feature rows | Producer, anvil identity/revision, option IDs, completeness and sequence |
+| Anvil target fit | Maximum heuristic over profiles | Not separately serialized as target relations | One aggregate best-fit value per option | Formula/version/uncertainty; per-target producer absent |
+
+### Architecture reconstruction review
+
+1. **Prior problem:** the semantic entity contract described item instances and anvil option identities as future records without distinguishing current catalog-string storage, aggregate component counts, and the dormant anvil consumer path.
+2. **Technical rationale:** treating catalog IDs or vector positions as physical copy identity would make item transfer, duplicate copies, replay and ownership joins ambiguous; treating a consumer branch as a live producer would fabricate decision opportunities.
+3. **New responsibility:** this audit slice owns source-backed classification of item catalog metadata, item/component ownership containers, anvil producer availability and actual PPO delivery.
+4. **Contracts/invariants:** catalog identity != physical item identity; repeated IDs express multiplicity only; components/inventory/equipment are distinct ownership states; anvil option index != stable option ID; diagnostic snapshot != PPO tensor; heuristic fit != observed fact.
+5. **Cross-component impact:** ItemEngine, ItemCatalog, UnitInstance equipment mirror, PvE loot distribution, TftEngine rewards/actions/masks/observations, AuditSnapshot, pybind, Python wrapper, PPO projection, replay and checkpoint lineage.
+6. **Objective validation:** source trace of grant/craft/equip/sale/merge/reset; direct PvE reward producer trace; ItemEngine unit tests for queue/choice/transfer; audit-snapshot and pybind field trace; explicit confirmation that no typed item-instance or anvil-option envelope reaches PPO.
+
