@@ -194,3 +194,23 @@ The conditional mask/executor mismatch above must be qualified by the producer a
 - The anvil enqueue APIs are exercised by direct ItemEngine tests; that does not establish a production TFTEngine path.
 
 Therefore, the dead-player pending-anvil mask/executor mismatch is **not currently shown reachable through the audited main-repository gameplay path**. Keep it as a defensive conditional contract requirement for any future producer or external injection, not as a current gameplay defect. If a producer is later added, it must prove it cannot leave an eliminated player with an unresolved forced action, or define a terminal resolution policy.
+
+
+## 13. AuditSnapshot terminal-status visibility — 2026-11-15
+
+The native `AuditPlayerSnapshot` declaration contains player_id, economy/board diagnostics, board/bench/shop arrays, item inventory/components/anvil state, last-item-action metadata and masks. It has no `alive` or `eliminated` field. `get_audit_snapshot()` fills those declared fields but cannot emit an explicit terminal player status through this DTO.
+
+The separate `get_public_state()` path does expose player elimination status (the full-match integration test reads each player's `eliminated` field). These are different diagnostic contracts and must not be conflated.
+
+Consequences:
+- An AuditSnapshot consumer cannot distinguish “eliminated and cleared” from “alive with an empty board/bench” using an explicit status field.
+- Empty board/bench slots, zero board power, or a particular mask shape are not substitutes for an authoritative terminal status.
+- The Viewer/audit consumer may obtain status through the separate public-state path, but that does not prove the status is correlated to the exact AuditSnapshot sequence unless the caller binds both records.
+
+Acceptance criteria:
+1. Add explicit alive/eliminated/placement state to a future versioned audit envelope, or define a typed same-episode correlation to the public-state source.
+2. Preserve the terminal status and item-owner disposition in the same correlated audit record.
+3. Test alive-empty versus eliminated-empty players and verify Viewer/replay does not infer status from board occupancy.
+4. Keep status unavailable if the source records cannot be correlated to the same Engine episode/snapshot.
+
+This is a diagnostic contract gap, not a claim that the public-state API lacks elimination status.

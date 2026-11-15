@@ -313,3 +313,8 @@ This narrows the explicit production paths but does not close the implicit C++ c
 ### Pending-anvil risk reachability qualification — 2026-11-15
 
 The conditional eliminated-player pending-anvil mask/executor mismatch is not currently shown reachable through the audited main-repository gameplay path. The production C++ translation-unit audit found no call to the two ItemEngine anvil enqueue APIs; the real PvE reward path grants inventory items directly; and pybind does not expose an anvil enqueue method. Direct ItemEngine tests are not a live TFTEngine producer. Keep this as a future-producer guard, not a current production defect, unless a deterministic gameplay path is established.
+
+
+### AuditSnapshot terminal player status gap — 2026-11-15
+
+The native `AuditPlayerSnapshot` DTO has no `alive` or `eliminated` field, although the separate `get_public_state()` path exposes player elimination status. Consumers of AuditSnapshot cannot distinguish an eliminated player with cleared units from a living player with an empty board/bench using that DTO alone. A separate public-state status is useful but must be correlated to the same Engine episode/snapshot; occupancy or mask shape is not a substitute. Future diagnostic acceptance must bind terminal status and item disposition to one correlated audit record.
