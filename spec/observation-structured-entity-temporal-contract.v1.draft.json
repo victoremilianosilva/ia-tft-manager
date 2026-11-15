@@ -664,19 +664,25 @@
     "Action comparison is unavailable for an empty candidate set even when evaluator objects are non-stale or candidate counts happen to match at zero.",
     "Flat action-memory scalars remain distinct from typed decision history; board move age is slot-scoped, not physical-unit scoped.",
     "Anti-loop history identity, retention/reset, Python exposure and mask relationship are explicit; exact native action masks remain independent final legality inputs."
-  ]
+  ],
+  "architecture_reconstruction_review": {
+    "prior_problem": "The manifest classified pool availability as unavailable until an authoritative producer existed, but later source audits established UnitPool::available()/initial_count(), TFTEngine query methods and direct pybind exposure.",
+    "technical_justification": "An authoritative point query is not an immutable pool snapshot correlated with the exact observation, masks and action. Treating the query as full observation delivery would overstate the current contract.",
+    "new_responsibility": "The pool-availability entity entry records the native shared-lobby query capability and its delivery boundary; the Engine observation adapter and schema remain responsible for any future decision-bound snapshot.",
+    "contract_and_invariants": [
+      "Pool counts remain shared-lobby state keyed by champion catalog identity.",
+      "Never infer pool availability from player-owned board, bench or shop state.",
+      "No decision sequence or PPO availability is claimed without an immutable correlated payload."
+    ],
+    "cross_component_impacts": [
+      "UnitPool",
+      "TFTEngine",
+      "pybind query methods",
+      "CppTFTLobbyWrapper",
+      "Observation Schema v2",
+      "producer coverage CSV",
+      "future replay and observation correlation"
+    ],
+    "objective_validation": "The manifest agrees with the producer coverage CSV and lifecycle follow-up: native query exists, delivery is direct-pybind-only, and PPO/snapshot delivery remains absent. No runtime, schema field, tensor or training behavior changes."
+  }
 }
-
-## Pool availability producer correction — 2026-11-15
-
-**Prior problem:** this manifest previously classified pool availability as unavailable until an authoritative producer existed. The source audit later established UnitPool::available()/initial_count(), TFTEngine query methods and direct pybind exposure, so that status was stale.
-
-**Technical justification:** an authoritative point query is not equivalent to an immutable pool snapshot correlated with the exact observation, masks and action. Treating the query as full observation delivery would overstate the current contract.
-
-**New responsibility:** the pool-availability entity entry records the native shared-lobby query capability and its current delivery boundary; the Engine observation adapter and schema remain responsible for any future decision-bound snapshot.
-
-**Contract and invariants:** pool counts remain shared-lobby state keyed by champion catalog identity; never infer them from player-owned board/bench/shop state; no decision sequence or PPO availability is claimed without an immutable correlated payload.
-
-**Cross-component impacts:** UnitPool, TFTEngine, pybind query methods, CppTFTLobbyWrapper, Schema v2, producer coverage CSV and future replay/observation correlation.
-
-**Objective validation:** the manifest now agrees with the producer coverage CSV and lifecycle follow-up: native query exists, delivery is direct-pybind-only, and PPO/snapshot delivery remains absent. No runtime, schema field, tensor or training behavior changes.
