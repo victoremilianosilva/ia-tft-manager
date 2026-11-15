@@ -274,3 +274,10 @@ The two focused native test files establish sale return-to-inventory and merge t
 The UnitInstance declaration also retains a stale comment saying UUID generation is future work; the factory's create/generate_uuid implementation proves generation exists. The struct declares no custom copy/move operations in the inspected declaration, so compiler-generated value copies preserve the UUID string. The complete implicit copy/ownership graph remains unproven.
 
 These findings strengthen the existing blockers: explicit terminal item policy, exactly-once equipment cleanup, active-owner lifecycle, and scoped physical identity. They do not authorize a runtime fix or change Gate status.
+
+
+### Elimination orphan observability boundary — 2026-11-15
+
+The orphaned ItemEngine equipment map is not enumerated by the inspected structured projections: `get_audit_snapshot()` serializes equipped item IDs from live board/bench UnitInstance mirrors, while its ItemEngine section exposes components/inventory/anvil/last-action fields but not the full UUID-keyed `equipped_` map. Strategic Planner item evidence also binds only current board/bench units. Ordinary item-target masks enumerate live board/bench slots and require a live target for type-7 equip. Thus retained orphan UUID mappings are neither visible in those structured projections nor targetable through that ordinary item-target path.
+
+This is a diagnostic/selection boundary, not proof of cross-player leakage or policy consumption. The terminal item policy and exactly-once cleanup remain unresolved. Runtime acceptance must explicitly prove the selected terminal disposition and expose enough audit evidence to verify it.
