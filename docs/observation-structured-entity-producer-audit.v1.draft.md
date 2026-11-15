@@ -83,6 +83,69 @@ Schema v2 currently requires `unit.instance_id`; the native field is `UnitInstan
 
 Do not map `instance_id = uuid` as a globally stable identity. A future versioned correction must define a composite/scoped identity or change the producer and prove its lifecycle before the schema field is accepted.
 
+
+## Board and bench slot producers
+
+### Native representation
+
+`TftEngine.hpp` defines fixed native capacities:
+
+- board: `kBoardSlots = 28`;
+- bench: `kBenchSlots = 9`;
+- shop: `kShopSlots = 5`.
+
+The player state stores board and bench as fixed arrays of `std::optional<UnitInstance>`. The optional value distinguishes an occupied slot from an observed empty slot in the native in-memory state. The audit snapshot preserves the fixed arrays and emits one `AuditUnitSnapshot` per slot; `occupied=false` represents an empty slot, while `occupied=true` carries champion, UUID, star, cost and item catalog IDs.
+
+### Slot identity and topology
+
+- A board slot is identified by its array index in the 28-element board domain; a bench slot is identified by its index in the 9-element bench domain.
+- The observation builder preserves these positions: it emits five values for each board slot and each bench slot, advancing across empty slots rather than compacting occupied units.
+- Existing board logic uses `slot / 7` for a coarse row classification (four groups of seven). This is not enough to define TFT's canonical hex coordinates, orientation, adjacency or front/back geometry.
+- Moving or swapping a unit changes its slot relationship but moves/swaps the `optional<UnitInstance>` itself; the unit UUID follows the instance. Slot identity and physical unit identity are therefore separate.
+- The audit snapshot contains round and stage but no typed per-entity source sequence or explicit episode/match identity. The fixed slot arrays prove positional indexing, not exact decision-sequence correlation.
+
+### Status
+
+**NATIVE SLOT INDEX AND OCCUPANCY OBSERVED; SPATIAL MAPPING AND SEQUENCE CORRELATION UNVERIFIED**
+
+The fixed slot index and empty/occupied state are native. Canonical coordinate/orientation mapping, adjacency semantics, player/match/sequence envelope and delivery into PPO as structured entities are not established. The PPO tensor contains slot-aligned numeric features but no physical UUID per slot.
+
+## Shop offer producer and lifecycle
+
+### Native creation and replacement path
+
+- `ShopEngine::draw(cost)` asks `UnitPool::draw_by_cost` for an available champion copy and then calls the shared `UnitInstanceFactory::create()`.
+- `ShopEngine::roll(level, force)` returns the previous offers to the shared pool, then fills the five fixed offer slots. A locked shop is not rerolled unless forced.
+- `reroll(level)` delegates to `roll(level, true)`.
+- `take_unit(slot)` moves the `UnitInstance` out of the offer slot and clears that slot. The purchase path then moves that instance to the player's bench; if an automatic merge occurs, the purchased instance is the surviving identity.
+- A shop offer's champion cost is read from the champion catalog definition at purchase/evaluation time. `ShopEngine` does not maintain a separately versioned price field on the offer.
+- The test hooks `set_offer_for_testing` and `set_next_roll_for_testing` are fixture mechanisms, not independent production identity authorities.
+
+### Identity distinction
+
+The offer reuses the UUID of the temporary `UnitInstance` created for that offer. No separate `offer_id`, offer revision, or reroll-generation token is produced by `ShopEngine`. Slot index alone is not a stable offer identity because reroll replaces the contents of the same slot. When an offer is purchased, its UnitInstance UUID continues with the owned unit; when rerolled/returned, the offer instance is discarded and the champion copy returns to the pool.
+
+Therefore, the UUID may identify the temporary unit object within the factory stream, but it does not by itself provide a stable shop-offer identity. A future offer key must be scoped to player, exact shop snapshot/decision sequence, slot and offer revision; none of those revisions is currently emitted as a complete typed envelope.
+
+### Current delivery
+
+The native audit snapshot exposes five fixed shop entries with `occupied`, champion ID, UUID, star and cost. The PPO observation builder emits five slot-aligned numeric records, but does not include a typed offer identity, offer revision, or UUID in the flat vector. The audit snapshot is diagnostic and has no typed source-sequence envelope.
+
+### Status
+
+**NATIVE OFFER CONTENT AND SLOT OBSERVED; OFFER IDENTITY/REVISION AND PPO STRUCTURED DELIVERY NOT PRODUCED**
+
+The five slot positions, occupied state, champion catalog identity and catalog-derived cost are observable. A stable offer ID, explicit offer revision/reroll sequence, and exact decision-sequence correlation are not produced in the inspected path. Do not infer offer identity from champion ID, slot index or the temporary unit UUID.
+
+## Entity producer status summary (audited slice)
+
+| Entity family | Native evidence | Status | Missing proof |
+|---|---|---|---|
+| Physical unit instance | Factory-generated UUID; movement/merge/sale lifecycle partially traced | `unverified` as canonical cross-match identity | Global/episode scope, collision enforcement, full callsite/test coverage, typed sequence |
+| Board slot | Fixed 28-slot optional array; audit snapshot has occupied flag; PPO slot-aligned features | `native_observed` for slot/occupancy; `not_correlated` for typed sequence | Canonical coordinates/orientation/adjacency, exact sequence, structured PPO delivery |
+| Bench slot | Fixed 9-slot optional array; audit snapshot has occupied flag; PPO slot-aligned features | `native_observed` for slot/occupancy; `not_correlated` for typed sequence | Exact sequence and structured PPO delivery |
+| Shop offer | Five fixed slots, pool draw + factory create, catalog cost, reroll replacement and purchase transfer | `native_observed` for offer content; `not_produced` for offer ID/revision | Stable offer identity, revision/reroll token, exact sequence, structured PPO delivery |
+
 ## Current Engine-to-Python and PPO delivery boundary
 
 The binding `cpp/bindings/tft_engine_bindings.cpp` exposes UUID through `TFTEngine::get_audit_snapshot()`: each audit unit dictionary contains `occupied`, `champion_id`, `uuid`, `star` and `cost`. This is a diagnostic/audit sidecar.
@@ -112,7 +175,7 @@ Therefore:
 
 ## Required follow-up
 
-Continue #346 with a repository-wide identity callsite/test audit, then audit board/bench slots, shop offers, items/components/anvil, traits, positioning, strategic evidence, action candidates, temporal histories and Engine-to-Python exposure. Until proven, unsupported entity fields remain unavailable or unverified.
+Continue #346 with a repository-wide identity callsite/test audit, then continue with items/components/anvil, traits, positioning, strategic evidence, action candidates and temporal histories, while preserving the Engine-to-Python boundary findings. Until proven, unsupported entity fields remain unavailable or unverified.
 
 ## Architecture reconstruction review
 
