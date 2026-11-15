@@ -231,3 +231,14 @@ The production ownership transitions otherwise use moves/swaps for shop→bench 
 - Assert same-seed Engine reset cannot make two simultaneously live canonical identities collide; a scoped identity contract is still required.
 - Complete semantic copy/assignment/destruction review beyond the explicit production paths listed here.
 
+
+
+## 8. Explicit special-member semantics and remaining proof boundary — 2026-11-15
+
+The declaration in `cpp/include/lobby/TftEngine.hpp` has no user-declared copy/move constructor, copy/move assignment operator or destructor. All data members are value members (`std::string`, integer fields and `std::vector<CombatItem>`), so compiler-generated copy construction/assignment copy the UUID and item mirror; compiler-generated move operations transfer those values and do not mint a replacement UUID. This is stronger than merely observing copies at selected call sites: it establishes the type's default value semantics.
+
+The enclosing `TFTEngine` is explicitly non-copyable and default-movable. Its `unique_ptr<Impl>` transfers the existing implementation on move; it does not create a new Engine-instance scope token. The Engine-instance scope gap is therefore separate from UnitInstance's value semantics.
+
+The header comment claiming UUID generation will be implemented later is stale: `UnitInstanceFactory::create()` calls `generate_uuid()`. This PR records the correction; it does not change the runtime header.
+
+**Still not proven:** a complete global proof that no production path accidentally retains two active owners with one copied UUID, nor a runtime invariant/test across all buy/reroll/merge/sale/elimination/reset paths. The explicit transfer map and source inventory narrow the search, but only targeted native regression tests can establish the active-owner invariant. No runtime behavior is changed.
