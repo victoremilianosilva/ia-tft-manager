@@ -57,7 +57,7 @@ Source inspection establishes the following object behavior:
 | Sale | Sell path captures `unit.uuid`, returns pool copies and removes the owned unit | Sold UUID leaves active ownership | Recent-purchase history may retain the old UUID as temporal evidence |
 | Engine reset | `TFTEngine::reset()` recreates factory using the same seed and reinitializes players | UUID sequence restarts; first generated identity repeats | Cross-episode collision is confirmed |
 
-This establishes object-transfer continuity for the inspected paths, not a complete formal lifecycle contract. Copy construction/assignment sites, all external test hooks, duplicate detection, and every sale/elimination/reset edge still require a repository-wide test and callsite audit.
+This establishes object-transfer continuity for the inspected paths, not a complete formal lifecycle contract. Explicit identity/test-hook references have now been inventoried across the tracked Python and C++ trees. Implicit value-copy/assignment/destruction paths, duplicate detection, and every sale/elimination/reset edge still require semantic lifecycle proof and regression coverage.
 
 ### Current consumers
 
@@ -71,7 +71,7 @@ The producer is now located, and same-episode object transfer is partially evide
 
 Remaining proof required:
 
-1. complete production-C++ enumeration of every `UnitInstance` construction, copy, assignment and destruction path (the tracked Python tree and all 48 C++ test files have now been enumerated; this does not yet prove the full production-C++ caller/copy graph);
+1. complete semantic proof of implicit C++ `UnitInstance` value-copy/assignment/destruction and ownership paths (explicit identity references were scanned across all 127 tracked C++ files and all 125 tracked Python files; token inventory alone does not prove every implicit copy);
 2. collision behavior and uniqueness enforcement within one Engine episode;
 3. player/match scoping and reset-safe identity;
 4. lifecycle regression tests for purchase, board/bench movement, merge, sale, elimination and consecutive matches;
@@ -141,7 +141,7 @@ The five slot positions, occupied state, champion catalog identity and catalog-d
 
 | Entity family | Native evidence | Status | Missing proof |
 |---|---|---|---|
-| Physical unit instance | Factory-generated UUID; movement/merge/sale lifecycle partially traced | `unverified` as canonical cross-match identity | Global/episode scope, collision enforcement, full callsite/test coverage, typed sequence |
+| Physical unit instance | Factory-generated UUID; movement/merge/sale lifecycle partially traced | `unverified` as canonical cross-match identity | Global/episode scope, collision enforcement, implicit copy/lifecycle invariants, typed sequence |
 | Board slot | Fixed 28-slot optional array; audit snapshot has occupied flag; PPO slot-aligned features | `native_observed` for slot/occupancy; `not_correlated` for typed sequence | Canonical coordinates/orientation/adjacency, exact sequence, structured PPO delivery |
 | Bench slot | Fixed 9-slot optional array; audit snapshot has occupied flag; PPO slot-aligned features | `native_observed` for slot/occupancy; `not_correlated` for typed sequence | Exact sequence and structured PPO delivery |
 | Shop offer | Five fixed slots, pool draw + factory create, catalog cost, reroll replacement and purchase transfer | `native_observed` for offer content; `not_produced` for offer ID/revision | Stable offer identity, revision/reroll token, exact sequence, structured PPO delivery |
@@ -175,7 +175,7 @@ Therefore:
 
 ## Required follow-up
 
-Continue #346 with a repository-wide identity callsite/test audit, then continue with items/components/anvil, traits, positioning, strategic evidence, action candidates and temporal histories, while preserving the Engine-to-Python boundary findings. Until proven, unsupported entity fields remain unavailable or unverified.
+The explicit tracked-source identity/test-hook inventories are complete. Continue #346 with semantic copy/ownership lifecycle proof, elimination item cleanup and exact producer/sequence/delivery acceptance; the other entity families remain tracked by the coverage matrix. Until proven, unsupported entity fields remain unavailable or unverified.
 
 ## Architecture reconstruction review
 
@@ -452,7 +452,7 @@ Anti-loop logic also participates in native move validation and mask generation.
 5. **Cross-component impact:** StrategicSharedContext, StrategicEvidenceContextBuilder, NativeStrategicCompositionGenerator, InitialStrategicDirectionDiscovery, UnifiedStrategicStateMachine, Composition Intelligence UnitPriorityPlanner, contextual/baseline evaluators, StrategicActionExecutor, AntiLoopEngine, DecisionHistory, TftEngine observation builder, pybind, PPO rollout, replay and checkpoint lineage.
 6. **Objective validation:** source paths and callsites were traced for the five entity families; entity count remains 17; no runtime file, PPO input, mask, reward, checkpoint or tensor layout was changed.
 
-**Next required proof:** reconcile these findings with the source-map and projection matrix, complete repository-wide producer/copy/sequence callsite checks, and verify each field's Python/Trainer exposure independently. #346 remains open until every entity field is classified and all required identity, completeness, provenance, sequence and reset criteria are evidenced.
+**Next required proof:** reconcile these findings with the source-map and projection matrix, close remaining implicit copy/lifecycle semantics and field-level producer/sequence gaps, and verify each field's Python/Trainer exposure independently. Explicit tracked Python/C++ identity and test-hook references are already inventoried. #346 remains open until every entity field is classified and all required identity, completeness, provenance, sequence and reset criteria are evidenced.
 
 
 ## Consolidated producer coverage matrix — 2026-11-15
