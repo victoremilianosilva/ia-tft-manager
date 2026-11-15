@@ -269,7 +269,7 @@
         "entities.board[].unit.traits",
         "entities.bench[].unit.traits"
       ],
-      "identity": "trait_id + trait catalog fingerprint",
+      "identity": "trait_id + champion catalog fingerprint/order (fingerprint not currently emitted)",
       "scope": [
         "catalog version"
       ],
@@ -277,7 +277,28 @@
         "catalog",
         "derived_player_state"
       ],
-      "invariant": "Observed unit trait membership differs from active count, completed trait, core trait and strategic focus."
+      "invariant": "Observed unit trait membership differs from active count, completed trait, core trait and strategic focus.",
+      "status": "native_catalog_membership_and_milestones; derived aggregates with distinct scopes; structured sequence-bound entity not produced",
+      "producer_paths": [
+        "cpp/include/lobby/TftEngine.hpp::ChampionDefinition::traits",
+        "cpp/include/lobby/TraitMilestones.hpp::load_trait_milestones",
+        "cpp/src/lobby/TftEngine.cpp::Impl::build_observations",
+        "cpp/src/lobby/TftEngine.cpp::Impl::update_strategy",
+        "cpp/include/strategy/SynergyCounter.hpp::count_unique_champion_traits"
+      ],
+      "gaps": [
+        "PPO build_observations counts catalog traits across board and bench, but its count_traits path does not include item.grants_trait.",
+        "StrategyInfo::active_traits is a distinct board-only count that unions catalog traits and item-granted traits once per UnitInstance.",
+        "Owned trait/core-trait counts use board plus bench and item-granted traits; core_traits is a derived top-three preference, not active trait state.",
+        "The SynergyCounter reward helper deduplicates by champion_internal_id, so duplicate physical copies contribute once; it is not equivalent to per-copy active trait counts.",
+        "Trait milestone levels, core_traits, composition_direction and focus weights are distinct derived/strategic signals and must not be collapsed.",
+        "PPO trait features are fixed numeric aggregates; no typed trait entity, field provenance, source sequence or catalog fingerprint/order envelope is delivered.",
+        "observation_trait_names is derived from champion catalog iteration; the ordering is not emitted as a separately versioned catalog contract."
+      ],
+      "delivery": {
+        "diagnostic": "StrategyInfo exposes active_traits/core_traits/direction/focus diagnostics with different scopes; no dedicated sequence-bound structured trait entity collection was established in the audited snapshot path.",
+        "ppo": "Fixed numeric trait blocks: board+bench catalog membership counts divided by five and clamped; item-granted traits and typed provenance/sequence/catalog fingerprint are absent from this projection."
+      }
     },
     {
       "kind": "position",
@@ -285,7 +306,7 @@
         "entities.board[].unit.position",
         "derived_context.positioning"
       ],
-      "identity": "(match,player,board_slot,source_sequence)",
+      "identity": "(engine_match_id, player_id, board_slot_index, source_sequence); canonical hex coordinate identity unavailable",
       "scope": [
         "one board snapshot"
       ],
@@ -293,8 +314,24 @@
         "board_spatial_state"
       ],
       "gaps": [
-        "Position map has no explicit coordinate, orientation, row/column/front-back contract."
-      ]
+        "The 28-slot board is interpreted internally as a 4x7 rectangular grid using slot / 7 and slot % 7; this does not prove canonical TFT hex coordinates, adjacency, orientation or enemy-facing semantics.",
+        "StrategicPositionSnapshot carries champion IDs rather than physical UnitInstance UUIDs; duplicate copies are ambiguous and skipped.",
+        "Role evidence is populated from active->candidate.units, not from a proven lineup.selected_board/entries/exits/deferred_target_ids integration chain.",
+        "Proposal searches empty targets only and does not perform implicit swaps; exact source/target slot and current native mask checks are present.",
+        "The proposal is read-only and does not prove executor acceptance or native action execution.",
+        "PPO receives aggregate positioning score, frontline/backline ratios and role diversity, not structured per-unit spatial entities or positioning proposals.",
+        "The full lineup-to-position-to-executor chain and exact sequence correlation require integrated replay evidence."
+      ],
+      "status": "native_slot_index_and_shadow_proposal; canonical_hex_geometry_and_physical_unit_identity_unverified",
+      "producer_paths": [
+        "cpp/include/strategy/PositioningEngine.hpp::PositioningEngine",
+        "cpp/include/composition_intelligence/StrategicPositionPlanner.hpp::StrategicPositionPlanner",
+        "cpp/src/lobby/TftEngine.cpp::StrategicPositionSnapshot construction"
+      ],
+      "delivery": {
+        "diagnostic": "Shadow proposal DTO carries match/player/round/sequence, composition identity/version, champion ID, role, source zone/slot, target board slot, scores and reason; it lacks physical instance identity.",
+        "ppo": "Aggregate positioning score, frontline/backline ratios and role diversity only; no per-unit spatial record, exact destination proposal or canonical hex coordinate."
+      }
     },
     {
       "kind": "unit_assessment",
@@ -437,6 +474,20 @@
       "to": "unit_instance|shop_offer|board_slot|item_instance",
       "cardinality": "action-kind dependent",
       "temporal": "decision-sequence scoped"
+    },
+    {
+      "from": "unit_instance",
+      "relation": "has_catalog_trait_membership",
+      "to": "trait",
+      "cardinality": "many_to_many",
+      "temporal": "catalog scoped; observed unit membership snapshot scoped"
+    },
+    {
+      "from": "position",
+      "relation": "locates_or_proposes_destination_for",
+      "to": "unit_instance|board_slot",
+      "cardinality": "one_source_to_one_target_per_proposal",
+      "temporal": "proposal sequence and composition-version scoped"
     }
   ],
   "derived_field_requirements": [
@@ -476,7 +527,13 @@
     "Component copies are represented by repeated catalog IDs and aggregate counts only; no physical component-instance identity exists, and PPO count normalization saturates at count 6.",
     "Anvil API/consumer exists, but no producer call was found in the audited TftEngine gameplay reward path; normal PvE rewards grant components/completed items directly.",
     "Anvil option identity is positional only; no anvil ID, option_id, revision, completeness or source sequence is produced.",
-    "Anvil target fit is emitted as one heuristic best-fit maximum per option, not target-specific target_fits records."
+    "Anvil target fit is emitted as one heuristic best-fit maximum per option, not target-specific target_fits records.",
+    "Trait membership, item-granted traits, board-only active counts, board+bench owned counts, reward unique-champion counts, milestone levels and strategic core/focus signals have distinct semantics and must be modeled separately.",
+    "Trait catalog/order fingerprint is not carried with the current fixed PPO trait feature blocks.",
+    "Positioning uses a 4x7 rectangular slot convention; canonical TFT hex coordinates, orientation and adjacency remain unverified.",
+    "StrategicPositionPlanner identifies sources by champion_id, so duplicate physical copies are ambiguous and no UnitInstance UUID is carried.",
+    "The Shadow positioning proposal is not proven to consume the lineup selected_board/entries/exits/deferred_target_ids chain or to be accepted/executed by the executor.",
+    "PPO receives aggregate positioning diagnostics rather than structured per-unit positions and exact destination proposals."
   ],
   "non_goals": [
     "tensor shapes",
@@ -496,6 +553,10 @@
     "Every temporal collection has reset and stale rules.",
     "All schema gaps are explicit and require versioned review before runtime use.",
     "Board and bench slot indices are kept separate from physical unit identity; empty slots remain explicit and positional.",
-    "Shop offer identity is distinct from champion catalog identity, temporary UnitInstance UUID and mutable slot index; offer revision/source sequence is explicit before use."
+    "Shop offer identity is distinct from champion catalog identity, temporary UnitInstance UUID and mutable slot index; offer revision/source sequence is explicit before use.",
+    "Trait counts preserve board versus bench scope, catalog membership versus item-granted membership, physical-copy versus unique-champion semantics, and observed count versus milestone/core/focus derivations.",
+    "Trait feature ordering is bound to an explicit catalog identity/version before structured projection.",
+    "Position slot indices are not described as canonical hex coordinates without a validated orientation/adjacency mapping.",
+    "Position proposals carry exact source and target parameters, physical source identity when unambiguous, exact sequence/composition identity and native mask evidence; proposals remain distinct from executor resolution."
   ]
 }
