@@ -139,3 +139,21 @@ The schema's required fields and hash scope are not weakened. The JSON changes a
 Issue #346 remains open. Gate 7 executable replay/evaluation remains pending. Gate 8 remains blocked pending integrated review of Gates 1–7 and explicit user authorization.
 
 No runtime, tests, training, PPO, observation tensor, action mask, reward, Viewer, Overwolf, checkpoint or historical artifact behavior is changed.
+
+
+
+### 5.1 Live-state envelope identifiers are separate source metadata
+
+The approved Overwolf boundary document describes a canonical live-state envelope containing gameId, sessionId, revision and capturedAt. Their names alone do not prove that they can populate the v2 canonical identity fields:
+
+| Live-state field | Safe interpretation from the current main-repository contract | v2 treatment |
+|---|---|---|
+| gameId | Game/product identifier; per-match uniqueness semantics are not established by this document | Do not map to match_id until the producer contract proves it identifies one logical match |
+| sessionId | Overwolf capture/transport session identifier | Preserve as source-session metadata; do not alias it to Viewer session_match_id without an explicit correlation contract |
+| revision | Source-state revision within its declared capture/session scope | Preserve as a typed GEP/live-state source reference; not an Engine decision or observation-snapshot sequence |
+| capturedAt | Capture timestamp | Audit metadata only; not a sequence and not part of the decision identity hash |
+| local-player index | Source-local player position/index | Map to player-N only after the source contract proves the same 0–7 seat semantics and scope |
+
+The native import boundary must preserve these source identifiers independently from ViewerSession identity and native Engine episode metadata. A future source-to-Engine correlation record may relate them, but must retain both original typed references and must not rewrite a game/product ID or capture revision as an Engine identity.
+
+gameId may become a valid match_id only if the authoritative GEP/live-state producer proves per-match uniqueness, lifecycle across reconnects, reset behavior and transport preservation. Until then, match_id remains unavailable for canonical v2 identity.
