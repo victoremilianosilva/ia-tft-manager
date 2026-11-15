@@ -79,14 +79,14 @@ The disposition column is a conservative eligibility decision, not a tensor assi
 | `strategic_evidence.commitment_context.direction_id` | available | derived | strategic evidence encoder | canonical strategic evidence candidate; actor/critic allocation and formula-level provenance require review |
 | `strategic_evidence.commitment_context.direction_identity` | available | derived | strategic evidence encoder | canonical strategic evidence candidate; actor/critic allocation and formula-level provenance require review |
 | `strategic_evidence.commitment_context.progression_plan` | not_produced | inferred | strategic/economic context encoder | unavailable/unknown; do not project as a value |
-| `strategic_evidence.owned_unit_assessments` | available | derived | strategic/entity encoder | canonical strategic evidence candidate; actor/critic allocation and formula-level provenance require review |
-| `strategic_evidence.anchor_candidates` | available | estimated | strategic evidence encoder | canonical strategic evidence candidate; actor/critic allocation and formula-level provenance require review |
+| `strategic_evidence.owned_unit_assessments` | available_shadow_only | derived | StrategicSharedContext.owned_units / UnitPrioritySnapshot | Shadow-only champion-keyed/per-slot assessments; no UUID-backed instance identity or structured PPO delivery; formula/version and duplicate-copy semantics block projection |
+| `strategic_evidence.anchor_candidates` | available_shadow_only | estimated | NativeStrategicCompositionGenerator plus distinct Unified direction/pivot producers | Shadow-only; no stable candidate_id/revision or complete set envelope; keep separate from active direction and pivot state |
 | `strategic_evidence.candidate_generation` | available | observed | strategic evidence encoder | diagnostic only; exclude from PPO input pending separate justification |
 | `strategic_evidence.completed_traits` | available | derived | strategic evidence encoder | canonical strategic evidence candidate; actor/critic allocation and formula-level provenance require review |
 | `strategic_evidence.commitment_context.core_unit_ids` | available | derived | strategic evidence encoder | canonical strategic evidence candidate; actor/critic allocation and formula-level provenance require review |
 | `strategic_evidence.commitment_context.composition_locked` | not_available | derived | strategic evidence encoder | unavailable/unknown; do not project as a value |
 | `derived_context.action_opportunity.items` | not_produced | estimated | action candidate context encoder | candidate/action-opportunity context; withhold until candidate producer and completeness contract are proven |
-| `legal_state_context.anti_loop_state` | available_but_not_projected | observed | critic legal-context encoder | critic history/context candidate; exact masks remain a separate side input |
+| `legal_state_context.anti_loop_state` | available_but_not_projected | observed | internal AntiLoopHistory; no ordered-history Python binding | Critic-only is target intent, not current delivery; require match/player/decision-sequence identity; exact masks remain separate |
 | `legal_state_context.mask_reference` | not_correlated | observed | actor and critic legal-context encoders | contract/control metadata; validate or bind vocabularies, not a learned scalar feature |
 | `shadow_recommendations` | available_shadow_only | recommended | diagnostic channel only | diagnostic only; exclude from PPO input pending separate justification |
 | `strategic_evidence.focus_weights` | not_produced | inferred | strategic evidence encoder | unavailable/unknown; do not project as a value |
@@ -193,3 +193,14 @@ Catalog IDs, content hashes, and order hashes bind categorical/entity vocabulari
 ## Follow-up decision matrix
 
 The proposed [Observation Projection Consumer Matrix v1](observation-projection-consumer-matrix.v1.draft.md) refines this audit into one primary disposition for each of the 77 semantic source-map fields and extends the 66-entry legacy crosswalk with target consumer intent. This follow-up remains a proposal: it does not approve tensor encoding, normalization, shape, offsets or architecture. The current audit remains the evidence inventory; the matrix is the proposed semantic consumer decision layer.
+
+
+## Source-backed producer caveats for strategic and temporal fields
+
+The consumer dispositions above describe proposed target consumers, not current runtime delivery. The latest producer audit establishes:
+
+- Unit assessments are not physical-instance entities: current strategic records lack UnitInstance UUID and are either per-slot champion-keyed records or champion-aggregated priorities.
+- Anchor candidates are Shadow evidence proposals without stable candidate IDs/revisions or complete candidate-set status. Direction discovery, active direction anchors and pivot candidates remain distinct.
+- The action-opportunity parent collection is not populated; child sell-value/affordability values remain withheld until a complete authoritative candidate set exists.
+- Action-memory count and board-slot ages are delivered as flat PPO features, but they are not a typed decision history.
+- Anti-loop history is not currently delivered to the Critic. The Critic-only disposition is future consumer intent; native anti-loop behavior continues to affect the independent legality/mask path.
