@@ -393,7 +393,8 @@
             "string",
             "null"
           ],
-          "description": "Participant seat/index within the scoped Engine episode. Not a persistent user/player identity."
+          "description": "Episode-local native player seat index encoded as the canonical string player-0 through player-7. This is not a persistent user/player UUID.",
+          "pattern": "^player-[0-7]$"
         },
         "round": {
           "type": [
