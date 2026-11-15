@@ -1,6 +1,6 @@
 # PPO Architecture and Checkpoint Contract v1
 
-**Status:** approved documentary specification; loader migration and executable acceptance remain blocked until Gate 8 and explicit authorization  
+**Status:** approved documentary specification; Gate 8 is authorized, while loader migration and executable acceptance remain gated by their implementation stages  
 **Contract ID:** `tft.ppo-checkpoint.v1`  
 **Target architecture:** `new-arquiteture`  
 **Related issues:** #286, #288, #287, #294, #295  
@@ -23,7 +23,7 @@ Non-goals:
 - No automatic semantic migration is approved here.
 - No existing checkpoint may be rewritten, upgraded in place, or deleted.
 - No change to PPO clipping, GAE, masks, action dimensions, reward values, or Engine rules is authorized.
-- Shadow recommendations, confidence, or planner outputs are not imitation targets and do not become PPO labels by inclusion in metadata.
+- TFT Strategic Engine recommendations, confidence, or planner outputs are not imitation targets and do not become PPO labels by inclusion in metadata.
 
 ## 2. Audited current architecture (baseline, not normative v1)
 
@@ -64,7 +64,7 @@ The following constraints are normative for the future architecture:
 
 1. **Projection first:** freeze a deterministic tensor projection before freezing encoder dimensions, following [Observation Tensor Projection Contract v1 — Design Requirements](observation-tensor-projection-contract.v1.draft.md). It must declare every feature ID, source field, provenance/status handling, units, normalization, offset/shape, formula version, and consumer (board encoder, global/context encoder, candidate scorer, actor, critic, or diagnostics). A schema field is not automatically a PPO tensor feature. The current schema projection envelope and source/legacy maps do not constitute a populated target projection.
 2. **Canonical strategic/economic context:** future PPO inputs may include validated factual/evidence fields from the canonical owners, including direction/commitment and active-composition context, unit/pair/upgrade evidence, progression, economic posture, opportunity costs, survival/pressure and uncertainty. Each field must preserve owner, identity/version and exact source sequence. Distinct concepts remain distinct; direction, active composition, pivot candidate, focus, core traits, posture and progression must not be collapsed into a legacy strategy enum.
-3. **No recommendation imitation:** exclude `shadow_recommendations`, evaluator scores/rankings/confidence, baseline recommendations, executor resolutions, and the diagnostic-only `unified_state_machine` from PPO observation features, labels, reward targets and imitation losses. Canonical owner-produced evidence may be consumed as context after provenance/sequence validation; Shadow recommendations remain diagnostics.
+3. **No recommendation imitation:** exclude `shadow_recommendations`, evaluator scores/rankings/confidence, baseline recommendations, executor resolutions, and the diagnostic-only `unified_state_machine` from PPO observation features, labels, reward targets and imitation losses. Canonical owner-produced evidence may be consumed as context after provenance/sequence validation; TFT Strategic Engine recommendations remain diagnostics.
 4. **Actor and action contract:** retain the independent Action Contract boundary. The actor may use an autoregressive/conditional factorization, but every output distribution and argument mapping must be explicitly identified against the action catalog. Item heads remain separately identified from the six-integer transport record. Observation projection changes must not silently alter action IDs, argument meanings or dimensions.
 5. **Mask side inputs:** the actor must use the exact decision-correlated masks at every conditional head. The future critic must receive the exact masks as a separate correlated side input/context, as required by Action/Mask Contract v1; masks are not copied into the observation tensor or treated as game strategy. The Engine remains final legality authority.
 6. **Critic/value semantics:** declare whether actor and critic share an encoder, partially share encoders, or use separate encoders. Declare value-head inputs, reward/return semantics, mask context, and any recurrent/history state. Do not infer this choice from the current shared latent.
@@ -290,7 +290,7 @@ These are deliberately sequenced before any PPO runtime implementation. Gate 8 a
 
 **New responsibility:** the Observation Schema and tensor projection define semantic input identity; the PPO architecture contract defines encoder, actor, critic and head identities; Action/Mask Contract defines action and mask semantics; Reward Contract defines value targets and temporal attribution. The checkpoint manifest records the complete combination.
 
-**Contract and invariants:** no legacy offset, strategy enum, hard-coded reserve formula, candidate slot index, or shared latent is automatically normative. Canonical owner-produced evidence may be used only with identity/provenance/sequence validation. Shadow recommendations, evaluator outputs and diagnostic Unified Shadow state are excluded from PPO inputs and targets. Actor and critic mask requirements follow the independent Action/Mask Contract. The exact architecture family remains undecided until projection and controlled ablations are complete.
+**Contract and invariants:** no legacy offset, strategy enum, hard-coded reserve formula, candidate slot index, or shared latent is automatically normative. Canonical owner-produced evidence may be used only with identity/provenance/sequence validation. TFT Strategic Engine recommendations, evaluator outputs and diagnostic Unified TFT Strategic Engine state are excluded from PPO inputs and targets. Actor and critic mask requirements follow the independent Action/Mask Contract. The exact architecture family remains undecided until projection and controlled ablations are complete.
 
 **Cross-component impact:** Observation Schema/projection, PPO policy/critic, Action/Mask, Reward/GAE, checkpoint loader/manifest, replay and evaluation. This change is documentary only.
 
