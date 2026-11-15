@@ -77,3 +77,8 @@ The existing CSV is intentionally conservative. Where a field is declared in the
 ## Schema v2 nested field crosswalk — 2026-11-15
 
 The [Schema v2 Field-to-Source Crosswalk](observation-schema-v2-field-source-crosswalk.v1.draft.md) enumerates 223 data paths under entities, derived_context, strategic_evidence and legal_state_context against the 77-entry source map: 43 exact matches, 164 ancestor/family matches and 16 paths with no source-map entry. Parent/family matches are explicitly not treated as field-level proof; Python and PPO delivery remain unestablished by the source map.
+
+
+## Unmapped field dispositions — 2026-11-15
+
+The [Schema v2 Unmapped Field Dispositions](observation-schema-v2-unmapped-field-dispositions.v1.draft.md) classifies all 16 paths without a source-map match as not-produced, Shadow-only, diagnostic-only, unverified, not-correlated or static contract metadata. This classification supplements but does not rewrite the mechanical match result.
