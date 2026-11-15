@@ -132,3 +132,17 @@ Issue #289 remains open for integrated multi-round replay. Issue #295 remains op
 5. **Cross-component impacts:** TFTEngine, CompositionIntelligencePlayerRuntime, StrategicContextBridge, UnifiedStrategicStateMachine/Recorder, ViewerSession, CppTFTLobbyWrapper, Trainer, RolloutBuffer, policy, checkpoint and evaluation tooling.
 6. **Objective validation:** each existing sequence, reset, persistence and replay mechanism is mapped to source; missing cross-boundary identities and the Viewer completeness predicate are explicitly identified; no runtime changes.
 
+
+
+
+## Viewer/Engine identity scope clarification — 2026-11-15
+
+The Viewer-to-Engine mapping described in section 3.3 is an explicit **diagnostic correlation** between a Viewer session UUID and the native numeric episode counter for those records. It is not a globally unique Engine episode identity: independent Engine objects can share the same episode_id, and no Engine-instance scope token is currently produced.
+
+Accordingly:
+- ViewerSession.match_id is session identity and maps to v2 session_match_id.
+- The copied numeric engine_match_id is legacy diagnostic metadata sourced from episode_id; it does not satisfy canonical v2 engine_match_id.
+- The current identity_complete predicate remains too weak for canonical identity and does not prove Engine scope or a typed decision sequence.
+- A v2 adapter must preserve the legacy values as session/episode metadata and leave canonical identity incomplete until authoritative match_id and scoped engine_match_id producers exist.
+
+See [Observation Schema v2 Identity Field Semantics Reconciliation](observation-schema-v2-identity-field-semantics-reconciliation.v1.draft.md). No runtime changes are made.

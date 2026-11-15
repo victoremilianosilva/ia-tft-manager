@@ -392,3 +392,16 @@ The structured entity producer audit now distinguishes the actual new-architectu
 - PPO receives flat temporal action-memory scalars, not a typed decision history. Anti-loop history remains internal; Python exposes aggregate anti-loop metrics only. Exact action masks remain separate legality inputs.
 
 These findings supersede any interpretation that champion-keyed assessments are physical-unit entities, that composition identity is a candidate-set identity, or that anti-loop metrics constitute delivery of ordered history.
+## UnitInstance UUID producer correction — 2026-11-15
+
+The earlier “Producer-backed identity correction — 2026-11-14” contains a statement that is now superseded by the later source audit. The header comment in TftEngine.hpp is stale: UnitInstanceFactory::create() calls generate_uuid(), and cpp/src/lobby/UnitInstanceFactory.cpp implements the UUID-shaped value generation. Successful factory creation therefore does produce a non-empty UUID in the audited path.
+
+The corrected status is:
+
+- **Raw UUID production:** native observed; the factory producer is implemented.
+- **UUID scope/uniqueness:** unverified as canonical physical identity; deterministic same-seed reset and independent same-seed Engine instances can repeat the sequence; no match/player namespace or collision registry exists.
+- **Object lifecycle:** moves/ownership transfers preserve the UUID in the audited paths; UnitInstance is implicitly copyable, so ordinary copies preserve UUID; complete ownership/copy/destruction acceptance remains open.
+- **Python/diagnostic delivery:** audit snapshot exposes UUID to Python; this is diagnostic delivery, not typed PPO observation or RolloutBuffer delivery.
+- **Schema v2 mapping:** do not treat raw UUID as a globally stable instance_id. A scoped identity is still required.
+
+This addendum supersedes only the claim that generation was not implemented. It does not upgrade UUID to canonical cross-match identity or change any runtime behavior.
