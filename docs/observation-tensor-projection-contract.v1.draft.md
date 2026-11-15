@@ -1,7 +1,7 @@
 # Observation Tensor Projection Contract v1 — Design Requirements
 
-**Status:** draft design requirements; no concrete tensor projection or encoder architecture is approved.  
-**Scope:** documentary contract only. Runtime projection, PPO, Engine, masks, rewards, training, Viewer, and checkpoints remain unchanged until Gate 8 and explicit authorization.  
+**Status:** design requirements; Stage 0 projection inventory exists, but concrete tensor layout and encoder architecture are not yet approved.  
+**Scope:** documentary contract only. Stage 0 is design-only. Runtime projection, PPO, Engine, masks, rewards, training, Viewer, and checkpoints remain unchanged until the relevant staged acceptance gates.  
 **Depends on:** Observation Schema v1, Action / Mask Contract v1, Reward Contract v1, Strategic Ownership and Integration Contract v1, and PPO Architecture and Checkpoint Contract v1.
 
 ## 1. Purpose and boundary
@@ -84,9 +84,9 @@ The projection must map each feature to its intended consumer without assuming t
 - Any additional critic state/history context is separately identified, sequenced, and versioned.
 - Action masks retain their independent action/legality ownership. The Engine remains final legality authority.
 - PPO may consume validated factual/evidence fields from canonical strategic, composition, unit, and economic owners as context.
-- Shadow recommendations, evaluator scores/rankings/confidence, baseline recommendations, executor resolutions, and diagnostic-only Unified Strategic State Machine outputs are excluded from PPO observation features, labels, reward targets, and imitation losses.
+- TFT Strategic Engine recommendations, evaluator scores/rankings/confidence, baseline recommendations, executor resolutions, and diagnostic-only Unified Strategic State Machine outputs are excluded from PPO observation features, labels, reward targets, and imitation losses.
 
-A feature that is available only behind a diagnostic/Shadow feature flag must carry that availability condition. Its absence must not be silently substituted by a baseline recommendation or legacy alias.
+A feature that is available only behind a diagnostic/TFT Strategic Engine feature flag must carry that availability condition. Its absence must not be silently substituted by a baseline recommendation or legacy alias.
 
 ## 6. Temporal and history representation
 
@@ -134,7 +134,7 @@ Only after this review may the projection be frozen and used to choose encoder d
 
 ## 9. Current audit disposition
 
-The current repository provides a strong semantic foundation and legacy migration evidence, but it does not yet provide the concrete target projection required by this contract. Inventory correction: the current source map contains 77 entries (50 available, 17 not produced, 2 not available, 1 available but not projected, 1 not correlated, 4 available Shadow-only, and 2 marked derived); the prior 97-entry count was incorrect. These are source-map entry statuses, not a count of all schema leaf fields.
+The current repository provides a strong semantic foundation and legacy migration evidence, but it does not yet provide the concrete target projection required by this contract. Inventory correction: the current source map contains 77 entries (50 available, 17 not produced, 2 not available, 1 available but not projected, 1 not correlated, 4 available TFT Strategic Engine diagnostic-only, and 2 marked derived); the prior 97-entry count was incorrect. These are source-map entry statuses, not a count of all schema leaf fields.
 
 | Artifact | What it establishes | What it does not establish |
 |---|---|---|
@@ -152,7 +152,7 @@ The current repository provides a strong semantic foundation and legacy migratio
 1. **Prior problem:** the approved semantic schema and historical feature/migration maps could be mistaken for a complete target tensor projection. The schema's projection envelope did not require all per-feature encoding, normalization, missingness, catalog, temporal, and actor/critic consumer details.
 2. **Technical rationale:** tensor shape compatibility does not establish semantic compatibility. The new lineage must preserve typed evidence and provenance while separating actor/critic inputs and exact action masks.
 3. **New responsibility:** this document defines the minimum design and acceptance requirements for a concrete tensor projection. Observation Schema owns semantic meaning; the projection manifest owns tensor representation; PPO architecture owns encoder/actor/critic structure; Action / Mask owns masks and legality; checkpoint manifest records the complete identities.
-4. **Contract and invariants:** no legacy offsets or encodings are inherited by default; every feature has stable identity, source, validity, unit, encoding, normalization, shape/order, and consumer; missingness is distinct from zero; masks remain separate; Shadow recommendations never become PPO targets.
+4. **Contract and invariants:** no legacy offsets or encodings are inherited by default; every feature has stable identity, source, validity, unit, encoding, normalization, shape/order, and consumer; missingness is distinct from zero; masks remain separate; TFT Strategic Engine recommendations never become PPO targets.
 5. **Cross-component impact:** Observation Schema and source/migration maps, PPO actor/critic, Action / Mask, Reward/GAE, checkpoint lineage, replay, and evaluation. Documentary only; no runtime wiring or architecture family is selected.
 6. **Objective validation:** compared the machine-readable schema's projection envelope, 77-entry source map, 66-feature legacy map, 66/66 migration crosswalk, and PPO checkpoint requirements. Confirmed that these artifacts do not contain a populated target tensor layout. Concrete projection and executable validation remain pending.
 

@@ -2,6 +2,12 @@
 
 Esta documentação descreve o código presente no repositório, separando arquitetura, contratos e funcionalidades. Os diagramas do viewer foram movidos para [assets](assets/).
 
+### Gate 8 — Stage 0 projection design
+
+- [Stage 0 Observation Projection Design v1](stage0-observation-projection-design.v1.draft.md) — initial semantic projection groups, Actor/Critic boundaries, identity and review criteria.
+- [Observation Projection Manifest v1 (machine-readable)](../spec/observation-projection-manifest.v1.draft.json) — 77-field inventory derived from the approved semantic consumer matrix; not yet a frozen tensor layout.
+- [Implementation Issue Roadmap v1](implementation-issue-roadmap.v1.draft.md) — ordered issue dependencies and staged execution plan.
+
 ## Fonte normativa da arquitetura canônica
 
 Para decisões de arquitetura e implementação da nova linhagem, use primeiro os contratos aprovados e os artefatos versionados abaixo. Os documentos de comportamento atual/legado continuam úteis como evidência histórica, mas não substituem esses contratos.

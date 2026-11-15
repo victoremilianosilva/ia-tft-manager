@@ -1,6 +1,6 @@
 # PPO Architecture and Checkpoint Contract v1
 
-**Status:** approved documentary specification; loader migration and executable acceptance remain blocked until Gate 8 and explicit authorization  
+**Status:** approved documentary specification; Gate 8 is authorized, while loader migration and executable acceptance remain gated by their implementation stages  
 **Contract ID:** `tft.ppo-checkpoint.v1`  
 **Target architecture:** `new-arquiteture`  
 **Related issues:** #286, #288, #287, #294, #295  
@@ -23,7 +23,7 @@ Non-goals:
 - No automatic semantic migration is approved here.
 - No existing checkpoint may be rewritten, upgraded in place, or deleted.
 - No change to PPO clipping, GAE, masks, action dimensions, reward values, or Engine rules is authorized.
-- Shadow recommendations, confidence, or planner outputs are not imitation targets and do not become PPO labels by inclusion in metadata.
+- TFT Strategic Engine recommendations, confidence, or planner outputs are not imitation targets and do not become PPO labels by inclusion in metadata.
 
 ## 2. Audited current architecture (baseline, not normative v1)
 
@@ -51,7 +51,7 @@ The audited implementation has the following additional properties:
 - The actor is autoregressive: action type is sampled first, then only the argument distributions required by that action are evaluated. BUY/SELL and candidate-conditioned item decisions use slot-local features; movement and item targets are conditioned on previously selected arguments.
 - The six-integer action record remains `[type, shop_slot, bench_slot, board_target, board_source, board_move_target]`. Item operations use dedicated internal categorical heads (9, 10, 10 and 37 choices) and pack their selected indices into existing record positions. The six base dimensions are therefore not the complete internal head inventory.
 - The critic is currently a single `value_head` over the same fused latent used by the actor. `get_value()` does not currently consume action masks as a side input. This differs from the approved future Action/Mask Contract, which requires the critic to receive the exact correlated masks separately from the observation.
-- The five derived economic features are computed inside `policy.py` from HP, gold, level, round and the legacy strategy one-hot at `obs[10:17]`. Their target-level, reserve, spendable-gold and phase-pressure rules are hard-coded policy-side derivations, not outputs of the canonical `EconomicController` or a validated projection of Shadow strategic ownership.
+- The five derived economic features are computed inside `policy.py` from HP, gold, level, round and the legacy strategy one-hot at `obs[10:17]`. Their target-level, reserve, spendable-gold and phase-pressure rules are hard-coded policy-side derivations, not outputs of the canonical `EconomicController` or a validated projection of TFT Strategic Engine ownership.
 - The current encoder treats most non-board fields as a positional flat vector. The eight candidate features per bench/shop slot are consumed by their position in the tail; their semantic identity, provenance, missingness encoding and stable feature manifest are not carried by the policy itself.
 
 These are facts about the audited baseline only. They are not architecture decisions for the canonical v1 lineage.
@@ -64,7 +64,7 @@ The following constraints are normative for the future architecture:
 
 1. **Projection first:** freeze a deterministic tensor projection before freezing encoder dimensions, following [Observation Tensor Projection Contract v1 — Design Requirements](observation-tensor-projection-contract.v1.draft.md). It must declare every feature ID, source field, provenance/status handling, units, normalization, offset/shape, formula version, and consumer (board encoder, global/context encoder, candidate scorer, actor, critic, or diagnostics). A schema field is not automatically a PPO tensor feature. The current schema projection envelope and source/legacy maps do not constitute a populated target projection.
 2. **Canonical strategic/economic context:** future PPO inputs may include validated factual/evidence fields from the canonical owners, including direction/commitment and active-composition context, unit/pair/upgrade evidence, progression, economic posture, opportunity costs, survival/pressure and uncertainty. Each field must preserve owner, identity/version and exact source sequence. Distinct concepts remain distinct; direction, active composition, pivot candidate, focus, core traits, posture and progression must not be collapsed into a legacy strategy enum.
-3. **No recommendation imitation:** exclude `shadow_recommendations`, evaluator scores/rankings/confidence, baseline recommendations, executor resolutions, and the diagnostic-only `unified_state_machine` from PPO observation features, labels, reward targets and imitation losses. Canonical owner-produced evidence may be consumed as context after provenance/sequence validation; Shadow recommendations remain diagnostics.
+3. **No recommendation imitation:** exclude `shadow_recommendations`, evaluator scores/rankings/confidence, baseline recommendations, executor resolutions, and the diagnostic-only `unified_state_machine` from PPO observation features, labels, reward targets and imitation losses. Canonical owner-produced evidence may be consumed as context after provenance/sequence validation; TFT Strategic Engine recommendations remain diagnostics.
 4. **Actor and action contract:** retain the independent Action Contract boundary. The actor may use an autoregressive/conditional factorization, but every output distribution and argument mapping must be explicitly identified against the action catalog. Item heads remain separately identified from the six-integer transport record. Observation projection changes must not silently alter action IDs, argument meanings or dimensions.
 5. **Mask side inputs:** the actor must use the exact decision-correlated masks at every conditional head. The future critic must receive the exact masks as a separate correlated side input/context, as required by Action/Mask Contract v1; masks are not copied into the observation tensor or treated as game strategy. The Engine remains final legality authority.
 6. **Critic/value semantics:** declare whether actor and critic share an encoder, partially share encoders, or use separate encoders. Declare value-head inputs, reward/return semantics, mask context, and any recurrent/history state. Do not infer this choice from the current shared latent.
@@ -286,11 +286,11 @@ These are deliberately sequenced before any PPO runtime implementation. Gate 8 a
 
 **Prior problem:** the baseline description listed the CNN, MLP, fusion, action heads and value head, but did not make explicit which behaviors were legacy implementation details versus which choices remained open for the canonical PPO lineage. This risked treating positional observation slicing, strategy-derived economic heuristics, a shared actor/critic latent, or shape-compatible heads as approved target architecture.
 
-**Technical rationale:** the new Observation Schema contains richer typed strategic/economic evidence than the legacy flat vector. Its semantic fields must be projected deliberately to consumers. The actor's conditional action distributions and the critic's value context have different contracts; exact masks and provenance must remain correlated without becoming duplicated observation features or Shadow imitation targets.
+**Technical rationale:** the new Observation Schema contains richer typed strategic/economic evidence than the legacy flat vector. Its semantic fields must be projected deliberately to consumers. The actor's conditional action distributions and the critic's value context have different contracts; exact masks and provenance must remain correlated without becoming duplicated observation features or TFT Strategic Engine recommendation imitation targets.
 
 **New responsibility:** the Observation Schema and tensor projection define semantic input identity; the PPO architecture contract defines encoder, actor, critic and head identities; Action/Mask Contract defines action and mask semantics; Reward Contract defines value targets and temporal attribution. The checkpoint manifest records the complete combination.
 
-**Contract and invariants:** no legacy offset, strategy enum, hard-coded reserve formula, candidate slot index, or shared latent is automatically normative. Canonical owner-produced evidence may be used only with identity/provenance/sequence validation. Shadow recommendations, evaluator outputs and diagnostic Unified Shadow state are excluded from PPO inputs and targets. Actor and critic mask requirements follow the independent Action/Mask Contract. The exact architecture family remains undecided until projection and controlled ablations are complete.
+**Contract and invariants:** no legacy offset, strategy enum, hard-coded reserve formula, candidate slot index, or shared latent is automatically normative. Canonical owner-produced evidence may be used only with identity/provenance/sequence validation. TFT Strategic Engine recommendations, evaluator outputs and diagnostic Unified TFT Strategic Engine state are excluded from PPO inputs and targets. Actor and critic mask requirements follow the independent Action/Mask Contract. The exact architecture family remains undecided until projection and controlled ablations are complete.
 
 **Cross-component impact:** Observation Schema/projection, PPO policy/critic, Action/Mask, Reward/GAE, checkpoint loader/manifest, replay and evaluation. This change is documentary only.
 
