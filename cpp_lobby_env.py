@@ -138,6 +138,7 @@ class CppTFTLobbyWrapper:
         ]
         self._last_action_masks = self._copy_action_masks(result.get("action_masks"))
         self._last_snapshot_metadata = {
+            "engine_instance_id": str(result["engine_instance_id"]),
             "episode_id": int(result["episode_id"]),
             "round": 0,
             "stage": 1,
@@ -164,6 +165,7 @@ class CppTFTLobbyWrapper:
         self._last_dones = np.asarray(result["dones"], dtype=np.bool_)
         self._last_action_masks = self._copy_action_masks(result.get("action_masks"))
         self._last_snapshot_metadata = {
+            "engine_instance_id": str(result["engine_instance_id"]),
             "episode_id": int(result["episode_id"]),
             "round": int(result.get("round", 0)),
             "stage": int(result.get("stage", 1)),

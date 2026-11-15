@@ -202,6 +202,7 @@ struct RewardState {
 };
 
 struct ResetResult {
+    std::string engine_instance_id;
     // Row-major: (8, observation_dim).
     std::vector<float> observations;
     std::size_t observation_dim{0};
@@ -432,6 +433,7 @@ struct AntiLoopMetrics {
 
 
 struct StepResult {
+    std::string engine_instance_id;
     // Row-major: (8, observation_dim).
     std::vector<float> observations;
     std::size_t observation_dim{0};
@@ -666,6 +668,7 @@ public:
     std::int64_t pool_total_available() const;
 
     std::size_t observation_dim() const noexcept;
+    std::string engine_instance_id() const;
     std::uint64_t episode_id() const noexcept;
     std::uint32_t round() const noexcept;
     std::uint32_t stage() const noexcept;

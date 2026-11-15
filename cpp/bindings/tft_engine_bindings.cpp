@@ -199,6 +199,7 @@ py::dict reset_to_dict(const tft::ResetResult& reset) {
     result["action_masks"] =
         masks_to_list(reset.action_masks);
 
+    result["engine_instance_id"] = reset.engine_instance_id;
     result["episode_id"] = reset.episode_id;
     result["observation_dim"] = reset.observation_dim;
 
@@ -240,6 +241,7 @@ py::dict step_to_dict(const tft::StepResult& step) {
     result["placement_rewards"] = std::move(placement_rewards);
     result["dones"] = std::move(dones);
     result["lobby_done"] = step.lobby_done;
+    result["engine_instance_id"] = step.engine_instance_id;
     result["episode_id"] = step.episode_id;
     result["round"] = step.round;
     result["stage"] = step.stage;
@@ -776,6 +778,10 @@ PYBIND11_MODULE(tft_engine, module) {
             py::arg("actions"),
             py::arg("timer_enabled") = false,
             py::arg("timer_expired") = false
+        )
+        .def_property_readonly(
+            "engine_instance_id",
+            &TFTEngine::engine_instance_id
         )
         .def(
             "adapt_opgg_compositions_json",

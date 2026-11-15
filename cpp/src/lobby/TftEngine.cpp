@@ -389,6 +389,26 @@ bool should_buy_unit(
     return upgrade_value >= 0.6 || impact > 1.2;
 }
 
+std::string generate_engine_instance_id() {
+    // Random per native Engine object; never derived from seed or episode.
+    std::random_device source;
+    std::array<std::uint8_t, 16> bytes{};
+    for (auto& byte : bytes) {
+        byte = static_cast<std::uint8_t>(source() & 0xffu);
+    }
+    bytes[6] = static_cast<std::uint8_t>((bytes[6] & 0x0fu) | 0x40u);
+    bytes[8] = static_cast<std::uint8_t>((bytes[8] & 0x3fu) | 0x80u);
+    constexpr char hex[] = "0123456789abcdef";
+    std::string result;
+    result.reserve(36);
+    for (std::size_t i = 0; i < bytes.size(); ++i) {
+        if (i == 4 || i == 6 || i == 8 || i == 10) result.push_back('-');
+        result.push_back(hex[(bytes[i] >> 4) & 0x0f]);
+        result.push_back(hex[bytes[i] & 0x0f]);
+    }
+    return result;
+}
+
 } // namespace
 
 // ============================================================
@@ -483,6 +503,7 @@ struct TFTEngine::Impl {
             const PlayerAction& player_action
         );
     };
+    const std::string engine_instance_id{generate_engine_instance_id()};
     std::uint64_t seed{0};
     std::uint64_t episode_id{0};
     std::mt19937_64 matchmaking_rng{0};
@@ -6237,6 +6258,7 @@ ResetResult TFTEngine::reset(
     result.observations = impl_->build_observations();
     result.observation_dim = impl_->observation_dim();
     for (std::size_t i = 0; i < kPlayersPerLobby; ++i) result.action_masks[i] = impl_->player_envs[i].action_masks;
+    result.engine_instance_id = impl_->engine_instance_id;
     result.episode_id = impl_->episode_id;
 
     return result;
@@ -6519,6 +6541,7 @@ StepResult TFTEngine::step(
     for (std::size_t i = 0; i < kPlayersPerLobby; ++i) result.players[i] = impl_->player_envs[i].info;
 
     result.lobby_done = impl_->done;
+    result.engine_instance_id = impl_->engine_instance_id;
     result.episode_id = impl_->episode_id;
     result.round = impl_->round + 1;
     result.stage = impl_->stage;
@@ -7308,6 +7331,14 @@ std::size_t TFTEngine::observation_dim() const noexcept {
 // ============================================================
 // IDENTIFICADOR DO EPISÓDIO
 // ============================================================
+
+std::string TFTEngine::engine_instance_id() const {
+    if (!impl_) {
+        throw std::runtime_error("TFTEngine nao possui estado interno.");
+    }
+    impl_->ensure_open();
+    return impl_->engine_instance_id;
+}
 
 std::uint64_t TFTEngine::episode_id() const noexcept {
     return impl_ ? impl_->episode_id : 0;

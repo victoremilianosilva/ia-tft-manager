@@ -616,3 +616,33 @@ def test_composition_intelligence_emits_per_player_shadow_diagnostics(monkeypatc
             assert "action_recommendation" in record["diagnostics"]
     finally:
         engine.close()
+
+
+
+def test_engine_instance_identity_is_distinct_from_seed_and_episode():
+    first = TFTLobby(seed=2026)
+    second = TFTLobby(seed=2026)
+    try:
+        first_reset = first.reset()
+        second_reset = second.reset()
+
+        first_id = first_reset["engine_instance_id"]
+        second_id = second_reset["engine_instance_id"]
+
+        assert isinstance(first_id, str)
+        assert len(first_id) == 36
+        assert first_id != second_id
+        assert first.engine_instance_id == first_id
+        assert second.engine_instance_id == second_id
+        assert first_reset["episode_id"] == second_reset["episode_id"] == 1
+
+        first_step = first.step([[6, 0, 0, 0, 0, 0] for _ in range(8)])
+        assert first_step["engine_instance_id"] == first_id
+        assert first_step["episode_id"] == first_reset["episode_id"]
+
+        next_reset = first.reset()
+        assert next_reset["engine_instance_id"] == first_id
+        assert next_reset["episode_id"] > first_reset["episode_id"]
+    finally:
+        first.close()
+        second.close()
