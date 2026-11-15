@@ -89,3 +89,8 @@ The [Schema v2 Unmapped Field Dispositions](observation-schema-v2-unmapped-field
 The [Unit Instance, Shop Offer and Shared Pool Lifecycle Follow-up](unit-instance-shop-pool-lifecycle-followup.v1.draft.md) refines the ownership lifecycle and corrects the pool-availability row. It traces shop → bench → board moves, merge identity retention/consumption, sale and elimination cleanup, same-seed reset UUID repetition, implicit value-copy behavior, and the direct TFTEngine/pybind pool-count query.
 
 **Correction:** the previous matrix wording that no authoritative per-champion pool count producer existed was too broad. `UnitPool::available()` and `TFTEngine::pool_available()` provide authoritative native queries, and pybind exposes them. The count is still not part of the immutable observation snapshot or PPO vector, and has no decision-sequence correlation. The shared champion pool is lobby-scoped, not player-owned.
+
+
+## PvE loot versus anvil producer boundary — 2026-11-15
+
+The [PvE Loot and Anvil Gameplay Producer Boundary Audit](anvil-gameplay-producer-boundary-audit.v1.draft.md) corrects a possible overreading of the earlier anvil proof. The Engine has an authoritative round-resolution PvE producer that directly grants components and completed items through `add_component()` and `add_completed_item()`. It does not enqueue an anvil. A scan of the 12 `cpp/src` implementation translation units found no gameplay call to `grant_component_anvil()` or `grant_completed_item_anvil()`. Pending-anvil state, masks, option projection and the conditional consumer remain real, but no audited gameplay producer populates that queue. Direct catalog-ID grants do not establish physical item identity or typed PPO entity delivery.
