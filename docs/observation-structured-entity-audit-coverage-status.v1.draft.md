@@ -25,13 +25,13 @@ This note creates one explicit closure view without upgrading any field's status
 
 | Entity kind | Current evidence status | Principal source-backed evidence | Remaining acceptance gap |
 |---|---|---|---|
-| unit_instance | Native UUID exists; canonical cross-episode identity **unverified** | UnitInstanceFactory lifecycle, copy/test-hook audit, Engine reset/instance-scope audit, Python/C++ call-site inventories | Engine/player scope, collision policy, implicit copy/assignment/destruction proof, elimination cleanup, typed decision correlation |
+| unit_instance | Native UUID exists; canonical cross-episode identity **unverified** | UnitInstanceFactory lifecycle, production transfer map, copy/test-hook audit, Engine reset/instance-scope audit, Python/C++ call-site inventories | Engine-instance + episode scope, collision policy, implicit copy/assignment/destruction and no-duplicate-active-owner proof, elimination item terminal policy/cleanup, typed decision correlation |
 | champion_catalog_entry | Native observed | ChampionCatalog and catalog-backed unit/trait audits | Stable catalog fingerprint and ordering contract in the entity envelope |
 | board_slot | Native slot and occupancy observed | Structured entity producer audit; unit/item field proof; positioning audit | Canonical hex geometry/orientation/adjacency, exact source sequence, structured PPO entity delivery |
 | bench_slot | Native slot and occupancy observed | Structured entity producer audit; unit/item field proof | Exact source sequence and structured PPO entity delivery |
 | shop_offer | Native offer content observed; separate offer identity absent | Shop offer identity/reroll lifecycle audit; UnitInstance and pool lifecycle evidence | Stable offer ID/revision/generation and observation-mask-decision binding |
 | pool_availability | Native shared-pool query observed | UnitPool producer audit and pool-availability correction | Immutable snapshot and exact decision correlation if the schema continues to require it; no current PPO feature |
-| item_instance | Physical item-instance identity **not produced** | ItemEngine ownership, inventory-slot/action binding, elimination-item ownership audits | Physical per-copy ID, typed owner relation, item event sequence, lossless per-copy delivery |
+| item_instance | Physical item-instance identity **not produced** | ItemEngine ownership, inventory-slot/action binding, elimination-item ownership and orphan-observability audits | Physical per-copy ID, typed owner relation, item event sequence, lossless per-copy delivery; eliminated UUID-keyed equipment records require an explicit terminal disposition and audit evidence |
 | item_catalog_entry | Native catalog definition observed | Item catalog/schema/generator and item-fit field proof | Catalog fingerprint/order and typed catalog entity contract |
 | component_inventory | Catalog IDs/multiplicity observed; physical identity not produced | PvE component inventory lifecycle and item inventory-slot/action audits | Physical component identity, acquisition sequence, catalog-order fingerprint |
 | anvil_option | No gameplay producer in audited path; option identity not produced | Anvil gameplay producer-boundary audit; item action policy/native binding; item-fit/anvil proof | Actual gameplay grant producer, stable option IDs, complete option snapshot and sequence |
@@ -124,3 +124,15 @@ These are evidence gates, not instructions to implement missing producers now.
 This is a coverage assessment, not issue closure. Issue #346 remains open. Gate 7 executable replay/evaluation remains pending. Gate 8 remains blocked until the integrated review of Gates 1–7 and explicit user authorization.
 
 No runtime, test, schema implementation, tensor layout, PPO, reward, mask, training, checkpoint, Viewer or Overwolf behavior is changed.
+
+
+## 9. Cross-cutting elimination and audit-status note — 2026-11-15
+
+The elimination follow-up adds two cross-cutting gaps not represented as separate entity kinds in the 17-kind matrix:
+
+- ItemEngine retains UUID-keyed equipment entries after eliminated board/bench UnitInstances are removed; the chosen terminal item policy and exactly-once cleanup remain unresolved.
+- `AuditPlayerSnapshot` has no explicit alive/eliminated field. The separate public-state API exposes it, but consumers need same-episode/snapshot correlation; empty board/bench is not a terminal status.
+
+The pending-anvil mask/executor mismatch is retained only as a future-producer guard: no production anvil enqueue call was found in the audited main gameplay path, the PvE reward path grants inventory items directly, and pybind does not expose an anvil enqueue operation.
+
+The updated CSV remains the field-family index (31 rows, 17 kinds). The new transfer/terminal findings are reflected in its UnitInstance and item_instance rows; this coverage assessment still does not claim canonical acceptance or PPO delivery.
