@@ -437,7 +437,7 @@ Anti-loop logic also participates in native move validation and mask generation.
 
 | Entity family | Current source-backed status | Identity/delivery boundary |
 |---|---|---|
-| Unit assessment | native_derived_champion_aggregate_only | No UUID-backed per-instance assessment; Shadow only, not PPO |
+| Unit assessment | native_derived_champion_keyed_without_physical_identity | No UUID-backed per-instance assessment; Shadow only, not PPO |
 | Anchor candidate | native_derived_shadow_candidate_without_candidate_id | Parent match/player/round/sequence exists; no stable candidate ID/revision or complete set |
 | Action opportunity candidate | not_produced | Source vector remains empty; child values do not prove parent set |
 | Temporal decision history | native_derived_flat_memory_only | Numeric action count/slot ages reach PPO; no typed event history or decision sequence |
