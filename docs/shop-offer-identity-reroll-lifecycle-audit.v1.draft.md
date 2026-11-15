@@ -3,7 +3,7 @@
 **Status:** source-backed static audit; documentation only.  
 **Tracking:** [Issue #346](https://github.com/victoremilianosilva/ia-tft-manager/issues/346).  
 **Base:** `new-arquiteture`.  
-**Related:** [Board/Bench/Shop Producer Audit](board-bench-shop-producer-audit.v1.draft.md); [Unit Instance Copy and Test Hook Audit](unit-instance-copy-test-hook-audit.v1.draft.md); [Native Engine Instance and Episode Identity Scope Audit](native-engine-instance-episode-identity-scope-audit.v1.draft.md).
+**Related:** [Board/Bench/Shop Producer Audit](observation-structured-entity-producer-audit.v1.draft.md); [Unit Instance Copy and Test Hook Audit](unit-instance-copy-test-hook-audit.v1.draft.md); [Native Engine Instance and Episode Identity Scope Audit](native-engine-instance-episode-identity-scope-audit.v1.draft.md).
 
 ## 1. Purpose
 
