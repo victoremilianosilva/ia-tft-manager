@@ -126,3 +126,17 @@ The repositories must share versioned schemas and fixtures, not duplicate GEP in
 ## Gate boundary
 
 No runtime, Engine, PPO, observations, masks, rewards, training, Viewer, checkpoint, or artifact changes. This document does not close integration issues or advance a gate. Gate 8 remains blocked until Gates 1–7 are fully reviewed and explicit implementation authorization is given.
+
+
+
+## Live-state source identifiers versus canonical Engine identity
+
+The envelope fields gameId, sessionId, revision and capturedAt are source/capture metadata. They must not be promoted to canonical Decision Identity v2 fields solely because their names look similar:
+
+- gameId is not assumed to identify one match; it must be proven per-match unique before it can populate canonical match_id.
+- sessionId identifies the Overwolf capture/transport session. It is not automatically the ViewerSession UUID or the v2 session_match_id.
+- revision orders source live-state updates within the producer's declared session/scope. It is not the native Engine episode_id, canonical decision_sequence, observation snapshot_sequence, or mask sequence.
+- capturedAt is timestamp metadata, not a substitute for any typed sequence.
+- local-player index may be mapped to the v2 player-N seat token only after the source contract confirms it represents the same 0–7 seat domain.
+
+A native importer must preserve source game/session/revision references and native Engine-instance/episode identity as distinct fields. Any mapping between them must be explicit, versioned, and validated across reconnect, reset, stale delivery and consecutive matches. Missing canonical match_id or engine_match_id keeps the v2 decision identity incomplete; capture-only identifiers cannot make it complete.

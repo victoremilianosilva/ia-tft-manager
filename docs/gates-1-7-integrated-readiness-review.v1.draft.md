@@ -212,9 +212,10 @@ The documentary/source audit has advanced since the first version of this readin
 
 ### Identity envelope semantics are now explicit
 
-- v2 match_id means authoritative logical game-match identity from a validated game/platform source. No such producer is proven in the audited main repository.
+- v2 match_id means authoritative logical game-match identity from a validated game/platform source. The Overwolf boundary's gameId is not yet proven to be per-match unique, so no canonical match_id producer is accepted in the audited main repository.
 - v2 engine_match_id means a canonical Engine-episode scope that distinguishes Engine object lifetime plus episode. The current native episode_id is local to one TFTEngine::Impl and is insufficient alone.
-- ViewerSession UUID maps to session_match_id only. Legacy Viewer diagnostic match_id/engine_match_id fields are not copied directly into a complete v2 identity.
+- ViewerSession UUID maps to session_match_id only. Overwolf sessionId remains source-session metadata, not automatically the Viewer UUID. Legacy Viewer diagnostic match_id/engine_match_id fields are not copied directly into a complete v2 identity.
+- Overwolf revision is a source-state revision, not an Engine decision/snapshot sequence; capturedAt is timestamp metadata.
 - Native episode_id remains local metadata. Native player seat 0–7 is serialized as player-0 through player-7, scoped by engine_match_id, and is not a persistent participant UUID.
 - The v2 JSON Schema and namespace registry descriptions now reflect these meanings. Existing identity hash scope and hash vectors remain unchanged.
 
