@@ -88,3 +88,48 @@ These are future executable acceptance criteria, not tests run by this documenta
 6. **Objective validation:** every current path is tied to source references; retained-map behavior is distinguished from active target reachability; terminal semantic alternatives and required tests are explicit; no runtime or tensor decisions are made.
 
 Issue #346 remains open. This document does not approve Gate 8 or runtime implementation.
+
+
+## 7. Follow-up source and reachability verification — 2026-11-15
+
+### Exact elimination path
+
+The current native path is confirmed in `cpp/src/lobby/TftEngine.cpp`:
+
+1. `eliminate_players()` marks the player dead/eliminated, assigns placement, and calls `return_eliminated_player_units(i)`.
+2. `return_eliminated_player_units()` returns current shop offers, returns champion copies from board and bench to the shared champion pool, and resets those board/bench optionals.
+3. It does **not** call `ItemEngine::return_equipped_to_inventory()`, clear the corresponding UUID entries, or invoke `ItemEngine::reset()`.
+4. The eliminated player's `item_engine` remains owned by its PlayerEnv. `ItemEngine::reset()` is called in the later Engine reset lifecycle, not in this elimination helper.
+5. Consequently, UUID-keyed equipment entries survive after the corresponding UnitInstances have been removed from active board/bench ownership. The entries are orphaned relative to active unit ownership; this does not prove they are exposed as active item targets or transferred to another player.
+
+The exact active-target boundary remains: item-target generation enumerates current board/bench UnitInstances, so removed units are no longer valid active targets through that path. Retained diagnostic/internal map state and active target reachability are distinct.
+
+### Stale source comment
+
+`cpp/include/lobby/TftEngine.hpp` still says “A geração efetiva do UUID será implementada posteriormente.” This is stale: `UnitInstanceFactory::create()` assigns `unit.uuid = generate_uuid()`, and `generate_uuid()` is implemented in `cpp/src/lobby/UnitInstanceFactory.cpp`. This is a documentation/source-comment discrepancy only; no header edit is included here.
+
+### Regression evidence boundary
+
+The inspected `cpp/tests/test_item_engine.cpp` verifies explicit return-to-inventory for a sold/removed UUID and verifies merge transfer. The inspected `cpp/tests/test_tft_engine_pool.cpp` covers pool reset, invalid sale, and item diagnostics/combat propagation, but contains no elimination-specific equipped-item cleanup case and no direct assertion against `return_eliminated_player_units()`. These tests therefore do not establish terminal elimination semantics.
+
+This follow-up narrows the previous finding: retained equipment is confirmed by the implementation path; cross-player transfer is not observed; active target reachability is separate; elimination cleanup is not regression-tested in the inspected test files.
+
+### Updated acceptance criteria
+
+- Equip items on both board and bench units, eliminate the player while other players remain active, and inspect the eliminated PlayerEnv's ItemEngine state.
+- Assert the selected terminal policy explicitly: return items to that eliminated player's own bag before terminal disposal, or retire/clear them; do not transfer to another player.
+- Assert all UUID-keyed entries for eliminated physical units are handled exactly once.
+- Assert removed UUIDs are absent from active item-target enumeration while the match continues.
+- Assert the policy is stable across elimination, full-match completion, reset, and consecutive episodes.
+- Assert audit output distinguishes retained terminal state from active ownership.
+
+## 8. Architecture reconstruction review
+
+1. **Prior problem:** the original audit identified missing cleanup but needed stronger source-path and test-coverage boundaries.
+2. **Technical justification:** elimination happens during a continuing lobby, so waiting for full Engine reset leaves a period where orphaned item state persists; sale and merge semantics cannot be assumed to define elimination.
+3. **New responsibility:** this addendum owns the exact elimination call chain, retained-state reachability, stale UUID comment discrepancy, and elimination-specific test gap.
+4. **Contract/invariants:** champion pool accounting is separate from item ownership; no cross-player transfer; no active target without a live UnitInstance; terminal item policy must be explicit and exactly-once.
+5. **Cross-component impacts:** TFTEngine elimination, PlayerEnv, ItemEngine, UnitInstance, masks/item-target generation, audit snapshot, reset, replay and multi-episode evaluation.
+6. **Objective validation:** call chain traced through native source; item engine reset boundary identified; two relevant test files checked for elimination coverage; no runtime behavior changed.
+
+Issue #346 remains open. Gate 8 remains blocked.
