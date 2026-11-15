@@ -98,4 +98,52 @@ No runtime fix is proposed or authorized by this document. The exact implementat
 5. **Cross-component impacts:** `viewer/session.py`, native `TFTEngine::episode_id`, Composition Intelligence diagnostics, Unified sidecar, Viewer replay, wrapper observation/mask delivery, PPO rollout identity and Gate 7 replay.
 6. **Objective validation:** the Viewer constructor/load/close lifecycle, UUID creation, event emission, diagnostic envelope and exact completeness predicate are traced; the missing Engine-ID and boolean-type defects are recorded; no runtime or tensor change is made.
 
+
+## 6. Native wrapper and PPO rollout source trace
+
+The current Python/native boundary reinforces the correlation gap:
+
+- `CppTFTLobbyWrapper.reset()` calls native `_engine.reset(seed)` but returns only `result["observations"]` as a float32 array. Any native episode identity in the reset result is not propagated by this wrapper return value.
+- `CppTFTLobbyWrapper.step()` calls native `_engine.step(...)`, then constructs a restricted `info` dictionary from players, round, stage, lobby completion, events and reward components. It returns observations, rewards, done and this info; it does not propagate an Engine episode ID or typed decision identity.
+- `CppTFTLobbyWrapper.get_action_masks()` is a separate native call. The wrapper does not attach a match/episode/decision identity to the returned mask object.
+- `LobbyVectorEnv.reset()` stacks only the observation arrays. `LobbyVectorEnv.step()` stacks observations/rewards/dones and forwards per-lobby info; it does not introduce an identity envelope.
+- `RolloutBuffer` allocates and stores observations, actions, log probabilities, rewards, dones, values, validity and mask tensors. Its `add()` contract has no match ID, Engine episode ID, player ID, round, decision ID or typed producer-sequence argument/field.
+- The existing PPO audit separately establishes that Trainer obtains masks through `env_method("get_action_masks")`, stores them alongside the transition, and uses them for Actor policy evaluation; this does not prove that the mask belongs to the exact observation/decision by identity.
+
+This confirms a loss of native episode identity at the Python wrapper boundary and absence of transition identity in the current rollout data model. It is not merely a Viewer logging limitation.
+
+## 7. Cross-component findings
+
+| Boundary | Current behavior | Missing proof |
+|---|---|---|
+| TFTEngine reset → wrapper reset | Native result is reduced to observations | Episode ID not returned to Python caller |
+| TFTEngine step → wrapper step | Native result reduced to observations/rewards/dones and selected info | Episode/decision identity not retained in info |
+| Native masks → Trainer | Separate `get_action_masks()` call | No identity binding to observation |
+| Vector environment → Trainer | Arrays and per-lobby info | No stable Engine/session/player/round envelope |
+| Trainer → RolloutBuffer | Tensor transition and masks | No typed source identity in stored transition |
+| Viewer → Composition diagnostics | Viewer UUID plus native Engine ID on that diagnostic path | Not propagated to every event/observation/mask/rollout |
+
+The required identity propagation must be designed as one explicit contract across these boundaries after Gate 8. Do not solve this by copying the Viewer UUID into a field named `engine_match_id`, by using the rollout tensor index as a decision ID, or by assuming separately fetched masks are current because they were fetched immediately before inference.
+
+## 8. Updated post-Gate-8 proof
+
+In addition to the Viewer-specific tests above, the integrated acceptance must:
+1. preserve native Engine scope and episode identity through wrapper reset and step results;
+2. bind each observation and mask snapshot to the same immutable decision identity;
+3. preserve identity through vectorization, action selection, reward attribution and RolloutBuffer storage/minibatch indexing;
+4. prove per-player identity under multi-lobby flattening and terminal lobby reset;
+5. reject missing, stale, mismatched or cross-episode masks and transitions;
+6. demonstrate joins from a rollout transition to native state, Viewer diagnostics and the correct Engine episode without relying on timestamps or array adjacency.
+
+No implementation is performed here.
+
+## 9. Architecture reconstruction review
+
+1. **Prior problem:** the Viewer correlation predicate was known to be incomplete, but the native wrapper and rollout boundary also needed a direct source trace to establish where Engine episode identity is dropped.
+2. **Technical justification:** wrapper reset/step expose arrays and selected metadata, while RolloutBuffer persists tensors without identity fields; masks are fetched separately and have no decision binding.
+3. **New responsibility:** this document now owns the source-backed Viewer session lifecycle, diagnostic correlation predicate, wrapper identity boundary and rollout identity gap.
+4. **Contract and invariants:** preserve Viewer and Engine namespaces; never infer mask/observation pairing from call order; never infer transition identity from tensor position; keep every player/lobby/episode scope explicit.
+5. **Cross-component impacts:** `viewer/session.py`, `cpp_lobby_env.py`, `vector_lobby_env.py`, `trainer.py`, `rollout.py`, TFTEngine native reset/step results, masks, replay and PPO.
+6. **Objective validation:** Viewer UUID/event lifecycle, diagnostic envelope predicate, wrapper reset/step return shape, vector adapter and RolloutBuffer storage fields are traced; missing identity propagation is explicit; no runtime or tensor change is made.
+
 Issue #346 remains open. Gate 7 executable acceptance remains pending. Gate 8 remains blocked.
