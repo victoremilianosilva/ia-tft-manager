@@ -46,7 +46,7 @@ Current crosswalk status after these passes:
 
 The 31 unit/item pass deliberately distinguishes diagnostic snapshot delivery from PPO delivery. Structured UUID/champion/item identifiers in the audit snapshot are not treated as PPO tensor inputs. The 16 unmapped dispositions preserve unavailable/not-produced distinctions rather than manufacturing data.
 
-Next work: continue the remaining 83 ancestor-only paths and validate the 43 exact matches at callsite level, then trace Python/vector-environment/rollout-buffer/Actor/Critic delivery. Issue #346 remains open.
+Next work: continue the remaining 63 ancestor-only paths and validate the 43 exact matches at callsite level, then trace Python/vector-environment/rollout-buffer/Actor/Critic delivery. Issue #346 remains open.
 
 ### Additional field-level proof — 2026-11-15
 
@@ -56,13 +56,19 @@ The [Item Fit, Anvil and Unit Role Field Proof](observation-schema-v2-item-fit-a
 - positional option IDs and aggregate anvil fit from stable option identity and per-target fit records;
 - slot-aligned role/item/recipe feature matrices from typed unit, item, recipe and target identities.
 
-Cumulative ancestor-path progress: 81 of 164 ancestor-mapped paths now have field-level dispositions; 83 remain. The 43 exact matches and 16 no-match paths are unchanged. This is a documentation audit, not an Actor/Critic leaf-delivery proof.
+Cumulative ancestor-path progress: 101 of 164 ancestor-mapped paths now have field-level dispositions; 63 remain. The 43 exact matches and 16 no-match paths are unchanged. This is a documentation audit, not an Actor/Critic leaf-delivery proof.
 
 ### Strategic evidence field-level proof — 2026-11-15
 
 The [Strategic Evidence Field Proof](observation-schema-v2-strategic-evidence-field-proof.v1.draft.md) reconciles 31 additional paths across priorities, owned-unit assessments, anchor candidates and candidate-generation diagnostics.
 
 Cumulative ancestor-path progress is now 81 of 164 paths with field-level dispositions; 83 remain. The audit preserves champion-keyed versus physical-unit identity, distinguishes per-slot in-memory assessment from diagnostic serialization, and flags zero-initialized rejection counters as defaults rather than measured zero values. Shadow evidence and PlayerInfo diagnostic fields are not PPO inputs.
+
+### Strategic owner snapshot field proof — 2026-11-15
+
+The [Strategic Owner Snapshot Field Proof](observation-schema-v2-strategic-owner-snapshot-field-proof.v1.draft.md) audits all 20 paths for StrategicPlanner commitment, Composition Intelligence and UnifiedStrategicStateMachine. The owners expose separate internal state and diagnostic artifacts, but no single common owner-snapshot envelope. Diagnostic emission/player sequences are not source decision sequences; phase, status, stale reason and transition reason remain distinct.
+
+Cumulative ancestor-path progress: 101 of 164 paths now have field-level dispositions; 63 remain. No synthetic owner ID, payload path or decision sequence is introduced.
 
 ## 4. The 16 paths without a source-map entry
 
