@@ -149,8 +149,25 @@
       "domain": [
         "shared_pool"
       ],
-      "status": "unavailable_until_authoritative_producer",
-      "invariant": "Never infer pool count from local board, bench or shop."
+      "status": "native_query_only_not_in_observation_snapshot",
+      "invariant": "Never infer pool count from local board, bench or shop.",
+      "producer_paths": [
+        "cpp/include/lobby/UnitPool.hpp::UnitPool::available/initial_count",
+        "cpp/src/lobby/UnitPool.cpp::available/initial_count",
+        "cpp/include/lobby/TftEngine.hpp::TFTEngine::pool_available/pool_initial_count",
+        "cpp/src/lobby/TftEngine.cpp::TFTEngine::pool_available/pool_initial_count/pool_total_available",
+        "cpp/bindings/tft_engine_bindings.cpp::pool_available/pool_initial_count/pool_total_available"
+      ],
+      "delivery": {
+        "native": "Authoritative shared-lobby per-champion current and initial count queries.",
+        "python": "Direct pybind query methods only; not included in CppTFTLobbyWrapper reset/step payload or immutable observation snapshot.",
+        "ppo": "Not delivered to PPO observations or RolloutBuffer."
+      },
+      "gaps": [
+        "No immutable pool snapshot bound to the exact observation/mask/action decision sequence.",
+        "No source-decision sequence or snapshot identity accompanies the direct query.",
+        "No dedicated Schema v2 pool-availability field is currently declared; any future field requires versioned contract review."
+      ]
     },
     {
       "kind": "item_instance",
@@ -611,7 +628,7 @@
   "unresolved_schema_gaps": [
     "Shop has no explicit offer_id, offer revision/reroll generation or observed price field.",
     "Inventory and unit attachments lack physical item_instance_id and explicit attachment owner references.",
-    "Pool availability has no authoritative producer or schema field.",
+    "Pool availability has an authoritative shared-lobby native query and direct pybind surface, but no immutable decision-correlated snapshot, source sequence, wrapper observation delivery, PPO projection or dedicated Schema v2 field.",
     "Board slot index lacks documented coordinate/orientation mapping.",
     "Positioning and trait aggregates use open maps without complete typed key/catalog contracts.",
     "Unit assessments and anchor candidates need explicit collection completeness and source-sequence contracts.",
