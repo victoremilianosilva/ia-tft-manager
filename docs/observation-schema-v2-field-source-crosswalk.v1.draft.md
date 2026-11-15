@@ -32,7 +32,22 @@ The result is a machine-readable CSV with one row per schema data path. Shared `
 
 **Important:** an ancestor/family match is not field-level producer proof. An exact source-map match is also not sufficient by itself; callsite, provenance, sequence, Python exposure and PPO delivery still need verification. The source map is an inventory, not a runtime schema validator.
 
-## 3. The 16 paths without a source-map entry
+## 3. Field-level reconciliation progress — 2026-11-14
+
+The first source-backed field-level pass is now recorded in the CSV for 31 paths covering board, bench, shop, loose components and completed-item inventory. A separate disposition pass records all 16 paths that had no source-map entry. These are dispositions, not claims that all such fields are runtime-produced.
+
+Current crosswalk status after these passes:
+- 223 total Schema v2 data paths.
+- 31 unit/item paths have field-level producer and delivery dispositions.
+- 16 previously unmapped paths have explicit source-backed dispositions (including not-produced, Shadow-only, diagnostic-only, unverified and static contract metadata).
+- 43 exact source-map matches still require callsite/provenance/sequence/Python/PPO validation.
+- 133 ancestor-only paths still require nested field-level proof.
+
+The 31 unit/item pass deliberately distinguishes diagnostic snapshot delivery from PPO delivery. Structured UUID/champion/item identifiers in the audit snapshot are not treated as PPO tensor inputs. The 16 unmapped dispositions preserve unavailable/not-produced distinctions rather than manufacturing data.
+
+Next work: continue the remaining 133 ancestor-only paths and validate the 43 exact matches at callsite level, then trace Python/vector-environment/rollout-buffer/Actor/Critic delivery. Issue #346 remains open.
+
+## 4. The 16 paths without a source-map entry
 
 | Schema path | Why it needs an explicit disposition |
 |---|---|
@@ -55,7 +70,7 @@ The result is a machine-readable CSV with one row per schema data path. Shared `
 
 These are **unmapped in the current source-map artifact**, not automatically proven absent from the Engine. Each requires a source-backed classification or an explicit statement that it is contract metadata only.
 
-## 4. How to read the match classification
+## 5. How to read the match classification
 
 - `exact`: the schema path equals a source-map field. Still requires source callsite and delivery verification.
 - `ancestor`: the path inherits a broader source-map family entry. The inherited availability is contextual only; the nested field is not proven by the parent row.
@@ -64,7 +79,7 @@ These are **unmapped in the current source-map artifact**, not automatically pro
 
 The CSV intentionally sets Python and PPO delivery to `not_established_by_source_map` for every row. Delivery is not inferred from source-map intended-consumer text.
 
-## 5. Required next work
+## 6. Required next work
 
 1. Audit the 16 unmapped paths against exact Engine/Shadow producers and classify them as observed, derived, Shadow-only, diagnostic-only, not-produced, not-correlated or metadata-only.
 2. Review all 164 ancestor-mapped paths and determine whether the nested schema property is actually produced; do not inherit parent availability automatically.
@@ -72,7 +87,7 @@ The CSV intentionally sets Python and PPO delivery to `not_established_by_source
 4. Reconcile schema-required identities with the correction proposal: raw UUID, unit assessment references, anchor candidate IDs, anvil option IDs, unit-role and item-target-fit targets.
 5. Extend replay/acceptance criteria only after producers and sequence scopes are proven.
 
-## 6. Architecture reconstruction review
+## 7. Architecture reconstruction review
 
 1. **Prior problem:** the 77-entry source map did not expose which individual Schema v2 nested data paths were exact matches, broad family inheritance or entirely unmapped.
 2. **Technical justification:** broad family matches can conceal unsupported child fields; an unmapped field can be a missing producer, a contract-only field or an incomplete source map, and those cases must not be conflated.
