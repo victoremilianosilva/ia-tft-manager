@@ -453,3 +453,17 @@ Anti-loop logic also participates in native move validation and mask generation.
 6. **Objective validation:** source paths and callsites were traced for the five entity families; entity count remains 17; no runtime file, PPO input, mask, reward, checkpoint or tensor layout was changed.
 
 **Next required proof:** reconcile these findings with the source-map and projection matrix, complete repository-wide producer/copy/sequence callsite checks, and verify each field's Python/Trainer exposure independently. #346 remains open until every entity field is classified and all required identity, completeness, provenance, sequence and reset criteria are evidenced.
+
+
+## Consolidated producer coverage matrix — 2026-11-15
+
+The 17 entity kinds are now indexed in a field-family-level machine-readable matrix: [Structured Entity Producer Coverage Matrix v1](observation-structured-entity-producer-coverage.v1.draft.md), with the [CSV artifact](../spec/observation-structured-entity-producer-coverage.v1.draft.csv).
+
+This index consolidates the audited slices for physical units/slots/shop, items/components/anvils, traits/positioning, and strategic/temporal entities. It records producer availability separately from Python diagnostic exposure and PPO delivery. It does **not** claim that every nested Schema v2 field has been exhaustively traced; the remaining nested-field reconciliation, UUID/candidate identity corrections, sequence namespaces, and lifecycle/reset tests remain open under #346.
+
+The matrix must be read as a conservative audit index:
+- native existence is not structured Python exposure;
+- diagnostic exposure is not PPO delivery;
+- flat PPO scalars are not structured entity delivery;
+- Shadow candidates and proposals are not PPO targets;
+- absent producer/identity/sequence remains unavailable rather than inferred.
