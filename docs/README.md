@@ -14,7 +14,12 @@ Para decisões de arquitetura e implementação da nova linhagem, use primeiro o
 - [Observation Tensor Projection Contract v1 — Design Requirements](observation-tensor-projection-contract.v1.draft.md)
 - [Observation Projection Consumer Matrix v1 — Draft](observation-projection-consumer-matrix.v1.draft.md)
 - [Structured Entity and Temporal Evidence Contract v1 — Draft](observation-structured-entity-temporal-contract.v1.draft.md) — entity identity, ownership, collection completeness, temporal scope and schema gaps before tensor encoding.
-- [Structured Entity Producer Evidence Audit — Identity Slice v1 — Draft](observation-structured-entity-producer-audit.v1.draft.md) — source-backed correction: native UnitInstance UUID generation and lifecycle remain unverified.
+- [Structured Entity Producer Evidence Audit — Identity Slice v1 — Draft](observation-structured-entity-producer-audit.v1.draft.md) — native UnitInstance UUID generation is implemented; canonical cross-episode identity and full lifecycle acceptance remain unverified.
+- [Observation Schema v2 Identity Field Semantics Reconciliation](observation-schema-v2-identity-field-semantics-reconciliation.v1.draft.md) — separates authoritative game match, Engine episode scope, Viewer session, native episode counter and player seat.
+- [Engine Identity Scope Reconciliation](engine-identity-scope-reconciliation.v1.draft.md) — defines the semantic need for Engine-instance scope plus episode without choosing a runtime ID algorithm.
+- [Structured Entity Audit Coverage Status](observation-structured-entity-audit-coverage-status.v1.draft.md) — consolidated status for 17 entity kinds and 31 field-family rows; unavailable fields remain unavailable.
+- [Gates 1–7 Integrated Readiness Review](gates-1-7-integrated-readiness-review.v1.draft.md) — documentary evidence versus runtime acceptance and Gate 8 blockers.
+- [Python Identity/Test-Hook Call-Site Inventory](python-identity-test-hook-callsite-inventory.v1.draft.md) and [C++ Identity/Test-Hook Caller Audit](cpp-identity-test-hook-caller-audit.v1.draft.md) — tracked source/test call-site inventories and explicit scope limitations.
 - [Decision Identity and Mask Correlation Contract v1 — Design Proposal](decision-identity-mask-correlation-contract.v1.draft.md) — rationale e invariantes de correlação entre observação, masks, critic, rollout e replay.
 - [Decision Identity Schema v2 — Versioning Boundary and Migration Design](decision-identity-schema-v2-design.v1.draft.md) — proposta para versionar namespaces tipados sem alterar o schema v1 histórico; ainda aguarda revisão/aprovação documental.
 - [Action / Mask Contract v1](action-mask-contract.v1.draft.md) — especificação documental aprovada; execução/aceitação runtime pendente.
