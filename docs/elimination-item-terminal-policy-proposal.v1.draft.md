@@ -1,5 +1,7 @@
 # Elimination Item Terminal Policy — Decision Proposal v1
 
+> **Supersession notice (2026-11-15):** Sections 1–10 preserve the original alternatives/recommendation as historical analysis. Section 12 records the later explicit domain-owner decision and is authoritative: Policy A is selected; Policy B and retaining active item state are rejected; no item is transferred to anyone or returned to a redistributable pool.
+
 **Status:** proposal only; not an accepted game rule or runtime contract.  
 **Target:** `new-arquiteture`.  
 **Tracking:** issue #346.  
@@ -11,7 +13,7 @@ The current elimination path returns champion copies to the shared UnitPool and 
 
 The result is a terminal ownership ambiguity: item state remains stored after the physical units that owned some items have left active ownership. The audit snapshot exposes some remaining item inventory/queue fields, but not the complete UUID-keyed equipment map, and AuditPlayerSnapshot has no explicit alive/eliminated field.
 
-No source-backed game-rule contract was found that defines whether eliminated-player items should be discarded, retained for replay, or returned to that player's own bag. This proposal therefore does not claim to reproduce an authoritative TFT rule.
+The initial source audit found no source-backed game-rule contract for terminal item handling. The domain owner subsequently supplied the governing project rule in section 12: no item transfer on elimination, with terminal retirement/discard.
 
 ## 2. Technical rationale
 
@@ -58,7 +60,7 @@ Keep the current behavior.
 
 Prefer **Policy A — explicit retirement/discard**, with a terminal snapshot captured before retirement.
 
-This is a recommendation, not a frozen decision. It follows from the current ownership model: the eliminated player cannot act, item inventories are player-owned rather than a shared pool, and no cross-player item transfer is supported or desired by the audited contract. It avoids pretending that a dead player's bag remains an active resource.
+Historical recommendation, superseded by the explicit domain-owner decision in section 12. Policy A is now selected, not provisional.
 
 Before accepting Policy A, inspect all ItemEngine metric consumers and placement/reward attribution to determine whether counters must survive terminalization. If metrics are needed, terminalization should clear owned item collections while preserving the required counters in a separate terminal summary; it should not blindly call the generic `ItemEngine::reset()` if that erases evidence needed for reward or replay.
 
@@ -117,7 +119,7 @@ These are future acceptance tests, not tests executed by this proposal.
 
 ## 10. Decision and gate status
 
-**Decision required:** accept Policy A, choose Policy B, or retain a different explicit terminal policy.
+**Historical decision prompt, superseded:** the domain owner selected Policy A in section 12. Implementation remains blocked until Gate 8.
 
 Until this decision is accepted and Gate 8 is authorized, no runtime implementation is permitted. Issue #346 remains open. Gate 8 remains blocked.
 
@@ -133,7 +135,7 @@ A focused source pass checked the ItemEngine metric declaration/accessor and its
 - In the inspected ItemEngine implementation, `items_left_unused` is declared but no increment/update site was found.
 - Current PPO reward is assembled from action/combat/placement reward paths; item assignment/crafting shaping uses evaluated action/context values, not ItemMetrics counters. The separate RewardManager helper is not the active PPO reward route documented by the native reward-binding audit.
 
-**Conclusion:** no current production placement/reward/PPO consumer of ItemMetrics was found in the audited main-repository paths. Therefore preserving these counters is not a demonstrated prerequisite for current reward attribution if a terminal item-retirement policy is selected. A terminal snapshot may still preserve them for diagnostics if desired. This narrows, but does not replace, the domain decision between Policy A and Policy B; it is not proof about external consumers outside the audited repository paths.
+**Conclusion:** no current production placement/reward/PPO consumer of ItemMetrics was found in the audited main-repository paths. Therefore preserving these counters is not a demonstrated prerequisite for current reward attribution if a terminal item-retirement policy is selected. A terminal snapshot may still preserve them for diagnostics if desired. This narrows the implementation risk; the domain choice was subsequently resolved in section 12. This is not proof about external consumers outside the audited repository paths.
 
 
 ## 12. Domain-owner decision — no item transfer on elimination
