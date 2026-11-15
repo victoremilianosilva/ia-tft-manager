@@ -325,3 +325,10 @@ The native `AuditPlayerSnapshot` DTO has no `alive` or `eliminated` field, altho
 The six requested documentary workstreams have been consolidated in [Final Documentary Reconciliation — Gates 1–7 v1](gates-1-7-final-documentary-reconciliation.v1.draft.md). That report reconciles identity/lifecycle, GEP-to-PPO correlation, all 17 structured entity kinds / 31 field-family rows, the unresolved elimination item policy decision, CSV integrity and the Gate 1–7 readiness table.
 
 This is a documentation closeout only. It does not change the gate table's runtime dispositions, close issue #346, select the terminal item policy, or authorize Gate 8. In particular, a complete source inventory is not proof of every implicit C++ copy/destruction path, and producer coverage is not proof of PPO delivery.
+
+
+## 14. Elimination item ownership decision — 2026-11-15
+
+The domain owner decided that **items of an eliminated player must not be transferred to anyone**. The prior alternative of returning equipment to the eliminated player's own active bag is rejected. Terminal policy is now Policy A: capture immutable non-owning terminal diagnostics, then retire/discard that player's equipped items, inventory, loose components and pending anvil options. No item returns to another player, the shared pool, shop or any redistributable source.
+
+This resolves the domain-policy decision but not implementation acceptance. ItemEngine terminal retirement, idempotence, no-redistribution invariants and regression tests remain post-Gate 8 work. No runtime implementation is authorized by this decision.
