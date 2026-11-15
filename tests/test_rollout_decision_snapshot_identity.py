@@ -1,0 +1,144 @@
+"""Identity correlation tests for vector auto-reset and PPO rollout storage."""
+
+import numpy as np
+import pytest
+import torch
+
+from rollout import RolloutBuffer
+from vector_lobby_env import LobbyVectorEnv
+
+
+class FakeIdentityEnv:
+    def __init__(self):
+        self.episode_id = 0
+        self.players = [
+            type("Player", (), {"alive": True})() for _ in range(8)
+        ]
+        self._metadata = None
+
+    def reset(self):
+        self.episode_id += 1
+        self._metadata = {
+            "engine_instance_id": "engine-A",
+            "episode_id": self.episode_id,
+            "round": 0,
+            "stage": 1,
+            "snapshot_kind": "reset",
+        }
+        return np.full((8, 3), self.episode_id, dtype=np.float32)
+
+    def get_snapshot_metadata(self):
+        return dict(self._metadata)
+
+    def step(self, _actions):
+        self._metadata = {
+            "engine_instance_id": "engine-A",
+            "episode_id": self.episode_id,
+            "round": 5,
+            "stage": 2,
+            "snapshot_kind": "step",
+        }
+        return (
+            np.full((8, 3), 99, dtype=np.float32),
+            np.full(8, 0.75, dtype=np.float32),
+            True,
+            {
+                "decision_snapshot": dict(self._metadata),
+                "players": [{"player_id": i, "alive": True} for i in range(8)],
+            },
+        )
+
+    def get_public_state(self):
+        return {"players": [], "round": 5}
+
+    def close(self):
+        pass
+
+
+def test_terminal_auto_reset_keeps_transition_and_next_episode_identity_separate():
+    env = LobbyVectorEnv([FakeIdentityEnv])
+    try:
+        initial_obs = env.reset()
+        assert np.all(initial_obs == 1)
+        assert env.get_snapshot_metadata()[0]["episode_id"] == 1
+
+        observations, rewards, dones, infos = env.step(
+            [[{"type": 6} for _ in range(8)]]
+        )
+
+        assert np.all(observations == 2)
+        assert np.all(rewards == 0.75)
+        assert np.all(dones)
+
+        info = infos[0]
+        assert info["step_result_snapshot"]["episode_id"] == 1
+        assert info["step_result_snapshot"]["round"] == 5
+        assert info["next_snapshot"]["episode_id"] == 2
+        assert info["next_snapshot"]["snapshot_kind"] == "reset"
+        assert env.get_snapshot_metadata()[0]["episode_id"] == 2
+    finally:
+        env.close()
+
+
+def test_rollout_buffer_preserves_per_agent_snapshot_identity():
+    buffer = RolloutBuffer(
+        num_steps=2,
+        num_envs=2,
+        obs_dim=3,
+        action_dim=6,
+        device=torch.device("cpu"),
+    )
+    metadata = [
+        {
+            "engine_instance_id": "engine-A",
+            "episode_id": 7,
+            "round": 4,
+            "stage": 2,
+            "snapshot_kind": "step",
+            "lobby_index": 0,
+            "player_id": player_id,
+        }
+        for player_id in range(2)
+    ]
+
+    buffer.add(
+        obs=np.zeros((2, 3), dtype=np.float32),
+        actions=np.zeros((2, 6), dtype=np.int64),
+        logprobs=np.zeros(2, dtype=np.float32),
+        rewards=np.zeros(2, dtype=np.float32),
+        dones=np.zeros(2, dtype=np.float32),
+        values=np.zeros(2, dtype=np.float32),
+        masks_dict={},
+        snapshot_metadata=metadata,
+    )
+
+    metadata[0]["episode_id"] = 999
+    stored = buffer.snapshot_metadata[0]
+    assert stored[0]["episode_id"] == 7
+    assert stored[0]["player_id"] == 0
+    assert stored[1]["player_id"] == 1
+    assert stored[1]["engine_instance_id"] == "engine-A"
+
+    buffer.reset()
+    assert buffer.snapshot_metadata[0] is None
+
+
+def test_rollout_buffer_rejects_incomplete_snapshot_identity():
+    buffer = RolloutBuffer(
+        num_steps=1,
+        num_envs=1,
+        obs_dim=3,
+        action_dim=6,
+        device=torch.device("cpu"),
+    )
+    with pytest.raises(ValueError, match="campos obrigatórios"):
+        buffer.add(
+            obs=np.zeros((1, 3), dtype=np.float32),
+            actions=np.zeros((1, 6), dtype=np.int64),
+            logprobs=np.zeros(1, dtype=np.float32),
+            rewards=np.zeros(1, dtype=np.float32),
+            dones=np.zeros(1, dtype=np.float32),
+            values=np.zeros(1, dtype=np.float32),
+            masks_dict={},
+            snapshot_metadata=[{"episode_id": 1, "player_id": 0}],
+        )

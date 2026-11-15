@@ -51,6 +51,7 @@ jobs:
           python -m pytest -q
           --junitxml=artifacts/native-engine-tests.xml
           tests/test_tft_engine_api.py
+          tests/test_rollout_decision_snapshot_identity.py
           tests/test_native_ppo_loop_regression.py
           tests/test_native_ppo_loop_audit_helpers.py
           tests/test_lobby_end_to_end.py

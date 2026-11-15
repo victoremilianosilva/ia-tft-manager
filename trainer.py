@@ -1066,6 +1066,22 @@ class Trainer:
                 # 🎭 MÁSCARAS
                 # ====================================================
 
+                # Capture identity for the exact observation/masks used by
+                # this policy decision, before any lobby is advanced.
+                lobby_snapshots = self.vec_env.get_snapshot_metadata()
+                flat_snapshot_metadata = []
+                for lobby_idx, snapshot in enumerate(lobby_snapshots):
+                    if not isinstance(snapshot, dict):
+                        raise RuntimeError(
+                            f"Lobby {lobby_idx} não forneceu identidade do snapshot "
+                            "usado pela decisão PPO."
+                        )
+                    for player_idx in range(self.PLAYERS_PER_LOBBY):
+                        agent_snapshot = dict(snapshot)
+                        agent_snapshot["lobby_index"] = lobby_idx
+                        agent_snapshot["player_id"] = player_idx
+                        flat_snapshot_metadata.append(agent_snapshot)
+
                 gym_masks = (
                     self.vec_env.env_method(
                         "get_action_masks"
@@ -1415,6 +1431,7 @@ class Trainer:
                     values,
                     masks,
                     valid=transition_valid,
+                    snapshot_metadata=flat_snapshot_metadata,
                 )
 
                 # ====================================================

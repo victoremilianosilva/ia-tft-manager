@@ -1,4 +1,3 @@
-
 import numpy as np
 
 
@@ -31,6 +30,14 @@ class LobbyVectorEnv:
             for env in self.envs
         ]
 
+    def get_snapshot_metadata(self):
+        """Retorna a identidade do snapshot atualmente exposto por cada lobby."""
+        snapshots = []
+        for env in self.envs:
+            getter = getattr(env, "get_snapshot_metadata", None)
+            snapshots.append(dict(getter()) if callable(getter) else None)
+        return snapshots
+
     def step(self, actions):
         """
         Entrada:
@@ -41,6 +48,9 @@ class LobbyVectorEnv:
             rewards:      (lobbies, 8)
             dones:        (lobbies, 8)
             infos:        uma info por lobby
+
+        Em auto-reset terminal, info mantém separados o snapshot que
+        produziu reward/done e o snapshot da nova observação retornada.
         """
         if len(actions) != self.num_envs:
             raise ValueError(
@@ -62,21 +72,23 @@ class LobbyVectorEnv:
                     f"Shape de rewards inválido: {rewards.shape}"
                 )
 
-            # O done individual acontece quando o jogador é eliminado.
             dones = np.asarray(
                 [not player.alive for player in env.players],
                 dtype=np.bool_,
             )
-
-            # Quando a partida termina, todos os episódios individuais
-            # terminam, inclusive o do vencedor.
             if lobby_done:
                 dones[:] = True
 
             info = dict(info)
             info["lobby_done"] = bool(lobby_done)
 
-            # Captura o estado terminal ANTES do reset para preservar ranking/colocações.
+            # Este é o snapshot produzido pelo step: rewards/dones pertencem
+            # a esta transição, mesmo quando a lobby termina.
+            step_result_snapshot = info.get("decision_snapshot")
+            if step_result_snapshot is not None:
+                step_result_snapshot = dict(step_result_snapshot)
+            info["step_result_snapshot"] = step_result_snapshot
+
             if lobby_done:
                 get_public_state = getattr(env, "get_public_state", None)
                 if callable(get_public_state):
@@ -90,13 +102,22 @@ class LobbyVectorEnv:
                         "winner_id": info.get("winner_id"),
                     }
 
-            # Salva a observação terminal antes de reiniciar a lobby.
-            # A recompensa terminal e o ranking já foram calculados
-            # por TFTLobby.step().
             obs = np.asarray(obs, dtype=np.float32)
 
             if lobby_done:
+                # O reset muda a identidade/episódio da observação retornada.
+                # Nunca sobrescrever step_result_snapshot com essa identidade.
                 obs = env.reset()
+                getter = getattr(env, "get_snapshot_metadata", None)
+                next_snapshot = dict(getter()) if callable(getter) else None
+            else:
+                next_snapshot = (
+                    dict(step_result_snapshot)
+                    if step_result_snapshot is not None
+                    else None
+                )
+
+            info["next_snapshot"] = next_snapshot
 
             all_obs.append(obs)
             all_rewards.append(rewards)
