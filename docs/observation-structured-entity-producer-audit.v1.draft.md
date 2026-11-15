@@ -71,7 +71,7 @@ The producer is now located, and same-episode object transfer is partially evide
 
 Remaining proof required:
 
-1. repository-wide enumeration of every `UnitInstance` construction, copy, assignment and destruction path;
+1. complete production-C++ enumeration of every `UnitInstance` construction, copy, assignment and destruction path (the tracked Python tree and all 48 C++ test files have now been enumerated; this does not yet prove the full production-C++ caller/copy graph);
 2. collision behavior and uniqueness enforcement within one Engine episode;
 3. player/match scoping and reset-safe identity;
 4. lifecycle regression tests for purchase, board/bench movement, merge, sale, elimination and consecutive matches;
@@ -484,3 +484,14 @@ See the [Schema v2 Field-to-Source Crosswalk](observation-schema-v2-field-source
 The [Unit Instance, Shop Offer and Shared Pool Lifecycle Follow-up](unit-instance-shop-pool-lifecycle-followup.v1.draft.md) refines the ownership lifecycle and corrects the pool-availability row. It traces shop → bench → board moves, merge identity retention/consumption, sale and elimination cleanup, same-seed reset UUID repetition, implicit value-copy behavior, and the direct TFTEngine/pybind pool-count query.
 
 **Correction:** the previous matrix wording that no authoritative per-champion pool count producer existed was too broad. `UnitPool::available()` and `TFTEngine::pool_available()` provide authoritative native queries, and pybind exposes them. The count is still not part of the immutable observation snapshot or PPO vector, and has no decision-sequence correlation. The shared champion pool is lobby-scoped, not player-owned.
+
+
+## Call-site inventory reconciliation — 2026-11-15
+
+The follow-up call-site inventories now close two previously open enumeration tasks:
+
+- All 125 tracked Python files were inspected. Python fixture-hook calls are limited to `set_unit_for_testing` in `tests/test_native_ppo_loop_regression.py` and `tests/test_tft_engine_api.py`, and `set_shop_offer_for_testing` in `tests/test_tft_engine_api.py`. No Python call sites were found for `set_next_shop_roll_for_testing`, `set_unit_items_for_testing`, or `get_combat_team_for_testing`.
+- All 48 tracked C++ test files were inspected. Direct TFTEngine fixture-hook calls are concentrated in `cpp/tests/test_tft_engine_pool.cpp`; no direct C++ test caller was found for `set_next_shop_roll_for_testing`.
+- The C++ binding audit confirms only `set_unit_for_testing`, `set_shop_offer_for_testing`, and `set_next_shop_roll_for_testing` are exposed through pybind. `set_unit_items_for_testing` and `get_combat_team_for_testing` remain native C++ test hooks.
+
+These inventories do not close the full production-C++ construction/copy/assignment/destruction graph. They also do not change the identity conclusion: UnitInstance UUID is deterministic, same-seed reset collisions are confirmed, and canonical cross-episode physical identity remains unverified. The machine-readable producer coverage CSV now records the completed Python/C++ test enumeration and the remaining production-C++ gap.
