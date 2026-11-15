@@ -159,7 +159,7 @@
         "entities.board[].unit.items[]",
         "entities.bench[].unit.items[]"
       ],
-      "identity": "future item_instance_id",
+      "identity": "no physical item-instance identity; only item catalog ID strings stored in inventory/equipment containers",
       "scope": [
         "match",
         "player",
@@ -170,10 +170,21 @@
         "unit_attachment"
       ],
       "gaps": [
-        "Inventory has item_id and slot but no physical item_instance_id.",
-        "Unit attachment arrays contain catalog strings without instance identity or explicit owner reference.",
-        "Schema revision is required before claiming lossless item-instance representation."
-      ]
+        "ItemEngine inventory stores std::string catalog IDs; no physical item-instance record or ID exists.",
+        "Equipped items are catalog IDs keyed by unit UUID; UnitInstance::items mirrors combat item catalog/API names, not item-instance references.",
+        "AuditSnapshot exposes catalog IDs only; no item-instance identity or typed item-owner relationship.",
+        "PPO receives numeric semantic rows and heuristic compatibility values, not raw item IDs, item-instance IDs, provenance or typed source sequence."
+      ],
+      "status": "not_produced",
+      "producer_paths": [
+        "cpp/include/items/ItemEngine.hpp::ItemEngine::inventory_",
+        "cpp/include/items/ItemEngine.hpp::ItemEngine::equipped_",
+        "cpp/src/lobby/TftEngine.cpp::sync_unit_items_from_engine"
+      ],
+      "delivery": {
+        "diagnostic": "get_audit_snapshot exposes inventory catalog IDs and nested unit attachment catalog IDs; no item-instance ID",
+        "ppo": "build_observations emits catalog-derived inventory semantic rows, equipped counts and heuristic fit features; no physical item ID or typed owner relation"
+      }
     },
     {
       "kind": "item_catalog_entry",
@@ -188,14 +199,19 @@
       "domain": [
         "catalog"
       ],
-      "invariant": "Catalog identity is not physical item-instance identity."
+      "invariant": "Catalog ID plus catalog fingerprint identifies a definition only; it never identifies a physical item copy.",
+      "producer_paths": [
+        "cpp/include/items/ItemEngine.hpp::ItemDefinition",
+        "cpp/include/items/ItemCatalog.hpp::load_item_catalog"
+      ],
+      "status": "native_observed"
     },
     {
       "kind": "component_inventory",
       "paths": [
         "entities.items.components[]"
       ],
-      "identity": "component_id",
+      "identity": "component_id + observed aggregate multiplicity",
       "scope": [
         "match",
         "player",
@@ -204,14 +220,25 @@
       "domain": [
         "inventory_aggregate"
       ],
-      "invariant": "Current count is an aggregate, not a list of physical component instances."
+      "invariant": "Current count is an aggregate, not a list of physical component instances.",
+      "status": "native_observed_aggregate_only",
+      "producer_paths": [
+        "cpp/include/items/ItemEngine.hpp::ItemEngine::components_",
+        "cpp/src/lobby/TftEngine.cpp::grant_round_pve_item_rewards"
+      ],
+      "gaps": [
+        "Repeated component catalog IDs in the vector preserve multiplicity but do not create independently identified physical component instances.",
+        "PPO observation emits one count per catalog component, normalized as clamp(count / 6, 0, 1); the current representation loses exact counts above the saturation ceiling.",
+        "Catalog order determines numeric feature positions and must be bound to the component catalog fingerprint/order.",
+        "The internal PvE component pool remaining count is loot-generation state, not player-owned component-instance identity or shared champion-pool availability."
+      ]
     },
     {
       "kind": "anvil_option",
       "paths": [
         "entities.items.anvil_options[]"
       ],
-      "identity": "option_id",
+      "identity": "option_index scoped to a pending ItemAnvil queue entry; no stable option_id or anvil identity is produced",
       "scope": [
         "match",
         "player",
@@ -221,8 +248,18 @@
         "pending_choice"
       ],
       "gaps": [
-        "Option-set completeness and source sequence must be explicit.",
-        "target_fits scores require estimated nature, formula and validity."
+        "ItemEngine can enqueue options through grant_component_anvil/grant_completed_item_anvil, but no caller was found in the audited TftEngine gameplay reward path.",
+        "The audited PvE reward path grants components and completed items directly; it does not create pending anvils.",
+        "The queue stores only kind and catalog-ID strings; there is no anvil ID, stable option_id, revision, producer event ID or source sequence.",
+        "The current consumer chooses by positional index and reuses the existing item action/mask head; a target-head sentinel is not a target entity.",
+        "The PPO anvil feature computes one best_fit maximum across all unit profiles (and recipe items for components), not per-target target_fits records.",
+        "Option-set completeness and pending-decision provenance are not produced."
+      ],
+      "status": "not_produced_in_audited_gameplay_path",
+      "producer_paths": [
+        "cpp/include/items/ItemEngine.hpp::grant_component_anvil",
+        "cpp/include/items/ItemEngine.hpp::grant_completed_item_anvil",
+        "cpp/src/lobby/TftEngine.cpp::grant_round_pve_item_rewards"
       ]
     },
     {
@@ -434,7 +471,12 @@
     "Action-opportunity producer is not populated; candidate rows remain withheld.",
     "Physical unit UUID producer exists, but same-seed Engine reset repeats the first UUID; no match/player namespace or collision registry exists, so Schema v2 instance_id remains unverified as canonical identity.",
     "Board slot indices and occupancy are native; canonical hex coordinate/orientation/adjacency mapping and exact source-sequence correlation are not proven.",
-    "Shop offer contents are produced in five slots, but no stable offer_id, offer revision or reroll-generation token is emitted; slot and temporary unit UUID are not sufficient offer identity."
+    "Shop offer contents are produced in five slots, but no stable offer_id, offer revision or reroll-generation token is emitted; slot and temporary unit UUID are not sufficient offer identity.",
+    "Physical item copies are not produced: ItemEngine stores catalog ID strings in inventory/equipment containers and has no item_instance_id or typed owner relation.",
+    "Component copies are represented by repeated catalog IDs and aggregate counts only; no physical component-instance identity exists, and PPO count normalization saturates at count 6.",
+    "Anvil API/consumer exists, but no producer call was found in the audited TftEngine gameplay reward path; normal PvE rewards grant components/completed items directly.",
+    "Anvil option identity is positional only; no anvil ID, option_id, revision, completeness or source sequence is produced.",
+    "Anvil target fit is emitted as one heuristic best-fit maximum per option, not target-specific target_fits records."
   ],
   "non_goals": [
     "tensor shapes",
