@@ -34,7 +34,7 @@
         "entities.board[].unit",
         "entities.bench[].unit"
       ],
-      "identity": "unverified: Schema v2 currently requires instance_id; native UnitInstance declares uuid, but UUID generation/lifecycle stability is explicitly documented as future work",
+      "identity": "unverified: native UnitInstanceFactory generates uuid, but it is deterministic from a seeded RNG, repeats after TFTEngine::reset() when the same seed is reused, and has no match/player namespace; it is not accepted as standalone canonical instance_id",
       "scope": [
         "engine_match_id",
         "player_id"
@@ -50,9 +50,11 @@
       ],
       "gaps": [
         "Unit.items currently contains catalog strings, not physical item-instance references.",
-        "cpp/include/lobby/TftEngine.hpp declares std::string uuid but comments that effective UUID generation will be implemented later; no uniqueness, non-empty generation, lifecycle stability or match/player scoping is proven."
+        "UnitInstanceFactory::create() generates uuid from a seeded mt19937_64; TFTEngine::reset() reconstructs the factory from the same seed, repeating the first generated UUID across episodes.",
+        "UUID has no encoded match/player scope and no issued-ID collision registry.",
+        "UUID is exposed through diagnostic get_audit_snapshot(), not the PPO observation tensor/rollout."
       ],
-      "native_identity_candidate": "UnitInstance::uuid",
+      "native_identity_candidate": "UnitInstance::uuid (scoped/deterministic; not accepted as standalone canonical identity)",
       "identity_status": "unverified"
     },
     {
@@ -91,7 +93,7 @@
         "stale",
         "incompatible"
       ],
-      "gap": "Canonical coordinate/orientation mapping is not yet specified."
+      "gap": "Native 28-slot array index and occupied/empty state are observed; canonical hex coordinates/orientation/adjacency and typed source-sequence correlation remain unverified."
     },
     {
       "kind": "bench_slot",
@@ -131,7 +133,10 @@
       ],
       "invariant": "Offer is not an owned unit instance or pool copy.",
       "gaps": [
-        "No explicit offer_id/revision/reroll generation or observed price field."
+        "No explicit offer_id, offer revision or reroll-generation token is produced.",
+        "Offer UUID is the temporary UnitInstance UUID, not a separate stable offer identity.",
+        "Cost is read from champion catalog; no separately versioned offer price field is emitted.",
+        "Diagnostic snapshot exposes offer contents, but PPO tensor has no typed offer identity/revision/source-sequence envelope."
       ]
     },
     {
@@ -427,7 +432,9 @@
     "Positioning and trait aggregates use open maps without complete typed key/catalog contracts.",
     "Unit assessments and anchor candidates need explicit collection completeness and source-sequence contracts.",
     "Action-opportunity producer is not populated; candidate rows remain withheld.",
-    "Physical unit identity is not yet producer-backed: UnitInstance::uuid exists as a member, but its header documents generation as future work; the Schema v2 instance_id requirement is not mapped to an authoritative runtime value."
+    "Physical unit UUID producer exists, but same-seed Engine reset repeats the first UUID; no match/player namespace or collision registry exists, so Schema v2 instance_id remains unverified as canonical identity.",
+    "Board slot indices and occupancy are native; canonical hex coordinate/orientation/adjacency mapping and exact source-sequence correlation are not proven.",
+    "Shop offer contents are produced in five slots, but no stable offer_id, offer revision or reroll-generation token is emitted; slot and temporary unit UUID are not sufficient offer identity."
   ],
   "non_goals": [
     "tensor shapes",
@@ -445,6 +452,8 @@
     "Empty, missing, unknown, partial, stale, incompatible and not-applicable are distinguishable.",
     "Every derived/estimated field retains formula/provenance/quality requirements.",
     "Every temporal collection has reset and stale rules.",
-    "All schema gaps are explicit and require versioned review before runtime use."
+    "All schema gaps are explicit and require versioned review before runtime use.",
+    "Board and bench slot indices are kept separate from physical unit identity; empty slots remain explicit and positional.",
+    "Shop offer identity is distinct from champion catalog identity, temporary UnitInstance UUID and mutable slot index; offer revision/source sequence is explicit before use."
   ]
 }
