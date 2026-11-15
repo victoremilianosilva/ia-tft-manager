@@ -123,6 +123,18 @@ The repositories must share versioned schemas and fixtures, not duplicate GEP in
 5. **Cross-component impact:** Overwolf GEP producer, canonical transport schema, Python validation, native LiveState DTO/importer, observation schema, action/mask contract, PPO checkpoint contract, Viewer/overlay, replay, and privacy logs.
 6. **Objective validation:** static reconciliation against `ia-tftmanager-ow/docs/GEP_MAPPING.md`, `docs/NATIVE_ENGINE_LIVE_IMPORT_AUDIT.md`, `tft-manager-ow/docs/CANONICAL_TFT_LIVE_STATE.md`, and the approved canonical contracts in this repository. This PR is documentation-only and does not claim runtime acceptance.
 
+## GEP match identity: exact source field and lifecycle remain unverified
+
+The envelope-level `gameId` is the Overwolf game/product identifier and must not be copied into canonical Decision Identity v2 `match_id` merely because the names are similar. The canonical contract separately describes a logical match identifier inside the live-state state model when the source reports one. These are distinct claims:
+
+- `gameId`: envelope/source metadata; not accepted as per-match identity.
+- `sessionId`: Overwolf capture/transport session metadata; not Viewer `session_match_id`.
+- `revision`: source-state revision within its producer scope; not Engine decision or observation sequence.
+- `capturedAt`: timestamp metadata; not a sequence.
+- canonical state match identifier: may populate v2 `match_id` only after the exact GEP leaf path, type, uniqueness across consecutive matches, reconnect behavior, reset boundary, and transport preservation are demonstrated from a sanitized real-game fixture.
+
+The current cross-repository documents describe the intended canonical match field, but the audited evidence set does not yet include a sanitized real-game fixture proving the exact source leaf and lifecycle. Therefore the existence of the contract field is not proof of a trustworthy producer. Until that fixture and source lifecycle test exist, v2 `match_id` remains unavailable for canonical identity. Do not synthesize it from `gameId`, `sessionId`, timestamps, directory names, or Viewer UUIDs.
+
 ## Gate boundary
 
 No runtime, Engine, PPO, observations, masks, rewards, training, Viewer, checkpoint, or artifact changes. This document does not close integration issues or advance a gate. Gate 8 remains blocked until Gates 1–7 are fully reviewed and explicit implementation authorization is given.
