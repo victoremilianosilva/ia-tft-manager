@@ -79,7 +79,7 @@ Relevant evidence:
 - Make empty candidate sets distinguishable from valid empty comparisons and no-eligible-candidate results.
 - Bind observations and masks to the same match/player/round/decision identity and typed sequence.
 - Version/hash the action and mask contracts and reject stale/mismatched mask snapshots.
-- Supply masks to the Critic/value path as required by the target contract, or approve a proven lossless alternative.
+- The exact same decision-correlated native mask snapshot is a required separate side input to both Actor and Critic. No alternative is accepted in the initial lineage; a future lossless encoding would require a separate reviewed contract change.
 - Test native legality rejection, stale masks, missing parameters, duplicate physical units and every action head.
 
 **Current blocking facts:** the audited `StrategicSharedContext.action_candidates` source vector is empty. Current masks are raw arrays without contract/hash/decision identity. Actor consumes masks; current `get_value()` ignores them.
@@ -121,8 +121,8 @@ Relevant evidence:
 ### Remaining acceptance
 
 - Decide the future semantic projection and Actor/Critic consumers from evidence; no tensor layout is selected in this review.
-- Resolve whether item/recipe compatibility matrices should also be available to the Critic.
-- Decide whether Critic needs additional history/context independently of masks.
+- Initial consumer decision: factual item/component inventory and unit target-profile evidence are shared semantic context; current pairwise compatibility matrices remain Actor-specific action-conditioning and need not be copied raw to the Critic. Any Critic summary must derive from the same validated evidence and carry its own feature/formula identity.
+- Initial lineage excludes separate AntiLoopEngine/untyped action history from the Critic. Additional temporal context requires typed producers, decision sequence, reset/replay proof and ablation.
 - Implement architecture identity, observation/action/reward/catalog hashes and checkpoint manifests.
 - Implement new-lineage loader, save/resume and evaluation-only validation.
 - Prove no silent semantic migration from legacy checkpoints.
@@ -244,13 +244,13 @@ These updates improve documentary precision and traceability only. They do not p
 
 ## 11. Gate 8 decision
 
-Gate 8 remains blocked. This review does not authorize implementation.
+The integrated documentary package is ready for domain-owner review through [Gate 8 Preflight](gate8-preflight-and-staged-implementation-plan.v1.draft.md). Gate 8 is **not approved or activated** by this review.
 
-Before Gate 8:
-1. User reviews this integrated Gate 1–7 evidence and unresolved decisions.
-2. Any requested documentary corrections are merged.
-3. Gate-specific acceptance criteria are reconciled with the current evidence and explicitly approved.
-4. User explicitly authorizes runtime implementation.
+Before authorization:
+1. User reviews this integrated Gate 1–7 ledger together with the Gate 8 preflight and staged plan.
+2. User accepts the explicit post-authorization runtime gaps, Actor/Critic consumer decisions and stage dependencies.
+3. Any requested documentary corrections are merged.
+4. User explicitly authorizes Stage 0 / the implementation program.
 
 Until then, all work remains documentation/source audit only. No Engine, runtime, observation, action mask, PPO, reward, training, checkpoint, Viewer or Overwolf changes.
 
@@ -345,3 +345,8 @@ Corrections to earlier sections of this review:
 - Native result/pybind preserve episode ID and masks; the Python wrapper drops them; RolloutBuffer stores masks at the same index as observation/action but stores no durable native identity. Terminal auto-reset returns old-episode reward/done alongside a next-episode observation; this is not proof of a stale-mask race, but it is an uncorrelated replay boundary.
 
 The Gate table remains unchanged in its essential disposition: documentary contracts exist, runtime acceptance for Gates 1–7 remains pending, and Gate 8 is blocked pending integrated review and explicit user authorization.
+
+
+## 16. Gate 8 preflight package — 2026-11-15
+
+The authoritative authorization checklist, closed design decisions, known runtime gaps and staged implementation order are consolidated in [Gate 8 Preflight — Integrated Decision and Staged Implementation Plan](gate8-preflight-and-staged-implementation-plan.v1.draft.md). It records exact masks as a mandatory Actor/Critic side input, initial exclusion of untyped AntiLoop history, shared factual item/target evidence with Actor-specific compatibility matrices, and defers concrete tensor layout until the projection review in Stage 0. The package is ready for user review; it does not grant Gate 8 authorization.
