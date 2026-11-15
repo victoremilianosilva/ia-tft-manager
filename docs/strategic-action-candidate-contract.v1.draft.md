@@ -132,7 +132,7 @@ No runtime code/tests, PPO, observations, rewards, checkpoints, masks, Engine ru
 
 ## 11. Current integration evidence boundary (2026-11-14)
 
-The evaluator documentation currently records `executor_connected=false`. The canonical role of ContextualActionEvaluator as proposal producer is approved, but the runtime connection to Shadow executor is not established by that role assignment. Do not describe the proposal as forwarded, resolved, or executor-accepted without correlated runtime evidence.
+The current source now establishes the resolver call path: TftEngine invokes `StrategicActionExecutor::resolve()`, and the diagnostic reports `executor_connected=true`. The resolver is read-only; `execution_enabled=false` and `native_action_applied=false`. Per-request acceptance remains separate and is not implied by connectivity. The current action-candidate source vector is empty, so no valid candidate comparison or accepted action is established.
 
 **Prior problem:** the earlier wording could be read as claiming an existing handoff while the evaluator diagnostic explicitly says the executor is disconnected.
 
@@ -145,3 +145,28 @@ The evaluator documentation currently records `executor_connected=false`. The ca
 **Cross-component impact:** #281/#289/#294 and the dual-evaluator, replay, and ownership contracts.
 
 **Validation:** reconciled against `dual-action-evaluator-shadow.md` (`executor_connected=false`) and this candidate contract. Post-Gate-8 acceptance requires an integrated call-path test and replay records proving proposal → executor input → resolution/rejection with identical candidate-set and typed sequence references.
+
+
+## 12. Current producer and comparison integration correction (2026-11-15)
+
+A source-backed recheck of cpp/src/lobby/TftEngine.cpp and StrategicActionExecutor.hpp establishes that the resolver call path is currently wired and invoked. The diagnostic values are:
+
+- executor_connected=true: the read-only resolver is called;
+- execution_enabled=false: no action execution is enabled;
+- native_action_applied=false: the resolver does not mutate/apply a native action.
+
+This supersedes the earlier executor_connected=false wording. It does not supersede the requirement for per-request acceptance evidence.
+
+A second mismatch remains: the current comparison_available diagnostic is derived from evaluator staleness, while same_initial_candidate_set can be true when all candidate counts are zero. The audited StrategicSharedContext::action_candidates vector is not populated. Therefore, the current booleans can describe an empty-set comparison as available/equal even though this contract requires at least one shared valid candidate identity. Until a source producer and runtime correction are proven, consumers must treat an empty source set as no_candidates and comparison as unavailable. This is a documentation finding only; no runtime behavior is changed.
+
+**Prior problem:** the earlier documentation understated resolver connectivity and did not clearly separate empty-set diagnostics from valid comparison.
+
+**Technical rationale:** a wired resolver, a valid candidate set, a selected proposal, per-request acceptance, and applied execution are separate states.
+
+**Ownership:** ContextualActionEvaluator remains the contextual proposal producer; StrategicActionExecutor remains the read-only resolver; native masks/rules remain final legality authority.
+
+**Invariants:** resolver connectivity is not acceptance; acceptance is not execution; empty candidate sets are not comparable; no action is applied; PPO action, baseline recommendation, contextual proposal and resolver output remain distinct.
+
+**Cross-component impact:** TftEngine, StrategicSharedContext, both action evaluators, StrategicActionExecutor, action candidate contract, producer-binding audit, replay and #281/#289/#294.
+
+**Validation:** verified the TftEngine callsite, diagnostic booleans, executor read-only contract and candidate vector population path. Post-Gate-8 acceptance must test empty candidate sets, non-empty shared sets, stale identity, native mask rejection and explicit non-execution.
