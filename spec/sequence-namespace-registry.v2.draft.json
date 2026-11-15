@@ -120,5 +120,12 @@
     "stale, mismatch, reset and conflict tests",
     "exact observation-mask decision correlation evidence",
     "registry version increment and architecture reconstruction review"
-  ]
+  ],
+  "identity_scope_contract": {
+    "match_id": "Authoritative logical game-match identity from a validated game/platform source; never the ViewerSession UUID.",
+    "engine_match_id": "Canonical Engine-episode scope combining Engine-instance lifetime and native episode_id; episode_id alone is insufficient.",
+    "session_match_id": "ViewerSession UUID for recording/session correlation only; not part of canonical decision identity.",
+    "episode_id": "Native counter local to one TFTEngine::Impl lifetime; metadata only unless paired with Engine-instance scope.",
+    "player_id": "Episode-local participant seat/index, not a persistent player UUID."
+  }
 }

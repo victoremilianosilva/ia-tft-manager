@@ -363,32 +363,37 @@
           "type": [
             "string",
             "null"
-          ]
+          ],
+          "description": "Authoritative logical game-match identity from a validated game/platform source. Must not contain ViewerSession.match_id; null when the source is unavailable."
         },
         "engine_match_id": {
           "type": [
             "string",
             "null"
-          ]
+          ],
+          "description": "Canonical Engine-episode scope that distinguishes an Engine object lifetime plus its episode. Native episode_id alone is insufficient; null until an authoritative scoped producer exists."
         },
         "session_match_id": {
           "type": [
             "string",
             "null"
-          ]
+          ],
+          "description": "Viewer recording/session UUID used only for explicit session correlation. Never substitutes for match_id or engine_match_id."
         },
         "episode_id": {
           "type": [
             "integer",
             "string",
             "null"
-          ]
+          ],
+          "description": "Native numeric episode counter scoped to one TFTEngine::Impl lifetime. Preserve as metadata; not globally unique and not sufficient alone for engine_match_id."
         },
         "player_id": {
           "type": [
             "string",
             "null"
-          ]
+          ],
+          "description": "Participant seat/index within the scoped Engine episode. Not a persistent user/player identity."
         },
         "round": {
           "type": [

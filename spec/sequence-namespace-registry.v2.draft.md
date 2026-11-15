@@ -12,6 +12,22 @@ A namespace identifies one producer-owned counter domain. The integer value has 
 - `proposed_not_implemented`: intended future namespace; no current producer guarantee is claimed.
 - `requires_runtime_verification`: the domain exists in the audited design, but exact reset/monotonicity/transport behavior is not sufficiently proven for canonical use.
 
+## Identity envelope scope fields
+
+The registry's `engine_match_id` scope means a canonical Engine episode identity that distinguishes both the native Engine object lifetime and its `episode_id` within that object. The current native `episode_id` alone is not sufficient: independent Engine objects can share the same numeric episode value, and same-seed UnitInstance UUID sequences can repeat across Engine resets/objects.
+
+The other identity fields have separate owners and meanings:
+
+| Envelope field | Meaning | Current status |
+|---|---|---|
+| `match_id` | Authoritative logical game-match identity from a validated game/platform source; never the Viewer session UUID | No authoritative producer proven in the audited main-repository path |
+| `engine_match_id` | Canonical Engine-instance + episode scope | Not currently produced; `episode_id` alone is insufficient |
+| `session_match_id` | ViewerSession recording/session UUID | Produced by Viewer; correlation only |
+| `episode_id` | Native counter local to one `TFTEngine::Impl` lifetime | Produced by native Engine and pybind; wrapper drops it from training-facing reset/step |
+| `player_id` | Participant seat/index within the Engine episode | Episode-local; not a persistent player UUID |
+
+The current Viewer logger writes its own UUID into the legacy `match_id` property and separately carries native `episode_id` as `engine_match_id`. This is a session-correlation record, not a valid source for populating the v2 canonical fields. A v2 adapter must place the Viewer UUID in `session_match_id`; if authoritative `match_id` or scoped `engine_match_id` is missing, identity status remains incomplete.
+
 ## Registry
 
 | Namespace ID | Producer / owner | Scope and meaning | Reset / monotonicity | Availability | Canonical decision eligible |
