@@ -86,8 +86,8 @@ This is a contract recommendation only; no collection wrapper is implemented her
 ## 5. Remaining source proof
 
 Before finalizing a versioned schema correction:
-1. Audit generation, uniqueness, reset and scope of `engine_match_id` and every sequence namespace.
-2. Enumerate every UnitInstance construction/copy/assignment/destruction path and lifecycle test.
+1. Audit generation, uniqueness, reset and scope of `engine_match_id` and every sequence namespace; raw UnitInstance UUID repetition on same-seed reset is already confirmed.
+2. Use the [Unit Instance, Shop Offer and Shared Pool Lifecycle Follow-up](unit-instance-shop-pool-lifecycle-followup.v1.draft.md) as the current source-backed lifecycle baseline; finish repository-wide external copy/test-hook enumeration, identity namespace design and missing elimination equipment-cleanup proof before accepting a canonical identity.
 3. Trace unit-role and item-target-fit producers to exact source records and physical identity.
 4. Trace every schema-required identity reference to a producer, including candidate and anvil records.
 5. Reconcile all 254 semantic leaf paths (including nested field wrappers) against producer/source-map evidence; distinguish semantic values from common status/provenance metadata.
