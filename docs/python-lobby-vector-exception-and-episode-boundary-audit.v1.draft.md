@@ -165,3 +165,7 @@ The earlier draft left native player ordering as unverified. A follow-up source 
 6. **Objective validation:** source trace confirms the same index through the inspected native reset/step and Python conversion path; runtime acceptance still requires tests that compare every player's returned identity/order across normal steps, terminal results, auto-reset and multiple independent lobbies.
 
 No runtime code, tests, observations, masks, rewards, PPO tensors, checkpoints or historical artifacts are changed by this correction.
+
+## Regression coverage follow-up
+
+The source and control-flow findings in this audit are mapped to existing native Engine, wrapper smoke, RolloutBuffer and PPO tests in [Python Lobby Vector and Episode Boundary Test Coverage Audit v1](python-lobby-vector-episode-boundary-test-coverage-audit.v1.draft.md). That coverage audit distinguishes existing native/numeric tests from the missing vector failure-injection, auto-reset identity and multi-lobby replay acceptance cases.
