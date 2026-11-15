@@ -68,6 +68,22 @@ The v2 schema must define the following exact envelope. This is a normative desi
 - `session_match_id`, `episode_id`, timestamps, event counters, JSONL append counters and Viewer session counters remain separate correlation/audit metadata. They are not substitutes for canonical Engine identity.
 - Incomplete identities have a status and reason, and their decision hash is null. They are not eligible for canonical PPO consumption.
 
+### 3.1.1 Source semantics of identity fields
+
+The field names are not interchangeable. Their canonical meanings for v2 are:
+
+| Field | Canonical meaning | Current source status | Rule |
+|---|---|---|---|
+| `match_id` | Authoritative logical game-match identity supplied by a validated game/platform source | No authoritative producer was proven in the audited main-repository path | Never fill it with the ViewerSession UUID or infer it from seed, timestamp, seat, or episode counter; if absent, identity is incomplete |
+| `engine_match_id` | Canonical Engine-episode scope, uniquely distinguishing one Engine object lifetime and one episode within it | Not currently produced; native `episode_id` alone is only Impl-local and collides across independent Engine objects | Future producer must bind Engine-instance scope + native episode; exact wire encoding remains a separate decision |
+| `session_match_id` | Viewer recording/session UUID | Produced by `ViewerSession` | Correlation/display metadata only; excluded from canonical identity and hash |
+| `episode_id` | Native numeric episode counter within one `TFTEngine::Impl` lifetime | Produced by native reset/step results and pybind; dropped by the Python training wrapper | Preserve as diagnostic/correlation metadata; never use alone as `engine_match_id` |
+| `player_id` | Participant seat/index within the canonical Engine episode | Native eight-player arrays and wrappers use seat positions | Episode-local only; not a persistent user/player UUID |
+
+The current Viewer correlation path writes the Viewer UUID into the record's `match_id` field and separately copies native `episode_id` into `engine_match_id`. That is a **legacy/session correlation shape**, not proof that those values satisfy the v2 canonical field meanings above. A v2 adapter must map the Viewer UUID to `session_match_id`; it must not promote it into `match_id`. Likewise, the current numeric native episode value cannot populate the v2 `engine_match_id` until an Engine-instance scope is included.
+
+If either authoritative game-match identity or canonical Engine-episode scope is unavailable, the v2 identity must remain non-complete with an explicit reason and null decision hash. Do not weaken the required v2 fields or silently reinterpret historical v1/session records to make them pass validation.
+
 ### 3.2 Namespace registry
 
 A versioned namespace registry must declare for each namespace:
