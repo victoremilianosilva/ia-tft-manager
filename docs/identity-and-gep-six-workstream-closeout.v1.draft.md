@@ -15,7 +15,7 @@ The six requested workstreams have been reconciled against the existing source-a
 | 1 | Python identity and test-hook call sites | Complete for 125/125 tracked Python files in the audited tree snapshot | No runtime identity transport; no tests executed by this inventory |
 | 2 | C++ identity and test-hook callers | Complete for 48/48 tracked C++ test files; explicit identity/test-hook references reconciled across 127/127 tracked C++ files | Not proof of every implicit copy/assignment/destruction path or all indirect production callers |
 | 3 | Canonical identity namespace proposal | Semantic contract exists: logical game match, Engine-instance-plus-episode scope, Viewer session, episode counter, player seat, and typed sequences remain distinct | No authoritative game-match producer, no Engine-instance scope producer, no canonical decision/snapshot sequence |
-| 4 | GEP match identity producer | Cross-repository envelope/state contract reconciled; envelope `gameId`, `sessionId`, `revision`, and `capturedAt` are not canonical Engine identity | Exact GEP leaf path and lifecycle of the canonical logical match field are not proven by a sanitized real-game fixture |
+| 4 | GEP match identity producer | Cross-repository envelope/state contract reconciled; envelope `gameId`, `sessionId`, `revision`, and `capturedAt` are not canonical Engine identity | Exact GEP leaf path is now source-traced and numeric-to-string conversion is tested synthetically; real-game availability, per-match uniqueness and controller reset/reconnect lifecycle remain unproven |
 | 5 | Schema v2 and producer reconciliation | Schema v2 identity semantics, namespace registry, crosswalk, field/source CSV and structured-entity matrix are cross-linked | Schema/CSV are documentary; structured records and exact identity are not delivered to PPO/rollout |
 | 6 | Issue #346 and producer audit status | Evidence and remaining criteria consolidated; item-elimination domain decision is settled separately | #346 remains open until every entity producer/delivery and end-to-end acceptance criteria are proven |
 
@@ -58,18 +58,18 @@ Source records: `docs/observation-schema-v2-identity-field-semantics-reconciliat
 
 ## 4. GEP source identity reconciliation
 
-The cross-repository contract exposes envelope metadata `gameId`, `sessionId`, `revision`, and `capturedAt`. These are not interchangeable:
+The Overwolf mapper source now confirms the intended logical match leaf `info.match_info.match_info.match_id`, with numeric-to-string normalization. Its automated fixture uses synthetic value `778899`; this is not a real GEP capture. The envelope also exposes metadata `gameId`, `sessionId`, `revision`, and `capturedAt`. These are not interchangeable:
 
 - `gameId` is not accepted as a per-match identifier.
 - `sessionId` identifies capture/transport session, not Viewer session.
 - `revision` orders source updates in its declared scope; it is not an Engine decision/snapshot sequence.
 - `capturedAt` is timestamp metadata.
 
-The canonical state contract describes a logical match identifier when the GEP source reports one. However, the audited evidence set does not contain a sanitized real-game fixture proving the exact source leaf path, type, uniqueness across consecutive matches, reconnect behavior, reset boundary and transport preservation. Therefore the canonical state field declaration is not proof of a valid producer. Until those details are demonstrated, `identity.match_id` remains unavailable for canonical Decision Identity v2.
+The exact source leaf and conversion are now proven at mapper level, but only against synthetic test input. The audited evidence set still lacks a sanitized real-game fixture proving source availability, uniqueness across consecutive matches, reconnect behavior, controller invocation of manager reset, and transport preservation. The recorder emits a new full snapshot when the known match ID changes, but this alone does not reset the manager session/revision. Therefore `identity.match_id` remains unavailable for canonical Decision Identity v2 until real-source and lifecycle acceptance pass.
 
 No GEP path mapping is moved into Python or C++; Overwolf/Electron remains the sole GEP interpreter. The native live importer and transport remain unimplemented; capture-only JSONL and the Python loopback receiver do not prove live inference.
 
-Source records: `docs/overwolf-live-state-integration-boundary.md`, plus the cross-repository `GEP_MAPPING.md`, `NATIVE_ENGINE_LIVE_IMPORT_AUDIT.md`, and `CANONICAL_TFT_LIVE_STATE.md`.
+Source records: `docs/overwolf-live-state-integration-boundary.md`, `docs/gep-match-id-source-path-and-lifecycle-audit.v1.draft.md`, plus the cross-repository `GEP_MAPPING.md`, `NATIVE_ENGINE_LIVE_IMPORT_AUDIT.md`, and `CANONICAL_TFT_LIVE_STATE.md`.
 
 ## 5. Schema v2 and machine-readable reconciliation
 
@@ -120,3 +120,10 @@ No Engine, PPO, reward, observation, action-mask, training, Viewer, checkpoint, 
 5. **Cross-component impacts:** Overwolf capture, canonical envelope, native Engine, pybind, Python wrapper, vector environment, PPO rollout, Viewer, Schema v2, structured-entity matrix and issue #346.
 6. **Objective validation:** references are cross-linked to the underlying audits; coverage counts and limitations are explicit; no runtime files or tensor layouts are changed.
 
+
+
+## 9. GEP match identity evidence refinement — 2026-11-15
+
+The exact mapper path is no longer an unknown: `info.match_info.match_info.match_id` is read by the Overwolf mapper and numeric values are normalized to strings. The test fixture uses synthetic `778899`. The snapshot manager's `sessionId` is generated independently and regenerated only by explicit `reset()`; revision resets with it. The recorder treats a changed known match ID as a new snapshot baseline without independently resetting that manager session.
+
+This narrows, but does not close, the blocker: real-game source presence, per-match uniqueness, reconnect/reset invocation and sanitized fixture evidence remain outstanding. See [Overwolf GEP live-state integration boundary](overwolf-live-state-integration-boundary.md), section “GEP match ID source-path and lifecycle evidence”.

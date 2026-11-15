@@ -130,7 +130,7 @@ The schema's required fields and hash scope are not weakened. The JSON changes a
 
 ## 8. Remaining work and gate status
 
-- Audit whether Overwolf/GEP supplies an authoritative game-match ID and document its exact field/lifecycle; until then match_id remains unavailable.
+- The mapper's exact intended GEP leaf is now source-traced as `info.match_info.match_info.match_id`, with numeric-to-string normalization and a synthetic fixture test. Still prove real-game availability, uniqueness across matches, reconnect behavior, reset invocation and missing/null behavior; until then match_id remains unavailable.
 - Design and, only after Gate 8 authorization, implement an authoritative Engine-instance scope producer; until then engine_match_id remains unavailable for canonical identity.
 - Preserve native episode_id through the Python wrapper and bind observation/masks/rollout to exact typed identity in a future authorized implementation.
 - Prove Viewer session ↔ Engine episode correlation without aliasing.
@@ -157,3 +157,24 @@ The approved Overwolf boundary document describes a canonical live-state envelop
 The native import boundary must preserve these source identifiers independently from ViewerSession identity and native Engine episode metadata. A future source-to-Engine correlation record may relate them, but must retain both original typed references and must not rewrite a game/product ID or capture revision as an Engine identity.
 
 gameId may become a valid match_id only if the authoritative GEP/live-state producer proves per-match uniqueness, lifecycle across reconnects, reset behavior and transport preservation. Until then, match_id remains unavailable for canonical v2 identity.
+
+
+## 8. GEP match-id source path: implementation proof versus real-source proof — 2026-11-15
+
+The Overwolf repository source pass now establishes the mapper's exact intended field path:
+
+- `src/browser/services/gep/tft-live-state.mapper.ts` reads `info.match_info.match_info.match_id`.
+- A textual value is retained; a numeric value is converted to its decimal string.
+- `scripts/test-tft-snapshot-manager.js` supplies the synthetic nested value `778899` and asserts the canonical state receives `"778899"`.
+
+This closes the earlier **unknown mapper path** question. It does not close the **authoritative producer** question: the fixture is authored test data, not a sanitized real GEP capture.
+
+The lifecycle source also distinguishes:
+- `TftSnapshotManager.sessionId`: random UUID created at manager construction and regenerated only by its explicit `reset(gameId)` method;
+- `revision`: manager-local counter, reset to zero by `reset()`, incremented when canonical source state changes;
+- `capturedAt`: refreshed on revision changes;
+- `state.matchId`: mapped from the nested match-info leaf;
+- recorder behavior: a changed known match ID causes a new full snapshot baseline, but the recorder does not itself reset the manager's session ID or revision.
+
+The source audit has not yet proven that the actual Overwolf event/controller lifecycle invokes manager reset on every new match, reconnect, or game re-entry. Nor has it proven per-match uniqueness of the leaf across real matches. Therefore this evidence does **not** promote `identity.match_id` to canonical v2 availability.
+
