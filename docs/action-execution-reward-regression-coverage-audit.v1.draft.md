@@ -119,3 +119,10 @@ The test does not assert:
 - completed-item loot (the variable is collected but no corresponding assertion is present).
 
 Therefore, the earlier native-test gap is not a claim that elimination itself lacks integration coverage. The missing proof is specifically elimination × item ownership × pending-anvil × execution-result correlation.
+
+
+## 10. Pending-anvil risk reachability qualification — 2026-11-15
+
+The conditional dead-player mask/executor mismatch is not currently shown reachable through normal main-repository gameplay: the audited production C++ translation units contain no call to either ItemEngine anvil enqueue API; the actual PvE reward path adds components/completed items directly to inventory; and the TFTEngine pybind surface does not expose an anvil enqueue method. Direct ItemEngine tests do exercise the anvil API, but do not establish a live TFTEngine producer.
+
+Retain the mask/executor acceptance case as a future producer guard. Do not classify it as a reproduced production defect unless a real gameplay or externally authorized producer is introduced and a deterministic path demonstrates the state.

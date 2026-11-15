@@ -308,3 +308,8 @@ A source-backed transfer map now distinguishes physical ownership transitions fr
 - Engine reset reconstructs the factory from base seed, so UUID sequences can repeat across same-seed episode scopes.
 
 This narrows the explicit production paths but does not close the implicit C++ copy/assignment/destruction proof or establish a globally scoped physical identity.
+
+
+### Pending-anvil risk reachability qualification — 2026-11-15
+
+The conditional eliminated-player pending-anvil mask/executor mismatch is not currently shown reachable through the audited main-repository gameplay path. The production C++ translation-unit audit found no call to the two ItemEngine anvil enqueue APIs; the real PvE reward path grants inventory items directly; and pybind does not expose an anvil enqueue method. Direct ItemEngine tests are not a live TFTEngine producer. Keep this as a future-producer guard, not a current production defect, unless a deterministic gameplay path is established.
