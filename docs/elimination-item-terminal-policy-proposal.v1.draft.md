@@ -120,3 +120,17 @@ These are future acceptance tests, not tests executed by this proposal.
 **Decision required:** accept Policy A, choose Policy B, or retain a different explicit terminal policy.
 
 Until this decision is accepted and Gate 8 is authorized, no runtime implementation is permitted. Issue #346 remains open. Gate 8 remains blocked.
+
+
+## 11. ItemMetrics consumer audit — 2026-11-15
+
+A focused source pass checked the ItemEngine metric declaration/accessor and its audited Engine, binding and reward consumers:
+
+- `ItemEngine::metrics()` exposes counters for collected components, crafts, equips, invalid actions, unused items, anvils received and anvil choices.
+- In the inspected production paths, `TFTEngine.cpp`, `tft_engine_bindings.cpp`, `RewardManager.hpp` and `RewardModel.hpp`, no read of `ItemEngine::metrics()` or any ItemMetrics field was found.
+- The direct reads found are in `cpp/tests/test_item_engine.cpp`, where they assert ItemEngine unit-test behavior.
+- `ItemEngine::reset()` clears components, inventory, equipped mappings, anvil queue and ItemMetrics.
+- In the inspected ItemEngine implementation, `items_left_unused` is declared but no increment/update site was found.
+- Current PPO reward is assembled from action/combat/placement reward paths; item assignment/crafting shaping uses evaluated action/context values, not ItemMetrics counters. The separate RewardManager helper is not the active PPO reward route documented by the native reward-binding audit.
+
+**Conclusion:** no current production placement/reward/PPO consumer of ItemMetrics was found in the audited main-repository paths. Therefore preserving these counters is not a demonstrated prerequisite for current reward attribution if a terminal item-retirement policy is selected. A terminal snapshot may still preserve them for diagnostics if desired. This narrows, but does not replace, the domain decision between Policy A and Policy B; it is not proof about external consumers outside the audited repository paths.
