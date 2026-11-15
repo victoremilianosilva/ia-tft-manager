@@ -42,11 +42,11 @@ Current crosswalk status after these passes:
 - 19 additional combat-stat, anvil, unit-role, item-fit and recipe-fit paths have field-level dispositions.
 - 16 previously unmapped paths have explicit source-backed dispositions (including not-produced, Shadow-only, diagnostic-only, unverified and static contract metadata).
 - 43 exact source-map matches still require callsite/provenance/sequence/Python/PPO validation.
-- 114 ancestor-only paths still require nested field-level proof.
+- 0 ancestor-only paths remain without a field-level disposition.
 
 The 31 unit/item pass deliberately distinguishes diagnostic snapshot delivery from PPO delivery. Structured UUID/champion/item identifiers in the audit snapshot are not treated as PPO tensor inputs. The 16 unmapped dispositions preserve unavailable/not-produced distinctions rather than manufacturing data.
 
-Next work: continue the remaining 46 ancestor-only paths and validate the 43 exact matches at callsite level, then trace Python/vector-environment/rollout-buffer/Actor/Critic delivery. Issue #346 remains open.
+Next work: validate the 43 exact source-map matches at callsite level, then complete Python/vector-environment/rollout-buffer/Actor/Critic delivery proof. Issue #346 remains open.
 
 ### Additional field-level proof — 2026-11-15
 
@@ -56,7 +56,7 @@ The [Item Fit, Anvil and Unit Role Field Proof](observation-schema-v2-item-fit-a
 - positional option IDs and aggregate anvil fit from stable option identity and per-target fit records;
 - slot-aligned role/item/recipe feature matrices from typed unit, item, recipe and target identities.
 
-Cumulative ancestor-path progress: 118 of 164 ancestor-mapped paths now have field-level dispositions; 46 remain. The 43 exact matches and 16 no-match paths are unchanged. This is a documentation audit, not an Actor/Critic leaf-delivery proof.
+Cumulative ancestor-path progress: 164 of 164 ancestor-mapped paths now have field-level dispositions; 0 remain. The 43 exact matches and 16 no-match paths are unchanged. This is a documentation audit, not an Actor/Critic leaf-delivery proof.
 
 ### Strategic evidence field-level proof — 2026-11-15
 
@@ -74,7 +74,16 @@ Cumulative ancestor-path progress: 101 of 164 paths now have field-level disposi
 
 The [Action Opportunity and Temporal Field Proof](observation-schema-v2-action-opportunity-temporal-field-proof.v1.draft.md) reconciles 17 paths. The 16 action-candidate fields remain unavailable as candidate records because the audited `StrategicSharedContext.action_candidates` source vector is empty. Some legacy slot-tail scalars (composition fit, upgrade signal, sell value and shop affordability) exist, but are not candidate-bound. The 28 board-move-age features are real normalized PPO temporal inputs, not typed decision history.
 
-Cumulative ancestor-path progress: 118 of 164 paths have field-level dispositions; 46 remain.
+Cumulative ancestor-path progress: 164 of 164 paths have field-level dispositions; 0 remain.
+
+### Legal state, AntiLoopEngine, masks and Critic context — 2026-11-15
+
+The [Legal State and Critic Context Field Proof](observation-schema-v2-legal-state-critic-context-field-proof.v1.draft.md) reconciles the final 46 ancestor-matched paths:
+- 32 AntiLoopEngine paths: bounded internal histories and summaries exist, but full histories are not exported; per-record decision sequences and SHA-256 hashes are absent.
+- 10 mask-reference paths: native masks are real arrays passed separately through Python/Actor/Rollout, but no runtime contract ID/version/hash, snapshot hash or decision identity hash accompanies them.
+- 4 Critic-context paths: the value head uses the shared observation encoder and explicitly ignores masks; no separate critic context/status/sequence/reason is emitted.
+
+**Milestone:** all 164/164 ancestor-matched Schema v2 paths now have field-level dispositions in the CSV. No ancestor-only placeholder remains. The 43 exact source-map matches still require callsite/provenance/sequence/Python/PPO validation; the 16 no-source-map paths retain explicit dispositions.
 
 ## 4. The 16 paths without a source-map entry
 
@@ -111,7 +120,7 @@ The CSV intentionally sets Python and PPO delivery to `not_established_by_source
 ## 6. Required next work
 
 1. Audit the 16 unmapped paths against exact Engine/Shadow producers and classify them as observed, derived, Shadow-only, diagnostic-only, not-produced, not-correlated or metadata-only.
-2. Review all 164 ancestor-mapped paths and determine whether the nested schema property is actually produced; do not inherit parent availability automatically.
+2. Verify the 164 existing ancestor-mapped dispositions against the final evidence index; no path may retain inherited-family status as a substitute for field proof.
 3. For all 43 exact matches, trace callsite, formula/version, identity, source sequence, reset, Python binding and PPO rollout independently.
 4. Reconcile schema-required identities with the correction proposal: raw UUID, unit assessment references, anchor candidate IDs, anvil option IDs, unit-role and item-target-fit targets.
 5. Extend replay/acceptance criteria only after producers and sequence scopes are proven.
