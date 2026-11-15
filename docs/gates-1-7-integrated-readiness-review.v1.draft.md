@@ -263,3 +263,14 @@ Until then, all work remains documentation/source audit only. No Engine, runtime
 5. **Cross-component impacts:** observation schema, action/masks, reward, PPO/checkpoints, strategic owners, legacy migration, replay/evaluation, Viewer and Overwolf inference.
 6. **Objective validation:** every Gate 1–7 has current documentary evidence, current runtime gaps, remaining acceptance criteria and source links; Gate 8 remains explicitly blocked.
 
+
+
+### UnitInstance elimination and copy-lifecycle evidence update — 2026-11-15
+
+The focused follow-up confirms that `eliminate_players()` calls `return_eliminated_player_units()`, which returns champion copies and clears board/bench but does not invoke ItemEngine equipment return/cleanup/reset. The eliminated PlayerEnv retains its ItemEngine until the Engine reset lifecycle, so UUID-keyed equipment records can remain after their physical UnitInstances have left active ownership. Item-target enumeration still depends on live board/bench units; retained map state is not proof of an active target or cross-player transfer.
+
+The two focused native test files establish sale return-to-inventory and merge transfer, but do not exercise elimination with equipped board/bench units. This is a scoped test gap, not a repository-wide claim that no elimination test exists.
+
+The UnitInstance declaration also retains a stale comment saying UUID generation is future work; the factory's create/generate_uuid implementation proves generation exists. The struct declares no custom copy/move operations in the inspected declaration, so compiler-generated value copies preserve the UUID string. The complete implicit copy/ownership graph remains unproven.
+
+These findings strengthen the existing blockers: explicit terminal item policy, exactly-once equipment cleanup, active-owner lifecycle, and scoped physical identity. They do not authorize a runtime fix or change Gate status.
