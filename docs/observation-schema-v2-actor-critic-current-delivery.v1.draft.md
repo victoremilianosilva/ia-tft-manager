@@ -84,6 +84,8 @@ The CSV's `actor_delivery` and `critic_delivery` columns describe **current runt
 | Conditional anvil features | Feature block exists in shared input, but audited gameplay path has no grant producer; current live values are not established | Same conditional/unpopulated boundary |
 | Critic context | No separate context object; Actor shares the encoded observation | Value head consumes shared encoded observation; no separate status/sequence/reason object |
 
+The current candidate tail's eight per-slot values include composition fit, cost, star, role, core flag, owned-copy count, upgrade signal, and either bench sell value or shop affordability. The cost value is a real shared Actor/Critic slot feature, but it is not a `StrategicActionCandidate.gold_cost` record and has no candidate ID, action kind or decision sequence.
+
 ## 4. Important per-family outcomes
 
 ### Shared current observation features
