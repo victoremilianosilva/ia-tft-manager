@@ -136,3 +136,14 @@ The elimination follow-up adds two cross-cutting gaps not represented as separat
 The pending-anvil mask/executor mismatch is retained only as a future-producer guard: no production anvil enqueue call was found in the audited main gameplay path, the PvE reward path grants inventory items directly, and pybind does not expose an anvil enqueue operation.
 
 The updated CSV remains the field-family index (31 rows, 17 kinds). The new transfer/terminal findings are reflected in its UnitInstance and item_instance rows; this coverage assessment still does not claim canonical acceptance or PPO delivery.
+
+
+## 10. Final documentary reconciliation — 2026-11-15
+
+The six-workstream closeout is consolidated in [Final Documentary Reconciliation — Gates 1–7 v1](gates-1-7-final-documentary-reconciliation.v1.draft.md).
+
+The 17 entity kinds and 31 field-family rows remain the structured-entity coverage scope. Cross-cutting player terminal status is documented separately rather than inventing an eighteenth entity kind: `AuditPlayerSnapshot` has no `alive`/`eliminated` field; `get_public_state()` exposes elimination separately and requires same-episode/snapshot correlation.
+
+The CSV was structurally validated at 31 data rows, 17 distinct entity kinds and 15 columns on every row. This validates traceability structure only. It does not promote any `not_produced`, `not_correlated`, `shadow_only`, `diagnostic_only`, `not_exposed_to_python` or `unverified` field to native/PPO availability.
+
+The Python inventory covers 125/125 tracked files. The C++ inventory covers 48/48 test files and explicit identity/test-hook references across 127/127 tracked C++ files; it does not prove every implicit value-copy/assignment/destruction path. Issue #346 remains open until the remaining producer and end-to-end acceptance criteria are met.
