@@ -168,3 +168,17 @@ Required acceptance:
 5. Verify the alive-player completion predicate and rollout transition semantics remain consistent.
 
 Until reachability is established, classify this as a conditional producer/mask/executor contract risk, not a reproduced gameplay defect.
+
+
+## 11. Full-match integration test boundary — 2026-11-15
+
+The Python integration test `tests/test_full_match_terminal_ranking.py` was also inspected. It drives a real native lobby through combat and at least one elimination, obtains masks for all eight player seats on every transition, and chooses PASS or a forced type-7 anvil action from those masks. It asserts terminal completion, unique ordered placements, and exactly one placement reward per player.
+
+Its limits for this audit:
+- It does not equip items on a player who is then eliminated, nor assert the fate of that player's UUID-keyed equipment map.
+- It does not record whether a forced anvil choice was consumed or whether the corresponding PlayerTransition had `acted=true`.
+- It does not assert that eliminated-player masks are inactive or that no forced item choice remains after elimination.
+- It sets `saw_completed_item_loot` but does not assert it; the actual loot assertion is for direct component loot.
+- A full match completing does not prove that a dead player's pending-anvil state is consumed; alive-player progression can continue independently.
+
+This confirms that normal full-match elimination and ranking are covered, while elimination-specific equipment ownership and dead-player forced-action semantics remain uncovered by this integration test.
