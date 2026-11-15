@@ -139,7 +139,7 @@ Authorization starts a controlled program, not an unrestricted runtime rewrite. 
 4. Implement checkpoint manifests, semantic compatibility classification, save/load/resume and immutable legacy baseline handling.
 5. Do not transfer optimizer/scheduler state unless the manifest explicitly proves compatibility.
 
-**Exit:** projection fixtures, policy/action-head tests, checkpoint compatibility tests and new-lineage smoke training pass.
+**Exit:** projection fixtures, policy/action-head tests and checkpoint compatibility tests pass. No training run is promoted or used for performance claims until Stage 5 has migrated and validated the new Reward Contract.
 
 ### Stage 5 — Reward migration and legacy isolation
 
@@ -197,3 +197,8 @@ No authorization is inferred from this document, a PR merge, a green CI run or a
 4. **Contract/invariants:** exact masks to Actor/Critic; no uncorrelated history; item/recipe facts shared while raw action-conditioning matrices remain Actor-specific initially; no tensor layout frozen here; no implementation without explicit Gate 8 authorization.
 5. **Cross-component impacts:** Schema v2, identity/namespace registry, Engine, masks, structured entities, strategic owners, Python wrapper/vector env, Trainer, RolloutBuffer, Actor/Critic, rewards, checkpoints, Viewer, replay and Overwolf.
 6. **Objective validation:** checked 223 schema-path dispositions, 77 source-map entries, 66 legacy mappings, 17 entity kinds/31 rows, nine sequence namespaces, seven synthetic hash vectors, current Actor/Critic delivery and the Gate 1–7 issue set. JSON and CSV artifacts parse with consistent structure. No runtime file is changed.
+
+
+## 10. Stage ordering correction — reward before training claims
+
+The Stage 4 exit criterion is limited to projection, policy/action-head and checkpoint contract tests. Any smoke training performed only as a mechanical integration check must be explicitly non-evaluative and must not produce a promotable checkpoint or performance claim. New-lineage training, benchmark, ablation and promotion evidence belongs after Stage 5 reward migration and Stage 6 evaluation protocol acceptance. This prevents training a candidate lineage against the still-active legacy reward path and then mislabeling it as the new Reward Contract.
