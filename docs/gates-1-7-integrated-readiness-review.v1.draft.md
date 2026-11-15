@@ -291,3 +291,20 @@ A source trace found that pending-anvil state overrides masks to a forced type-7
 ### Full-match elimination test coverage refinement — 2026-11-15
 
 The Python integration test `tests/test_full_match_terminal_ranking.py` does drive a real lobby through combat/elimination and validates terminal ranking and placement rewards while selecting actions from masks for all eight seats. It does not prove elimination-time equipment cleanup, post-elimination pending-anvil consumption, dead-player `acted` status, or an inactive-only mask contract. It also records but does not assert completed-item loot. Thus the remaining gap is not “no elimination integration test”; it is the specific interaction among elimination, item ownership, forced masks and typed execution outcome.
+
+
+### Production UnitInstance transfer-path refinement — 2026-11-15
+
+A source-backed transfer map now distinguishes physical ownership transitions from value-copy projections:
+
+- Shop draw creates a new factory UnitInstance.
+- Reroll rollback stores a temporary copy of previous offers for failure restoration; successful reroll discards the backup.
+- Strategic decision-state construction copies an offer into a temporary projection input and emits UnitSnapshot metadata; it is not an ownership transfer.
+- Purchase moves the shop offer into bench.
+- Bench/board positioning uses move or swap.
+- Merge keeps the purchased UnitInstance UUID as survivor, transfers consumed UUID equipment mappings to it, and resets consumed slots.
+- Sale returns equipped items by UUID before bench removal.
+- Elimination removes board/bench owners but leaves UUID-keyed equipment entries without explicit terminal cleanup.
+- Engine reset reconstructs the factory from base seed, so UUID sequences can repeat across same-seed episode scopes.
+
+This narrows the explicit production paths but does not close the implicit C++ copy/assignment/destruction proof or establish a globally scoped physical identity.
