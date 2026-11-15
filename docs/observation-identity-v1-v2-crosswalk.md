@@ -5,16 +5,16 @@
 
 | v1 field | v1 meaning/type | v2 disposition | Migration rule |
 |---|---|---|---|
-| `match_id` | nullable string | Preserve | Copy only from validated match source; required non-empty for complete v2 identity |
-| `engine_match_id` | nullable string | Preserve | Keep distinct from match_id; required non-empty for complete v2 identity |
+| `match_id` | nullable string; authoritative logical game-match identity, not Viewer session ID | Preserve | Copy only from validated game/platform source; if absent, v2 identity is incomplete |
+| `engine_match_id` | nullable string; canonical Engine-episode scope (Engine-instance scope + episode) | Preserve as a distinct field | Current numeric `episode_id` alone is insufficient; require an authoritative scoped producer before marking complete |
 | `player_id` | nullable string | Preserve | Required non-empty for complete v2 identity |
 | `round` | nullable non-negative integer | Preserve | Required for complete v2 identity |
 | `decision_sequence` | nullable integer | Breaking type change to `{namespace,value}` or null | Namespace must be proven from its producer; current audit does not establish a canonical Engine decision counter |
 | `snapshot_sequence` | nullable integer | Breaking type change to `{namespace,value}` or null | Namespace must be proven from the snapshot producer; no typed native observation snapshot is currently transported through the Python wrapper |
 | `player_sequence` | nullable integer | Typed producer-local reference or null | Preserve owner-local meaning only after producer/scope verification; never alias Engine decision sequence |
 | `event_sequence` | nullable integer | Typed producer-local reference or null | Preserve event producer namespace only after source verification; otherwise null/incomplete |
-| `session_match_id` | nullable string | Preserve as session correlation metadata | Never substitutes for match_id or engine_match_id |
-| `episode_id` | integer/string/null | Preserve as episode metadata | Not a decision counter and excluded from decision hash |
+| `session_match_id` | nullable string; ViewerSession recording UUID | Preserve as session correlation metadata | Map ViewerSession.match_id here; never promote it to canonical `match_id` or `engine_match_id` |
+| `episode_id` | integer/string/null; native counter local to one TFTEngine::Impl | Preserve as episode metadata | Not globally unique, not a decision counter, and excluded from decision hash; insufficient alone for `engine_match_id` |
 | `captured_at` | date-time string | Preserve as capture metadata | Not a sequence and excluded from decision hash |
 | `status` | complete/partial/session_only/missing/stale/incompatible | Extend in v2 | Add unsupported/conflict; non-complete statuses require reason and null identity hash |
 | `reason` | optional string | Preserve; required for non-complete | Explicit reason; never silently downgrade unknown data to complete |
