@@ -174,3 +174,23 @@ The prior audit's ownership conclusions remain unchanged. This follow-up narrows
 4. **Contract and invariants:** implementation is authoritative over stale comments; fixture writes do not establish production ownership; `set_unit_items_for_testing` only mutates the mirror; shop fixtures retain pool accounting where the implementation explicitly performs it; no stable offer identity is inferred.
 5. **Cross-component impacts:** UnitInstance declaration/factory, TFTEngine test hooks, ShopEngine, ItemEngine, pybind, C++ tests, Python parity fixtures and the physical-identity audit.
 6. **Objective validation:** each listed hook is traced to declaration/implementation and checked against the binding chain; native and Python exposure are distinguished; the UUID comment is compared against the actual factory implementation. Documentation only.
+
+
+## 10. Follow-up: declaration comment and implicit copy contract — 2026-11-15
+
+The native `UnitInstance` declaration in `cpp/include/lobby/TftEngine.hpp` contains ordinary value members (`std::string uuid`, `std::string champion_id`, `std::vector<CombatItem> items`) and declares no custom copy constructor, copy assignment, move constructor, move assignment, or deleted copy operation in the inspected struct. The type therefore retains compiler-generated value-copy behavior: copying a UnitInstance copies the UUID string and item mirror; it does not mint a new UUID.
+
+This is a language-level declaration finding, not proof that every runtime copy site or ownership transfer is safe. The completed explicit-reference inventory across 127 tracked C++ files does not enumerate every implicit copy/assignment/destruction expression. The full semantic ownership graph and all copy-induced duplicate-live-identity scenarios remain unproven.
+
+The stale UUID comment in the struct says generation will be implemented later. The factory implementation already assigns a generated UUID. The comment should be corrected in a future authorized code change; this documentation-only follow-up does not edit the header.
+
+### Required lifecycle acceptance cases
+
+- Copy construction and copy assignment preserve the UUID value, and tests explicitly demonstrate that two simultaneously live copies with the same UUID are not treated as two distinct physical identities.
+- Moves/transfers preserve one logical owner and do not leave two active owners.
+- Merge retires consumed UUIDs and keeps the documented survivor identity.
+- Sale/elimination remove active ownership and resolve item ownership exactly once.
+- Reset/new episode cannot silently reuse an identity in a scope where it is treated as canonical.
+- Diagnostic snapshots/copies are marked non-owning and cannot be fed back as active physical units.
+
+These are proposed acceptance cases, not claims that tests already exist.
