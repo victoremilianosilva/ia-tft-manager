@@ -98,9 +98,9 @@ Keep separately typed: actual PPO-selected action (if available for same match/p
 
 Comparison is available only when there is at least one shared valid candidate identity, the candidate set is non-empty and ready (or has an explicitly defined comparable subset), both evaluators received the same candidate-set identity and correlated snapshot, and both outputs are valid under their own semantics. Two empty lists are never comparable; `same_initial_candidate_set` cannot make them comparable. Partial sets compare only an explicit shared valid subset with exclusions explained.
 
-When the executor integration is implemented and proven, it must receive the contextual proposal, originating candidate set, and exact sequence refs. It validates match/player/round/sequences against the independently supplied current Engine snapshot; validates candidate revision and physical parameters; resolves against current native masks without modifying them; and explicitly rejects stale, ambiguous, malformed, or illegal candidates. It never issues input or mutates Engine state. A relevant sequence change within the same round and composition version can stale a candidate.
+The current TftEngine call path invokes the read-only resolver with the contextual recommendation, source StrategicSharedContext and current native snapshot. In the audited path, however, the source candidate set is empty, so no valid selected candidate can be resolved. For a future non-empty candidate set, the resolver must validate match/player/round/sequences against the independently supplied current Engine snapshot; validate candidate revision and exact physical parameters; resolve against current native masks without modifying them; and explicitly reject stale, ambiguous, malformed, or illegal candidates. It never issues input or mutates Engine state. A relevant sequence change within the same round and composition version can stale a candidate.
 
-Until the handoff is demonstrated, the executor stage is `unavailable/not_connected`; evaluator diagnostics alone do not count as executor resolution.
+The resolver call path is connected, but per-request resolution remains unavailable/rejected when there is no valid selected candidate. Evaluator diagnostics alone do not establish candidate validity, resolver acceptance, or execution.
 
 ## 9. Acceptance matrix — after Gate 8
 
@@ -134,13 +134,13 @@ No runtime code/tests, PPO, observations, rewards, checkpoints, masks, Engine ru
 
 The current source establishes the resolver call path: TftEngine invokes StrategicActionExecutor::resolve(), and the diagnostic reports executor_connected=true. The resolver is read-only; execution_enabled=false and native_action_applied=false. Per-request acceptance remains separate and is not implied by connectivity. The current action-candidate source vector is empty, so no valid candidate comparison or accepted action is established.
 
-**Prior problem:** the earlier wording could be read as claiming an existing handoff while the evaluator diagnostic explicitly says the executor is disconnected.
+**Prior problem:** the earlier wording understated the existing read-only resolver call path and did not clearly separate resolver connectivity from per-request acceptance.
 
 **Technical rationale:** ownership defines who should produce/consume a contract; integration status requires evidence of an actual connected call path and correlated records.
 
 **Ownership:** ContextualActionEvaluator owns contextual proposals; StrategicActionExecutor owns read-only validation/resolution when connected; diagnostics report connection/availability and must not synthesize resolution.
 
-**Invariants:** disconnected is not accepted; unavailable is not HOLD; candidate proposal is not execution; no live input or Engine mutation; native masks remain final legality authority.
+**Invariants:** connected is not accepted; unavailable is not HOLD; candidate proposal is not execution; no live input or Engine mutation; native masks remain final legality authority.
 
 **Cross-component impact:** #281/#289/#294 and the dual-evaluator, replay, and ownership contracts.
 
