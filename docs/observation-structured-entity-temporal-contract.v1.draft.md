@@ -110,19 +110,11 @@ These are not permission to fabricate fields. They require source audit and, whe
 6. **Objective validation:** every structured field maps to an entity/relationship or explicit gap; identities are scoped; collection completeness is typed; derived fields retain provenance; schema gaps are listed.
 
 **Gate status:** documentary proposal only. Gate 1 and Gate 4 remain open. Gate 8 and explicit authorization remain required before runtime implementation.
-## Producer-backed identity correction — 2026-11-14
+## Superseded historical identity correction — 2026-11-14
 
-The previous draft described unit.instance_id as the canonical native identity. That claim was premature and is corrected here.
+This historical note relied on the stale `TftEngine.hpp` comment and is superseded by the 2026-11-15 UnitInstance UUID producer correction below. It must not be read as the current finding. The premise that UUID generation was unimplemented was disproved by `UnitInstanceFactory::create()` calling `generate_uuid()`. The surviving conclusion is that raw UUID is not accepted as canonical cross-episode identity until Engine scope, collision policy and full lifecycle are proven.
 
-Source inspection of cpp/include/lobby/TftEngine.hpp finds UnitInstance::uuid, but the declaration's own comment states that effective UUID generation will be implemented later. The presence of a string member is therefore not evidence that a value is generated, non-empty, unique, stable across board/bench movement, or scoped to a match/player. cpp/src/lobby/TftEngine.cpp consumes unit.uuid in several paths and includes guards that skip some processing when it is empty; this still does not prove a valid identity lifecycle.
-
-- Native physical-unit identity producer status is **unverified**.
-- Schema v2's required instance_id is a semantic contract field, not a demonstrated alias for UnitInstance::uuid.
-- Do not map instance_id = uuid until UUID generation, uniqueness, lifecycle, ownership transfer and reset semantics are proven.
-- Champion ID and slot index remain invalid substitutes.
-- Unit-instance projection remains blocked until the source audit establishes an authoritative identity or proposes a versioned producer/schema correction.
-
-This correction does not alter runtime code or claim that UUID generation is implemented.
+Historical statement retained for audit chronology: the initial pass treated native identity production as unverified because the header comment said generation would be implemented later. The factory audit subsequently disproved that specific premise.
 
 ## Pool availability producer correction — 2026-11-15
 
