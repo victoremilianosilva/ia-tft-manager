@@ -143,3 +143,34 @@ Do not synthesize a globally unique ID from champion ID, slot, round or factory 
 6. **Objective validation:** factory and test-hook implementations are traced; existing test claims are bounded to their actual assertions; missing regression cases are enumerated; no runtime or tensor change is made.
 
 Issue #346 remains open. Gate 8 remains blocked.
+
+## 8. Cross-check of fixture exposure and stale identity comment — 2026-11-15
+
+### 8.1 Native declaration comment is stale
+
+`cpp/include/lobby/TftEngine.hpp`, immediately above `UnitInstance::uuid`, still says: `A geração efetiva do UUID será implementada posteriormente.` That statement is contradicted by the current implementation: `UnitInstanceFactory::create()` assigns `unit.uuid = generate_uuid()`, and `generate_uuid()` constructs the UUID-shaped value from its seeded `std::mt19937_64` stream. This is a stale source comment, not evidence that UUID generation is absent. It should be corrected in a future code change, but this audit does not edit runtime/header code.
+
+### 8.2 Fixture hooks: native versus Python exposure
+
+| Hook | Native behavior | Python binding in inspected `tft_engine_bindings.cpp` | Identity/lifecycle boundary |
+|---|---|---|---|
+| `set_unit_for_testing` | Creates a factory unit and writes directly to board/bench slot; may overwrite an occupied slot without production pool/item cleanup | Exposed | Fixture-only ownership injection; does not prove shop/pool lifecycle |
+| `set_unit_items_for_testing` | Writes `UnitInstance::items` mirror directly; does not update ItemEngine UUID-keyed equipment or inventory | Not exposed in inspected pybind chain | C++ fixture-only item mirror mutation |
+| `set_shop_offer_for_testing` | Creates a factory unit and calls `ShopEngine::set_offer_for_testing`; that method takes the champion from pool and returns replaced offer's champion copy | Exposed | Bypasses normal weighted draw, but retains explicit pool accounting; offer has no stable offer ID/revision |
+| `set_next_shop_roll_for_testing` | Queues five champion catalog IDs for a later deterministic `ShopEngine::roll`; forced roll still checks/takes pool copies and creates units through factory | Exposed | Controls fixture draw outcome; does not establish offer identity or ordinary RNG/odds behavior |
+| `get_combat_team_for_testing` | Read-only conversion to CombatTeam for a selected player/team | Not exposed in inspected pybind chain | Diagnostic/test projection; does not create or transfer UnitInstance ownership |
+
+The inspected pybind chain also exposes item grant fixture helpers and player/economy fixtures, but those do not create or copy UnitInstance values directly. Their presence must not be confused with the four unit/shop fixture surfaces above.
+
+### 8.3 Disposition
+
+The prior audit's ownership conclusions remain unchanged. This follow-up narrows the fixture boundary and identifies a stale source comment. The header comment is not silently treated as runtime truth; implementation and tests remain the evidence. No test hook is promoted to production lifecycle evidence.
+
+## 9. Architecture reconstruction review
+
+1. **Prior problem:** the copy/test-hook audit did not distinguish which fixture hooks cross the Python binding boundary, and the native UnitInstance declaration retains an outdated statement that UUID generation is future work.
+2. **Technical justification:** source comments can lag implementation; Python-visible fixtures and C++-only fixtures have different reachability, while both remain non-production evidence.
+3. **New responsibility:** this addendum owns the cross-check between UnitInstance fixture declarations/implementations and the inspected pybind surface, plus the stale-comment discrepancy.
+4. **Contract and invariants:** implementation is authoritative over stale comments; fixture writes do not establish production ownership; `set_unit_items_for_testing` only mutates the mirror; shop fixtures retain pool accounting where the implementation explicitly performs it; no stable offer identity is inferred.
+5. **Cross-component impacts:** UnitInstance declaration/factory, TFTEngine test hooks, ShopEngine, ItemEngine, pybind, C++ tests, Python parity fixtures and the physical-identity audit.
+6. **Objective validation:** each listed hook is traced to declaration/implementation and checked against the binding chain; native and Python exposure are distinguished; the UUID comment is compared against the actual factory implementation. Documentation only.
