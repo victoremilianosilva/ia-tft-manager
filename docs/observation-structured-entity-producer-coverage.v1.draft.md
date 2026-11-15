@@ -99,3 +99,8 @@ The [PvE Loot and Anvil Gameplay Producer Boundary Audit](anvil-gameplay-produce
 ## PvE component pool and inventory lifecycle — 2026-11-15
 
 The [PvE Component Pool and Item Inventory Lifecycle Audit](pve-component-inventory-lifecycle-audit.v1.draft.md) separates the per-player, episode-local Set 18 loot distribution pool from collected component multiplicity in ItemEngine. The pool is not projected to PPO. PPO receives ten catalog-order component counts divided by six and clamped, plus nine positional semantic inventory slots; neither is a lossless physical-item or loot-provenance representation. The audit also traces recipe consumption, craft-and-equip rollback, equipment ownership and reset behavior, and records existing test coverage and gaps.
+
+
+## Item action policy-to-native binding — 2026-11-15
+
+The [Item Action Policy-to-Native Binding Audit](item-action-policy-native-binding-audit.v1.draft.md) records the type-specific meaning of the six-wide action vector for inventory equip, both anvil choice kinds, and craft-and-equip. It confirms type 7 is conditionally overloaded: a pending anvil makes action[1] an option index and action[2] a forced zero sentinel; otherwise they are inventory slot and target. Type 8 binds two component indices and a target. Item masks remain separate conditional legality inputs. Existing tests cover policy sampling/replay for anvil and crafting, while full native/Python round-trip correlation remains open.
