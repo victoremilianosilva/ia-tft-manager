@@ -117,3 +117,15 @@ Decision identity hashes, observation/mask payload hashes, action/mask contract 
 6. **Objective validation:** 77/77 semantic fields accounted for; 66/66 historical mappings reconciled; disposition coverage checked; candidate producer, semantic bridge and provenance blockers explicitly retained. No runtime files changed.
 
 **Gate status:** documentary proposal only. Gate 1 tensor projection and Gate 4 PPO architecture remain open. Gate 8 and explicit authorization are still required before runtime implementation.
+
+
+## 10. Gate 8 initial consumer decision reconciliation — 2026-11-15
+
+The initial PPO lineage decisions are:
+
+- **Exact masks:** same decision-correlated native mask snapshot is mandatory as a separate Actor and Critic side input. The Engine remains final legality authority.
+- **Item/recipe evidence:** factual inventory/component and unit target-profile inputs are shared semantic context. The precomputed 9×37 inventory-fit and 100×37 recipe-fit matrices are Actor-specific action-conditioning structures in the initial consumer design; they are not required raw Critic inputs. A Critic summary is permitted only as a separately versioned derivation from the same validated source evidence.
+- **Temporal history:** AntiLoopEngine history and current untyped action-memory scalars are excluded as separate Critic history inputs in the initial projection. Reconsideration requires typed event producer/sequence, explicit reset semantics, deterministic replay and evaluation ablation.
+- **No tensor layout:** these decisions establish semantic consumer eligibility only. They do not choose dimensions, offsets, normalization, padding, encoder family or sharing topology.
+
+This section supersedes the unresolved wording in sections 4 and 8 that asked whether raw compatibility matrices or AntiLoop history should be included in the initial Critic input. The semantic consumer matrix remains a design input until Stage 0 projection review.
