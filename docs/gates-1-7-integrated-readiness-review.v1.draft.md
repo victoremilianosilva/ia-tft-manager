@@ -44,6 +44,9 @@ Relevant evidence:
 - `spec/observation-schema-v2-field-source-crosswalk.v1.draft.csv`
 - `docs/observation-schema-v2-field-source-crosswalk.v1.draft.md`
 - `docs/observation-schema-v2-actor-critic-current-delivery.v1.draft.md`
+- `docs/observation-schema-v2-identity-field-semantics-reconciliation.v1.draft.md`
+- `docs/engine-identity-scope-reconciliation.v1.draft.md`
+- `docs/observation-structured-entity-audit-coverage-status.v1.draft.md`
 - Unit/item, strategic, owner-snapshot, action-opportunity, derived-context and legal-state field-proof documents.
 
 ### Remaining acceptance
@@ -140,6 +143,7 @@ Relevant evidence:
 - `docs/observation-schema-v2-strategic-evidence-field-proof.v1.draft.md`
 - `docs/observation-schema-v2-strategic-owner-snapshot-field-proof.v1.draft.md`
 - `docs/observation-schema-v2-strategic-evidence-exact-source-proof.v1.draft.md`
+- `docs/observation-structured-entity-audit-coverage-status.v1.draft.md`
 
 ### Remaining acceptance
 
@@ -185,6 +189,8 @@ Relevant evidence:
 Relevant evidence:
 - `docs/strategic-shadow-integrated-replay-contract.v1.draft.md`
 - `docs/current-replay-correlation-evaluation-gap-audit.v1.draft.md`
+- `docs/observation-schema-v2-identity-field-semantics-reconciliation.v1.draft.md`
+- `docs/engine-identity-scope-reconciliation.v1.draft.md`
 - `docs/ppo-evaluation-protocol.v1.draft.md`
 - `docs/evaluation-tooling.md`
 - Issues #289 and #295; documentary PRs #315 and #317.
@@ -200,7 +206,42 @@ Relevant evidence:
 
 **Current blocking facts:** the replay/evaluation documents are approved contracts, not executable acceptance. Viewer log playback does not re-execute Engine/policy; the cross-language fixture covers only round barriers and BUY_XP; rollout has no decision identity; masks are separately fetched; Viewer `identity_complete` does not require Engine match ID. No full multi-round integrated replay or new-lineage PPO evaluation is accepted by this review.
 
-## 10. Gate 8 decision
+## 10. Latest integrated evidence reconciliation — 2026-11-15
+
+The documentary/source audit has advanced since the first version of this readiness review. The following evidence is now incorporated; it does not change the runtime status in the gate table.
+
+### Identity envelope semantics are now explicit
+
+- v2 match_id means authoritative logical game-match identity from a validated game/platform source. No such producer is proven in the audited main repository.
+- v2 engine_match_id means a canonical Engine-episode scope that distinguishes Engine object lifetime plus episode. The current native episode_id is local to one TFTEngine::Impl and is insufficient alone.
+- ViewerSession UUID maps to session_match_id only. Legacy Viewer diagnostic match_id/engine_match_id fields are not copied directly into a complete v2 identity.
+- Native episode_id remains local metadata. Native player seat 0–7 is serialized as player-0 through player-7, scoped by engine_match_id, and is not a persistent participant UUID.
+- The v2 JSON Schema and namespace registry descriptions now reflect these meanings. Existing identity hash scope and hash vectors remain unchanged.
+
+Evidence: docs/observation-schema-v2-identity-field-semantics-reconciliation.v1.draft.md, docs/engine-identity-scope-reconciliation.v1.draft.md, docs/native-engine-instance-episode-identity-scope-audit.v1.draft.md, spec/sequence-namespace-registry.v2.draft.json and spec/decision-identity-v2-hash-vectors.draft.json.
+
+### Source inventory and structured entity coverage
+
+- All 125 tracked Python files were inspected for identity fields and the five native test-hook names (66 test files + 59 other Python files).
+- All 127 tracked C++ files were inspected for explicit UnitInstance/UUID/generate_uuid/episode_id/test-hook references (48 C++ tests + 79 production headers/sources/bindings). This does not by itself prove every implicit C++ value-copy/assignment/destruction lifecycle path.
+- The structured entity coverage matrix contains 17 unique entity kinds and 31 field-family rows. Every row has a source/status/delivery disposition, but multiple families remain unverified, Shadow-only, not produced, not correlated or not exposed to Python.
+- UnitInstance UUID generation is implemented by UnitInstanceFactory; the old header comment claiming future generation is stale. UUID is still not globally unique across same-seed Engine resets/objects, and it is not a typed PPO observation/rollout identity.
+- The C++ fixture hooks are concentrated in the native pool/lifecycle test. Python calls are limited to two test files. Test-hook fixture use does not prove ordinary production ownership or item lifecycle.
+
+Evidence: docs/python-identity-test-hook-callsite-inventory.v1.draft.md, docs/cpp-identity-test-hook-caller-audit.v1.draft.md, docs/observation-structured-entity-audit-coverage-status.v1.draft.md, docs/observation-structured-entity-producer-audit.v1.draft.md and spec/observation-structured-entity-producer-coverage.v1.draft.csv.
+
+### Remaining cross-gate blockers
+
+1. No authoritative game-match ID producer or canonical Engine-instance scope producer is available in the audited main repository; complete v2 identity therefore remains unavailable.
+2. Native episode_id is dropped by the Python training wrapper; observation, masks, action and rollout still lack one exact typed decision identity.
+3. UnitInstance cross-episode scope/collision policy, complete implicit-copy lifecycle proof and elimination equipment cleanup remain open.
+4. Physical item-instance identity, shop offer opportunity identity, anvil gameplay producer, action candidate producer, and typed ordered decision history remain absent or incomplete.
+5. Actor/Critic and RolloutBuffer do not receive the complete structured entity/identity envelope; diagnostic availability is not PPO delivery.
+6. Executable integrated replay and new-lineage evaluation remain pending.
+
+These updates improve documentary precision and traceability only. They do not promote any gate from documentary review to runtime acceptance.
+
+## 11. Gate 8 decision
 
 Gate 8 remains blocked. This review does not authorize implementation.
 
@@ -212,7 +253,7 @@ Before Gate 8:
 
 Until then, all work remains documentation/source audit only. No Engine, runtime, observation, action mask, PPO, reward, training, checkpoint, Viewer or Overwolf changes.
 
-## 11. Architecture reconstruction review
+## 12. Architecture reconstruction review
 
 1. **Prior problem:** each gate had a separate contract/audit, but no single evidence ledger distinguished documentary completion from executable acceptance across Gates 1–7.
 2. **Technical justification:** implementation readiness depends on cross-gate contracts and integration boundaries; a locally complete document cannot prove end-to-end semantics or runtime conformance.
