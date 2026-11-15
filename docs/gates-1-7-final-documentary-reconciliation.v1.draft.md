@@ -123,14 +123,7 @@ Native availability, diagnostic JSON availability, Shadow-only availability, Pyt
 
 The current elimination path returns champion copies to UnitPool and clears board/bench UnitInstances but does not explicitly retire ItemEngine's UUID-keyed equipment map, loose components, completed inventory or pending queue. The retained equipment map is not shown as an active target and is not fully enumerated by the audit snapshot; this is an ownership/diagnostic ambiguity, not proof of cross-player leakage.
 
-Three policies are documented:
-- **A — retire/discard** all item ownership after capturing an immutable terminal snapshot;
-- **B — return equipped items to the eliminated player's own bag, then freeze it**;
-- **C — retain current internal state until Engine reset**.
-
-Policy A is recommended provisionally because it gives the eliminated player no continuing active inventory and avoids orphaned active ownership. This was the historical recommendation before the domain owner made the explicit decision recorded in section 5.2.
-
-Before choosing A, inspect ItemEngine metric consumers and placement/reward attribution. A generic reset must not erase counters needed for terminal reward/replay. The user/domain owner must explicitly select A, B or another policy. No implementation is authorized by this document.
+Three policies were compared historically: A — terminal discard, B — return to the eliminated player's own bag, and C — retain state until reset. The domain owner subsequently selected Policy A definitively, as recorded in section 5.2 and PR #416. Policies B and C are rejected. The ItemMetrics consumer audit (#415) found no production consumer in the inspected main-repository paths; terminal diagnostics may preserve required counters, but this does not alter the no-transfer rule. Implementation must retire the eliminated player's item state exactly once after capturing a non-owning terminal snapshot. No runtime implementation is authorized before Gate 8.
 
 ## 6. Workstream 5 — CSV and machine-readable traceability
 
@@ -165,7 +158,7 @@ The CSV is an index for traceability. The Markdown audits remain the source of t
 4. Actor receives masks but current Critic value path ignores them.
 5. Action candidate source vector is empty.
 6. Multiple structured entity families are not produced, not correlated, Shadow-only, diagnostic-only or not delivered to PPO.
-7. Terminal item policy is not decided; item metrics/terminal ownership acceptance remains open.
+7. Terminal item policy is decided (terminal discard, no transfer/redistribution); implementation, diagnostic proof and regression acceptance remain open.
 8. Legacy strategy consumers remain active.
 9. Full integrated replay and new-lineage PPO evaluation remain unexecuted.
 
@@ -173,15 +166,13 @@ The CSV is an index for traceability. The Markdown audits remain the source of t
 
 **Closed by this documentary pass:** identity semantics reconciliation; current lifecycle/source map; explicit Python/C++ inventory scope; GEP/native/Python/rollout/Viewer boundary reconciliation; 17-kind/31-row coverage classification; CSV structural validation; terminal item policy alternatives and decision boundary; consolidated Gate 1–7 readiness ledger.
 
-**Not closed:** issue #346 producer acceptance; implementation of missing producers/transport; terminal item domain decision; Gate 1–7 runtime acceptance; Gate 8 authorization.
+**Not closed:** issue #346 producer acceptance; implementation of missing producers/transport; terminal item retirement and regression tests; Gate 1–7 runtime acceptance; Gate 8 authorization.
 
 ## 8. Decisions required from the domain owner
 
-1. Choose the terminal item policy: A, B or another explicitly described policy. Before choosing A, authorize/complete the metric-consumer review.
-2. Review the integrated Gate 1–7 ledger and unresolved architecture contracts.
-3. Only after that review, explicitly authorize or decline Gate 8.
-
-No silent default is applied to either decision.
+1. The terminal item policy is already settled: terminal discard, no transfer, no return to the eliminated player's bag and no redistribution. Do not reopen this domain choice without new evidence and explicit owner change.
+2. Review the integrated Gate 1–7 ledger and [Gate 8 Preflight](gate8-preflight-and-staged-implementation-plan.v1.draft.md), including the initial Actor/Critic decisions and staged plan.
+3. Accept or request corrections to the preflight, then explicitly authorize or decline Gate 8. No authorization is inferred from review or merge.
 
 ## 9. Architecture reconstruction review
 
@@ -224,3 +215,8 @@ This section supersedes stale statements in earlier sections where they describe
 - **PPO correlation:** pybind preserves native episode/masks, wrapper drops them; RolloutBuffer stores pre-action masks with observation/action at one pointer but no durable episode/player/decision identity. Terminal auto-reset mixes terminal reward/done with next-episode observation in the vector return; no stale-mask race is established, but typed replay correlation is missing.
 
 For the current authoritative remaining-work ledger, see [Remaining Identity, Ownership, Rollout and Gate Reconciliation](remaining-identity-rollout-gate-reconciliation.v1.draft.md). Issue #346 remains open; Gates 1–7 still lack runtime acceptance; Gate 8 remains blocked pending integrated review and explicit user authorization.
+
+
+## 12. Gate 8 preflight supersession — 2026-11-15
+
+The current authorization package is [Gate 8 Preflight — Integrated Decision and Staged Implementation Plan](gate8-preflight-and-staged-implementation-plan.v1.draft.md). It supersedes the historical provisional language in sections 5 and 8: the eliminated-player item rule is final, and the remaining work is runtime retirement/testing. Real GEP source validation is deferred until Overwolf integration and is not a blocker for the current main-repository preflight.

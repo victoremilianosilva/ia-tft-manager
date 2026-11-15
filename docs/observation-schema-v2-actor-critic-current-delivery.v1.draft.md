@@ -153,12 +153,12 @@ All 223 unique schema paths have non-empty Actor and Critic delivery classificat
 
 ## 6. Remaining integration gaps
 
-1. **Decision correlation:** add explicit match/player/round/decision identity and sequence to observation and mask snapshots; reject stale/mismatched masks.
-2. **Critic masks:** supply the exact native masks to the value path as required by the target contract, or prove a lossless alternative. Current `get_value` ignores them.
-3. **Critic history:** decide and define any additional Markov/history context independently of masks. AntiLoopHistory is currently internal and not exported.
-4. **Item fit semantics:** decide whether compatibility matrices belong in Critic context; current implementation gives them only to Actor. Do not change layout before Gate 8.
+1. **Decision correlation:** add explicit match/player/round/decision identity and typed sequence to observation and mask snapshots; reject stale/mismatched masks. Runtime producer and transport work remains post-Gate 8.
+2. **Critic masks:** target decision is settled: the exact same native mask snapshot is mandatory as a separate side input to Actor and Critic. Current `get_value` ignoring masks is a migration gap.
+3. **Critic history:** initial lineage excludes untyped AntiLoopEngine/action history. A future typed history feature requires authoritative producer, sequence, reset/replay proof and ablation.
+4. **Item fit semantics:** factual inventory/component and unit target-profile evidence are shared semantic context; raw 9×37/100×37 compatibility matrices remain Actor-specific action-conditioning initially. Any Critic summary must derive from the same validated evidence and have explicit formula identity.
 5. **Canonical strategic evidence:** build the post-Gate 8 producer/adapter path from canonical owner evidence; do not copy Shadow diagnostics or legacy StrategyInfo defaults into PPO.
-6. **Projection manifest:** after producer and consumer decisions, define stable feature IDs, per-feature provenance/validity/missingness, normalization, ordering, catalog fingerprints and explicit Actor/Critic consumers.
+6. **Projection manifest:** Stage 0 of the Gate 8 preflight defines stable feature IDs, per-feature provenance/validity/missingness, normalization, ordering, catalog fingerprints and explicit Actor/Critic consumers before any PPO runtime implementation.
 7. **Replay/evaluation:** prove deterministic observation/mask pairing and replay the full producer→wrapper→policy→rollout chain under the accepted fixtures.
 
 Issue #346 remains open. Gate 8 remains blocked. This audit makes no runtime, schema, tensor, PPO, reward, mask, training, checkpoint or Viewer changes.
@@ -172,3 +172,15 @@ Issue #346 remains open. Gate 8 remains blocked. This audit makes no runtime, sc
 5. **Cross-component impacts:** TftEngine observation builder, pybind, CppTFTLobbyWrapper, Trainer, TFTPolicy encoder/Actor/item heads/value head, RolloutBuffer, schema crosswalk and future projection manifest.
 6. **Objective validation:** all 223 paths have non-empty Actor/Critic classifications; policy source proves shared encoder, Actor-only item compatibility and Actor-only masks; no runtime or tensor-layout changes.
 
+
+
+## 8. Target consumer decisions for the first new lineage — 2026-11-15
+
+The current-delivery facts above remain unchanged. The initial target design is now clarified:
+
+1. Actor and Critic must receive the exact same decision-correlated native mask snapshot as a separate side input. The current Critic ignoring masks is a migration gap, not the desired contract.
+2. Item inventory/component facts and unit target-profile facts are shared semantic context. The 9×37 inventory-fit and 100×37 recipe-fit matrices remain Actor-specific conditional action-scoring inputs initially; they are not copied raw into the Critic. Any Critic summary must be derived from the same validated facts and versioned independently.
+3. AntiLoopEngine history and untyped action-memory scalars are not projected as Critic history in the initial lineage. A later history feature requires typed identity/sequence, authoritative producer, reset behavior, replay fixtures and an ablation.
+4. Encoder sharing/topology and all concrete dimensions remain open until the projection manifest and feature-to-consumer map are approved in Stage 0.
+
+These target decisions do not change audited current-delivery classifications in the CSV and do not imply that the runtime currently conforms.
