@@ -133,3 +133,17 @@ This follow-up narrows the previous finding: retained equipment is confirmed by 
 6. **Objective validation:** call chain traced through native source; item engine reset boundary identified; two relevant test files checked for elimination coverage; no runtime behavior changed.
 
 Issue #346 remains open. Gate 8 remains blocked.
+
+
+## 9. Follow-up: orphan observability and mask reachability — 2026-11-15
+
+A second source pass narrows what can be observed after elimination:
+
+- `get_audit_snapshot()` serializes board and bench units through `describe_unit()`; equipped IDs there come from each live `UnitInstance::items` mirror. After elimination clears those optionals, the orphaned `ItemEngine::equipped_` map is not serialized as a complete UUID-keyed collection.
+- The same audit snapshot separately exposes ItemEngine components, inventory, pending anvil and last-item-action metadata. It does not enumerate every `equipped_` map entry.
+- Strategic Planner item evidence builds `equipped_by_unit_uuid` only while iterating current board and bench UnitInstances. Eliminated UUIDs therefore do not enter that evidence binding.
+- Item mask target generation calls `item_target_unit()` for each board/bench target slot. A cleared slot cannot target the retained orphan UUID. Type-7 equip is enabled only when both inventory and a live target are available.
+- This establishes a visibility/reachability gap: retained orphan entries are not exposed by these two structured projections and are not selectable through the ordinary active target mask. It does not prove they are leaked to another player or used by the policy.
+
+The terminal-state decision remains unresolved. If the chosen policy is discard, the Engine needs explicit owner-scoped cleanup and a way to prove the orphan mapping was retired. If the chosen policy is return-to-owner-bag, the return must occur before the terminal inventory is frozen/cleared. In either case, observability must report the terminal disposition without exposing eliminated items as active equipment.
+
