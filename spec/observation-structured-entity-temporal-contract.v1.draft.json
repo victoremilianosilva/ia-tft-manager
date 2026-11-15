@@ -338,7 +338,7 @@
       "paths": [
         "strategic_evidence.owned_unit_assessments[]"
       ],
-      "identity": "unit_instance_id",
+      "identity": "no unit_instance_id is produced; current derived records are champion_id keyed or per-slot without UUID, so duplicate physical copies are ambiguous",
       "scope": [
         "match",
         "player",
@@ -348,14 +348,32 @@
       "domain": [
         "derived_assessment"
       ],
-      "invariant": "is_core, board_contribution, composition_fit and item_fit are derived/estimated, not observed unit facts."
+      "invariant": "is_core, board_contribution, composition_fit and item_fit are derived/estimated, not observed unit facts.",
+      "status": "native_derived_champion_aggregate_only; per-instance assessment identity and PPO structured delivery not produced",
+      "producer_paths": [
+        "cpp/src/lobby/TftEngine.cpp::Impl::update_strategy append_owned_candidate",
+        "cpp/include/strategy/StrategicEvidenceContext.hpp::StrategicEvidenceContextBuilder::build",
+        "cpp/src/lobby/TftEngine.cpp::Impl::update_strategy UnitPriorityContext construction",
+        "cpp/include/composition_intelligence/UnitPriorityPlanner.hpp::UnitPriorityPlanner::resolve"
+      ],
+      "gaps": [
+        "StrategicSharedContext::owned_units is appended per occupied board/bench slot but carries champion_id and no UnitInstance::uuid or exact slot identity; duplicate copies cannot be joined unambiguously.",
+        "copies_owned is champion-aggregated; board_contribution, composition_fit and item_fit are heuristic/derived values with different formulas, not observed unit facts.",
+        "The separate UnitPriorityContext aggregates ownership by champion_id and UnitPrioritySnapshot emits champion-keyed assessments, including missing target champions; it is not a physical UnitInstance assessment.",
+        "No field-level formula/version, per-field quality/uncertainty envelope or typed source sequence is attached to each assessment.",
+        "No structured unit-assessment record is delivered through pybind or the PPO observation/rollout."
+      ],
+      "delivery": {
+        "shadow": "StrategicSharedContext::owned_units and UnitPrioritySnapshot are used in Shadow strategic/composition evaluation; records are champion-keyed and lack physical UUID identity.",
+        "ppo": "No structured unit-assessment entity is delivered. Existing numeric observation features are separate legacy aggregates."
+      }
     },
     {
       "kind": "anchor_candidate",
       "paths": [
         "strategic_evidence.anchor_candidates[]"
       ],
-      "identity": "candidate_id",
+      "identity": "no emitted candidate_id or candidate_revision; generated composition identity plus parent producer snapshot sequence is the strongest available correlation, not a stable candidate-set identity",
       "scope": [
         "match",
         "player",
@@ -366,7 +384,28 @@
       "domain": [
         "strategic_candidate"
       ],
-      "invariant": "Evidence proposal only; not an active composition, accepted pivot or command."
+      "invariant": "Evidence proposal only; not an active composition, accepted pivot or command.",
+      "status": "native_derived_shadow_candidate_without_candidate_id; not delivered to PPO",
+      "producer_paths": [
+        "cpp/src/lobby/TftEngine.cpp::Impl::update_strategy strategic_native_generation.candidates mapping",
+        "cpp/include/strategy/NativeStrategicCompositionGenerator.hpp",
+        "cpp/include/strategy/UnifiedStrategicStateMachine.hpp::UnifiedStrategicStateMachine::refresh",
+        "cpp/include/strategy/InitialStrategicDirectionDiscovery.hpp::InitialStrategicDirectionDiscovery::evaluate",
+        "cpp/include/strategy/CompositionBoundDirectionAnchor.hpp::CompositionBoundDirectionAnchor::from_active_composition",
+        "cpp/include/strategy/UnifiedStrategicShadowRuntime.hpp pivot/exploration serialization"
+      ],
+      "gaps": [
+        "StrategicAnchorCandidate carries direction/composition identity, champion IDs, evidence strings and heuristic scores but no dedicated candidate_id, candidate revision or producer-local sequence.",
+        "The parent StrategicEvidenceContext carries match/player/round/sequence; that parent sequence does not establish immutable candidate-set identity or completeness.",
+        "Initial direction hypotheses, active direction anchors and pivot candidates are distinct records with different owners and lifecycle; they must not be collapsed into one anchor entity.",
+        "InitialStrategicDirectionDiscovery and pivot references use champion IDs rather than physical UnitInstance UUIDs.",
+        "Pivot candidate confidence is initialized to zero in the audited callsite; protected gold floor and transition economic cost remain unavailable.",
+        "Anchor and pivot records are serialized to Shadow diagnostics, not to the PPO observation tensor or rollout."
+      ],
+      "delivery": {
+        "shadow": "Native composition candidates feed StrategicSharedContext; exploratory hypotheses and pivot candidates are evaluated/serialized by UnifiedStrategicStateMachine and its diagnostic sidecar.",
+        "ppo": "No typed anchor-candidate entity or candidate-set envelope is delivered."
+      }
     },
     {
       "kind": "action_opportunity_candidate",
@@ -383,15 +422,33 @@
       "domain": [
         "decision_opportunity"
       ],
-      "status": "withheld_until_complete_authoritative_producer",
-      "invariant": "Child sell_value/affordability does not prove a complete parent candidate set exists."
+      "status": "not_produced_in_audited_TftEngine_context",
+      "invariant": "Child sell_value/affordability does not prove a complete parent candidate set exists.",
+      "producer_paths": [
+        "cpp/include/strategy/StrategicPlanning.hpp::StrategicSharedContext::action_candidates",
+        "cpp/src/lobby/TftEngine.cpp::Impl::update_strategy",
+        "cpp/include/composition_intelligence/CompositionActionEvaluator.hpp",
+        "cpp/include/composition_intelligence/ContextualActionEvaluator.hpp",
+        "cpp/include/composition_intelligence/StrategicActionExecutor.hpp"
+      ],
+      "gaps": [
+        "StrategicSharedContext declares action_candidates, but the audited TftEngine construction path does not populate the vector before either evaluator runs.",
+        "Baseline and contextual evaluators therefore receive an empty source candidate set in the audited path; child sell-value/affordability features do not establish a complete parent candidate set.",
+        "Current diagnostic same_initial_candidate_set may be true for three empty lists, and comparison_available is computed from stale flags alone; both can misstate comparability when no candidate exists.",
+        "The approved contract requires at least one shared valid candidate identity before comparison_available can be true.",
+        "StrategicActionExecutor::resolve is invoked, but an empty candidate set does not establish a selected or accepted action."
+      ],
+      "delivery": {
+        "shadow": "Both evaluators consume the empty StrategicSharedContext::action_candidates vector in the audited TftEngine path; resolver call is wired and per-request resolution remains separate.",
+        "ppo": "No action-opportunity candidate collection is delivered. Legacy sell-value/affordability child scalars do not form a candidate set."
+      }
     },
     {
       "kind": "temporal_decision_history",
       "paths": [
         "derived_context.decision_history"
       ],
-      "identity": "source_decision_sequence",
+      "identity": "no source_decision_sequence or event identity is produced for a structured decision-history collection; current memory is player/round and board-slot scoped",
       "scope": [
         "match",
         "player",
@@ -401,21 +458,60 @@
       "domain": [
         "decision_history"
       ],
-      "invariant": "Descriptive context only; never a mask or legality override."
+      "invariant": "Descriptive context only; never a mask or legality override.",
+      "status": "native_derived_flat_memory_only; structured sequence-bound history not produced",
+      "producer_paths": [
+        "cpp/src/lobby/TftEngine.cpp::PlayerEnv::actions_taken_this_round",
+        "cpp/src/lobby/TftEngine.cpp::PlayerEnv::board_move_age",
+        "cpp/src/lobby/TftEngine.cpp::Impl::build_observations temporal action memory block",
+        "cpp/src/lobby/TftEngine.cpp action-memory update/reset paths"
+      ],
+      "gaps": [
+        "PPO receives normalized remaining action horizon and per-board-slot move ages as flat numeric features; these are not an ordered action/event history.",
+        "The flat features do not carry typed decision IDs, action kinds, action outcomes, field-level provenance or source sequence.",
+        "board_move_age is slot-scoped, not physical-unit scoped; a move changes the slot-age relationship.",
+        "DecisionHistory.hpp defines AntiLoopHistory, not a general source-sequence-bound decision event ledger.",
+        "No structured decision_history collection with explicit completeness, episode reset and stale semantics is serialized through pybind."
+      ],
+      "delivery": {
+        "ppo": "Normalized action-memory count and 28 board-slot age values are included in the flat observation vector.",
+        "diagnostic": "No typed decision-history collection is exposed by the audited audit-snapshot or pybind path."
+      }
     },
     {
       "kind": "anti_loop_history",
       "paths": [
         "legal_state_context.anti_loop_state"
       ],
-      "identity": "(match,player,decision_sequence)",
+      "identity": "implicit per PlayerEnv and episode; internal records have no match_id, player_id or source_decision_sequence field",
       "scope": [
         "episode"
       ],
       "domain": [
         "diagnostic_or_critic_context"
       ],
-      "invariant": "Critic-only candidate per consumer matrix; never an Actor legality rule."
+      "invariant": "Critic-only candidate per consumer matrix; never an Actor legality rule.",
+      "status": "native_internal_history_not_exposed_as_structured_python_or_PPO_entity",
+      "producer_paths": [
+        "cpp/include/decision/DecisionHistory.hpp::AntiLoopHistory",
+        "cpp/include/decision/AntiLoopEngine.hpp::AntiLoopEngine",
+        "cpp/src/decision/AntiLoopEngine.cpp::reset",
+        "cpp/src/decision/AntiLoopEngine.cpp::begin_round",
+        "cpp/src/lobby/TftEngine.cpp::PlayerEnv::anti_loop",
+        "cpp/src/lobby/TftEngine.cpp::Impl::get_anti_loop_metrics",
+        "cpp/bindings/tft_engine_bindings.cpp::get_anti_loop_metrics"
+      ],
+      "gaps": [
+        "PositionSignature, MoveRecord, BlockedMoveRecord and StateVisit have no match/player/decision-sequence identity; StateVisit stores last_seen_round only.",
+        "AntiLoopEngine::reset clears history while preserving accumulated metrics; begin_round clears position history, retains at most six move records, clears blocked moves and expires state visits outside the configured eight-round window.",
+        "AntiLoopEngine::get_state returns only history sizes and last_move; the audited TftEngine path does not call it or serialize the ordered history through get_audit_snapshot.",
+        "The pybind get_anti_loop_metrics endpoint exports aggregate counters, not position_history, move_history, blocked_moves or state_visits.",
+        "Anti-loop logic contributes to native move validation and action masks; this is a legality/control path, not a PPO history feature or a replacement for exact masks."
+      ],
+      "delivery": {
+        "diagnostic": "The Python binding exposes aggregate anti-loop metrics only; ordered history remains internal to the native per-player engine.",
+        "ppo": "No anti-loop history entity is delivered. Native legality effects remain represented by the separate action-mask side input."
+      }
     }
   ],
   "relationships": [
@@ -457,15 +553,15 @@
     {
       "from": "unit_assessment",
       "relation": "assesses",
-      "to": "unit_instance",
-      "cardinality": "many_to_one",
+      "to": "champion_catalog_entry (aggregate assessment; no physical UnitInstance identity)",
+      "cardinality": "many_to_one champion-keyed assessments",
       "temporal": "composition-version and source-sequence scoped"
     },
     {
       "from": "anchor_candidate",
       "relation": "references",
-      "to": "unit_instance",
-      "cardinality": "one_or_more",
+      "to": "champion_catalog_entry (champion references; physical instance join unavailable)",
+      "cardinality": "one_or_more champion references",
       "temporal": "candidate/source-sequence scoped"
     },
     {
@@ -533,7 +629,12 @@
     "Positioning uses a 4x7 rectangular slot convention; canonical TFT hex coordinates, orientation and adjacency remain unverified.",
     "StrategicPositionPlanner identifies sources by champion_id, so duplicate physical copies are ambiguous and no UnitInstance UUID is carried.",
     "The Shadow positioning proposal is not proven to consume the lineup selected_board/entries/exits/deferred_target_ids chain or to be accepted/executed by the executor.",
-    "PPO receives aggregate positioning diagnostics rather than structured per-unit positions and exact destination proposals."
+    "PPO receives aggregate positioning diagnostics rather than structured per-unit positions and exact destination proposals.",
+    "Unit assessments exist only as champion-keyed/per-slot derived Shadow records without UnitInstance UUID; the declared unit_instance_id cannot be populated for duplicate physical copies.",
+    "Native anchor/composition candidates, early direction hypotheses, active direction anchors and pivot candidates have distinct producers/lifecycles; no stable candidate_id/revision or complete immutable candidate-set envelope is emitted.",
+    "StrategicSharedContext.action_candidates is not populated in the audited TftEngine path; evaluator diagnostics can currently report comparison_available for an empty set because the flag is based on staleness rather than non-empty shared candidate identity.",
+    "Temporal action memory reaches PPO only as normalized action-horizon and board-slot-age scalars; no typed decision event history or source_decision_sequence is delivered.",
+    "AntiLoopHistory is internal per-player state with bounded round/episode retention but no match/player/decision-sequence fields; get_state is not serialized by the audited TftEngine/pybind path, and Python receives aggregate metrics only."
   ],
   "non_goals": [
     "tensor shapes",
@@ -557,6 +658,11 @@
     "Trait counts preserve board versus bench scope, catalog membership versus item-granted membership, physical-copy versus unique-champion semantics, and observed count versus milestone/core/focus derivations.",
     "Trait feature ordering is bound to an explicit catalog identity/version before structured projection.",
     "Position slot indices are not described as canonical hex coordinates without a validated orientation/adjacency mapping.",
-    "Position proposals carry exact source and target parameters, physical source identity when unambiguous, exact sequence/composition identity and native mask evidence; proposals remain distinct from executor resolution."
+    "Position proposals carry exact source and target parameters, physical source identity when unambiguous, exact sequence/composition identity and native mask evidence; proposals remain distinct from executor resolution.",
+    "Unit assessment identity must not claim unit_instance_id until exact UUID/slot identity and duplicate-copy correlation are produced; champion-keyed priority aggregates remain a distinct derived entity.",
+    "Anchor candidate, exploratory direction hypothesis, active direction anchor and pivot candidate retain distinct producer, identity, lifecycle, completeness and source-sequence contracts.",
+    "Action comparison is unavailable for an empty candidate set even when evaluator objects are non-stale or candidate counts happen to match at zero.",
+    "Flat action-memory scalars remain distinct from typed decision history; board move age is slot-scoped, not physical-unit scoped.",
+    "Anti-loop history identity, retention/reset, Python exposure and mask relationship are explicit; exact native action masks remain independent final legality inputs."
   ]
 }
