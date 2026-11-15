@@ -172,3 +172,15 @@ Issue #346 remains open. Gate 8 remains blocked. This audit makes no runtime, sc
 5. **Cross-component impacts:** TftEngine observation builder, pybind, CppTFTLobbyWrapper, Trainer, TFTPolicy encoder/Actor/item heads/value head, RolloutBuffer, schema crosswalk and future projection manifest.
 6. **Objective validation:** all 223 paths have non-empty Actor/Critic classifications; policy source proves shared encoder, Actor-only item compatibility and Actor-only masks; no runtime or tensor-layout changes.
 
+
+
+## 8. Target consumer decisions for the first new lineage — 2026-11-15
+
+The current-delivery facts above remain unchanged. The initial target design is now clarified:
+
+1. Actor and Critic must receive the exact same decision-correlated native mask snapshot as a separate side input. The current Critic ignoring masks is a migration gap, not the desired contract.
+2. Item inventory/component facts and unit target-profile facts are shared semantic context. The 9×37 inventory-fit and 100×37 recipe-fit matrices remain Actor-specific conditional action-scoring inputs initially; they are not copied raw into the Critic. Any Critic summary must be derived from the same validated facts and versioned independently.
+3. AntiLoopEngine history and untyped action-memory scalars are not projected as Critic history in the initial lineage. A later history feature requires typed identity/sequence, authoritative producer, reset behavior, replay fixtures and an ablation.
+4. Encoder sharing/topology and all concrete dimensions remain open until the projection manifest and feature-to-consumer map are approved in Stage 0.
+
+These target decisions do not change audited current-delivery classifications in the CSV and do not imply that the runtime currently conforms.
