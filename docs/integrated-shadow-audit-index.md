@@ -135,3 +135,17 @@ source contracts.
 ownership, replay and evaluation contracts. No logs or runtime behavior change.
 **Validation:** documentary consistency now; post-Gate-8 acceptance must prove
 that audit artifacts cannot become training labels or runtime observations.
+
+
+
+## Viewer correlation v1 versus canonical identity v2 — 2026-11-15
+
+The correlation envelope described above is the **legacy Viewer/diagnostic correlation shape**, not the canonical Decision Identity Envelope v2:
+
+- ViewerSession's UUID in the legacy record field match_id is a Viewer session identifier. In v2 it maps to session_match_id, never to canonical match_id.
+- The legacy engine_match_id copied from native episode_id is the numeric counter local to one TFTEngine::Impl. It is useful as a local diagnostic reference but is not a globally scoped Engine episode identity.
+- The native player_id is an integer seat index 0–7. In v2 it is represented as player-0 through player-7, scoped by canonical engine_match_id.
+- The canonical v2 match_id requires a validated logical game-match source; no such producer is proven in the audited main-repository path.
+- The canonical v2 engine_match_id requires Engine-instance scope plus episode_id; the current native producer does not yet emit that composite identity.
+
+Do not copy the legacy Viewer correlation fields directly into a complete v2 identity. The v2 field mapping and incomplete-identity behavior are defined in [Observation Schema v2 Identity Field Semantics Reconciliation](observation-schema-v2-identity-field-semantics-reconciliation.v1.draft.md). The Viewer audit remains useful for session diagnostics and explicit local correlation, but its identity_complete flag is not proof of canonical v2 identity.
