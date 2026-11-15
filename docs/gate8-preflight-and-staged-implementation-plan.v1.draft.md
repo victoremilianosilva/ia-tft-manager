@@ -1,14 +1,14 @@
 # Gate 8 Preflight — Integrated Decision and Staged Implementation Plan v1
 
-**Status:** ready for domain-owner review; Gate 8 is not approved or activated.  
-**Architecture:** Shadow remains the canonical strategic context; PPO remains the learning/decision algorithm.  
+**Status:** Gate 8 authorized; Stage 0 semantic projection design is in progress and pending review.  
+**Architecture:** TFT Strategic Engine is the canonical strategic-intelligence architecture; PPO remains the learning/decision algorithm.  
 **Target branch:** `new-arquiteture`.  
-**Hard boundary:** no runtime implementation before explicit Gate 8 authorization.  
+**Hard boundary:** Stage 0 is design-only; no Stage 1 runtime work before Stage 0 review and acceptance.  
 **GEP scope:** real capture and lifecycle validation is deferred until the Overwolf integration workstream, per the user's direction.
 
 ## 1. Purpose
 
-This document is the final preflight package for reviewing Gates 1–7 together and deciding whether to authorize the next phase. It consolidates what is ready, what is deliberately deferred, the decisions already made, and the exact staged order after authorization.
+This document is the accepted preflight baseline for Gates 1–7 and the staged implementation program. Gate 8 has been authorized; Stage 0 must still be reviewed before Stage 1 runtime work. It consolidates what is ready, what is deliberately deferred, the decisions already made, and the exact staged order after authorization.
 
 "Ready for Gate 8 review" does not mean that Gates 1–7 have runtime acceptance, that all producers exist, that a tensor layout is selected, or that the project is authorized to change runtime code.
 
@@ -32,7 +32,7 @@ This document is the final preflight package for reviewing Gates 1–7 together 
 
 These decisions are not to be reopened without new source evidence or an explicit domain-owner change:
 
-1. **Architecture:** Shadow is the canonical strategic context, not a disposable parallel AI. PPO remains responsible for learning and selecting policy actions.
+1. **Architecture:** TFT Strategic Engine is the canonical strategic-intelligence architecture, not a parallel or diagnostic AI. PPO remains responsible for learning and selecting policy actions.
 2. **Legality:** native Engine rules and exact action masks remain the final legality authority. Shadow candidates/recommendations never execute actions.
 3. **Strategic ownership:** StrategicPlanner owns direction commitment; ActiveCompositionManager/TransitionManager owns active composition; candidate producers cannot mutate active state; Unified Shadow remains diagnostic-only.
 4. **Economy:** posture and progression are separate outputs. Missing projections/risk remain unknown; no synthetic defaults.
@@ -67,7 +67,7 @@ The current implementation and future contract must not be conflated. The follow
 
 ### 4.4 Encoder and tensor layout
 
-Shared versus separate encoders, feature ordering, tensor dimensions, offsets, padding, normalization values, board geometry encoding, entity encoders and action-head dimensions remain deliberately unselected. The concrete projection must be a reviewed artifact before any PPO runtime implementation PR. Gate 8 authorizes the staged program to produce and review that artifact; it does not waive the projection review.
+Shared versus separate encoders, feature ordering, tensor dimensions, offsets, padding, normalization values, board geometry encoding, entity encoders and action-head dimensions remain deliberately unselected. The concrete projection must be a reviewed artifact before any PPO runtime implementation PR. Gate 8 authorization starts the staged program; Stage 0 projection review remains a mandatory exit condition.
 
 ## 5. Unresolved facts accepted as post-authorization implementation work
 
