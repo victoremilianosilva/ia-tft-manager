@@ -71,8 +71,8 @@ def test_terminal_auto_reset_keeps_transition_and_next_episode_identity_separate
         assert np.all(dones)
 
         info = infos[0]
-        assert info["transition_snapshot"]["episode_id"] == 1
-        assert info["transition_snapshot"]["round"] == 5
+        assert info["step_result_snapshot"]["episode_id"] == 1
+        assert info["step_result_snapshot"]["round"] == 5
         assert info["next_snapshot"]["episode_id"] == 2
         assert info["next_snapshot"]["snapshot_kind"] == "reset"
         assert env.get_snapshot_metadata()[0]["episode_id"] == 2
