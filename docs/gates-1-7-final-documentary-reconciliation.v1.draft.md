@@ -200,3 +200,12 @@ This is a documentary closeout report, not a claim that the AI is ready to code 
 A focused audit of `ItemEngine::metrics()`, `TFTEngine.cpp`, pybind, RewardManager and RewardModel found no production read of ItemMetrics in the inspected main-repository paths. Direct counter reads are in ItemEngine unit tests. `ItemEngine::reset()` clears its owned collections, anvil queue and metrics; `items_left_unused` is declared but no update site was found in the inspected implementation. Current PPO reward uses action/combat/placement reward paths and item action-quality shaping, not ItemMetrics counters.
 
 This means metric preservation is not a demonstrated prerequisite for current placement/reward/PPO attribution if Policy A is selected. A terminal diagnostic may preserve the counters for audit purposes. This does not decide the game/domain policy: Policy A remains provisional and Policy B remains a valid alternative pending owner decision. The source pass is limited to the audited main-repository paths and does not claim knowledge of external consumers.
+
+
+### 5.2 Domain-owner decision — no item transfer on elimination
+
+The user explicitly decided: **items belonging to an eliminated player must not be transferred to anyone.** This resolves the former Policy A/B domain choice.
+
+Policy A is now selected as terminal retirement/discard, with the important clarification that items are not returned even to the eliminated player's own active bag. No equipped item, completed item, loose component or pending anvil option may move to another player, shared pool, shop or redistributable reward source. An immutable non-owning terminal diagnostic snapshot may preserve historical facts before ItemEngine retires the active item state.
+
+Required implementation tests and ownership boundaries are defined in section 12 of the [elimination item terminal policy proposal](elimination-item-terminal-policy-proposal.v1.draft.md). This decision settles the domain policy, not the implementation: Gate 8 remains blocked and no runtime change is authorized.
