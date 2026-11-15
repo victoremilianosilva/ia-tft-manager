@@ -477,3 +477,10 @@ The schema-to-producer mismatches found in the required identity/reference field
 ## Schema v2 nested field crosswalk — 2026-11-15
 
 See the [Schema v2 Field-to-Source Crosswalk](observation-schema-v2-field-source-crosswalk.v1.draft.md) for the 223-path reconciliation across entities, derived_context, strategic_evidence and legal_state_context. The 16 paths without source-map entries are explicit follow-up items; the 164 ancestor matches still require nested field-level producer proof. This is not final acceptance of #346.
+
+
+## Unit identity, shop and shared pool lifecycle follow-up — 2026-11-15
+
+The [Unit Instance, Shop Offer and Shared Pool Lifecycle Follow-up](unit-instance-shop-pool-lifecycle-followup.v1.draft.md) refines the ownership lifecycle and corrects the pool-availability row. It traces shop → bench → board moves, merge identity retention/consumption, sale and elimination cleanup, same-seed reset UUID repetition, implicit value-copy behavior, and the direct TFTEngine/pybind pool-count query.
+
+**Correction:** the previous matrix wording that no authoritative per-champion pool count producer existed was too broad. `UnitPool::available()` and `TFTEngine::pool_available()` provide authoritative native queries, and pybind exposes them. The count is still not part of the immutable observation snapshot or PPO vector, and has no decision-sequence correlation. The shared champion pool is lobby-scoped, not player-owned.
