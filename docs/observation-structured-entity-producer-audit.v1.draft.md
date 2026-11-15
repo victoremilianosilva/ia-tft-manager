@@ -266,3 +266,74 @@ Continue #346 with a repository-wide identity callsite/test audit, then continue
 5. **Cross-component impact:** ItemEngine, ItemCatalog, UnitInstance equipment mirror, PvE loot distribution, TftEngine rewards/actions/masks/observations, AuditSnapshot, pybind, Python wrapper, PPO projection, replay and checkpoint lineage.
 6. **Objective validation:** source trace of grant/craft/equip/sale/merge/reset; direct PvE reward producer trace; ItemEngine unit tests for queue/choice/transfer; audit-snapshot and pybind field trace; explicit confirmation that no typed item-instance or anvil-option envelope reaches PPO.
 
+
+
+## Trait and positioning producer audit — source-backed slice
+
+**Audit status:** partial source audit for #346. The findings below distinguish native/catalog facts, derived strategic assessments, PPO projection, and read-only positioning proposals. No runtime behavior or tensor layout is changed.
+
+### Trait identity, membership and counting semantics
+
+#### Catalog producers
+
+- `ChampionDefinition::traits` is loaded from the active champion catalog and represents static champion-to-trait membership.
+- `TraitMilestones.hpp::load_trait_milestones()` loads threshold values from `traits.json` (preferentially beside the selected unit catalog, with the configured repository fallback). It indexes API identifiers and canonical English names; conflicting milestone definitions are rejected.
+- `observation_trait_names` is assembled by iterating champion catalog entries and appending each previously unseen trait. This is an ordering derived from catalog iteration, not a separately versioned trait-catalog fingerprint in the observation payload.
+- The milestone loader and champion trait membership are distinct inputs. The inspected path does not bind either to a typed per-observation catalog fingerprint or source-sequence envelope.
+
+#### Distinct native counting paths
+
+The current Engine has several non-equivalent trait calculations:
+
+1. **PPO observation counts (`build_observations`, lines around 1305–1368):** counts each catalog trait for each occupied board and bench UnitInstance. It reads `ChampionDefinition::traits`; the inspected `count_traits` path does not add `item.grants_trait`. It therefore represents board + bench catalog membership, not active board synergies and not the complete item-adjusted trait state.
+2. **PPO fixed trait block:** emits one value per `observation_trait_names` entry using the board + bench count divided by five and clamped to 1.0. The preceding five-value SYNERGY block instead selects the first five traits in the insertion order of the current accumulated counts. Neither is a lossless typed trait entity collection; counts above five saturate.
+3. **Strategic active traits (`update_strategy`):** builds `board_trait_counts` from board units only. For each physical UnitInstance it unions catalog traits with non-empty `item.grants_trait` in a set, so one unit contributes at most once to a given trait. It then emits `StrategyInfo::active_traits` in the current owned-unit `trait_order`. This is the closest current representation of deployed, item-adjusted active-trait counts.
+4. **Owned trait counts and `core_traits`:** a separate board + bench aggregation includes item-granted traits, counts each physical owned unit once per trait, orders by count with stable first-seen tie behavior, and selects up to three traits with count >= 2. This is a derived strategic preference, not the active board trait state.
+5. **Synergy reward helper:** `count_unique_champion_traits` deduplicates by `champion_internal_id`, not UnitInstance UUID. Multiple physical copies of the same champion therefore contribute only once in this helper. This is not equivalent to active trait counting by physical unit copy.
+6. **Composition trait scoring/focus:** weighted scores use unit cost, star level, offensive factors, board milestone levels and focus weights. These are derived strategic assessments, not observed trait counts.
+
+These semantics must remain separate. In particular, catalog membership != item-granted membership; board + bench != deployed board; raw count != activated milestone level; active trait != core trait != composition direction != focus weight; physical-copy count != unique-champion reward count.
+
+#### Delivery boundary
+
+- The native PPO observation contains fixed numeric trait blocks only. It carries neither trait entity records nor field-level provenance, trait source sequence, explicit milestone records, or the catalog fingerprint/order as a typed envelope.
+- The audit snapshot path inspected for #346 exposes unit/item state and board diagnostics, but does not establish a dedicated structured trait collection with typed identity, producer sequence and completeness.
+- `StrategyInfo::active_traits`, `core_traits`, `composition_direction` and focus diagnostics are not interchangeable with PPO trait features. Existing strategic Shadow snapshots and diagnostics must preserve their own provenance and sequence; their existence does not prove PPO delivery.
+
+**Trait status:** catalog membership and milestone definitions are native/catalog-backed; several aggregates are derived in distinct scopes; structured, sequence-bound trait entities and catalog-version binding are not produced in the inspected PPO delivery path.
+
+### Position identity, spatial mapping and proposal lifecycle
+
+#### Native board geometry
+
+- The board is a fixed 28-slot array. `PositioningEngine` declares a 4-row × 7-column mapping using `row = slot / 7` and `column = slot % 7`.
+- The inspected positioning helpers calculate rectangular row/column neighbors (4- or 8-direction) and role preferences. `StrategicPositionPlanner` also uses the same 4×7 decomposition for row/column scoring.
+- This proves an internal rectangular slot convention, not canonical TFT hex coordinates, hex adjacency, board orientation, opponent-facing direction, or a versioned mapping to the live game's spatial model. Do not label these indices as canonical hex coordinates.
+
+#### Shadow positioning snapshot and proposal
+
+- `TftEngine.cpp` constructs `StrategicPositionSnapshot` from a correlated native action state: match/player/round/sequence, active composition identity/version, alive state, current board/bench champion-ID arrays, and the exact native masks.
+- Its role list is populated from `active->candidate.units` (the active composition candidate), not from a proven `lineup.selected_board / entries / exits / deferred_target_ids` integration chain. The audited builder does not establish that those lineup fields are the producer of the positioning proposal.
+- The planner maps candidate roles by `champion_id`, then searches current board and bench slots. Because physical UUID is absent from this snapshot, duplicate copies of one champion are marked ambiguous and skipped rather than guessed.
+- A proposal contains champion ID, role, source zone/slot, exact target board slot, current/target score, improvement, reason and status, together with match/player/round/sequence and composition identity/version.
+- The planner considers empty board destinations only; it does not implicitly swap occupied units. It checks the relevant native action type, source mask and source→target mask before returning a proposal. This is a read-only recommendation, not execution or legality authority.
+- The caller adds the proposed champion/target pair to `requested_move_targets` for subsequent resolution. The separate executor resolution contract and its accepted/unavailable result remain authoritative; a positioning proposal alone does not prove execution.
+
+#### Delivery and unresolved spatial semantics
+
+- The positioning proposal is a Shadow diagnostic/proposal path, not a PPO structured observation. The PPO tensor currently receives aggregate positioning score, frontline/backline ratios and role diversity, not per-unit spatial entities or target proposals.
+- The exact source/target slot pair is available in the proposal DTO, but its unit reference is champion-level and becomes ambiguous with duplicate owned copies. No UUID-backed physical source identity is carried.
+- The 4×7 row/column mapping and role score are heuristic. Hex adjacency, orientation, enemy-facing side, actual frontline/backline semantics, and a catalog/versioned geometry contract remain unverified.
+- No integrated evidence in this slice proves that a selected lineup target, its entries/exits/deferred targets, the current board, the proposal and the executor resolution are one continuous correlated record. The existing proposal carries sequence/composition metadata, but the full lineup→position→executor chain remains a replay acceptance requirement.
+
+**Position status:** native slot indices and read-only role-aware proposal parameters are produced; canonical hex geometry, physical-copy source identity, lineup-chain integration and PPO structured delivery are not established.
+
+### Architecture reconstruction review
+
+1. **Prior problem:** the structured contract grouped traits into one generic entity and treated position as a simple slot field without reflecting the multiple counting scopes, item-granted traits, reward deduplication, or the existing proposal's champion-level identity.
+2. **Technical rationale:** collapsing board/bench, deployed/owned, catalog/item-granted, physical-copy/unique-champion, or slot/hex-coordinate semantics would create false equivalence and corrupt replay or downstream learning.
+3. **New responsibility:** this audit slice records the native trait producers, their distinct derived consumers, the current spatial convention, and the exact limits of the Shadow proposal path.
+4. **Contracts and invariants:** trait facts retain scope and source; derived milestone/core/focus values retain formula and provenance; champion ID is not a physical copy identity; slot index is not canonical hex geometry; proposal is not execution; native masks remain the legality authority.
+5. **Cross-component impact:** ChampionCatalog, TraitMilestones, UnitInstance and item emblems, PPO observation builder, SynergyCounter/reward, StrategyInfo, StrategicPositionSnapshot/Planner, native action state, masks, executor resolution, Viewer diagnostics, replay and checkpoint lineage.
+6. **Objective validation:** compare board/bench/catalog/item-emblem trait fixtures against each producer independently; verify duplicate-copy behavior and milestone boundaries; bind catalog order/version; test every 4×7 slot mapping and reject unsupported hex claims; exercise duplicate champion copies, bench→board and board→board proposals, exact mask rejection, stale sequence rejection, and integrated lineup→position→executor replay.
+
