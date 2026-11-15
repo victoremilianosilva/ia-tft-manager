@@ -16,7 +16,7 @@ This document is the accepted preflight baseline for Gates 1–7 and the staged 
 
 | Entry condition | Current evidence | Preflight disposition |
 |---|---|---|
-| Canonical architecture and authority | Shadow is canonical; PPO remains the policy-learning algorithm; native Engine/masks retain final legality | Ready for review |
+| Canonical architecture and authority | TFT Strategic Engine is canonical; PPO remains the policy-learning algorithm; native Engine/masks retain final legality | Ready for review |
 | Observation semantics | Schema v2 draft, 223-path source crosswalk, 77-entry source map, legacy crosswalk and Actor/Critic delivery matrix | Documentary package ready; source gaps remain explicit |
 | Identity and correlation | v2 identity proposal, 9-namespace registry, 7 synthetic hash vectors, Engine/UnitInstance lifecycle audits, wrapper/rollout loss audit | Semantics and gaps documented; runtime producer absent |
 | Action and masks | Action/Mask Contract v1 and Strategic Action Candidate Contract v1 | Contract ready; real candidate producer and exact identity-bound mask delivery absent |
@@ -33,8 +33,8 @@ This document is the accepted preflight baseline for Gates 1–7 and the staged 
 These decisions are not to be reopened without new source evidence or an explicit domain-owner change:
 
 1. **Architecture:** TFT Strategic Engine is the canonical strategic-intelligence architecture, not a parallel or diagnostic AI. PPO remains responsible for learning and selecting policy actions.
-2. **Legality:** native Engine rules and exact action masks remain the final legality authority. Shadow candidates/recommendations never execute actions.
-3. **Strategic ownership:** StrategicPlanner owns direction commitment; ActiveCompositionManager/TransitionManager owns active composition; candidate producers cannot mutate active state; Unified Shadow remains diagnostic-only.
+2. **Legality:** native Engine rules and exact action masks remain the final legality authority. TFT Strategic Engine candidate proposals/recommendations never execute actions.
+3. **Strategic ownership:** StrategicPlanner owns direction commitment; ActiveCompositionManager/TransitionManager owns active composition; candidate producers cannot mutate active state; Unified Strategic State Machine remains diagnostic-only.
 4. **Economy:** posture and progression are separate outputs. Missing projections/risk remain unknown; no synthetic defaults.
 5. **Elimination items:** terminal discard/retirement; no transfer to another player, no return to the eliminated player's active bag, and no redistribution to any pool/shop/PvE source.
 6. **Checkpoints:** historical checkpoints remain immutable baselines. No automatic semantic compatibility or implicit legacy migration.
@@ -117,7 +117,7 @@ Authorization starts a controlled program, not an unrestricted runtime rewrite. 
 2. Preserve distinct board/bench/shop/pool/item/component/trait/position domains.
 3. Implement the settled eliminated-player item terminal-discard policy exactly once, with no transfer or redistribution.
 4. Build the real StrategicActionCandidate producer; empty/incomplete sets remain explicit and never become confident HOLD.
-5. Complete direction/composition/economic/unit/position owner snapshots without parallel authority or Shadow execution.
+5. Complete direction/composition/economic/unit/position owner snapshots without parallel authority or strategic-engine execution.
 
 **Exit:** native producer tests and source-to-schema audit show no fabricated values, duplicate active owners or cross-player item transfer.
 
@@ -170,8 +170,8 @@ Authorization starts a controlled program, not an unrestricted runtime rewrite. 
 
 ## 7. Cross-stage invariants
 
-- No second AI, no replacement of PPO with Shadow, and no autonomous gameplay execution.
-- Shadow remains canonical strategic context and read-only recommendation source.
+- No second AI, no replacement of PPO with TFT Strategic Engine, and no autonomous gameplay execution.
+- TFT Strategic Engine is the canonical strategic-intelligence architecture; PPO consumes validated evidence from it and learns its own policy.
 - Engine/masks remain final legality authority.
 - No synthetic identity, candidate, item, pool, economic risk, history or position values.
 - Unknown/missing/stale/partial/incompatible remain distinct from numeric zero.
