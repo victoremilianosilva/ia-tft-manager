@@ -67,3 +67,27 @@ The item audit snapshot assertions prove useful native diagnostic detail for ite
 6. **Objective validation:** every existing coverage claim is tied to concrete test sections; unproven claims have explicit acceptance cases. Documentation only.
 
 No runtime, test, schema, tensor-layout, PPO architecture, reward, mask, training, checkpoint, Viewer or Overwolf implementation is authorized by this audit. Issue #346 remains open; Gate 8 remains blocked.
+
+## 7. Unit elimination and equipment lifecycle test coverage follow-up — 2026-11-15
+
+The focused inspection of `cpp/tests/test_item_engine.cpp` and `cpp/tests/test_tft_engine_pool.cpp` establishes:
+
+- ItemEngine tests directly verify `return_equipped_to_inventory()` for a sold/removed UUID and verify `transfer_equipped_on_merge()` for merge sources.
+- The pool/Engine test verifies sale validation and pool accounting, and checks diagnostic item fields/combat propagation.
+- Neither inspected test file exercises the Engine elimination path `eliminate_players() → return_eliminated_player_units()` with equipped board/bench units.
+- Neither asserts that the eliminated player's UUID-keyed equipment entries are cleared/retired or returned to that player's own bag.
+- The sale test's comment uses “selling/removing”; it is a direct ItemEngine method test and must not be counted as proof of the Engine elimination lifecycle.
+
+This is a scoped negative finding for these two relevant test files, not a claim that no test anywhere in the repository touches elimination. A repository-wide test-name/behavior audit would be required for that stronger claim.
+
+### Required regression cases
+
+1. Eliminate a player with one equipped board unit and one equipped bench unit while other players remain active.
+2. Assert champion copies return exactly once and all active board/bench units are removed.
+3. Assert the selected item terminal policy is applied exactly once to every eliminated UUID.
+4. Assert no item becomes available to another player's inventory.
+5. Assert removed UUIDs are no longer valid item targets.
+6. Assert repeated elimination handling and subsequent Engine reset do not duplicate or resurrect items.
+7. Assert a diagnostic snapshot clearly separates active equipment from terminal/orphaned records.
+
+These are future acceptance criteria; no tests or runtime code were changed.
