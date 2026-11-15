@@ -31,6 +31,12 @@ Para uso deste utilitário legado, mantenha o mesmo --seed inicial, quantidade d
 
 Arquivos de profiling e relatórios existentes são artefatos de execuções específicas; não são benchmarks atuais sem repetir a medição.
 
+## Lacunas atuais de identidade semântica
+
+O Trainer ainda salva policy, optimizer, scheduler, update, training_config e scheduler_type sem manifesto de contratos semânticos, hashes de schema/action-mask/reward/catalog, identidade de encoder/head ou estado completo de RNG. O Viewer registra SHA-256 do checkpoint, seed, dimensões de observação/ação e modo determinístico, mas isso não valida compatibilidade semântica. A avaliação head-to-head atual é ferramenta legada, não aceitação do PPO Evaluation Protocol v1.
+
+A auditoria de correlação/replay atual está em [Current Replay, Correlation and Evaluation Gap Audit](current-replay-correlation-evaluation-gap-audit.v1.draft.md). O protocolo v1 permanece documental até Gate 8.
+
 ## Benchmark de velocidade antes/depois
 
 Compile a engine nativa em Release e execute os comandos na mesma máquina, com o mesmo Python/venv, configuração, carga do sistema e seed. Faça pelo menos três processos independentes por revisão; não execute ambos simultaneamente.
