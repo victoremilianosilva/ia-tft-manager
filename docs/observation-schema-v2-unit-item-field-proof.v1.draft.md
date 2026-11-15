@@ -87,7 +87,7 @@ The authoritative runtime path remains native C++ `TftEngine` → flat observati
 
 ## 5. Remaining work in this slice
 
-- Reconcile these 34 paths against the crosswalk CSV with per-path proof labels, rather than leaving all ancestor rows in the inherited placeholder state.
+- Reconcile these 31 paths against the crosswalk CSV with per-path proof labels, rather than leaving all ancestor rows in the inherited placeholder state.
 - Trace exact trait and item-granted-trait formulas and distinguish board-only versus board+bench scopes for each consumer.
 - Verify the exact construction of the audit snapshot's per-unit `items` list and whether it reads UnitInstance or ItemEngine equipment state in every lifecycle path.
 - Complete Python → vector environment → rollout buffer → Actor/Critic delivery proof for each feature block. This document only establishes the native vector and wrapper boundary; it does not claim Actor/Critic leaf-level allocation.
@@ -100,6 +100,6 @@ The authoritative runtime path remains native C++ `TftEngine` → flat observati
 3. **New responsibility:** this audit owns field-level evidence/disposition for board, bench, shop and basic item-inventory schema paths; the source map remains an index, not proof.
 4. **Contract and invariants:** native state is authoritative; diagnostic snapshots and PPO vectors are separate products; slot order is not identity; raw UUID remains scope-limited; masks remain separate legality inputs; no fabricated IDs/sequences.
 5. **Cross-component impacts:** TftEngine, UnitInstanceFactory, ShopEngine, ItemEngine, ChampionCatalog, pybind audit snapshot, Python wrapper, vector environment, rollout buffer, Actor/Critic, Schema v2 and replay fixtures.
-6. **Objective validation:** every listed path has an explicit evidence-based disposition; source line ranges are recorded above; no runtime/schema/tensor/checkpoint changes are made; unresolved fields remain explicitly open rather than inferred as available.
+6. **Objective validation:** all 31 listed paths have an explicit evidence-based disposition; source line ranges are recorded above; no runtime/schema/tensor/checkpoint changes are made; unresolved fields remain explicitly open rather than inferred as available.
 
 Issue #346 remains open. This slice is not Gate 8 approval.
