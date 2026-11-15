@@ -127,3 +127,10 @@ No Engine, PPO, reward, observation, action-mask, training, Viewer, checkpoint, 
 The exact mapper path is no longer an unknown: `info.match_info.match_info.match_id` is read by the Overwolf mapper and numeric values are normalized to strings. The test fixture uses synthetic `778899`. The snapshot manager's `sessionId` is generated independently and regenerated only by explicit `reset()`; revision resets with it. The recorder treats a changed known match ID as a new snapshot baseline without independently resetting that manager session.
 
 This narrows, but does not close, the blocker: real-game source presence, per-match uniqueness, reconnect/reset invocation and sanitized fixture evidence remain outstanding. See [Overwolf GEP live-state integration boundary](overwolf-live-state-integration-boundary.md), section “GEP match ID source-path and lifecycle evidence”.
+
+
+## 10. Remaining main-repository work and GEP deferral — 2026-11-15
+
+The six-workstream closeout is extended by [Remaining Identity, Ownership, Rollout and Gate Reconciliation](remaining-identity-rollout-gate-reconciliation.v1.draft.md). That document consolidates Engine-instance scope, UnitInstance special-member semantics, Python wrapper/RolloutBuffer correlation, Schema v2 dispositions and Gates 1–7.
+
+The GEP real-source validation described in section 4 is explicitly deferred until the Overwolf integration workstream. This is a scheduling/scope decision, not a claim that canonical `match_id` is already validated. It is not a blocker for the remaining main-repository work. The item-elimination domain rule is settled as terminal discard with no transfer or redistribution; only runtime implementation and regression proof remain.
