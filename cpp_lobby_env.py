@@ -62,6 +62,8 @@ class CppTFTLobbyWrapper:
             str(resolved_item_catalog),
         )
         self._last_dones = np.zeros(self.PLAYERS_PER_LOBBY, dtype=np.bool_)
+        self._last_action_masks = None
+        self._last_snapshot_metadata = None
         self._players = [
             SimpleNamespace(player_id=i, alive=True, eliminated=False)
             for i in range(self.PLAYERS_PER_LOBBY)
@@ -117,6 +119,16 @@ class CppTFTLobbyWrapper:
             raise ValueError("Cada ação deve conter exatamente 6 componentes.")
         return [int(value) for value in values]
 
+    @staticmethod
+    def _copy_action_masks(masks):
+        """Detach the exact native mask payload from mutable binding buffers."""
+        if masks is None or len(masks) != CppTFTLobbyWrapper.PLAYERS_PER_LOBBY:
+            raise RuntimeError("Snapshot nativo sem as oito action masks esperadas.")
+        return [
+            {key: np.asarray(value, dtype=np.bool_).copy() for key, value in player.items()}
+            for player in masks
+        ]
+
     def reset(self, seed: int | None = None):
         result = self._engine.reset(seed)
         self._last_dones.fill(False)
@@ -124,6 +136,13 @@ class CppTFTLobbyWrapper:
             SimpleNamespace(player_id=i, alive=True, eliminated=False)
             for i in range(self.PLAYERS_PER_LOBBY)
         ]
+        self._last_action_masks = self._copy_action_masks(result.get("action_masks"))
+        self._last_snapshot_metadata = {
+            "episode_id": int(result["episode_id"]),
+            "round": 0,
+            "stage": 1,
+            "snapshot_kind": "reset",
+        }
         return np.asarray(result["observations"], dtype=np.float32)
 
     def step(self, actions, *, timer_enabled: bool = False, timer_expired: bool = False):
@@ -143,6 +162,13 @@ class CppTFTLobbyWrapper:
         observations = np.asarray(result["observations"], dtype=np.float32)
         rewards = np.asarray(result["rewards"], dtype=np.float32)
         self._last_dones = np.asarray(result["dones"], dtype=np.bool_)
+        self._last_action_masks = self._copy_action_masks(result.get("action_masks"))
+        self._last_snapshot_metadata = {
+            "episode_id": int(result["episode_id"]),
+            "round": int(result.get("round", 0)),
+            "stage": int(result.get("stage", 1)),
+            "snapshot_kind": "step",
+        }
         player_info = result.get("players", [])
         self._players = [
             SimpleNamespace(
@@ -155,6 +181,7 @@ class CppTFTLobbyWrapper:
 
         info = {
             "players": result.get("players", []),
+            "decision_snapshot": dict(self._last_snapshot_metadata),
             "round": int(result.get("round", 0)),
             "stage": int(result.get("stage", 1)),
             "finished": bool(result.get("lobby_done", False)),
@@ -183,24 +210,34 @@ class CppTFTLobbyWrapper:
         return dict(self._engine.get_champion_id_map())
 
     def get_action_masks(self):
-        masks = self._engine.get_action_masks()
+        """Return masks captured atomically with the latest observation snapshot."""
+        if self._last_action_masks is None:
+            raise RuntimeError("Execute reset() antes de solicitar action masks.")
+
+        masks = self._copy_action_masks(self._last_action_masks)
         if os.environ.get("TFT_ABLATE_ITEM_ACTIONS") != "1":
             return masks
 
         # Evaluation-only ablation: suppress item equip/transfer and craft actions.
         # Keep type 7 when it is the sole legal type because that state represents
         # a mandatory anvil choice, not optional item management.
-        result = dict(masks)
-        type_mask = np.asarray(result["type_mask"], dtype=np.bool_).copy()
-        legal_types = np.flatnonzero(type_mask)
-        mandatory_anvil_choice = len(legal_types) == 1 and int(legal_types[0]) == 7
-        if not mandatory_anvil_choice:
-            type_mask[7] = False
-            type_mask[8] = False
-        if not bool(type_mask.any()):
-            type_mask[6] = True
-        result["type_mask"] = type_mask
-        return result
+        for player_masks in masks:
+            type_mask = np.asarray(player_masks["type_mask"], dtype=np.bool_).copy()
+            legal_types = np.flatnonzero(type_mask)
+            mandatory_anvil_choice = len(legal_types) == 1 and int(legal_types[0]) == 7
+            if not mandatory_anvil_choice:
+                type_mask[7] = False
+                type_mask[8] = False
+            if not bool(type_mask.any()):
+                type_mask[6] = True
+            player_masks["type_mask"] = type_mask
+        return masks
+
+    def get_snapshot_metadata(self):
+        """Return non-neural metadata for the exact observation/mask snapshot."""
+        if self._last_snapshot_metadata is None:
+            raise RuntimeError("Execute reset() antes de solicitar snapshot metadata.")
+        return dict(self._last_snapshot_metadata)
 
     def get_strategy_snapshots(self):
         """Return complete native strategy/composition diagnostics for the viewer."""
