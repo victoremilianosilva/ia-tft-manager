@@ -194,3 +194,40 @@ The stale UUID comment in the struct says generation will be implemented later. 
 - Diagnostic snapshots/copies are marked non-owning and cannot be fed back as active physical units.
 
 These are proposed acceptance cases, not claims that tests already exist.
+
+
+## 11. Production UnitInstance transfer map — 2026-11-15
+
+The following production paths were traced in `ShopEngine.cpp` and `TftEngine.cpp`. “Owner” means the active native UnitInstance stored in a shop/bench/board slot; read-only projections and local rollback snapshots are not promoted to additional physical owners.
+
+| Transition/path | Native operation | Identity disposition | Evidence boundary |
+|---|---|---|---|
+| Shop draw | `ShopEngine::draw()` calls pool draw then `UnitInstanceFactory::create()` | New factory UUID for the newly drawn physical copy | Factory seed/scope limitations still apply |
+| Reroll rollback snapshot | `const auto previous_offers = offers_` copies the offer array before returning offers to pool | UUID values are copied into a temporary local rollback snapshot; successful reroll discards it, failure restores it | Compiler copy is not a new physical identity or registry entry |
+| Strategic state projection | `build_decision_state()` copies an offer into a temporary optional and emits `decision::UnitSnapshot` | UUID is propagated as snapshot identity metadata; no shop ownership transfer | DTO/snapshot only |
+| Purchase | `ShopEngine::take_unit()` moves the optional out and resets the offer slot; PlayerEnv moves the purchased UnitInstance into bench | Same UUID follows the physical copy from shop to bench | Explicit move/slot ownership transfer |
+| Bench→board | Move assignment or `std::swap` between optionals | UUID follows the same instance; no new UUID | Explicit move/swap |
+| Board→board | Move assignment or `std::swap` between optionals | UUID follows the same instance; no new UUID | Explicit move/swap |
+| Merge | Purchased copy in bench is the survivor; equipped mappings from consumed UUIDs transfer to survivor UUID; consumed slots reset | Survivor keeps purchased UUID; consumed UUIDs retire from active slots | ItemEngine transfer and slot reset are explicit; complete duplicate/copy lifecycle tests still missing |
+| Sale | ItemEngine returns equipped catalog IDs from sold UUID to inventory, then bench optional resets | Sold UUID leaves active ownership | Sale path has direct item-engine regression coverage |
+| Elimination | Champion copies return to pool; board/bench optionals reset | Unit UUIDs leave active slots, but ItemEngine UUID-keyed equipped entries are not explicitly cleaned | Terminal item ownership gap remains |
+| Engine reset | Unit factory is reconstructed from base Engine seed | UUID sequence can repeat across same-seed resets/Engine objects | No global scope/collision registry |
+
+### Copy-site interpretation
+
+The two identified production copy-shaped paths are intentionally different:
+
+1. `previous_offers` is a local rollback snapshot used to restore shop state if a forced roll fails. It temporarily duplicates values but does not establish a second active shop/board/bench owner.
+2. `std::optional<UnitInstance>{*offer}` is a temporary projection input used to build a read-only UnitSnapshot. It copies UUID metadata but does not transfer or create physical ownership.
+
+The production ownership transitions otherwise use moves/swaps for shop→bench and board/bench positioning. Merge deliberately transfers equipment to the purchased survivor before consumed slots are reset. This is a source-traced map, not a proof that no other implicit copies exist in every C++ expression.
+
+### Remaining lifecycle proof
+
+- Add tests that count active UUID owners before/after every transfer and merge.
+- Assert a projection/rollback copy is never inserted into active ownership.
+- Assert consumed merge UUIDs cannot remain in any active slot or ItemEngine equipment owner map.
+- Assert sale and elimination have different explicit terminal semantics.
+- Assert same-seed Engine reset cannot make two simultaneously live canonical identities collide; a scoped identity contract is still required.
+- Complete semantic copy/assignment/destruction review beyond the explicit production paths listed here.
+
