@@ -105,3 +105,17 @@ Source tracing across `refresh_masks()`, `TFTEngine::step()`, and `PlayerEnv::st
 If an eliminated player can retain a pending anvil, the mask/effective-action path advertises and preserves a choice that the dead-player executor path ignores. Reachability has not yet been proven from normal gameplay; no runtime defect is asserted.
 
 Add a deterministic acceptance case that injects/reaches pending anvil before elimination, verifies the post-elimination mask, submitted/effective action, executor resolution, pending queue disposition, alive-player completion, and rollout record. If the state is unreachable by invariant, add a test proving that invariant and keep the branch unreachable by construction.
+
+
+## 9. Full-match integration coverage refinement — 2026-11-15
+
+`tests/test_full_match_terminal_ranking.py` does provide real integration coverage for combat, elimination, mask-driven idle actions, terminal ranking and exactly-once placement rewards. Its helper chooses anvil actions whenever a player's mask exposes the forced type-7 state, without separately checking whether that player is alive.
+
+The test does not assert:
+- elimination-time equipment cleanup or the disposition of UUID-keyed equipped entries;
+- that a pending anvil is actually consumed after a dead-player action (as opposed to a no-op transition);
+- the dead player's `acted`/execution-resolution status;
+- an inactive-only mask contract for eliminated seats;
+- completed-item loot (the variable is collected but no corresponding assertion is present).
+
+Therefore, the earlier native-test gap is not a claim that elimination itself lacks integration coverage. The missing proof is specifically elimination × item ownership × pending-anvil × execution-result correlation.
