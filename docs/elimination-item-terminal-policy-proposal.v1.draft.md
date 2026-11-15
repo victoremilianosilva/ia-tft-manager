@@ -134,3 +134,42 @@ A focused source pass checked the ItemEngine metric declaration/accessor and its
 - Current PPO reward is assembled from action/combat/placement reward paths; item assignment/crafting shaping uses evaluated action/context values, not ItemMetrics counters. The separate RewardManager helper is not the active PPO reward route documented by the native reward-binding audit.
 
 **Conclusion:** no current production placement/reward/PPO consumer of ItemMetrics was found in the audited main-repository paths. Therefore preserving these counters is not a demonstrated prerequisite for current reward attribution if a terminal item-retirement policy is selected. A terminal snapshot may still preserve them for diagnostics if desired. This narrows, but does not replace, the domain decision between Policy A and Policy B; it is not proof about external consumers outside the audited repository paths.
+
+
+## 12. Domain-owner decision — no item transfer on elimination
+
+**Decision received: eliminated-player items must not be transferred to anyone.**
+
+This decision resolves the previously open ownership question. Policy B (returning equipped items to the eliminated player's own bag) is rejected as a terminal policy: once the player is eliminated, no item may remain as an active resource in that player's inventory, and no item may be transferred to another player or to a shared pool for redistribution.
+
+### Accepted terminal invariant
+
+1. No equipped item, completed item, loose component or pending anvil option belonging to an eliminated player is transferred to another player.
+2. No such item/component is returned to a shared pool, shop, PvE reward pool or any redistributable source.
+3. No such item is returned to the eliminated player's active inventory after terminalization.
+4. Capture any required immutable terminal diagnostic snapshot before retiring the player's item state.
+5. After terminalization, the eliminated player's item ownership is retired/discarded. Diagnostic records may retain catalog IDs/counts as historical facts, but those records are non-owning and cannot be consumed as inventory.
+6. Terminalization is idempotent: repeated elimination processing cannot duplicate, reissue or resurrect item resources.
+7. Other players' inventories, component counts, equipment maps, shop offers and shared pool availability remain unchanged by this player's item retirement.
+
+**Selected direction:** Policy A, refined to mean terminal retirement/discard with no redistribution and no return to the eliminated player's active bag. This is now the domain-owner decision, not merely a provisional recommendation.
+
+### Implementation ownership and proof obligations
+
+- TFTEngine elimination coordinator invokes terminalization exactly once after capturing terminal facts.
+- ItemEngine owns atomic retirement of the eliminated player's components, inventory, equipped mappings and pending anvil queue.
+- The terminal audit producer emits an immutable, non-owning disposition record.
+- Viewer/replay consume the terminal record read-only.
+- The operation must not clear placement/reward/anti-loop metrics owned outside ItemEngine; ItemEngine's own counters may be copied into the terminal diagnostic record before its item state is retired.
+
+### Required regression tests
+
+- Eliminate a player with equipped board and bench units; verify no items appear in any other player, shared pool, shop or PvE pool.
+- Eliminate with loose components, completed inventory and pending anvil; verify none remain actionable or redistributable.
+- Verify other players' inventory/equipment/pool snapshots are byte-for-byte unchanged by terminalization.
+- Verify terminal diagnostic record preserves pre-retirement facts without retaining an owning reference.
+- Invoke terminalization twice; verify no duplicate items, grants or metric increments.
+- Verify reset/new episode cannot resurrect retired terminal items.
+- Verify terminal placement/reward and non-ItemEngine metrics are preserved.
+
+This decision does not authorize implementation before Gate 8.
