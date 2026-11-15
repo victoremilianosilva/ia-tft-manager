@@ -472,3 +472,8 @@ The matrix must be read as a conservative audit index:
 ## Schema v2 producer correction proposal — 2026-11-15
 
 The schema-to-producer mismatches found in the required identity/reference fields are consolidated in the [Observation Schema v2 Producer Reconciliation and Correction Proposal](observation-schema-v2-producer-correction-proposal.v1.draft.md). It covers unsafe direct UUID aliasing, missing per-instance unit assessments, absent candidate IDs, champion-vs-physical-unit reference ambiguity, missing anvil option identity, unverified unit-role/item-target-fit references, and absent temporal sequence delivery. This remains a documentation proposal; Schema v2 is not edited and no runtime behavior is authorized.
+
+
+## Schema v2 nested field crosswalk — 2026-11-15
+
+See the [Schema v2 Field-to-Source Crosswalk](observation-schema-v2-field-source-crosswalk.v1.draft.md) for the 223-path reconciliation across entities, derived_context, strategic_evidence and legal_state_context. The 16 paths without source-map entries are explicit follow-up items; the 164 ancestor matches still require nested field-level producer proof. This is not final acceptance of #346.
