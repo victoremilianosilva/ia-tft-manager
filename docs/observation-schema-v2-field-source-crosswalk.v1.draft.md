@@ -41,12 +41,12 @@ Current crosswalk status after these passes:
 - 31 board/bench/shop/component/inventory paths have field-level producer and delivery dispositions.
 - 19 additional combat-stat, anvil, unit-role, item-fit and recipe-fit paths have field-level dispositions.
 - 16 previously unmapped paths have explicit source-backed dispositions (including not-produced, Shadow-only, diagnostic-only, unverified and static contract metadata).
-- 24 exact source-map matches still require callsite/provenance/sequence/Python/PPO validation.
+- 0 exact source-map matches remain without a field-level disposition.
 - 0 ancestor-only paths remain without a field-level disposition.
 
 The 31 unit/item pass deliberately distinguishes diagnostic snapshot delivery from PPO delivery. Structured UUID/champion/item identifiers in the audit snapshot are not treated as PPO tensor inputs. The 16 unmapped dispositions preserve unavailable/not-produced distinctions rather than manufacturing data.
 
-Next work: validate the remaining 24 exact source-map matches at callsite level, then complete Python/vector-environment/rollout-buffer/Actor/Critic delivery proof. Issue #346 remains open.
+Next work: complete Python/vector-environment/rollout-buffer/Actor/Critic delivery proof, then integrated replay/evaluation. Issue #346 remains open.
 
 ### Additional field-level proof — 2026-11-15
 
@@ -56,7 +56,7 @@ The [Item Fit, Anvil and Unit Role Field Proof](observation-schema-v2-item-fit-a
 - positional option IDs and aggregate anvil fit from stable option identity and per-target fit records;
 - slot-aligned role/item/recipe feature matrices from typed unit, item, recipe and target identities.
 
-Cumulative ancestor-path progress: 164 of 164 ancestor-mapped paths now have field-level dispositions; 0 remain. 19 of 43 exact matches are now validated; 24 remain. The 16 no-match paths retain explicit dispositions. This is a documentation audit, not an Actor/Critic leaf-delivery proof.
+Cumulative ancestor-path progress: 164 of 164 ancestor-mapped paths now have field-level dispositions; 0 remain. All 43 exact matches now have field-level dispositions. The 16 no-match paths retain explicit dispositions. This is a documentation audit, not an Actor/Critic leaf-delivery proof.
 
 ### Strategic evidence field-level proof — 2026-11-15
 
@@ -83,7 +83,7 @@ The [Legal State and Critic Context Field Proof](observation-schema-v2-legal-sta
 - 10 mask-reference paths: native masks are real arrays passed separately through Python/Actor/Rollout, but no runtime contract ID/version/hash, snapshot hash or decision identity hash accompanies them.
 - 4 Critic-context paths: the value head uses the shared observation encoder and explicitly ignores masks; no separate critic context/status/sequence/reason is emitted.
 
-**Milestone:** all 164/164 ancestor-matched Schema v2 paths now have field-level dispositions in the CSV. No ancestor-only placeholder remains. 19 of 43 exact source-map matches are now validated; 24 still require callsite/provenance/sequence/Python/PPO validation; the 16 no-source-map paths retain explicit dispositions.
+**Milestone:** all 164/164 ancestor-matched Schema v2 paths now have field-level dispositions in the CSV. No ancestor-only placeholder remains. All 43 exact source-map matches now have field-level dispositions; Python/PPO consumer proof remains separate; the 16 no-source-map paths retain explicit dispositions.
 
 ### Exact derived-context path validation — 2026-11-15
 
@@ -92,6 +92,14 @@ The [Derived Context Exact-Path Source Proof](observation-schema-v2-derived-cont
 Key corrections include: typed positioning/trait/capacity maps are not emitted; PPO receives selected flat features. Projected next-round income, estimated incoming damage and elimination risk remain unpopulated defaults. Economic pressure outputs are Shadow-only diagnostics, and survival pressure currently receives default-zero incoming/elimination inputs. The remaining-action budget is a normalized horizon scalar, not a raw integer.
 
 Exact-match progress: 19/43 validated; 24 remain for callsite/provenance/sequence/Python/PPO proof.
+
+### Strategic evidence exact-path validation — 2026-11-15
+
+The [Strategic Evidence Exact-Path Source Proof](observation-schema-v2-strategic-evidence-exact-source-proof.v1.draft.md) validates the remaining 24 exact matches: progression, pressure, uncertainty, commitment context, completed traits and focus weights.
+
+Key corrections: ProgressionPlan remains default Flexible because no producer assigns it; pressure outputs exist only as separate Shadow diagnostic scalars, not a map; uncertainty has no producer; commitment confidence/revision fields are partial or unassigned; composition_locked is hardcoded false in the new context and is not authoritative; generated completed traits differ from observed active traits; legacy focus-weight scalars are not a new evidence map.
+
+**Exact-path milestone:** all 43/43 exact source-map matches now have field-level source-backed dispositions. Combined with 164/164 ancestor matches and 16/16 no-source-map dispositions, all 223 Schema v2 paths now have an explicit classification. This does not yet prove Actor/Critic leaf allocation or integrated runtime acceptance.
 
 ## 4. The 16 paths without a source-map entry
 
