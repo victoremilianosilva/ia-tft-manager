@@ -64,7 +64,7 @@ Decision identity hashes, mask references, opaque direction/composition identity
 
 ### Diagnostic-only outputs
 
-Candidate-generation diagnostics, Shadow priorities, planner scores/confidence, selection rationale, revision rationale, raw Composition Intelligence diagnostic snapshots, Unified Strategic State Machine snapshots and Shadow recommendations remain outside PPO observations, labels, rewards and imitation targets. A future change requires a separate learning-purpose justification and reconstruction review.
+Candidate-generation diagnostics, TFT Strategic Engine priorities, planner scores/confidence, selection rationale, revision rationale, raw Composition Intelligence diagnostic snapshots, Unified Strategic State Machine snapshots and TFT Strategic Engine recommendations remain outside PPO observations, labels, rewards and imitation targets. A future change requires a separate learning-purpose justification and reconstruction review.
 
 ### Unavailable and unresolved fields
 
@@ -81,7 +81,7 @@ The action-opportunity parent collection is not populated. Sell-value and afford
 - Completed traits are not focus weights or core traits by alias.
 - Progression and economic posture are distinct outputs.
 - Lock unavailable is not unlocked.
-- Planner commitment, Composition Intelligence active composition and Unified Shadow snapshots remain separate owner streams.
+- Planner commitment, Composition Intelligence active composition and Unified Strategic State Machine snapshots remain separate owner streams.
 - Candidate proposals are evidence, not commands or confirmed transitions.
 
 ## 6. Legacy crosswalk
@@ -110,9 +110,9 @@ Decision identity hashes, observation/mask payload hashes, action/mask contract 
 ## 9. Architecture reconstruction review
 
 1. **Prior problem:** the previous audit identified broad candidate families but left many Actor/Critic allocations unresolved and did not provide one explicit disposition for every semantic field.
-2. **Technical rationale:** PPO must learn from canonical factual and strategic context without inheriting legacy positional assumptions or copying Shadow recommendations.
+2. **Technical rationale:** PPO must learn from canonical factual and strategic context without inheriting legacy positional assumptions or copying TFT Strategic Engine recommendations.
 3. **New responsibility:** this matrix owns semantic eligibility and consumer intent; schema owns meaning/provenance; source owners own evidence; Action/Mask owns legality; PPO architecture owns eventual encoding.
-4. **Contracts/invariants:** every field has one disposition; unavailable stays unavailable; no legacy offset inheritance; exact masks remain separate; Shadow recommendations/evaluator outputs are excluded; metadata hashes are not neural scalars.
+4. **Contracts/invariants:** every field has one disposition; unavailable stays unavailable; no legacy offset inheritance; exact masks remain separate; TFT Strategic Engine recommendations/evaluator outputs are excluded; metadata hashes are not neural scalars.
 5. **Cross-component impact:** schema/source/legacy/migration maps, strategic/economic owners, Engine bindings, Action/Mask, PPO Actor/Critic, checkpoint lineage, replay and evaluation.
 6. **Objective validation:** 77/77 semantic fields accounted for; 66/66 historical mappings reconciled; disposition coverage checked; candidate producer, semantic bridge and provenance blockers explicitly retained. No runtime files changed.
 
