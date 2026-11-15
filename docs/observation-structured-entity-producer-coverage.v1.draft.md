@@ -71,7 +71,7 @@ The existing CSV is intentionally conservative. Where a field is declared in the
 3. **New responsibility:** this matrix is the audit index for producer-to-entity coverage; it does not own runtime production or choose the future tensor projection.
 4. **Contract and invariants:** 17 entity kinds; field-family rows; explicit status and delivery vocabularies; no synthetic IDs; no alias assumptions; masks remain independent.
 5. **Cross-component impacts:** Schema v2, temporal entity contract, Engine native state, ItemEngine, ShopEngine, strategic Shadow producers, pybind, Python wrapper, PPO observation/rollout, replay and checkpoint lineage.
-6. **Objective validation:** CSV has 20 data rows and 15 columns; 17 unique entity kinds; all rows include source, availability, identity, ownership/cardinality, completeness/provenance, formula/version, sequence, lifecycle/reset, Python delivery, PPO delivery and unresolved gaps. Documentation/specification only; no runtime or tensor-layout changes.
+6. **Objective validation:** CSV has 31 data rows and 15 columns; 17 unique entity kinds; all rows include source, availability, identity, ownership/cardinality, completeness/provenance, formula/version, sequence, lifecycle/reset, Python delivery, PPO delivery and unresolved gaps. Documentation/specification only; no runtime or tensor-layout changes.
 
 
 ## Schema v2 nested field crosswalk — 2026-11-15
