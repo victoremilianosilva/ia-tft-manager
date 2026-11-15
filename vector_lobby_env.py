@@ -84,10 +84,10 @@ class LobbyVectorEnv:
 
             # Este é o snapshot produzido pelo step: rewards/dones pertencem
             # a esta transição, mesmo quando a lobby termina.
-            transition_snapshot = info.get("decision_snapshot")
-            if transition_snapshot is not None:
-                transition_snapshot = dict(transition_snapshot)
-            info["transition_snapshot"] = transition_snapshot
+            step_result_snapshot = info.get("decision_snapshot")
+            if step_result_snapshot is not None:
+                step_result_snapshot = dict(step_result_snapshot)
+            info["step_result_snapshot"] = step_result_snapshot
 
             if lobby_done:
                 get_public_state = getattr(env, "get_public_state", None)
@@ -106,14 +106,14 @@ class LobbyVectorEnv:
 
             if lobby_done:
                 # O reset muda a identidade/episódio da observação retornada.
-                # Nunca sobrescrever transition_snapshot com essa identidade.
+                # Nunca sobrescrever step_result_snapshot com essa identidade.
                 obs = env.reset()
                 getter = getattr(env, "get_snapshot_metadata", None)
                 next_snapshot = dict(getter()) if callable(getter) else None
             else:
                 next_snapshot = (
-                    dict(transition_snapshot)
-                    if transition_snapshot is not None
+                    dict(step_result_snapshot)
+                    if step_result_snapshot is not None
                     else None
                 )
 
