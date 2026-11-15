@@ -147,3 +147,24 @@ A second source pass narrows what can be observed after elimination:
 
 The terminal-state decision remains unresolved. If the chosen policy is discard, the Engine needs explicit owner-scoped cleanup and a way to prove the orphan mapping was retired. If the chosen policy is return-to-owner-bag, the return must occur before the terminal inventory is frozen/cleared. In either case, observability must report the terminal disposition without exposing eliminated items as active equipment.
 
+
+
+## 10. Conditional dead-player pending-anvil mask/step boundary — 2026-11-15
+
+A focused trace found a second, conditional boundary that must not be conflated with the orphan equipment map:
+
+- `refresh_masks()` normally derives item target availability from live board/bench slots. If an ItemEngine still has a pending anvil, it overrides the entire type mask to allow only type-7 anvil selection and installs the degenerate target head.
+- `TFTEngine::step()` preserves a non-PASS action for any player whose round is finished while a pending anvil exists.
+- However, `PlayerEnv::step()` checks `!info.alive` before dispatching action type and returns `PlayerTransition{0.0f, false}`. A dead player's pending-anvil choice is therefore not applied by that path.
+- The lobby's preparation-completion predicate is based on alive players, so the dead player's no-op does not by itself establish a lobby stall.
+
+If a pending anvil can survive into the eliminated state, the combination advertises a forced type-7 choice, preserves it through effective-action substitution, then ignores it in PlayerEnv::step. The source trace establishes this conditional mismatch; it does **not** yet prove that a normal gameplay sequence can produce a pending anvil at the exact moment of elimination.
+
+Required acceptance:
+1. Prove whether a pending anvil can coexist with elimination using a deterministic native scenario.
+2. If reachable, assert the chosen policy: resolve before elimination, explicitly discard/retire on elimination, or return to a valid owner state; do not leave a forced mask for an ignored action.
+3. Assert dead-player masks expose only the documented inactive/terminal action contract.
+4. Assert action resolution records a skipped/inactive result rather than a sampled action that appears legal but is silently ignored.
+5. Verify the alive-player completion predicate and rollout transition semantics remain consistent.
+
+Until reachability is established, classify this as a conditional producer/mask/executor contract risk, not a reproduced gameplay defect.
