@@ -7,7 +7,7 @@
 |---|---|---|---|
 | `match_id` | nullable string; authoritative logical game-match identity, not Viewer session ID | Preserve | Copy only from validated game/platform source; if absent, v2 identity is incomplete |
 | `engine_match_id` | nullable string; canonical Engine-episode scope (Engine-instance scope + episode) | Preserve as a distinct field | Current numeric `episode_id` alone is insufficient; require an authoritative scoped producer before marking complete |
-| `player_id` | nullable string | Preserve | Required non-empty for complete v2 identity |
+| `player_id` | nullable string; canonical token `player-0`…`player-7` encodes the native episode-local seat/index | Preserve as a typed seat token | Required for complete v2 identity and scoped by `engine_match_id`; not a persistent player UUID |
 | `round` | nullable non-negative integer | Preserve | Required for complete v2 identity |
 | `decision_sequence` | nullable integer | Breaking type change to `{namespace,value}` or null | Namespace must be proven from its producer; current audit does not establish a canonical Engine decision counter |
 | `snapshot_sequence` | nullable integer | Breaking type change to `{namespace,value}` or null | Namespace must be proven from the snapshot producer; no typed native observation snapshot is currently transported through the Python wrapper |
