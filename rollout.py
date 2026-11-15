@@ -101,6 +101,8 @@ class RolloutBuffer:
         )
 
         self.ptr = 0
+        # Non-tensor correlation metadata, indexed exactly like rollout transitions.
+        self.snapshot_metadata = [None for _ in range(self.num_steps)]
 
         # ============================================================
         # DADOS PRINCIPAIS
@@ -244,6 +246,7 @@ class RolloutBuffer:
         values,
         masks_dict,
         valid=None,
+        snapshot_metadata=None,
     ):
         """
         Adiciona uma transição de todos os agentes.
@@ -338,6 +341,29 @@ class RolloutBuffer:
             dones,
             values
         )
+
+        if snapshot_metadata is not None:
+            if len(snapshot_metadata) != self.num_envs:
+                raise ValueError(
+                    "snapshot_metadata deve conter uma identidade por agente: "
+                    f"{len(snapshot_metadata)} != {self.num_envs}"
+                )
+            normalized_metadata = []
+            for index, metadata in enumerate(snapshot_metadata):
+                if not isinstance(metadata, dict):
+                    raise TypeError(
+                        f"snapshot_metadata[{index}] deve ser um dicionário."
+                    )
+                required = ("engine_instance_id", "episode_id", "player_id")
+                missing = [key for key in required if key not in metadata]
+                if missing:
+                    raise ValueError(
+                        f"snapshot_metadata[{index}] sem campos obrigatórios: {missing}"
+                    )
+                normalized_metadata.append(dict(metadata))
+            self.snapshot_metadata[self.ptr] = normalized_metadata
+        else:
+            self.snapshot_metadata[self.ptr] = None
 
         # ============================================================
         # SALVAR
@@ -800,6 +826,8 @@ class RolloutBuffer:
         desnecessárias a cada rollout.
         """
 
+        for index in range(self.ptr):
+            self.snapshot_metadata[index] = None
         self.ptr = 0
 
         # ------------------------------------------------------------
