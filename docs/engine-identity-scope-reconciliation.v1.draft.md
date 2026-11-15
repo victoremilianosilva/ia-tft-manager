@@ -144,3 +144,10 @@ These are future acceptance tests. No runtime changes or tests are added by this
 This is a design proposal only. Gate 1 observation identity and Gate 2 mask correlation remain runtime-pending; Gate 7 replay acceptance remains executable-test-pending. Gate 8 remains blocked until the integrated review of Gates 1–7 and explicit user authorization.
 
 Issue #346 remains open. This note does not claim the 17 structured entity kinds or their end-to-end producers are complete.
+
+
+## 10. Native Engine type semantics confirmation — 2026-11-15
+
+Source inspection confirms `TFTEngine` deletes copy construction/assignment and defaults move construction/assignment. The class owns `std::unique_ptr<Impl>`; constructor creates a new Impl, reset increments the Impl-local `episode_id`, and default move transfers the existing pointer/state. No independent Engine-instance token or registry is produced in the audited constructor, Impl fields, reset, result or pybind path.
+
+Therefore the semantic requirement in this proposal remains exactly `(engine_instance_scope, episode_id)`. The move operation must preserve one future scope token; construction must acquire a distinct one. Neither seed nor numeric episode counter is an acceptable substitute. This is a source-backed design requirement, not an implemented identity generator.
