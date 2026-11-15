@@ -72,3 +72,8 @@ The existing CSV is intentionally conservative. Where a field is declared in the
 4. **Contract and invariants:** 17 entity kinds; field-family rows; explicit status and delivery vocabularies; no synthetic IDs; no alias assumptions; masks remain independent.
 5. **Cross-component impacts:** Schema v2, temporal entity contract, Engine native state, ItemEngine, ShopEngine, strategic Shadow producers, pybind, Python wrapper, PPO observation/rollout, replay and checkpoint lineage.
 6. **Objective validation:** CSV has 20 data rows and 15 columns; 17 unique entity kinds; all rows include source, availability, identity, ownership/cardinality, completeness/provenance, formula/version, sequence, lifecycle/reset, Python delivery, PPO delivery and unresolved gaps. Documentation/specification only; no runtime or tensor-layout changes.
+
+
+## Schema v2 nested field crosswalk — 2026-11-15
+
+The [Schema v2 Field-to-Source Crosswalk](observation-schema-v2-field-source-crosswalk.v1.draft.md) enumerates 223 data paths under entities, derived_context, strategic_evidence and legal_state_context against the 77-entry source map: 43 exact matches, 164 ancestor/family matches and 16 paths with no source-map entry. Parent/family matches are explicitly not treated as field-level proof; Python and PPO delivery remain unestablished by the source map.
