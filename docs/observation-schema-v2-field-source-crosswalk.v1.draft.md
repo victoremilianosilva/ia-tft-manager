@@ -23,7 +23,6 @@ The result is a machine-readable CSV with one row per schema data path. Shared `
 
 ## 2. Reconciliation result
 
-<text/>
 
 - 223 Schema v2 data paths enumerated across the four roots.
 - 43 exact path matches to the source map.
