@@ -38,6 +38,7 @@ Para decisões de arquitetura e implementação da nova linhagem, use primeiro o
 ## Comece por aqui
 
 - [Limite de integração live Overwolf/GEP](overwolf-live-state-integration-boundary.md) — ownership entre captura GEP, estado canônico, importação nativa, inferência PPO e evidência necessária para declarar integração live.
+- [GEP Match ID Source Path and Lifecycle Audit](gep-match-id-source-path-and-lifecycle-audit.v1.draft.md) — path exato do match ID, normalização, sessão/revisão do snapshot manager e evidência ainda pendente de captura real.
 
 - [Arquitetura geral](architecture.md) — componentes e fluxo de dados.
 - [Engine de lobby](lobby-engine.md) — ciclo de partida e estado dos oito jogadores.
