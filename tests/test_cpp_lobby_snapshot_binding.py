@@ -38,6 +38,7 @@ class FakeNativeLobby:
         return {
             "observations": np.full((8, 4), self.episode_id, dtype=np.float32),
             "action_masks": make_masks(0),
+            "engine_instance_id": f"fake-engine-{id(self)}",
             "episode_id": self.episode_id,
             "observation_dim": 4,
         }
@@ -48,6 +49,7 @@ class FakeNativeLobby:
             "rewards": np.zeros(8, dtype=np.float32),
             "dones": np.zeros(8, dtype=np.bool_),
             "action_masks": make_masks(2),
+            "engine_instance_id": f"fake-engine-{id(self)}",
             "episode_id": self.episode_id,
             "round": 3,
             "stage": 2,
@@ -80,6 +82,7 @@ def test_reset_masks_are_taken_from_same_native_snapshot(monkeypatch):
         assert all(mask["type_mask"][0] for mask in masks)
         assert all(not mask["type_mask"][8] for mask in masks)
         assert lobby.get_snapshot_metadata() == {
+            "engine_instance_id": f"fake-engine-{id(lobby._engine)}",
             "episode_id": 1,
             "round": 0,
             "stage": 1,
@@ -107,6 +110,7 @@ def test_step_masks_are_taken_from_same_native_snapshot(monkeypatch):
         assert all(mask["type_mask"][2] for mask in masks)
         assert all(not mask["type_mask"][8] for mask in masks)
         assert info["decision_snapshot"] == {
+            "engine_instance_id": f"fake-engine-{id(lobby._engine)}",
             "episode_id": 1,
             "round": 3,
             "stage": 2,
