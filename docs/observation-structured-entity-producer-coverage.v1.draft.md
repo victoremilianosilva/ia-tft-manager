@@ -94,3 +94,8 @@ The [Unit Instance, Shop Offer and Shared Pool Lifecycle Follow-up](unit-instanc
 ## PvE loot versus anvil producer boundary — 2026-11-15
 
 The [PvE Loot and Anvil Gameplay Producer Boundary Audit](anvil-gameplay-producer-boundary-audit.v1.draft.md) corrects a possible overreading of the earlier anvil proof. The Engine has an authoritative round-resolution PvE producer that directly grants components and completed items through `add_component()` and `add_completed_item()`. It does not enqueue an anvil. A scan of the 12 `cpp/src` implementation translation units found no gameplay call to `grant_component_anvil()` or `grant_completed_item_anvil()`. Pending-anvil state, masks, option projection and the conditional consumer remain real, but no audited gameplay producer populates that queue. Direct catalog-ID grants do not establish physical item identity or typed PPO entity delivery.
+
+
+## PvE component pool and inventory lifecycle — 2026-11-15
+
+The [PvE Component Pool and Item Inventory Lifecycle Audit](pve-component-inventory-lifecycle-audit.v1.draft.md) separates the per-player, episode-local Set 18 loot distribution pool from collected component multiplicity in ItemEngine. The pool is not projected to PPO. PPO receives ten catalog-order component counts divided by six and clamped, plus nine positional semantic inventory slots; neither is a lossless physical-item or loot-provenance representation. The audit also traces recipe consumption, craft-and-equip rollback, equipment ownership and reset behavior, and records existing test coverage and gaps.
