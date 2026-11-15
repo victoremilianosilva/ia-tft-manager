@@ -318,3 +318,10 @@ The conditional eliminated-player pending-anvil mask/executor mismatch is not cu
 ### AuditSnapshot terminal player status gap — 2026-11-15
 
 The native `AuditPlayerSnapshot` DTO has no `alive` or `eliminated` field, although the separate `get_public_state()` path exposes player elimination status. Consumers of AuditSnapshot cannot distinguish an eliminated player with cleared units from a living player with an empty board/bench using that DTO alone. A separate public-state status is useful but must be correlated to the same Engine episode/snapshot; occupancy or mask shape is not a substitute. Future diagnostic acceptance must bind terminal status and item disposition to one correlated audit record.
+
+
+## 13. Final documentary reconciliation link — 2026-11-15
+
+The six requested documentary workstreams have been consolidated in [Final Documentary Reconciliation — Gates 1–7 v1](gates-1-7-final-documentary-reconciliation.v1.draft.md). That report reconciles identity/lifecycle, GEP-to-PPO correlation, all 17 structured entity kinds / 31 field-family rows, the unresolved elimination item policy decision, CSV integrity and the Gate 1–7 readiness table.
+
+This is a documentation closeout only. It does not change the gate table's runtime dispositions, close issue #346, select the terminal item policy, or authorize Gate 8. In particular, a complete source inventory is not proof of every implicit C++ copy/destruction path, and producer coverage is not proof of PPO delivery.
