@@ -28,7 +28,7 @@ The result is a machine-readable CSV with one row per schema data path. Shared `
 - 43 exact path matches to the source map.
 - 164 paths mapped only through an ancestor/family entry.
 - 16 paths have no source-map entry.
-- The CSV carries 14 columns, including schema path/type/required status, source-map match, inherited availability/nature/source/formula/notes, field-level proof status, Python/PPO delivery status and next action.
+- The CSV carries 16 columns, including schema path/type/required status, source-map match, inherited availability/nature/source/formula/notes, field-level proof status, Python/PPO delivery, next action, and current Actor/Critic delivery.
 
 **Important:** an ancestor/family match is not field-level producer proof. An exact source-map match is also not sufficient by itself; callsite, provenance, sequence, Python exposure and PPO delivery still need verification. The source map is an inventory, not a runtime schema validator.
 
@@ -100,6 +100,14 @@ The [Strategic Evidence Exact-Path Source Proof](observation-schema-v2-strategic
 Key corrections: ProgressionPlan remains default Flexible because no producer assigns it; pressure outputs exist only as separate Shadow diagnostic scalars, not a map; uncertainty has no producer; commitment confidence/revision fields are partial or unassigned; composition_locked is hardcoded false in the new context and is not authoritative; generated completed traits differ from observed active traits; legacy focus-weight scalars are not a new evidence map.
 
 **Exact-path milestone:** all 43/43 exact source-map matches now have field-level source-backed dispositions. Combined with 164/164 ancestor matches and 16/16 no-source-map dispositions, all 223 Schema v2 paths now have an explicit classification. This does not yet prove Actor/Critic leaf allocation or integrated runtime acceptance.
+
+### Current Actor/Critic delivery proof — 2026-11-15
+
+The [Current Actor/Critic Delivery Audit](observation-schema-v2-actor-critic-current-delivery.v1.draft.md) adds two current-consumer columns to all 223 CSV rows.
+
+Key implementation result: Actor and Critic share `encode(obs)`, but not every input block is shared. The Actor receives the 9×37 inventory-fit and 100×37 recipe-fit matrices through item-specific heads; `encode()` strips the compatibility matrix from the shared value-head input. Native masks are passed separately to Actor logits; `get_value()` explicitly ignores masks. Candidate slot tail and item semantic/global blocks remain in the shared encoder. Shadow/diagnostic paths remain outside both networks.
+
+These columns classify current code delivery, not future projection eligibility. They do not approve dimensions, offsets, normalization or a new encoder layout.
 
 ## 4. The 16 paths without a source-map entry
 

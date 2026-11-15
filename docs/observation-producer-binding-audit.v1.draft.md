@@ -47,6 +47,14 @@ The current synchronous vector-environment loop may keep these reads aligned ope
 
 This is a current implementation gap against the target Action/Mask contract: exact decision-correlated masks must be supplied independently to Actor and Critic (or through a provably lossless encoding); any additional Markov/history context is additive and cannot replace masks.
 
+### 2.3 Current Actor/Critic item-compatibility split
+
+The shared encoder does not consume every observation sub-block. `TFTPolicy.encode()` removes `item_compatibility_observation_dim` from the middle/global block before constructing `global_part` (`policy.py:271-304`). The semantic item-global block remains in the shared encoder: component features, nine inventory semantic rows, one hundred recipe semantic rows and thirty-seven unit target-profile rows.
+
+The Actor separately extracts the full item state with `_item_state_features()`, including the 9×37 inventory-target fit matrix and 100×37 recipe-target fit matrix (`policy.py:389-446`). The inventory action head consumes per-item fit summaries, the item-target head consumes selected inventory fit scores, and the recipe path consumes selected recipe fit scores (`policy.py:448-500,882-979`). The value head uses only `value_head(encode(obs))` (`policy.py:528-530,1008`).
+
+Therefore, the current Critic receives item semantics and target profiles but not the exact item/recipe compatibility matrices. These matrices are current Actor-only inputs. This is an implementation fact, not a decision that the future Critic must permanently exclude them; any future change is gated and requires explicit Actor/Critic projection review.
+
 ## 3. Current observation producers
 
 ### 3.1 Global player/economy fields
@@ -88,7 +96,7 @@ Do not rename or reinterpret the old bench/shop feature tail as the missing Shad
 
 ### 3.4 Existing item features
 
-The native observation builder reads the ItemEngine and item/champion catalogs to encode component counts, inventory semantics, recipes, target roles/stats, compatibility, and anvil options. Some compatibility values are heuristic fits. The new projection must preserve item identity, unit-instance target identity, catalog binding, and formula provenance; it must not promote a heuristic fit score to an observed fact.
+The native observation builder reads the ItemEngine and item/champion catalogs to encode component counts, inventory semantics, recipes, target roles/stats, compatibility, and anvil options. Some compatibility values are heuristic fits. The new projection must preserve item identity, unit-instance target identity, catalog binding, and formula provenance; it must not promote a heuristic fit score to an observed fact. The current Actor receives inventory/recipe compatibility matrices through item-specific heads, while the Critic's shared encoder strips those matrices and retains only the semantic item/recipe/target-profile block.
 
 ## 4. Legacy StrategyInfo still present in PPO observations
 

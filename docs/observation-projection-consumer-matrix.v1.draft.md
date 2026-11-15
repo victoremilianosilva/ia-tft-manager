@@ -11,6 +11,8 @@ The previous consumer audit correctly separated the semantic source map, histori
 
 It does **not** select tensor dimensions, offsets, shapes, axes, ordering, padding, normalization, categorical vocabularies, or encoder architecture. A candidate is not runtime-ready: all source, provenance, formula, validity, identity-correlation and missingness blockers must be satisfied first.
 
+**Current implementation is separate from this proposed allocation.** See [Schema v2 Current Actor/Critic Delivery Audit](observation-schema-v2-actor-critic-current-delivery.v1.draft.md): the current Actor receives item/recipe compatibility matrices through specialized heads, while `encode()` removes those matrices from the value-head input; current masks are applied to Actor but ignored by `get_value()`. Any `shared_actor_critic_candidate` entry in this matrix is a future semantic-consumer proposal, not evidence that the current Critic receives that exact feature block.
+
 ## 2. Disposition vocabulary
 
 | Disposition | Meaning |
