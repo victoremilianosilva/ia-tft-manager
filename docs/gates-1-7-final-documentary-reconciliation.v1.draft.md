@@ -14,7 +14,7 @@ The six requested documentary workstreams have been consolidated against the cur
 | 1. Identity and lifecycle | Reconciled Engine, episode, Viewer, player seat, UnitInstance and GEP source identifiers | Semantic meanings, source owners and collision/reset findings are explicit | No authoritative game-match ID; no Engine-instance scope producer; UnitInstance UUID is not cross-episode identity |
 | 2. End-to-end correlation | Reconciled GEP → native import → Engine → masks → Python → PPO rollout → Viewer/replay | Transport losses, independent sequence namespaces and reset boundary risks are documented | No live importer acceptance; no canonical decision sequence; no exact observation/mask/action/rollout identity envelope |
 | 3. Structured entities | All 17 entity kinds / 31 field-family rows have documented dispositions | Audit coverage and source classification are consolidated | Many fields are unavailable, uncorrelated, diagnostic-only, Shadow-only or not delivered to PPO; source presence is not delivery |
-| 4. Elimination item policy | Three terminal policies compared; Policy A recommended provisionally | Ownership problem, candidate owners, invariants and acceptance tests documented | Domain decision is not accepted; ItemEngine metric/reward consumers must be checked before selecting the terminal operation |
+| 4. Elimination item policy | Domain decision accepted: Policy A terminal retirement/discard; no transfer to anyone | Ownership rule, candidate owners, invariants and acceptance tests documented | Runtime terminalization and regression tests remain post-Gate 8 |
 | 5. Machine-readable traceability | CSV validated and reconciled with the lifecycle audit | 31 data rows, 17 entity kinds, 15 columns; all rows have 15 fields | CSV is an index, not proof of runtime production or schema acceptance |
 | 6. Gates 1–7 integrated review | Documentary and runtime status reconciled in one readiness ledger | Gate-specific contracts, evidence and remaining acceptance are cross-linked | Runtime acceptance remains pending; Gate 8 is blocked |
 
@@ -119,6 +119,8 @@ Native availability, diagnostic JSON availability, Shadow-only availability, Pyt
 
 ## 5. Workstream 4 — elimination item terminal policy
 
+**Current accepted domain rule:** no item belonging to an eliminated player is transferred to anyone, returned to the eliminated player's active bag, or made available through a shared/redistributable pool. The original alternatives below are retained as historical analysis only; section 5.2 records the accepted decision.
+
 The current elimination path returns champion copies to UnitPool and clears board/bench UnitInstances but does not explicitly retire ItemEngine's UUID-keyed equipment map, loose components, completed inventory or pending queue. The retained equipment map is not shown as an active target and is not fully enumerated by the audit snapshot; this is an ownership/diagnostic ambiguity, not proof of cross-player leakage.
 
 Three policies are documented:
@@ -126,7 +128,7 @@ Three policies are documented:
 - **B — return equipped items to the eliminated player's own bag, then freeze it**;
 - **C — retain current internal state until Engine reset**.
 
-Policy A is recommended provisionally because it gives the eliminated player no continuing active inventory and avoids orphaned active ownership. This recommendation is **not an accepted game rule or domain decision**.
+Policy A is recommended provisionally because it gives the eliminated player no continuing active inventory and avoids orphaned active ownership. This was the historical recommendation before the domain owner made the explicit decision recorded in section 5.2.
 
 Before choosing A, inspect ItemEngine metric consumers and placement/reward attribution. A generic reset must not erase counters needed for terminal reward/replay. The user/domain owner must explicitly select A, B or another policy. No implementation is authorized by this document.
 
@@ -199,7 +201,7 @@ This is a documentary closeout report, not a claim that the AI is ready to code 
 
 A focused audit of `ItemEngine::metrics()`, `TFTEngine.cpp`, pybind, RewardManager and RewardModel found no production read of ItemMetrics in the inspected main-repository paths. Direct counter reads are in ItemEngine unit tests. `ItemEngine::reset()` clears its owned collections, anvil queue and metrics; `items_left_unused` is declared but no update site was found in the inspected implementation. Current PPO reward uses action/combat/placement reward paths and item action-quality shaping, not ItemMetrics counters.
 
-This means metric preservation is not a demonstrated prerequisite for current placement/reward/PPO attribution if Policy A is selected. A terminal diagnostic may preserve the counters for audit purposes. This does not decide the game/domain policy: Policy A remains provisional and Policy B remains a valid alternative pending owner decision. The source pass is limited to the audited main-repository paths and does not claim knowledge of external consumers.
+This means metric preservation is not a demonstrated prerequisite for current placement/reward/PPO attribution if Policy A is selected. A terminal diagnostic may preserve the counters for audit purposes. This does not reopen the domain decision: Policy A is selected and Policy B is rejected by the domain-owner decision in section 5.2. The source pass is limited to the audited main-repository paths and does not claim knowledge of external consumers.
 
 
 ### 5.2 Domain-owner decision — no item transfer on elimination
