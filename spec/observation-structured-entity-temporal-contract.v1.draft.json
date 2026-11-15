@@ -349,7 +349,7 @@
         "derived_assessment"
       ],
       "invariant": "is_core, board_contribution, composition_fit and item_fit are derived/estimated, not observed unit facts.",
-      "status": "native_derived_champion_aggregate_only; per-instance assessment identity and PPO structured delivery not produced",
+      "status": "native_derived_champion_keyed_without_physical_identity; no UUID-backed per-instance join",
       "producer_paths": [
         "cpp/src/lobby/TftEngine.cpp::Impl::update_strategy append_owned_candidate",
         "cpp/include/strategy/StrategicEvidenceContext.hpp::StrategicEvidenceContextBuilder::build",
