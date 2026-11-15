@@ -58,7 +58,10 @@ def test_native_mask_blocks_reverse_swap_and_executor_rejects_forced_reverse():
 
         before = lobby.get_audit_snapshot()["players"][0]
         before_signature = _state_signature(before)
-        forward_masks = lobby.get_action_masks()[0]
+        # The test-only setters mutate native state outside reset/step, so no new
+        # observation/mask snapshot exists yet. Read the native mask directly for
+        # this fixture; production consumers must use the wrapper's correlated snapshot.
+        forward_masks = native.get_action_masks()[0]
         assert bool(forward_masks["type_mask"][4])
         assert bool(forward_masks["board_move_target_masks"][3][10]), (
             "O movimento inicial deve ser elegível na máscara nativa."
