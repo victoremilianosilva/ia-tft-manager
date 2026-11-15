@@ -82,3 +82,8 @@ The CSV intentionally sets Python and PPO delivery to `not_established_by_source
 6. **Objective validation:** schema traversal and source-map matching produced 223 unique paths: 43 exact, 164 ancestor, 16 none; 14-column CSV; documentation/specification only, no runtime or tensor-layout changes.
 
 Issue #346 remains open until every path has a source-backed disposition and identity/sequence/delivery proof.
+
+
+## Unmapped field dispositions — 2026-11-15
+
+The [Schema v2 Unmapped Field Dispositions](observation-schema-v2-unmapped-field-dispositions.v1.draft.md) classifies all 16 paths without a source-map match as not-produced, Shadow-only, diagnostic-only, unverified, not-correlated or static contract metadata. This classification supplements but does not rewrite the mechanical match result.
