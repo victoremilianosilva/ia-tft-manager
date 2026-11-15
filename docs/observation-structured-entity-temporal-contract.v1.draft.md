@@ -92,7 +92,7 @@ Every temporal collection binds to match, player, round/episode and exact source
 
 1. Shop schema has no explicit offer ID/revision/reroll generation or observed price field.
 2. Inventory and unit attachments lack physical item-instance identity and explicit attachment owner references.
-3. Pool availability has no authoritative producer/schema field.
+3. Pool availability has authoritative shared-lobby native queries through UnitPool::available()/initial_count(), TFTEngine query methods and direct pybind methods. It still has no immutable observation-correlated snapshot, source decision sequence, wrapper observation/PPO delivery or dedicated Schema v2 field.
 4. Board slot index has no documented coordinate/orientation contract.
 5. Positioning and trait aggregates use open maps without complete typed key/catalog contracts.
 6. Unit assessments and anchor candidates need explicit collection completeness and source-sequence contracts.
@@ -123,3 +123,17 @@ Source inspection of cpp/include/lobby/TftEngine.hpp finds UnitInstance::uuid, b
 - Unit-instance projection remains blocked until the source audit establishes an authoritative identity or proposes a versioned producer/schema correction.
 
 This correction does not alter runtime code or claim that UUID generation is implemented.
+
+## Pool availability producer correction — 2026-11-15
+
+**Prior problem:** the original gap statement treated pool availability as having no authoritative producer, despite the later source audit proving native query methods.
+
+**Technical justification:** a point query over the live shared pool is not the same as a snapshot correlated to the exact observation, masks and action; conflating them would overstate availability to PPO.
+
+**New responsibility:** this semantic contract records the shared-pool scope and the requirement for a future decision-correlated snapshot; the native query audit establishes current producer capability.
+
+**Contract and invariants:** the pool is shared at lobby scope and keyed by champion catalog identity; it must not be inferred from player-local board/bench/shop state; query-only availability does not imply PPO delivery or a source sequence.
+
+**Cross-component impacts:** UnitPool, TFTEngine, pybind, CppTFTLobbyWrapper, Schema v2, producer coverage matrix and replay correlation.
+
+**Objective validation:** the Markdown contract now agrees with the JSON manifest, coverage CSV and lifecycle follow-up: native query exists, but immutable snapshot/sequence/PPO delivery and a dedicated schema field remain absent. No runtime or tensor changes.
