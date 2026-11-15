@@ -2,7 +2,7 @@
 
 > **Supersession notice (2026-11-15):** Sections 1–10 preserve the original alternatives/recommendation as historical analysis. Section 12 records the later explicit domain-owner decision and is authoritative: Policy A is selected; Policy B and retaining active item state are rejected; no item is transferred to anyone or returned to a redistributable pool.
 
-**Status:** proposal only; not an accepted game rule or runtime contract.  
+**Status:** domain decision accepted; runtime contract and implementation pending.  
 **Target:** `new-arquiteture`.  
 **Tracking:** issue #346.  
 **Scope:** native item ownership after a player is eliminated.
@@ -56,13 +56,11 @@ Keep the current behavior.
 
 **Costs:** leaves orphaned UUID-keyed equipment mappings; does not distinguish active from terminal inventory; makes audit consumers depend on an implicit reset for cleanup; is not an explicit ownership contract.
 
-## 4. Provisional recommendation
+## 4. Historical recommendation — superseded
 
-Prefer **Policy A — explicit retirement/discard**, with a terminal snapshot captured before retirement.
+The original recommendation favored Policy A, explicit retirement/discard after capturing a terminal snapshot. The later domain-owner decision in section 12 formally selects and tightens that policy: **no item is transferred to another player, returned to the eliminated player's active bag, or made available to any redistributable pool**. Section 12 is authoritative; this section is retained only as decision history.
 
-Historical recommendation, superseded by the explicit domain-owner decision in section 12. Policy A is now selected, not provisional.
-
-Before accepting Policy A, inspect all ItemEngine metric consumers and placement/reward attribution to determine whether counters must survive terminalization. If metrics are needed, terminalization should clear owned item collections while preserving the required counters in a separate terminal summary; it should not blindly call the generic `ItemEngine::reset()` if that erases evidence needed for reward or replay.
+The subsequent ItemMetrics audit in section 11 found no production PPO/reward consumer in the inspected paths. Runtime implementation must still preserve terminal placement/reward and non-ItemEngine metrics deliberately; it must not blindly call a generic reset if that would erase required terminal evidence.
 
 ## 5. Proposed owner and boundaries
 
@@ -77,7 +75,7 @@ Before accepting Policy A, inspect all ItemEngine metric consumers and placement
 1. Elimination retires the player's active UnitInstance ownership exactly once.
 2. No equipped item, component, completed item or pending choice is transferred to another player.
 3. No UUID-keyed equipped entry remains classified as active ownership after terminalization.
-4. The terminal disposition is explicit: retired/discarded or returned-to-owner-bag-and-frozen; no implicit retention.
+4. The only accepted terminal disposition is retired/discarded; return-to-owner-bag, cross-player transfer, and redistribution are forbidden.
 5. Terminalization is idempotent and safe under repeated elimination/reset handling.
 6. ItemEngine remains the authority for item counts; no synthetic per-item IDs are introduced.
 7. Terminal diagnostic data is immutable and correlated to the same Engine episode and player seat.
@@ -106,7 +104,7 @@ Before implementation acceptance:
 9. Assert two consecutive matches cannot expose prior terminal item state.
 10. Assert full-match replay reproduces the same terminal item disposition.
 
-These are future acceptance tests, not tests executed by this proposal.
+These are future acceptance tests, not tests executed by this document. They must explicitly assert that no item/component/anvil reaches another player, the eliminated player's active bag, a shared pool, shop, or PvE reward source.
 
 ## 9. Architecture reconstruction review
 
@@ -119,7 +117,7 @@ These are future acceptance tests, not tests executed by this proposal.
 
 ## 10. Decision and gate status
 
-**Historical decision prompt, superseded:** the domain owner selected Policy A in section 12. Implementation remains blocked until Gate 8.
+**Decision resolved:** the domain owner selected Policy A in section 12, with no transfer or redistribution. The domain choice is closed; implementation and regression proof remain blocked until Gate 8.
 
 Until this decision is accepted and Gate 8 is authorized, no runtime implementation is permitted. Issue #346 remains open. Gate 8 remains blocked.
 
