@@ -137,3 +137,15 @@ This correction does not alter runtime code or claim that UUID generation is imp
 **Cross-component impacts:** UnitPool, TFTEngine, pybind, CppTFTLobbyWrapper, Schema v2, producer coverage matrix and replay correlation.
 
 **Objective validation:** the Markdown contract now agrees with the JSON manifest, coverage CSV and lifecycle follow-up: native query exists, but immutable snapshot/sequence/PPO delivery and a dedicated schema field remain absent. No runtime or tensor changes.
+## UnitInstance UUID producer correction — 2026-11-15
+
+The historical “Producer-backed identity correction — 2026-11-14” below predates the completed factory audit and must not be read as the current producer finding. The TftEngine.hpp comment claiming UUID generation will be implemented later is stale. UnitInstanceFactory::create() calls generate_uuid(), and UnitInstanceFactory.cpp implements the seeded UUID-shaped generation.
+
+Current disposition:
+- UUID generation is implemented and native-observed.
+- UUID is still unverified as canonical cross-episode physical identity because same-seed resets/independent Engines can repeat it and no Engine/player scope or collision registry exists.
+- Copy/move semantics preserve the UUID value; implicit copies do not mint a new identity.
+- Diagnostic audit snapshot exposure is not structured PPO delivery.
+- The semantic contract must keep physical identity unavailable for cross-episode canonical joins until the scope/lifecycle contract is accepted.
+
+This correction supersedes the historical “generation not proven” statement only. It does not authorize a schema/runtime/tensor change.
