@@ -34,7 +34,7 @@
         "entities.board[].unit",
         "entities.bench[].unit"
       ],
-      "identity": "unit.instance_id",
+      "identity": "unverified: Schema v2 currently requires instance_id; native UnitInstance declares uuid, but UUID generation/lifecycle stability is explicitly documented as future work",
       "scope": [
         "engine_match_id",
         "player_id"
@@ -49,8 +49,11 @@
         "has attached item relationships"
       ],
       "gaps": [
-        "Unit.items currently contains catalog strings, not physical item-instance references."
-      ]
+        "Unit.items currently contains catalog strings, not physical item-instance references.",
+        "cpp/include/lobby/TftEngine.hpp declares std::string uuid but comments that effective UUID generation will be implemented later; no uniqueness, non-empty generation, lifecycle stability or match/player scoping is proven."
+      ],
+      "native_identity_candidate": "UnitInstance::uuid",
+      "identity_status": "unverified"
     },
     {
       "kind": "champion_catalog_entry",
@@ -423,7 +426,8 @@
     "Board slot index lacks documented coordinate/orientation mapping.",
     "Positioning and trait aggregates use open maps without complete typed key/catalog contracts.",
     "Unit assessments and anchor candidates need explicit collection completeness and source-sequence contracts.",
-    "Action-opportunity producer is not populated; candidate rows remain withheld."
+    "Action-opportunity producer is not populated; candidate rows remain withheld.",
+    "Physical unit identity is not yet producer-backed: UnitInstance::uuid exists as a member, but its header documents generation as future work; the Schema v2 instance_id requirement is not mapped to an authoritative runtime value."
   ],
   "non_goals": [
     "tensor shapes",
