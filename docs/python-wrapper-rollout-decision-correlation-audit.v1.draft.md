@@ -108,3 +108,11 @@ The trainer also fetches masks for bootstrap value evaluation, but the existing 
 6. **Objective validation:** exact source paths and current call order are recorded; current serial pairing is distinguished from missing typed identity; terminal reset and replay acceptance cases are explicit. Documentation only.
 
 No runtime, schema, tensor-layout, PPO architecture, reward, mask, training, checkpoint, Viewer or Overwolf implementation is authorized by this audit. Issue #346 remains open; Gate 8 remains blocked.
+
+## 10. Terminal auto-reset and transition identity refinement — 2026-11-15
+
+The vector adapter's terminal behavior must be described as two state scopes in one returned vector step: reward/done/final result refer to the episode that just ended, while the returned observation after automatic reset refers to the next episode. The next iteration's separately fetched masks are obtained from that reset environment. This does not establish a stale-mask race in the current serial Trainer path.
+
+RolloutBuffer stores the pre-action observation, sampled action, reward, done, value and the exact pre-action masks at one pointer. It does not store a next-observation tensor or any native Engine/episode/player/round/decision identity. Thus a replay consumer cannot prove the old-episode terminal transition and new-episode returned observation boundary from RolloutBuffer metadata alone.
+
+Future acceptance must bind the old-episode pre-action observation/masks/action and terminal reward/done to one decision reference, while separately binding the returned next observation and its masks to the new episode after auto-reset. Storage pointer, flattened agent index and synchronous call order remain non-authoritative correlation aids only.

@@ -211,3 +211,16 @@ The user explicitly decided: **items belonging to an eliminated player must not 
 Policy A is now selected as terminal retirement/discard, with the important clarification that items are not returned even to the eliminated player's own active bag. No equipped item, completed item, loose component or pending anvil option may move to another player, shared pool, shop or redistributable reward source. An immutable non-owning terminal diagnostic snapshot may preserve historical facts before ItemEngine retires the active item state.
 
 Required implementation tests and ownership boundaries are defined in section 12 of the [elimination item terminal policy proposal](elimination-item-terminal-policy-proposal.v1.draft.md). This decision settles the domain policy, not the implementation: Gate 8 remains blocked and no runtime change is authorized.
+
+
+## 11. Superseding reconciliation — identity, rollout and decisions (2026-11-15)
+
+This section supersedes stale statements in earlier sections where they describe the terminal item policy as provisional/undecided or GEP real-source evidence as a current blocker.
+
+- **Eliminated-player items:** domain decision is final: terminal discard/retirement, no transfer to any player, no return to the eliminated player's active bag, and no redistribution to shared pool/shop/PvE. Implementation and regression tests remain post-Gate 8. The prior Policy A/B/C comparison is historical decision context only.
+- **GEP:** real capture, uniqueness and reconnect/reset lifecycle validation is deferred until Overwolf integration, per user direction. The exact mapper path and synthetic conversion behavior are documented. This deferred work does not block the current main-repository identity/rollout audit.
+- **Engine identity:** `TFTEngine` is non-copyable/movable and owns `Impl` by unique_ptr; `episode_id` is Impl-local and no Engine-instance token is produced. Canonical episode reference still requires Engine-instance scope plus episode ID.
+- **UnitInstance:** implicit value copies/moves preserve UUID; factory UUIDs can repeat across same-seed resets/independent same-seed Engine instances. UUID alone is not globally unique.
+- **PPO correlation:** pybind preserves native episode/masks, wrapper drops them; RolloutBuffer stores pre-action masks with observation/action at one pointer but no durable episode/player/decision identity. Terminal auto-reset mixes terminal reward/done with next-episode observation in the vector return; no stale-mask race is established, but typed replay correlation is missing.
+
+For the current authoritative remaining-work ledger, see [Remaining Identity, Ownership, Rollout and Gate Reconciliation](remaining-identity-rollout-gate-reconciliation.v1.draft.md). Issue #346 remains open; Gates 1–7 still lack runtime acceptance; Gate 8 remains blocked pending integrated review and explicit user authorization.
