@@ -332,3 +332,16 @@ This is a documentation closeout only. It does not change the gate table's runti
 The domain owner decided that **items of an eliminated player must not be transferred to anyone**. The prior alternative of returning equipment to the eliminated player's own active bag is rejected. Terminal policy is now Policy A: capture immutable non-owning terminal diagnostics, then retire/discard that player's equipped items, inventory, loose components and pending anvil options. No item returns to another player, the shared pool, shop or any redistributable source.
 
 This resolves the domain-policy decision but not implementation acceptance. ItemEngine terminal retirement, idempotence, no-redistribution invariants and regression tests remain post-Gate 8 work. No runtime implementation is authorized by this decision.
+
+
+## 15. Remaining identity/rollout reconciliation and superseding dispositions — 2026-11-15
+
+The later [Remaining Identity, Ownership, Rollout and Gate Reconciliation](remaining-identity-rollout-gate-reconciliation.v1.draft.md) is authoritative for the remaining main-repository identity and PPO correlation status.
+
+Corrections to earlier sections of this review:
+- The eliminated-player item policy is **settled**, not undecided: terminal retirement/discard, no transfer to another player, no return to the eliminated player's active bag, and no redistribution. Runtime retirement/tests remain post-Gate 8.
+- GEP real-source validation is **deferred until Overwolf integration** per user direction. The exact mapper path and synthetic behavior remain documented; real capture/reconnect validation is not a blocker for the current main-repository workstream.
+- `UnitInstance` is implicitly copyable/movable by value and copies preserve UUID. `TFTEngine` is non-copyable and movable; no Engine-instance scope token is currently produced. Canonical episode scope still requires Engine-instance scope plus `episode_id`.
+- Native result/pybind preserve episode ID and masks; the Python wrapper drops them; RolloutBuffer stores masks at the same index as observation/action but stores no durable native identity. Terminal auto-reset returns old-episode reward/done alongside a next-episode observation; this is not proof of a stale-mask race, but it is an uncorrelated replay boundary.
+
+The Gate table remains unchanged in its essential disposition: documentary contracts exist, runtime acceptance for Gates 1–7 remains pending, and Gate 8 is blocked pending integrated review and explicit user authorization.
