@@ -408,8 +408,11 @@ class RolloutBuffer:
                 if decision["episode_id"] != result["episode_id"]:
                     raise ValueError(f"Episode divergente entre decisão e resultado na transição {index}.")
                 action_trace = result.get("action_trace")
-                if action_trace is not None:
-                    if not isinstance(action_trace, dict):
+                if action_trace is None:
+                    raise ValueError(
+                        f"result_snapshot_metadata[{index}].action_trace é obrigatório para transições identificadas."
+                    )
+                if not isinstance(action_trace, dict):
                         raise TypeError(
                             f"result_snapshot_metadata[{index}].action_trace deve ser um dicionário."
                         )
