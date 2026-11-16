@@ -413,9 +413,9 @@ class RolloutBuffer:
                         f"result_snapshot_metadata[{index}].action_trace é obrigatório para transições identificadas."
                     )
                 if not isinstance(action_trace, dict):
-                        raise TypeError(
-                            f"result_snapshot_metadata[{index}].action_trace deve ser um dicionário."
-                        )
+                    raise TypeError(
+                        f"result_snapshot_metadata[{index}].action_trace deve ser um dicionário."
+                    )
                     for action_field in ("requested_action", "effective_action"):
                         action_values = action_trace.get(action_field)
                         if not isinstance(action_values, (list, tuple)) or len(action_values) != actions.shape[1]:
