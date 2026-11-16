@@ -11,6 +11,7 @@ from vector_lobby_env import LobbyVectorEnv
 class FakeIdentityEnv:
     def __init__(self):
         self.episode_id = 0
+        self.decision_sequence = 0
         self.players = [
             type("Player", (), {"alive": True})() for _ in range(8)
         ]
@@ -18,9 +19,11 @@ class FakeIdentityEnv:
 
     def reset(self):
         self.episode_id += 1
+        self.decision_sequence += 1
         self._metadata = {
             "engine_instance_id": "engine-A",
             "episode_id": self.episode_id,
+            "decision_sequence": self.decision_sequence,
             "round": 0,
             "stage": 1,
             "snapshot_kind": "reset",
@@ -31,9 +34,11 @@ class FakeIdentityEnv:
         return dict(self._metadata)
 
     def step(self, _actions):
+        self.decision_sequence += 1
         self._metadata = {
             "engine_instance_id": "engine-A",
             "episode_id": self.episode_id,
+            "decision_sequence": self.decision_sequence,
             "round": 5,
             "stage": 2,
             "snapshot_kind": "step",
@@ -73,9 +78,12 @@ def test_terminal_auto_reset_keeps_transition_and_next_episode_identity_separate
         info = infos[0]
         assert info["step_result_snapshot"]["episode_id"] == 1
         assert info["step_result_snapshot"]["round"] == 5
+        assert info["step_result_snapshot"]["decision_sequence"] == 2
         assert info["next_snapshot"]["episode_id"] == 2
+        assert info["next_snapshot"]["decision_sequence"] == 3
         assert info["next_snapshot"]["snapshot_kind"] == "reset"
         assert env.get_snapshot_metadata()[0]["episode_id"] == 2
+        assert env.get_snapshot_metadata()[0]["decision_sequence"] == 3
     finally:
         env.close()
 
@@ -92,6 +100,7 @@ def test_rollout_buffer_preserves_per_agent_snapshot_identity():
         {
             "engine_instance_id": "engine-A",
             "episode_id": 7,
+            "decision_sequence": 12,
             "round": 4,
             "stage": 2,
             "snapshot_kind": "step",
@@ -115,6 +124,7 @@ def test_rollout_buffer_preserves_per_agent_snapshot_identity():
     metadata[0]["episode_id"] = 999
     stored = buffer.snapshot_metadata[0]
     assert stored[0]["episode_id"] == 7
+    assert stored[0]["decision_sequence"] == 12
     assert stored[0]["player_id"] == 0
     assert stored[1]["player_id"] == 1
     assert stored[1]["engine_instance_id"] == "engine-A"

@@ -354,11 +354,16 @@ class RolloutBuffer:
                     raise TypeError(
                         f"snapshot_metadata[{index}] deve ser um dicionário."
                     )
-                required = ("engine_instance_id", "episode_id", "player_id")
+                required = ("engine_instance_id", "episode_id", "decision_sequence", "player_id")
                 missing = [key for key in required if key not in metadata]
                 if missing:
                     raise ValueError(
                         f"snapshot_metadata[{index}] sem campos obrigatórios: {missing}"
+                    )
+                sequence = metadata["decision_sequence"]
+                if isinstance(sequence, bool) or not isinstance(sequence, int) or sequence < 0:
+                    raise ValueError(
+                        f"snapshot_metadata[{index}].decision_sequence deve ser inteiro nao negativo."
                     )
                 normalized_metadata.append(dict(metadata))
             self.snapshot_metadata[self.ptr] = normalized_metadata

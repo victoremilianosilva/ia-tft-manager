@@ -201,6 +201,7 @@ py::dict reset_to_dict(const tft::ResetResult& reset) {
 
     result["engine_instance_id"] = reset.engine_instance_id;
     result["episode_id"] = reset.episode_id;
+    result["decision_sequence"] = reset.decision_sequence;
     result["observation_dim"] = reset.observation_dim;
 
     return result;
@@ -243,6 +244,7 @@ py::dict step_to_dict(const tft::StepResult& step) {
     result["lobby_done"] = step.lobby_done;
     result["engine_instance_id"] = step.engine_instance_id;
     result["episode_id"] = step.episode_id;
+    result["decision_sequence"] = step.decision_sequence;
     result["round"] = step.round;
     result["stage"] = step.stage;
     result["alive_players"] = step.alive_players;

@@ -506,6 +506,7 @@ struct TFTEngine::Impl {
     const std::string engine_instance_id{generate_engine_instance_id()};
     std::uint64_t seed{0};
     std::uint64_t episode_id{0};
+    std::uint64_t decision_sequence{0};
     std::mt19937_64 matchmaking_rng{0};
     std::set<std::uint64_t> previous_matchups;
 
@@ -6260,6 +6261,10 @@ ResetResult TFTEngine::reset(
     for (std::size_t i = 0; i < kPlayersPerLobby; ++i) result.action_masks[i] = impl_->player_envs[i].action_masks;
     result.engine_instance_id = impl_->engine_instance_id;
     result.episode_id = impl_->episode_id;
+    if (impl_->decision_sequence == std::numeric_limits<std::uint64_t>::max()) {
+        throw std::overflow_error("Sequencia de decisao da Engine esgotada.");
+    }
+    result.decision_sequence = ++impl_->decision_sequence;
 
     return result;
 }
@@ -6543,6 +6548,10 @@ StepResult TFTEngine::step(
     result.lobby_done = impl_->done;
     result.engine_instance_id = impl_->engine_instance_id;
     result.episode_id = impl_->episode_id;
+    if (impl_->decision_sequence == std::numeric_limits<std::uint64_t>::max()) {
+        throw std::overflow_error("Sequencia de decisao da Engine esgotada.");
+    }
+    result.decision_sequence = ++impl_->decision_sequence;
     result.round = impl_->round + 1;
     result.stage = impl_->stage;
     result.alive_players = impl_->alive_players;
