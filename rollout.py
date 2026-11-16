@@ -407,6 +407,36 @@ class RolloutBuffer:
                     raise ValueError(f"Engine divergente na transição {index}.")
                 if decision["episode_id"] != result["episode_id"]:
                     raise ValueError(f"Episode divergente entre decisão e resultado na transição {index}.")
+                action_trace = result.get("action_trace")
+                if action_trace is not None:
+                    if not isinstance(action_trace, dict):
+                        raise TypeError(
+                            f"result_snapshot_metadata[{index}].action_trace deve ser um dicionário."
+                        )
+                    requested = action_trace.get("requested_action")
+                    if not isinstance(requested, (list, tuple)) or len(requested) != actions.shape[1]:
+                        raise ValueError(
+                            f"result_snapshot_metadata[{index}].action_trace.requested_action "
+                            f"deve conter {actions.shape[1]} parâmetros."
+                        )
+                    try:
+                        requested_values = [int(value) for value in requested]
+                    except (TypeError, ValueError, OverflowError) as exc:
+                        raise ValueError(
+                            f"result_snapshot_metadata[{index}].action_trace.requested_action "
+                            "deve conter inteiros."
+                        ) from exc
+                    if any(isinstance(value, bool) or int(value) != value for value in requested):
+                        raise ValueError(
+                            f"result_snapshot_metadata[{index}].action_trace.requested_action "
+                            "deve conter inteiros sem coerção."
+                        )
+                    stored_action = actions[index].detach().cpu().tolist()
+                    if requested_values != stored_action:
+                        raise ValueError(
+                            f"Ação PPO diverge da ação solicitada à Engine na transição {index}: "
+                            f"{stored_action} != {requested_values}."
+                        )
                 if result["decision_sequence"] <= decision["decision_sequence"]:
                     raise ValueError(f"Sequência do resultado não avança na transição {index}.")
                 if next_state["episode_id"] == result["episode_id"]:
