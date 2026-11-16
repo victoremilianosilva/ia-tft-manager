@@ -145,6 +145,33 @@ def test_step_masks_are_taken_from_same_native_snapshot(monkeypatch):
         lobby.close()
 
 
+def test_policy_requires_branch_specific_bench_masks():
+    from policy import TFTPolicy
+
+    with pytest.raises(ValueError, match="bench_move_source_mask"):
+        TFTPolicy._require_mask(
+            {"bench_source_mask": np.ones((8, 9), dtype=np.bool_)},
+            "bench_move_source_mask",
+        )
+
+    with pytest.raises(ValueError, match="bench_to_board_target_masks"):
+        TFTPolicy._require_mask(
+            {"board_target_mask": np.ones((8, 28), dtype=np.bool_)},
+            "bench_to_board_target_masks",
+        )
+
+
+def test_policy_required_mask_returns_exact_snapshot_payload():
+    from policy import TFTPolicy
+
+    expected = np.ones((8, 9, 28), dtype=np.bool_)
+    actual = TFTPolicy._require_mask(
+        {"bench_to_board_target_masks": expected},
+        "bench_to_board_target_masks",
+    )
+    assert actual is expected
+
+
 def test_item_ablation_fails_closed_when_it_removes_all_legal_actions(monkeypatch):
     monkeypatch.setattr(cpp_lobby_env, "_NativeTFTLobby", FakeNativeLobby)
     monkeypatch.setenv("TFT_ABLATE_ITEM_ACTIONS", "1")
