@@ -55,6 +55,12 @@ def test_lobby_step_contract():
         assert result["dones"].shape == (8,)
         assert len(result["action_masks"]) == 8
         assert isinstance(result["lobby_done"], bool)
+        assert len(result["action_traces"]) == 8
+        for player_id, trace in enumerate(result["action_traces"]):
+            assert trace["requested_action"] == actions[player_id]
+            assert trace["effective_action"] == actions[player_id]
+            assert trace["handler_applied"] is True
+            assert trace["status_reason"] == "applied"
 
         # O estado público deve refletir o resultado do step.
         state = engine.get_public_state()
