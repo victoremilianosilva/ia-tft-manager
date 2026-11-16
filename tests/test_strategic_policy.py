@@ -3,6 +3,25 @@ import torch
 
 from policy import TFTPolicy
 
+def _complete_mask_bundle(masks, batch_size, device="cpu"):
+    """Build full native mask snapshots for focused Policy unit fixtures."""
+    shapes = {
+        "type_mask": (9,), "shop_mask": (5,), "bench_source_mask": (9,),
+        "board_target_mask": (28,), "board_source_mask": (28,),
+        "board_move_target_masks": (28, 28), "bench_move_source_mask": (9,),
+        "bench_to_board_target_masks": (9, 28), "item_inventory_mask": (9,),
+        "item_component_first_mask": (10,), "item_component_pair_masks": (10, 10),
+        "item_target_mask": (37,),
+    }
+    result = {
+        key: torch.zeros((batch_size, *shape), dtype=torch.bool, device=device)
+        for key, shape in shapes.items()
+    }
+    for key, value in masks.items():
+        result[key] = value
+    return result
+
+
 
 ACTION_DIMS = [9, 5, 9, 28, 28, 28]
 
@@ -119,6 +138,7 @@ def test_policy_forward_accepts_new_candidate_observation_contract():
         "bench_to_board_target_masks": torch.ones(2, 9, 28, dtype=torch.bool),
     }
 
+    masks = _complete_mask_bundle(masks, observations.shape[0])
     actions, logprob, entropy, value, diagnostics = policy.get_action_and_value_with_diagnostics(
         observations, masks=masks, deterministic=True
     )
