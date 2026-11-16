@@ -427,15 +427,15 @@ class Trainer:
         hashes = []
         for agent_idx in range(batch_size or 0):
             digest = hashlib.sha256()
-            digest.update(b"tft-action-mask-snapshot-v1\\0")
+            digest.update(b"tft-action-mask-snapshot-v1\\x00")
             for name, shape in cls.MASK_SHAPES.items():
                 row = masks[name][agent_idx].detach().to(
                     device="cpu", dtype=torch.bool
                 ).contiguous()
                 digest.update(name.encode("utf-8"))
-                digest.update(b"\\0")
+                digest.update(b"\\x00")
                 digest.update(",".join(str(dim) for dim in shape).encode("ascii"))
-                digest.update(b"\\0")
+                digest.update(b"\\x00")
                 digest.update(row.numpy().tobytes(order="C"))
             hashes.append(digest.hexdigest())
         return hashes
