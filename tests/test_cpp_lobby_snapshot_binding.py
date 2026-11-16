@@ -34,8 +34,13 @@ class FakeNativeLobby:
         self.mask_reads = 0
         self.episode_id = 0
         self.decision_sequence = 0
+        self.fail_reset = False
+        self.fail_step = False
 
     def reset(self, _seed=None):
+        if self.fail_reset:
+            self.fail_reset = False
+            raise RuntimeError("synthetic reset failure")
         self.episode_id += 1
         self.decision_sequence += 1
         return {
@@ -48,6 +53,9 @@ class FakeNativeLobby:
         }
 
     def step(self, _actions, _timer_enabled=False, _timer_expired=False):
+        if self.fail_step:
+            self.fail_step = False
+            raise RuntimeError("synthetic step failure")
         self.decision_sequence += 1
         return {
             "observations": np.full((8, 4), 2, dtype=np.float32),
@@ -217,5 +225,53 @@ def test_returned_masks_are_copies_not_mutable_snapshot_storage(monkeypatch):
 
         assert second[0]["type_mask"][0]
         assert lobby._engine.mask_reads == 0
+    finally:
+        lobby.close()
+
+
+
+def test_failed_step_invalidates_previous_snapshot_and_masks(monkeypatch):
+    monkeypatch.setattr(cpp_lobby_env, "_NativeTFTLobby", FakeNativeLobby)
+    lobby = cpp_lobby_env.CppTFTLobbyWrapper(seed=7)
+
+    try:
+        lobby.reset()
+        assert lobby.get_action_masks()
+        assert lobby.get_snapshot_metadata()["snapshot_kind"] == "reset"
+
+        lobby._engine.fail_step = True
+        with pytest.raises(RuntimeError, match="synthetic step failure"):
+            lobby.step([[6, 0, 0, 0, 0, 0] for _ in range(8)])
+
+        with pytest.raises(RuntimeError, match="Execute reset"):
+            lobby.get_action_masks()
+        with pytest.raises(RuntimeError, match="Execute reset"):
+            lobby.get_snapshot_metadata()
+
+        # A successful reset establishes a fresh usable pair again.
+        lobby.reset()
+        assert lobby.get_snapshot_metadata()["snapshot_kind"] == "reset"
+        assert lobby.get_action_masks()
+    finally:
+        lobby.close()
+
+
+def test_failed_reset_invalidates_previous_snapshot_and_masks(monkeypatch):
+    monkeypatch.setattr(cpp_lobby_env, "_NativeTFTLobby", FakeNativeLobby)
+    lobby = cpp_lobby_env.CppTFTLobbyWrapper(seed=7)
+
+    try:
+        lobby.reset()
+        assert lobby.get_action_masks()
+        assert lobby.get_snapshot_metadata()["snapshot_kind"] == "reset"
+
+        lobby._engine.fail_reset = True
+        with pytest.raises(RuntimeError, match="synthetic reset failure"):
+            lobby.reset()
+
+        with pytest.raises(RuntimeError, match="Execute reset"):
+            lobby.get_action_masks()
+        with pytest.raises(RuntimeError, match="Execute reset"):
+            lobby.get_snapshot_metadata()
     finally:
         lobby.close()
