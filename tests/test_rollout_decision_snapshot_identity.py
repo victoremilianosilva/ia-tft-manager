@@ -6,6 +6,7 @@ import torch
 
 from rollout import RolloutBuffer
 from vector_lobby_env import LobbyVectorEnv
+from trainer import Trainer
 
 
 class FakeIdentityEnv:
@@ -169,6 +170,14 @@ def test_rollout_buffer_rejects_incomplete_snapshot_identity():
             values=np.zeros(1, dtype=np.float32),
             masks_dict={},
             snapshot_metadata=[{"episode_id": 1, "player_id": 0}],
+            result_snapshot_metadata=[{
+                "engine_instance_id": "engine-A", "episode_id": 1,
+                "decision_sequence": 2, "player_id": 0, "lobby_index": 0,
+            }],
+            next_snapshot_metadata=[{
+                "engine_instance_id": "engine-A", "episode_id": 1,
+                "decision_sequence": 2, "player_id": 0, "lobby_index": 0,
+            }],
         )
 
 
@@ -234,3 +243,19 @@ def test_rollout_buffer_rejects_result_identity_from_another_episode():
             result_snapshot_metadata=[result],
             next_snapshot_metadata=[result],
         )
+
+
+def test_mask_snapshot_hash_is_deterministic_and_sensitive_to_payload():
+    masks = {
+        name: torch.zeros((2, *shape), dtype=torch.bool)
+        for name, shape in Trainer.MASK_SHAPES.items()
+    }
+    first = Trainer._hash_mask_rows(masks)
+    second = Trainer._hash_mask_rows(masks)
+    assert first == second
+    assert first[0] == first[1]
+
+    masks["type_mask"][1, 3] = True
+    changed = Trainer._hash_mask_rows(masks)
+    assert changed[0] == first[0]
+    assert changed[1] != first[1]
