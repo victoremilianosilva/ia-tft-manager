@@ -346,6 +346,7 @@ def test_anvil_option_sampling_and_ppo_replay_use_anvil_context():
         "item_inventory_mask": inventory_mask,
         "item_target_mask": target_mask,
     }
+    masks = _complete_mask_bundle(masks, obs.shape[0])
     actions, sampled_logprob, _, _ = policy.get_action_and_value(
         obs, masks=masks, deterministic=True
     )
@@ -371,6 +372,7 @@ def test_craft_sampling_and_ppo_replay_use_same_recipe_target_context():
         "item_component_pair_masks": pair_mask,
         "item_target_mask": target_mask,
     }
+    masks = _complete_mask_bundle(masks, obs.shape[0])
     actions, sampled_logprob, _, _ = policy.get_action_and_value(
         obs, masks=masks, deterministic=True
     )
