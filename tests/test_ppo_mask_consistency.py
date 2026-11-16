@@ -220,6 +220,10 @@ def test_reroll_and_buy_xp_logprobs_match():
         "bench_to_board_target_masks": torch.zeros(
             batch_size, 9, 28, dtype=torch.bool
         ),
+        "item_inventory_mask": torch.zeros(batch_size, 9, dtype=torch.bool),
+        "item_component_first_mask": torch.zeros(batch_size, 10, dtype=torch.bool),
+        "item_component_pair_masks": torch.zeros(batch_size, 10, 10, dtype=torch.bool),
+        "item_target_mask": torch.zeros(batch_size, 37, dtype=torch.bool),
     }
 
     for i, action_type in enumerate(expected_types):
@@ -760,3 +764,56 @@ def test_evaluation_rejects_legacy_bench_mask_fallbacks():
     missing_target.pop("bench_to_board_target_masks")
     with pytest.raises(ValueError, match="bench_to_board_target_masks"):
         policy.evaluate_actions(obs, actions, missing_target)
+
+
+def test_policy_rejects_missing_native_mask_snapshot_for_collection_and_replay():
+    obs, masks, _ = create_test_batch()
+    policy = TFTPolicy(obs_dim=obs.shape[-1], action_dims=Trainer.ACTION_DIMS, hidden_size=32)
+
+    with torch.no_grad():
+        try:
+            policy.get_action_and_value(obs, masks=None)
+        except ValueError as exc:
+            assert "ausentes" in str(exc)
+        else:
+            raise AssertionError("Coleta aceitou action masks ausentes.")
+
+        actions = torch.zeros((obs.shape[0], 6), dtype=torch.long)
+        try:
+            policy.evaluate_actions(obs, actions, masks=None)
+        except ValueError as exc:
+            assert "ausentes" in str(exc)
+        else:
+            raise AssertionError("Replay aceitou action masks ausentes.")
+
+
+def test_policy_rejects_incomplete_wrong_shape_and_non_boolean_mask_bundles():
+    obs, masks, _ = create_test_batch()
+    policy = TFTPolicy(obs_dim=obs.shape[-1], action_dims=Trainer.ACTION_DIMS, hidden_size=32)
+
+    incomplete = dict(masks)
+    del incomplete["item_target_mask"]
+    try:
+        policy.get_action_and_value(obs, masks=incomplete)
+    except ValueError as exc:
+        assert "item_target_mask" in str(exc)
+    else:
+        raise AssertionError("Coleta aceitou bundle incompleto.")
+
+    wrong_shape = dict(masks)
+    wrong_shape["shop_mask"] = torch.ones((obs.shape[0], 4), dtype=torch.bool)
+    try:
+        policy.get_action_and_value(obs, masks=wrong_shape)
+    except ValueError as exc:
+        assert "shop_mask" in str(exc)
+    else:
+        raise AssertionError("Coleta aceitou shape divergente.")
+
+    wrong_dtype = dict(masks)
+    wrong_dtype["shop_mask"] = wrong_dtype["shop_mask"].float()
+    try:
+        policy.get_action_and_value(obs, masks=wrong_dtype)
+    except TypeError as exc:
+        assert "torch.bool" in str(exc)
+    else:
+        raise AssertionError("Coleta aceitou máscara fora do dtype canônico.")
