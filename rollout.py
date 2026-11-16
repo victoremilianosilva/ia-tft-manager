@@ -887,6 +887,7 @@ class RolloutBuffer:
                     self.next_snapshot_metadata, batch_idx
                 ),
             }
+
     @staticmethod
     def _metadata_for_batch(metadata_by_step, batch_indices):
         if not metadata_by_step or metadata_by_step[0] is None:
