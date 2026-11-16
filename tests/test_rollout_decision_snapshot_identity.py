@@ -51,6 +51,15 @@ class FakeIdentityEnv:
             {
                 "decision_snapshot": dict(self._metadata),
                 "players": [{"player_id": i, "alive": True} for i in range(8)],
+                "action_trace": [
+                    {
+                        "requested_action": [6, 0, 0, 0, 0, 0],
+                        "effective_action": [6, 0, 0, 0, 0, 0],
+                        "handler_applied": True,
+                        "status_reason": "applied",
+                    }
+                    for _ in range(8)
+                ],
             },
         )
 
@@ -80,6 +89,8 @@ def test_terminal_auto_reset_keeps_transition_and_next_episode_identity_separate
         assert info["step_result_snapshot"]["episode_id"] == 1
         assert info["step_result_snapshot"]["round"] == 5
         assert info["step_result_snapshot"]["decision_sequence"] == 2
+        assert len(info["action_trace"]) == 8
+        assert info["action_trace"][0]["handler_applied"] is True
         assert info["next_snapshot"]["episode_id"] == 2
         assert info["next_snapshot"]["decision_sequence"] == 3
         assert info["next_snapshot"]["snapshot_kind"] == "reset"
@@ -113,7 +124,17 @@ def test_rollout_buffer_preserves_per_agent_snapshot_identity():
         for player_id in range(2)
     ]
     result_metadata = [
-        {**item, "decision_sequence": 13, "snapshot_kind": "step_result"}
+        {
+            **item,
+            "decision_sequence": 13,
+            "snapshot_kind": "step_result",
+            "action_trace": {
+                "requested_action": [6, 0, 0, 0, 0, 0],
+                "effective_action": [6, 0, 0, 0, 0, 0],
+                "handler_applied": True,
+                "status_reason": "applied",
+            },
+        }
         for item in metadata
     ]
     next_metadata = [dict(item) for item in result_metadata]
@@ -139,6 +160,7 @@ def test_rollout_buffer_preserves_per_agent_snapshot_identity():
     assert stored[1]["player_id"] == 1
     assert stored[1]["engine_instance_id"] == "engine-A"
     assert buffer.result_snapshot_metadata[0][0]["decision_sequence"] == 13
+    assert buffer.result_snapshot_metadata[0][0]["action_trace"]["handler_applied"] is True
     assert buffer.next_snapshot_metadata[0][0]["decision_sequence"] == 13
 
     batch = next(buffer.get_batches(batch_size=2))
