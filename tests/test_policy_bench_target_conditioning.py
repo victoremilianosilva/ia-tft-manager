@@ -16,6 +16,8 @@ def _complete_mask_bundle(masks, batch_size, device="cpu"):
         key: torch.zeros((batch_size, *shape), dtype=torch.bool, device=device)
         for key, shape in shapes.items()
     }
+    # PASS is the safe neutral action for fixture rows that do not target a branch.
+    result["type_mask"][:, 6] = True
     for key, value in masks.items():
         result[key] = value
     return result
