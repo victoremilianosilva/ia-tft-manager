@@ -1,3 +1,5 @@
+from collections.abc import Mapping
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -6,6 +8,22 @@ from torch.distributions import Categorical
 
 ACTION_DIMS = [9, 5, 9, 28, 28, 28]
 LEGACY_ACTION_DIMS = [7, 5, 9, 28, 28, 28]
+
+# Canonical native action-mask contract shared by collection and replay.
+MASK_SHAPES = {
+    "type_mask": (9,),
+    "shop_mask": (5,),
+    "bench_source_mask": (9,),
+    "board_target_mask": (28,),
+    "board_source_mask": (28,),
+    "board_move_target_masks": (28, 28),
+    "bench_move_source_mask": (9,),
+    "bench_to_board_target_masks": (9, 28),
+    "item_inventory_mask": (9,),
+    "item_component_first_mask": (10,),
+    "item_component_pair_masks": (10, 10),
+    "item_target_mask": (37,),
+}
 
 
 class TFTPolicy(nn.Module):
@@ -534,6 +552,53 @@ class TFTPolicy(nn.Module):
         return self.get_action_and_value(obs, masks=masks, deterministic=deterministic)
 
     @staticmethod
+    def _validate_mask_bundle(obs, masks):
+        """Validate the complete native mask snapshot before any policy computation."""
+        if masks is None:
+            raise ValueError(
+                "Action masks nativas ausentes: a Policy exige o snapshot de "
+                "legalidade correlacionado à observação."
+            )
+        if not isinstance(masks, Mapping):
+            raise TypeError("Action masks devem ser fornecidas como um mapping.")
+
+        if not isinstance(obs, torch.Tensor) or obs.ndim != 2:
+            raise ValueError("Observação deve ser um tensor [batch, features].")
+
+        batch_size = obs.shape[0]
+        expected_keys = set(MASK_SHAPES)
+        actual_keys = set(masks)
+        missing = sorted(expected_keys - actual_keys)
+        unexpected = sorted(actual_keys - expected_keys)
+        if missing or unexpected:
+            raise ValueError(
+                f"Contrato de action masks inválido: ausentes={missing}, "
+                f"inesperadas={unexpected}."
+            )
+
+        for name, shape in MASK_SHAPES.items():
+            mask = masks[name]
+            if not isinstance(mask, torch.Tensor):
+                raise TypeError(f"Action mask '{name}' deve ser torch.Tensor.")
+            expected_shape = (batch_size, *shape)
+            if tuple(mask.shape) != expected_shape:
+                raise ValueError(
+                    f"Shape inválido para action mask '{name}': "
+                    f"{tuple(mask.shape)}; esperado: {expected_shape}."
+                )
+            if mask.dtype != torch.bool:
+                raise TypeError(
+                    f"Action mask '{name}' deve ter dtype torch.bool; "
+                    f"recebido {mask.dtype}."
+                )
+            if mask.device != obs.device:
+                raise ValueError(
+                    f"Action mask '{name}' está em {mask.device}, "
+                    f"mas a observação está em {obs.device}."
+                )
+        return masks
+
+    @staticmethod
     def _require_mask(masks, key):
         """Require a contract mask; never substitute a broader legacy mask."""
         if masks is None:
@@ -648,6 +713,7 @@ class TFTPolicy(nn.Module):
         self, obs, masks=None, deterministic=False, collect_diagnostics=False,
         collect_entropy_diagnostics=False
     ):
+        masks = self._validate_mask_bundle(obs, masks)
         device = obs.device
         batch_size = obs.shape[0]
         player_diagnostics = [[] for _ in range(batch_size)]
@@ -1022,6 +1088,14 @@ class TFTPolicy(nn.Module):
         return actions, total_logprob, total_entropy, value, None
 
     def evaluate_actions(self, obs, actions, masks):
+        masks = self._validate_mask_bundle(obs, masks)
+        if not isinstance(actions, torch.Tensor) or tuple(actions.shape) != (obs.shape[0], 6):
+            raise ValueError(
+                f"Ações devem ter shape {(obs.shape[0], 6)}; "
+                f"recebido {getattr(actions, 'shape', None)}."
+            )
+        if actions.device != obs.device:
+            raise ValueError("Ações e observação devem estar no mesmo device.")
         hidden = self.encode(obs)
         bench_candidate_features, shop_candidate_features = self._candidate_features(obs)
         (
