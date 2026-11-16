@@ -145,6 +145,38 @@ def test_step_masks_are_taken_from_same_native_snapshot(monkeypatch):
         lobby.close()
 
 
+def test_item_ablation_fails_closed_when_it_removes_all_legal_actions(monkeypatch):
+    monkeypatch.setattr(cpp_lobby_env, "_NativeTFTLobby", FakeNativeLobby)
+    monkeypatch.setenv("TFT_ABLATE_ITEM_ACTIONS", "1")
+    lobby = cpp_lobby_env.CppTFTLobbyWrapper(seed=7)
+
+    try:
+        lobby.reset()
+        # The fake native snapshot permits only craft (type 8). Ablation removes
+        # it; the wrapper must not fabricate HOLD/PASS as a replacement.
+        lobby._last_action_masks = make_masks(8)
+        import pytest
+        with pytest.raises(RuntimeError, match="nenhuma ação substituta será inventada"):
+            lobby.get_action_masks()
+    finally:
+        lobby.close()
+
+
+def test_item_ablation_preserves_mandatory_anvil_choice(monkeypatch):
+    monkeypatch.setattr(cpp_lobby_env, "_NativeTFTLobby", FakeNativeLobby)
+    monkeypatch.setenv("TFT_ABLATE_ITEM_ACTIONS", "1")
+    lobby = cpp_lobby_env.CppTFTLobbyWrapper(seed=7)
+
+    try:
+        lobby.reset()
+        lobby._last_action_masks = make_masks(7)
+        result = lobby.get_action_masks()
+        assert all(mask["type_mask"][7] for mask in result)
+        assert all(not mask["type_mask"][8] for mask in result)
+    finally:
+        lobby.close()
+
+
 def test_returned_masks_are_copies_not_mutable_snapshot_storage(monkeypatch):
     monkeypatch.setattr(cpp_lobby_env, "_NativeTFTLobby", FakeNativeLobby)
     lobby = cpp_lobby_env.CppTFTLobbyWrapper(seed=7)
