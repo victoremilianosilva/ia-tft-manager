@@ -413,29 +413,40 @@ class RolloutBuffer:
                         raise TypeError(
                             f"result_snapshot_metadata[{index}].action_trace deve ser um dicionário."
                         )
-                    requested = action_trace.get("requested_action")
-                    if not isinstance(requested, (list, tuple)) or len(requested) != actions.shape[1]:
+                    for action_field in ("requested_action", "effective_action"):
+                        action_values = action_trace.get(action_field)
+                        if not isinstance(action_values, (list, tuple)) or len(action_values) != actions.shape[1]:
+                            raise ValueError(
+                                f"result_snapshot_metadata[{index}].action_trace.{action_field} "
+                                f"deve conter {actions.shape[1]} parâmetros."
+                            )
+                        try:
+                            normalized_values = [int(value) for value in action_values]
+                        except (TypeError, ValueError, OverflowError) as exc:
+                            raise ValueError(
+                                f"result_snapshot_metadata[{index}].action_trace.{action_field} "
+                                "deve conter inteiros."
+                            ) from exc
+                        if any(isinstance(value, bool) or int(value) != value for value in action_values):
+                            raise ValueError(
+                                f"result_snapshot_metadata[{index}].action_trace.{action_field} "
+                                "deve conter inteiros sem coerção."
+                            )
+                        if action_field == "requested_action":
+                            stored_action = actions[index].detach().cpu().tolist()
+                            if normalized_values != stored_action:
+                                raise ValueError(
+                                    f"Ação PPO diverge da ação solicitada à Engine na transição {index}: "
+                                    f"{stored_action} != {normalized_values}."
+                                )
+                    if not isinstance(action_trace.get("handler_applied"), bool):
                         raise ValueError(
-                            f"result_snapshot_metadata[{index}].action_trace.requested_action "
-                            f"deve conter {actions.shape[1]} parâmetros."
+                            f"result_snapshot_metadata[{index}].action_trace.handler_applied deve ser booleano."
                         )
-                    try:
-                        requested_values = [int(value) for value in requested]
-                    except (TypeError, ValueError, OverflowError) as exc:
+                    status_reason = action_trace.get("status_reason")
+                    if not isinstance(status_reason, str) or not status_reason.strip():
                         raise ValueError(
-                            f"result_snapshot_metadata[{index}].action_trace.requested_action "
-                            "deve conter inteiros."
-                        ) from exc
-                    if any(isinstance(value, bool) or int(value) != value for value in requested):
-                        raise ValueError(
-                            f"result_snapshot_metadata[{index}].action_trace.requested_action "
-                            "deve conter inteiros sem coerção."
-                        )
-                    stored_action = actions[index].detach().cpu().tolist()
-                    if requested_values != stored_action:
-                        raise ValueError(
-                            f"Ação PPO diverge da ação solicitada à Engine na transição {index}: "
-                            f"{stored_action} != {requested_values}."
+                            f"result_snapshot_metadata[{index}].action_trace.status_reason deve ser texto não vazio."
                         )
                 if result["decision_sequence"] <= decision["decision_sequence"]:
                     raise ValueError(f"Sequência do resultado não avança na transição {index}.")
