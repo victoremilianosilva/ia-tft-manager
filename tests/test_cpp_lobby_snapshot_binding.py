@@ -1,6 +1,7 @@
 """Regression tests for observation/action-mask snapshot correlation."""
 
 import numpy as np
+import pytest
 
 import cpp_lobby_env
 
