@@ -6,6 +6,7 @@ import torch
 
 from rollout import RolloutBuffer
 from vector_lobby_env import LobbyVectorEnv
+from trainer import Trainer
 
 
 class FakeIdentityEnv:
@@ -106,9 +107,16 @@ def test_rollout_buffer_preserves_per_agent_snapshot_identity():
             "snapshot_kind": "step",
             "lobby_index": 0,
             "player_id": player_id,
+            "mask_snapshot_hash": "a" * 64,
+            "mask_snapshot_hash_algorithm": "tft-action-mask-snapshot-v1",
         }
         for player_id in range(2)
     ]
+    result_metadata = [
+        {**item, "decision_sequence": 13, "snapshot_kind": "step_result"}
+        for item in metadata
+    ]
+    next_metadata = [dict(item) for item in result_metadata]
 
     buffer.add(
         obs=np.zeros((2, 3), dtype=np.float32),
@@ -119,6 +127,8 @@ def test_rollout_buffer_preserves_per_agent_snapshot_identity():
         values=np.zeros(2, dtype=np.float32),
         masks_dict={},
         snapshot_metadata=metadata,
+        result_snapshot_metadata=result_metadata,
+        next_snapshot_metadata=next_metadata,
     )
 
     metadata[0]["episode_id"] = 999
@@ -128,9 +138,18 @@ def test_rollout_buffer_preserves_per_agent_snapshot_identity():
     assert stored[0]["player_id"] == 0
     assert stored[1]["player_id"] == 1
     assert stored[1]["engine_instance_id"] == "engine-A"
+    assert buffer.result_snapshot_metadata[0][0]["decision_sequence"] == 13
+    assert buffer.next_snapshot_metadata[0][0]["decision_sequence"] == 13
+
+    batch = next(buffer.get_batches(batch_size=2))
+    assert len(batch["snapshot_metadata"]) == 2
+    assert all(item["mask_snapshot_hash"] == "a" * 64 for item in batch["snapshot_metadata"])
+    assert all(item["decision_sequence"] == 13 for item in batch["result_snapshot_metadata"])
 
     buffer.reset()
     assert buffer.snapshot_metadata[0] is None
+    assert buffer.result_snapshot_metadata[0] is None
+    assert buffer.next_snapshot_metadata[0] is None
 
 
 def test_rollout_buffer_rejects_incomplete_snapshot_identity():
@@ -151,4 +170,92 @@ def test_rollout_buffer_rejects_incomplete_snapshot_identity():
             values=np.zeros(1, dtype=np.float32),
             masks_dict={},
             snapshot_metadata=[{"episode_id": 1, "player_id": 0}],
+            result_snapshot_metadata=[{
+                "engine_instance_id": "engine-A", "episode_id": 1,
+                "decision_sequence": 2, "player_id": 0, "lobby_index": 0,
+            }],
+            next_snapshot_metadata=[{
+                "engine_instance_id": "engine-A", "episode_id": 1,
+                "decision_sequence": 2, "player_id": 0, "lobby_index": 0,
+            }],
         )
+
+
+def test_rollout_buffer_preserves_terminal_result_and_new_episode_identity():
+    buffer = RolloutBuffer(
+        num_steps=1, num_envs=1, obs_dim=3, action_dim=6, device=torch.device("cpu")
+    )
+    decision = {
+        "engine_instance_id": "engine-A", "episode_id": 4,
+        "decision_sequence": 21, "player_id": 0, "lobby_index": 0,
+        "mask_snapshot_hash": "b" * 64,
+        "mask_snapshot_hash_algorithm": "tft-action-mask-snapshot-v1",
+    }
+    result = {
+        "engine_instance_id": "engine-A", "episode_id": 4,
+        "decision_sequence": 22, "player_id": 0, "lobby_index": 0,
+    }
+    next_state = {
+        "engine_instance_id": "engine-A", "episode_id": 5,
+        "decision_sequence": 23, "player_id": 0, "lobby_index": 0,
+    }
+    buffer.add(
+        obs=np.zeros((1, 3), dtype=np.float32),
+        actions=np.zeros((1, 6), dtype=np.int64),
+        logprobs=np.zeros(1, dtype=np.float32),
+        rewards=np.ones(1, dtype=np.float32),
+        dones=np.ones(1, dtype=np.float32),
+        values=np.zeros(1, dtype=np.float32),
+        masks_dict={},
+        snapshot_metadata=[decision],
+        result_snapshot_metadata=[result],
+        next_snapshot_metadata=[next_state],
+    )
+    assert buffer.snapshot_metadata[0][0]["decision_sequence"] == 21
+    assert buffer.result_snapshot_metadata[0][0]["decision_sequence"] == 22
+    assert buffer.next_snapshot_metadata[0][0]["episode_id"] == 5
+
+
+def test_rollout_buffer_rejects_result_identity_from_another_episode():
+    buffer = RolloutBuffer(
+        num_steps=1, num_envs=1, obs_dim=3, action_dim=6, device=torch.device("cpu")
+    )
+    decision = {
+        "engine_instance_id": "engine-A", "episode_id": 4,
+        "decision_sequence": 21, "player_id": 0, "lobby_index": 0,
+        "mask_snapshot_hash": "c" * 64,
+        "mask_snapshot_hash_algorithm": "tft-action-mask-snapshot-v1",
+    }
+    result = {
+        "engine_instance_id": "engine-A", "episode_id": 5,
+        "decision_sequence": 22, "player_id": 0, "lobby_index": 0,
+    }
+    with pytest.raises(ValueError, match="Episode divergente"):
+        buffer.add(
+            obs=np.zeros((1, 3), dtype=np.float32),
+            actions=np.zeros((1, 6), dtype=np.int64),
+            logprobs=np.zeros(1, dtype=np.float32),
+            rewards=np.ones(1, dtype=np.float32),
+            dones=np.ones(1, dtype=np.float32),
+            values=np.zeros(1, dtype=np.float32),
+            masks_dict={},
+            snapshot_metadata=[decision],
+            result_snapshot_metadata=[result],
+            next_snapshot_metadata=[result],
+        )
+
+
+def test_mask_snapshot_hash_is_deterministic_and_sensitive_to_payload():
+    masks = {
+        name: torch.zeros((2, *shape), dtype=torch.bool)
+        for name, shape in Trainer.MASK_SHAPES.items()
+    }
+    first = Trainer._hash_mask_rows(masks)
+    second = Trainer._hash_mask_rows(masks)
+    assert first == second
+    assert first[0] == first[1]
+
+    masks["type_mask"][1, 3] = True
+    changed = Trainer._hash_mask_rows(masks)
+    assert changed[0] == first[0]
+    assert changed[1] != first[1]

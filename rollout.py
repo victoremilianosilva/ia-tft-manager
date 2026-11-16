@@ -103,6 +103,8 @@ class RolloutBuffer:
         self.ptr = 0
         # Non-tensor correlation metadata, indexed exactly like rollout transitions.
         self.snapshot_metadata = [None for _ in range(self.num_steps)]
+        self.result_snapshot_metadata = [None for _ in range(self.num_steps)]
+        self.next_snapshot_metadata = [None for _ in range(self.num_steps)]
 
         # ============================================================
         # DADOS PRINCIPAIS
@@ -247,6 +249,8 @@ class RolloutBuffer:
         masks_dict,
         valid=None,
         snapshot_metadata=None,
+        result_snapshot_metadata=None,
+        next_snapshot_metadata=None,
     ):
         """
         Adiciona uma transição de todos os agentes.
@@ -342,33 +346,108 @@ class RolloutBuffer:
             values
         )
 
-        if snapshot_metadata is not None:
-            if len(snapshot_metadata) != self.num_envs:
+        metadata_groups = (
+            ("snapshot_metadata", snapshot_metadata),
+            ("result_snapshot_metadata", result_snapshot_metadata),
+            ("next_snapshot_metadata", next_snapshot_metadata),
+        )
+        supplied_groups = [value is not None for _, value in metadata_groups]
+        if any(supplied_groups) and not all(supplied_groups):
+            raise ValueError(
+                "Identidade da decisão, resultado e próxima observação devem ser "
+                "armazenadas juntas."
+            )
+
+        if self.ptr > 0:
+            previous_has_identity = self.snapshot_metadata[0] is not None
+            if previous_has_identity != all(supplied_groups):
                 raise ValueError(
-                    "snapshot_metadata deve conter uma identidade por agente: "
-                    f"{len(snapshot_metadata)} != {self.num_envs}"
+                    "O rollout não pode misturar transições com e sem identidade."
                 )
-            normalized_metadata = []
-            for index, metadata in enumerate(snapshot_metadata):
-                if not isinstance(metadata, dict):
-                    raise TypeError(
-                        f"snapshot_metadata[{index}] deve ser um dicionário."
-                    )
-                required = ("engine_instance_id", "episode_id", "decision_sequence", "player_id")
-                missing = [key for key in required if key not in metadata]
-                if missing:
+
+        normalized_groups = {}
+        if all(supplied_groups):
+            for group_name, group in metadata_groups:
+                if len(group) != self.num_envs:
                     raise ValueError(
-                        f"snapshot_metadata[{index}] sem campos obrigatórios: {missing}"
+                        f"{group_name} deve conter uma identidade por agente: "
+                        f"{len(group)} != {self.num_envs}"
                     )
-                sequence = metadata["decision_sequence"]
-                if isinstance(sequence, bool) or not isinstance(sequence, int) or sequence < 0:
+                normalized = []
+                for index, metadata in enumerate(group):
+                    if not isinstance(metadata, dict):
+                        raise TypeError(f"{group_name}[{index}] deve ser um dicionário.")
+                    required = (
+                        "engine_instance_id", "episode_id",
+                        "decision_sequence", "player_id", "lobby_index",
+                    )
+                    missing = [key for key in required if key not in metadata]
+                    if missing:
+                        raise ValueError(
+                            f"{group_name}[{index}] sem campos obrigatórios: {missing}"
+                        )
+                    sequence = metadata["decision_sequence"]
+                    if isinstance(sequence, bool) or not isinstance(sequence, int) or sequence < 0:
+                        raise ValueError(
+                            f"{group_name}[{index}].decision_sequence deve ser inteiro não negativo."
+                        )
+                    normalized.append(dict(metadata))
+                normalized_groups[group_name] = normalized
+
+            for index, (decision, result, next_state) in enumerate(zip(
+                normalized_groups["snapshot_metadata"],
+                normalized_groups["result_snapshot_metadata"],
+                normalized_groups["next_snapshot_metadata"],
+            )):
+                if decision["player_id"] != result["player_id"] or decision["player_id"] != next_state["player_id"]:
+                    raise ValueError(f"Identidade de player divergente na transição {index}.")
+                if decision["lobby_index"] != result["lobby_index"] or decision["lobby_index"] != next_state["lobby_index"]:
+                    raise ValueError(f"Identidade de lobby divergente na transição {index}.")
+                if decision["engine_instance_id"] != result["engine_instance_id"] or decision["engine_instance_id"] != next_state["engine_instance_id"]:
+                    raise ValueError(f"Engine divergente na transição {index}.")
+                if decision["episode_id"] != result["episode_id"]:
+                    raise ValueError(f"Episode divergente entre decisão e resultado na transição {index}.")
+                if result["decision_sequence"] <= decision["decision_sequence"]:
+                    raise ValueError(f"Sequência do resultado não avança na transição {index}.")
+                if next_state["episode_id"] == result["episode_id"]:
+                    if next_state["decision_sequence"] != result["decision_sequence"]:
+                        raise ValueError(f"Próximo snapshot não corresponde ao resultado na transição {index}.")
+                elif next_state["episode_id"] <= result["episode_id"] or next_state["decision_sequence"] <= result["decision_sequence"]:
+                    raise ValueError(f"Auto-reset não avança identidade na transição {index}.")
+
+                mask_hash = decision.get("mask_snapshot_hash")
+                if not isinstance(mask_hash, str) or len(mask_hash) != 64 or any(
+                    char not in "0123456789abcdef" for char in mask_hash
+                ):
                     raise ValueError(
-                        f"snapshot_metadata[{index}].decision_sequence deve ser inteiro nao negativo."
+                        f"snapshot_metadata[{index}].mask_snapshot_hash deve ser SHA-256 hexadecimal."
                     )
-                normalized_metadata.append(dict(metadata))
-            self.snapshot_metadata[self.ptr] = normalized_metadata
-        else:
+                if decision.get("mask_snapshot_hash_algorithm") != "tft-action-mask-snapshot-v1":
+                    raise ValueError(
+                        f"snapshot_metadata[{index}] usa algoritmo de hash de mask desconhecido."
+                    )
+
+            for group_name, group in normalized_groups.items():
+                by_lobby = {}
+                for metadata in group:
+                    key = metadata["lobby_index"]
+                    identity = (
+                        metadata["engine_instance_id"],
+                        metadata["episode_id"],
+                        metadata["decision_sequence"],
+                    )
+                    previous = by_lobby.setdefault(key, identity)
+                    if previous != identity:
+                        raise ValueError(
+                            f"Snapshot inconsistente em {group_name} dentro da lobby {key}."
+                        )
+
+        for group_name, normalized in normalized_groups.items():
+            getattr(self, group_name)[self.ptr] = normalized
+        if not all(supplied_groups):
             self.snapshot_metadata[self.ptr] = None
+            self.result_snapshot_metadata[self.ptr] = None
+            self.next_snapshot_metadata[self.ptr] = None
 
         # ============================================================
         # SALVAR
@@ -798,7 +877,31 @@ class RolloutBuffer:
                     key: value[batch_idx]
                     for key, value in flat_masks.items()
                 },
+                "snapshot_metadata": self._metadata_for_batch(
+                    self.snapshot_metadata, batch_idx
+                ),
+                "result_snapshot_metadata": self._metadata_for_batch(
+                    self.result_snapshot_metadata, batch_idx
+                ),
+                "next_snapshot_metadata": self._metadata_for_batch(
+                    self.next_snapshot_metadata, batch_idx
+                ),
             }
+
+    @staticmethod
+    def _metadata_for_batch(metadata_by_step, batch_indices):
+        if not metadata_by_step or metadata_by_step[0] is None:
+            return None
+        num_envs = len(metadata_by_step[0])
+        result = []
+        for flat_index in batch_indices.detach().cpu().tolist():
+            step_index, env_index = divmod(int(flat_index), num_envs)
+            step_metadata = metadata_by_step[step_index]
+            if step_metadata is None:
+                raise RuntimeError("Metadata parcial dentro do RolloutBuffer.")
+            result.append(dict(step_metadata[env_index]))
+        return result
+
     # =================================================================
     # READY
     # =================================================================
@@ -833,6 +936,8 @@ class RolloutBuffer:
 
         for index in range(self.ptr):
             self.snapshot_metadata[index] = None
+            self.result_snapshot_metadata[index] = None
+            self.next_snapshot_metadata[index] = None
         self.ptr = 0
 
         # ------------------------------------------------------------

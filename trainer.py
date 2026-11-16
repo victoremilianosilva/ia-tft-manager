@@ -3,6 +3,7 @@ import torch.optim as optim
 import numpy as np
 import os
 import json
+import hashlib
 
 from rich.console import Console
 from rich.progress import (
@@ -389,6 +390,56 @@ class Trainer:
             self.num_agents,
             self.obs_dim
         )
+
+    @staticmethod
+    def _expand_lobby_snapshot_metadata(lobby_snapshots, players_per_lobby, label):
+        """Expand one lobby snapshot identity into stable per-player rollout rows."""
+        expanded = []
+        for lobby_idx, snapshot in enumerate(lobby_snapshots):
+            if not isinstance(snapshot, dict):
+                raise RuntimeError(
+                    f"Lobby {lobby_idx} não forneceu metadata de {label}."
+                )
+            for player_idx in range(players_per_lobby):
+                metadata = dict(snapshot)
+                metadata["lobby_index"] = lobby_idx
+                metadata["player_id"] = player_idx
+                expanded.append(metadata)
+        return expanded
+
+    @classmethod
+    def _hash_mask_rows(cls, masks):
+        """Hash each exact per-agent mask payload with stable field/shape ordering."""
+        batch_size = None
+        for name, shape in cls.MASK_SHAPES.items():
+            if name not in masks:
+                raise ValueError(f"Máscara obrigatória ausente para hash: {name}.")
+            tensor = masks[name]
+            if tuple(tensor.shape[1:]) != tuple(shape):
+                raise ValueError(
+                    f"Shape inválido para hash de {name}: {tuple(tensor.shape[1:])}."
+                )
+            if batch_size is None:
+                batch_size = int(tensor.shape[0])
+            elif int(tensor.shape[0]) != batch_size:
+                raise ValueError("Batch de masks desalinhado durante o hash.")
+
+        hashes = []
+        for agent_idx in range(batch_size or 0):
+            digest = hashlib.sha256()
+            digest.update(b"tft-action-mask-snapshot-v1\\x00")
+            for name, shape in cls.MASK_SHAPES.items():
+                row = masks[name][agent_idx].detach().to(
+                    device="cpu", dtype=torch.bool
+                ).contiguous()
+                digest.update(name.encode("utf-8"))
+                digest.update(b"\\x00")
+                digest.update(",".join(str(dim) for dim in shape).encode("ascii"))
+                digest.update(b"\\x00")
+                digest.update(row.numpy().tobytes(order="C"))
+            hashes.append(digest.hexdigest())
+        return hashes
+
 
     # ================================================================
     # 🎭 FLATTEN MASKS
@@ -1069,18 +1120,11 @@ class Trainer:
                 # Capture identity for the exact observation/masks used by
                 # this policy decision, before any lobby is advanced.
                 lobby_snapshots = self.vec_env.get_snapshot_metadata()
-                flat_snapshot_metadata = []
-                for lobby_idx, snapshot in enumerate(lobby_snapshots):
-                    if not isinstance(snapshot, dict):
-                        raise RuntimeError(
-                            f"Lobby {lobby_idx} não forneceu identidade do snapshot "
-                            "usado pela decisão PPO."
-                        )
-                    for player_idx in range(self.PLAYERS_PER_LOBBY):
-                        agent_snapshot = dict(snapshot)
-                        agent_snapshot["lobby_index"] = lobby_idx
-                        agent_snapshot["player_id"] = player_idx
-                        flat_snapshot_metadata.append(agent_snapshot)
+                flat_snapshot_metadata = self._expand_lobby_snapshot_metadata(
+                    lobby_snapshots,
+                    self.PLAYERS_PER_LOBBY,
+                    "snapshot da decisão PPO",
+                )
 
                 gym_masks = (
                     self.vec_env.env_method(
@@ -1091,6 +1135,15 @@ class Trainer:
                 masks = self._flatten_masks(
                     gym_masks
                 )
+
+                # Hash the exact post-ablation masks consumed by Actor and
+                # persisted with this action; each player has an independent payload.
+                for metadata, mask_hash in zip(
+                    flat_snapshot_metadata,
+                    self._hash_mask_rows(masks),
+                ):
+                    metadata["mask_snapshot_hash"] = mask_hash
+                    metadata["mask_snapshot_hash_algorithm"] = "tft-action-mask-snapshot-v1"
 
                 # 📊 Quantas opções permaneceram válidas após as máscaras?
                 valid_type_mean = (
@@ -1243,6 +1296,19 @@ class Trainer:
                     infos
                 ) = self.vec_env.step(
                     lobby_actions
+                )
+
+                # Reward/done belong to the Engine step result; next_obs may
+                # instead belong to a freshly auto-reset episode.
+                flat_result_snapshot_metadata = self._expand_lobby_snapshot_metadata(
+                    [info.get("step_result_snapshot") for info in infos],
+                    self.PLAYERS_PER_LOBBY,
+                    "snapshot de resultado da transição",
+                )
+                flat_next_snapshot_metadata = self._expand_lobby_snapshot_metadata(
+                    [info.get("next_snapshot") for info in infos],
+                    self.PLAYERS_PER_LOBBY,
+                    "snapshot da próxima observação",
                 )
 
                 # Resultado final, colocação e duração de cada partida.
@@ -1432,6 +1498,8 @@ class Trainer:
                     masks,
                     valid=transition_valid,
                     snapshot_metadata=flat_snapshot_metadata,
+                    result_snapshot_metadata=flat_result_snapshot_metadata,
+                    next_snapshot_metadata=flat_next_snapshot_metadata,
                 )
 
                 # ====================================================
