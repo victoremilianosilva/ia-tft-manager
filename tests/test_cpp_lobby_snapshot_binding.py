@@ -275,3 +275,17 @@ def test_failed_reset_invalidates_previous_snapshot_and_masks(monkeypatch):
             lobby.get_snapshot_metadata()
     finally:
         lobby.close()
+
+
+def test_player_liveness_exposes_latest_wrapper_state(monkeypatch):
+    monkeypatch.setattr(cpp_lobby_env, "_NativeTFTLobby", FakeNativeLobby)
+    lobby = cpp_lobby_env.CppTFTLobbyWrapper(seed=7)
+
+    try:
+        lobby.reset()
+        assert lobby.get_player_liveness() == [True] * 8
+
+        lobby._players[3].alive = False
+        assert lobby.get_player_liveness() == [True, True, True, False, True, True, True, True]
+    finally:
+        lobby.close()
