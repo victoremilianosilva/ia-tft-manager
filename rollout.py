@@ -408,46 +408,49 @@ class RolloutBuffer:
                 if decision["episode_id"] != result["episode_id"]:
                     raise ValueError(f"Episode divergente entre decisão e resultado na transição {index}.")
                 action_trace = result.get("action_trace")
-                if action_trace is not None:
-                    if not isinstance(action_trace, dict):
-                        raise TypeError(
-                            f"result_snapshot_metadata[{index}].action_trace deve ser um dicionário."
-                        )
-                    for action_field in ("requested_action", "effective_action"):
-                        action_values = action_trace.get(action_field)
-                        if not isinstance(action_values, (list, tuple)) or len(action_values) != actions.shape[1]:
-                            raise ValueError(
-                                f"result_snapshot_metadata[{index}].action_trace.{action_field} "
-                                f"deve conter {actions.shape[1]} parâmetros."
-                            )
-                        try:
-                            normalized_values = [int(value) for value in action_values]
-                        except (TypeError, ValueError, OverflowError) as exc:
-                            raise ValueError(
-                                f"result_snapshot_metadata[{index}].action_trace.{action_field} "
-                                "deve conter inteiros."
-                            ) from exc
-                        if any(isinstance(value, bool) or int(value) != value for value in action_values):
-                            raise ValueError(
-                                f"result_snapshot_metadata[{index}].action_trace.{action_field} "
-                                "deve conter inteiros sem coerção."
-                            )
-                        if action_field == "requested_action":
-                            stored_action = actions[index].detach().cpu().tolist()
-                            if normalized_values != stored_action:
-                                raise ValueError(
-                                    f"Ação PPO diverge da ação solicitada à Engine na transição {index}: "
-                                    f"{stored_action} != {normalized_values}."
-                                )
-                    if not isinstance(action_trace.get("handler_applied"), bool):
+                if action_trace is None:
+                    raise ValueError(
+                        f"result_snapshot_metadata[{index}].action_trace é obrigatório para transições identificadas."
+                    )
+                if not isinstance(action_trace, dict):
+                    raise TypeError(
+                        f"result_snapshot_metadata[{index}].action_trace deve ser um dicionário."
+                    )
+                for action_field in ("requested_action", "effective_action"):
+                    action_values = action_trace.get(action_field)
+                    if not isinstance(action_values, (list, tuple)) or len(action_values) != actions.shape[1]:
                         raise ValueError(
-                            f"result_snapshot_metadata[{index}].action_trace.handler_applied deve ser booleano."
+                            f"result_snapshot_metadata[{index}].action_trace.{action_field} "
+                            f"deve conter {actions.shape[1]} parâmetros."
                         )
-                    status_reason = action_trace.get("status_reason")
-                    if not isinstance(status_reason, str) or not status_reason.strip():
+                    try:
+                        normalized_values = [int(value) for value in action_values]
+                    except (TypeError, ValueError, OverflowError) as exc:
                         raise ValueError(
-                            f"result_snapshot_metadata[{index}].action_trace.status_reason deve ser texto não vazio."
+                            f"result_snapshot_metadata[{index}].action_trace.{action_field} "
+                            "deve conter inteiros."
+                        ) from exc
+                    if any(isinstance(value, bool) or int(value) != value for value in action_values):
+                        raise ValueError(
+                            f"result_snapshot_metadata[{index}].action_trace.{action_field} "
+                            "deve conter inteiros sem coerção."
                         )
+                    if action_field == "requested_action":
+                        stored_action = actions[index].detach().cpu().tolist()
+                        if normalized_values != stored_action:
+                            raise ValueError(
+                                f"Ação PPO diverge da ação solicitada à Engine na transição {index}: "
+                                f"{stored_action} != {normalized_values}."
+                            )
+                if not isinstance(action_trace.get("handler_applied"), bool):
+                    raise ValueError(
+                        f"result_snapshot_metadata[{index}].action_trace.handler_applied deve ser booleano."
+                    )
+                status_reason = action_trace.get("status_reason")
+                if not isinstance(status_reason, str) or not status_reason.strip():
+                    raise ValueError(
+                        f"result_snapshot_metadata[{index}].action_trace.status_reason deve ser texto não vazio."
+                    )
                 if result["decision_sequence"] <= decision["decision_sequence"]:
                     raise ValueError(f"Sequência do resultado não avança na transição {index}.")
                 if next_state["episode_id"] == result["episode_id"]:
