@@ -737,3 +737,26 @@ def test_item_masks_survive_rollout_and_ppo_minibatch_evaluation():
         batch["obs"], batch["actions"], batch["masks"]
     )
     assert torch.allclose(batch["logprobs"], evaluated, atol=1e-5, rtol=1e-5)
+
+
+def test_evaluation_rejects_legacy_bench_mask_fallbacks():
+    obs, masks, _ = create_test_batch()
+    policy = TFTPolicy(
+        obs_dim=obs.shape[-1],
+        action_dims=Trainer.ACTION_DIMS,
+        hidden_size=32,
+    )
+    with torch.no_grad():
+        actions, _, _, _ = policy.get_action_and_value(
+            obs, masks=masks, deterministic=True
+        )
+
+    missing_source = dict(masks)
+    missing_source.pop("bench_move_source_mask")
+    with pytest.raises(ValueError, match="bench_move_source_mask"):
+        policy.evaluate_actions(obs, actions, missing_source)
+
+    missing_target = dict(masks)
+    missing_target.pop("bench_to_board_target_masks")
+    with pytest.raises(ValueError, match="bench_to_board_target_masks"):
+        policy.evaluate_actions(obs, actions, missing_target)
