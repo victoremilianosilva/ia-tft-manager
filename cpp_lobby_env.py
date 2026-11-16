@@ -140,6 +140,7 @@ class CppTFTLobbyWrapper:
         self._last_snapshot_metadata = {
             "engine_instance_id": str(result["engine_instance_id"]),
             "episode_id": int(result["episode_id"]),
+            "decision_sequence": int(result["decision_sequence"]),
             "round": 0,
             "stage": 1,
             "snapshot_kind": "reset",
@@ -167,6 +168,7 @@ class CppTFTLobbyWrapper:
         self._last_snapshot_metadata = {
             "engine_instance_id": str(result["engine_instance_id"]),
             "episode_id": int(result["episode_id"]),
+            "decision_sequence": int(result["decision_sequence"]),
             "round": int(result.get("round", 0)),
             "stage": int(result.get("stage", 1)),
             "snapshot_kind": "step",
