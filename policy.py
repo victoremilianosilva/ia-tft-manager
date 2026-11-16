@@ -534,6 +534,19 @@ class TFTPolicy(nn.Module):
         return self.get_action_and_value(obs, masks=masks, deterministic=deterministic)
 
     @staticmethod
+    def _require_mask(masks, key):
+        """Require a contract mask; never substitute a broader legacy mask."""
+        if masks is None:
+            raise ValueError(
+                f"Action masks ausentes ao resolver a máscara obrigatória '{key}'."
+            )
+        if key not in masks:
+            raise ValueError(
+                f"Action mask obrigatória '{key}' ausente no snapshot correlacionado."
+            )
+        return masks[key]
+
+    @staticmethod
     def _mask_logits(logits, mask):
         """🛡️ Valida máscaras antes de criar uma distribuição."""
         mask = torch.as_tensor(mask, device=logits.device)
@@ -770,9 +783,8 @@ class TFTPolicy(nn.Module):
             if masks is not None:
                 # Máscara específica para mover unidades do banco.
                 # bench_source_mask continua disponível para SELL.
-                source_mask = masks.get(
-                    "bench_move_source_mask",
-                    masks["bench_source_mask"]
+                source_mask = self._require_mask(
+                    masks, "bench_move_source_mask"
                 )
                 logits = self._mask_logits(
                     logits,
@@ -786,7 +798,7 @@ class TFTPolicy(nn.Module):
             total_entropy[move_bench_mask] += dist.entropy()
             record_distribution(
                 "bench_slot", logits, sampled, torch.where(move_bench_mask)[0],
-                masks.get("bench_move_source_mask", masks["bench_source_mask"])[move_bench_mask]
+                self._require_mask(masks, "bench_move_source_mask")[move_bench_mask]
                 if masks is not None else None,
             )
 
@@ -800,15 +812,13 @@ class TFTPolicy(nn.Module):
             if masks is not None:
                 batch_indices = torch.where(move_bench_mask)[0]
 
-                if "bench_to_board_target_masks" in masks:
-                    target_mask = masks["bench_to_board_target_masks"][
-                        batch_indices,
-                        sampled,
-                        :
-                    ]
-                else:
-                    # Compatibilidade com máscaras antigas.
-                    target_mask = masks["board_target_mask"][move_bench_mask]
+                target_mask = self._require_mask(
+                    masks, "bench_to_board_target_masks"
+                )[
+                    batch_indices,
+                    sampled,
+                    :
+                ]
 
                 logits = self._mask_logits(logits, target_mask)
 
