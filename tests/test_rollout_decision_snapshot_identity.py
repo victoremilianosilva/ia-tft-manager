@@ -216,6 +216,11 @@ def test_rollout_buffer_preserves_terminal_result_and_new_episode_identity():
     result = {
         "engine_instance_id": "engine-A", "episode_id": 4,
         "decision_sequence": 22, "player_id": 0, "lobby_index": 0,
+        "action_trace": {
+            "requested_action": [0, 0, 0, 0, 0, 0],
+            "effective_action": [0, 0, 0, 0, 0, 0],
+            "handler_applied": False, "status_reason": "rejected",
+        },
     }
     next_state = {
         "engine_instance_id": "engine-A", "episode_id": 5,
@@ -413,3 +418,31 @@ def test_rollout_rejects_empty_action_status_reason():
     }
     with pytest.raises(ValueError, match="status_reason deve ser texto não vazio"):
         _add_rollout_with_action_trace_for_validation(trace)
+
+def test_rollout_rejects_transition_without_native_action_trace():
+    buffer = RolloutBuffer(
+        num_steps=1, num_envs=1, obs_dim=3, action_dim=6, device=torch.device("cpu")
+    )
+    decision = {
+        "engine_instance_id": "engine-A", "episode_id": 4,
+        "decision_sequence": 21, "player_id": 0, "lobby_index": 0,
+        "mask_snapshot_hash": "a" * 64,
+        "mask_snapshot_hash_algorithm": "tft-action-mask-snapshot-v1",
+    }
+    result = {
+        "engine_instance_id": "engine-A", "episode_id": 4,
+        "decision_sequence": 22, "player_id": 0, "lobby_index": 0,
+    }
+    with pytest.raises(ValueError, match="action_trace é obrigatório"):
+        buffer.add(
+            obs=np.zeros((1, 3), dtype=np.float32),
+            actions=np.zeros((1, 6), dtype=np.int64),
+            logprobs=np.zeros(1, dtype=np.float32),
+            rewards=np.zeros(1, dtype=np.float32),
+            dones=np.zeros(1, dtype=np.float32),
+            values=np.zeros(1, dtype=np.float32),
+            masks_dict={},
+            snapshot_metadata=[decision],
+            result_snapshot_metadata=[result],
+            next_snapshot_metadata=[result],
+        )
