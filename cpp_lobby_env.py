@@ -185,6 +185,7 @@ class CppTFTLobbyWrapper:
 
         info = {
             "players": result.get("players", []),
+            "action_trace": [dict(item) for item in result.get("action_traces", [])],
             "decision_snapshot": dict(self._last_snapshot_metadata),
             "round": int(result.get("round", 0)),
             "stage": int(result.get("stage", 1)),

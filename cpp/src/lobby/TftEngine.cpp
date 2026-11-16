@@ -422,6 +422,7 @@ struct TFTEngine::Impl {
     struct PlayerTransition {
         float action_reward{0.0f};
         bool acted{false};
+        bool action_succeeded{false};
         bool board_capacity_violation{false};
         std::int32_t action_cost{0};
         std::int32_t sale_proceeds{0};
@@ -6143,6 +6144,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         return PlayerTransition{
             static_cast<float>(action_reward),
             true,
+            success,
             board_capacity_violation,
             actual_action_cost,
             actual_sale_proceeds,
@@ -6337,9 +6339,20 @@ StepResult TFTEngine::step(
     std::array<std::int32_t, kPlayersPerLobby> level_after_actions{};
     std::array<std::int32_t, kPlayersPerLobby> xp_before_actions{};
     std::array<std::int32_t, kPlayersPerLobby> xp_after_actions{};
+    std::array<ActionExecutionTrace, kPlayersPerLobby> action_traces{};
     std::vector<std::string> item_action_events;
     for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+        auto& trace = action_traces[i];
+        trace.requested_action = actions[i].values;
+        trace.effective_action = effective_actions[i].values;
+        const bool was_overridden = trace.requested_action != trace.effective_action;
         const auto transition = impl_->player_envs[i].step(*impl_, i, effective_actions[i]);
+        trace.handler_applied = transition.action_succeeded;
+        trace.status_reason = !transition.acted
+            ? "not_processed"
+            : (was_overridden
+                ? (transition.action_succeeded ? "overridden_and_applied" : "overridden_not_applied")
+                : (transition.action_succeeded ? "applied" : "not_applied_by_action_handler"));
         if (!transition.acted) {
             continue;
         }
@@ -6544,6 +6557,7 @@ StepResult TFTEngine::step(
 
     for (std::size_t i = 0; i < kPlayersPerLobby; ++i) result.action_masks[i] = impl_->player_envs[i].action_masks;
     for (std::size_t i = 0; i < kPlayersPerLobby; ++i) result.players[i] = impl_->player_envs[i].info;
+    result.action_traces = action_traces;
 
     result.lobby_done = impl_->done;
     result.engine_instance_id = impl_->engine_instance_id;

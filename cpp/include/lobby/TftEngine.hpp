@@ -434,6 +434,15 @@ struct AntiLoopMetrics {
 };
 
 
+struct ActionExecutionTrace {
+    std::array<std::int32_t, kActionComponents> requested_action{};
+    std::array<std::int32_t, kActionComponents> effective_action{};
+    // True only when the native action handler reports successful application.
+    bool handler_applied{false};
+    // Stable machine-readable reason; never inferred from reward values.
+    std::string status_reason;
+};
+
 struct StepResult {
     std::string engine_instance_id;
     // Row-major: (8, observation_dim).
@@ -451,6 +460,8 @@ struct StepResult {
         action_masks{};
 
     std::array<PlayerInfo, kPlayersPerLobby> players{};
+    // Per-player trace linking caller input to Engine-normalized and applied action.
+    std::array<ActionExecutionTrace, kPlayersPerLobby> action_traces{};
 
     bool lobby_done{false};
     std::uint64_t episode_id{0};

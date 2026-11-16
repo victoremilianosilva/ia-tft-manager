@@ -1305,6 +1305,24 @@ class Trainer:
                     self.PLAYERS_PER_LOBBY,
                     "snapshot de resultado da transição",
                 )
+                # Keep native action provenance beside the exact StepResult identity.
+                for lobby_idx, info in enumerate(infos):
+                    traces = info.get("action_trace")
+                    if not isinstance(traces, list) or len(traces) != self.PLAYERS_PER_LOBBY:
+                        raise RuntimeError(
+                            f"Lobby {lobby_idx} não forneceu oito registros nativos de execução de ação."
+                        )
+                    start = lobby_idx * self.PLAYERS_PER_LOBBY
+                    for player_id, trace in enumerate(traces):
+                        if not isinstance(trace, dict) or not {
+                            "requested_action", "effective_action",
+                            "handler_applied", "status_reason",
+                        }.issubset(trace):
+                            raise RuntimeError(
+                                f"Trace de ação inválido para lobby {lobby_idx}, jogador {player_id}."
+                            )
+                        flat_result_snapshot_metadata[start + player_id]["action_trace"] = dict(trace)
+
                 flat_next_snapshot_metadata = self._expand_lobby_snapshot_metadata(
                     [info.get("next_snapshot") for info in infos],
                     self.PLAYERS_PER_LOBBY,
