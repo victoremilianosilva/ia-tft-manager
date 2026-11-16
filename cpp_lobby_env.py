@@ -257,6 +257,12 @@ class CppTFTLobbyWrapper:
             raise RuntimeError("Execute reset() antes de solicitar snapshot metadata.")
         return dict(self._last_snapshot_metadata)
 
+    def get_player_liveness(self):
+        """Return authoritative per-player alive flags from the latest native result."""
+        if len(self._players) != self.PLAYERS_PER_LOBBY:
+            raise RuntimeError("Estado de jogadores incompleto; execute reset().")
+        return [bool(player.alive) for player in self._players]
+
     def get_strategy_snapshots(self):
         """Return complete native strategy/composition diagnostics for the viewer."""
         snapshots = self._engine.get_strategies()
