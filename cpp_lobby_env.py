@@ -130,6 +130,11 @@ class CppTFTLobbyWrapper:
         ]
 
     def reset(self, seed: int | None = None):
+        # Invalidate the previous pair before asking native code for a new
+        # snapshot. If reset raises, callers must not reuse old observations'
+        # masks or identity as though they belonged to the attempted reset.
+        self._last_action_masks = None
+        self._last_snapshot_metadata = None
         result = self._engine.reset(seed)
         self._last_dones.fill(False)
         self._players = [
@@ -155,6 +160,10 @@ class CppTFTLobbyWrapper:
             )
 
         native_actions = [self._normalize_action(action) for action in actions]
+        # A failed native step must not leave the previous decision snapshot
+        # available for another policy decision.
+        self._last_action_masks = None
+        self._last_snapshot_metadata = None
         result = self._engine.step(
             native_actions,
             bool(timer_enabled),
