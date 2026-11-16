@@ -350,3 +350,66 @@ def test_rollout_rejects_malformed_requested_action_trace():
             result_snapshot_metadata=[result],
             next_snapshot_metadata=[next_state],
         )
+
+
+def _add_rollout_with_action_trace_for_validation(action_trace):
+    buffer = RolloutBuffer(
+        num_steps=1, num_envs=1, obs_dim=3, action_dim=6, device=torch.device("cpu")
+    )
+    decision = {
+        "engine_instance_id": "engine-A", "episode_id": 4,
+        "decision_sequence": 21, "player_id": 0, "lobby_index": 0,
+        "mask_snapshot_hash": "f" * 64,
+        "mask_snapshot_hash_algorithm": "tft-action-mask-snapshot-v1",
+    }
+    result = {
+        "engine_instance_id": "engine-A", "episode_id": 4,
+        "decision_sequence": 22, "player_id": 0, "lobby_index": 0,
+        "action_trace": action_trace,
+    }
+    next_state = {key: value for key, value in result.items() if key != "action_trace"}
+    buffer.add(
+        obs=np.zeros((1, 3), dtype=np.float32),
+        actions=np.array([[6, 0, 0, 0, 0, 0]], dtype=np.int64),
+        logprobs=np.zeros(1, dtype=np.float32),
+        rewards=np.zeros(1, dtype=np.float32),
+        dones=np.zeros(1, dtype=np.float32),
+        values=np.zeros(1, dtype=np.float32),
+        masks_dict={},
+        snapshot_metadata=[decision],
+        result_snapshot_metadata=[result],
+        next_snapshot_metadata=[next_state],
+    )
+
+
+def test_rollout_rejects_malformed_effective_action_trace():
+    trace = {
+        "requested_action": [6, 0, 0, 0, 0, 0],
+        "effective_action": [6, 0],
+        "handler_applied": True,
+        "status_reason": "applied",
+    }
+    with pytest.raises(ValueError, match="effective_action deve conter 6 parâmetros"):
+        _add_rollout_with_action_trace_for_validation(trace)
+
+
+def test_rollout_rejects_non_boolean_action_handler_status():
+    trace = {
+        "requested_action": [6, 0, 0, 0, 0, 0],
+        "effective_action": [6, 0, 0, 0, 0, 0],
+        "handler_applied": 1,
+        "status_reason": "applied",
+    }
+    with pytest.raises(ValueError, match="handler_applied deve ser booleano"):
+        _add_rollout_with_action_trace_for_validation(trace)
+
+
+def test_rollout_rejects_empty_action_status_reason():
+    trace = {
+        "requested_action": [6, 0, 0, 0, 0, 0],
+        "effective_action": [6, 0, 0, 0, 0, 0],
+        "handler_applied": False,
+        "status_reason": "   ",
+    }
+    with pytest.raises(ValueError, match="status_reason deve ser texto não vazio"):
+        _add_rollout_with_action_trace_for_validation(trace)
