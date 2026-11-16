@@ -416,7 +416,7 @@ class RolloutBuffer:
                     raise TypeError(
                         f"result_snapshot_metadata[{index}].action_trace deve ser um dicionário."
                     )
-                    for action_field in ("requested_action", "effective_action"):
+                for action_field in ("requested_action", "effective_action"):
                     action_values = action_trace.get(action_field)
                     if not isinstance(action_values, (list, tuple)) or len(action_values) != actions.shape[1]:
                         raise ValueError(
