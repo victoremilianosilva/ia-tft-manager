@@ -141,7 +141,7 @@ def test_rollout_buffer_preserves_per_agent_snapshot_identity():
 
     buffer.add(
         obs=np.zeros((2, 3), dtype=np.float32),
-        actions=np.zeros((2, 6), dtype=np.int64),
+        actions=np.tile(np.array([6, 0, 0, 0, 0, 0], dtype=np.int64), (2, 1)),
         logprobs=np.zeros(2, dtype=np.float32),
         rewards=np.zeros(2, dtype=np.float32),
         dones=np.zeros(2, dtype=np.float32),
@@ -281,3 +281,72 @@ def test_mask_snapshot_hash_is_deterministic_and_sensitive_to_payload():
     changed = Trainer._hash_mask_rows(masks)
     assert changed[0] == first[0]
     assert changed[1] != first[1]
+
+
+def test_rollout_rejects_action_trace_that_differs_from_ppo_action():
+    buffer = RolloutBuffer(
+        num_steps=1, num_envs=1, obs_dim=3, action_dim=6, device=torch.device("cpu")
+    )
+    decision = {
+        "engine_instance_id": "engine-A", "episode_id": 4,
+        "decision_sequence": 21, "player_id": 0, "lobby_index": 0,
+        "mask_snapshot_hash": "d" * 64,
+        "mask_snapshot_hash_algorithm": "tft-action-mask-snapshot-v1",
+    }
+    result = {
+        "engine_instance_id": "engine-A", "episode_id": 4,
+        "decision_sequence": 22, "player_id": 0, "lobby_index": 0,
+        "action_trace": {
+            "requested_action": [6, 0, 0, 0, 0, 0],
+            "effective_action": [6, 0, 0, 0, 0, 0],
+            "handler_applied": True,
+            "status_reason": "applied",
+        },
+    }
+    next_state = {key: value for key, value in result.items() if key != "action_trace"}
+
+    with pytest.raises(ValueError, match="Ação PPO diverge"):
+        buffer.add(
+            obs=np.zeros((1, 3), dtype=np.float32),
+            actions=np.array([[0, 0, 0, 0, 0, 0]], dtype=np.int64),
+            logprobs=np.zeros(1, dtype=np.float32),
+            rewards=np.zeros(1, dtype=np.float32),
+            dones=np.zeros(1, dtype=np.float32),
+            values=np.zeros(1, dtype=np.float32),
+            masks_dict={},
+            snapshot_metadata=[decision],
+            result_snapshot_metadata=[result],
+            next_snapshot_metadata=[next_state],
+        )
+
+
+def test_rollout_rejects_malformed_requested_action_trace():
+    buffer = RolloutBuffer(
+        num_steps=1, num_envs=1, obs_dim=3, action_dim=6, device=torch.device("cpu")
+    )
+    decision = {
+        "engine_instance_id": "engine-A", "episode_id": 4,
+        "decision_sequence": 21, "player_id": 0, "lobby_index": 0,
+        "mask_snapshot_hash": "e" * 64,
+        "mask_snapshot_hash_algorithm": "tft-action-mask-snapshot-v1",
+    }
+    result = {
+        "engine_instance_id": "engine-A", "episode_id": 4,
+        "decision_sequence": 22, "player_id": 0, "lobby_index": 0,
+        "action_trace": {"requested_action": [6, 0]},
+    }
+    next_state = {key: value for key, value in result.items() if key != "action_trace"}
+
+    with pytest.raises(ValueError, match="deve conter 6 parâmetros"):
+        buffer.add(
+            obs=np.zeros((1, 3), dtype=np.float32),
+            actions=np.array([[6, 0, 0, 0, 0, 0]], dtype=np.int64),
+            logprobs=np.zeros(1, dtype=np.float32),
+            rewards=np.zeros(1, dtype=np.float32),
+            dones=np.zeros(1, dtype=np.float32),
+            values=np.zeros(1, dtype=np.float32),
+            masks_dict={},
+            snapshot_metadata=[decision],
+            result_snapshot_metadata=[result],
+            next_snapshot_metadata=[next_state],
+        )
