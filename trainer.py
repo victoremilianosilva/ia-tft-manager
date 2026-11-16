@@ -24,7 +24,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 from vector_lobby_env import LobbyVectorEnv
 
-from policy import TFTPolicy
+from policy import TFTPolicy, MASK_SHAPES
 from rollout import RolloutBuffer
 from ppo import PPOTrainer, exponential_schedule_value
 
@@ -89,20 +89,7 @@ class Trainer:
     # 🎭 MASK SHAPES
     # ================================================================
 
-    MASK_SHAPES = {
-        "type_mask": (9,),
-        "shop_mask": (5,),
-        "bench_source_mask": (9,),
-        "board_target_mask": (28,),
-        "board_source_mask": (28,),
-        "board_move_target_masks": (28, 28),
-        "bench_move_source_mask": (9,),
-        "bench_to_board_target_masks": (9, 28),
-        "item_inventory_mask": (9,),
-        "item_component_first_mask": (10,),
-        "item_component_pair_masks": (10, 10),
-        "item_target_mask": (37,),
-    }
+    MASK_SHAPES = MASK_SHAPES
 
     def __init__(
         self,

@@ -5,6 +5,27 @@ from policy import TFTPolicy
 from trainer import Trainer
 from scripts.evaluate_composition_ablation import ACTION_DIMS as ABLATION_ACTION_DIMS
 
+def _complete_mask_bundle(masks, batch_size, device="cpu"):
+    """Build full native mask snapshots for focused Policy unit fixtures."""
+    shapes = {
+        "type_mask": (9,), "shop_mask": (5,), "bench_source_mask": (9,),
+        "board_target_mask": (28,), "board_source_mask": (28,),
+        "board_move_target_masks": (28, 28), "bench_move_source_mask": (9,),
+        "bench_to_board_target_masks": (9, 28), "item_inventory_mask": (9,),
+        "item_component_first_mask": (10,), "item_component_pair_masks": (10, 10),
+        "item_target_mask": (37,),
+    }
+    result = {
+        key: torch.zeros((batch_size, *shape), dtype=torch.bool, device=device)
+        for key, shape in shapes.items()
+    }
+    # PASS is the safe neutral action for fixture rows that do not target a branch.
+    result["type_mask"][:, 6] = True
+    for key, value in masks.items():
+        result[key] = value
+    return result
+
+
 
 def test_action_dimensions_match_the_environment_contract():
     assert Trainer.ACTION_DIMS == [9, 5, 9, 28, 28, 28]
@@ -178,6 +199,7 @@ def test_policy_accepts_observation_with_composition_control_features():
     values = policy.get_value(observations)
     actions, log_prob, entropy, values_again = policy.get_action_and_value(
         observations,
+        masks=_complete_mask_bundle({}, observations.shape[0]),
         deterministic=True,
     )
 

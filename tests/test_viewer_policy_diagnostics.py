@@ -3,6 +3,27 @@ import torch
 
 from policy import TFTPolicy
 
+def _complete_mask_bundle(masks, batch_size, device="cpu"):
+    """Build full native mask snapshots for focused Policy unit fixtures."""
+    shapes = {
+        "type_mask": (9,), "shop_mask": (5,), "bench_source_mask": (9,),
+        "board_target_mask": (28,), "board_source_mask": (28,),
+        "board_move_target_masks": (28, 28), "bench_move_source_mask": (9,),
+        "bench_to_board_target_masks": (9, 28), "item_inventory_mask": (9,),
+        "item_component_first_mask": (10,), "item_component_pair_masks": (10, 10),
+        "item_target_mask": (37,),
+    }
+    result = {
+        key: torch.zeros((batch_size, *shape), dtype=torch.bool, device=device)
+        for key, shape in shapes.items()
+    }
+    # PASS is the safe neutral action for fixture rows that do not target a branch.
+    result["type_mask"][:, 6] = True
+    for key, value in masks.items():
+        result[key] = value
+    return result
+
+
 
 def _fixture():
     torch.manual_seed(781)
@@ -18,6 +39,7 @@ def _fixture():
         "board_source_mask": torch.ones(2, 28, dtype=torch.bool),
         "board_move_target_masks": torch.ones(2, 28, 28, dtype=torch.bool),
     }
+    masks = _complete_mask_bundle(masks, obs.shape[0])
     masks["type_mask"][0, 0] = True  # BUY
     masks["type_mask"][1, 4] = True  # MOVE_BOARD
     return policy.eval(), obs, masks

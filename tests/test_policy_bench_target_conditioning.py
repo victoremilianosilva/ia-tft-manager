@@ -2,6 +2,27 @@ import torch
 
 from policy import TFTPolicy
 
+def _complete_mask_bundle(masks, batch_size, device="cpu"):
+    """Build full native mask snapshots for focused Policy unit fixtures."""
+    shapes = {
+        "type_mask": (9,), "shop_mask": (5,), "bench_source_mask": (9,),
+        "board_target_mask": (28,), "board_source_mask": (28,),
+        "board_move_target_masks": (28, 28), "bench_move_source_mask": (9,),
+        "bench_to_board_target_masks": (9, 28), "item_inventory_mask": (9,),
+        "item_component_first_mask": (10,), "item_component_pair_masks": (10, 10),
+        "item_target_mask": (37,),
+    }
+    result = {
+        key: torch.zeros((batch_size, *shape), dtype=torch.bool, device=device)
+        for key, shape in shapes.items()
+    }
+    # PASS is the safe neutral action for fixture rows that do not target a branch.
+    result["type_mask"][:, 6] = True
+    for key, value in masks.items():
+        result[key] = value
+    return result
+
+
 
 ACTION_DIMS = [9, 5, 9, 28, 28, 28]
 OBS_DIM = 22 + (4 * 7 * 5) + (1 + 4 * 7) + ((9 + 5) * 8)
@@ -23,12 +44,12 @@ def _move_bench_masks(batch_size=1):
         batch_size, ACTION_DIMS[2], ACTION_DIMS[3], dtype=torch.bool
     )
     target_masks[:, :2, :3] = True
-    return {
+    return _complete_mask_bundle({
         "type_mask": type_mask,
         "bench_move_source_mask": source_mask,
         "bench_source_mask": source_mask.clone(),
         "bench_to_board_target_masks": target_masks,
-    }
+    }, batch_size)
 
 
 def test_bench_to_board_logits_include_selected_slot_and_candidate_features():
@@ -160,7 +181,7 @@ def test_legacy_global_encoder_migrates_five_derived_economic_features():
 def test_entropy_only_diagnostics_are_compact_and_finite():
     policy, obs = _policy_and_observation()
     with torch.no_grad():
-        _, _, _, _, diagnostics = policy.get_action_and_value_with_entropy_diagnostics(obs)
+        _, _, _, _, diagnostics = policy.get_action_and_value_with_entropy_diagnostics(obs, masks=_complete_mask_bundle({}, obs.shape[0]))
     assert diagnostics and diagnostics[0]
     for record in diagnostics[0]:
         assert torch.isfinite(torch.tensor(record["entropy_nats"]))
