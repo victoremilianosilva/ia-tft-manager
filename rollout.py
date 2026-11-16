@@ -358,6 +358,13 @@ class RolloutBuffer:
                 "armazenadas juntas."
             )
 
+        if self.ptr > 0:
+            previous_has_identity = self.snapshot_metadata[0] is not None
+            if previous_has_identity != all(supplied_groups):
+                raise ValueError(
+                    "O rollout não pode misturar transições com e sem identidade."
+                )
+
         normalized_groups = {}
         if all(supplied_groups):
             for group_name, group in metadata_groups:
@@ -420,17 +427,20 @@ class RolloutBuffer:
                         f"snapshot_metadata[{index}] usa algoritmo de hash de mask desconhecido."
                     )
 
-            by_lobby = {}
-            for decision in normalized_groups["snapshot_metadata"]:
-                key = decision["lobby_index"]
-                identity = (
-                    decision["engine_instance_id"],
-                    decision["episode_id"],
-                    decision["decision_sequence"],
-                )
-                previous = by_lobby.setdefault(key, identity)
-                if previous != identity:
-                    raise ValueError(f"Snapshot de decisão inconsistente dentro da lobby {key}.")
+            for group_name, group in normalized_groups.items():
+                by_lobby = {}
+                for metadata in group:
+                    key = metadata["lobby_index"]
+                    identity = (
+                        metadata["engine_instance_id"],
+                        metadata["episode_id"],
+                        metadata["decision_sequence"],
+                    )
+                    previous = by_lobby.setdefault(key, identity)
+                    if previous != identity:
+                        raise ValueError(
+                            f"Snapshot inconsistente em {group_name} dentro da lobby {key}."
+                        )
 
         for group_name, normalized in normalized_groups.items():
             getattr(self, group_name)[self.ptr] = normalized
