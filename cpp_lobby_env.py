@@ -226,7 +226,7 @@ class CppTFTLobbyWrapper:
         # Evaluation-only ablation: suppress item equip/transfer and craft actions.
         # Keep type 7 when it is the sole legal type because that state represents
         # a mandatory anvil choice, not optional item management.
-        for player_masks in masks:
+        for player_idx, player_masks in enumerate(masks):
             type_mask = np.asarray(player_masks["type_mask"], dtype=np.bool_).copy()
             legal_types = np.flatnonzero(type_mask)
             mandatory_anvil_choice = len(legal_types) == 1 and int(legal_types[0]) == 7
@@ -234,7 +234,11 @@ class CppTFTLobbyWrapper:
                 type_mask[7] = False
                 type_mask[8] = False
             if not bool(type_mask.any()):
-                type_mask[6] = True
+                raise RuntimeError(
+                    "A ablação de ações de item removeu todas as ações legais "
+                    f"do snapshot nativo para o jogador {player_idx}; "
+                    "nenhuma ação substituta será inventada."
+                )
             player_masks["type_mask"] = type_mask
         return masks
 
