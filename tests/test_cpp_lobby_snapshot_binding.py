@@ -32,18 +32,22 @@ class FakeNativeLobby:
     def __init__(self, *_args):
         self.mask_reads = 0
         self.episode_id = 0
+        self.decision_sequence = 0
 
     def reset(self, _seed=None):
         self.episode_id += 1
+        self.decision_sequence += 1
         return {
             "observations": np.full((8, 4), self.episode_id, dtype=np.float32),
             "action_masks": make_masks(0),
             "engine_instance_id": f"fake-engine-{id(self)}",
             "episode_id": self.episode_id,
+            "decision_sequence": self.decision_sequence,
             "observation_dim": 4,
         }
 
     def step(self, _actions, _timer_enabled=False, _timer_expired=False):
+        self.decision_sequence += 1
         return {
             "observations": np.full((8, 4), 2, dtype=np.float32),
             "rewards": np.zeros(8, dtype=np.float32),
@@ -51,6 +55,7 @@ class FakeNativeLobby:
             "action_masks": make_masks(2),
             "engine_instance_id": f"fake-engine-{id(self)}",
             "episode_id": self.episode_id,
+            "decision_sequence": self.decision_sequence,
             "round": 3,
             "stage": 2,
             "lobby_done": False,
@@ -84,6 +89,7 @@ def test_reset_masks_are_taken_from_same_native_snapshot(monkeypatch):
         assert lobby.get_snapshot_metadata() == {
             "engine_instance_id": f"fake-engine-{id(lobby._engine)}",
             "episode_id": 1,
+            "decision_sequence": 1,
             "round": 0,
             "stage": 1,
             "snapshot_kind": "reset",
@@ -112,6 +118,7 @@ def test_step_masks_are_taken_from_same_native_snapshot(monkeypatch):
         assert info["decision_snapshot"] == {
             "engine_instance_id": f"fake-engine-{id(lobby._engine)}",
             "episode_id": 1,
+            "decision_sequence": 2,
             "round": 3,
             "stage": 2,
             "snapshot_kind": "step",
