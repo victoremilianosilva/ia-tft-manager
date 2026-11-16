@@ -1076,11 +1076,9 @@ class TFTPolicy(nn.Module):
             # Bench source
             logits = self.bench_head(conditioned[move_bench_mask])
 
-            source_mask = masks.get(
-                "bench_move_source_mask",
-                masks["bench_source_mask"]
-            )
-            source_mask = source_mask[move_bench_mask]
+            source_mask = self._require_mask(
+                masks, "bench_move_source_mask"
+            )[move_bench_mask]
 
             logits = self._mask_logits(logits, source_mask)
 
@@ -1107,15 +1105,13 @@ class TFTPolicy(nn.Module):
 
             batch_indices = torch.where(move_bench_mask)[0]
 
-            if "bench_to_board_target_masks" in masks:
-                target_mask = masks["bench_to_board_target_masks"][
-                    batch_indices,
-                    selected_bench_slots,
-                    :
-                ]
-            else:
-                # Compatibilidade com máscaras antigas.
-                target_mask = masks["board_target_mask"][move_bench_mask]
+            target_mask = self._require_mask(
+                masks, "bench_to_board_target_masks"
+            )[
+                batch_indices,
+                selected_bench_slots,
+                :
+            ]
 
             logits = self._mask_logits(logits, target_mask)
 
