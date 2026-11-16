@@ -635,14 +635,17 @@ def test_engine_instance_identity_is_distinct_from_seed_and_episode():
         assert first.engine_instance_id == first_id
         assert second.engine_instance_id == second_id
         assert first_reset["episode_id"] == second_reset["episode_id"] == 1
+        assert first_reset["decision_sequence"] == second_reset["decision_sequence"] == 1
 
         first_step = first.step([[6, 0, 0, 0, 0, 0] for _ in range(8)])
         assert first_step["engine_instance_id"] == first_id
         assert first_step["episode_id"] == first_reset["episode_id"]
+        assert first_step["decision_sequence"] == 2
 
         next_reset = first.reset()
         assert next_reset["engine_instance_id"] == first_id
         assert next_reset["episode_id"] > first_reset["episode_id"]
+        assert next_reset["decision_sequence"] == 3
     finally:
         first.close()
         second.close()
