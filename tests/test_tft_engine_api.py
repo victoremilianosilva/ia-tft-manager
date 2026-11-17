@@ -921,20 +921,51 @@ def test_unit_instance_uuid_is_preserved_across_bench_and_board_moves():
         assert moved["board"][destination]["occupied"] is True
         assert moved["board"][destination]["uuid"] == unit_uuid
 
-        # Each public step resolves one preparation round. The same physical
-        # UnitInstance must remain correlated across both native transitions.
+        # A preparation round requires 15 actions per player. Finish the
+        # remaining 14 actions with PASS before moving the unit in round 2.
+        pass_actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        round_two_result = None
+        for _ in range(14):
+            round_two_result = engine.step(pass_actions)
+
+        assert round_two_result is not None
+        assert round_two_result["round"] == 2
+        assert round_two_result["decision_sequence"] == deploy_result["decision_sequence"] + 14
+        assert round_two_result["player_decision_sequences"] == [16] * 8
+
+        # Move that same physical UnitInstance during the next preparation round.
+        masks = engine.get_action_masks()[0]
+        board_move_targets = masks["board_move_target_masks"][board_target]
+        destination = next(
+            (index for index, allowed in enumerate(board_move_targets)
+             if index != board_target and bool(allowed)),
+            None,
+        )
+        assert destination is not None
+        actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        actions[0] = [4, 0, 0, 0, board_target, destination]
+        move_result = engine.step(actions)
+
+        moved = engine.get_audit_snapshot()["players"][0]
+        assert moved["board"][board_target]["occupied"] is False
+        assert moved["board"][destination]["occupied"] is True
+        assert moved["board"][destination]["uuid"] == unit_uuid
+
+        # Both transitions remain bound to one Engine/episode; the native
+        # sequence advances through the round boundary without losing identity.
         assert deploy_result["engine_instance_id"] == reset_result["engine_instance_id"]
         assert move_result["engine_instance_id"] == reset_result["engine_instance_id"]
         assert deploy_result["episode_id"] == reset_result["episode_id"]
         assert move_result["episode_id"] == reset_result["episode_id"]
         assert deploy_result["decision_sequence"] == reset_result["decision_sequence"] + 1
-        assert move_result["decision_sequence"] == deploy_result["decision_sequence"] + 1
+        assert move_result["decision_sequence"] == round_two_result["decision_sequence"] + 1
         assert deploy_result["player_decision_sequences"] == [2] * 8
-        assert move_result["player_decision_sequences"] == [3] * 8
+        assert move_result["player_decision_sequences"] == [17] * 8
         assert deploy_result["native_state_snapshot"]["snapshot_sequence"] == deploy_result["decision_sequence"]
+        assert round_two_result["native_state_snapshot"]["snapshot_sequence"] == round_two_result["decision_sequence"]
         assert move_result["native_state_snapshot"]["snapshot_sequence"] == move_result["decision_sequence"]
-        assert deploy_result["round"] == 2
-        assert move_result["round"] == 3
+        assert deploy_result["round"] == 1
+        assert move_result["round"] == 2
     finally:
         engine.close()
 
