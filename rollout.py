@@ -1,3 +1,5 @@
+import copy
+
 import torch
 
 
@@ -391,7 +393,7 @@ class RolloutBuffer:
                         raise ValueError(
                             f"{group_name}[{index}].decision_sequence deve ser inteiro não negativo."
                         )
-                    normalized.append(dict(metadata))
+                    normalized.append(copy.deepcopy(metadata))
                 normalized_groups[group_name] = normalized
 
             for index, (decision, result, next_state) in enumerate(zip(
@@ -953,7 +955,7 @@ class RolloutBuffer:
             step_metadata = metadata_by_step[step_index]
             if step_metadata is None:
                 raise RuntimeError("Metadata parcial dentro do RolloutBuffer.")
-            result.append(dict(step_metadata[env_index]))
+            result.append(copy.deepcopy(step_metadata[env_index]))
         return result
 
     # =================================================================

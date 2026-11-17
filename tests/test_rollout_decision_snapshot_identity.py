@@ -644,3 +644,62 @@ def test_attach_native_action_traces_rejects_non_mapping_lobby_info():
 
     with pytest.raises(RuntimeError, match="Info nativa inválida"):
         Trainer._attach_native_action_traces(result_metadata, infos, 8)
+
+
+
+def test_rollout_metadata_nested_action_trace_is_isolated_on_store_and_batch():
+    buffer = RolloutBuffer(
+        num_steps=1, num_envs=1, obs_dim=3, action_dim=6, device=torch.device("cpu")
+    )
+    decision = {
+        "engine_instance_id": "engine-A", "episode_id": 4,
+        "decision_sequence": 21, "player_id": 0, "lobby_index": 0,
+        "mask_snapshot_hash": "a" * 64,
+        "mask_snapshot_hash_algorithm": "tft-action-mask-snapshot-v1",
+    }
+    trace = {
+        "player_id": 0,
+        "requested_action": [6, 0, 0, 0, 0, 0],
+        "effective_action": [6, 0, 0, 0, 0, 0],
+        "handler_applied": True,
+        "status_reason": "applied",
+    }
+    result = {
+        "engine_instance_id": "engine-A", "episode_id": 4,
+        "decision_sequence": 22, "player_id": 0, "lobby_index": 0,
+        "action_trace": trace,
+    }
+    next_state = {
+        "engine_instance_id": "engine-A", "episode_id": 4,
+        "decision_sequence": 22, "player_id": 0, "lobby_index": 0,
+    }
+
+    buffer.add(
+        obs=np.zeros((1, 3), dtype=np.float32),
+        actions=np.array([[6, 0, 0, 0, 0, 0]], dtype=np.int64),
+        logprobs=np.zeros(1, dtype=np.float32),
+        rewards=np.zeros(1, dtype=np.float32),
+        dones=np.zeros(1, dtype=np.float32),
+        values=np.zeros(1, dtype=np.float32),
+        masks_dict={},
+        snapshot_metadata=[decision],
+        result_snapshot_metadata=[result],
+        next_snapshot_metadata=[next_state],
+    )
+
+    # Mutating caller-owned nested data must not rewrite stored rollout history.
+    trace["requested_action"][0] = 0
+    result["action_trace"]["status_reason"] = "caller-mutated"
+    stored_trace = buffer.result_snapshot_metadata[0][0]["action_trace"]
+    assert stored_trace["requested_action"] == [6, 0, 0, 0, 0, 0]
+    assert stored_trace["status_reason"] == "applied"
+
+    batch = next(buffer.get_batches(batch_size=1))
+    batch_trace = batch["result_snapshot_metadata"][0]["action_trace"]
+    batch_trace["effective_action"][0] = 99
+    batch_trace["status_reason"] = "batch-mutated"
+
+    # Mutating batch metadata must not rewrite the buffer's canonical copy.
+    stored_trace = buffer.result_snapshot_metadata[0][0]["action_trace"]
+    assert stored_trace["effective_action"] == [6, 0, 0, 0, 0, 0]
+    assert stored_trace["status_reason"] == "applied"
