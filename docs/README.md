@@ -21,6 +21,7 @@ Para decisões de arquitetura e implementação da nova linhagem, use primeiro o
 - [Observation Projection Consumer Matrix v1 — Draft](observation-projection-consumer-matrix.v1.draft.md)
 - [Structured Entity and Temporal Evidence Contract v1 — Draft](observation-structured-entity-temporal-contract.v1.draft.md) — entity identity, ownership, collection completeness, temporal scope and schema gaps before tensor encoding.
 - [Structured Entity Producer Evidence Audit — Identity Slice v1 — Draft](observation-structured-entity-producer-audit.v1.draft.md) — native UnitInstance UUID generation is implemented; canonical cross-episode identity and full lifecycle acceptance remain unverified.
+- [Native State Snapshot Contract v1 — Draft](native-state-snapshot-contract.v1.draft.md) — binds existing board/bench/shop, economy and item-inventory facts to the exact native observation/mask snapshot and carries per-player records into rollout sidecar metadata; not an Actor/Critic tensor contract.
 - [Observation Schema v2 Identity Field Semantics Reconciliation](observation-schema-v2-identity-field-semantics-reconciliation.v1.draft.md) — separates authoritative game match, Engine episode scope, Viewer session, native episode counter and player seat.
 - [Engine Identity Scope Reconciliation](engine-identity-scope-reconciliation.v1.draft.md) — defines the semantic need for Engine-instance scope plus episode without choosing a runtime ID algorithm.
 - [Structured Entity Audit Coverage Status](observation-structured-entity-audit-coverage-status.v1.draft.md) — consolidated status for 17 entity kinds and 31 field-family rows; unavailable fields remain unavailable.
@@ -86,6 +87,6 @@ Para decisões de arquitetura e implementação da nova linhagem, use primeiro o
 
 - `observation-schema-v2-identity-boundary.v1.draft.md` — Stage 1 executable identity/provenance/cardinality contract for Observation Schema v2.
 
-- [Stage 1 — Structured Entity Producer Audit Reconciliation](stage1-structured-entity-producer-audit-reconciliation.v1.draft.md) — consolidated Stage 1 item-D source audit across 17 entity kinds, 31 field families and the 223-path Schema v2 crosswalk; documents producer and delivery gaps without authorizing runtime changes.
+- [Stage 1 — Structured Entity Producer Audit Reconciliation](stage1-structured-entity-producer-audit-reconciliation.v1.draft.md) — consolidated Stage 1 item-D source audit across 17 entity kinds, 31 field families and the 223-path Schema v2 crosswalk; paired with the bounded native-state sidecar producer in PR #455.
 
 - [Stage 1 — Integrated Contract and Runtime Evidence Gate](stage1-integrated-contract-runtime-evidence-gate.v1.draft.md) — consolidated acceptance ledger for PRs #425–#452, separating merged boundary evidence from outstanding replay, producer, identity, checkpoint and evaluation gates.
