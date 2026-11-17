@@ -769,3 +769,34 @@ def test_rollout_rejects_malformed_identity_field_types(field, invalid_value):
             result_snapshot_metadata=[result],
             next_snapshot_metadata=[next_state],
         )
+
+
+def test_trainer_expands_native_state_snapshot_to_exact_player_rows():
+    from trainer import Trainer
+
+    snapshot = {
+        "engine_instance_id": "engine-A",
+        "episode_id": 4,
+        "decision_sequence": 9,
+        "player_decision_sequences": [9] * 8,
+        "native_state_snapshot": {
+            "engine_instance_id": "engine-A",
+            "episode_id": 4,
+            "snapshot_sequence": 9,
+            "player_decision_sequences": [9] * 8,
+            "players": [
+                {
+                    "player_id": player_id,
+                    "board": [{"occupied": False} for _ in range(28)],
+                    "bench": [{"occupied": False} for _ in range(9)],
+                    "shop": [{"occupied": False} for _ in range(5)],
+                }
+                for player_id in range(8)
+            ],
+        },
+    }
+    rows = Trainer._expand_lobby_snapshot_metadata([snapshot], 8, "teste")
+    assert len(rows) == 8
+    assert [row["native_player_state"]["player_id"] for row in rows] == list(range(8))
+    assert all(row["player_decision_sequence"] == 9 for row in rows)
+    assert "native_state_snapshot" not in rows[0]

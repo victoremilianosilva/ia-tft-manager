@@ -38,6 +38,28 @@ class FakeNativeLobby:
         self.fail_reset = False
         self.fail_step = False
 
+    def _native_state_snapshot(self):
+        return {
+            "engine_instance_id": f"fake-engine-{id(self)}",
+            "episode_id": self.episode_id,
+            "snapshot_sequence": self.decision_sequence,
+            "player_decision_sequences": list(self.player_decision_sequences),
+            "round": 1,
+            "stage": 1,
+            "finished": False,
+            "players": [
+                {
+                    "player_id": player_id,
+                    "board": [{"occupied": False, "champion_id": "", "uuid": "", "star": 0, "cost": 0, "items": []} for _ in range(28)],
+                    "bench": [{"occupied": False, "champion_id": "", "uuid": "", "star": 0, "cost": 0, "items": []} for _ in range(9)],
+                    "shop": [{"occupied": False, "champion_id": "", "uuid": "", "star": 0, "cost": 0, "items": []} for _ in range(5)],
+                    "item_components": [], "item_inventory": [], "item_component_catalog": [],
+                    "pending_anvil_options": [],
+                }
+                for player_id in range(8)
+            ],
+        }
+
     def reset(self, _seed=None):
         if self.fail_reset:
             self.fail_reset = False
@@ -52,6 +74,7 @@ class FakeNativeLobby:
             "episode_id": self.episode_id,
             "decision_sequence": self.decision_sequence,
             "player_decision_sequences": list(self.player_decision_sequences),
+            "native_state_snapshot": self._native_state_snapshot(),
             "observation_dim": 4,
         }
 
@@ -70,6 +93,7 @@ class FakeNativeLobby:
             "episode_id": self.episode_id,
             "decision_sequence": self.decision_sequence,
             "player_decision_sequences": list(self.player_decision_sequences),
+            "native_state_snapshot": self._native_state_snapshot(),
             "round": 3,
             "stage": 2,
             "lobby_done": False,
@@ -110,15 +134,15 @@ def test_reset_masks_are_taken_from_same_native_snapshot(monkeypatch):
         assert observations.shape == (8, 4)
         assert all(mask["type_mask"][0] for mask in masks)
         assert all(not mask["type_mask"][8] for mask in masks)
-        assert lobby.get_snapshot_metadata() == {
-            "engine_instance_id": f"fake-engine-{id(lobby._engine)}",
-            "episode_id": 1,
-            "decision_sequence": 1,
-            "player_decision_sequences": [1] * 8,
-            "round": 0,
-            "stage": 1,
-            "snapshot_kind": "reset",
-        }
+        metadata = lobby.get_snapshot_metadata()
+        assert metadata["engine_instance_id"] == f"fake-engine-{id(lobby._engine)}"
+        assert metadata["episode_id"] == 1
+        assert metadata["decision_sequence"] == 1
+        assert metadata["player_decision_sequences"] == [1] * 8
+        assert metadata["native_state_snapshot"]["snapshot_sequence"] == 1
+        assert len(metadata["native_state_snapshot"]["players"][0]["board"]) == 28
+        assert len(metadata["native_state_snapshot"]["players"][0]["bench"]) == 9
+        assert len(metadata["native_state_snapshot"]["players"][0]["shop"]) == 5
         assert lobby._engine.mask_reads == 0
     finally:
         lobby.close()
@@ -148,15 +172,12 @@ def test_step_masks_are_taken_from_same_native_snapshot(monkeypatch):
             "handler_applied": True,
             "status_reason": "applied",
         }
-        assert info["decision_snapshot"] == {
-            "engine_instance_id": f"fake-engine-{id(lobby._engine)}",
-            "episode_id": 1,
-            "decision_sequence": 2,
-            "player_decision_sequences": [2] * 8,
-            "round": 3,
-            "stage": 2,
-            "snapshot_kind": "step",
-        }
+        metadata = info["decision_snapshot"]
+        assert metadata["engine_instance_id"] == f"fake-engine-{id(lobby._engine)}"
+        assert metadata["episode_id"] == 1
+        assert metadata["decision_sequence"] == 2
+        assert metadata["player_decision_sequences"] == [2] * 8
+        assert metadata["native_state_snapshot"]["snapshot_sequence"] == 2
         assert lobby.get_snapshot_metadata() == info["decision_snapshot"]
         assert lobby._engine.mask_reads == 0
     finally:

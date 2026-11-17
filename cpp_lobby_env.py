@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from types import SimpleNamespace
+import copy
 import os
 import sys
 
@@ -129,6 +130,50 @@ class CppTFTLobbyWrapper:
             for player in masks
         ]
 
+    @classmethod
+    def _copy_native_state_snapshot(cls, value, expected_identity):
+        if not isinstance(value, dict):
+            raise RuntimeError("Snapshot nativo estruturado ausente ou inválido.")
+        if value.get("engine_instance_id") != expected_identity["engine_instance_id"]:
+            raise RuntimeError("Snapshot estruturado pertence a outra instância da Engine.")
+        if value.get("episode_id") != expected_identity["episode_id"]:
+            raise RuntimeError("Snapshot estruturado pertence a outro episódio.")
+        if value.get("snapshot_sequence") != expected_identity["decision_sequence"]:
+            raise RuntimeError("Snapshot estruturado não corresponde à sequência publicada.")
+        if value.get("player_decision_sequences") != expected_identity["player_decision_sequences"]:
+            raise RuntimeError("Snapshot estruturado não corresponde às sequências individuais publicadas.")
+        players = value.get("players")
+        if not isinstance(players, list) or len(players) != cls.PLAYERS_PER_LOBBY:
+            raise RuntimeError("Snapshot estruturado não contém exatamente oito jogadores.")
+        expected_slots = {"board": 28, "bench": 9, "shop": 5}
+        for player_id, player in enumerate(players):
+            if not isinstance(player, dict) or player.get("player_id") != player_id:
+                raise RuntimeError(f"Registro estruturado desalinhado para jogador {player_id}.")
+            for field, expected_count in expected_slots.items():
+                units = player.get(field)
+                if not isinstance(units, list) or len(units) != expected_count:
+                    raise RuntimeError(f"Snapshot do jogador {player_id} possui cardinalidade inválida em {field}.")
+                for slot, unit in enumerate(units):
+                    if not isinstance(unit, dict) or not isinstance(unit.get("occupied"), bool):
+                        raise RuntimeError(f"Registro de unidade inválido em {field}[{slot}], jogador {player_id}.")
+                    if unit["occupied"]:
+                        if not isinstance(unit.get("champion_id"), str) or not unit["champion_id"]:
+                            raise RuntimeError("Unidade ocupada sem champion_id nativo.")
+                        if not isinstance(unit.get("uuid"), str) or not unit["uuid"]:
+                            raise RuntimeError("Unidade ocupada sem UUID nativo.")
+                        star, cost, items = unit.get("star"), unit.get("cost"), unit.get("items")
+                        if isinstance(star, bool) or not isinstance(star, int) or not 1 <= star <= 3:
+                            raise RuntimeError("Unidade ocupada com nível de estrela inválido.")
+                        if isinstance(cost, bool) or not isinstance(cost, int) or cost < 0:
+                            raise RuntimeError("Unidade ocupada com custo de catálogo inválido.")
+                        if not isinstance(items, list) or any(not isinstance(item, str) for item in items):
+                            raise RuntimeError("Lista de itens da unidade inválida.")
+            for field in ("item_components", "item_inventory", "item_component_catalog", "pending_anvil_options"):
+                values = player.get(field)
+                if not isinstance(values, list) or any(not isinstance(item, str) for item in values):
+                    raise RuntimeError(f"Campo estruturado {field} inválido para jogador {player_id}.")
+        return copy.deepcopy(value)
+
     @staticmethod
     def _copy_player_decision_sequences(values):
         if not isinstance(values, (list, tuple, np.ndarray)) or len(values) != CppTFTLobbyWrapper.PLAYERS_PER_LOBBY:
@@ -164,6 +209,9 @@ class CppTFTLobbyWrapper:
             "stage": 1,
             "snapshot_kind": "reset",
         }
+        self._last_snapshot_metadata["native_state_snapshot"] = self._copy_native_state_snapshot(
+            result.get("native_state_snapshot"), self._last_snapshot_metadata
+        )
         return np.asarray(result["observations"], dtype=np.float32)
 
     def step(self, actions, *, timer_enabled: bool = False, timer_expired: bool = False):
@@ -197,6 +245,9 @@ class CppTFTLobbyWrapper:
             "stage": int(result.get("stage", 1)),
             "snapshot_kind": "step",
         }
+        self._last_snapshot_metadata["native_state_snapshot"] = self._copy_native_state_snapshot(
+            result.get("native_state_snapshot"), self._last_snapshot_metadata
+        )
         player_info = result.get("players", [])
         self._players = [
             SimpleNamespace(
@@ -210,7 +261,7 @@ class CppTFTLobbyWrapper:
         info = {
             "players": result.get("players", []),
             "action_trace": [dict(item) for item in result.get("action_traces", [])],
-            "decision_snapshot": dict(self._last_snapshot_metadata),
+            "decision_snapshot": copy.deepcopy(self._last_snapshot_metadata),
             "round": int(result.get("round", 0)),
             "stage": int(result.get("stage", 1)),
             "finished": bool(result.get("lobby_done", False)),
@@ -270,7 +321,7 @@ class CppTFTLobbyWrapper:
         """Return non-neural metadata for the exact observation/mask snapshot."""
         if self._last_snapshot_metadata is None:
             raise RuntimeError("Execute reset() antes de solicitar snapshot metadata.")
-        return dict(self._last_snapshot_metadata)
+        return copy.deepcopy(self._last_snapshot_metadata)
 
     def get_player_liveness(self):
         """Return authoritative per-player alive flags from the latest native result."""
