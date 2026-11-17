@@ -18,7 +18,7 @@ public:
     const std::array<std::optional<UnitInstance>, kShopSlots>& offers() const noexcept;
     const std::array<std::uint64_t, kShopSlots>& offer_revisions() const noexcept;
     const UnitInstance* get_unit(std::int32_t slot) const noexcept;
-    std::optional<UnitInstance> take_unit(std::int32_t slot) noexcept;
+    std::optional<UnitInstance> take_unit(std::int32_t slot);
     void return_current_shop();
     void reset();
     bool set_offer_for_testing(std::int32_t slot, UnitInstance unit);
