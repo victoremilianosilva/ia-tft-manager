@@ -879,7 +879,7 @@ def test_unit_instance_uuid_is_preserved_across_bench_and_board_moves():
     """Physical unit identity follows the same copy as its location changes."""
     engine = TFTLobby(seed=20261118)
     try:
-        engine.reset()
+        reset_result = engine.reset()
         initial = engine.get_audit_snapshot()["players"][0]
         starter = initial["bench"][0]
         assert starter["occupied"]
@@ -896,7 +896,7 @@ def test_unit_instance_uuid_is_preserved_across_bench_and_board_moves():
         assert board_target is not None
         actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
         actions[0] = [3, 0, 0, board_target, 0, 0]
-        engine.step(actions)
+        deploy_result = engine.step(actions)
 
         deployed = engine.get_audit_snapshot()["players"][0]
         assert deployed["bench"][0]["occupied"] is False
@@ -914,12 +914,27 @@ def test_unit_instance_uuid_is_preserved_across_bench_and_board_moves():
         assert destination is not None
         actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
         actions[0] = [4, 0, 0, 0, board_target, destination]
-        engine.step(actions)
+        move_result = engine.step(actions)
 
         moved = engine.get_audit_snapshot()["players"][0]
         assert moved["board"][board_target]["occupied"] is False
         assert moved["board"][destination]["occupied"] is True
         assert moved["board"][destination]["uuid"] == unit_uuid
+
+        # Each public step resolves one preparation round. The same physical
+        # UnitInstance must remain correlated across both native transitions.
+        assert deploy_result["engine_instance_id"] == reset_result["engine_instance_id"]
+        assert move_result["engine_instance_id"] == reset_result["engine_instance_id"]
+        assert deploy_result["episode_id"] == reset_result["episode_id"]
+        assert move_result["episode_id"] == reset_result["episode_id"]
+        assert deploy_result["decision_sequence"] == reset_result["decision_sequence"] + 1
+        assert move_result["decision_sequence"] == deploy_result["decision_sequence"] + 1
+        assert deploy_result["player_decision_sequences"] == [2] * 8
+        assert move_result["player_decision_sequences"] == [3] * 8
+        assert deploy_result["native_state_snapshot"]["snapshot_sequence"] == deploy_result["decision_sequence"]
+        assert move_result["native_state_snapshot"]["snapshot_sequence"] == move_result["decision_sequence"]
+        assert deploy_result["round"] == 2
+        assert move_result["round"] == 3
     finally:
         engine.close()
 
