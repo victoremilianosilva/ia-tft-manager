@@ -68,13 +68,13 @@ class LobbyVectorEnv:
                 "chame reset() em todas as lobbies antes de continuar."
             )
 
-        try:
-            if len(actions) != self.num_envs:
-                raise ValueError(
-                    f"Recebi ações para {len(actions)} lobbies; "
-                    f"esperava {self.num_envs}."
-                )
+        if len(actions) != self.num_envs:
+            raise ValueError(
+                f"Recebi ações para {len(actions)} lobbies; "
+                f"esperava {self.num_envs}."
+            )
 
+        try:
             all_obs = []
             all_rewards = []
             all_dones = []
