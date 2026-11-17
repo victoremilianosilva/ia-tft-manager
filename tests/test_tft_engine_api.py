@@ -728,9 +728,15 @@ def test_elimination_retires_item_ownership_in_native_snapshot():
             row["catalog_id"]: row["count"]
             for row in player["retired_item_component_counts"]
         }
-        assert retired_components[component_id] == initial_component_count + 1
+        # The match may award additional components before the first PvP elimination.
+        # The explicitly injected copy must still be present in the terminal aggregate.
+        assert retired_components[component_id] >= initial_component_count + 1
         assert all(count > 0 for count in retired_components.values())
+        assert player["item_inventory"] == []
+        assert player["item_inventory_counts"] == []
+        assert player["equipped_items"] == []
         assert player["pending_anvil"] is False
+        assert player["pending_anvil_options"] == []
         assert all(not unit["occupied"] for unit in player["board"])
         assert all(not unit["occupied"] for unit in player["bench"])
         assert all(
