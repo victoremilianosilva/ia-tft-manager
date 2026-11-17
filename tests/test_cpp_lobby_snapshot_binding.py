@@ -147,6 +147,8 @@ def test_reset_masks_are_taken_from_same_native_snapshot(monkeypatch):
         assert len(metadata["native_state_snapshot"]["players"][0]["board"]) == 28
         assert len(metadata["native_state_snapshot"]["players"][0]["bench"]) == 9
         assert len(metadata["native_state_snapshot"]["players"][0]["shop"]) == 5
+        metadata["native_state_snapshot"]["players"][0]["board"].clear()
+        assert len(lobby.get_snapshot_metadata()["native_state_snapshot"]["players"][0]["board"]) == 28
         assert lobby._engine.mask_reads == 0
     finally:
         lobby.close()
@@ -412,3 +414,37 @@ def test_vector_reset_stays_poisoned_when_observation_batch_cannot_be_stacked():
 
     result = vector.step([np.zeros((8, 6)), np.zeros((8, 6))])
     assert result[0].shape == (2, 8, 3)
+
+
+def test_wrapper_rejects_structured_snapshot_with_mismatched_sequence():
+    native = FakeNativeLobby()
+    native.episode_id = 1
+    native.decision_sequence = 2
+    native.player_decision_sequences = [2] * 8
+    snapshot = native._native_state_snapshot()
+    snapshot["snapshot_sequence"] = 1
+    identity = {
+        "engine_instance_id": f"fake-engine-{id(native)}",
+        "episode_id": 1,
+        "decision_sequence": 2,
+        "player_decision_sequences": [2] * 8,
+    }
+    with pytest.raises(RuntimeError, match="sequência publicada"):
+        cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
+
+
+def test_wrapper_rejects_structured_snapshot_with_wrong_slot_cardinality():
+    native = FakeNativeLobby()
+    native.episode_id = 1
+    native.decision_sequence = 1
+    native.player_decision_sequences = [1] * 8
+    snapshot = native._native_state_snapshot()
+    snapshot["players"][0]["board"].pop()
+    identity = {
+        "engine_instance_id": f"fake-engine-{id(native)}",
+        "episode_id": 1,
+        "decision_sequence": 1,
+        "player_decision_sequences": [1] * 8,
+    }
+    with pytest.raises(RuntimeError, match="cardinalidade inválida em board"):
+        cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
