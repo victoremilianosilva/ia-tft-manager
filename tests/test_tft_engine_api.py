@@ -655,6 +655,10 @@ def test_engine_instance_identity_is_distinct_from_seed_and_episode():
             assert structured["player_decision_sequences"] == reset["player_decision_sequences"]
             assert len(structured["players"]) == 8
             assert len(structured["players"][0]["board"]) == 28
+            starter = structured["players"][0]["bench"][0]
+            assert starter["occupied"]
+            assert starter["champion_id"]
+            assert starter["uuid"]
 
         first_step = first.step([[6, 0, 0, 0, 0, 0] for _ in range(8)])
         assert first_step["engine_instance_id"] == first_id
@@ -662,6 +666,7 @@ def test_engine_instance_identity_is_distinct_from_seed_and_episode():
         assert first_step["decision_sequence"] == 2
         assert first_step["player_decision_sequences"] == [2] * 8
         assert first_step["native_state_snapshot"]["snapshot_sequence"] == first_step["decision_sequence"]
+        assert first_step["native_state_snapshot"]["players"][0]["bench"][0]["uuid"] == starter["uuid"]
 
         next_reset = first.reset()
         assert next_reset["engine_instance_id"] == first_id

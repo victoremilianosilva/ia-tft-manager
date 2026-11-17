@@ -134,24 +134,50 @@ class CppTFTLobbyWrapper:
     def _copy_native_state_snapshot(cls, value, expected_identity):
         if not isinstance(value, dict):
             raise RuntimeError("Snapshot nativo estruturado ausente ou inválido.")
-        if value.get("contract_id") != "tft.native-state-snapshot" or value.get("contract_version") != 1:
+        version = value.get("contract_version")
+        if (
+            value.get("contract_id") != "tft.native-state-snapshot"
+            or isinstance(version, bool)
+            or not isinstance(version, int)
+            or version != 1
+        ):
             raise RuntimeError("Versão/identidade do contrato de snapshot estruturado incompatível.")
         if value.get("source_namespace") != "tft.engine.observation-snapshot":
             raise RuntimeError("Namespace de sequência do snapshot estruturado incompatível.")
+        if value.get("producer") != "TFTEngine::get_audit_snapshot":
+            raise RuntimeError("Produtor do snapshot estruturado incompatível.")
         if value.get("engine_instance_id") != expected_identity["engine_instance_id"]:
             raise RuntimeError("Snapshot estruturado pertence a outra instância da Engine.")
-        if value.get("episode_id") != expected_identity["episode_id"]:
+        episode_id = value.get("episode_id")
+        if isinstance(episode_id, bool) or not isinstance(episode_id, int) or episode_id < 0:
+            raise RuntimeError("Snapshot estruturado contém episode_id inválido.")
+        if episode_id != expected_identity["episode_id"]:
             raise RuntimeError("Snapshot estruturado pertence a outro episódio.")
-        if value.get("snapshot_sequence") != expected_identity["decision_sequence"]:
+        snapshot_sequence = value.get("snapshot_sequence")
+        if isinstance(snapshot_sequence, bool) or not isinstance(snapshot_sequence, int) or snapshot_sequence < 0:
+            raise RuntimeError("Snapshot estruturado contém snapshot_sequence inválida.")
+        if snapshot_sequence != expected_identity["decision_sequence"]:
             raise RuntimeError("Snapshot estruturado não corresponde à sequência publicada.")
-        if value.get("player_decision_sequences") != expected_identity["player_decision_sequences"]:
+        player_sequences = value.get("player_decision_sequences")
+        if (
+            not isinstance(player_sequences, list)
+            or len(player_sequences) != cls.PLAYERS_PER_LOBBY
+            or any(isinstance(seq, bool) or not isinstance(seq, int) or seq < 0 for seq in player_sequences)
+        ):
+            raise RuntimeError("Snapshot estruturado contém sequências individuais inválidas.")
+        if player_sequences != expected_identity["player_decision_sequences"]:
             raise RuntimeError("Snapshot estruturado não corresponde às sequências individuais publicadas.")
         players = value.get("players")
         if not isinstance(players, list) or len(players) != cls.PLAYERS_PER_LOBBY:
             raise RuntimeError("Snapshot estruturado não contém exatamente oito jogadores.")
         expected_slots = {"board": 28, "bench": 9, "shop": 5}
         for player_id, player in enumerate(players):
-            if not isinstance(player, dict) or player.get("player_id") != player_id:
+            actual_player_id = player.get("player_id") if isinstance(player, dict) else None
+            if (
+                isinstance(actual_player_id, bool)
+                or not isinstance(actual_player_id, int)
+                or actual_player_id != player_id
+            ):
                 raise RuntimeError(f"Registro estruturado desalinhado para jogador {player_id}.")
             for field, expected_count in expected_slots.items():
                 units = player.get(field)
