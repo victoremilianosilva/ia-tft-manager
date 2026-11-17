@@ -15,12 +15,22 @@ class LobbyVectorEnv:
     def __init__(self, env_fns):
         self.envs = [make_env() for make_env in env_fns]
         self.num_envs = len(self.envs)
+        self._requires_full_reset = False
 
         if self.num_envs == 0:
             raise ValueError("É necessário criar pelo menos uma lobby.")
 
     def reset(self):
-        observations = [env.reset() for env in self.envs]
+        observations = []
+        try:
+            for env in self.envs:
+                observations.append(env.reset())
+        except Exception:
+            # A partial reset cannot restore a known vector boundary.
+            self._requires_full_reset = True
+            raise
+
+        self._requires_full_reset = False
         return np.stack(observations).astype(np.float32, copy=False)
 
     def env_method(self, method_name, *args, **kwargs):
@@ -52,84 +62,100 @@ class LobbyVectorEnv:
         Em auto-reset terminal, info mantém separados o snapshot que
         produziu reward/done e o snapshot da nova observação retornada.
         """
-        if len(actions) != self.num_envs:
-            raise ValueError(
-                f"Recebi ações para {len(actions)} lobbies; "
-                f"esperava {self.num_envs}."
+        if self._requires_full_reset:
+            raise RuntimeError(
+                "LobbyVectorEnv está em estado inconsistente após falha parcial; "
+                "chame reset() em todas as lobbies antes de continuar."
             )
 
-        all_obs = []
-        all_rewards = []
-        all_dones = []
-        all_infos = []
-
-        for env, lobby_actions in zip(self.envs, actions):
-            obs, rewards, lobby_done, info = env.step(lobby_actions)
-
-            rewards = np.asarray(rewards, dtype=np.float32)
-            if rewards.shape != (self.PLAYERS_PER_LOBBY,):
+        try:
+            if len(actions) != self.num_envs:
                 raise ValueError(
-                    f"Shape de rewards inválido: {rewards.shape}"
+                    f"Recebi ações para {len(actions)} lobbies; "
+                    f"esperava {self.num_envs}."
                 )
 
-            dones = np.asarray(
-                [not player.alive for player in env.players],
-                dtype=np.bool_,
-            )
-            if lobby_done:
-                dones[:] = True
+            all_obs = []
+            all_rewards = []
+            all_dones = []
+            all_infos = []
 
-            info = dict(info)
-            info["lobby_done"] = bool(lobby_done)
+            for env, lobby_actions in zip(self.envs, actions):
+                obs, rewards, lobby_done, info = env.step(lobby_actions)
 
-            # Este é o snapshot produzido pelo step: rewards/dones pertencem
-            # a esta transição, mesmo quando a lobby termina.
-            step_result_snapshot = info.get("decision_snapshot")
-            if step_result_snapshot is not None:
-                step_result_snapshot = dict(step_result_snapshot)
-            info["step_result_snapshot"] = step_result_snapshot
+                rewards = np.asarray(rewards, dtype=np.float32)
+                if rewards.shape != (self.PLAYERS_PER_LOBBY,):
+                    raise ValueError(
+                        f"Shape de rewards inválido: {rewards.shape}"
+                    )
 
-            if lobby_done:
-                get_public_state = getattr(env, "get_public_state", None)
-                if callable(get_public_state):
-                    info["final_state"] = get_public_state()
+                dones = np.asarray(
+                    [not player.alive for player in env.players],
+                    dtype=np.bool_,
+                )
+                if lobby_done:
+                    dones[:] = True
+
+                info = dict(info)
+                info["lobby_done"] = bool(lobby_done)
+
+                # Este é o snapshot produzido pelo step: rewards/dones pertencem
+                # a esta transição, mesmo quando a lobby termina.
+                step_result_snapshot = info.get("decision_snapshot")
+                if step_result_snapshot is not None:
+                    step_result_snapshot = dict(step_result_snapshot)
+                info["step_result_snapshot"] = step_result_snapshot
+
+                if lobby_done:
+                    get_public_state = getattr(env, "get_public_state", None)
+                    if callable(get_public_state):
+                        info["final_state"] = get_public_state()
+                    else:
+                        info["final_state"] = {
+                            "players": info.get("players", []),
+                            "round": info.get("round"),
+                            "stage": info.get("stage"),
+                            "ranking": info.get("ranking", []),
+                            "winner_id": info.get("winner_id"),
+                        }
+
+                obs = np.asarray(obs, dtype=np.float32)
+
+                if lobby_done:
+                    # O reset muda a identidade/episódio da observação retornada.
+                    # Nunca sobrescrever step_result_snapshot com essa identidade.
+                    obs = env.reset()
+                    getter = getattr(env, "get_snapshot_metadata", None)
+                    next_snapshot = dict(getter()) if callable(getter) else None
                 else:
-                    info["final_state"] = {
-                        "players": info.get("players", []),
-                        "round": info.get("round"),
-                        "stage": info.get("stage"),
-                        "ranking": info.get("ranking", []),
-                        "winner_id": info.get("winner_id"),
-                    }
+                    next_snapshot = (
+                        dict(step_result_snapshot)
+                        if step_result_snapshot is not None
+                        else None
+                    )
 
-            obs = np.asarray(obs, dtype=np.float32)
+                info["next_snapshot"] = next_snapshot
 
-            if lobby_done:
-                # O reset muda a identidade/episódio da observação retornada.
-                # Nunca sobrescrever step_result_snapshot com essa identidade.
-                obs = env.reset()
-                getter = getattr(env, "get_snapshot_metadata", None)
-                next_snapshot = dict(getter()) if callable(getter) else None
-            else:
-                next_snapshot = (
-                    dict(step_result_snapshot)
-                    if step_result_snapshot is not None
-                    else None
-                )
+                all_obs.append(obs)
+                all_rewards.append(rewards)
+                all_dones.append(dones)
+                all_infos.append(info)
 
-            info["next_snapshot"] = next_snapshot
+            return (
+                np.stack(all_obs).astype(np.float32, copy=False),
+                np.stack(all_rewards).astype(np.float32, copy=False),
+                np.stack(all_dones).astype(np.bool_, copy=False),
+                all_infos,
+            )
 
-            all_obs.append(obs)
-            all_rewards.append(rewards)
-            all_dones.append(dones)
-            all_infos.append(info)
-
-        return (
-            np.stack(all_obs).astype(np.float32, copy=False),
-            np.stack(all_rewards).astype(np.float32, copy=False),
-            np.stack(all_dones).astype(np.bool_, copy=False),
-            all_infos,
-        )
+        except Exception as exc:
+            # The failing env.step may itself have advanced before raising.
+            # Fail closed: no further vector step until every lobby is reset.
+            self._requires_full_reset = True
+            raise RuntimeError(
+                "LobbyVectorEnv interrompido durante step; o estado das lobbies "
+                "pode estar dessincronizado. Chame reset() completo antes de continuar."
+            ) from exc
 
     def close(self):
         for env in self.envs:
