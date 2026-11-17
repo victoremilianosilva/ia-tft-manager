@@ -461,3 +461,84 @@ def test_rollout_rejects_action_trace_owned_by_another_player():
     }
     with pytest.raises(ValueError, match="player_id não corresponde"):
         _add_rollout_with_action_trace_for_validation(trace)
+
+
+
+def test_integrated_vector_to_rollout_preserves_terminal_transition_correlation():
+    env = LobbyVectorEnv([FakeIdentityEnv])
+    buffer = RolloutBuffer(
+        num_steps=1,
+        num_envs=8,
+        obs_dim=3,
+        action_dim=6,
+        device=torch.device("cpu"),
+    )
+    try:
+        observations = env.reset()
+        decision_metadata = Trainer._expand_lobby_snapshot_metadata(
+            env.get_snapshot_metadata(), 8, "snapshot da decisão PPO"
+        )
+
+        # Build the complete typed mask bundle consumed by the policy. The
+        # test uses PASS as the selected legal action for all eight players.
+        masks = {
+            name: torch.zeros((8, *shape), dtype=torch.bool)
+            for name, shape in Trainer.MASK_SHAPES.items()
+        }
+        masks["type_mask"][:, 6] = True
+        for metadata, mask_hash in zip(
+            decision_metadata, Trainer._hash_mask_rows(masks)
+        ):
+            metadata["mask_snapshot_hash"] = mask_hash
+            metadata["mask_snapshot_hash_algorithm"] = "tft-action-mask-snapshot-v1"
+
+        actions = torch.tensor([[6, 0, 0, 0, 0, 0]] * 8, dtype=torch.long)
+        next_observations, rewards, dones, infos = env.step(
+            [[{"type": 6} for _ in range(8)]]
+        )
+
+        result_metadata = Trainer._expand_lobby_snapshot_metadata(
+            [infos[0]["step_result_snapshot"]], 8, "snapshot de resultado"
+        )
+        next_metadata = Trainer._expand_lobby_snapshot_metadata(
+            [infos[0]["next_snapshot"]], 8, "próxima observação"
+        )
+        for player_id, trace in enumerate(infos[0]["action_trace"]):
+            assert trace["player_id"] == player_id
+            result_metadata[player_id]["action_trace"] = dict(trace)
+
+        buffer.add(
+            obs=observations.reshape(8, 3),
+            actions=actions,
+            logprobs=torch.zeros(8),
+            rewards=torch.as_tensor(rewards.reshape(8)),
+            dones=torch.as_tensor(dones.reshape(8), dtype=torch.float32),
+            values=torch.zeros(8),
+            masks_dict=masks,
+            snapshot_metadata=decision_metadata,
+            result_snapshot_metadata=result_metadata,
+            next_snapshot_metadata=next_metadata,
+        )
+
+        stored_decisions = buffer.snapshot_metadata[0]
+        stored_results = buffer.result_snapshot_metadata[0]
+        stored_next = buffer.next_snapshot_metadata[0]
+        assert len(stored_decisions) == len(stored_results) == len(stored_next) == 8
+        for player_id in range(8):
+            assert stored_decisions[player_id]["player_id"] == player_id
+            assert stored_decisions[player_id]["episode_id"] == 1
+            assert stored_decisions[player_id]["decision_sequence"] == 1
+            assert stored_decisions[player_id]["mask_snapshot_hash"] == Trainer._hash_mask_rows(masks)[player_id]
+            assert stored_results[player_id]["player_id"] == player_id
+            assert stored_results[player_id]["episode_id"] == 1
+            assert stored_results[player_id]["decision_sequence"] == 2
+            assert stored_results[player_id]["action_trace"]["requested_action"] == [6, 0, 0, 0, 0, 0]
+            assert stored_next[player_id]["episode_id"] == 2
+            assert stored_next[player_id]["decision_sequence"] == 3
+            assert stored_next[player_id]["snapshot_kind"] == "reset"
+
+        assert next_observations.shape == (1, 8, 3)
+        assert np.all(rewards == 0.75)
+        assert np.all(dones)
+    finally:
+        env.close()
