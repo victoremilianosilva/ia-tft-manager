@@ -11,7 +11,7 @@
 
 The structured entity work is spread across producer audits, field proofs, lifecycle notes, identity/correlation audits and a machine-readable coverage CSV. The CSV already records 31 field-family rows across 17 entity kinds, but it is easy to mistake broad coverage for acceptance or to overlook that different rows within one entity kind can have different availability statuses.
 
-This note creates one explicit closure view without upgrading any field's status.
+This note creates one explicit closure view without upgrading any field's status. The bounded v2 delivery adds actual per-unit catalog trait membership, explicit 4x7 rectangular board geometry, and collision-checked episode-scoped UnitInstance UUIDs; it does not close the remaining lifecycle, strategic, item-identity or replay gaps.
 
 ## 2. Coverage summary
 
@@ -25,7 +25,7 @@ This note creates one explicit closure view without upgrading any field's status
 
 | Entity kind | Current evidence status | Principal source-backed evidence | Remaining acceptance gap |
 |---|---|---|---|
-| unit_instance | Native UUID exists; canonical cross-episode identity **unverified** | UnitInstanceFactory lifecycle, production transfer map, copy/test-hook audit, Engine reset/instance-scope audit, Python/C++ call-site inventories | Engine-instance + episode scope, collision policy, implicit copy/assignment/destruction and no-duplicate-active-owner proof, elimination item terminal policy/cleanup, typed decision correlation |
+| unit_instance | Native UUID observed within explicit Engine/episode/player scope; active duplicate UUIDs rejected | UnitInstanceFactory, v2 native snapshot, wrapper uniqueness validator, #461 movement test | Full sale/merge/elimination/pool-return lifecycle replay and real GEP match identity |
 | champion_catalog_entry | Native observed | ChampionCatalog and catalog-backed unit/trait audits | Stable catalog fingerprint and ordering contract in the entity envelope |
 | board_slot | Native slot and occupancy observed | Structured entity producer audit; unit/item field proof; positioning audit | Canonical hex geometry/orientation/adjacency, exact source sequence, structured PPO entity delivery |
 | bench_slot | Native slot and occupancy observed | Structured entity producer audit; unit/item field proof | Exact source sequence and structured PPO entity delivery |
@@ -35,8 +35,8 @@ This note creates one explicit closure view without upgrading any field's status
 | item_catalog_entry | Native catalog definition observed | Item catalog/schema/generator and item-fit field proof | Catalog fingerprint/order and typed catalog entity contract |
 | component_inventory | Catalog IDs/multiplicity observed; physical identity not produced | PvE component inventory lifecycle and item inventory-slot/action audits | Physical component identity, acquisition sequence, catalog-order fingerprint |
 | anvil_option | No gameplay producer in audited path; option identity not produced | Anvil gameplay producer-boundary audit; item action policy/native binding; item-fit/anvil proof | Actual gameplay grant producer, stable option IDs, complete option snapshot and sequence |
-| trait | Catalog membership observed; counts/active/completed scopes derived; focus_weights new producer absent | Trait/position producer audit; derived-context exact source proof | Preserve board vs board+bench vs item-granted scopes; catalog/milestone formula versions |
-| position | Native slot position observed; Shadow proposal diagnostic-only | Positioning producer audit; item-fit/anvil/role proof; derived-context proof | Canonical hex geometry and physical UUID references; lineup-to-executor replay proof |
+| trait | Static per-unit catalog membership delivered in v2 snapshot; active/completed/focus scopes remain separately derived or unavailable | ChampionDefinition::traits → get_audit_snapshot → pybind → wrapper/rollout metadata | Item-granted trait membership, stable trait catalog fingerprint/order, milestone and active-scope formula versions |
+| position | Native 4x7 rectangular slot geometry delivered; Shadow proposal remains diagnostic-only | PositioningEngine 4x7 mapping → v2 snapshot geometry envelope | Canonical hex coordinates, adjacency/orientation/enemy-facing and lineup-to-executor replay proof |
 | unit_assessment | Shadow-only assessment; schema-required physical reference not produced | Strategic evidence exact-source and owner-snapshot field proofs | UUID-backed identity, exact slot, formula/version/uncertainty and explicit collection status; no PPO delivery |
 | anchor_candidate | Shadow candidate/derived champion references; stable candidate identity absent | Strategic evidence and owner-snapshot field proofs; composition/anchor contracts | Candidate ID/revision/set identity/completeness; distinguish champion references from physical instances |
 | action_opportunity_candidate | Not produced | Action-opportunity/temporal field proof; Strategic Action Candidate Contract | Authoritative non-empty producer, exact action parameters, costs/benefits/horizon and truthful availability state |

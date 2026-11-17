@@ -647,7 +647,7 @@ def test_engine_instance_identity_is_distinct_from_seed_and_episode():
         for reset in (first_reset, second_reset):
             structured = reset["native_state_snapshot"]
             assert structured["contract_id"] == "tft.native-state-snapshot"
-            assert structured["contract_version"] == 1
+            assert structured["contract_version"] == 2
             assert structured["source_namespace"] == "tft.engine.observation-snapshot"
             assert structured["engine_instance_id"] == reset["engine_instance_id"]
             assert structured["episode_id"] == reset["episode_id"]
@@ -743,6 +743,38 @@ def test_elimination_retires_item_ownership_in_native_snapshot():
             not result["native_state_snapshot"]["players"][other]["item_ownership_retired"]
             for other in range(1, 8)
         )
+    finally:
+        engine.close()
+
+
+def test_native_snapshot_v2_exposes_unit_traits_and_board_geometry():
+    engine = TFTLobby(seed=20261119)
+    try:
+        reset = engine.reset()
+        snapshot = reset["native_state_snapshot"]
+        assert snapshot["contract_id"] == "tft.native-state-snapshot"
+        assert snapshot["contract_version"] == 2
+        assert snapshot["board_geometry_id"] == "tft.board-grid.rectangular-4x7"
+        assert snapshot["board_geometry_version"] == 1
+        assert snapshot["board_rows"] == 4
+        assert snapshot["board_columns"] == 7
+        assert snapshot["board_position_formula"] == "row=slot/7;column=slot%7"
+
+        player = snapshot["players"][0]
+        starter = next(unit for unit in player["bench"] if unit["occupied"])
+        assert isinstance(starter["trait_names"], list)
+        assert all(isinstance(trait, str) and trait for trait in starter["trait_names"])
+        assert len(starter["trait_names"]) == len(set(starter["trait_names"]))
+
+        active_uuids = [
+            unit["uuid"]
+            for owner in snapshot["players"]
+            for location in ("board", "bench", "shop")
+            for unit in owner[location]
+            if unit["occupied"]
+        ]
+        assert active_uuids
+        assert len(active_uuids) == len(set(active_uuids))
     finally:
         engine.close()
 

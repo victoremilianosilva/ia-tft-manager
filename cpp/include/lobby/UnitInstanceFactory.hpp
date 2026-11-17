@@ -5,6 +5,8 @@
 
 #include <cstdint>
 #include <random>
+#include <string>
+#include <unordered_set>
 
 namespace tft {
 
@@ -24,6 +26,9 @@ public:
 private:
     const ChampionCatalog& catalog_;
     std::mt19937_64 rng_;
+    // UUIDs are unique within one factory lifetime (one Engine episode).
+    // Cross-episode and cross-Engine scope comes from the snapshot envelope.
+    std::unordered_set<std::string> issued_uuids_;
 
     std::string generate_uuid();
 };

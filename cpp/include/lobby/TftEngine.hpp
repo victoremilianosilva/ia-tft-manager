@@ -208,6 +208,9 @@ struct AuditUnitSnapshot {
     std::int32_t star{0};
     std::int32_t cost{0};
     std::vector<std::string> item_ids;
+    // Exact static catalog membership from ChampionDefinition::traits.
+    // This excludes item-granted traits and active trait counts.
+    std::vector<std::string> trait_names;
 };
 
 struct AuditItemCount { std::string catalog_id; std::uint32_t count{0}; };
@@ -300,7 +303,13 @@ struct AuditSharedPoolSnapshot {
 struct AuditSnapshot {
     AuditSharedPoolSnapshot shared_pool;
     std::string contract_id{"tft.native-state-snapshot"};
-    std::uint32_t contract_version{1};
+    std::uint32_t contract_version{2};
+    // Current native board-slot geometry: rectangular 4x7, not canonical hex.
+    std::string board_geometry_id{"tft.board-grid.rectangular-4x7"};
+    std::uint32_t board_geometry_version{1};
+    std::uint32_t board_rows{4};
+    std::uint32_t board_columns{7};
+    std::string board_position_formula{"row=slot/7;column=slot%7"};
     std::string source_namespace{"tft.engine.observation-snapshot"};
     std::string producer{"TFTEngine::get_audit_snapshot"};
     std::string engine_instance_id;

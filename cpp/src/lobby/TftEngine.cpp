@@ -6788,6 +6788,7 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
             unit->champion_internal_id
         );
         result.cost = definition ? definition->cost : 0;
+        if (definition) result.trait_names = definition->traits;
         result.item_ids.reserve(unit->items.size());
         for (const auto& item : unit->items) result.item_ids.push_back(item.api_name);
         return result;

@@ -5,6 +5,8 @@
 #include <cassert>
 #include <iostream>
 #include <stdexcept>
+#include <string>
+#include <unordered_set>
 
 int main(int argc, char** argv) {
     assert(argc == 2);
@@ -25,6 +27,14 @@ int main(int argc, char** argv) {
     assert(first.is_valid());
     assert(second.is_valid());
     assert(first.uuid != second.uuid);
+
+    // UUID issuance remains unique for the full lifetime of this episode factory.
+    std::unordered_set<std::string> issued{first.uuid, second.uuid};
+    for (int i = 0; i < 128; ++i) {
+        const auto unit = factory.create(0);
+        assert(!unit.uuid.empty());
+        assert(issued.insert(unit.uuid).second);
+    }
 
     // Novas unidades começam com uma estrela.
     assert(first.star == 1);
