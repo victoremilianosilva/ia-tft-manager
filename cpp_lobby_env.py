@@ -272,6 +272,42 @@ class CppTFTLobbyWrapper:
             if not isinstance(equipped, list): raise RuntimeError("Snapshot estruturado sem equipped_items.")
             for row in equipped:
                 if (not isinstance(row, dict) or not isinstance(row.get("unit_uuid"), str) or not row["unit_uuid"] or row.get("location") not in ("board", "bench") or isinstance(row.get("slot"), bool) or not isinstance(row.get("slot"), int) or not 0 <= row["slot"] < (28 if row["location"] == "board" else 9) or not isinstance(row.get("catalog_id"), str) or not row["catalog_id"]): raise RuntimeError("Snapshot estruturado contém equipped_items inválido.")
+            retired_flag = player.get("item_ownership_retired")
+            if not isinstance(retired_flag, bool):
+                raise RuntimeError("Snapshot estruturado contém item_ownership_retired inválido.")
+            retired_count_fields = ("retired_item_component_counts", "retired_item_inventory_counts")
+            for field in retired_count_fields:
+                rows = player.get(field)
+                if not isinstance(rows, list):
+                    raise RuntimeError(f"Snapshot estruturado sem {field}.")
+                seen = set()
+                for row in rows:
+                    if (not isinstance(row, dict) or not isinstance(row.get("catalog_id"), str) or not row["catalog_id"] or row["catalog_id"] in seen or isinstance(row.get("count"), bool) or not isinstance(row.get("count"), int) or row["count"] <= 0):
+                        raise RuntimeError(f"Snapshot estruturado contém {field} inválido.")
+                    seen.add(row["catalog_id"])
+            retired_equipped = player.get("retired_equipped_item_counts")
+            if not isinstance(retired_equipped, list):
+                raise RuntimeError("Snapshot estruturado sem retired_equipped_item_counts.")
+            retired_equipped_seen = set()
+            for row in retired_equipped:
+                key = (row.get("unit_uuid"), row.get("catalog_id")) if isinstance(row, dict) else None
+                if (not isinstance(row, dict) or not isinstance(row.get("unit_uuid"), str) or not row["unit_uuid"] or not isinstance(row.get("catalog_id"), str) or not row["catalog_id"] or key in retired_equipped_seen or isinstance(row.get("count"), bool) or not isinstance(row.get("count"), int) or row["count"] <= 0):
+                    raise RuntimeError("Snapshot estruturado contém retired_equipped_item_counts inválido.")
+                retired_equipped_seen.add(key)
+            retired_anvils = player.get("retired_pending_anvils")
+            if not isinstance(retired_anvils, list):
+                raise RuntimeError("Snapshot estruturado sem retired_pending_anvils.")
+            retired_anvil_sequences = set()
+            for row in retired_anvils:
+                if (not isinstance(row, dict) or isinstance(row.get("sequence"), bool) or not isinstance(row.get("sequence"), int) or row["sequence"] <= 0 or row["sequence"] in retired_anvil_sequences or isinstance(row.get("kind"), bool) or row.get("kind") not in (0, 1) or not isinstance(row.get("options"), list) or not row["options"] or any(not isinstance(option, str) or not option for option in row["options"])):
+                    raise RuntimeError("Snapshot estruturado contém retired_pending_anvils inválido.")
+                retired_anvil_sequences.add(row["sequence"])
+            retired_has_evidence = any(player[field] for field in retired_count_fields) or bool(retired_equipped) or bool(retired_anvils)
+            active_has_ownership = bool(player["item_components"] or player["item_inventory"] or player["item_component_counts"] or player["item_inventory_counts"] or equipped or pending_flag or pending_sequence or player["pending_anvil_options"])
+            if retired_flag and active_has_ownership:
+                raise RuntimeError("Ownership ativo presente após aposentadoria terminal dos itens.")
+            if not retired_flag and retired_has_evidence:
+                raise RuntimeError("Evidência de aposentadoria presente sem estado terminal.")
         return copy.deepcopy(value)
 
     @staticmethod

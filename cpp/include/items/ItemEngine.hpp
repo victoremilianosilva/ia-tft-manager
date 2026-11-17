@@ -87,6 +87,14 @@ struct ItemAnvil {
     std::vector<std::string> options;
     std::uint64_t sequence{0};
 };
+struct RetiredEquippedItem { std::string unit_uuid; std::string catalog_id; };
+struct ItemRetirementSnapshot {
+    bool retired{false};
+    std::vector<std::string> components;
+    std::vector<std::string> inventory;
+    std::vector<RetiredEquippedItem> equipped;
+    std::vector<ItemAnvil> pending_anvils;
+};
 
 struct ItemMetrics {
     std::uint64_t components_collected{0};
@@ -137,8 +145,32 @@ public:
         inventory_.clear();
         equipped_.clear();
         anvils_.clear();
+        retirement_ = {};
         metrics_ = {};
     }
+
+    bool retire_all_owned_state() {
+        if (retirement_.retired) return false;
+        retirement_.retired = true;
+        retirement_.components = components_;
+        retirement_.inventory = inventory_;
+        for (const auto& [unit_uuid, item_ids] : equipped_)
+            for (const auto& item_id : item_ids)
+                retirement_.equipped.push_back({unit_uuid, item_id});
+        std::sort(retirement_.equipped.begin(), retirement_.equipped.end(),
+            [](const RetiredEquippedItem& lhs, const RetiredEquippedItem& rhs) {
+                if (lhs.unit_uuid != rhs.unit_uuid) return lhs.unit_uuid < rhs.unit_uuid;
+                return lhs.catalog_id < rhs.catalog_id;
+            });
+        retirement_.pending_anvils = anvils_;
+        components_.clear();
+        inventory_.clear();
+        equipped_.clear();
+        anvils_.clear();
+        return true;
+    }
+    [[nodiscard]] bool ownership_retired() const noexcept { return retirement_.retired; }
+    [[nodiscard]] const ItemRetirementSnapshot& retirement_snapshot() const noexcept { return retirement_; }
 
     bool grant_component_anvil(std::vector<std::string> options) {
         return grant_anvil(ItemAnvilKind::COMPONENT, std::move(options));
@@ -159,7 +191,7 @@ public:
     // The selection is atomic: exactly one offered ID is added to inventory,
     // and the active anvil is consumed only after the grant succeeds.
     bool choose_anvil_option(std::size_t option_index) {
-        if (anvils_.empty() || option_index >= anvils_.front().options.size()) {
+        if (retirement_.retired || anvils_.empty() || option_index >= anvils_.front().options.size()) {
             ++metrics_.invalid_actions;
             return false;
         }
@@ -177,7 +209,7 @@ public:
     }
 
     bool add_component(const std::string& component_id) {
-        if (component_id.empty() || !component_ids_.contains(component_id)) {
+        if (retirement_.retired || component_id.empty() || !component_ids_.contains(component_id)) {
             ++metrics_.invalid_actions;
             return false;
         }
@@ -188,6 +220,7 @@ public:
 
     // Called by game loot/armory events, never by the policy action decoder.
     bool add_completed_item(const std::string& item_id) {
+        if (retirement_.retired) { ++metrics_.invalid_actions; return false; }
         const auto* definition = find(item_id);
         if (!definition || !definition->unit_equipable) {
             ++metrics_.invalid_actions;
@@ -199,6 +232,7 @@ public:
 
     [[nodiscard]] bool can_craft(const std::string& first,
                                 const std::string& second) const {
+        if (retirement_.retired) return false;
         const auto recipe = craftable_item(first, second);
         const auto* definition = recipe ? find(*recipe) : nullptr;
         if (!definition || !definition->unit_equipable) return false;
@@ -212,6 +246,7 @@ public:
 
     [[nodiscard]] bool can_equip(const std::string& item_id,
                                 const std::string& unit_uuid) const {
+        if (retirement_.retired) return false;
         const auto* definition = find(item_id);
         return definition && definition->unit_equipable &&
             !unit_uuid.empty() && has_item(item_id) &&
@@ -220,7 +255,7 @@ public:
 
     // Returns the crafted item id; neither component is consumed on failure.
     std::optional<std::string> craft(const std::string& first, const std::string& second) {
-        if (first.empty() || second.empty()) {
+        if (retirement_.retired || first.empty() || second.empty()) {
             ++metrics_.invalid_actions;
             return std::nullopt;
         }
@@ -263,6 +298,7 @@ public:
     }
 
     bool equip(const std::string& item_id, const UnitProfile& target) {
+        if (retirement_.retired) { ++metrics_.invalid_actions; return false; }
         const auto target_items = equipped_.find(target.uuid);
         const std::size_t target_count = target_items == equipped_.end()
             ? 0U : target_items->second.size();
@@ -288,7 +324,7 @@ public:
     // preserves every item copy and removes the unit UUID as an equipment owner.
     // It is used by sale/merge lifecycle transitions, not by policy actions.
     bool return_equipped_to_inventory(const std::string& unit_uuid) {
-        if (unit_uuid.empty()) return false;
+        if (retirement_.retired || unit_uuid.empty()) return false;
         const auto it = equipped_.find(unit_uuid);
         if (it == equipped_.end()) return true;
         inventory_.insert(inventory_.end(), it->second.begin(), it->second.end());
@@ -301,7 +337,7 @@ public:
     // shared inventory instead of being silently lost or blocking the purchase.
     bool transfer_equipped_on_merge(const std::string& from_uuid,
                                     const std::string& to_uuid) {
-        if (from_uuid.empty() || to_uuid.empty() || from_uuid == to_uuid) return false;
+        if (retirement_.retired || from_uuid.empty() || to_uuid.empty() || from_uuid == to_uuid) return false;
         const auto source = equipped_.find(from_uuid);
         if (source == equipped_.end()) return true;
         const auto transferred = source->second;
@@ -525,6 +561,7 @@ public:
             ++metrics_.invalid_actions;
             return ItemActionResult{false, reason};
         };
+        if (retirement_.retired) return reject("item_ownership_retired");
         if (!command.operation) return reject("missing_item_operation");
 
         const auto find_unit = [&candidates](const std::string& uuid)
@@ -605,9 +642,10 @@ private:
     ItemMetrics metrics_{};
     std::vector<ItemAnvil> anvils_;
     std::uint64_t next_anvil_sequence_{0}; // survives reset; identities are never reused
+    ItemRetirementSnapshot retirement_{};
 
     bool grant_anvil(ItemAnvilKind kind, std::vector<std::string> options) {
-        if (options.empty() || options.size() > 9U) {
+        if (retirement_.retired || options.empty() || options.size() > 9U) {
             ++metrics_.invalid_actions;
             return false;
         }

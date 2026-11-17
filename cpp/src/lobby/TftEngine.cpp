@@ -4592,8 +4592,20 @@ struct TFTEngine::Impl {
         }
     }
 
-    void return_eliminated_player_units(std::size_t player_index) {
-        if (player_envs[player_index].shop) player_envs[player_index].shop->return_current_shop();
+    void return_eliminated_player_units(
+        std::size_t player_index, std::vector<std::string>& events
+    ) {
+        auto& player = player_envs[player_index];
+        if (player.shop) player.shop->return_current_shop();
+        if (player.item_engine && player.item_engine->retire_all_owned_state()) {
+            const auto& retired = player.item_engine->retirement_snapshot();
+            events.emplace_back(
+                "ITEM_OWNERSHIP_RETIRED: player=" + std::to_string(player_index) +
+                ", components=" + std::to_string(retired.components.size()) +
+                ", inventory=" + std::to_string(retired.inventory.size()) +
+                ", equipped=" + std::to_string(retired.equipped.size()) +
+                ", pending_anvils=" + std::to_string(retired.pending_anvils.size()));
+        }
 
         auto return_unit_copies = [this](const std::optional<UnitInstance>& unit) {
             if (!unit) return;
@@ -4623,7 +4635,7 @@ struct TFTEngine::Impl {
             ranking.push_back(static_cast<std::int32_t>(i));
             --alive_players;
             round_finished[i] = true;
-            return_eliminated_player_units(i);
+            return_eliminated_player_units(i, events);
             events.emplace_back("ELIMINATED: jogador " + std::to_string(i));
         }
     }
@@ -6851,6 +6863,32 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
                 target.pending_anvil_sequence = pending->sequence;
                 target.pending_anvil_kind = static_cast<std::int32_t>(pending->kind);
                 target.pending_anvil_options = pending->options;
+            }
+            const auto& retirement = source.item_engine->retirement_snapshot();
+            target.item_ownership_retired = retirement.retired;
+            append_counts(retirement.components, target.retired_item_component_counts);
+            append_counts(retirement.inventory, target.retired_item_inventory_counts);
+            for (const auto& retired_item : retirement.equipped) {
+                const auto found = std::find_if(
+                    target.retired_equipped_item_counts.begin(),
+                    target.retired_equipped_item_counts.end(),
+                    [&](const AuditRetiredEquippedItemCount& row) {
+                        return row.unit_uuid == retired_item.unit_uuid &&
+                            row.catalog_id == retired_item.catalog_id;
+                    });
+                if (found == target.retired_equipped_item_counts.end()) {
+                    target.retired_equipped_item_counts.push_back(
+                        AuditRetiredEquippedItemCount{retired_item.unit_uuid, retired_item.catalog_id, 1});
+                } else {
+                    ++found->count;
+                }
+            }
+            for (const auto& retired_anvil : retirement.pending_anvils) {
+                target.retired_pending_anvils.push_back(AuditRetiredAnvilSnapshot{
+                    retired_anvil.sequence,
+                    static_cast<std::int32_t>(retired_anvil.kind),
+                    retired_anvil.options
+                });
             }
         }
         target.last_item_action_kind = source.last_item_action.kind;

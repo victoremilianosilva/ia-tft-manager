@@ -212,6 +212,8 @@ struct AuditUnitSnapshot {
 
 struct AuditItemCount { std::string catalog_id; std::uint32_t count{0}; };
 struct AuditEquippedItemSnapshot { std::string unit_uuid; std::string location; std::int32_t slot{-1}; std::string catalog_id; };
+struct AuditRetiredEquippedItemCount { std::string unit_uuid; std::string catalog_id; std::uint32_t count{0}; };
+struct AuditRetiredAnvilSnapshot { std::uint64_t sequence{0}; std::int32_t kind{-1}; std::vector<std::string> options; };
 struct AuditPlayerSnapshot {
     std::int32_t player_id{-1};
     std::int32_t gold{0};
@@ -250,6 +252,11 @@ struct AuditPlayerSnapshot {
     std::vector<AuditItemCount> item_component_counts;
     std::vector<AuditItemCount> item_inventory_counts;
     std::vector<AuditEquippedItemSnapshot> equipped_items;
+    bool item_ownership_retired{false};
+    std::vector<AuditItemCount> retired_item_component_counts;
+    std::vector<AuditItemCount> retired_item_inventory_counts;
+    std::vector<AuditRetiredEquippedItemCount> retired_equipped_item_counts;
+    std::vector<AuditRetiredAnvilSnapshot> retired_pending_anvils;
     std::vector<std::string> item_component_catalog;
     bool pending_anvil{false};
     std::uint64_t pending_anvil_sequence{0};
