@@ -508,6 +508,8 @@ struct TFTEngine::Impl {
     std::uint64_t seed{0};
     std::uint64_t episode_id{0};
     std::uint64_t decision_sequence{0};
+    // Independent monotonic namespace for each player's published decision row.
+    std::array<std::uint64_t, kPlayersPerLobby> player_decision_sequences{};
     std::mt19937_64 matchmaking_rng{0};
     std::set<std::uint64_t> previous_matchups;
 
@@ -6267,6 +6269,12 @@ ResetResult TFTEngine::reset(
         throw std::overflow_error("Sequencia de decisao da Engine esgotada.");
     }
     result.decision_sequence = ++impl_->decision_sequence;
+    for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+        if (impl_->player_decision_sequences[i] == std::numeric_limits<std::uint64_t>::max()) {
+            throw std::overflow_error("Sequencia de decisao do jogador esgotada.");
+        }
+        result.player_decision_sequences[i] = ++impl_->player_decision_sequences[i];
+    }
 
     return result;
 }
@@ -6567,6 +6575,12 @@ StepResult TFTEngine::step(
         throw std::overflow_error("Sequencia de decisao da Engine esgotada.");
     }
     result.decision_sequence = ++impl_->decision_sequence;
+    for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+        if (impl_->player_decision_sequences[i] == std::numeric_limits<std::uint64_t>::max()) {
+            throw std::overflow_error("Sequencia de decisao do jogador esgotada.");
+        }
+        result.player_decision_sequences[i] = ++impl_->player_decision_sequences[i];
+    }
     result.round = impl_->round + 1;
     result.stage = impl_->stage;
     result.alive_players = impl_->alive_players;

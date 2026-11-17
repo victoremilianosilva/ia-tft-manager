@@ -414,8 +414,23 @@ class Trainer:
                 raise RuntimeError(
                     f"Lobby {lobby_idx} não forneceu metadata de {label}."
                 )
-            for player_idx in range(players_per_lobby):
+            player_sequences = snapshot.get("player_decision_sequences")
+            if not isinstance(player_sequences, (list, tuple)) or len(player_sequences) != players_per_lobby:
+                raise RuntimeError(
+                    f"Lobby {lobby_idx} não forneceu sequências individuais para {players_per_lobby} jogadores."
+                )
+            for player_idx, player_sequence in enumerate(player_sequences):
+                if (
+                    isinstance(player_sequence, bool)
+                    or not isinstance(player_sequence, int)
+                    or player_sequence < 0
+                ):
+                    raise RuntimeError(
+                        f"Sequência individual inválida para lobby {lobby_idx}, jogador {player_idx}."
+                    )
                 metadata = dict(snapshot)
+                metadata.pop("player_decision_sequences", None)
+                metadata["player_decision_sequence"] = player_sequence
                 metadata["lobby_index"] = lobby_idx
                 metadata["player_id"] = player_idx
                 expanded.append(metadata)

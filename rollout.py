@@ -389,7 +389,7 @@ class RolloutBuffer:
                         raise TypeError(f"{group_name}[{index}] deve ser um dicionário.")
                     required = (
                         "engine_instance_id", "episode_id",
-                        "decision_sequence", "player_id", "lobby_index",
+                        "decision_sequence", "player_decision_sequence", "player_id", "lobby_index",
                     )
                     missing = [key for key in required if key not in metadata]
                     if missing:
@@ -427,6 +427,8 @@ class RolloutBuffer:
                     raise ValueError(f"Engine divergente na transição {index}.")
                 if decision["episode_id"] != result["episode_id"]:
                     raise ValueError(f"Episode divergente entre decisão e resultado na transição {index}.")
+                if result["player_decision_sequence"] <= decision["player_decision_sequence"]:
+                    raise ValueError(f"Sequência individual do resultado não avança na transição {index}.")
                 action_trace = result.get("action_trace")
                 if action_trace is None:
                     raise ValueError(
@@ -486,7 +488,13 @@ class RolloutBuffer:
                 if next_state["episode_id"] == result["episode_id"]:
                     if next_state["decision_sequence"] != result["decision_sequence"]:
                         raise ValueError(f"Próximo snapshot não corresponde ao resultado na transição {index}.")
-                elif next_state["episode_id"] <= result["episode_id"] or next_state["decision_sequence"] <= result["decision_sequence"]:
+                    if next_state["player_decision_sequence"] != result["player_decision_sequence"]:
+                        raise ValueError(f"Próxima sequência individual não corresponde ao resultado na transição {index}.")
+                elif (
+                    next_state["episode_id"] <= result["episode_id"]
+                    or next_state["decision_sequence"] <= result["decision_sequence"]
+                    or next_state["player_decision_sequence"] <= result["player_decision_sequence"]
+                ):
                     raise ValueError(f"Auto-reset não avança identidade na transição {index}.")
 
                 mask_hash = decision.get("mask_snapshot_hash")
