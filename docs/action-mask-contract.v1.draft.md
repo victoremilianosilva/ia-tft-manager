@@ -1,6 +1,6 @@
 # Action / Mask Contract v1 — especificação documental aprovada
 
-**Status:** especificação documental aprovada para Gate 2; implementação runtime, migração e aceitação executável permanecem pendentes após Gate 8. Esta aprovação não autoriza implementação.  
+**Status:** especificação documental aprovada; a fatia runtime de Stage 1 está em implementação/revisão; aceite integral ainda depende da matriz completa e da integração posterior do Critic.  
 **Base auditada:** branch `new-arquiteture`, commit de base `046c9300882ebb7fb0003436f39d91eb4a2a75e5`.  
 **Issue:** [#294 — PPO Action Contract](https://github.com/victoremilianosilva/ia-tft-manager/issues/294)
 
@@ -203,4 +203,25 @@ Não substituir ação ausente/rejeitada por PASS para fins de comparação PPO-
 
 ## Decision Identity v2 alignment (proposal; not runtime-approved)
 
-Observation Schema v1 and Action/Mask Contract v1 remain immutable documentary contracts. The proposed Observation Schema v2 / Decision Identity Envelope v2 adds typed sequence references and makes namespace part of the decision hash. For the future v2 lineage, every mask payload must bind the exact same decision identity as its observation plus an independent ordered mask payload hash and Action/Mask contract identities. Actor and Critic receive that exact mask snapshot as a separate side input. The current implementation does not yet transport this envelope or mask hash; separate mask retrieval and equal shapes do not prove correlation. Do not reinterpret v1 integer sequence values or v1 hashes as v2. See `docs/decision-identity-schema-v2-design.v1.draft.md`, `spec/sequence-namespace-registry.v2.draft.json`, and `spec/decision-identity-v2-hash-vectors.draft.json`.
+Observation Schema v1 and Action/Mask Contract v1 remain immutable documentary contracts. The proposed Observation Schema v2 / Decision Identity Envelope v2 adds typed sequence references and makes namespace part of the decision hash. For the future v2 lineage, every mask payload must bind the exact same decision identity as its observation plus an independent ordered mask payload hash and Action/Mask contract identities. Actor and Critic receive that exact mask snapshot as a separate side input. Stage 1 now persists the exact mask snapshot hash and independent Action/Mask contract identities with rollout decision metadata. The typed v2 sequence namespaces, canonical v2 decision identity hash, observation/projection hashes, and Critic-side mask context are not yet runtime-delivered. Separate producer-local sequences must not be reinterpreted as the canonical v2 identity. Do not reinterpret v1 integer sequence values or v1 hashes as v2. See `docs/decision-identity-schema-v2-design.v1.draft.md`, `spec/sequence-namespace-registry.v2.draft.json`, and `spec/decision-identity-v2-hash-vectors.draft.json`.
+
+
+## Stage 1 runtime implementation — Action/Mask Contract v1
+
+**Problema anterior:** o RolloutBuffer verificava que o hash da máscara tinha formato SHA-256, mas não recalculava o digest a partir das máscaras persistidas. A Policy também convertia índices de ação para inteiro durante a validação e não rejeitava argumentos inativos preenchidos no registro de seis inteiros. Checkpoints não carregavam identidade independente dos contratos de ação e máscara.
+
+**Justificativa técnica:** shape igual ou hash sintaticamente válido não prova identidade semântica nem integridade do payload. As fronteiras de coleta, armazenamento e retomada precisam verificar os contratos independentes e o conteúdo exato.
+
+**Responsabilidade nova:** `action_contract.py` é a fonte única dos IDs, versões, hashes, catálogo v1, shapes das 12 máscaras e serialização determinística do hash de snapshot. Policy valida índices sem coerção e exige zero nos argumentos inativos. RolloutBuffer recalcula o hash contra o bundle recebido. Trainer anexa as identidades dos contratos à decisão e grava o manifesto no checkpoint.
+
+**Contrato e invariantes:**
+- Action Contract v1 e Mask Contract v1 possuem IDs, versões e SHA-256 independentes.
+- O registro PPO continua com seis inteiros e o catálogo permanece inalterado.
+- Ação usa somente os argumentos definidos pelo tipo; posições inativas devem ser zero.
+- Rollout com máscaras fornecidas exige exatamente as 12 máscaras booleanas, shapes canônicos e hash idêntico ao payload.
+- Checkpoint novo registra ambos os contratos. Checkpoint sem manifesto exige opt-in explícito para carregar somente pesos; optimizer/scheduler não são restaurados nesse caminho.
+- A Engine continua a autoridade final de legalidade; recomendações estratégicas e baseline não são comandos PPO.
+
+**Impactos:** `policy.py`, `trainer.py`, `rollout.py`, checkpoints futuros e testes de contrato. A integração efetiva das masks como side input do Critic permanece na migração de arquitetura PPO/Stage 4 (#286), sem alterar aqui a arquitetura da value head.
+
+**Validação objetiva:** testes determinísticos dos hashes independentes, rejeição de contrato divergente, rejeição de ação com dtype/argumentos inválidos, verificação do hash recalculado no limite do RolloutBuffer e testes de checkpoint versionado/legado explícito.
