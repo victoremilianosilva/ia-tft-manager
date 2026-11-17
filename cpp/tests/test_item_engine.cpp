@@ -370,6 +370,7 @@ int main() {
 
     require(engine.grant_completed_item_anvil({"damage_blade", "guard_plate"}),
             "completed-item anvil should accept known catalog item options");
+    const auto completed_anvil_sequence = engine.pending_anvil()->sequence;
     require(engine.choose_anvil_option(0),
             "policy should select one completed item from the anvil");
     require(engine.inventory().back() == "damage_blade" &&

@@ -6848,6 +6848,7 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
             }
             if (const auto* pending = source.item_engine->pending_anvil()) {
                 target.pending_anvil = true;
+                target.pending_anvil_sequence = pending->sequence;
                 target.pending_anvil_kind = static_cast<std::int32_t>(pending->kind);
                 target.pending_anvil_options = pending->options;
             }

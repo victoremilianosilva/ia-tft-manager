@@ -570,3 +570,33 @@ def test_native_snapshot_rejects_occupied_shop_offer_without_revision():
     identity = {"engine_instance_id": snapshot["engine_instance_id"], "episode_id": snapshot["episode_id"], "decision_sequence": snapshot["snapshot_sequence"], "player_decision_sequences": snapshot["player_decision_sequences"]}
     with pytest.raises(RuntimeError, match="sem revisão nativa"):
         wrapper._copy_native_state_snapshot(snapshot, identity)
+
+
+def test_wrapper_rejects_pending_anvil_without_identity_sequence():
+    native = FakeNativeLobby()
+    snapshot = native._native_state_snapshot()
+    player = snapshot["players"][0]
+    player["pending_anvil"] = True
+    player["pending_anvil_options"] = ["sword"]
+    identity = {
+        "engine_instance_id": f"fake-engine-{id(native)}",
+        "episode_id": 0,
+        "decision_sequence": 0,
+        "player_decision_sequences": [0] * 8,
+    }
+    with pytest.raises(RuntimeError, match="Bigorna pendente sem sequência"):
+        cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
+
+
+def test_wrapper_rejects_anvil_sequence_without_pending_choice():
+    native = FakeNativeLobby()
+    snapshot = native._native_state_snapshot()
+    snapshot["players"][0]["pending_anvil_sequence"] = 3
+    identity = {
+        "engine_instance_id": f"fake-engine-{id(native)}",
+        "episode_id": 0,
+        "decision_sequence": 0,
+        "player_decision_sequences": [0] * 8,
+    }
+    with pytest.raises(RuntimeError, match="Sequência de bigorna presente"):
+        cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)

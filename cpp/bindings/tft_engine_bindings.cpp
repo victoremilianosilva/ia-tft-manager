@@ -283,6 +283,7 @@ py::dict audit_snapshot_to_dict(
         p["equipped_items"] = std::move(equipped_items);
         p["item_component_catalog"] = player.item_component_catalog;
         p["pending_anvil"] = player.pending_anvil;
+        p["pending_anvil_sequence"] = player.pending_anvil_sequence;
         p["pending_anvil_kind"] = player.pending_anvil_kind;
         p["pending_anvil_options"] = player.pending_anvil_options;
         p["last_item_action_kind"] = player.last_item_action_kind;
