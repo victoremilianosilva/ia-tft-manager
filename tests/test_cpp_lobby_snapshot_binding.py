@@ -51,6 +51,21 @@ class FakeNativeLobby:
             "round": 1,
             "stage": 1,
             "finished": False,
+            "shared_pool": {
+                "contract_id": "tft.shared-champion-pool-snapshot",
+                "contract_version": 1,
+                "source_namespace": "tft.engine.observation-snapshot",
+                "producer": "UnitPool::available",
+                "engine_instance_id": f"fake-engine-{id(self)}",
+                "episode_id": self.episode_id,
+                "snapshot_sequence": self.decision_sequence,
+                "player_decision_sequences": list(self.player_decision_sequences),
+                "total_available": 17,
+                "champions": [
+                    {"champion_internal_id": 0, "champion_id": "Test_A", "cost": 1, "initial_count": 30, "available_count": 10},
+                    {"champion_internal_id": 1, "champion_id": "Test_B", "cost": 2, "initial_count": 25, "available_count": 7},
+                ],
+            },
             "players": [
                 {
                     "player_id": player_id,
@@ -144,6 +159,10 @@ def test_reset_masks_are_taken_from_same_native_snapshot(monkeypatch):
         assert metadata["decision_sequence"] == 1
         assert metadata["player_decision_sequences"] == [1] * 8
         assert metadata["native_state_snapshot"]["snapshot_sequence"] == 1
+        pool = metadata["native_state_snapshot"]["shared_pool"]
+        assert pool["snapshot_sequence"] == 1
+        assert pool["total_available"] == 17
+        assert len(pool["champions"]) == 2
         assert len(metadata["native_state_snapshot"]["players"][0]["board"]) == 28
         assert len(metadata["native_state_snapshot"]["players"][0]["bench"]) == 9
         assert len(metadata["native_state_snapshot"]["players"][0]["shop"]) == 5
@@ -447,4 +466,29 @@ def test_wrapper_rejects_structured_snapshot_with_wrong_slot_cardinality():
         "player_decision_sequences": [1] * 8,
     }
     with pytest.raises(RuntimeError, match="cardinalidade inválida em board"):
+        cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
+
+
+
+def test_wrapper_rejects_pool_snapshot_with_mismatched_sequence():
+    native = FakeNativeLobby()
+    native.episode_id = 1
+    native.decision_sequence = 2
+    native.player_decision_sequences = [2] * 8
+    snapshot = native._native_state_snapshot()
+    snapshot["shared_pool"]["snapshot_sequence"] = 1
+    identity = {"engine_instance_id": f"fake-engine-{id(native)}", "episode_id": 1, "decision_sequence": 2, "player_decision_sequences": [2] * 8}
+    with pytest.raises(RuntimeError, match="identidade do snapshot nativo"):
+        cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
+
+
+def test_wrapper_rejects_pool_snapshot_with_inconsistent_total():
+    native = FakeNativeLobby()
+    native.episode_id = 1
+    native.decision_sequence = 1
+    native.player_decision_sequences = [1] * 8
+    snapshot = native._native_state_snapshot()
+    snapshot["shared_pool"]["total_available"] = 18
+    identity = {"engine_instance_id": f"fake-engine-{id(native)}", "episode_id": 1, "decision_sequence": 1, "player_decision_sequences": [1] * 8}
+    with pytest.raises(RuntimeError, match="soma das disponibilidades"):
         cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)

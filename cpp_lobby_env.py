@@ -167,6 +167,51 @@ class CppTFTLobbyWrapper:
             raise RuntimeError("Snapshot estruturado contém sequências individuais inválidas.")
         if player_sequences != expected_identity["player_decision_sequences"]:
             raise RuntimeError("Snapshot estruturado não corresponde às sequências individuais publicadas.")
+        pool = value.get("shared_pool")
+        if not isinstance(pool, dict):
+            raise RuntimeError("Snapshot estruturado sem shared_pool nativo.")
+        pool_version = pool.get("contract_version")
+        if (
+            pool.get("contract_id") != "tft.shared-champion-pool-snapshot"
+            or isinstance(pool_version, bool)
+            or not isinstance(pool_version, int)
+            or pool_version != 1
+            or pool.get("source_namespace") != "tft.engine.observation-snapshot"
+            or pool.get("producer") != "UnitPool::available"
+        ):
+            raise RuntimeError("Contrato do snapshot compartilhado de pool incompatível.")
+        if pool.get("engine_instance_id") != expected_identity["engine_instance_id"]:
+            raise RuntimeError("Snapshot do pool pertence a outra instância da Engine.")
+        for key in ("episode_id", "snapshot_sequence", "player_decision_sequences"):
+            if pool.get(key) != value.get(key):
+                raise RuntimeError("Snapshot do pool não corresponde à identidade do snapshot nativo.")
+        total_available = pool.get("total_available")
+        if isinstance(total_available, bool) or not isinstance(total_available, int) or total_available < 0:
+            raise RuntimeError("Snapshot do pool contém total_available inválido.")
+        champions = pool.get("champions")
+        if not isinstance(champions, list) or not champions:
+            raise RuntimeError("Snapshot do pool não contém catálogo de campeões.")
+        seen_ids, seen_names, available_sum = set(), set(), 0
+        for row in champions:
+            if not isinstance(row, dict):
+                raise RuntimeError("Registro de campeão inválido no snapshot do pool.")
+            champion_id, name = row.get("champion_internal_id"), row.get("champion_id")
+            cost, initial, available = row.get("cost"), row.get("initial_count"), row.get("available_count")
+            if (
+                isinstance(champion_id, bool) or not isinstance(champion_id, int) or champion_id < 0
+                or not isinstance(name, str) or not name
+                or isinstance(cost, bool) or not isinstance(cost, int) or not 1 <= cost <= 5
+                or isinstance(initial, bool) or not isinstance(initial, int) or initial <= 0
+                or isinstance(available, bool) or not isinstance(available, int)
+                or not 0 <= available <= initial
+                or champion_id in seen_ids or name in seen_names
+            ):
+                raise RuntimeError("Registro de campeão inválido/duplicado no snapshot do pool.")
+            seen_ids.add(champion_id)
+            seen_names.add(name)
+            available_sum += available
+        if available_sum != total_available:
+            raise RuntimeError("Total do pool não corresponde à soma das disponibilidades por campeão.")
         players = value.get("players")
         if not isinstance(players, list) or len(players) != cls.PLAYERS_PER_LOBBY:
             raise RuntimeError("Snapshot estruturado não contém exatamente oito jogadores.")

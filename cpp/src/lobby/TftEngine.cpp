@@ -6750,6 +6750,20 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
     snapshot.round = impl_->round + 1;
     snapshot.stage = impl_->stage;
     snapshot.finished = impl_->done;
+    auto& pool_snapshot = snapshot.shared_pool;
+    pool_snapshot.engine_instance_id = impl_->engine_instance_id;
+    pool_snapshot.episode_id = impl_->episode_id;
+    pool_snapshot.snapshot_sequence = impl_->decision_sequence;
+    pool_snapshot.player_decision_sequences = impl_->player_decision_sequences;
+    pool_snapshot.total_available = impl_->pool->total_available();
+    pool_snapshot.champions.reserve(impl_->catalog->size());
+    for (const auto& champion : impl_->catalog->all()) {
+        pool_snapshot.champions.push_back(AuditPoolChampionCount{
+            champion.internal_id, champion.api_name, champion.cost,
+            impl_->pool->initial_count(champion.internal_id),
+            impl_->pool->available(champion.internal_id)
+        });
+    }
 
     const auto describe_unit = [this](const UnitInstance* unit) {
         AuditUnitSnapshot result{};

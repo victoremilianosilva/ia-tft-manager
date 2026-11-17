@@ -653,6 +653,21 @@ def test_engine_instance_identity_is_distinct_from_seed_and_episode():
             assert structured["episode_id"] == reset["episode_id"]
             assert structured["snapshot_sequence"] == reset["decision_sequence"]
             assert structured["player_decision_sequences"] == reset["player_decision_sequences"]
+            pool = structured["shared_pool"]
+            assert pool["contract_id"] == "tft.shared-champion-pool-snapshot"
+            assert pool["contract_version"] == 1
+            assert pool["source_namespace"] == "tft.engine.observation-snapshot"
+            assert pool["producer"] == "UnitPool::available"
+            assert pool["engine_instance_id"] == reset["engine_instance_id"]
+            assert pool["episode_id"] == reset["episode_id"]
+            assert pool["snapshot_sequence"] == reset["decision_sequence"]
+            assert pool["player_decision_sequences"] == reset["player_decision_sequences"]
+            assert pool["total_available"] == sum(row["available_count"] for row in pool["champions"])
+            assert pool["total_available"] == first.pool_total_available()
+            assert len(pool["champions"]) > 0
+            for row in pool["champions"]:
+                assert row["available_count"] == first.pool_available(row["champion_internal_id"])
+                assert row["initial_count"] == first.pool_initial_count(row["champion_internal_id"])
             assert len(structured["players"]) == 8
             assert len(structured["players"][0]["board"]) == 28
             starter = structured["players"][0]["bench"][0]

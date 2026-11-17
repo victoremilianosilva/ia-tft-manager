@@ -204,6 +204,29 @@ py::dict audit_snapshot_to_dict(
     result["round"] = snapshot.round;
     result["stage"] = snapshot.stage;
     result["finished"] = snapshot.finished;
+    const auto& pool = snapshot.shared_pool;
+    py::dict pool_dict;
+    pool_dict["contract_id"] = pool.contract_id;
+    pool_dict["contract_version"] = pool.contract_version;
+    pool_dict["source_namespace"] = pool.source_namespace;
+    pool_dict["producer"] = pool.producer;
+    pool_dict["engine_instance_id"] = pool.engine_instance_id;
+    pool_dict["episode_id"] = pool.episode_id;
+    pool_dict["snapshot_sequence"] = pool.snapshot_sequence;
+    pool_dict["player_decision_sequences"] = pool.player_decision_sequences;
+    pool_dict["total_available"] = pool.total_available;
+    py::list pool_champions;
+    for (const auto& champion : pool.champions) {
+        py::dict row;
+        row["champion_internal_id"] = champion.champion_internal_id;
+        row["champion_id"] = champion.champion_id;
+        row["cost"] = champion.cost;
+        row["initial_count"] = champion.initial_count;
+        row["available_count"] = champion.available_count;
+        pool_champions.append(std::move(row));
+    }
+    pool_dict["champions"] = std::move(pool_champions);
+    result["shared_pool"] = std::move(pool_dict);
     py::list players;
     const auto unit_to_dict = [](const tft::AuditUnitSnapshot& unit) {
         py::dict d;

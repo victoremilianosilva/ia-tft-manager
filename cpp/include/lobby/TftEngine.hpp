@@ -264,7 +264,27 @@ struct AuditPlayerSnapshot {
     PlayerActionMasks masks{};
 };
 
+struct AuditPoolChampionCount {
+    std::int32_t champion_internal_id{-1};
+    std::string champion_id;
+    std::int32_t cost{0};
+    std::int32_t initial_count{0};
+    std::int32_t available_count{0};
+};
+struct AuditSharedPoolSnapshot {
+    std::string contract_id{"tft.shared-champion-pool-snapshot"};
+    std::uint32_t contract_version{1};
+    std::string source_namespace{"tft.engine.observation-snapshot"};
+    std::string producer{"UnitPool::available"};
+    std::string engine_instance_id;
+    std::uint64_t episode_id{0};
+    std::uint64_t snapshot_sequence{0};
+    std::array<std::uint64_t, kPlayersPerLobby> player_decision_sequences{};
+    std::int64_t total_available{0};
+    std::vector<AuditPoolChampionCount> champions;
+};
 struct AuditSnapshot {
+    AuditSharedPoolSnapshot shared_pool;
     std::string contract_id{"tft.native-state-snapshot"};
     std::uint32_t contract_version{1};
     std::string source_namespace{"tft.engine.observation-snapshot"};
