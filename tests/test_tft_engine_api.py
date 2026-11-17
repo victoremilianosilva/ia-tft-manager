@@ -695,3 +695,41 @@ def test_engine_instance_identity_is_distinct_from_seed_and_episode():
     finally:
         first.close()
         second.close()
+
+
+def test_elimination_retires_item_ownership_in_native_snapshot():
+    engine = TFTLobby(seed=20261117)
+    try:
+        reset = engine.reset()
+        component_id = reset["native_state_snapshot"]["players"][0]["item_component_catalog"][0]
+        assert engine.add_item_component_for_testing(0, component_id)
+        assert engine.set_player_hp_for_testing(0, 0.1)
+
+        actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        result = None
+        for _ in range(4):
+            result = engine.step(actions, timer_enabled=True, timer_expired=True)
+            player = result["native_state_snapshot"]["players"][0]
+            if player["item_ownership_retired"]:
+                break
+
+        assert result is not None
+        player = result["native_state_snapshot"]["players"][0]
+        assert player["item_ownership_retired"] is True
+        assert player["item_components"] == []
+        assert player["item_component_counts"] == []
+        assert player["retired_item_component_counts"] == [
+            {"catalog_id": component_id, "count": 1}
+        ]
+        assert player["retired_item_inventory_counts"] == []
+        assert player["retired_equipped_item_counts"] == []
+        assert player["pending_anvil"] is False
+        assert player["retired_pending_anvils"] == []
+        assert all(not unit["occupied"] for unit in player["board"])
+        assert all(not unit["occupied"] for unit in player["bench"])
+        assert all(
+            not result["native_state_snapshot"]["players"][other]["item_ownership_retired"]
+            for other in range(1, 8)
+        )
+    finally:
+        engine.close()

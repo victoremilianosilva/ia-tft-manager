@@ -395,6 +395,48 @@ int main() {
     require(reset_identity_engine.pending_anvil()->sequence > before_reset_sequence,
             "anvil sequence must not be reused across ItemEngine reset");
 
+    // Elimination retires ownership without transferring copies to another owner.
+    ItemEngine retirement_engine({damage, guard}, {"sword", "bow"});
+    UnitProfile retirement_target{"retired-unit", 1, 1, false, true,
+                                  80.0, 1.2, 0.0, 900.0, 30.0, 30.0, 0.9};
+    require(retirement_engine.add_component("sword") &&
+            retirement_engine.add_component("sword") &&
+            retirement_engine.add_completed_item("damage_blade") &&
+            retirement_engine.add_completed_item("guard_plate") &&
+            retirement_engine.equip("guard_plate", retirement_target),
+            "retirement fixture should contain loose components, inventory and equipment");
+    require(retirement_engine.grant_component_anvil({"sword", "bow"}),
+            "retirement fixture should contain a pending anvil choice");
+    const auto retired_anvil_sequence = retirement_engine.pending_anvil()->sequence;
+    require(retirement_engine.retire_all_owned_state(),
+            "first terminal retirement should capture and clear ownership");
+    const auto& retirement = retirement_engine.retirement_snapshot();
+    require(retirement.retired && retirement.components.size() == 2 &&
+            retirement.inventory.size() == 1 && retirement.equipped.size() == 1,
+            "terminal summary should preserve component, inventory and equipped multiplicity");
+    require(retirement.equipped.front().unit_uuid == "retired-unit" &&
+            retirement.equipped.front().catalog_id == "guard_plate",
+            "retired equipment should retain unit ownership provenance");
+    require(retirement.pending_anvils.size() == 1 &&
+            retirement.pending_anvils.front().sequence == retired_anvil_sequence,
+            "terminal summary should preserve pending anvil identity separately from owned items");
+    require(retirement_engine.components().empty() &&
+            retirement_engine.inventory().empty() &&
+            retirement_engine.equipped("retired-unit").empty() &&
+            !retirement_engine.has_pending_anvil(),
+            "retirement must remove every live ownership reference");
+    require(!retirement_engine.add_component("bow") &&
+            !retirement_engine.add_completed_item("damage_blade") &&
+            !retirement_engine.grant_component_anvil({"sword", "bow"}),
+            "retired ownership must reject new item grants and choice sets");
+    require(!retirement_engine.retire_all_owned_state(),
+            "repeated retirement must not duplicate terminal evidence");
+    retirement_engine.reset();
+    require(!retirement_engine.ownership_retired() &&
+            retirement_engine.retirement_snapshot().components.empty() &&
+            retirement_engine.add_component("bow"),
+            "episode reset should clear terminal evidence and reopen ownership");
+
     // Auto-merge lifecycle: equipment moves to the upgraded unit; if the
     // three-slot cap is reached, overflow returns to the bag instead of vanishing.
     ItemEngine merge_engine({damage, guard});
