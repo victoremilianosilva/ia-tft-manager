@@ -745,3 +745,52 @@ def test_elimination_retires_item_ownership_in_native_snapshot():
         )
     finally:
         engine.close()
+
+
+def test_unit_instance_uuid_is_preserved_across_bench_and_board_moves():
+    """Physical unit identity follows the same copy as its location changes."""
+    engine = TFTLobby(seed=20261118)
+    try:
+        engine.reset()
+        initial = engine.get_audit_snapshot()["players"][0]
+        starter = initial["bench"][0]
+        assert starter["occupied"]
+        unit_uuid = starter["uuid"]
+        assert isinstance(unit_uuid, str) and unit_uuid
+
+        # Deploy the starter from bench to a currently legal board slot.
+        masks = engine.get_action_masks()[0]
+        board_target = next(
+            (index for index, allowed in enumerate(masks["bench_to_board_target_masks"][0])
+             if bool(allowed)),
+            None,
+        )
+        assert board_target is not None
+        actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        actions[0] = [3, 0, 0, board_target, 0, 0]
+        engine.step(actions)
+
+        deployed = engine.get_audit_snapshot()["players"][0]
+        assert deployed["bench"][0]["occupied"] is False
+        assert deployed["board"][board_target]["occupied"] is True
+        assert deployed["board"][board_target]["uuid"] == unit_uuid
+
+        # Move that exact copy to another legal board slot.
+        masks = engine.get_action_masks()[0]
+        board_move_targets = masks["board_move_target_masks"][board_target]
+        destination = next(
+            (index for index, allowed in enumerate(board_move_targets)
+             if index != board_target and bool(allowed)),
+            None,
+        )
+        assert destination is not None
+        actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        actions[0] = [4, 0, 0, 0, board_target, destination]
+        engine.step(actions)
+
+        moved = engine.get_audit_snapshot()["players"][0]
+        assert moved["board"][board_target]["occupied"] is False
+        assert moved["board"][destination]["occupied"] is True
+        assert moved["board"][destination]["uuid"] == unit_uuid
+    finally:
+        engine.close()
