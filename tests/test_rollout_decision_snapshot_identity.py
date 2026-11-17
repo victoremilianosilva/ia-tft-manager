@@ -612,3 +612,35 @@ def test_attach_native_action_traces_rejects_snapshot_cardinality_mismatch():
 
     with pytest.raises(RuntimeError, match="não corresponde"):
         Trainer._attach_native_action_traces(result_metadata, infos, 8)
+
+
+def test_attach_native_action_traces_rejects_boolean_result_player_id():
+    result_metadata, infos = _valid_native_action_trace_rows()
+    result_metadata[0]["player_id"] = False
+
+    with pytest.raises(RuntimeError, match="Snapshot de resultado desalinhado"):
+        Trainer._attach_native_action_traces(result_metadata, infos, 8)
+
+
+def test_attach_native_action_traces_rejects_non_integer_result_lobby_id():
+    result_metadata, infos = _valid_native_action_trace_rows()
+    result_metadata[0]["lobby_index"] = "0"
+
+    with pytest.raises(RuntimeError, match="Snapshot de resultado desalinhado"):
+        Trainer._attach_native_action_traces(result_metadata, infos, 8)
+
+
+def test_attach_native_action_traces_rejects_non_mapping_result_row():
+    result_metadata, infos = _valid_native_action_trace_rows()
+    result_metadata[0] = None
+
+    with pytest.raises(RuntimeError, match="Snapshot de resultado inválido"):
+        Trainer._attach_native_action_traces(result_metadata, infos, 8)
+
+
+def test_attach_native_action_traces_rejects_non_mapping_lobby_info():
+    result_metadata, infos = _valid_native_action_trace_rows()
+    infos[0] = None
+
+    with pytest.raises(RuntimeError, match="Info nativa inválida"):
+        Trainer._attach_native_action_traces(result_metadata, infos, 8)

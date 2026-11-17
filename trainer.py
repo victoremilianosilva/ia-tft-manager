@@ -403,6 +403,10 @@ class Trainer:
             )
 
         for lobby_idx, info in enumerate(infos):
+            if not isinstance(info, dict):
+                raise RuntimeError(
+                    f"Info nativa inválida para lobby {lobby_idx}: esperado objeto."
+                )
             traces = info.get("action_trace")
             if not isinstance(traces, list) or len(traces) != players_per_lobby:
                 raise RuntimeError(
@@ -428,7 +432,20 @@ class Trainer:
                         f"{trace_player_id}, esperado {player_id}."
                     )
                 row = result_snapshot_metadata[start + player_id]
-                if row.get("lobby_index") != lobby_idx or row.get("player_id") != player_id:
+                if not isinstance(row, dict):
+                    raise RuntimeError(
+                        f"Snapshot de resultado inválido para lobby {lobby_idx}, jogador {player_id}."
+                    )
+                row_lobby = row.get("lobby_index")
+                row_player = row.get("player_id")
+                if (
+                    isinstance(row_lobby, bool)
+                    or not isinstance(row_lobby, int)
+                    or row_lobby != lobby_idx
+                    or isinstance(row_player, bool)
+                    or not isinstance(row_player, int)
+                    or row_player != player_id
+                ):
                     raise RuntimeError(
                         f"Snapshot de resultado desalinhado para lobby {lobby_idx}, jogador {player_id}."
                     )
