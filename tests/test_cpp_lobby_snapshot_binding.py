@@ -361,6 +361,7 @@ class _VectorResetShapeEnv:
 
 
 def test_vector_reset_stays_poisoned_when_observation_batch_cannot_be_stacked():
+    from vector_lobby_env import LobbyVectorEnv
     first = _VectorResetShapeEnv((8, 3))
     second = _VectorResetShapeEnv((8, 4))
     vector = LobbyVectorEnv([lambda: first, lambda: second])
