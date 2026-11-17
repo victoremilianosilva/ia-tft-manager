@@ -72,7 +72,7 @@ class FakeNativeLobby:
                     "board": [{"occupied": False, "champion_id": "", "uuid": "", "star": 0, "cost": 0, "items": []} for _ in range(28)],
                     "bench": [{"occupied": False, "champion_id": "", "uuid": "", "star": 0, "cost": 0, "items": []} for _ in range(9)],
                     "shop": [{"occupied": False, "champion_id": "", "uuid": "", "star": 0, "cost": 0, "items": []} for _ in range(5)],
-                    "item_components": [], "item_inventory": [], "item_component_catalog": [],
+                    "item_components": [], "item_inventory": [], "item_component_counts": [], "item_inventory_counts": [], "equipped_items": [], "item_component_catalog": [],
                     "pending_anvil_options": [],
                 }
                 for player_id in range(8)
@@ -491,4 +491,63 @@ def test_wrapper_rejects_pool_snapshot_with_inconsistent_total():
     snapshot["shared_pool"]["total_available"] = 18
     identity = {"engine_instance_id": f"fake-engine-{id(native)}", "episode_id": 1, "decision_sequence": 1, "player_decision_sequences": [1] * 8}
     with pytest.raises(RuntimeError, match="soma das disponibilidades"):
+        cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
+
+
+def test_wrapper_accepts_counted_item_ownership_rows_and_live_equipment():
+    native = FakeNativeLobby()
+    native.episode_id = 1
+    native.decision_sequence = 1
+    native.player_decision_sequences = [1] * 8
+    snapshot = native._native_state_snapshot()
+    player = snapshot["players"][0]
+    player["item_component_counts"] = [{"catalog_id": "component_x", "count": 2}]
+    player["item_inventory_counts"] = [{"catalog_id": "item_y", "count": 1}]
+    player["equipped_items"] = [{
+        "unit_uuid": "unit-live-1", "location": "board", "slot": 3, "catalog_id": "item_z"
+    }]
+    identity = {
+        "engine_instance_id": f"fake-engine-{id(native)}",
+        "episode_id": 1,
+        "decision_sequence": 1,
+        "player_decision_sequences": [1] * 8,
+    }
+    copied = cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
+    assert copied["players"][0]["item_component_counts"][0]["count"] == 2
+    assert copied["players"][0]["equipped_items"][0]["unit_uuid"] == "unit-live-1"
+
+
+def test_wrapper_rejects_invalid_item_ownership_count():
+    native = FakeNativeLobby()
+    native.episode_id = 1
+    native.decision_sequence = 1
+    native.player_decision_sequences = [1] * 8
+    snapshot = native._native_state_snapshot()
+    snapshot["players"][0]["item_inventory_counts"] = [{"catalog_id": "item_x", "count": True}]
+    identity = {
+        "engine_instance_id": f"fake-engine-{id(native)}",
+        "episode_id": 1,
+        "decision_sequence": 1,
+        "player_decision_sequences": [1] * 8,
+    }
+    with pytest.raises(RuntimeError, match="item_inventory_counts inválido"):
+        cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
+
+
+def test_wrapper_rejects_equipment_without_valid_live_slot():
+    native = FakeNativeLobby()
+    native.episode_id = 1
+    native.decision_sequence = 1
+    native.player_decision_sequences = [1] * 8
+    snapshot = native._native_state_snapshot()
+    snapshot["players"][0]["equipped_items"] = [{
+        "unit_uuid": "unit-live-1", "location": "board", "slot": 28, "catalog_id": "item_x"
+    }]
+    identity = {
+        "engine_instance_id": f"fake-engine-{id(native)}",
+        "episode_id": 1,
+        "decision_sequence": 1,
+        "player_decision_sequences": [1] * 8,
+    }
+    with pytest.raises(RuntimeError, match="equipped_items inválido"):
         cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)

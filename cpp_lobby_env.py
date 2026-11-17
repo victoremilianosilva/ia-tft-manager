@@ -247,6 +247,17 @@ class CppTFTLobbyWrapper:
                 values = player.get(field)
                 if not isinstance(values, list) or any(not isinstance(item, str) for item in values):
                     raise RuntimeError(f"Campo estruturado {field} inválido para jogador {player_id}.")
+            for field in ("item_component_counts", "item_inventory_counts"):
+                rows = player.get(field)
+                if not isinstance(rows, list): raise RuntimeError(f"Snapshot estruturado sem {field}.")
+                seen = set()
+                for row in rows:
+                    if (not isinstance(row, dict) or not isinstance(row.get("catalog_id"), str) or not row["catalog_id"] or row["catalog_id"] in seen or isinstance(row.get("count"), bool) or not isinstance(row.get("count"), int) or row["count"] <= 0): raise RuntimeError(f"Snapshot estruturado contém {field} inválido.")
+                    seen.add(row["catalog_id"])
+            equipped = player.get("equipped_items")
+            if not isinstance(equipped, list): raise RuntimeError("Snapshot estruturado sem equipped_items.")
+            for row in equipped:
+                if (not isinstance(row, dict) or not isinstance(row.get("unit_uuid"), str) or not row["unit_uuid"] or row.get("location") not in ("board", "bench") or isinstance(row.get("slot"), bool) or not isinstance(row.get("slot"), int) or not 0 <= row["slot"] < (28 if row["location"] == "board" else 9) or not isinstance(row.get("catalog_id"), str) or not row["catalog_id"]): raise RuntimeError("Snapshot estruturado contém equipped_items inválido.")
         return copy.deepcopy(value)
 
     @staticmethod
