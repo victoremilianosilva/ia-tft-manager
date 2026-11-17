@@ -139,9 +139,20 @@ class CppTFTLobbyWrapper:
             value.get("contract_id") != "tft.native-state-snapshot"
             or isinstance(version, bool)
             or not isinstance(version, int)
-            or version != 1
+            or version != 2
         ):
             raise RuntimeError("Versão/identidade do contrato de snapshot estruturado incompatível.")
+        geometry_version = value.get("board_geometry_version")
+        board_rows = value.get("board_rows")
+        board_columns = value.get("board_columns")
+        if (
+            value.get("board_geometry_id") != "tft.board-grid.rectangular-4x7"
+            or isinstance(geometry_version, bool) or not isinstance(geometry_version, int) or geometry_version != 1
+            or isinstance(board_rows, bool) or not isinstance(board_rows, int) or board_rows != 4
+            or isinstance(board_columns, bool) or not isinstance(board_columns, int) or board_columns != 7
+            or value.get("board_position_formula") != "row=slot/7;column=slot%7"
+        ):
+            raise RuntimeError("Snapshot estruturado contém contrato de geometria do board incompatível.")
         if value.get("source_namespace") != "tft.engine.observation-snapshot":
             raise RuntimeError("Namespace de sequência do snapshot estruturado incompatível.")
         if value.get("producer") != "TFTEngine::get_audit_snapshot":
@@ -216,6 +227,9 @@ class CppTFTLobbyWrapper:
         if not isinstance(players, list) or len(players) != cls.PLAYERS_PER_LOBBY:
             raise RuntimeError("Snapshot estruturado não contém exatamente oito jogadores.")
         expected_slots = {"board": 28, "bench": 9, "shop": 5}
+        # Unit UUID is scoped by Engine/episode/player. One active copy may
+        # occupy exactly one board, bench or shop slot in this snapshot.
+        seen_unit_uuids = set()
         for player_id, player in enumerate(players):
             actual_player_id = player.get("player_id") if isinstance(player, dict) else None
             if (
@@ -231,11 +245,23 @@ class CppTFTLobbyWrapper:
                 for slot, unit in enumerate(units):
                     if not isinstance(unit, dict) or not isinstance(unit.get("occupied"), bool):
                         raise RuntimeError(f"Registro de unidade inválido em {field}[{slot}], jogador {player_id}.")
+                    trait_names = unit.get("trait_names")
+                    if (
+                        not isinstance(trait_names, list)
+                        or any(not isinstance(trait, str) or not trait for trait in trait_names)
+                        or len(trait_names) != len(set(trait_names))
+                    ):
+                        raise RuntimeError("Unidade contém trait_names inválido ou duplicado.")
+                    if not unit["occupied"] and trait_names:
+                        raise RuntimeError("Slot vazio não pode declarar trait_names.")
                     if unit["occupied"]:
                         if not isinstance(unit.get("champion_id"), str) or not unit["champion_id"]:
                             raise RuntimeError("Unidade ocupada sem champion_id nativo.")
                         if not isinstance(unit.get("uuid"), str) or not unit["uuid"]:
                             raise RuntimeError("Unidade ocupada sem UUID nativo.")
+                        if unit["uuid"] in seen_unit_uuids:
+                            raise RuntimeError("UUID de UnitInstance duplicado entre owners/slots ativos.")
+                        seen_unit_uuids.add(unit["uuid"])
                         star, cost, items = unit.get("star"), unit.get("cost"), unit.get("items")
                         if isinstance(star, bool) or not isinstance(star, int) or not 1 <= star <= 3:
                             raise RuntimeError("Unidade ocupada com nível de estrela inválido.")

@@ -195,6 +195,11 @@ py::dict audit_snapshot_to_dict(
     py::dict result;
     result["contract_id"] = snapshot.contract_id;
     result["contract_version"] = snapshot.contract_version;
+    result["board_geometry_id"] = snapshot.board_geometry_id;
+    result["board_geometry_version"] = snapshot.board_geometry_version;
+    result["board_rows"] = snapshot.board_rows;
+    result["board_columns"] = snapshot.board_columns;
+    result["board_position_formula"] = snapshot.board_position_formula;
     result["source_namespace"] = snapshot.source_namespace;
     result["producer"] = snapshot.producer;
     result["engine_instance_id"] = snapshot.engine_instance_id;
@@ -236,6 +241,7 @@ py::dict audit_snapshot_to_dict(
         d["star"] = unit.star;
         d["cost"] = unit.cost;
         d["items"] = unit.item_ids;
+        d["trait_names"] = unit.trait_names;
         return d;
     };
     for (const auto& player : snapshot.players) {

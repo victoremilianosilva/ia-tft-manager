@@ -41,7 +41,12 @@ class FakeNativeLobby:
     def _native_state_snapshot(self):
         return {
             "contract_id": "tft.native-state-snapshot",
-            "contract_version": 1,
+            "contract_version": 2,
+            "board_geometry_id": "tft.board-grid.rectangular-4x7",
+            "board_geometry_version": 1,
+            "board_rows": 4,
+            "board_columns": 7,
+            "board_position_formula": "row=slot/7;column=slot%7",
             "source_namespace": "tft.engine.observation-snapshot",
             "producer": "TFTEngine::get_audit_snapshot",
             "engine_instance_id": f"fake-engine-{id(self)}",
@@ -69,9 +74,9 @@ class FakeNativeLobby:
             "players": [
                 {
                     "player_id": player_id,
-                    "board": [{"occupied": False, "champion_id": "", "uuid": "", "star": 0, "cost": 0, "items": []} for _ in range(28)],
-                    "bench": [{"occupied": False, "champion_id": "", "uuid": "", "star": 0, "cost": 0, "items": []} for _ in range(9)],
-                    "shop": [{"occupied": False, "champion_id": "", "uuid": "", "star": 0, "cost": 0, "items": []} for _ in range(5)],
+                    "board": [{"occupied": False, "champion_id": "", "uuid": "", "star": 0, "cost": 0, "items": [], "trait_names": []} for _ in range(28)],
+                    "bench": [{"occupied": False, "champion_id": "", "uuid": "", "star": 0, "cost": 0, "items": [], "trait_names": []} for _ in range(9)],
+                    "shop": [{"occupied": False, "champion_id": "", "uuid": "", "star": 0, "cost": 0, "items": [], "trait_names": []} for _ in range(5)],
                     "shop_offer_revisions": [0] * 5,
                     "item_components": [], "item_inventory": [], "item_component_counts": [], "item_inventory_counts": [], "equipped_items": [], "item_component_catalog": [],
                     "pending_anvil": False,
@@ -148,6 +153,52 @@ class FakeNativeLobby:
 
     def close(self):
         pass
+
+
+def test_wrapper_rejects_duplicate_unit_instance_uuid_across_active_owners():
+    native = FakeNativeLobby()
+    snapshot = native._native_state_snapshot()
+    unit = {
+        "occupied": True,
+        "champion_id": "Test_A",
+        "uuid": "duplicate-unit-uuid",
+        "star": 1,
+        "cost": 1,
+        "items": [],
+        "trait_names": ["TestTrait"],
+    }
+    snapshot["players"][0]["board"][0] = dict(unit)
+    snapshot["players"][1]["bench"][0] = dict(unit)
+    identity = {
+        "engine_instance_id": f"fake-engine-{id(native)}",
+        "episode_id": 0,
+        "decision_sequence": 0,
+        "player_decision_sequences": [0] * 8,
+    }
+    with pytest.raises(RuntimeError, match="UUID de UnitInstance duplicado"):
+        cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
+
+
+def test_wrapper_rejects_invalid_unit_trait_membership():
+    native = FakeNativeLobby()
+    snapshot = native._native_state_snapshot()
+    snapshot["players"][0]["bench"][0] = {
+        "occupied": True,
+        "champion_id": "Test_A",
+        "uuid": "unit-with-invalid-trait",
+        "star": 1,
+        "cost": 1,
+        "items": [],
+        "trait_names": ["", 7],
+    }
+    identity = {
+        "engine_instance_id": f"fake-engine-{id(native)}",
+        "episode_id": 0,
+        "decision_sequence": 0,
+        "player_decision_sequences": [0] * 8,
+    }
+    with pytest.raises(RuntimeError, match="trait_names inválido"):
+        cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
 
 
 def test_reset_masks_are_taken_from_same_native_snapshot(monkeypatch):

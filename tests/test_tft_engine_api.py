@@ -747,6 +747,38 @@ def test_elimination_retires_item_ownership_in_native_snapshot():
         engine.close()
 
 
+def test_native_snapshot_v2_exposes_unit_traits_and_board_geometry():
+    engine = TFTLobby(seed=20261119)
+    try:
+        reset = engine.reset()
+        snapshot = reset["native_state_snapshot"]
+        assert snapshot["contract_id"] == "tft.native-state-snapshot"
+        assert snapshot["contract_version"] == 2
+        assert snapshot["board_geometry_id"] == "tft.board-grid.rectangular-4x7"
+        assert snapshot["board_geometry_version"] == 1
+        assert snapshot["board_rows"] == 4
+        assert snapshot["board_columns"] == 7
+        assert snapshot["board_position_formula"] == "row=slot/7;column=slot%7"
+
+        player = snapshot["players"][0]
+        starter = next(unit for unit in player["bench"] if unit["occupied"])
+        assert isinstance(starter["trait_names"], list)
+        assert all(isinstance(trait, str) and trait for trait in starter["trait_names"])
+        assert len(starter["trait_names"]) == len(set(starter["trait_names"]))
+
+        active_uuids = [
+            unit["uuid"]
+            for owner in snapshot["players"]
+            for location in ("board", "bench", "shop")
+            for unit in owner[location]
+            if unit["occupied"]
+        ]
+        assert active_uuids
+        assert len(active_uuids) == len(set(active_uuids))
+    finally:
+        engine.close()
+
+
 def test_unit_instance_uuid_is_preserved_across_bench_and_board_moves():
     """Physical unit identity follows the same copy as its location changes."""
     engine = TFTLobby(seed=20261118)
