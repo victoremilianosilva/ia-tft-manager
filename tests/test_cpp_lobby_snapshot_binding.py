@@ -76,8 +76,6 @@ class FakeNativeLobby:
                     "item_components": [], "item_inventory": [], "item_component_counts": [], "item_inventory_counts": [], "equipped_items": [], "item_component_catalog": [],
                     "pending_anvil": False,
                     "pending_anvil_sequence": 0,
-                    "pending_anvil": False,
-                    "pending_anvil_sequence": 0,
                     "pending_anvil_options": [],
                     "item_ownership_retired": False,
                     "retired_item_component_counts": [],
