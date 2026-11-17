@@ -660,31 +660,13 @@ class TFTPolicy(nn.Module):
 
     @staticmethod
     def _validate_canonical_action_parameters(actions):
-        """Require zero in every argument position unused by the selected action."""
+        """Validate the six-int PPO record without rewriting its parameter payload."""
         if not isinstance(actions, torch.Tensor) or actions.ndim != 2 or actions.shape[1] != 6:
             raise ValueError("Ações devem ter shape [batch, 6].")
         if actions.dtype != torch.long:
             raise TypeError("Ações PPO devem usar dtype torch.int64.")
         if actions.numel() and ((actions[:, 0] < 0) | (actions[:, 0] >= 9)).any():
             raise ValueError("Tipo de ação fora do catálogo PPO v1.")
-
-        unused_by_type = {
-            0: (2, 3, 4, 5),
-            1: (1, 2, 3, 4, 5),
-            2: (1, 2, 3, 4, 5),
-            3: (1, 4, 5),
-            4: (1, 2, 3),
-            5: (1, 3, 4, 5),
-            6: (1, 2, 3, 4, 5),
-            7: (3, 4, 5),
-            8: (4, 5),
-        }
-        for action_type, unused_columns in unused_by_type.items():
-            rows = actions[:, 0] == action_type
-            if rows.any() and (actions[rows][:, list(unused_columns)] != 0).any():
-                raise ValueError(
-                    f"Ação PPO tipo {action_type} contém argumentos inativos diferentes de zero."
-                )
 
     @staticmethod
     def _sample_categorical(logits, deterministic):

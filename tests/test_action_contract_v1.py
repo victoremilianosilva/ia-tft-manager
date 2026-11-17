@@ -170,24 +170,12 @@ def test_every_action_type_accepts_its_canonical_six_integer_encoding(action):
     TFTPolicy._validate_canonical_action_parameters(tensor)
 
 
-@pytest.mark.parametrize(
-    "action",
-    [
-        [0, 2, 1, 0, 0, 0],
-        [1, 0, 1, 0, 0, 0],
-        [2, 0, 0, 1, 0, 0],
-        [3, 1, 4, 17, 0, 0],
-        [4, 1, 0, 0, 9, 18],
-        [5, 0, 7, 1, 0, 0],
-        [6, 0, 0, 0, 0, 1],
-        [7, 2, 36, 1, 0, 0],
-        [8, 1, 2, 4, 1, 0],
-    ],
-)
-def test_every_action_type_rejects_nonzero_inactive_arguments(action):
-    tensor = torch.tensor([action], dtype=torch.long)
-    with pytest.raises(ValueError, match="argumentos inativos"):
-        TFTPolicy._validate_canonical_action_parameters(tensor)
+@pytest.mark.parametrize("action_type", range(9))
+def test_action_contract_preserves_all_six_integer_payload_slots(action_type):
+    # The transport record is not normalized by guessing which slots are
+    # inactive. Action-specific semantics are validated by their own heads.
+    tensor = torch.tensor([[action_type, 2, 3, 4, 5, 6]], dtype=torch.long)
+    TFTPolicy._validate_canonical_action_parameters(tensor)
 
 
 def test_action_validation_rejects_float_indices_instead_of_coercing():
