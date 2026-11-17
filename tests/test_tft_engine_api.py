@@ -511,8 +511,8 @@ def test_anti_loop_history_is_scoped_to_each_preparation():
         engine.close()
 
 
-def test_buying_third_copy_auto_upgrades_to_two_star():
-    """Three copies split between board, bench, and shop must merge on purchase."""
+def test_buying_third_copy_auto_upgrades_and_preserves_purchased_identity():
+    """The purchased shop copy survives as the upgraded unit; consumed copies retire."""
     engine = TFTLobby(seed=20261016)
 
     try:
@@ -527,6 +527,13 @@ def test_buying_third_copy_auto_upgrades_to_two_star():
         assert native.set_unit_for_testing(0, False, 0, champion_id, 1)
         assert native.set_shop_offer_for_testing(0, 0, champion_id)
 
+        before = native.get_audit_snapshot()["players"][0]
+        board_uuid = before["board"][0]["uuid"]
+        bench_uuid = before["bench"][0]["uuid"]
+        purchased_uuid = before["shop"][0]["uuid"]
+        assert board_uuid and bench_uuid and purchased_uuid
+        assert len({board_uuid, bench_uuid, purchased_uuid}) == 3
+
         actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
         actions[0] = [0, 0, 0, 0, 0, 0]
         engine.step(actions)
@@ -536,7 +543,21 @@ def test_buying_third_copy_auto_upgrades_to_two_star():
             unit for unit in list(after["board"]) + list(after["bench"])
             if unit["occupied"] and unit["champion_id"] == champion_id and unit["star"] == 2
         ]
-        assert two_star, "The third 1-star copy should auto-upgrade into a 2-star unit."
+        assert len(two_star) == 1, "The three 1-star copies should produce one 2-star unit."
+        assert two_star[0]["uuid"] == purchased_uuid, (
+            "The purchased shop UnitInstance must remain the physical identity of the upgrade."
+        )
+
+        active_uuids = {
+            unit["uuid"]
+            for location in ("board", "bench", "shop")
+            for unit in after[location]
+            if unit["occupied"]
+        }
+        assert purchased_uuid in active_uuids
+        assert board_uuid not in active_uuids
+        assert bench_uuid not in active_uuids
+        assert not after["shop"][0]["occupied"]
     finally:
         engine.close()
 
