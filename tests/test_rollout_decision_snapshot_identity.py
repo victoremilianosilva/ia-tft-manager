@@ -770,7 +770,6 @@ def test_rollout_rejects_malformed_identity_field_types(field, invalid_value):
             next_snapshot_metadata=[next_state],
         )
 
-
 def test_trainer_expands_native_state_snapshot_to_exact_player_rows():
     from trainer import Trainer
 
