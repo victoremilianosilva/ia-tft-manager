@@ -672,12 +672,13 @@ def test_selling_purchased_unit_retires_uuid_and_returns_copy_to_pool():
 
         offer = player["shop"][offer_slot]
         champion_id = offer["champion_id"]
+        champion_internal_id = native.get_champion_id_map()[champion_id]
         purchased_uuid = offer["uuid"]
         assert purchased_uuid
 
         pool_row_before = next(
             row for row in before["shared_pool"]["champions"]
-            if row["champion_internal_id"] == champion_id
+            if row["champion_internal_id"] == champion_internal_id
         )
         available_before = pool_row_before["available_count"]
 
@@ -712,7 +713,7 @@ def test_selling_purchased_unit_retires_uuid_and_returns_copy_to_pool():
 
         pool_row_after = next(
             row for row in after_sell["shared_pool"]["champions"]
-            if row["champion_internal_id"] == champion_id
+            if row["champion_internal_id"] == champion_internal_id
         )
         assert pool_row_after["available_count"] == available_before + 1
         assert not sold_player["bench"][bench_slot]["occupied"]
