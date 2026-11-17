@@ -13,13 +13,13 @@ The structured-entity audit had several complementary artifacts: a 17-kind entit
 - Python exposure with PPO tensor delivery;
 - a complete schema identity with a complete runtime decision identity.
 
-PR #451 added executable Schema v2 validation and corrected the native sequence namespace. This reconciliation records what that validation proves—and what it does not.
+PR #451 added executable Schema v2 validation and corrected the native sequence namespace. PR #454 added the native per-player sequence array. PR #455 adds a bounded native-state sidecar, atomically bound to the same ResetResult/StepResult identity and masks. This reconciliation records what those changes prove—and what they do not.
 
 ## 2. Technical rationale
 
 A structured entity is accepted only when its producer, identity, ownership, cardinality, completeness, provenance/formula, source sequence, lifecycle/reset behavior, Python exposure and PPO consumer delivery are independently established. A parent container or ancestor source-map match cannot prove a nested identity field.
 
-The native Engine snapshot ordinal is shared by all eight player rows in one ResetResult/StepResult. It is not a per-player decision counter. Matching local integers, round values, array positions or timestamps cannot substitute for a typed identity join.
+The native Engine snapshot ordinal is shared by all eight player rows in one ResetResult/StepResult. PR #454 adds eight player-indexed counters; they currently advance together because all eight rows are published atomically, but each counter is explicitly owned and transported. PR #455 binds the structured native state to both namespaces. Matching local integers, round values, array positions or timestamps cannot substitute for a typed identity join.
 
 ## 3. New responsibility and ownership
 
@@ -69,20 +69,22 @@ The 223-path crosswalk and the separate 254 semantic-leaf count in the producer-
 | `temporal_decision_history` | Flat action-memory/slot-age features are delivered | Typed ordered events and authoritative per-player decision sequence |
 | `anti_loop_history` | Internal native history exists | Record identity/sequence and approved Python exposure; it never replaces action masks |
 
-## 5. Identity and delivery corrections carried forward from PR #451
+## 5. Identity and delivery corrections carried forward from PRs #451, #454 and #455
 
 1. Native `TFTEngine::Impl::decision_sequence` maps to `snapshot_sequence` in namespace `tft.engine.observation-snapshot`.
 2. That sequence increments once per published ResetResult/StepResult, is shared by the eight player rows, and remains monotonic across episode resets within one Engine instance.
-3. `tft.engine.decision` remains a future per-player decision counter. It must not be populated from the Engine-wide snapshot ordinal.
-4. Authoritative logical `match_id` and per-player decision sequence remain unavailable in the audited native-to-PPO path. Decision identity therefore remains partial; the identity hash remains null.
-5. A partial identity cannot authorize masks, Critic context, anti-loop history or strategic-owner snapshots.
-6. The Action/Mask Contract remains independent. Native masks are exact side inputs; Engine remains the final legality authority.
+3. PR #454 publishes `player_decision_sequences[8]`; values currently advance in lockstep with atomic eight-player publication. Trainer expands them into the scalar `player_decision_sequence` for each rollout row.
+4. PR #455 adds `native_state_snapshot` to ResetResult/StepResult with contract ID/version, producer, source namespace, Engine/episode/snapshot identity, all eight player sequences and the existing native audit records.
+5. Wrapper validates the snapshot envelope, player cardinality and board/bench/shop cardinalities; Trainer selects exactly one player record and RolloutBuffer preserves it as non-tensor metadata. The sidecar does not duplicate the exact action masks, which remain a separate sibling field.
+6. This does not create an authoritative logical GEP `match_id`, prove UUID uniqueness/lifecycle, or make the structured sidecar an Actor/Critic tensor. Decision identity remains partial; identity hash remains null.
+7. A partial identity cannot authorize missing fields, Critic context, anti-loop history or strategic-owner snapshots.
+8. The Action/Mask Contract remains independent. Native masks remain exact side inputs; Engine remains the final legality authority.
 
 ## 6. Critical producer-to-PPO boundaries
 
-- **Unit UUID:** available in diagnostic audit snapshots and decision-state copies; not present as a typed field in the flat PPO observation or RolloutBuffer.
-- **Shop offer:** current offer content and a UnitInstance UUID are not a stable offer identity. Slot index and champion ID cannot substitute for offer revision.
-- **Items/components:** catalog IDs and multiplicity are observed; physical item/component instance identity is not produced. Eliminated unit equipment mappings require explicit terminal cleanup/disposition evidence.
+- **Unit UUID:** included in the identity-bound native-state sidecar and preserved as per-player rollout metadata; still not a typed Actor/Critic tensor field, and still not accepted as globally/cross-episode canonical identity.
+- **Shop offer:** current offer content, slot and UnitInstance UUID are included in the sidecar; there is still no stable offer ID/revision. Slot index and champion ID cannot substitute for offer identity.
+- **Items/components:** equipment catalog IDs, component multiplicity and completed-item inventory catalog IDs are included in the sidecar; physical item/component instance identity is still not produced. Eliminated unit equipment mappings require explicit terminal cleanup/disposition evidence.
 - **Traits/position:** native catalog/slot-derived and heuristic values have different scopes. The 4×7 internal mapping is not proven canonical TFT hex geometry.
 - **Strategic evidence:** owned-unit assessments and anchors are Shadow/diagnostic; they lack physical unit or stable candidate-set identities. The action-candidate source vector is empty in the audited call path.
 - **Temporal/anti-loop:** flat PPO action-memory scalars are not typed event history. Internal AntiLoopHistory records are not exported to Python and have no per-record decision sequence.
@@ -113,14 +115,14 @@ Issue #346 remains open until the following are proven or the corresponding sche
 - real action-opportunity candidate producer, or explicit not-produced status;
 - typed temporal/anti-loop record sequence and reset semantics, if these records are ever approved for Python/PPO;
 - authoritative logical match identity and per-player decision sequence;
-- integrated native → pybind → wrapper → vector env → Trainer/RolloutBuffer → Actor/Critic delivery and replay acceptance;
+- integrated native → pybind → wrapper → vector env → Trainer/RolloutBuffer sidecar delivery is implemented for the bounded native-state payload; Actor/Critic projection and replay acceptance remain open;
 - reconciliation of the 223 versus 254 path-counting scopes with a reproducible enumeration rule.
 
 These are acceptance blockers, not instructions to synthesize missing data. Real GEP match identity evidence remains deferred to Stage 7.
 
 ## 9. Cross-component impacts
 
-The audit informs Observation Schema v2, Decision Identity v2, sequence registry, structured entity temporal contract, UnitInstance/ShopEngine/UnitPool/ItemEngine, trait and positioning producers, strategic evidence, pybind, Python wrapper, rollout, Actor/Critic, replay and checkpoint lineage. It does not alter any of those runtime components.
+The audit informs Observation Schema v2, Decision Identity v2, sequence registry, structured entity temporal contract, UnitInstance/ShopEngine/UnitPool/ItemEngine, trait and positioning producers, strategic evidence, pybind, Python wrapper, rollout, Actor/Critic, replay and checkpoint lineage. PR #455 changes only the bounded native state snapshot/transport boundary; it does not alter tensor projection, rewards, masks, checkpoints, Viewer or Overwolf.
 
 ## 10. Objective validation criteria
 

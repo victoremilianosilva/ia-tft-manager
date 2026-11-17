@@ -201,6 +201,85 @@ struct RewardState {
     double total_reward{0.0};
 };
 
+struct AuditUnitSnapshot {
+    bool occupied{false};
+    std::string champion_id;
+    std::string uuid;
+    std::int32_t star{0};
+    std::int32_t cost{0};
+    std::vector<std::string> item_ids;
+};
+
+struct AuditPlayerSnapshot {
+    std::int32_t player_id{-1};
+    std::int32_t gold{0};
+    std::int32_t level{0};
+    std::int32_t xp{0};
+    std::int32_t win_streak{0};
+    std::int32_t loss_streak{0};
+    std::int32_t gold_before_interest{0};
+    std::int32_t interest_if_resolved_now{0};
+    double board_power{0.0};
+    double synergy_score{0.0};
+    double positioning_score{0.0};
+    // Keep native board-evaluation diagnostics in the audit snapshot; the
+    // Viewer cannot reconstruct structural quality from board power alone.
+    double board_quality_score{0.0};
+    double board_positional_score{0.0};
+    double board_structural_score{0.0};
+    double board_quality_delta{0.0};
+    std::int32_t board_exposed_carries{0};
+    std::int32_t board_frontline_count{0};
+    std::int32_t board_isolated_frontline_count{0};
+    std::int32_t board_important_bench_units_unplayed{0};
+    std::int32_t round_gold{0};
+    std::int32_t round_base_gold{0};
+    std::int32_t round_interest{0};
+    std::int32_t round_streak_gold{0};
+    std::int32_t round_win_gold{0};
+    std::array<AuditUnitSnapshot, kBoardSlots> board{};
+    std::array<AuditUnitSnapshot, kBenchSlots> bench{};
+    std::array<AuditUnitSnapshot, kShopSlots> shop{};
+    // Item state is part of the audit snapshot so the viewer can distinguish
+    // loose components, completed items in the bag, and unit equipment.
+    std::vector<std::string> item_components;
+    std::vector<std::string> item_inventory;
+    std::vector<std::string> item_component_catalog;
+    bool pending_anvil{false};
+    std::int32_t pending_anvil_kind{-1};
+    std::vector<std::string> pending_anvil_options;
+    // Last item decision is carried by the post-action snapshot for exact
+    // Viewer attribution (normal equip/craft versus forced anvil selection).
+    std::string last_item_action_kind;
+    std::string last_item_id;
+    std::string last_item_first_component;
+    std::string last_item_second_component;
+    std::string last_item_target_uuid;
+    std::int32_t last_item_target_slot{-1};
+    bool last_item_target_on_board{false};
+    double last_item_fit{0.0};
+    double last_item_immediate_strength{0.0};
+    double last_item_role_alignment{0.0};
+    double last_item_assignment_reward{0.0};
+    PlayerActionMasks masks{};
+};
+
+struct AuditSnapshot {
+    std::string contract_id{"tft.native-state-snapshot"};
+    std::uint32_t contract_version{1};
+    std::string source_namespace{"tft.engine.observation-snapshot"};
+    std::string producer{"TFTEngine::get_audit_snapshot"};
+    std::string engine_instance_id;
+    std::uint64_t episode_id{0};
+    std::uint64_t snapshot_sequence{0};
+    std::array<std::uint64_t, kPlayersPerLobby> player_decision_sequences{};
+    std::uint32_t round{0};
+    std::uint32_t stage{1};
+    bool finished{false};
+    std::array<AuditPlayerSnapshot, kPlayersPerLobby> players{};
+};
+
+
 struct ResetResult {
     std::string engine_instance_id;
     // Row-major: (8, observation_dim).
@@ -215,6 +294,8 @@ struct ResetResult {
     std::uint64_t decision_sequence{0};
     // Per-player decision-snapshot sequence; advances with every published row.
     std::array<std::uint64_t, kPlayersPerLobby> player_decision_sequences{};
+    // Structured native facts captured atomically with observations and masks.
+    AuditSnapshot native_state_snapshot{};
 };
 
 
@@ -476,6 +557,8 @@ struct StepResult {
     std::uint32_t round{0};
     std::uint32_t stage{1};
     std::int32_t alive_players{8};
+    // Structured native facts captured atomically with observations and masks.
+    AuditSnapshot native_state_snapshot{};
 
     // Diagnósticos adicionais sem acoplar o PPO às engines.
     std::vector<std::string> events;
@@ -495,75 +578,6 @@ struct PublicState {
 };
 
 
-struct AuditUnitSnapshot {
-    bool occupied{false};
-    std::string champion_id;
-    std::string uuid;
-    std::int32_t star{0};
-    std::int32_t cost{0};
-    std::vector<std::string> item_ids;
-};
-
-struct AuditPlayerSnapshot {
-    std::int32_t player_id{-1};
-    std::int32_t gold{0};
-    std::int32_t level{0};
-    std::int32_t xp{0};
-    std::int32_t win_streak{0};
-    std::int32_t loss_streak{0};
-    std::int32_t gold_before_interest{0};
-    std::int32_t interest_if_resolved_now{0};
-    double board_power{0.0};
-    double synergy_score{0.0};
-    double positioning_score{0.0};
-    // Keep native board-evaluation diagnostics in the audit snapshot; the
-    // Viewer cannot reconstruct structural quality from board power alone.
-    double board_quality_score{0.0};
-    double board_positional_score{0.0};
-    double board_structural_score{0.0};
-    double board_quality_delta{0.0};
-    std::int32_t board_exposed_carries{0};
-    std::int32_t board_frontline_count{0};
-    std::int32_t board_isolated_frontline_count{0};
-    std::int32_t board_important_bench_units_unplayed{0};
-    std::int32_t round_gold{0};
-    std::int32_t round_base_gold{0};
-    std::int32_t round_interest{0};
-    std::int32_t round_streak_gold{0};
-    std::int32_t round_win_gold{0};
-    std::array<AuditUnitSnapshot, kBoardSlots> board{};
-    std::array<AuditUnitSnapshot, kBenchSlots> bench{};
-    std::array<AuditUnitSnapshot, kShopSlots> shop{};
-    // Item state is part of the audit snapshot so the viewer can distinguish
-    // loose components, completed items in the bag, and unit equipment.
-    std::vector<std::string> item_components;
-    std::vector<std::string> item_inventory;
-    std::vector<std::string> item_component_catalog;
-    bool pending_anvil{false};
-    std::int32_t pending_anvil_kind{-1};
-    std::vector<std::string> pending_anvil_options;
-    // Last item decision is carried by the post-action snapshot for exact
-    // Viewer attribution (normal equip/craft versus forced anvil selection).
-    std::string last_item_action_kind;
-    std::string last_item_id;
-    std::string last_item_first_component;
-    std::string last_item_second_component;
-    std::string last_item_target_uuid;
-    std::int32_t last_item_target_slot{-1};
-    bool last_item_target_on_board{false};
-    double last_item_fit{0.0};
-    double last_item_immediate_strength{0.0};
-    double last_item_role_alignment{0.0};
-    double last_item_assignment_reward{0.0};
-    PlayerActionMasks masks{};
-};
-
-struct AuditSnapshot {
-    std::uint32_t round{0};
-    std::uint32_t stage{1};
-    bool finished{false};
-    std::array<AuditPlayerSnapshot, kPlayersPerLobby> players{};
-};
 
 
 class TFTEngine {

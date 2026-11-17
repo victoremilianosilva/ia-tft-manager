@@ -28,13 +28,13 @@ The CSV is deliberately a separate artifact so it can be consumed by scripts or 
 
 | Entity family | Source-backed status | Current Python/PPO boundary | Blocking issue |
 |---|---|---|---|
-| Unit instance | UUID is generated, but is not canonical cross-episode identity | UUID is available in diagnostic snapshot; absent from PPO tensor/rollout | Seed reset repeats UUID; no match/player namespace or collision registry |
-| Board/bench slots | Fixed 28/9 slot arrays and occupancy are native | Diagnostic snapshot plus slot-aligned flat PPO features | No typed source sequence or structured entity delivery; board geometry is not canonical hex |
-| Shop offer | Five fixed offers and reroll/purchase lifecycle are native | Diagnostic snapshot plus fixed slot features | No stable offer ID/revision/reroll generation |
+| Unit instance | UUID is generated, but is not canonical cross-episode identity | Identity-bound native sidecar is preserved in per-player rollout metadata; not an Actor/Critic tensor | Seed reset repeats UUID; no global collision registry or formal lifecycle guarantee |
+| Board/bench slots | Fixed 28/9 slot arrays and occupancy are native | Exact 28/9 slot records now travel in the native sidecar and rollout metadata; PPO still consumes flat features | No canonical hex geometry/orientation; no structured Actor/Critic projection |
+| Shop offer | Five fixed offers and reroll/purchase lifecycle are native | Five slot records travel in the native sidecar and rollout metadata | No stable offer ID/revision/reroll generation; UnitInstance UUID is not offer identity |
 | Pool availability | `UnitPool::available()` is an authoritative shared-lobby per-champion count query | Direct pybind query only; not in wrapper observation or PPO vector | No immutable decision-correlated pool snapshot or source sequence |
-| Item instance | No physical item-instance object or ID; catalog IDs and multiplicity only | Diagnostic catalog IDs and flat item semantics | No per-copy identity, typed owner relation or item event sequence |
-| Component inventory | Native aggregate/multiplicity exists | Diagnostic IDs and aggregate PPO counts | No component instance identity/acquisition sequence |
-| Anvil option | ItemEngine queue API exists, but audited gameplay reward path does not produce it | Not delivered | No gameplay producer, stable anvil/option IDs or decision sequence |
+| Item instance | No physical item-instance object or ID; catalog IDs and multiplicity only | Equipped catalog IDs are carried beside unit records; bag/component catalog IDs are carried in player sidecar | No per-copy identity, typed owner relation or item event sequence |
+| Component inventory | Native aggregate/multiplicity exists | Catalog IDs/multiplicity travel in the sidecar and remain aggregate PPO features | No component instance identity/acquisition sequence |
+| Anvil option | ItemEngine queue API exists, but audited gameplay reward path does not produce it | Existing pending options are preserved in the sidecar when present | No authoritative gameplay producer, stable anvil/option IDs or decision sequence |
 | Trait | Catalog membership and several derived count scopes exist | Fixed numeric trait features only | PPO and strategic counts differ; no typed trait records/catalog fingerprint |
 | Position | Internal 4×7 slot mapping and read-only Shadow proposal exist | Aggregate positioning features; proposal diagnostic | No canonical hex semantics or physical UUID join |
 | Unit assessment | Shadow-only heuristic assessment | Diagnostic/Shadow only; no structured PPO delivery | Champion-keyed/per-slot records lack physical UUID and formula provenance |
@@ -59,6 +59,8 @@ The CSV uses the status vocabulary required by #346:
 Delivery is recorded separately as `diagnostic_sidecar_to_python`, `flat_ppo_feature`, `not_delivered`, and related values. This prevents a native or diagnostic value from being described as PPO input.
 
 ## Known limitations and next audit work
+
+PR #455 adds a versioned `native_state_snapshot` sidecar to ResetResult/StepResult and carries one player record into each corresponding rollout metadata row. This proves transport for the existing AuditPlayerSnapshot fields only; it does not mean the 17 entity kinds are fully produced or projected into Actor/Critic tensors. See [Native State Snapshot Contract v1](native-state-snapshot-contract.v1.draft.md).
 
 This matrix is a coverage index, not proof that every field in every nested Schema v2 object has been individually traced. In particular, the next pass must enumerate all nested declared fields and reconcile them against the matrix; resolve the schema's required `instance_id`, `unit_instance_id`, and `candidate_id` assumptions against absent or unsafe native identities; and complete repository-wide callsite/test coverage for UUID lifecycle, source sequences, reset behavior and delivery.
 

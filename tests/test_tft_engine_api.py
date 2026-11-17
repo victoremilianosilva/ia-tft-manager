@@ -644,18 +644,36 @@ def test_engine_instance_identity_is_distinct_from_seed_and_episode():
         assert first_reset["decision_sequence"] == second_reset["decision_sequence"] == 1
         assert first_reset["player_decision_sequences"] == [1] * 8
         assert second_reset["player_decision_sequences"] == [1] * 8
+        for reset in (first_reset, second_reset):
+            structured = reset["native_state_snapshot"]
+            assert structured["contract_id"] == "tft.native-state-snapshot"
+            assert structured["contract_version"] == 1
+            assert structured["source_namespace"] == "tft.engine.observation-snapshot"
+            assert structured["engine_instance_id"] == reset["engine_instance_id"]
+            assert structured["episode_id"] == reset["episode_id"]
+            assert structured["snapshot_sequence"] == reset["decision_sequence"]
+            assert structured["player_decision_sequences"] == reset["player_decision_sequences"]
+            assert len(structured["players"]) == 8
+            assert len(structured["players"][0]["board"]) == 28
+            starter = structured["players"][0]["bench"][0]
+            assert starter["occupied"]
+            assert starter["champion_id"]
+            assert starter["uuid"]
 
         first_step = first.step([[6, 0, 0, 0, 0, 0] for _ in range(8)])
         assert first_step["engine_instance_id"] == first_id
         assert first_step["episode_id"] == first_reset["episode_id"]
         assert first_step["decision_sequence"] == 2
         assert first_step["player_decision_sequences"] == [2] * 8
+        assert first_step["native_state_snapshot"]["snapshot_sequence"] == first_step["decision_sequence"]
+        assert first_step["native_state_snapshot"]["players"][0]["bench"][0]["uuid"] == starter["uuid"]
 
         next_reset = first.reset()
         assert next_reset["engine_instance_id"] == first_id
         assert next_reset["episode_id"] > first_reset["episode_id"]
         assert next_reset["decision_sequence"] == 3
         assert next_reset["player_decision_sequences"] == [3] * 8
+        assert next_reset["native_state_snapshot"]["snapshot_sequence"] == next_reset["decision_sequence"]
     finally:
         first.close()
         second.close()

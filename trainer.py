@@ -3,6 +3,7 @@ import torch.optim as optim
 import numpy as np
 import os
 import json
+import copy
 import hashlib
 
 from rich.console import Console
@@ -419,6 +420,21 @@ class Trainer:
                 raise RuntimeError(
                     f"Lobby {lobby_idx} não forneceu sequências individuais para {players_per_lobby} jogadores."
                 )
+            native_snapshot = snapshot.get("native_state_snapshot")
+            native_players = None
+            if native_snapshot is not None:
+                if not isinstance(native_snapshot, dict):
+                    raise RuntimeError(f"Snapshot estruturado inválido para lobby {lobby_idx}.")
+                for field in ("engine_instance_id", "episode_id"):
+                    if native_snapshot.get(field) != snapshot.get(field):
+                        raise RuntimeError(f"Snapshot estruturado diverge em {field} na lobby {lobby_idx}.")
+                if native_snapshot.get("snapshot_sequence") != snapshot.get("decision_sequence"):
+                    raise RuntimeError(f"Snapshot estruturado diverge na sequência da lobby {lobby_idx}.")
+                if native_snapshot.get("player_decision_sequences") != player_sequences:
+                    raise RuntimeError(f"Snapshot estruturado diverge nas sequências individuais da lobby {lobby_idx}.")
+                native_players = native_snapshot.get("players")
+                if not isinstance(native_players, list) or len(native_players) != players_per_lobby:
+                    raise RuntimeError(f"Snapshot estruturado sem {players_per_lobby} jogadores na lobby {lobby_idx}.")
             for player_idx, player_sequence in enumerate(player_sequences):
                 if (
                     isinstance(player_sequence, bool)
@@ -430,6 +446,12 @@ class Trainer:
                     )
                 metadata = dict(snapshot)
                 metadata.pop("player_decision_sequences", None)
+                metadata.pop("native_state_snapshot", None)
+                if native_players is not None:
+                    native_player = native_players[player_idx]
+                    if not isinstance(native_player, dict) or native_player.get("player_id") != player_idx:
+                        raise RuntimeError(f"Registro estruturado desalinhado para lobby {lobby_idx}, jogador {player_idx}.")
+                    metadata["native_player_state"] = copy.deepcopy(native_player)
                 metadata["player_decision_sequence"] = player_sequence
                 metadata["lobby_index"] = lobby_idx
                 metadata["player_id"] = player_idx

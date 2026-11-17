@@ -1,6 +1,6 @@
 # Structured Entity Producer Evidence Audit — Identity Slice v1 (Draft)
 
-**Status:** partial source audit; not runtime-approved. Full coverage tracked by [#346](https://github.com/victoremilianosilva/ia-tft-manager/issues/346).
+**Status:** partial source audit; not runtime-approved. Full coverage tracked by [#346](https://github.com/victoremilianosilva/ia-tft-manager/issues/346). The bounded native-state sidecar introduced by PR #455 is documented in [Native State Snapshot Contract v1](native-state-snapshot-contract.v1.draft.md); it does not close the remaining producer gaps.
 
 ## Scope of this slice
 

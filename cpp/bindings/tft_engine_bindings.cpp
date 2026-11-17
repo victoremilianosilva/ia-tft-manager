@@ -188,6 +188,90 @@ py::list player_info_to_list(
     return result;
 }
 
+py::dict audit_snapshot_to_dict(
+    const tft::AuditSnapshot& snapshot,
+    bool include_masks = true
+) {
+    py::dict result;
+    result["contract_id"] = snapshot.contract_id;
+    result["contract_version"] = snapshot.contract_version;
+    result["source_namespace"] = snapshot.source_namespace;
+    result["producer"] = snapshot.producer;
+    result["engine_instance_id"] = snapshot.engine_instance_id;
+    result["episode_id"] = snapshot.episode_id;
+    result["snapshot_sequence"] = snapshot.snapshot_sequence;
+    result["player_decision_sequences"] = snapshot.player_decision_sequences;
+    result["round"] = snapshot.round;
+    result["stage"] = snapshot.stage;
+    result["finished"] = snapshot.finished;
+    py::list players;
+    const auto unit_to_dict = [](const tft::AuditUnitSnapshot& unit) {
+        py::dict d;
+        d["occupied"] = unit.occupied;
+        d["champion_id"] = unit.champion_id;
+        d["uuid"] = unit.uuid;
+        d["star"] = unit.star;
+        d["cost"] = unit.cost;
+        d["items"] = unit.item_ids;
+        return d;
+    };
+    for (const auto& player : snapshot.players) {
+        py::dict p;
+        p["player_id"] = player.player_id;
+        p["gold"] = player.gold;
+        p["level"] = player.level;
+        p["xp"] = player.xp;
+        p["win_streak"] = player.win_streak;
+        p["loss_streak"] = player.loss_streak;
+        p["gold_before_interest"] = player.gold_before_interest;
+        p["interest_if_resolved_now"] = player.interest_if_resolved_now;
+        p["board_power"] = player.board_power;
+        p["synergy_score"] = player.synergy_score;
+        p["positioning_score"] = player.positioning_score;
+        p["board_quality_score"] = player.board_quality_score;
+        p["board_positional_score"] = player.board_positional_score;
+        p["board_structural_score"] = player.board_structural_score;
+        p["board_quality_delta"] = player.board_quality_delta;
+        p["board_exposed_carries"] = player.board_exposed_carries;
+        p["board_frontline_count"] = player.board_frontline_count;
+        p["board_isolated_frontline_count"] = player.board_isolated_frontline_count;
+        p["board_important_bench_units_unplayed"] = player.board_important_bench_units_unplayed;
+        p["round_gold"] = player.round_gold;
+        p["round_base_gold"] = player.round_base_gold;
+        p["round_interest"] = player.round_interest;
+        p["round_streak_gold"] = player.round_streak_gold;
+        p["round_win_gold"] = player.round_win_gold;
+        py::list board, bench, shop;
+        for (const auto& unit : player.board) board.append(unit_to_dict(unit));
+        for (const auto& unit : player.bench) bench.append(unit_to_dict(unit));
+        for (const auto& unit : player.shop) shop.append(unit_to_dict(unit));
+        p["board"] = board;
+        p["bench"] = bench;
+        p["shop"] = shop;
+        p["item_components"] = player.item_components;
+        p["item_inventory"] = player.item_inventory;
+        p["item_component_catalog"] = player.item_component_catalog;
+        p["pending_anvil"] = player.pending_anvil;
+        p["pending_anvil_kind"] = player.pending_anvil_kind;
+        p["pending_anvil_options"] = player.pending_anvil_options;
+        p["last_item_action_kind"] = player.last_item_action_kind;
+        p["last_item_id"] = player.last_item_id;
+        p["last_item_first_component"] = player.last_item_first_component;
+        p["last_item_second_component"] = player.last_item_second_component;
+        p["last_item_target_uuid"] = player.last_item_target_uuid;
+        p["last_item_target_slot"] = player.last_item_target_slot;
+        p["last_item_target_on_board"] = player.last_item_target_on_board;
+        p["last_item_fit"] = player.last_item_fit;
+        p["last_item_immediate_strength"] = player.last_item_immediate_strength;
+        p["last_item_role_alignment"] = player.last_item_role_alignment;
+        p["last_item_assignment_reward"] = player.last_item_assignment_reward;
+        if (include_masks) p["action_masks"] = masks_to_dict(player.masks);
+        players.append(std::move(p));
+    }
+    result["players"] = std::move(players);
+    return result;
+}
+
 py::dict reset_to_dict(const tft::ResetResult& reset) {
     py::dict result;
 
@@ -203,6 +287,7 @@ py::dict reset_to_dict(const tft::ResetResult& reset) {
     result["episode_id"] = reset.episode_id;
     result["decision_sequence"] = reset.decision_sequence;
     result["player_decision_sequences"] = reset.player_decision_sequences;
+    result["native_state_snapshot"] = audit_snapshot_to_dict(reset.native_state_snapshot, false);
     result["observation_dim"] = reset.observation_dim;
 
     return result;
@@ -247,6 +332,7 @@ py::dict step_to_dict(const tft::StepResult& step) {
     result["episode_id"] = step.episode_id;
     result["decision_sequence"] = step.decision_sequence;
     result["player_decision_sequences"] = step.player_decision_sequences;
+    result["native_state_snapshot"] = audit_snapshot_to_dict(step.native_state_snapshot, false);
     result["round"] = step.round;
     result["stage"] = step.stage;
     result["alive_players"] = step.alive_players;
@@ -816,83 +902,9 @@ PYBIND11_MODULE(tft_engine, module) {
         .def("get_composition_diagnostics_jsonl", &TFTEngine::get_composition_diagnostics_jsonl)
         .def("set_strategic_direction_pivot_audit_path",
              &TFTEngine::set_strategic_direction_pivot_audit_path, py::arg("path"))
-        .def(
-            "get_audit_snapshot",
-            [](const TFTEngine& self) {
-                const auto snapshot = self.get_audit_snapshot();
-                py::dict result;
-                result["round"] = snapshot.round;
-                result["stage"] = snapshot.stage;
-                result["finished"] = snapshot.finished;
-                py::list players;
-                const auto unit_to_dict = [](const tft::AuditUnitSnapshot& unit) {
-                    py::dict d;
-                    d["occupied"] = unit.occupied;
-                    d["champion_id"] = unit.champion_id;
-                    d["uuid"] = unit.uuid;
-                    d["star"] = unit.star;
-                    d["cost"] = unit.cost;
-                    d["items"] = unit.item_ids;
-                    return d;
-                };
-                for (const auto& player : snapshot.players) {
-                    py::dict p;
-                    p["player_id"] = player.player_id;
-                    p["gold"] = player.gold;
-                    p["level"] = player.level;
-                    p["xp"] = player.xp;
-                    p["win_streak"] = player.win_streak;
-                    p["loss_streak"] = player.loss_streak;
-                    p["gold_before_interest"] = player.gold_before_interest;
-                    p["interest_if_resolved_now"] = player.interest_if_resolved_now;
-                    p["board_power"] = player.board_power;
-                    p["synergy_score"] = player.synergy_score;
-                    p["positioning_score"] = player.positioning_score;
-                    p["board_quality_score"] = player.board_quality_score;
-                    p["board_positional_score"] = player.board_positional_score;
-                    p["board_structural_score"] = player.board_structural_score;
-                    p["board_quality_delta"] = player.board_quality_delta;
-                    p["board_exposed_carries"] = player.board_exposed_carries;
-                    p["board_frontline_count"] = player.board_frontline_count;
-                    p["board_isolated_frontline_count"] = player.board_isolated_frontline_count;
-                    p["board_important_bench_units_unplayed"] =
-                        player.board_important_bench_units_unplayed;
-                    p["round_gold"] = player.round_gold;
-                    p["round_base_gold"] = player.round_base_gold;
-                    p["round_interest"] = player.round_interest;
-                    p["round_streak_gold"] = player.round_streak_gold;
-                    p["round_win_gold"] = player.round_win_gold;
-                    py::list board, bench, shop;
-                    for (const auto& unit : player.board) board.append(unit_to_dict(unit));
-                    for (const auto& unit : player.bench) bench.append(unit_to_dict(unit));
-                    for (const auto& unit : player.shop) shop.append(unit_to_dict(unit));
-                    p["board"] = board;
-                    p["bench"] = bench;
-                    p["shop"] = shop;
-                    p["item_components"] = player.item_components;
-                    p["item_inventory"] = player.item_inventory;
-                    p["item_component_catalog"] = player.item_component_catalog;
-                    p["pending_anvil"] = player.pending_anvil;
-                    p["pending_anvil_kind"] = player.pending_anvil_kind;
-                    p["pending_anvil_options"] = player.pending_anvil_options;
-                    p["last_item_action_kind"] = player.last_item_action_kind;
-                    p["last_item_id"] = player.last_item_id;
-                    p["last_item_first_component"] = player.last_item_first_component;
-                    p["last_item_second_component"] = player.last_item_second_component;
-                    p["last_item_target_uuid"] = player.last_item_target_uuid;
-                    p["last_item_target_slot"] = player.last_item_target_slot;
-                    p["last_item_target_on_board"] = player.last_item_target_on_board;
-                    p["last_item_fit"] = player.last_item_fit;
-                    p["last_item_immediate_strength"] = player.last_item_immediate_strength;
-                    p["last_item_role_alignment"] = player.last_item_role_alignment;
-                    p["last_item_assignment_reward"] = player.last_item_assignment_reward;
-                    p["action_masks"] = masks_to_dict(player.masks);
-                    players.append(p);
-                }
-                result["players"] = players;
-                return result;
-            }
-        )
+        .def("get_audit_snapshot", [](const TFTEngine& self) {
+            return audit_snapshot_to_dict(self.get_audit_snapshot());
+        })
         .def(
             "get_action_masks",
             [](const TFTEngine& self) {
