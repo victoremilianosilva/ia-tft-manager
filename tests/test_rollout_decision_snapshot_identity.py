@@ -13,6 +13,7 @@ class FakeIdentityEnv:
     def __init__(self):
         self.episode_id = 0
         self.decision_sequence = 0
+        self.player_decision_sequences = [0] * 8
         self.players = [
             type("Player", (), {"alive": True})() for _ in range(8)
         ]
@@ -21,10 +22,12 @@ class FakeIdentityEnv:
     def reset(self):
         self.episode_id += 1
         self.decision_sequence += 1
+        self.player_decision_sequences = [value + 1 for value in self.player_decision_sequences]
         self._metadata = {
             "engine_instance_id": "engine-A",
             "episode_id": self.episode_id,
             "decision_sequence": self.decision_sequence,
+            "player_decision_sequences": list(self.player_decision_sequences),
             "round": 0,
             "stage": 1,
             "snapshot_kind": "reset",
@@ -36,10 +39,12 @@ class FakeIdentityEnv:
 
     def step(self, _actions):
         self.decision_sequence += 1
+        self.player_decision_sequences = [value + 1 for value in self.player_decision_sequences]
         self._metadata = {
             "engine_instance_id": "engine-A",
             "episode_id": self.episode_id,
             "decision_sequence": self.decision_sequence,
+            "player_decision_sequences": list(self.player_decision_sequences),
             "round": 5,
             "stage": 2,
             "snapshot_kind": "step",
@@ -90,10 +95,12 @@ def test_terminal_auto_reset_keeps_transition_and_next_episode_identity_separate
         assert info["step_result_snapshot"]["episode_id"] == 1
         assert info["step_result_snapshot"]["round"] == 5
         assert info["step_result_snapshot"]["decision_sequence"] == 2
+        assert info["step_result_snapshot"]["player_decision_sequences"] == [2] * 8
         assert len(info["action_trace"]) == 8
         assert info["action_trace"][0]["handler_applied"] is True
         assert info["next_snapshot"]["episode_id"] == 2
         assert info["next_snapshot"]["decision_sequence"] == 3
+        assert info["next_snapshot"]["player_decision_sequences"] == [3] * 8
         assert info["next_snapshot"]["snapshot_kind"] == "reset"
         assert env.get_snapshot_metadata()[0]["episode_id"] == 2
         assert env.get_snapshot_metadata()[0]["decision_sequence"] == 3
@@ -114,6 +121,7 @@ def test_rollout_buffer_preserves_per_agent_snapshot_identity():
             "engine_instance_id": "engine-A",
             "episode_id": 7,
             "decision_sequence": 12,
+            "player_decision_sequence": 12,
             "round": 4,
             "stage": 2,
             "snapshot_kind": "step",
@@ -128,6 +136,7 @@ def test_rollout_buffer_preserves_per_agent_snapshot_identity():
         {
             **item,
             "decision_sequence": 13,
+            "player_decision_sequence": 13,
             "snapshot_kind": "step_result",
             "action_trace": {
                 "player_id": item["player_id"],
@@ -196,11 +205,11 @@ def test_rollout_buffer_rejects_incomplete_snapshot_identity():
             snapshot_metadata=[{"episode_id": 1, "player_id": 0}],
             result_snapshot_metadata=[{
                 "engine_instance_id": "engine-A", "episode_id": 1,
-                "decision_sequence": 2, "player_id": 0, "lobby_index": 0,
+                "decision_sequence": 2, "player_decision_sequence": 2, "player_id": 0, "lobby_index": 0,
             }],
             next_snapshot_metadata=[{
                 "engine_instance_id": "engine-A", "episode_id": 1,
-                "decision_sequence": 2, "player_id": 0, "lobby_index": 0,
+                "decision_sequence": 2, "player_decision_sequence": 2, "player_id": 0, "lobby_index": 0,
             }],
         )
 
@@ -211,13 +220,13 @@ def test_rollout_buffer_preserves_terminal_result_and_new_episode_identity():
     )
     decision = {
         "engine_instance_id": "engine-A", "episode_id": 4,
-        "decision_sequence": 21, "player_id": 0, "lobby_index": 0,
+        "decision_sequence": 21, "player_decision_sequence": 21, "player_id": 0, "lobby_index": 0,
         "mask_snapshot_hash": "b" * 64,
         "mask_snapshot_hash_algorithm": "tft-action-mask-snapshot-v1",
     }
     result = {
         "engine_instance_id": "engine-A", "episode_id": 4,
-        "decision_sequence": 22, "player_id": 0, "lobby_index": 0,
+        "decision_sequence": 22, "player_decision_sequence": 22, "player_id": 0, "lobby_index": 0,
         "action_trace": {
             "player_id": 0,
             "requested_action": [0, 0, 0, 0, 0, 0],
@@ -227,7 +236,7 @@ def test_rollout_buffer_preserves_terminal_result_and_new_episode_identity():
     }
     next_state = {
         "engine_instance_id": "engine-A", "episode_id": 5,
-        "decision_sequence": 23, "player_id": 0, "lobby_index": 0,
+        "decision_sequence": 23, "player_decision_sequence": 23, "player_id": 0, "lobby_index": 0,
     }
     buffer.add(
         obs=np.zeros((1, 3), dtype=np.float32),
@@ -252,13 +261,13 @@ def test_rollout_buffer_rejects_result_identity_from_another_episode():
     )
     decision = {
         "engine_instance_id": "engine-A", "episode_id": 4,
-        "decision_sequence": 21, "player_id": 0, "lobby_index": 0,
+        "decision_sequence": 21, "player_decision_sequence": 21, "player_id": 0, "lobby_index": 0,
         "mask_snapshot_hash": "c" * 64,
         "mask_snapshot_hash_algorithm": "tft-action-mask-snapshot-v1",
     }
     result = {
         "engine_instance_id": "engine-A", "episode_id": 5,
-        "decision_sequence": 22, "player_id": 0, "lobby_index": 0,
+        "decision_sequence": 22, "player_decision_sequence": 22, "player_id": 0, "lobby_index": 0,
     }
     with pytest.raises(ValueError, match="Episode divergente"):
         buffer.add(
@@ -297,13 +306,13 @@ def test_rollout_rejects_action_trace_that_differs_from_ppo_action():
     )
     decision = {
         "engine_instance_id": "engine-A", "episode_id": 4,
-        "decision_sequence": 21, "player_id": 0, "lobby_index": 0,
+        "decision_sequence": 21, "player_decision_sequence": 21, "player_id": 0, "lobby_index": 0,
         "mask_snapshot_hash": "d" * 64,
         "mask_snapshot_hash_algorithm": "tft-action-mask-snapshot-v1",
     }
     result = {
         "engine_instance_id": "engine-A", "episode_id": 4,
-        "decision_sequence": 22, "player_id": 0, "lobby_index": 0,
+        "decision_sequence": 22, "player_decision_sequence": 22, "player_id": 0, "lobby_index": 0,
         "action_trace": {
             "player_id": 0,
             "requested_action": [6, 0, 0, 0, 0, 0],
@@ -335,13 +344,13 @@ def test_rollout_rejects_malformed_requested_action_trace():
     )
     decision = {
         "engine_instance_id": "engine-A", "episode_id": 4,
-        "decision_sequence": 21, "player_id": 0, "lobby_index": 0,
+        "decision_sequence": 21, "player_decision_sequence": 21, "player_id": 0, "lobby_index": 0,
         "mask_snapshot_hash": "e" * 64,
         "mask_snapshot_hash_algorithm": "tft-action-mask-snapshot-v1",
     }
     result = {
         "engine_instance_id": "engine-A", "episode_id": 4,
-        "decision_sequence": 22, "player_id": 0, "lobby_index": 0,
+        "decision_sequence": 22, "player_decision_sequence": 22, "player_id": 0, "lobby_index": 0,
         "action_trace": {"player_id": 0, "requested_action": [6, 0]},
     }
     next_state = {key: value for key, value in result.items() if key != "action_trace"}
@@ -367,13 +376,13 @@ def _add_rollout_with_action_trace_for_validation(action_trace):
     )
     decision = {
         "engine_instance_id": "engine-A", "episode_id": 4,
-        "decision_sequence": 21, "player_id": 0, "lobby_index": 0,
+        "decision_sequence": 21, "player_decision_sequence": 21, "player_id": 0, "lobby_index": 0,
         "mask_snapshot_hash": "f" * 64,
         "mask_snapshot_hash_algorithm": "tft-action-mask-snapshot-v1",
     }
     result = {
         "engine_instance_id": "engine-A", "episode_id": 4,
-        "decision_sequence": 22, "player_id": 0, "lobby_index": 0,
+        "decision_sequence": 22, "player_decision_sequence": 22, "player_id": 0, "lobby_index": 0,
         "action_trace": {"player_id": 0, **action_trace},
     }
     next_state = {key: value for key, value in result.items() if key != "action_trace"}
@@ -429,13 +438,13 @@ def test_rollout_rejects_transition_without_native_action_trace():
     )
     decision = {
         "engine_instance_id": "engine-A", "episode_id": 4,
-        "decision_sequence": 21, "player_id": 0, "lobby_index": 0,
+        "decision_sequence": 21, "player_decision_sequence": 21, "player_id": 0, "lobby_index": 0,
         "mask_snapshot_hash": "a" * 64,
         "mask_snapshot_hash_algorithm": "tft-action-mask-snapshot-v1",
     }
     result = {
         "engine_instance_id": "engine-A", "episode_id": 4,
-        "decision_sequence": 22, "player_id": 0, "lobby_index": 0,
+        "decision_sequence": 22, "player_decision_sequence": 22, "player_id": 0, "lobby_index": 0,
     }
     with pytest.raises(ValueError, match="action_trace é obrigatório"):
         buffer.add(
@@ -653,7 +662,7 @@ def test_rollout_metadata_nested_action_trace_is_isolated_on_store_and_batch():
     )
     decision = {
         "engine_instance_id": "engine-A", "episode_id": 4,
-        "decision_sequence": 21, "player_id": 0, "lobby_index": 0,
+        "decision_sequence": 21, "player_decision_sequence": 21, "player_id": 0, "lobby_index": 0,
         "mask_snapshot_hash": "a" * 64,
         "mask_snapshot_hash_algorithm": "tft-action-mask-snapshot-v1",
     }
@@ -666,12 +675,12 @@ def test_rollout_metadata_nested_action_trace_is_isolated_on_store_and_batch():
     }
     result = {
         "engine_instance_id": "engine-A", "episode_id": 4,
-        "decision_sequence": 22, "player_id": 0, "lobby_index": 0,
+        "decision_sequence": 22, "player_decision_sequence": 22, "player_id": 0, "lobby_index": 0,
         "action_trace": trace,
     }
     next_state = {
         "engine_instance_id": "engine-A", "episode_id": 4,
-        "decision_sequence": 22, "player_id": 0, "lobby_index": 0,
+        "decision_sequence": 22, "player_decision_sequence": 22, "player_id": 0, "lobby_index": 0,
     }
 
     buffer.add(
@@ -726,14 +735,14 @@ def test_rollout_rejects_malformed_identity_field_types(field, invalid_value):
     )
     decision = {
         "engine_instance_id": "engine-A", "episode_id": 4,
-        "decision_sequence": 21, "player_id": 0, "lobby_index": 0,
+        "decision_sequence": 21, "player_decision_sequence": 21, "player_id": 0, "lobby_index": 0,
         "mask_snapshot_hash": "a" * 64,
         "mask_snapshot_hash_algorithm": "tft-action-mask-snapshot-v1",
     }
     decision[field] = invalid_value
     result = {
         "engine_instance_id": "engine-A", "episode_id": 4,
-        "decision_sequence": 22, "player_id": 0, "lobby_index": 0,
+        "decision_sequence": 22, "player_decision_sequence": 22, "player_id": 0, "lobby_index": 0,
         "action_trace": {
             "player_id": 0,
             "requested_action": [6, 0, 0, 0, 0, 0],
@@ -744,7 +753,7 @@ def test_rollout_rejects_malformed_identity_field_types(field, invalid_value):
     }
     next_state = {
         "engine_instance_id": "engine-A", "episode_id": 4,
-        "decision_sequence": 22, "player_id": 0, "lobby_index": 0,
+        "decision_sequence": 22, "player_decision_sequence": 22, "player_id": 0, "lobby_index": 0,
     }
 
     with pytest.raises(ValueError, match=field):

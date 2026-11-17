@@ -129,6 +129,19 @@ class CppTFTLobbyWrapper:
             for player in masks
         ]
 
+    @staticmethod
+    def _copy_player_decision_sequences(values):
+        if not isinstance(values, (list, tuple, np.ndarray)) or len(values) != CppTFTLobbyWrapper.PLAYERS_PER_LOBBY:
+            raise RuntimeError("Snapshot nativo sem as oito sequências individuais de decisão esperadas.")
+        sequences = []
+        for player_id, value in enumerate(values):
+            if isinstance(value, (bool, np.bool_)) or not isinstance(value, (int, np.integer)) or value < 0:
+                raise RuntimeError(
+                    f"Sequência de decisão inválida para o jogador {player_id}: {value!r}."
+                )
+            sequences.append(int(value))
+        return sequences
+
     def reset(self, seed: int | None = None):
         # Invalidate the previous pair before asking native code for a new
         # snapshot. If reset raises, callers must not reuse old observations'
@@ -146,6 +159,7 @@ class CppTFTLobbyWrapper:
             "engine_instance_id": str(result["engine_instance_id"]),
             "episode_id": int(result["episode_id"]),
             "decision_sequence": int(result["decision_sequence"]),
+            "player_decision_sequences": self._copy_player_decision_sequences(result.get("player_decision_sequences")),
             "round": 0,
             "stage": 1,
             "snapshot_kind": "reset",
@@ -178,6 +192,7 @@ class CppTFTLobbyWrapper:
             "engine_instance_id": str(result["engine_instance_id"]),
             "episode_id": int(result["episode_id"]),
             "decision_sequence": int(result["decision_sequence"]),
+            "player_decision_sequences": self._copy_player_decision_sequences(result.get("player_decision_sequences")),
             "round": int(result.get("round", 0)),
             "stage": int(result.get("stage", 1)),
             "snapshot_kind": "step",

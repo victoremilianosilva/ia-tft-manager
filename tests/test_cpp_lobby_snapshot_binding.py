@@ -34,6 +34,7 @@ class FakeNativeLobby:
         self.mask_reads = 0
         self.episode_id = 0
         self.decision_sequence = 0
+        self.player_decision_sequences = [0] * 8
         self.fail_reset = False
         self.fail_step = False
 
@@ -43,12 +44,14 @@ class FakeNativeLobby:
             raise RuntimeError("synthetic reset failure")
         self.episode_id += 1
         self.decision_sequence += 1
+        self.player_decision_sequences = [value + 1 for value in self.player_decision_sequences]
         return {
             "observations": np.full((8, 4), self.episode_id, dtype=np.float32),
             "action_masks": make_masks(0),
             "engine_instance_id": f"fake-engine-{id(self)}",
             "episode_id": self.episode_id,
             "decision_sequence": self.decision_sequence,
+            "player_decision_sequences": list(self.player_decision_sequences),
             "observation_dim": 4,
         }
 
@@ -57,6 +60,7 @@ class FakeNativeLobby:
             self.fail_step = False
             raise RuntimeError("synthetic step failure")
         self.decision_sequence += 1
+        self.player_decision_sequences = [value + 1 for value in self.player_decision_sequences]
         return {
             "observations": np.full((8, 4), 2, dtype=np.float32),
             "rewards": np.zeros(8, dtype=np.float32),
@@ -65,6 +69,7 @@ class FakeNativeLobby:
             "engine_instance_id": f"fake-engine-{id(self)}",
             "episode_id": self.episode_id,
             "decision_sequence": self.decision_sequence,
+            "player_decision_sequences": list(self.player_decision_sequences),
             "round": 3,
             "stage": 2,
             "lobby_done": False,
@@ -109,6 +114,7 @@ def test_reset_masks_are_taken_from_same_native_snapshot(monkeypatch):
             "engine_instance_id": f"fake-engine-{id(lobby._engine)}",
             "episode_id": 1,
             "decision_sequence": 1,
+            "player_decision_sequences": [1] * 8,
             "round": 0,
             "stage": 1,
             "snapshot_kind": "reset",
@@ -146,6 +152,7 @@ def test_step_masks_are_taken_from_same_native_snapshot(monkeypatch):
             "engine_instance_id": f"fake-engine-{id(lobby._engine)}",
             "episode_id": 1,
             "decision_sequence": 2,
+            "player_decision_sequences": [2] * 8,
             "round": 3,
             "stage": 2,
             "snapshot_kind": "step",

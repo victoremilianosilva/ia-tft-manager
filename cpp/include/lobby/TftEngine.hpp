@@ -213,6 +213,8 @@ struct ResetResult {
     std::uint64_t episode_id{0};
     // Monotonic per Engine instance; identifies the exact published observation/mask snapshot.
     std::uint64_t decision_sequence{0};
+    // Per-player decision-snapshot sequence; advances with every published row.
+    std::array<std::uint64_t, kPlayersPerLobby> player_decision_sequences{};
 };
 
 
@@ -469,6 +471,8 @@ struct StepResult {
     std::uint64_t episode_id{0};
     // Monotonic per Engine instance; identifies the exact published observation/mask snapshot.
     std::uint64_t decision_sequence{0};
+    // Per-player decision-snapshot sequence; advances with every published row.
+    std::array<std::uint64_t, kPlayersPerLobby> player_decision_sequences{};
     std::uint32_t round{0};
     std::uint32_t stage{1};
     std::int32_t alive_players{8};
