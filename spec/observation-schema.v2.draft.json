@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:tft:ppo:observation-schema:v2-draft",
   "title": "TFT PPO Observation Snapshot — Draft v2",
-  "description": "PROPOSED DOCUMENTARY SPECIFICATION; not approved for runtime use. Preserves v1 semantic observation fields while introducing Decision Identity Envelope v2 with typed sequence references. Runtime producer/consumer migration and executable acceptance remain blocked until Gate 8 and explicit authorization.",
+  "description": "PROPOSED DOCUMENTARY SPECIFICATION; not approved for runtime use. Semantic observation contract v2 with typed, namespaced sequence references. The native Engine currently supplies an Engine-instance-scoped observation/mask snapshot sequence; a separate per-player decision sequence and authoritative logical match identity remain unavailable until their producers are proven.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -91,7 +91,32 @@
         "nature": {
           "$ref": "#/$defs/fieldNature"
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "nature": {
+                "enum": [
+                  "derived",
+                  "estimated",
+                  "inferred",
+                  "recommended"
+                ]
+              }
+            },
+            "required": [
+              "nature"
+            ]
+          },
+          "then": {
+            "required": [
+              "formula_id",
+              "formula_version"
+            ]
+          }
+        }
+      ]
     },
     "field": {
       "type": "object",
@@ -335,7 +360,10 @@
               "unit": {
                 "type": "null"
               }
-            }
+            },
+            "required": [
+              "unit"
+            ]
           }
         }
       ]
@@ -371,7 +399,7 @@
             "string",
             "null"
           ],
-          "description": "Canonical Engine-episode scope that distinguishes an Engine object lifetime plus its episode. Native episode_id alone is insufficient; null until an authoritative scoped producer exists."
+          "description": "Canonical Engine-episode scope derived from validated Engine-instance identity plus episode identity. episode_id alone is insufficient; null until the adapter publishes a canonical scoped identifier."
         },
         "session_match_id": {
           "type": [
@@ -411,7 +439,8 @@
             {
               "type": "null"
             }
-          ]
+          ],
+          "description": "Per-player decision counter in a registered namespace. It must not be populated from the native Engine-wide snapshot publication counter; null when no authoritative per-player producer exists."
         },
         "snapshot_sequence": {
           "oneOf": [
@@ -421,7 +450,8 @@
             {
               "type": "null"
             }
-          ]
+          ],
+          "description": "Exact observation/action-mask snapshot publication counter in a registered namespace. Native TFTEngine::Impl decision_sequence is mapped here because it increments once per ResetResult/StepResult and is shared by all eight player rows."
         },
         "player_sequence": {
           "oneOf": [
@@ -657,7 +687,8 @@
                 "then": {
                   "required": [
                     "padding_policy",
-                    "presence_mask_path"
+                    "presence_mask_path",
+                    "length_path"
                   ]
                 }
               },

@@ -7,7 +7,12 @@ on:
   pull_request:
     paths:
       - "spec/observation-schema.v1.draft.json"
+      - "spec/observation-schema.v2.draft.json"
+      - "spec/sequence-namespace-registry.v2.draft.json"
+      - "spec/decision-identity-v2-hash-vectors.draft.json"
+      - "spec/examples/observation-v2/**"
       - "scripts/validate_observation_schema.py"
+      - "scripts/validate_observation_schema_v2.py"
       - ".github/workflows/observation-schema-contract.yml"
 
 jobs:
@@ -20,5 +25,7 @@ jobs:
           python-version: "3.12"
       - name: Install pinned contract validators
         run: python -m pip install jsonschema==4.23.0 rfc8785==0.1.4
-      - name: Validate Observation Schema and semantic fixtures
+      - name: Validate Observation Schema v1 and semantic fixtures
         run: python scripts/validate_observation_schema.py
+      - name: Validate Observation Schema v2, identity and cardinality contracts
+        run: python scripts/validate_observation_schema_v2.py

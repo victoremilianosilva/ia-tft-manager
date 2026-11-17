@@ -1,6 +1,6 @@
 # Observation Schema v2 Identity Field Semantics Reconciliation v1
 
-**Status:** documentary correction to the v2 proposal; not runtime-approved.  
+**Status:** documentary correction to the v2 proposal; not runtime-approved. PR #451 adds executable validation for this contract.  
 **Target:** new-arquiteture.  
 **Related:** Decision Identity Schema v2 Design; Engine Identity Scope Reconciliation; Native Engine Instance and Episode Identity Scope Audit; Viewer–Engine Session Correlation Audit; Observation Identity v1→v2 Crosswalk; Sequence Namespace Registry v2.  
 **Tracking:** issue #346.
@@ -178,3 +178,10 @@ The lifecycle source also distinguishes:
 
 The source audit has not yet proven that the actual Overwolf event/controller lifecycle invokes manager reset on every new match, reconnect, or game re-entry. Nor has it proven per-match uniqueness of the leaf across real matches. Therefore this evidence does **not** promote `identity.match_id` to canonical v2 availability.
 
+
+
+## Native sequence mapping correction
+
+The native `TFTEngine::Impl::decision_sequence` is a per-Engine snapshot-publication counter, not a per-player decision counter. It increments once for each `ResetResult`/`StepResult`, is shared by all eight player rows, and remains monotonic across episode resets. Decision Identity v2 maps it to `snapshot_sequence` under `tft.engine.observation-snapshot`. The per-player `decision_sequence` remains null until an authoritative producer exists.
+
+Consequently, current native snapshots remain `partial` identity until authoritative logical `match_id` and per-player decision sequence are supplied. A partial identity cannot carry valid mask, Critic, anti-loop, or strategic-owner context merely because local integer counters happen to match.
