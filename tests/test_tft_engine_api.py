@@ -987,3 +987,59 @@ def test_selling_equipped_unit_returns_item_to_inventory_without_duplication():
         assert after_sale["item_inventory"].count(item_id) == 1
     finally:
         engine.close()
+
+def test_same_seed_replays_unit_identity_without_reusing_engine_identity():
+    """Equivalent native action traces replay unit IDs but isolate Engine IDs."""
+    first = TFTLobby(seed=20261120)
+    second = TFTLobby(seed=20261120)
+    try:
+        first_reset = first.reset()
+        second_reset = second.reset()
+
+        assert first_reset["engine_instance_id"] != second_reset["engine_instance_id"]
+        assert first_reset["episode_id"] == second_reset["episode_id"]
+        first_state = first.get_audit_snapshot()
+        second_state = second.get_audit_snapshot()
+        assert first_state["players"][0]["bench"][0]["uuid"] == (
+            second_state["players"][0]["bench"][0]["uuid"]
+        )
+
+        # Choose the same legal deployment target from equivalent initial states.
+        first_masks = first.get_action_masks()[0]
+        second_masks = second.get_action_masks()[0]
+        target = next(
+            (index for index, allowed in enumerate(first_masks["bench_to_board_target_masks"][0])
+             if bool(allowed)),
+            None,
+        )
+        assert target is not None
+        assert bool(second_masks["bench_to_board_target_masks"][0][target])
+
+        actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        actions[0] = [3, 0, 0, target, 0, 0]
+        first_deploy = first.step(actions)
+        second_deploy = second.step(actions)
+
+        first_after_deploy = first.get_audit_snapshot()
+        second_after_deploy = second.get_audit_snapshot()
+        first_uuid = first_after_deploy["players"][0]["board"][target]["uuid"]
+        second_uuid = second_after_deploy["players"][0]["board"][target]["uuid"]
+        assert first_uuid == second_uuid
+
+        # The action trace is equivalent, but each result remains bound to its
+        # own Engine instance and the same episode/decision sequence.
+        assert first_deploy["engine_instance_id"] == first_reset["engine_instance_id"]
+        assert second_deploy["engine_instance_id"] == second_reset["engine_instance_id"]
+        assert first_deploy["engine_instance_id"] != second_deploy["engine_instance_id"]
+        assert first_deploy["episode_id"] == second_deploy["episode_id"]
+        assert first_deploy["decision_sequence"] == second_deploy["decision_sequence"] == 2
+        assert first_deploy["player_decision_sequences"] == [2] * 8
+        assert second_deploy["player_decision_sequences"] == [2] * 8
+
+        # Compare semantic player state only; Engine identity is deliberately
+        # distinct and is not part of deterministic game-state equivalence.
+        assert first_after_deploy["players"][0] == second_after_deploy["players"][0]
+        assert first_after_deploy["shared_pool"] == second_after_deploy["shared_pool"]
+    finally:
+        first.close()
+        second.close()
