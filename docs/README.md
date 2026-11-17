@@ -87,3 +87,5 @@ Para decisões de arquitetura e implementação da nova linhagem, use primeiro o
 - `observation-schema-v2-identity-boundary.v1.draft.md` — Stage 1 executable identity/provenance/cardinality contract for Observation Schema v2.
 
 - [Stage 1 — Structured Entity Producer Audit Reconciliation](stage1-structured-entity-producer-audit-reconciliation.v1.draft.md) — consolidated Stage 1 item-D source audit across 17 entity kinds, 31 field families and the 223-path Schema v2 crosswalk; documents producer and delivery gaps without authorizing runtime changes.
+
+- [Stage 1 — Integrated Contract and Runtime Evidence Gate](stage1-integrated-contract-runtime-evidence-gate.v1.draft.md) — consolidated acceptance ledger for PRs #425–#452, separating merged boundary evidence from outstanding replay, producer, identity, checkpoint and evaluation gates.
