@@ -388,11 +388,21 @@ class RolloutBuffer:
                         raise ValueError(
                             f"{group_name}[{index}] sem campos obrigatórios: {missing}"
                         )
-                    sequence = metadata["decision_sequence"]
-                    if isinstance(sequence, bool) or not isinstance(sequence, int) or sequence < 0:
+                    engine_instance_id = metadata["engine_instance_id"]
+                    if not isinstance(engine_instance_id, str) or not engine_instance_id.strip():
                         raise ValueError(
-                            f"{group_name}[{index}].decision_sequence deve ser inteiro não negativo."
+                            f"{group_name}[{index}].engine_instance_id deve ser texto não vazio."
                         )
+                    for identity_field in ("episode_id", "decision_sequence", "player_id", "lobby_index"):
+                        identity_value = metadata[identity_field]
+                        if (
+                            isinstance(identity_value, bool)
+                            or not isinstance(identity_value, int)
+                            or identity_value < 0
+                        ):
+                            raise ValueError(
+                                f"{group_name}[{index}].{identity_field} deve ser inteiro não negativo."
+                            )
                     normalized.append(copy.deepcopy(metadata))
                 normalized_groups[group_name] = normalized
 
