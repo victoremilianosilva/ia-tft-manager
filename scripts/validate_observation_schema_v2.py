@@ -109,8 +109,8 @@ def verify_identity(snapshot: dict, registry: dict) -> None:
         entry = namespaces.get(reference["namespace"])
         if entry is None:
             raise ValueError(f"unregistered sequence namespace: {reference['namespace']}")
-        if entry["availability"] == "proposed_not_implemented":
-            raise ValueError(f"unimplemented namespace used by snapshot: {reference['namespace']}")
+        if not entry["availability"].startswith("implemented_"):
+            raise ValueError(f"unimplemented or unverified namespace used by snapshot: {reference['namespace']}")
         if field_name == "decision_sequence" and not entry["canonical_decision_eligible"]:
             raise ValueError("snapshot publication sequence cannot stand in for per-player decision sequence")
 
