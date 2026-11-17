@@ -385,10 +385,14 @@ int main() {
 
     require(!engine.grant_component_anvil({"sword", "sword"}),
             "anvil must not present duplicate options");
-    engine.reset();
-    require(engine.grant_component_anvil({"sword", "bow"}),
+    ItemEngine reset_identity_engine({damage, guard});
+    require(reset_identity_engine.grant_component_anvil({"sword", "bow"}),
+            "initial identity fixture anvil should be accepted");
+    const auto before_reset_sequence = reset_identity_engine.pending_anvil()->sequence;
+    reset_identity_engine.reset();
+    require(reset_identity_engine.grant_component_anvil({"sword", "bow"}),
             "new anvil after reset should be accepted");
-    require(engine.pending_anvil()->sequence > completed_anvil_sequence,
+    require(reset_identity_engine.pending_anvil()->sequence > before_reset_sequence,
             "anvil sequence must not be reused across ItemEngine reset");
 
     // Auto-merge lifecycle: equipment moves to the upgraded unit; if the
