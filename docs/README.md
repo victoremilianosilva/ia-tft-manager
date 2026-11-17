@@ -85,3 +85,5 @@ Para decisões de arquitetura e implementação da nova linhagem, use primeiro o
 - [Gate 8 Preflight and Staged Implementation Plan](gate8-preflight-and-staged-implementation-plan.v1.draft.md) — integrated authorization checklist, closed design decisions, accepted runtime gaps and dependency-ordered implementation stages; does not grant authorization.
 
 - `observation-schema-v2-identity-boundary.v1.draft.md` — Stage 1 executable identity/provenance/cardinality contract for Observation Schema v2.
+
+- [Stage 1 — Structured Entity Producer Audit Reconciliation](stage1-structured-entity-producer-audit-reconciliation.v1.draft.md) — consolidated Stage 1 item-D source audit across 17 entity kinds, 31 field families and the 223-path Schema v2 crosswalk; documents producer and delivery gaps without authorizing runtime changes.
