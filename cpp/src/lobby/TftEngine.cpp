@@ -6343,6 +6343,7 @@ StepResult TFTEngine::step(
     std::vector<std::string> item_action_events;
     for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
         auto& trace = action_traces[i];
+        trace.player_id = static_cast<std::int32_t>(i);
         trace.requested_action = actions[i].values;
         trace.effective_action = effective_actions[i].values;
         const bool was_overridden = trace.requested_action != trace.effective_action;
