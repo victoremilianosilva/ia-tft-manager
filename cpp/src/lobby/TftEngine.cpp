@@ -7114,7 +7114,7 @@ bool TFTEngine::set_player_hp_for_testing(
     impl_->ensure_open();
     if (player_id < 0 ||
         static_cast<std::size_t>(player_id) >= kPlayersPerLobby ||
-        !std::isfinite(hp) || hp <= 0.0f) {
+        !std::isfinite(hp) || hp < 0.0f) {
         return false;
     }
     auto& player = impl_->player_envs[static_cast<std::size_t>(player_id)].info;

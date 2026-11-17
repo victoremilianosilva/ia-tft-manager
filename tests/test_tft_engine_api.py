@@ -703,7 +703,7 @@ def test_elimination_retires_item_ownership_in_native_snapshot():
         reset = engine.reset()
         component_id = reset["native_state_snapshot"]["players"][0]["item_component_catalog"][0]
         assert engine.add_item_component_for_testing(0, component_id)
-        assert engine.set_player_hp_for_testing(0, 0.1)
+        assert engine.set_player_hp_for_testing(0, 0.0)
 
         actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
         result = None
