@@ -394,6 +394,48 @@ class Trainer:
                 expanded.append(metadata)
         return expanded
 
+    @staticmethod
+    def _attach_native_action_traces(result_snapshot_metadata, infos, players_per_lobby):
+        """Bind each native execution trace to its exact lobby/player result row."""
+        if len(result_snapshot_metadata) != len(infos) * players_per_lobby:
+            raise RuntimeError(
+                "Quantidade de snapshots de resultado não corresponde às lobbies/traces."
+            )
+
+        for lobby_idx, info in enumerate(infos):
+            traces = info.get("action_trace")
+            if not isinstance(traces, list) or len(traces) != players_per_lobby:
+                raise RuntimeError(
+                    f"Lobby {lobby_idx} não forneceu {players_per_lobby} registros nativos de execução de ação."
+                )
+            start = lobby_idx * players_per_lobby
+            for player_id, trace in enumerate(traces):
+                if not isinstance(trace, dict) or not {
+                    "player_id", "requested_action", "effective_action",
+                    "handler_applied", "status_reason",
+                }.issubset(trace):
+                    raise RuntimeError(
+                        f"Trace de ação inválido para lobby {lobby_idx}, jogador {player_id}."
+                    )
+                trace_player_id = trace.get("player_id")
+                if (
+                    isinstance(trace_player_id, bool)
+                    or not isinstance(trace_player_id, int)
+                    or trace_player_id != player_id
+                ):
+                    raise RuntimeError(
+                        f"Trace de ação da lobby {lobby_idx} pertence ao jogador "
+                        f"{trace_player_id}, esperado {player_id}."
+                    )
+                row = result_snapshot_metadata[start + player_id]
+                if row.get("lobby_index") != lobby_idx or row.get("player_id") != player_id:
+                    raise RuntimeError(
+                        f"Snapshot de resultado desalinhado para lobby {lobby_idx}, jogador {player_id}."
+                    )
+                row["action_trace"] = dict(trace)
+
+        return result_snapshot_metadata
+
     @classmethod
     def _hash_mask_rows(cls, masks):
         """Hash each exact per-agent mask payload with stable field/shape ordering."""
@@ -1335,32 +1377,11 @@ class Trainer:
                     "snapshot de resultado da transição",
                 )
                 # Keep native action provenance beside the exact StepResult identity.
-                for lobby_idx, info in enumerate(infos):
-                    traces = info.get("action_trace")
-                    if not isinstance(traces, list) or len(traces) != self.PLAYERS_PER_LOBBY:
-                        raise RuntimeError(
-                            f"Lobby {lobby_idx} não forneceu oito registros nativos de execução de ação."
-                        )
-                    start = lobby_idx * self.PLAYERS_PER_LOBBY
-                    for player_id, trace in enumerate(traces):
-                        if not isinstance(trace, dict) or not {
-                            "player_id", "requested_action", "effective_action",
-                            "handler_applied", "status_reason",
-                        }.issubset(trace):
-                            raise RuntimeError(
-                                f"Trace de ação inválido para lobby {lobby_idx}, jogador {player_id}."
-                            )
-                        trace_player_id = trace.get("player_id")
-                        if (
-                            isinstance(trace_player_id, bool)
-                            or not isinstance(trace_player_id, int)
-                            or trace_player_id != player_id
-                        ):
-                            raise RuntimeError(
-                                f"Trace de ação da lobby {lobby_idx} pertence ao jogador "
-                                f"{trace_player_id}, esperado {player_id}."
-                            )
-                        flat_result_snapshot_metadata[start + player_id]["action_trace"] = dict(trace)
+                self._attach_native_action_traces(
+                    flat_result_snapshot_metadata,
+                    infos,
+                    self.PLAYERS_PER_LOBBY,
+                )
 
                 flat_next_snapshot_metadata = self._expand_lobby_snapshot_metadata(
                     [info.get("next_snapshot") for info in infos],
