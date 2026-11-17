@@ -39,10 +39,12 @@ class FakeIdentityEnv:
 
     def step(self, _actions):
         self.decision_sequence += 1
+        self.player_decision_sequences = [value + 1 for value in self.player_decision_sequences]
         self._metadata = {
             "engine_instance_id": "engine-A",
             "episode_id": self.episode_id,
             "decision_sequence": self.decision_sequence,
+            "player_decision_sequences": list(self.player_decision_sequences),
             "round": 5,
             "stage": 2,
             "snapshot_kind": "step",
@@ -119,7 +121,6 @@ def test_rollout_buffer_preserves_per_agent_snapshot_identity():
             "engine_instance_id": "engine-A",
             "episode_id": 7,
             "decision_sequence": 12,
-            "player_decision_sequence": 12,
             "round": 4,
             "stage": 2,
             "snapshot_kind": "step",
@@ -134,7 +135,6 @@ def test_rollout_buffer_preserves_per_agent_snapshot_identity():
         {
             **item,
             "decision_sequence": 13,
-            "player_decision_sequence": 13,
             "snapshot_kind": "step_result",
             "action_trace": {
                 "player_id": item["player_id"],
