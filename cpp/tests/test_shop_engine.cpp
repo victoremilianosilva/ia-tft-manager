@@ -12,6 +12,8 @@ int main(int argc,char** argv){
   tft::ChampionCatalog catalog(argv[1]); tft::UnitPool pool(catalog);
   tft::UnitInstanceFactory factory(catalog,1234); tft::ShopEngine shop(pool,factory,9876);
   const auto initial=pool.total_available(); shop.roll(2);
+  const auto first_revisions=shop.offer_revisions();
+  for(std::size_t i=0;i<tft::kShopSlots;++i) if(shop.get_unit(static_cast<std::int32_t>(i))) require(first_revisions[i]>0,"Oferta ocupada sem revisão.");
   require(pool.validate(),"Pool inválido após roll.");
   std::size_t occupied=0;
   for(const auto& offer:shop.offers()) if(offer){
@@ -26,6 +28,7 @@ int main(int argc,char** argv){
    locked_uuids[i]=offer?offer->uuid:std::string{};
   }
   shop.set_locked(true); const auto stock=pool.total_available(); shop.roll(10);
+  require(shop.offer_revisions()==first_revisions,"Loja bloqueada alterou revisão das ofertas.");
   require(pool.total_available()==stock,"Loja bloqueada alterou estoque.");
   for(std::size_t i=0;i<tft::kShopSlots;++i){
    const auto* offer=shop.get_unit(static_cast<std::int32_t>(i));
@@ -57,7 +60,9 @@ int main(int argc,char** argv){
   require(expected_odds[9] == std::array<double, 5>{{0.05,0.10,0.20,0.40,0.25}},
           "Nível 10 deve manter 5/10/20/40/25 no Set 18.");
   for (int level=1; level<=10; ++level) {
+   const auto before_reroll=shop.offer_revisions();
    shop.reroll(level);
+   for(std::size_t i=0;i<tft::kShopSlots;++i) if(shop.get_unit(static_cast<std::int32_t>(i))) require(shop.offer_revisions()[i]>before_reroll[i],"Reroll não avançou revisão da oferta.");
    require(pool.validate(),"Pool inválido após reroll por nível.");
    for (const auto& offer: shop.offers()) if (offer) {
     const auto* def=catalog.find_by_id(offer->champion_internal_id);
@@ -97,7 +102,9 @@ int main(int argc,char** argv){
   for(std::int32_t i=0;i<static_cast<std::int32_t>(tft::kShopSlots);++i)if(shop.get_unit(i)){slot=i;break;}
   require(slot>=0,"Reroll não gerou oferta.");
   const auto id=shop.get_unit(slot)->champion_internal_id; const auto before=pool.available(id);
+  const auto revision_before_purchase=shop.offer_revisions()[static_cast<std::size_t>(slot)];
   require(shop.take_unit(slot).has_value(),"Compra falhou.");
+  require(shop.offer_revisions()[static_cast<std::size_t>(slot)]>revision_before_purchase,"Compra não aposentou identidade da oferta.");
   require(!shop.get_unit(slot)&&pool.available(id)==before,"Compra devolveu cópia ao pool ou não limpou slot.");
   require(!shop.take_unit(slot),"Slot permitiu compra duplicada.");
   shop.reset(); require(!shop.is_locked()&&pool.validate(),"Reset da loja inválido.");

@@ -72,6 +72,7 @@ class FakeNativeLobby:
                     "board": [{"occupied": False, "champion_id": "", "uuid": "", "star": 0, "cost": 0, "items": []} for _ in range(28)],
                     "bench": [{"occupied": False, "champion_id": "", "uuid": "", "star": 0, "cost": 0, "items": []} for _ in range(9)],
                     "shop": [{"occupied": False, "champion_id": "", "uuid": "", "star": 0, "cost": 0, "items": []} for _ in range(5)],
+                    "shop_offer_revisions": [0] * 5,
                     "item_components": [], "item_inventory": [], "item_component_counts": [], "item_inventory_counts": [], "equipped_items": [], "item_component_catalog": [],
                     "pending_anvil_options": [],
                 }
@@ -551,3 +552,21 @@ def test_wrapper_rejects_equipment_without_valid_live_slot():
     }
     with pytest.raises(RuntimeError, match="equipped_items inválido"):
         cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
+
+
+def test_native_snapshot_rejects_invalid_shop_offer_revisions():
+    wrapper = cpp_lobby_env.CppTFTLobbyWrapper.__new__(cpp_lobby_env.CppTFTLobbyWrapper)
+    snapshot = FakeNativeLobby()._native_state_snapshot()
+    snapshot["players"][0]["shop_offer_revisions"] = [0, True, 0, 0, 0]
+    identity = {"engine_instance_id": snapshot["engine_instance_id"], "episode_id": snapshot["episode_id"], "decision_sequence": snapshot["snapshot_sequence"], "player_decision_sequences": snapshot["player_decision_sequences"]}
+    with pytest.raises(RuntimeError, match="revisões de oferta inválidas"):
+        wrapper._copy_native_state_snapshot(snapshot, identity)
+
+
+def test_native_snapshot_rejects_occupied_shop_offer_without_revision():
+    wrapper = cpp_lobby_env.CppTFTLobbyWrapper.__new__(cpp_lobby_env.CppTFTLobbyWrapper)
+    snapshot = FakeNativeLobby()._native_state_snapshot()
+    snapshot["players"][0]["shop"][0] = {"occupied": True, "champion_id": "Test_A", "uuid": "unit-a", "star": 1, "cost": 1, "items": []}
+    identity = {"engine_instance_id": snapshot["engine_instance_id"], "episode_id": snapshot["episode_id"], "decision_sequence": snapshot["snapshot_sequence"], "player_decision_sequences": snapshot["player_decision_sequences"]}
+    with pytest.raises(RuntimeError, match="sem revisão nativa"):
+        wrapper._copy_native_state_snapshot(snapshot, identity)

@@ -243,6 +243,12 @@ class CppTFTLobbyWrapper:
                             raise RuntimeError("Unidade ocupada com custo de catálogo inválido.")
                         if not isinstance(items, list) or any(not isinstance(item, str) for item in items):
                             raise RuntimeError("Lista de itens da unidade inválida.")
+            offer_revisions = player.get("shop_offer_revisions")
+            if (not isinstance(offer_revisions, list) or len(offer_revisions) != expected_slots["shop"] or any(isinstance(x, bool) or not isinstance(x, int) or x < 0 for x in offer_revisions)):
+                raise RuntimeError(f"Snapshot do jogador {player_id} contém revisões de oferta inválidas.")
+            for slot, offer in enumerate(player["shop"]):
+                if offer["occupied"] and offer_revisions[slot] == 0:
+                    raise RuntimeError("Oferta ocupada sem revisão nativa de identidade.")
             for field in ("item_components", "item_inventory", "item_component_catalog", "pending_anvil_options"):
                 values = player.get(field)
                 if not isinstance(values, list) or any(not isinstance(item, str) for item in values):
