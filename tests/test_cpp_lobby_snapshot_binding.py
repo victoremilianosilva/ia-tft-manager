@@ -624,7 +624,7 @@ def test_native_snapshot_rejects_invalid_shop_offer_revisions():
 def test_native_snapshot_rejects_occupied_shop_offer_without_revision():
     wrapper = cpp_lobby_env.CppTFTLobbyWrapper.__new__(cpp_lobby_env.CppTFTLobbyWrapper)
     snapshot = FakeNativeLobby()._native_state_snapshot()
-    snapshot["players"][0]["shop"][0] = {"occupied": True, "champion_id": "Test_A", "uuid": "unit-a", "star": 1, "cost": 1, "items": []}
+    snapshot["players"][0]["shop"][0] = {"occupied": True, "champion_id": "Test_A", "uuid": "unit-a", "star": 1, "cost": 1, "items": [], "trait_names": []}
     identity = {"engine_instance_id": snapshot["engine_instance_id"], "episode_id": snapshot["episode_id"], "decision_sequence": snapshot["snapshot_sequence"], "player_decision_sequences": snapshot["player_decision_sequences"]}
     with pytest.raises(RuntimeError, match="sem revisão nativa"):
         wrapper._copy_native_state_snapshot(snapshot, identity)

@@ -647,7 +647,7 @@ def test_engine_instance_identity_is_distinct_from_seed_and_episode():
         for reset in (first_reset, second_reset):
             structured = reset["native_state_snapshot"]
             assert structured["contract_id"] == "tft.native-state-snapshot"
-            assert structured["contract_version"] == 1
+            assert structured["contract_version"] == 2
             assert structured["source_namespace"] == "tft.engine.observation-snapshot"
             assert structured["engine_instance_id"] == reset["engine_instance_id"]
             assert structured["episode_id"] == reset["episode_id"]
