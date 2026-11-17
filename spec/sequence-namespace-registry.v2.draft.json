@@ -1,6 +1,6 @@
 {
   "registry_id": "tft.sequence-namespace-registry",
-  "version": "2.0.0-draft",
+  "version": "2.1.0-draft",
   "identity_envelope": "tft.decision-identity.v2",
   "status": "proposed_not_approved_for_runtime",
   "entries": [
@@ -9,24 +9,24 @@
       "producer": "Native Engine",
       "owner": "Native Engine",
       "scope": "per_player_within_engine_match_id",
-      "counter_meaning": "canonical player decision sequence",
+      "counter_meaning": "Canonical per-player decision counter; distinct from the Engine-wide snapshot publication counter.",
       "monotonicity": "strictly_increasing_within_scope_no_wrap",
       "reset_boundary": "new_engine_match_id",
       "availability": "proposed_not_implemented",
-      "canonical_decision_eligible": false,
-      "evidence": "Current native-to-Python audit does not find a typed canonical decision counter transported to PPO."
+      "canonical_decision_eligible": true,
+      "evidence": "No authoritative per-player decision counter has been proven in the native-to-PPO path. Do not populate from TFTEngine::Impl::decision_sequence."
     },
     {
       "namespace": "tft.engine.observation-snapshot",
       "producer": "Native Engine observation producer",
       "owner": "Native Engine",
-      "scope": "per_player_within_engine_match_id",
-      "counter_meaning": "exact observation snapshot sequence",
-      "monotonicity": "strictly_increasing_within_scope_no_wrap",
-      "reset_boundary": "new_engine_match_id",
-      "availability": "proposed_not_implemented",
+      "scope": "per_engine_instance_snapshot_stream",
+      "counter_meaning": "Exact observation and action-mask snapshot publication sequence shared by all eight player rows in one ResetResult or StepResult.",
+      "monotonicity": "strictly_increasing_within_engine_instance_no_wrap",
+      "reset_boundary": "new_engine_instance; counter continues across episode resets within the same Engine instance",
+      "availability": "implemented_native_engine_pr428",
       "canonical_decision_eligible": false,
-      "evidence": "Current wrapper returns observations without typed identity envelope."
+      "evidence": "PR #428 adds TFTEngine::Impl::decision_sequence to ResetResult/StepResult; it increments once per published native snapshot, survives reset, and is shared by all player rows. It is snapshot identity, not a per-player decision counter."
     },
     {
       "namespace": "tft.engine.action-mask-snapshot",

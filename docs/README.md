@@ -83,3 +83,5 @@ Para decisões de arquitetura e implementação da nova linhagem, use primeiro o
 - [Remaining Identity, Ownership, Rollout and Gate Reconciliation](remaining-identity-rollout-gate-reconciliation.v1.draft.md) — current consolidated source evidence for Engine scope, UnitInstance value semantics, wrapper/RolloutBuffer correlation, Schema v2 dispositions, GEP deferral and Gates 1–7 readiness.
 
 - [Gate 8 Preflight and Staged Implementation Plan](gate8-preflight-and-staged-implementation-plan.v1.draft.md) — integrated authorization checklist, closed design decisions, accepted runtime gaps and dependency-ordered implementation stages; does not grant authorization.
+
+- `observation-schema-v2-identity-boundary.v1.draft.md` — Stage 1 executable identity/provenance/cardinality contract for Observation Schema v2.

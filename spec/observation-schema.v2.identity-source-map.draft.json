@@ -1,0 +1,169 @@
+{
+  "map_id": "tft.ppo.observation.identity-source-map",
+  "version": "1.0.0-draft",
+  "schema": "spec/observation-schema.v2.draft.json",
+  "identity_definition": "#/$defs/sequenceIdentity",
+  "status": "documentary_source_and_availability_audit",
+  "fields": [
+    {
+      "field_path": "identity.identity_version",
+      "owner": "Observation Schema v2 contract",
+      "source": "constant:tft.decision-identity.v2",
+      "availability": "available_contract_constant",
+      "nature": "observed",
+      "scope": "contract_constant",
+      "canonical_decision_eligible": false,
+      "notes": "Version discriminator; never inferred from runtime counters."
+    },
+    {
+      "field_path": "identity.match_id",
+      "owner": "Validated game/platform match source",
+      "source": "GEP/platform match identity",
+      "availability": "not_proven_in_runtime; real_capture_deferred_to_stage7",
+      "nature": "observed",
+      "scope": "logical_match",
+      "canonical_decision_eligible": false,
+      "notes": "Null until a validated authoritative logical match source is delivered."
+    },
+    {
+      "field_path": "identity.engine_match_id",
+      "owner": "Native Engine identity adapter",
+      "source": "engine_instance_id + episode_id",
+      "availability": "derivable_inputs_available; canonical_adapter_field_not_yet_delivered",
+      "nature": "derived",
+      "scope": "engine_instance_plus_episode",
+      "canonical_decision_eligible": false,
+      "notes": "Must distinguish Engine instance lifetime and episode; episode_id alone is insufficient."
+    },
+    {
+      "field_path": "identity.session_match_id",
+      "owner": "Viewer session/replay adapter",
+      "source": "ViewerSession.match_id",
+      "availability": "available_for_session_correlation_only",
+      "nature": "observed",
+      "scope": "viewer_session",
+      "canonical_decision_eligible": false,
+      "notes": "Never substitutes for logical match_id or engine_match_id."
+    },
+    {
+      "field_path": "identity.episode_id",
+      "owner": "Native Engine",
+      "source": "ResetResult/StepResult.episode_id",
+      "availability": "implemented_native_engine_pr426",
+      "nature": "observed",
+      "scope": "per_engine_instance_episode",
+      "canonical_decision_eligible": false,
+      "notes": "Native episode counter is scoped to one Engine instance."
+    },
+    {
+      "field_path": "identity.player_id",
+      "owner": "Native Engine adapter",
+      "source": "player index 0..7 to player-0..player-7",
+      "availability": "implemented_native_player_index",
+      "nature": "derived",
+      "scope": "episode_local_seat",
+      "canonical_decision_eligible": false,
+      "notes": "Seat identity only; not a persistent user/player identifier."
+    },
+    {
+      "field_path": "identity.round",
+      "owner": "Native Engine",
+      "source": "ResetResult/StepResult.round",
+      "availability": "implemented_native_engine",
+      "nature": "observed",
+      "scope": "engine_episode_round",
+      "canonical_decision_eligible": false,
+      "notes": "Game round metadata; not a unique decision identity by itself."
+    },
+    {
+      "field_path": "identity.decision_sequence",
+      "owner": "Authoritative per-player decision producer",
+      "source": "registered tft.engine.decision namespace",
+      "availability": "proposed_not_implemented",
+      "nature": "observed",
+      "scope": "per_player_within_engine_match_id",
+      "canonical_decision_eligible": true,
+      "notes": "Must remain null until an authoritative per-player decision counter exists; do not reuse the native snapshot ordinal."
+    },
+    {
+      "field_path": "identity.snapshot_sequence",
+      "owner": "Native Engine",
+      "source": "TFTEngine::Impl::decision_sequence to ResetResult/StepResult.decision_sequence",
+      "availability": "implemented_native_engine_pr428",
+      "nature": "observed",
+      "scope": "per_engine_instance_snapshot_stream",
+      "canonical_decision_eligible": false,
+      "notes": "One increment per published native result, shared by all eight player rows, monotonic across episode resets."
+    },
+    {
+      "field_path": "identity.player_sequence",
+      "owner": "Producer-local player stream",
+      "source": "registered producer namespace",
+      "availability": "optional_source_not_canonical",
+      "nature": "observed",
+      "scope": "producer_defined",
+      "canonical_decision_eligible": false,
+      "notes": "Optional correlation metadata; never substitutes for canonical decision sequence."
+    },
+    {
+      "field_path": "identity.event_sequence",
+      "owner": "Producer-local event stream",
+      "source": "registered producer namespace",
+      "availability": "optional_source_not_canonical",
+      "nature": "observed",
+      "scope": "producer_defined",
+      "canonical_decision_eligible": false,
+      "notes": "Optional event ordering; not a decision identity component."
+    },
+    {
+      "field_path": "identity.captured_at",
+      "owner": "Snapshot adapter/recorder",
+      "source": "UTC capture timestamp",
+      "availability": "adapter_timestamp_available_when_captured",
+      "nature": "observed",
+      "scope": "capture_event",
+      "canonical_decision_eligible": false,
+      "notes": "Diagnostic timestamp only; never a fallback identity key."
+    },
+    {
+      "field_path": "identity.status",
+      "owner": "Decision Identity validator",
+      "source": "completeness of required authoritative fields",
+      "availability": "derived_at_validation",
+      "nature": "derived",
+      "scope": "identity_envelope",
+      "canonical_decision_eligible": false,
+      "notes": "Complete only when match, Engine episode, player, round, per-player decision and snapshot refs are authoritative."
+    },
+    {
+      "field_path": "identity.reason",
+      "owner": "Decision Identity validator",
+      "source": "missing/stale/conflicting source classification",
+      "availability": "derived_at_validation_when_incomplete",
+      "nature": "derived",
+      "scope": "identity_envelope",
+      "canonical_decision_eligible": false,
+      "notes": "Required for every non-complete status."
+    },
+    {
+      "field_path": "identity.decision_identity_hash",
+      "owner": "Decision Identity v2 canonicalizer",
+      "source": "RFC8785 canonical JSON plus SHA-256 over declared v2 scope",
+      "availability": "derived_only_when_complete",
+      "nature": "derived",
+      "scope": "identity_envelope",
+      "canonical_decision_eligible": false,
+      "notes": "Null unless status=complete; never hash an incomplete or guessed identity."
+    },
+    {
+      "field_path": "identity.decision_identity_hash_scope",
+      "owner": "Decision Identity v2 contract",
+      "source": "RFC8785-SHA256:v2 declared field list",
+      "availability": "available_contract_constant",
+      "nature": "observed",
+      "scope": "contract_constant",
+      "canonical_decision_eligible": false,
+      "notes": "Constant hash-scope declaration; changes require a semantic identity version change."
+    }
+  ]
+}

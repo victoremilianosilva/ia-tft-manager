@@ -62,3 +62,10 @@ The current native→Python PPO path has no typed decision identity envelope joi
 ## Change control
 
 Any change to producer ownership, scope, counter meaning, reset behavior or canonical eligibility requires a registry version change and the six-point architecture reconstruction review. Runtime implementation remains blocked until Gate 8 and explicit authorization.
+
+
+## Native Engine sequence reconciliation (PR #428)
+
+The native `TFTEngine::Impl::decision_sequence` is **not** a per-player decision counter. It increments once for each `ResetResult` or `StepResult`, is shared by all eight player observation rows, remains monotonic across episode resets, and is scoped to one Engine instance. In Decision Identity v2 it maps to `snapshot_sequence` under `tft.engine.observation-snapshot`.
+
+The namespace `tft.engine.decision` remains reserved for a future authoritative per-player decision counter and is not populated from the native snapshot counter. Until that counter and authoritative `match_id` are available, identity remains `partial`, its decision identity hash remains null, and mask/Critic/anti-loop/strategic-owner contexts cannot be marked valid by matching local integer values.
