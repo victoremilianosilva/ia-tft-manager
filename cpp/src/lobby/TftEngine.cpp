@@ -6275,6 +6275,7 @@ ResetResult TFTEngine::reset(
         }
         result.player_decision_sequences[i] = ++impl_->player_decision_sequences[i];
     }
+    result.native_state_snapshot = get_audit_snapshot();
 
     return result;
 }
@@ -6584,6 +6585,7 @@ StepResult TFTEngine::step(
     result.round = impl_->round + 1;
     result.stage = impl_->stage;
     result.alive_players = impl_->alive_players;
+    result.native_state_snapshot = get_audit_snapshot();
 
     result.events.emplace_back(
         "Acoes de loja, economia, venda e movimentacao "
@@ -6741,6 +6743,10 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
     impl_->ensure_open();
 
     AuditSnapshot snapshot{};
+    snapshot.engine_instance_id = impl_->engine_instance_id;
+    snapshot.episode_id = impl_->episode_id;
+    snapshot.snapshot_sequence = impl_->decision_sequence;
+    snapshot.player_decision_sequences = impl_->player_decision_sequences;
     snapshot.round = impl_->round + 1;
     snapshot.stage = impl_->stage;
     snapshot.finished = impl_->done;
