@@ -493,9 +493,15 @@ def test_integrated_vector_to_rollout_preserves_terminal_transition_correlation(
             metadata["mask_snapshot_hash_algorithm"] = "tft-action-mask-snapshot-v1"
 
         actions = torch.tensor([[6, 0, 0, 0, 0, 0]] * 8, dtype=torch.long)
-        next_observations, rewards, dones, infos = env.step(
-            [[{"type": 6} for _ in range(8)]]
-        )
+        # Exercise the production PPO-action-to-native-payload adapter rather
+        # than hand-constructing the dictionaries accepted by the fake Engine.
+        trainer = Trainer.__new__(Trainer)
+        trainer.num_envs = 1
+        trainer.num_agents = 8
+        trainer.PLAYERS_PER_LOBBY = 8
+        trainer.ACTION_DIM = 6
+        lobby_actions = trainer._actions_to_lobby_format(actions)
+        next_observations, rewards, dones, infos = env.step(lobby_actions)
 
         result_metadata = Trainer._expand_lobby_snapshot_metadata(
             [infos[0]["step_result_snapshot"]], 8, "snapshot de resultado"
@@ -503,9 +509,13 @@ def test_integrated_vector_to_rollout_preserves_terminal_transition_correlation(
         next_metadata = Trainer._expand_lobby_snapshot_metadata(
             [infos[0]["next_snapshot"]], 8, "próxima observação"
         )
-        for player_id, trace in enumerate(infos[0]["action_trace"]):
-            assert trace["player_id"] == player_id
-            result_metadata[player_id]["action_trace"] = dict(trace)
+        Trainer._attach_native_action_traces(
+            result_metadata,
+            infos,
+            players_per_lobby=8,
+        )
+        for player_id, metadata in enumerate(result_metadata):
+            assert metadata["action_trace"]["player_id"] == player_id
 
         buffer.add(
             obs=observations.reshape(8, 3),
