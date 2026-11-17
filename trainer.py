@@ -24,7 +24,14 @@ from torch.utils.tensorboard import SummaryWriter
 
 from vector_lobby_env import LobbyVectorEnv
 
-from policy import TFTPolicy, MASK_SHAPES
+from policy import TFTPolicy
+from action_contract import (
+    MASK_SHAPES,
+    ACTION_CONTRACT_ID, ACTION_CONTRACT_VERSION, ACTION_CONTRACT_HASH,
+    MASK_CONTRACT_ID, MASK_CONTRACT_VERSION, MASK_CONTRACT_HASH,
+    build_action_mask_checkpoint_contract, hash_mask_rows,
+    validate_action_mask_checkpoint_contract,
+)
 from rollout import RolloutBuffer
 from ppo import PPOTrainer, exponential_schedule_value
 
@@ -242,9 +249,25 @@ class Trainer:
         checkpoint = None
         migrated_checkpoint = False
 
+        legacy_action_mask_checkpoint = False
         if os.path.exists(checkpoint_path):
             print(f"📂 Carregando checkpoint: {checkpoint_path}")
             checkpoint = torch.load(checkpoint_path, map_location=self.device)
+            saved_contract = checkpoint.get("action_mask_contract")
+            if saved_contract is None:
+                allow_legacy = os.environ.get(
+                    "TFT_ALLOW_UNVERSIONED_ACTION_MASK_CHECKPOINT", ""
+                ).strip().lower() in {"1", "true", "yes"}
+                if not allow_legacy:
+                    raise RuntimeError(
+                        "Checkpoint sem identidade independente de Action Contract e Mask Contract. "
+                        "Para carregar somente pesos legados de forma explícita, defina "
+                        "TFT_ALLOW_UNVERSIONED_ACTION_MASK_CHECKPOINT=1; optimizer/scheduler "
+                        "não serão restaurados."
+                    )
+                legacy_action_mask_checkpoint = True
+            else:
+                validate_action_mask_checkpoint_contract(saved_contract)
             migrated_checkpoint = self.policy.load_compatible_state_dict(checkpoint["policy"])
             print("⚠️ Checkpoint migrado; optimizer/scheduler serão reiniciados." if migrated_checkpoint
                   else "✅ Pesos da policy carregados.")
@@ -268,7 +291,10 @@ class Trainer:
             self.config.min_learning_rate,
             self.config.learning_rate,
         )
-        can_restore_optimizer = bool(checkpoint and "optimizer" in checkpoint and not migrated_checkpoint)
+        can_restore_optimizer = bool(
+            checkpoint and "optimizer" in checkpoint
+            and not migrated_checkpoint and not legacy_action_mask_checkpoint
+        )
         if can_restore_optimizer:
             self.optimizer.load_state_dict(checkpoint["optimizer"])
             # Restaura os momentos do Adam, mas o LR solicitado nesta execução
@@ -455,36 +481,8 @@ class Trainer:
 
     @classmethod
     def _hash_mask_rows(cls, masks):
-        """Hash each exact per-agent mask payload with stable field/shape ordering."""
-        batch_size = None
-        for name, shape in cls.MASK_SHAPES.items():
-            if name not in masks:
-                raise ValueError(f"Máscara obrigatória ausente para hash: {name}.")
-            tensor = masks[name]
-            if tuple(tensor.shape[1:]) != tuple(shape):
-                raise ValueError(
-                    f"Shape inválido para hash de {name}: {tuple(tensor.shape[1:])}."
-                )
-            if batch_size is None:
-                batch_size = int(tensor.shape[0])
-            elif int(tensor.shape[0]) != batch_size:
-                raise ValueError("Batch de masks desalinhado durante o hash.")
-
-        hashes = []
-        for agent_idx in range(batch_size or 0):
-            digest = hashlib.sha256()
-            digest.update(b"tft-action-mask-snapshot-v1\\x00")
-            for name, shape in cls.MASK_SHAPES.items():
-                row = masks[name][agent_idx].detach().to(
-                    device="cpu", dtype=torch.bool
-                ).contiguous()
-                digest.update(name.encode("utf-8"))
-                digest.update(b"\\x00")
-                digest.update(",".join(str(dim) for dim in shape).encode("ascii"))
-                digest.update(b"\\x00")
-                digest.update(row.numpy().tobytes(order="C"))
-            hashes.append(digest.hexdigest())
-        return hashes
+        """Hash each exact per-agent mask payload with the canonical v1 helper."""
+        return hash_mask_rows(masks, cls.MASK_SHAPES)
 
 
     # ================================================================
@@ -843,12 +841,12 @@ class Trainer:
         )
 
         if actions.shape != expected_shape:
-
             raise ValueError(
-                f"Shape de actions inválido: "
-                f"{actions.shape} "
-                f"!= {expected_shape}"
+                f"Shape de actions inválido: {actions.shape} != {expected_shape}"
             )
+        if actions.dtype != np.int64:
+            raise TypeError("Ações encaminhadas à Engine devem ser registros PPO int64.")
+        TFTPolicy._validate_canonical_action_parameters(torch.from_numpy(actions))
 
         lobby_actions = []
 
@@ -1232,6 +1230,12 @@ class Trainer:
                 ):
                     metadata["mask_snapshot_hash"] = mask_hash
                     metadata["mask_snapshot_hash_algorithm"] = "tft-action-mask-snapshot-v1"
+                    metadata["action_contract_id"] = ACTION_CONTRACT_ID
+                    metadata["action_contract_version"] = ACTION_CONTRACT_VERSION
+                    metadata["action_contract_hash"] = ACTION_CONTRACT_HASH
+                    metadata["mask_contract_id"] = MASK_CONTRACT_ID
+                    metadata["mask_contract_version"] = MASK_CONTRACT_VERSION
+                    metadata["mask_contract_hash"] = MASK_CONTRACT_HASH
 
                 # 📊 Quantas opções permaneceram válidas após as máscaras?
                 valid_type_mean = (
@@ -2080,6 +2084,8 @@ class Trainer:
                             self.config.to_dict(),
                         "scheduler_type":
                             "cosine_clamped",
+                        "action_mask_contract":
+                            build_action_mask_checkpoint_contract(),
                     },
                     self.config.checkpoint_path
                 )
@@ -2114,6 +2120,7 @@ class Trainer:
                 "update": end - 1,
                 "training_config": self.config.to_dict(),
                 "scheduler_type": "cosine_clamped",
+                "action_mask_contract": build_action_mask_checkpoint_contract(),
             },
             self.config.checkpoint_path,
         )

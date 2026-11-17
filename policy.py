@@ -5,26 +5,11 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.distributions import Categorical
 
+from action_contract import MASK_SHAPES
+
 
 ACTION_DIMS = [9, 5, 9, 28, 28, 28]
 LEGACY_ACTION_DIMS = [7, 5, 9, 28, 28, 28]
-
-# Canonical native action-mask contract shared by collection and replay.
-MASK_SHAPES = {
-    "type_mask": (9,),
-    "shop_mask": (5,),
-    "bench_source_mask": (9,),
-    "board_target_mask": (28,),
-    "board_source_mask": (28,),
-    "board_move_target_masks": (28, 28),
-    "bench_move_source_mask": (9,),
-    "bench_to_board_target_masks": (9, 28),
-    "item_inventory_mask": (9,),
-    "item_component_first_mask": (10,),
-    "item_component_pair_masks": (10, 10),
-    "item_target_mask": (37,),
-}
-
 
 class TFTPolicy(nn.Module):
   
@@ -652,35 +637,54 @@ class TFTPolicy(nn.Module):
 
     @staticmethod
     def _validate_selected_actions(actions, mask, name):
-        """🔎 Rejeita ações registradas que a máscara proíbe."""
-        actions = actions.long()
-
+        """Reject malformed or masked action indices without coercion."""
+        if not isinstance(actions, torch.Tensor) or actions.dtype != torch.long:
+            raise TypeError(f"Ação '{name}' deve ser um tensor torch.int64.")
+        if not isinstance(mask, torch.Tensor) or mask.dtype != torch.bool:
+            raise TypeError(f"Máscara de '{name}' deve ser um tensor torch.bool.")
+        if actions.device != mask.device:
+            raise ValueError(f"Ação e máscara de '{name}' devem estar no mesmo device.")
         if actions.ndim != 1 or mask.ndim != 2:
-            raise ValueError(
-                f"Formato inválido ao validar ação '{name}'."
-            )
-
+            raise ValueError(f"Formato inválido ao validar ação '{name}'.")
         if actions.shape[0] != mask.shape[0]:
-            raise ValueError(
-                f"Batch incompatível ao validar ação '{name}'."
-            )
-
+            raise ValueError(f"Batch incompatível ao validar ação '{name}'.")
         if ((actions < 0) | (actions >= mask.shape[1])).any():
-            raise ValueError(
-                f"Índice fora dos limites para a ação '{name}'."
-            )
+            raise ValueError(f"Índice fora dos limites para a ação '{name}'.")
 
-        selected_valid = mask.to(
-            device=actions.device,
-            dtype=torch.bool,
-        ).gather(1, actions.unsqueeze(1)).squeeze(1)
-
+        selected_valid = mask.gather(1, actions.unsqueeze(1)).squeeze(1)
         if not selected_valid.all():
             rows = (~selected_valid).nonzero().flatten().tolist()
             raise ValueError(
-                f"Ação '{name}' bloqueada pela máscara "
-                f"nas linhas: {rows}"
+                f"Ação '{name}' bloqueada pela máscara nas linhas: {rows}"
             )
+
+    @staticmethod
+    def _validate_canonical_action_parameters(actions):
+        """Require zero in every argument position unused by the selected action."""
+        if not isinstance(actions, torch.Tensor) or actions.ndim != 2 or actions.shape[1] != 6:
+            raise ValueError("Ações devem ter shape [batch, 6].")
+        if actions.dtype != torch.long:
+            raise TypeError("Ações PPO devem usar dtype torch.int64.")
+        if actions.numel() and ((actions[:, 0] < 0) | (actions[:, 0] >= 9)).any():
+            raise ValueError("Tipo de ação fora do catálogo PPO v1.")
+
+        unused_by_type = {
+            0: (2, 3, 4, 5),
+            1: (1, 2, 3, 4, 5),
+            2: (1, 2, 3, 4, 5),
+            3: (1, 4, 5),
+            4: (1, 2, 3),
+            5: (1, 3, 4, 5),
+            6: (1, 2, 3, 4, 5),
+            7: (3, 4, 5),
+            8: (4, 5),
+        }
+        for action_type, unused_columns in unused_by_type.items():
+            rows = actions[:, 0] == action_type
+            if rows.any() and (actions[rows][:, list(unused_columns)] != 0).any():
+                raise ValueError(
+                    f"Ação PPO tipo {action_type} contém argumentos inativos diferentes de zero."
+                )
 
     @staticmethod
     def _sample_categorical(logits, deterministic):
@@ -1094,8 +1098,11 @@ class TFTPolicy(nn.Module):
                 f"Ações devem ter shape {(obs.shape[0], 6)}; "
                 f"recebido {getattr(actions, 'shape', None)}."
             )
+        if actions.dtype != torch.long:
+            raise TypeError("Ações PPO devem usar dtype torch.int64; coerção silenciosa é proibida.")
         if actions.device != obs.device:
             raise ValueError("Ações e observação devem estar no mesmo device.")
+        self._validate_canonical_action_parameters(actions)
         hidden = self.encode(obs)
         bench_candidate_features, shop_candidate_features = self._candidate_features(obs)
         (

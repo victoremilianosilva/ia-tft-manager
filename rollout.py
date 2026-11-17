@@ -2,6 +2,13 @@ import copy
 
 import torch
 
+from action_contract import (
+    MASK_SHAPES,
+    ACTION_CONTRACT_ID, ACTION_CONTRACT_VERSION, ACTION_CONTRACT_HASH,
+    MASK_CONTRACT_ID, MASK_CONTRACT_VERSION, MASK_CONTRACT_HASH,
+    hash_mask_row,
+)
+
 
 class RolloutBuffer:
     """
@@ -492,6 +499,48 @@ class RolloutBuffer:
                     raise ValueError(
                         f"snapshot_metadata[{index}] usa algoritmo de hash de mask desconhecido."
                     )
+
+                # Production collection supplies the complete bundle. Recompute
+                # its digest at the storage boundary instead of trusting a
+                # well-formed SHA-256 string detached from the actual tensors.
+                if masks_dict:
+                    expected_contract = {
+                        "action_contract_id": ACTION_CONTRACT_ID,
+                        "action_contract_version": ACTION_CONTRACT_VERSION,
+                        "action_contract_hash": ACTION_CONTRACT_HASH,
+                        "mask_contract_id": MASK_CONTRACT_ID,
+                        "mask_contract_version": MASK_CONTRACT_VERSION,
+                        "mask_contract_hash": MASK_CONTRACT_HASH,
+                    }
+                    for field, expected_value in expected_contract.items():
+                        if decision.get(field) != expected_value:
+                            raise ValueError(
+                                f"snapshot_metadata[{index}].{field} ausente ou incompatível."
+                            )
+                    if set(masks_dict) != set(MASK_SHAPES):
+                        raise ValueError(
+                            "Rollout exige exatamente as 12 action masks do contrato v1."
+                        )
+                    for mask_name, mask_shape in MASK_SHAPES.items():
+                        mask_tensor = masks_dict[mask_name]
+                        if not isinstance(mask_tensor, torch.Tensor):
+                            raise TypeError(f"Máscara '{mask_name}' deve ser torch.Tensor.")
+                        if mask_tensor.dtype != torch.bool:
+                            raise TypeError(f"Máscara '{mask_name}' deve usar torch.bool.")
+                        if tuple(mask_tensor.shape) != (self.num_envs, *mask_shape):
+                            raise ValueError(
+                                f"Shape inválido para máscara '{mask_name}' no rollout: "
+                                f"{tuple(mask_tensor.shape)}."
+                            )
+                    actual_mask_hash = hash_mask_row({
+                        name: masks_dict[name][index]
+                        for name in MASK_SHAPES
+                    })
+                    if actual_mask_hash != mask_hash:
+                        raise ValueError(
+                            f"Hash da máscara não corresponde ao conteúdo armazenado "
+                            f"na transição {index}."
+                        )
 
             for group_name, group in normalized_groups.items():
                 by_lobby = {}
