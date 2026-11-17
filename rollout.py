@@ -416,6 +416,16 @@ class RolloutBuffer:
                     raise TypeError(
                         f"result_snapshot_metadata[{index}].action_trace deve ser um dicionário."
                     )
+                trace_player_id = action_trace.get("player_id")
+                if (
+                    isinstance(trace_player_id, bool)
+                    or not isinstance(trace_player_id, int)
+                    or trace_player_id != decision["player_id"]
+                ):
+                    raise ValueError(
+                        f"result_snapshot_metadata[{index}].action_trace.player_id "
+                        "não corresponde ao jogador da transição."
+                    )
                 for action_field in ("requested_action", "effective_action"):
                     action_values = action_trace.get(action_field)
                     if not isinstance(action_values, (list, tuple)) or len(action_values) != actions.shape[1]:
