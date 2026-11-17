@@ -707,7 +707,8 @@ def test_elimination_retires_item_ownership_in_native_snapshot():
 
         actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
         result = None
-        for _ in range(4):
+        # Rounds 1-1 through 1-4 are PvE; elimination is evaluated on the first PvP round (2-1).
+        for _ in range(5):
             result = engine.step(actions, timer_enabled=True, timer_expired=True)
             player = result["native_state_snapshot"]["players"][0]
             if player["item_ownership_retired"]:
