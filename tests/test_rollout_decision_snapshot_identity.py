@@ -578,7 +578,7 @@ def test_attach_native_action_traces_rejects_missing_player_trace():
     result_metadata, infos = _valid_native_action_trace_rows()
     infos[0]["action_trace"].pop()
 
-    with pytest.raises(RuntimeError, match="oito registros"):
+    with pytest.raises(RuntimeError, match="8 registros"):
         Trainer._attach_native_action_traces(result_metadata, infos, 8)
 
 
