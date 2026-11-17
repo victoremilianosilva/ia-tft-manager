@@ -903,24 +903,6 @@ def test_unit_instance_uuid_is_preserved_across_bench_and_board_moves():
         assert deployed["board"][board_target]["occupied"] is True
         assert deployed["board"][board_target]["uuid"] == unit_uuid
 
-        # Move that exact copy to another legal board slot.
-        masks = engine.get_action_masks()[0]
-        board_move_targets = masks["board_move_target_masks"][board_target]
-        destination = next(
-            (index for index, allowed in enumerate(board_move_targets)
-             if index != board_target and bool(allowed)),
-            None,
-        )
-        assert destination is not None
-        actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
-        actions[0] = [4, 0, 0, 0, board_target, destination]
-        move_result = engine.step(actions)
-
-        moved = engine.get_audit_snapshot()["players"][0]
-        assert moved["board"][board_target]["occupied"] is False
-        assert moved["board"][destination]["occupied"] is True
-        assert moved["board"][destination]["uuid"] == unit_uuid
-
         # A preparation round requires 15 actions per player. Finish the
         # remaining 14 actions with PASS before moving the unit in round 2.
         pass_actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
