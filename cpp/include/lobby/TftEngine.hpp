@@ -242,6 +242,7 @@ struct AuditPlayerSnapshot {
     std::array<AuditUnitSnapshot, kBoardSlots> board{};
     std::array<AuditUnitSnapshot, kBenchSlots> bench{};
     std::array<AuditUnitSnapshot, kShopSlots> shop{};
+    std::array<std::uint64_t, kShopSlots> shop_offer_revisions{};
     // Item state is part of the audit snapshot so the viewer can distinguish
     // loose components, completed items in the bag, and unit equipment.
     std::vector<std::string> item_components;

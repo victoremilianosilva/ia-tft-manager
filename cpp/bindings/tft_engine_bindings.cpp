@@ -271,6 +271,7 @@ py::dict audit_snapshot_to_dict(
         p["board"] = board;
         p["bench"] = bench;
         p["shop"] = shop;
+        p["shop_offer_revisions"] = player.shop_offer_revisions;
         p["item_components"] = player.item_components;
         p["item_inventory"] = player.item_inventory;
         py::list component_counts, inventory_counts, equipped_items;

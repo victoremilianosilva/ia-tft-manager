@@ -6824,10 +6824,10 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
             target.bench[slot] = describe_unit(
                 source.bench[slot] ? &*source.bench[slot] : nullptr
             );
-        for (std::size_t slot = 0; slot < kShopSlots; ++slot)
-            target.shop[slot] = describe_unit(source.shop->get_unit(
-                static_cast<std::int32_t>(slot)
-            ));
+        for (std::size_t slot = 0; slot < kShopSlots; ++slot) {
+            target.shop[slot] = describe_unit(source.shop->get_unit(static_cast<std::int32_t>(slot)));
+            target.shop_offer_revisions[slot] = source.shop->offer_revisions()[slot];
+        }
         if (source.item_engine) {
             target.item_components = source.item_engine->components();
             target.item_inventory = source.item_engine->inventory();

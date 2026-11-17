@@ -16,6 +16,7 @@ public:
     bool toggle_lock() noexcept;
     bool is_locked() const noexcept;
     const std::array<std::optional<UnitInstance>, kShopSlots>& offers() const noexcept;
+    const std::array<std::uint64_t, kShopSlots>& offer_revisions() const noexcept;
     const UnitInstance* get_unit(std::int32_t slot) const noexcept;
     std::optional<UnitInstance> take_unit(std::int32_t slot) noexcept;
     void return_current_shop();
@@ -42,6 +43,8 @@ private:
     UnitInstanceFactory& factory_;
     std::mt19937_64 rng_;
     std::array<std::optional<UnitInstance>, kShopSlots> offers_{};
+    std::array<std::uint64_t, kShopSlots> offer_revisions_{};
+    void advance_offer_revision(std::size_t slot);
     bool locked_{false};
     std::optional<std::vector<std::int32_t>> next_roll_for_testing_;
     std::int32_t roll_cost(std::int32_t level);
