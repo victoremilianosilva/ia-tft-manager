@@ -27,6 +27,7 @@ from vector_lobby_env import LobbyVectorEnv
 from policy import TFTPolicy
 from action_contract import (
     MASK_SHAPES,
+    MASK_SNAPSHOT_HASH_ALGORITHM,
     ACTION_CONTRACT_ID, ACTION_CONTRACT_VERSION, ACTION_CONTRACT_HASH,
     MASK_CONTRACT_ID, MASK_CONTRACT_VERSION, MASK_CONTRACT_HASH,
     build_action_mask_checkpoint_contract, hash_mask_rows,
@@ -1229,7 +1230,7 @@ class Trainer:
                     self._hash_mask_rows(masks),
                 ):
                     metadata["mask_snapshot_hash"] = mask_hash
-                    metadata["mask_snapshot_hash_algorithm"] = "tft-action-mask-snapshot-v1"
+                    metadata["mask_snapshot_hash_algorithm"] = MASK_SNAPSHOT_HASH_ALGORITHM
                     metadata["action_contract_id"] = ACTION_CONTRACT_ID
                     metadata["action_contract_version"] = ACTION_CONTRACT_VERSION
                     metadata["action_contract_hash"] = ACTION_CONTRACT_HASH

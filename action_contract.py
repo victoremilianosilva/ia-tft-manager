@@ -37,6 +37,18 @@ ACTION_CONTRACT_PAYLOAD = {
     "version": ACTION_CONTRACT_VERSION,
     "record": ["type", "shop_slot", "bench_slot", "board_target", "board_source", "board_move_target"],
     "record_dtype": "int64",
+    "base_action_dims": [9, 5, 9, 28, 28, 28],
+    "argument_head_dimensions": {
+        "shop_slot": 5,
+        "bench_slot": 9,
+        "board_target": 28,
+        "board_source": 28,
+        "board_move_target": 28,
+        "item_inventory": 9,
+        "item_component_first": 10,
+        "item_component_second": 10,
+        "item_target": 37,
+    },
     "actions": [
         {"id": 0, "name": "BUY", "arguments": {"shop_slot": 1}},
         {"id": 1, "name": "REROLL", "arguments": {}},

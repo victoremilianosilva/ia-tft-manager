@@ -3,6 +3,7 @@ import torch
 
 from action_contract import (
     ACTION_CONTRACT_HASH,
+    ACTION_CONTRACT_PAYLOAD,
     ACTION_CONTRACT_ID,
     ACTION_CONTRACT_VERSION,
     MASK_CONTRACT_HASH,
@@ -99,6 +100,8 @@ def test_action_and_mask_contracts_have_independent_stable_hashes():
     assert first["action_contract"]["sha256"] == ACTION_CONTRACT_HASH
     assert first["mask_contract"]["sha256"] == MASK_CONTRACT_HASH
     assert ACTION_CONTRACT_HASH != MASK_CONTRACT_HASH
+    assert ACTION_CONTRACT_PAYLOAD["base_action_dims"] == [9, 5, 9, 28, 28, 28]
+    assert ACTION_CONTRACT_PAYLOAD["argument_head_dimensions"]["item_target"] == 37
 
 
 def test_checkpoint_contract_rejects_changed_action_or_mask_semantics():

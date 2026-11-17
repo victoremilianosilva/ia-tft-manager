@@ -1,6 +1,6 @@
 # Action / Mask Contract v1 — especificação documental aprovada
 
-**Status:** especificação documental aprovada; a fatia runtime de Stage 1 está em implementação/revisão; aceite integral ainda depende da matriz completa e da integração posterior do Critic. Esta aprovação não autoriza implementação.  
+**Status:** especificação documental aprovada; a fatia runtime de Stage 1 está em implementação/revisão; aceite integral ainda depende da matriz completa e da integração posterior do Critic.  
 **Base auditada:** branch `new-arquiteture`, commit de base `046c9300882ebb7fb0003436f39d91eb4a2a75e5`.  
 **Issue:** [#294 — PPO Action Contract](https://github.com/victoremilianosilva/ia-tft-manager/issues/294)
 
@@ -203,7 +203,7 @@ Não substituir ação ausente/rejeitada por PASS para fins de comparação PPO-
 
 ## Decision Identity v2 alignment (proposal; not runtime-approved)
 
-Observation Schema v1 and Action/Mask Contract v1 remain immutable documentary contracts. The proposed Observation Schema v2 / Decision Identity Envelope v2 adds typed sequence references and makes namespace part of the decision hash. For the future v2 lineage, every mask payload must bind the exact same decision identity as its observation plus an independent ordered mask payload hash and Action/Mask contract identities. Actor and Critic receive that exact mask snapshot as a separate side input. The current implementation does not yet transport this envelope or mask hash; separate mask retrieval and equal shapes do not prove correlation. Do not reinterpret v1 integer sequence values or v1 hashes as v2. See `docs/decision-identity-schema-v2-design.v1.draft.md`, `spec/sequence-namespace-registry.v2.draft.json`, and `spec/decision-identity-v2-hash-vectors.draft.json`.
+Observation Schema v1 and Action/Mask Contract v1 remain immutable documentary contracts. The proposed Observation Schema v2 / Decision Identity Envelope v2 adds typed sequence references and makes namespace part of the decision hash. For the future v2 lineage, every mask payload must bind the exact same decision identity as its observation plus an independent ordered mask payload hash and Action/Mask contract identities. Actor and Critic receive that exact mask snapshot as a separate side input. Stage 1 now persists the exact mask snapshot hash and independent Action/Mask contract identities with rollout decision metadata. The typed v2 sequence namespaces, canonical v2 decision identity hash, observation/projection hashes, and Critic-side mask context are not yet runtime-delivered. Separate producer-local sequences must not be reinterpreted as the canonical v2 identity. Do not reinterpret v1 integer sequence values or v1 hashes as v2. See `docs/decision-identity-schema-v2-design.v1.draft.md`, `spec/sequence-namespace-registry.v2.draft.json`, and `spec/decision-identity-v2-hash-vectors.draft.json`.
 
 
 ## Stage 1 runtime implementation — Action/Mask Contract v1

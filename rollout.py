@@ -4,6 +4,7 @@ import torch
 
 from action_contract import (
     MASK_SHAPES,
+    MASK_SNAPSHOT_HASH_ALGORITHM,
     ACTION_CONTRACT_ID, ACTION_CONTRACT_VERSION, ACTION_CONTRACT_HASH,
     MASK_CONTRACT_ID, MASK_CONTRACT_VERSION, MASK_CONTRACT_HASH,
     hash_mask_row,
@@ -495,7 +496,7 @@ class RolloutBuffer:
                     raise ValueError(
                         f"snapshot_metadata[{index}].mask_snapshot_hash deve ser SHA-256 hexadecimal."
                     )
-                if decision.get("mask_snapshot_hash_algorithm") != "tft-action-mask-snapshot-v1":
+                if decision.get("mask_snapshot_hash_algorithm") != MASK_SNAPSHOT_HASH_ALGORITHM:
                     raise ValueError(
                         f"snapshot_metadata[{index}] usa algoritmo de hash de mask desconhecido."
                     )
@@ -503,7 +504,7 @@ class RolloutBuffer:
                 # Production collection supplies the complete bundle. Recompute
                 # its digest at the storage boundary instead of trusting a
                 # well-formed SHA-256 string detached from the actual tensors.
-                if masks_dict:
+                if self.masks:
                     expected_contract = {
                         "action_contract_id": ACTION_CONTRACT_ID,
                         "action_contract_version": ACTION_CONTRACT_VERSION,
