@@ -352,6 +352,7 @@ int main() {
     // option enters the inventory, and queued anvils are opened one at a time.
     require(engine.grant_component_anvil({"sword", "bow", "rod"}),
             "component anvil should accept unique known component options");
+    const auto component_anvil_sequence = engine.pending_anvil()->sequence;
     require(engine.has_pending_anvil() &&
             engine.pending_anvil()->kind == ItemAnvilKind::COMPONENT &&
             engine.pending_anvil()->options.size() == 3,
@@ -371,6 +372,8 @@ int main() {
     require(engine.grant_completed_item_anvil({"damage_blade", "guard_plate"}),
             "completed-item anvil should accept known catalog item options");
     const auto completed_anvil_sequence = engine.pending_anvil()->sequence;
+    require(completed_anvil_sequence > component_anvil_sequence,
+            "anvil sequence should advance for each accepted choice set");
     require(engine.choose_anvil_option(0),
             "policy should select one completed item from the anvil");
     require(engine.inventory().back() == "damage_blade" &&
@@ -382,6 +385,11 @@ int main() {
 
     require(!engine.grant_component_anvil({"sword", "sword"}),
             "anvil must not present duplicate options");
+    engine.reset();
+    require(engine.grant_component_anvil({"sword", "bow"}),
+            "new anvil after reset should be accepted");
+    require(engine.pending_anvil()->sequence > completed_anvil_sequence,
+            "anvil sequence must not be reused across ItemEngine reset");
 
     // Auto-merge lifecycle: equipment moves to the upgraded unit; if the
     // three-slot cap is reached, overflow returns to the bag instead of vanishing.
