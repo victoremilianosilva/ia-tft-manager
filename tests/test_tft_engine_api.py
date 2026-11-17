@@ -932,12 +932,12 @@ def test_selling_equipped_unit_returns_item_to_inventory_without_duplication():
         engine.reset()
         native = engine
         initial = native.get_audit_snapshot()["players"][0]
-        starter = next(
-            (unit for unit in initial["bench"] if unit["occupied"]),
+        starter_slot = next(
+            (slot for slot, unit in enumerate(initial["bench"]) if unit["occupied"]),
             None,
         )
-        assert starter is not None
-        sold_uuid = starter["uuid"]
+        assert starter_slot is not None
+        sold_uuid = initial["bench"][starter_slot]["uuid"]
         assert sold_uuid
 
         item_id = "TFT_Item_AdaptiveHelm"
@@ -945,7 +945,7 @@ def test_selling_equipped_unit_returns_item_to_inventory_without_duplication():
 
         # Item target indices use board slots first, then bench slots.
         equip_actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
-        equip_actions[0] = [7, 0, 28, 0, 0, 0]
+        equip_actions[0] = [7, 0, 28 + starter_slot, 0, 0, 0]
         engine.step(equip_actions)
 
         after_equip = native.get_audit_snapshot()["players"][0]
