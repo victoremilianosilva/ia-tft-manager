@@ -703,3 +703,60 @@ def test_rollout_metadata_nested_action_trace_is_isolated_on_store_and_batch():
     stored_trace = buffer.result_snapshot_metadata[0][0]["action_trace"]
     assert stored_trace["effective_action"] == [6, 0, 0, 0, 0, 0]
     assert stored_trace["status_reason"] == "applied"
+
+
+@pytest.mark.parametrize(
+    ("field", "invalid_value"),
+    [
+        ("engine_instance_id", ""),
+        ("engine_instance_id", 123),
+        ("episode_id", True),
+        ("episode_id", "4"),
+        ("decision_sequence", False),
+        ("decision_sequence", "21"),
+        ("player_id", True),
+        ("player_id", "0"),
+        ("lobby_index", False),
+        ("lobby_index", "0"),
+    ],
+)
+def test_rollout_rejects_malformed_identity_field_types(field, invalid_value):
+    buffer = RolloutBuffer(
+        num_steps=1, num_envs=1, obs_dim=3, action_dim=6, device=torch.device("cpu")
+    )
+    decision = {
+        "engine_instance_id": "engine-A", "episode_id": 4,
+        "decision_sequence": 21, "player_id": 0, "lobby_index": 0,
+        "mask_snapshot_hash": "a" * 64,
+        "mask_snapshot_hash_algorithm": "tft-action-mask-snapshot-v1",
+    }
+    decision[field] = invalid_value
+    result = {
+        "engine_instance_id": "engine-A", "episode_id": 4,
+        "decision_sequence": 22, "player_id": 0, "lobby_index": 0,
+        "action_trace": {
+            "player_id": 0,
+            "requested_action": [6, 0, 0, 0, 0, 0],
+            "effective_action": [6, 0, 0, 0, 0, 0],
+            "handler_applied": True,
+            "status_reason": "applied",
+        },
+    }
+    next_state = {
+        "engine_instance_id": "engine-A", "episode_id": 4,
+        "decision_sequence": 22, "player_id": 0, "lobby_index": 0,
+    }
+
+    with pytest.raises(ValueError, match=field):
+        buffer.add(
+            obs=np.zeros((1, 3), dtype=np.float32),
+            actions=np.array([[6, 0, 0, 0, 0, 0]], dtype=np.int64),
+            logprobs=np.zeros(1, dtype=np.float32),
+            rewards=np.zeros(1, dtype=np.float32),
+            dones=np.zeros(1, dtype=np.float32),
+            values=np.zeros(1, dtype=np.float32),
+            masks_dict={},
+            snapshot_metadata=[decision],
+            result_snapshot_metadata=[result],
+            next_snapshot_metadata=[next_state],
+        )
