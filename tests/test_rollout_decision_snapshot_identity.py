@@ -552,3 +552,63 @@ def test_integrated_vector_to_rollout_preserves_terminal_transition_correlation(
         assert np.all(dones)
     finally:
         env.close()
+
+
+def _valid_native_action_trace_rows():
+    infos = [{
+        "action_trace": [
+            {
+                "player_id": player_id,
+                "requested_action": [6, 0, 0, 0, 0, 0],
+                "effective_action": [6, 0, 0, 0, 0, 0],
+                "handler_applied": True,
+                "status_reason": "pass",
+            }
+            for player_id in range(8)
+        ]
+    }]
+    result_metadata = [
+        {"lobby_index": 0, "player_id": player_id}
+        for player_id in range(8)
+    ]
+    return result_metadata, infos
+
+
+def test_attach_native_action_traces_rejects_missing_player_trace():
+    result_metadata, infos = _valid_native_action_trace_rows()
+    infos[0]["action_trace"].pop()
+
+    with pytest.raises(RuntimeError, match="oito registros"):
+        Trainer._attach_native_action_traces(result_metadata, infos, 8)
+
+
+def test_attach_native_action_traces_rejects_trace_for_wrong_player():
+    result_metadata, infos = _valid_native_action_trace_rows()
+    infos[0]["action_trace"][3]["player_id"] = 4
+
+    with pytest.raises(RuntimeError, match="esperado 3"):
+        Trainer._attach_native_action_traces(result_metadata, infos, 8)
+
+
+def test_attach_native_action_traces_rejects_misaligned_result_row():
+    result_metadata, infos = _valid_native_action_trace_rows()
+    result_metadata[5]["lobby_index"] = 1
+
+    with pytest.raises(RuntimeError, match="Snapshot de resultado desalinhado"):
+        Trainer._attach_native_action_traces(result_metadata, infos, 8)
+
+
+def test_attach_native_action_traces_rejects_incomplete_trace_fields():
+    result_metadata, infos = _valid_native_action_trace_rows()
+    del infos[0]["action_trace"][2]["status_reason"]
+
+    with pytest.raises(RuntimeError, match="Trace de ação inválido"):
+        Trainer._attach_native_action_traces(result_metadata, infos, 8)
+
+
+def test_attach_native_action_traces_rejects_snapshot_cardinality_mismatch():
+    result_metadata, infos = _valid_native_action_trace_rows()
+    result_metadata.pop()
+
+    with pytest.raises(RuntimeError, match="não corresponde"):
+        Trainer._attach_native_action_traces(result_metadata, infos, 8)
