@@ -147,3 +147,12 @@ The 17 entity kinds and 31 field-family rows remain the structured-entity covera
 The CSV was structurally validated at 31 data rows, 17 distinct entity kinds and 15 columns on every row. This validates traceability structure only. It does not promote any `not_produced`, `not_correlated`, `shadow_only`, `diagnostic_only`, `not_exposed_to_python` or `unverified` field to native/PPO availability.
 
 The Python inventory covers 125/125 tracked files. The C++ inventory covers 48/48 test files and explicit identity/test-hook references across 127/127 tracked C++ files; it does not prove every implicit value-copy/assignment/destruction path. Issue #346 remains open until the remaining producer and end-to-end acceptance criteria are met.
+
+
+## 11. Stage 1 item-D reconciliation — PR #452
+
+The consolidated [Stage 1 Structured Entity Producer Audit Reconciliation](stage1-structured-entity-producer-audit-reconciliation.v1.draft.md) now joins the 17-kind temporal inventory, 31-row producer matrix, 223-path Schema v2 crosswalk, field-level source proofs and current Actor/Critic delivery audit. It explicitly distinguishes inherited source-map availability from field-level proof and records the native Engine snapshot sequence correction introduced by PR #451.
+
+The audit remains documentary and does not close #346. In particular, raw UnitInstance UUID is still unverified as canonical identity; the Engine-wide snapshot sequence is not a per-player decision sequence; diagnostic UUID visibility is not PPO delivery; and unresolved producer gaps remain unavailable rather than synthesized. The 223-path crosswalk and the separate 254 semantic-leaf count are recorded as different counting scopes pending reproducible reconciliation.
+
+No runtime, schema implementation, tensor, PPO, reward, mask, checkpoint, Viewer or Overwolf behavior is changed by this reconciliation.
