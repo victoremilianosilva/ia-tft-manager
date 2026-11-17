@@ -75,7 +75,7 @@ The 223-path crosswalk and the separate 254 semantic-leaf count in the producer-
 2. That sequence increments once per published ResetResult/StepResult, is shared by the eight player rows, and remains monotonic across episode resets within one Engine instance.
 3. PR #454 publishes `player_decision_sequences[8]`; values currently advance in lockstep with atomic eight-player publication. Trainer expands them into the scalar `player_decision_sequence` for each rollout row.
 4. PR #455 adds `native_state_snapshot` to ResetResult/StepResult with contract ID/version, producer, source namespace, Engine/episode/snapshot identity, all eight player sequences and the existing native audit records.
-5. Wrapper validates the snapshot envelope, player cardinality and board/bench/shop cardinalities; Trainer selects exactly one player record and RolloutBuffer preserves it as non-tensor metadata.
+5. Wrapper validates the snapshot envelope, player cardinality and board/bench/shop cardinalities; Trainer selects exactly one player record and RolloutBuffer preserves it as non-tensor metadata. The sidecar does not duplicate the exact action masks, which remain a separate sibling field.
 6. This does not create an authoritative logical GEP `match_id`, prove UUID uniqueness/lifecycle, or make the structured sidecar an Actor/Critic tensor. Decision identity remains partial; identity hash remains null.
 7. A partial identity cannot authorize missing fields, Critic context, anti-loop history or strategic-owner snapshots.
 8. The Action/Mask Contract remains independent. Native masks remain exact side inputs; Engine remains the final legality authority.

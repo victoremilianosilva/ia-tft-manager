@@ -34,7 +34,7 @@ The envelope contains:
 - the eight `player_decision_sequences`;
 - round/stage/finished metadata and eight player records.
 
-Each player record contains native economy facts, board (28 slots), bench (9 slots), shop (5 slots), unit champion/catalog identity, raw UnitInstance UUID, star/cost, equipped item catalog IDs, loose component catalog IDs/multiplicity, completed-item inventory catalog IDs, pending-anvil options and the existing audit diagnostics/masks.
+Each player record contains native economy facts, board (28 slots), bench (9 slots), shop (5 slots), unit champion/catalog identity, raw UnitInstance UUID, star/cost, equipped item catalog IDs, loose component catalog IDs/multiplicity, completed-item inventory catalog IDs, pending-anvil options and the existing audit diagnostics. Exact action masks remain the sibling `action_masks` field in ResetResult/StepResult and are not duplicated in the sidecar.
 
 Invariants:
 1. Envelope identity must equal the enclosing ResetResult/StepResult identity.
@@ -44,7 +44,7 @@ Invariants:
 5. Board/bench/shop cardinalities are fixed at 28/9/5; occupied units require nonempty native champion ID and UUID.
 6. Missing physical item/component IDs, shop-offer IDs, anvil IDs, pool snapshots, canonical hex coordinates, trait records, action-candidate sets, logical GEP match ID and typed temporal/anti-loop records remain unavailable. No synthetic values are created.
 7. Unit UUID remains scoped evidence, not a globally unique or cross-episode canonical identity. Engine/episode/player/sequence envelope context is required, and lifecycle/collision proof remains open.
-8. Strategic scores, diagnostics, recommendations, masks and action traces remain sidecar metadata. They do not become Actor/Critic features, PPO labels, rewards or executable commands.
+8. Strategic scores and diagnostics remain sidecar metadata. Exact action masks remain the sibling ResetResult/StepResult field and are independently hashed/correlated. Neither masks nor diagnostics become Actor/Critic features, PPO labels, rewards or executable commands.
 9. Native masks remain the independent exact legality side input; this contract does not replace Action/Mask Contract v1.
 
 ## 5. Cross-component impact

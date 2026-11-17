@@ -188,7 +188,10 @@ py::list player_info_to_list(
     return result;
 }
 
-py::dict audit_snapshot_to_dict(const tft::AuditSnapshot& snapshot) {
+py::dict audit_snapshot_to_dict(
+    const tft::AuditSnapshot& snapshot,
+    bool include_masks = true
+) {
     py::dict result;
     result["contract_id"] = snapshot.contract_id;
     result["contract_version"] = snapshot.contract_version;
@@ -262,7 +265,7 @@ py::dict audit_snapshot_to_dict(const tft::AuditSnapshot& snapshot) {
         p["last_item_immediate_strength"] = player.last_item_immediate_strength;
         p["last_item_role_alignment"] = player.last_item_role_alignment;
         p["last_item_assignment_reward"] = player.last_item_assignment_reward;
-        p["action_masks"] = masks_to_dict(player.masks);
+        if (include_masks) p["action_masks"] = masks_to_dict(player.masks);
         players.append(std::move(p));
     }
     result["players"] = std::move(players);
@@ -284,7 +287,7 @@ py::dict reset_to_dict(const tft::ResetResult& reset) {
     result["episode_id"] = reset.episode_id;
     result["decision_sequence"] = reset.decision_sequence;
     result["player_decision_sequences"] = reset.player_decision_sequences;
-    result["native_state_snapshot"] = audit_snapshot_to_dict(reset.native_state_snapshot);
+    result["native_state_snapshot"] = audit_snapshot_to_dict(reset.native_state_snapshot, false);
     result["observation_dim"] = reset.observation_dim;
 
     return result;
@@ -329,7 +332,7 @@ py::dict step_to_dict(const tft::StepResult& step) {
     result["episode_id"] = step.episode_id;
     result["decision_sequence"] = step.decision_sequence;
     result["player_decision_sequences"] = step.player_decision_sequences;
-    result["native_state_snapshot"] = audit_snapshot_to_dict(step.native_state_snapshot);
+    result["native_state_snapshot"] = audit_snapshot_to_dict(step.native_state_snapshot, false);
     result["round"] = step.round;
     result["stage"] = step.stage;
     result["alive_players"] = step.alive_players;
