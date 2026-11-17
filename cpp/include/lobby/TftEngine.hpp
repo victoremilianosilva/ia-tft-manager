@@ -435,6 +435,8 @@ struct AntiLoopMetrics {
 
 
 struct ActionExecutionTrace {
+    // Explicit owner of this trace; array position alone is not identity.
+    std::int32_t player_id{-1};
     std::array<std::int32_t, kActionComponents> requested_action{};
     std::array<std::int32_t, kActionComponents> effective_action{};
     // True only when the native action handler reports successful application.

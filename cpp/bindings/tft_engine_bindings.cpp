@@ -257,6 +257,7 @@ py::dict step_to_dict(const tft::StepResult& step) {
     py::list action_traces;
     for (const auto& trace : step.action_traces) {
         py::dict item;
+        item["player_id"] = trace.player_id;
         item["requested_action"] = trace.requested_action;
         item["effective_action"] = trace.effective_action;
         item["handler_applied"] = trace.handler_applied;

@@ -74,12 +74,13 @@ class FakeNativeLobby:
             ],
             "action_traces": [
                 {
+                    "player_id": player_id,
                     "requested_action": [6, 0, 0, 0, 0, 0],
                     "effective_action": [6, 0, 0, 0, 0, 0],
                     "handler_applied": True,
                     "status_reason": "applied",
                 }
-                for _ in range(8)
+                for player_id in range(8)
             ],
             "events": [],
         }
@@ -135,6 +136,7 @@ def test_step_masks_are_taken_from_same_native_snapshot(monkeypatch):
         assert all(not mask["type_mask"][8] for mask in masks)
         assert len(info["action_trace"]) == 8
         assert info["action_trace"][0] == {
+            "player_id": 0,
             "requested_action": [6, 0, 0, 0, 0, 0],
             "effective_action": [6, 0, 0, 0, 0, 0],
             "handler_applied": True,

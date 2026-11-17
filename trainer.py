@@ -1344,11 +1344,21 @@ class Trainer:
                     start = lobby_idx * self.PLAYERS_PER_LOBBY
                     for player_id, trace in enumerate(traces):
                         if not isinstance(trace, dict) or not {
-                            "requested_action", "effective_action",
+                            "player_id", "requested_action", "effective_action",
                             "handler_applied", "status_reason",
                         }.issubset(trace):
                             raise RuntimeError(
                                 f"Trace de ação inválido para lobby {lobby_idx}, jogador {player_id}."
+                            )
+                        trace_player_id = trace.get("player_id")
+                        if (
+                            isinstance(trace_player_id, bool)
+                            or not isinstance(trace_player_id, int)
+                            or trace_player_id != player_id
+                        ):
+                            raise RuntimeError(
+                                f"Trace de ação da lobby {lobby_idx} pertence ao jogador "
+                                f"{trace_player_id}, esperado {player_id}."
                             )
                         flat_result_snapshot_metadata[start + player_id]["action_trace"] = dict(trace)
 
