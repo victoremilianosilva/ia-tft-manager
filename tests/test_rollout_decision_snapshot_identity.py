@@ -374,7 +374,7 @@ def _add_rollout_with_action_trace_for_validation(action_trace):
     result = {
         "engine_instance_id": "engine-A", "episode_id": 4,
         "decision_sequence": 22, "player_id": 0, "lobby_index": 0,
-        "action_trace": action_trace,
+        "action_trace": {"player_id": 0, **action_trace},
     }
     next_state = {key: value for key, value in result.items() if key != "action_trace"}
     buffer.add(
@@ -450,3 +450,14 @@ def test_rollout_rejects_transition_without_native_action_trace():
             result_snapshot_metadata=[result],
             next_snapshot_metadata=[result],
         )
+
+def test_rollout_rejects_action_trace_owned_by_another_player():
+    trace = {
+        "player_id": 1,
+        "requested_action": [6, 0, 0, 0, 0, 0],
+        "effective_action": [6, 0, 0, 0, 0, 0],
+        "handler_applied": True,
+        "status_reason": "applied",
+    }
+    with pytest.raises(ValueError, match="player_id não corresponde"):
+        _add_rollout_with_action_trace_for_validation(trace)
