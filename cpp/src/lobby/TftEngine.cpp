@@ -6831,6 +6831,17 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
         if (source.item_engine) {
             target.item_components = source.item_engine->components();
             target.item_inventory = source.item_engine->inventory();
+            const auto append_counts = [](const std::vector<std::string>& ids, std::vector<AuditItemCount>& counts) {
+                for (const auto& id : ids) { const auto found = std::find_if(counts.begin(), counts.end(), [&id](const AuditItemCount& row) { return row.catalog_id == id; }); if (found == counts.end()) counts.push_back(AuditItemCount{id, 1}); else ++found->count; }
+            };
+            append_counts(target.item_components, target.item_component_counts);
+            append_counts(target.item_inventory, target.item_inventory_counts);
+            const auto append_equipment = [&target](const std::optional<UnitInstance>& unit, const char* location, std::size_t slot) {
+                if (!unit || unit->uuid.empty()) return;
+                for (const auto& item : unit->items) target.equipped_items.push_back(AuditEquippedItemSnapshot{unit->uuid, location, static_cast<std::int32_t>(slot), item.api_name});
+            };
+            for (std::size_t slot = 0; slot < source.board.size(); ++slot) append_equipment(source.board[slot], "board", slot);
+            for (std::size_t slot = 0; slot < source.bench.size(); ++slot) append_equipment(source.bench[slot], "bench", slot);
             if (impl_->item_catalog) {
                 for (const auto& component : impl_->item_catalog->components)
                     target.item_component_catalog.push_back(component.first);

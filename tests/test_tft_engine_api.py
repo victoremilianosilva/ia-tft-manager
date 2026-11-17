@@ -669,6 +669,9 @@ def test_engine_instance_identity_is_distinct_from_seed_and_episode():
                 assert row["available_count"] == first.pool_available(row["champion_internal_id"])
                 assert row["initial_count"] == first.pool_initial_count(row["champion_internal_id"])
             assert len(structured["players"]) == 8
+            assert isinstance(structured["players"][0]["item_component_counts"], list)
+            assert isinstance(structured["players"][0]["item_inventory_counts"], list)
+            assert isinstance(structured["players"][0]["equipped_items"], list)
             assert len(structured["players"][0]["board"]) == 28
             starter = structured["players"][0]["bench"][0]
             assert starter["occupied"]

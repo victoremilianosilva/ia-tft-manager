@@ -210,6 +210,8 @@ struct AuditUnitSnapshot {
     std::vector<std::string> item_ids;
 };
 
+struct AuditItemCount { std::string catalog_id; std::uint32_t count{0}; };
+struct AuditEquippedItemSnapshot { std::string unit_uuid; std::string location; std::int32_t slot{-1}; std::string catalog_id; };
 struct AuditPlayerSnapshot {
     std::int32_t player_id{-1};
     std::int32_t gold{0};
@@ -244,6 +246,9 @@ struct AuditPlayerSnapshot {
     // loose components, completed items in the bag, and unit equipment.
     std::vector<std::string> item_components;
     std::vector<std::string> item_inventory;
+    std::vector<AuditItemCount> item_component_counts;
+    std::vector<AuditItemCount> item_inventory_counts;
+    std::vector<AuditEquippedItemSnapshot> equipped_items;
     std::vector<std::string> item_component_catalog;
     bool pending_anvil{false};
     std::int32_t pending_anvil_kind{-1};

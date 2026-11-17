@@ -273,6 +273,13 @@ py::dict audit_snapshot_to_dict(
         p["shop"] = shop;
         p["item_components"] = player.item_components;
         p["item_inventory"] = player.item_inventory;
+        py::list component_counts, inventory_counts, equipped_items;
+        for (const auto& count : player.item_component_counts) { py::dict row; row["catalog_id"] = count.catalog_id; row["count"] = count.count; component_counts.append(std::move(row)); }
+        for (const auto& count : player.item_inventory_counts) { py::dict row; row["catalog_id"] = count.catalog_id; row["count"] = count.count; inventory_counts.append(std::move(row)); }
+        for (const auto& equipped : player.equipped_items) { py::dict row; row["unit_uuid"] = equipped.unit_uuid; row["location"] = equipped.location; row["slot"] = equipped.slot; row["catalog_id"] = equipped.catalog_id; equipped_items.append(std::move(row)); }
+        p["item_component_counts"] = std::move(component_counts);
+        p["item_inventory_counts"] = std::move(inventory_counts);
+        p["equipped_items"] = std::move(equipped_items);
         p["item_component_catalog"] = player.item_component_catalog;
         p["pending_anvil"] = player.pending_anvil;
         p["pending_anvil_kind"] = player.pending_anvil_kind;

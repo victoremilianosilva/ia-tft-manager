@@ -72,7 +72,7 @@ class FakeNativeLobby:
                     "board": [{"occupied": False, "champion_id": "", "uuid": "", "star": 0, "cost": 0, "items": []} for _ in range(28)],
                     "bench": [{"occupied": False, "champion_id": "", "uuid": "", "star": 0, "cost": 0, "items": []} for _ in range(9)],
                     "shop": [{"occupied": False, "champion_id": "", "uuid": "", "star": 0, "cost": 0, "items": []} for _ in range(5)],
-                    "item_components": [], "item_inventory": [], "item_component_catalog": [],
+                    "item_components": [], "item_inventory": [], "item_component_counts": [], "item_inventory_counts": [], "equipped_items": [], "item_component_catalog": [],
                     "pending_anvil_options": [],
                 }
                 for player_id in range(8)
