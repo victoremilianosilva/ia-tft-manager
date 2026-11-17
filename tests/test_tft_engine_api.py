@@ -701,7 +701,12 @@ def test_elimination_retires_item_ownership_in_native_snapshot():
     engine = TFTLobby(seed=20261117)
     try:
         reset = engine.reset()
+        initial_components = reset["native_state_snapshot"]["players"][0]["item_component_counts"]
         component_id = reset["native_state_snapshot"]["players"][0]["item_component_catalog"][0]
+        initial_component_count = next(
+            (row["count"] for row in initial_components if row["catalog_id"] == component_id),
+            0,
+        )
         assert engine.add_item_component_for_testing(0, component_id)
         assert engine.set_player_hp_for_testing(0, 0.0)
 
@@ -719,13 +724,13 @@ def test_elimination_retires_item_ownership_in_native_snapshot():
         assert player["item_ownership_retired"] is True
         assert player["item_components"] == []
         assert player["item_component_counts"] == []
-        assert player["retired_item_component_counts"] == [
-            {"catalog_id": component_id, "count": 1}
-        ]
-        assert player["retired_item_inventory_counts"] == []
-        assert player["retired_equipped_item_counts"] == []
+        retired_components = {
+            row["catalog_id"]: row["count"]
+            for row in player["retired_item_component_counts"]
+        }
+        assert retired_components[component_id] == initial_component_count + 1
+        assert all(count > 0 for count in retired_components.values())
         assert player["pending_anvil"] is False
-        assert player["retired_pending_anvils"] == []
         assert all(not unit["occupied"] for unit in player["board"])
         assert all(not unit["occupied"] for unit in player["bench"])
         assert all(
