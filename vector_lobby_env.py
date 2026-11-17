@@ -30,8 +30,19 @@ class LobbyVectorEnv:
             self._requires_full_reset = True
             raise
 
+        # Building the vector batch is part of reset success. If stacking
+        # fails (for example, incompatible observation shapes), callers must
+        # not continue with stale observations and newly reset lobbies.
+        try:
+            stacked_observations = np.stack(observations).astype(
+                np.float32, copy=False
+            )
+        except Exception:
+            self._requires_full_reset = True
+            raise
+
         self._requires_full_reset = False
-        return np.stack(observations).astype(np.float32, copy=False)
+        return stacked_observations
 
     def env_method(self, method_name, *args, **kwargs):
         """Mantém compatibilidade com as chamadas do Trainer."""

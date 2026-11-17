@@ -340,3 +340,43 @@ def test_vector_env_fails_closed_after_partial_step_and_recovers_on_full_reset()
 
     result = vector.step([np.zeros((8, 6)), np.zeros((8, 6))])
     assert result[0].shape == (2, 8, 3)
+
+
+
+class _VectorResetShapeEnv:
+    def __init__(self, observation_shape):
+        self.observation_shape = observation_shape
+        self.players = [type("Player", (), {"alive": True})() for _ in range(8)]
+
+    def reset(self):
+        return np.zeros(self.observation_shape, dtype=np.float32)
+
+    def step(self, _actions):
+        return (
+            np.zeros(self.observation_shape, dtype=np.float32),
+            np.zeros(8, dtype=np.float32),
+            False,
+            {},
+        )
+
+
+def test_vector_reset_stays_poisoned_when_observation_batch_cannot_be_stacked():
+    from vector_lobby_env import LobbyVectorEnv
+    first = _VectorResetShapeEnv((8, 3))
+    second = _VectorResetShapeEnv((8, 4))
+    vector = LobbyVectorEnv([lambda: first, lambda: second])
+
+    with pytest.raises(ValueError):
+        vector.reset()
+
+    with pytest.raises(RuntimeError, match="estado inconsistente"):
+        vector.step([np.zeros((8, 6)), np.zeros((8, 6))])
+
+    # Once all environments can produce a compatible reset batch, the vector
+    # may recover and accept a new step.
+    second.observation_shape = (8, 3)
+    observations = vector.reset()
+    assert observations.shape == (2, 8, 3)
+
+    result = vector.step([np.zeros((8, 6)), np.zeros((8, 6))])
+    assert result[0].shape == (2, 8, 3)
