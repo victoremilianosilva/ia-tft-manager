@@ -190,6 +190,10 @@ py::list player_info_to_list(
 
 py::dict audit_snapshot_to_dict(const tft::AuditSnapshot& snapshot) {
     py::dict result;
+    result["contract_id"] = snapshot.contract_id;
+    result["contract_version"] = snapshot.contract_version;
+    result["source_namespace"] = snapshot.source_namespace;
+    result["producer"] = snapshot.producer;
     result["engine_instance_id"] = snapshot.engine_instance_id;
     result["episode_id"] = snapshot.episode_id;
     result["snapshot_sequence"] = snapshot.snapshot_sequence;

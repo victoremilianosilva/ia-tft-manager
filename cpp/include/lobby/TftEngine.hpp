@@ -265,6 +265,10 @@ struct AuditPlayerSnapshot {
 };
 
 struct AuditSnapshot {
+    std::string contract_id{"tft.native-state-snapshot"};
+    std::uint32_t contract_version{1};
+    std::string source_namespace{"tft.engine.observation-snapshot"};
+    std::string producer{"TFTEngine::get_audit_snapshot"};
     std::string engine_instance_id;
     std::uint64_t episode_id{0};
     std::uint64_t snapshot_sequence{0};

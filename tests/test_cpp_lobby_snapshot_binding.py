@@ -40,6 +40,10 @@ class FakeNativeLobby:
 
     def _native_state_snapshot(self):
         return {
+            "contract_id": "tft.native-state-snapshot",
+            "contract_version": 1,
+            "source_namespace": "tft.engine.observation-snapshot",
+            "producer": "TFTEngine::get_audit_snapshot",
             "engine_instance_id": f"fake-engine-{id(self)}",
             "episode_id": self.episode_id,
             "snapshot_sequence": self.decision_sequence,

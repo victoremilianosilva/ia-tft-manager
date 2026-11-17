@@ -134,6 +134,10 @@ class CppTFTLobbyWrapper:
     def _copy_native_state_snapshot(cls, value, expected_identity):
         if not isinstance(value, dict):
             raise RuntimeError("Snapshot nativo estruturado ausente ou inválido.")
+        if value.get("contract_id") != "tft.native-state-snapshot" or value.get("contract_version") != 1:
+            raise RuntimeError("Versão/identidade do contrato de snapshot estruturado incompatível.")
+        if value.get("source_namespace") != "tft.engine.observation-snapshot":
+            raise RuntimeError("Namespace de sequência do snapshot estruturado incompatível.")
         if value.get("engine_instance_id") != expected_identity["engine_instance_id"]:
             raise RuntimeError("Snapshot estruturado pertence a outra instância da Engine.")
         if value.get("episode_id") != expected_identity["episode_id"]:
