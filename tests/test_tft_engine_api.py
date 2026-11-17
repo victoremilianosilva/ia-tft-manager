@@ -957,7 +957,7 @@ def test_selling_equipped_unit_returns_item_to_inventory_without_duplication():
         assert len(equipped) == 1
 
         sell_actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
-        sell_actions[0] = [5, 0, 0, 0, 0, 0]
+        sell_actions[0] = [5, 0, starter_slot, 0, 0, 0]
         engine.step(sell_actions)
 
         after_sale = native.get_audit_snapshot()["players"][0]
