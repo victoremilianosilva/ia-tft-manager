@@ -646,6 +646,81 @@ def test_composition_intelligence_emits_per_player_shadow_diagnostics(monkeypatc
 
 
 
+def test_selling_purchased_unit_retires_uuid_and_returns_copy_to_pool():
+    """A real purchase followed by sale retires its UUID and restores one pool copy."""
+    engine = TFTLobby(seed=20261117)
+
+    try:
+        engine.reset()
+        native = engine
+        before = native.get_audit_snapshot()
+        player = before["players"][0]
+        owned_champions = {
+            unit["champion_id"]
+            for location in ("board", "bench")
+            for unit in player[location]
+            if unit["occupied"]
+        }
+        offer_slot = next(
+            (
+                slot for slot, unit in enumerate(player["shop"])
+                if unit["occupied"] and unit["champion_id"] not in owned_champions
+            ),
+            None,
+        )
+        assert offer_slot is not None, "A non-duplicate shop offer is required for the sale lifecycle test."
+
+        offer = player["shop"][offer_slot]
+        champion_id = offer["champion_id"]
+        champion_internal_id = native.get_champion_id_map()[champion_id]
+        purchased_uuid = offer["uuid"]
+        assert purchased_uuid
+
+        pool_row_before = next(
+            row for row in before["shared_pool"]["champions"]
+            if row["champion_internal_id"] == champion_internal_id
+        )
+        available_before = pool_row_before["available_count"]
+
+        assert native.set_player_economy_for_testing(0, 20, 3, 0)
+        actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        actions[0] = [0, offer_slot, 0, 0, 0, 0]
+        engine.step(actions)
+
+        after_buy = native.get_audit_snapshot()["players"][0]
+        purchased_bench_slots = [
+            slot for slot, unit in enumerate(after_buy["bench"])
+            if unit["occupied"] and unit["uuid"] == purchased_uuid
+        ]
+        assert len(purchased_bench_slots) == 1, (
+            "The purchased shop UnitInstance should move to the bench without changing identity."
+        )
+        bench_slot = purchased_bench_slots[0]
+
+        sell_actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        sell_actions[0] = [5, 0, bench_slot, 0, 0, 0]
+        engine.step(sell_actions)
+
+        after_sell = native.get_audit_snapshot()
+        sold_player = after_sell["players"][0]
+        active_uuids = {
+            unit["uuid"]
+            for location in ("board", "bench", "shop")
+            for unit in sold_player[location]
+            if unit["occupied"]
+        }
+        assert purchased_uuid not in active_uuids
+
+        pool_row_after = next(
+            row for row in after_sell["shared_pool"]["champions"]
+            if row["champion_internal_id"] == champion_internal_id
+        )
+        assert pool_row_after["available_count"] == available_before + 1
+        assert not sold_player["bench"][bench_slot]["occupied"]
+    finally:
+        engine.close()
+
+
 def test_engine_instance_identity_is_distinct_from_seed_and_episode():
     first = TFTLobby(seed=2026)
     second = TFTLobby(seed=2026)
