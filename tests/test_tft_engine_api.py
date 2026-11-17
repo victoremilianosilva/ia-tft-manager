@@ -922,3 +922,53 @@ def test_unit_instance_uuid_is_preserved_across_bench_and_board_moves():
         assert moved["board"][destination]["uuid"] == unit_uuid
     finally:
         engine.close()
+
+
+def test_selling_equipped_unit_returns_item_to_inventory_without_duplication():
+    """Selling a unit detaches its equipment back to the player's item inventory."""
+    engine = TFTLobby(seed=20261117)
+
+    try:
+        engine.reset()
+        native = engine
+        initial = native.get_audit_snapshot()["players"][0]
+        starter_slot = next(
+            (slot for slot, unit in enumerate(initial["bench"]) if unit["occupied"]),
+            None,
+        )
+        assert starter_slot is not None
+        sold_uuid = initial["bench"][starter_slot]["uuid"]
+        assert sold_uuid
+
+        item_id = "TFT_Item_AdaptiveHelm"
+        assert native.add_completed_item_for_testing(0, item_id)
+
+        # Item target indices use board slots first, then bench slots.
+        equip_actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        equip_actions[0] = [7, 0, 28 + starter_slot, 0, 0, 0]
+        engine.step(equip_actions)
+
+        after_equip = native.get_audit_snapshot()["players"][0]
+        assert after_equip["item_inventory"] == []
+        equipped = [
+            row for row in after_equip["equipped_items"]
+            if row["unit_uuid"] == sold_uuid and row["catalog_id"] == item_id
+        ]
+        assert len(equipped) == 1
+
+        sell_actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        sell_actions[0] = [5, 0, starter_slot, 0, 0, 0]
+        engine.step(sell_actions)
+
+        after_sale = native.get_audit_snapshot()["players"][0]
+        active_uuids = {
+            unit["uuid"]
+            for location in ("board", "bench", "shop")
+            for unit in after_sale[location]
+            if unit["occupied"]
+        }
+        assert sold_uuid not in active_uuids
+        assert after_sale["equipped_items"] == []
+        assert after_sale["item_inventory"].count(item_id) == 1
+    finally:
+        engine.close()
