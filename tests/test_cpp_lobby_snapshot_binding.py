@@ -77,6 +77,11 @@ class FakeNativeLobby:
                     "pending_anvil": False,
                     "pending_anvil_sequence": 0,
                     "pending_anvil_options": [],
+                    "item_ownership_retired": False,
+                    "retired_item_component_counts": [],
+                    "retired_item_inventory_counts": [],
+                    "retired_equipped_item_counts": [],
+                    "retired_pending_anvils": [],
                 }
                 for player_id in range(8)
             ],
@@ -572,6 +577,62 @@ def test_native_snapshot_rejects_occupied_shop_offer_without_revision():
     identity = {"engine_instance_id": snapshot["engine_instance_id"], "episode_id": snapshot["episode_id"], "decision_sequence": snapshot["snapshot_sequence"], "player_decision_sequences": snapshot["player_decision_sequences"]}
     with pytest.raises(RuntimeError, match="sem revisão nativa"):
         wrapper._copy_native_state_snapshot(snapshot, identity)
+
+
+def test_wrapper_accepts_terminal_item_retirement_summary():
+    native = FakeNativeLobby()
+    snapshot = native._native_state_snapshot()
+    player = snapshot["players"][0]
+    player["item_ownership_retired"] = True
+    player["retired_item_component_counts"] = [{"catalog_id": "sword", "count": 2}]
+    player["retired_item_inventory_counts"] = [{"catalog_id": "damage_blade", "count": 1}]
+    player["retired_equipped_item_counts"] = [
+        {"unit_uuid": "unit-retired", "catalog_id": "guard_plate", "count": 1}
+    ]
+    player["retired_pending_anvils"] = [
+        {"sequence": 7, "kind": 0, "options": ["sword", "bow"]}
+    ]
+    identity = {
+        "engine_instance_id": f"fake-engine-{id(native)}",
+        "episode_id": 0,
+        "decision_sequence": 0,
+        "player_decision_sequences": [0] * 8,
+    }
+    copied = cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
+    assert copied["players"][0]["item_ownership_retired"] is True
+    assert copied["players"][0]["retired_item_component_counts"][0]["count"] == 2
+
+
+def test_wrapper_rejects_live_item_ownership_after_retirement():
+    native = FakeNativeLobby()
+    snapshot = native._native_state_snapshot()
+    player = snapshot["players"][0]
+    player["item_ownership_retired"] = True
+    player["item_components"] = ["sword"]
+    identity = {
+        "engine_instance_id": f"fake-engine-{id(native)}",
+        "episode_id": 0,
+        "decision_sequence": 0,
+        "player_decision_sequences": [0] * 8,
+    }
+    with pytest.raises(RuntimeError, match="Ownership ativo presente"):
+        cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
+
+
+def test_wrapper_rejects_malformed_retired_equipment_count():
+    native = FakeNativeLobby()
+    snapshot = native._native_state_snapshot()
+    snapshot["players"][0]["retired_equipped_item_counts"] = [
+        {"unit_uuid": "unit-retired", "catalog_id": "guard_plate", "count": True}
+    ]
+    identity = {
+        "engine_instance_id": f"fake-engine-{id(native)}",
+        "episode_id": 0,
+        "decision_sequence": 0,
+        "player_decision_sequences": [0] * 8,
+    }
+    with pytest.raises(RuntimeError, match="retired_equipped_item_counts inválido"):
+        cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
 
 
 def test_wrapper_rejects_pending_anvil_without_identity_sequence():

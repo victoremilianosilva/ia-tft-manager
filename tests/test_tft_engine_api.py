@@ -695,3 +695,53 @@ def test_engine_instance_identity_is_distinct_from_seed_and_episode():
     finally:
         first.close()
         second.close()
+
+
+def test_elimination_retires_item_ownership_in_native_snapshot():
+    engine = TFTLobby(seed=20261117)
+    try:
+        reset = engine.reset()
+        initial_components = reset["native_state_snapshot"]["players"][0]["item_component_counts"]
+        component_id = reset["native_state_snapshot"]["players"][0]["item_component_catalog"][0]
+        initial_component_count = next(
+            (row["count"] for row in initial_components if row["catalog_id"] == component_id),
+            0,
+        )
+        assert engine.add_item_component_for_testing(0, component_id)
+        assert engine.set_player_hp_for_testing(0, 0.0)
+
+        actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        result = None
+        # Rounds 1-1 through 1-4 are PvE; elimination is evaluated on the first PvP round (2-1).
+        for _ in range(5):
+            result = engine.step(actions, timer_enabled=True, timer_expired=True)
+            player = result["native_state_snapshot"]["players"][0]
+            if player["item_ownership_retired"]:
+                break
+
+        assert result is not None
+        player = result["native_state_snapshot"]["players"][0]
+        assert player["item_ownership_retired"] is True
+        assert player["item_components"] == []
+        assert player["item_component_counts"] == []
+        retired_components = {
+            row["catalog_id"]: row["count"]
+            for row in player["retired_item_component_counts"]
+        }
+        # The match may award additional components before the first PvP elimination.
+        # The explicitly injected copy must still be present in the terminal aggregate.
+        assert retired_components[component_id] >= initial_component_count + 1
+        assert all(count > 0 for count in retired_components.values())
+        assert player["item_inventory"] == []
+        assert player["item_inventory_counts"] == []
+        assert player["equipped_items"] == []
+        assert player["pending_anvil"] is False
+        assert player["pending_anvil_options"] == []
+        assert all(not unit["occupied"] for unit in player["board"])
+        assert all(not unit["occupied"] for unit in player["bench"])
+        assert all(
+            not result["native_state_snapshot"]["players"][other]["item_ownership_retired"]
+            for other in range(1, 8)
+        )
+    finally:
+        engine.close()

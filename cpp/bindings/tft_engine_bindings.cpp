@@ -281,6 +281,16 @@ py::dict audit_snapshot_to_dict(
         p["item_component_counts"] = std::move(component_counts);
         p["item_inventory_counts"] = std::move(inventory_counts);
         p["equipped_items"] = std::move(equipped_items);
+        p["item_ownership_retired"] = player.item_ownership_retired;
+        py::list retired_component_counts, retired_inventory_counts, retired_equipped_counts, retired_anvils;
+        for (const auto& count : player.retired_item_component_counts) { py::dict row; row["catalog_id"] = count.catalog_id; row["count"] = count.count; retired_component_counts.append(std::move(row)); }
+        for (const auto& count : player.retired_item_inventory_counts) { py::dict row; row["catalog_id"] = count.catalog_id; row["count"] = count.count; retired_inventory_counts.append(std::move(row)); }
+        for (const auto& equipped : player.retired_equipped_item_counts) { py::dict row; row["unit_uuid"] = equipped.unit_uuid; row["catalog_id"] = equipped.catalog_id; row["count"] = equipped.count; retired_equipped_counts.append(std::move(row)); }
+        for (const auto& anvil : player.retired_pending_anvils) { py::dict row; row["sequence"] = anvil.sequence; row["kind"] = anvil.kind; row["options"] = anvil.options; retired_anvils.append(std::move(row)); }
+        p["retired_item_component_counts"] = std::move(retired_component_counts);
+        p["retired_item_inventory_counts"] = std::move(retired_inventory_counts);
+        p["retired_equipped_item_counts"] = std::move(retired_equipped_counts);
+        p["retired_pending_anvils"] = std::move(retired_anvils);
         p["item_component_catalog"] = player.item_component_catalog;
         p["pending_anvil"] = player.pending_anvil;
         p["pending_anvil_sequence"] = player.pending_anvil_sequence;
@@ -983,6 +993,8 @@ PYBIND11_MODULE(tft_engine, module) {
              py::arg("player_id"), py::arg("item_id"))
         .def("set_player_alive_for_testing", &TFTEngine::set_player_alive_for_testing,
              py::arg("player_id"), py::arg("alive"))
+        .def("set_player_hp_for_testing", &TFTEngine::set_player_hp_for_testing,
+             py::arg("player_id"), py::arg("hp"))
         .def("set_player_economy_for_testing", &TFTEngine::set_player_economy_for_testing,
              py::arg("player_id"), py::arg("gold"), py::arg("level"), py::arg("xp"))
         .def("set_shop_offer_for_testing", &TFTEngine::set_shop_offer_for_testing,
