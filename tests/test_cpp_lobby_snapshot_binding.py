@@ -291,3 +291,52 @@ def test_player_liveness_exposes_latest_wrapper_state(monkeypatch):
         assert lobby.get_player_liveness() == [True, True, True, False, True, True, True, True]
     finally:
         lobby.close()
+
+
+class _VectorStepEnv:
+    def __init__(self, *, fail_step=False):
+        self.fail_step = fail_step
+        self.step_calls = 0
+        self.reset_calls = 0
+        self.players = [type("Player", (), {"alive": True})() for _ in range(8)]
+
+    def reset(self):
+        self.reset_calls += 1
+        return np.zeros((8, 3), dtype=np.float32)
+
+    def step(self, _actions):
+        self.step_calls += 1
+        if self.fail_step:
+            raise ValueError("synthetic step failure")
+        return (
+            np.zeros((8, 3), dtype=np.float32),
+            np.zeros(8, dtype=np.float32),
+            False,
+            {},
+        )
+
+
+def test_vector_env_fails_closed_after_partial_step_and_recovers_on_full_reset():
+    from vector_lobby_env import LobbyVectorEnv
+
+    first = _VectorStepEnv()
+    second = _VectorStepEnv(fail_step=True)
+    vector = LobbyVectorEnv([lambda: first, lambda: second])
+
+    with pytest.raises(RuntimeError, match="estado das lobbies"):
+        vector.step([np.zeros((8, 6)), np.zeros((8, 6))])
+
+    assert first.step_calls == 1
+    assert second.step_calls == 1
+
+    with pytest.raises(RuntimeError, match="estado inconsistente"):
+        vector.step([np.zeros((8, 6)), np.zeros((8, 6))])
+
+    second.fail_step = False
+    observations = vector.reset()
+    assert observations.shape == (2, 8, 3)
+    assert first.reset_calls == 1
+    assert second.reset_calls == 1
+
+    result = vector.step([np.zeros((8, 6)), np.zeros((8, 6))])
+    assert result[0].shape == (2, 8, 3)
