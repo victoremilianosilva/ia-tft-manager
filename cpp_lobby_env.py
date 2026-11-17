@@ -249,6 +249,14 @@ class CppTFTLobbyWrapper:
             for slot, offer in enumerate(player["shop"]):
                 if offer["occupied"] and offer_revisions[slot] == 0:
                     raise RuntimeError("Oferta ocupada sem revisão nativa de identidade.")
+            pending_flag = player.get("pending_anvil")
+            pending_sequence = player.get("pending_anvil_sequence")
+            if not isinstance(pending_flag, bool) or isinstance(pending_sequence, bool) or not isinstance(pending_sequence, int) or pending_sequence < 0:
+                raise RuntimeError(f"Snapshot do jogador {player_id} contém identidade de bigorna inválida.")
+            if pending_flag and (pending_sequence == 0 or not player.get("pending_anvil_options")):
+                raise RuntimeError("Bigorna pendente sem sequência ou opções válidas.")
+            if not pending_flag and pending_sequence != 0:
+                raise RuntimeError("Sequência de bigorna presente sem escolha pendente.")
             for field in ("item_components", "item_inventory", "item_component_catalog", "pending_anvil_options"):
                 values = player.get(field)
                 if not isinstance(values, list) or any(not isinstance(item, str) for item in values):

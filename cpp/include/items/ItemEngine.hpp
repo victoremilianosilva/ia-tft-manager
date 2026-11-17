@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <cctype>
 #include <iterator>
+#include <limits>
 #include <optional>
 #include <stdexcept>
 #include <string>
@@ -84,6 +85,7 @@ enum class ItemAnvilKind : std::uint8_t {
 struct ItemAnvil {
     ItemAnvilKind kind{ItemAnvilKind::COMPONENT};
     std::vector<std::string> options;
+    std::uint64_t sequence{0};
 };
 
 struct ItemMetrics {
@@ -602,6 +604,7 @@ private:
     std::unordered_map<std::string, std::vector<std::string>> equipped_;
     ItemMetrics metrics_{};
     std::vector<ItemAnvil> anvils_;
+    std::uint64_t next_anvil_sequence_{0}; // survives reset; identities are never reused
 
     bool grant_anvil(ItemAnvilKind kind, std::vector<std::string> options) {
         if (options.empty() || options.size() > 9U) {
@@ -621,7 +624,10 @@ private:
                 return false;
             }
         }
-        anvils_.push_back(ItemAnvil{kind, std::move(options)});
+        if (next_anvil_sequence_ == std::numeric_limits<std::uint64_t>::max())
+            throw std::overflow_error("Sequencia de bigorna esgotada.");
+        const auto sequence = ++next_anvil_sequence_;
+        anvils_.push_back(ItemAnvil{kind, std::move(options), sequence});
         ++metrics_.anvils_received;
         return true;
     }

@@ -252,6 +252,7 @@ struct AuditPlayerSnapshot {
     std::vector<AuditEquippedItemSnapshot> equipped_items;
     std::vector<std::string> item_component_catalog;
     bool pending_anvil{false};
+    std::uint64_t pending_anvil_sequence{0};
     std::int32_t pending_anvil_kind{-1};
     std::vector<std::string> pending_anvil_options;
     // Last item decision is carried by the post-action snapshot for exact
