@@ -74,6 +74,8 @@ class FakeNativeLobby:
                     "shop": [{"occupied": False, "champion_id": "", "uuid": "", "star": 0, "cost": 0, "items": []} for _ in range(5)],
                     "shop_offer_revisions": [0] * 5,
                     "item_components": [], "item_inventory": [], "item_component_counts": [], "item_inventory_counts": [], "equipped_items": [], "item_component_catalog": [],
+                    "pending_anvil": False,
+                    "pending_anvil_sequence": 0,
                     "pending_anvil_options": [],
                 }
                 for player_id in range(8)
