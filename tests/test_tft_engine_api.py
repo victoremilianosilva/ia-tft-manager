@@ -1245,3 +1245,32 @@ def test_audit_snapshot_publishes_player_survival_and_standing():
             assert player["opponent_id"] is None
     finally:
         engine.close()
+
+
+def test_audit_snapshot_publishes_accumulated_player_damage():
+    """Accumulated lobby damage is copied from the authoritative player state."""
+    engine = TFTLobby(seed=20261119)
+
+    try:
+        engine.reset()
+        initial = engine.get_audit_snapshot()
+        assert all(player["damage_taken"] == 0.0 for player in initial["players"])
+
+        pass_actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        # Resolve opening PvE rounds and the first PvP preparation/combat cycle.
+        for _ in range(5 * 15):
+            engine.step(pass_actions)
+
+        after = engine.get_audit_snapshot()
+        assert after["snapshot_sequence"] > initial["snapshot_sequence"]
+        assert after["episode_id"] == initial["episode_id"]
+        assert all(
+            isinstance(player["damage_taken"], (int, float))
+            and player["damage_taken"] >= 0.0
+            for player in after["players"]
+        )
+        assert sum(player["damage_taken"] for player in after["players"]) > 0.0, (
+            "At least one resolved PvP matchup must publish accumulated player damage."
+        )
+    finally:
+        engine.close()

@@ -6828,6 +6828,7 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
         auto& target = snapshot.players[i];
         target.player_id = static_cast<std::int32_t>(i);
         target.hp = source.info.hp;
+        target.damage_taken = source.info.damage_taken;
         target.alive = source.info.alive;
         target.wins = source.info.wins;
         target.losses = source.info.losses;

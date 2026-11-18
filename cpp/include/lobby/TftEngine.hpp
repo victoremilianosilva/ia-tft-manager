@@ -221,6 +221,7 @@ struct AuditPlayerSnapshot {
     std::int32_t player_id{-1};
     // Player survival and standing facts, correlated by the enclosing snapshot identity.
     double hp{100.0};
+    double damage_taken{0.0};
     bool alive{true};
     std::int32_t wins{0};
     std::int32_t losses{0};
