@@ -169,7 +169,6 @@ struct StrategicSharedContext {
 struct StrategicCommitment {
     ProgressionPlan progression{ProgressionPlan::Flexible};
     std::string composition_direction;
-    std::vector<std::int32_t> core_unit_ids;
     std::vector<std::int32_t> flexible_unit_ids;
     std::uint32_t selected_round{0};
     std::uint32_t last_review_round{0};
