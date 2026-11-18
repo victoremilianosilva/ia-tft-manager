@@ -41,7 +41,7 @@ A matching value is not enough to prove duplication. Sequence domains, identity 
 | `StrategicContextBridge` | Projects validated strategic/economic/active-composition values into diagnostic JSON with origin and quality metadata. | **Keep, consumer-scoped** | It is a read-only bridge, not a second owner. Keep provenance distinctions (observed/derived/recommended). |
 | Composition diagnostic snapshot and runtime envelope | Runtime owns player/match/round/sequence; bridge no longer owns a second identity envelope after #484. | **Simplify** | Keep one snapshot envelope and stage-specific sequence. Avoid reintroducing nested correlation metadata. |
 | Stage sequence vs player sequence | Stage sequence orders steps within one runtime evaluation; player sequence orders published player snapshots. | **Keep both** | They represent different ordering domains, not duplicate counters. |
-| Item profile preferred traits | Current `item_unit_profiles()` derives preferred traits from legacy core/planned traits, direction, focus and active traits. | **Migrate** | Use observed catalog traits and canonical active-composition/evidence only when a validated owner supplies them; preserve explicit absence instead of a legacy fallback. |
+| Item profile preferred traits | Composition Intelligence now uses `strategic_context.current_core_traits` for unit synergy and item preferred traits (PR 2). The separate PPO anvil helper `item_unit_profiles()` still reads legacy `StrategyInfo`. | **Migrate in two consumer slices** | New Composition Intelligence no longer reads legacy core traits; PPO item-fit remains pending under #286 and must not be silently conflated with the new runtime. |
 | PPO strategic observation features | `build_observations()` reads `StrategyInfo` for strategy one-hot, direction, core traits, composition fit, planned carry, focus, lock and strength. | **Migrate under approved projection contract** | This is an active legacy dependency, not diagnostic-only. Replace only with a versioned projection and aligned Actor/Critic/action-head tests. |
 | PPO reward strategy branches | `PlayerEnv::step` reward/action shaping reads legacy strategy identity for selected branches. | **Migrate under reward contract** | Replace with outcome/evidence-based reward semantics; preserve PPO/GAE and avoid turning strategic recommendations into labels. |
 | Viewer strategy fields | Viewer cards/dialog/logs still read legacy strategy snapshots; Composition Intelligence diagnostics are a separate surface. | **Compatibility projection** | Project from canonical owners; mark unavailable/inferred values honestly. Preserve historical log readability. |
@@ -98,3 +98,14 @@ This map is an audit artifact, not proof of completed migration. Stage 1 remains
 - Viewer compatibility is sourced from canonical owners;
 - multi-round replay proves identity/provenance continuity with legacy strategic producers unavailable;
 - Actor and Critic receive the exact decision-correlated masks as independent inputs.
+
+
+## PR 2 implementation evidence — native Composition Intelligence core traits
+
+- Removed both reads of `info.core_traits` from the Composition Intelligence pipeline in `TftEngine.cpp`.
+- `UnitPriorityEvidence::synergy_contribution` now compares catalog traits against `strategic_context.current_core_traits`.
+- `ItemUnitBinding::profile.preferred_traits` now uses the same native strategic-context field.
+- Added an architecture regression guard that isolates the Composition Intelligence source region and fails if `info.core_traits` reappears there.
+- Explicitly retained the separate PPO anvil `item_unit_profiles()` legacy dependency for migration under #286; it is not represented as fixed by this PR.
+
+This closes the proven core-trait leak into Composition Intelligence, not the broader PPO observation/reward/Viewer migration. Stage 1 remains unaccepted until those consumer boundaries and integrated replay are validated.
