@@ -525,6 +525,8 @@ struct StrategyInfo {
     // Persistent state migrated from Python comp_direction/comp_focus logic.
     bool composition_locked{false};
     bool composition_locked_available{false};
+    bool composition_focus_available{false};
+    bool composition_strength_available{false};
     bool strategic_direction_available{false};
     bool active_composition_available{false};
     std::string direction_state_source{"unavailable"};
