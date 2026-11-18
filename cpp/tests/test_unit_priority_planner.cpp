@@ -139,10 +139,6 @@ void validated_item_snapshot_protects_outside_target_unit() {
     evidence.composition_version = active.version;
     evidence.round = 12;
     evidence.items.metadata.source = "ItemEngine";
-    evidence.items.metadata.source_version = active.version;
-    evidence.items.metadata.match_id = 99;
-    evidence.items.metadata.player_id = 0;
-    evidence.items.metadata.composition_id = active.candidate.composition_id;
     evidence.items.metadata.source_round = 12;
     evidence.items.metadata.expected_round = 12;
     evidence.items.metadata.quality = EvidenceQuality::Valid;
@@ -170,9 +166,7 @@ void board_gap_increases_matching_missing_unit_priority() {
     evidence.composition_id = active.candidate.composition_id;
     evidence.composition_version = active.version; evidence.round = 10;
     auto& metadata = evidence.board.metadata;
-    metadata.source = "BoardEvaluation"; metadata.source_version = active.version;
-    metadata.match_id = 91; metadata.player_id = 0;
-    metadata.composition_id = active.candidate.composition_id;
+    metadata.source = "BoardEvaluation";
     metadata.source_round = 10; metadata.expected_round = 10;
     metadata.quality = EvidenceQuality::Valid; metadata.available = true;
     evidence.board.missing_frontline_count = 1;
