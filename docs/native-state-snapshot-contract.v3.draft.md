@@ -7,7 +7,7 @@
 ## 1. Prior problem
 
 Snapshot v2 carried a single parent identity envelope, but several nested records copied its identity and sequence fields:
-- Combat events repeated the parent `round` and `combat_sequence`.
+- Combat events repeated the parent `round`; their `combat_sequence` was event-specific and must remain to distinguish multiple matchups in one snapshot.
 - Economy and PvP-credit events repeated Engine instance, episode, snapshot sequence and player decision sequence; PvP events also repeated round and combat sequence.
 - The nested shared-pool snapshot repeated the parent source namespace and all Engine/episode/snapshot/player sequence fields.
 
@@ -29,7 +29,7 @@ The independent AntiLoop JSONL API is intentionally not consolidated into this p
 ## 3. New responsibility and owners
 
 - `AuditSnapshot` owns Engine instance, episode, snapshot sequence, all eight player decision sequences, round and combat sequence.
-- `AuditCombatDamageEvent`, `AuditCombatAttackEvent` and `AuditCombatDeathEvent` own only event-specific combat facts; their parent supplies round and combat sequence.
+- `AuditCombatDamageEvent`, `AuditCombatAttackEvent` and `AuditCombatDeathEvent` own event-specific combat facts and matchup `combat_sequence`; their parent supplies round and decision identity.
 - `AuditEconomyResolutionEvent` owns economy-resolution provenance and result fields. Its player identity is `player_id`; its sequence is resolved through the parent array.
 - `AuditPvpResultCreditEvent` owns PvP-credit provenance and balance/streak transition fields. Winner and loser identities select the parent player sequences.
 - `AuditSharedPoolSnapshot` owns its independent pool contract, producer and pool data. Its correlation identity and source namespace are inherited from the parent snapshot.
@@ -51,7 +51,7 @@ The v3 parent envelope remains:
 ### Nested combat events
 
 - Combat damage/attack/death rows no longer contain `round`; each retains its own `combat_sequence` so events from multiple matchups in one round remain distinguishable.
-- All rows in these arrays belong to the combat identified by the parent snapshot's round/combat sequence.
+- Each row's `combat_sequence` identifies its matchup; the parent snapshot supplies the shared round and the latest lobby-wide combat sequence counter.
 - Timestamp, unit/player ownership mapping, damage/attack/death facts remain event-specific.
 - Truncation flags remain on the parent collection.
 
@@ -103,7 +103,7 @@ This is an explicit snapshot schema revision. Consumers must require v3 and must
 1. **Prior problem:** nested records repeated parent identity/sequence fields, allowing redundant values to drift and multiplying transport/validation obligations.
 2. **Technical rationale:** these rows are children of one atomic snapshot, so parent identity is authoritative; only event-specific producer provenance and temporal facts belong on child rows.
 3. **New responsibility:** the parent AuditSnapshot owns correlation; each child owns only its event or pool semantics.
-4. **Contract/invariants:** v3 is explicit; child event IDs/producers remain; player sequences are resolved by player ID; combat round/sequence inherit from the parent; economy round boundaries remain distinct; AntiLoop JSONL remains independently enveloped.
+4. **Contract/invariants:** v3 is explicit; child event IDs/producers remain; player sequences are resolved by player ID; round is inherited while matchup combat sequence remains event-specific; economy round boundaries remain distinct; AntiLoop JSONL remains independently enveloped.
 5. **Cross-component impacts:** C++ DTO/producers, pybind, Python wrapper, fixtures, producer-audit docs and downstream snapshot consumers; no tensor, reward, masks or PPO behavior changes.
 6. **Objective validation:** compile native code, validate pybind shape, accept/reject wrapper fixtures, preserve parent identity checks and run CI before considering this consolidation complete.
 
