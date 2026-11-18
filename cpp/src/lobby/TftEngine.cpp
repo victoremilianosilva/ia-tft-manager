@@ -4374,12 +4374,6 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         const auto& action = player_action.values;
 
         const auto type = action[0];
-        if (!movement_sequence_round_initialized ||
-            movement_sequence_round != lobby.round) {
-            movement_sequence_round = lobby.round;
-            movement_sequence_round_initialized = true;
-            movement_sequence_length = 0;
-        }
         last_item_action = {};
 
         const auto shop_slot = action[1];
@@ -4529,10 +4523,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                                 buy_builds_pair,
                                 false,
                                 false,
-                                std::clamp(std::max(0.0, candidate_comp_score) / 40.0, 0.0, 1.0),
-                                0.0,
-                                strategy_before.composition_direction,
-                                strategy_before.composition_focus
+                                0.0
                             });
                         }
                         lobby.register_position_state(player_id);
@@ -4863,37 +4854,12 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                          gold_after_sale >= EconomyEngine::REROLL_COST) ||
                         (old_gold < EconomyEngine::BUY_XP_COST &&
                          gold_after_sale >= EconomyEngine::BUY_XP_COST);
-                    // Crossing a spending threshold is not, by itself, a
-                    // strategic reason to discard a core unit or an upgrade path.
-                    // It remains available to the recent-purchase reversal check,
-                    // but does not weaken the unit-retention signal.
-                    sale_has_legitimate_context = sale_bench_was_full;
                     const auto recent = std::find_if(
                         this->recent_purchases.rbegin(), this->recent_purchases.rend(),
                         [&sold_uuid](const RecentPurchase& purchase) {
                             return !sold_uuid.empty() && purchase.uuid == sold_uuid;
                         });
                     if (recent != this->recent_purchases.rend()) {
-                        const auto& current_strategy = this->strategy.empty()
-                            ? StrategyInfo{} : this->strategy.back();
-                        const bool still_core_or_planned =
-                            std::find(current_strategy.core_unit_ids.begin(),
-                                      current_strategy.core_unit_ids.end(),
-                                      unit.champion_internal_id) != current_strategy.core_unit_ids.end() ||
-                            std::find(current_strategy.planned_unit_ids.begin(),
-                                      current_strategy.planned_unit_ids.end(),
-                                      unit.champion_internal_id) != current_strategy.planned_unit_ids.end();
-                        const bool composition_changed =
-                            (recent->comp_direction != current_strategy.composition_direction ||
-                             recent->comp_focus != current_strategy.composition_focus) &&
-                            (!recent->comp_direction.empty() || !recent->comp_focus.empty()) &&
-                            !still_core_or_planned;
-                        sale_has_legitimate_context = sale_has_legitimate_context ||
-                            composition_changed || recent->was_deployed;
-
-                        // An experiment is justified when a later, better-fit
-                        // purchase is still owned. This preserves flexibility:
-                        // discovering a stronger option is not a buy/sell mistake.
                         const auto is_still_owned = [this](const std::string& uuid) {
                             if (uuid.empty()) return false;
                             const auto in_board = std::any_of(
@@ -4908,91 +4874,21 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                                 });
                             return in_board || in_bench;
                         };
-                        const bool better_alternative_found = std::any_of(
+                        const bool newer_purchase_still_owned = std::any_of(
                             this->recent_purchases.begin(), this->recent_purchases.end(),
                             [&](const RecentPurchase& candidate) {
                                 return candidate.uuid != sold_uuid &&
                                     candidate.action_serial > recent->action_serial &&
-                                    candidate.fit_score >= recent->fit_score + 0.10 &&
                                     is_still_owned(candidate.uuid);
                             });
-
-                        // Selling to cross a meaningful spending threshold is an
-                        // economic decision, not an impulsive reversal. The sale
-                        // must make a 2g reroll or 4g XP purchase affordable.
-                        const int gold_after_sale = old_gold + sell_value;
-                        sale_has_legitimate_context = sale_has_legitimate_context ||
-                            better_alternative_found;
-                        if (reward_model::should_penalize_reversed_purchase(
-                                recent->fit_score,
-                                recent->completed_upgrade,
-                                recent->was_deployed,
-                                sale_bench_was_full,
-                                composition_changed,
-                                recent->built_pair,
-                                better_alternative_found,
-                                sale_economic_need)) {
+                        const bool reversed_without_progress =
+                            !recent->completed_upgrade && !recent->built_pair &&
+                            !recent->was_deployed && !sale_bench_was_full &&
+                            !sale_economic_need && !newer_purchase_still_owned;
+                        if (reversed_without_progress) {
                             purchase_was_recently_reversed = true;
                             reversed_purchase_prior_reward = recent->reward;
                         }
-                    }
-                    const auto& current_strategy = strategy_before;
-                    if (!this->strategy.empty()) {
-                        const auto& core_unit_ids = current_strategy.core_unit_ids;
-                        const auto& planned_unit_ids = current_strategy.planned_unit_ids;
-                        sold_core_unit =
-                            std::find(core_unit_ids.begin(), core_unit_ids.end(),
-                                unit.champion_internal_id) != core_unit_ids.end() ||
-                            std::find(planned_unit_ids.begin(), planned_unit_ids.end(),
-                                unit.champion_internal_id) != planned_unit_ids.end();
-                        sold_unit_fit_score = std::clamp(
-                            unit_composition_score(current_strategy, *definition, unit.star, lobby.trait_milestones) / 18.0,
-                            0.0, 1.0);
-                    }
-                    int same_star_copies = 0;
-                    int one_star_copies = 0;
-                    const auto count_upgrade_copies = [&](const auto& candidate) {
-                        if (!candidate ||
-                            candidate->champion_internal_id != unit.champion_internal_id ||
-                            &*candidate == &unit)
-                            return;
-                        if (candidate->star == unit.star) ++same_star_copies;
-                        if (candidate->star == 1) ++one_star_copies;
-                    };
-                    for (const auto& candidate : this->board)
-                        count_upgrade_copies(candidate);
-                    for (const auto& candidate : this->bench)
-                        count_upgrade_copies(candidate);
-                    // Only same-star copies form a pair. For a 2-star sale, three
-                    // 1-star copies also represent a concrete route to another 2-star.
-                    sold_unit_upgrade_strength = reward_model::upgrade_path_strength(
-                        unit.star, same_star_copies, one_star_copies);
-                    sold_unit_protects_upgrade = sold_unit_upgrade_strength >= 0.45;
-
-                    // A genuinely stronger owned option can justify releasing a
-                    // planned/core slot. Compare only against units that fit the
-                    // active plan materially better, not merely any owned unit.
-                    if (sold_core_unit && !this->strategy.empty()) {
-                        const auto has_better_owned_fit = [&](const auto& candidate) {
-                            if (!candidate ||
-                                candidate->champion_internal_id == unit.champion_internal_id)
-                                return false;
-                            const auto* candidate_def = lobby.catalog->find_by_id(
-                                candidate->champion_internal_id);
-                            if (!candidate_def) return false;
-                            const double candidate_fit = std::clamp(
-                                unit_composition_score(current_strategy, *candidate_def,
-                                    candidate->star, lobby.trait_milestones) / 18.0,
-                                0.0, 1.0);
-                            return candidate_fit >= sold_unit_fit_score + 0.10;
-                        };
-                        const bool better_owned_substitute =
-                            std::any_of(this->board.begin(), this->board.end(),
-                                has_better_owned_fit) ||
-                            std::any_of(this->bench.begin(), this->bench.end(),
-                                has_better_owned_fit);
-                        sale_has_legitimate_context =
-                            sale_has_legitimate_context || better_owned_substitute;
                     }
                     // Só confirma a venda se a devolução ao pool
                     // for aceita.
@@ -5489,19 +5385,6 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         // RewardManager's broader state components are not called by the
         // Python environment, so applying them here would change PPO targets.
         lobby.update_strategy(player_id);
-        // Record the direction *after* this purchase has refreshed strategy.
-        // Otherwise a direction change caused by the purchase itself is mistaken
-        // for a later legitimate transition and exempts an immediate buy/sell loop.
-        if (type == 0 && success && !this->strategy.empty()) {
-            for (auto it = this->recent_purchases.rbegin();
-                 it != this->recent_purchases.rend(); ++it) {
-                if (it->action_serial == this->action_serial) {
-                    it->comp_direction = this->strategy.back().composition_direction;
-                    it->comp_focus = this->strategy.back().composition_focus;
-                    break;
-                }
-            }
-        }
         // Capture actual action economics before round income is resolved.
         // Net gold after TFTEngine::step may include income and cannot be used
         // to infer the action's true cost. This trace is audit-only and never
