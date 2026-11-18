@@ -164,3 +164,37 @@ before append and is not stored in ContextBridgeInput.
 **Validation:** native build and strategic architecture regression checks
 validate the updated DTOs, producers and consumers. Diagnostic schema changes
 are isolated from PPO, rewards, masks, action execution and Engine legality.
+
+
+## Core-trait provenance boundary (Stage 1 PR 2)
+
+Composition Intelligence derives unit synergy and item affinity from the
+native `StrategicSharedContext::current_core_traits` built from the current
+per-player native strategic commitment and Native candidate generation.
+
+The runtime must not read `StrategyInfo::core_traits` for either:
+- `UnitPriorityEvidence::synergy_contribution`;
+- `ItemUnitBinding::profile.preferred_traits`.
+
+Those legacy fields may remain available to the old PPO/Viewer compatibility
+path, but they are not inputs to Composition Intelligence. When the native
+strategic context has no core traits, the value remains an empty/unknown
+evidence set; it is not filled from legacy fields.
+
+The architecture regression check extracts the Composition Intelligence
+pipeline from `TftEngine.cpp` and rejects any `info.core_traits` reference
+inside that boundary while requiring the native strategic-context source.
+
+This change does not migrate the PPO anvil observation helper
+`item_unit_profiles()`, which remains part of the legacy PPO projection and
+must move only with the approved observation contract (#286). It also does not
+change reward shaping (#287) or Viewer compatibility (#292).
+
+## Six-point architecture review
+
+1. **Prior problem:** Composition Intelligence calculated owned-unit synergy and item preferred traits from legacy `StrategyInfo::core_traits`, despite its new native strategic evidence context.
+2. **Technical rationale:** the same update already constructs `StrategicSharedContext::current_core_traits` from the per-player native commitment and Native candidate generation. The legacy field is not needed for this runtime.
+3. **New responsibility:** native strategic context owns the trait evidence consumed by Composition Intelligence; `StrategyInfo` remains only for legacy consumers.
+4. **Contracts/invariants:** no fallback from missing native traits to legacy traits; preserve missingness and provenance; recommendations remain Shadow-only.
+5. **Cross-component impact:** `TftEngine.cpp`, the strategic architecture regression test and this runtime contract. PPO observation, reward, Viewer UI and Engine legality are unchanged.
+6. **Objective validation:** source-level architecture guard proves the Composition Intelligence block contains no legacy core-trait reads and uses the native strategic context instead.

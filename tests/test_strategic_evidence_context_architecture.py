@@ -26,6 +26,15 @@ assert "StrategicEvidenceContext" in planner_header
 assert "StrategicEvidenceContextBuilder" in source
 assert "strategic_planner_commitments[i]" in source
 assert "strategic_planner_commitments = {};" in source
+
+# Composition Intelligence must derive synergy/item affinity from the native
+# StrategicSharedContext, never from legacy StrategyInfo core traits.
+ci_start = source.index("// New Composition Intelligence pipeline")
+ci_end = source.index("// Correlate strategic/economic context", ci_start)
+composition_intelligence_input = source[ci_start:ci_end]
+assert "info.core_traits" not in composition_intelligence_input
+assert "strategic_context.current_core_traits" in composition_intelligence_input
+assert "profile.preferred_traits = strategic_context.current_core_traits;" in composition_intelligence_input
 assert "match_id" in context_header and "player_id" in context_header
 assert "sequence" in context_header and "provenance" in context_header
 
