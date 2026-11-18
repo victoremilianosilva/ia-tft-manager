@@ -1258,6 +1258,10 @@ def test_audit_snapshot_publishes_accumulated_player_damage():
         assert initial["combat_sequence"] == 0
         assert initial["combat_damage_events"] == []
         assert initial["combat_damage_events_truncated"] is False
+        assert initial["combat_attack_events"] == []
+        assert initial["combat_attack_events_truncated"] is False
+        assert initial["combat_death_events"] == []
+        assert initial["combat_death_events_truncated"] is False
 
         pass_actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
         # Resolve opening PvE rounds and the first PvP preparation/combat cycle.
@@ -1289,14 +1293,21 @@ def test_audit_snapshot_publishes_identity_bound_combat_damage_events():
         champion_id = initial["players"][0]["bench"][0]["champion_id"]
         assert champion_id
 
-        for player_id in range(8):
+        # Give player 0 a full board so its real PvP combat reliably produces
+        # deaths within the simulator's 30-second combat window. Star rank alone
+        # does not scale the native CombatUnit stats in this lobby adapter.
+        for slot in range(28):
+            assert engine.set_unit_for_testing(0, True, slot, champion_id, 1)
+        for player_id in range(1, 8):
             assert engine.set_unit_for_testing(player_id, True, 0, champion_id, 1)
         before = engine.get_audit_snapshot()
-        expected_uuid_by_player = {
-            player["player_id"]: player["board"][0]["uuid"]
+        expected_uuids_by_player = {
+            player["player_id"]: {
+                unit["uuid"] for unit in player["board"] if unit is not None
+            }
             for player in before["players"]
         }
-        assert all(expected_uuid_by_player.values())
+        assert all(expected_uuids_by_player.values())
 
         pass_actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
         # Resolve the opening PvE rounds and first PvP cycle.
@@ -1313,12 +1324,34 @@ def test_audit_snapshot_publishes_identity_bound_combat_damage_events():
         assert all(event["timestamp"] >= 0.0 for event in damage_events)
         assert any(event["final_damage"] > 0.0 for event in damage_events)
         assert all(event["final_damage"] >= 0.0 for event in damage_events)
+        attack_events = after["combat_attack_events"]
+        death_events = after["combat_death_events"]
+        assert attack_events, "Real PvP combats must publish typed attack events."
+        assert death_events, "Real PvP combats must publish typed death events."
+        assert after["combat_attack_events_truncated"] is False
+        assert after["combat_death_events_truncated"] is False
+        for event in attack_events:
+            assert event["source_player_id"] in expected_uuids_by_player
+            assert event["target_player_id"] in expected_uuids_by_player
+            assert event["source_unit_uuid"] in expected_uuids_by_player[event["source_player_id"]]
+            assert event["target_unit_uuid"] in expected_uuids_by_player[event["target_player_id"]]
+            assert event["timestamp"] >= 0.0
+            assert event["damage"] >= 0.0
+        for event in death_events:
+            assert event["unit_player_id"] in expected_uuids_by_player
+            assert event["unit_uuid"] in expected_uuids_by_player[event["unit_player_id"]]
+            if event["killer_unit_id"] >= 0:
+                assert event["killer_player_id"] in expected_uuids_by_player
+                assert event["killer_unit_uuid"] in expected_uuids_by_player[event["killer_player_id"]]
+            else:
+                assert event["killer_player_id"] == -1
+                assert event["killer_unit_uuid"] == ""
         for event in damage_events:
-            assert event["target_player_id"] in expected_uuid_by_player
-            assert event["target_unit_uuid"] == expected_uuid_by_player[event["target_player_id"]]
+            assert event["target_player_id"] in expected_uuids_by_player
+            assert event["target_unit_uuid"] in expected_uuids_by_player[event["target_player_id"]]
             if event["source_unit_id"] >= 0:
-                assert event["source_player_id"] in expected_uuid_by_player
-                assert event["source_unit_uuid"] == expected_uuid_by_player[event["source_player_id"]]
+                assert event["source_player_id"] in expected_uuids_by_player
+                assert event["source_unit_uuid"] in expected_uuids_by_player[event["source_player_id"]]
             else:
                 assert event["source_player_id"] == -1
                 assert event["source_unit_uuid"] == ""
