@@ -104,3 +104,29 @@ def test_historical_policy_checkpoint_migrates_with_neutral_semantic_encoder():
         before = source.get_value(obs, masks=masks)
         after = migrated.get_value(obs, masks=masks, semantic_state=semantic)
     assert torch.allclose(before, after, atol=1e-6, rtol=1e-6)
+
+
+def test_semantic_mode_ignores_legacy_strategy_board_and_candidate_offsets():
+    torch.manual_seed(20261121)
+    obs, masks, semantic = _batch()
+    policy = TFTPolicy(
+        obs_dim=obs.shape[-1],
+        action_dims=list(ACTION_DIMS),
+        hidden_size=32,
+        semantic_vocab_size=64,
+    ).eval()
+    legacy_changed = obs.clone()
+    legacy_changed[:, 10:22] = 0.75
+    legacy_changed[:, 22:162] = 0.5
+    legacy_changed[:, -112:] = 0.9
+
+    with torch.no_grad():
+        original = policy.get_action_and_value(
+            obs, masks=masks, deterministic=True, semantic_state=semantic
+        )
+        changed = policy.get_action_and_value(
+            legacy_changed, masks=masks, deterministic=True, semantic_state=semantic
+        )
+    assert torch.equal(original[0], changed[0])
+    assert torch.allclose(original[1], changed[1], atol=1e-7, rtol=1e-7)
+    assert torch.allclose(original[3], changed[3], atol=1e-7, rtol=1e-7)
