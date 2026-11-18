@@ -308,8 +308,32 @@ struct AuditSharedPoolSnapshot {
     std::int64_t total_available{0};
     std::vector<AuditPoolChampionCount> champions;
 };
+struct AuditCombatDamageEvent {
+    std::string event_kind{"damage"};
+    std::string engine_instance_id;
+    std::uint64_t episode_id{0};
+    std::uint64_t snapshot_sequence{0};
+    std::uint32_t round{0};
+    std::uint32_t combat_sequence{0};
+    std::uint32_t event_sequence{0};
+    std::int32_t player_a_id{-1};
+    std::int32_t player_b_id{-1};
+    float timestamp{0.0f};
+    std::int32_t source_player_id{-1};
+    std::int32_t target_player_id{-1};
+    std::int32_t source_unit_id{-1};
+    std::int32_t target_unit_id{-1};
+    std::string source_unit_uuid;
+    std::string target_unit_uuid;
+    std::uint8_t damage_type{0};
+    float raw_damage{0.0f};
+    float final_damage{0.0f};
+    bool critical{false};
+    bool ability_damage{false};
+};
 struct AuditSnapshot {
     AuditSharedPoolSnapshot shared_pool;
+    std::vector<AuditCombatDamageEvent> combat_damage_events;
     std::string contract_id{"tft.native-state-snapshot"};
     std::uint32_t contract_version{2};
     // Current native board-slot geometry: rectangular 4x7, not canonical hex.

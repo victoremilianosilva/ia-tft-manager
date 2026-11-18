@@ -209,6 +209,33 @@ py::dict audit_snapshot_to_dict(
     result["round"] = snapshot.round;
     result["stage"] = snapshot.stage;
     result["finished"] = snapshot.finished;
+    py::list combat_damage_events;
+    for (const auto& event : snapshot.combat_damage_events) {
+        py::dict row;
+        row["event_kind"] = event.event_kind;
+        row["engine_instance_id"] = event.engine_instance_id;
+        row["episode_id"] = event.episode_id;
+        row["snapshot_sequence"] = event.snapshot_sequence;
+        row["round"] = event.round;
+        row["combat_sequence"] = event.combat_sequence;
+        row["event_sequence"] = event.event_sequence;
+        row["player_a_id"] = event.player_a_id;
+        row["player_b_id"] = event.player_b_id;
+        row["timestamp"] = event.timestamp;
+        row["source_player_id"] = event.source_player_id;
+        row["target_player_id"] = event.target_player_id;
+        row["source_unit_id"] = event.source_unit_id;
+        row["target_unit_id"] = event.target_unit_id;
+        row["source_unit_uuid"] = event.source_unit_uuid;
+        row["target_unit_uuid"] = event.target_unit_uuid;
+        row["damage_type"] = event.damage_type;
+        row["raw_damage"] = event.raw_damage;
+        row["final_damage"] = event.final_damage;
+        row["critical"] = event.critical;
+        row["ability_damage"] = event.ability_damage;
+        combat_damage_events.append(std::move(row));
+    }
+    result["combat_damage_events"] = std::move(combat_damage_events);
     const auto& pool = snapshot.shared_pool;
     py::dict pool_dict;
     pool_dict["contract_id"] = pool.contract_id;

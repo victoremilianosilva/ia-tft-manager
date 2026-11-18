@@ -510,6 +510,8 @@ struct TFTEngine::Impl {
     std::uint64_t decision_sequence{0};
     // Independent monotonic namespace for each player's published decision row.
     std::array<std::uint64_t, kPlayersPerLobby> player_decision_sequences{};
+    // Latest resolved round only; bounded by that round's native combat output.
+    std::vector<AuditCombatDamageEvent> combat_damage_events;
     std::mt19937_64 matchmaking_rng{0};
     std::set<std::uint64_t> previous_matchups;
 
@@ -4493,7 +4495,8 @@ struct TFTEngine::Impl {
         std::size_t player_index,
         UnitTeam team,
         CombatTeam& output,
-        int& next_unit_id
+        int& next_unit_id,
+        std::unordered_map<int, std::pair<std::int32_t, std::string>>& unit_identity
     ) const {
         output.team = team;
         output.player_id = static_cast<std::int32_t>(player_index);
@@ -4532,6 +4535,8 @@ struct TFTEngine::Impl {
             CombatUnit unit{};
             // Same deterministic sequential IDs as TFTLobby._build_cpp_combat_input().
             unit.id = next_unit_id++;
+            unit_identity.emplace(unit.id, std::make_pair(
+                static_cast<std::int32_t>(player_index), instance.uuid));
             unit.api_name = definition->api_name;
             unit.name = definition->name;
             unit.star = std::clamp(instance.star, 1, 3);
@@ -4710,6 +4715,7 @@ struct TFTEngine::Impl {
         std::array<float, kPlayersPerLobby>& rewards,
         std::array<float, kPlayersPerLobby>& combat_rewards
     ) {
+        combat_damage_events.clear();
         std::vector<std::size_t> alive;
         alive.reserve(kPlayersPerLobby);
         for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
@@ -4762,9 +4768,11 @@ struct TFTEngine::Impl {
             input.config.max_duration = 30.0f;
             input.config.max_events = 100000;
             input.config.deterministic = true;
+            input.config.record_damage = true;
             int next_unit_id = 0;
-            append_combat_team(a, UnitTeam::PLAYER_A, input.player_a, next_unit_id);
-            append_combat_team(b, UnitTeam::PLAYER_B, input.player_b, next_unit_id);
+            std::unordered_map<int, std::pair<std::int32_t, std::string>> unit_identity;
+            append_combat_team(a, UnitTeam::PLAYER_A, input.player_a, next_unit_id, unit_identity);
+            append_combat_team(b, UnitTeam::PLAYER_B, input.player_b, next_unit_id, unit_identity);
             const auto record_combat_item_inputs = [&](std::size_t player_id,
                                                         const auto& team) {
                 for (const auto& unit : team.units) {
@@ -4815,6 +4823,37 @@ struct TFTEngine::Impl {
                 events.emplace_back("COMBAT: jogador " + std::to_string(a) +
                     " vs " + std::to_string(b) + ", eventos=" +
                     std::to_string(combat.events_processed));
+                std::uint32_t damage_event_sequence = 0;
+                for (const auto& damage_event : combat.damage_events) {
+                    AuditCombatDamageEvent audit_event{};
+                    audit_event.engine_instance_id = engine_instance_id;
+                    audit_event.episode_id = episode_id;
+                    audit_event.snapshot_sequence = decision_sequence + 1;
+                    audit_event.round = round + 1;
+                    audit_event.combat_sequence = static_cast<std::uint32_t>(combat_damage_events.size());
+                    audit_event.event_sequence = damage_event_sequence++;
+                    audit_event.player_a_id = static_cast<std::int32_t>(a);
+                    audit_event.player_b_id = static_cast<std::int32_t>(b);
+                    audit_event.timestamp = damage_event.timestamp;
+                    audit_event.source_unit_id = damage_event.source_unit_id;
+                    audit_event.target_unit_id = damage_event.target_unit_id;
+                    audit_event.damage_type = static_cast<std::uint8_t>(damage_event.damage_type);
+                    audit_event.raw_damage = damage_event.raw_damage;
+                    audit_event.final_damage = damage_event.final_damage;
+                    audit_event.critical = damage_event.critical;
+                    audit_event.ability_damage = damage_event.ability_damage;
+                    const auto source = unit_identity.find(damage_event.source_unit_id);
+                    if (source != unit_identity.end()) {
+                        audit_event.source_player_id = source->second.first;
+                        audit_event.source_unit_uuid = source->second.second;
+                    }
+                    const auto target = unit_identity.find(damage_event.target_unit_id);
+                    if (target != unit_identity.end()) {
+                        audit_event.target_player_id = target->second.first;
+                        audit_event.target_unit_uuid = target->second.second;
+                    }
+                    combat_damage_events.push_back(std::move(audit_event));
+                }
                 if (combat.timeout) {
                     events.emplace_back(
                         "COMBAT_TIMEOUT: resultado parcial aceito para " +
@@ -6791,6 +6830,7 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
     snapshot.round = impl_->round + 1;
     snapshot.stage = impl_->stage;
     snapshot.finished = impl_->done;
+    snapshot.combat_damage_events = impl_->combat_damage_events;
     auto& pool_snapshot = snapshot.shared_pool;
     pool_snapshot.engine_instance_id = impl_->engine_instance_id;
     pool_snapshot.episode_id = impl_->episode_id;

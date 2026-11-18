@@ -1272,5 +1272,20 @@ def test_audit_snapshot_publishes_accumulated_player_damage():
         assert sum(player["damage_taken"] for player in after["players"]) > 0.0, (
             "At least one resolved PvP matchup must publish accumulated player damage."
         )
+        combat_events = after["combat_damage_events"]
+        assert combat_events, "Resolved PvP combats must publish typed damage events."
+        for event in combat_events:
+            assert event["event_kind"] == "damage"
+            assert event["engine_instance_id"] == after["engine_instance_id"]
+            assert event["episode_id"] == after["episode_id"]
+            assert event["snapshot_sequence"] == after["snapshot_sequence"]
+            assert event["round"] == 5
+            assert event["player_a_id"] != event["player_b_id"]
+            assert event["source_player_id"] in (event["player_a_id"], event["player_b_id"])
+            assert event["target_player_id"] in (event["player_a_id"], event["player_b_id"])
+            assert event["source_unit_uuid"]
+            assert event["target_unit_uuid"]
+            assert event["final_damage"] >= 0.0
+            assert event["raw_damage"] >= event["final_damage"]
     finally:
         engine.close()
