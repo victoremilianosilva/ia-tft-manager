@@ -3526,10 +3526,21 @@ struct TFTEngine::Impl {
             ? "ActiveCompositionManager" : "unavailable";
         info.composition_locked = false;
         info.composition_locked_available = false;
+        info.composition_focus_available = false;
+        info.composition_strength_available = false;
         info.composition_strength = 0.0;
         info.composition_focus.clear();
         info.composition_focus_id = -1;
         info.composition_focus_weights.clear();
+        info.composition_direction_change_was_locked = false;
+        info.composition_direction_change_round = 0;
+        info.composition_direction_change_focus_weight = 0.0;
+        info.composition_direction_change_reason = "unavailable";
+        info.composition_direction_change_count = 0;
+        info.active_composition_id.clear();
+        info.active_composition_source = "unavailable";
+        info.active_composition_version = 0;
+        info.active_composition_version_available = false;
         info.core_units.clear();
         info.core_unit_ids.clear();
         info.core_traits.clear();
@@ -3541,6 +3552,12 @@ struct TFTEngine::Impl {
         info.planned_acquisition_notes.clear();
         if (active_composition) {
             const auto& candidate = active_composition->candidate;
+            info.active_composition_id = candidate.composition_id;
+            info.active_composition_source =
+                candidate.source == composition_intelligence::CompositionSource::Native
+                    ? "native" : "opgg";
+            info.active_composition_version = active_composition->version;
+            info.active_composition_version_available = true;
             info.planned_main_carry_id = candidate.main_carry_id;
             info.planned_composition_score = candidate.source_score;
             for (const auto& target : candidate.units) {
