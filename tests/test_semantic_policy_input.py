@@ -65,10 +65,14 @@ def test_semantic_side_input_changes_actor_and_critic_and_receives_gradients():
     }
     policy.eval()
     with torch.no_grad():
-        base = policy.get_action_and_value(obs, masks=masks, semantic_state=semantic)
-        enriched = policy.get_action_and_value(obs, masks=masks, semantic_state=changed)
-    assert not torch.allclose(base[3], enriched[3])
-    assert not torch.allclose(base[1], enriched[1])
+        base_features = policy.encode(obs, semantic_state=semantic)
+        enriched_features = policy.encode(obs, semantic_state=changed)
+        base_logits = policy.type_head(base_features)
+        enriched_logits = policy.type_head(enriched_features)
+        base_values = policy.get_value(obs, masks=masks, semantic_state=semantic)
+        enriched_values = policy.get_value(obs, masks=masks, semantic_state=changed)
+    assert not torch.allclose(base_values, enriched_values)
+    assert not torch.allclose(base_logits, enriched_logits)
 
     policy.train()
     policy.zero_grad(set_to_none=True)
