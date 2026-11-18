@@ -1331,27 +1331,27 @@ def test_audit_snapshot_publishes_identity_bound_combat_damage_events():
         assert after["combat_attack_events_truncated"] is False
         assert after["combat_death_events_truncated"] is False
         for event in attack_events:
-            assert event["source_player_id"] in expected_uuid_by_player
-            assert event["target_player_id"] in expected_uuid_by_player
+            assert event["source_player_id"] in expected_uuids_by_player
+            assert event["target_player_id"] in expected_uuids_by_player
             assert event["source_unit_uuid"] in expected_uuids_by_player[event["source_player_id"]]
             assert event["target_unit_uuid"] in expected_uuids_by_player[event["target_player_id"]]
             assert event["timestamp"] >= 0.0
             assert event["damage"] >= 0.0
         for event in death_events:
-            assert event["unit_player_id"] in expected_uuid_by_player
+            assert event["unit_player_id"] in expected_uuids_by_player
             assert event["unit_uuid"] in expected_uuids_by_player[event["unit_player_id"]]
             if event["killer_unit_id"] >= 0:
-                assert event["killer_player_id"] in expected_uuid_by_player
+                assert event["killer_player_id"] in expected_uuids_by_player
                 assert event["killer_unit_uuid"] in expected_uuids_by_player[event["killer_player_id"]]
             else:
                 assert event["killer_player_id"] == -1
                 assert event["killer_unit_uuid"] == ""
         for event in damage_events:
-            assert event["target_player_id"] in expected_uuid_by_player
-            assert event["target_unit_uuid"] == expected_uuid_by_player[event["target_player_id"]]
+            assert event["target_player_id"] in expected_uuids_by_player
+            assert event["target_unit_uuid"] in expected_uuids_by_player[event["target_player_id"]]
             if event["source_unit_id"] >= 0:
-                assert event["source_player_id"] in expected_uuid_by_player
-                assert event["source_unit_uuid"] == expected_uuid_by_player[event["source_player_id"]]
+                assert event["source_player_id"] in expected_uuids_by_player
+                assert event["source_unit_uuid"] in expected_uuids_by_player[event["source_player_id"]]
             else:
                 assert event["source_player_id"] == -1
                 assert event["source_unit_uuid"] == ""
