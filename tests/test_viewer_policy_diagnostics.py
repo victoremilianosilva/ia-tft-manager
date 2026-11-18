@@ -127,6 +127,12 @@ def test_viewer_validates_semantic_projection_contract_and_catalog_identity():
     )
     with pytest.raises(ValueError, match="semantic_state_contract"):
         _validate_semantic_checkpoint_payload({}, state, catalog)
+    partial_state = dict(state)
+    partial_state.pop("semantic_encoder.2.bias")
+    with pytest.raises(ValueError, match="parcial"):
+        _validate_semantic_checkpoint_payload(
+            {"semantic_state_contract": contract}, partial_state, catalog
+        )
     with pytest.raises(ValueError, match="catalog"):
         _validate_semantic_checkpoint_payload(
             {"semantic_state_contract": contract}, state, {"TFT_Example": 8}
