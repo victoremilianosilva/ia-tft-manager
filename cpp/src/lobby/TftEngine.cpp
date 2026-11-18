@@ -5976,21 +5976,11 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             success = economy.gold == old_gold - EconomyEngine::REROLL_COST;
             action_reward = success ? -0.01 : -0.10;
             if (success) {
-                // Only SLOWROLL receives positive shop-quality feedback.
-                // Other strategies use planned XP progress and useful purchases;
-                // a better shop alone must not teach them to reroll.
-                const std::int32_t active_strategy_id =
-                    this->strategy ? this->strategy->strategy : 0;
-                const double tactical_reroll_scale =
-                    reward_model::tactical_reroll_quality_scale(
-                        active_strategy_id, this->info.hp, economy.gold,
-                        static_cast<int>(lobby.stage));
-                if (tactical_reroll_scale > 0.0) {
-                    const double quality_reward = reward_model::reroll_quality_reward(
-                        reroll_old_best_fit, reroll_new_best_fit,
-                        economy.gold, this->info.hp, static_cast<int>(lobby.stage));
-                    action_reward += tactical_reroll_scale * quality_reward;
-                }
+                // Score only the observed shop delta, liquidity, health pressure
+                // and stage. The reward must not depend on the nominal strategy ID.
+                action_reward += reward_model::reroll_quality_reward(
+                    reroll_old_best_fit, reroll_new_best_fit,
+                    economy.gold, this->info.hp, static_cast<int>(lobby.stage));
                 // Reroll quality already includes liquidity and urgency. Do not
                 // add the generic spending-timing bonus here, which could make
                 // rolling below 50 more profitable than preserving interest.
@@ -6000,8 +5990,6 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             // Do not give a positive reward merely for spending on XP. Early
             // levels are less valuable than building a playable board and pairs.
             action_reward = success ? (lobby.stage <= 2 ? -0.03 : 0.0) : -0.10;
-            const std::int32_t xp_strategy_id =
-                this->strategy ? this->strategy->strategy : 0;
             if (success) {
                 double unlocked_board_power = 0.0;
                 // A level-up can unlock a board slot. Credit only a plausible
@@ -6021,27 +6009,11 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 }
                 action_reward += reward_model::xp_level_transition_value(
                     old_gold, economy.gold, this->info.hp, lobby.stage,
-                    old_level, economy.level, unlocked_board_power,
-                    xp_strategy_id);
-                const double phase_xp_reward =
-                    reward_model::phase_xp_progress_reward(
-                        old_gold, economy.gold, old_level, economy.level,
-                        old_xp, economy.xp, this->info.hp,
-                        static_cast<int>(lobby.stage), xp_strategy_id,
-                        useful_shop_purchase_available);
-                action_reward += phase_xp_reward;
-                // Do not stack the generic surplus fallback on top of the
-                // stronger phase/target-aware signal. Retain it for cases
-                // where no phase progress signal applies.
-                if (phase_xp_reward <= 0.0) {
-                    action_reward += reward_model::surplus_xp_spending_reward(
-                        old_gold, economy.gold, static_cast<int>(lobby.stage),
-                        xp_strategy_id, useful_shop_purchase_available);
-                }
-                action_reward += reward_model::xp_progress_reward(
-                    old_gold, economy.gold, old_level, economy.level,
-                    old_xp, economy.xp, this->info.hp, static_cast<int>(lobby.stage),
-                    xp_strategy_id, useful_shop_purchase_available);
+                    old_level, economy.level, unlocked_board_power);
+                // Partial XP and surplus-spend shaping are intentionally omitted
+                // until their versioned reward semantics are calibrated. A real
+                // level transition and its observed board-capacity consequence
+                // remain eligible for factual reward.
             }
             // RewardManager tracks the last rewarded level, initialized to 1,
             // not merely the level at the start of this action.
@@ -6059,7 +6031,6 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 // Trim the extra level-transition shaping by the same
                 // modest factor as the XP-specific marginal reward.
                 action_reward += 0.90 * level_scale *
-                    reward_model::xp_strategy_reward_scale(xp_strategy_id) *
                     reward_model::level(economy.level, this->previous_reward_level);
                 this->previous_reward_level = economy.level;
                 // Early XP should not receive the rich-spending bonus unless
@@ -6163,14 +6134,8 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     sale_has_legitimate_context,
                     sold_unit_upgrade_strength)
                 : -0.10;
-            if (success && this->strategy) {
-                action_reward += reward_model::critical_all_in_sale_penalty(
-                    this->strategy->strategy,
-                    static_cast<double>(this->info.hp),
-                    sold_core_unit,
-                    sold_unit_protects_upgrade,
-                    sale_compensated_by_board_gain);
-            }
+            // Sale value is determined by the observed unit/upgrade and
+            // board-state consequences above, never by a strategy label.
             if (success && purchase_was_recently_reversed &&
                 old_bench_count < static_cast<int>(kBenchSlots)) {
                 // Do not exempt a unit merely because update_strategy promoted
@@ -6186,51 +6151,15 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             action_reward = item_assignment_reward;
         } else {
             success = true;
-            if (type == 6 && this->strategy) {
-                const std::int32_t pass_strategy_id =
-                    this->strategy->strategy;
-                const bool useful_xp_spending_available =
-                    reward_model::phase_xp_opportunity_available(
-                        economy.gold, economy.level, this->info.hp,
-                        static_cast<int>(lobby.stage), pass_strategy_id);
+            if (type == 6) {
                 action_reward += reward_model::pass_opportunity_penalty(
                     economy.gold, this->info.hp, lobby.stage,
-                    useful_shop_purchase_available,
-                    useful_xp_spending_available);
+                    useful_shop_purchase_available);
             }
         }
 
-        // Give spending decisions immediate feedback for the opportunity cost
-        // of liquid gold and the interest breakpoints. This is a potential delta,
-        // not a per-step bonus, so repeatedly PASSing cannot farm reward.
-        // Small, bounded strategy shaping: rewards the intended action, not
-        // merely the mode label. The active mode is the one used to choose this action.
-        const std::int32_t active_strategy_id =
-            this->strategy ? this->strategy->strategy : 0;
-        action_reward += reward_model::strategy_action_reward(
-            active_strategy_id,
-            type,
-            old_gold,
-            economy.gold,
-            static_cast<double>(this->info.hp),
-            static_cast<int>(lobby.stage),
-            success && (buy_strategy_approved || buy_completes_upgrade || buy_builds_pair),
-            success && reroll_new_best_fit > reroll_old_best_fit,
-            success && economy.level > old_level,
-            active_strategy_id == 2 || active_strategy_id == 3,
-            lobby.board_power(player_id),
-            useful_shop_purchase_available);
-
-        // A policy-specific bonus must not erase the shared economic objective:
-        // preserve the path to 50 gold, except when the board is already full
-        // and leveling unlocks a real slot, or health pressure is critical.
-        if (type == 2 && success && old_gold < 50 &&
-            this->info.hp > 30.0 && old_board_count < old_level) {
-            // Interest loss is already represented by gold_change_reward().
-            // Keep XP slightly costly below 50, but do not stack a large
-            // penalty that makes reroll the less-bad choice outside SLOWROLL.
-            action_reward -= active_strategy_id == 3 ? 0.12 : 0.025;
-        }
+        // All action shaping above is tied to observed execution and state
+        // deltas. Nominal strategy IDs and plan labels are not reward inputs.
         // Even a better shop is usually not worth sacrificing interest below
         // 50. Critical health is the explicit exception; at/above 50 the
         // liquidity-scaled reroll quality signal decides whether to spend.
@@ -6259,14 +6188,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
 
         const double action_gold_reward =
             reward_model::gold_change_reward(old_gold, economy.gold);
-        const std::int32_t gold_reward_strategy_id =
-            this->strategy ? this->strategy->strategy : 0;
-        // ALL_IN is the explicit exception to interest preservation: retain
-        // some opportunity-cost signal, but do not let crossing below 50
-        // overwhelm the action's survival-oriented spending reward.
-        const double liquidity_reward_scale =
-            gold_reward_strategy_id == 4 && (type == 0 || type == 2) ? 0.35 : 1.0;
-        action_reward += action_gold_reward * liquidity_reward_scale;
+        action_reward += action_gold_reward;
 
         // Persist the complete buy reward so a later proven reversal can be
         // prevented from making the aggregate purchase->sale sequence positive.
