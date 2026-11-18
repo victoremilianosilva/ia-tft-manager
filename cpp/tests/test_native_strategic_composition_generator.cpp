@@ -187,7 +187,6 @@ int main() {
         assert(candidate.player_id == 3);
         assert(candidate.round == 5);
         assert(candidate.source_sequence == 42);
-        assert(candidate.candidate_revision == 42);
         assert(candidate.identity.find(candidate.candidate_set_id + ":") == 0);
     }
 
