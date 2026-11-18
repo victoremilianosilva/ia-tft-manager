@@ -547,6 +547,10 @@ py::list strategies_to_list(
             item["active_composition_available"] = false;
             item["direction_state_source"] = "unavailable";
             item["composition_state_source"] = "unavailable";
+            item["active_composition_id"] = "";
+            item["active_composition_source"] = "unavailable";
+            item["active_composition_version"] = 0;
+            item["active_composition_version_available"] = false;
             item["comp_direction_update_steps"] = 0;
             item["comp_stabilize_start_round"] = -1;
             item["composition_strength"] = 0.0;
@@ -670,6 +674,10 @@ py::list strategies_to_list(
             item["active_composition_available"] = strategy.active_composition_available;
             item["direction_state_source"] = strategy.direction_state_source;
             item["composition_state_source"] = strategy.composition_state_source;
+            item["active_composition_id"] = strategy.active_composition_id;
+            item["active_composition_source"] = strategy.active_composition_source;
+            item["active_composition_version"] = strategy.active_composition_version;
+            item["active_composition_version_available"] = strategy.active_composition_version_available;
             item["comp_direction_update_steps"] = strategy.comp_direction_update_steps;
             item["comp_stabilize_start_round"] = strategy.comp_stabilize_start_round;
             item["composition_strength"] = strategy.composition_strength;
