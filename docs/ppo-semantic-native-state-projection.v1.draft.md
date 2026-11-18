@@ -57,3 +57,7 @@ Therefore:
 - The full legacy-independent replay gate remains open.
 - The item-state/legacy-profile migration remains open.
 - A future projection version must add strategic-owner facts only after their producers, provenance, validity and synchronization contracts are explicitly published.
+
+## Legacy producer replay gate
+
+Trainer collection no longer calls the legacy `get_strategies()` compatibility API. That removes a Python-side diagnostic dependency, but it does not satisfy the producer-disabled replay gate: native `update_strategy()` still co-locates the economic Strategy ID selector, legacy composition-direction/focus maintenance, native composition generation, and the isolated Shadow evaluation pipeline. Disabling that entire function would also disable native generation and would invalidate the evidence needed by the current strategic path. The next safe step is to separate those responsibilities and publish their own owner snapshots before a replay can disable only the legacy producers without disabling the native owners.
