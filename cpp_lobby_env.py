@@ -581,7 +581,7 @@ class CppTFTLobbyWrapper:
 
     def get_strategy_snapshots(self):
         """Return complete native strategy/composition diagnostics for the viewer."""
-        snapshots = self._engine.get_strategies()
+        snapshots = self._engine.get_viewer_strategy_snapshots()
         return [dict(snapshot) if isinstance(snapshot, dict) else {"strategy": int(snapshot)}
                 for snapshot in snapshots]
 
