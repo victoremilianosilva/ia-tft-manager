@@ -6858,6 +6858,9 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
     snapshot.round = impl_->round + 1;
     snapshot.stage = impl_->stage;
     snapshot.finished = impl_->done;
+    snapshot.combat_sequence = impl_->combat_sequence;
+    snapshot.combat_damage_events_truncated = impl_->combat_damage_events_truncated;
+    snapshot.combat_damage_events = impl_->last_combat_damage_events;
     auto& pool_snapshot = snapshot.shared_pool;
     pool_snapshot.engine_instance_id = impl_->engine_instance_id;
     pool_snapshot.episode_id = impl_->episode_id;
