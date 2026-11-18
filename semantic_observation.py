@@ -80,7 +80,7 @@ def build_semantic_state_checkpoint_contract(catalog_map: Mapping[str, int]) -> 
             "order": ["board[0:28]", "bench[0:9]", "shop[0:5]"],
             "features": [
                 "occupied", "star/3", "cost/5", "item_count/9",
-                "trait_count/10", "champion_id_valid",
+                "static_trait_count/10", "champion_id_valid",
             ],
             "champion_id": "catalog_internal_id_plus_one; zero=unknown_or_empty",
         },
