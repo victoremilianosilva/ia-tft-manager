@@ -566,20 +566,52 @@ def test_wrapper_rejects_economy_event_that_repeats_parent_identity():
         cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
 
 
-def test_wrapper_rejects_combat_event_that_repeats_parent_round_and_sequence():
+def test_wrapper_accepts_event_specific_combat_sequences_with_parent_envelope():
     native = FakeNativeLobby()
     native.episode_id = 1
     native.decision_sequence = 1
     native.player_decision_sequences = [1] * 8
     snapshot = native._native_state_snapshot()
-    snapshot["combat_damage_events"] = [{"round": 1, "combat_sequence": 0}]
+    snapshot["combat_sequence"] = 2
+    snapshot["combat_damage_events"] = [
+        {"combat_sequence": 1, "timestamp": 0.1},
+        {"combat_sequence": 2, "timestamp": 0.2},
+    ]
+    snapshot["pvp_result_credit_events"] = [{
+        "combat_sequence": 1,
+        "contract_id": "tft.pvp-result-credit-event",
+        "contract_version": 2,
+        "source_namespace": "tft.economy-engine.register-pvp-win",
+        "producer": "EconomyEngine::register_pvp_win",
+        "winner_player_id": 0,
+        "loser_player_id": 1,
+    }]
     identity = {
         "engine_instance_id": f"fake-engine-{id(native)}",
         "episode_id": 1,
         "decision_sequence": 1,
         "player_decision_sequences": [1] * 8,
     }
-    with pytest.raises(RuntimeError, match="duplicou round/combat_sequence"):
+    copied = cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
+    assert [event["combat_sequence"] for event in copied["combat_damage_events"]] == [1, 2]
+    assert copied["pvp_result_credit_events"][0]["combat_sequence"] == 1
+
+
+def test_wrapper_rejects_combat_event_that_repeats_parent_round():
+    native = FakeNativeLobby()
+    native.episode_id = 1
+    native.decision_sequence = 1
+    native.player_decision_sequences = [1] * 8
+    snapshot = native._native_state_snapshot()
+    snapshot["combat_sequence"] = 1
+    snapshot["combat_damage_events"] = [{"round": 1, "combat_sequence": 1}]
+    identity = {
+        "engine_instance_id": f"fake-engine-{id(native)}",
+        "episode_id": 1,
+        "decision_sequence": 1,
+        "player_decision_sequences": [1] * 8,
+    }
+    with pytest.raises(RuntimeError, match="duplicou round do envelope pai"):
         cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
 
 

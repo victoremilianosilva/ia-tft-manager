@@ -217,8 +217,9 @@ struct AuditItemCount { std::string catalog_id; std::uint32_t count{0}; };
 struct AuditEquippedItemSnapshot { std::string unit_uuid; std::string location; std::int32_t slot{-1}; std::string catalog_id; };
 struct AuditRetiredEquippedItemCount { std::string unit_uuid; std::string catalog_id; std::uint32_t count{0}; };
 struct AuditRetiredAnvilSnapshot { std::uint64_t sequence{0}; std::int32_t kind{-1}; std::vector<std::string> options; };
-// Combat event rows inherit round/combat_sequence and decision identity from AuditSnapshot.
+// Combat rows inherit round/decision identity; each retains its own combat_sequence.
 struct AuditCombatDamageEvent {
+    std::uint64_t combat_sequence{0};
     float timestamp{0.0f};
     std::int32_t source_unit_id{-1};
     std::int32_t target_unit_id{-1};
@@ -233,6 +234,7 @@ struct AuditCombatDamageEvent {
     bool ability_damage{false};
 };
 struct AuditCombatAttackEvent {
+    std::uint64_t combat_sequence{0};
     float timestamp{0.0f};
     std::int32_t source_unit_id{-1};
     std::int32_t target_unit_id{-1};
@@ -244,6 +246,7 @@ struct AuditCombatAttackEvent {
     float damage{0.0f};
 };
 struct AuditCombatDeathEvent {
+    std::uint64_t combat_sequence{0};
     float timestamp{0.0f};
     std::int32_t unit_id{-1};
     std::int32_t killer_unit_id{-1};
@@ -283,8 +286,8 @@ struct AuditPvpResultCreditEvent {
     std::uint32_t contract_version{2};
     std::string source_namespace{"tft.economy-engine.register-pvp-win"};
     std::string producer{"EconomyEngine::register_pvp_win"};
-    // Identity, round and combat sequence are inherited from AuditSnapshot.
-
+    // Identity and round are inherited; combat_sequence identifies this specific matchup.
+    std::uint64_t combat_sequence{0};
     std::int32_t winner_player_id{-1};
     std::int32_t loser_player_id{-1};
     std::int32_t gold_before_credit{0};

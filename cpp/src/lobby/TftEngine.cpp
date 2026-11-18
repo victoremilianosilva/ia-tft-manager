@@ -4866,6 +4866,7 @@ struct TFTEngine::Impl {
                         break;
                     }
                     AuditCombatDamageEvent audit_event{};
+                    audit_event.combat_sequence = combat_sequence;
                     audit_event.timestamp = damage_event.timestamp;
                     audit_event.source_unit_id = damage_event.source_unit_id;
                     audit_event.target_unit_id = damage_event.target_unit_id;
@@ -4898,6 +4899,7 @@ struct TFTEngine::Impl {
                         break;
                     }
                     AuditCombatAttackEvent audit_event{};
+                    audit_event.combat_sequence = combat_sequence;
                     audit_event.timestamp = attack_event.timestamp;
                     audit_event.source_unit_id = attack_event.source_unit_id;
                     audit_event.target_unit_id = attack_event.target_unit_id;
@@ -4922,6 +4924,7 @@ struct TFTEngine::Impl {
                         break;
                     }
                     AuditCombatDeathEvent audit_event{};
+                    audit_event.combat_sequence = combat_sequence;
                     audit_event.timestamp = death_event.timestamp;
                     audit_event.unit_id = death_event.unit_id;
                     audit_event.killer_unit_id = death_event.killer_unit_id;
@@ -4982,6 +4985,7 @@ struct TFTEngine::Impl {
             economy_engine.register_pvp_win(player_envs[winner].economy);
             const auto gold_after_credit = player_envs[winner].economy.gold;
             AuditPvpResultCreditEvent pvp_credit_event{};
+            pvp_credit_event.combat_sequence = combat_sequence;
             pvp_credit_event.winner_player_id = static_cast<std::int32_t>(winner);
             pvp_credit_event.loser_player_id = static_cast<std::int32_t>(loser);
             pvp_credit_event.gold_before_credit = gold_before_credit;

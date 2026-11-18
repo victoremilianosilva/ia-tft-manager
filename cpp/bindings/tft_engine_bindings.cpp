@@ -214,6 +214,7 @@ py::dict audit_snapshot_to_dict(
     py::list combat_damage_events;
     for (const auto& event : snapshot.combat_damage_events) {
         py::dict row;
+        row["combat_sequence"] = event.combat_sequence;
         row["timestamp"] = event.timestamp;
         row["source_unit_id"] = event.source_unit_id;
         row["target_unit_id"] = event.target_unit_id;
@@ -233,6 +234,7 @@ py::dict audit_snapshot_to_dict(
     py::list combat_attack_events;
     for (const auto& event : snapshot.combat_attack_events) {
         py::dict row;
+        row["combat_sequence"] = event.combat_sequence;
         row["timestamp"] = event.timestamp;
         row["source_unit_id"] = event.source_unit_id;
         row["target_unit_id"] = event.target_unit_id;
@@ -249,6 +251,7 @@ py::dict audit_snapshot_to_dict(
     py::list combat_death_events;
     for (const auto& event : snapshot.combat_death_events) {
         py::dict row;
+        row["combat_sequence"] = event.combat_sequence;
         row["timestamp"] = event.timestamp;
         row["unit_id"] = event.unit_id;
         row["killer_unit_id"] = event.killer_unit_id;
@@ -289,6 +292,7 @@ py::dict audit_snapshot_to_dict(
     py::list pvp_result_credit_events;
     for (const auto& event : snapshot.pvp_result_credit_events) {
         py::dict row;
+        row["combat_sequence"] = event.combat_sequence;
         row["contract_id"] = event.contract_id;
         row["contract_version"] = event.contract_version;
         row["source_namespace"] = event.source_namespace;

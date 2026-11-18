@@ -21,7 +21,7 @@ Event-specific provenance is not redundant:
 - Event `contract_id` and `contract_version` identify the event payload contract.
 - Event `source_namespace` and `producer` identify the actual source of the event.
 - Player IDs select the corresponding entry in the parent `player_decision_sequences` array.
-- Combat event rows inherit the parent `round` and `combat_sequence`.
+- Combat event rows inherit the parent `round` but retain `combat_sequence`, because one snapshot may contain multiple PvP matchups with different combat sequence values.
 - Economy `resolved_after_round` and `income_for_round` remain separate because they describe two different temporal boundaries.
 
 The independent AntiLoop JSONL API is intentionally not consolidated into this parent envelope: each row is exported independently and must retain its own decision identity.
@@ -50,7 +50,7 @@ The v3 parent envelope remains:
 
 ### Nested combat events
 
-- Combat damage/attack/death rows no longer contain `round` or `combat_sequence`.
+- Combat damage/attack/death rows no longer contain `round`; each retains its own `combat_sequence` so events from multiple matchups in one round remain distinguishable.
 - All rows in these arrays belong to the combat identified by the parent snapshot's round/combat sequence.
 - Timestamp, unit/player ownership mapping, damage/attack/death facts remain event-specific.
 - Truncation flags remain on the parent collection.
@@ -62,7 +62,7 @@ The v3 parent envelope remains:
 - Neither event repeats `engine_instance_id`, `episode_id`, `snapshot_sequence` or `player_decision_sequence`.
 - Economy `player_id` maps to `player_decision_sequences[player_id]`.
 - PvP `winner_player_id` and `loser_player_id` map to their respective parent sequence entries.
-- PvP rows inherit `round` and `combat_sequence` from the parent.
+- PvP rows inherit `round` but retain their event-specific `combat_sequence`.
 - Economy `resolved_after_round` and `income_for_round` remain event-specific and are not aliases for the parent round.
 
 ### Shared pool snapshot
@@ -87,7 +87,7 @@ No changes to observation tensor dimensions, PPO policy, Actor/Critic projection
 ## 6. Objective validation
 
 - Native C++ targets compile after removal of obsolete child field assignments.
-- Pybind builds with the v3 DTO and emits no duplicate child identity/round/combat-sequence fields.
+- Pybind builds with the v3 DTO; combat sequence remains event-specific while duplicate parent identity and round fields are absent.
 - Python wrapper accepts v3 and shared-pool v2 payloads with parent-only correlation.
 - Python wrapper rejects a shared-pool record that reintroduces parent envelope fields.
 - Existing snapshot identity, sequence, pool total and unit-cardinality tests continue to pass.

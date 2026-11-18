@@ -231,14 +231,26 @@ class CppTFTLobbyWrapper:
             "engine_instance_id", "episode_id", "snapshot_sequence",
             "player_decision_sequence",
         }
+        parent_combat_sequence = value.get("combat_sequence")
+        if (
+            isinstance(parent_combat_sequence, bool)
+            or not isinstance(parent_combat_sequence, int)
+            or parent_combat_sequence < 0
+        ):
+            raise RuntimeError("Snapshot estruturado contém combat_sequence inválido.")
         for field in ("combat_damage_events", "combat_attack_events", "combat_death_events"):
             rows = value.get(field)
             if not isinstance(rows, list) or any(not isinstance(row, dict) for row in rows):
                 raise RuntimeError(f"Snapshot estruturado contém {field} inválido.")
-            if any("round" in row or "combat_sequence" in row for row in rows):
-                raise RuntimeError(
-                    f"{field} duplicou round/combat_sequence do envelope pai."
-                )
+            for row in rows:
+                sequence = row.get("combat_sequence")
+                if "round" in row:
+                    raise RuntimeError(f"{field} duplicou round do envelope pai.")
+                if (
+                    isinstance(sequence, bool) or not isinstance(sequence, int)
+                    or sequence <= 0 or sequence > parent_combat_sequence
+                ):
+                    raise RuntimeError(f"{field} contém combat_sequence inválido.")
 
         event_contracts = (
             ("economy_resolution_events", "tft.economy-resolution-event",
@@ -264,12 +276,19 @@ class CppTFTLobbyWrapper:
                     raise RuntimeError(
                         f"{field} duplicou identidade/sequence do envelope pai."
                     )
-                if field == "pvp_result_credit_events" and (
-                    "round" in row or "combat_sequence" in row
-                ):
-                    raise RuntimeError(
-                        "pvp_result_credit_events duplicou round/combat_sequence do envelope pai."
-                    )
+                if field == "pvp_result_credit_events":
+                    sequence = row.get("combat_sequence")
+                    if "round" in row:
+                        raise RuntimeError(
+                            "pvp_result_credit_events duplicou round do envelope pai."
+                        )
+                    if (
+                        isinstance(sequence, bool) or not isinstance(sequence, int)
+                        or sequence <= 0 or sequence > parent_combat_sequence
+                    ):
+                        raise RuntimeError(
+                            "pvp_result_credit_events contém combat_sequence inválido."
+                        )
 
         players = value.get("players")
         if not isinstance(players, list) or len(players) != cls.PLAYERS_PER_LOBBY:
