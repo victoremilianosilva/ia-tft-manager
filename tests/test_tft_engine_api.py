@@ -1292,6 +1292,16 @@ def test_audit_snapshot_publishes_identity_bound_economy_resolution_events():
         assert initial["economy_resolution_events"] == []
         assert initial["pvp_result_credit_events"] == []
 
+        # Ensure the real PvP phase has a decisive winner. A pass-only lobby
+        # can legitimately produce draws, in which case register_pvp_win is
+        # never called and there is no credit event to publish.
+        champion_id = initial["players"][0]["bench"][0]["champion_id"]
+        assert champion_id
+        for slot in range(28):
+            assert engine.set_unit_for_testing(0, True, slot, champion_id, 1)
+        for player_id in range(1, 8):
+            assert engine.set_unit_for_testing(player_id, True, 0, champion_id, 1)
+
         pass_actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
         # Resolve the first five preparations, including the first PvP income cycle.
         for _ in range(5 * 15):
