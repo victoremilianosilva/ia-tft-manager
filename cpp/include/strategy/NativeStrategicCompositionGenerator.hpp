@@ -230,7 +230,6 @@ public:
             candidate.player_id = result.player_id;
             candidate.round = result.round;
             candidate.source_sequence = result.source_sequence;
-            candidate.candidate_revision = result.source_sequence;
             bool has_carry = false;
             bool has_frontline = false;
             bool has_support = false;
