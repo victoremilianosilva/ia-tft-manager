@@ -541,6 +541,8 @@ py::list strategies_to_list(
             item["composition_direction"] = "";
             item["composition_locked"] = false;
             item["composition_locked_available"] = false;
+            item["composition_focus_available"] = false;
+            item["composition_strength_available"] = false;
             item["strategic_direction_available"] = false;
             item["active_composition_available"] = false;
             item["direction_state_source"] = "unavailable";
@@ -662,6 +664,8 @@ py::list strategies_to_list(
             item["composition_direction"] = strategy.composition_direction;
             item["composition_locked"] = strategy.composition_locked;
             item["composition_locked_available"] = strategy.composition_locked_available;
+            item["composition_focus_available"] = strategy.composition_focus_available;
+            item["composition_strength_available"] = strategy.composition_strength_available;
             item["strategic_direction_available"] = strategy.strategic_direction_available;
             item["active_composition_available"] = strategy.active_composition_available;
             item["direction_state_source"] = strategy.direction_state_source;
