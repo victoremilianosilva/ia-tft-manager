@@ -9,6 +9,11 @@ from action_contract import (
     CRITIC_MASK_FEATURE_DIM,
     CRITIC_MASK_EMBED_DIM,
 )
+from semantic_observation import (
+    SEMANTIC_NUMERIC_DIM,
+    SEMANTIC_ENTITY_SLOTS,
+    SEMANTIC_ID_EMBED_DIM,
+)
 
 
 ACTION_DIMS = [9, 5, 9, 28, 28, 28]
@@ -16,7 +21,7 @@ LEGACY_ACTION_DIMS = [7, 5, 9, 28, 28, 28]
 
 class TFTPolicy(nn.Module):
   
-    def __init__(self, obs_dim, action_dims, hidden_size=512):
+    def __init__(self, obs_dim, action_dims, hidden_size=512, semantic_vocab_size=2):
         super().__init__()
 
         # 🛡️ Valida o contrato das seis dimensões antes de criar as camadas.
@@ -177,6 +182,25 @@ class TFTPolicy(nn.Module):
         nn.init.zeros_(self.critic_mask_encoder.bias)
         self.value_head = nn.Linear(hidden_size + CRITIC_MASK_EMBED_DIM, 1)
 
+        # Native semantic state is an independent, versioned side input. A
+        # zero-initialized final layer preserves historical logits/values while
+        # allowing PPO gradients to train the new semantic path.
+        if isinstance(semantic_vocab_size, bool) or int(semantic_vocab_size) < 2:
+            raise ValueError("semantic_vocab_size must be an integer >= 2")
+        self.semantic_id_embedding = nn.Embedding(
+            int(semantic_vocab_size), SEMANTIC_ID_EMBED_DIM, padding_idx=0
+        )
+        semantic_input_dim = (
+            SEMANTIC_NUMERIC_DIM + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ID_EMBED_DIM
+        )
+        self.semantic_encoder = nn.Sequential(
+            nn.Linear(semantic_input_dim, 256),
+            nn.ReLU(),
+            nn.Linear(256, hidden_size),
+        )
+        nn.init.zeros_(self.semantic_encoder[-1].weight)
+        nn.init.zeros_(self.semantic_encoder[-1].bias)
+
     def load_compatible_state_dict(self, state_dict):
         """Load current weights or migrate supported input-shape changes.
 
@@ -194,7 +218,11 @@ class TFTPolicy(nn.Module):
             "item_target_candidate_head."
         ))}
         critic_mask_keys = {key for key in target if key.startswith("critic_mask_encoder.")}
-        optional_new_keys = item_head_keys | critic_mask_keys
+        semantic_keys = {
+            key for key in target
+            if key.startswith(("semantic_id_embedding.", "semantic_encoder."))
+        }
+        optional_new_keys = item_head_keys | critic_mask_keys | semantic_keys
         missing = sorted((set(target) - set(state_dict)) - optional_new_keys)
         unexpected = sorted(set(state_dict) - set(target))
         if missing or unexpected:
@@ -207,7 +235,8 @@ class TFTPolicy(nn.Module):
         loaded = {}
         for key, target_value in target.items():
             if key not in state_dict:
-                # New item-specific and Critic-mask modules start from deterministic initialization.
+                # New item, Critic-mask and semantic modules use their declared
+                # neutral initialization when migrating a historical checkpoint.
                 loaded[key] = target_value
                 migrated = True
                 continue
@@ -300,7 +329,7 @@ class TFTPolicy(nn.Module):
         self.load_state_dict(loaded, strict=True)
         return migrated
 
-    def encode(self, obs):
+    def encode(self, obs, semantic_state=None):
         """ Fatia cirurgicamente o tabuleiro do meio do vetor de estado e processa em 2D """
         # FIX: se o env mudar de dimensão, o erro aparece aqui com mensagem clara
         # em vez do CNN processar features errados silenciosamente.
@@ -333,7 +362,35 @@ class TFTPolicy(nn.Module):
         
         # Fusão latente
         combined = torch.cat([cnn_features, global_features], dim=-1)
-        return self.fusion(combined)
+        latent = self.fusion(combined)
+        if semantic_state is not None:
+            if not isinstance(semantic_state, Mapping):
+                raise TypeError("semantic_state must be a mapping with numeric and champion_ids tensors")
+            numeric = semantic_state.get("numeric")
+            champion_ids = semantic_state.get("champion_ids")
+            if not isinstance(numeric, torch.Tensor) or tuple(numeric.shape) != (obs.shape[0], SEMANTIC_NUMERIC_DIM):
+                raise ValueError(
+                    f"semantic numeric input must have shape {(obs.shape[0], SEMANTIC_NUMERIC_DIM)}"
+                )
+            if numeric.dtype != torch.float32 or numeric.device != obs.device:
+                raise TypeError("semantic numeric input must be float32 on the observation device")
+            if not torch.isfinite(numeric).all():
+                raise ValueError("semantic numeric input contains NaN or infinity")
+            if not isinstance(champion_ids, torch.Tensor) or tuple(champion_ids.shape) != (obs.shape[0], SEMANTIC_ENTITY_SLOTS):
+                raise ValueError(
+                    f"semantic champion IDs must have shape {(obs.shape[0], SEMANTIC_ENTITY_SLOTS)}"
+                )
+            if champion_ids.dtype != torch.long or champion_ids.device != obs.device:
+                raise TypeError("semantic champion IDs must be int64 on the observation device")
+            if champion_ids.numel() and (
+                (champion_ids < 0).any()
+                or (champion_ids >= self.semantic_id_embedding.num_embeddings).any()
+            ):
+                raise ValueError("semantic champion ID is outside the checkpoint catalog vocabulary")
+            embedded_ids = self.semantic_id_embedding(champion_ids).reshape(obs.shape[0], -1)
+            semantic_input = torch.cat([numeric, embedded_ids], dim=-1)
+            latent = latent + self.semantic_encoder(semantic_input)
+        return latent
 
     def _economic_context_features(self, obs):
         """Expose phase target/reserve context explicitly to the PPO encoder.
@@ -571,14 +628,16 @@ class TFTPolicy(nn.Module):
         mask_embedding = torch.tanh(self.critic_mask_encoder(mask_features))
         return self.value_head(torch.cat([features, mask_embedding], dim=-1)).squeeze(-1)
 
-    def get_value(self, obs, masks=None):
-        """Return the Critic value using the exact mask snapshot correlated to obs."""
+    def get_value(self, obs, masks=None, semantic_state=None):
+        """Return value from the exact observation, semantic state and mask snapshot."""
         masks = self._validate_mask_bundle(obs, masks)
-        return self._critic_value(self.encode(obs), masks)
+        return self._critic_value(self.encode(obs, semantic_state=semantic_state), masks)
 
-    def get_action(self, obs, masks=None, deterministic=False):
-        """ Atalho para compatibilidade com o trainer.py """
-        return self.get_action_and_value(obs, masks=masks, deterministic=deterministic)
+    def get_action(self, obs, masks=None, deterministic=False, semantic_state=None):
+        """Atalho para compatibilidade com o trainer.py."""
+        return self.get_action_and_value(
+            obs, masks=masks, deterministic=deterministic, semantic_state=semantic_state
+        )
 
     @staticmethod
     def _validate_mask_bundle(obs, masks):
@@ -720,27 +779,30 @@ class TFTPolicy(nn.Module):
             dist = Categorical(logits=logits)
             return dist.sample()
 
-    def get_action_and_value(self, obs, masks=None, deterministic=False):
+    def get_action_and_value(self, obs, masks=None, deterministic=False, semantic_state=None):
         """API original usada pelo PPO; mantém as quatro saídas existentes."""
         actions, logprob, entropy, value, _ = self._get_action_and_value_impl(
-            obs, masks=masks, deterministic=deterministic, collect_diagnostics=False
+            obs, masks=masks, deterministic=deterministic, semantic_state=semantic_state,
+            collect_diagnostics=False
         )
         return actions, logprob, entropy, value
 
-    def get_action_and_value_with_diagnostics(self, obs, masks=None, deterministic=False):
+    def get_action_and_value_with_diagnostics(self, obs, masks=None, deterministic=False, semantic_state=None):
         """Inferência opt-in com as distribuições realmente usadas, sem segunda amostragem."""
         return self._get_action_and_value_impl(
-            obs, masks=masks, deterministic=deterministic, collect_diagnostics=True
+            obs, masks=masks, deterministic=deterministic, semantic_state=semantic_state,
+            collect_diagnostics=True
         )
 
-    def get_action_and_value_with_entropy_diagnostics(self, obs, masks=None, deterministic=False):
+    def get_action_and_value_with_entropy_diagnostics(self, obs, masks=None, deterministic=False, semantic_state=None):
         """Retorna entropia por cabeça sem materializar probabilidades/top-k completos."""
         return self._get_action_and_value_impl(
-            obs, masks=masks, deterministic=deterministic, collect_entropy_diagnostics=True
+            obs, masks=masks, deterministic=deterministic, semantic_state=semantic_state,
+            collect_entropy_diagnostics=True
         )
 
     def _get_action_and_value_impl(
-        self, obs, masks=None, deterministic=False, collect_diagnostics=False,
+        self, obs, masks=None, deterministic=False, semantic_state=None, collect_diagnostics=False,
         collect_entropy_diagnostics=False
     ):
         masks = self._validate_mask_bundle(obs, masks)
@@ -816,7 +878,7 @@ class TFTPolicy(nn.Module):
                     })
                 player_diagnostics[player_id].append(item)
 
-        features = self.encode(obs)
+        features = self.encode(obs, semantic_state=semantic_state)
 
         # --- Action type ---
         type_logits = self.type_head(features)
@@ -1117,7 +1179,7 @@ class TFTPolicy(nn.Module):
             return actions, total_logprob, total_entropy, value, player_diagnostics
         return actions, total_logprob, total_entropy, value, None
 
-    def evaluate_actions(self, obs, actions, masks):
+    def evaluate_actions(self, obs, actions, masks, semantic_state=None):
         masks = self._validate_mask_bundle(obs, masks)
         if not isinstance(actions, torch.Tensor) or tuple(actions.shape) != (obs.shape[0], 6):
             raise ValueError(
@@ -1129,7 +1191,7 @@ class TFTPolicy(nn.Module):
         if actions.device != obs.device:
             raise ValueError("Ações e observação devem estar no mesmo device.")
         self._validate_canonical_action_parameters(actions)
-        hidden = self.encode(obs)
+        hidden = self.encode(obs, semantic_state=semantic_state)
         bench_candidate_features, shop_candidate_features = self._candidate_features(obs)
         (
             item_component_features, item_inventory_features, item_recipe_features,
