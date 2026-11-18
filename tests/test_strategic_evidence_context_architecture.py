@@ -40,14 +40,17 @@ assert "sequence" in context_header and "provenance" in context_header
 assert "derived_core_unit_ids" not in context_header
 assert "std::vector<std::int32_t> core_unit_ids" not in context_header
 
-# Item profiles must use the active-composition owner, with no legacy fallback.
-item_profiles_start = source.index("std::vector<items::UnitProfile> item_unit_profiles")
-item_profiles_end = source.index("const UnitInstance* item_target_unit", item_profiles_start)
-item_profiles_source = source[item_profiles_start:item_profiles_end]
-assert "player.strategy" not in item_profiles_source
-assert "unit_composition_score" not in item_profiles_source
-assert "composition_intelligence_players[player_index].active.current()" in item_profiles_source
-assert "if (active)" in item_profiles_source
+# The remaining item profile helper is explicitly isolated as legacy PPO/reward
+# compatibility. New Composition Intelligence item evidence is sourced from the
+# native StrategicSharedContext in the dedicated pipeline below.
+legacy_profiles_start = source.index("legacy_item_unit_profiles")
+legacy_profiles_end = source.index("const UnitInstance* item_target_unit", legacy_profiles_start)
+legacy_profiles_source = source[legacy_profiles_start:legacy_profiles_end]
+assert "player.strategy" in legacy_profiles_source
+assert "unit_composition_score" in legacy_profiles_source
+assert "legacy_item_unit_profiles(i)" in source
+assert "lobby.legacy_item_unit_profiles(player_id)" in source
+assert "profile.preferred_traits = strategic_context.current_core_traits;" in source
 
 # Viewer-facing legacy shape is now a one-way projection from canonical owners.
 viewer_projection_start = source.index("TFTEngine::get_strategies() const")
