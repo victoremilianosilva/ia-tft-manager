@@ -824,6 +824,8 @@ public:
 
     std::array<std::vector<StrategyInfo>, kPlayersPerLobby>
     get_strategies() const;
+    std::array<std::vector<StrategyInfo>, kPlayersPerLobby>
+    get_viewer_strategy_snapshots() const;
 
     RewardState get_reward_state(std::int32_t player_id) const;
     double get_unit_comp_score(std::int32_t player_id, const std::string& champion_api_name, std::int32_t star = 1) const;
