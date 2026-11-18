@@ -5067,7 +5067,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         bool displaced_core_unit = false;
         bool buy_completes_upgrade = false;
         bool buy_builds_pair = false;
-        bool buy_strategy_approved = true;
+        bool buy_plan_evidence_approved = true;
         double candidate_board_impact = 0.0;
         double item_assignment_reward = 0.0;
         double reroll_old_best_fit = 0.0;
@@ -5153,7 +5153,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     const bool early_flex_purchase =
                         offer_stage <= 2 && def->cost <= 2 &&
                         old_bench_count < 6 && candidate_comp_score >= -2.0;
-                    buy_strategy_approved = should_buy_unit(candidate_board_impact, upgrade_value,
+                    buy_plan_evidence_approved = should_buy_unit(candidate_board_impact, upgrade_value,
                         in_top_trait || in_planned_comp, old_bench_count,
                         offer_stage, def->cost) || early_flex_purchase;
                     // A second matching copy has real upgrade option value
@@ -5915,7 +5915,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             // No unconditional bonus for a normal purchase; +0.30 for a completed upgrade.
             success = bought_unit_successfully;
             action_reward = !success ? -0.10 : (bought_upgrade ? 0.30 : 0.0);
-            if (success && !buy_strategy_approved &&
+            if (success && !buy_plan_evidence_approved &&
                 !buy_completes_upgrade && !buy_builds_pair) {
                 // Keep the rejection signal for genuinely low-value clutter, but
                 // don't punish pair progress or a merge because a board heuristic
