@@ -255,6 +255,14 @@ class Trainer:
         if os.path.exists(checkpoint_path):
             print(f"📂 Carregando checkpoint: {checkpoint_path}")
             checkpoint = torch.load(checkpoint_path, map_location=self.device)
+            saved_projection = checkpoint.get("observation_projection_id")
+            if saved_projection != self.policy.observation_projection_id:
+                raise RuntimeError(
+                    "Checkpoint usa outra projeção de observação. "
+                    f"Esperado={self.policy.observation_projection_id!r}, "
+                    f"recebido={saved_projection!r}. "
+                    "A linhagem PPO anterior não é compatível com a projeção estratégica nativa."
+                )
             saved_contract = checkpoint.get("action_mask_contract")
             if saved_contract is None:
                 allow_legacy = os.environ.get(
@@ -2124,6 +2132,8 @@ class Trainer:
                             "cosine_clamped",
                         "action_mask_contract":
                             build_action_mask_checkpoint_contract(),
+                        "observation_projection_id":
+                            self.policy.observation_projection_id,
                     },
                     self.config.checkpoint_path
                 )
@@ -2159,6 +2169,7 @@ class Trainer:
                 "training_config": self.config.to_dict(),
                 "scheduler_type": "cosine_clamped",
                 "action_mask_contract": build_action_mask_checkpoint_contract(),
+                "observation_projection_id": self.policy.observation_projection_id,
             },
             self.config.checkpoint_path,
         )
