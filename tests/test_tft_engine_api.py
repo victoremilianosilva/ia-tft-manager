@@ -1001,8 +1001,8 @@ def test_selling_equipped_unit_returns_item_to_inventory_without_duplication():
     finally:
         engine.close()
 
-def test_same_seed_replays_unit_identity_without_reusing_engine_identity():
-    """Equivalent native action traces replay unit IDs but isolate Engine IDs."""
+def test_same_seed_replays_game_state_without_reusing_engine_identity():
+    """Equivalent action traces replay game state while isolating Engine-local UUIDs."""
     first = TFTLobby(seed=20261120)
     second = TFTLobby(seed=20261120)
     try:
@@ -1013,9 +1013,10 @@ def test_same_seed_replays_unit_identity_without_reusing_engine_identity():
         assert first_reset["episode_id"] == second_reset["episode_id"]
         first_state = first.get_audit_snapshot()
         second_state = second.get_audit_snapshot()
-        assert first_state["players"][0]["bench"][0]["uuid"] == (
-            second_state["players"][0]["bench"][0]["uuid"]
-        )
+        first_initial_uuid = first_state["players"][0]["bench"][0]["uuid"]
+        second_initial_uuid = second_state["players"][0]["bench"][0]["uuid"]
+        assert first_initial_uuid
+        assert second_initial_uuid
 
         # Choose the same legal deployment target from equivalent initial states.
         first_masks = first.get_action_masks()[0]
@@ -1037,7 +1038,8 @@ def test_same_seed_replays_unit_identity_without_reusing_engine_identity():
         second_after_deploy = second.get_audit_snapshot()
         first_uuid = first_after_deploy["players"][0]["board"][target]["uuid"]
         second_uuid = second_after_deploy["players"][0]["board"][target]["uuid"]
-        assert first_uuid == second_uuid
+        assert first_uuid == first_initial_uuid
+        assert second_uuid == second_initial_uuid
 
         # The action trace is equivalent, but each result remains bound to its
         # own Engine instance and the same episode/decision sequence.
@@ -1059,6 +1061,9 @@ def test_same_seed_replays_unit_identity_without_reusing_engine_identity():
                 assert isinstance(right, dict)
                 assert left.keys() == right.keys()
                 for key in left:
+                    # Unit UUIDs are Engine-local identity, not seeded game state.
+                    if key == "uuid":
+                        continue
                     assert_same_value(left[key], right[key])
             elif isinstance(left, (list, tuple)):
                 assert isinstance(right, type(left))
