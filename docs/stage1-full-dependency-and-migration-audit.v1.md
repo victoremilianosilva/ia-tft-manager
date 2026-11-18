@@ -89,12 +89,12 @@ Viewer Session configures `set_strategic_direction_pivot_audit_path()`; the Engi
 3. Viewer-facing current composition fields are projected from the per-player StrategicCommitment and ActiveCompositionManager:
    - direction from the canonical commitment;
    - planned units/main carry/source score from the published active candidate;
-   - core unit IDs from the commitment;
+   - core unit IDs from the published candidate's explicit `CompositionUnit::core` flags (currently main carry only);
    - core/planned traits from the champion catalog for those canonical unit IDs;
    - composition version from the active owner.
 4. Fields with no canonical equivalent (lock, focus weights, legacy strength, prior-direction transition counters) are cleared rather than fabricated. Projection metadata exposes source, status and version.
 5. The Viewer projection is made on the returned copy; it does not mutate `PlayerEnv.strategy` or alter PPO/reward behavior.
-6. The unused aggregate `derived_core_unit_ids` copy was removed; per-unit `is_core` remains the consumed representation.
+6. The unused aggregate `derived_core_unit_ids` copy and the unwritten `StrategicCommitment::core_unit_ids` field were removed. The active composition's `CompositionUnit::core` is the consumed canonical subset; in the current native candidate producer this marks the main carry only. Other legacy core-unit rankings are not synthesized.
 
 ### Still legacy, deliberately isolated
 
