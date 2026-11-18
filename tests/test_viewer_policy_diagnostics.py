@@ -106,3 +106,28 @@ def test_viewer_validates_critic_mask_checkpoint_identity_without_breaking_legac
         _validate_critic_mask_checkpoint_payload(
             {"critic_mask_input_contract": contract}, legacy_state
         )
+
+
+def test_viewer_validates_semantic_projection_contract_and_catalog_identity():
+    import pytest
+    from semantic_observation import build_semantic_state_checkpoint_contract
+    from viewer.session import _validate_semantic_checkpoint_payload
+
+    catalog = {"TFT_Example": 7}
+    contract = build_semantic_state_checkpoint_contract(catalog)
+    state = {
+        "semantic_id_embedding.weight": torch.zeros(9, 16),
+        "semantic_encoder.0.weight": torch.zeros(256, 941),
+        "semantic_encoder.0.bias": torch.zeros(256),
+        "semantic_encoder.2.weight": torch.zeros(512, 256),
+        "semantic_encoder.2.bias": torch.zeros(512),
+    }
+    _validate_semantic_checkpoint_payload(
+        {"semantic_state_contract": contract}, state, catalog
+    )
+    with pytest.raises(ValueError, match="sem pesos"):
+        _validate_semantic_checkpoint_payload({}, state, catalog)
+    with pytest.raises(ValueError, match="catalog"):
+        _validate_semantic_checkpoint_payload(
+            {"semantic_state_contract": contract}, state, {"TFT_Example": 8}
+        )
