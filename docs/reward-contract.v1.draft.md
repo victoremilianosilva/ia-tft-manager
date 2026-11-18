@@ -358,7 +358,7 @@ Tests must assert component values and event counts, not only final episode retu
 
 ## Runtime migration checkpoint — Stage 1 PR #488
 
-The current PPO action-reward path in `TFTEngine::Impl::PlayerEnv::step` no longer reads a nominal Strategy ID. The runtime no longer applies strategy-keyed action shaping, strategy-keyed XP scaling/progress gates, the ALL_IN-only sale penalty, or strategy-keyed liquidity scaling.
+The current PPO action-reward path in `TFTEngine::Impl::PlayerEnv::step` no longer reads a nominal Strategy ID. The runtime no longer applies strategy-keyed action shaping, strategy-keyed XP scaling/progress gates, the ALL_IN-only sale penalty, strategy-keyed liquidity scaling, or the FAST8-before-level-8 reroll execution gate. Reroll execution is now governed by the legal action mask, available gold and observed shop outcomes rather than a strategy label.
 
 The retained action signals are based on observed execution/state evidence (including successful transitions, actual level changes, observed shop-fit delta, sale/upgrade state, board movement outcomes, and gold-potential delta). Partial-XP and surplus-XP shaping were removed from this path rather than retaining strategy-dependent target-level heuristics. PASS opportunity cost now uses the observed useful-shop-opportunity signal; it does not infer an XP opportunity from a strategy target.
 
