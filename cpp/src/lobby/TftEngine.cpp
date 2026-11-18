@@ -3553,7 +3553,9 @@ struct TFTEngine::Impl {
                             : evidence.board_contribution;
                         std::size_t matching_traits = 0;
                         for (const auto& trait : definition->traits)
-                            if (std::find(info.core_traits.begin(), info.core_traits.end(), trait) != info.core_traits.end()) ++matching_traits;
+                            if (std::find(strategic_context.current_core_traits.begin(),
+                                          strategic_context.current_core_traits.end(), trait) !=
+                                strategic_context.current_core_traits.end()) ++matching_traits;
                         evidence.synergy_contribution = std::clamp(static_cast<double>(matching_traits) / 2.0, 0.0, 1.0);
                         evidence.confidence = 0.75;
                         evidence.copies_toward_next_star =
@@ -3658,7 +3660,7 @@ struct TFTEngine::Impl {
                                     [&](const auto& target) { return target.champion_id == definition->internal_id; })
                                 ? 1.0 : 0.0;
                             profile.traits = definition->traits;
-                            profile.preferred_traits = info.core_traits;
+                            profile.preferred_traits = strategic_context.current_core_traits;
                             item_state.equipped_by_unit_uuid[unit.uuid] =
                                 player_envs[i].item_engine->equipped(unit.uuid);
                             item_bindings.push_back({definition->internal_id, std::move(profile)});
