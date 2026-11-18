@@ -341,32 +341,15 @@ class TFTPolicy(nn.Module):
         # Extrai a seção geométrica do tabuleiro usando o deslocamento inicial fixo
         board_part = obs[:, self.pre_board_dim : self.pre_board_dim + self.board_flat_dim]
 
-        # Native semantic input replaces the legacy strategic prefix, board
-        # heuristics and slot candidate tail. The remaining middle block is kept
-        # only for independently sourced item/catalog state compatibility.
-        pre_part = obs[:, :self.pre_board_dim].clone()
+        # Keep candidate records at the tail. Native item semantics live in the
+        # middle block; derived economic context follows it before candidate slots.
+        pre_part = obs[:, :self.pre_board_dim]
         post_part = obs[:, self.pre_board_dim + self.board_flat_dim :]
         candidate_tail = post_part[:, -self.candidate_observation_dim:]
         middle_part = post_part[:, :-self.candidate_observation_dim]
         if self.has_item_compatibility_observation:
             middle_part = middle_part[:, :-self.item_compatibility_observation_dim]
-        if semantic_state is not None:
-            semantic_numeric = semantic_state["numeric"]
-            semantic_entities = semantic_numeric[:, SEMANTIC_GLOBAL_FEATURES:].reshape(
-                -1, SEMANTIC_ENTITY_SLOTS, 6
-            )
-            board_features = semantic_entities[:, :28, :5]
-            board_part = board_features.permute(0, 2, 1).reshape(-1, 5, 4, 7).flatten(1)
-            candidate_slots = semantic_entities[:, 28:42, :6]
-            candidate_padding = torch.zeros(
-                candidate_slots.shape[0], candidate_slots.shape[1], 2,
-                dtype=candidate_slots.dtype, device=candidate_slots.device,
-            )
-            candidate_tail = torch.cat(
-                [candidate_slots, candidate_padding], dim=-1
-            ).flatten(1)
-            pre_part[:, 10:22] = 0.0
-        economic_context = self._economic_context_features(obs, semantic_state=semantic_state)
+        economic_context = self._economic_context_features(obs)
         global_part = torch.cat(
             [pre_part, middle_part, economic_context, candidate_tail], dim=-1
         )
@@ -410,78 +393,54 @@ class TFTPolicy(nn.Module):
             latent = latent + self.semantic_encoder(semantic_input)
         return latent
 
-    def _economic_context_features(self, obs, semantic_state=None):
+    def _economic_context_features(self, obs):
         """Expose phase target/reserve context explicitly to the PPO encoder.
 
         The native observation already contains the source fields. Deriving these
         features here keeps the engine contract stable and ensures action sampling,
         value estimation and PPO replay all see exactly the same deterministic data.
         """
-        if semantic_state is not None:
-            semantic_numeric = semantic_state["numeric"]
-            hp = (semantic_numeric[:, 0] * 100.0).clamp(0.0, 100.0)
-            gold = (semantic_numeric[:, 5] * 200.0).clamp(min=0.0)
-            level = (semantic_numeric[:, 6] * 10.0).clamp(1.0, 10.0)
-            stage = (semantic_numeric[:, 15] * 7.0).clamp(1.0, 7.0)
-            target_level = torch.where(
-                stage <= 1.0, 3.0,
-                torch.where(stage <= 2.0, 5.0,
-                    torch.where(stage <= 3.0, 7.0,
-                        torch.where(stage <= 4.0, 8.0, 9.0))),
-            )
-            reserve = torch.where(
-                stage <= 2.0, 30.0,
-                torch.where(stage <= 3.0, 15.0,
-                    torch.where(stage <= 4.0, 10.0,
-                        torch.where(stage <= 5.0, 5.0, 0.0))),
-            )
-            reserve = torch.where(hp <= 30.0, 5.0, reserve)
-            reserve = torch.where(hp <= 20.0, 0.0, reserve)
-            reserve = torch.where(
-                (hp <= 40.0) & (hp > 20.0),
-                (reserve - 5.0).clamp(min=0.0),
-                reserve,
-            )
-        else:
-            gold = (obs[:, 1] * 50.0).clamp(min=0.0)
-            hp = (obs[:, 0] * 100.0).clamp(0.0, 100.0)
-            level = (obs[:, 2] * 9.0).clamp(1.0, 10.0)
+        gold = (obs[:, 1] * 50.0).clamp(min=0.0)
+        hp = (obs[:, 0] * 100.0).clamp(0.0, 100.0)
+        level = (obs[:, 2] * 9.0).clamp(1.0, 10.0)
 
-            round_fraction = obs[:, 6].clamp(0.0, 0.999)
-            round_number = (10.0 * round_fraction / (1.0 - round_fraction)).clamp(1.0, 42.0)
-            stage = torch.where(
-                round_number <= 4.0,
-                torch.ones_like(round_number),
-                2.0 + torch.floor((round_number - 5.0) / 7.0),
-            ).clamp(1.0, 7.0)
+        round_fraction = obs[:, 6].clamp(0.0, 0.999)
+        round_number = (10.0 * round_fraction / (1.0 - round_fraction)).clamp(1.0, 42.0)
+        stage = torch.where(
+            round_number <= 4.0,
+            torch.ones_like(round_number),
+            2.0 + torch.floor((round_number - 5.0) / 7.0),
+        ).clamp(1.0, 7.0)
 
-            strategy = obs[:, 10:17].argmax(dim=-1)
-            target_level = torch.where(
-                stage <= 1.0, 3.0,
-                torch.where(stage <= 2.0, 5.0,
-                    torch.where(stage <= 3.0, 7.0,
-                        torch.where(stage <= 4.0, 8.0, 9.0))),
-            )
-            target_level = torch.where(strategy == 2, 8.0, target_level)
-            target_level = torch.where(strategy == 3, 6.0, target_level)
-            reserve = torch.where(
-                stage <= 2.0, 30.0,
-                torch.where(stage <= 3.0, 15.0,
-                    torch.where(stage <= 4.0, 10.0,
-                        torch.where(stage <= 5.0, 5.0, 0.0))),
-            )
-            slowroll_reserve = torch.where(
-                stage <= 3.0, 30.0,
-                torch.where(stage <= 4.0, 25.0, 15.0),
-            )
-            reserve = torch.where(strategy == 3, slowroll_reserve, reserve)
-            reserve = torch.where(hp <= 30.0, 5.0, reserve)
-            reserve = torch.where((hp <= 20.0) | (strategy == 4), 0.0, reserve)
-            reserve = torch.where(
-                (hp <= 40.0) & (hp > 20.0) & (strategy != 4),
-                (reserve - 5.0).clamp(min=0.0),
-                reserve,
-            )
+        # Core strategy one-hot occupies [10:17], matching the C++ observation.
+        strategy = obs[:, 10:17].argmax(dim=-1)
+        target_level = torch.where(
+            stage <= 1.0, 3.0,
+            torch.where(stage <= 2.0, 5.0,
+                torch.where(stage <= 3.0, 7.0,
+                    torch.where(stage <= 4.0, 8.0, 9.0))),
+        )
+        target_level = torch.where(strategy == 2, 8.0, target_level)  # FAST8
+        target_level = torch.where(strategy == 3, 6.0, target_level)  # SLOWROLL
+
+        reserve = torch.where(
+            stage <= 2.0, 30.0,
+            torch.where(stage <= 3.0, 15.0,
+                torch.where(stage <= 4.0, 10.0,
+                    torch.where(stage <= 5.0, 5.0, 0.0))),
+        )
+        slowroll_reserve = torch.where(
+            stage <= 3.0, 30.0,
+            torch.where(stage <= 4.0, 25.0, 15.0),
+        )
+        reserve = torch.where(strategy == 3, slowroll_reserve, reserve)
+        reserve = torch.where(hp <= 30.0, 5.0, reserve)
+        reserve = torch.where((hp <= 20.0) | (strategy == 4), 0.0, reserve)
+        reserve = torch.where(
+            (hp <= 40.0) & (hp > 20.0) & (strategy != 4),
+            (reserve - 5.0).clamp(min=0.0),
+            reserve,
+        )
 
         level_deficit = (target_level - level).clamp(0.0, 8.0)
         spendable_gold = (gold - reserve).clamp(0.0, 200.0)
@@ -500,31 +459,8 @@ class TFTPolicy(nn.Module):
             dim=-1,
         )
 
-    def _candidate_features(self, obs, semantic_state=None):
-        """Extract candidate features from native semantic slots when available."""
-        if semantic_state is not None:
-            numeric = semantic_state.get("numeric")
-            if not isinstance(numeric, torch.Tensor) or tuple(numeric.shape) != (
-                obs.shape[0], SEMANTIC_NUMERIC_DIM
-            ):
-                raise ValueError("semantic candidate input has an incompatible numeric shape")
-            entities = numeric[:, SEMANTIC_GLOBAL_FEATURES:].reshape(
-                -1, SEMANTIC_ENTITY_SLOTS, 6
-            )
-            bench = entities[:, 28:37, :6]
-            shop = entities[:, 37:42, :6]
-            padding_bench = torch.zeros(
-                bench.shape[0], bench.shape[1], 2,
-                dtype=bench.dtype, device=bench.device,
-            )
-            padding_shop = torch.zeros(
-                shop.shape[0], shop.shape[1], 2,
-                dtype=shop.dtype, device=shop.device,
-            )
-            return (
-                torch.cat([bench, padding_bench], dim=-1),
-                torch.cat([shop, padding_shop], dim=-1),
-            )
+    def _candidate_features(self, obs):
+        """Extract slot-aligned strategic features appended by the native C++ engine."""
         if obs.shape[-1] < self.candidate_observation_dim:
             raise ValueError(
                 f"Observação curta para features de candidatos: {obs.shape[-1]} < "
@@ -874,9 +810,7 @@ class TFTPolicy(nn.Module):
         device = obs.device
         batch_size = obs.shape[0]
         player_diagnostics = [[] for _ in range(batch_size)]
-        bench_candidate_features, shop_candidate_features = self._candidate_features(
-            obs, semantic_state=semantic_state
-        )
+        bench_candidate_features, shop_candidate_features = self._candidate_features(obs)
         (
             item_component_features, item_inventory_features, item_recipe_features,
             item_target_features, item_inventory_target_fit, item_recipe_target_fit,
@@ -1259,9 +1193,7 @@ class TFTPolicy(nn.Module):
             raise ValueError("Ações e observação devem estar no mesmo device.")
         self._validate_canonical_action_parameters(actions)
         hidden = self.encode(obs, semantic_state=semantic_state)
-        bench_candidate_features, shop_candidate_features = self._candidate_features(
-            obs, semantic_state=semantic_state
-        )
+        bench_candidate_features, shop_candidate_features = self._candidate_features(obs)
         (
             item_component_features, item_inventory_features, item_recipe_features,
             item_target_features, item_inventory_target_fit, item_recipe_target_fit,
