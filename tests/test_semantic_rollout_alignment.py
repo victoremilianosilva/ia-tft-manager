@@ -65,9 +65,11 @@ def test_rollout_rejects_semantic_projection_shape_and_non_finite_values():
         "champion_ids": torch.zeros((1, SEMANTIC_ENTITY_SLOTS), dtype=torch.long),
     }
     try:
+        actions = torch.zeros(1, 6, dtype=torch.long)
+        actions[:, 0] = 6
         buffer.add(
             torch.zeros(1, 4),
-            torch.zeros(1, 6, dtype=torch.long),
+            actions,
             torch.zeros(1),
             torch.zeros(1),
             torch.zeros(1),
