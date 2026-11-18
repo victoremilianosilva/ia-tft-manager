@@ -60,7 +60,7 @@ void test_temporal_events_are_bound_to_native_decision_identity() {
         assert(event.identity.episode_id == 9);
         assert(event.identity.player_id == 2);
         assert(event.identity.decision_sequence == 17);
-        assert(event.identity.round == 1); // AntiLoop round defaults to 1 until begin_round.
+        assert(event.identity.round == 4);
         assert(event.unit_uuid == std::optional<std::string>{"unit-uuid-1"});
     }
 }
@@ -546,6 +546,8 @@ void test_round_boundary_clears_local_blocks_but_retains_state_visits() {
 } // namespace
 
 int main() {
+    test_temporal_events_are_bound_to_native_decision_identity();
+    test_temporal_history_is_bounded();
     test_blocks_reverse_move_for_same_unit();
     test_blocks_reverse_swap_with_different_unit_identity();
     test_blocks_explicitly_repeated_move();

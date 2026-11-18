@@ -122,7 +122,6 @@ void AntiLoopEngine::append_temporal_event(TemporalHistoryEvent event) {
         return;
     }
     event.identity = identity;
-    event.identity.round = history_.current_round;
     constexpr std::size_t kTemporalHistoryLimit = 64;
     if (history_.temporal_events.size() >= kTemporalHistoryLimit) {
         history_.temporal_events.erase(history_.temporal_events.begin());
