@@ -220,7 +220,7 @@ def test_reset_masks_are_taken_from_same_native_snapshot(monkeypatch):
         assert metadata["player_decision_sequences"] == [1] * 8
         assert metadata["native_state_snapshot"]["snapshot_sequence"] == 1
         pool = metadata["native_state_snapshot"]["shared_pool"]
-        assert pool["snapshot_sequence"] == 1
+        assert "snapshot_sequence" not in pool
         assert pool["total_available"] == 17
         assert len(pool["champions"]) == 2
         assert len(metadata["native_state_snapshot"]["players"][0]["board"]) == 28
@@ -538,7 +538,7 @@ def test_wrapper_rejects_pool_snapshot_with_mismatched_sequence():
     snapshot = native._native_state_snapshot()
     snapshot["shared_pool"]["snapshot_sequence"] = 1
     identity = {"engine_instance_id": f"fake-engine-{id(native)}", "episode_id": 1, "decision_sequence": 2, "player_decision_sequences": [2] * 8}
-    with pytest.raises(RuntimeError, match="identidade do snapshot nativo"):
+    with pytest.raises(RuntimeError, match="duplicou campos do envelope nativo"):
         cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
 
 

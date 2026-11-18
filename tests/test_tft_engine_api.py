@@ -789,11 +789,11 @@ def test_selling_purchased_unit_retires_uuid_and_returns_copy_to_pool():
         after_buy_snapshot = native.get_audit_snapshot()
         after_buy = after_buy_snapshot["players"][0]
         pool_after_buy = after_buy_snapshot["shared_pool"]
-        assert pool_after_buy["engine_instance_id"] == before["engine_instance_id"]
-        assert pool_after_buy["episode_id"] == before["episode_id"]
-        assert pool_after_buy["snapshot_sequence"] == after_buy_snapshot["snapshot_sequence"]
-        assert pool_after_buy["player_decision_sequences"] == after_buy_snapshot["player_decision_sequences"]
-        assert pool_after_buy["snapshot_sequence"] > before["snapshot_sequence"]
+        assert "engine_instance_id" not in pool_after_buy
+        assert "episode_id" not in pool_after_buy
+        assert "snapshot_sequence" not in pool_after_buy
+        assert "player_decision_sequences" not in pool_after_buy
+        assert after_buy_snapshot["snapshot_sequence"] > before["snapshot_sequence"]
         pool_row_after_buy = next(
             row for row in pool_after_buy["champions"]
             if row["champion_internal_id"] == champion_internal_id
@@ -865,7 +865,7 @@ def test_engine_instance_identity_is_distinct_from_seed_and_episode():
         for reset in (first_reset, second_reset):
             structured = reset["native_state_snapshot"]
             assert structured["contract_id"] == "tft.native-state-snapshot"
-            assert structured["contract_version"] == 2
+            assert structured["contract_version"] == 3
             assert structured["source_namespace"] == "tft.engine.observation-snapshot"
             assert structured["engine_instance_id"] == reset["engine_instance_id"]
             assert structured["episode_id"] == reset["episode_id"]
@@ -873,13 +873,13 @@ def test_engine_instance_identity_is_distinct_from_seed_and_episode():
             assert structured["player_decision_sequences"] == reset["player_decision_sequences"]
             pool = structured["shared_pool"]
             assert pool["contract_id"] == "tft.shared-champion-pool-snapshot"
-            assert pool["contract_version"] == 1
-            assert pool["source_namespace"] == "tft.engine.observation-snapshot"
+            assert pool["contract_version"] == 2
             assert pool["producer"] == "UnitPool::available"
-            assert pool["engine_instance_id"] == reset["engine_instance_id"]
-            assert pool["episode_id"] == reset["episode_id"]
-            assert pool["snapshot_sequence"] == reset["decision_sequence"]
-            assert pool["player_decision_sequences"] == reset["player_decision_sequences"]
+            for inherited_field in (
+                "source_namespace", "engine_instance_id", "episode_id",
+                "snapshot_sequence", "player_decision_sequences",
+            ):
+                assert inherited_field not in pool
             assert pool["total_available"] == sum(row["available_count"] for row in pool["champions"])
             assert pool["total_available"] == first.pool_total_available()
             assert len(pool["champions"]) > 0
@@ -1321,15 +1321,16 @@ def test_audit_snapshot_publishes_identity_bound_economy_resolution_events():
             assert 0 <= loser_id < 8
             assert winner_id != loser_id
             assert credit["contract_id"] == "tft.pvp-result-credit-event"
-            assert credit["contract_version"] == 1
+            assert credit["contract_version"] == 2
             assert credit["source_namespace"] == "tft.economy-engine.register-pvp-win"
             assert credit["producer"] == "EconomyEngine::register_pvp_win"
-            assert credit["engine_instance_id"] == after["engine_instance_id"]
-            assert credit["episode_id"] == after["episode_id"]
-            assert credit["snapshot_sequence"] == after["snapshot_sequence"]
-            assert credit["player_decision_sequence"] == after["player_decision_sequences"][winner_id]
-            assert credit["round"] == 5
+            for inherited_field in (
+                "engine_instance_id", "episode_id", "snapshot_sequence",
+                "player_decision_sequence", "round",
+            ):
+                assert inherited_field not in credit
             assert credit["combat_sequence"] > 0
+            assert credit["combat_sequence"] <= after["combat_sequence"]
             assert credit["gold_after_credit"] - credit["gold_before_credit"] == credit["credited_gold"]
             assert credit["credited_gold"] > 0
             assert credit["win_streak_after"] == credit["win_streak_before"] + 1
@@ -1341,13 +1342,15 @@ def test_audit_snapshot_publishes_identity_bound_economy_resolution_events():
             player_id = event["player_id"]
             assert 0 <= player_id < 8
             assert event["contract_id"] == "tft.economy-resolution-event"
-            assert event["contract_version"] == 1
+            assert event["contract_version"] == 2
             assert event["source_namespace"] == "tft.economy-engine.resolve-round"
             assert event["producer"] == "EconomyEngine::resolve_round"
-            assert event["engine_instance_id"] == after["engine_instance_id"]
-            assert event["episode_id"] == after["episode_id"]
-            assert event["snapshot_sequence"] == after["snapshot_sequence"]
-            assert event["player_decision_sequence"] == after["player_decision_sequences"][player_id]
+            for inherited_field in (
+                "engine_instance_id", "episode_id", "snapshot_sequence",
+                "player_decision_sequence",
+            ):
+                assert inherited_field not in event
+            assert after["player_decision_sequences"][player_id] > 0
             assert event["resolved_after_round"] == 5
             assert event["income_for_round"] == 6
 
@@ -1418,8 +1421,8 @@ def test_audit_snapshot_publishes_identity_bound_combat_damage_events():
         assert damage_events, "At least one real PvP combat must publish damage events."
         assert after["combat_sequence"] >= 4
         assert after["combat_damage_events_truncated"] is False
-        assert all(event["round"] == after["round"] - 1 for event in damage_events)
-        assert all(event["combat_sequence"] > 0 for event in damage_events)
+        assert all("round" not in event for event in damage_events)
+        assert all(0 < event["combat_sequence"] <= after["combat_sequence"] for event in damage_events)
         assert all(event["timestamp"] >= 0.0 for event in damage_events)
         assert any(event["final_damage"] > 0.0 for event in damage_events)
         assert all(event["final_damage"] >= 0.0 for event in damage_events)
