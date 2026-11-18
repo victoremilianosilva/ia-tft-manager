@@ -511,6 +511,69 @@ def test_anti_loop_history_is_scoped_to_each_preparation():
         engine.close()
 
 
+def test_shop_offer_revision_is_published_across_reroll_and_purchase():
+    """Shop offer revisions in the audit snapshot track real reroll and purchase actions."""
+    engine = TFTLobby(seed=20261121)
+
+    try:
+        engine.reset()
+        native = engine
+        assert native.set_player_economy_for_testing(0, 20, 5, 0)
+
+        before_reroll = native.get_audit_snapshot()["players"][0]
+        occupied_slots = [
+            index for index, offer in enumerate(before_reroll["shop"])
+            if offer["occupied"]
+        ]
+        assert occupied_slots, "Reset should publish at least one shop offer."
+        reroll_slot = occupied_slots[0]
+        initial_revision = int(before_reroll["shop_offer_revisions"][reroll_slot])
+        initial_uuid = before_reroll["shop"][reroll_slot]["uuid"]
+        assert initial_revision > 0
+        assert initial_uuid
+
+        actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        actions[0] = [1, 0, 0, 0, 0, 0]
+        engine.step(actions)
+
+        after_reroll = native.get_audit_snapshot()["players"][0]
+        rerolled_revision = int(after_reroll["shop_offer_revisions"][reroll_slot])
+        assert rerolled_revision > initial_revision, (
+            "A real reroll must advance the published revision for the replaced slot."
+        )
+        assert not any(
+            offer["occupied"] and offer["uuid"] == initial_uuid
+            for offer in after_reroll["shop"]
+        ), "The replaced shop UnitInstance must no longer be offered."
+
+        purchase_slot = next(
+            index for index, offer in enumerate(after_reroll["shop"])
+            if offer["occupied"]
+        )
+        purchase_revision = int(after_reroll["shop_offer_revisions"][purchase_slot])
+        purchased_uuid = after_reroll["shop"][purchase_slot]["uuid"]
+        assert purchase_revision > 0 and purchased_uuid
+
+        actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        actions[0] = [0, purchase_slot, 0, 0, 0, 0]
+        engine.step(actions)
+
+        after_purchase = native.get_audit_snapshot()["players"][0]
+        retired_offer_revision = int(
+            after_purchase["shop_offer_revisions"][purchase_slot]
+        )
+        assert retired_offer_revision > purchase_revision, (
+            "A real purchase must advance the published revision and retire the offer."
+        )
+        assert not after_purchase["shop"][purchase_slot]["occupied"]
+        assert not any(
+            offer["occupied"] and offer["uuid"] == purchased_uuid
+            for offer in after_purchase["shop"]
+        )
+    finally:
+        engine.close()
+
+
 def test_buying_third_copy_auto_upgrades_and_preserves_purchased_identity():
     """The purchased shop copy survives as the upgraded unit; consumed copies retire."""
     engine = TFTLobby(seed=20261016)
