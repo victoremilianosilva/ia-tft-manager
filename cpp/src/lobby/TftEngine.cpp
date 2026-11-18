@@ -1679,8 +1679,8 @@ struct TFTEngine::Impl {
                         const int role = std::clamp(observation_role(*unit, *definition), 0, 4);
                         const auto& stats = definition->stats;
                         const auto& combat = definition->combat_profile;
-                        const auto fit = unit_composition_score(strategy, *definition,
-                            unit->star, trait_milestones);
+                        const double fit = active_composition_unit_ids.count(definition->internal_id) != 0
+                            ? 1.0 : 0.0;
                         features[0] = 1.0f;
                         features[1] = on_board ? 1.0f : 0.0f;
                         features[2] = on_board ? 0.0f : 1.0f;
@@ -1823,11 +1823,10 @@ struct TFTEngine::Impl {
                         out[offset++] = 0.0f;
                     return;
                 }
-                const double fit = unit_composition_score(strategy, *def, unit->star, trait_milestones);
-                const bool core = std::find(strategy.core_unit_ids.begin(),
-                    strategy.core_unit_ids.end(), def->internal_id) != strategy.core_unit_ids.end() ||
-                    std::find(strategy.planned_unit_ids.begin(),
-                    strategy.planned_unit_ids.end(), def->internal_id) != strategy.planned_unit_ids.end();
+                const double fit = active_composition_unit_ids.count(def->internal_id) != 0
+                    ? 1.0 : 0.0;
+                const bool core = active_composition &&
+                    def->internal_id == active_composition->candidate.main_carry_id;
                 const int copies = count_same_champion(*unit);
                 out[offset++] = static_cast<float>(std::clamp(fit / 22.5, 0.0, 1.0));
                 out[offset++] = static_cast<float>(def->cost) / 5.0f;
