@@ -14,7 +14,7 @@ def _unit(occupied=False, champion_id="", star=0, cost=0):
         "champion_id": champion_id,
         "star": star,
         "cost": cost,
-        "item_ids": [],
+        "items": [],
         "trait_names": [],
     }
 
@@ -41,7 +41,7 @@ def _metadata():
         "shop": [_unit() for _ in range(5)],
     }
     player["board"][0] = _unit(True, "TFT_TestChampion", 2, 3)
-    player["board"][0]["item_ids"] = ["ItemA"]
+    player["board"][0]["items"] = ["ItemA"]
     player["board"][0]["trait_names"] = ["TraitA", "TraitB"]
     return {
         "engine_instance_id": "engine-1",
