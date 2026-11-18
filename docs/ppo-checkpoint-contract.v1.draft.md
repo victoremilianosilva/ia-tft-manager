@@ -330,3 +330,11 @@ This resolves consumer-intent ambiguity without selecting tensor dimensions, off
 6. **Objective validation:** tests cover mask-sensitive Critic values, neutral legacy value migration, Actor/collection/evaluation parity, and rejection of side-input contract drift. CI remains the final execution proof.
 
 This implementation closes the Critic-mask delivery gap only. It does not approve or implement the concrete Observation Tensor Projection, does not migrate reward semantics, and does not claim integrated multi-round replay acceptance.
+
+## Native semantic state side-input — Stage 1 PR #488
+
+New checkpoints persist `semantic_state_contract` when the policy contains `semantic_id_embedding.*` and `semantic_encoder.*` weights. The manifest binds the AuditSnapshot v3 producer/namespace, catalog fingerprint and vocabulary size, 17 global feature order, 42 entity-slot order, normalizations, dimensions, unknown-ID handling and excluded legacy/Shadow fields.
+
+The Trainer and Viewer must validate this contract against the active native catalog before loading semantic weights. Weights without the contract, a contract without weights, or a catalog fingerprint/vocabulary mismatch are rejected. Historical checkpoints without semantic weights/contracts remain loadable through the neutral additive migration: the semantic encoder's final layer is zero-initialized, so the legacy Actor/Critic outputs are preserved at load while the new side input remains trainable.
+
+The semantic rows are part of the rollout transition and must remain aligned with the same Engine/episode/decision/player identity as observation and action masks. The next-state semantic row is used for the GAE bootstrap. This is a new independent side input; it does not alter the historical flat observation tensor or silently rewrite its offsets.
