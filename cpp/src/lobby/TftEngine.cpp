@@ -4768,6 +4768,7 @@ struct TFTEngine::Impl {
             input.config.max_duration = 30.0f;
             input.config.max_events = 100000;
             input.config.deterministic = true;
+            input.config.record_damage = true;
             int next_unit_id = 0;
             append_combat_team(a, UnitTeam::PLAYER_A, input.player_a, next_unit_id);
             append_combat_team(b, UnitTeam::PLAYER_B, input.player_b, next_unit_id);
@@ -4818,6 +4819,66 @@ struct TFTEngine::Impl {
                     throw std::runtime_error("CombatEngine falhou no confronto " +
                         std::to_string(a) + " vs " + std::to_string(b) +
                         ": " + combat.error_code + " - " + combat.error_message);
+
+                struct CombatUnitOwner {
+                    std::int32_t player_id{-1};
+                    std::string unit_uuid;
+                };
+                std::unordered_map<std::int32_t, CombatUnitOwner> combat_unit_owners;
+                const auto index_team_units = [&](const CombatTeam& team) {
+                    if (team.player_id < 0 ||
+                        team.player_id >= static_cast<std::int32_t>(kPlayersPerLobby)) {
+                        return;
+                    }
+                    const auto player_id = static_cast<std::size_t>(team.player_id);
+                    for (const auto& unit : team.units) {
+                        const auto slot = unit.source_board_position;
+                        if (slot < 0 || slot >= static_cast<std::int32_t>(kBoardSlots)) continue;
+                        const auto& instance =
+                            player_envs[player_id].board[static_cast<std::size_t>(slot)];
+                        if (!instance || instance->uuid.empty()) continue;
+                        combat_unit_owners.emplace(
+                            unit.id, CombatUnitOwner{team.player_id, instance->uuid});
+                    }
+                };
+                index_team_units(input.player_a);
+                index_team_units(input.player_b);
+
+                ++combat_sequence;
+                constexpr std::size_t kCombatDamageAuditLimit = 4096;
+                for (const auto& damage_event : combat.damage_events) {
+                    if (last_combat_damage_events.size() >= kCombatDamageAuditLimit) {
+                        combat_damage_events_truncated = true;
+                        break;
+                    }
+                    AuditCombatDamageEvent audit_event{};
+                    audit_event.combat_sequence = combat_sequence;
+                    audit_event.round = round + 1;
+                    audit_event.timestamp = damage_event.timestamp;
+                    audit_event.source_unit_id = damage_event.source_unit_id;
+                    audit_event.target_unit_id = damage_event.target_unit_id;
+                    audit_event.damage_type =
+                        static_cast<std::uint8_t>(damage_event.damage_type);
+                    audit_event.raw_damage = damage_event.raw_damage;
+                    audit_event.final_damage = damage_event.final_damage;
+                    audit_event.critical = damage_event.critical;
+                    audit_event.ability_damage = damage_event.ability_damage;
+
+                    const auto source_owner =
+                        combat_unit_owners.find(damage_event.source_unit_id);
+                    if (source_owner != combat_unit_owners.end()) {
+                        audit_event.source_player_id = source_owner->second.player_id;
+                        audit_event.source_unit_uuid = source_owner->second.unit_uuid;
+                    }
+                    const auto target_owner =
+                        combat_unit_owners.find(damage_event.target_unit_id);
+                    if (target_owner != combat_unit_owners.end()) {
+                        audit_event.target_player_id = target_owner->second.player_id;
+                        audit_event.target_unit_uuid = target_owner->second.unit_uuid;
+                    }
+                    last_combat_damage_events.push_back(std::move(audit_event));
+                }
+
                 events.emplace_back("COMBAT: jogador " + std::to_string(a) +
                     " vs " + std::to_string(b) + ", eventos=" +
                     std::to_string(combat.events_processed));
