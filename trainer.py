@@ -45,7 +45,6 @@ from semantic_observation import (
     validate_semantic_state_checkpoint_contract,
 )
 
-from engine_contracts import Strategy
 from engine_contracts import ActionType
 
 def refresh_opgg_meta_catalog() -> None:
@@ -1072,56 +1071,6 @@ class Trainer:
         )
 
     # ================================================================
-    # 🧠 STRATEGY LOGGING
-    # ================================================================
-
-    def _collect_strategy_counts(
-        self,
-        strategies
-    ):
-        """
-        strategies vem como:
-
-            [
-                [
-                    strategy_p0,
-                    ...
-                    strategy_p7
-                ],
-                ...
-            ]
-
-        Conta todos os jogadores.
-        """
-
-        counts = np.zeros(
-            len(Strategy),
-            dtype=np.int32
-        )
-
-        for lobby_strategies in strategies:
-
-            for strategy in lobby_strategies:
-
-                if strategy is None:
-                    continue
-
-                try:
-
-                    counts[
-                        strategy.value
-                    ] += 1
-
-                except (
-                    AttributeError,
-                    IndexError
-                ):
-
-                    pass
-
-        return counts
-
-    # ================================================================
     # 🏋️ TRAIN
     # ================================================================
 
@@ -1306,11 +1255,6 @@ class Trainer:
                 dtype=np.int32
             )
 
-            strategy_counts = np.zeros(
-                len(Strategy),
-                dtype=np.int32
-            )
-
             self.policy.eval()
 
             # ========================================================
@@ -1361,6 +1305,18 @@ class Trainer:
                     metadata["semantic_projection_contract_hash"] = (
                         self.semantic_state_contract["sha256"]
                     )
+                semantic_entities = np.asarray(
+                    semantic_batch["numeric"], dtype=np.float32
+                )[:, 17:].reshape(-1, 42, 6)
+                unknown_semantic_champions = int(
+                    ((semantic_entities[:, :, 0] > 0.5) &
+                     (semantic_entities[:, :, 5] < 0.5)).sum()
+                )
+                self.writer.add_scalar(
+                    "semantic/unknown_occupied_champion_slots",
+                    unknown_semantic_champions,
+                    update * rollout_steps + step,
+                )
 
                 gym_masks = (
                     self.vec_env.env_method(
@@ -1429,26 +1385,8 @@ class Trainer:
 
                 mask_samples += 1
 
-                # ====================================================
-                # 🧠 STRATEGIES
-                # ====================================================
-
-                current_strategies = (
-                    self.vec_env.env_method(
-                        "get_strategies"
-                    )
-                )
-
-                current_strategy_counts = (
-                    self._collect_strategy_counts(
-                        current_strategies
-                    )
-                )
-
-                strategy_counts += (
-                    current_strategy_counts
-                )
-
+                # Strategy labels are diagnostics only; PPO collection does
+                # not query the legacy get_strategies() compatibility API.
 
                 # 📸 Fotografa quem pode gerar experiência neste passo.
                 # A cópia precisa acontecer ANTES da ação.
@@ -2186,19 +2124,11 @@ class Trainer:
                 update
             )
 
-            # ========================================================
-            # 🎭 STRATEGIES
-            # ========================================================
-
-            for strat in Strategy:
-
-                self.writer.add_scalar(
-                    f"strategy/{strat.name}",
-                    strategy_counts[
-                        strat.value
-                    ],
-                    update
-                )
+            self.writer.add_scalar(
+                "semantic/catalog_vocab_size",
+                self.semantic_vocab_size,
+                update,
+            )
 
             # ========================================================
             # 📈 EPISODE RETURN
