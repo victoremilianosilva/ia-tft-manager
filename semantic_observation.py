@@ -142,14 +142,29 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
     placement = state.get("placement")
     if placement is not None:
         placement = _non_negative_int(placement, "placement")
+        if not 1 <= placement <= 8:
+            raise ValueError("placement must be in the native lobby range 1..8")
     opponent_id = state.get("opponent_id")
     if opponent_id is not None:
-        _non_negative_int(opponent_id, "opponent_id")
+        opponent_id = _non_negative_int(opponent_id, "opponent_id")
+        if opponent_id >= 8 or opponent_id == player_id:
+            raise ValueError("opponent_id must identify a different player in this lobby")
+    alive = state.get("alive")
+    if not isinstance(alive, bool):
+        raise TypeError("native semantic field alive must be boolean")
+    stage = _non_negative_int(metadata.get("stage"), "stage")
+    round_number = _non_negative_int(metadata.get("round"), "round")
+    if not 1 <= stage <= 7 or round_number > 50:
+        raise ValueError("native stage/round is outside the supported lobby range")
+    hp = _finite_number(state.get("hp"), "hp")
+    damage_taken = _finite_number(state.get("damage_taken"), "damage_taken")
+    if not 0.0 <= hp <= 100.0 or damage_taken < 0.0:
+        raise ValueError("native HP/damage facts are outside their valid range")
 
     global_values = [
-        _finite_number(state.get("hp"), "hp") / 100.0,
-        _finite_number(state.get("damage_taken"), "damage_taken") / 100.0,
-        float(bool(state.get("alive"))),
+        hp / 100.0,
+        damage_taken / 100.0,
+        float(alive),
         _non_negative_int(state.get("wins"), "wins") / 100.0,
         _non_negative_int(state.get("losses"), "losses") / 100.0,
         _non_negative_int(state.get("gold"), "gold") / 200.0,
@@ -162,8 +177,8 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
         0.0 if placement is None else placement / 8.0,
         float(placement is not None),
         float(opponent_id is not None),
-        _non_negative_int(metadata.get("stage"), "stage") / 7.0,
-        _non_negative_int(metadata.get("round"), "round") / 50.0,
+        stage / 7.0,
+        round_number / 50.0,
     ]
 
     catalog = dict(catalog_map)
