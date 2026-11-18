@@ -7453,18 +7453,23 @@ std::vector<float> TFTEngine::get_observations() const {
 std::array<std::vector<StrategyInfo>, kPlayersPerLobby>
 TFTEngine::get_strategies() const {
     if (!impl_) {
-        throw std::runtime_error(
-            "TFTEngine nao possui estado interno."
-        );
+        throw std::runtime_error("TFTEngine nao possui estado interno.");
     }
-
     impl_->ensure_open();
 
     std::array<std::vector<StrategyInfo>, kPlayersPerLobby> result{};
     for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
-        if (!impl_->player_envs[i].strategy) continue;
-        result[i].push_back(*impl_->player_envs[i].strategy);
+        if (impl_->player_envs[i].strategy)
+            result[i].push_back(*impl_->player_envs[i].strategy);
+    }
+    return result;
+}
 
+std::array<std::vector<StrategyInfo>, kPlayersPerLobby>
+TFTEngine::get_viewer_strategy_snapshots() const {
+    auto result = get_strategies();
+    for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+        if (result[i].empty()) continue;
         auto& projection = result[i].back();
         const auto& commitment = impl_->strategic_planner_commitments[i];
         const auto& active = impl_->composition_intelligence_players[i].active.current();
@@ -7541,6 +7546,7 @@ TFTEngine::get_strategies() const {
                     : "native_direction_without_active_composition";
         }
     }
+
     return result;
 }
 
