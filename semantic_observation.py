@@ -87,6 +87,17 @@ def build_semantic_state_checkpoint_contract(catalog_map: Mapping[str, int]) -> 
         "numeric_dimension": SEMANTIC_NUMERIC_DIM,
         "entity_slot_count": SEMANTIC_ENTITY_SLOTS,
         "id_embedding_dimension": SEMANTIC_ID_EMBED_DIM,
+        "encoder": {
+            "kind": "champion_embedding_plus_mlp",
+            "numeric_plus_embedding_input_dim": (
+                SEMANTIC_NUMERIC_DIM + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ID_EMBED_DIM
+            ),
+            "hidden_dim": 256,
+            "output_dim": "policy_hidden_size",
+            "fusion": "additive_to_shared_actor_critic_latent",
+            "final_layer_initialization": "zero",
+        },
+        "critic_action_mask_input": "separate_independent_side_input",
         "missing_policy": "preserve validity; never synthesize a champion identity",
         "excluded": [
             "legacy_strategy_id", "legacy_strategy_one_hot", "legacy_composition_direction",
