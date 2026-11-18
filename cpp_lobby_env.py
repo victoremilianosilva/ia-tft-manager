@@ -586,20 +586,27 @@ class CppTFTLobbyWrapper:
                 for snapshot in snapshots]
 
     def get_strategies(self):
-        """Return native strategy snapshots as the enum expected by Trainer logs."""
+        """Return only an authoritative legacy strategy enum when one exists.
+
+        The new strategic/economic owners publish separate diagnostics. An
+        unavailable legacy enum is None, never silently mapped to ECON.
+        """
         from engine_contracts import Strategy
 
         snapshots = self._engine.get_strategies()
         result = []
         for snapshot in snapshots:
             if isinstance(snapshot, dict):
-                strategy_id = int(snapshot.get("strategy", 0))
+                if not snapshot.get("strategy_available", False):
+                    result.append(None)
+                    continue
+                strategy_id = int(snapshot.get("strategy", -1))
             else:
                 strategy_id = int(snapshot)
             try:
                 result.append(Strategy(strategy_id))
             except ValueError:
-                result.append(Strategy.ECON)
+                result.append(None)
         return result
 
     def get_anti_loop_metrics(self):
