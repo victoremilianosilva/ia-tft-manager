@@ -1294,7 +1294,7 @@ def test_audit_snapshot_publishes_identity_bound_combat_damage_events():
         assert champion_id
 
         for player_id in range(8):
-            assert engine.set_unit_for_testing(player_id, True, 0, champion_id, 1)
+            assert engine.set_unit_for_testing(player_id, True, 0, champion_id, 3 if player_id == 0 else 1)
         before = engine.get_audit_snapshot()
         expected_uuid_by_player = {
             player["player_id"]: player["board"][0]["uuid"]
