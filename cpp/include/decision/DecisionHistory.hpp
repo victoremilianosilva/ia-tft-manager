@@ -62,34 +62,6 @@ struct BlockedMoveRecord {
     std::optional<PositionSignature> blocked_state;
 };
 
-enum class TemporalEventKind : std::uint8_t {
-    StateObserved = 0,
-    MoveRegistered = 1,
-    MoveBlocked = 2,
-    MoveSucceeded = 3
-};
-
-struct TemporalDecisionIdentity {
-    std::string engine_instance_id;
-    std::uint64_t episode_id{0};
-    std::int32_t player_id{-1};
-    std::uint64_t decision_sequence{0};
-    std::uint32_t round{0};
-};
-
-struct TemporalHistoryEvent {
-    TemporalEventKind kind{TemporalEventKind::StateObserved};
-    TemporalDecisionIdentity identity;
-    std::string move_type;
-    std::int32_t source{-1};
-    std::int32_t target{-1};
-    std::optional<std::string> unit_uuid;
-    std::optional<std::int64_t> unit_id;
-    std::uint8_t unit_star{1};
-    std::uint32_t state_visit_count{0};
-    std::string reason;
-};
-
 // Diagnósticos coletados durante a geração das máscaras. Contam somente
 // pares estruturalmente legais; fallbacks categóricos nunca entram nesses contadores.
 struct MaskDiagnostics {
@@ -145,8 +117,6 @@ struct AntiLoopHistory {
     ExecutionMetrics metrics;
     std::uint32_t current_round = 1;
     std::uint32_t state_window_rounds = 8;
-    TemporalDecisionIdentity current_decision;
-    std::vector<TemporalHistoryEvent> temporal_events;
 };
 
 } // namespace tft::decision
