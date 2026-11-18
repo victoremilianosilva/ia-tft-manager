@@ -1,11 +1,14 @@
 from collections.abc import Mapping
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.distributions import Categorical
 
-from action_contract import MASK_SHAPES
+from action_contract import (
+    MASK_SHAPES,
+    CRITIC_MASK_FEATURE_DIM,
+    CRITIC_MASK_EMBED_DIM,
+)
 
 
 ACTION_DIMS = [9, 5, 9, 28, 28, 28]
@@ -164,7 +167,15 @@ class TFTPolicy(nn.Module):
         ):
             nn.init.zeros_(candidate_head[-1].weight)
             nn.init.zeros_(candidate_head[-1].bias)
-        self.value_head = nn.Linear(hidden_size, 1)
+        # The Critic receives the exact decision-correlated mask bundle through
+        # an independent side input. Zero initialization preserves legacy value
+        # predictions while allowing the new lineage to learn mask relevance.
+        self.critic_mask_encoder = nn.Linear(
+            CRITIC_MASK_FEATURE_DIM, CRITIC_MASK_EMBED_DIM
+        )
+        nn.init.zeros_(self.critic_mask_encoder.weight)
+        nn.init.zeros_(self.critic_mask_encoder.bias)
+        self.value_head = nn.Linear(hidden_size + CRITIC_MASK_EMBED_DIM, 1)
 
     def load_compatible_state_dict(self, state_dict):
         """Load current weights or migrate supported input-shape changes.
@@ -182,7 +193,9 @@ class TFTPolicy(nn.Module):
             "item_component_candidate_head.",
             "item_target_candidate_head."
         ))}
-        missing = sorted((set(target) - set(state_dict)) - item_head_keys)
+        critic_mask_keys = {key for key in target if key.startswith("critic_mask_encoder.")}
+        optional_new_keys = item_head_keys | critic_mask_keys
+        missing = sorted((set(target) - set(state_dict)) - optional_new_keys)
         unexpected = sorted(set(state_dict) - set(target))
         if missing or unexpected:
             raise RuntimeError(
@@ -194,7 +207,7 @@ class TFTPolicy(nn.Module):
         loaded = {}
         for key, target_value in target.items():
             if key not in state_dict:
-                # New item-specific heads start from their deterministic module initialization.
+                # New item-specific and Critic-mask modules start from deterministic initialization.
                 loaded[key] = target_value
                 migrated = True
                 continue
@@ -246,6 +259,22 @@ class TFTPolicy(nn.Module):
                     # Older checkpoints without the explicit candidate tail:
                     # preserve their known columns and initialize the new tail.
                     expanded[:, :source_value.shape[1]] = source_value
+                loaded[key] = expanded
+                migrated = True
+                continue
+
+            if (
+                key == "value_head.weight"
+                and source_value.ndim == 2
+                and target_value.ndim == 2
+                and source_value.shape[0] == target_value.shape[0]
+                and target_value.shape[1] == source_value.shape[1] + CRITIC_MASK_EMBED_DIM
+            ):
+                # Keep the target module's deterministic mask columns.
+                # The mask encoder is zero-initialized, so the old value is
+                # preserved exactly while gradients can reach the encoder.
+                expanded = target_value.clone()
+                expanded[:, :source_value.shape[1]] = source_value
                 loaded[key] = expanded
                 migrated = True
                 continue
@@ -528,9 +557,24 @@ class TFTPolicy(nn.Module):
         joined = torch.cat([context, candidate_features], dim=-1)
         return head(joined.reshape(batch * slots, -1)).reshape(batch, slots)
 
+    def _critic_value(self, features, masks):
+        """Estimate value from state features plus the independent exact-mask side input."""
+        mask_features = torch.cat([
+            masks[name].reshape(masks[name].shape[0], -1).to(dtype=features.dtype)
+            for name in MASK_SHAPES
+        ], dim=-1)
+        if mask_features.shape[-1] != CRITIC_MASK_FEATURE_DIM:
+            raise ValueError(
+                f"Critic mask feature size mismatch: {mask_features.shape[-1]} != "
+                f"{CRITIC_MASK_FEATURE_DIM}."
+            )
+        mask_embedding = torch.tanh(self.critic_mask_encoder(mask_features))
+        return self.value_head(torch.cat([features, mask_embedding], dim=-1)).squeeze(-1)
+
     def get_value(self, obs, masks=None):
-        """ Retorna a estimativa de valor do estado (ignora as máscaras se enviadas) """
-        return self.value_head(self.encode(obs)).squeeze(-1)
+        """Return the Critic value using the exact mask snapshot correlated to obs."""
+        masks = self._validate_mask_bundle(obs, masks)
+        return self._critic_value(self.encode(obs), masks)
 
     def get_action(self, obs, masks=None, deterministic=False):
         """ Atalho para compatibilidade com o trainer.py """
@@ -1067,7 +1111,7 @@ class TFTPolicy(nn.Module):
             action_type, shop_slot, bench_slot, board_target, board_source, board_move_target
         ], dim=-1)
 
-        value = self.value_head(features).squeeze(-1)
+        value = self._critic_value(features, masks)
 
         if collect_diagnostics or collect_entropy_diagnostics:
             return actions, total_logprob, total_entropy, value, player_diagnostics
@@ -1366,5 +1410,5 @@ class TFTPolicy(nn.Module):
             total_logprob[sell_mask] += dist.log_prob(actions[sell_mask, 2])
             total_entropy[sell_mask] += dist.entropy()
 
-        value = self.value_head(hidden).squeeze(-1)
+        value = self._critic_value(hidden, masks)
         return total_logprob, total_entropy, value

@@ -16,6 +16,7 @@ import torch
 from policy import TFTPolicy, ACTION_DIMS, LEGACY_ACTION_DIMS
 from cpp_lobby_env import CppTFTLobbyWrapper
 from viewer.player_logs import PlayerJsonLogWriter
+from action_contract import validate_critic_mask_input_checkpoint_contract
 
 ROOT = Path(__file__).resolve().parents[1]
 CATALOG = ROOT / "data" / "units_gerado.json"
@@ -43,6 +44,28 @@ def _resolve_action_dims(payload: dict) -> list[int]:
     if normalized == LEGACY_ACTION_DIMS:
         return list(ACTION_DIMS)
     return normalized
+
+
+def _validate_critic_mask_checkpoint_payload(payload: dict, state_dict: dict) -> None:
+    """Require the side-input identity whenever a checkpoint contains Critic mask weights."""
+    contract = payload.get("critic_mask_input_contract")
+    has_encoder = any(
+        key.startswith("critic_mask_encoder.")
+        for key in state_dict
+    )
+    if contract is None:
+        if has_encoder:
+            raise ValueError(
+                "Checkpoint contém pesos do Critic mask encoder sem "
+                "critic_mask_input_contract."
+            )
+        return
+    validate_critic_mask_input_checkpoint_contract(contract)
+    if not has_encoder:
+        raise ValueError(
+            "Checkpoint declara critic_mask_input_contract, mas não contém "
+            "os pesos do Critic mask encoder."
+        )
 
 
 def _jsonable(value: Any):
@@ -145,6 +168,7 @@ class ViewerSession:
             raise ValueError("Formato de checkpoint não reconhecido: esperado um dicionário de pesos/metadata.")
         if not isinstance(state_dict, dict) or not state_dict:
             raise ValueError("O checkpoint não contém state_dict de política.")
+        _validate_critic_mask_checkpoint_payload(payload, state_dict)
         if obs_dim is None:
             # Validate old checkpoint metadata, but construct the live policy
             # from the observation dimension produced by the current native engine.
@@ -185,8 +209,8 @@ class ViewerSession:
             raise ValueError(f"Checkpoint incompatível com TFTPolicy atual: {exc}") from exc
         if migrated_checkpoint:
             print(
-                "Checkpoint migrado: colunas novas da observação e condicionamento "
-                "MOVE_BENCH inicializados sem alterar os pesos antigos compatíveis."
+                "Checkpoint migrado: novas entradas neutras de observação/ação/Critic "
+                "inicializadas sem alterar os pesos antigos compatíveis."
             )
         self.policy.eval()
         for parameter in self.policy.parameters():
@@ -675,12 +699,36 @@ class ViewerSession:
         source = Path(path).expanduser().resolve()
         if source.is_dir():
             legacy_stream = source / "events.jsonl"
-            source = legacy_stream if legacy_stream.is_file() else source / "player_1_log.json"
+            structured_player_log = source / "player_1_log.json"
+            legacy_text_log = source / "player_1_log.tft"
+            if legacy_stream.is_file():
+                source = legacy_stream
+            elif structured_player_log.is_file():
+                source = structured_player_log
+            else:
+                source = legacy_text_log
         if not source.is_file():
             raise FileNotFoundError(source)
 
         events = []
-        if source.suffix.casefold() == ".json":
+        if source.suffix.casefold() in {".tft", ".txt"}:
+            # Historical .tft logs are human-readable timelines, not structured
+            # Engine replays. Preserve their exact text and ordering without
+            # fabricating actions, board states, rewards or Engine identities.
+            lines = source.read_text(encoding="utf-8").splitlines()
+            events = [
+                {
+                    "schema_version": 1,
+                    "sequence_id": line_number,
+                    "event_type": "legacy_text_line",
+                    "legacy_source_format": "tft_text_v1",
+                    "legacy_line_number": line_number,
+                    "text": line,
+                }
+                for line_number, line in enumerate(lines, 1)
+                if line.strip()
+            ]
+        elif source.suffix.casefold() == ".json":
             try:
                 document = json.loads(source.read_text(encoding="utf-8"))
             except json.JSONDecodeError as exc:

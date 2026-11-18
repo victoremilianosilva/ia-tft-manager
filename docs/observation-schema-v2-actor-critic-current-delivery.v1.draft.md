@@ -184,3 +184,18 @@ The current-delivery facts above remain unchanged. The initial target design is 
 4. Encoder sharing/topology and all concrete dimensions remain open until the projection manifest and feature-to-consumer map are approved in Stage 0.
 
 These target decisions do not change audited current-delivery classifications in the CSV and do not imply that the runtime currently conforms.
+
+
+## 9. Runtime update — 2026-11-18 (Stage 1 completion PR #488)
+
+The historical trace above remains accurate for the baseline commit, but its Critic-mask conclusion is superseded by the runtime change in PR #488:
+
+- `TFTPolicy.critic_mask_encoder` now receives every field in the canonical `MASK_SHAPES` order as an independent boolean side input; the input is not concatenated into the observation tensor and does not alter Actor logits.
+- `get_value`, action collection and PPO action evaluation all validate and consume the same exact mask bundle. Missing, malformed, wrong-device or wrong-dtype masks are rejected rather than replaced with fabricated values.
+- Trainer checkpoints now persist `critic_mask_input_contract`, binding the mask contract identity, field order/shapes, C-order flattening, input dimension, zero-initialized linear+tanh encoder and Critic fusion order.
+- Historical checkpoints without this contract are accepted only through the neutral migration path: zero-initialized mask encoder and deterministically initialized value-head mask columns preserve the old value estimate while keeping the new path trainable; optimizer/scheduler restoration is skipped. A checkpoint that contains Critic mask weights without the contract is rejected.
+- Per-decision Trainer metadata captures Engine/episode/decision/player sequence identity, a deterministic SHA-256 hash of the exact float32 observation row, and the hash of the exact post-ablation mask row stored with the rollout. Both payload hashes are non-neural control metadata and remain attached to the same per-player rollout identity.
+- Viewer checkpoint loading now validates the Critic mask side-input identity when those weights are present; historical checkpoints without the side-input weights continue through neutral migration.
+- A deterministic native multi-round PPO replay now checks observation/mask payload hashes, decision-sequence advancement, finite policy outputs and repeatability across identical seeds. It does not yet prove operation with all legacy strategic producers disabled.
+
+**Still open:** the concrete semantic Observation Schema v2 → tensor projection is not implemented. The Critic receives the exact mask side input, but its state encoder still uses the legacy flat observation. Actor-only raw item/recipe compatibility matrices remain excluded from the Critic as required by the initial consumer decision. Full identity/provenance proof and deterministic integrated replay remain acceptance work; this update does not claim them complete.

@@ -799,3 +799,28 @@ def test_trainer_expands_native_state_snapshot_to_exact_player_rows():
     assert [row["native_player_state"]["player_id"] for row in rows] == list(range(8))
     assert all(row["player_decision_sequence"] == 9 for row in rows)
     assert "native_state_snapshot" not in rows[0]
+
+
+def test_observation_rows_receive_stable_content_hashes():
+    observations = torch.tensor(
+        [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]],
+        dtype=torch.float32,
+    )
+    first = Trainer._hash_observation_rows(observations)
+    repeated = Trainer._hash_observation_rows(observations.clone())
+    assert first == repeated
+    assert len(first) == 2
+    assert first[0] != first[1]
+
+    changed = observations.clone()
+    changed[0, 1] += 0.001
+    changed_hashes = Trainer._hash_observation_rows(changed)
+    assert changed_hashes[0] != first[0]
+    assert changed_hashes[1] == first[1]
+
+
+def test_observation_row_hash_rejects_non_float32_or_non_matrix_input():
+    with pytest.raises(TypeError, match="float32"):
+        Trainer._hash_observation_rows(torch.zeros((2, 3), dtype=torch.float64))
+    with pytest.raises(TypeError, match="batch"):
+        Trainer._hash_observation_rows(torch.zeros(3, dtype=torch.float32))

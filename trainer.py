@@ -33,6 +33,8 @@ from action_contract import (
     MASK_CONTRACT_ID, MASK_CONTRACT_VERSION, MASK_CONTRACT_HASH,
     build_action_mask_checkpoint_contract, hash_mask_rows,
     validate_action_mask_checkpoint_contract,
+    build_critic_mask_input_checkpoint_contract,
+    validate_critic_mask_input_checkpoint_contract,
 )
 from rollout import RolloutBuffer
 from ppo import PPOTrainer, exponential_schedule_value
@@ -270,6 +272,28 @@ class Trainer:
                 legacy_action_mask_checkpoint = True
             else:
                 validate_action_mask_checkpoint_contract(saved_contract)
+
+            saved_critic_mask_contract = checkpoint.get("critic_mask_input_contract")
+            checkpoint_has_critic_mask_encoder = any(
+                key.startswith("critic_mask_encoder.")
+                for key in checkpoint.get("policy", {})
+            )
+            if saved_critic_mask_contract is None:
+                if checkpoint_has_critic_mask_encoder:
+                    raise RuntimeError(
+                        "Checkpoint contém pesos do Critic mask encoder sem "
+                        "critic_mask_input_contract; a semântica da entrada não pode ser inferida."
+                    )
+                # Historical checkpoint: load only through the explicit neutral
+                # weight migration in TFTPolicy; optimizer/scheduler are reset.
+            else:
+                validate_critic_mask_input_checkpoint_contract(saved_critic_mask_contract)
+                if not checkpoint_has_critic_mask_encoder:
+                    raise RuntimeError(
+                        "Checkpoint declara critic_mask_input_contract, mas não contém "
+                        "os pesos do Critic mask encoder."
+                    )
+
             migrated_checkpoint = self.policy.load_compatible_state_dict(checkpoint["policy"])
             print("⚠️ Checkpoint migrado; optimizer/scheduler serão reiniciados." if migrated_checkpoint
                   else "✅ Pesos da policy carregados.")
@@ -521,6 +545,25 @@ class Trainer:
     def _hash_mask_rows(cls, masks):
         """Hash each exact per-agent mask payload with the canonical v1 helper."""
         return hash_mask_rows(masks, cls.MASK_SHAPES)
+
+    @staticmethod
+    def _hash_observation_rows(observations):
+        """Hash each exact float32 observation row independently and deterministically."""
+        if not isinstance(observations, torch.Tensor) or observations.ndim != 2:
+            raise TypeError("Observations para correlação devem ser tensor [batch, features].")
+        if observations.dtype != torch.float32:
+            raise TypeError("Observations para correlação devem usar torch.float32.")
+        rows = observations.detach().to(device="cpu").contiguous().numpy()
+        shape_identity = f"{rows.shape[1]}:float32".encode("ascii")
+        hashes = []
+        for row in rows:
+            digest = hashlib.sha256()
+            digest.update(b"tft-ppo-observation-row-v1\\x00")
+            digest.update(shape_identity)
+            digest.update(b"\\x00")
+            digest.update(row.tobytes(order="C"))
+            hashes.append(digest.hexdigest())
+        return hashes
 
 
     # ================================================================
@@ -1245,6 +1288,12 @@ class Trainer:
                     self.PLAYERS_PER_LOBBY,
                     "snapshot da decisão PPO",
                 )
+                for metadata, observation_hash in zip(
+                    flat_snapshot_metadata,
+                    self._hash_observation_rows(obs),
+                ):
+                    metadata["observation_snapshot_hash"] = observation_hash
+                    metadata["observation_snapshot_hash_algorithm"] = "tft-ppo-observation-row-v1"
 
                 gym_masks = (
                     self.vec_env.env_method(
@@ -1568,6 +1617,12 @@ class Trainer:
                     dtype=torch.float32,
                     device=self.device
                 )
+                for metadata, observation_hash in zip(
+                    flat_next_snapshot_metadata,
+                    self._hash_observation_rows(next_obs),
+                ):
+                    metadata["observation_snapshot_hash"] = observation_hash
+                    metadata["observation_snapshot_hash_algorithm"] = "tft-ppo-observation-row-v1"
 
                 # ====================================================
                 # ❤️ REWARDS
@@ -2124,6 +2179,8 @@ class Trainer:
                             "cosine_clamped",
                         "action_mask_contract":
                             build_action_mask_checkpoint_contract(),
+                        "critic_mask_input_contract":
+                            build_critic_mask_input_checkpoint_contract(),
                     },
                     self.config.checkpoint_path
                 )
@@ -2159,6 +2216,7 @@ class Trainer:
                 "training_config": self.config.to_dict(),
                 "scheduler_type": "cosine_clamped",
                 "action_mask_contract": build_action_mask_checkpoint_contract(),
+                "critic_mask_input_contract": build_critic_mask_input_checkpoint_contract(),
             },
             self.config.checkpoint_path,
         )

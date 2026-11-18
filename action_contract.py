@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from math import prod
 from collections.abc import Mapping
 
 import torch
@@ -16,7 +17,8 @@ ACTION_CONTRACT_VERSION = 1
 MASK_CONTRACT_ID = "tft.ppo-action-mask.v1"
 MASK_CONTRACT_VERSION = 1
 MASK_SNAPSHOT_HASH_ALGORITHM = "tft-action-mask-snapshot-v1"
-
+CRITIC_MASK_INPUT_CONTRACT_ID = "tft.ppo-critic-mask-input.v1"
+CRITIC_MASK_INPUT_CONTRACT_VERSION = 1
 MASK_SHAPES = {
     "type_mask": (9,),
     "shop_mask": (5,),
@@ -31,6 +33,11 @@ MASK_SHAPES = {
     "item_component_pair_masks": (10, 10),
     "item_target_mask": (37,),
 }
+
+CRITIC_MASK_EMBED_DIM = 64
+CRITIC_MASK_FEATURE_DIM = sum(
+    prod(shape) for shape in MASK_SHAPES.values()
+)
 
 ACTION_CONTRACT_PAYLOAD = {
     "contract_id": ACTION_CONTRACT_ID,
@@ -101,6 +108,55 @@ def validate_action_mask_checkpoint_contract(manifest: Mapping) -> None:
         actual = manifest.get(section)
         if not isinstance(actual, Mapping) or dict(actual) != expected[section]:
             raise ValueError(f"{section} incompatível: esperado {expected[section]}, recebido {actual}.")
+
+def build_critic_mask_input_checkpoint_contract() -> dict:
+    """Identity for the Critic's independent, decision-correlated mask side input."""
+    payload = {
+        "contract_id": CRITIC_MASK_INPUT_CONTRACT_ID,
+        "version": CRITIC_MASK_INPUT_CONTRACT_VERSION,
+        "mask_contract": {
+            "contract_id": MASK_CONTRACT_ID,
+            "version": MASK_CONTRACT_VERSION,
+            "sha256": MASK_CONTRACT_HASH,
+        },
+        "feature_order": [
+            {
+                "name": name,
+                "shape": list(shape),
+                "flatten_order": "C",
+            }
+            for name, shape in MASK_SHAPES.items()
+        ],
+        "input_encoding": "boolean_to_observation_dtype",
+        "input_dim": CRITIC_MASK_FEATURE_DIM,
+        "encoder": {
+            "kind": "linear_tanh",
+            "output_dim": CRITIC_MASK_EMBED_DIM,
+            "initialization": "zero",
+        },
+        "critic_fusion": {
+            "kind": "concatenate",
+            "order": ["observation_latent", "mask_embedding"],
+        },
+        "actor_input": "unchanged",
+    }
+    return {
+        "manifest_version": 1,
+        "contract": payload,
+        "sha256": _canonical_hash(payload),
+    }
+
+
+def validate_critic_mask_input_checkpoint_contract(manifest: Mapping) -> None:
+    if not isinstance(manifest, Mapping):
+        raise TypeError("critic_mask_input_contract do checkpoint deve ser um mapping.")
+    expected = build_critic_mask_input_checkpoint_contract()
+    if dict(manifest) != expected:
+        raise ValueError(
+            "critic_mask_input_contract incompatível: "
+            f"esperado {expected}, recebido {manifest}."
+        )
+
 
 def hash_mask_row(mask_row: Mapping, mask_shapes: Mapping = MASK_SHAPES) -> str:
     if not isinstance(mask_row, Mapping) or set(mask_row) != set(mask_shapes):
