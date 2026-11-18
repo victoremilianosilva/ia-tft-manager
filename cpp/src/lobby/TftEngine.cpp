@@ -7042,7 +7042,9 @@ CombatTeam TFTEngine::get_combat_team_for_testing(
         throw std::invalid_argument("Time invalido para snapshot de combate.");
     CombatTeam output{};
     int next_unit_id = 0;
-    impl_->append_combat_team(static_cast<std::size_t>(player_id), team, output, next_unit_id);
+    std::unordered_map<int, std::pair<std::int32_t, std::string>> unit_identity;
+    impl_->append_combat_team(
+        static_cast<std::size_t>(player_id), team, output, next_unit_id, unit_identity);
     return output;
 }
 
