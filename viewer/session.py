@@ -17,6 +17,12 @@ from policy import TFTPolicy, ACTION_DIMS, LEGACY_ACTION_DIMS
 from cpp_lobby_env import CppTFTLobbyWrapper
 from viewer.player_logs import PlayerJsonLogWriter
 from action_contract import validate_critic_mask_input_checkpoint_contract
+from semantic_observation import (
+    build_semantic_state_checkpoint_contract,
+    catalog_identity,
+    project_native_player_state,
+    validate_semantic_state_checkpoint_contract,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 CATALOG = ROOT / "data" / "units_gerado.json"
@@ -65,6 +71,25 @@ def _validate_critic_mask_checkpoint_payload(payload: dict, state_dict: dict) ->
         raise ValueError(
             "Checkpoint declara critic_mask_input_contract, mas não contém "
             "os pesos do Critic mask encoder."
+        )
+
+
+def _validate_semantic_checkpoint_payload(payload: dict, state_dict: dict, catalog_map: dict) -> None:
+    contract = payload.get("semantic_state_contract")
+    has_encoder = any(
+        key.startswith(("semantic_id_embedding.", "semantic_encoder."))
+        for key in state_dict
+    )
+    if contract is None:
+        if has_encoder:
+            raise ValueError(
+                "Checkpoint contém pesos do encoder sem semantic_state_contract."
+            )
+        return
+    validate_semantic_state_checkpoint_contract(contract, catalog_map)
+    if not has_encoder:
+        raise ValueError(
+            "Checkpoint declara semantic_state_contract, mas não contém os pesos do encoder semântico."
         )
 
 
@@ -117,6 +142,8 @@ class ViewerSession:
     def __init__(self):
         self.lobby: CppTFTLobbyWrapper | None = None
         self.policy: TFTPolicy | None = None
+        self.champion_id_map: dict[str, int] = {}
+        self.semantic_state_contract: dict | None = None
         self.obs: np.ndarray | None = None
         self.masks: list[dict] | None = None
         self.public_state: dict = {}
@@ -201,8 +228,17 @@ class ViewerSession:
                     print(f"OP.GG meta refresh skipped: {exc}")
         self.lobby = CppTFTLobbyWrapper(seed=int(seed), catalog_path=str(CATALOG))
         self.obs = self.lobby.reset(seed=int(seed))
+        self.champion_id_map = self.lobby.get_champion_id_map()
+        _validate_semantic_checkpoint_payload(payload, state_dict, self.champion_id_map)
+        self.semantic_state_contract = (
+            build_semantic_state_checkpoint_contract(self.champion_id_map)
+        )
+        semantic_vocab_size = catalog_identity(self.champion_id_map)["vocab_size"]
         current_obs_dim = int(self.obs.shape[-1])
-        self.policy = TFTPolicy(current_obs_dim, list(action_dims), hidden_size=int(hidden_size))
+        self.policy = TFTPolicy(
+            current_obs_dim, list(action_dims), hidden_size=int(hidden_size),
+            semantic_vocab_size=semantic_vocab_size,
+        )
         try:
             migrated_checkpoint = self.policy.load_compatible_state_dict(state_dict)
         except RuntimeError as exc:
@@ -409,10 +445,48 @@ class ViewerSession:
                 tensor_masks[key] = torch.as_tensor(np.asarray(value), dtype=torch.bool).unsqueeze(0)
             except (ValueError, TypeError):
                 continue
+        snapshot = self.lobby.get_snapshot_metadata()
+        native_snapshot = snapshot.get("native_state_snapshot")
+        if not isinstance(native_snapshot, dict):
+            raise RuntimeError("Viewer requires the native semantic snapshot for PPO inference.")
+        native_players = native_snapshot.get("players")
+        player_sequences = native_snapshot.get("player_decision_sequences")
+        if (
+            not isinstance(native_players, list) or len(native_players) != 8
+            or not isinstance(player_sequences, list) or len(player_sequences) != 8
+        ):
+            raise RuntimeError("Viewer semantic snapshot is missing aligned player state/sequence rows.")
+        semantic_metadata = {
+            "engine_instance_id": snapshot.get("engine_instance_id"),
+            "episode_id": snapshot.get("episode_id"),
+            "decision_sequence": snapshot.get("decision_sequence"),
+            "player_decision_sequence": player_sequences[player_id],
+            "player_id": player_id,
+            "lobby_index": 0,
+            "stage": snapshot.get("stage"),
+            "round": snapshot.get("round"),
+            "native_state_contract_id": native_snapshot.get("contract_id"),
+            "native_state_contract_version": native_snapshot.get("contract_version"),
+            "native_state_producer": native_snapshot.get("producer"),
+            "native_state_source_namespace": native_snapshot.get("source_namespace"),
+            "native_player_state": native_players[player_id],
+        }
+        semantic = project_native_player_state(
+            semantic_metadata, self.champion_id_map
+        )
+        semantic_state = {
+            "numeric": torch.as_tensor(
+                [semantic["numeric"]], dtype=torch.float32, device=obs.device
+            ),
+            "champion_ids": torch.as_tensor(
+                [semantic["champion_ids"]], dtype=torch.long, device=obs.device
+            ),
+        }
         infer = self.policy.get_action_and_value_with_diagnostics
         with torch.inference_mode():
             actions, logprob, entropy, value, diagnostics = infer(
-                obs, masks=tensor_masks, deterministic=self.config.deterministic
+                obs, masks=tensor_masks, deterministic=self.config.deterministic,
+                semantic_state=semantic_state,
             )
         action = [int(x) for x in actions[0].detach().cpu().tolist()]
         diag = {
