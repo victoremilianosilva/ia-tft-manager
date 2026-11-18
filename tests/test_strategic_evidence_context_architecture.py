@@ -102,3 +102,11 @@ print("strategic evidence context architecture checks passed")
 
 planning_header = Path("cpp/include/strategy/StrategicPlanning.hpp").read_text(encoding="utf-8")
 assert "std::vector<std::int32_t> core_unit_ids;" not in planning_header
+
+# PlayerEnv owns one current optional StrategyInfo, not a one-element history.
+assert "std::optional<StrategyInfo> strategy;" in source
+assert "std::vector<StrategyInfo> strategy;" not in source
+assert "player_envs[i].strategy = StrategyInfo{};" in source
+assert "strategy_snapshot = std::move(info);" in source
+assert "result[i].push_back(*impl_->player_envs[i].strategy);" in source
+assert "strategy.back()" not in source and "strategy.empty()" not in source
