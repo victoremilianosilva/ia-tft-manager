@@ -296,6 +296,29 @@ py::dict audit_snapshot_to_dict(
         economy_resolution_events.append(std::move(row));
     }
     result["economy_resolution_events"] = std::move(economy_resolution_events);
+    py::list pvp_result_credit_events;
+    for (const auto& event : snapshot.pvp_result_credit_events) {
+        py::dict row;
+        row["contract_id"] = event.contract_id;
+        row["contract_version"] = event.contract_version;
+        row["source_namespace"] = event.source_namespace;
+        row["producer"] = event.producer;
+        row["engine_instance_id"] = event.engine_instance_id;
+        row["episode_id"] = event.episode_id;
+        row["snapshot_sequence"] = event.snapshot_sequence;
+        row["player_decision_sequence"] = event.player_decision_sequence;
+        row["combat_sequence"] = event.combat_sequence;
+        row["round"] = event.round;
+        row["winner_player_id"] = event.winner_player_id;
+        row["loser_player_id"] = event.loser_player_id;
+        row["gold_before_credit"] = event.gold_before_credit;
+        row["gold_after_credit"] = event.gold_after_credit;
+        row["credited_gold"] = event.credited_gold;
+        row["win_streak_before"] = event.win_streak_before;
+        row["win_streak_after"] = event.win_streak_after;
+        pvp_result_credit_events.append(std::move(row));
+    }
+    result["pvp_result_credit_events"] = std::move(pvp_result_credit_events);
     const auto& pool = snapshot.shared_pool;
     py::dict pool_dict;
     pool_dict["contract_id"] = pool.contract_id;

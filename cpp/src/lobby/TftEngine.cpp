@@ -576,6 +576,8 @@ struct TFTEngine::Impl {
     bool combat_death_events_truncated{false};
     // Latest completed round's authoritative per-player income breakdown.
     std::vector<AuditEconomyResolutionEvent> last_economy_resolution_events;
+    // Exact balance transition caused by each resolved PvP win, separate from round income.
+    std::vector<AuditPvpResultCreditEvent> last_pvp_result_credit_events;
     decision::ActionMaskEngine action_mask_engine;
 
     std::int32_t alive_players{
@@ -1211,6 +1213,7 @@ struct TFTEngine::Impl {
         last_combat_death_events.clear();
         combat_death_events_truncated = false;
         last_economy_resolution_events.clear();
+        last_pvp_result_credit_events.clear();
         matchmaking_rng.seed(seed + episode_id);
 
         // Python creates one random cost-1 starter on each player's bench
@@ -4981,7 +4984,26 @@ struct TFTEngine::Impl {
 
             ++player_envs[winner].info.wins;
             ++player_envs[loser].info.losses;
+            const auto gold_before_credit = player_envs[winner].economy.gold;
+            const auto win_streak_before = player_envs[winner].economy.win_streak;
             economy_engine.register_pvp_win(player_envs[winner].economy);
+            const auto gold_after_credit = player_envs[winner].economy.gold;
+            AuditPvpResultCreditEvent pvp_credit_event{};
+            pvp_credit_event.engine_instance_id = engine_instance_id;
+            pvp_credit_event.episode_id = episode_id;
+            pvp_credit_event.snapshot_sequence = decision_sequence + 1;
+            pvp_credit_event.player_decision_sequence =
+                player_decision_sequences[winner] + 1;
+            pvp_credit_event.combat_sequence = combat_sequence;
+            pvp_credit_event.round = round + 1;
+            pvp_credit_event.winner_player_id = static_cast<std::int32_t>(winner);
+            pvp_credit_event.loser_player_id = static_cast<std::int32_t>(loser);
+            pvp_credit_event.gold_before_credit = gold_before_credit;
+            pvp_credit_event.gold_after_credit = gold_after_credit;
+            pvp_credit_event.credited_gold = gold_after_credit - gold_before_credit;
+            pvp_credit_event.win_streak_before = win_streak_before;
+            pvp_credit_event.win_streak_after = player_envs[winner].economy.win_streak;
+            last_pvp_result_credit_events.push_back(std::move(pvp_credit_event));
             economy_engine.register_loss(player_envs[loser].economy);
             const auto damage = stage_damage(stage) + std::max(0, winner_survivors);
             apply_damage(loser, damage);
@@ -6604,6 +6626,7 @@ StepResult TFTEngine::step(
     if (preparation_complete) {
         round_resolved = true;
         impl_->last_economy_resolution_events.clear();
+        impl_->last_pvp_result_credit_events.clear();
 
         // Primeiro resolve o PvP quando esta rodada possui combate entre
         // jogadores. PvE/carrossel não concedem bônus de vitória nem alteram
@@ -6954,6 +6977,7 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
     snapshot.combat_death_events_truncated = impl_->combat_death_events_truncated;
     snapshot.combat_death_events = impl_->last_combat_death_events;
     snapshot.economy_resolution_events = impl_->last_economy_resolution_events;
+    snapshot.pvp_result_credit_events = impl_->last_pvp_result_credit_events;
     auto& pool_snapshot = snapshot.shared_pool;
     pool_snapshot.engine_instance_id = impl_->engine_instance_id;
     pool_snapshot.episode_id = impl_->episode_id;

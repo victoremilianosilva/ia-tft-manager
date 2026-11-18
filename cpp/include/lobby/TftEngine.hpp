@@ -286,6 +286,26 @@ struct AuditEconomyResolutionEvent {
     std::int32_t xp_to_next{0};
 };
 
+struct AuditPvpResultCreditEvent {
+    std::string contract_id{"tft.pvp-result-credit-event"};
+    std::uint32_t contract_version{1};
+    std::string source_namespace{"tft.economy-engine.register-pvp-win"};
+    std::string producer{"EconomyEngine::register_pvp_win"};
+    std::string engine_instance_id;
+    std::uint64_t episode_id{0};
+    std::uint64_t snapshot_sequence{0};
+    std::uint64_t player_decision_sequence{0};
+    std::uint64_t combat_sequence{0};
+    std::uint32_t round{0};
+    std::int32_t winner_player_id{-1};
+    std::int32_t loser_player_id{-1};
+    std::int32_t gold_before_credit{0};
+    std::int32_t gold_after_credit{0};
+    std::int32_t credited_gold{0};
+    std::int32_t win_streak_before{0};
+    std::int32_t win_streak_after{0};
+};
+
 struct AuditPlayerSnapshot {
     std::int32_t player_id{-1};
     // Player survival and standing facts, correlated by the enclosing snapshot identity.
@@ -404,6 +424,7 @@ struct AuditSnapshot {
     bool combat_death_events_truncated{false};
     std::vector<AuditCombatDeathEvent> combat_death_events;
     std::vector<AuditEconomyResolutionEvent> economy_resolution_events;
+    std::vector<AuditPvpResultCreditEvent> pvp_result_credit_events;
     std::array<AuditPlayerSnapshot, kPlayersPerLobby> players{};
 };
 
