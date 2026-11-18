@@ -5332,11 +5332,9 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 }
                 return best;
             };
-            const bool fast8_before_level_eight =
-                this->strategy && this->strategy->strategy == 2 &&
-                economy.level < 8;
-            if (economy.gold >= EconomyEngine::REROLL_COST &&
-                !fast8_before_level_eight) {
+            // Reroll legality and value are determined by the action mask,
+            // available gold and observed shop outcomes—not a strategy label.
+            if (economy.gold >= EconomyEngine::REROLL_COST) {
                 // Compare both shops with the same post-reroll cash balance.
                 // Otherwise the new shop is unfairly downgraded just because
                 // the reroll itself removed two gold before its score is computed.
