@@ -3,6 +3,9 @@ from pathlib import Path
 
 def test_player_action_reward_path_is_independent_of_strategy_id():
     source = (Path(__file__).resolve().parents[1] / "cpp" / "src" / "lobby" / "TftEngine.cpp").read_text(encoding="utf-8")
+    assert "this->strategy->strategy" not in source, (
+        "PlayerEnv runtime must not gate action execution/reward on Strategy ID"
+    )
     start_marker = "// Alinhado a RewardManager.calculate_action_reward()"
     end_marker = "// MiniTFTEnv.step() returns the action-specific reward directly."
     start = source.index(start_marker)
