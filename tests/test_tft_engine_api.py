@@ -728,7 +728,7 @@ def test_composition_intelligence_emits_per_player_shadow_diagnostics(monkeypatc
         assert isinstance(lines, list)
         assert lines, "native shadow runtime must emit diagnostic snapshots"
         records = [json.loads(line) for line in lines]
-        assert all(record.get("schema_version") == 1 for record in records)
+        assert all(record.get("schema_version") == 2 for record in records)
         sequences = [record["sequence"] for record in records]
         assert sequences == sorted(sequences)
         assert len(sequences) == len(set(sequences))
@@ -819,11 +819,15 @@ def test_selling_purchased_unit_retires_uuid_and_returns_copy_to_pool():
         after_sell = native.get_audit_snapshot()
         sold_player = after_sell["players"][0]
         pool_after_sell = after_sell["shared_pool"]
-        assert pool_after_sell["engine_instance_id"] == before["engine_instance_id"]
-        assert pool_after_sell["episode_id"] == before["episode_id"]
-        assert pool_after_sell["snapshot_sequence"] == after_sell["snapshot_sequence"]
-        assert pool_after_sell["player_decision_sequences"] == after_sell["player_decision_sequences"]
-        assert pool_after_sell["snapshot_sequence"] > pool_after_buy["snapshot_sequence"]
+        for inherited_field in (
+            "engine_instance_id", "episode_id", "snapshot_sequence",
+            "player_decision_sequences",
+        ):
+            assert inherited_field not in pool_after_sell
+        assert after_sell["engine_instance_id"] == before["engine_instance_id"]
+        assert after_sell["episode_id"] == before["episode_id"]
+        assert after_sell["snapshot_sequence"] > after_buy_snapshot["snapshot_sequence"]
+        assert after_sell["player_decision_sequences"] == after_buy_snapshot["player_decision_sequences"]
         active_uuids = {
             unit["uuid"]
             for location in ("board", "bench", "shop")
@@ -965,13 +969,13 @@ def test_elimination_retires_item_ownership_in_native_snapshot():
         engine.close()
 
 
-def test_native_snapshot_v2_exposes_unit_traits_and_board_geometry():
+def test_native_snapshot_v3_exposes_unit_traits_and_board_geometry():
     engine = TFTLobby(seed=20261119)
     try:
         reset = engine.reset()
         snapshot = reset["native_state_snapshot"]
         assert snapshot["contract_id"] == "tft.native-state-snapshot"
-        assert snapshot["contract_version"] == 2
+        assert snapshot["contract_version"] == 3
         assert snapshot["board_geometry_id"] == "tft.board-grid.rectangular-4x7"
         assert snapshot["board_geometry_version"] == 1
         assert snapshot["board_rows"] == 4
