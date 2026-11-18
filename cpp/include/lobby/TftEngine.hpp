@@ -275,7 +275,6 @@ struct AuditEconomyResolutionEvent {
     std::int32_t gold_before_income{0};
     std::int32_t new_gold{0};
     std::int32_t base_gold{0};
-    std::int32_t passive_gold{0};
     std::int32_t interest_gold{0};
     std::int32_t streak_gold{0};
     std::int32_t win_gold{0};
