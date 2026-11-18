@@ -798,7 +798,10 @@ def test_selling_purchased_unit_retires_uuid_and_returns_copy_to_pool():
             row for row in pool_after_buy["champions"]
             if row["champion_internal_id"] == champion_internal_id
         )
-        assert pool_row_after_buy["available_count"] == available_before - 1
+        # The shop offer was already reserved from the shared pool before this
+        # BUY action; purchasing it transfers ownership but does not decrement
+        # the pool a second time.
+        assert pool_row_after_buy["available_count"] == available_before
 
         purchased_bench_slots = [
             slot for slot, unit in enumerate(after_buy["bench"])
@@ -833,7 +836,8 @@ def test_selling_purchased_unit_retires_uuid_and_returns_copy_to_pool():
             row for row in pool_after_sell["champions"]
             if row["champion_internal_id"] == champion_internal_id
         )
-        assert pool_row_after["available_count"] == available_before
+        # Selling the owned copy returns exactly one unit to the shared pool.
+        assert pool_row_after["available_count"] == available_before + 1
         assert not sold_player["bench"][bench_slot]["occupied"]
     finally:
         engine.close()
