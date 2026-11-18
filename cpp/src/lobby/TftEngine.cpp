@@ -6188,7 +6188,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             success = true;
             if (type == 6 && this->strategy) {
                 const std::int32_t pass_strategy_id =
-                    this->strategy.back().strategy;
+                    this->strategy->strategy;
                 const bool useful_xp_spending_available =
                     reward_model::phase_xp_opportunity_available(
                         economy.gold, economy.level, this->info.hp,
@@ -6260,7 +6260,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         const double action_gold_reward =
             reward_model::gold_change_reward(old_gold, economy.gold);
         const std::int32_t gold_reward_strategy_id =
-            this->strategy.empty() ? 0 : this->strategy.back().strategy;
+            this->strategy ? this->strategy->strategy : 0;
         // ALL_IN is the explicit exception to interest preservation: retain
         // some opportunity-cost signal, but do not let crossing below 50
         // overwhelm the action's survival-oriented spending reward.
