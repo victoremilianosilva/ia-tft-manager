@@ -312,10 +312,23 @@ class Trainer:
                     )
 
             saved_semantic_contract = checkpoint.get("semantic_state_contract")
-            checkpoint_has_semantic_weights = any(
-                key.startswith(("semantic_id_embedding.", "semantic_encoder."))
-                for key in checkpoint.get("policy", {})
-            )
+            semantic_state_keys = {
+                key for key in self.policy.state_dict()
+                if key.startswith(("semantic_id_embedding.", "semantic_encoder."))
+            }
+            present_semantic_state_keys = {
+                key for key in checkpoint.get("policy", {})
+                if key.startswith(("semantic_id_embedding.", "semantic_encoder."))
+            }
+            checkpoint_has_semantic_weights = bool(present_semantic_state_keys)
+            if (
+                present_semantic_state_keys
+                and present_semantic_state_keys != semantic_state_keys
+            ):
+                raise RuntimeError(
+                    "Checkpoint contém um encoder semântico parcial; "
+                    "todos os pesos do contrato devem estar presentes."
+                )
             if saved_semantic_contract is None:
                 if checkpoint_has_semantic_weights:
                     raise RuntimeError(
