@@ -6528,14 +6528,6 @@ StepResult TFTEngine::step(
             std::numeric_limits<std::uint64_t>::max()) {
             throw std::overflow_error("Sequencia temporal do jogador esgotada.");
         }
-        impl_->player_envs[i].anti_loop.set_decision_identity(
-            decision::TemporalDecisionIdentity{
-                impl_->engine_instance_id,
-                impl_->episode_id,
-                static_cast<std::int32_t>(i),
-                impl_->player_decision_sequences[i] + 1,
-                impl_->round + 1
-            });
         const auto transition = impl_->player_envs[i].step(*impl_, i, effective_actions[i]);
         trace.handler_applied = transition.action_succeeded;
         trace.status_reason = !transition.acted
@@ -7524,38 +7516,6 @@ bool TFTEngine::is_core_unit(std::int32_t player_id, const std::string& champion
 bool TFTEngine::is_core_trait(std::int32_t player_id, const std::string& trait) const {
     if (!impl_ || player_id < 0 || player_id >= static_cast<std::int32_t>(kPlayersPerLobby)) return false; impl_->ensure_open(); const auto& list = impl_->player_envs[static_cast<std::size_t>(player_id)].strategy;
     return !list.empty() && std::find(list.back().core_traits.begin(), list.back().core_traits.end(), trait) != list.back().core_traits.end();
-}
-
-std::array<std::vector<std::string>, kPlayersPerLobby>
-TFTEngine::get_anti_loop_history_jsonl() const {
-    if (!impl_) throw std::runtime_error("TFTEngine nao possui estado interno.");
-    impl_->ensure_open();
-    std::array<std::vector<std::string>, kPlayersPerLobby> result;
-    for (std::size_t player = 0; player < kPlayersPerLobby; ++player) {
-        const auto events = impl_->player_envs[player].anti_loop.get_temporal_history();
-        auto& rows = result[player];
-        rows.reserve(events.size());
-        for (const auto& event : events) {
-            nlohmann::json row{
-                {"event_kind", static_cast<std::uint8_t>(event.kind)},
-                {"engine_instance_id", event.identity.engine_instance_id},
-                {"episode_id", event.identity.episode_id},
-                {"player_id", event.identity.player_id},
-                {"decision_sequence", event.identity.decision_sequence},
-                {"round", event.identity.round},
-                {"move_type", event.move_type},
-                {"source", event.source},
-                {"target", event.target},
-                {"unit_uuid", event.unit_uuid ? nlohmann::json(*event.unit_uuid) : nlohmann::json(nullptr)},
-                {"unit_id", event.unit_id ? nlohmann::json(*event.unit_id) : nlohmann::json(nullptr)},
-                {"unit_star", event.unit_star},
-                {"state_visit_count", event.state_visit_count},
-                {"reason", event.reason}
-            };
-            rows.push_back(row.dump());
-        }
-    }
-    return result;
 }
 
 std::array<AntiLoopMetrics, kPlayersPerLobby>
