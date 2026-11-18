@@ -247,6 +247,14 @@ py::dict audit_snapshot_to_dict(
     for (const auto& player : snapshot.players) {
         py::dict p;
         p["player_id"] = player.player_id;
+        p["hp"] = player.hp;
+        p["alive"] = player.alive;
+        p["wins"] = player.wins;
+        p["losses"] = player.losses;
+        if (player.placement.has_value()) p["placement"] = *player.placement;
+        else p["placement"] = py::none();
+        if (player.opponent_id.has_value()) p["opponent_id"] = *player.opponent_id;
+        else p["opponent_id"] = py::none();
         p["gold"] = player.gold;
         p["level"] = player.level;
         p["xp"] = player.xp;
