@@ -53,7 +53,7 @@ assert "lobby.legacy_item_unit_profiles(player_id)" in source
 assert "profile.preferred_traits = strategic_context.current_core_traits;" in source
 
 # Viewer-facing legacy shape is now a one-way projection from canonical owners.
-viewer_projection_start = source.index("TFTEngine::get_strategies() const")
+viewer_projection_start = source.index("TFTEngine::get_viewer_strategy_snapshots() const")
 viewer_projection_end = source.index("RewardState TFTEngine::get_reward_state", viewer_projection_start)
 viewer_projection_source = source[viewer_projection_start:viewer_projection_end]
 assert "strategic_planner_commitments[i]" in viewer_projection_source
