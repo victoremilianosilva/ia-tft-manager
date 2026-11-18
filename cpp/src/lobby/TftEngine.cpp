@@ -2125,16 +2125,6 @@ struct TFTEngine::Impl {
     void update_strategy(std::size_t i) {
         auto& list = player_envs[i].strategy;
         StrategyInfo info = list.empty() ? StrategyInfo{} : list.back();
-        // Keep the last confirmed lineup so small score fluctuations do not
-        // repeatedly replace the strategic plan on every refresh.
-        const auto previous_planned_units = info.planned_units;
-        const auto previous_planned_unit_ids = info.planned_unit_ids;
-        const auto previous_planned_traits = info.planned_traits;
-        const auto previous_planned_main_carry_id = info.planned_main_carry_id;
-        const double previous_planned_score = info.planned_composition_score;
-        const auto previous_planned_notes = info.planned_acquisition_notes;
-        const bool previous_composition_locked = info.composition_locked;
-        const std::string previous_direction = info.composition_direction;
         const auto& player = player_envs[i].info;
         const auto& economy = player_envs[i].economy;
         const double power = board_power(i);
@@ -2146,6 +2136,20 @@ struct TFTEngine::Impl {
         }
         info.board_power = power;
         info.bench_strength = bench_strength;
+        info.economic_posture = 0;
+        info.economic_posture_name = "UNAVAILABLE";
+        info.economic_posture_reason.clear();
+        info.economic_posture_confidence = 0.0;
+        info.economic_posture_available = false;
+        info.economic_posture_source = "unavailable";
+        info.economic_shadow_only = false;
+        info.strategic_target_direction.clear();
+        info.strategic_reason.clear();
+        info.strategic_shadow_only = false;
+        info.strategic_direction_available = false;
+        info.active_composition_available = false;
+        info.direction_state_source = "unavailable";
+        info.composition_state_source = "unavailable";
 
         // Factual producer inventory. New strategic owners consume only
         // observed board/bench/shop/catalog/pool facts and their own commitment.
@@ -4231,6 +4235,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             this->recent_purchases.end());
         const auto old_gold = economy.gold;
         const auto old_level = economy.level;
+        const auto old_xp = economy.xp;
         int old_board_count = 0, old_bench_count = 0;
         bool buy_completes_upgrade = false;
         bool buy_builds_pair = false;
