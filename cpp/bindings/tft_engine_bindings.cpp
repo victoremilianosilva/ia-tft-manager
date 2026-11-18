@@ -214,8 +214,6 @@ py::dict audit_snapshot_to_dict(
     py::list combat_damage_events;
     for (const auto& event : snapshot.combat_damage_events) {
         py::dict row;
-        row["combat_sequence"] = event.combat_sequence;
-        row["round"] = event.round;
         row["timestamp"] = event.timestamp;
         row["source_unit_id"] = event.source_unit_id;
         row["target_unit_id"] = event.target_unit_id;
@@ -235,8 +233,6 @@ py::dict audit_snapshot_to_dict(
     py::list combat_attack_events;
     for (const auto& event : snapshot.combat_attack_events) {
         py::dict row;
-        row["combat_sequence"] = event.combat_sequence;
-        row["round"] = event.round;
         row["timestamp"] = event.timestamp;
         row["source_unit_id"] = event.source_unit_id;
         row["target_unit_id"] = event.target_unit_id;
@@ -253,8 +249,6 @@ py::dict audit_snapshot_to_dict(
     py::list combat_death_events;
     for (const auto& event : snapshot.combat_death_events) {
         py::dict row;
-        row["combat_sequence"] = event.combat_sequence;
-        row["round"] = event.round;
         row["timestamp"] = event.timestamp;
         row["unit_id"] = event.unit_id;
         row["killer_unit_id"] = event.killer_unit_id;
@@ -272,10 +266,6 @@ py::dict audit_snapshot_to_dict(
         row["contract_version"] = event.contract_version;
         row["source_namespace"] = event.source_namespace;
         row["producer"] = event.producer;
-        row["engine_instance_id"] = event.engine_instance_id;
-        row["episode_id"] = event.episode_id;
-        row["snapshot_sequence"] = event.snapshot_sequence;
-        row["player_decision_sequence"] = event.player_decision_sequence;
         row["player_id"] = event.player_id;
         row["resolved_after_round"] = event.resolved_after_round;
         row["income_for_round"] = event.income_for_round;
@@ -303,12 +293,6 @@ py::dict audit_snapshot_to_dict(
         row["contract_version"] = event.contract_version;
         row["source_namespace"] = event.source_namespace;
         row["producer"] = event.producer;
-        row["engine_instance_id"] = event.engine_instance_id;
-        row["episode_id"] = event.episode_id;
-        row["snapshot_sequence"] = event.snapshot_sequence;
-        row["player_decision_sequence"] = event.player_decision_sequence;
-        row["combat_sequence"] = event.combat_sequence;
-        row["round"] = event.round;
         row["winner_player_id"] = event.winner_player_id;
         row["loser_player_id"] = event.loser_player_id;
         row["gold_before_credit"] = event.gold_before_credit;
@@ -323,12 +307,7 @@ py::dict audit_snapshot_to_dict(
     py::dict pool_dict;
     pool_dict["contract_id"] = pool.contract_id;
     pool_dict["contract_version"] = pool.contract_version;
-    pool_dict["source_namespace"] = pool.source_namespace;
     pool_dict["producer"] = pool.producer;
-    pool_dict["engine_instance_id"] = pool.engine_instance_id;
-    pool_dict["episode_id"] = pool.episode_id;
-    pool_dict["snapshot_sequence"] = pool.snapshot_sequence;
-    pool_dict["player_decision_sequences"] = pool.player_decision_sequences;
     pool_dict["total_available"] = pool.total_available;
     py::list pool_champions;
     for (const auto& champion : pool.champions) {

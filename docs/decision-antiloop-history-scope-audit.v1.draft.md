@@ -134,3 +134,18 @@ No runtime implementation or tensor-layout decision is authorized by this audit.
 6. **Objective validation:** history structures, mutation callsites, round/episode reset behavior, recent-purchase fields and temporal observation projection are source-traced; all surfaces have explicit status; no runtime/tensor changes are made.
 
 Issue #346 remains open. Gate 7 executable acceptance remains pending. Gate 8 remains blocked.
+
+
+## 9. Post-#475 correction — separate sequence-bound diagnostic stream
+
+PR #475 added a second, deliberately separate surface:
+
+- AntiLoopHistory::temporal_events retains up to 64 typed events (StateObserved, MoveRegistered, MoveBlocked, MoveSucceeded).
+- Every exported event carries Engine instance, episode, player, per-player decision sequence and round identity.
+- TFTEngine::get_anti_loop_history_jsonl() serializes the bounded event tail as JSONL, and pybind exposes it through get_anti_loop_history_jsonl.
+- This stream is not part of AuditSnapshot, ResetResult/StepResult structured state, PPO observations, Actor/Critic inputs, or action masks.
+- It is not equivalent to position_history, move_history, blocked_moves or state_visits: those operational structures answer anti-loop queries and have their own retention/reset behavior. The JSONL stream records a compact, decision-correlated diagnostic timeline.
+
+**Consolidation decision:** keep this stream. Its per-event identity is necessary because it is exported independently of the parent AuditSnapshot envelope, and its event ordering/identity is not reconstructible from the operational AntiLoop state or aggregate metrics. Do not copy this event envelope into AuditSnapshot or promote the stream to PPO without a separate projection/replay contract.
+
+The earlier statements in Sections 5–7 that AntiLoop history is not exposed to Python refer to the operational position/move/block/state-visit structures. They do not apply to the later #475 JSONL diagnostic stream.

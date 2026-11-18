@@ -56,6 +56,12 @@ class FakeNativeLobby:
             "round": 1,
             "stage": 1,
             "finished": False,
+            "combat_sequence": 0,
+            "combat_damage_events": [],
+            "combat_attack_events": [],
+            "combat_death_events": [],
+            "economy_resolution_events": [],
+            "pvp_result_credit_events": [],
             "shared_pool": {
                 "contract_id": "tft.shared-champion-pool-snapshot",
                 "contract_version": 1,
@@ -538,6 +544,47 @@ def test_wrapper_rejects_pool_snapshot_with_mismatched_sequence():
     snapshot["shared_pool"]["snapshot_sequence"] = 1
     identity = {"engine_instance_id": f"fake-engine-{id(native)}", "episode_id": 1, "decision_sequence": 2, "player_decision_sequences": [2] * 8}
     with pytest.raises(RuntimeError, match="identidade do snapshot nativo"):
+        cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
+
+
+def test_wrapper_rejects_economy_event_that_repeats_parent_identity():
+    native = FakeNativeLobby()
+    native.episode_id = 1
+    native.decision_sequence = 1
+    native.player_decision_sequences = [1] * 8
+    snapshot = native._native_state_snapshot()
+    snapshot["economy_resolution_events"] = [{
+        "contract_id": "tft.economy-resolution-event",
+        "contract_version": 2,
+        "source_namespace": "tft.economy-engine.resolve-round",
+        "producer": "EconomyEngine::resolve_round",
+        "player_id": 0,
+        "engine_instance_id": f"fake-engine-{id(native)}",
+    }]
+    identity = {
+        "engine_instance_id": f"fake-engine-{id(native)}",
+        "episode_id": 1,
+        "decision_sequence": 1,
+        "player_decision_sequences": [1] * 8,
+    }
+    with pytest.raises(RuntimeError, match="duplicou identidade/sequence"):
+        cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
+
+
+def test_wrapper_rejects_combat_event_that_repeats_parent_round_and_sequence():
+    native = FakeNativeLobby()
+    native.episode_id = 1
+    native.decision_sequence = 1
+    native.player_decision_sequences = [1] * 8
+    snapshot = native._native_state_snapshot()
+    snapshot["combat_damage_events"] = [{"round": 1, "combat_sequence": 0}]
+    identity = {
+        "engine_instance_id": f"fake-engine-{id(native)}",
+        "episode_id": 1,
+        "decision_sequence": 1,
+        "player_decision_sequences": [1] * 8,
+    }
+    with pytest.raises(RuntimeError, match="duplicou round/combat_sequence"):
         cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
 
 

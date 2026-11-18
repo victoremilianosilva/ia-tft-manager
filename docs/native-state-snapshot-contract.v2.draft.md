@@ -1,7 +1,7 @@
 # Native State Snapshot Contract v2 — Draft
 
-**Status:** bounded Stage 1 B implementation contract; review required.  
-**Supersedes:** Native State Snapshot Contract v1 for the enriched unit/position fields.  
+**Status:** superseded historical contract; see [Native State Snapshot Contract v3](native-state-snapshot-contract.v3.draft.md).  
+**Supersedes:** Native State Snapshot Contract v1 for the enriched unit/position fields; superseded by v3 for the consolidated nested-envelope contract.  
 **Tracking:** #346, #293 and #294.
 
 ## 1. Prior problem

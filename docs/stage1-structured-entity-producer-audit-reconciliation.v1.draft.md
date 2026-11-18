@@ -67,7 +67,7 @@ The 223-path crosswalk and the separate 254 semantic-leaf count in the producer-
 | `anchor_candidate` | Shadow composition/direction/pivot candidates exist | Candidate ID/revision/set completeness and owner sequence |
 | `action_opportunity_candidate` | Authoritative candidate vector is empty in audited construction path | Real producer and immutable snapshot-bound candidate set; empty is not HOLD |
 | `temporal_decision_history` | Flat action-memory/slot-age features are delivered | Typed ordered events and authoritative per-player decision sequence |
-| `anti_loop_history` | Internal native history exists | Record identity/sequence and approved Python exposure; it never replaces action masks |
+| `anti_loop_history` | Operational position/move/block/state-visit structures remain internal; #475 exposes a separate bounded JSONL event tail through pybind | Each exported event has Engine/episode/player/decision-sequence identity; diagnostic only, not PPO and never a replacement for masks |
 
 ## 5. Identity and delivery corrections carried forward from PRs #451, #454 and #455
 
@@ -87,7 +87,7 @@ The 223-path crosswalk and the separate 254 semantic-leaf count in the producer-
 - **Items/components:** equipment catalog IDs, component multiplicity and completed-item inventory catalog IDs are included in the sidecar; physical item/component instance identity is still not produced. Eliminated unit equipment mappings require explicit terminal cleanup/disposition evidence.
 - **Traits/position:** native catalog/slot-derived and heuristic values have different scopes. The 4×7 internal mapping is not proven canonical TFT hex geometry.
 - **Strategic evidence:** owned-unit assessments and anchors are Shadow/diagnostic; they lack physical unit or stable candidate-set identities. The action-candidate source vector is empty in the audited call path.
-- **Temporal/anti-loop:** flat PPO action-memory scalars are not typed event history. Internal AntiLoopHistory records are not exported to Python and have no per-record decision sequence.
+- **Temporal/anti-loop:** flat PPO action-memory scalars are not typed event history. The operational AntiLoop structures remain internal; the separate #475 JSONL tail is exported through pybind with per-event identity, but remains diagnostic-only and is not delivered to PPO.
 - **Actor/Critic:** the current audit records Actor-only item compatibility inputs and Actor mask side inputs; the value path currently ignores masks. This is a current-delivery finding, not an approval of a future Critic design.
 
 ## 7. Contract and invariants
@@ -155,3 +155,8 @@ The audit informs Observation Schema v2, Decision Identity v2, sequence registry
 - [Unit Instance, Shop Offer and Shared Pool Lifecycle Follow-up](unit-instance-shop-pool-lifecycle-followup.v1.draft.md)
 - [Observation Schema v2 Identity Boundary](observation-schema-v2-identity-boundary.v1.draft.md)
 - [Current Actor/Critic Delivery Audit](observation-schema-v2-actor-critic-current-delivery.v1.draft.md)
+
+
+## AntiLoop diagnostic stream reconciliation — PR #475
+
+The temporal JSONL stream is a distinct export, not a second copy of the operational AntiLoop structures. It is bounded to 64 events, carries the exact native per-player decision identity, and is exposed independently through pybind. Its identity envelope must remain on each event because there is no parent snapshot envelope in this API. It is not part of the native-state snapshot and is not Actor/Critic input. The Stage 1 inventory therefore treats the operational anti-loop state and the exported temporal diagnostic stream as separate surfaces with separate consumers and lifecycle semantics.
