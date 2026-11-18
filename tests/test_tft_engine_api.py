@@ -1062,7 +1062,7 @@ def test_same_seed_replays_game_state_without_reusing_engine_identity():
                 assert left.keys() == right.keys()
                 for key in left:
                     # Unit UUIDs are Engine-local identity, not seeded game state.
-                    if key == "uuid":
+                    if key == "uuid" or key.endswith("_uuid"):
                         continue
                     assert_same_value(left[key], right[key])
             elif isinstance(left, (list, tuple)):
