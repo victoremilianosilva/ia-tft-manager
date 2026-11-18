@@ -53,10 +53,25 @@ struct NativeCompositionGenerationInput {
     std::int32_t gold{0};
     std::int32_t target_slots{8};
     std::size_t maximum_candidates{8};
+
+    // Optional decision-correlated identity envelope. When any field is
+    // supplied, the complete envelope is required and candidates are bound
+    // to this exact observed snapshot.
+    std::uint64_t match_id{0};
+    std::int32_t player_id{-1};
+    std::uint32_t round{0};
+    std::uint64_t sequence{0};
 };
 
 struct NativeGeneratedComposition {
     std::string identity;
+    std::string candidate_set_id;
+    std::string producer_id{"native-strategic-composition-generator"};
+    std::uint64_t match_id{0};
+    std::int32_t player_id{-1};
+    std::uint32_t round{0};
+    std::uint64_t source_sequence{0};
+    std::uint64_t candidate_revision{0};
     std::string direction;
     std::vector<std::int32_t> unit_ids;
     std::int32_t anchor_champion_id{-1};
@@ -71,6 +86,12 @@ struct NativeGeneratedComposition {
 
 struct NativeCompositionGenerationResult {
     std::vector<NativeGeneratedComposition> candidates;
+    std::string candidate_set_id;
+    std::string producer_id{"native-strategic-composition-generator"};
+    std::uint64_t match_id{0};
+    std::int32_t player_id{-1};
+    std::uint32_t round{0};
+    std::uint64_t source_sequence{0};
     std::uint32_t directions_considered{0};
     std::uint32_t rejected_missing_pool_data{0};
     std::string reason{"not_evaluated"};
@@ -81,6 +102,24 @@ public:
     NativeCompositionGenerationResult generate(
         const NativeCompositionGenerationInput& input) const {
         NativeCompositionGenerationResult result;
+        const bool has_identity_metadata = input.match_id != 0 ||
+            input.player_id != -1 || input.round != 0 || input.sequence != 0;
+        if (has_identity_metadata &&
+            (input.match_id == 0 || input.player_id < 0 || input.sequence == 0)) {
+            result.reason = "invalid_candidate_set_identity";
+            return result;
+        }
+        result.match_id = input.match_id;
+        result.player_id = input.player_id;
+        result.round = input.round;
+        result.source_sequence = input.sequence;
+        if (has_identity_metadata) {
+            result.candidate_set_id = "native-candidate-set:v1:" +
+                std::to_string(input.match_id) + ":" +
+                std::to_string(input.player_id) + ":" +
+                std::to_string(input.round) + ":" +
+                std::to_string(input.sequence);
+        }
         if (input.catalog.empty() || input.target_slots <= 0 ||
             input.maximum_candidates == 0) {
             result.reason = "insufficient_catalog_or_capacity";
@@ -187,6 +226,12 @@ public:
             NativeGeneratedComposition candidate;
             candidate.direction = direction;
             candidate.identity = "native:" + direction;
+            candidate.candidate_set_id = result.candidate_set_id;
+            candidate.match_id = result.match_id;
+            candidate.player_id = result.player_id;
+            candidate.round = result.round;
+            candidate.source_sequence = result.source_sequence;
+            candidate.candidate_revision = result.source_sequence;
             bool has_carry = false;
             bool has_frontline = false;
             bool has_support = false;
@@ -287,6 +332,8 @@ public:
                 if (index != 0) candidate.identity += ",";
                 candidate.identity += std::to_string(candidate.unit_ids[index]);
             }
+            if (!candidate.candidate_set_id.empty())
+                candidate.identity = candidate.candidate_set_id + ":" + candidate.identity;
             result.candidates.push_back(std::move(candidate));
         }
 

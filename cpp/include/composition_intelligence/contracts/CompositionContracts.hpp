@@ -68,6 +68,14 @@ struct NativeCompositionSnapshot {
 
 struct CompositionCandidate {
     std::string composition_id;
+    // Immutable provenance for the snapshot-bound candidate proposal.
+    std::string candidate_set_id;
+    std::string producer_id;
+    std::uint64_t source_match_id{0};
+    std::int32_t source_player_id{-1};
+    std::uint32_t source_round{0};
+    std::uint64_t source_sequence{0};
+    std::uint64_t candidate_revision{0};
     CompositionSource source{CompositionSource::Native};
     std::string set_id;
     std::string patch;

@@ -2986,6 +2986,16 @@ struct TFTEngine::Impl {
             strategic_native_owned;
         {
             strategy::NativeCompositionGenerationInput native_input;
+            native_input.match_id = episode_id;
+            native_input.player_id = static_cast<std::int32_t>(i);
+            native_input.round = static_cast<std::uint32_t>(current_round);
+            if (strategic_context_sequences[i] ==
+                std::numeric_limits<std::uint64_t>::max()) {
+                throw std::overflow_error("strategic_candidate_sequence_overflow");
+            }
+            // The evidence context below increments this exact per-player
+            // sequence once in the same decision cycle.
+            native_input.sequence = strategic_context_sequences[i] + 1;
             native_input.level = economy.level;
             native_input.gold = economy.gold;
             native_input.target_slots = std::clamp(economy.level, 1, 10);
@@ -3057,6 +3067,13 @@ struct TFTEngine::Impl {
             for (const auto& generated : strategic_native_generation.candidates) {
                 composition_intelligence::CompositionCandidate candidate;
                 candidate.composition_id = generated.identity;
+                candidate.candidate_set_id = generated.candidate_set_id;
+                candidate.producer_id = generated.producer_id;
+                candidate.source_match_id = generated.match_id;
+                candidate.source_player_id = generated.player_id;
+                candidate.source_round = generated.round;
+                candidate.source_sequence = generated.source_sequence;
+                candidate.candidate_revision = generated.candidate_revision;
                 candidate.source = composition_intelligence::CompositionSource::Native;
                 candidate.source_reference = "native-strategic-composition-generator";
                 candidate.source_score = generated.score;
