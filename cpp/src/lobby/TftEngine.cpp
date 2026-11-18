@@ -566,6 +566,10 @@ struct TFTEngine::Impl {
     // Serviços compartilhados pela lobby, não pertencem a um jogador.
     EconomyEngine economy_engine;
     CombatEngine combat_engine;
+    // Audit-only combat evidence for the most recently resolved PvP preparation.
+    std::uint64_t combat_sequence{0};
+    std::vector<AuditCombatDamageEvent> last_combat_damage_events;
+    bool combat_damage_events_truncated{false};
     decision::ActionMaskEngine action_mask_engine;
 
     std::int32_t alive_players{
