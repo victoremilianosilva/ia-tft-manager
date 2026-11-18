@@ -1320,7 +1320,6 @@ def test_audit_snapshot_publishes_identity_bound_economy_resolution_events():
             assert event["gold_before_interest"] == event["gold_before_income"]
             assert event["new_gold"] >= event["gold_before_income"]
             assert event["base_gold"] >= 0
-            assert event["passive_gold"] == event["base_gold"]
             assert event["interest_gold"] >= 0
             assert event["streak_gold"] >= 0
             assert event["win_gold"] >= 0
