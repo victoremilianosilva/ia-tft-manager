@@ -120,3 +120,26 @@ def test_projection_rejects_missing_native_provenance_or_player_mismatch():
         pass
     else:
         raise AssertionError("cross-player native state must be rejected")
+
+
+def test_semantic_projection_and_trainer_do_not_query_legacy_strategy_api():
+    from copy import deepcopy
+    from pathlib import Path
+
+    catalog = {"TFT_TestChampion": 17}
+    baseline = _metadata()
+    changed_legacy_diagnostics = deepcopy(baseline)
+    changed_legacy_diagnostics["strategy"] = 0
+    changed_legacy_diagnostics["strategic_action_recommendation"] = 8
+    changed_legacy_diagnostics["strategic_confidence"] = 0.01
+    changed_legacy_diagnostics["composition_direction"] = "unrelated-legacy-label"
+
+    first = project_native_player_state(baseline, catalog)
+    second = project_native_player_state(changed_legacy_diagnostics, catalog)
+    assert first["numeric"] == second["numeric"]
+    assert first["champion_ids"] == second["champion_ids"]
+
+    trainer_source = (
+        Path(__file__).resolve().parents[1] / "trainer.py"
+    ).read_text(encoding="utf-8")
+    assert 'env_method(\n                        "get_strategies"' not in trainer_source
