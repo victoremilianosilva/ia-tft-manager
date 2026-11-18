@@ -36,9 +36,6 @@
 #include "strategy/BoardEvaluation.hpp"
 #include "strategy/UnitCombatClassifier.hpp"
 #include "reward/RewardModel.hpp"
-#include "strategy/CompositionDirectionPolicy.hpp"
-#include "strategy/StrategyPolicy.hpp"
-#include "strategy/CompositionPlanner.hpp"
 #include "strategy/NativeStrategicCompositionGenerator.hpp"
 #include "strategy/StrategicEvidenceContext.hpp"
 #include "strategy/StrategicPlanner.hpp"
@@ -87,7 +84,7 @@ namespace tft {
 namespace {
 
 constexpr std::uint32_t kRoundsPerStage = 7;
-constexpr std::size_t kCoreObservationDim = 22;
+constexpr std::size_t kCoreObservationDim = 10;
 constexpr std::size_t kBoardObservationDim = kBoardSlots * 5;
 constexpr std::size_t kBenchObservationDim = kBenchSlots * 5;
 constexpr std::size_t kShopObservationDim = kShopSlots * 5;
@@ -886,28 +883,29 @@ struct TFTEngine::Impl {
         std::vector<items::UnitProfile> profiles;
         profiles.reserve(kBoardSlots + kBenchSlots);
         const auto& player = player_envs[player_index];
+        const auto& active = composition_intelligence_players[player_index].active.current();
+        std::vector<std::string> preferred_traits;
+        if (active) {
+            for (const auto& target : active->candidate.units) {
+                const auto* definition = catalog->find_by_id(target.champion_id);
+                if (!definition) continue;
+                for (const auto& trait : definition->traits)
+                    if (!trait.empty()) preferred_traits.push_back(trait);
+            }
+        }
+        const auto& direction = strategic_planner_commitments[player_index].composition_direction;
+        if (!direction.empty()) preferred_traits.push_back(direction);
+        std::sort(preferred_traits.begin(), preferred_traits.end());
+        preferred_traits.erase(std::unique(preferred_traits.begin(), preferred_traits.end()),
+                               preferred_traits.end());
         const auto append = [&](const UnitInstance& unit, bool frontline, bool backline) {
             const auto* def = catalog->find_by_id(unit.champion_internal_id);
             if (!def || unit.uuid.empty()) return;
             const auto& stats = def->stats;
             const auto& combat = def->combat_profile;
-            const auto strategy = player.strategy.empty() ? StrategyInfo{} : player.strategy.back();
-            const double fit = unit_composition_score(strategy, *def, unit.star, trait_milestones);
-            std::vector<std::string> preferred_traits = strategy.core_traits;
-            preferred_traits.insert(preferred_traits.end(),
-                strategy.planned_traits.begin(), strategy.planned_traits.end());
-            if (!strategy.composition_direction.empty())
-                preferred_traits.push_back(strategy.composition_direction);
-            for (const auto& [trait, weight] : strategy.composition_focus_weights) {
-                if (weight > 0.1) preferred_traits.push_back(trait);
-            }
-            for (const auto& [trait, count] : strategy.active_traits) {
-                if (count > 0) preferred_traits.push_back(trait);
-            }
-            std::sort(preferred_traits.begin(), preferred_traits.end());
-            preferred_traits.erase(
-                std::unique(preferred_traits.begin(), preferred_traits.end()),
-                preferred_traits.end());
+            const bool active_target = active && std::any_of(
+                active->candidate.units.begin(), active->candidate.units.end(),
+                [&](const auto& target) { return target.champion_id == def->internal_id; });
             profiles.push_back(items::UnitProfile{
                 unit.uuid, unit.star, std::clamp(combat.role, 0, 4),
                 frontline, backline,
@@ -917,9 +915,9 @@ struct TFTEngine::Impl {
                 combat.max_hp > 0.0 ? combat.max_hp : stats.max_hp,
                 combat.armor > 0.0 ? combat.armor : stats.armor,
                 combat.magic_resist > 0.0 ? combat.magic_resist : stats.magic_resist,
-                std::clamp(fit / 32.5, 0.0, 1.0),
+                active_target ? 1.0 : 0.0,
                 def->traits,
-                std::move(preferred_traits)
+                preferred_traits
             });
         };
         for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
@@ -1310,8 +1308,7 @@ struct TFTEngine::Impl {
             kPositioningObservationDim + observation_trait_names.size() +
             kCapacityObservationDim +
             2 * observation_trait_names.size() + kCompositionUnitSlots +
-            kActionMemoryObservationDim +
-            observation_trait_names.size() + 2 +
+            kActionMemoryObservationDim + 2 +
             kAnvilObservationDim + kItemStateObservationDim +
             kStrategicCandidateObservationDim;
     }
@@ -1566,27 +1563,12 @@ struct TFTEngine::Impl {
                     static_cast<float>(kActionMemoryHorizon);
             }
 
-            // 14) COMPOSITION CONTROL FEATURES. Keep these immediately before the
-            // candidate tail: policy.py extracts candidate records from the end,
-            // and checkpoint migration inserts new global features at this boundary.
-            // Focus weights use the stable catalog trait order shared by direction/core
-            // flags and are normalized from Python's [0, 10] scale to [0, 1].
-            for (const auto& trait : observation_trait_names) {
-                double weight = 0.0;
-                for (const auto& [focus_trait, focus_weight] :
-                     strategy.composition_focus_weights) {
-                    if (focus_trait == trait) {
-                        weight = focus_weight;
-                        break;
-                    }
-                }
-                out[offset++] = static_cast<float>(
-                    std::clamp(weight / 10.0, 0.0, 1.0));
-            }
-            out[offset++] = strategy.composition_locked ? 1.0f : 0.0f;
-            // Strategy strength is bounded to [0, 10] by its scoring formula.
-            out[offset++] = static_cast<float>(
-                std::clamp(strategy.composition_strength / 10.0, 0.0, 1.0));
+            // 14) Explicit availability bits distinguish absent evidence from
+            // an observed direction/composition whose encoded vectors are zero.
+            out[offset++] = strategic_planner_commitments[i].composition_direction.empty()
+                ? 0.0f : 1.0f;
+            out[offset++] = composition_intelligence_players[i].active.current()
+                ? 1.0f : 0.0f;
 
             // 15) ITEM ANVIL CHOICES. A pending anvil is a forced single-choice
             // decision. Each option exposes either a component one-hot or the
