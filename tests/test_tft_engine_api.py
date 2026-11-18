@@ -786,7 +786,20 @@ def test_selling_purchased_unit_retires_uuid_and_returns_copy_to_pool():
         actions[0] = [0, offer_slot, 0, 0, 0, 0]
         engine.step(actions)
 
-        after_buy = native.get_audit_snapshot()["players"][0]
+        after_buy_snapshot = native.get_audit_snapshot()
+        after_buy = after_buy_snapshot["players"][0]
+        pool_after_buy = after_buy_snapshot["shared_pool"]
+        assert pool_after_buy["engine_instance_id"] == before["engine_instance_id"]
+        assert pool_after_buy["episode_id"] == before["episode_id"]
+        assert pool_after_buy["snapshot_sequence"] == after_buy_snapshot["snapshot_sequence"]
+        assert pool_after_buy["player_decision_sequences"] == after_buy_snapshot["player_decision_sequences"]
+        assert pool_after_buy["snapshot_sequence"] > before["snapshot_sequence"]
+        pool_row_after_buy = next(
+            row for row in pool_after_buy["champions"]
+            if row["champion_internal_id"] == champion_internal_id
+        )
+        assert pool_row_after_buy["available_count"] == available_before - 1
+
         purchased_bench_slots = [
             slot for slot, unit in enumerate(after_buy["bench"])
             if unit["occupied"] and unit["uuid"] == purchased_uuid
@@ -802,6 +815,12 @@ def test_selling_purchased_unit_retires_uuid_and_returns_copy_to_pool():
 
         after_sell = native.get_audit_snapshot()
         sold_player = after_sell["players"][0]
+        pool_after_sell = after_sell["shared_pool"]
+        assert pool_after_sell["engine_instance_id"] == before["engine_instance_id"]
+        assert pool_after_sell["episode_id"] == before["episode_id"]
+        assert pool_after_sell["snapshot_sequence"] == after_sell["snapshot_sequence"]
+        assert pool_after_sell["player_decision_sequences"] == after_sell["player_decision_sequences"]
+        assert pool_after_sell["snapshot_sequence"] > pool_after_buy["snapshot_sequence"]
         active_uuids = {
             unit["uuid"]
             for location in ("board", "bench", "shop")
@@ -811,10 +830,10 @@ def test_selling_purchased_unit_retires_uuid_and_returns_copy_to_pool():
         assert purchased_uuid not in active_uuids
 
         pool_row_after = next(
-            row for row in after_sell["shared_pool"]["champions"]
+            row for row in pool_after_sell["champions"]
             if row["champion_internal_id"] == champion_internal_id
         )
-        assert pool_row_after["available_count"] == available_before + 1
+        assert pool_row_after["available_count"] == available_before
         assert not sold_player["bench"][bench_slot]["occupied"]
     finally:
         engine.close()
