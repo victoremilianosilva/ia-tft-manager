@@ -284,7 +284,6 @@ py::dict audit_snapshot_to_dict(
         row["gold_before_income"] = event.gold_before_income;
         row["new_gold"] = event.new_gold;
         row["base_gold"] = event.base_gold;
-        row["passive_gold"] = event.passive_gold;
         row["interest_gold"] = event.interest_gold;
         row["streak_gold"] = event.streak_gold;
         row["win_gold"] = event.win_gold;
