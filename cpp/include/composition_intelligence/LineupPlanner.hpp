@@ -76,8 +76,7 @@ public:
                 context.match_id, context.player_id, active->candidate.composition_id,
                 active->version, context.round)) {
             const auto& board = context.planner_evidence->board;
-            if (PlannerEvidenceAdapters::source_matches(board.metadata, context.match_id,
-                    context.player_id, active->candidate.composition_id, active->version, context.round)) {
+            if (PlannerEvidenceAdapters::source_matches(board.metadata, context.round)) {
                 out.board_evidence_available = true;
                 out.observed_frontline_count = board.frontline_count;
                 out.observed_carry_count = board.carry_count;
