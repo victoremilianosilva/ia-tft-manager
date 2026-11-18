@@ -101,15 +101,15 @@ The current action masks remain independent legality inputs. Anti-loop history i
 ## 6. Field status and contract gaps
 
 - Position signatures: **native observed/internal**, player-scoped by owning AntiLoopEngine; no explicit episode field.
-- Successful movement records: **native observed/internal**, bounded and not individually decision-sequenced; the separate #475 JSONL stream records correlated MoveRegistered/MoveSucceeded events.
-- Blocked movement records: **native derived/internal**, tied to a board signature; the operational record has no decision ID, while the separate #475 MoveBlocked event carries decision identity.
+- Successful movement records: **native observed/internal**, bounded and not individually decision-sequenced; no separate typed event stream is retained.
+- Blocked movement records: **native derived/internal**, tied to a board signature and retained only for AntiLoop's operational queries; no separate decision-bound event copy is retained.
 - State visit counts: **native derived/internal**, round-windowed.
 - Execution/mask metrics: **native derived diagnostics**, lifetime-accumulated across episode reset.
 - Recent purchase records: **native derived reward bookkeeping**, purchase-only and horizon-limited.
 - Action serial: **native derived control metadata**, per player and reset each episode.
 - PPO temporal scalars: **native derived and delivered**, but not lossless history.
 - Typed ordered decision history delivered to Actor/Critic: **not delivered to PPO**. The optional #475 diagnostic tail had no consumer in the Trainer, Python adapter or Viewer path and is removed by the follow-up consolidation.
-- Explicit linkage: operational AntiLoop records remain local to the AntiLoopEngine instance; the separate #475 diagnostic tail was correlated to Engine/episode/player/decision sequence but had no active consumer and was not linked into Viewer or PPO rollout.
+- Explicit linkage: operational AntiLoop records remain local to the per-player AntiLoopEngine instance; no separate decision-correlated event tail is currently retained or delivered to Viewer/PPO.
 
 ## 7. Required post-Gate-8 acceptance
 
