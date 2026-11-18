@@ -903,7 +903,19 @@ def test_unit_instance_uuid_is_preserved_across_bench_and_board_moves():
         assert deployed["board"][board_target]["occupied"] is True
         assert deployed["board"][board_target]["uuid"] == unit_uuid
 
-        # Move that exact copy to another legal board slot.
+        # A preparation round requires 15 actions per player. Finish the
+        # remaining 14 actions with PASS before moving the unit in round 2.
+        pass_actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        round_two_result = None
+        for _ in range(14):
+            round_two_result = engine.step(pass_actions)
+
+        assert round_two_result is not None
+        assert round_two_result["round"] == 2
+        assert round_two_result["decision_sequence"] == deploy_result["decision_sequence"] + 14
+        assert round_two_result["player_decision_sequences"] == [16] * 8
+
+        # Move that same physical UnitInstance during the next preparation round.
         masks = engine.get_action_masks()[0]
         board_move_targets = masks["board_move_target_masks"][board_target]
         destination = next(
@@ -921,20 +933,21 @@ def test_unit_instance_uuid_is_preserved_across_bench_and_board_moves():
         assert moved["board"][destination]["occupied"] is True
         assert moved["board"][destination]["uuid"] == unit_uuid
 
-        # Each public step resolves one preparation round. The same physical
-        # UnitInstance must remain correlated across both native transitions.
+        # Both transitions remain bound to one Engine/episode; the native
+        # sequence advances through the round boundary without losing identity.
         assert deploy_result["engine_instance_id"] == reset_result["engine_instance_id"]
         assert move_result["engine_instance_id"] == reset_result["engine_instance_id"]
         assert deploy_result["episode_id"] == reset_result["episode_id"]
         assert move_result["episode_id"] == reset_result["episode_id"]
         assert deploy_result["decision_sequence"] == reset_result["decision_sequence"] + 1
-        assert move_result["decision_sequence"] == deploy_result["decision_sequence"] + 1
+        assert move_result["decision_sequence"] == round_two_result["decision_sequence"] + 1
         assert deploy_result["player_decision_sequences"] == [2] * 8
-        assert move_result["player_decision_sequences"] == [3] * 8
+        assert move_result["player_decision_sequences"] == [17] * 8
         assert deploy_result["native_state_snapshot"]["snapshot_sequence"] == deploy_result["decision_sequence"]
+        assert round_two_result["native_state_snapshot"]["snapshot_sequence"] == round_two_result["decision_sequence"]
         assert move_result["native_state_snapshot"]["snapshot_sequence"] == move_result["decision_sequence"]
-        assert deploy_result["round"] == 2
-        assert move_result["round"] == 3
+        assert deploy_result["round"] == 1
+        assert move_result["round"] == 2
     finally:
         engine.close()
 
@@ -988,8 +1001,8 @@ def test_selling_equipped_unit_returns_item_to_inventory_without_duplication():
     finally:
         engine.close()
 
-def test_same_seed_replays_unit_identity_without_reusing_engine_identity():
-    """Equivalent native action traces replay unit IDs but isolate Engine IDs."""
+def test_same_seed_replays_game_state_without_reusing_engine_identity():
+    """Equivalent action traces replay game state while isolating Engine-local UUIDs."""
     first = TFTLobby(seed=20261120)
     second = TFTLobby(seed=20261120)
     try:
@@ -1000,9 +1013,10 @@ def test_same_seed_replays_unit_identity_without_reusing_engine_identity():
         assert first_reset["episode_id"] == second_reset["episode_id"]
         first_state = first.get_audit_snapshot()
         second_state = second.get_audit_snapshot()
-        assert first_state["players"][0]["bench"][0]["uuid"] == (
-            second_state["players"][0]["bench"][0]["uuid"]
-        )
+        first_initial_uuid = first_state["players"][0]["bench"][0]["uuid"]
+        second_initial_uuid = second_state["players"][0]["bench"][0]["uuid"]
+        assert first_initial_uuid
+        assert second_initial_uuid
 
         # Choose the same legal deployment target from equivalent initial states.
         first_masks = first.get_action_masks()[0]
@@ -1024,7 +1038,8 @@ def test_same_seed_replays_unit_identity_without_reusing_engine_identity():
         second_after_deploy = second.get_audit_snapshot()
         first_uuid = first_after_deploy["players"][0]["board"][target]["uuid"]
         second_uuid = second_after_deploy["players"][0]["board"][target]["uuid"]
-        assert first_uuid == second_uuid
+        assert first_uuid == first_initial_uuid
+        assert second_uuid == second_initial_uuid
 
         # The action trace is equivalent, but each result remains bound to its
         # own Engine instance and the same episode/decision sequence.
@@ -1036,10 +1051,49 @@ def test_same_seed_replays_unit_identity_without_reusing_engine_identity():
         assert first_deploy["player_decision_sequences"] == [2] * 8
         assert second_deploy["player_decision_sequences"] == [2] * 8
 
-        # Compare semantic player state only; Engine identity is deliberately
-        # distinct and is not part of deterministic game-state equivalence.
-        assert first_after_deploy["players"][0] == second_after_deploy["players"][0]
-        assert first_after_deploy["shared_pool"] == second_after_deploy["shared_pool"]
+        # Compare semantic state recursively because the native audit
+        # snapshot nests NumPy arrays inside player/pool structures.
+        def assert_same_value(left, right):
+            if isinstance(left, np.ndarray):
+                assert isinstance(right, np.ndarray)
+                assert left.shape == right.shape
+                if left.dtype.kind in "OUS":
+                    for index in np.ndindex(left.shape):
+                        assert_same_value(left[index], right[index])
+                else:
+                    np.testing.assert_array_equal(left, right)
+            elif isinstance(left, str) and isinstance(right, str):
+                def is_uuid(value):
+                    return (
+                        len(value) == 36
+                        and value[8] == "-"
+                        and value[13] == "-"
+                        and value[18] == "-"
+                        and value[23] == "-"
+                    )
+                if is_uuid(left) and is_uuid(right):
+                    return
+                assert left == right
+            elif isinstance(left, dict):
+                assert isinstance(right, dict)
+                assert left.keys() == right.keys()
+                for key in left:
+                    # Unit UUIDs are Engine-local identity, not seeded game state.
+                    if key == "uuid" or key.endswith("_uuid"):
+                        continue
+                    assert_same_value(left[key], right[key])
+            elif isinstance(left, (list, tuple)):
+                assert isinstance(right, type(left))
+                assert len(left) == len(right)
+                for left_item, right_item in zip(left, right):
+                    assert_same_value(left_item, right_item)
+            else:
+                assert left == right
+
+        # Engine identity is deliberately distinct and excluded from semantic
+        # game-state equivalence; all player and shared-pool data must match.
+        assert_same_value(first_after_deploy["players"][0], second_after_deploy["players"][0])
+        assert_same_value(first_after_deploy["shared_pool"], second_after_deploy["shared_pool"])
     finally:
         first.close()
         second.close()
