@@ -459,11 +459,6 @@ struct TFTEngine::Impl {
         double round_reward_total{0.0};
         double total_reward{0.0};
         bool placement_reward_given{false};
-        // Consecutive successful board movements are shaped as a telescoping
-        // potential delta. Reset at every round boundary and non-movement action.
-        std::uint32_t movement_sequence_length{0};
-        std::uint32_t movement_sequence_round{0};
-        bool movement_sequence_round_initialized{false};
         struct RecentPurchase {
             std::string uuid;
             std::int32_t champion_id{-1};
@@ -473,10 +468,7 @@ struct TFTEngine::Impl {
             bool built_pair{false};
             bool completed_upgrade{false};
             bool was_deployed{false};
-            double fit_score{0.0};
             double reward{0.0};
-            std::string comp_direction;
-            std::string comp_focus;
         };
         std::uint64_t action_serial{0};
         std::vector<RecentPurchase> recent_purchases;
@@ -4414,26 +4406,13 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             this->recent_purchases.end());
         const auto old_gold = economy.gold;
         const auto old_level = economy.level;
-        const auto old_xp = economy.xp;
         int old_board_count = 0, old_bench_count = 0;
-        const double old_synergy_score = lobby.synergy_score(player_id);
-        const double old_positioning_score = lobby.positioning_score(player_id);
-        bool sold_core_unit = false;
-        bool sold_unit_protects_upgrade = false;
-        double sold_unit_upgrade_strength = 0.0;
-        double sold_unit_fit_score = 0.0;
-        bool displaced_core_unit = false;
         bool buy_completes_upgrade = false;
         bool buy_builds_pair = false;
-        bool buy_strategy_approved = true;
-        double candidate_board_impact = 0.0;
         double item_assignment_reward = 0.0;
-        double reroll_old_best_fit = 0.0;
-        double reroll_new_best_fit = 0.0;
         bool bought_unit_successfully = false;
         bool bought_upgrade = false;
         bool purchase_was_recently_reversed = false;
-        bool sale_has_legitimate_context = false;
         bool sale_bench_was_full = false;
         double reversed_purchase_prior_reward = 0.0;
         bool board_capacity_violation = false;
@@ -4447,116 +4426,19 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         }
         for (const auto& unit : this->bench) if (unit) ++old_bench_count;
 
-        // Compare a candidate against the current composition before mutating
-        // the board. This makes a replacement's reward relative, not absolute.
-        const StrategyInfo strategy_before = this->strategy.empty()
-            ? StrategyInfo{} : this->strategy.back();
-        double board_comp_score_sum = 0.0;
-        int board_comp_score_count = 0;
-        for (const auto& unit : this->board) {
-            if (!unit) continue;
-            const auto* def = lobby.catalog->find_by_id(unit->champion_internal_id);
-            if (!def) continue;
-            board_comp_score_sum += unit_composition_score(strategy_before, *def, unit->star, lobby.trait_milestones);
-            ++board_comp_score_count;
-        }
-        double candidate_comp_score = 0.0;
-        double displaced_comp_score = 0.0;
-        bool has_candidate_comp_score = false;
-        bool has_displaced_comp_score = false;
+        // Pair/upgrade progress is observed from owned copies and stable unit identity.
         if (type == 0) {
-            // BUY: avalia a oferta contra a direção atual da composição,
-            // para que comprar qualquer unidade não tenha sempre a mesma recompensa.
             const auto* offer = shop.get_unit(shop_slot);
             if (offer) {
-                const auto* def = lobby.catalog->find_by_id(
-                    offer->champion_internal_id);
-                if (def) {
-                    candidate_comp_score = unit_composition_score(strategy_before, *def, offer->star, lobby.trait_milestones);
-                    has_candidate_comp_score = true;
-                    int same_star_copies = 0;
-                    for (const auto& unit : this->board) {
-                        if (unit && unit->champion_internal_id == offer->champion_internal_id &&
-                            unit->star == offer->star) ++same_star_copies;
-                    }
-                    for (const auto& unit : this->bench) {
-                        if (unit && unit->champion_internal_id == offer->champion_internal_id &&
-                            unit->star == offer->star) ++same_star_copies;
-                    }
-                    buy_completes_upgrade = same_star_copies >= 2;
-                    candidate_board_impact = unit_board_impact_score(
-                        strategy_before, *def, offer->star, lobby.trait_milestones,
-                        old_board_count, economy.level, static_cast<int>(stage_for_round(lobby.round + 1)));
-                    const double upgrade_value = same_star_copies >= 3 ? 1.0
-                        : (same_star_copies == 2 ? 0.6 : (same_star_copies == 1 ? 0.2 : 0.0));
-                    const bool in_top_trait = (!strategy_before.composition_direction.empty() &&
-                        std::find(def->traits.begin(), def->traits.end(),
-                            strategy_before.composition_direction) != def->traits.end()) ||
-                        std::any_of(def->traits.begin(), def->traits.end(), [&](const auto& trait) {
-                            return std::find(strategy_before.core_traits.begin(),
-                                strategy_before.core_traits.end(), trait) != strategy_before.core_traits.end();
-                        });
-                    // A unit explicitly selected by the current plan (including
-                    // an OP.GG-derived plan) is strategically relevant even when
-                    // it does not share the single anchor trait.
-                    const bool in_planned_comp =
-                        std::find(strategy_before.core_unit_ids.begin(),
-                            strategy_before.core_unit_ids.end(), def->internal_id) !=
-                                strategy_before.core_unit_ids.end() ||
-                        std::find(strategy_before.planned_unit_ids.begin(),
-                            strategy_before.planned_unit_ids.end(), def->internal_id) !=
-                                strategy_before.planned_unit_ids.end();
-                    const int offer_stage =
-                        static_cast<int>(stage_for_round(lobby.round + 1));
-                    const bool early_flex_purchase =
-                        offer_stage <= 2 && def->cost <= 2 &&
-                        old_bench_count < 6 && candidate_comp_score >= -2.0;
-                    buy_strategy_approved = should_buy_unit(candidate_board_impact, upgrade_value,
-                        in_top_trait || in_planned_comp, old_bench_count,
-                        offer_stage, def->cost) || early_flex_purchase;
-                    // A second matching copy has real upgrade option value
-                    // even if temporary comp fit is negative. Fit still scales
-                    // the pair reward; it does not gate pair recognition.
-                    buy_builds_pair = reward_model::is_pair_purchase(same_star_copies, offer->star);
-                }
-            }
-        } else if (type == 3) {
-            const auto source = static_cast<std::size_t>(action[2]);
-            const auto target = static_cast<std::size_t>(action[3]);
-            if (source < this->bench.size() && this->bench[source]) {
-                const auto* def = lobby.catalog->find_by_id(
-                    this->bench[source]->champion_internal_id);
-                if (def) {
-                    candidate_comp_score = unit_composition_score(strategy_before, *def, this->bench[source]->star, lobby.trait_milestones);
-                    has_candidate_comp_score = true;
-                }
-            }
-            if (target < this->board.size() && this->board[target]) {
-                const auto* def = lobby.catalog->find_by_id(
-                    this->board[target]->champion_internal_id);
-                if (def) {
-                    displaced_comp_score = unit_composition_score(strategy_before, *def, this->board[target]->star, lobby.trait_milestones);
-                    has_displaced_comp_score = true;
-                    displaced_core_unit =
-                        std::find(strategy_before.core_unit_ids.begin(),
-                            strategy_before.core_unit_ids.end(), def->internal_id) !=
-                                strategy_before.core_unit_ids.end() ||
-                        std::find(strategy_before.planned_unit_ids.begin(),
-                            strategy_before.planned_unit_ids.end(), def->internal_id) !=
-                                strategy_before.planned_unit_ids.end();
-                }
-            }
-        }
-        double composition_quality_delta = 0.0;
-        if (has_candidate_comp_score) {
-            if (has_displaced_comp_score) {
-                composition_quality_delta =
-                    candidate_comp_score - displaced_comp_score;
-            } else if (board_comp_score_count > 0) {
-                composition_quality_delta = candidate_comp_score -
-                    board_comp_score_sum / board_comp_score_count;
-            } else {
-                composition_quality_delta = candidate_comp_score;
+                int same_star_copies = 0;
+                for (const auto& unit : this->board)
+                    if (unit && unit->champion_internal_id == offer->champion_internal_id &&
+                        unit->star == offer->star) ++same_star_copies;
+                for (const auto& unit : this->bench)
+                    if (unit && unit->champion_internal_id == offer->champion_internal_id &&
+                        unit->star == offer->star) ++same_star_copies;
+                buy_completes_upgrade = same_star_copies >= 2;
+                buy_builds_pair = reward_model::is_pair_purchase(same_star_copies, offer->star);
             }
         }
 
@@ -4663,48 +4545,9 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 }
             }
         } else if (type == 1) {
-            // REROLL: compare the best composition-fit offer before and after.
-            // The spend is justified by improved options, not by rerolling itself.
-            const auto best_shop_fit = [&](int available_gold) {
-                double best = 0.0;
-                for (std::size_t slot = 0; slot < kShopSlots; ++slot) {
-                    const auto* offer = shop.get_unit(static_cast<std::int32_t>(slot));
-                    if (!offer) continue;
-                    const auto* def = lobby.catalog->find_by_id(offer->champion_internal_id);
-                    if (!def || available_gold < def->cost) continue;
-                    double value = unit_composition_score(
-                        strategy_before, *def, offer->star, lobby.trait_milestones);
-                    int owned_same_star = 0;
-                    for (const auto& unit : this->board)
-                        if (unit && unit->champion_internal_id == offer->champion_internal_id &&
-                            unit->star == offer->star) ++owned_same_star;
-                    for (const auto& unit : this->bench)
-                        if (unit && unit->champion_internal_id == offer->champion_internal_id &&
-                            unit->star == offer->star) ++owned_same_star;
-                    // A reroll must recognize upgrade progress, not only the
-                    // highest single-unit fit. The third matching copy is much
-                    // more valuable than an isolated offer with a similar score.
-                    if (offer->star == 1 && owned_same_star == 1) value += 3.0;
-                    else if (offer->star == 1 && owned_same_star == 2) value += 7.0;
-                    best = std::max(best, value);
-                }
-                return best;
-            };
-            const bool fast8_before_level_eight =
-                !this->strategy.empty() && this->strategy.back().strategy == 2 &&
-                economy.level < 8;
             if (economy.gold >= EconomyEngine::REROLL_COST &&
-                !fast8_before_level_eight) {
-                // Compare both shops with the same post-reroll cash balance.
-                // Otherwise the new shop is unfairly downgraded just because
-                // the reroll itself removed two gold before its score is computed.
-                const int comparison_gold = old_gold - EconomyEngine::REROLL_COST;
-                reroll_old_best_fit = best_shop_fit(comparison_gold);
-                if (lobby.economy_engine.spend_gold(economy, EconomyEngine::REROLL_COST)) {
-                    shop.reroll(economy.level);
-                    reroll_new_best_fit = best_shop_fit(comparison_gold);
-                }
-            }
+                lobby.economy_engine.spend_gold(economy, EconomyEngine::REROLL_COST))
+                shop.reroll(economy.level);
         } else if (type == 2) {
             // BUY XP
             (void)lobby.economy_engine.buy_xp(economy);
