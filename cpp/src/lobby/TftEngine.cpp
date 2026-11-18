@@ -882,7 +882,10 @@ struct TFTEngine::Impl {
     // MÁSCARAS DE AÇÃO
     // ========================================================
 
-    std::vector<items::UnitProfile> item_unit_profiles(std::size_t player_index) const {
+    // Legacy PPO/reward compatibility profile. New Composition Intelligence
+    // item evidence is built separately from StrategicSharedContext and must
+    // never consume this compatibility projection.
+    std::vector<items::UnitProfile> legacy_item_unit_profiles(std::size_t player_index) const {
         std::vector<items::UnitProfile> profiles;
         profiles.reserve(kBoardSlots + kBenchSlots);
         const auto& player = player_envs[player_index];
@@ -891,22 +894,18 @@ struct TFTEngine::Impl {
             if (!def || unit.uuid.empty()) return;
             const auto& stats = def->stats;
             const auto& combat = def->combat_profile;
-            // Item affinity is sourced only from the canonical active-composition
-            // owner. No StrategyInfo/CompositionPlanner fallback is permitted:
-            // an unavailable active composition means unknown fit and no
-            // preferred-trait evidence, not a synthetic legacy preference.
-            const auto& active = composition_intelligence_players[player_index].active.current();
-            double fit = 0.0;
-            std::vector<std::string> preferred_traits;
-            if (active) {
-                for (const auto& target : active->candidate.units) {
-                    if (target.champion_id == unit.champion_internal_id)
-                        fit = 1.0; // exact membership in the published target
-                    const auto* target_definition = catalog->find_by_id(target.champion_id);
-                    if (!target_definition) continue;
-                    preferred_traits.insert(preferred_traits.end(),
-                        target_definition->traits.begin(), target_definition->traits.end());
-                }
+            const auto strategy = player.strategy.empty() ? StrategyInfo{} : player.strategy.back();
+            const double fit = unit_composition_score(strategy, *def, unit.star, trait_milestones);
+            std::vector<std::string> preferred_traits = strategy.core_traits;
+            preferred_traits.insert(preferred_traits.end(),
+                strategy.planned_traits.begin(), strategy.planned_traits.end());
+            if (!strategy.composition_direction.empty())
+                preferred_traits.push_back(strategy.composition_direction);
+            for (const auto& [trait, weight] : strategy.composition_focus_weights) {
+                if (weight > 0.1) preferred_traits.push_back(trait);
+            }
+            for (const auto& [trait, count] : strategy.active_traits) {
+                if (count > 0) preferred_traits.push_back(trait);
             }
             std::sort(preferred_traits.begin(), preferred_traits.end());
             preferred_traits.erase(
@@ -921,7 +920,7 @@ struct TFTEngine::Impl {
                 combat.max_hp > 0.0 ? combat.max_hp : stats.max_hp,
                 combat.armor > 0.0 ? combat.armor : stats.armor,
                 combat.magic_resist > 0.0 ? combat.magic_resist : stats.magic_resist,
-                std::clamp(fit, 0.0, 1.0),
+                std::clamp(fit / 32.5, 0.0, 1.0),
                 def->traits,
                 std::move(preferred_traits)
             });
@@ -1603,7 +1602,7 @@ struct TFTEngine::Impl {
             out[offset++] = pending_anvil &&
                 pending_anvil->kind == items::ItemAnvilKind::COMPLETED_ITEM ? 1.0f : 0.0f;
             const auto item_profiles = player_envs[i].item_engine
-                ? item_unit_profiles(i) : std::vector<items::UnitProfile>{};
+                ? legacy_item_unit_profiles(i) : std::vector<items::UnitProfile>{};
             // Scoped to this observation so changed unit stats/traits never reuse stale fits.
             items::ItemFitCache item_fit_cache(player_envs[i].item_engine.get());
             for (std::size_t option_index = 0; option_index < kAnvilOptionCount; ++option_index) {
@@ -5553,7 +5552,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 const auto target_index = static_cast<std::size_t>(type == 7 ? action[2] : action[3]);
                 auto* target_unit = lobby.item_target_unit(player_id, target_index);
                 if (!target_unit) throw std::invalid_argument("Alvo de item nao existe.");
-                const auto profiles = lobby.item_unit_profiles(player_id);
+                const auto profiles = lobby.legacy_item_unit_profiles(player_id);
                 items::ItemActionCommand command;
                 command.operation = type == 7 ? items::ItemOperation::EQUIP_FROM_INVENTORY
                                                : items::ItemOperation::CRAFT_AND_EQUIP;
