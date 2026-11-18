@@ -1074,6 +1074,12 @@ PYBIND11_MODULE(tft_engine, module) {
             }
         )
         .def(
+            "get_viewer_strategy_snapshots",
+            [](const TFTEngine& self) {
+                return strategies_to_list(self.get_viewer_strategy_snapshots());
+            }
+        )
+        .def(
             "get_anti_loop_metrics",
             [](const TFTEngine& self) {
                 return anti_loop_to_dict(self.get_anti_loop_metrics());
