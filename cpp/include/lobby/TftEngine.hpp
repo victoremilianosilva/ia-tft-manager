@@ -217,6 +217,22 @@ struct AuditItemCount { std::string catalog_id; std::uint32_t count{0}; };
 struct AuditEquippedItemSnapshot { std::string unit_uuid; std::string location; std::int32_t slot{-1}; std::string catalog_id; };
 struct AuditRetiredEquippedItemCount { std::string unit_uuid; std::string catalog_id; std::uint32_t count{0}; };
 struct AuditRetiredAnvilSnapshot { std::uint64_t sequence{0}; std::int32_t kind{-1}; std::vector<std::string> options; };
+struct AuditCombatDamageEvent {
+    std::uint64_t combat_sequence{0};
+    std::uint32_t round{0};
+    float timestamp{0.0f};
+    std::int32_t source_unit_id{-1};
+    std::int32_t target_unit_id{-1};
+    std::int32_t source_player_id{-1};
+    std::int32_t target_player_id{-1};
+    std::string source_unit_uuid;
+    std::string target_unit_uuid;
+    std::uint8_t damage_type{0};
+    float raw_damage{0.0f};
+    float final_damage{0.0f};
+    bool critical{false};
+    bool ability_damage{false};
+};
 struct AuditPlayerSnapshot {
     std::int32_t player_id{-1};
     // Player survival and standing facts, correlated by the enclosing snapshot identity.
@@ -327,6 +343,9 @@ struct AuditSnapshot {
     std::uint32_t round{0};
     std::uint32_t stage{1};
     bool finished{false};
+    std::uint64_t combat_sequence{0};
+    bool combat_damage_events_truncated{false};
+    std::vector<AuditCombatDamageEvent> combat_damage_events;
     std::array<AuditPlayerSnapshot, kPlayersPerLobby> players{};
 };
 

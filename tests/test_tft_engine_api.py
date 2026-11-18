@@ -1255,6 +1255,9 @@ def test_audit_snapshot_publishes_accumulated_player_damage():
         engine.reset()
         initial = engine.get_audit_snapshot()
         assert all(player["damage_taken"] == 0.0 for player in initial["players"])
+        assert initial["combat_sequence"] == 0
+        assert initial["combat_damage_events"] == []
+        assert initial["combat_damage_events_truncated"] is False
 
         pass_actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
         # Resolve opening PvE rounds and the first PvP preparation/combat cycle.
@@ -1272,5 +1275,52 @@ def test_audit_snapshot_publishes_accumulated_player_damage():
         assert sum(player["damage_taken"] for player in after["players"]) > 0.0, (
             "At least one resolved PvP matchup must publish accumulated player damage."
         )
+    finally:
+        engine.close()
+
+
+def test_audit_snapshot_publishes_identity_bound_combat_damage_events():
+    """Combat damage events retain native player and UnitInstance provenance."""
+    engine = TFTLobby(seed=20261120)
+
+    try:
+        engine.reset()
+        initial = engine.get_audit_snapshot()
+        champion_id = initial["players"][0]["bench"][0]["champion_id"]
+        assert champion_id
+
+        for player_id in range(8):
+            assert engine.set_unit_for_testing(player_id, True, 0, champion_id, 1)
+        before = engine.get_audit_snapshot()
+        expected_uuid_by_player = {
+            player["player_id"]: player["board"][0]["uuid"]
+            for player in before["players"]
+        }
+        assert all(expected_uuid_by_player.values())
+
+        pass_actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        # Resolve the opening PvE rounds and first PvP cycle.
+        for _ in range(5 * 15):
+            engine.step(pass_actions)
+
+        after = engine.get_audit_snapshot()
+        damage_events = after["combat_damage_events"]
+        assert damage_events, "At least one real PvP combat must publish damage events."
+        assert after["combat_sequence"] >= 4
+        assert after["combat_damage_events_truncated"] is False
+        assert all(event["round"] == after["round"] - 1 for event in damage_events)
+        assert all(event["combat_sequence"] > 0 for event in damage_events)
+        assert all(event["timestamp"] >= 0.0 for event in damage_events)
+        assert any(event["final_damage"] > 0.0 for event in damage_events)
+        assert all(event["final_damage"] >= 0.0 for event in damage_events)
+        for event in damage_events:
+            assert event["target_player_id"] in expected_uuid_by_player
+            assert event["target_unit_uuid"] == expected_uuid_by_player[event["target_player_id"]]
+            if event["source_unit_id"] >= 0:
+                assert event["source_player_id"] in expected_uuid_by_player
+                assert event["source_unit_uuid"] == expected_uuid_by_player[event["source_player_id"]]
+            else:
+                assert event["source_player_id"] == -1
+                assert event["source_unit_uuid"] == ""
     finally:
         engine.close()
