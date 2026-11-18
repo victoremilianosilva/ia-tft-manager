@@ -531,6 +531,10 @@ struct StrategyInfo {
     bool active_composition_available{false};
     std::string direction_state_source{"unavailable"};
     std::string composition_state_source{"unavailable"};
+    std::string active_composition_id;
+    std::string active_composition_source{"unavailable"};
+    std::uint64_t active_composition_version{0};
+    bool active_composition_version_available{false};
     std::uint32_t comp_direction_update_steps{0};
     std::int32_t comp_stabilize_start_round{-1};
     double composition_strength{0.0};
