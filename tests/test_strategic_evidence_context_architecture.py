@@ -61,7 +61,7 @@ assert "composition_intelligence_players[i].active.current()" in viewer_projecti
 assert "composition_projection_source = \"tft_strategic_engine\"" in viewer_projection_source
 assert "canonical_active_composition" in viewer_projection_source
 assert "native_composition_unavailable" in viewer_projection_source
-assert "unit_composition_score" not in item_profiles_source
+assert "unit_composition_score" not in composition_intelligence_input
 
 evidence_header = Path("cpp/include/composition_intelligence/PlannerEvidenceAdapters.hpp").read_text(encoding="utf-8")
 diagnostics_header = Path("cpp/include/composition_intelligence/CompositionDiagnostics.hpp").read_text(encoding="utf-8")
