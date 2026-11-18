@@ -5736,7 +5736,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                         }
                     }
                     const auto& current_strategy = strategy_before;
-                    if (!this->strategy.empty()) {
+                    if (this->strategy) {
                         const auto& core_unit_ids = current_strategy.core_unit_ids;
                         const auto& planned_unit_ids = current_strategy.planned_unit_ids;
                         sold_core_unit =
@@ -5771,7 +5771,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     // A genuinely stronger owned option can justify releasing a
                     // planned/core slot. Compare only against units that fit the
                     // active plan materially better, not merely any owned unit.
-                    if (sold_core_unit && !this->strategy.empty()) {
+                    if (sold_core_unit && this->strategy) {
                         const auto has_better_owned_fit = [&](const auto& candidate) {
                             if (!candidate ||
                                 candidate->champion_internal_id == unit.champion_internal_id)
@@ -6001,7 +6001,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             // levels are less valuable than building a playable board and pairs.
             action_reward = success ? (lobby.stage <= 2 ? -0.03 : 0.0) : -0.10;
             const std::int32_t xp_strategy_id =
-                this->strategy.empty() ? 0 : this->strategy->strategy;
+                this->strategy ? this->strategy->strategy : 0;
             if (success) {
                 double unlocked_board_power = 0.0;
                 // A level-up can unlock a board slot. Credit only a plausible
@@ -6165,7 +6165,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 : -0.10;
             if (success && this->strategy) {
                 action_reward += reward_model::critical_all_in_sale_penalty(
-                    this->strategy.back().strategy,
+                    this->strategy->strategy,
                     static_cast<double>(this->info.hp),
                     sold_core_unit,
                     sold_unit_protects_upgrade,
@@ -6206,7 +6206,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         // Small, bounded strategy shaping: rewards the intended action, not
         // merely the mode label. The active mode is the one used to choose this action.
         const std::int32_t active_strategy_id =
-            this->strategy.empty() ? 0 : this->strategy.back().strategy;
+            this->strategy ? this->strategy->strategy : 0;
         action_reward += reward_model::strategy_action_reward(
             active_strategy_id,
             type,
