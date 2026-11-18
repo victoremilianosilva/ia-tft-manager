@@ -28,9 +28,11 @@ def test_rollout_keeps_semantic_projection_aligned_with_each_transition():
             batch_size * SEMANTIC_ENTITY_SLOTS, dtype=torch.long
         ).reshape(batch_size, SEMANTIC_ENTITY_SLOTS),
     }
+    actions = torch.zeros(batch_size, 6, dtype=torch.long)
+    actions[:, 0] = 6
     buffer.add(
         torch.zeros(batch_size, 4),
-        torch.zeros(batch_size, 6, dtype=torch.long),
+        actions,
         torch.zeros(batch_size),
         torch.zeros(batch_size),
         torch.zeros(batch_size),
