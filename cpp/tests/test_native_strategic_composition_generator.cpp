@@ -163,6 +163,55 @@ int main() {
                     [](std::int32_t id) { return id >= 0; });
         }));
 
+    // Snapshot-bound candidate sets carry an explicit player/round/sequence
+    // envelope, and every proposal retains that exact provenance.
+    auto correlated = input;
+    correlated.match_id = 7001;
+    correlated.player_id = 3;
+    correlated.round = 5;
+    correlated.sequence = 42;
+    const auto correlated_result =
+        NativeStrategicCompositionGenerator{}.generate(correlated);
+    assert(correlated_result.reason == "native_candidates_generated");
+    assert(correlated_result.candidate_set_id ==
+        "native-candidate-set:v1:7001:3:5:42");
+    assert(correlated_result.match_id == 7001);
+    assert(correlated_result.player_id == 3);
+    assert(correlated_result.round == 5);
+    assert(correlated_result.source_sequence == 42);
+    assert(!correlated_result.candidates.empty());
+    for (const auto& candidate : correlated_result.candidates) {
+        assert(candidate.candidate_set_id == correlated_result.candidate_set_id);
+        assert(candidate.producer_id == "native-strategic-composition-generator");
+        assert(candidate.match_id == 7001);
+        assert(candidate.player_id == 3);
+        assert(candidate.round == 5);
+        assert(candidate.source_sequence == 42);
+        assert(candidate.candidate_revision == 42);
+        assert(candidate.identity.find(candidate.candidate_set_id + ":") == 0);
+    }
+
+    // The same semantic alternatives from a later decision are a different
+    // candidate set; candidate IDs cannot silently be reused across snapshots.
+    auto next_decision = correlated;
+    next_decision.sequence = 43;
+    const auto next_result =
+        NativeStrategicCompositionGenerator{}.generate(next_decision);
+    assert(next_result.candidate_set_id != correlated_result.candidate_set_id);
+    assert(next_result.candidates.front().identity !=
+        correlated_result.candidates.front().identity);
+
+    // Partial identity envelopes fail closed instead of publishing unbound
+    // candidate proposals.
+    auto incomplete_identity = input;
+    incomplete_identity.match_id = 7001;
+    incomplete_identity.player_id = 3;
+    incomplete_identity.round = 5;
+    const auto invalid_identity_result =
+        NativeStrategicCompositionGenerator{}.generate(incomplete_identity);
+    assert(invalid_identity_result.candidates.empty());
+    assert(invalid_identity_result.reason == "invalid_candidate_set_identity");
+
     std::cout << "native strategic composition generator tests passed\n";
     return 0;
 }
