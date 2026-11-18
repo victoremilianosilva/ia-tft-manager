@@ -233,6 +233,30 @@ struct AuditCombatDamageEvent {
     bool critical{false};
     bool ability_damage{false};
 };
+struct AuditCombatAttackEvent {
+    std::uint64_t combat_sequence{0};
+    std::uint32_t round{0};
+    float timestamp{0.0f};
+    std::int32_t source_unit_id{-1};
+    std::int32_t target_unit_id{-1};
+    std::int32_t source_player_id{-1};
+    std::int32_t target_player_id{-1};
+    std::string source_unit_uuid;
+    std::string target_unit_uuid;
+    bool critical{false};
+    float damage{0.0f};
+};
+struct AuditCombatDeathEvent {
+    std::uint64_t combat_sequence{0};
+    std::uint32_t round{0};
+    float timestamp{0.0f};
+    std::int32_t unit_id{-1};
+    std::int32_t killer_unit_id{-1};
+    std::int32_t unit_player_id{-1};
+    std::int32_t killer_player_id{-1};
+    std::string unit_uuid;
+    std::string killer_unit_uuid;
+};
 struct AuditPlayerSnapshot {
     std::int32_t player_id{-1};
     // Player survival and standing facts, correlated by the enclosing snapshot identity.
@@ -346,6 +370,10 @@ struct AuditSnapshot {
     std::uint64_t combat_sequence{0};
     bool combat_damage_events_truncated{false};
     std::vector<AuditCombatDamageEvent> combat_damage_events;
+    bool combat_attack_events_truncated{false};
+    std::vector<AuditCombatAttackEvent> combat_attack_events;
+    bool combat_death_events_truncated{false};
+    std::vector<AuditCombatDeathEvent> combat_death_events;
     std::array<AuditPlayerSnapshot, kPlayersPerLobby> players{};
 };
 

@@ -570,6 +570,10 @@ struct TFTEngine::Impl {
     std::uint64_t combat_sequence{0};
     std::vector<AuditCombatDamageEvent> last_combat_damage_events;
     bool combat_damage_events_truncated{false};
+    std::vector<AuditCombatAttackEvent> last_combat_attack_events;
+    bool combat_attack_events_truncated{false};
+    std::vector<AuditCombatDeathEvent> last_combat_death_events;
+    bool combat_death_events_truncated{false};
     decision::ActionMaskEngine action_mask_engine;
 
     std::int32_t alive_players{
@@ -1200,6 +1204,10 @@ struct TFTEngine::Impl {
         previous_matchups.clear();
         last_combat_damage_events.clear();
         combat_damage_events_truncated = false;
+        last_combat_attack_events.clear();
+        combat_attack_events_truncated = false;
+        last_combat_death_events.clear();
+        combat_death_events_truncated = false;
         matchmaking_rng.seed(seed + episode_id);
 
         // Python creates one random cost-1 starter on each player's bench
@@ -4769,6 +4777,7 @@ struct TFTEngine::Impl {
             input.config.max_events = 100000;
             input.config.deterministic = true;
             input.config.record_damage = true;
+            input.config.record_events = true;
             int next_unit_id = 0;
             append_combat_team(a, UnitTeam::PLAYER_A, input.player_a, next_unit_id);
             append_combat_team(b, UnitTeam::PLAYER_B, input.player_b, next_unit_id);
@@ -4877,6 +4886,57 @@ struct TFTEngine::Impl {
                         audit_event.target_unit_uuid = target_owner->second.unit_uuid;
                     }
                     last_combat_damage_events.push_back(std::move(audit_event));
+                }
+
+                constexpr std::size_t kCombatTypedEventAuditLimit = 4096;
+                for (const auto& attack_event : combat.attack_events) {
+                    if (last_combat_attack_events.size() >= kCombatTypedEventAuditLimit) {
+                        combat_attack_events_truncated = true;
+                        break;
+                    }
+                    AuditCombatAttackEvent audit_event{};
+                    audit_event.combat_sequence = combat_sequence;
+                    audit_event.round = round + 1;
+                    audit_event.timestamp = attack_event.timestamp;
+                    audit_event.source_unit_id = attack_event.source_unit_id;
+                    audit_event.target_unit_id = attack_event.target_unit_id;
+                    audit_event.critical = attack_event.critical;
+                    audit_event.damage = attack_event.damage;
+                    const auto source_owner = combat_unit_owners.find(attack_event.source_unit_id);
+                    if (source_owner != combat_unit_owners.end()) {
+                        audit_event.source_player_id = source_owner->second.player_id;
+                        audit_event.source_unit_uuid = source_owner->second.unit_uuid;
+                    }
+                    const auto target_owner = combat_unit_owners.find(attack_event.target_unit_id);
+                    if (target_owner != combat_unit_owners.end()) {
+                        audit_event.target_player_id = target_owner->second.player_id;
+                        audit_event.target_unit_uuid = target_owner->second.unit_uuid;
+                    }
+                    last_combat_attack_events.push_back(std::move(audit_event));
+                }
+
+                for (const auto& death_event : combat.death_events) {
+                    if (last_combat_death_events.size() >= kCombatTypedEventAuditLimit) {
+                        combat_death_events_truncated = true;
+                        break;
+                    }
+                    AuditCombatDeathEvent audit_event{};
+                    audit_event.combat_sequence = combat_sequence;
+                    audit_event.round = round + 1;
+                    audit_event.timestamp = death_event.timestamp;
+                    audit_event.unit_id = death_event.unit_id;
+                    audit_event.killer_unit_id = death_event.killer_unit_id;
+                    const auto unit_owner = combat_unit_owners.find(death_event.unit_id);
+                    if (unit_owner != combat_unit_owners.end()) {
+                        audit_event.unit_player_id = unit_owner->second.player_id;
+                        audit_event.unit_uuid = unit_owner->second.unit_uuid;
+                    }
+                    const auto killer_owner = combat_unit_owners.find(death_event.killer_unit_id);
+                    if (killer_owner != combat_unit_owners.end()) {
+                        audit_event.killer_player_id = killer_owner->second.player_id;
+                        audit_event.killer_unit_uuid = killer_owner->second.unit_uuid;
+                    }
+                    last_combat_death_events.push_back(std::move(audit_event));
                 }
 
                 events.emplace_back("COMBAT: jogador " + std::to_string(a) +
@@ -6861,6 +6921,10 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
     snapshot.combat_sequence = impl_->combat_sequence;
     snapshot.combat_damage_events_truncated = impl_->combat_damage_events_truncated;
     snapshot.combat_damage_events = impl_->last_combat_damage_events;
+    snapshot.combat_attack_events_truncated = impl_->combat_attack_events_truncated;
+    snapshot.combat_attack_events = impl_->last_combat_attack_events;
+    snapshot.combat_death_events_truncated = impl_->combat_death_events_truncated;
+    snapshot.combat_death_events = impl_->last_combat_death_events;
     auto& pool_snapshot = snapshot.shared_pool;
     pool_snapshot.engine_instance_id = impl_->engine_instance_id;
     pool_snapshot.episode_id = impl_->episode_id;
