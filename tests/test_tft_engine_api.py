@@ -1051,7 +1051,19 @@ def test_same_seed_replays_unit_identity_without_reusing_engine_identity():
 
         # Compare semantic player state only; Engine identity is deliberately
         # distinct and is not part of deterministic game-state equivalence.
-        assert first_after_deploy["players"][0] == second_after_deploy["players"][0]
+        # Audit snapshots contain NumPy arrays, which require element-wise
+        # comparison rather than Python container equality.
+        first_player = first_after_deploy["players"][0]
+        second_player = second_after_deploy["players"][0]
+        assert first_player.keys() == second_player.keys()
+        for field in first_player:
+            first_value = first_player[field]
+            second_value = second_player[field]
+            if isinstance(first_value, np.ndarray):
+                assert isinstance(second_value, np.ndarray)
+                np.testing.assert_array_equal(first_value, second_value)
+            else:
+                assert first_value == second_value
         assert first_after_deploy["shared_pool"] == second_after_deploy["shared_pool"]
     finally:
         first.close()
