@@ -248,6 +248,7 @@ py::dict audit_snapshot_to_dict(
         py::dict p;
         p["player_id"] = player.player_id;
         p["hp"] = player.hp;
+        p["damage_taken"] = player.damage_taken;
         p["alive"] = player.alive;
         p["wins"] = player.wins;
         p["losses"] = player.losses;
