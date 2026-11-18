@@ -522,15 +522,16 @@ py::list strategies_to_list(
         py::dict item;
 
         if (player_strategies.empty()) {
-            item["strategy"] = 0;
-            item["strategy_name"] = "ECON";
+            item["strategy"] = -1;
+            item["strategy_name"] = "UNAVAILABLE";
+            item["strategy_available"] = false;
             item["previous_strategy"] = py::none();
             item["confidence"] = 0.0f;
             item["strategy_age"] = 0;
             item["reason"] = "";
             item["changed"] = false;
             item["state_confidence"] = 0.0f;
-            item["best_scored_strategy"] = 0;
+            item["best_scored_strategy"] = -1;
             item["strategy_scores"] = py::dict();
             item["board_power"] = 0.0;
             item["bench_strength"] = 0.0;
@@ -539,6 +540,11 @@ py::list strategies_to_list(
             item["composition_focus_id"] = -1;
             item["composition_direction"] = "";
             item["composition_locked"] = false;
+            item["composition_locked_available"] = false;
+            item["strategic_direction_available"] = false;
+            item["active_composition_available"] = false;
+            item["direction_state_source"] = "unavailable";
+            item["composition_state_source"] = "unavailable";
             item["comp_direction_update_steps"] = 0;
             item["comp_stabilize_start_round"] = -1;
             item["composition_strength"] = 0.0;
@@ -607,6 +613,8 @@ py::list strategies_to_list(
             item["economic_posture_name"] = "ACCUMULATE_RESOURCES";
             item["economic_posture_reason"] = "";
             item["economic_posture_confidence"] = 0.0;
+            item["economic_posture_available"] = false;
+            item["economic_posture_source"] = "unavailable";
             item["economic_survival_pressure"] = 0.0;
             item["economic_board_pressure"] = 0.0;
             item["economic_resource_pressure"] = 0.0;
@@ -629,6 +637,7 @@ py::list strategies_to_list(
 
             item["strategy"] = strategy.strategy;
             item["strategy_name"] = strategy.strategy_name;
+            item["strategy_available"] = strategy.strategy_available;
 
             item["previous_strategy"] =
                 strategy.previous_strategy.has_value()
@@ -652,6 +661,11 @@ py::list strategies_to_list(
             item["composition_focus_id"] = strategy.composition_focus_id;
             item["composition_direction"] = strategy.composition_direction;
             item["composition_locked"] = strategy.composition_locked;
+            item["composition_locked_available"] = strategy.composition_locked_available;
+            item["strategic_direction_available"] = strategy.strategic_direction_available;
+            item["active_composition_available"] = strategy.active_composition_available;
+            item["direction_state_source"] = strategy.direction_state_source;
+            item["composition_state_source"] = strategy.composition_state_source;
             item["comp_direction_update_steps"] = strategy.comp_direction_update_steps;
             item["comp_stabilize_start_round"] = strategy.comp_stabilize_start_round;
             item["composition_strength"] = strategy.composition_strength;
@@ -742,6 +756,8 @@ py::list strategies_to_list(
             item["economic_posture_name"] = strategy.economic_posture_name;
             item["economic_posture_reason"] = strategy.economic_posture_reason;
             item["economic_posture_confidence"] = strategy.economic_posture_confidence;
+            item["economic_posture_available"] = strategy.economic_posture_available;
+            item["economic_posture_source"] = strategy.economic_posture_source;
             item["economic_survival_pressure"] = strategy.economic_survival_pressure;
             item["economic_board_pressure"] = strategy.economic_board_pressure;
             item["economic_resource_pressure"] = strategy.economic_resource_pressure;
