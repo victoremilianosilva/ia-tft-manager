@@ -8,7 +8,7 @@
 
 This audit distinguishes three classes:
 
-1. **Safe and implemented now:** proven duplicate data with no consumer; native trait evidence in Composition Intelligence; Viewer compatibility projection from canonical strategic owners. The PPO/reward item profile helper is isolated but intentionally not migrated.
+1. **Safe and implemented now:** proven duplicate data with no consumer; removal of a one-entry vector wrapper; native trait evidence in Composition Intelligence; Viewer compatibility projection from canonical strategic owners. The PPO/reward item profile helper is isolated but intentionally not migrated.
 2. **Required but intentionally retained:** distinct producer/namespace semantics, independently versioned event contracts, transformation/validation adapters, decision/event sequence domains, and legacy data still consumed by PPO/reward.
 3. **Blocked by unapproved contracts:** concrete PPO tensor projection, reward coefficients/semantics, and Actor/Critic mask-side-input architecture. The existing projection and reward documents explicitly remain design drafts and do not approve runtime semantics.
 
@@ -39,7 +39,7 @@ No default, inferred score, or legacy alias is promoted as native evidence when 
 | Unified Strategic Shadow runtime | Viewer configures per-player audit runtime path → append-only strategic decision/action/economic audit records | **Keep pending consumer expansion** | Viewer session configures the sidecar; it is diagnostic-only and not consumed by PPO. Keep separate from Composition diagnostic snapshots because event payload and purpose differ. |
 | AntiLoop operational histories | AntiLoop legality logic → move/state cycle prevention and metrics | **Keep** | Operational state affects legal move/mask behavior. |
 | Typed AntiLoop diagnostic event tail | #475 had no application consumer; #485 removed it | **Eliminate — merged** | Parallel partial event history duplicated operational state and was not a complete action replay. |
-| `PlayerEnv.strategy` history | Legacy `update_strategy()` → PPO observation/reward and historical telemetry | **Keep temporarily as PPO/reward compatibility** | Still actively consumed. It is not canonical input to the new strategic planner or the new Viewer projection. Retire only with approved PPO/reward migrations. |
+| `PlayerEnv.strategy` one-entry vector | Legacy `update_strategy()` → PPO observation/reward and telemetry | **Simplify container — implemented; retain value as compatibility** | The vector was cleared/pushed once at reset and only `back()` was read/overwritten; it never accumulated history. Internal storage is now `optional<StrategyInfo>`. The public pybind shape remains a one-element list for compatibility. Its legacy values remain until approved PPO/reward migrations. |
 | Legacy `CompositionPlanner` output | `update_strategy()` populates legacy `planned_*`; legacy PPO feature/reward paths still read those fields | **Keep temporarily as legacy PPO compatibility; exclude from new strategic owners** | New StrategicPlanner/Composition Intelligence already consume NativeStrategicCompositionGenerator and native evidence. The legacy planner must not feed active composition or Viewer canonical projections. Remove only when PPO/reward projection is approved and migrated. |
 | Legacy `CompositionDirectionPolicy` output | Legacy `update_strategy()` updates old StrategyInfo direction; PPO observation/reward still consume it | **Keep temporarily as PPO compatibility; exclude from new strategic owners** | StrategicPlanner commitment is the canonical new direction. Viewer projection now reads that commitment. |
 | Native composition candidate generator | Native catalog + board/bench/shop/pool facts → snapshot-bound candidates | **Keep** | New proposal producer; no StrategyInfo/CompositionPlanner input. |
@@ -94,8 +94,8 @@ Viewer Session configures `set_strategic_direction_pivot_audit_path()`; the Engi
    - core/planned traits from the champion catalog for those canonical unit IDs;
    - composition version from the active owner.
 4. Fields with no canonical equivalent (lock, focus weights, legacy strength, prior-direction transition counters) are cleared rather than fabricated. Projection metadata exposes source, status and version.
-5. The Viewer projection is made on the returned copy; it does not mutate `PlayerEnv.strategy` or alter PPO/reward behavior.
-6. The unused aggregate `derived_core_unit_ids` copy and the unwritten `StrategicCommitment::core_unit_ids` field were removed. The active composition's `CompositionUnit::core` is the consumed canonical subset; in the current native candidate producer this marks the main carry only. Other legacy core-unit rankings are not synthesized.
+5. The Viewer projection is made on the returned copy; it does not mutate the internal `PlayerEnv.strategy` value or alter PPO/reward behavior. Internal storage changed from a vector that never held more than one entry to `optional<StrategyInfo>`; the external pybind list shape is preserved.
+6. The unused aggregate `derived_core_unit_ids` copy, the unwritten `StrategicCommitment::core_unit_ids` field, and the one-entry `PlayerEnv.strategy` vector wrapper were removed. The active composition's `CompositionUnit::core` is the consumed canonical subset; in the current native candidate producer this marks the main carry only. Other legacy core-unit rankings are not synthesized.
 
 ### Still legacy, deliberately isolated
 
@@ -148,12 +148,12 @@ No synthetic values are inserted to make these cases pass.
 
 ## 8. Six-point architecture review
 
-1. **Prior problem:** new strategic runtime and old PPO/Viewer compatibility state overlapped. The new Composition Intelligence item evidence was fixed in #486, but the separate PPO/reward item profile helper and Viewer consumers still observed legacy fields; an unused aggregate core-unit vector duplicated per-unit `is_core`.
+1. **Prior problem:** new strategic runtime and old PPO/Viewer compatibility state overlapped. The new Composition Intelligence item evidence was fixed in #486, but the separate PPO/reward item profile helper and Viewer consumers still observed legacy fields; unused aggregate core IDs and a one-entry StrategyInfo vector duplicated or obscured ownership.
 2. **Technical rationale:** the active composition owner already contains the published candidate; StrategicCommitment owns direction/core unit IDs; the aggregate core-unit vector had no consumer. Producer function names, logical namespaces and event contract versions have different semantics and are retained.
 3. **New responsibility:** ActiveCompositionManager supplies item target/trait evidence, lineup and explicit core flags; StrategicCommitment supplies direction; Viewer receives a one-way compatibility projection; PPO/reward retain explicitly marked legacy inputs until their own contracts are approved.
 4. **Contracts/invariants:** no fallback from missing native composition; no mutation of PPO-facing StrategyInfo by Viewer projection; event and decision sequence namespaces remain distinct; Engine remains final legality authority; recommendations remain Shadow-only.
-5. **Cross-component impact:** native Composition Intelligence evidence, explicit legacy item-profile compatibility naming/callsites, Viewer strategy snapshots, pybind schema, strategic evidence tests and documentation. PPO tensors, reward values, action masks, checkpoint format and Engine legality are intentionally unchanged.
-6. **Objective validation:** source-boundary tests verify the new Composition Intelligence path uses native traits, the legacy item profile is explicitly isolated to PPO/reward callsites, and Viewer projection reads native owners; C++ StrategicEvidenceContext tests no longer construct unused duplicate core IDs; CI must pass native, strategic, Python and Viewer suites.
+5. **Cross-component impact:** native Composition Intelligence evidence, explicit legacy item-profile compatibility naming/callsites, optional StrategyInfo storage, Viewer strategy snapshots, pybind compatibility adapter, strategic evidence tests and documentation. PPO tensors, reward values, action masks, checkpoint format and Engine legality are intentionally unchanged.
+6. **Objective validation:** source-boundary tests verify the new Composition Intelligence path uses native traits, the legacy item profile is explicitly isolated to PPO/reward callsites, the one-entry vector is absent internally, and Viewer projection reads native owners; C++ StrategicEvidenceContext tests no longer construct unused duplicate core IDs; CI must pass native, strategic, Python and Viewer suites.
 
 ## 9. Stage 1 acceptance status
 
