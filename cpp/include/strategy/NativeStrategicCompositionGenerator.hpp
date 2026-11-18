@@ -71,7 +71,6 @@ struct NativeGeneratedComposition {
     std::int32_t player_id{-1};
     std::uint32_t round{0};
     std::uint64_t source_sequence{0};
-    std::uint64_t candidate_revision{0};
     std::string direction;
     std::vector<std::int32_t> unit_ids;
     std::int32_t anchor_champion_id{-1};

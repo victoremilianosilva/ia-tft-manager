@@ -75,7 +75,6 @@ struct CompositionCandidate {
     std::int32_t source_player_id{-1};
     std::uint32_t source_round{0};
     std::uint64_t source_sequence{0};
-    std::uint64_t candidate_revision{0};
     CompositionSource source{CompositionSource::Native};
     std::string set_id;
     std::string patch;
