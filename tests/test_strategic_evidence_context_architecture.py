@@ -96,3 +96,6 @@ for forbidden in ("StrategyInfo", "CompositionDirectionPolicy", "CompositionPlan
     assert forbidden not in context_header, f"legacy type dependency: {forbidden}"
 
 print("strategic evidence context architecture checks passed")
+
+planning_header = Path("cpp/include/strategy/StrategicPlanning.hpp").read_text(encoding="utf-8")
+assert "std::vector<std::int32_t> core_unit_ids;" not in planning_header
