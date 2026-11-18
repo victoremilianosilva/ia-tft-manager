@@ -501,8 +501,9 @@ struct ActionCandidateScoreInfo {
 
 struct StrategyInfo {
     // Valores compatíveis com StrategyManager.py.
-    std::int32_t strategy{0};
-    std::string strategy_name{"ECON"};
+    std::int32_t strategy{-1};
+    std::string strategy_name{"UNAVAILABLE"};
+    bool strategy_available{false};
 
     std::optional<std::int32_t> previous_strategy;
 
@@ -511,7 +512,7 @@ struct StrategyInfo {
     std::string reason;
     bool changed{false};
     float state_confidence{0.0f};
-    std::int32_t best_scored_strategy{0};
+    std::int32_t best_scored_strategy{-1};
     std::vector<std::pair<std::int32_t, double>> strategy_scores;
     double board_power{0.0};
     double bench_strength{0.0};
@@ -523,6 +524,11 @@ struct StrategyInfo {
     std::string composition_direction;
     // Persistent state migrated from Python comp_direction/comp_focus logic.
     bool composition_locked{false};
+    bool composition_locked_available{false};
+    bool strategic_direction_available{false};
+    bool active_composition_available{false};
+    std::string direction_state_source{"unavailable"};
+    std::string composition_state_source{"unavailable"};
     std::uint32_t comp_direction_update_steps{0};
     std::int32_t comp_stabilize_start_round{-1};
     double composition_strength{0.0};
@@ -603,6 +609,8 @@ struct StrategyInfo {
     std::string economic_posture_name{"ACCUMULATE_RESOURCES"};
     std::string economic_posture_reason;
     double economic_posture_confidence{0.0};
+    bool economic_posture_available{false};
+    std::string economic_posture_source{"unavailable"};
     double economic_survival_pressure{0.0};
     double economic_board_pressure{0.0};
     double economic_resource_pressure{0.0};
