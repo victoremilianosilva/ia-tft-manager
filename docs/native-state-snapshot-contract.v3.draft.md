@@ -8,7 +8,7 @@
 
 Snapshot v2 carried a single parent identity envelope, but several nested records copied its identity and sequence fields:
 - Combat events repeated the parent `round`; their `combat_sequence` was event-specific and must remain to distinguish multiple matchups in one snapshot.
-- Economy and PvP-credit events repeated Engine instance, episode, snapshot sequence and player decision sequence; PvP events also repeated round and combat sequence.
+- Economy and PvP-credit events repeated Engine instance, episode, snapshot sequence and player decision sequence; PvP events also repeated round. Their matchup `combat_sequence` is event-specific and remains.
 - The nested shared-pool snapshot repeated the parent source namespace and all Engine/episode/snapshot/player sequence fields.
 
 Those copies created multiple representations of the same decision context. A future producer could update the parent and forget one child copy, leaving contradictory identities inside an otherwise atomic snapshot.
