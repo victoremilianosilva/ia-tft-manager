@@ -1290,6 +1290,17 @@ def test_audit_snapshot_publishes_identity_bound_economy_resolution_events():
         reset = engine.reset()
         initial = engine.get_audit_snapshot()
         assert initial["economy_resolution_events"] == []
+        assert initial["pvp_result_credit_events"] == []
+
+        # Ensure the real PvP phase has a decisive winner. A pass-only lobby
+        # can legitimately produce draws, in which case register_pvp_win is
+        # never called and there is no credit event to publish.
+        champion_id = initial["players"][0]["bench"][0]["champion_id"]
+        assert champion_id
+        for slot in range(28):
+            assert engine.set_unit_for_testing(0, True, slot, champion_id, 1)
+        for player_id in range(1, 8):
+            assert engine.set_unit_for_testing(player_id, True, 0, champion_id, 1)
 
         pass_actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
         # Resolve the first five preparations, including the first PvP income cycle.
@@ -1298,7 +1309,31 @@ def test_audit_snapshot_publishes_identity_bound_economy_resolution_events():
 
         after = engine.get_audit_snapshot()
         events = after["economy_resolution_events"]
+        pvp_credit_events = after["pvp_result_credit_events"]
         assert len(events) == 8
+        assert pvp_credit_events, "Resolved PvP wins must publish their actual economy credit transitions."
+
+        credit_totals_by_player = {player_id: 0 for player_id in range(8)}
+        for credit in pvp_credit_events:
+            winner_id = credit["winner_player_id"]
+            loser_id = credit["loser_player_id"]
+            assert 0 <= winner_id < 8
+            assert 0 <= loser_id < 8
+            assert winner_id != loser_id
+            assert credit["contract_id"] == "tft.pvp-result-credit-event"
+            assert credit["contract_version"] == 1
+            assert credit["source_namespace"] == "tft.economy-engine.register-pvp-win"
+            assert credit["producer"] == "EconomyEngine::register_pvp_win"
+            assert credit["engine_instance_id"] == after["engine_instance_id"]
+            assert credit["episode_id"] == after["episode_id"]
+            assert credit["snapshot_sequence"] == after["snapshot_sequence"]
+            assert credit["player_decision_sequence"] == after["player_decision_sequences"][winner_id]
+            assert credit["round"] == 5
+            assert credit["combat_sequence"] > 0
+            assert credit["gold_after_credit"] - credit["gold_before_credit"] == credit["credited_gold"]
+            assert credit["credited_gold"] > 0
+            assert credit["win_streak_after"] == credit["win_streak_before"] + 1
+            credit_totals_by_player[winner_id] += credit["credited_gold"]
         assert after["snapshot_sequence"] > reset["decision_sequence"]
         assert after["episode_id"] == reset["episode_id"]
 
@@ -1323,6 +1358,7 @@ def test_audit_snapshot_publishes_identity_bound_economy_resolution_events():
             assert event["interest_gold"] >= 0
             assert event["streak_gold"] >= 0
             assert event["win_gold"] >= 0
+            assert event["win_gold"] == credit_totals_by_player[player_id]
             assert event["total_gold"] == (
                 event["base_gold"] + event["interest_gold"]
                 + event["streak_gold"] + event["win_gold"]
@@ -1341,6 +1377,7 @@ def test_audit_snapshot_publishes_identity_bound_economy_resolution_events():
         reset_snapshot = engine.get_audit_snapshot()
         assert reset_snapshot["episode_id"] > after["episode_id"]
         assert reset_snapshot["economy_resolution_events"] == []
+        assert reset_snapshot["pvp_result_credit_events"] == []
     finally:
         engine.close()
 
