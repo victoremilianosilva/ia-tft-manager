@@ -891,18 +891,22 @@ struct TFTEngine::Impl {
             if (!def || unit.uuid.empty()) return;
             const auto& stats = def->stats;
             const auto& combat = def->combat_profile;
-            const auto strategy = player.strategy.empty() ? StrategyInfo{} : player.strategy.back();
-            const double fit = unit_composition_score(strategy, *def, unit.star, trait_milestones);
-            std::vector<std::string> preferred_traits = strategy.core_traits;
-            preferred_traits.insert(preferred_traits.end(),
-                strategy.planned_traits.begin(), strategy.planned_traits.end());
-            if (!strategy.composition_direction.empty())
-                preferred_traits.push_back(strategy.composition_direction);
-            for (const auto& [trait, weight] : strategy.composition_focus_weights) {
-                if (weight > 0.1) preferred_traits.push_back(trait);
-            }
-            for (const auto& [trait, count] : strategy.active_traits) {
-                if (count > 0) preferred_traits.push_back(trait);
+            // Item affinity is sourced only from the canonical active-composition
+            // owner. No StrategyInfo/CompositionPlanner fallback is permitted:
+            // an unavailable active composition means unknown fit and no
+            // preferred-trait evidence, not a synthetic legacy preference.
+            const auto& active = composition_intelligence_players[player_index].active.current();
+            double fit = 0.0;
+            std::vector<std::string> preferred_traits;
+            if (active) {
+                for (const auto& target : active->candidate.units) {
+                    if (target.champion_id == unit.champion_internal_id)
+                        fit = 1.0; // exact membership in the published target
+                    const auto* target_definition = catalog->find_by_id(target.champion_id);
+                    if (!target_definition) continue;
+                    preferred_traits.insert(preferred_traits.end(),
+                        target_definition->traits.begin(), target_definition->traits.end());
+                }
             }
             std::sort(preferred_traits.begin(), preferred_traits.end());
             preferred_traits.erase(
@@ -917,7 +921,7 @@ struct TFTEngine::Impl {
                 combat.max_hp > 0.0 ? combat.max_hp : stats.max_hp,
                 combat.armor > 0.0 ? combat.armor : stats.armor,
                 combat.magic_resist > 0.0 ? combat.magic_resist : stats.magic_resist,
-                std::clamp(fit / 32.5, 0.0, 1.0),
+                std::clamp(fit, 0.0, 1.0),
                 def->traits,
                 std::move(preferred_traits)
             });
@@ -3437,10 +3441,6 @@ struct TFTEngine::Impl {
                 active_native_direction != strategic_native_generation.candidates.end()
                     ? active_native_direction->completed_traits
                     : std::vector<std::string>{};
-            evidence_input.core_unit_ids =
-                active_native_direction != strategic_native_generation.candidates.end()
-                    ? active_native_direction->unit_ids
-                    : std::vector<std::int32_t>{};
             evidence_input.provenance = {
                 {"board_bench", "native_player_units", "observed_game_facts"},
                 {"shop", "native_shop_snapshot", "observed_game_facts"},
@@ -7465,7 +7465,88 @@ TFTEngine::get_strategies() const {
     impl_->ensure_open();
 
     std::array<std::vector<StrategyInfo>, kPlayersPerLobby> result{};
-    for (std::size_t i = 0; i < kPlayersPerLobby; ++i) result[i] = impl_->player_envs[i].strategy;
+    for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+        result[i] = impl_->player_envs[i].strategy;
+        if (result[i].empty()) continue;
+
+        auto& projection = result[i].back();
+        const auto& commitment = impl_->strategic_planner_commitments[i];
+        const auto& active = impl_->composition_intelligence_players[i].active.current();
+
+        // This is a Viewer/telemetry compatibility projection only. PPO's
+        // observation and reward paths continue to use their explicitly
+        // version-gated legacy inputs until their contracts are approved.
+        projection.composition_projection_source = "tft_strategic_engine";
+        projection.composition_version = active ? active->version : 0;
+        projection.composition_direction = commitment.composition_direction;
+        projection.composition_candidate_direction =
+            commitment.candidate_composition_direction;
+        projection.composition_candidate_strength = commitment.candidate_score;
+        projection.composition_candidate_streak = commitment.consecutive_reviews;
+        projection.composition_direction_change_round =
+            static_cast<std::int32_t>(commitment.selected_round);
+        projection.composition_direction_change_reason = "native_strategic_commitment";
+        projection.composition_locked = false; // no authoritative lock producer in the new owner
+        projection.composition_strength = 0.0; // no equivalent calibrated strength contract
+        projection.composition_focus_weights.clear();
+        projection.composition_focus.clear();
+        projection.composition_focus_id = -1;
+        projection.previous_composition_direction.clear();
+        projection.previous_composition_strength = 0.0;
+        projection.composition_direction_change_was_locked = false;
+        projection.composition_direction_change_focus_weight = 0.0;
+        projection.composition_direction_change_count = 0;
+        projection.comp_direction_update_steps = 0;
+        projection.comp_stabilize_start_round = -1;
+
+        projection.core_units.clear();
+        projection.core_unit_ids = commitment.core_unit_ids;
+        projection.core_traits.clear();
+        projection.planned_units.clear();
+        projection.planned_unit_ids.clear();
+        projection.planned_traits.clear();
+        projection.planned_main_carry_id = -1;
+        projection.planned_composition_score = 0.0;
+        projection.planned_acquisition_notes.clear();
+
+        for (const auto id : commitment.core_unit_ids) {
+            const auto* definition = impl_->catalog->find_by_id(id);
+            if (!definition) continue;
+            projection.core_units.push_back(definition->api_name);
+            for (const auto& trait : definition->traits)
+                if (std::find(projection.core_traits.begin(),
+                              projection.core_traits.end(), trait) ==
+                    projection.core_traits.end())
+                    projection.core_traits.push_back(trait);
+        }
+
+        if (active) {
+            const auto& candidate = active->candidate;
+            projection.planned_main_carry_id = candidate.main_carry_id;
+            projection.planned_composition_score = candidate.source_score;
+            for (const auto& unit : candidate.units) {
+                projection.planned_unit_ids.push_back(unit.champion_id);
+                const auto* definition = impl_->catalog->find_by_id(unit.champion_id);
+                if (!definition) continue;
+                projection.planned_units.push_back(definition->api_name);
+                for (const auto& trait : definition->traits)
+                    if (std::find(projection.planned_traits.begin(),
+                                  projection.planned_traits.end(), trait) ==
+                        projection.planned_traits.end())
+                        projection.planned_traits.push_back(trait);
+                if (unit.champion_id == candidate.main_carry_id) {
+                    projection.composition_focus = definition->api_name;
+                    projection.composition_focus_id = definition->internal_id;
+                }
+            }
+            projection.composition_projection_status = "canonical_active_composition";
+        } else {
+            projection.composition_projection_status =
+                commitment.composition_direction.empty()
+                    ? "native_composition_unavailable"
+                    : "native_direction_without_active_composition";
+        }
+    }
     return result;
 }
 
