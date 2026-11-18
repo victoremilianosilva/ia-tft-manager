@@ -1,6 +1,6 @@
 # Decision and Anti-Loop History Scope Audit v1 — Draft
 
-**Status:** source-backed static audit; documentation only.  
+**Status:** source-backed audit and consolidation record.  
 **Tracking:** [Issue #346](https://github.com/victoremilianosilva/ia-tft-manager/issues/346).  
 **Base:** `new-arquiteture`.  
 **Related:** [Native Engine Instance and Episode Identity Scope Audit](native-engine-instance-episode-identity-scope-audit.v1.draft.md); [PPO Evaluation Protocol](ppo-evaluation-protocol.v1.draft.md).
@@ -101,22 +101,22 @@ The current action masks remain independent legality inputs. Anti-loop history i
 ## 6. Field status and contract gaps
 
 - Position signatures: **native observed/internal**, player-scoped by owning AntiLoopEngine; no explicit episode field.
-- Successful movement records: **native observed/internal**, bounded and not individually decision-sequenced; the separate #475 JSONL stream records correlated MoveRegistered/MoveSucceeded events.
-- Blocked movement records: **native derived/internal**, tied to a board signature; the operational record has no decision ID, while the separate #475 MoveBlocked event carries decision identity.
+- Successful movement records: **native observed/internal**, bounded and not individually decision-sequenced; no separate typed event stream is retained.
+- Blocked movement records: **native derived/internal**, tied to a board signature and retained only for AntiLoop's operational queries; no separate decision-bound event copy is retained.
 - State visit counts: **native derived/internal**, round-windowed.
 - Execution/mask metrics: **native derived diagnostics**, lifetime-accumulated across episode reset.
 - Recent purchase records: **native derived reward bookkeeping**, purchase-only and horizon-limited.
 - Action serial: **native derived control metadata**, per player and reset each episode.
 - PPO temporal scalars: **native derived and delivered**, but not lossless history.
-- Typed ordered decision history delivered to Actor/Critic: **not delivered to PPO**. A bounded typed diagnostic event tail is exposed separately through pybind (#475).
-- Explicit linkage: operational AntiLoop records remain uncorrelated to a decision envelope; #475 JSONL events are correlated to Engine/episode/player/decision sequence, but are not linked into Viewer or PPO rollout.
+- Typed ordered decision history delivered to Actor/Critic: **not delivered to PPO**. The optional #475 diagnostic tail had no consumer in the Trainer, Python adapter or Viewer path and is removed by the follow-up consolidation.
+- Explicit linkage: operational AntiLoop records remain local to the per-player AntiLoopEngine instance; no separate decision-correlated event tail is currently retained or delivered to Viewer/PPO.
 
 ## 7. Required post-Gate-8 acceptance
 
 1. Keep AntiLoop legality state, temporal observation summaries, reward-credit bookkeeping and any future decision history as distinct semantic surfaces.
-2. Before any typed history is promoted beyond diagnostics, define event completeness, source sequence, horizon, reset/stale behavior and exact Actor/Critic/replay consumers; #475 is a bounded diagnostic subset, not a complete action history.
-3. Preserve Engine scope, episode, player and decision identity for every #475 JSONL event; do not imply that the operational AntiLoop state records carry those fields.
-4. Distinguish the JSONL event kinds (state observed, move registered, move blocked, move succeeded); do not interpret them as a complete record of all player actions.
+2. Before any separate typed history is reintroduced, demonstrate a concrete consumer and define event completeness, source sequence, horizon, reset/stale behavior and exact Actor/Critic/replay consumers.
+3. Do not add decision identity to operational AntiLoop records unless a concrete consumer requires it; their player scope is already provided by per-player AntiLoopEngine ownership.
+4. Do not describe operational AntiLoop structures as a complete action history: successful movement, blocked candidates, visited states and aggregate metrics have different inclusion and retention rules.
 5. Bind any history-derived observation to the same immutable observation/mask decision envelope.
 6. Preserve the existing independent native masks as the final legality authority.
 7. Test round boundary, episode reset, consecutive episodes, same-seed UUID repetition, player isolation, bounded eviction and metrics accumulation.
@@ -129,23 +129,43 @@ No runtime implementation or tensor-layout decision is authorized by this audit.
 1. **Prior problem:** the schema/source audit identified decision-history gaps, but AntiLoop history, reward purchase bookkeeping and scalar temporal observations needed to be separated by actual producer and lifecycle.
 2. **Technical justification:** these systems have different event inclusion, retention, reset and consumer semantics; treating them as one history would invent completeness and causal sequence that the code does not provide.
 3. **New responsibility:** this note owns the native anti-loop and temporal-history source map, including the distinction between movement history, reward bookkeeping and PPO scalar summaries.
-4. **Contract and invariants:** operational AntiLoop state is episode-local while metrics accumulate; recent purchases are not all actions; scalar temporal features are not typed history; the #475 JSONL stream is bounded and per-event decision-correlated but diagnostic-only.
+4. **Contract and invariants:** operational AntiLoop state is episode-local while metrics accumulate; recent purchases are not all actions; scalar temporal features are not typed history; no additional typed event tail is retained without a concrete consumer.
 5. **Cross-component impacts:** AntiLoopEngine, DecisionHistory, PlayerEnv, action masks, reward credit assignment, observation builder, pybind diagnostics, PPO Actor/Critic and RolloutBuffer.
 6. **Objective validation:** history structures, mutation callsites, round/episode reset behavior, recent-purchase fields and temporal observation projection are source-traced; all surfaces have explicit status; no runtime/tensor changes are made.
 
 Issue #346 remains open. Gate 7 executable acceptance remains pending. Gate 8 remains blocked.
 
 
-## 9. Post-#475 correction — separate sequence-bound diagnostic stream
+## 9. Post-#475 usage audit and consolidation decision
 
-PR #475 added a second, deliberately separate surface:
+PR #475 added a second event sequence inside `AntiLoopHistory`:
+- `StateObserved`, `MoveRegistered`, `MoveBlocked` and `MoveSucceeded` records;
+- a separate 64-event retention buffer;
+- per-event Engine/episode/player/decision/round identity;
+- serialization through `TFTEngine::get_anti_loop_history_jsonl()` and a direct pybind method.
 
-- AntiLoopHistory::temporal_events retains up to 64 typed events (StateObserved, MoveRegistered, MoveBlocked, MoveSucceeded).
-- Every exported event carries Engine instance, episode, player, per-player decision sequence and round identity.
-- TFTEngine::get_anti_loop_history_jsonl() serializes the bounded event tail as JSONL, and pybind exposes it through get_anti_loop_history_jsonl.
-- This stream is not part of AuditSnapshot, ResetResult/StepResult structured state, PPO observations, Actor/Critic inputs, or action masks.
-- It is not equivalent to position_history, move_history, blocked_moves or state_visits: those operational structures answer anti-loop queries and have their own retention/reset behavior. The JSONL stream records a compact, decision-correlated diagnostic timeline.
+A source-level consumer audit after #484 found:
+- `trainer.py` consumes `get_anti_loop_metrics`, not the event tail;
+- `cpp_lobby_env.py` adapts the metrics, but has no event-tail adapter;
+- no Trainer, rollout, Viewer or Python integration callsite consumes `get_anti_loop_history_jsonl`;
+- the method only returned freshly serialized strings on demand; it did not persist a JSONL file or participate in the established snapshot/rollout transport;
+- the event tail duplicated a subset of operational state changes while omitting most player actions, so it was not a complete decision history.
 
-**Consolidation decision:** keep this stream. Its per-event identity is necessary because it is exported independently of the parent AuditSnapshot envelope, and its event ordering/identity is not reconstructible from the operational AntiLoop state or aggregate metrics. Do not copy this event envelope into AuditSnapshot or promote the stream to PPO without a separate projection/replay contract.
+**Consolidation decision:** remove the unused typed event tail, its decision-identity binding, serializer and pybind surface. Keep the operational AntiLoop state and metrics unchanged:
+- `position_history`, `move_history`, `blocked_moves`, `state_visits`, their index and last-state records continue to drive anti-loop decisions;
+- round and episode retention behavior remains unchanged;
+- execution and mask metrics remain exposed and consumed;
+- action masks and native movement validation remain authoritative.
 
-The earlier statements in Sections 5–7 that AntiLoop history is not exposed to Python refer to the operational position/move/block/state-visit structures. They do not apply to the later #475 JSONL diagnostic stream.
+This removes a second bounded event vector and per-event allocation/serialization work from the movement/state path. It does not remove AntiLoop functionality, metrics, action masks, PPO temporal scalar features, reward bookkeeping or any required replay data.
+
+If a future diagnostic/replay consumer needs an ordered event stream, it must be introduced with that consumer and a defined completeness, identity, retention and transport contract rather than as an unused parallel history.
+
+## 10. Architecture simplification review
+
+1. **Prior problem:** #475 added an identity-bound diagnostic event buffer beside the operational AntiLoop history, but no application component consumed the buffer.
+2. **Technical rationale:** the extra vector duplicated selected state/movement events, omitted most player actions, allocated and evicted entries on the native path, and serialized only when a currently unused binding was called. Its identity was valid but had no consumer to justify the extra lifecycle.
+3. **New responsibility:** AntiLoopEngine retains only the state and metrics required for anti-loop legality and diagnostics; a future event-history producer must be justified by a concrete consumer and transport contract.
+4. **Contracts/invariants:** operational move/state/block history, round/episode retention, metrics, masks and native legality are unchanged; no synthetic or incomplete stream is presented as a complete action history.
+5. **Cross-component impact:** AntiLoopEngine, DecisionHistory, TFTEngine API, pybind binding, native tests and this audit note; no Trainer/PPO/rollout/Viewer behavior changes.
+6. **Objective validation:** all references to the unused event-tail API are removed; existing anti-loop behavior and metrics tests continue to pass; native and Python integration suites compile and pass.

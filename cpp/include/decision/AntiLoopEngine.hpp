@@ -47,12 +47,6 @@ public:
     // Reset de episódio preserva métricas acumuladas.
     void reset();
 
-    // Bind events to the exact native decision row before processing its action.
-    void set_decision_identity(TemporalDecisionIdentity identity);
-
-    // Read-only bounded typed history; it never feeds PPO or changes legality.
-    [[nodiscard]] std::vector<TemporalHistoryEvent> get_temporal_history() const;
-
     // Inicia uma nova preparação: heurísticas locais são limpas e estados
     // visitados expiram após uma janela limitada de rodadas.
     void begin_round(std::uint32_t round_number);
@@ -189,7 +183,6 @@ private:
     void trim_position_history();
     void trim_move_history();
     void trim_blocked_moves();
-    void append_temporal_event(TemporalHistoryEvent event);
 };
 
 } // namespace tft::decision

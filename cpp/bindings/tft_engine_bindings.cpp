@@ -1073,15 +1073,6 @@ PYBIND11_MODULE(tft_engine, module) {
                 return anti_loop_to_dict(self.get_anti_loop_metrics());
             }
         )
-        .def("get_anti_loop_history_jsonl", [](const TFTEngine& self) {
-            py::list result;
-            for (const auto& player_events : self.get_anti_loop_history_jsonl()) {
-                py::list rows;
-                for (const auto& row : player_events) rows.append(row);
-                result.append(rows);
-            }
-            return result;
-        })
         // Contrato público de diagnóstico e fixtures de paridade.
         // Não faz parte do caminho de execução normal do Trainer.
         .def(
