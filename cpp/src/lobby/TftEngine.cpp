@@ -1194,6 +1194,8 @@ struct TFTEngine::Impl {
         round_actions.fill(0);
         round_finished.fill(false);
         previous_matchups.clear();
+        last_combat_damage_events.clear();
+        combat_damage_events_truncated = false;
         matchmaking_rng.seed(seed + episode_id);
 
         // Python creates one random cost-1 starter on each player's bench
