@@ -37,6 +37,28 @@ assert "strategic_context.current_core_traits" in composition_intelligence_input
 assert "profile.preferred_traits = strategic_context.current_core_traits;" in composition_intelligence_input
 assert "match_id" in context_header and "player_id" in context_header
 assert "sequence" in context_header and "provenance" in context_header
+assert "derived_core_unit_ids" not in context_header
+assert "std::vector<std::int32_t> core_unit_ids" not in context_header
+
+# Item profiles must use the active-composition owner, with no legacy fallback.
+item_profiles_start = source.index("std::vector<items::UnitProfile> item_unit_profiles")
+item_profiles_end = source.index("const UnitInstance* item_target_unit", item_profiles_start)
+item_profiles_source = source[item_profiles_start:item_profiles_end]
+assert "player.strategy" not in item_profiles_source
+assert "unit_composition_score" not in item_profiles_source
+assert "composition_intelligence_players[player_index].active.current()" in item_profiles_source
+assert "if (active)" in item_profiles_source
+
+# Viewer-facing legacy shape is now a one-way projection from canonical owners.
+viewer_projection_start = source.index("TFTEngine::get_strategies() const")
+viewer_projection_end = source.index("RewardState TFTEngine::get_reward_state", viewer_projection_start)
+viewer_projection_source = source[viewer_projection_start:viewer_projection_end]
+assert "strategic_planner_commitments[i]" in viewer_projection_source
+assert "composition_intelligence_players[i].active.current()" in viewer_projection_source
+assert "composition_projection_source = \"tft_strategic_engine\"" in viewer_projection_source
+assert "canonical_active_composition" in viewer_projection_source
+assert "native_composition_unavailable" in viewer_projection_source
+assert "unit_composition_score" not in item_profiles_source
 
 evidence_header = Path("cpp/include/composition_intelligence/PlannerEvidenceAdapters.hpp").read_text(encoding="utf-8")
 diagnostics_header = Path("cpp/include/composition_intelligence/CompositionDiagnostics.hpp").read_text(encoding="utf-8")
