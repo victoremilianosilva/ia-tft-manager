@@ -827,7 +827,9 @@ def test_selling_purchased_unit_retires_uuid_and_returns_copy_to_pool():
         assert after_sell["engine_instance_id"] == before["engine_instance_id"]
         assert after_sell["episode_id"] == before["episode_id"]
         assert after_sell["snapshot_sequence"] > after_buy_snapshot["snapshot_sequence"]
-        assert after_sell["player_decision_sequences"] == after_buy_snapshot["player_decision_sequences"]
+        assert after_sell["player_decision_sequences"] == [
+            sequence + 1 for sequence in after_buy_snapshot["player_decision_sequences"]
+        ]
         active_uuids = {
             unit["uuid"]
             for location in ("board", "bench", "shop")
