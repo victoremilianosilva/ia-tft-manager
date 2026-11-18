@@ -366,12 +366,29 @@ class PlayerJsonLogWriter:
                 int(audit.get("round_gold", 0) or 0)
                 + int(audit.get("round_win_gold", 0) or 0)
             ),
-            "strategy_name": strategy_info.get("strategy_name", "ECON"),
-            "strategy_id": strategy_info.get("strategy", 0),
-            "comp_direction": strategy_info.get("composition_direction", ""),
-            "comp_focus": strategy_info.get("composition_focus", ""),
-            "composition_locked": bool(strategy_info.get("composition_locked", False)),
-            "composition_strength": float(strategy_info.get("composition_strength", 0.0) or 0.0),
+            "strategy_available": bool(strategy_info.get("strategy_available", False)),
+            "strategy_name": strategy_info.get("strategy_name", "UNAVAILABLE")
+                if strategy_info.get("strategy_available", False) else "UNAVAILABLE",
+            "strategy_id": strategy_info.get("strategy") if strategy_info.get("strategy_available", False) else None,
+            "direction_state_source": strategy_info.get("direction_state_source", "unavailable"),
+            "strategic_direction_available": bool(strategy_info.get("strategic_direction_available", False)),
+            "comp_direction": strategy_info.get("composition_direction")
+                if strategy_info.get("strategic_direction_available", False) else None,
+            "composition_state_source": strategy_info.get("composition_state_source", "unavailable"),
+            "active_composition_available": bool(strategy_info.get("active_composition_available", False)),
+            "active_composition_id": strategy_info.get("active_composition_id") or None,
+            "active_composition_source": strategy_info.get("active_composition_source", "unavailable"),
+            "active_composition_version": strategy_info.get("active_composition_version")
+                if strategy_info.get("active_composition_version_available", False) else None,
+            "comp_focus": strategy_info.get("composition_focus")
+                if strategy_info.get("composition_focus_available", False) else None,
+            "composition_locked_available": bool(strategy_info.get("composition_locked_available", False)),
+            "composition_locked": bool(strategy_info.get("composition_locked", False))
+                if strategy_info.get("composition_locked_available", False) else None,
+            "composition_strength_available": bool(strategy_info.get("composition_strength_available", False)),
+            "composition_strength": float(strategy_info.get("composition_strength", 0.0) or 0.0)
+                if strategy_info.get("composition_strength_available", False) else None,
+            "composition_focus_available": bool(strategy_info.get("composition_focus_available", False)),
             "composition_candidate_direction": strategy_info.get("composition_candidate_direction", ""),
             "composition_candidate_strength": float(strategy_info.get("composition_candidate_strength", 0.0) or 0.0),
             "composition_candidate_streak": int(strategy_info.get("composition_candidate_streak", 0) or 0),
@@ -382,9 +399,12 @@ class PlayerJsonLogWriter:
             "composition_direction_change_focus_weight": float(strategy_info.get("composition_direction_change_focus_weight", 0.0) or 0.0),
             "composition_direction_change_reason": strategy_info.get("composition_direction_change_reason", ""),
             "composition_direction_change_count": int(strategy_info.get("composition_direction_change_count", 0) or 0),
-            "composition_focus_weights": dict(strategy_info.get("composition_focus_weights", {}) or {}),
-            "strategy_confidence": strategy_info.get("confidence", 0.0),
-            "strategy_reason": strategy_info.get("reason", ""),
+            "composition_focus_weights": dict(strategy_info.get("composition_focus_weights", {}) or {})
+                if strategy_info.get("composition_focus_available", False) else {},
+            "strategy_confidence": strategy_info.get("confidence")
+                if strategy_info.get("strategy_available", False) else None,
+            "strategy_reason": strategy_info.get("reason")
+                if strategy_info.get("strategy_available", False) else None,
             # Keep new shadow recommendations beside the state at decision time.
             # Older native bindings may not expose these fields; omit unavailable values.
             "shadow_planning": {
@@ -418,9 +438,14 @@ class PlayerJsonLogWriter:
                 "rejected_anchor_not_in_plan": strategy_info.get("strategic_rejected_anchor_not_in_plan"),
                 "candidates_generated": strategy_info.get("strategic_candidates_generated"),
                 "strategic_shadow_only": strategy_info.get("strategic_shadow_only"),
-                "economic_posture_name": strategy_info.get("economic_posture_name"),
-                "economic_posture_reason": strategy_info.get("economic_posture_reason"),
-                "economic_posture_confidence": strategy_info.get("economic_posture_confidence"),
+                "economic_posture_available": bool(strategy_info.get("economic_posture_available", False)),
+                "economic_posture_source": strategy_info.get("economic_posture_source", "unavailable"),
+                "economic_posture_name": strategy_info.get("economic_posture_name")
+                    if strategy_info.get("economic_posture_available", False) else None,
+                "economic_posture_reason": strategy_info.get("economic_posture_reason")
+                    if strategy_info.get("economic_posture_available", False) else None,
+                "economic_posture_confidence": strategy_info.get("economic_posture_confidence")
+                    if strategy_info.get("economic_posture_available", False) else None,
                 "economic_survival_pressure": strategy_info.get("economic_survival_pressure"),
                 "economic_board_pressure": strategy_info.get("economic_board_pressure"),
                 "economic_resource_pressure": strategy_info.get("economic_resource_pressure"),
@@ -449,28 +474,17 @@ class PlayerJsonLogWriter:
                 strategy_info.get("planned_main_carry_id", -1)
                 if strategy_info.get("planned_main_carry_id") is not None else -1
             ),
-            "planned_composition_score": float(strategy_info.get("planned_composition_score", 0.0) or 0.0),
+            "planned_composition_score": float(strategy_info.get("planned_composition_score", 0.0) or 0.0)
+                if strategy_info.get("active_composition_available", False) else None,
             "planned_acquisition_notes": list(strategy_info.get("planned_acquisition_notes", []) or []),
-            "composition_source": (
-                "OP.GG" if any(
-                    str(note).startswith("OPGG_META_CANDIDATE:")
-                    for note in (strategy_info.get("planned_acquisition_notes", []) or [])
-                ) else "NATIVE"
-            ),
-            "composition_source_name": next((
-                str(note).split("OPGG_META_CANDIDATE:", 1)[1].split(" (score=", 1)[0].strip()
-                for note in (strategy_info.get("planned_acquisition_notes", []) or [])
-                if str(note).startswith("OPGG_META_CANDIDATE:")
-            ), ""),
-            "planner_target_slots": (
-                8 if int(public.get("level", audit.get("level", 1)) or 1) <= 8
-                else min(10, int(public.get("level", audit.get("level", 1)) or 1))
-            ),
-            "planner_mode": (
-                "WAITING_FOR_DIRECTION" if not (strategy_info.get("planned_units", []) or [])
-                else "LEVEL_8_CORE" if int(public.get("level", audit.get("level", 1)) or 1) <= 8
-                else f"DYNAMIC_LEVEL_{min(10, int(public.get('level', audit.get('level', 1)) or 1))}"
-            ),
+            "composition_source": strategy_info.get("active_composition_source", "unavailable").upper()
+                if strategy_info.get("active_composition_available", False) else "UNAVAILABLE",
+            "composition_source_name": strategy_info.get("active_composition_id")
+                if strategy_info.get("active_composition_available", False) else None,
+            "planner_target_slots": len(strategy_info.get("planned_units", []) or [])
+                if strategy_info.get("active_composition_available", False) else 0,
+            "planner_mode": "ACTIVE_COMPOSITION"
+                if strategy_info.get("active_composition_available", False) else "UNAVAILABLE",
             "active_traits": dict(strategy_info.get("active_traits", {}) or {}),
             "strategy_scores": dict(strategy_info.get("strategy_scores", {}) or {}),
             "board": [self._unit_info(u, i, "board") for i, u in enumerate(audit.get("board", []))],
