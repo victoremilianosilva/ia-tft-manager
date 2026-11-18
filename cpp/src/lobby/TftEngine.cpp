@@ -1328,8 +1328,19 @@ struct TFTEngine::Impl {
             }
 
             const auto& economy = player_envs[i].economy;
-            const auto& strategy = player_envs[i].strategy.empty()
-                ? StrategyInfo{} : player_envs[i].strategy.back();
+            const auto& active_composition = composition_intelligence_players[i].active.current();
+            const auto& strategic_direction = strategic_planner_commitments[i].composition_direction;
+            std::unordered_set<std::int32_t> active_composition_unit_ids;
+            std::unordered_set<std::string> active_composition_traits;
+            if (active_composition) {
+                for (const auto& target : active_composition->candidate.units) {
+                    active_composition_unit_ids.insert(target.champion_id);
+                    const auto* definition = catalog->find_by_id(target.champion_id);
+                    if (definition)
+                        for (const auto& trait : definition->traits)
+                            active_composition_traits.insert(trait);
+                }
+            }
 
             std::array<int, kBoardSlots> board_roles{};
             std::array<bool, kBoardSlots> board_occupied{};
@@ -1369,8 +1380,8 @@ struct TFTEngine::Impl {
                 signals.attack_damage = def.stats.attack_damage;
                 signals.attack_speed = def.stats.attack_speed;
                 signals.ability_text = def.ability.description + " " + def.ability.name;
-                signals.planned_main_carry =
-                    unit.champion_internal_id == strategy.planned_main_carry_id;
+                signals.planned_main_carry = active_composition &&
+                    unit.champion_internal_id == active_composition->candidate.main_carry_id;
                 for (const auto& item : unit.items) {
                     signals.item_health += item.health;
                     signals.item_armor += item.armor;
@@ -1424,9 +1435,6 @@ struct TFTEngine::Impl {
                 static_cast<float>(std::max(1, economy.level));
             out[offset++] = static_cast<float>(bench_count) / static_cast<float>(kBenchSlots);
             out[offset++] = 1.0f; // shop vector always contains five slots in Python.
-            for (int s = 0; s < 7; ++s)
-                out[offset++] = strategy.strategy == s ? 1.0f : 0.0f;
-            // Python's 22-wide core reserves five trailing zero features.
             offset = kCoreObservationDim;
 
             // 2) BOARD: occupied, cost, stars, role, strength per slot.
@@ -1508,16 +1516,14 @@ struct TFTEngine::Impl {
             // catalog trait order. This is derived from board + bench state.
             for (const auto& trait : observation_trait_names) {
                 out[offset++] =
-                    !strategy.composition_direction.empty() &&
-                    strategy.composition_direction == trait ? 1.0f : 0.0f;
+                    !strategic_direction.empty() &&
+                    strategic_direction == trait ? 1.0f : 0.0f;
             }
 
             // 11) CORE TRAITS: explicit flags, aligned with the same trait order.
             for (const auto& trait : observation_trait_names) {
                 out[offset++] =
-                    std::find(strategy.core_traits.begin(),
-                              strategy.core_traits.end(), trait) !=
-                    strategy.core_traits.end() ? 1.0f : 0.0f;
+                    active_composition_traits.count(trait) != 0 ? 1.0f : 0.0f;
             }
 
             // 12) COMPOSITION FIT: normalized per-unit compatibility score.
@@ -1533,10 +1539,8 @@ struct TFTEngine::Impl {
                     out[offset++] = 0.0f;
                     return;
                 }
-                const double score =
-                    unit_composition_score(strategy, *def, unit->star, trait_milestones);
-                out[offset++] = static_cast<float>(
-                    std::clamp(score / 32.5, 0.0, 1.0));
+                out[offset++] = active_composition_unit_ids.count(def->internal_id) != 0
+                    ? 1.0f : 0.0f;
             };
             for (const auto& unit : player_envs[i].board)
                 append_unit_fit(unit ? &*unit : nullptr);
