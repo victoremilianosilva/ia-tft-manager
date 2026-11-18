@@ -1282,6 +1282,69 @@ def test_audit_snapshot_publishes_accumulated_player_damage():
     finally:
         engine.close()
 
+def test_audit_snapshot_publishes_identity_bound_economy_resolution_events():
+    """Round income breakdown is sourced from EconomyEngine and bound to the exact decision snapshot."""
+    engine = TFTLobby(seed=20261123)
+
+    try:
+        reset = engine.reset()
+        initial = engine.get_audit_snapshot()
+        assert initial["economy_resolution_events"] == []
+
+        pass_actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        # Resolve the first five preparations, including the first PvP income cycle.
+        for _ in range(5 * 15):
+            engine.step(pass_actions)
+
+        after = engine.get_audit_snapshot()
+        events = after["economy_resolution_events"]
+        assert len(events) == 8
+        assert after["snapshot_sequence"] > reset["decision_sequence"]
+        assert after["episode_id"] == reset["episode_id"]
+
+        for event in events:
+            player_id = event["player_id"]
+            assert 0 <= player_id < 8
+            assert event["contract_id"] == "tft.economy-resolution-event"
+            assert event["contract_version"] == 1
+            assert event["source_namespace"] == "tft.economy-engine.resolve-round"
+            assert event["producer"] == "EconomyEngine::resolve_round"
+            assert event["engine_instance_id"] == after["engine_instance_id"]
+            assert event["episode_id"] == after["episode_id"]
+            assert event["snapshot_sequence"] == after["snapshot_sequence"]
+            assert event["player_decision_sequence"] == after["player_decision_sequences"][player_id]
+            assert event["resolved_after_round"] == 5
+            assert event["income_for_round"] == 6
+
+            assert event["old_gold"] == event["gold_before_interest"]
+            assert event["gold_before_interest"] == event["gold_before_income"]
+            assert event["new_gold"] >= event["gold_before_income"]
+            assert event["base_gold"] >= 0
+            assert event["passive_gold"] == event["base_gold"]
+            assert event["interest_gold"] >= 0
+            assert event["streak_gold"] >= 0
+            assert event["win_gold"] >= 0
+            assert event["total_gold"] == (
+                event["base_gold"] + event["interest_gold"]
+                + event["streak_gold"] + event["win_gold"]
+            )
+            # Win gold is credited by the PvP result before resolve_round;
+            # the resolve_round balance delta contains base/interest/streak.
+            assert event["new_gold"] - event["old_gold"] == (
+                event["base_gold"] + event["interest_gold"] + event["streak_gold"]
+            )
+            assert event["new_level"] >= event["old_level"]
+            assert event["xp"] >= 0
+            assert event["xp_to_next"] >= 0
+
+        # A new episode must not leak the previous episode's economy evidence.
+        engine.reset()
+        reset_snapshot = engine.get_audit_snapshot()
+        assert reset_snapshot["episode_id"] > after["episode_id"]
+        assert reset_snapshot["economy_resolution_events"] == []
+    finally:
+        engine.close()
+
 
 def test_audit_snapshot_publishes_identity_bound_combat_damage_events():
     """Combat damage events retain native player and UnitInstance provenance."""
