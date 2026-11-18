@@ -2208,8 +2208,10 @@ struct TFTEngine::Impl {
         const auto signature = board_evaluation_signature(player_index);
         if (cached.matches(signature))
             return cached.value();
-        const StrategyInfo active_strategy = player_envs[player_index].strategy.empty()
-            ? StrategyInfo{} : player_envs[player_index].strategy.back();
+        const auto& active_composition =
+            composition_intelligence_players[player_index].active.current();
+        const auto& strategic_direction =
+            strategic_planner_commitments[player_index].composition_direction;
         const auto classify_unit = [&](const UnitInstance& unit, const ChampionDefinition& def) {
             strategy::UnitCombatSignals signals;
             signals.base_role = def.combat_profile.role;
@@ -2217,7 +2219,8 @@ struct TFTEngine::Impl {
             signals.max_health = def.stats.max_hp; signals.armor = def.stats.armor;
             signals.magic_resist = def.stats.magic_resist; signals.attack_damage = def.stats.attack_damage;
             signals.attack_speed = def.stats.attack_speed; signals.ability_text = def.ability.description + " " + def.ability.name;
-            signals.planned_main_carry = unit.champion_internal_id == active_strategy.planned_main_carry_id;
+            signals.planned_main_carry = active_composition &&
+                unit.champion_internal_id == active_composition->candidate.main_carry_id;
             for (const auto& item : unit.items) {
                 signals.item_health += item.health; signals.item_armor += item.armor;
                 signals.item_magic_resist += item.magic_resist; signals.item_attack_damage += item.attack_damage;
@@ -2240,8 +2243,6 @@ struct TFTEngine::Impl {
                 profile.star = unit->star;
                 profile.cost = def->cost;
                 profile.traits = def->traits;
-                // Emblems and other trait-granting items are part of the
-                // effective board identity for synergy and strategic fit.
                 for (const auto& item : unit->items) {
                     if (!item.grants_trait.empty() &&
                         std::find(profile.traits.begin(), profile.traits.end(),
@@ -2253,52 +2254,46 @@ struct TFTEngine::Impl {
 
         strategy::StrategicBoardContext strategic_context;
         strategic_context.level = player_envs[player_index].economy.level;
-        strategic_context.direction = active_strategy.composition_direction;
-        strategic_context.focus_weights = active_strategy.composition_focus_weights;
-        strategic_context.core_unit_ids = active_strategy.core_unit_ids;
-        strategic_context.planned_unit_ids = active_strategy.planned_unit_ids;
-        strategic_context.core_traits = active_strategy.core_traits;
-        strategic_context.planned_traits = active_strategy.planned_traits;
+        strategic_context.direction = strategic_direction;
         strategic_context.trait_milestones = trait_milestones;
-        std::vector<int> main_carry_positions;
-        int fallback_carry_slot = -1;
-        double fallback_carry_fit = -std::numeric_limits<double>::infinity();
-        int core_carry_slot = -1;
-        double core_carry_fit = -std::numeric_limits<double>::infinity();
-        for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
-            const auto& unit = player_envs[player_index].board[slot];
-            if (!unit || board_roles[slot] != PositioningEngine::carry) continue;
-            const auto* def = catalog->find_by_id(unit->champion_internal_id);
-            if (!def) continue;
-            const bool core_by_id = std::find(
-                active_strategy.core_unit_ids.begin(), active_strategy.core_unit_ids.end(),
-                unit->champion_internal_id) != active_strategy.core_unit_ids.end() ||
-                unit->champion_internal_id == active_strategy.planned_main_carry_id;
-            const auto name_is_core = [&active_strategy](const std::string& name) {
-                return !name.empty() && std::find(
-                    active_strategy.core_units.begin(), active_strategy.core_units.end(),
-                    name) != active_strategy.core_units.end();
-            };
-            const bool core_by_name = name_is_core(def->api_name) ||
-                name_is_core(def->character_name) || name_is_core(def->name) ||
-                name_is_core(unit->champion_id);
-            const double fit = unit_composition_score(
-                active_strategy, *def, unit->star, trait_milestones);
-            if (fit > fallback_carry_fit) {
-                fallback_carry_fit = fit;
-                fallback_carry_slot = static_cast<int>(slot);
-            }
-            if ((core_by_id || core_by_name) && fit > core_carry_fit) {
-                core_carry_fit = fit;
-                core_carry_slot = static_cast<int>(slot);
+        int selected_main_carry = active_composition
+            ? active_composition->candidate.main_carry_id : -1;
+        if (active_composition) {
+            for (const auto& target : active_composition->candidate.units) {
+                strategic_context.planned_unit_ids.push_back(target.champion_id);
+                if (target.core) strategic_context.core_unit_ids.push_back(target.champion_id);
+                const auto* definition = catalog->find_by_id(target.champion_id);
+                if (!definition) continue;
+                for (const auto& trait : definition->traits) {
+                    if (std::find(strategic_context.planned_traits.begin(),
+                                  strategic_context.planned_traits.end(), trait) ==
+                        strategic_context.planned_traits.end())
+                        strategic_context.planned_traits.push_back(trait);
+                    if (target.core &&
+                        std::find(strategic_context.core_traits.begin(),
+                                  strategic_context.core_traits.end(), trait) ==
+                        strategic_context.core_traits.end())
+                        strategic_context.core_traits.push_back(trait);
+                }
             }
         }
-        // Track one main carry: prefer the best-fitting deployed core carry.
-        // If the composition core is not deployed, use the best-fitting carry.
-        const int selected_main_carry =
-            core_carry_slot >= 0 ? core_carry_slot : fallback_carry_slot;
-        if (selected_main_carry >= 0)
-            main_carry_positions.push_back(selected_main_carry);
+        std::vector<int> main_carry_positions;
+        for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
+            const auto& unit = player_envs[player_index].board[slot];
+            if (unit && board_roles[slot] == PositioningEngine::carry &&
+                unit->champion_internal_id == selected_main_carry) {
+                main_carry_positions.push_back(static_cast<int>(slot));
+                break;
+            }
+        }
+        if (main_carry_positions.empty()) {
+            for (std::size_t slot = 0; slot < kBoardSlots; ++slot)
+                if (player_envs[player_index].board[slot] &&
+                    board_roles[slot] == PositioningEngine::carry) {
+                    main_carry_positions.push_back(static_cast<int>(slot));
+                    break;
+                }
+        }
 
         std::vector<strategy::BenchUnitProfile> bench_profiles;
         bench_profiles.reserve(kBenchSlots);
