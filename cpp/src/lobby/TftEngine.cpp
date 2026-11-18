@@ -3937,6 +3937,7 @@ struct TFTEngine::Impl {
                 bridge_input.active_composition = &active;
                 bridge_input.expected_player_id = static_cast<std::int32_t>(i);
                 bridge_input.expected_round = round_id;
+                const auto strategic_sequence = runtime.next_player_sequence();
                 const auto diagnostic_timestamp_unix_ms = static_cast<std::uint64_t>(
                     std::chrono::duration_cast<std::chrono::milliseconds>(
                         std::chrono::system_clock::now().time_since_epoch()).count());
@@ -3988,7 +3989,7 @@ struct TFTEngine::Impl {
                         // pivot evaluations, without publishing back to CI/PPO.
                         if (!tracked_active && active)
                             unified_input.active_composition = active;
-                        unified_input.evaluation_sequence = bridge_input.sequence;
+                        unified_input.evaluation_sequence = strategic_sequence;
                         auto& discovery = unified_input.exploration;
                         discovery.round = round_id;
                         discovery.gold_available = economy.gold;
