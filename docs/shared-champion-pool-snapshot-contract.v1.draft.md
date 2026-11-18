@@ -1,6 +1,6 @@
 # Shared Champion Pool Snapshot Contract v1 — Draft
 
-**Status:** bounded Stage 1 runtime contract; review required.  
+**Status:** superseded historical contract; see [Shared Champion Pool Snapshot Contract v2](shared-champion-pool-snapshot-contract.v2.draft.md).  
 **Tracking:** #346, #293 and #294.
 
 ## 1. Prior problem
@@ -18,10 +18,10 @@ UnitPool remains authoritative for initial and currently available copy counts. 
 ## 4. Contract
 
 The nested shared_pool record uses:
-- contract ID tft.shared-champion-pool-snapshot, version 1;
+- contract ID tft.shared-champion-pool-snapshot, version 1 (historical);
 - source namespace tft.engine.observation-snapshot;
 - producer UnitPool::available;
-- Engine instance, episode, Engine snapshot sequence and eight player decision sequences copied from the enclosing native snapshot;
+- Engine instance, episode, Engine snapshot sequence and eight player decision sequences copied from the enclosing native snapshot in v1; v2 inherits them from the parent without child copies;
 - catalog-ordered rows: champion_internal_id, champion_id, cost, initial_count and available_count;
 - total_available, equal to the sum of row available_count values.
 

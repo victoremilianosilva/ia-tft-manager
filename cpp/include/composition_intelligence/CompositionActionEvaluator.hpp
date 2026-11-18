@@ -77,14 +77,11 @@ public:
             PlannerEvidenceAdapters::snapshot_identity_matches(*planner_evidence, match_id,
                 context.player_id, out.composition_id, active->version, context.round);
         const bool economy_valid = snapshot_identity_valid &&
-            PlannerEvidenceAdapters::source_matches(planner_evidence->economy.metadata, match_id,
-                context.player_id, out.composition_id, active->version, context.round);
+            PlannerEvidenceAdapters::source_matches(planner_evidence->economy.metadata, context.round);
         const bool board_valid = snapshot_identity_valid &&
-            PlannerEvidenceAdapters::source_matches(planner_evidence->board.metadata, match_id,
-                context.player_id, out.composition_id, active->version, context.round);
+            PlannerEvidenceAdapters::source_matches(planner_evidence->board.metadata, context.round);
         const bool items_valid = snapshot_identity_valid &&
-            PlannerEvidenceAdapters::source_matches(planner_evidence->items.metadata, match_id,
-                context.player_id, out.composition_id, active->version, context.round);
+            PlannerEvidenceAdapters::source_matches(planner_evidence->items.metadata, context.round);
         out.economy_evidence_consumed = economy_valid;
         out.board_evidence_validated = board_valid;
         if (economy_valid) {

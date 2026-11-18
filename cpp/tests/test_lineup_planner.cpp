@@ -71,10 +71,6 @@ void valid_board_evidence_is_bound_to_lineup_version() {
     evidence.composition_version = active.version;
     evidence.round = 14;
     evidence.board.metadata.source = "BoardEvaluation";
-    evidence.board.metadata.source_version = active.version;
-    evidence.board.metadata.match_id = 123;
-    evidence.board.metadata.player_id = 2;
-    evidence.board.metadata.composition_id = active.candidate.composition_id;
     evidence.board.metadata.source_round = 14;
     evidence.board.metadata.expected_round = 14;
     evidence.board.metadata.quality = EvidenceQuality::Valid;
@@ -115,9 +111,7 @@ void board_gap_changes_role_selection_within_target_priority_tier() {
     evidence.composition_id = active.candidate.composition_id;
     evidence.composition_version = active.version; evidence.round = 8;
     auto& metadata = evidence.board.metadata;
-    metadata.source = "BoardEvaluation"; metadata.source_version = active.version;
-    metadata.match_id = 44; metadata.player_id = 1;
-    metadata.composition_id = active.candidate.composition_id;
+    metadata.source = "BoardEvaluation";
     metadata.source_round = 8; metadata.expected_round = 8;
     metadata.quality = EvidenceQuality::Valid; metadata.available = true;
     evidence.board.missing_frontline_count = 1;

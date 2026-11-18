@@ -96,8 +96,7 @@ void invalid_candidates_and_equipped_sales_are_rejected() {
     evidence.match_id=77; evidence.player_id=0; evidence.composition_id="comp-a";
     evidence.composition_version=4; evidence.round=8;
     auto set_valid = [&](EvidenceSourceMetadata& m, const std::string& name) {
-        m.source=name; m.source_version=4; m.match_id=77; m.player_id=0;
-        m.composition_id="comp-a"; m.source_round=8; m.expected_round=8;
+        m.source=name; m.source_round=8; m.expected_round=8;
         m.quality=EvidenceQuality::Valid; m.available=true; m.reason="valid";
     };
     set_valid(evidence.economy.metadata,"EconomicController");

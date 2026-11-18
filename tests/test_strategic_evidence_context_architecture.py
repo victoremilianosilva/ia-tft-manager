@@ -29,6 +29,37 @@ assert "strategic_planner_commitments = {};" in source
 assert "match_id" in context_header and "player_id" in context_header
 assert "sequence" in context_header and "provenance" in context_header
 
+evidence_header = Path("cpp/include/composition_intelligence/PlannerEvidenceAdapters.hpp").read_text(encoding="utf-8")
+diagnostics_header = Path("cpp/include/composition_intelligence/CompositionDiagnostics.hpp").read_text(encoding="utf-8")
+runtime_header = Path("cpp/include/composition_intelligence/CompositionIntelligenceRuntime.hpp").read_text(encoding="utf-8")
+bridge_header = Path("cpp/include/composition_intelligence/StrategicContextBridge.hpp").read_text(encoding="utf-8")
+
+# Snapshot identity/version is owned once; source metadata carries source-local freshness only.
+metadata_decl = evidence_header.split("struct EvidenceSourceMetadata", 1)[1].split("};", 1)[0]
+for inherited in ("match_id", "player_id", "composition_id", "source_version"):
+    assert inherited not in metadata_decl, f"duplicate evidence identity field: {inherited}"
+assert '"match_id", e.match_id' not in diagnostics_header
+assert '"composition_version", e.composition_version' not in diagnostics_header
+assert '"match_id",metadata.match_id' not in bridge_header
+assert '"timestamp_unix_ms",metadata.timestamp_unix_ms' not in bridge_header
+bridge_metadata = bridge_header.split("struct ContextBridgeMetadata", 1)[1].split("};", 1)[0]
+bridge_input = bridge_header.split("struct ContextBridgeInput", 1)[1].split("};", 1)[0]
+for inherited in ("match_id", "player_id", "round", "timestamp_unix_ms", "sequence", "composition_id", "composition_version"):
+    assert inherited not in bridge_metadata, f"duplicate context bridge envelope field: {inherited}"
+for inherited in ("match_id", "timestamp_unix_ms", "sequence"):
+    assert inherited not in bridge_input, f"unused context bridge input field: {inherited}"
+assert "static PlannerEvidenceSnapshot combine(" not in evidence_header
+assert "std::uint32_t schema_version{2}" in diagnostics_header
+assert "std::uint64_t match_id{0}" in diagnostics_header
+assert "std::int32_t player_id{-1}" in diagnostics_header
+assert 'canonical.erase("timestamp_unix_ms")' in runtime_header
+
+# Runtime envelope owns match/player/round; stage rows retain only stage-local identity.
+assert '{"match_id", match_id_}' not in runtime_header
+assert '{"player_id", player_id_}' not in runtime_header
+assert '{"round", round_}' not in runtime_header
+assert '{"stage_sequence", ++next_stage_sequence_}' in runtime_header
+
 # The new contract must not even name the old strategic source types.
 for forbidden in ("StrategyInfo", "CompositionDirectionPolicy", "CompositionPlanner"):
     assert forbidden not in context_header, f"legacy type dependency: {forbidden}"

@@ -26,10 +26,7 @@ template<class T> struct ContextBridgeValue {
     bool available() const noexcept{return value.has_value();}
 };
 struct ContextBridgeMetadata {
-    std::uint32_t schema_version{1}; std::uint64_t match_id{0};
-    std::int32_t player_id{-1}; std::uint32_t round{0};
-    std::uint64_t timestamp_unix_ms{0},sequence{0};
-    std::string composition_id; std::uint64_t composition_version{0};
+    std::uint32_t schema_version{2};
     ContextBridgeQuality quality{ContextBridgeQuality::Missing};
     std::string reason{"not_evaluated"};
 };
@@ -44,7 +41,7 @@ struct StrategicContextBridgeSnapshot {
     nlohmann::json to_json() const {
         const auto field=[](const auto& v){nlohmann::json j={{"origin",context_value_origin_name(v.origin)},{"quality",context_bridge_quality_name(v.quality)},{"source",v.source},{"reason",v.reason}};j["value"]=v.value?nlohmann::json(*v.value):nlohmann::json(nullptr);return j;};
         return {
-          {"metadata",{{"schema_version",metadata.schema_version},{"match_id",metadata.match_id},{"player_id",metadata.player_id},{"round",metadata.round},{"timestamp_unix_ms",metadata.timestamp_unix_ms},{"sequence",metadata.sequence},{"composition_id",metadata.composition_id},{"composition_version",metadata.composition_version},{"quality",context_bridge_quality_name(metadata.quality)},{"reason",metadata.reason}}},
+          {"metadata",{{"schema_version",metadata.schema_version},{"quality",context_bridge_quality_name(metadata.quality)},{"reason",metadata.reason}}},
           {"observed",{{"hp",field(hp)},{"gold",field(gold)},{"level",field(level)},{"xp",field(xp)},{"xp_to_next",field(xp_to_next)},{"win_streak",field(win_streak)},{"loss_streak",field(loss_streak)},{"composition_locked",field(composition_locked)},{"direction",field(observed_direction)},{"focus",field(observed_focus)},{"core_traits",field(core_traits)}}},
           {"derived",{{"board_power",field(board_power)},{"relative_board_power",field(relative_board_power)},{"direction_score",field(direction_score)},{"direction_viable",field(direction_viable)},{"stage",field(stage)},{"progression_plan",field(progression_plan)}}},
           {"recommended",{{"direction",field(recommended_direction)},{"composition_decision",field(composition_decision)},{"economic_posture",field(economic_posture)},{"strategic_confidence",field(strategic_confidence)},{"economic_confidence",field(economic_confidence)}}}
@@ -56,21 +53,19 @@ struct ContextBridgeInput {
     const strategy::StrategicPlanDecision* strategic_decision{nullptr};
     const strategy::EconomicControlDecision* economic_decision{nullptr};
     const std::optional<ActiveComposition>* active_composition{nullptr};
-    std::uint64_t match_id{0}; std::int32_t expected_player_id{-1};
-    std::uint32_t expected_round{0}; std::uint64_t timestamp_unix_ms{0},sequence{0};
+    std::int32_t expected_player_id{-1};
+    std::uint32_t expected_round{0};
 };
 class StrategicContextBridge {
 public:
     static StrategicContextBridgeSnapshot adapt(const ContextBridgeInput& in) {
         StrategicContextBridgeSnapshot out; auto& m=out.metadata;
-        m.match_id=in.match_id;m.player_id=in.expected_player_id;m.round=in.expected_round;
-        m.timestamp_unix_ms=in.timestamp_unix_ms;m.sequence=in.sequence;
         if(!in.strategic||!in.strategic_decision||!in.economic_decision){m.quality=ContextBridgeQuality::Missing;m.reason="required_strategic_or_economic_source_missing";return out;}
         const auto& c=*in.strategic;
         if(c.player_id!=in.expected_player_id){m.quality=ContextBridgeQuality::Incompatible;m.reason="player_id_mismatch";return out;}
         if(c.round!=in.expected_round){m.quality=ContextBridgeQuality::Stale;m.reason="round_mismatch";return out;}
         const bool active=in.active_composition&&in.active_composition->has_value();
-        if(active){const auto& a=**in.active_composition;m.composition_id=a.candidate.composition_id;m.composition_version=a.version;}
+        const bool has_active_composition=active;
         const auto set=[](auto& dst,auto value,ContextValueOrigin origin,const char* source,const char* reason){dst.value=std::move(value);dst.origin=origin;dst.quality=ContextBridgeQuality::Valid;dst.source=source;dst.reason=reason;};
         set(out.hp,c.hp,ContextValueOrigin::Observed,"StrategicSharedContext","live_player_state");
         set(out.gold,c.gold,ContextValueOrigin::Observed,"StrategicSharedContext","live_economy_state");
@@ -94,9 +89,9 @@ public:
         set(out.economic_posture,posture_name(in.economic_decision->posture),ContextValueOrigin::Recommended,"EconomicController","shadow_recommendation_only");
         set(out.strategic_confidence,in.strategic_decision->confidence,ContextValueOrigin::Recommended,"StrategicPlanner","uncalibrated_score_confidence");
         set(out.economic_confidence,in.economic_decision->confidence,ContextValueOrigin::Recommended,"EconomicController","uncalibrated_score_confidence");
-        m.quality=active?ContextBridgeQuality::Valid:ContextBridgeQuality::Partial;
-        m.reason=active?"validated_player_round_and_composition_identity":"player_round_valid_but_no_active_composition";
-        if(!active){out.recommended_direction.quality=ContextBridgeQuality::Partial;out.recommended_direction.reason="no_active_composition_identity";out.composition_decision.quality=ContextBridgeQuality::Partial;out.composition_decision.reason="no_active_composition_identity";}
+        m.quality=has_active_composition?ContextBridgeQuality::Valid:ContextBridgeQuality::Partial;
+        m.reason=has_active_composition?"validated_player_round_and_composition_identity":"player_round_valid_but_no_active_composition";
+        if(!has_active_composition){out.recommended_direction.quality=ContextBridgeQuality::Partial;out.recommended_direction.reason="no_active_composition_identity";out.composition_decision.quality=ContextBridgeQuality::Partial;out.composition_decision.reason="no_active_composition_identity";}
         return out;
     }
 private:

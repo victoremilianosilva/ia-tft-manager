@@ -139,7 +139,7 @@ class CppTFTLobbyWrapper:
             value.get("contract_id") != "tft.native-state-snapshot"
             or isinstance(version, bool)
             or not isinstance(version, int)
-            or version != 2
+            or version != 3
         ):
             raise RuntimeError("Versão/identidade do contrato de snapshot estruturado incompatível.")
         geometry_version = value.get("board_geometry_version")
@@ -186,16 +186,19 @@ class CppTFTLobbyWrapper:
             pool.get("contract_id") != "tft.shared-champion-pool-snapshot"
             or isinstance(pool_version, bool)
             or not isinstance(pool_version, int)
-            or pool_version != 1
-            or pool.get("source_namespace") != "tft.engine.observation-snapshot"
+            or pool_version != 2
             or pool.get("producer") != "UnitPool::available"
         ):
             raise RuntimeError("Contrato do snapshot compartilhado de pool incompatível.")
-        if pool.get("engine_instance_id") != expected_identity["engine_instance_id"]:
-            raise RuntimeError("Snapshot do pool pertence a outra instância da Engine.")
-        for key in ("episode_id", "snapshot_sequence", "player_decision_sequences"):
-            if pool.get(key) != value.get(key):
-                raise RuntimeError("Snapshot do pool não corresponde à identidade do snapshot nativo.")
+        inherited_pool_envelope = (
+            "source_namespace", "engine_instance_id", "episode_id",
+            "snapshot_sequence", "player_decision_sequences",
+        )
+        if any(key in pool for key in inherited_pool_envelope):
+            raise RuntimeError(
+                "Snapshot do pool duplicou campos do envelope nativo; "
+                "a correlação deve ser herdada do AuditSnapshot."
+            )
         total_available = pool.get("total_available")
         if isinstance(total_available, bool) or not isinstance(total_available, int) or total_available < 0:
             raise RuntimeError("Snapshot do pool contém total_available inválido.")
@@ -223,6 +226,91 @@ class CppTFTLobbyWrapper:
             available_sum += available
         if available_sum != total_available:
             raise RuntimeError("Total do pool não corresponde à soma das disponibilidades por campeão.")
+
+        inherited_event_envelope = {
+            "engine_instance_id", "episode_id", "snapshot_sequence",
+            "player_decision_sequence",
+        }
+        parent_combat_sequence = value.get("combat_sequence")
+        if (
+            isinstance(parent_combat_sequence, bool)
+            or not isinstance(parent_combat_sequence, int)
+            or parent_combat_sequence < 0
+        ):
+            raise RuntimeError("Snapshot estruturado contém combat_sequence inválido.")
+        for field in ("combat_damage_events", "combat_attack_events", "combat_death_events"):
+            rows = value.get(field)
+            if not isinstance(rows, list) or any(not isinstance(row, dict) for row in rows):
+                raise RuntimeError(f"Snapshot estruturado contém {field} inválido.")
+            for row in rows:
+                sequence = row.get("combat_sequence")
+                if "round" in row:
+                    raise RuntimeError(f"{field} duplicou round do envelope pai.")
+                if (
+                    isinstance(sequence, bool) or not isinstance(sequence, int)
+                    or sequence <= 0 or sequence > parent_combat_sequence
+                ):
+                    raise RuntimeError(f"{field} contém combat_sequence inválido.")
+
+        event_contracts = (
+            ("economy_resolution_events", "tft.economy-resolution-event",
+             "tft.economy-engine.resolve-round", "EconomyEngine::resolve_round"),
+            ("pvp_result_credit_events", "tft.pvp-result-credit-event",
+             "tft.economy-engine.register-pvp-win", "EconomyEngine::register_pvp_win"),
+        )
+        for field, contract_id, source_namespace, producer in event_contracts:
+            rows = value.get(field)
+            if not isinstance(rows, list):
+                raise RuntimeError(f"Snapshot estruturado contém {field} inválido.")
+            for row in rows:
+                version = row.get("contract_version") if isinstance(row, dict) else None
+                if (
+                    not isinstance(row, dict)
+                    or row.get("contract_id") != contract_id
+                    or isinstance(version, bool) or not isinstance(version, int) or version != 2
+                    or row.get("source_namespace") != source_namespace
+                    or row.get("producer") != producer
+                ):
+                    raise RuntimeError(f"Contrato de evento incompatível em {field}.")
+                if inherited_event_envelope.intersection(row):
+                    raise RuntimeError(
+                        f"{field} duplicou identidade/sequence do envelope pai."
+                    )
+                if field == "economy_resolution_events":
+                    player_id = row.get("player_id")
+                    if (
+                        isinstance(player_id, bool) or not isinstance(player_id, int)
+                        or not 0 <= player_id < cls.PLAYERS_PER_LOBBY
+                    ):
+                        raise RuntimeError(
+                            "economy_resolution_events contém player_id sem sequência no envelope pai."
+                        )
+                if field == "pvp_result_credit_events":
+                    winner_id = row.get("winner_player_id")
+                    loser_id = row.get("loser_player_id")
+                    if (
+                        isinstance(winner_id, bool) or not isinstance(winner_id, int)
+                        or isinstance(loser_id, bool) or not isinstance(loser_id, int)
+                        or not 0 <= winner_id < cls.PLAYERS_PER_LOBBY
+                        or not 0 <= loser_id < cls.PLAYERS_PER_LOBBY
+                        or winner_id == loser_id
+                    ):
+                        raise RuntimeError(
+                            "pvp_result_credit_events contém owners sem sequência no envelope pai."
+                        )
+                    sequence = row.get("combat_sequence")
+                    if "round" in row:
+                        raise RuntimeError(
+                            "pvp_result_credit_events duplicou round do envelope pai."
+                        )
+                    if (
+                        isinstance(sequence, bool) or not isinstance(sequence, int)
+                        or sequence <= 0 or sequence > parent_combat_sequence
+                    ):
+                        raise RuntimeError(
+                            "pvp_result_credit_events contém combat_sequence inválido."
+                        )
+
         players = value.get("players")
         if not isinstance(players, list) or len(players) != cls.PLAYERS_PER_LOBBY:
             raise RuntimeError("Snapshot estruturado não contém exatamente oito jogadores.")

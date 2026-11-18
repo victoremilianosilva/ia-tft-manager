@@ -30,19 +30,20 @@ For each player update, the Shadow block executes the following order:
 11. Append the Composition Intelligence diagnostic snapshot to the per-player history.
 
 A stage can be marked completed, skipped, unavailable, or failed. Each trace
-entry carries match/episode, player, round, stage sequence, and the active
-composition identity/version at that point. The enclosing snapshot carries the
-same player/match/round identity and a player-local sequence in addition to the
-lobby-wide ordering sequence.
+entry carries its stage sequence and the active composition identity/version
+at that point; the active composition may change between stages. The enclosing
+snapshot owns match/episode, player, round, timestamp, player-local sequence
+and lobby-wide ordering sequence.
 
 ## Frequency and duplicate policy
 
 The pipeline is evaluated at the player's update boundary, after the live state
 for that update is available. This preserves action-level changes to board,
 bench, shop, economy, and items. Before persistence, snapshots are compared
-using a canonical representation that excludes only the lobby-wide sequence,
-player-local sequence, and context-bridge wall-clock timestamp/sequence.
-Identical logical snapshots are not appended. A changed diagnostic or stage
+using a canonical representation that excludes the lobby-wide sequence,
+player-local sequence and top-level wall-clock timestamp. Context Bridge is a
+nested semantic projection and no longer carries a second identity, timestamp
+or sequence envelope. Identical logical snapshots are not appended. A changed diagnostic or stage
 outcome is retained.
 
 This policy deduplicates persisted records; it does not claim to skip all
@@ -125,3 +126,41 @@ must remain aligned; no change is made to current runtime behavior.
 **Validation:** documentary consistency only now. Producer/consumer lineage,
 provenance, identity/sequence, missingness and no-imitation tests are
 executable acceptance after Gate 8 and explicit authorization.
+
+
+## Envelope consolidation — PR #484
+
+**Prior problem:** runtime_execution and each stage repeated match/player/
+round already present on the parent snapshot. Context Bridge metadata also
+repeated match/player/round, timestamp, sequence and active composition
+identity, even though Context Bridge is serialized only inside this runtime
+snapshot.
+
+**Technical rationale:** Context Bridge validates expected player/round while
+adapting strategic values; it is not an independent transport. The runtime
+snapshot is the common transport envelope. Stage-local composition identity
+is retained because a transition may change the active composition during a
+single evaluation cycle.
+
+**New responsibility:** CompositionDiagnosticSnapshot owns match/player/
+round/composition identity. CompositionIntelligencePlayerRuntime adds the
+player-local sequence and timestamp at the outer snapshot. Context Bridge
+metadata owns schema/quality/reason and each value retains its own
+observed/derived/recommended origin, quality and source. Stage records own
+stage_sequence and stage-specific composition identity/version only.
+
+**Contract/invariants:** diagnostic snapshot schema v2 and Context Bridge
+metadata schema v2. Nested Context Bridge and runtime stage records do not
+repeat the parent identity envelope. The duplicate-snapshot fingerprint
+ignores timestamp and sequence fields but retains semantic stage outcomes and
+stage-specific composition identity.
+
+**Cross-component impact:** CompositionIntelligenceRuntime,
+CompositionDiagnosticRecorder, StrategicContextBridge and TftEngine producer
+are updated together. UnifiedStrategicShadowRuntime still receives its
+independent evaluation sequence; that sequence is sourced from the runtime
+before append and is not stored in ContextBridgeInput.
+
+**Validation:** native build and strategic architecture regression checks
+validate the updated DTOs, producers and consumers. Diagnostic schema changes
+are isolated from PPO, rewards, masks, action execution and Engine legality.

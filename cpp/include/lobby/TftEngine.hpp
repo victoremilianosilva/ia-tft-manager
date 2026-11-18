@@ -217,9 +217,9 @@ struct AuditItemCount { std::string catalog_id; std::uint32_t count{0}; };
 struct AuditEquippedItemSnapshot { std::string unit_uuid; std::string location; std::int32_t slot{-1}; std::string catalog_id; };
 struct AuditRetiredEquippedItemCount { std::string unit_uuid; std::string catalog_id; std::uint32_t count{0}; };
 struct AuditRetiredAnvilSnapshot { std::uint64_t sequence{0}; std::int32_t kind{-1}; std::vector<std::string> options; };
+// Combat rows inherit round/decision identity; each retains its own combat_sequence.
 struct AuditCombatDamageEvent {
     std::uint64_t combat_sequence{0};
-    std::uint32_t round{0};
     float timestamp{0.0f};
     std::int32_t source_unit_id{-1};
     std::int32_t target_unit_id{-1};
@@ -235,7 +235,6 @@ struct AuditCombatDamageEvent {
 };
 struct AuditCombatAttackEvent {
     std::uint64_t combat_sequence{0};
-    std::uint32_t round{0};
     float timestamp{0.0f};
     std::int32_t source_unit_id{-1};
     std::int32_t target_unit_id{-1};
@@ -248,7 +247,6 @@ struct AuditCombatAttackEvent {
 };
 struct AuditCombatDeathEvent {
     std::uint64_t combat_sequence{0};
-    std::uint32_t round{0};
     float timestamp{0.0f};
     std::int32_t unit_id{-1};
     std::int32_t killer_unit_id{-1};
@@ -259,13 +257,10 @@ struct AuditCombatDeathEvent {
 };
 struct AuditEconomyResolutionEvent {
     std::string contract_id{"tft.economy-resolution-event"};
-    std::uint32_t contract_version{1};
+    std::uint32_t contract_version{2};
     std::string source_namespace{"tft.economy-engine.resolve-round"};
     std::string producer{"EconomyEngine::resolve_round"};
-    std::string engine_instance_id;
-    std::uint64_t episode_id{0};
-    std::uint64_t snapshot_sequence{0};
-    std::uint64_t player_decision_sequence{0};
+    // Engine/episode/snapshot/player sequence are inherited from AuditSnapshot.
     std::int32_t player_id{-1};
     // The completed preparation round and the next round receiving this income.
     std::uint32_t resolved_after_round{0};
@@ -288,15 +283,11 @@ struct AuditEconomyResolutionEvent {
 
 struct AuditPvpResultCreditEvent {
     std::string contract_id{"tft.pvp-result-credit-event"};
-    std::uint32_t contract_version{1};
+    std::uint32_t contract_version{2};
     std::string source_namespace{"tft.economy-engine.register-pvp-win"};
     std::string producer{"EconomyEngine::register_pvp_win"};
-    std::string engine_instance_id;
-    std::uint64_t episode_id{0};
-    std::uint64_t snapshot_sequence{0};
-    std::uint64_t player_decision_sequence{0};
+    // Identity and round are inherited; combat_sequence identifies this specific matchup.
     std::uint64_t combat_sequence{0};
-    std::uint32_t round{0};
     std::int32_t winner_player_id{-1};
     std::int32_t loser_player_id{-1};
     std::int32_t gold_before_credit{0};
@@ -387,20 +378,16 @@ struct AuditPoolChampionCount {
 };
 struct AuditSharedPoolSnapshot {
     std::string contract_id{"tft.shared-champion-pool-snapshot"};
-    std::uint32_t contract_version{1};
-    std::string source_namespace{"tft.engine.observation-snapshot"};
+    std::uint32_t contract_version{2};
     std::string producer{"UnitPool::available"};
-    std::string engine_instance_id;
-    std::uint64_t episode_id{0};
-    std::uint64_t snapshot_sequence{0};
-    std::array<std::uint64_t, kPlayersPerLobby> player_decision_sequences{};
+    // Correlation identity and source namespace are inherited from AuditSnapshot.
     std::int64_t total_available{0};
     std::vector<AuditPoolChampionCount> champions;
 };
 struct AuditSnapshot {
     AuditSharedPoolSnapshot shared_pool;
     std::string contract_id{"tft.native-state-snapshot"};
-    std::uint32_t contract_version{2};
+    std::uint32_t contract_version{3};
     // Current native board-slot geometry: rectangular 4x7, not canonical hex.
     std::string board_geometry_id{"tft.board-grid.rectangular-4x7"};
     std::uint32_t board_geometry_version{1};

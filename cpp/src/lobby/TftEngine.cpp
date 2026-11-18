@@ -3624,18 +3624,17 @@ struct TFTEngine::Impl {
                     active);
                 ci::PlannerEvidenceSnapshot evidence;
                 const auto version = active ? active->version : 0;
+                evidence.match_id = episode_id;
+                evidence.player_id = static_cast<std::int32_t>(i);
                 evidence.composition_id = active ? active->candidate.composition_id : "";
                 evidence.composition_version = version;
                 evidence.round = round_id;
                 if (version > 0) {
-                    evidence.match_id = episode_id;
-                    evidence.player_id = static_cast<std::int32_t>(i);
                     evidence.economy = ci::PlannerEvidenceAdapters::economic(
-                        strategic_context, economic_decision, version, round_id,
-                        episode_id, static_cast<std::int32_t>(i), evidence.composition_id);
+                        strategic_context, economic_decision, round_id,
+                        static_cast<std::int32_t>(i));
                     evidence.board = ci::PlannerEvidenceAdapters::board(
-                        board_evaluation(i), version, round_id, round_id,
-                        episode_id, static_cast<std::int32_t>(i), evidence.composition_id);
+                        board_evaluation(i), round_id, round_id);
                     if (player_envs[i].item_engine) {
                         items::ItemPlayerState item_state;
                         item_state.components = player_envs[i].item_engine->components();
@@ -3668,8 +3667,7 @@ struct TFTEngine::Impl {
                         for (const auto& unit : player_envs[i].bench) if (unit) append_item_binding(*unit);
                         evidence.items = ci::PlannerEvidenceAdapters::item(
                             *player_envs[i].item_engine, item_state, item_bindings,
-                            version, round_id, round_id, episode_id,
-                            static_cast<std::int32_t>(i), evidence.composition_id);
+                            round_id, round_id);
                     }
                 }
                 runtime.mark_stage("planner_evidence", version > 0 ? "completed" : "skipped",
@@ -3937,13 +3935,12 @@ struct TFTEngine::Impl {
                 bridge_input.strategic_decision = &shadow_decision;
                 bridge_input.economic_decision = &economic_decision;
                 bridge_input.active_composition = &active;
-                bridge_input.match_id = episode_id;
                 bridge_input.expected_player_id = static_cast<std::int32_t>(i);
                 bridge_input.expected_round = round_id;
-                bridge_input.timestamp_unix_ms = static_cast<std::uint64_t>(
+                const auto strategic_sequence = runtime.next_player_sequence();
+                const auto diagnostic_timestamp_unix_ms = static_cast<std::uint64_t>(
                     std::chrono::duration_cast<std::chrono::milliseconds>(
                         std::chrono::system_clock::now().time_since_epoch()).count());
-                bridge_input.sequence = runtime.next_player_sequence();
                 const auto context_bridge =
                     ci::StrategicContextBridge::adapt(bridge_input);
 
@@ -3992,7 +3989,7 @@ struct TFTEngine::Impl {
                         // pivot evaluations, without publishing back to CI/PPO.
                         if (!tracked_active && active)
                             unified_input.active_composition = active;
-                        unified_input.evaluation_sequence = bridge_input.sequence;
+                        unified_input.evaluation_sequence = strategic_sequence;
                         auto& discovery = unified_input.exploration;
                         discovery.round = round_id;
                         discovery.gold_available = economy.gold;
@@ -4192,7 +4189,7 @@ struct TFTEngine::Impl {
                 }
                 diagnostic_json["context_bridge"] = context_bridge.to_json();
                 diagnostic_json["player_id"] = static_cast<std::int32_t>(i);
-                diagnostic_json["timestamp_unix_ms"] = bridge_input.timestamp_unix_ms;
+                diagnostic_json["timestamp_unix_ms"] = diagnostic_timestamp_unix_ms;
                 diagnostic_json["engine_match_id"] = episode_id;
                 diagnostic_json["sequence"] = composition_intelligence_sequence + 1;
                 diagnostic_json["catalog_diagnostics"] = composition_intelligence_catalog_diagnostics;
@@ -4867,7 +4864,6 @@ struct TFTEngine::Impl {
                     }
                     AuditCombatDamageEvent audit_event{};
                     audit_event.combat_sequence = combat_sequence;
-                    audit_event.round = round + 1;
                     audit_event.timestamp = damage_event.timestamp;
                     audit_event.source_unit_id = damage_event.source_unit_id;
                     audit_event.target_unit_id = damage_event.target_unit_id;
@@ -4901,7 +4897,6 @@ struct TFTEngine::Impl {
                     }
                     AuditCombatAttackEvent audit_event{};
                     audit_event.combat_sequence = combat_sequence;
-                    audit_event.round = round + 1;
                     audit_event.timestamp = attack_event.timestamp;
                     audit_event.source_unit_id = attack_event.source_unit_id;
                     audit_event.target_unit_id = attack_event.target_unit_id;
@@ -4927,7 +4922,6 @@ struct TFTEngine::Impl {
                     }
                     AuditCombatDeathEvent audit_event{};
                     audit_event.combat_sequence = combat_sequence;
-                    audit_event.round = round + 1;
                     audit_event.timestamp = death_event.timestamp;
                     audit_event.unit_id = death_event.unit_id;
                     audit_event.killer_unit_id = death_event.killer_unit_id;
@@ -4988,13 +4982,7 @@ struct TFTEngine::Impl {
             economy_engine.register_pvp_win(player_envs[winner].economy);
             const auto gold_after_credit = player_envs[winner].economy.gold;
             AuditPvpResultCreditEvent pvp_credit_event{};
-            pvp_credit_event.engine_instance_id = engine_instance_id;
-            pvp_credit_event.episode_id = episode_id;
-            pvp_credit_event.snapshot_sequence = decision_sequence + 1;
-            pvp_credit_event.player_decision_sequence =
-                player_decision_sequences[winner] + 1;
             pvp_credit_event.combat_sequence = combat_sequence;
-            pvp_credit_event.round = round + 1;
             pvp_credit_event.winner_player_id = static_cast<std::int32_t>(winner);
             pvp_credit_event.loser_player_id = static_cast<std::int32_t>(loser);
             pvp_credit_event.gold_before_credit = gold_before_credit;
@@ -6666,11 +6654,6 @@ StepResult TFTEngine::step(
                     next_round_number
                 );
                 AuditEconomyResolutionEvent economy_event{};
-                economy_event.engine_instance_id = impl_->engine_instance_id;
-                economy_event.episode_id = impl_->episode_id;
-                economy_event.snapshot_sequence = impl_->decision_sequence + 1;
-                economy_event.player_decision_sequence =
-                    impl_->player_decision_sequences[i] + 1;
                 economy_event.player_id = static_cast<std::int32_t>(i);
                 economy_event.resolved_after_round = current_round_number;
                 economy_event.income_for_round = economy_result.round;
@@ -6978,10 +6961,6 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
     snapshot.economy_resolution_events = impl_->last_economy_resolution_events;
     snapshot.pvp_result_credit_events = impl_->last_pvp_result_credit_events;
     auto& pool_snapshot = snapshot.shared_pool;
-    pool_snapshot.engine_instance_id = impl_->engine_instance_id;
-    pool_snapshot.episode_id = impl_->episode_id;
-    pool_snapshot.snapshot_sequence = impl_->decision_sequence;
-    pool_snapshot.player_decision_sequences = impl_->player_decision_sequences;
     pool_snapshot.total_available = impl_->pool->total_available();
     pool_snapshot.champions.reserve(impl_->catalog->size());
     for (const auto& champion : impl_->catalog->all()) {

@@ -122,14 +122,11 @@ public:
             PlannerEvidenceAdapters::snapshot_identity_matches(*evidence, match_id,
                 context.player_id, out.composition_id, active->version, context.round);
         const bool economy_valid = envelope_valid &&
-            PlannerEvidenceAdapters::source_matches(evidence->economy.metadata, match_id,
-                context.player_id, out.composition_id, active->version, context.round);
+            PlannerEvidenceAdapters::source_matches(evidence->economy.metadata, context.round);
         const bool board_valid = envelope_valid &&
-            PlannerEvidenceAdapters::source_matches(evidence->board.metadata, match_id,
-                context.player_id, out.composition_id, active->version, context.round);
+            PlannerEvidenceAdapters::source_matches(evidence->board.metadata, context.round);
         const bool items_valid = envelope_valid &&
-            PlannerEvidenceAdapters::source_matches(evidence->items.metadata, match_id,
-                context.player_id, out.composition_id, active->version, context.round);
+            PlannerEvidenceAdapters::source_matches(evidence->items.metadata, context.round);
         if (evidence && !envelope_valid)
             return stale(std::move(out), "planner evidence match/player/round/composition identity mismatch");
         out.economy_evidence_consumed = economy_valid;

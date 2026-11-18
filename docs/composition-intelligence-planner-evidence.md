@@ -3,13 +3,15 @@
 ## Snapshot identity and freshness
 
 Every planner evidence snapshot is bound to the current episode/match, player,
-active composition ID, active composition version, and round. Each source
-(EconomicController, BoardEvaluation, ItemEngine) carries the same identity,
-source round, expected round, and source version.
+active composition ID, active composition version, and round. This
+`PlannerEvidenceSnapshot` is the sole identity/version owner for its nested
+EconomicController, BoardEvaluation and ItemEngine evidence.
 
-Consumers validate the snapshot envelope and each source independently.
-A source is consumed only when its metadata is available, quality is `valid`,
-and all identity/version/round fields match. A stale or invalid source does
+Each source metadata carries only its source name, source round, expected
+round, quality, availability and reason. Consumers validate the snapshot
+identity once, then validate each source's freshness independently. A source
+is consumed only when its metadata is available, quality is `valid`, and its
+source/expected rounds match the current round. A stale or invalid source does
 not invalidate unrelated valid sources. Missing, stale, partial, and invalid
 sources remain distinguishable in diagnostics; no absent source is converted
 into a zero score or a negative signal.
@@ -47,8 +49,9 @@ document does not establish a shared score scale or require agreement.
 
 The JSONL snapshot exposes:
 
-- Match/player/composition/version/round identity on the envelope and each
-  source metadata record.
+- Match/player/composition/version/round identity once on the
+  PlannerEvidenceSnapshot/diagnostic envelope.
+- Source-local provenance and freshness only in each nested source metadata.
 - Human-readable quality: `missing`, `stale`, `partial`, `invalid`, or
   `valid`, with source-specific reason.
 - Evidence consumed/rejected by Unit Priority and Action Evaluation.
@@ -109,3 +112,38 @@ Evidence and Strategic Ownership contracts and the audited evaluator callsites.
 Post-Gate-8 tests must prove per-field consumer attribution, unavailable
 projected income, source freshness, read-only behavior, and independent
 baseline/contextual evaluator semantics.
+
+
+## Envelope consolidation — PR #484
+
+**Prior problem:** each evidence source repeated match/player/composition
+identity and a `source_version` value that was populated from the enclosing
+composition version. The diagnostic JSON therefore serialized the same
+correlation identity several times.
+
+**Technical rationale:** all three sources are constructed together and
+consumed through one PlannerEvidenceSnapshot. Snapshot identity is validated
+before individual source freshness. The source version was not independently
+produced and therefore did not identify a distinct source revision.
+
+**New responsibility:** PlannerEvidenceSnapshot owns match/player/composition/
+version/round. EvidenceSourceMetadata owns source, source/expected round,
+quality, availability and reason. CompositionDiagnosticSnapshot owns the
+serialized diagnostic identity envelope; nested evidence contains source facts
+only.
+
+**Contract/invariants:** PlannerEvidenceSnapshot schema v2 removes repeated
+identity and source_version fields from source metadata. Source and expected
+round remain separate. A source remains unavailable/stale/partial/invalid as
+appropriate; no missing value is synthesized.
+
+**Cross-component impact:** PlannerEvidenceAdapters, UnitPriorityPlanner,
+LineupPlanner, CompositionActionEvaluator, ContextualActionEvaluator,
+CompositionDiagnosticRecorder and the native producer now share the single
+identity boundary. The Viewer continues reading source quality from nested
+metadata and correlation identity from the parent record.
+
+**Validation:** native compilation covers every consumer; regression checks
+assert that source metadata cannot reintroduce parent identity fields and that
+snapshot identity is validated before source freshness. This consolidation
+does not alter strategic scores, PPO inputs, reward, masks or action legality.

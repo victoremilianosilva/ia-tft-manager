@@ -22,8 +22,10 @@ struct CompositionOutcomeObservation {
 // Read-only, append-only diagnostic record. It is a Viewer/export contract,
 // not a runtime controller and never feeds decisions back into the engine.
 struct CompositionDiagnosticSnapshot {
-    std::uint32_t schema_version{1};
+    std::uint32_t schema_version{2};
     std::uint64_t sequence{0};
+    std::uint64_t match_id{0};
+    std::int32_t player_id{-1};
     std::uint32_t round{0};
     std::string composition_id;
     std::uint64_t composition_version{0};
@@ -35,6 +37,8 @@ struct CompositionDiagnosticSnapshot {
         return {
             {"schema_version", schema_version},
             {"sequence", sequence},
+            {"match_id", match_id},
+            {"player_id", player_id},
             {"round", round},
             {"composition_id", composition_id},
             {"composition_version", composition_version},
@@ -70,6 +74,8 @@ public:
         const std::optional<CompositionOutcomeObservation>& outcome = std::nullopt) {
         CompositionDiagnosticSnapshot out;
         out.sequence = next_sequence_++;
+        out.match_id = evidence.match_id;
+        out.player_id = evidence.player_id;
         out.round = round;
         out.stale = priorities.stale || lineup.stale || actions.stale ||
             (active && (priorities.composition_id != active->candidate.composition_id ||
@@ -268,9 +274,7 @@ private:
         return "unknown";
     }
     static nlohmann::json metadata_json(const EvidenceSourceMetadata& m) {
-        return {{"source", m.source}, {"source_version", m.source_version},
-            {"match_id", m.match_id}, {"player_id", m.player_id},
-            {"composition_id", m.composition_id},
+        return {{"source", m.source},
             {"source_round", m.source_round}, {"expected_round", m.expected_round},
             {"quality", static_cast<int>(m.quality)}, {"quality_name", evidence_quality_name(m.quality)},
             {"available", m.available}, {"reason", m.reason}};
@@ -290,9 +294,7 @@ private:
         const bool economy_available = e.economy.metadata.available;
         const bool board_available = e.board.metadata.available;
         const bool items_available = e.items.metadata.available;
-        return {{"schema_version", e.schema_version}, {"match_id", e.match_id},
-            {"player_id", e.player_id}, {"composition_id", e.composition_id},
-            {"composition_version", e.composition_version}, {"round", e.round},
+        return {{"schema_version", e.schema_version},
             {"economy", {{"metadata", metadata_json(e.economy.metadata)},
                 {"gold", value_or_null(economy_available, e.economy.gold)},
                 {"level", value_or_null(economy_available, e.economy.level)},

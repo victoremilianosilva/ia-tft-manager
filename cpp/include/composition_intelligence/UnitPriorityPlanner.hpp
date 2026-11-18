@@ -135,14 +135,12 @@ public:
             if (PlannerEvidenceAdapters::snapshot_identity_matches(snapshot, context.match_id,
                     context.player_id, active->candidate.composition_id, active->version, context.round)) {
                 accepted_evidence = &snapshot;
-                if (PlannerEvidenceAdapters::source_matches(snapshot.board.metadata, context.match_id,
-                        context.player_id, active->candidate.composition_id, active->version, context.round)) {
+                if (PlannerEvidenceAdapters::source_matches(snapshot.board.metadata, context.round)) {
                     board_evidence_valid = true;
                     out.evidence_consumed.push_back("BoardEvaluation:role_gap_priority_context");
                 }
                 else out.evidence_rejected.push_back("BoardEvaluation:" + snapshot.board.metadata.reason);
-                if (PlannerEvidenceAdapters::source_matches(snapshot.items.metadata, context.match_id,
-                        context.player_id, active->candidate.composition_id, active->version, context.round))
+                if (PlannerEvidenceAdapters::source_matches(snapshot.items.metadata, context.round))
                     out.evidence_consumed.push_back("ItemEngine:equipped_item_risk");
                 else out.evidence_rejected.push_back("ItemEngine:" + snapshot.items.metadata.reason);
             } else out.evidence_rejected.push_back("PlannerEvidenceSnapshot:identity_mismatch");
@@ -191,9 +189,7 @@ public:
             }
             const auto* ev = find_evidence(evidence, target.champion_id);
             auto owned_with_items = *found->second;
-            if (accepted_evidence && PlannerEvidenceAdapters::source_matches(
-                    accepted_evidence->items.metadata, context.match_id, context.player_id,
-                    active->candidate.composition_id, active->version, context.round)) {
+            if (accepted_evidence && PlannerEvidenceAdapters::source_matches(accepted_evidence->items.metadata, context.round)) {
                 const auto item_unit = std::find_if(accepted_evidence->items.units.begin(),
                     accepted_evidence->items.units.end(), [&](const auto& item) {
                         return item.champion_id == target.champion_id;
@@ -218,7 +214,7 @@ public:
             if (emitted.count(owned_pair.first)) continue;
             const auto* ev = find_evidence(evidence, owned_pair.first);
             auto owned_with_items = *owned_pair.second;
-            if (accepted_evidence && PlannerEvidenceAdapters::source_matches(accepted_evidence->items.metadata, context.match_id, context.player_id, active->candidate.composition_id, active->version, context.round)) {
+            if (accepted_evidence && PlannerEvidenceAdapters::source_matches(accepted_evidence->items.metadata, context.round)) {
                 const auto item_unit = std::find_if(accepted_evidence->items.units.begin(), accepted_evidence->items.units.end(), [&](const auto& item) { return item.champion_id == owned_pair.first; });
                 if (item_unit != accepted_evidence->items.units.end()) owned_with_items.equipped_item_ids = item_unit->equipped_item_ids;
             }

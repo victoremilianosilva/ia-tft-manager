@@ -33,9 +33,6 @@ public:
             {"stage", std::move(name)},
             {"status", std::move(status)},
             {"reason", std::move(reason)},
-            {"match_id", match_id_},
-            {"player_id", player_id_},
-            {"round", round_},
             {"stage_sequence", ++next_stage_sequence_},
             {"composition_id", active_composition
                 ? active_composition->candidate.composition_id : std::string{}},
@@ -58,20 +55,13 @@ public:
         snapshot["round"] = round_;
         snapshot["player_sequence"] = next_player_sequence();
         snapshot["runtime_execution"] = {
-            {"match_id", match_id_},
-            {"player_id", player_id_},
-            {"round", round_},
             {"stages", stage_trace_}
         };
 
         auto canonical = snapshot;
         canonical.erase("sequence");
         canonical.erase("player_sequence");
-        if (canonical.contains("context_bridge") &&
-            canonical["context_bridge"].contains("metadata")) {
-            canonical["context_bridge"]["metadata"].erase("timestamp_unix_ms");
-            canonical["context_bridge"]["metadata"].erase("sequence");
-        }
+        canonical.erase("timestamp_unix_ms");
         const auto fingerprint = canonical.dump();
         if (fingerprint == last_snapshot_fingerprint_) return false;
 
