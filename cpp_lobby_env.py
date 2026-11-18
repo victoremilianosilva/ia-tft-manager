@@ -276,7 +276,28 @@ class CppTFTLobbyWrapper:
                     raise RuntimeError(
                         f"{field} duplicou identidade/sequence do envelope pai."
                     )
+                if field == "economy_resolution_events":
+                    player_id = row.get("player_id")
+                    if (
+                        isinstance(player_id, bool) or not isinstance(player_id, int)
+                        or not 0 <= player_id < cls.PLAYERS_PER_LOBBY
+                    ):
+                        raise RuntimeError(
+                            "economy_resolution_events contém player_id sem sequência no envelope pai."
+                        )
                 if field == "pvp_result_credit_events":
+                    winner_id = row.get("winner_player_id")
+                    loser_id = row.get("loser_player_id")
+                    if (
+                        isinstance(winner_id, bool) or not isinstance(winner_id, int)
+                        or isinstance(loser_id, bool) or not isinstance(loser_id, int)
+                        or not 0 <= winner_id < cls.PLAYERS_PER_LOBBY
+                        or not 0 <= loser_id < cls.PLAYERS_PER_LOBBY
+                        or winner_id == loser_id
+                    ):
+                        raise RuntimeError(
+                            "pvp_result_credit_events contém owners sem sequência no envelope pai."
+                        )
                     sequence = row.get("combat_sequence")
                     if "round" in row:
                         raise RuntimeError(

@@ -542,6 +542,29 @@ def test_wrapper_rejects_pool_snapshot_with_mismatched_sequence():
         cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
 
 
+def test_wrapper_rejects_economy_event_without_parent_player_sequence():
+    native = FakeNativeLobby()
+    native.episode_id = 1
+    native.decision_sequence = 1
+    native.player_decision_sequences = [1] * 8
+    snapshot = native._native_state_snapshot()
+    snapshot["economy_resolution_events"] = [{
+        "contract_id": "tft.economy-resolution-event",
+        "contract_version": 2,
+        "source_namespace": "tft.economy-engine.resolve-round",
+        "producer": "EconomyEngine::resolve_round",
+        "player_id": 8,
+    }]
+    identity = {
+        "engine_instance_id": f"fake-engine-{id(native)}",
+        "episode_id": 1,
+        "decision_sequence": 1,
+        "player_decision_sequences": [1] * 8,
+    }
+    with pytest.raises(RuntimeError, match="player_id sem sequência"):
+        cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
+
+
 def test_wrapper_rejects_economy_event_that_repeats_parent_identity():
     native = FakeNativeLobby()
     native.episode_id = 1
@@ -577,6 +600,15 @@ def test_wrapper_accepts_event_specific_combat_sequences_with_parent_envelope():
         {"combat_sequence": 1, "timestamp": 0.1},
         {"combat_sequence": 2, "timestamp": 0.2},
     ]
+    snapshot["economy_resolution_events"] = [{
+        "contract_id": "tft.economy-resolution-event",
+        "contract_version": 2,
+        "source_namespace": "tft.economy-engine.resolve-round",
+        "producer": "EconomyEngine::resolve_round",
+        "player_id": 3,
+        "resolved_after_round": 1,
+        "income_for_round": 2,
+    }]
     snapshot["pvp_result_credit_events"] = [{
         "combat_sequence": 1,
         "contract_id": "tft.pvp-result-credit-event",
@@ -595,6 +627,7 @@ def test_wrapper_accepts_event_specific_combat_sequences_with_parent_envelope():
     copied = cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
     assert [event["combat_sequence"] for event in copied["combat_damage_events"]] == [1, 2]
     assert copied["pvp_result_credit_events"][0]["combat_sequence"] == 1
+    assert copied["player_decision_sequences"][3] == 1
 
 
 def test_wrapper_rejects_combat_event_that_repeats_parent_round():
