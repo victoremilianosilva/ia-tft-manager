@@ -4930,249 +4930,27 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         for (const auto& unit : this->board) if (unit) ++new_board_count;
         for (const auto& unit : this->bench) if (unit) ++new_bench_count;
 
-        // Shared shop-opportunity check: buy meaningful pairs/upgrades/fits
-        // before converting surplus gold into XP or passing.
-        const auto has_useful_shop_purchase = [&]() {
-            if (this->strategy.empty()) return false;
-            const bool has_free_bench_slot = std::any_of(
-                this->bench.begin(), this->bench.end(),
-                [](const auto& unit) { return !unit.has_value(); });
-            const auto& current_strategy = this->strategy.back();
-            for (std::size_t slot = 0; slot < kShopSlots; ++slot) {
-                const auto* offer = shop.get_unit(static_cast<std::int32_t>(slot));
-                if (!offer) continue;
-                const auto* definition = lobby.catalog->find_by_id(offer->champion_internal_id);
-                if (!definition || economy.gold < definition->cost) continue;
-                int same_star_copies = 0;
-                for (const auto& unit : this->board)
-                    if (unit && unit->champion_internal_id == offer->champion_internal_id &&
-                        unit->star == offer->star) ++same_star_copies;
-                for (const auto& unit : this->bench)
-                    if (unit && unit->champion_internal_id == offer->champion_internal_id &&
-                        unit->star == offer->star) ++same_star_copies;
-                const double upgrade_value = same_star_copies >= 3 ? 1.0
-                    : (same_star_copies == 2 ? 0.6
-                    : (same_star_copies == 1 ? 0.2 : 0.0));
-                const bool completes_upgrade =
-                    same_star_copies >= 2 && offer->star == 1;
-                // A full bench can still buy a copy that immediately merges
-                // into a higher-star unit and releases capacity.
-                if (!has_free_bench_slot && !completes_upgrade) continue;
-                // A matching copy is genuine upgrade progress even when
-                // temporary comp-fit scores are negative. Fit still scales
-                // purchase quality; it must not erase the pair opportunity.
-                const bool builds_pair =
-                    same_star_copies == 1 && offer->star == 1;
-                const bool in_top_trait =
-                    (!current_strategy.composition_direction.empty() &&
-                     std::find(definition->traits.begin(), definition->traits.end(),
-                        current_strategy.composition_direction) != definition->traits.end()) ||
-                    std::any_of(definition->traits.begin(), definition->traits.end(),
-                        [&](const auto& trait) {
-                            return std::find(current_strategy.core_traits.begin(),
-                                current_strategy.core_traits.end(), trait) !=
-                                current_strategy.core_traits.end();
-                        });
-                const bool in_planned_comp =
-                    std::find(current_strategy.core_unit_ids.begin(),
-                        current_strategy.core_unit_ids.end(), definition->internal_id) !=
-                            current_strategy.core_unit_ids.end() ||
-                    std::find(current_strategy.planned_unit_ids.begin(),
-                        current_strategy.planned_unit_ids.end(), definition->internal_id) !=
-                            current_strategy.planned_unit_ids.end();
-                const double board_impact = unit_board_impact_score(
-                    current_strategy, *definition, offer->star, lobby.trait_milestones,
-                    new_board_count, economy.level,
-                    static_cast<int>(stage_for_round(lobby.round + 1)));
-                const int offer_stage =
-                    static_cast<int>(stage_for_round(lobby.round + 1));
-                const bool early_flex_purchase =
-                    offer_stage <= 2 && definition->cost <= 2 &&
-                    new_bench_count < 6;
-                const bool strategy_approved = should_buy_unit(
-                    board_impact, upgrade_value, in_top_trait || in_planned_comp,
-                    new_bench_count, offer_stage, definition->cost);
-                // Early low-cost units create options before the comp is known.
-                // Keep this bounded by cost and bench capacity so it cannot
-                // turn into indiscriminate shop clearing.
-                if (strategy_approved || early_flex_purchase ||
-                    completes_upgrade || builds_pair)
-                    return true;
-            }
-            return false;
-        };
         const bool useful_shop_purchase_available = has_useful_shop_purchase();
 
-        // Alinhado a RewardManager.calculate_action_reward() e aos valores
-        // usados em env.py para compra, reroll e XP.
+        // Outcome-only action reward. Strategy IDs, strategic recommendations,
+        // legacy composition scores and positioning heuristics never shape PPO.
         double action_reward = 0.0;
         bool success = false;
         if (type == 0) {
-            // The unit may be bought successfully while immediately consuming
-            // two copies in an automatic upgrade, so slot counts are not a
-            // reliable signal of success. Match MiniTFTEnv._execute_buy():
-            // No unconditional bonus for a normal purchase; +0.30 for a completed upgrade.
             success = bought_unit_successfully;
             action_reward = !success ? -0.10 : (bought_upgrade ? 0.30 : 0.0);
-            if (success && !buy_strategy_approved &&
-                !buy_completes_upgrade && !buy_builds_pair) {
-                // Keep the rejection signal for genuinely low-value clutter, but
-                // don't punish pair progress or a merge because a board heuristic
-                // undervalued a unit that is not deployed yet.
-                action_reward -= 0.10;
-            }
-            if (success && has_candidate_comp_score) {
-                // Bench acquisitions are valuable even if their raw score is below
-                // the current board average. Blend absolute plan fit with marginal
-                // board fit instead of making board-relative delta the only signal.
-                // Early comp plans can be incomplete or overconfident. Keep
-                // a modest positive floor for an affordable bench acquisition
-                // instead of letting the current direction erase its value.
-                // The early-game floor is for actual upgrade/pair progress.
-                // Modest-fit early acquisitions preserve option value; the
-                // recent-purchase sale guard prevents rewarding buy/sell loops.
-                const bool early_purchase_has_progress =
-                    buy_completes_upgrade || buy_builds_pair;
-                const double effective_candidate_score =
-                    lobby.stage <= 2 && early_purchase_has_progress
-                        ? std::max(candidate_comp_score, 2.0)
-                        : candidate_comp_score;
-                const double acquisition_value = 0.75 * effective_candidate_score +
-                    0.25 * composition_quality_delta;
-                action_reward += reward_model::purchase_quality(
-                    acquisition_value, false);
-            }
-            if (success && buy_completes_upgrade) {
-                action_reward += 0.25;
-            } else if (success && buy_builds_pair) {
-                action_reward += reward_model::purchase_pair_quality(
-                    candidate_comp_score);
-            }
-            if (success && economy.gold < old_gold) {
-                const double normalized_fit = has_candidate_comp_score
-                    ? std::clamp((lobby.stage <= 2 &&
-                        (buy_completes_upgrade || buy_builds_pair)
-                            ? std::max(candidate_comp_score, 2.0)
-                            : candidate_comp_score) / 32.5, 0.0, 1.0)
-                    : 0.0;
-                action_reward += reward_model::spending_timing_reward(
-                    old_gold, this->info.hp, lobby.stage, normalized_fit,
-                    buy_completes_upgrade, false);
-                // The offer is scoped to the execution branch above; the
-                // actual gold delta is the authoritative purchase cost here.
-                const int purchase_cost = old_gold - economy.gold;
-                action_reward += reward_model::early_purchase_reward(
-                    lobby.stage, old_gold, purchase_cost, old_bench_count,
-                    normalized_fit, buy_completes_upgrade, buy_builds_pair);
-                action_reward += reward_model::unit_purchase_timing_reward(
-                    lobby.stage, old_gold, purchase_cost, old_bench_count,
-                    normalized_fit, this->info.hp,
-                    buy_completes_upgrade, buy_builds_pair);
-            }
         } else if (type == 1) {
             success = economy.gold == old_gold - EconomyEngine::REROLL_COST;
             action_reward = success ? -0.01 : -0.10;
-            if (success) {
-                // Only SLOWROLL receives positive shop-quality feedback.
-                // Other strategies use planned XP progress and useful purchases;
-                // a better shop alone must not teach them to reroll.
-                const std::int32_t active_strategy_id =
-                    this->strategy.empty() ? 0 : this->strategy.back().strategy;
-                const double tactical_reroll_scale =
-                    reward_model::tactical_reroll_quality_scale(
-                        active_strategy_id, this->info.hp, economy.gold,
-                        static_cast<int>(lobby.stage));
-                if (tactical_reroll_scale > 0.0) {
-                    const double quality_reward = reward_model::reroll_quality_reward(
-                        reroll_old_best_fit, reroll_new_best_fit,
-                        economy.gold, this->info.hp, static_cast<int>(lobby.stage));
-                    action_reward += tactical_reroll_scale * quality_reward;
-                }
-                // Reroll quality already includes liquidity and urgency. Do not
-                // add the generic spending-timing bonus here, which could make
-                // rolling below 50 more profitable than preserving interest.
-            }
         } else if (type == 2) {
             success = economy.gold == old_gold - EconomyEngine::BUY_XP_COST;
-            // Do not give a positive reward merely for spending on XP. Early
-            // levels are less valuable than building a playable board and pairs.
-            action_reward = success ? (lobby.stage <= 2 ? -0.03 : 0.0) : -0.10;
-            const std::int32_t xp_strategy_id =
-                this->strategy.empty() ? 0 : this->strategy.back().strategy;
-            if (success) {
-                double unlocked_board_power = 0.0;
-                // A level-up can unlock a board slot. Credit only a plausible
-                // immediate strength gain when the old board was full and a
-                // deployable bench unit is already available.
-                if (economy.level > old_level && old_board_count >= old_level) {
-                    for (const auto& unit : this->bench) {
-                        if (!unit) continue;
-                        const auto* definition = lobby.catalog->find_by_id(
-                            unit->champion_internal_id);
-                        if (!definition) continue;
-                        unlocked_board_power = std::max(
-                            unlocked_board_power,
-                            static_cast<double>(definition->cost) *
-                                static_cast<double>(unit->star) * 2.0);
-                    }
-                }
-                action_reward += reward_model::xp_level_transition_value(
-                    old_gold, economy.gold, this->info.hp, lobby.stage,
-                    old_level, economy.level, unlocked_board_power,
-                    xp_strategy_id);
-                const double phase_xp_reward =
-                    reward_model::phase_xp_progress_reward(
-                        old_gold, economy.gold, old_level, economy.level,
-                        old_xp, economy.xp, this->info.hp,
-                        static_cast<int>(lobby.stage), xp_strategy_id,
-                        useful_shop_purchase_available);
-                action_reward += phase_xp_reward;
-                // Do not stack the generic surplus fallback on top of the
-                // stronger phase/target-aware signal. Retain it for cases
-                // where no phase progress signal applies.
-                if (phase_xp_reward <= 0.0) {
-                    action_reward += reward_model::surplus_xp_spending_reward(
-                        old_gold, economy.gold, static_cast<int>(lobby.stage),
-                        xp_strategy_id, useful_shop_purchase_available);
-                }
-                action_reward += reward_model::xp_progress_reward(
-                    old_gold, economy.gold, old_level, economy.level,
-                    old_xp, economy.xp, this->info.hp, static_cast<int>(lobby.stage),
-                    xp_strategy_id, useful_shop_purchase_available);
-            }
-            // RewardManager tracks the last rewarded level, initialized to 1,
-            // not merely the level at the start of this action.
+            action_reward = success ? 0.0 : -0.10;
             if (success && economy.level > old_level &&
                 economy.level > this->previous_reward_level) {
-                // A level-up is not automatically worth more than economy.
-                // Scale its progress signal by liquidity and urgency so the
-                // early policy builds pairs and protects interest before routine XP.
-                const double level_scale = this->info.hp <= 30.0 ? 0.65
-                    : (old_gold >= 54 ? 0.30
-                    : (old_gold >= 50 ? 0.12
-                    : (old_gold >= 40 ? 0.10
-                    : (old_gold >= 30 ? 0.08
-                    : (old_gold >= 20 ? 0.04 : 0.02)))));
-                // Trim the extra level-transition shaping by the same
-                // modest factor as the XP-specific marginal reward.
-                action_reward += 0.90 * level_scale *
-                    reward_model::xp_strategy_reward_scale(xp_strategy_id) *
-                    reward_model::level(economy.level, this->previous_reward_level);
+                action_reward += reward_model::level(
+                    economy.level, this->previous_reward_level);
                 this->previous_reward_level = economy.level;
-                // Early XP should not receive the rich-spending bonus unless
-                // the player is already under meaningful health pressure.
-                // Do not stack a generic spending bonus onto an XP action
-                // that breaks the interest floor. Preserve the exception for
-                // critical HP and for spending surplus while staying at 50+.
-                if (this->info.hp <= 30.0 ||
-                    (old_gold >= EconomyEngine::BUY_XP_COST + 50 &&
-                     economy.gold >= 50)) {
-                    action_reward += 0.90 * reward_model::spending_timing_reward(
-                        old_gold, this->info.hp, lobby.stage, 0.0, false, true);
-                }
             }
-            (void)old_level;
-            (void)old_xp;
         } else if (type == 3 || type == 4) {
             bool board_layout_changed = false;
             for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
@@ -5183,190 +4961,28 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     break;
                 }
             }
-            // Tanto a implantação como a substituição alteram o layout.
-            // Capacidade excedida é a única falha com penalidade específica.
             success = board_layout_changed;
-            action_reward = board_capacity_violation
-                ? -0.25
-                : (anti_loop_blocked
-                    ? reward_model::blocked_move()
-                    : (success ? 0.0 : -0.10));
-
-            if (success && !board_capacity_violation && !anti_loop_blocked) {
-                const double positioning_delta =
-                    lobby.positioning_score(player_id) - old_positioning_score;
-                const double synergy_delta =
-                    lobby.synergy_score(player_id) - old_synergy_score;
-
-                // Potential-based shaping makes consecutive movement rewards
-                // telescope: intermediate improvements cannot be farmed and a
-                // sequence is judged by its net final board state.
-                action_reward += reward_model::movement_sequence_reward(
-                    old_positioning_score,
-                    old_synergy_score,
-                    lobby.positioning_score(player_id),
-                    lobby.synergy_score(player_id));
-
-                if (type == 3) {
-                    action_reward += 0.10 * std::tanh(
-                        composition_quality_delta / 5.0);
-
-                    const bool composition_improved =
-                        old_board_count == 0 ||
-                        composition_quality_delta > 1e-6 ||
-                        synergy_delta > 1e-6 ||
-                        positioning_delta > 1e-6;
-
-                    if (new_board_count > old_board_count && composition_improved) {
-                        action_reward += 0.25;
-                        const int board_capacity = std::min(
-                            economy.level, static_cast<int>(kBoardSlots));
-                        if (new_board_count == board_capacity) {
-                            // Capacity bonus only applies when the deployment
-                            // improves composition, synergy, or positioning.
-                            action_reward += reward_model::board_capacity_completion();
-                        }
-                    } else if (new_board_count <= old_board_count && !composition_improved) {
-                        // A replacement that neither grows the team nor improves
-                        // fit/synergy/positioning must not be a free action.
-                        action_reward += reward_model::movement_no_progress_penalty(
-                            composition_quality_delta, synergy_delta, positioning_delta);
-                    }
-                    // Do not casually bench a planned/core unit to make room for
-                    // a weaker or merely equivalent candidate. Allow replacement
-                    // when the new unit has a clear composition-fit advantage.
-                    if (has_displaced_comp_score) {
-                        action_reward += reward_model::core_displacement_penalty(
-                            displaced_core_unit, composition_quality_delta);
-                    }
-                }
-            }
+            action_reward = board_capacity_violation ? -0.25
+                : (anti_loop_blocked ? reward_model::blocked_move()
+                                     : (success ? 0.0 : -0.10));
         } else if (type == 5) {
             success = economy.gold > old_gold;
-            const double sale_synergy_delta =
-                lobby.synergy_score(player_id) - old_synergy_score;
-            const double sale_positioning_delta =
-                lobby.positioning_score(player_id) - old_positioning_score;
-            // A negligible score fluctuation must not justify selling a planned
-            // unit. Require a material, measurable improvement to the active board.
-            const bool sale_compensated_by_board_gain =
-                sale_synergy_delta >= 0.20 || sale_positioning_delta >= 0.10;
-            action_reward = success
-                ? reward_model::sale_quality(
-                    sold_unit_fit_score, sold_core_unit,
-                    sold_unit_protects_upgrade,
-                    sale_bench_was_full,
-                    sale_compensated_by_board_gain,
-                    sale_has_legitimate_context,
-                    sold_unit_upgrade_strength)
-                : -0.10;
-            if (success && !this->strategy.empty()) {
-                action_reward += reward_model::critical_all_in_sale_penalty(
-                    this->strategy.back().strategy,
-                    static_cast<double>(this->info.hp),
-                    sold_core_unit,
-                    sold_unit_protects_upgrade,
-                    sale_compensated_by_board_gain);
-            }
-            if (success && purchase_was_recently_reversed &&
-                old_bench_count < static_cast<int>(kBenchSlots)) {
-                // Do not exempt a unit merely because update_strategy promoted
-                // it to core after the purchase. That would let the buy itself
-                // manufacture the exception and hide the immediate reversal.
+            action_reward = success ? 0.0 : -0.10;
+            if (success && purchase_was_recently_reversed)
                 action_reward += reward_model::reversed_purchase_penalty();
-            }
         } else if (type == 7 || type == 8) {
-            // Item actions use the normal environment/PPO reward path, with a
-            // bounded strategic signal balancing immediate combat value and
-            // long-term composition fit.
-            success = true;
-            action_reward = item_assignment_reward;
+            success = !last_item_action.kind.empty();
+            action_reward = success ? 0.0 : -0.10;
         } else {
             success = true;
-            if (type == 6 && !this->strategy.empty()) {
-                const std::int32_t pass_strategy_id =
-                    this->strategy.back().strategy;
-                const bool useful_xp_spending_available =
-                    reward_model::phase_xp_opportunity_available(
-                        economy.gold, economy.level, this->info.hp,
-                        static_cast<int>(lobby.stage), pass_strategy_id);
-                action_reward += reward_model::pass_opportunity_penalty(
-                    economy.gold, this->info.hp, lobby.stage,
-                    useful_shop_purchase_available,
-                    useful_xp_spending_available);
-            }
+            action_reward = 0.0;
         }
 
-        // Give spending decisions immediate feedback for the opportunity cost
-        // of liquid gold and the interest breakpoints. This is a potential delta,
-        // not a per-step bonus, so repeatedly PASSing cannot farm reward.
-        // Small, bounded strategy shaping: rewards the intended action, not
-        // merely the mode label. The active mode is the one used to choose this action.
-        const std::int32_t active_strategy_id =
-            this->strategy.empty() ? 0 : this->strategy.back().strategy;
-        action_reward += reward_model::strategy_action_reward(
-            active_strategy_id,
-            type,
-            old_gold,
-            economy.gold,
-            static_cast<double>(this->info.hp),
-            static_cast<int>(lobby.stage),
-            success && (buy_strategy_approved || buy_completes_upgrade || buy_builds_pair),
-            success && reroll_new_best_fit > reroll_old_best_fit,
-            success && economy.level > old_level,
-            active_strategy_id == 2 || active_strategy_id == 3,
-            lobby.board_power(player_id),
-            useful_shop_purchase_available);
+        // One factual gold-transition term; no strategy-dependent liquidity
+        // multiplier, nominal reserve target, or duplicated action shaping.
+        action_reward += reward_model::gold_change_reward(old_gold, economy.gold);
 
-        // A policy-specific bonus must not erase the shared economic objective:
-        // preserve the path to 50 gold, except when the board is already full
-        // and leveling unlocks a real slot, or health pressure is critical.
-        if (type == 2 && success && old_gold < 50 &&
-            this->info.hp > 30.0 && old_board_count < old_level) {
-            // Interest loss is already represented by gold_change_reward().
-            // Keep XP slightly costly below 50, but do not stack a large
-            // penalty that makes reroll the less-bad choice outside SLOWROLL.
-            action_reward -= active_strategy_id == 3 ? 0.12 : 0.025;
-        }
-        // Even a better shop is usually not worth sacrificing interest below
-        // 50. Critical health is the explicit exception; at/above 50 the
-        // liquidity-scaled reroll quality signal decides whether to spend.
-        if (type == 1 && success && old_gold < 50 && this->info.hp > 40.0) {
-            // Small additional opportunity cost: discourage marginal rolls,
-            // without suppressing genuinely useful rolls under pressure.
-            action_reward -= 0.07;
-        }
-
-        // Charge a small, bounded action cost only for extra consecutive
-        // movements. This preserves useful multi-step repositioning while
-        // discouraging long shuffling sequences. A non-move or failed move
-        // closes the sequence; the next round starts a fresh one.
-        if (type == 3 || type == 4) {
-            if (success && !board_capacity_violation && !anti_loop_blocked) {
-                action_reward += reward_model::movement_sequence_action_cost(
-                    movement_sequence_length);
-                movement_sequence_length = std::min<std::uint32_t>(
-                    movement_sequence_length + 1, 15);
-            } else {
-                movement_sequence_length = 0;
-            }
-        } else {
-            movement_sequence_length = 0;
-        }
-
-        const double action_gold_reward =
-            reward_model::gold_change_reward(old_gold, economy.gold);
-        const std::int32_t gold_reward_strategy_id =
-            this->strategy.empty() ? 0 : this->strategy.back().strategy;
-        // ALL_IN is the explicit exception to interest preservation: retain
-        // some opportunity-cost signal, but do not let crossing below 50
-        // overwhelm the action's survival-oriented spending reward.
-        const double liquidity_reward_scale =
-            gold_reward_strategy_id == 4 && (type == 0 || type == 2) ? 0.35 : 1.0;
-        action_reward += action_gold_reward * liquidity_reward_scale;
-
-        // Persist the complete buy reward so a later proven reversal can be
-        // prevented from making the aggregate purchase->sale sequence positive.
+        // Persist the complete purchase reward for identity-correlated reversal accounting.
         if (type == 0 && success && !bought_upgrade) {
             for (auto it = this->recent_purchases.rbegin();
                  it != this->recent_purchases.rend(); ++it) {
@@ -5381,9 +4997,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 reversed_purchase_prior_reward, action_reward);
         }
 
-        // MiniTFTEnv.step() returns the action-specific reward directly.
-        // RewardManager's broader state components are not called by the
-        // Python environment, so applying them here would change PPO targets.
+        // The native strategic and composition owners refresh after the action.
         lobby.update_strategy(player_id);
         // Capture actual action economics before round income is resolved.
         // Net gold after TFTEngine::step may include income and cannot be used
