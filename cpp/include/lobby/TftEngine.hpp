@@ -219,6 +219,13 @@ struct AuditRetiredEquippedItemCount { std::string unit_uuid; std::string catalo
 struct AuditRetiredAnvilSnapshot { std::uint64_t sequence{0}; std::int32_t kind{-1}; std::vector<std::string> options; };
 struct AuditPlayerSnapshot {
     std::int32_t player_id{-1};
+    // Player survival and standing facts, correlated by the enclosing snapshot identity.
+    double hp{100.0};
+    bool alive{true};
+    std::int32_t wins{0};
+    std::int32_t losses{0};
+    std::optional<std::int32_t> placement;
+    std::optional<std::int32_t> opponent_id;
     std::int32_t gold{0};
     std::int32_t level{0};
     std::int32_t xp{0};

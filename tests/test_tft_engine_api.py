@@ -1219,3 +1219,29 @@ def test_same_seed_replays_game_state_without_reusing_engine_identity():
     finally:
         first.close()
         second.close()
+
+
+def test_audit_snapshot_publishes_player_survival_and_standing():
+    """Native player HP/liveness/record and optional standings share the audit snapshot identity."""
+    engine = TFTLobby(seed=20261118)
+
+    try:
+        reset = engine.reset()
+        snapshot = engine.get_audit_snapshot()
+
+        assert snapshot["engine_instance_id"] == reset["engine_instance_id"]
+        assert snapshot["episode_id"] == reset["episode_id"]
+        assert snapshot["snapshot_sequence"] == reset["decision_sequence"]
+        assert snapshot["player_decision_sequences"] == reset["player_decision_sequences"]
+        assert len(snapshot["players"]) == 8
+
+        for player_id, player in enumerate(snapshot["players"]):
+            assert player["player_id"] == player_id
+            assert player["hp"] == 100.0
+            assert player["alive"] is True
+            assert player["wins"] == 0
+            assert player["losses"] == 0
+            assert player["placement"] is None
+            assert player["opponent_id"] is None
+    finally:
+        engine.close()
