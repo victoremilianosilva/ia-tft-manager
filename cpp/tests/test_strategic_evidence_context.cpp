@@ -17,7 +17,6 @@ StrategicEvidenceContextInput observed_input() {
     input.direction_identity = "direction:v2:Bruiser";
     input.direction_source = "native_strategic_commitment";
     input.focus_traits = {"Bruiser", "Invoker"};
-    input.core_unit_ids = {10, 11};
     input.provenance = {
         {"board", "native_board_snapshot", "observed"},
         {"shop", "native_shop_snapshot", "observed"}
