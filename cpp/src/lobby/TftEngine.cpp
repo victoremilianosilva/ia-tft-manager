@@ -6657,7 +6657,6 @@ StepResult TFTEngine::step(
                 economy_event.gold_before_income = economy_result.gold_before_income;
                 economy_event.new_gold = economy_result.new_gold;
                 economy_event.base_gold = economy_result.base_gold;
-                economy_event.passive_gold = economy_result.passive_gold;
                 economy_event.interest_gold = economy_result.interest_gold;
                 economy_event.streak_gold = economy_result.streak_gold;
                 economy_event.win_gold = economy_result.win_gold;
