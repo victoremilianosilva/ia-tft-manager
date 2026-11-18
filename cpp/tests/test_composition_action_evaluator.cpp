@@ -109,10 +109,6 @@ void validated_economy_and_item_evidence_reach_action_evaluator() {
     evidence.round = 9;
     const auto set_valid = [&](EvidenceSourceMetadata& m, const std::string& source) {
         m.source = source;
-        m.source_version = 4;
-        m.match_id = 55;
-        m.player_id = 0;
-        m.composition_id = "comp-a";
         m.source_round = 9;
         m.expected_round = 9;
         m.quality = EvidenceQuality::Valid;
