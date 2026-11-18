@@ -125,7 +125,7 @@ def test_viewer_validates_semantic_projection_contract_and_catalog_identity():
     _validate_semantic_checkpoint_payload(
         {"semantic_state_contract": contract}, state, catalog
     )
-    with pytest.raises(ValueError, match="sem pesos"):
+    with pytest.raises(ValueError, match="semantic_state_contract"):
         _validate_semantic_checkpoint_payload({}, state, catalog)
     with pytest.raises(ValueError, match="catalog"):
         _validate_semantic_checkpoint_payload(
