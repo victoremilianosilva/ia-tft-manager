@@ -7481,7 +7481,7 @@ TFTEngine::get_strategies() const {
         projection.composition_direction = commitment.composition_direction;
         projection.composition_candidate_direction =
             commitment.candidate_composition_direction;
-        projection.composition_candidate_strength = commitment.candidate_score;
+        projection.composition_candidate_strength = 0.0; // no legacy strength-equivalent producer
         projection.composition_candidate_streak = commitment.consecutive_reviews;
         projection.composition_direction_change_round =
             static_cast<std::int32_t>(commitment.selected_round);
