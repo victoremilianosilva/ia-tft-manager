@@ -550,6 +550,14 @@ struct StrategyInfo {
     double planned_composition_score{0.0};
     // Estimated chance that an unowned planned champion appears in a five-slot shop.
     std::vector<std::string> planned_acquisition_notes;
+
+    // Read-only compatibility projection metadata. These fields identify
+    // whether the Viewer-facing legacy shape was populated from canonical
+    // native strategic owners or is unavailable; they are not PPO inputs.
+    std::string composition_projection_source{"legacy_strategy_state"};
+    std::string composition_projection_status{"legacy_unprojected"};
+    std::uint64_t composition_version{0};
+
     std::vector<std::pair<std::string, std::int32_t>> active_traits;
     std::vector<std::pair<std::string, std::int32_t>> unit_counts;
     std::vector<std::pair<std::int32_t, std::int32_t>> unit_counts_by_id;
