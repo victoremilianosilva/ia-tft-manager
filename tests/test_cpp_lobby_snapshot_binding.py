@@ -41,7 +41,7 @@ class FakeNativeLobby:
     def _native_state_snapshot(self):
         return {
             "contract_id": "tft.native-state-snapshot",
-            "contract_version": 2,
+            "contract_version": 3,
             "board_geometry_id": "tft.board-grid.rectangular-4x7",
             "board_geometry_version": 1,
             "board_rows": 4,
@@ -64,13 +64,8 @@ class FakeNativeLobby:
             "pvp_result_credit_events": [],
             "shared_pool": {
                 "contract_id": "tft.shared-champion-pool-snapshot",
-                "contract_version": 1,
-                "source_namespace": "tft.engine.observation-snapshot",
+                "contract_version": 2,
                 "producer": "UnitPool::available",
-                "engine_instance_id": f"fake-engine-{id(self)}",
-                "episode_id": self.episode_id,
-                "snapshot_sequence": self.decision_sequence,
-                "player_decision_sequences": list(self.player_decision_sequences),
                 "total_available": 17,
                 "champions": [
                     {"champion_internal_id": 0, "champion_id": "Test_A", "cost": 1, "initial_count": 30, "available_count": 10},

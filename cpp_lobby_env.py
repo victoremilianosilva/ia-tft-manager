@@ -139,7 +139,7 @@ class CppTFTLobbyWrapper:
             value.get("contract_id") != "tft.native-state-snapshot"
             or isinstance(version, bool)
             or not isinstance(version, int)
-            or version != 2
+            or version != 3
         ):
             raise RuntimeError("Versão/identidade do contrato de snapshot estruturado incompatível.")
         geometry_version = value.get("board_geometry_version")
@@ -186,16 +186,19 @@ class CppTFTLobbyWrapper:
             pool.get("contract_id") != "tft.shared-champion-pool-snapshot"
             or isinstance(pool_version, bool)
             or not isinstance(pool_version, int)
-            or pool_version != 1
-            or pool.get("source_namespace") != "tft.engine.observation-snapshot"
+            or pool_version != 2
             or pool.get("producer") != "UnitPool::available"
         ):
             raise RuntimeError("Contrato do snapshot compartilhado de pool incompatível.")
-        if pool.get("engine_instance_id") != expected_identity["engine_instance_id"]:
-            raise RuntimeError("Snapshot do pool pertence a outra instância da Engine.")
-        for key in ("episode_id", "snapshot_sequence", "player_decision_sequences"):
-            if pool.get(key) != value.get(key):
-                raise RuntimeError("Snapshot do pool não corresponde à identidade do snapshot nativo.")
+        inherited_pool_envelope = (
+            "source_namespace", "engine_instance_id", "episode_id",
+            "snapshot_sequence", "player_decision_sequences",
+        )
+        if any(key in pool for key in inherited_pool_envelope):
+            raise RuntimeError(
+                "Snapshot do pool duplicou campos do envelope nativo; "
+                "a correlação deve ser herdada do AuditSnapshot."
+            )
         total_available = pool.get("total_available")
         if isinstance(total_available, bool) or not isinstance(total_available, int) or total_available < 0:
             raise RuntimeError("Snapshot do pool contém total_available inválido.")
