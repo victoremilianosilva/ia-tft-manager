@@ -2135,69 +2135,42 @@ struct TFTEngine::Impl {
     }
 
     std::uint64_t board_evaluation_signature(std::size_t player_index) const {
-        const auto& env = player_envs[player_index];
-        std::size_t hash = 0;
-        const auto mix = [&hash](std::size_t value) {
-            hash ^= value + static_cast<std::size_t>(0x9e3779b97f4a7c15ULL) +
-                (hash << 6U) + (hash >> 2U);
+        std::uint64_t hash = 1469598103934665603ULL;
+        const auto mix = [&hash](std::uint64_t value) {
+            hash ^= value;
+            hash *= 1099511628211ULL;
         };
-        const auto add_int = [&mix](std::int32_t value) {
-            mix(std::hash<std::int32_t>{}(value));
+        const auto add_string = [&](const std::string& value) {
+            mix(static_cast<std::uint64_t>(std::hash<std::string>{}(value)));
         };
-        const auto add_string = [&mix](const std::string& value) {
-            mix(std::hash<std::string>{}(value));
-        };
-        const auto add_double = [&mix](double value) {
-            mix(std::hash<double>{}(value));
-        };
-        const auto add_unit = [&](const std::optional<UnitInstance>& maybe_unit,
-                                  bool include_equipment) {
-            mix(maybe_unit.has_value() ? 1U : 0U);
-            if (!maybe_unit) return;
-            const auto& unit = *maybe_unit;
-            add_int(unit.champion_internal_id);
-            add_int(unit.star);
-            add_string(unit.champion_id);
-            if (!include_equipment) return;
-            mix(unit.items.size());
-            for (const auto& item : unit.items) {
-                add_double(item.health);
-                add_double(item.armor);
-                add_double(item.magic_resist);
-                add_double(item.attack_damage);
-                add_double(item.attack_speed);
-                add_double(item.ability_power);
-                add_double(item.critical_strike_chance);
+        const auto add_unit = [&](const std::optional<UnitInstance>& unit) {
+            if (!unit) { mix(0); return; }
+            mix(1);
+            mix(static_cast<std::uint64_t>(unit->champion_internal_id + 1));
+            mix(static_cast<std::uint64_t>(unit->star));
+            add_string(unit->uuid);
+            for (const auto& item : unit->items) {
+                add_string(item.api_name);
                 add_string(item.grants_trait);
             }
         };
-
-        // Position and occupancy are significant to tactical evaluation.
-        for (const auto& unit : env.board) add_unit(unit, true);
-        for (const auto& unit : env.bench) add_unit(unit, false);
-        add_int(env.economy.level);
-
-        const StrategyInfo empty_strategy{};
-        const StrategyInfo& active = env.strategy.empty()
-            ? empty_strategy : env.strategy.back();
-        add_int(active.planned_main_carry_id);
-        add_string(active.composition_direction);
-        for (const auto& [trait, weight] : active.composition_focus_weights) {
-            add_string(trait);
-            add_double(weight);
+        for (const auto& unit : player_envs[player_index].board) add_unit(unit);
+        for (const auto& unit : player_envs[player_index].bench) add_unit(unit);
+        mix(static_cast<std::uint64_t>(player_envs[player_index].economy.level));
+        const auto& active = composition_intelligence_players[player_index].active.current();
+        if (active) {
+            mix(active->version);
+            add_string(active->candidate.composition_id);
+            mix(static_cast<std::uint64_t>(active->candidate.main_carry_id + 1));
+            for (const auto& target : active->candidate.units) {
+                mix(static_cast<std::uint64_t>(target.champion_id + 1));
+                mix(target.core ? 1 : 0);
+            }
+        } else {
+            mix(0);
         }
-        mix(active.composition_focus_weights.size());
-        for (const auto id : active.core_unit_ids) add_int(id);
-        mix(active.core_unit_ids.size());
-        for (const auto id : active.planned_unit_ids) add_int(id);
-        mix(active.planned_unit_ids.size());
-        for (const auto& trait : active.core_traits) add_string(trait);
-        mix(active.core_traits.size());
-        for (const auto& trait : active.planned_traits) add_string(trait);
-        mix(active.planned_traits.size());
-        for (const auto& name : active.core_units) add_string(name);
-        mix(active.core_units.size());
-        return static_cast<std::uint64_t>(hash);
+        add_string(strategic_planner_commitments[player_index].composition_direction);
+        return hash;
     }
 
     strategy::BoardEvaluationResult board_evaluation(
