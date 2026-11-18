@@ -265,6 +265,38 @@ py::dict audit_snapshot_to_dict(
         combat_death_events.append(std::move(row));
     }
     result["combat_death_events"] = std::move(combat_death_events);
+    py::list economy_resolution_events;
+    for (const auto& event : snapshot.economy_resolution_events) {
+        py::dict row;
+        row["contract_id"] = event.contract_id;
+        row["contract_version"] = event.contract_version;
+        row["source_namespace"] = event.source_namespace;
+        row["producer"] = event.producer;
+        row["engine_instance_id"] = event.engine_instance_id;
+        row["episode_id"] = event.episode_id;
+        row["snapshot_sequence"] = event.snapshot_sequence;
+        row["player_decision_sequence"] = event.player_decision_sequence;
+        row["player_id"] = event.player_id;
+        row["resolved_after_round"] = event.resolved_after_round;
+        row["income_for_round"] = event.income_for_round;
+        row["old_gold"] = event.old_gold;
+        row["gold_before_interest"] = event.gold_before_interest;
+        row["gold_before_income"] = event.gold_before_income;
+        row["new_gold"] = event.new_gold;
+        row["base_gold"] = event.base_gold;
+        row["passive_gold"] = event.passive_gold;
+        row["interest_gold"] = event.interest_gold;
+        row["streak_gold"] = event.streak_gold;
+        row["win_gold"] = event.win_gold;
+        row["total_gold"] = event.total_gold;
+        row["old_level"] = event.old_level;
+        row["new_level"] = event.new_level;
+        row["leveled_up"] = event.leveled_up;
+        row["xp"] = event.xp;
+        row["xp_to_next"] = event.xp_to_next;
+        economy_resolution_events.append(std::move(row));
+    }
+    result["economy_resolution_events"] = std::move(economy_resolution_events);
     const auto& pool = snapshot.shared_pool;
     py::dict pool_dict;
     pool_dict["contract_id"] = pool.contract_id;
