@@ -7500,7 +7500,7 @@ TFTEngine::get_strategies() const {
         projection.comp_stabilize_start_round = -1;
 
         projection.core_units.clear();
-        projection.core_unit_ids = commitment.core_unit_ids;
+        projection.core_unit_ids.clear();
         projection.core_traits.clear();
         projection.planned_units.clear();
         projection.planned_unit_ids.clear();
@@ -7508,17 +7508,6 @@ TFTEngine::get_strategies() const {
         projection.planned_main_carry_id = -1;
         projection.planned_composition_score = 0.0;
         projection.planned_acquisition_notes.clear();
-
-        for (const auto id : commitment.core_unit_ids) {
-            const auto* definition = impl_->catalog->find_by_id(id);
-            if (!definition) continue;
-            projection.core_units.push_back(definition->api_name);
-            for (const auto& trait : definition->traits)
-                if (std::find(projection.core_traits.begin(),
-                              projection.core_traits.end(), trait) ==
-                    projection.core_traits.end())
-                    projection.core_traits.push_back(trait);
-        }
 
         if (active) {
             const auto& candidate = active->candidate;
@@ -7534,6 +7523,15 @@ TFTEngine::get_strategies() const {
                                   projection.planned_traits.end(), trait) ==
                         projection.planned_traits.end())
                         projection.planned_traits.push_back(trait);
+                if (unit.core) {
+                    projection.core_unit_ids.push_back(unit.champion_id);
+                    projection.core_units.push_back(definition->api_name);
+                    for (const auto& trait : definition->traits)
+                        if (std::find(projection.core_traits.begin(),
+                                      projection.core_traits.end(), trait) ==
+                            projection.core_traits.end())
+                            projection.core_traits.push_back(trait);
+                }
                 if (unit.champion_id == candidate.main_carry_id) {
                     projection.composition_focus = definition->api_name;
                     projection.composition_focus_id = definition->internal_id;
