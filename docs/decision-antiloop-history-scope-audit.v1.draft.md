@@ -101,22 +101,22 @@ The current action masks remain independent legality inputs. Anti-loop history i
 ## 6. Field status and contract gaps
 
 - Position signatures: **native observed/internal**, player-scoped by owning AntiLoopEngine; no explicit episode field.
-- Successful movement records: **native observed/internal**, bounded and missing typed action sequence.
-- Blocked movement records: **native derived/internal**, tied to a board signature; no decision ID.
+- Successful movement records: **native observed/internal**, bounded and not individually decision-sequenced; the separate #475 JSONL stream records correlated MoveRegistered/MoveSucceeded events.
+- Blocked movement records: **native derived/internal**, tied to a board signature; the operational record has no decision ID, while the separate #475 MoveBlocked event carries decision identity.
 - State visit counts: **native derived/internal**, round-windowed.
 - Execution/mask metrics: **native derived diagnostics**, lifetime-accumulated across episode reset.
 - Recent purchase records: **native derived reward bookkeeping**, purchase-only and horizon-limited.
 - Action serial: **native derived control metadata**, per player and reset each episode.
 - PPO temporal scalars: **native derived and delivered**, but not lossless history.
-- Typed ordered decision history delivered to Actor/Critic: **not produced / not exposed to PPO**.
-- Explicit linkage from AntiLoop records to Viewer/Engine/PPO decision envelope: **not correlated**.
+- Typed ordered decision history delivered to Actor/Critic: **not delivered to PPO**. A bounded typed diagnostic event tail is exposed separately through pybind (#475).
+- Explicit linkage: operational AntiLoop records remain uncorrelated to a decision envelope; #475 JSONL events are correlated to Engine/episode/player/decision sequence, but are not linked into Viewer or PPO rollout.
 
 ## 7. Required post-Gate-8 acceptance
 
 1. Keep AntiLoop legality state, temporal observation summaries, reward-credit bookkeeping and any future decision history as distinct semantic surfaces.
-2. If a typed decision history is introduced, identify producer, event inclusion rules, stable sequence namespace, completeness, horizon, reset and stale behavior.
-3. Preserve Engine scope, episode, player and decision identity for every retained event.
-4. Distinguish action attempts, rejected/blocked candidates, successful actions and resulting state transitions.
+2. Before any typed history is promoted beyond diagnostics, define event completeness, source sequence, horizon, reset/stale behavior and exact Actor/Critic/replay consumers; #475 is a bounded diagnostic subset, not a complete action history.
+3. Preserve Engine scope, episode, player and decision identity for every #475 JSONL event; do not imply that the operational AntiLoop state records carry those fields.
+4. Distinguish the JSONL event kinds (state observed, move registered, move blocked, move succeeded); do not interpret them as a complete record of all player actions.
 5. Bind any history-derived observation to the same immutable observation/mask decision envelope.
 6. Preserve the existing independent native masks as the final legality authority.
 7. Test round boundary, episode reset, consecutive episodes, same-seed UUID repetition, player isolation, bounded eviction and metrics accumulation.
@@ -129,7 +129,7 @@ No runtime implementation or tensor-layout decision is authorized by this audit.
 1. **Prior problem:** the schema/source audit identified decision-history gaps, but AntiLoop history, reward purchase bookkeeping and scalar temporal observations needed to be separated by actual producer and lifecycle.
 2. **Technical justification:** these systems have different event inclusion, retention, reset and consumer semantics; treating them as one history would invent completeness and causal sequence that the code does not provide.
 3. **New responsibility:** this note owns the native anti-loop and temporal-history source map, including the distinction between movement history, reward bookkeeping and PPO scalar summaries.
-4. **Contract and invariants:** AntiLoop state is episode-local while metrics accumulate; recent purchases are not all actions; scalar temporal features are not typed history; no record has a globally correlated decision identity.
+4. **Contract and invariants:** operational AntiLoop state is episode-local while metrics accumulate; recent purchases are not all actions; scalar temporal features are not typed history; the #475 JSONL stream is bounded and per-event decision-correlated but diagnostic-only.
 5. **Cross-component impacts:** AntiLoopEngine, DecisionHistory, PlayerEnv, action masks, reward credit assignment, observation builder, pybind diagnostics, PPO Actor/Critic and RolloutBuffer.
 6. **Objective validation:** history structures, mutation callsites, round/episode reset behavior, recent-purchase fields and temporal observation projection are source-traced; all surfaces have explicit status; no runtime/tensor changes are made.
 
