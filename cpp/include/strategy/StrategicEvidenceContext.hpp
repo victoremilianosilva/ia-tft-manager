@@ -43,7 +43,6 @@ struct StrategicEvidenceContext {
     std::vector<StrategicUnitCandidate> observed_units;
     std::string proposed_or_confirmed_direction;
     std::vector<std::string> derived_focus_traits;
-    std::vector<std::int32_t> derived_core_unit_ids;
     std::string direction_identity;
     std::string direction_source{"none"};
 
@@ -76,7 +75,6 @@ struct StrategicEvidenceContextInput {
     std::string direction_identity;
     std::string direction_source{"native_strategic_commitment"};
     std::vector<std::string> focus_traits;
-    std::vector<std::int32_t> core_unit_ids;
     std::vector<StrategicEvidenceProvenance> provenance;
 };
 
@@ -93,7 +91,6 @@ public:
         out.direction_identity = std::move(input.direction_identity);
         out.direction_source = std::move(input.direction_source);
         out.derived_focus_traits = std::move(input.focus_traits);
-        out.derived_core_unit_ids = std::move(input.core_unit_ids);
 
         if (input.player_id < 0 || input.sequence == 0 ||
             input.observed_context.player_id != input.player_id ||
