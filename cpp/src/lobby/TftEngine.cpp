@@ -3093,7 +3093,6 @@ struct TFTEngine::Impl {
                 candidate.source_player_id = generated.player_id;
                 candidate.source_round = generated.round;
                 candidate.source_sequence = generated.source_sequence;
-                candidate.candidate_revision = generated.candidate_revision;
                 candidate.source = composition_intelligence::CompositionSource::Native;
                 candidate.source_reference = "native-strategic-composition-generator";
                 candidate.source_score = generated.score;
