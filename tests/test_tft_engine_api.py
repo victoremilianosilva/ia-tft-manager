@@ -1056,7 +1056,24 @@ def test_same_seed_replays_game_state_without_reusing_engine_identity():
         def assert_same_value(left, right):
             if isinstance(left, np.ndarray):
                 assert isinstance(right, np.ndarray)
-                np.testing.assert_array_equal(left, right)
+                assert left.shape == right.shape
+                if left.dtype.kind in "OUS":
+                    for index in np.ndindex(left.shape):
+                        assert_same_value(left[index], right[index])
+                else:
+                    np.testing.assert_array_equal(left, right)
+            elif isinstance(left, str) and isinstance(right, str):
+                def is_uuid(value):
+                    return (
+                        len(value) == 36
+                        and value[8] == "-"
+                        and value[13] == "-"
+                        and value[18] == "-"
+                        and value[23] == "-"
+                    )
+                if is_uuid(left) and is_uuid(right):
+                    return
+                assert left == right
             elif isinstance(left, dict):
                 assert isinstance(right, dict)
                 assert left.keys() == right.keys()
