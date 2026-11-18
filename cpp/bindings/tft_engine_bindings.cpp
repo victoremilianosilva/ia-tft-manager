@@ -562,6 +562,9 @@ py::list strategies_to_list(
             item["planned_main_carry_id"] = -1;
             item["planned_composition_score"] = 0.0;
             item["planned_acquisition_notes"] = py::list();
+            item["composition_projection_source"] = "unavailable";
+            item["composition_projection_status"] = "no_strategy_snapshot";
+            item["composition_version"] = 0;
             item["active_traits"] = py::dict();
             item["unit_counts"] = py::dict();
             item["unit_counts_by_id"] = py::dict();
@@ -678,6 +681,9 @@ py::list strategies_to_list(
             item["planned_main_carry_id"] = strategy.planned_main_carry_id;
             item["planned_composition_score"] = strategy.planned_composition_score;
             item["planned_acquisition_notes"] = strategy.planned_acquisition_notes;
+            item["composition_projection_source"] = strategy.composition_projection_source;
+            item["composition_projection_status"] = strategy.composition_projection_status;
+            item["composition_version"] = strategy.composition_version;
             py::dict active_traits;
             for (const auto& [trait, count] : strategy.active_traits)
                 active_traits[py::str(trait)] = count;
@@ -1065,6 +1071,12 @@ PYBIND11_MODULE(tft_engine, module) {
             "get_strategies",
             [](const TFTEngine& self) {
                 return strategies_to_list(self.get_strategies());
+            }
+        )
+        .def(
+            "get_viewer_strategy_snapshots",
+            [](const TFTEngine& self) {
+                return strategies_to_list(self.get_viewer_strategy_snapshots());
             }
         )
         .def(

@@ -37,6 +37,38 @@ assert "strategic_context.current_core_traits" in composition_intelligence_input
 assert "profile.preferred_traits = strategic_context.current_core_traits;" in composition_intelligence_input
 assert "match_id" in context_header and "player_id" in context_header
 assert "sequence" in context_header and "provenance" in context_header
+assert "derived_core_unit_ids" not in context_header
+assert "std::vector<std::int32_t> core_unit_ids" not in context_header
+
+# The remaining item profile helper is explicitly isolated as legacy PPO/reward
+# compatibility. New Composition Intelligence item evidence is sourced from the
+# native StrategicSharedContext in the dedicated pipeline below.
+legacy_profiles_start = source.index("legacy_item_unit_profiles")
+legacy_profiles_end = source.index("const UnitInstance* item_target_unit", legacy_profiles_start)
+legacy_profiles_source = source[legacy_profiles_start:legacy_profiles_end]
+assert "player.strategy" in legacy_profiles_source
+assert "unit_composition_score" in legacy_profiles_source
+assert "legacy_item_unit_profiles(i)" in source
+assert "lobby.legacy_item_unit_profiles(player_id)" in source
+assert "profile.preferred_traits = strategic_context.current_core_traits;" in source
+
+# Viewer-facing legacy shape is now a one-way projection from canonical owners.
+viewer_projection_start = source.index("TFTEngine::get_viewer_strategy_snapshots() const")
+viewer_projection_end = source.index("RewardState TFTEngine::get_reward_state", viewer_projection_start)
+viewer_projection_source = source[viewer_projection_start:viewer_projection_end]
+assert "strategic_planner_commitments[i]" in viewer_projection_source
+legacy_strategy_api_start = source.index("TFTEngine::get_strategies() const")
+legacy_strategy_api_end = source.index("TFTEngine::get_viewer_strategy_snapshots() const", legacy_strategy_api_start)
+legacy_strategy_api_source = source[legacy_strategy_api_start:legacy_strategy_api_end]
+assert "strategic_planner_commitments" not in legacy_strategy_api_source
+wrapper = Path("cpp_lobby_env.py").read_text(encoding="utf-8")
+viewer_wrapper = wrapper.split("def get_strategy_snapshots", 1)[1].split("def get_strategies", 1)[0]
+assert "get_viewer_strategy_snapshots()" in viewer_wrapper
+assert "composition_intelligence_players[i].active.current()" in viewer_projection_source
+assert "composition_projection_source = \"tft_strategic_engine\"" in viewer_projection_source
+assert "canonical_active_composition" in viewer_projection_source
+assert "native_composition_unavailable" in viewer_projection_source
+assert "unit_composition_score" not in composition_intelligence_input
 
 evidence_header = Path("cpp/include/composition_intelligence/PlannerEvidenceAdapters.hpp").read_text(encoding="utf-8")
 diagnostics_header = Path("cpp/include/composition_intelligence/CompositionDiagnostics.hpp").read_text(encoding="utf-8")
@@ -74,3 +106,14 @@ for forbidden in ("StrategyInfo", "CompositionDirectionPolicy", "CompositionPlan
     assert forbidden not in context_header, f"legacy type dependency: {forbidden}"
 
 print("strategic evidence context architecture checks passed")
+
+planning_header = Path("cpp/include/strategy/StrategicPlanning.hpp").read_text(encoding="utf-8")
+assert "std::vector<std::int32_t> core_unit_ids;" not in planning_header
+
+# PlayerEnv owns one current optional StrategyInfo, not a one-element history.
+assert "std::optional<StrategyInfo> strategy;" in source
+assert "std::vector<StrategyInfo> strategy;" not in source
+assert "player_envs[i].strategy = StrategyInfo{};" in source
+assert "strategy_snapshot = std::move(info);" in source
+assert "result[i].push_back(*impl_->player_envs[i].strategy);" in source
+assert "strategy.back()" not in source and "strategy.empty()" not in source

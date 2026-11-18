@@ -450,7 +450,7 @@ struct TFTEngine::Impl {
         decision::AntiLoopEngine anti_loop;
         PlayerInfo info{};
         PlayerActionMasks action_masks{};
-        std::vector<StrategyInfo> strategy;
+        std::optional<StrategyInfo> strategy;
         AntiLoopMetrics anti_loop_metrics{};
         PlayerEconomy economy{};
 
@@ -882,7 +882,10 @@ struct TFTEngine::Impl {
     // MÁSCARAS DE AÇÃO
     // ========================================================
 
-    std::vector<items::UnitProfile> item_unit_profiles(std::size_t player_index) const {
+    // Legacy PPO/reward compatibility profile. New Composition Intelligence
+    // item evidence is built separately from StrategicSharedContext and must
+    // never consume this compatibility projection.
+    std::vector<items::UnitProfile> legacy_item_unit_profiles(std::size_t player_index) const {
         std::vector<items::UnitProfile> profiles;
         profiles.reserve(kBoardSlots + kBenchSlots);
         const auto& player = player_envs[player_index];
@@ -891,7 +894,7 @@ struct TFTEngine::Impl {
             if (!def || unit.uuid.empty()) return;
             const auto& stats = def->stats;
             const auto& combat = def->combat_profile;
-            const auto strategy = player.strategy.empty() ? StrategyInfo{} : player.strategy.back();
+            const StrategyInfo strategy = player.strategy.value_or(StrategyInfo{});
             const double fit = unit_composition_score(strategy, *def, unit.star, trait_milestones);
             std::vector<std::string> preferred_traits = strategy.core_traits;
             preferred_traits.insert(preferred_traits.end(),
@@ -1289,8 +1292,7 @@ struct TFTEngine::Impl {
 
             player_envs[i].action_masks = make_default_masks();
 
-            player_envs[i].strategy.clear();
-            player_envs[i].strategy.push_back(StrategyInfo{});
+            player_envs[i].strategy = StrategyInfo{};
 
             player_envs[i].anti_loop_metrics = AntiLoopMetrics{};
 
@@ -1331,8 +1333,8 @@ struct TFTEngine::Impl {
             }
 
             const auto& economy = player_envs[i].economy;
-            const auto& strategy = player_envs[i].strategy.empty()
-                ? StrategyInfo{} : player_envs[i].strategy.back();
+            const StrategyInfo strategy =
+                player_envs[i].strategy.value_or(StrategyInfo{});
 
             std::array<int, kBoardSlots> board_roles{};
             std::array<bool, kBoardSlots> board_occupied{};
@@ -1599,7 +1601,7 @@ struct TFTEngine::Impl {
             out[offset++] = pending_anvil &&
                 pending_anvil->kind == items::ItemAnvilKind::COMPLETED_ITEM ? 1.0f : 0.0f;
             const auto item_profiles = player_envs[i].item_engine
-                ? item_unit_profiles(i) : std::vector<items::UnitProfile>{};
+                ? legacy_item_unit_profiles(i) : std::vector<items::UnitProfile>{};
             // Scoped to this observation so changed unit stats/traits never reuse stale fits.
             items::ItemFitCache item_fit_cache(player_envs[i].item_engine.get());
             for (std::size_t option_index = 0; option_index < kAnvilOptionCount; ++option_index) {
@@ -2193,9 +2195,8 @@ struct TFTEngine::Impl {
         for (const auto& unit : env.bench) add_unit(unit, false);
         add_int(env.economy.level);
 
-        const StrategyInfo empty_strategy{};
-        const StrategyInfo& active = env.strategy.empty()
-            ? empty_strategy : env.strategy.back();
+        const StrategyInfo active =
+            env.strategy.value_or(StrategyInfo{});
         add_int(active.planned_main_carry_id);
         add_string(active.composition_direction);
         for (const auto& [trait, weight] : active.composition_focus_weights) {
@@ -2222,8 +2223,8 @@ struct TFTEngine::Impl {
         const auto signature = board_evaluation_signature(player_index);
         if (cached.matches(signature))
             return cached.value();
-        const StrategyInfo active_strategy = player_envs[player_index].strategy.empty()
-            ? StrategyInfo{} : player_envs[player_index].strategy.back();
+        const StrategyInfo active_strategy =
+            player_envs[player_index].strategy.value_or(StrategyInfo{});
         const auto classify_unit = [&](const UnitInstance& unit, const ChampionDefinition& def) {
             strategy::UnitCombatSignals signals;
             signals.base_role = def.combat_profile.role;
@@ -2348,8 +2349,8 @@ struct TFTEngine::Impl {
     }
 
     void update_strategy(std::size_t i) {
-        auto& list = player_envs[i].strategy;
-        StrategyInfo info = list.empty() ? StrategyInfo{} : list.back();
+        auto& strategy_snapshot = player_envs[i].strategy;
+        StrategyInfo info = strategy_snapshot.value_or(StrategyInfo{});
         // Keep the last confirmed lineup so small score fluctuations do not
         // repeatedly replace the strategic plan on every refresh.
         const auto previous_planned_units = info.planned_units;
@@ -3437,10 +3438,6 @@ struct TFTEngine::Impl {
                 active_native_direction != strategic_native_generation.candidates.end()
                     ? active_native_direction->completed_traits
                     : std::vector<std::string>{};
-            evidence_input.core_unit_ids =
-                active_native_direction != strategic_native_generation.candidates.end()
-                    ? active_native_direction->unit_ids
-                    : std::vector<std::int32_t>{};
             evidence_input.provenance = {
                 {"board_bench", "native_player_units", "observed_game_facts"},
                 {"shop", "native_shop_snapshot", "observed_game_facts"},
@@ -4410,8 +4407,7 @@ struct TFTEngine::Impl {
         info.best_scored_strategy = chosen;
         info.active_traits_count = static_cast<std::int32_t>(info.active_traits.size());
 
-        if (list.empty()) list.push_back(info);
-        else list.back() = info;
+        strategy_snapshot = std::move(info);
     }
 
     double state_reward(std::size_t i, double action_reward) {
@@ -5095,8 +5091,8 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
 
         // Compare a candidate against the current composition before mutating
         // the board. This makes a replacement's reward relative, not absolute.
-        const StrategyInfo strategy_before = this->strategy.empty()
-            ? StrategyInfo{} : this->strategy.back();
+        const StrategyInfo strategy_before =
+            this->strategy.value_or(StrategyInfo{});
         double board_comp_score_sum = 0.0;
         int board_comp_score_count = 0;
         for (const auto& unit : this->board) {
@@ -5337,7 +5333,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 return best;
             };
             const bool fast8_before_level_eight =
-                !this->strategy.empty() && this->strategy.back().strategy == 2 &&
+                this->strategy && this->strategy->strategy == 2 &&
                 economy.level < 8;
             if (economy.gold >= EconomyEngine::REROLL_COST &&
                 !fast8_before_level_eight) {
@@ -5553,7 +5549,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 const auto target_index = static_cast<std::size_t>(type == 7 ? action[2] : action[3]);
                 auto* target_unit = lobby.item_target_unit(player_id, target_index);
                 if (!target_unit) throw std::invalid_argument("Alvo de item nao existe.");
-                const auto profiles = lobby.item_unit_profiles(player_id);
+                const auto profiles = lobby.legacy_item_unit_profiles(player_id);
                 items::ItemActionCommand command;
                 command.operation = type == 7 ? items::ItemOperation::EQUIP_FROM_INVENTORY
                                                : items::ItemOperation::CRAFT_AND_EQUIP;
@@ -5677,8 +5673,8 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                             return !sold_uuid.empty() && purchase.uuid == sold_uuid;
                         });
                     if (recent != this->recent_purchases.rend()) {
-                        const auto& current_strategy = this->strategy.empty()
-                            ? StrategyInfo{} : this->strategy.back();
+                        const StrategyInfo current_strategy =
+                            this->strategy.value_or(StrategyInfo{});
                         const bool still_core_or_planned =
                             std::find(current_strategy.core_unit_ids.begin(),
                                       current_strategy.core_unit_ids.end(),
@@ -5740,7 +5736,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                         }
                     }
                     const auto& current_strategy = strategy_before;
-                    if (!this->strategy.empty()) {
+                    if (this->strategy) {
                         const auto& core_unit_ids = current_strategy.core_unit_ids;
                         const auto& planned_unit_ids = current_strategy.planned_unit_ids;
                         sold_core_unit =
@@ -5775,7 +5771,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     // A genuinely stronger owned option can justify releasing a
                     // planned/core slot. Compare only against units that fit the
                     // active plan materially better, not merely any owned unit.
-                    if (sold_core_unit && !this->strategy.empty()) {
+                    if (sold_core_unit && this->strategy) {
                         const auto has_better_owned_fit = [&](const auto& candidate) {
                             if (!candidate ||
                                 candidate->champion_internal_id == unit.champion_internal_id)
@@ -5840,11 +5836,11 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         // Shared shop-opportunity check: buy meaningful pairs/upgrades/fits
         // before converting surplus gold into XP or passing.
         const auto has_useful_shop_purchase = [&]() {
-            if (this->strategy.empty()) return false;
+            if (!this->strategy) return false;
             const bool has_free_bench_slot = std::any_of(
                 this->bench.begin(), this->bench.end(),
                 [](const auto& unit) { return !unit.has_value(); });
-            const auto& current_strategy = this->strategy.back();
+            const auto& current_strategy = *this->strategy;
             for (std::size_t slot = 0; slot < kShopSlots; ++slot) {
                 const auto* offer = shop.get_unit(static_cast<std::int32_t>(slot));
                 if (!offer) continue;
@@ -5984,7 +5980,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 // Other strategies use planned XP progress and useful purchases;
                 // a better shop alone must not teach them to reroll.
                 const std::int32_t active_strategy_id =
-                    this->strategy.empty() ? 0 : this->strategy.back().strategy;
+                    this->strategy ? this->strategy->strategy : 0;
                 const double tactical_reroll_scale =
                     reward_model::tactical_reroll_quality_scale(
                         active_strategy_id, this->info.hp, economy.gold,
@@ -6005,7 +6001,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             // levels are less valuable than building a playable board and pairs.
             action_reward = success ? (lobby.stage <= 2 ? -0.03 : 0.0) : -0.10;
             const std::int32_t xp_strategy_id =
-                this->strategy.empty() ? 0 : this->strategy.back().strategy;
+                this->strategy ? this->strategy->strategy : 0;
             if (success) {
                 double unlocked_board_power = 0.0;
                 // A level-up can unlock a board slot. Credit only a plausible
@@ -6167,9 +6163,9 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     sale_has_legitimate_context,
                     sold_unit_upgrade_strength)
                 : -0.10;
-            if (success && !this->strategy.empty()) {
+            if (success && this->strategy) {
                 action_reward += reward_model::critical_all_in_sale_penalty(
-                    this->strategy.back().strategy,
+                    this->strategy->strategy,
                     static_cast<double>(this->info.hp),
                     sold_core_unit,
                     sold_unit_protects_upgrade,
@@ -6190,9 +6186,9 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             action_reward = item_assignment_reward;
         } else {
             success = true;
-            if (type == 6 && !this->strategy.empty()) {
+            if (type == 6 && this->strategy) {
                 const std::int32_t pass_strategy_id =
-                    this->strategy.back().strategy;
+                    this->strategy->strategy;
                 const bool useful_xp_spending_available =
                     reward_model::phase_xp_opportunity_available(
                         economy.gold, economy.level, this->info.hp,
@@ -6210,7 +6206,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         // Small, bounded strategy shaping: rewards the intended action, not
         // merely the mode label. The active mode is the one used to choose this action.
         const std::int32_t active_strategy_id =
-            this->strategy.empty() ? 0 : this->strategy.back().strategy;
+            this->strategy ? this->strategy->strategy : 0;
         action_reward += reward_model::strategy_action_reward(
             active_strategy_id,
             type,
@@ -6264,7 +6260,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         const double action_gold_reward =
             reward_model::gold_change_reward(old_gold, economy.gold);
         const std::int32_t gold_reward_strategy_id =
-            this->strategy.empty() ? 0 : this->strategy.back().strategy;
+            this->strategy ? this->strategy->strategy : 0;
         // ALL_IN is the explicit exception to interest preservation: retain
         // some opportunity-cost signal, but do not let crossing below 50
         // overwhelm the action's survival-oriented spending reward.
@@ -6295,12 +6291,12 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         // Record the direction *after* this purchase has refreshed strategy.
         // Otherwise a direction change caused by the purchase itself is mistaken
         // for a later legitimate transition and exempts an immediate buy/sell loop.
-        if (type == 0 && success && !this->strategy.empty()) {
+        if (type == 0 && success && this->strategy) {
             for (auto it = this->recent_purchases.rbegin();
                  it != this->recent_purchases.rend(); ++it) {
                 if (it->action_serial == this->action_serial) {
-                    it->comp_direction = this->strategy.back().composition_direction;
-                    it->comp_focus = this->strategy.back().composition_focus;
+                    it->comp_direction = this->strategy->composition_direction;
+                    it->comp_focus = this->strategy->composition_focus;
                     break;
                 }
             }
@@ -7457,15 +7453,100 @@ std::vector<float> TFTEngine::get_observations() const {
 std::array<std::vector<StrategyInfo>, kPlayersPerLobby>
 TFTEngine::get_strategies() const {
     if (!impl_) {
-        throw std::runtime_error(
-            "TFTEngine nao possui estado interno."
-        );
+        throw std::runtime_error("TFTEngine nao possui estado interno.");
     }
-
     impl_->ensure_open();
 
     std::array<std::vector<StrategyInfo>, kPlayersPerLobby> result{};
-    for (std::size_t i = 0; i < kPlayersPerLobby; ++i) result[i] = impl_->player_envs[i].strategy;
+    for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+        if (impl_->player_envs[i].strategy)
+            result[i].push_back(*impl_->player_envs[i].strategy);
+    }
+    return result;
+}
+
+std::array<std::vector<StrategyInfo>, kPlayersPerLobby>
+TFTEngine::get_viewer_strategy_snapshots() const {
+    auto result = get_strategies();
+    for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+        if (result[i].empty()) continue;
+        auto& projection = result[i].back();
+        const auto& commitment = impl_->strategic_planner_commitments[i];
+        const auto& active = impl_->composition_intelligence_players[i].active.current();
+
+        // This is a Viewer/telemetry compatibility projection only. PPO's
+        // observation and reward paths continue to use their explicitly
+        // version-gated legacy inputs until their contracts are approved.
+        projection.composition_projection_source = "tft_strategic_engine";
+        projection.composition_version = active ? active->version : 0;
+        projection.composition_direction = commitment.composition_direction;
+        projection.composition_candidate_direction =
+            commitment.candidate_composition_direction;
+        projection.composition_candidate_strength = 0.0; // no legacy strength-equivalent producer
+        projection.composition_candidate_streak = commitment.consecutive_reviews;
+        projection.composition_direction_change_round =
+            static_cast<std::int32_t>(commitment.selected_round);
+        projection.composition_direction_change_reason = "native_strategic_commitment";
+        projection.composition_locked = false; // no authoritative lock producer in the new owner
+        projection.composition_strength = 0.0; // no equivalent calibrated strength contract
+        projection.composition_focus_weights.clear();
+        projection.composition_focus.clear();
+        projection.composition_focus_id = -1;
+        projection.previous_composition_direction.clear();
+        projection.previous_composition_strength = 0.0;
+        projection.composition_direction_change_was_locked = false;
+        projection.composition_direction_change_focus_weight = 0.0;
+        projection.composition_direction_change_count = 0;
+        projection.comp_direction_update_steps = 0;
+        projection.comp_stabilize_start_round = -1;
+
+        projection.core_units.clear();
+        projection.core_unit_ids.clear();
+        projection.core_traits.clear();
+        projection.planned_units.clear();
+        projection.planned_unit_ids.clear();
+        projection.planned_traits.clear();
+        projection.planned_main_carry_id = -1;
+        projection.planned_composition_score = 0.0;
+        projection.planned_acquisition_notes.clear();
+
+        if (active) {
+            const auto& candidate = active->candidate;
+            projection.planned_main_carry_id = candidate.main_carry_id;
+            projection.planned_composition_score = candidate.source_score;
+            for (const auto& unit : candidate.units) {
+                projection.planned_unit_ids.push_back(unit.champion_id);
+                const auto* definition = impl_->catalog->find_by_id(unit.champion_id);
+                if (!definition) continue;
+                projection.planned_units.push_back(definition->api_name);
+                for (const auto& trait : definition->traits)
+                    if (std::find(projection.planned_traits.begin(),
+                                  projection.planned_traits.end(), trait) ==
+                        projection.planned_traits.end())
+                        projection.planned_traits.push_back(trait);
+                if (unit.core) {
+                    projection.core_unit_ids.push_back(unit.champion_id);
+                    projection.core_units.push_back(definition->api_name);
+                    for (const auto& trait : definition->traits)
+                        if (std::find(projection.core_traits.begin(),
+                                      projection.core_traits.end(), trait) ==
+                            projection.core_traits.end())
+                            projection.core_traits.push_back(trait);
+                }
+                if (unit.champion_id == candidate.main_carry_id) {
+                    projection.composition_focus = definition->api_name;
+                    projection.composition_focus_id = definition->internal_id;
+                }
+            }
+            projection.composition_projection_status = "canonical_active_composition";
+        } else {
+            projection.composition_projection_status =
+                commitment.composition_direction.empty()
+                    ? "native_composition_unavailable"
+                    : "native_direction_without_active_composition";
+        }
+    }
+
     return result;
 }
 
@@ -7506,18 +7587,26 @@ double TFTEngine::get_unit_comp_score(
     impl_->ensure_open();
     const auto* def = impl_->catalog->find_by_api_name(champion_api_name);
     if (!def || star < 1 || star > 3) return 0.0;
-    const auto& list =
+    const auto& strategy =
         impl_->player_envs[static_cast<std::size_t>(player_id)].strategy;
-    if (list.empty()) return 0.0;
-    return unit_composition_score(list.back(), *def, star, impl_->trait_milestones);
+    if (!strategy) return 0.0;
+    return unit_composition_score(*strategy, *def, star, impl_->trait_milestones);
 }
 bool TFTEngine::is_core_unit(std::int32_t player_id, const std::string& champion_api_name) const {
-    if (!impl_ || player_id < 0 || player_id >= static_cast<std::int32_t>(kPlayersPerLobby)) return false; impl_->ensure_open(); const auto* def = impl_->catalog->find_by_api_name(champion_api_name); if (!def) return false;
-    const auto& list = impl_->player_envs[static_cast<std::size_t>(player_id)].strategy; return !list.empty() && std::find(list.back().core_unit_ids.begin(), list.back().core_unit_ids.end(), def->internal_id) != list.back().core_unit_ids.end();
+    if (!impl_ || player_id < 0 || player_id >= static_cast<std::int32_t>(kPlayersPerLobby)) return false;
+    impl_->ensure_open();
+    const auto* def = impl_->catalog->find_by_api_name(champion_api_name);
+    if (!def) return false;
+    const auto& strategy = impl_->player_envs[static_cast<std::size_t>(player_id)].strategy;
+    return strategy && std::find(strategy->core_unit_ids.begin(),
+        strategy->core_unit_ids.end(), def->internal_id) != strategy->core_unit_ids.end();
 }
 bool TFTEngine::is_core_trait(std::int32_t player_id, const std::string& trait) const {
-    if (!impl_ || player_id < 0 || player_id >= static_cast<std::int32_t>(kPlayersPerLobby)) return false; impl_->ensure_open(); const auto& list = impl_->player_envs[static_cast<std::size_t>(player_id)].strategy;
-    return !list.empty() && std::find(list.back().core_traits.begin(), list.back().core_traits.end(), trait) != list.back().core_traits.end();
+    if (!impl_ || player_id < 0 || player_id >= static_cast<std::int32_t>(kPlayersPerLobby)) return false;
+    impl_->ensure_open();
+    const auto& strategy = impl_->player_envs[static_cast<std::size_t>(player_id)].strategy;
+    return strategy && std::find(strategy->core_traits.begin(),
+        strategy->core_traits.end(), trait) != strategy->core_traits.end();
 }
 
 std::array<AntiLoopMetrics, kPlayersPerLobby>
