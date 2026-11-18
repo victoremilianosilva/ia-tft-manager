@@ -57,6 +57,13 @@ viewer_projection_start = source.index("TFTEngine::get_viewer_strategy_snapshots
 viewer_projection_end = source.index("RewardState TFTEngine::get_reward_state", viewer_projection_start)
 viewer_projection_source = source[viewer_projection_start:viewer_projection_end]
 assert "strategic_planner_commitments[i]" in viewer_projection_source
+legacy_strategy_api_start = source.index("TFTEngine::get_strategies() const")
+legacy_strategy_api_end = source.index("TFTEngine::get_viewer_strategy_snapshots() const", legacy_strategy_api_start)
+legacy_strategy_api_source = source[legacy_strategy_api_start:legacy_strategy_api_end]
+assert "strategic_planner_commitments" not in legacy_strategy_api_source
+wrapper = Path("cpp_lobby_env.py").read_text(encoding="utf-8")
+viewer_wrapper = wrapper.split("def get_strategy_snapshots", 1)[1].split("def get_strategies", 1)[0]
+assert "get_viewer_strategy_snapshots()" in viewer_wrapper
 assert "composition_intelligence_players[i].active.current()" in viewer_projection_source
 assert "composition_projection_source = \"tft_strategic_engine\"" in viewer_projection_source
 assert "canonical_active_composition" in viewer_projection_source
