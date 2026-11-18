@@ -58,6 +58,9 @@ def test_semantic_side_input_changes_actor_and_critic_and_receives_gradients():
         policy.semantic_encoder[0].bias.fill_(0.1)
         policy.semantic_encoder[-1].weight.fill_(0.01)
         policy.semantic_encoder[-1].bias.zero_()
+        policy.type_head.weight.fill_(0.01)
+        policy.type_head.bias.zero_()
+        policy.value_head.weight[:, :32].fill_(0.01)
 
     changed = {
         "numeric": torch.ones_like(semantic["numeric"]),
