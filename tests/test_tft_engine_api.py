@@ -1049,22 +1049,29 @@ def test_same_seed_replays_unit_identity_without_reusing_engine_identity():
         assert first_deploy["player_decision_sequences"] == [2] * 8
         assert second_deploy["player_decision_sequences"] == [2] * 8
 
-        # Compare semantic player state only; Engine identity is deliberately
-        # distinct and is not part of deterministic game-state equivalence.
-        # Audit snapshots contain NumPy arrays, which require element-wise
-        # comparison rather than Python container equality.
-        first_player = first_after_deploy["players"][0]
-        second_player = second_after_deploy["players"][0]
-        assert first_player.keys() == second_player.keys()
-        for field in first_player:
-            first_value = first_player[field]
-            second_value = second_player[field]
-            if isinstance(first_value, np.ndarray):
-                assert isinstance(second_value, np.ndarray)
-                np.testing.assert_array_equal(first_value, second_value)
+        # Compare semantic state recursively because the native audit
+        # snapshot nests NumPy arrays inside player/pool structures.
+        def assert_same_value(left, right):
+            if isinstance(left, np.ndarray):
+                assert isinstance(right, np.ndarray)
+                np.testing.assert_array_equal(left, right)
+            elif isinstance(left, dict):
+                assert isinstance(right, dict)
+                assert left.keys() == right.keys()
+                for key in left:
+                    assert_same_value(left[key], right[key])
+            elif isinstance(left, (list, tuple)):
+                assert isinstance(right, type(left))
+                assert len(left) == len(right)
+                for left_item, right_item in zip(left, right):
+                    assert_same_value(left_item, right_item)
             else:
-                assert first_value == second_value
-        assert first_after_deploy["shared_pool"] == second_after_deploy["shared_pool"]
+                assert left == right
+
+        # Engine identity is deliberately distinct and excluded from semantic
+        # game-state equivalence; all player and shared-pool data must match.
+        assert_same_value(first_after_deploy["players"][0], second_after_deploy["players"][0])
+        assert_same_value(first_after_deploy["shared_pool"], second_after_deploy["shared_pool"])
     finally:
         first.close()
         second.close()
