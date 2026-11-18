@@ -37,6 +37,49 @@ PositionSignature make_signature(
 // Reversões e movimentos repetidos
 // ---------------------------------------------------------
 
+void test_temporal_events_are_bound_to_native_decision_identity() {
+    AntiLoopEngine engine;
+    TemporalDecisionIdentity identity;
+    identity.engine_instance_id = "engine-test";
+    identity.episode_id = 9;
+    identity.player_id = 2;
+    identity.decision_sequence = 17;
+    identity.round = 4;
+    engine.set_decision_identity(identity);
+
+    const auto unit = make_unit("unit-uuid-1", 101);
+    (void)engine.register_move("board_move", 3, 12, unit);
+    engine.record_successful_move("board_move");
+    const auto events = engine.get_temporal_history();
+
+    assert(events.size() == 2);
+    assert(events[0].kind == TemporalEventKind::MoveRegistered);
+    assert(events[1].kind == TemporalEventKind::MoveSucceeded);
+    for (const auto& event : events) {
+        assert(event.identity.engine_instance_id == "engine-test");
+        assert(event.identity.episode_id == 9);
+        assert(event.identity.player_id == 2);
+        assert(event.identity.decision_sequence == 17);
+        assert(event.identity.round == 4);
+        assert(event.unit_uuid == std::optional<std::string>{"unit-uuid-1"});
+    }
+}
+
+void test_temporal_history_is_bounded() {
+    AntiLoopEngine engine;
+    TemporalDecisionIdentity identity{"engine-test", 9, 2, 17, 1};
+    engine.set_decision_identity(identity);
+    for (std::uint64_t sequence = 1; sequence <= 80; ++sequence) {
+        identity.decision_sequence = sequence;
+        engine.set_decision_identity(identity);
+        (void)engine.register_state(PositionSignature{});
+    }
+    const auto events = engine.get_temporal_history();
+    assert(events.size() == 64);
+    assert(events.front().identity.decision_sequence == 17);
+    assert(events.back().identity.decision_sequence == 80);
+}
+
 void test_blocks_reverse_move_for_same_unit() {
     AntiLoopEngine engine;
     const auto nasus = make_unit("nasus-1", 1);
@@ -503,6 +546,8 @@ void test_round_boundary_clears_local_blocks_but_retains_state_visits() {
 } // namespace
 
 int main() {
+    test_temporal_events_are_bound_to_native_decision_identity();
+    test_temporal_history_is_bounded();
     test_blocks_reverse_move_for_same_unit();
     test_blocks_reverse_swap_with_different_unit_identity();
     test_blocks_explicitly_repeated_move();

@@ -732,6 +732,10 @@ public:
     std::array<AntiLoopMetrics, kPlayersPerLobby>
     get_anti_loop_metrics() const;
 
+    // Bounded typed AntiLoop event history serialized as JSONL for audit/consumers.
+    std::array<std::vector<std::string>, kPlayersPerLobby>
+    get_anti_loop_history_jsonl() const;
+
     PublicState get_public_state() const;
 
     // Consultas do estoque global de campeões.

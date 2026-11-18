@@ -107,6 +107,28 @@ void AntiLoopEngine::reset() {
     history_.state_window_rounds = state_window_rounds;
 }
 
+void AntiLoopEngine::set_decision_identity(TemporalDecisionIdentity identity) {
+    history_.current_decision = std::move(identity);
+}
+
+std::vector<TemporalHistoryEvent> AntiLoopEngine::get_temporal_history() const {
+    return history_.temporal_events;
+}
+
+void AntiLoopEngine::append_temporal_event(TemporalHistoryEvent event) {
+    const auto& identity = history_.current_decision;
+    if (identity.engine_instance_id.empty() || identity.episode_id == 0 ||
+        identity.player_id < 0 || identity.decision_sequence == 0) {
+        return;
+    }
+    event.identity = identity;
+    constexpr std::size_t kTemporalHistoryLimit = 64;
+    if (history_.temporal_events.size() >= kTemporalHistoryLimit) {
+        history_.temporal_events.erase(history_.temporal_events.begin());
+    }
+    history_.temporal_events.push_back(std::move(event));
+}
+
 void AntiLoopEngine::begin_round(std::uint32_t round_number) {
     history_.current_round = std::max<std::uint32_t>(1, round_number);
     history_.position_history.clear();
@@ -223,6 +245,11 @@ StateRegistrationResult AntiLoopEngine::register_state(
     history_.last_board_signature = signature;
     const auto& visit = history_.state_visits[visit_index];
 
+    TemporalHistoryEvent event;
+    event.kind = TemporalEventKind::StateObserved;
+    event.state_visit_count = visit.visits;
+    append_temporal_event(std::move(event));
+
     return StateRegistrationResult{
         signature,
         visit.visits >= config_.loop_threshold,
@@ -250,6 +277,17 @@ MoveRecord AntiLoopEngine::register_move(
 
     history_.last_move = move;
 
+    TemporalHistoryEvent event;
+    event.kind = TemporalEventKind::MoveRegistered;
+    event.move_type = move.move_type;
+    event.source = move.source;
+    event.target = move.target;
+    if (move.unit) {
+        event.unit_uuid = move.unit->uuid;
+        event.unit_id = move.unit->id;
+        event.unit_star = move.unit->star;
+    }
+    append_temporal_event(std::move(event));
     return move;
 }
 
@@ -315,6 +353,18 @@ MoveKey AntiLoopEngine::block_move(
         trim_blocked_moves();
     }
 
+    TemporalHistoryEvent event;
+    event.kind = TemporalEventKind::MoveBlocked;
+    event.move_type = key.move_type;
+    event.source = static_cast<std::int32_t>(key.source);
+    event.target = static_cast<std::int32_t>(key.target);
+    if (key.unit_identity) {
+        event.unit_uuid = key.unit_identity->uuid;
+        event.unit_id = key.unit_identity->id;
+        event.unit_star = key.unit_identity->star;
+    }
+    event.reason = "anti_loop";
+    append_temporal_event(std::move(event));
     return key;
 }
 
@@ -768,6 +818,19 @@ void AntiLoopEngine::record_successful_move(
     } else if (move_type == "bench_to_board") {
         ++history_.metrics.bench_to_board_executed;
     }
+    TemporalHistoryEvent event;
+    event.kind = TemporalEventKind::MoveSucceeded;
+    event.move_type = move_type;
+    if (history_.last_move) {
+        event.source = history_.last_move->source;
+        event.target = history_.last_move->target;
+        if (history_.last_move->unit) {
+            event.unit_uuid = history_.last_move->unit->uuid;
+            event.unit_id = history_.last_move->unit->id;
+            event.unit_star = history_.last_move->unit->star;
+        }
+    }
+    append_temporal_event(std::move(event));
 }
 
 void AntiLoopEngine::record_mask_diagnostics(
