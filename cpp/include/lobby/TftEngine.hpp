@@ -257,6 +257,35 @@ struct AuditCombatDeathEvent {
     std::string unit_uuid;
     std::string killer_unit_uuid;
 };
+struct AuditEconomyResolutionEvent {
+    std::string contract_id{"tft.economy-resolution-event"};
+    std::uint32_t contract_version{1};
+    std::string source_namespace{"tft.economy-engine.resolve-round"};
+    std::string producer{"EconomyEngine::resolve_round"};
+    std::string engine_instance_id;
+    std::uint64_t episode_id{0};
+    std::uint64_t snapshot_sequence{0};
+    std::uint64_t player_decision_sequence{0};
+    std::int32_t player_id{-1};
+    // The completed preparation round and the next round receiving this income.
+    std::uint32_t resolved_after_round{0};
+    std::int32_t income_for_round{0};
+    std::int32_t old_gold{0};
+    std::int32_t gold_before_interest{0};
+    std::int32_t gold_before_income{0};
+    std::int32_t new_gold{0};
+    std::int32_t base_gold{0};
+    std::int32_t interest_gold{0};
+    std::int32_t streak_gold{0};
+    std::int32_t win_gold{0};
+    std::int32_t total_gold{0};
+    std::int32_t old_level{0};
+    std::int32_t new_level{0};
+    bool leveled_up{false};
+    std::int32_t xp{0};
+    std::int32_t xp_to_next{0};
+};
+
 struct AuditPlayerSnapshot {
     std::int32_t player_id{-1};
     // Player survival and standing facts, correlated by the enclosing snapshot identity.
@@ -374,6 +403,7 @@ struct AuditSnapshot {
     std::vector<AuditCombatAttackEvent> combat_attack_events;
     bool combat_death_events_truncated{false};
     std::vector<AuditCombatDeathEvent> combat_death_events;
+    std::vector<AuditEconomyResolutionEvent> economy_resolution_events;
     std::array<AuditPlayerSnapshot, kPlayersPerLobby> players{};
 };
 

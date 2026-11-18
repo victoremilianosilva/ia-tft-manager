@@ -574,6 +574,8 @@ struct TFTEngine::Impl {
     bool combat_attack_events_truncated{false};
     std::vector<AuditCombatDeathEvent> last_combat_death_events;
     bool combat_death_events_truncated{false};
+    // Latest completed round's authoritative per-player income breakdown.
+    std::vector<AuditEconomyResolutionEvent> last_economy_resolution_events;
     decision::ActionMaskEngine action_mask_engine;
 
     std::int32_t alive_players{
@@ -1208,6 +1210,7 @@ struct TFTEngine::Impl {
         combat_attack_events_truncated = false;
         last_combat_death_events.clear();
         combat_death_events_truncated = false;
+        last_economy_resolution_events.clear();
         matchmaking_rng.seed(seed + episode_id);
 
         // Python creates one random cost-1 starter on each player's bench
@@ -6600,6 +6603,7 @@ StepResult TFTEngine::step(
 
     if (preparation_complete) {
         round_resolved = true;
+        impl_->last_economy_resolution_events.clear();
 
         // Primeiro resolve o PvP quando esta rodada possui combate entre
         // jogadores. PvE/carrossel não concedem bônus de vitória nem alteram
@@ -6635,10 +6639,34 @@ StepResult TFTEngine::step(
                     continue;
                 }
 
-                (void)impl_->economy_engine.resolve_round(
+                const auto economy_result = impl_->economy_engine.resolve_round(
                     player_env.economy,
                     next_round_number
                 );
+                AuditEconomyResolutionEvent economy_event{};
+                economy_event.engine_instance_id = impl_->engine_instance_id;
+                economy_event.episode_id = impl_->episode_id;
+                economy_event.snapshot_sequence = impl_->decision_sequence + 1;
+                economy_event.player_decision_sequence =
+                    impl_->player_decision_sequences[i] + 1;
+                economy_event.player_id = static_cast<std::int32_t>(i);
+                economy_event.resolved_after_round = current_round_number;
+                economy_event.income_for_round = economy_result.round;
+                economy_event.old_gold = economy_result.old_gold;
+                economy_event.gold_before_interest = economy_result.gold_before_interest;
+                economy_event.gold_before_income = economy_result.gold_before_income;
+                economy_event.new_gold = economy_result.new_gold;
+                economy_event.base_gold = economy_result.base_gold;
+                economy_event.interest_gold = economy_result.interest_gold;
+                economy_event.streak_gold = economy_result.streak_gold;
+                economy_event.win_gold = economy_result.win_gold;
+                economy_event.total_gold = economy_result.total_gold;
+                economy_event.old_level = economy_result.old_level;
+                economy_event.new_level = economy_result.new_level;
+                economy_event.leveled_up = economy_result.leveled_up;
+                economy_event.xp = economy_result.xp;
+                economy_event.xp_to_next = economy_result.xp_to_next;
+                impl_->last_economy_resolution_events.push_back(std::move(economy_event));
                 impl_->sync_player_economy(i);
 
                 // A loja é renovada para o próximo turno após atualizar o nível.
@@ -6925,6 +6953,7 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
     snapshot.combat_attack_events = impl_->last_combat_attack_events;
     snapshot.combat_death_events_truncated = impl_->combat_death_events_truncated;
     snapshot.combat_death_events = impl_->last_combat_death_events;
+    snapshot.economy_resolution_events = impl_->last_economy_resolution_events;
     auto& pool_snapshot = snapshot.shared_pool;
     pool_snapshot.engine_instance_id = impl_->engine_instance_id;
     pool_snapshot.episode_id = impl_->episode_id;
