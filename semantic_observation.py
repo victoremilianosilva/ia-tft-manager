@@ -175,14 +175,14 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
             champion_name = entity.get("champion_id")
             star = _non_negative_int(entity.get("star"), f"{group_name}[{slot}].star")
             cost = _non_negative_int(entity.get("cost"), f"{group_name}[{slot}].cost")
-            items = entity.get("item_ids")
+            items = entity.get("items")
             traits = entity.get("trait_names")
             if not isinstance(champion_name, str) or not champion_name:
                 raise ValueError(f"occupied {group_name}[{slot}] has no champion identity")
             if not 1 <= star <= 3 or not 1 <= cost <= 5:
                 raise ValueError(f"occupied {group_name}[{slot}] has invalid star/cost")
             if not isinstance(items, list) or not isinstance(traits, list):
-                raise TypeError(f"occupied {group_name}[{slot}] requires item_ids and trait_names lists")
+                raise TypeError(f"occupied {group_name}[{slot}] requires items and trait_names lists")
             internal_id = catalog.get(champion_name)
             champion_valid = internal_id is not None
             numeric.extend([
