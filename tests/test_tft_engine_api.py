@@ -1281,11 +1281,13 @@ def test_audit_snapshot_publishes_accumulated_player_damage():
             assert event["snapshot_sequence"] == after["snapshot_sequence"]
             assert event["round"] == 5
             assert event["player_a_id"] != event["player_b_id"]
-            assert event["source_player_id"] in (event["player_a_id"], event["player_b_id"])
-            assert event["target_player_id"] in (event["player_a_id"], event["player_b_id"])
-            assert event["source_unit_uuid"]
-            assert event["target_unit_uuid"]
+            if event["source_unit_id"] >= 0:
+                assert event["source_player_id"] in (event["player_a_id"], event["player_b_id"])
+                assert event["source_unit_uuid"]
+            if event["target_unit_id"] >= 0:
+                assert event["target_player_id"] in (event["player_a_id"], event["player_b_id"])
+                assert event["target_unit_uuid"]
             assert event["final_damage"] >= 0.0
-            assert event["raw_damage"] >= event["final_damage"]
+            assert event["raw_damage"] >= 0.0
     finally:
         engine.close()

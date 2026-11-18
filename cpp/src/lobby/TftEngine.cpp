@@ -4755,7 +4755,9 @@ struct TFTEngine::Impl {
             player.damage_taken += applied;
         };
 
+        std::uint32_t combat_sequence = 0;
         for (const auto& [a, b] : matchups) {
+            const auto current_combat_sequence = combat_sequence++;
             if (!player_envs[a].info.alive || !player_envs[b].info.alive) continue;
             CombatInput input{};
             input.context = CombatContext::PVP;
@@ -4830,7 +4832,7 @@ struct TFTEngine::Impl {
                     audit_event.episode_id = episode_id;
                     audit_event.snapshot_sequence = decision_sequence + 1;
                     audit_event.round = round + 1;
-                    audit_event.combat_sequence = static_cast<std::uint32_t>(combat_damage_events.size());
+                    audit_event.combat_sequence = current_combat_sequence;
                     audit_event.event_sequence = damage_event_sequence++;
                     audit_event.player_a_id = static_cast<std::int32_t>(a);
                     audit_event.player_b_id = static_cast<std::int32_t>(b);
