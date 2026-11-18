@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <cassert>
 #include <iostream>
+#include <limits>
+#include <cmath>
 
 using namespace tft::strategy;
 
@@ -111,6 +113,55 @@ int main() {
     const auto no_evidence = NativeStrategicCompositionGenerator{}.generate(empty);
     assert(no_evidence.candidates.empty());
     assert(no_evidence.reason == "no_candidate_from_observed_traits");
+
+    // Candidate identity and ordering are deterministic for equivalent facts,
+    // even when catalog and owned-unit input order changes.
+    auto reordered = input;
+    std::reverse(reordered.catalog.begin(), reordered.catalog.end());
+    std::reverse(reordered.owned.begin(), reordered.owned.end());
+    const auto reordered_result = NativeStrategicCompositionGenerator{}.generate(reordered);
+    assert(reordered_result.candidates.size() == missing_pool.candidates.size());
+    for (std::size_t index = 0; index < missing_pool.candidates.size(); ++index) {
+        assert(reordered_result.candidates[index].identity == missing_pool.candidates[index].identity);
+        assert(reordered_result.candidates[index].unit_ids == missing_pool.candidates[index].unit_ids);
+        assert(reordered_result.candidates[index].direction == missing_pool.candidates[index].direction);
+    }
+
+    // Candidate caps are respected.
+    auto capped = input;
+    capped.maximum_candidates = 1;
+    const auto capped_result = NativeStrategicCompositionGenerator{}.generate(capped);
+    assert(capped_result.candidates.size() == 1);
+    assert(capped_result.directions_considered == 1);
+
+    // An exhausted pool excludes unowned, non-shop copies, but never erases
+    // evidence for a unit already owned by the player.
+    auto exhausted = input;
+    exhausted.pool_remaining[3] = 0;
+    exhausted.pool_remaining[4] = 0;
+    exhausted.shop_ids.clear();
+    const auto exhausted_result = NativeStrategicCompositionGenerator{}.generate(exhausted);
+    for (const auto& candidate : exhausted_result.candidates) {
+        assert(std::find(candidate.unit_ids.begin(), candidate.unit_ids.end(), 3) == candidate.unit_ids.end());
+        assert(std::find(candidate.unit_ids.begin(), candidate.unit_ids.end(), 4) == candidate.unit_ids.end());
+    }
+    assert(std::any_of(exhausted_result.candidates.begin(), exhausted_result.candidates.end(),
+        [](const auto& candidate) {
+            return std::find(candidate.unit_ids.begin(), candidate.unit_ids.end(), 1) != candidate.unit_ids.end();
+        }));
+
+    // Malformed catalog rows and NaN owned evidence cannot poison scores.
+    auto malformed = input;
+    malformed.catalog.push_back({-1, "Invalid", 0, {"Bruiser"}, true, false, false});
+    malformed.owned.push_back({99, 2, 1, true, false, 0.0,
+        std::numeric_limits<double>::quiet_NaN()});
+    const auto malformed_result = NativeStrategicCompositionGenerator{}.generate(malformed);
+    assert(std::all_of(malformed_result.candidates.begin(), malformed_result.candidates.end(),
+        [](const auto& candidate) {
+            return std::isfinite(candidate.score) &&
+                std::all_of(candidate.unit_ids.begin(), candidate.unit_ids.end(),
+                    [](std::int32_t id) { return id >= 0; });
+        }));
 
     std::cout << "native strategic composition generator tests passed\n";
     return 0;

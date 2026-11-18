@@ -452,6 +452,54 @@ void test_reset_clears_move_and_state_history() {
     assert(!state.last_move.has_value());
 }
 
+void test_cross_round_move_history_is_bounded_to_recent_tail() {
+    AntiLoopEngine engine(AntiLoopConfig{20, 10, 2});
+    const auto unit = make_unit("bounded-history-unit", 9);
+    for (std::int32_t index = 0; index < 9; ++index)
+        engine.register_move("board_move", index, index + 1, unit);
+    engine.begin_round(2);
+    const auto state = engine.get_state();
+    assert(state.move_history_size == 6);
+    assert(state.last_move.has_value());
+    assert(state.last_move->source == 8);
+    assert(state.last_move->target == 9);
+}
+
+void test_state_visit_identity_uses_unit_uuid_across_round_window() {
+    AntiLoopEngine engine;
+    const auto first_copy = make_unit("physical-copy-a", 9);
+    const auto second_copy = make_unit("physical-copy-b", 9);
+    const auto first_signature = make_signature(first_copy, 3);
+    const auto second_signature = make_signature(second_copy, 3);
+    const auto first_visit = engine.register_state(first_signature);
+    const auto repeated_visit = engine.register_state(first_signature);
+    const auto distinct_visit = engine.register_state(second_signature);
+    assert(!first_visit.repeated);
+    assert(repeated_visit.repeated);
+    assert(repeated_visit.visits == 2);
+    assert(!distinct_visit.repeated);
+    assert(distinct_visit.visits == 1);
+    engine.begin_round(2);
+    assert(engine.was_state_seen(first_signature));
+    assert(engine.was_state_seen(second_signature));
+    assert(engine.get_state_visits(first_signature) == 2);
+    assert(engine.get_state_visits(second_signature) == 1);
+}
+
+void test_round_boundary_clears_local_blocks_but_retains_state_visits() {
+    AntiLoopEngine engine;
+    const auto unit = make_unit("round-boundary-unit", 11);
+    const auto signature = make_signature(unit, 7);
+    engine.register_state(signature);
+    engine.block_move("board_move", 7, 8, unit);
+    assert(engine.is_move_blocked("board_move", 7, 8, unit));
+    engine.begin_round(2);
+    assert(!engine.is_move_blocked("board_move", 7, 8, unit));
+    assert(engine.was_state_seen(signature));
+    assert(engine.get_state_visits(signature) == 1);
+    assert(engine.get_state().blocked_moves == 0);
+}
+
 } // namespace
 
 int main() {
@@ -474,6 +522,9 @@ int main() {
     test_move_queries_do_not_mutate_history();
     test_incremental_signature_hash_matches_full_recomputation();
     test_round_window_expires_old_states_and_preserves_recent_movement();
+    test_cross_round_move_history_is_bounded_to_recent_tail();
+    test_state_visit_identity_uses_unit_uuid_across_round_window();
+    test_round_boundary_clears_local_blocks_but_retains_state_visits();
     test_reset_clears_move_and_state_history();
     test_reset_preserves_execution_metrics_like_python();
     test_mask_diagnostics_accumulate_and_survive_reset();
