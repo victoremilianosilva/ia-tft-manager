@@ -511,6 +511,42 @@ def test_anti_loop_history_is_scoped_to_each_preparation():
         engine.close()
 
 
+def test_stage_one_pve_reward_is_direct_component_grant_not_anvil_choice():
+    """The stage-one PvE reward reaches inventory directly and does not enqueue an anvil."""
+    engine = TFTLobby(seed=20261122)
+
+    try:
+        engine.reset()
+        native = engine
+        before = native.get_audit_snapshot()
+        before_player = before["players"][0]
+        assert before_player["item_components"] == []
+        assert before_player["pending_anvil"] is False
+        assert before_player["pending_anvil_options"] == []
+
+        pass_actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        # Each call contributes one action per player; fifteen actions resolve
+        # one preparation round. Stage 1 round 4 is the component-loot round.
+        for _ in range(4 * 15):
+            result = engine.step(pass_actions)
+
+        after = native.get_audit_snapshot()
+        player = after["players"][0]
+        assert after["round"] == 5, "The trace must resolve exactly through stage 1 round 4."
+        assert player["item_components"], (
+            "The stage-one PvE producer must grant at least one component directly to inventory."
+        )
+        assert player["item_component_counts"]
+        assert sum(row["count"] for row in player["item_component_counts"]) == len(
+            player["item_components"]
+        )
+        assert player["pending_anvil"] is False
+        assert player["pending_anvil_sequence"] == 0
+        assert player["pending_anvil_options"] == []
+    finally:
+        engine.close()
+
+
 def test_shop_offer_revision_is_published_across_reroll_and_purchase():
     """Shop offer revisions in the audit snapshot track real reroll and purchase actions."""
     engine = TFTLobby(seed=20261121)
