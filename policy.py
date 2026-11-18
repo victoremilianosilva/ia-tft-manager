@@ -357,6 +357,14 @@ class TFTPolicy(nn.Module):
             )
             board_features = semantic_entities[:, :28, :5]
             board_part = board_features.permute(0, 2, 1).reshape(-1, 5, 4, 7).flatten(1)
+            candidate_slots = semantic_entities[:, 28:42, :6]
+            candidate_padding = torch.zeros(
+                candidate_slots.shape[0], candidate_slots.shape[1], 2,
+                dtype=candidate_slots.dtype, device=candidate_slots.device,
+            )
+            candidate_tail = torch.cat(
+                [candidate_slots, candidate_padding], dim=-1
+            ).flatten(1)
             pre_part[:, 10:22] = 0.0
         economic_context = self._economic_context_features(obs, semantic_state=semantic_state)
         global_part = torch.cat(
