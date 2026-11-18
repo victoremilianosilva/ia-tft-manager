@@ -2,7 +2,7 @@ from pathlib import Path
 
 
 def test_player_action_reward_path_is_independent_of_strategy_id():
-    source = Path("cpp/src/lobby/TftEngine.cpp").read_text(encoding="utf-8")
+    source = (Path(__file__).resolve().parents[1] / "cpp" / "src" / "lobby" / "TftEngine.cpp").read_text(encoding="utf-8")
     start_marker = "// Alinhado a RewardManager.calculate_action_reward()"
     end_marker = "// MiniTFTEnv.step() returns the action-specific reward directly."
     start = source.index(start_marker)
@@ -28,7 +28,7 @@ def test_player_action_reward_path_is_independent_of_strategy_id():
 
 
 def test_reward_path_keeps_factual_economic_and_outcome_signals():
-    source = Path("cpp/src/lobby/TftEngine.cpp").read_text(encoding="utf-8")
+    source = (Path(__file__).resolve().parents[1] / "cpp" / "src" / "lobby" / "TftEngine.cpp").read_text(encoding="utf-8")
     start = source.index("// Alinhado a RewardManager.calculate_action_reward()")
     end = source.index(
         "// MiniTFTEnv.step() returns the action-specific reward directly.",
