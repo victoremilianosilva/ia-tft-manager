@@ -392,6 +392,16 @@ if(BUILD_TESTING)
     enable_tft_test_assertions(test_strategic_action_executor)
     add_test(NAME strategic_action_executor COMMAND test_strategic_action_executor)
 
+    add_executable(
+        test_strategic_action_candidate_builder
+        tests/test_strategic_action_candidate_builder.cpp
+        src/lobby/EconomyEngine.cpp
+    )
+    configure_tft_module(test_strategic_action_candidate_builder)
+    target_link_libraries(test_strategic_action_candidate_builder PRIVATE nlohmann_json::nlohmann_json)
+    enable_tft_test_assertions(test_strategic_action_candidate_builder)
+    add_test(NAME strategic_action_candidate_builder COMMAND test_strategic_action_candidate_builder)
+
     add_executable(test_strategic_position_planner tests/test_strategic_position_planner.cpp)
     configure_tft_module(test_strategic_position_planner)
     target_link_libraries(test_strategic_position_planner PRIVATE nlohmann_json::nlohmann_json)
@@ -438,6 +448,11 @@ if(BUILD_TESTING)
         NAME strategic_planner_shadow
         COMMAND test_strategic_planner
     )
+
+    add_executable(test_economic_controller tests/test_economic_controller.cpp)
+    configure_tft_module(test_economic_controller)
+    enable_tft_test_assertions(test_economic_controller)
+    add_test(NAME economic_controller COMMAND test_economic_controller)
 
     add_executable(test_initial_strategic_direction_discovery tests/test_initial_strategic_direction_discovery.cpp)
     configure_tft_module(test_initial_strategic_direction_discovery)

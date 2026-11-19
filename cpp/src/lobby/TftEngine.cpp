@@ -58,6 +58,7 @@
 #include "composition_intelligence/CompositionDiagnostics.hpp"
 #include "composition_intelligence/ContextualActionEvaluator.hpp"
 #include "composition_intelligence/StrategicActionExecutor.hpp"
+#include "composition_intelligence/StrategicActionCandidateBuilder.hpp"
 #include "composition_intelligence/StrategicPositionPlanner.hpp"
 #include "composition_intelligence/CompositionIntelligenceRuntime.hpp"
 #include "composition_intelligence/ShadowFailureBoundary.hpp"
@@ -3269,6 +3270,14 @@ struct TFTEngine::Impl {
             strategic_context.win_streak = economy.win_streak;
             strategic_context.loss_streak = economy.loss_streak;
             strategic_context.board_power = power;
+            strategic_context.evidence.hp = true;
+            strategic_context.evidence.gold = true;
+            strategic_context.evidence.level = true;
+            strategic_context.evidence.xp = true;
+            strategic_context.evidence.xp_to_next = true;
+            strategic_context.evidence.interest_if_resolved_now = true;
+            strategic_context.evidence.streaks = true;
+            strategic_context.evidence.board_power = true;
             strategic_context.current_composition_direction =
                 strategic_planner_commitments[i].composition_direction;
             strategic_context.current_composition_focus.clear();
@@ -3308,6 +3317,14 @@ struct TFTEngine::Impl {
             strategic_context.relative_board_power =
                 strategic_context.lobby_average_board_power > 0.0
                     ? power / strategic_context.lobby_average_board_power : 1.0;
+            strategic_context.evidence.relative_board_power =
+                lobby_alive_count > 0 && strategic_context.lobby_average_board_power > 0.0;
+            // These projections have no authoritative producer in this cycle.
+            // Keep their availability false instead of treating numeric defaults as evidence.
+            strategic_context.evidence.projected_next_round_income = false;
+            strategic_context.evidence.estimated_incoming_damage = false;
+            strategic_context.evidence.elimination_risk = false;
+            strategic_context.evidence.progression_plan = false;
 
             const auto append_owned_candidate = [&](const UnitInstance& unit,
                                                     bool on_board) {
@@ -3445,7 +3462,7 @@ struct TFTEngine::Impl {
                 {"candidate_lineups", "NativeStrategicCompositionGenerator",
                     "new_architecture_candidate_generation"}
             };
-            const auto evidence_context =
+            auto evidence_context =
                 strategy::StrategicEvidenceContextBuilder{}.build(
                     std::move(evidence_input));
             if (!evidence_context.valid_for(
@@ -3502,7 +3519,7 @@ struct TFTEngine::Impl {
             static const strategy::ActionEvaluator action_evaluator{};
             const auto economic_decision =
                 economic_controller.evaluate(evidence_context.planner_context);
-            const auto action_decision = action_evaluator.evaluate(
+            auto action_decision = action_evaluator.evaluate(
                 evidence_context.planner_context, economic_decision);
 
             // New Composition Intelligence pipeline: opt-in Viewer-only shadow state.
@@ -3721,11 +3738,62 @@ struct TFTEngine::Impl {
                 runtime.mark_stage("lineup", lineup.stale ? "unavailable" : "completed",
                     lineup.stale ? lineup.stale_reason : lineup.status, active);
 
+                // Build the native action snapshot before evaluating candidates.
+                // Every candidate is tied to this exact sequence and physical slot.
+                ci::StrategicActionNativeSnapshot native_action_state;
+                native_action_state.match_id = episode_id;
+                native_action_state.player_id = static_cast<std::int32_t>(i);
+                native_action_state.round = round_id;
+                native_action_state.sequence = strategic_context_sequences[i];
+                native_action_state.composition_id = active
+                    ? active->candidate.composition_id : std::string{};
+                native_action_state.composition_version = active ? active->version : 0;
+                native_action_state.gold = strategic_context.gold;
+                native_action_state.alive = strategic_context.alive;
+                populate_strategic_action_masks(i, native_action_state);
+                native_action_state.shop_champion_ids.fill(-1);
+                native_action_state.bench_champion_ids.fill(-1);
+                native_action_state.board_champion_ids.fill(-1);
+                for (std::size_t slot = 0; slot < kShopSlots; ++slot) {
+                    const auto* unit = player_envs[i].shop
+                        ? player_envs[i].shop->get_unit(static_cast<std::int32_t>(slot)) : nullptr;
+                    if (unit) native_action_state.shop_champion_ids[slot] = unit->champion_internal_id;
+                }
+                for (std::size_t slot = 0; slot < kBenchSlots; ++slot)
+                    if (player_envs[i].bench[slot])
+                        native_action_state.bench_champion_ids[slot] =
+                            player_envs[i].bench[slot]->champion_internal_id;
+                for (std::size_t slot = 0; slot < kBoardSlots; ++slot)
+                    if (player_envs[i].board[slot])
+                        native_action_state.board_champion_ids[slot] =
+                            player_envs[i].board[slot]->champion_internal_id;
+
+                std::unordered_map<std::int32_t, std::int32_t> unit_costs;
+                for (const auto id : native_action_state.shop_champion_ids)
+                    if (id >= 0) {
+                        const auto* definition = catalog->find_by_id(id);
+                        if (definition) unit_costs[id] = definition->cost;
+                    }
+                for (const auto& priority : priorities.units)
+                    if (priority.champion_id >= 0) {
+                        const auto* definition = catalog->find_by_id(priority.champion_id);
+                        if (definition) unit_costs[priority.champion_id] = definition->cost;
+                    }
+                const auto candidate_build = ci::StrategicActionCandidateBuilder{}.build(
+                    strategic_context, active, priorities, lineup, native_action_state, unit_costs);
+                strategic_context.action_candidates = candidate_build.candidates;
+                evidence_context.planner_context.action_candidates = candidate_build.candidates;
+                runtime.mark_stage("action_candidate_generation",
+                    candidate_build.status == "candidates_generated" ? "completed" : "unavailable",
+                    candidate_build.status, active);
+                action_decision = action_evaluator.evaluate(
+                    evidence_context.planner_context, economic_decision);
+
                 ci::CompositionActionEvaluation composition_actions;
                 if (active) {
                     composition_actions = ci::CompositionActionEvaluator{}.evaluate(
                         active, priorities, lineup, strategic_context, economic_decision,
-                        action_decision.recommended_action, &evidence, episode_id);
+                        strategy::StrategicActionKind::None, &evidence, episode_id);
                 } else {
                     composition_actions.stale = true;
                     composition_actions.stale_reason = "no active composition";
@@ -3761,86 +3829,20 @@ struct TFTEngine::Impl {
                 // Resolve the independent recommendation against the exact current
                 // native slots and masks. The result is audit-only: it is never fed
                 // into step(), PPO, the action queue, or game-state mutation.
-                ci::StrategicActionNativeSnapshot native_action_state;
-                native_action_state.match_id = episode_id;
-                native_action_state.player_id = static_cast<std::int32_t>(i);
-                native_action_state.round = round_id;
-                native_action_state.sequence = strategic_context_sequences[i];
-                native_action_state.composition_id = active
-                    ? active->candidate.composition_id : std::string{};
-                native_action_state.composition_version = active ? active->version : 0;
-                native_action_state.gold = strategic_context.gold;
-                native_action_state.alive = strategic_context.alive;
-                // Regenerate masks from the exact current native state through
-                // a const legality query; cached masks may belong to an older sequence.
-                populate_strategic_action_masks(i, native_action_state);
-                native_action_state.shop_champion_ids.fill(-1);
-                native_action_state.bench_champion_ids.fill(-1);
-                native_action_state.board_champion_ids.fill(-1);
-                for (std::size_t slot = 0; slot < kShopSlots; ++slot) {
-                    const auto* unit = player_envs[i].shop
-                        ? player_envs[i].shop->get_unit(static_cast<std::int32_t>(slot)) : nullptr;
-                    if (unit) native_action_state.shop_champion_ids[slot] = unit->champion_internal_id;
-                }
-                for (std::size_t slot = 0; slot < kBenchSlots; ++slot)
-                    if (player_envs[i].bench[slot])
-                        native_action_state.bench_champion_ids[slot] =
-                            player_envs[i].bench[slot]->champion_internal_id;
-                for (std::size_t slot = 0; slot < kBoardSlots; ++slot)
-                    if (player_envs[i].board[slot])
-                        native_action_state.board_champion_ids[slot] =
-                            player_envs[i].board[slot]->champion_internal_id;
-
-                // Produce a concrete, role-aware destination only for the
-                // selected DeployOrMove recommendation. This remains a pure
-                // Shadow proposal and uses the exact masks from this snapshot.
                 ci::StrategicPositionProposal positioning_proposal;
+                const auto selected_position = std::find_if(
+                    candidate_build.positioning.begin(), candidate_build.positioning.end(),
+                    [&](const auto& proposal) {
+                        return proposal.champion_id == contextual_actions.recommended_champion_id;
+                    });
                 if (contextual_actions.recommended_action == strategy::StrategicActionKind::DeployOrMove &&
-                    !contextual_actions.stale && active) {
-                    try {
-                        ci::StrategicPositionSnapshot position_snapshot;
-                        position_snapshot.match_id = native_action_state.match_id;
-                        position_snapshot.player_id = native_action_state.player_id;
-                        position_snapshot.round = native_action_state.round;
-                        position_snapshot.sequence = native_action_state.sequence;
-                        position_snapshot.composition_id = native_action_state.composition_id;
-                        position_snapshot.composition_version = native_action_state.composition_version;
-                        position_snapshot.alive = native_action_state.alive;
-                        position_snapshot.requested_champion_id = contextual_actions.recommended_champion_id;
-                        position_snapshot.board_ids = native_action_state.board_champion_ids;
-                        position_snapshot.bench_ids = native_action_state.bench_champion_ids;
-                        position_snapshot.masks = native_action_state.masks;
-                        for (const auto& unit : active->candidate.units) {
-                            ci::StrategicPositionRole role = ci::StrategicPositionRole::Flex;
-                            switch (unit.role) {
-                                case ci::UnitRole::MainCarry:
-                                    role = ci::StrategicPositionRole::MainCarry; break;
-                                case ci::UnitRole::SecondaryCarry:
-                                    role = ci::StrategicPositionRole::SecondaryCarry; break;
-                                case ci::UnitRole::Frontline:
-                                    role = ci::StrategicPositionRole::Frontline; break;
-                                case ci::UnitRole::Support:
-                                    role = ci::StrategicPositionRole::Support; break;
-                                case ci::UnitRole::Flex:
-                                    role = ci::StrategicPositionRole::Flex; break;
-                            }
-                            position_snapshot.composition_units.push_back(
-                                {unit.champion_id, role, unit.priority});
-                        }
-                        positioning_proposal = ci::StrategicPositionPlanner{}.plan(position_snapshot);
-                        if (positioning_proposal.available()) {
-                            native_action_state.requested_move_targets.push_back({
-                                positioning_proposal.champion_id,
-                                positioning_proposal.target_board_slot});
-                        }
-                    } catch (const std::exception& positioning_error) {
-                        positioning_proposal.reason =
-                            std::string("position_planner_exception: ") + positioning_error.what();
-                    } catch (...) {
-                        positioning_proposal.reason = "position_planner_exception: unknown";
-                    }
+                    !contextual_actions.stale && selected_position != candidate_build.positioning.end()) {
+                    positioning_proposal = *selected_position;
                 } else {
-                    positioning_proposal.reason = "no_selected_deploy_or_move_recommendation";
+                    positioning_proposal.reason =
+                        contextual_actions.recommended_action == strategy::StrategicActionKind::DeployOrMove
+                            ? "no_positioning_proposal_for_selected_candidate"
+                            : "no_selected_deploy_or_move_recommendation";
                 }
 
                 const auto recommendation_id = std::to_string(episode_id) + ":" +
@@ -3910,7 +3912,10 @@ struct TFTEngine::Impl {
                         }
                     }
                 }
-                const bool comparison_available = !composition_actions.stale && !contextual_actions.stale;
+                const bool comparison_available =
+                    !composition_actions.stale && !contextual_actions.stale &&
+                    same_initial_candidate_set &&
+                    !strategic_context.action_candidates.empty();
                 const bool evaluator_diverged = comparison_available &&
                     (composition_actions.evaluation.recommended_action != contextual_actions.recommended_action ||
                      composition_actions.evaluation.recommended_champion_id != contextual_actions.recommended_champion_id);

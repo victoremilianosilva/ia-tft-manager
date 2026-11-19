@@ -160,7 +160,9 @@ public:
         const auto& source_candidate = source.action_candidates[selected->candidate_index];
         if (source_candidate.kind != selected->kind ||
             source_candidate.champion_id != selected->champion_id ||
-            !source_candidate.available || source_candidate.gold_cost > state.gold)
+            !source_candidate.available || source_candidate.gold_cost > state.gold ||
+            source_candidate.source_sequence != state.sequence ||
+            source_candidate.candidate_id.empty())
             return reject(std::move(out), "selected_candidate_does_not_match_current_source_evidence", "source_candidate_mismatch");
 
         out.recommended_kind = selected->kind;
@@ -186,16 +188,11 @@ public:
             case strategy::StrategicActionKind::BuyUnit: {
                 if (!type_enabled(decision::ActionType::BUY))
                     return reject(std::move(out), "BUY_disabled_by_native_mask", "native_type_mask_rejected");
-                std::int32_t slot = -1;
-                for (std::size_t i = 0; i < state.shop_champion_ids.size(); ++i) {
-                    if (state.shop_champion_ids[i] == selected->champion_id &&
-                        state.masks.shop_mask[i] == decision::MASK_ENABLED) {
-                        slot = static_cast<std::int32_t>(i);
-                        break;
-                    }
-                }
-                if (slot < 0)
-                    return reject(std::move(out), "champion_not_in_legal_shop_slot", "native_shop_mask_rejected");
+                const auto slot = source_candidate.shop_slot;
+                if (slot < 0 || slot >= static_cast<std::int32_t>(state.shop_champion_ids.size()) ||
+                    state.shop_champion_ids[static_cast<std::size_t>(slot)] != selected->champion_id ||
+                    state.masks.shop_mask[static_cast<std::size_t>(slot)] != decision::MASK_ENABLED)
+                    return reject(std::move(out), "candidate_shop_slot_missing_stale_or_illegal", "native_shop_mask_rejected");
                 values[0] = static_cast<std::int32_t>(decision::ActionType::BUY);
                 values[1] = slot;
                 break;
@@ -213,73 +210,48 @@ public:
             case strategy::StrategicActionKind::SellUnit: {
                 if (!type_enabled(decision::ActionType::SELL))
                     return reject(std::move(out), "SELL_disabled_by_native_mask", "native_type_mask_rejected");
-                std::int32_t slot = -1;
-                for (std::size_t i = 0; i < state.bench_champion_ids.size(); ++i) {
-                    if (state.bench_champion_ids[i] == selected->champion_id &&
-                        state.masks.bench_source_mask[i] == decision::MASK_ENABLED) {
-                        if (slot >= 0)
-                            return reject(std::move(out), "multiple_matching_bench_copies_require_explicit_instance", "ambiguous_unit_instance");
-                        slot = static_cast<std::int32_t>(i);
-                    }
-                }
-                if (slot < 0)
-                    return reject(std::move(out), "sell_target_not_in_legal_bench_slot", "native_bench_mask_rejected");
+                const auto slot = source_candidate.source_slot;
+                if (!source_candidate.source_is_bench || slot < 0 ||
+                    slot >= static_cast<std::int32_t>(state.bench_champion_ids.size()) ||
+                    state.bench_champion_ids[static_cast<std::size_t>(slot)] != selected->champion_id ||
+                    state.masks.bench_source_mask[static_cast<std::size_t>(slot)] != decision::MASK_ENABLED)
+                    return reject(std::move(out), "candidate_sell_instance_missing_stale_or_illegal", "native_bench_mask_rejected");
                 values[0] = static_cast<std::int32_t>(decision::ActionType::SELL);
                 values[2] = slot;
                 break;
             }
             case strategy::StrategicActionKind::DeployOrMove: {
-                const auto target = std::find_if(state.requested_move_targets.begin(),
-                    state.requested_move_targets.end(), [&](const auto& item) {
-                        return item.champion_id == selected->champion_id;
-                    });
-                if (target == state.requested_move_targets.end())
-                    return reject(std::move(out), "explicit_positioning_target_missing", "move_intent_unresolved");
-                if (std::find_if(std::next(target), state.requested_move_targets.end(),
-                    [&](const auto& item) { return item.champion_id == selected->champion_id; }) !=
-                    state.requested_move_targets.end())
-                    return reject(std::move(out), "multiple_positioning_targets_for_unit", "ambiguous_move_intent");
-                if (target->target_board_slot < 0 ||
-                    target->target_board_slot >= static_cast<std::int32_t>(decision::BOARD_SIZE))
-                    return reject(std::move(out), "positioning_target_out_of_range", "invalid_move_target");
-                std::int32_t bench_slot = -1;
-                std::int32_t board_slot = -1;
-                for (std::size_t i = 0; i < state.bench_champion_ids.size(); ++i)
-                    if (state.bench_champion_ids[i] == selected->champion_id) {
-                        if (bench_slot >= 0)
-                            return reject(std::move(out), "multiple_bench_copies_require_explicit_instance", "ambiguous_unit_instance");
-                        bench_slot = static_cast<std::int32_t>(i);
-                    }
-                for (std::size_t i = 0; i < state.board_champion_ids.size(); ++i)
-                    if (state.board_champion_ids[i] == selected->champion_id) {
-                        if (board_slot >= 0)
-                            return reject(std::move(out), "multiple_board_copies_require_explicit_instance", "ambiguous_unit_instance");
-                        board_slot = static_cast<std::int32_t>(i);
-                    }
-                if (bench_slot >= 0 && board_slot >= 0)
-                    return reject(std::move(out), "champion_has_multiple_owned_instances_require_explicit_instance", "ambiguous_unit_instance");
-                if (bench_slot >= 0) {
+                const auto source_slot = source_candidate.source_slot;
+                const auto target_slot = source_candidate.target_board_slot;
+                if (source_slot < 0 || target_slot < 0 ||
+                    target_slot >= static_cast<std::int32_t>(decision::BOARD_SIZE))
+                    return reject(std::move(out), "candidate_move_parameters_missing", "move_intent_unresolved");
+                if (source_candidate.source_is_bench) {
+                    if (source_slot >= static_cast<std::int32_t>(state.bench_champion_ids.size()) ||
+                        state.bench_champion_ids[static_cast<std::size_t>(source_slot)] != selected->champion_id)
+                        return reject(std::move(out), "candidate_bench_source_stale", "stale_move_source");
                     if (!type_enabled(decision::ActionType::MOVE_BENCH) ||
-                        state.masks.bench_move_source_mask[static_cast<std::size_t>(bench_slot)] != decision::MASK_ENABLED ||
+                        state.masks.bench_move_source_mask[static_cast<std::size_t>(source_slot)] != decision::MASK_ENABLED ||
                         state.masks.bench_to_board_target_masks[
-                            static_cast<std::size_t>(bench_slot) * decision::BOARD_SIZE +
-                            static_cast<std::size_t>(target->target_board_slot)] != decision::MASK_ENABLED)
+                            static_cast<std::size_t>(source_slot) * decision::BOARD_SIZE +
+                            static_cast<std::size_t>(target_slot)] != decision::MASK_ENABLED)
                         return reject(std::move(out), "bench_to_board_move_disabled_by_native_mask", "native_move_mask_rejected");
                     values[0] = static_cast<std::int32_t>(decision::ActionType::MOVE_BENCH);
-                    values[2] = bench_slot;
-                    values[3] = target->target_board_slot;
+                    values[2] = source_slot;
+                    values[3] = target_slot;
                 } else {
-                    if (board_slot < 0)
-                        return reject(std::move(out), "move_unit_not_owned", "unit_not_found");
+                    if (source_slot >= static_cast<std::int32_t>(state.board_champion_ids.size()) ||
+                        state.board_champion_ids[static_cast<std::size_t>(source_slot)] != selected->champion_id)
+                        return reject(std::move(out), "candidate_board_source_stale", "stale_move_source");
                     if (!type_enabled(decision::ActionType::MOVE_BOARD) ||
-                        state.masks.board_source_mask[static_cast<std::size_t>(board_slot)] != decision::MASK_ENABLED ||
+                        state.masks.board_source_mask[static_cast<std::size_t>(source_slot)] != decision::MASK_ENABLED ||
                         state.masks.board_move_target_masks[
-                            static_cast<std::size_t>(board_slot) * decision::BOARD_SIZE +
-                            static_cast<std::size_t>(target->target_board_slot)] != decision::MASK_ENABLED)
+                            static_cast<std::size_t>(source_slot) * decision::BOARD_SIZE +
+                            static_cast<std::size_t>(target_slot)] != decision::MASK_ENABLED)
                         return reject(std::move(out), "board_move_disabled_by_native_mask", "native_move_mask_rejected");
                     values[0] = static_cast<std::int32_t>(decision::ActionType::MOVE_BOARD);
-                    values[4] = board_slot;
-                    values[5] = target->target_board_slot;
+                    values[4] = source_slot;
+                    values[5] = target_slot;
                 }
                 break;
             }

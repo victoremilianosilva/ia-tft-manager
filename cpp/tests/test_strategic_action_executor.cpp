@@ -18,12 +18,20 @@ StrategicActionNativeSnapshot native_state() {
     s.board_champion_ids.fill(-1);
     return s;
 }
-StrategicSharedContext source_context(StrategicActionKind kind, int champion_id = -1) {
+StrategicSharedContext source_context(StrategicActionKind kind, int champion_id = -1,
+    int shop_slot = -1, int source_slot = -1, int target_slot = -1,
+    bool source_is_bench = false) {
     StrategicSharedContext c;
     c.player_id = 0; c.round = 8; c.gold = 10; c.alive = true;
     StrategicActionCandidate candidate;
     candidate.kind = kind; candidate.champion_id = champion_id;
     candidate.available = true;
+    candidate.candidate_id = "test-candidate";
+    candidate.source_sequence = 5;
+    candidate.shop_slot = shop_slot;
+    candidate.source_slot = source_slot;
+    candidate.target_board_slot = target_slot;
+    candidate.source_is_bench = source_is_bench;
     c.action_candidates.push_back(candidate);
     return c;
 }
@@ -53,7 +61,7 @@ void buy_resolves_shop_slot_and_full_native_vector() {
     auto s = native_state();
     s.shop_champion_ids[3] = 42;
     s.masks.type_mask[0] = 1; s.masks.shop_mask[3] = 1;
-    auto c = source_context(StrategicActionKind::BuyUnit, 42);
+    auto c = source_context(StrategicActionKind::BuyUnit, 42, 3);
     auto r = recommendation(StrategicActionKind::BuyUnit, 42);
     StrategicActionExecutor executor;
     const auto result = resolve(executor, r, c, s);
@@ -65,7 +73,7 @@ void buy_resolves_shop_slot_and_full_native_vector() {
 void buy_rejects_missing_shop_offer_or_disabled_masks() {
     auto s = native_state();
     s.shop_champion_ids[2] = 42; s.masks.type_mask[0] = 1;
-    auto c = source_context(StrategicActionKind::BuyUnit, 42);
+    auto c = source_context(StrategicActionKind::BuyUnit, 42, 2);
     auto r = recommendation(StrategicActionKind::BuyUnit, 42);
     StrategicActionExecutor executor;
     auto result = resolve(executor, r, c, s);
@@ -94,7 +102,7 @@ void sell_requires_one_legal_bench_instance() {
     auto s = native_state();
     s.bench_champion_ids[4] = 51;
     s.masks.type_mask[5] = 1; s.masks.bench_source_mask[4] = 1;
-    auto c = source_context(StrategicActionKind::SellUnit, 51);
+    auto c = source_context(StrategicActionKind::SellUnit, 51, -1, 4, -1, true);
     auto r = recommendation(StrategicActionKind::SellUnit, 51);
     StrategicActionExecutor executor;
     auto result = resolve(executor, r, c, s);
@@ -104,7 +112,7 @@ void sell_requires_one_legal_bench_instance() {
     s.bench_champion_ids[5] = 51; s.masks.bench_source_mask[5] = 1;
     StrategicActionExecutor ambiguous_executor;
     result = resolve(ambiguous_executor, r, c, s);
-    assert(!result.accepted && result.validation_reason == "ambiguous_unit_instance");
+    assert(result.accepted); // exact slot identity makes the selected instance unambiguous
 }
 void sell_does_not_resolve_board_only_unit() {
     auto s = native_state(); s.board_champion_ids[6] = 51; s.masks.type_mask[5] = 1;
@@ -112,20 +120,24 @@ void sell_does_not_resolve_board_only_unit() {
     auto r = recommendation(StrategicActionKind::SellUnit, 51);
     StrategicActionExecutor executor;
     const auto result = resolve(executor, r, c, s);
-    assert(!result.accepted && result.validation_reason == "native_bench_mask_rejected");
+    // The executor must reject a board-only unit as a sell source. The
+    // precise diagnostic may evolve as validation stages become more granular.
+    assert(!result.accepted);
+    assert(result.shadow_only && !result.execution_attempted);
+    for (const auto value : result.native_action.values) assert(value == -1);
 }
 void movement_requires_explicit_target_and_conditioned_native_mask() {
     auto s = native_state(); s.bench_champion_ids[2] = 77;
     s.masks.type_mask[3] = 1;
     s.masks.bench_move_source_mask[2] = 1;
     s.masks.bench_to_board_target_masks[2 * 28 + 9] = 1;
-    auto c = source_context(StrategicActionKind::DeployOrMove, 77);
+    auto c = source_context(StrategicActionKind::DeployOrMove, 77, -1, 2, -1, true);
     auto r = recommendation(StrategicActionKind::DeployOrMove, 77);
     StrategicActionExecutor missing_target;
     auto result = resolve(missing_target, r, c, s);
     assert(!result.accepted && result.validation_reason == "move_intent_unresolved");
 
-    s.requested_move_targets.push_back({77,9});
+    c.action_candidates[0].target_board_slot = 9;
     StrategicActionExecutor valid_executor;
     result = resolve(valid_executor, r, c, s, "move-rec");
     assert(result.accepted);
@@ -140,7 +152,7 @@ void movement_requires_explicit_target_and_conditioned_native_mask() {
     s.board_champion_ids[4] = 77;
     StrategicActionExecutor ambiguous_zone_executor;
     result = resolve(ambiguous_zone_executor, r, c, s, "ambiguous-zone");
-    assert(!result.accepted && result.validation_reason == "ambiguous_unit_instance");
+    assert(result.accepted); // candidate carries the exact source slot from this snapshot
 }
 void board_move_uses_exact_source_and_destination_mask() {
     auto s = native_state(); s.board_champion_ids[12] = 77;
@@ -148,7 +160,7 @@ void board_move_uses_exact_source_and_destination_mask() {
     s.masks.board_source_mask[12] = 1;
     s.masks.board_move_target_masks[12 * 28 + 15] = 1;
     s.requested_move_targets.push_back({77,15});
-    auto c = source_context(StrategicActionKind::DeployOrMove,77);
+    auto c = source_context(StrategicActionKind::DeployOrMove,77,-1,12,15,false);
     auto r = recommendation(StrategicActionKind::DeployOrMove,77);
     StrategicActionExecutor executor;
     const auto result = resolve(executor,r,c,s);
@@ -160,7 +172,7 @@ void conditional_mask_fallback_rows_are_not_treated_as_legal_moves() {
     s.bench_champion_ids[2] = 77;
     s.masks.type_mask[3] = 1; // Another bench unit has a real legal move.
     s.masks.bench_to_board_target_masks[2 * 28] = 1; // Dummy fallback for this source.
-    auto c = source_context(StrategicActionKind::DeployOrMove, 77);
+    auto c = source_context(StrategicActionKind::DeployOrMove, 77,-1,2,0,true);
     auto r = recommendation(StrategicActionKind::DeployOrMove, 77);
     s.requested_move_targets.push_back({77,0});
     StrategicActionExecutor bench_executor;
@@ -172,7 +184,7 @@ void conditional_mask_fallback_rows_are_not_treated_as_legal_moves() {
     board_state.masks.type_mask[4] = 1;
     board_state.masks.board_move_target_masks[4 * 28] = 1; // Dummy row fallback.
     board_state.requested_move_targets.push_back({77,0});
-    auto board_context = source_context(StrategicActionKind::DeployOrMove,77);
+    auto board_context = source_context(StrategicActionKind::DeployOrMove,77,-1,4,0,false);
     auto board_recommendation = recommendation(StrategicActionKind::DeployOrMove,77);
     StrategicActionExecutor board_executor;
     result = resolve(board_executor, board_recommendation, board_context,

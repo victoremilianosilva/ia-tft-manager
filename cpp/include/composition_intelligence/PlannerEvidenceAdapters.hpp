@@ -23,6 +23,11 @@ struct EconomicPlannerEvidence {
  double survival_pressure{0},board_pressure{0},economy_pressure{0},confidence{0};
  double buy_experience_opportunity_cost{0},reroll_with_target_opportunity_cost{0};
  double reroll_without_target_opportunity_cost{0},buy_unit_opportunity_cost{0};
+ // Appended to preserve existing aggregate initialization contracts.
+ bool sufficient_evidence{false};
+ std::vector<std::string> evidence_used,evidence_missing;
+ bool survival_evidence_available{false};
+ bool streak_evidence_available{false};
 };
 struct BoardPlannerEvidence {
  EvidenceSourceMetadata metadata;
@@ -59,6 +64,11 @@ public:
   o.gold=c.gold;o.level=c.level;o.xp=c.xp;o.xp_to_next=c.xp_to_next;
   o.interest_if_resolved_now=c.interest_if_resolved_now;o.projected_next_round_income=c.projected_next_round_income;
   o.win_streak=c.win_streak;o.loss_streak=c.loss_streak;o.posture=d.posture;o.reason=d.reason;
+  o.sufficient_evidence=d.sufficient_evidence;
+  o.evidence_used=d.evidence_used;o.evidence_missing=d.evidence_missing;
+  o.survival_evidence_available=c.evidence.hp ||
+   c.evidence.estimated_incoming_damage || c.evidence.elimination_risk;
+  o.streak_evidence_available=c.evidence.streaks;
   o.survival_pressure=unit(d.survival_pressure);o.board_pressure=unit(d.board_pressure);
   o.economy_pressure=unit(d.economy_pressure);o.confidence=unit(d.confidence);
   o.buy_experience_opportunity_cost=strategy::action_opportunity_cost::kBuyExperience;

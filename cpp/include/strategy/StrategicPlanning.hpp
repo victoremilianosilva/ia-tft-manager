@@ -97,6 +97,14 @@ struct StrategicActionCandidate {
     double composition_fit{0.0};
     double upgrade_value{0.0};
     bool available{true};
+    // Physical parameters are tied to the source snapshot; -1 means absent.
+    std::string candidate_id;
+    std::uint64_t source_sequence{0};
+    std::int32_t shop_slot{-1};
+    std::int32_t source_slot{-1};
+    std::int32_t target_board_slot{-1};
+    bool source_is_bench{false};
+    std::string evidence_reason;
 };
 
 struct ActionCandidateScore {
@@ -132,6 +140,22 @@ struct StrategicCandidateGenerationDiagnostics {
     std::string no_candidate_reason{"not_evaluated"};
 };
 
+struct StrategicEvidenceAvailability {
+    bool hp{false};
+    bool gold{false};
+    bool level{false};
+    bool xp{false};
+    bool xp_to_next{false};
+    bool interest_if_resolved_now{false};
+    bool streaks{false};
+    bool board_power{false};
+    bool relative_board_power{false};
+    bool projected_next_round_income{false};
+    bool estimated_incoming_damage{false};
+    bool elimination_risk{false};
+    bool progression_plan{false};
+};
+
 struct StrategicSharedContext {
     std::uint32_t schema_version{1};
     std::int32_t player_id{-1};
@@ -164,6 +188,8 @@ struct StrategicSharedContext {
     bool alive{true};
     // Candidate actions are diagnostic estimates assembled from native state.
     std::vector<StrategicActionCandidate> action_candidates;
+    // Appended to preserve existing aggregate initialization contracts.
+    StrategicEvidenceAvailability evidence;
 };
 
 struct StrategicCommitment {
@@ -230,6 +256,10 @@ struct EconomicControlDecision {
     double board_pressure{0.0};
     double economy_pressure{0.0};
     bool shadow_only{true};
+    // Appended to preserve existing aggregate initialization contracts.
+    bool sufficient_evidence{false};
+    std::vector<std::string> evidence_used;
+    std::vector<std::string> evidence_missing;
 };
 
 struct ActionEvaluation {
