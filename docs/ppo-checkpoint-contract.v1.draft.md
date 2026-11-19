@@ -338,3 +338,10 @@ New checkpoints persist `semantic_state_contract` when the policy contains `sema
 The Trainer and Viewer must validate this contract against the active native catalog before loading semantic weights. Weights without the contract, a contract without weights, or a catalog fingerprint/vocabulary mismatch are rejected. Historical checkpoints without semantic weights/contracts remain loadable through the neutral additive migration: the semantic encoder's final layer is zero-initialized, so the legacy Actor/Critic outputs are preserved at load while the new side input remains trainable.
 
 The semantic rows are part of the rollout transition and must remain aligned with the same Engine/episode/decision/player identity as observation and action masks. The next-state semantic row is used for the GAE bootstrap. This is a new independent side input; it does not alter the historical flat observation tensor or silently rewrite its offsets.
+
+
+## Reward contract binding — PR #496
+
+New checkpoints persist `reward_contract` independently from observation, Action Contract and Mask Contract identities. The v1 manifest is `tft.ppo.outcome-reward.v1` and contains its version and deterministic SHA-256 digest.
+
+The loader rejects unknown or mismatched reward manifests even when policy tensor shapes match. A checkpoint without the manifest is an unversioned historical baseline; it can be loaded for policy weights only with `TFT_ALLOW_UNVERSIONED_REWARD_CHECKPOINT=1`. In that explicit migration path, optimizer and scheduler state are reset. This does not imply semantic compatibility of the still-active legacy flat observation projection.
