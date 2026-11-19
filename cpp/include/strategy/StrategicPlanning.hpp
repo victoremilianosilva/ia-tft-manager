@@ -97,6 +97,14 @@ struct StrategicActionCandidate {
     double composition_fit{0.0};
     double upgrade_value{0.0};
     bool available{true};
+    // Physical parameters are tied to the source snapshot; -1 means absent.
+    std::string candidate_id;
+    std::uint64_t source_sequence{0};
+    std::int32_t shop_slot{-1};
+    std::int32_t source_slot{-1};
+    std::int32_t target_board_slot{-1};
+    bool source_is_bench{false};
+    std::string evidence_reason;
 };
 
 struct ActionCandidateScore {
