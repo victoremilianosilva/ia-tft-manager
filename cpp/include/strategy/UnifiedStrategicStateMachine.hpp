@@ -74,8 +74,17 @@ struct StrategicCycleResult {
 class UnifiedStrategicStateMachine {
 public:
     explicit UnifiedStrategicStateMachine(
+        composition_intelligence::ActiveCompositionManager& active_composition,
         PivotConfirmationPolicy pivot_policy = {}
-    ) : pivot_coordinator_(pivot_policy) {}
+    ) : pivot_coordinator_(active_composition, pivot_policy) {}
+
+    // Resets orchestration history while leaving the canonical composition
+    // untouched. Its lifecycle owner performs match/session resets.
+    void reset() noexcept {
+        pivot_coordinator_.reset_state();
+        previous_discovery_direction_.clear();
+        phase_ = StrategicCyclePhase::Exploration;
+    }
 
     StrategicCycleResult refresh(const StrategicCycleInput& input) {
         StrategicCycleResult out;
@@ -100,7 +109,23 @@ public:
                 out.diagnostics.discovery.hypotheses.front().anchor.direction;
         }
 
-        if (!had_active && input.active_composition.has_value()) {
+        const auto& canonical_active = pivot_coordinator_.active_composition();
+        const bool direction_uninitialized =
+            !pivot_coordinator_.anchors().has_direction_anchor();
+        if (direction_uninitialized && canonical_active) {
+            const auto projected = CompositionBoundDirectionAnchor::from_active_composition(
+                *canonical_active);
+            if (!projected) {
+                phase_ = StrategicCyclePhase::NoEvidence;
+                out.diagnostics.transition_reason = "active_composition_cannot_form_valid_direction_anchor";
+                return finish(std::move(out));
+            }
+            const auto initialized = pivot_coordinator_.initialize(*canonical_active, *projected);
+            out.state_changed = initialized.state_changed;
+            out.diagnostics.transition_reason = initialized.reason;
+            phase_ = initialized.status == PivotConfirmationStatus::Initialized
+                ? StrategicCyclePhase::CompositionActive : StrategicCyclePhase::NoEvidence;
+        } else if (direction_uninitialized && input.active_composition.has_value()) {
             const auto projected = CompositionBoundDirectionAnchor::from_active_composition(
                 *input.active_composition);
             if (!projected) {
