@@ -141,3 +141,17 @@ Current disposition:
 - The semantic contract must keep physical identity unavailable for cross-episode canonical joins until the scope/lifecycle contract is accepted.
 
 This correction supersedes the historical “generation not proven” statement only. It does not authorize a schema/runtime/tensor change.
+
+## Native UnitInstance identity reconciliation — PR #497
+
+**Prior problem:** Schema v2 named the physical unit key instance_id, while the native model and snapshot publish UnitInstance::uuid. The old text also treated the UUID as lacking Engine/player scope even though the current native snapshot envelope now carries Engine-instance identity, episode ID, and per-player decision sequences.
+
+**Technical rationale:** schema names must reflect the native producer, while the deterministic UUID generator means the raw UUID cannot be treated as globally unique. The identity is the composite (engine_instance_id, episode_id, player_id, uuid).
+
+**Owner and boundaries:** UnitInstanceFactory owns UUID creation; TFTEngine owns Engine/episode scope and snapshot publication; the wrapper validates the enclosing snapshot. This does not create a new physical-identity owner.
+
+**Contract and invariants:** $defs.unit and slot-aligned unit-role references use uuid; the temporal manifest and producer coverage matrix use the same name. Raw UUID alone is never a cross-episode or global join key. No UUID-backed physical-unit assessment is fabricated for champion-keyed priority records.
+
+**Impacts:** Schema v2 draft, temporal manifest, producer coverage CSV, and their contract tests. No tensor layout, normalization, PPO encoder, rollout, reward, or mask changes.
+
+**Validation:** tests/test_structured_unit_uuid_schema_contract.py checks the schema, manifest scope, and producer matrix consistency. The complete lifecycle replay across all transitions and authoritative GEP match correlation remain open; this is a schema/source reconciliation, not proof of typed UUID delivery to PPO.
