@@ -159,6 +159,14 @@ public:
                     equipped_item_risk[unit.champion_id] = true;
         }
 
+        if (context.action_candidates.empty()) {
+            out.recommended_action = strategy::StrategicActionKind::None;
+            out.recommended_champion_id = -1;
+            out.confidence_not_probability = 0.0;
+            out.rationale = "no_candidates";
+            return out;
+        }
+
         double best_score = 0.0; // HOLD remains the explicit zero-value option.
         std::size_t selected_index = std::numeric_limits<std::size_t>::max();
         std::size_t hold_candidate_index = std::numeric_limits<std::size_t>::max();
