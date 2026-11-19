@@ -39,7 +39,7 @@ struct BoardPlannerEvidence {
 struct ItemUnitBinding {
  std::int32_t champion_id{-1};
  items::UnitProfile profile;
- std::string role_source{"ChampionDefinition+UnitCombatClassifier"};
+ std::string role_source{"derived:UnitCombatClassifier"};
  std::string composition_source{"unavailable_without_active_composition"};
  std::string composition_id;
  std::uint64_t composition_version{0};
