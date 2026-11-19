@@ -89,10 +89,10 @@ def verify_cardinality(snapshot: dict) -> None:
                 if not isinstance(unit, dict):
                     raise ValueError(f"occupied {name} slot requires a physical unit")
                 if name in {"board", "bench"}:
-                    instance_id = unit["instance_id"]
-                    if instance_id in physical_ids:
-                        raise ValueError(f"duplicate physical unit instance_id: {instance_id}")
-                    physical_ids.add(instance_id)
+                    unit_uuid = unit["uuid"]
+                    if unit_uuid in physical_ids:
+                        raise ValueError(f"duplicate physical unit uuid within player episode: {unit_uuid}")
+                    physical_ids.add(unit_uuid)
             elif slot.get("unit", "not-present") is not None:
                 raise ValueError(f"non-occupied {name} slot must carry unit=null")
 
