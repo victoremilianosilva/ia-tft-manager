@@ -45,11 +45,12 @@ struct StrategicActionNativeSnapshot {
         empty_champion_slots<decision::BENCH_SIZE>();
     std::array<std::int32_t, decision::BOARD_SIZE> board_champion_ids =
         empty_champion_slots<decision::BOARD_SIZE>();
-    std::array<std::string, decision::BENCH_SIZE> bench_unit_uuids{};
-    std::array<std::string, decision::BOARD_SIZE> board_unit_uuids{};
     PlayerActionMasks masks{};
     std::string mask_generation_error;
     std::vector<StrategicActionMoveTarget> requested_move_targets;
+    // Appended to preserve aggregate initialization of the existing snapshot contract.
+    std::array<std::string, decision::BENCH_SIZE> bench_unit_uuids{};
+    std::array<std::string, decision::BOARD_SIZE> board_unit_uuids{};
 };
 
 struct StrategicActionResolutionRequest {
