@@ -39,7 +39,7 @@ assert "strategic_context.current_core_traits" in composition_intelligence_input
 # not copied from StrategicSharedContext or legacy StrategyInfo fields.
 assert "semantic_item_unit_profiles" in source
 semantic_profile_start = source.index("std::vector<items::UnitProfile> semantic_item_unit_profiles")
-semantic_profile_end = source.index("\\n    const UnitInstance* item_target_unit", semantic_profile_start)
+semantic_profile_end = source.index("\n    const UnitInstance* item_target_unit", semantic_profile_start)
 semantic_profile_source = source[semantic_profile_start:semantic_profile_end]
 assert "composition_intelligence_players[player_index].active.current()" in semantic_profile_source
 assert "target.core" in semantic_profile_source
