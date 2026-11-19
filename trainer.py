@@ -469,8 +469,12 @@ class Trainer:
             print("ℹ️ Scheduler reiniciado: LR/schedule mudou ou checkpoint incompatível.")
 
         if checkpoint:
-            self.start_update = int(checkpoint.get("update", 0)) + 1
-            print(f"▶️ Retomando do update {self.start_update}")
+            if legacy_checkpoint_lineage:
+                self.start_update = 1
+                print("ℹ️ Checkpoint histórico carregado como baseline de pesos; nova linhagem começa no update 1.")
+            else:
+                self.start_update = int(checkpoint.get("update", 0)) + 1
+                print(f"▶️ Retomando do update {self.start_update}")
         else:
             print("⚠️ Nenhum checkpoint encontrado; iniciando do zero.")
 
