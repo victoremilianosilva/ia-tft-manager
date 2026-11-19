@@ -314,14 +314,14 @@ def test_candidate_slot_validation_rejects_duplicates_invalid_ids_and_booleans()
 
 def test_paired_summary_rejects_duplicate_or_overlapping_player_identity():
     rows = _seed_rows(500, [1, 2, 3, 4], [5, 6, 7, 8])
-    rows[-1]["player_id"] = 3
+    rows[-1]["player_id"] = 2
     with pytest.raises(ValueError, match="distinct player IDs"):
         summarize_paired_seeds(rows)
 
 
 def test_paired_summary_rejects_same_player_assigned_to_both_policies():
     rows = _seed_rows(501, [1, 2, 3, 4], [5, 6, 7, 8])
-    rows[-1]["player_id"] = 0
+    rows[-1]["player_id"] = 4
     with pytest.raises(ValueError, match="distinct player IDs|assigns a player"):
         summarize_paired_seeds(rows)
 
