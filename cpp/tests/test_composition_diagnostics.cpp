@@ -68,6 +68,7 @@ int main() {
     assert(payload["evidence"]["economy"]["gold"] == 0);
     assert(payload["evidence"]["economy"]["interest"] == 2);
     assert(payload["evidence"]["economy"]["projected_income"].is_null());
+    assert(payload["evidence"]["economy"]["posture"].is_null());
     assert(payload["evidence"]["items"]["units"][0]["composition_id"] == "comp-a");
     assert(payload["evidence"]["items"]["units"][0]["role_source"] == "derived:UnitCombatClassifier");
     assert(payload["evidence"]["items"]["units"][0]["preferred_traits"][0] == "Arcanist");
