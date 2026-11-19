@@ -6023,79 +6023,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         // Shared shop-opportunity check: buy meaningful pairs/upgrades/fits
         // before converting surplus gold into XP or passing.
 
-        // Alinhado a RewardManager.calculate_action_reward() e aos valores
-        // usados em env.py para compra, reroll e XP.
-        double action_reward = 0.0;
-        bool success = false;
-        if (type == 0) {
-            // The unit may be bought successfully while immediately consuming
-            // two copies in an automatic upgrade, so slot counts are not a
-            // reliable signal of success. Match MiniTFTEnv._execute_buy():
-            // No unconditional bonus for a normal purchase; +0.30 for a completed upgrade.
-            success = bought_unit_successfully;
-            action_reward = !success ? -0.10 : (bought_upgrade ? 0.30 : 0.0);
-            if (success && !buy_plan_evidence_approved &&
-                !buy_completes_upgrade && !buy_builds_pair) {
-                // Keep the rejection signal for genuinely low-value clutter, but
-                // don't punish pair progress or a merge because a board heuristic
-                // undervalued a unit that is not deployed yet.
-                action_reward -= 0.10;
-            }
-            if (success && has_candidate_comp_score) {
-                // Bench acquisitions are valuable even if their raw score is below
-                // the current board average. Blend absolute plan fit with marginal
-                // board fit instead of making board-relative delta the only signal.
-                // Early comp plans can be incomplete or overconfident. Keep
-                // a modest positive floor for an affordable bench acquisition
-                // instead of letting the current direction erase its value.
-                // The early-game floor is for actual upgrade/pair progress.
-                // Modest-fit early acquisitions preserve option value; the
-                // recent-purchase sale guard prevents rewarding buy/sell loops.
-                const bool early_purchase_has_progress =
-                    buy_completes_upgrade || buy_builds_pair;
-                const double effective_candidate_score =
-                    lobby.stage <= 2 && early_purchase_has_progress
-                        ? std::max(candidate_comp_score, 2.0)
-                        : candidate_comp_score;
-                const double acquisition_value = 0.75 * effective_candidate_score +
-                    0.25 * composition_quality_delta;
-                action_reward += reward_model::purchase_quality(
-                    acquisition_value, false);
-            }
-            if (success && buy_completes_upgrade) {
-                action_reward += 0.25;
-            } else if (success && buy_builds_pair) {
-                action_reward += reward_model::purchase_pair_quality(
-                    candidate_comp_score);
-            }
-            if (success && economy.gold < old_gold) {
-                const double normalized_fit = has_candidate_comp_score
-                    ? std::clamp((lobby.stage <= 2 &&
-                        (buy_completes_upgrade || buy_builds_pair)
-                            ? std::max(candidate_comp_score, 2.0)
-                            : candidate_comp_score) / 32.5, 0.0, 1.0)
-                    : 0.0;
-                action_reward += reward_model::spending_timing_reward(
-                    old_gold, this->info.hp, lobby.stage, normalized_fit,
-                    buy_completes_upgrade, false);
-                // The offer is scoped to the execution branch above; the
-                // actual gold delta is the authoritative purchase cost here.
-                const int purchase_cost = old_gold - economy.gold;
-                action_reward += reward_model::early_purchase_reward(
-                    lobby.stage, old_gold, purchase_cost, old_bench_count,
-                    normalized_fit, buy_completes_upgrade, buy_builds_pair);
-                action_reward += reward_model::unit_purchase_timing_reward(
-                    lobby.stage, old_gold, purchase_cost, old_bench_count,
-                    normalized_fit, this->info.hp,
-                    buy_completes_upgrade, buy_builds_pair);
-            }
-        } else if (type == 1) {
-            success = economy.gold == old_gold - EconomyEngine::REROLL_COST;
-            action_reward = success ? -0.01 : -0.10;
-            if (success) {
-                // Score only the observed shop delta, liquidity, health pressure
-                // and stage. The reward must not depend on the nominal strategy ID.
-                action_reward += reward_model::reroll_quality_reward(        // Reward Contract v1 deliberately does not turn Shadow scores,
+        // Reward Contract v1 deliberately does not turn Shadow scores,
         // legacy composition fit, heuristic board scores, or action costs into
         // PPO targets. Until an outcome has a versioned causal definition and
         // calibration evidence, action-level shaping is neutral. Combat and
@@ -6129,7 +6057,120 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             success = true;
         }
 
-ed + impl_->episode_id);
+        // MiniTFTEnv.step() returns the action-specific reward directly.
+        // RewardManager's broader state components are not called by the
+        // Python environment, so applying them here would change PPO targets.
+        lobby.update_strategy(player_id);
+        // Record the direction *after* this purchase has refreshed strategy.
+        // Otherwise a direction change caused by the purchase itself is mistaken
+        // for a later legitimate transition and exempts an immediate buy/sell loop.
+        if (type == 0 && success && this->strategy) {
+            for (auto it = this->recent_purchases.rbegin();
+                 it != this->recent_purchases.rend(); ++it) {
+                if (it->action_serial == this->action_serial) {
+                    it->comp_direction = this->strategy->composition_direction;
+                    it->comp_focus = this->strategy->composition_focus;
+                    break;
+                }
+            }
+        }
+        // Capture actual action economics before round income is resolved.
+        // Net gold after TFTEngine::step may include income and cannot be used
+        // to infer the action's true cost. This trace is audit-only and never
+        // enters the policy observation or PPO reward calculation.
+        const auto actual_action_cost = type == 5
+            ? 0 : std::max<std::int32_t>(0, old_gold - economy.gold);
+        const auto actual_sale_proceeds = type == 5
+            ? std::max<std::int32_t>(0, economy.gold - old_gold) : 0;
+        return PlayerTransition{
+            static_cast<float>(action_reward),
+            true,
+            success,
+            board_capacity_violation,
+            actual_action_cost,
+            actual_sale_proceeds,
+            old_gold,
+            economy.gold,
+            lobby.economy_engine.get_interest(old_gold),
+            lobby.economy_engine.get_interest(economy.gold),
+            old_level,
+            economy.level,
+            old_xp,
+            economy.xp
+        };
+}
+
+// ============================================================
+// CONSTRUTOR E DESTRUTOR
+// ============================================================
+
+TFTEngine::TFTEngine(
+    std::uint64_t seed,
+    std::string catalog_path,
+    std::string item_catalog_path
+)
+    : impl_(
+        std::make_unique<Impl>(seed, catalog_path, item_catalog_path)
+    ) {
+}
+
+TFTEngine::~TFTEngine() = default;
+
+TFTEngine::TFTEngine(TFTEngine&&) noexcept = default;
+
+TFTEngine& TFTEngine::operator=(TFTEngine&&) noexcept = default;
+
+// ============================================================
+// RESET
+// ============================================================
+
+ResetResult TFTEngine::reset(
+    std::optional<std::uint64_t> seed
+) {
+    if (!impl_) {
+        throw std::runtime_error(
+            "TFTEngine nao possui estado interno."
+        );
+    }
+
+    impl_->ensure_open();
+
+    if (seed.has_value()) {
+        impl_->seed = *seed;
+    }
+
+    ++impl_->episode_id;
+    impl_->composition_intelligence_players =
+        decltype(impl_->composition_intelligence_players){};
+    impl_->composition_intelligence_native_candidates =
+        decltype(impl_->composition_intelligence_native_candidates){};
+    impl_->composition_intelligence_native_diagnostics =
+        decltype(impl_->composition_intelligence_native_diagnostics){};
+    impl_->composition_intelligence_sequence = 0;
+    impl_->strategic_shadow_external_active_identity.fill(std::string{});
+    impl_->strategic_shadow_external_active_version.fill(0);
+    impl_->strategic_planner_commitments = {};
+    for (auto& executor : impl_->strategic_action_executors) executor.reset();
+    impl_->strategic_context_sequences.fill(0);
+    if (!impl_->strategic_shadow_audit_path.empty()) {
+        std::error_code remove_error;
+        std::filesystem::remove(impl_->strategic_shadow_audit_path, remove_error);
+        for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+            impl_->strategic_shadow_runtimes[i] =
+                std::make_unique<strategy::UnifiedStrategicShadowRuntime>(
+                    impl_->composition_intelligence_players[i].active,
+                    impl_->strategic_planner_commitments[i],
+                    impl_->strategic_shadow_audit_path);
+        }
+    }
+
+    impl_->round = 0;
+    impl_->stage = 1;
+    impl_->done = false;
+    impl_->winner_id = std::nullopt;
+    impl_->ranking.clear();
+    impl_->previous_matchups.clear();
+    impl_->matchmaking_rng.seed(impl_->seed + impl_->episode_id);
 
     // Devolve as ofertas antes de restaurar o pool.
     for (auto& player_env : impl_->player_envs) {
