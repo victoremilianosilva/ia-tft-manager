@@ -158,7 +158,6 @@ struct StrategicEvidenceAvailability {
 
 struct StrategicSharedContext {
     std::uint32_t schema_version{1};
-    StrategicEvidenceAvailability evidence;
     std::int32_t player_id{-1};
     std::uint32_t round{0};
     std::uint32_t stage{1};
@@ -189,6 +188,8 @@ struct StrategicSharedContext {
     bool alive{true};
     // Candidate actions are diagnostic estimates assembled from native state.
     std::vector<StrategicActionCandidate> action_candidates;
+    // Appended to preserve existing aggregate initialization contracts.
+    StrategicEvidenceAvailability evidence;
 };
 
 struct StrategicCommitment {
@@ -254,10 +255,11 @@ struct EconomicControlDecision {
     double survival_pressure{0.0};
     double board_pressure{0.0};
     double economy_pressure{0.0};
+    bool shadow_only{true};
+    // Appended to preserve existing aggregate initialization contracts.
     bool sufficient_evidence{false};
     std::vector<std::string> evidence_used;
     std::vector<std::string> evidence_missing;
-    bool shadow_only{true};
 };
 
 struct ActionEvaluation {
