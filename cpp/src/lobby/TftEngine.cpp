@@ -6326,9 +6326,11 @@ ResetResult TFTEngine::reset(
     if (!impl_->strategic_shadow_audit_path.empty()) {
         std::error_code remove_error;
         std::filesystem::remove(impl_->strategic_shadow_audit_path, remove_error);
-        for (auto& runtime : impl_->strategic_shadow_runtimes) {
-            runtime = std::make_unique<strategy::UnifiedStrategicShadowRuntime>(
-                impl_->strategic_shadow_audit_path);
+        for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+            impl_->strategic_shadow_runtimes[i] =
+                std::make_unique<strategy::UnifiedStrategicShadowRuntime>(
+                    impl_->composition_intelligence_players[i].active,
+                    impl_->strategic_shadow_audit_path);
         }
     }
 
@@ -6851,8 +6853,10 @@ void TFTEngine::set_strategic_direction_pivot_audit_path(const std::string& path
     }
     std::error_code remove_error;
     std::filesystem::remove(path, remove_error);
-    for (auto& runtime : impl_->strategic_shadow_runtimes) {
-        runtime = std::make_unique<strategy::UnifiedStrategicShadowRuntime>(path);
+    for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+        impl_->strategic_shadow_runtimes[i] =
+            std::make_unique<strategy::UnifiedStrategicShadowRuntime>(
+                impl_->composition_intelligence_players[i].active, path);
     }
 }
 
