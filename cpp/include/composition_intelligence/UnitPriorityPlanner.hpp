@@ -265,9 +265,9 @@ public:
 private:
     static std::int32_t affordable_shop_copies(
         const UnitPriorityEvidence* ev, const UnitPriorityContext& context) {
-        if (!ev || ev->unit_cost < 0 || context.gold_available < 0) return 0;
-        if (ev->unit_cost > context.gold_available) return 0;
-        return std::max(0, ev->copies_in_shop);
+        if (!ev || ev->unit_cost <= 0 || context.gold_available < 0) return 0;
+        const auto affordable = context.gold_available / ev->unit_cost;
+        return std::clamp(ev->copies_in_shop, 0, affordable);
     }
     static std::int32_t tier_base(UnitPriorityTier tier) {
         switch (tier) {
