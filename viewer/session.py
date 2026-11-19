@@ -16,6 +16,13 @@ import torch
 from policy import TFTPolicy, ACTION_DIMS, LEGACY_ACTION_DIMS
 from cpp_lobby_env import CppTFTLobbyWrapper
 from viewer.player_logs import PlayerJsonLogWriter
+from action_contract import validate_critic_mask_input_checkpoint_contract
+from semantic_observation import (
+    build_semantic_state_checkpoint_contract,
+    catalog_identity,
+    project_native_player_state,
+    validate_semantic_state_checkpoint_contract,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 CATALOG = ROOT / "data" / "units_gerado.json"
@@ -43,6 +50,57 @@ def _resolve_action_dims(payload: dict) -> list[int]:
     if normalized == LEGACY_ACTION_DIMS:
         return list(ACTION_DIMS)
     return normalized
+
+
+def _validate_critic_mask_checkpoint_payload(payload: dict, state_dict: dict) -> None:
+    """Require the side-input identity whenever a checkpoint contains Critic mask weights."""
+    contract = payload.get("critic_mask_input_contract")
+    has_encoder = any(
+        key.startswith("critic_mask_encoder.")
+        for key in state_dict
+    )
+    if contract is None:
+        if has_encoder:
+            raise ValueError(
+                "Checkpoint contém pesos do Critic mask encoder sem "
+                "critic_mask_input_contract."
+            )
+        return
+    validate_critic_mask_input_checkpoint_contract(contract)
+    if not has_encoder:
+        raise ValueError(
+            "Checkpoint declara critic_mask_input_contract, mas não contém "
+            "os pesos do Critic mask encoder."
+        )
+
+
+def _validate_semantic_checkpoint_payload(payload: dict, state_dict: dict, catalog_map: dict) -> None:
+    contract = payload.get("semantic_state_contract")
+    expected_semantic_keys = {
+        "semantic_id_embedding.weight",
+        "semantic_encoder.0.weight",
+        "semantic_encoder.0.bias",
+        "semantic_encoder.2.weight",
+        "semantic_encoder.2.bias",
+    }
+    present_semantic_keys = {
+        key for key in state_dict
+        if key.startswith(("semantic_id_embedding.", "semantic_encoder."))
+    }
+    has_encoder = bool(present_semantic_keys)
+    if present_semantic_keys and present_semantic_keys != expected_semantic_keys:
+        raise ValueError("Checkpoint contém um encoder semântico parcial.")
+    if contract is None:
+        if has_encoder:
+            raise ValueError(
+                "Checkpoint contém pesos do encoder sem semantic_state_contract."
+            )
+        return
+    validate_semantic_state_checkpoint_contract(contract, catalog_map)
+    if not has_encoder:
+        raise ValueError(
+            "Checkpoint declara semantic_state_contract, mas não contém os pesos do encoder semântico."
+        )
 
 
 def _jsonable(value: Any):
@@ -94,6 +152,8 @@ class ViewerSession:
     def __init__(self):
         self.lobby: CppTFTLobbyWrapper | None = None
         self.policy: TFTPolicy | None = None
+        self.champion_id_map: dict[str, int] = {}
+        self.semantic_state_contract: dict | None = None
         self.obs: np.ndarray | None = None
         self.masks: list[dict] | None = None
         self.public_state: dict = {}
@@ -145,6 +205,7 @@ class ViewerSession:
             raise ValueError("Formato de checkpoint não reconhecido: esperado um dicionário de pesos/metadata.")
         if not isinstance(state_dict, dict) or not state_dict:
             raise ValueError("O checkpoint não contém state_dict de política.")
+        _validate_critic_mask_checkpoint_payload(payload, state_dict)
         if obs_dim is None:
             # Validate old checkpoint metadata, but construct the live policy
             # from the observation dimension produced by the current native engine.
@@ -177,16 +238,25 @@ class ViewerSession:
                     print(f"OP.GG meta refresh skipped: {exc}")
         self.lobby = CppTFTLobbyWrapper(seed=int(seed), catalog_path=str(CATALOG))
         self.obs = self.lobby.reset(seed=int(seed))
+        self.champion_id_map = self.lobby.get_champion_id_map()
+        _validate_semantic_checkpoint_payload(payload, state_dict, self.champion_id_map)
+        self.semantic_state_contract = (
+            build_semantic_state_checkpoint_contract(self.champion_id_map)
+        )
+        semantic_vocab_size = catalog_identity(self.champion_id_map)["vocab_size"]
         current_obs_dim = int(self.obs.shape[-1])
-        self.policy = TFTPolicy(current_obs_dim, list(action_dims), hidden_size=int(hidden_size))
+        self.policy = TFTPolicy(
+            current_obs_dim, list(action_dims), hidden_size=int(hidden_size),
+            semantic_vocab_size=semantic_vocab_size,
+        )
         try:
             migrated_checkpoint = self.policy.load_compatible_state_dict(state_dict)
         except RuntimeError as exc:
             raise ValueError(f"Checkpoint incompatível com TFTPolicy atual: {exc}") from exc
         if migrated_checkpoint:
             print(
-                "Checkpoint migrado: colunas novas da observação e condicionamento "
-                "MOVE_BENCH inicializados sem alterar os pesos antigos compatíveis."
+                "Checkpoint migrado: novas entradas neutras de observação/ação/Critic "
+                "inicializadas sem alterar os pesos antigos compatíveis."
             )
         self.policy.eval()
         for parameter in self.policy.parameters():
@@ -385,10 +455,48 @@ class ViewerSession:
                 tensor_masks[key] = torch.as_tensor(np.asarray(value), dtype=torch.bool).unsqueeze(0)
             except (ValueError, TypeError):
                 continue
+        snapshot = self.lobby.get_snapshot_metadata()
+        native_snapshot = snapshot.get("native_state_snapshot")
+        if not isinstance(native_snapshot, dict):
+            raise RuntimeError("Viewer requires the native semantic snapshot for PPO inference.")
+        native_players = native_snapshot.get("players")
+        player_sequences = native_snapshot.get("player_decision_sequences")
+        if (
+            not isinstance(native_players, list) or len(native_players) != 8
+            or not isinstance(player_sequences, list) or len(player_sequences) != 8
+        ):
+            raise RuntimeError("Viewer semantic snapshot is missing aligned player state/sequence rows.")
+        semantic_metadata = {
+            "engine_instance_id": snapshot.get("engine_instance_id"),
+            "episode_id": snapshot.get("episode_id"),
+            "decision_sequence": snapshot.get("decision_sequence"),
+            "player_decision_sequence": player_sequences[player_id],
+            "player_id": player_id,
+            "lobby_index": 0,
+            "stage": snapshot.get("stage"),
+            "round": snapshot.get("round"),
+            "native_state_contract_id": native_snapshot.get("contract_id"),
+            "native_state_contract_version": native_snapshot.get("contract_version"),
+            "native_state_producer": native_snapshot.get("producer"),
+            "native_state_source_namespace": native_snapshot.get("source_namespace"),
+            "native_player_state": native_players[player_id],
+        }
+        semantic = project_native_player_state(
+            semantic_metadata, self.champion_id_map
+        )
+        semantic_state = {
+            "numeric": torch.as_tensor(
+                [semantic["numeric"]], dtype=torch.float32, device=obs.device
+            ),
+            "champion_ids": torch.as_tensor(
+                [semantic["champion_ids"]], dtype=torch.long, device=obs.device
+            ),
+        }
         infer = self.policy.get_action_and_value_with_diagnostics
         with torch.inference_mode():
             actions, logprob, entropy, value, diagnostics = infer(
-                obs, masks=tensor_masks, deterministic=self.config.deterministic
+                obs, masks=tensor_masks, deterministic=self.config.deterministic,
+                semantic_state=semantic_state,
             )
         action = [int(x) for x in actions[0].detach().cpu().tolist()]
         diag = {
@@ -675,12 +783,36 @@ class ViewerSession:
         source = Path(path).expanduser().resolve()
         if source.is_dir():
             legacy_stream = source / "events.jsonl"
-            source = legacy_stream if legacy_stream.is_file() else source / "player_1_log.json"
+            structured_player_log = source / "player_1_log.json"
+            legacy_text_log = source / "player_1_log.tft"
+            if legacy_stream.is_file():
+                source = legacy_stream
+            elif structured_player_log.is_file():
+                source = structured_player_log
+            else:
+                source = legacy_text_log
         if not source.is_file():
             raise FileNotFoundError(source)
 
         events = []
-        if source.suffix.casefold() == ".json":
+        if source.suffix.casefold() in {".tft", ".txt"}:
+            # Historical .tft logs are human-readable timelines, not structured
+            # Engine replays. Preserve their exact text and ordering without
+            # fabricating actions, board states, rewards or Engine identities.
+            lines = source.read_text(encoding="utf-8").splitlines()
+            events = [
+                {
+                    "schema_version": 1,
+                    "sequence_id": line_number,
+                    "event_type": "legacy_text_line",
+                    "legacy_source_format": "tft_text_v1",
+                    "legacy_line_number": line_number,
+                    "text": line,
+                }
+                for line_number, line in enumerate(lines, 1)
+                if line.strip()
+            ]
+        elif source.suffix.casefold() == ".json":
             try:
                 document = json.loads(source.read_text(encoding="utf-8"))
             except json.JSONDecodeError as exc:

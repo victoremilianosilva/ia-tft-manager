@@ -33,11 +33,18 @@ from action_contract import (
     MASK_CONTRACT_ID, MASK_CONTRACT_VERSION, MASK_CONTRACT_HASH,
     build_action_mask_checkpoint_contract, hash_mask_rows,
     validate_action_mask_checkpoint_contract,
+    build_critic_mask_input_checkpoint_contract,
+    validate_critic_mask_input_checkpoint_contract,
 )
 from rollout import RolloutBuffer
 from ppo import PPOTrainer, exponential_schedule_value
+from semantic_observation import (
+    build_semantic_batch,
+    build_semantic_state_checkpoint_contract,
+    catalog_identity,
+    validate_semantic_state_checkpoint_contract,
+)
 
-from engine_contracts import Strategy
 from engine_contracts import ActionType
 
 def refresh_opgg_meta_catalog() -> None:
@@ -220,6 +227,17 @@ class Trainer:
         )
 
         dummy_obs = self.vec_env.reset()
+        catalog_maps = self.vec_env.env_method("get_champion_id_map")
+        if not catalog_maps or any(not isinstance(item, dict) for item in catalog_maps):
+            raise RuntimeError("Native champion catalog map is required for semantic PPO projection.")
+        canonical_catalog = catalog_maps[0]
+        if any(item != canonical_catalog for item in catalog_maps[1:]):
+            raise RuntimeError("Vector lobbies expose different champion catalog identities.")
+        self.champion_id_map = dict(canonical_catalog)
+        self.semantic_state_contract = build_semantic_state_checkpoint_contract(
+            self.champion_id_map
+        )
+        self.semantic_vocab_size = catalog_identity(self.champion_id_map)["vocab_size"]
 
         if dummy_obs.ndim != 3:
             raise ValueError(
@@ -239,7 +257,8 @@ class Trainer:
 
         self.policy = TFTPolicy(
             self.obs_dim,
-            self.ACTION_DIMS
+            self.ACTION_DIMS,
+            semantic_vocab_size=self.semantic_vocab_size,
         ).to(self.device)
 
         # ============================================================
@@ -270,6 +289,64 @@ class Trainer:
                 legacy_action_mask_checkpoint = True
             else:
                 validate_action_mask_checkpoint_contract(saved_contract)
+
+            saved_critic_mask_contract = checkpoint.get("critic_mask_input_contract")
+            checkpoint_has_critic_mask_encoder = any(
+                key.startswith("critic_mask_encoder.")
+                for key in checkpoint.get("policy", {})
+            )
+            if saved_critic_mask_contract is None:
+                if checkpoint_has_critic_mask_encoder:
+                    raise RuntimeError(
+                        "Checkpoint contém pesos do Critic mask encoder sem "
+                        "critic_mask_input_contract; a semântica da entrada não pode ser inferida."
+                    )
+                # Historical checkpoint: load only through the explicit neutral
+                # weight migration in TFTPolicy; optimizer/scheduler are reset.
+            else:
+                validate_critic_mask_input_checkpoint_contract(saved_critic_mask_contract)
+                if not checkpoint_has_critic_mask_encoder:
+                    raise RuntimeError(
+                        "Checkpoint declara critic_mask_input_contract, mas não contém "
+                        "os pesos do Critic mask encoder."
+                    )
+
+            saved_semantic_contract = checkpoint.get("semantic_state_contract")
+            semantic_state_keys = {
+                key for key in self.policy.state_dict()
+                if key.startswith(("semantic_id_embedding.", "semantic_encoder."))
+            }
+            present_semantic_state_keys = {
+                key for key in checkpoint.get("policy", {})
+                if key.startswith(("semantic_id_embedding.", "semantic_encoder."))
+            }
+            checkpoint_has_semantic_weights = bool(present_semantic_state_keys)
+            if (
+                present_semantic_state_keys
+                and present_semantic_state_keys != semantic_state_keys
+            ):
+                raise RuntimeError(
+                    "Checkpoint contém um encoder semântico parcial; "
+                    "todos os pesos do contrato devem estar presentes."
+                )
+            if saved_semantic_contract is None:
+                if checkpoint_has_semantic_weights:
+                    raise RuntimeError(
+                        "Checkpoint contém pesos sem semantic_state_contract; "
+                        "a origem/layout do estado semântico não pode ser inferida."
+                    )
+                # Historical checkpoint: semantic branch migrates from its
+                # neutral initialization; optimizer/scheduler are reset.
+            else:
+                validate_semantic_state_checkpoint_contract(
+                    saved_semantic_contract, self.champion_id_map
+                )
+                if not checkpoint_has_semantic_weights:
+                    raise RuntimeError(
+                        "Checkpoint declara semantic_state_contract, mas não contém "
+                        "os pesos do encoder semântico."
+                    )
+
             migrated_checkpoint = self.policy.load_compatible_state_dict(checkpoint["policy"])
             print("⚠️ Checkpoint migrado; optimizer/scheduler serão reiniciados." if migrated_checkpoint
                   else "✅ Pesos da policy carregados.")
@@ -452,6 +529,10 @@ class Trainer:
                     if not isinstance(native_player, dict) or native_player.get("player_id") != player_idx:
                         raise RuntimeError(f"Registro estruturado desalinhado para lobby {lobby_idx}, jogador {player_idx}.")
                     metadata["native_player_state"] = copy.deepcopy(native_player)
+                    metadata["native_state_contract_id"] = native_snapshot.get("contract_id")
+                    metadata["native_state_contract_version"] = native_snapshot.get("contract_version")
+                    metadata["native_state_producer"] = native_snapshot.get("producer")
+                    metadata["native_state_source_namespace"] = native_snapshot.get("source_namespace")
                 metadata["player_decision_sequence"] = player_sequence
                 metadata["lobby_index"] = lobby_idx
                 metadata["player_id"] = player_idx
@@ -521,6 +602,25 @@ class Trainer:
     def _hash_mask_rows(cls, masks):
         """Hash each exact per-agent mask payload with the canonical v1 helper."""
         return hash_mask_rows(masks, cls.MASK_SHAPES)
+
+    @staticmethod
+    def _hash_observation_rows(observations):
+        """Hash each exact float32 observation row independently and deterministically."""
+        if not isinstance(observations, torch.Tensor) or observations.ndim != 2:
+            raise TypeError("Observations para correlação devem ser tensor [batch, features].")
+        if observations.dtype != torch.float32:
+            raise TypeError("Observations para correlação devem usar torch.float32.")
+        rows = observations.detach().to(device="cpu").contiguous().numpy()
+        shape_identity = f"{rows.shape[1]}:float32".encode("ascii")
+        hashes = []
+        for row in rows:
+            digest = hashlib.sha256()
+            digest.update(b"tft-ppo-observation-row-v1\\x00")
+            digest.update(shape_identity)
+            digest.update(b"\\x00")
+            digest.update(row.tobytes(order="C"))
+            hashes.append(digest.hexdigest())
+        return hashes
 
 
     # ================================================================
@@ -984,56 +1084,6 @@ class Trainer:
         )
 
     # ================================================================
-    # 🧠 STRATEGY LOGGING
-    # ================================================================
-
-    def _collect_strategy_counts(
-        self,
-        strategies
-    ):
-        """
-        strategies vem como:
-
-            [
-                [
-                    strategy_p0,
-                    ...
-                    strategy_p7
-                ],
-                ...
-            ]
-
-        Conta todos os jogadores.
-        """
-
-        counts = np.zeros(
-            len(Strategy),
-            dtype=np.int32
-        )
-
-        for lobby_strategies in strategies:
-
-            for strategy in lobby_strategies:
-
-                if strategy is None:
-                    continue
-
-                try:
-
-                    counts[
-                        strategy.value
-                    ] += 1
-
-                except (
-                    AttributeError,
-                    IndexError
-                ):
-
-                    pass
-
-        return counts
-
-    # ================================================================
     # 🏋️ TRAIN
     # ================================================================
 
@@ -1218,11 +1268,6 @@ class Trainer:
                 dtype=np.int32
             )
 
-            strategy_counts = np.zeros(
-                len(Strategy),
-                dtype=np.int32
-            )
-
             self.policy.eval()
 
             # ========================================================
@@ -1244,6 +1289,46 @@ class Trainer:
                     lobby_snapshots,
                     self.PLAYERS_PER_LOBBY,
                     "snapshot da decisão PPO",
+                )
+                for metadata, observation_hash in zip(
+                    flat_snapshot_metadata,
+                    self._hash_observation_rows(obs),
+                ):
+                    metadata["observation_snapshot_hash"] = observation_hash
+                    metadata["observation_snapshot_hash_algorithm"] = "tft-ppo-observation-row-v1"
+
+                semantic_batch = build_semantic_batch(
+                    flat_snapshot_metadata, self.champion_id_map
+                )
+                semantic_state = {
+                    "numeric": torch.as_tensor(
+                        semantic_batch["numeric"], dtype=torch.float32, device=self.device
+                    ),
+                    "champion_ids": torch.as_tensor(
+                        semantic_batch["champion_ids"], dtype=torch.long, device=self.device
+                    ),
+                }
+                for metadata, semantic_hash in zip(
+                    flat_snapshot_metadata, semantic_batch["hashes"]
+                ):
+                    metadata["semantic_projection_hash"] = semantic_hash
+                    metadata["semantic_projection_contract_id"] = (
+                        self.semantic_state_contract["contract"]["contract_id"]
+                    )
+                    metadata["semantic_projection_contract_hash"] = (
+                        self.semantic_state_contract["sha256"]
+                    )
+                semantic_entities = np.asarray(
+                    semantic_batch["numeric"], dtype=np.float32
+                )[:, 17:].reshape(-1, 42, 6)
+                unknown_semantic_champions = int(
+                    ((semantic_entities[:, :, 0] > 0.5) &
+                     (semantic_entities[:, :, 5] < 0.5)).sum()
+                )
+                self.writer.add_scalar(
+                    "semantic/unknown_occupied_champion_slots",
+                    unknown_semantic_champions,
+                    update * rollout_steps + step,
                 )
 
                 gym_masks = (
@@ -1313,26 +1398,8 @@ class Trainer:
 
                 mask_samples += 1
 
-                # ====================================================
-                # 🧠 STRATEGIES
-                # ====================================================
-
-                current_strategies = (
-                    self.vec_env.env_method(
-                        "get_strategies"
-                    )
-                )
-
-                current_strategy_counts = (
-                    self._collect_strategy_counts(
-                        current_strategies
-                    )
-                )
-
-                strategy_counts += (
-                    current_strategy_counts
-                )
-
+                # Strategy labels are diagnostics only; PPO collection does
+                # not query the legacy get_strategies() compatibility API.
 
                 # 📸 Fotografa quem pode gerar experiência neste passo.
                 # A cópia precisa acontecer ANTES da ação.
@@ -1352,11 +1419,11 @@ class Trainer:
                             values,
                             head_entropy_diagnostics,
                         ) = self.policy.get_action_and_value_with_entropy_diagnostics(
-                            obs, masks=masks
+                            obs, masks=masks, semantic_state=semantic_state
                         )
                     else:
                         actions, logprobs, _, values = self.policy.get_action(
-                            obs, masks=masks
+                            obs, masks=masks, semantic_state=semantic_state
                         )
 
                 # Sample entropy diagnostics every ten rollout steps to avoid
@@ -1447,6 +1514,27 @@ class Trainer:
                     self.PLAYERS_PER_LOBBY,
                     "snapshot da próxima observação",
                 )
+                next_semantic_batch = build_semantic_batch(
+                    flat_next_snapshot_metadata, self.champion_id_map
+                )
+                next_semantic_state = {
+                    "numeric": torch.as_tensor(
+                        next_semantic_batch["numeric"], dtype=torch.float32, device=self.device
+                    ),
+                    "champion_ids": torch.as_tensor(
+                        next_semantic_batch["champion_ids"], dtype=torch.long, device=self.device
+                    ),
+                }
+                for metadata, semantic_hash in zip(
+                    flat_next_snapshot_metadata, next_semantic_batch["hashes"]
+                ):
+                    metadata["semantic_projection_hash"] = semantic_hash
+                    metadata["semantic_projection_contract_id"] = (
+                        self.semantic_state_contract["contract"]["contract_id"]
+                    )
+                    metadata["semantic_projection_contract_hash"] = (
+                        self.semantic_state_contract["sha256"]
+                    )
 
                 # Resultado final, colocação e duração de cada partida.
                 for lobby_idx, info in enumerate(infos):
@@ -1568,6 +1656,12 @@ class Trainer:
                     dtype=torch.float32,
                     device=self.device
                 )
+                for metadata, observation_hash in zip(
+                    flat_next_snapshot_metadata,
+                    self._hash_observation_rows(next_obs),
+                ):
+                    metadata["observation_snapshot_hash"] = observation_hash
+                    metadata["observation_snapshot_hash_algorithm"] = "tft-ppo-observation-row-v1"
 
                 # ====================================================
                 # ❤️ REWARDS
@@ -1637,6 +1731,7 @@ class Trainer:
                     snapshot_metadata=flat_snapshot_metadata,
                     result_snapshot_metadata=flat_result_snapshot_metadata,
                     next_snapshot_metadata=flat_next_snapshot_metadata,
+                    semantic_state=semantic_state,
                 )
 
                 # ====================================================
@@ -1703,7 +1798,8 @@ class Trainer:
                 next_value = (
                     self.policy.get_value(
                         obs,
-                        masks=next_masks
+                        masks=next_masks,
+                        semantic_state=next_semantic_state,
                     )
                 )
 
@@ -1771,6 +1867,14 @@ class Trainer:
                         )[valid_indices]
                         for k, v in rollout.masks.items()
                     }
+                    sample_semantic_state = {
+                        "numeric": rollout.semantic_numeric[:rollout.ptr].reshape(
+                            -1, rollout.semantic_numeric_dim
+                        )[valid_indices],
+                        "champion_ids": rollout.semantic_champion_ids[:rollout.ptr].reshape(
+                            -1, rollout.semantic_entity_slots
+                        )[valid_indices],
+                    }
 
                     # ------------------------------------------------
                     # Limitar a amostra às primeiras 256 transições
@@ -1789,6 +1893,10 @@ class Trainer:
                         k: v[:sample_size]
                         for k, v in sample_masks.items()
                     }
+                    sample_semantic_state = {
+                        k: v[:sample_size]
+                        for k, v in sample_semantic_state.items()
+                    }
 
                     (
                         _,
@@ -1797,7 +1905,8 @@ class Trainer:
                     ) = self.policy.evaluate_actions(
                         sample_obs,
                         sample_actions,
-                        masks=sample_masks
+                        masks=sample_masks,
+                        semantic_state=sample_semantic_state,
                     )
 
                     self.writer.add_scalar(
@@ -2028,19 +2137,11 @@ class Trainer:
                 update
             )
 
-            # ========================================================
-            # 🎭 STRATEGIES
-            # ========================================================
-
-            for strat in Strategy:
-
-                self.writer.add_scalar(
-                    f"strategy/{strat.name}",
-                    strategy_counts[
-                        strat.value
-                    ],
-                    update
-                )
+            self.writer.add_scalar(
+                "semantic/catalog_vocab_size",
+                self.semantic_vocab_size,
+                update,
+            )
 
             # ========================================================
             # 📈 EPISODE RETURN
@@ -2124,6 +2225,9 @@ class Trainer:
                             "cosine_clamped",
                         "action_mask_contract":
                             build_action_mask_checkpoint_contract(),
+                        "critic_mask_input_contract":
+                            build_critic_mask_input_checkpoint_contract(),
+                        "semantic_state_contract": self.semantic_state_contract,
                     },
                     self.config.checkpoint_path
                 )
@@ -2159,6 +2263,8 @@ class Trainer:
                 "training_config": self.config.to_dict(),
                 "scheduler_type": "cosine_clamped",
                 "action_mask_contract": build_action_mask_checkpoint_contract(),
+                "critic_mask_input_contract": build_critic_mask_input_checkpoint_contract(),
+                "semantic_state_contract": self.semantic_state_contract,
             },
             self.config.checkpoint_path,
         )

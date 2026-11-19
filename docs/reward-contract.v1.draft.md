@@ -355,3 +355,11 @@ Tests must assert component values and event counts, not only final episode retu
 **Cross-component impact:** future producer/wrapper, RolloutBuffer, GAE, PPO loss selection, checkpoint manifest, replay, and evaluation must carry the distinct semantics. Current legacy behavior is documented as evidence only; no runtime change is made here.
 
 **Objective validation:** traced `Trainer.transition_valid`, `RolloutBuffer.valid`, GAE recurrence, per-player `done`, and rollout-end `next_value/next_done`; the documented mapping matches the audited call path. Executable boundary tests remain post-Gate 8.
+
+## Runtime migration checkpoint — Stage 1 PR #488
+
+The current PPO action-reward path in `TFTEngine::Impl::PlayerEnv::step` no longer reads a nominal Strategy ID. The runtime no longer applies strategy-keyed action shaping, strategy-keyed XP scaling/progress gates, the ALL_IN-only sale penalty, strategy-keyed liquidity scaling, or the FAST8-before-level-8 reroll execution gate. Reroll execution is now governed by the legal action mask, available gold and observed shop outcomes rather than a strategy label.
+
+The retained action signals are based on observed execution/state evidence (including successful transitions, actual level changes, observed shop-fit delta, sale/upgrade state, board movement outcomes, and gold-potential delta). Partial-XP and surplus-XP shaping were removed from this path rather than retaining strategy-dependent target-level heuristics. PASS opportunity cost now uses the observed useful-shop-opportunity signal; it does not infer an XP opportunity from a strategy target.
+
+**Boundary:** this is a Strategy-ID-independence migration, not yet the complete Reward Contract v1 implementation. Some retained purchase/reroll/composition-fit terms still consume legacy composition evidence, and their replacement by independently sourced native evidence remains part of the semantic-projection and legacy-producer replay gates. Existing numeric terms are not claimed to be calibrated v1 coefficients. Reward Contract v1 remains the normative target; runtime acceptance still requires the full offline calibration/ablation and reward-hacking checks.

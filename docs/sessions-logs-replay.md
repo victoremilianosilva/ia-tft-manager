@@ -17,7 +17,7 @@ O `match_id` dos eventos do Viewer é um UUID gerado por `ViewerSession`; ele n�
 
 A validação atual de `identity_complete` verifica player_id, round e sequence, mas não exige engine_match_id. Portanto, esse booleano não é prova suficiente de correlação Engine↔sessão. Consulte [Current Replay, Correlation and Evaluation Gap Audit](current-replay-correlation-evaluation-gap-audit.v1.draft.md).
 
-O PPO RolloutBuffer guarda observações e máscaras em tensores separados, sem match/episode/player/round/decision ID ou sequência. O replay do Viewer continua sendo navegação de logs; não reexecuta Engine ou policy.
+O PPO RolloutBuffer guarda observações e máscaras em tensores separados e mantém metadata por linha com Engine instance, episode, decision sequence, player sequence, player ID, round, hash da observação float32 e hash da máscara pós-ablation. Os hashes são metadados de correlação, não features neurais. O replay do Viewer continua sendo navegação de logs; não reexecuta Engine ou policy.
 
 ## Persistência
 
@@ -29,7 +29,7 @@ A linha legível de impacto usa cost × star × 2.0, identificada nos metadados 
 
 O replay importa JSON com schema_version = 1 e log_format = tft_player_log, ou JSONL legado. Valida estrutura, versão e ordem/unicidade de sequence_id. Navegar no replay exibe entradas gravadas e não executa a policy nem avança a engine.
 
-Ao abrir uma pasta de sessão, o leitor procura primeiro events.jsonl legado e, se não existir, tenta player_1_log.json.
+Ao abrir uma pasta de sessão, o leitor procura primeiro events.jsonl legado, depois player_1_log.json e, por último, player_1_log.tft. O formato .tft histórico é exibido como timeline textual somente leitura, preservando linhas e ordem; o leitor não inventa ações, snapshots, recompensas ou identidade de Engine a partir do texto.
 
 ## Integridade e limites
 
@@ -39,4 +39,4 @@ Ao abrir uma pasta de sessão, o leitor procura primeiro events.jsonl legado e, 
 - Logs são dados de auditoria, não substituem os vetores de observação do PPO.
 - Eventos não retornados pela API nativa não podem ser reconstruídos como se fossem observações reais.
 
-Teste principal: tests/test_viewer_player_logs.py.
+Testes principais: tests/test_viewer_player_logs.py e tests/test_viewer_legacy_log_compatibility.py.

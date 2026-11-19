@@ -9,6 +9,7 @@ from action_contract import (
     MASK_CONTRACT_ID, MASK_CONTRACT_VERSION, MASK_CONTRACT_HASH,
     hash_mask_row,
 )
+from semantic_observation import SEMANTIC_NUMERIC_DIM, SEMANTIC_ENTITY_SLOTS
 
 
 class RolloutBuffer:
@@ -78,7 +79,9 @@ class RolloutBuffer:
         obs_dim,
         action_dim,
         device,
-        mask_shapes=None
+        mask_shapes=None,
+        semantic_numeric_dim=SEMANTIC_NUMERIC_DIM,
+        semantic_entity_slots=SEMANTIC_ENTITY_SLOTS,
     ):
         self.device = device
 
@@ -105,6 +108,10 @@ class RolloutBuffer:
 
         self.obs_dim = int(obs_dim)
         self.action_dim = int(action_dim)
+        self.semantic_numeric_dim = int(semantic_numeric_dim)
+        self.semantic_entity_slots = int(semantic_entity_slots)
+        if self.semantic_numeric_dim <= 0 or self.semantic_entity_slots <= 0:
+            raise ValueError("semantic projection dimensions must be positive")
 
         self.total_transitions = (
             self.num_steps * self.num_envs
@@ -196,6 +203,17 @@ class RolloutBuffer:
             device=self.device
         )
 
+        self.semantic_numeric = torch.zeros(
+            (self.num_steps, self.num_envs, self.semantic_numeric_dim),
+            dtype=torch.float32,
+            device=self.device,
+        )
+        self.semantic_champion_ids = torch.zeros(
+            (self.num_steps, self.num_envs, self.semantic_entity_slots),
+            dtype=torch.long,
+            device=self.device,
+        )
+
         # ============================================================
         # GAE / RETURNS
         # ============================================================
@@ -261,6 +279,7 @@ class RolloutBuffer:
         snapshot_metadata=None,
         result_snapshot_metadata=None,
         next_snapshot_metadata=None,
+        semantic_state=None,
     ):
         """
         Adiciona uma transição de todos os agentes.
@@ -355,6 +374,34 @@ class RolloutBuffer:
             dones,
             values
         )
+
+        if semantic_state is None:
+            semantic_numeric = torch.zeros(
+                (self.num_envs, self.semantic_numeric_dim),
+                dtype=torch.float32,
+                device=self.device,
+            )
+            semantic_champion_ids = torch.zeros(
+                (self.num_envs, self.semantic_entity_slots),
+                dtype=torch.long,
+                device=self.device,
+            )
+        else:
+            if not isinstance(semantic_state, dict):
+                raise TypeError("semantic_state must be a mapping")
+            semantic_numeric = self._to_tensor(semantic_state.get("numeric"), dtype=torch.float32)
+            semantic_champion_ids = self._to_tensor(semantic_state.get("champion_ids"), dtype=torch.long)
+            if tuple(semantic_numeric.shape) != (self.num_envs, self.semantic_numeric_dim):
+                raise ValueError("semantic numeric batch has an incompatible shape")
+            if tuple(semantic_champion_ids.shape) != (self.num_envs, self.semantic_entity_slots):
+                raise ValueError("semantic champion ID batch has an incompatible shape")
+            if not torch.isfinite(semantic_numeric).all():
+                raise ValueError("semantic numeric batch contains NaN or infinity")
+            if semantic_champion_ids.numel() and (semantic_champion_ids < 0).any():
+                raise ValueError("semantic champion IDs must be non-negative")
+
+        self.semantic_numeric[self.ptr].copy_(semantic_numeric)
+        self.semantic_champion_ids[self.ptr].copy_(semantic_champion_ids)
 
         metadata_groups = (
             ("snapshot_metadata", snapshot_metadata),
@@ -968,6 +1015,12 @@ class RolloutBuffer:
         flat_values = self.values[:steps].reshape(
             total_transitions
         )
+        flat_semantic_numeric = self.semantic_numeric[:steps].reshape(
+            total_transitions, self.semantic_numeric_dim
+        )
+        flat_semantic_champion_ids = self.semantic_champion_ids[:steps].reshape(
+            total_transitions, self.semantic_entity_slots
+        )
 
         flat_masks = {
             key: tensor[:steps].reshape(
@@ -997,6 +1050,10 @@ class RolloutBuffer:
                 "advantages": batch_advantages,
                 "returns": flat_returns[batch_idx],
                 "values": flat_values[batch_idx],
+                "semantic_state": {
+                    "numeric": flat_semantic_numeric[batch_idx],
+                    "champion_ids": flat_semantic_champion_ids[batch_idx],
+                },
                 "masks": {
                     key: value[batch_idx]
                     for key, value in flat_masks.items()
@@ -1085,6 +1142,8 @@ class RolloutBuffer:
             "total_transitions": self.size(),
             "obs_dim": self.obs_dim,
             "action_dim": self.action_dim,
+            "semantic_numeric_dim": self.semantic_numeric_dim,
+            "semantic_entity_slots": self.semantic_entity_slots,
             "ptr": self.ptr,
             "full": self.is_full(),
             "mask_names": list(self.masks.keys()),

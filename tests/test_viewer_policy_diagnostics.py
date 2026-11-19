@@ -80,3 +80,60 @@ def test_diagnostics_do_not_consume_extra_rng_in_stochastic_mode():
         )
     for expected, actual in zip(normal, diagnostic[:4]):
         assert torch.equal(expected, actual)
+
+
+def test_viewer_validates_critic_mask_checkpoint_identity_without_breaking_legacy():
+    import pytest
+    from action_contract import build_critic_mask_input_checkpoint_contract
+    from viewer.session import _validate_critic_mask_checkpoint_payload
+
+    legacy_state = {"value_head.weight": torch.zeros(1, 32)}
+    _validate_critic_mask_checkpoint_payload({}, legacy_state)
+
+    new_state = {
+        "value_head.weight": torch.zeros(1, 96),
+        "critic_mask_encoder.weight": torch.zeros(64, 1280),
+        "critic_mask_encoder.bias": torch.zeros(64),
+    }
+    contract = build_critic_mask_input_checkpoint_contract()
+    _validate_critic_mask_checkpoint_payload(
+        {"critic_mask_input_contract": contract}, new_state
+    )
+
+    with pytest.raises(ValueError, match="sem critic_mask_input_contract"):
+        _validate_critic_mask_checkpoint_payload({}, new_state)
+    with pytest.raises(ValueError, match="não contém"):
+        _validate_critic_mask_checkpoint_payload(
+            {"critic_mask_input_contract": contract}, legacy_state
+        )
+
+
+def test_viewer_validates_semantic_projection_contract_and_catalog_identity():
+    import pytest
+    from semantic_observation import build_semantic_state_checkpoint_contract
+    from viewer.session import _validate_semantic_checkpoint_payload
+
+    catalog = {"TFT_Example": 7}
+    contract = build_semantic_state_checkpoint_contract(catalog)
+    state = {
+        "semantic_id_embedding.weight": torch.zeros(9, 16),
+        "semantic_encoder.0.weight": torch.zeros(256, 941),
+        "semantic_encoder.0.bias": torch.zeros(256),
+        "semantic_encoder.2.weight": torch.zeros(512, 256),
+        "semantic_encoder.2.bias": torch.zeros(512),
+    }
+    _validate_semantic_checkpoint_payload(
+        {"semantic_state_contract": contract}, state, catalog
+    )
+    with pytest.raises(ValueError, match="semantic_state_contract"):
+        _validate_semantic_checkpoint_payload({}, state, catalog)
+    partial_state = dict(state)
+    partial_state.pop("semantic_encoder.2.bias")
+    with pytest.raises(ValueError, match="parcial"):
+        _validate_semantic_checkpoint_payload(
+            {"semantic_state_contract": contract}, partial_state, catalog
+        )
+    with pytest.raises(ValueError, match="catalog"):
+        _validate_semantic_checkpoint_payload(
+            {"semantic_state_contract": contract}, state, {"TFT_Example": 8}
+        )

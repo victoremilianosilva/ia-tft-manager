@@ -316,3 +316,25 @@ The manifest path is `spec/observation-structured-entity-temporal-contract.v1.dr
 For the first new lineage, the exact same decision-correlated native action-mask snapshot is a mandatory separate input to Actor and Critic; current `get_value()` behavior is a known migration gap. Underlying factual item/component inventory and unit target-profile evidence are shared semantic inputs. The current 9×37 inventory-fit and 100×37 recipe-fit matrices remain Actor-specific action-conditioning structures and are not required raw Critic inputs. Any Critic-side derived summary must use the same validated evidence and a separately identified formula. Untyped AntiLoopEngine history is excluded from the initial projection; a future temporal context requires typed source sequence, reset/replay proof and ablation.
 
 This resolves consumer-intent ambiguity without selecting tensor dimensions, offsets, normalization, encoder family or shared/separate encoder topology.
+
+
+## 15. Runtime implementation — independent Critic mask input
+
+**Status:** implemented in the Stage 1 completion branch; executable CI validation pending.
+
+1. **Prior problem:** the Actor consumed the exact decision-correlated native masks, while get_value(obs, masks) accepted but ignored them. The value head therefore estimated state value without the legality/opportunity context supplied to the Actor.
+2. **Technical rationale:** the Critic must evaluate the same decision state under the same available-action context, without treating masks as ordinary observation features or allowing them to alter Actor logits. A separate side-input encoder preserves that boundary.
+3. **New responsibility:** TFTPolicy.critic_mask_encoder consumes the exact mask bundle in the canonical MASK_SHAPES order, flattens each field in C order, maps boolean values to the observation dtype, and produces a 64-wide embedding. The Critic concatenates that embedding after the observation latent. Actor heads and action distributions remain unchanged.
+4. **Contract and invariants:** all mask fields, shapes, dtypes, batch sizes and devices are validated by the existing Action/Mask contract before Critic evaluation. Missing masks are rejected; no synthetic all-legal/all-illegal mask is created. The side-input contract has its own ID/version/hash and binds the exact mask contract, field order, shapes, flattening, encoder and fusion order.
+5. **Checkpoint compatibility:** old checkpoints without the side-input contract are accepted only through the explicit legacy migration path. The new mask encoder is zero-initialized and the expanded value-head mask columns retain their deterministic target initialization. Because the embedding is exactly zero, this preserves the old observation-only value estimate at load time while allowing gradients to reach the mask encoder from the first update. Such a load is marked migrated, so optimizer and scheduler state are not restored. New checkpoints persist and validate critic_mask_input_contract; weights without that identity are rejected.
+6. **Objective validation:** tests cover mask-sensitive Critic values, neutral legacy value migration, Actor/collection/evaluation parity, and rejection of side-input contract drift. CI remains the final execution proof.
+
+This implementation closes the Critic-mask delivery gap only. It does not approve or implement the concrete Observation Tensor Projection, does not migrate reward semantics, and does not claim integrated multi-round replay acceptance.
+
+## Native semantic state side-input — Stage 1 PR #488
+
+New checkpoints persist `semantic_state_contract` when the policy contains `semantic_id_embedding.*` and `semantic_encoder.*` weights. The manifest binds the AuditSnapshot v3 producer/namespace, catalog fingerprint and vocabulary size, 17 global feature order, 42 entity-slot order, normalizations, dimensions, unknown-ID handling and excluded legacy/Shadow fields.
+
+The Trainer and Viewer must validate this contract against the active native catalog before loading semantic weights. Weights without the contract, a contract without weights, or a catalog fingerprint/vocabulary mismatch are rejected. Historical checkpoints without semantic weights/contracts remain loadable through the neutral additive migration: the semantic encoder's final layer is zero-initialized, so the legacy Actor/Critic outputs are preserved at load while the new side input remains trainable.
+
+The semantic rows are part of the rollout transition and must remain aligned with the same Engine/episode/decision/player identity as observation and action masks. The next-state semantic row is used for the GAE bootstrap. This is a new independent side input; it does not alter the historical flat observation tensor or silently rewrite its offsets.

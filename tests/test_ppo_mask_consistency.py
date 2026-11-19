@@ -817,3 +817,75 @@ def test_policy_rejects_incomplete_wrong_shape_and_non_boolean_mask_bundles():
         assert "torch.bool" in str(exc)
     else:
         raise AssertionError("Coleta aceitou máscara fora do dtype canônico.")
+
+
+def test_critic_receives_exact_mask_side_input_and_legacy_checkpoint_migrates_neutrally():
+    torch.manual_seed(20261118)
+    obs, masks, _ = create_test_batch()
+    policy = TFTPolicy(
+        obs_dim=obs.shape[-1],
+        action_dims=Trainer.ACTION_DIMS,
+        hidden_size=32,
+    ).eval()
+
+    # Make the independent mask path observable without changing actor logits.
+    with torch.no_grad():
+        policy.critic_mask_encoder.weight.fill_(0.01)
+        policy.value_head.weight[:, 32:] = 0.01
+
+    changed_masks = {name: value.clone() for name, value in masks.items()}
+    changed_masks["type_mask"][0, 1] = True
+    with torch.no_grad():
+        original_values = policy.get_value(obs, masks=masks)
+        changed_values = policy.get_value(obs, masks=changed_masks)
+    assert not torch.allclose(original_values, changed_values)
+
+    # A historical checkpoint has no Critic mask encoder and a value head
+    # whose input is only the observation latent. Migration preserves the old value function with a zero-initialized encoder;
+    # target-initialized mask columns remain trainable after the first update.
+    legacy_state = {
+        key: value.detach().clone()
+        for key, value in policy.state_dict().items()
+        if not key.startswith("critic_mask_encoder.")
+    }
+    legacy_state["value_head.weight"] = legacy_state["value_head.weight"][
+        :, :policy.value_head.in_features - 64
+    ].clone()
+
+    migrated_policy = TFTPolicy(
+        obs_dim=obs.shape[-1],
+        action_dims=Trainer.ACTION_DIMS,
+        hidden_size=32,
+    ).eval()
+    migrated = migrated_policy.load_compatible_state_dict(legacy_state)
+    assert migrated is True
+    with torch.no_grad():
+        migrated_values = migrated_policy.get_value(obs, masks=masks)
+        migrated_changed_values = migrated_policy.get_value(obs, masks=changed_masks)
+    assert torch.allclose(migrated_values, migrated_changed_values, atol=1e-6, rtol=1e-6)
+
+    migrated_policy.train()
+    migrated_policy.zero_grad(set_to_none=True)
+    migrated_policy.get_value(obs, masks=masks).sum().backward()
+    encoder_gradient = migrated_policy.critic_mask_encoder.weight.grad
+    assert encoder_gradient is not None
+    assert float(encoder_gradient.abs().sum()) > 0.0
+
+
+def test_critic_mask_checkpoint_contract_is_versioned_and_rejects_drift():
+    from action_contract import (
+        build_critic_mask_input_checkpoint_contract,
+        validate_critic_mask_input_checkpoint_contract,
+    )
+
+    contract = build_critic_mask_input_checkpoint_contract()
+    validate_critic_mask_input_checkpoint_contract(contract)
+
+    incompatible = dict(contract)
+    incompatible["sha256"] = "0" * 64
+    try:
+        validate_critic_mask_input_checkpoint_contract(incompatible)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("Critic mask input contract drift must be rejected.")
