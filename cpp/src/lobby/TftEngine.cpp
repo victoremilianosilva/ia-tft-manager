@@ -3515,6 +3515,11 @@ struct TFTEngine::Impl {
                 runtime.begin_cycle(episode_id, static_cast<std::int32_t>(i), round_id);
                 const auto active_before = runtime.active.current();
                 ci::CompositionEvaluationContext composition_context;
+                // TransitionManager hysteresis is scoped to the real match/player
+                // identity. Do not rely on the per-player runtime instance as an
+                // implicit substitute for the identity carried by its contract.
+                composition_context.match_id = episode_id;
+                composition_context.player_id = static_cast<std::int32_t>(i);
                 composition_context.round = round_id;
                 composition_context.level = economy.level;
                 composition_context.gold = economy.gold;
