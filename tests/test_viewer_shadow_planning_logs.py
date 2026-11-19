@@ -88,3 +88,17 @@ def test_player_snapshot_keeps_missing_shadow_fields_missing():
     writer = PlayerJsonLogWriter.__new__(PlayerJsonLogWriter)
     snapshot = writer._player_snapshot({}, {"player_id": 0})
     assert all(value is None for value in snapshot["shadow_planning"].values())
+
+
+
+def test_player_log_keeps_shadow_owner_snapshot_and_labels_legacy_fields():
+    writer = PlayerJsonLogWriter.__new__(PlayerJsonLogWriter)
+    snapshot = writer._player_snapshot(
+        {"shadow_composition": {"sequence": 12, "composition_id": "comp-b"}},
+        {"player_id": 1},
+    )
+    assert snapshot["shadow_composition"]["composition_id"] == "comp-b"
+    assert snapshot["legacy_strategy_compatibility"]["authority"] == (
+        "compatibility_only_not_canonical_strategy_state"
+    )
+    assert snapshot["legacy_strategy_compatibility"]["status"] == "unavailable"

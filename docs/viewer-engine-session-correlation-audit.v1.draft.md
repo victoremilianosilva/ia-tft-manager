@@ -147,3 +147,21 @@ No implementation is performed here.
 6. **Objective validation:** Viewer UUID/event lifecycle, diagnostic envelope predicate, wrapper reset/step return shape, vector adapter and RolloutBuffer storage fields are traced; missing identity propagation is explicit; no runtime or tensor change is made.
 
 Issue #346 remains open. Gate 7 executable acceptance remains pending. Gate 8 remains blocked.
+
+## Runtime reconciliation — PR #497
+
+The sections above preserve the original source-audit findings. The following changes supersede only the Viewer projection/persistence behavior described there; they do not claim a shared PPO/native decision identity.
+
+**Prior problem:** ViewerSession enriched each native audit player with a StrategyInfo snapshot, and PlayerCard, player details and composition dialog treated those fields as current strategic state. The diagnostic sidecar cursor also did not reset when the native episode changed.
+
+**Technical rationale:** Composition Intelligence diagnostics are the canonical read-only Shadow producer. Viewer UI and current logs should consume that producer directly, while historical StrategyInfo fields remain clearly marked as compatibility-only.
+
+**Owner and boundaries:** TFTEngine/CompositionIntelligencePlayerRuntime own the diagnostic records. ViewerSession attaches the latest per-player diagnostic and persists it. viewer/shadow_projection.py is a pure read-only projection. PlayerJsonLogWriter preserves old fields only as explicitly labelled compatibility data.
+
+**Contract and invariants:** PlayerCard, player dialog, selected-player panel and composition dialog read composition_decision, lineup_plan.selected_board, unit_intentions and action_recommendation from shadow_composition. No current UI fallback to strategy_info remains in viewer/main.py. Sidecar append cursor is scoped by native episode_id and resets when the episode changes or ViewerSession closes/replaces the Engine, including when a new Engine reuses the same episode_id. Historical logs remain readable; no legacy values are promoted to canonical Shadow state.
+
+**Impacts:** viewer/session.py, viewer/main.py, viewer/player_logs.py, viewer/shadow_projection.py and focused Viewer tests. No policy, PPO observation, action, mask or execution behavior changes.
+
+**Validation:** tests/test_viewer_session_shadow_projection.py verifies that StrategyInfo is not requested and that the latest Shadow record is attached; it also verifies sidecar append across episode reset. tests/test_viewer_shadow_projection.py verifies pure canonical projections and unavailable-state behavior. tests/test_viewer_shadow_planning_logs.py verifies compatibility labels and persisted Shadow payload.
+
+**Remaining limitations:** Viewer↔Engine session identity correlation remains a separate namespace mapping, not a canonical PPO decision ID. The UI displays the current diagnostic selected_board and unit intentions; it does not imply that a Shadow recommendation was executed or that a proposed position is an authoritative Engine destination.

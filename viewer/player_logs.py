@@ -330,12 +330,21 @@ class PlayerJsonLogWriter:
 
     def _player_snapshot(self, audit: dict, public: dict) -> dict:
         audit, public = audit or {}, public or {}
-        # Native get_audit_snapshot() flattens StrategyInfo fields onto each
-        # audit-player record. Older adapters wrapped them in strategy_info.
-        # Normalize both contracts here so the persisted shadow snapshot is complete.
+        # Preserve the flattened native diagnostic fields for compatibility
+        # with existing log consumers, but label StrategyInfo only when its
+        # legacy-specific fields were actually supplied.
         strategy_info = audit.get("strategy_info")
         if not isinstance(strategy_info, dict):
             strategy_info = audit
+        legacy_keys = {
+            "strategy_name", "strategy_id", "composition_direction",
+            "composition_focus", "planned_units", "planned_unit_ids",
+            "planned_main_carry_id", "core_traits", "active_traits",
+        }
+        legacy_strategy_present = (
+            isinstance(audit.get("strategy_info"), dict)
+            or any(key in audit for key in legacy_keys)
+        )
         return {
             "player_id": int(public.get("player_id", audit.get("player_id", -1))),
             "hp": public.get("hp"), "gold": public.get("gold", audit.get("gold")),
@@ -366,6 +375,16 @@ class PlayerJsonLogWriter:
                 int(audit.get("round_gold", 0) or 0)
                 + int(audit.get("round_win_gold", 0) or 0)
             ),
+            "legacy_strategy_compatibility": {
+                "status": "present" if legacy_strategy_present else "unavailable",
+                "source": "native StrategyInfo audit compatibility fields" if legacy_strategy_present else None,
+                "authority": "compatibility_only_not_canonical_strategy_state",
+                "canonical_shadow_source": "composition_diagnostics.jsonl",
+            },
+            "shadow_composition": _jsonable(audit.get("shadow_composition", {
+                "status": "unavailable",
+                "reason": "shadow_diagnostics_not_attached_to_snapshot",
+            })),
             "strategy_name": strategy_info.get("strategy_name", "ECON"),
             "strategy_id": strategy_info.get("strategy", 0),
             "comp_direction": strategy_info.get("composition_direction", ""),

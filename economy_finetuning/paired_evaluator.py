@@ -20,6 +20,20 @@ if str(ROOT) not in sys.path:
 from cpp_lobby_env import CppTFTLobbyWrapper
 from engine_contracts import ActionType
 from policy import TFTPolicy
+from action_contract import (
+    build_action_mask_checkpoint_contract,
+    build_critic_mask_input_checkpoint_contract,
+    validate_action_mask_checkpoint_contract,
+    validate_critic_mask_input_checkpoint_contract,
+)
+from reward_contract import (
+    build_reward_checkpoint_contract,
+    validate_reward_checkpoint_contract,
+)
+from semantic_observation import (
+    build_semantic_state_checkpoint_contract,
+    validate_semantic_state_checkpoint_contract,
+)
 from economy_finetuning.finetune import ACTION_DIMS, _actions_to_native, _flatten_masks
 
 
@@ -42,13 +56,116 @@ def repository_commit() -> str | None:
         return os.environ.get("GITHUB_SHA")
 
 
-def load_policy(checkpoint_path: Path, obs_dim: int, device) -> TFTPolicy:
+def validate_evaluation_checkpoint_contracts(payload: dict, catalog_map: dict) -> dict:
+    """Fail closed on semantic checkpoint drift; legacy weights require explicit opt-in."""
+    if not isinstance(payload, dict):
+        raise TypeError("Checkpoint de avaliação deve ser um mapping.")
+
+    status = {}
+    action_contract = payload.get("action_mask_contract")
+    if action_contract is None:
+        allow_legacy = os.environ.get(
+            "TFT_ALLOW_UNVERSIONED_ACTION_MASK_CHECKPOINT", ""
+        ).strip().lower() in {"1", "true", "yes"}
+        if not allow_legacy:
+            raise ValueError(
+                "Checkpoint sem Action/Mask Contract versionado. "
+                "Para avaliação somente de pesos legados, defina "
+                "TFT_ALLOW_UNVERSIONED_ACTION_MASK_CHECKPOINT=1."
+            )
+        status["action_mask"] = "unversioned_weights_only_opt_in"
+    else:
+        validate_action_mask_checkpoint_contract(action_contract)
+        status["action_mask"] = "validated"
+
+    state = payload.get("policy", payload)
+    critic_mask_keys = {
+        key for key in state if key.startswith("critic_mask_encoder.")
+    }
+    critic_mask_contract = payload.get("critic_mask_input_contract")
+    if critic_mask_contract is None:
+        if critic_mask_keys:
+            raise ValueError(
+                "Checkpoint contém pesos do Critic mask encoder sem critic_mask_input_contract."
+            )
+        status["critic_mask_input"] = "not_present"
+    else:
+        validate_critic_mask_input_checkpoint_contract(critic_mask_contract)
+        if not critic_mask_keys:
+            raise ValueError(
+                "Checkpoint declara critic_mask_input_contract sem pesos do encoder."
+            )
+        status["critic_mask_input"] = "validated"
+
+    reward_contract = payload.get("reward_contract")
+    if reward_contract is None:
+        allow_legacy = os.environ.get(
+            "TFT_ALLOW_UNVERSIONED_REWARD_CHECKPOINT", ""
+        ).strip().lower() in {"1", "true", "yes"}
+        if not allow_legacy:
+            raise ValueError(
+                "Checkpoint sem Reward Contract versionado. "
+                "Para avaliação somente de pesos legados, defina "
+                "TFT_ALLOW_UNVERSIONED_REWARD_CHECKPOINT=1."
+            )
+        status["reward"] = "unversioned_weights_only_opt_in"
+    else:
+        validate_reward_checkpoint_contract(reward_contract)
+        status["reward"] = "validated"
+
+    semantic_keys = {
+        key for key in state
+        if key.startswith(("semantic_id_embedding.", "semantic_encoder."))
+    }
+    expected_keys = {
+        "semantic_id_embedding.weight",
+        "semantic_encoder.0.weight",
+        "semantic_encoder.0.bias",
+        "semantic_encoder.2.weight",
+        "semantic_encoder.2.bias",
+    }
+    if semantic_keys and semantic_keys != expected_keys:
+        raise ValueError("Checkpoint contém um encoder semântico parcial.")
+    semantic_contract = payload.get("semantic_state_contract")
+    if semantic_contract is None:
+        if semantic_keys:
+            raise ValueError(
+                "Checkpoint contém pesos semânticos sem semantic_state_contract."
+            )
+        status["semantic_state"] = "legacy_neutral_branch"
+    else:
+        validate_semantic_state_checkpoint_contract(semantic_contract, catalog_map)
+        if not semantic_keys:
+            raise ValueError(
+                "Checkpoint declara semantic_state_contract sem pesos do encoder semântico."
+            )
+        status["semantic_state"] = "validated"
+    return status
+
+
+def load_policy(checkpoint_path: Path, obs_dim: int, device, catalog_map: dict):
     payload = torch.load(checkpoint_path, map_location=device, weights_only=False)
+    contract_status = validate_evaluation_checkpoint_contracts(payload, catalog_map)
     state = payload.get("policy", payload)
     policy = TFTPolicy(obs_dim, ACTION_DIMS).to(device)
     policy.load_compatible_state_dict(state)
     policy.eval()
-    return policy
+    return policy, contract_status
+
+
+def mirrored_policy_variants(seed: int) -> tuple[list[str], list[str]]:
+    """Build a deterministic, seed-rotated 4v4 seat schedule and its exact mirror."""
+    seats = np.random.default_rng(int(seed)).permutation(8)
+    tuned_seats = set(int(player_id) for player_id in seats[:4])
+    first = [
+        "finetuned" if player_id in tuned_seats else "original"
+        for player_id in range(8)
+    ]
+    second = [
+        "original" if variant == "finetuned" else "finetuned"
+        for variant in first
+    ]
+    return first, second
 
 
 def masks_sha256(raw_masks) -> str:
@@ -321,10 +438,19 @@ def main():
     try:
         initial = probe.reset(seed=seeds[0])
         obs_dim = int(initial.shape[-1])
+        catalog_map = probe.get_champion_id_map()
     finally:
         probe.close()
-    original = load_policy(original_path, obs_dim, device)
-    tuned = load_policy(tuned_path, obs_dim, device)
+    original, original_contract_status = load_policy(
+        original_path, obs_dim, device, catalog_map
+    )
+    tuned, tuned_contract_status = load_policy(
+        tuned_path, obs_dim, device, catalog_map
+    )
+    semantic_contract = build_semantic_state_checkpoint_contract(catalog_map)
+    action_mask_contract = build_action_mask_checkpoint_contract()
+    critic_mask_contract = build_critic_mask_input_checkpoint_contract()
+    reward_contract = build_reward_checkpoint_contract()
     provenance = {
         "repository_commit": repository_commit(),
         "original_checkpoint_sha256": file_sha256(original_path),
@@ -341,7 +467,19 @@ def main():
         "policy_source_sha256": file_sha256(ROOT / "policy.py"),
         "observation_dim": obs_dim,
         "action_dims": ACTION_DIMS,
-        "evaluation_mode": "mixed_4v4_mirrored_seats",
+        "evaluation_mode": "mixed_4v4_seed_rotated_mirrored_seats",
+        "checkpoint_contract_validation": {
+            "original": original_contract_status,
+            "finetuned": tuned_contract_status,
+        },
+        "action_mask_contract": action_mask_contract,
+        "critic_mask_input_contract": critic_mask_contract,
+        "reward_contract": reward_contract,
+        "semantic_state_contract": {
+            "contract_id": semantic_contract["contract"]["contract_id"],
+            "version": semantic_contract["contract"]["version"],
+            "sha256": semantic_contract["sha256"],
+        },
     }
 
     output = Path(args.output)
@@ -352,13 +490,11 @@ def main():
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("w", encoding="utf-8") as stream:
         for seed in seeds:
-            # First lobby: tuned policy occupies even seats.
-            variants_a = ["finetuned" if player_id % 2 == 0 else "original" for player_id in range(8)]
+            # Rotate the four candidate seats by seed, then run the exact complement.
+            variants_a, variants_b = mirrored_policy_variants(seed)
             policies_a = [tuned if variant == "finetuned" else original for variant in variants_a]
             run_a = run_match(policies_a, variants_a, seed, args.max_steps, device)
 
-            # Mirror the assignment to cancel deterministic seat/ordering bias.
-            variants_b = ["original" if player_id % 2 == 0 else "finetuned" for player_id in range(8)]
             policies_b = [original if variant == "original" else tuned for variant in variants_b]
             run_b = run_match(policies_b, variants_b, seed, args.max_steps, device)
 

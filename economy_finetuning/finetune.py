@@ -460,14 +460,23 @@ def run(args):
             )
 
         # Always save a distinct fine-tuned artifact; never overwrite the source.
-        torch.save({
+        finetuned_payload = {
             "policy": policy.state_dict(),
             # Do not serialize the partial optimizer: the main Trainer has a
             # different full-parameter optimizer and must initialize it fresh.
             "update": 0,
             "fine_tuning": metadata,
             "source_checkpoint_sha256": metadata["checkpoint_sha256"],
-        }, output)
+        }
+        # Preserve the exact semantic lineage of the source checkpoint. Never
+        # manufacture missing manifests for historical weights.
+        for contract_key in (
+            "action_mask_contract", "critic_mask_input_contract",
+            "semantic_state_contract", "reward_contract",
+        ):
+            if contract_key in original_checkpoint:
+                finetuned_payload[contract_key] = original_checkpoint[contract_key]
+        torch.save(finetuned_payload, output)
         metadata["finetuned_checkpoint_sha256"] = _sha256(output)
         (reports_dir / "experiment_config.json").write_text(
             json.dumps(metadata, ensure_ascii=False, indent=2), encoding="utf-8"

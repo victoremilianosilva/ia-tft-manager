@@ -211,3 +211,17 @@ Future replay artifacts in the v2 lineage must preserve the original typed Engin
 ## Structured entity and temporal replay identity — proposal
 
 Replay fixtures and artifacts should preserve the entity/temporal semantics in the [Structured Entity and Temporal Evidence Contract v1](observation-structured-entity-temporal-contract.v1.draft.md): physical unit instance identity, board/bench/shop ownership domains, snapshot-scoped offers, item relationships, collection completeness, source sequences and episode resets. This is a documentary requirement only; it does not assert that the current replay runtime records all these fields.
+
+## Executable runtime evidence — PR #497
+
+**Prior problem:** the approved replay contract had no deterministic Engine-level test that crossed multiple rounds while exercising the opt-in Shadow pipeline and proving that episode reset retired the previous diagnostic history.
+
+**Technical rationale:** component tests cannot establish the runtime sequence/round relationship or feature-flag boundary. The replay must use the existing native Engine and existing diagnostic producer, not a second simulation or a parallel state owner.
+
+**Owner and boundaries:** TFTEngine and CompositionIntelligencePlayerRuntime remain the producers. tests/test_shadow_multiround_replay.py is a read-only integration consumer. PPO, reward, action masks, and game execution semantics are unchanged.
+
+**Contract and invariants:** the test runs a fixed-seed PASS-only lobby with the Shadow feature flag enabled, validates Engine/episode identity, monotonic unique diagnostic sequence, multiple observed rounds, per-player identity, and the evaluator envelope's execution_enabled=false / native_action_applied=false. Empty candidate sets must not report a valid evaluator comparison. A second test proves that disabling the flag emits no Composition Intelligence snapshots. Reset must advance the episode and clear the previous episode's diagnostic history.
+
+**Impacts:** native Shadow diagnostics, Python wrapper, replay tests, and reset lifecycle. No new schema or replay owner is introduced.
+
+**Validation:** tests/test_shadow_multiround_replay.py adds deterministic enabled/disabled and reset coverage. Full scenario coverage remains open: buy/upgrade/pivot economic consequences, stale same-round sequence rejection, contradictory evidence, outcome correlation, and all candidate/evaluator branches are not yet proven by this PASS-only replay. The replay does not execute Shadow recommendations in the game.
