@@ -3772,28 +3772,25 @@ struct TFTEngine::Impl {
                         item_state.components = player_envs[i].item_engine->components();
                         item_state.inventory = player_envs[i].item_engine->inventory();
                         std::vector<ci::ItemUnitBinding> item_bindings;
+                        std::unordered_map<std::string, items::UnitProfile> semantic_profiles_by_uuid;
+                        for (auto& profile : semantic_item_unit_profiles(i))
+                            semantic_profiles_by_uuid.emplace(profile.uuid, std::move(profile));
                         const auto append_item_binding = [&](const UnitInstance& unit) {
                             const auto* definition = catalog->find_by_id(unit.champion_internal_id);
                             if (!definition || unit.uuid.empty()) return;
-                            items::UnitProfile profile;
-                            profile.uuid = unit.uuid;
-                            profile.star = unit.star;
-                            profile.role = definition->combat_profile.role;
-                            profile.frontline = definition->combat_profile.frontline;
-                            profile.backline = definition->combat_profile.backline;
-                            profile.attack_damage = definition->stats.attack_damage;
-                            profile.attack_speed = definition->stats.attack_speed;
-                            profile.ability_power = 0.0;
-                            profile.max_health = definition->stats.max_hp;
-                            profile.composition_fit = active &&
-                                std::any_of(active->candidate.units.begin(), active->candidate.units.end(),
-                                    [&](const auto& target) { return target.champion_id == definition->internal_id; })
-                                ? 1.0 : 0.0;
-                            profile.traits = definition->traits;
-                            profile.preferred_traits = strategic_context.current_core_traits;
+                            const auto profile = semantic_profiles_by_uuid.find(unit.uuid);
+                            if (profile == semantic_profiles_by_uuid.end()) return;
                             item_state.equipped_by_unit_uuid[unit.uuid] =
                                 player_envs[i].item_engine->equipped(unit.uuid);
-                            item_bindings.push_back({definition->internal_id, std::move(profile)});
+                            item_bindings.push_back({
+                                definition->internal_id,
+                                profile->second,
+                                "ChampionDefinition+observed_stats+UnitCombatClassifier",
+                                active ? "ActiveCompositionManager.core_unit_catalog_traits"
+                                       : "unavailable_without_active_composition",
+                                active ? active->candidate.composition_id : std::string{},
+                                active ? active->version : 0
+                            });
                         };
                         for (const auto& unit : player_envs[i].board) if (unit) append_item_binding(*unit);
                         for (const auto& unit : player_envs[i].bench) if (unit) append_item_binding(*unit);
