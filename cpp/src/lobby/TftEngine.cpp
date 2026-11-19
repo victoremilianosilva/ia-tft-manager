@@ -3986,14 +3986,13 @@ struct TFTEngine::Impl {
                                 last_external_identity != active->candidate.composition_id ||
                                 last_external_version != active->version;
                             if (external_snapshot_changed) {
-                                const auto& tracked =
-                                    strategic_shadow_runtimes[i]->machine().active_composition();
-                                if (!tracked ||
-                                    tracked->candidate.composition_id !=
-                                        active->candidate.composition_id ||
-                                    tracked->version != active->version) {
-                                    strategic_shadow_runtimes[i]->reset_machine();
-                                }
+                                // The state machine now shares this canonical
+                                // ActiveCompositionManager. The manager has
+                                // already advanced, so its snapshot cannot be
+                                // used to detect whether the direction anchor is
+                                // stale; reset only orchestration history and
+                                // rebind it to the newly published version.
+                                strategic_shadow_runtimes[i]->reset_machine();
                                 strategic_shadow_external_active_identity[i] =
                                     active->candidate.composition_id;
                                 strategic_shadow_external_active_version[i] =
@@ -4196,9 +4195,21 @@ struct TFTEngine::Impl {
                         const strategy::StrategicCycleAuditContext audit_context{
                             episode_id, static_cast<std::int32_t>(i), round_id
                         };
-                        (void)strategic_shadow_runtimes[i]->refresh(audit_context, unified_input);
+                        const auto unified_result =
+                            strategic_shadow_runtimes[i]->refresh(audit_context, unified_input);
+                        // A pivot may publish through the shared canonical
+                        // manager during this cycle. Advance the external
+                        // observation marker to that committed version so the
+                        // next round does not reset the just-confirmed history.
+                        if (const auto& committed = runtime.active.current()) {
+                            strategic_shadow_external_active_identity[i] =
+                                committed->candidate.composition_id;
+                            strategic_shadow_external_active_version[i] =
+                                committed->version;
+                        }
                         runtime.mark_stage("unified_strategic_cycle", "completed",
-                            "live normalized snapshot evaluated or deduplicated; changed evidence is emitted to the sidecar", active);
+                            unified_result.diagnostics.transition_reason,
+                            runtime.active.current());
                     } catch (const std::exception& unified_error) {
                         runtime.mark_stage("unified_strategic_cycle", "failed",
                             unified_error.what(), active);
@@ -6326,9 +6337,12 @@ ResetResult TFTEngine::reset(
     if (!impl_->strategic_shadow_audit_path.empty()) {
         std::error_code remove_error;
         std::filesystem::remove(impl_->strategic_shadow_audit_path, remove_error);
-        for (auto& runtime : impl_->strategic_shadow_runtimes) {
-            runtime = std::make_unique<strategy::UnifiedStrategicShadowRuntime>(
-                impl_->strategic_shadow_audit_path);
+        for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+            impl_->strategic_shadow_runtimes[i] =
+                std::make_unique<strategy::UnifiedStrategicShadowRuntime>(
+                    impl_->composition_intelligence_players[i].active,
+                    impl_->strategic_planner_commitments[i],
+                    impl_->strategic_shadow_audit_path);
         }
     }
 
@@ -6851,8 +6865,11 @@ void TFTEngine::set_strategic_direction_pivot_audit_path(const std::string& path
     }
     std::error_code remove_error;
     std::filesystem::remove(path, remove_error);
-    for (auto& runtime : impl_->strategic_shadow_runtimes) {
-        runtime = std::make_unique<strategy::UnifiedStrategicShadowRuntime>(path);
+    for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+        impl_->strategic_shadow_runtimes[i] =
+            std::make_unique<strategy::UnifiedStrategicShadowRuntime>(
+                impl_->composition_intelligence_players[i].active,
+                impl_->strategic_planner_commitments[i], path);
     }
 }
 

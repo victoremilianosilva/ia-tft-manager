@@ -96,7 +96,9 @@ PivotFeasibilityInput viable_pivot_input() {
 }
 
 void exploration_waits_for_composition_and_then_binds_direction() {
-    UnifiedStrategicStateMachine machine;
+    ActiveCompositionManager active_composition;
+    StrategicCommitment commitment;
+    UnifiedStrategicStateMachine machine(active_composition, commitment);
     StrategicCycleInput input;
     input.exploration = discovery_input();
 
@@ -121,7 +123,9 @@ void exploration_waits_for_composition_and_then_binds_direction() {
 }
 
 void machine_owns_exploratory_direction_history_without_legacy_inputs() {
-    UnifiedStrategicStateMachine machine;
+    ActiveCompositionManager active_composition;
+    StrategicCommitment commitment;
+    UnifiedStrategicStateMachine machine(active_composition, commitment);
     StrategicCycleInput input;
     input.exploration.units = {
         {10, 2, 2, 1, true, false, false, false, true, 0.0, {"Bruiser"}},
@@ -156,8 +160,14 @@ void shadow_runtime_isolates_players_and_resets_its_own_direction_history() {
     std::filesystem::remove(player_zero_path, ignored);
     std::filesystem::remove(player_one_path, ignored);
 
-    UnifiedStrategicShadowRuntime player_zero(player_zero_path);
-    UnifiedStrategicShadowRuntime player_one(player_one_path);
+    ActiveCompositionManager player_zero_composition;
+    ActiveCompositionManager player_one_composition;
+    StrategicCommitment player_zero_commitment;
+    StrategicCommitment player_one_commitment;
+    UnifiedStrategicShadowRuntime player_zero(
+        player_zero_composition, player_zero_commitment, player_zero_path);
+    UnifiedStrategicShadowRuntime player_one(
+        player_one_composition, player_one_commitment, player_one_path);
     const StrategicCycleAuditContext context_zero{42, 0, 3};
     const StrategicCycleAuditContext context_one{42, 1, 3};
 
@@ -190,7 +200,10 @@ void shadow_runtime_isolates_players_and_resets_its_own_direction_history() {
 }
 
 void pivot_evaluation_does_not_mutate_then_confirms_synchronized_state() {
-    UnifiedStrategicStateMachine machine({3, 60.0, 5});
+    ActiveCompositionManager active_composition;
+    StrategicCommitment commitment;
+    commitment.composition_direction = "Shepherd";
+    UnifiedStrategicStateMachine machine(active_composition, commitment, {3, 60.0, 5});
     StrategicCycleInput input;
     input.active_composition = ActiveComposition{composition(
         "composition-current", 1,
@@ -198,6 +211,8 @@ void pivot_evaluation_does_not_mutate_then_confirms_synchronized_state() {
          {2, UnitRole::Frontline, true, 80}}), 1};
     auto result = machine.refresh(input);
     assert(result.phase == StrategicCyclePhase::CompositionActive);
+    assert(result.anchors.direction_anchor.direction == "Shepherd");
+    assert(result.anchors.direction_anchor.composition_identity == "composition-current");
 
     input.active_composition.reset();
     input.pivot_candidate = pivot_candidate();
@@ -220,15 +235,24 @@ void pivot_evaluation_does_not_mutate_then_confirms_synchronized_state() {
     assert(result.state_changed);
     assert(result.active_composition->candidate.composition_id == "composition-next");
     assert(result.active_composition->version == 2);
+    // The machine and Composition Intelligence observe the same canonical
+    // manager; pivot confirmation must update that owner, not a private copy.
+    assert(active_composition.current().has_value());
+    assert(active_composition.current()->candidate.composition_id == "composition-next");
+    assert(active_composition.current()->version == 2);
     assert(result.anchors.direction_anchor.composition_identity == "composition-next");
     assert(result.anchors.direction_anchor.composition_version == 2);
     assert(result.anchors.direction_anchor.identity == "direction:composition-next:v2");
+    assert(commitment.composition_direction == "composition-next");
+    assert(commitment.selected_round == input.exploration.round);
     assert(result.anchors.pivot_candidate.identity.empty());
     assert(machine.transition_history().size() == 1);
 }
 
 void invalidated_candidate_is_removed_and_old_direction_is_preserved() {
-    UnifiedStrategicStateMachine machine({3, 60.0, 5});
+    ActiveCompositionManager active_composition;
+    StrategicCommitment commitment;
+    UnifiedStrategicStateMachine machine(active_composition, commitment, {3, 60.0, 5});
     StrategicCycleInput input;
     input.active_composition = ActiveComposition{composition(
         "composition-current", 1,
@@ -253,7 +277,9 @@ void invalidated_candidate_is_removed_and_old_direction_is_preserved() {
 }
 
 void missing_candidate_invalidates_pending_pivot_without_mutation() {
-    UnifiedStrategicStateMachine machine({3, 60.0, 5});
+    ActiveCompositionManager active_composition;
+    StrategicCommitment commitment;
+    UnifiedStrategicStateMachine machine(active_composition, commitment, {3, 60.0, 5});
     StrategicCycleInput input;
     input.active_composition = ActiveComposition{composition(
         "composition-current", 1,
@@ -278,8 +304,44 @@ void missing_candidate_invalidates_pending_pivot_without_mutation() {
     assert(result.active_composition->candidate.composition_id == "composition-current");
 }
 
+void reset_rebinds_to_the_canonical_composition_without_clearing_it() {
+    ActiveCompositionManager active_composition;
+    StrategicCommitment commitment;
+    UnifiedStrategicStateMachine machine(active_composition, commitment);
+
+    const auto first = composition(
+        "composition-current", 1,
+        {{1, UnitRole::MainCarry, true, 100}});
+    const auto first_publish = active_composition.publish(first);
+    assert(first_publish.status == PublishStatus::Published);
+
+    auto result = machine.refresh({});
+    assert(result.phase == StrategicCyclePhase::CompositionActive);
+    assert(result.active_composition->candidate.composition_id == "composition-current");
+
+    const auto next = composition(
+        "composition-next", 3,
+        {{3, UnitRole::MainCarry, true, 100}});
+    const auto next_publish = active_composition.publish(next);
+    assert(next_publish.status == PublishStatus::Published);
+    assert(next_publish.active.version == 2);
+
+    // Session orchestration may be reset/re-anchored, but the canonical
+    // composition owner remains intact and is rebound on the next cycle.
+    machine.reset();
+    result = machine.refresh({});
+    assert(result.phase == StrategicCyclePhase::CompositionActive);
+    assert(result.active_composition->candidate.composition_id == "composition-next");
+    assert(result.active_composition->version == 2);
+    assert(active_composition.current()->candidate.composition_id == "composition-next");
+    assert(result.anchors.direction_anchor.composition_identity == "composition-next");
+    assert(result.anchors.direction_anchor.composition_version == 2);
+}
+
 void insufficient_evidence_clears_pivot_and_keeps_active_composition() {
-    UnifiedStrategicStateMachine machine({3, 60.0, 5});
+    ActiveCompositionManager active_composition;
+    StrategicCommitment commitment;
+    UnifiedStrategicStateMachine machine(active_composition, commitment, {3, 60.0, 5});
     StrategicCycleInput input;
     input.active_composition = ActiveComposition{composition(
         "composition-current", 1,
@@ -308,6 +370,7 @@ int main() {
     pivot_evaluation_does_not_mutate_then_confirms_synchronized_state();
     invalidated_candidate_is_removed_and_old_direction_is_preserved();
     missing_candidate_invalidates_pending_pivot_without_mutation();
+    reset_rebinds_to_the_canonical_composition_without_clearing_it();
     insufficient_evidence_clears_pivot_and_keeps_active_composition();
     std::cout << "Unified strategic state machine tests passed\n";
     return 0;

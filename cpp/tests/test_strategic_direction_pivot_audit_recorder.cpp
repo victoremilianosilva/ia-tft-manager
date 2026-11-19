@@ -68,7 +68,9 @@ int main() {
     // The runtime-facing bridge executes the real state machine and emits its
     // resulting phase without requiring a game/PPO action or mutating input.
     const auto runtime_output = root / "runtime" / "strategic_direction_pivot.jsonl";
-    UnifiedStrategicShadowRuntime runtime(runtime_output);
+    ci::ActiveCompositionManager runtime_composition;
+    StrategicCommitment runtime_commitment;
+    UnifiedStrategicShadowRuntime runtime(runtime_composition, runtime_commitment, runtime_output);
     StrategicCycleInput runtime_input;
     runtime_input.exploration.round = 6;
     const StrategicCycleAuditContext runtime_context{88, 3, 6};
@@ -98,7 +100,9 @@ int main() {
     // Repeated live observations must not advance pivot hysteresis, even
     // when the producer's emission sequence changes.
     const auto pivot_runtime_path = root / "pivot-runtime" / "events.jsonl";
-    UnifiedStrategicShadowRuntime pivot_runtime(pivot_runtime_path,
+    ci::ActiveCompositionManager pivot_composition;
+    StrategicCommitment pivot_commitment;
+    UnifiedStrategicShadowRuntime pivot_runtime(pivot_composition, pivot_commitment, pivot_runtime_path,
         PivotConfirmationPolicy{3, 60.0, 5});
     const auto make_composition = [](const std::string& id, int carry,
                                      std::vector<ci::CompositionUnit> units) {
@@ -193,6 +197,8 @@ int main() {
     pivot_input.evaluation_sequence = 4;
     pivot_result = pivot_runtime.refresh(pivot_context, pivot_input);
     assert(pivot_result.phase == StrategicCyclePhase::PivotConfirmed);
+    assert(pivot_commitment.composition_direction == "composition-next");
+    assert(pivot_commitment.selected_round == 4);
 
     {
         std::ifstream pivot_stream(pivot_runtime_path);
