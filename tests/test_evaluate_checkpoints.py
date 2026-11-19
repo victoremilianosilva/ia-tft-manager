@@ -25,6 +25,7 @@ from scripts.evaluate_checkpoints import (
     candidate_slots_for_seed,
     validate_candidate_slots,
     run_paired_evaluation,
+    write_paired_evaluation_artifacts,
 )
 
 
@@ -425,3 +426,68 @@ def test_paired_evaluation_rejects_tampered_lineage_hash_and_duplicate_seeds():
             split="test",
             max_steps=2,
         )
+
+
+def test_evaluation_artifacts_are_hash_linked_and_never_overwritten(tmp_path):
+    result = {
+        "evaluation_mode": "evaluation_only",
+        "split": "test",
+        "baseline_checkpoint_sha256": "a" * 64,
+        "candidate_checkpoint_sha256": "b" * 64,
+        "checkpoint_lineage_sha256": "c" * 64,
+        "raw_results": [
+            {"seed": 9, "player_id": 0, "version": "candidate", "placement": 2,
+             "win": 0, "actions": 12, "item_actions": 2,
+             "equip_actions": 1, "craft_and_equip_actions": 1}
+        ],
+        "summary": {"seed_count": 1},
+    }
+    manifest = {
+        "experiment_id": "paired-test-001",
+        "code_revision": "d" * 40,
+        "engine_build": "native-build-001",
+        "catalog_sha256": "e" * 64,
+        "split_manifest_sha256": "f" * 64,
+        "split": "test",
+        "baseline_checkpoint_sha256": "a" * 64,
+        "candidate_checkpoint_sha256": "b" * 64,
+        "primary_metric": "mean_placement",
+        "practical_effect_threshold": 0.15,
+    }
+
+    output = tmp_path / "evaluation-001"
+    written = write_paired_evaluation_artifacts(result, manifest, output)
+
+    raw = json.loads((output / "raw_results.json").read_text(encoding="utf-8"))
+    summary = json.loads((output / "summary.json").read_text(encoding="utf-8"))
+    report = json.loads((output / "report.json").read_text(encoding="utf-8"))
+    assert raw == result["raw_results"]
+    assert summary == result["summary"]
+    assert report["sha256"]["raw_results_sha256"] == hashlib.sha256(
+        json.dumps(raw, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    ).hexdigest()
+    assert report["sha256"]["experiment_manifest_sha256"] == written["report"]["sha256"]["experiment_manifest_sha256"]
+    with pytest.raises(FileExistsError):
+        write_paired_evaluation_artifacts(result, manifest, output)
+
+
+def test_evaluation_artifact_writer_rejects_missing_or_mismatched_manifest(tmp_path):
+    result = {
+        "evaluation_mode": "evaluation_only", "split": "validation",
+        "baseline_checkpoint_sha256": "a" * 64,
+        "candidate_checkpoint_sha256": "b" * 64,
+        "checkpoint_lineage_sha256": "c" * 64,
+        "raw_results": [{"seed": 1}], "summary": {"seed_count": 1},
+    }
+    with pytest.raises(ValueError, match="experiment manifest is missing"):
+        write_paired_evaluation_artifacts(result, {}, tmp_path / "missing")
+    manifest = {
+        "experiment_id": "mismatch", "code_revision": "d" * 40,
+        "engine_build": "build", "catalog_sha256": "e" * 64,
+        "split_manifest_sha256": "f" * 64, "split": "test",
+        "baseline_checkpoint_sha256": "a" * 64,
+        "candidate_checkpoint_sha256": "b" * 64,
+        "primary_metric": "mean_placement", "practical_effect_threshold": 0.1,
+    }
+    with pytest.raises(ValueError, match="split does not match"):
+        write_paired_evaluation_artifacts(result, manifest, tmp_path / "mismatch")
