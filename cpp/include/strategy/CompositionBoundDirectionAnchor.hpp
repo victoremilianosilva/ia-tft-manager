@@ -16,7 +16,8 @@ namespace tft::strategy {
 class CompositionBoundDirectionAnchor {
 public:
     static std::optional<StrategicDirectionAnchor> from_active_composition(
-        const composition_intelligence::ActiveComposition& active) {
+        const composition_intelligence::ActiveComposition& active,
+        const std::string& committed_direction = {}) {
         const auto& candidate = active.candidate;
         if (candidate.composition_id.empty() || active.version == 0 ||
             candidate.units.empty()) {
@@ -26,7 +27,8 @@ public:
         StrategicDirectionAnchor anchor;
         anchor.identity = "direction:composition:" + candidate.composition_id +
             ":" + std::to_string(active.version);
-        anchor.direction = candidate.composition_id;
+        anchor.direction = committed_direction.empty()
+            ? candidate.composition_id : committed_direction;
         anchor.composition_identity = candidate.composition_id;
         anchor.composition_version = active.version;
         anchor.composition_bound = true;
