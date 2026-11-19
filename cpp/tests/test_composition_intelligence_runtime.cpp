@@ -41,8 +41,8 @@ void shadow_runtime_uses_native_core_and_item_evidence_without_legacy_strategy()
     profile.preferred_traits = native_core_traits;
     const auto item_evidence = PlannerEvidenceAdapters::item(
         item_engine, item_state, {{42, profile,
-            "ChampionDefinition+observed_stats+UnitCombatClassifier",
-            "ActiveCompositionManager.core_unit_catalog_traits",
+            "derived:UnitCombatClassifier(ChampionDefinition+observed_stats+ability+items)",
+            "derived:ActiveCompositionManager.core_unit_catalog_traits",
             "native-shadow-core", 1}}, 12, 12);
     assert(item_evidence.metadata.available);
     assert(item_evidence.units.size() == 1);
