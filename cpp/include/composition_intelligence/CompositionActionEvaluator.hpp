@@ -92,7 +92,8 @@ public:
                 ? planner_evidence->economy.interest_if_resolved_now : -1;
             out.projected_next_round_income = planner_evidence->economy.projected_income_available
                 ? planner_evidence->economy.projected_next_round_income : -1;
-            out.observed_economic_posture = static_cast<std::int32_t>(planner_evidence->economy.posture);
+            out.observed_economic_posture = planner_evidence->economy.sufficient_evidence
+                ? static_cast<std::int32_t>(planner_evidence->economy.posture) : -1;
         }
         if (planner_evidence && !snapshot_identity_valid)
             out.evidence_rejected.push_back("PlannerEvidenceSnapshot:identity_mismatch");
