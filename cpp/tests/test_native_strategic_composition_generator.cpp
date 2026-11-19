@@ -115,7 +115,7 @@ int main() {
         upgraded_result.candidates.begin(), upgraded_result.candidates.end(),
         [](const auto& candidate) { return candidate.direction == "Bruiser"; });
     assert(upgraded_bruiser != upgraded_result.candidates.end());
-    assert(upgraded_bruiser->score > bruiser->score);
+    assert(upgraded_bruiser->score > baseline_bruiser->score);
 
     auto without_items = input;
     without_items.owned[1].item_fit = 0.0;
