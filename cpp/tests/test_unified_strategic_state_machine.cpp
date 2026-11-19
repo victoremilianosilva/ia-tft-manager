@@ -97,7 +97,8 @@ PivotFeasibilityInput viable_pivot_input() {
 
 void exploration_waits_for_composition_and_then_binds_direction() {
     ActiveCompositionManager active_composition;
-    UnifiedStrategicStateMachine machine(active_composition);
+    StrategicCommitment commitment;
+    UnifiedStrategicStateMachine machine(active_composition, commitment);
     StrategicCycleInput input;
     input.exploration = discovery_input();
 
@@ -195,7 +196,8 @@ void shadow_runtime_isolates_players_and_resets_its_own_direction_history() {
 
 void pivot_evaluation_does_not_mutate_then_confirms_synchronized_state() {
     ActiveCompositionManager active_composition;
-    UnifiedStrategicStateMachine machine(active_composition, {3, 60.0, 5});
+    StrategicCommitment commitment;
+    UnifiedStrategicStateMachine machine(active_composition, commitment, {3, 60.0, 5});
     StrategicCycleInput input;
     input.active_composition = ActiveComposition{composition(
         "composition-current", 1,
@@ -233,6 +235,8 @@ void pivot_evaluation_does_not_mutate_then_confirms_synchronized_state() {
     assert(result.anchors.direction_anchor.composition_identity == "composition-next");
     assert(result.anchors.direction_anchor.composition_version == 2);
     assert(result.anchors.direction_anchor.identity == "direction:composition-next:v2");
+    assert(commitment.composition_direction == "composition-next");
+    assert(commitment.selected_round == input.exploration.round);
     assert(result.anchors.pivot_candidate.identity.empty());
     assert(machine.transition_history().size() == 1);
 }
