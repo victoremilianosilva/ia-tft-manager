@@ -13,7 +13,7 @@ namespace tft::strategy {
 // from scoring rather than interpreted as a measured zero/default.
 class EconomicController {
 public:
-    EconomicControlDecision evaluate(const StrategicSharedContext& c) const noexcept {
+    EconomicControlDecision evaluate(const StrategicSharedContext& c) const {
         EconomicControlDecision out;
         out.shadow_only = true;
         if (!c.alive) {
