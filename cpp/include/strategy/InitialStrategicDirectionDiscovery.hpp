@@ -41,6 +41,7 @@ struct DirectionDiscoveryUnit {
     std::int32_t pool_remaining{-1};
     // False means unknown unless this availability bit is true.
     bool core_potential_available{false};
+    std::array<std::int32_t, 4> copies_by_star{};
 };
 
 struct DirectionDiscoveryTrait {
@@ -147,7 +148,8 @@ public:
                     a.supported_units.insert(unit.champion_id);
                     a.copies += std::max(unit.copies_owned, 1);
                     a.board_value += std::max(0.0, unit.board_contribution);
-                    a.pair = a.pair || unit.copies_owned >= 2;
+                    a.pair = a.pair ||
+                        copies_toward_next_star(unit.copies_by_star, unit.star) > 0;
                     a.board = a.board || unit.on_board;
                     a.bench = a.bench || unit.on_bench;
                     a.highest_star = std::max(a.highest_star, unit.star);
