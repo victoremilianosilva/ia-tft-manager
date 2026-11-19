@@ -190,7 +190,7 @@ The manifest path is `spec/observation-structured-entity-temporal-contract.v1.dr
 
 **Owner and boundaries:** economy_finetuning/paired_evaluator.py owns evaluation preflight and deterministic seat scheduling. action_contract.py, reward_contract.py, and semantic_observation.py remain canonical contract owners. Fine-tuning preserves source manifests rather than manufacturing missing contracts.
 
-**Contract and invariants:** each seed deterministically selects four tuned seats and the second lobby uses the exact complement. Checkpoints must validate Action/Mask and Reward manifests and, when semantic encoder weights exist, the semantic-state manifest against the loaded catalog. Legacy weights require the same explicit per-contract opt-ins used by the Trainer; the evaluator records validation status and semantic contract identity/hash.
+**Contract and invariants:** each seed deterministically selects four tuned seats and the second lobby uses the exact complement. Checkpoints must validate Action/Mask and Reward manifests, validate Critic mask-input identity when that encoder is present, and validate the semantic-state manifest against the loaded catalog when semantic encoder weights exist. Legacy weights require the same explicit per-contract opt-ins used by the Trainer; the evaluator records validation status and Action/Mask, Critic mask-input, Reward and semantic contract identities/hashes.
 
 **Impacts:** paired evaluation scheduling, checkpoint preflight, fine-tuning artifact lineage, and evaluation provenance. No training, checkpoint promotion, optimizer resume, or policy mutation is performed by this PR.
 
