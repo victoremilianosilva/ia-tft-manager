@@ -96,7 +96,8 @@ PivotFeasibilityInput viable_pivot_input() {
 }
 
 void exploration_waits_for_composition_and_then_binds_direction() {
-    UnifiedStrategicStateMachine machine;
+    ActiveCompositionManager active_composition;
+    UnifiedStrategicStateMachine machine(active_composition);
     StrategicCycleInput input;
     input.exploration = discovery_input();
 
@@ -121,7 +122,8 @@ void exploration_waits_for_composition_and_then_binds_direction() {
 }
 
 void machine_owns_exploratory_direction_history_without_legacy_inputs() {
-    UnifiedStrategicStateMachine machine;
+    ActiveCompositionManager active_composition;
+    UnifiedStrategicStateMachine machine(active_composition);
     StrategicCycleInput input;
     input.exploration.units = {
         {10, 2, 2, 1, true, false, false, false, true, 0.0, {"Bruiser"}},
@@ -156,8 +158,10 @@ void shadow_runtime_isolates_players_and_resets_its_own_direction_history() {
     std::filesystem::remove(player_zero_path, ignored);
     std::filesystem::remove(player_one_path, ignored);
 
-    UnifiedStrategicShadowRuntime player_zero(player_zero_path);
-    UnifiedStrategicShadowRuntime player_one(player_one_path);
+    ActiveCompositionManager player_zero_composition;
+    ActiveCompositionManager player_one_composition;
+    UnifiedStrategicShadowRuntime player_zero(player_zero_composition, player_zero_path);
+    UnifiedStrategicShadowRuntime player_one(player_one_composition, player_one_path);
     const StrategicCycleAuditContext context_zero{42, 0, 3};
     const StrategicCycleAuditContext context_one{42, 1, 3};
 
@@ -190,7 +194,8 @@ void shadow_runtime_isolates_players_and_resets_its_own_direction_history() {
 }
 
 void pivot_evaluation_does_not_mutate_then_confirms_synchronized_state() {
-    UnifiedStrategicStateMachine machine({3, 60.0, 5});
+    ActiveCompositionManager active_composition;
+    UnifiedStrategicStateMachine machine(active_composition, {3, 60.0, 5});
     StrategicCycleInput input;
     input.active_composition = ActiveComposition{composition(
         "composition-current", 1,
@@ -228,7 +233,8 @@ void pivot_evaluation_does_not_mutate_then_confirms_synchronized_state() {
 }
 
 void invalidated_candidate_is_removed_and_old_direction_is_preserved() {
-    UnifiedStrategicStateMachine machine({3, 60.0, 5});
+    ActiveCompositionManager active_composition;
+    UnifiedStrategicStateMachine machine(active_composition, {3, 60.0, 5});
     StrategicCycleInput input;
     input.active_composition = ActiveComposition{composition(
         "composition-current", 1,
@@ -253,7 +259,8 @@ void invalidated_candidate_is_removed_and_old_direction_is_preserved() {
 }
 
 void missing_candidate_invalidates_pending_pivot_without_mutation() {
-    UnifiedStrategicStateMachine machine({3, 60.0, 5});
+    ActiveCompositionManager active_composition;
+    UnifiedStrategicStateMachine machine(active_composition, {3, 60.0, 5});
     StrategicCycleInput input;
     input.active_composition = ActiveComposition{composition(
         "composition-current", 1,
@@ -279,7 +286,8 @@ void missing_candidate_invalidates_pending_pivot_without_mutation() {
 }
 
 void insufficient_evidence_clears_pivot_and_keeps_active_composition() {
-    UnifiedStrategicStateMachine machine({3, 60.0, 5});
+    ActiveCompositionManager active_composition;
+    UnifiedStrategicStateMachine machine(active_composition, {3, 60.0, 5});
     StrategicCycleInput input;
     input.active_composition = ActiveComposition{composition(
         "composition-current", 1,
