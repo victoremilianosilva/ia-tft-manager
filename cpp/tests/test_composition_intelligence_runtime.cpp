@@ -58,31 +58,6 @@ void shadow_runtime_uses_native_core_and_item_evidence_without_legacy_strategy()
         current_arcanist_count >= arcanist_milestone &&
         current_arcanist_count - 1 < arcanist_milestone;
 
-    UnitPriorityContext priority_context;
-    priority_context.composition_id = runtime.active.current()
-        ? runtime.active.current()->candidate.composition_id : std::string{};
-    priority_context.composition_version = runtime.active.current()
-        ? runtime.active.current()->version : 0;
-    priority_context.owned_units = {{42, 1, 1, true, {}}};
-    UnitPriorityEvidence unit_evidence;
-    unit_evidence.champion_id = 42;
-    unit_evidence.board_contribution = 0.9;
-    unit_evidence.synergy_contribution = native_synergy;
-    unit_evidence.confidence = 0.9;
-    unit_evidence.trait_completion = completes_active_trait;
-    priority_context.evidence = {unit_evidence};
-    const auto priorities = UnitPriorityPlanner{}.resolve(
-        runtime.active.current(), priority_context);
-    assert(!priorities.stale);
-    const auto prioritized_core = std::find_if(priorities.units.begin(),
-        priorities.units.end(), [](const auto& unit) { return unit.champion_id == 42; });
-    assert(prioritized_core != priorities.units.end());
-    assert(prioritized_core->synergy_contribution > 0.0);
-    assert(std::find_if(prioritized_core->reasons.begin(), prioritized_core->reasons.end(),
-        [](const auto& reason) {
-            return reason.code == UnitReasonCode::TraitCompletionPriority;
-        }) != prioritized_core->reasons.end());
-
     CompositionEvaluationContext context;
     context.match_id = 901;
     context.player_id = 0;
@@ -115,6 +90,31 @@ void shadow_runtime_uses_native_core_and_item_evidence_without_legacy_strategy()
     assert(runtime.active.current());
     assert(runtime.active.current()->candidate.composition_id == "native-shadow-core");
     assert(runtime.active.current()->version == 1);
+
+    UnitPriorityContext priority_context;
+    priority_context.composition_id = runtime.active.current()
+        ? runtime.active.current()->candidate.composition_id : std::string{};
+    priority_context.composition_version = runtime.active.current()
+        ? runtime.active.current()->version : 0;
+    priority_context.owned_units = {{42, 1, 1, true, {}}};
+    UnitPriorityEvidence unit_evidence;
+    unit_evidence.champion_id = 42;
+    unit_evidence.board_contribution = 0.9;
+    unit_evidence.synergy_contribution = native_synergy;
+    unit_evidence.confidence = 0.9;
+    unit_evidence.trait_completion = completes_active_trait;
+    priority_context.evidence = {unit_evidence};
+    const auto priorities = UnitPriorityPlanner{}.resolve(
+        runtime.active.current(), priority_context);
+    assert(!priorities.stale);
+    const auto prioritized_core = std::find_if(priorities.units.begin(),
+        priorities.units.end(), [](const auto& unit) { return unit.champion_id == 42; });
+    assert(prioritized_core != priorities.units.end());
+    assert(prioritized_core->synergy_contribution > 0.0);
+    assert(std::find_if(prioritized_core->reasons.begin(), prioritized_core->reasons.end(),
+        [](const auto& reason) {
+            return reason.code == UnitReasonCode::TraitCompletionPriority;
+        }) != prioritized_core->reasons.end());
 }
 
 int main() {
