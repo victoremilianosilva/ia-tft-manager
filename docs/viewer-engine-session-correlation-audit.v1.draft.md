@@ -158,7 +158,7 @@ The sections above preserve the original source-audit findings. The following ch
 
 **Owner and boundaries:** TFTEngine/CompositionIntelligencePlayerRuntime own the diagnostic records. ViewerSession attaches the latest per-player diagnostic and persists it. viewer/shadow_projection.py is a pure read-only projection. PlayerJsonLogWriter preserves old fields only as explicitly labelled compatibility data.
 
-**Contract and invariants:** PlayerCard, player dialog, selected-player panel and composition dialog read composition_decision, lineup_plan.selected_board, unit_intentions and action_recommendation from shadow_composition. No current UI fallback to strategy_info remains in viewer/main.py. Sidecar append cursor is scoped by native episode_id and resets when the episode changes. Historical logs remain readable; no legacy values are promoted to canonical Shadow state.
+**Contract and invariants:** PlayerCard, player dialog, selected-player panel and composition dialog read composition_decision, lineup_plan.selected_board, unit_intentions and action_recommendation from shadow_composition. No current UI fallback to strategy_info remains in viewer/main.py. Sidecar append cursor is scoped by native episode_id and resets when the episode changes or ViewerSession closes/replaces the Engine, including when a new Engine reuses the same episode_id. Historical logs remain readable; no legacy values are promoted to canonical Shadow state.
 
 **Impacts:** viewer/session.py, viewer/main.py, viewer/player_logs.py, viewer/shadow_projection.py and focused Viewer tests. No policy, PPO observation, action, mask or execution behavior changes.
 
