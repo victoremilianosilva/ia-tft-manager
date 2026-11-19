@@ -39,9 +39,16 @@ void item_test(){
  tft::items::ItemEngine engine({sword},{"bf"});tft::items::ItemPlayerState state;
  state.inventory={"test_sword"};state.equipped_by_unit_uuid["unit-1"]={"test_sword"};
  tft::items::UnitProfile profile;profile.uuid="unit-1";profile.role=1;profile.backline=true;profile.attack_damage=100;
- const std::vector<ItemUnitBinding> bindings{{42,profile}};
+ const std::vector<ItemUnitBinding> bindings{{42,profile,
+  "ChampionDefinition+observed_stats+UnitCombatClassifier",
+  "ActiveCompositionManager.core_unit_catalog_traits","comp-A",5}};
  auto e=PlannerEvidenceAdapters::item(engine,state,bindings,12,12);
  assert(e.metadata.available&&e.units.size()==1&&e.units[0].has_equipped_items&&e.units[0].has_inventory_candidate);
+ assert(e.units[0].role_source.find("UnitCombatClassifier")!=std::string::npos);
+ assert(e.units[0].composition_source.find("ActiveCompositionManager")!=std::string::npos);
+ assert(e.units[0].composition_id=="comp-A"&&e.units[0].composition_version==5);
+ assert(e.units[0].composition_fit==profile.composition_fit);
+ assert(e.units[0].preferred_traits==profile.preferred_traits);
  assert(e.units[0].best_inventory_item_id=="test_sword"&&e.inventory_count==1&&state.inventory.size()==1);
  auto stale=PlannerEvidenceAdapters::item(engine,state,bindings,11,12);
  assert(!stale.metadata.available&&stale.metadata.quality==EvidenceQuality::Stale);
