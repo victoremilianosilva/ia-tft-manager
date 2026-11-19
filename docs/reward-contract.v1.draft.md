@@ -363,3 +363,19 @@ The current PPO action-reward path in `TFTEngine::Impl::PlayerEnv::step` no long
 The retained action signals are based on observed execution/state evidence (including successful transitions, actual level changes, observed shop-fit delta, sale/upgrade state, board movement outcomes, and gold-potential delta). Partial-XP and surplus-XP shaping were removed from this path rather than retaining strategy-dependent target-level heuristics. PASS opportunity cost now uses the observed useful-shop-opportunity signal; it does not infer an XP opportunity from a strategy target.
 
 **Boundary:** this is a Strategy-ID-independence migration, not yet the complete Reward Contract v1 implementation. Some retained purchase/reroll/composition-fit terms still consume legacy composition evidence, and their replacement by independently sourced native evidence remains part of the semantic-projection and legacy-producer replay gates. Existing numeric terms are not claimed to be calibrated v1 coefficients. Reward Contract v1 remains the normative target; runtime acceptance still requires the full offline calibration/ablation and reward-hacking checks.
+
+
+## Runtime reconciliation — Reward Contract v1
+
+PR #496 introduces the explicit runtime contract `tft.ppo.outcome-reward.v1`.
+
+- Action-level shaping is neutral (`0.0`) while the remaining composition-fit, shop-quality, sale-quality, movement-quality, item-fit and economic-urgency signals lack a validated causal and calibrated contract.
+- The runtime action handler still records whether the requested operation actually succeeded. This execution status is diagnostic and does not become a player reward.
+- Native PvP combat outcomes remain credited by the resolved combat event.
+- Final placement remains credited once, when a validated placement becomes known.
+- Invalid or unavailable action evidence is not converted into a negative player reward.
+- GAE remains the temporal credit mechanism; invalid transitions break recursive propagation and are excluded from PPO batches.
+
+This is a conservative migration boundary, not a claim that action-level reward shaping is permanently unnecessary. Reintroducing a shaping component requires its own versioned definition, authoritative source, attribution horizon, non-duplication proof, calibration and regression tests. Shadow evaluator scores and recommendations are not reward targets.
+
+The checkpoint now persists the reward contract ID/version/hash. A checkpoint without this manifest is treated as an unversioned reward baseline: loading its policy weights requires the explicit `TFT_ALLOW_UNVERSIONED_REWARD_CHECKPOINT=1` opt-in, and its optimizer/scheduler state is not restored.
