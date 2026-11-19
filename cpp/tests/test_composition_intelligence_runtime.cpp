@@ -1,5 +1,6 @@
 #include "composition_intelligence/CompositionIntelligenceRuntime.hpp"
 #include "composition_intelligence/PlannerEvidenceAdapters.hpp"
+#include "composition_intelligence/UnitPriorityPlanner.hpp"
 
 #include <algorithm>
 #include <cassert>
@@ -45,6 +46,43 @@ void shadow_runtime_uses_native_core_and_item_evidence_without_legacy_strategy()
     assert(item_evidence.units.front().has_inventory_candidate);
     assert(item_evidence.units.front().best_inventory_fit > 0.0);
 
+    std::size_t matching_core_traits = 0;
+    for (const auto& trait : profile.traits)
+        if (std::find(native_core_traits.begin(), native_core_traits.end(), trait) !=
+            native_core_traits.end()) ++matching_core_traits;
+    const double native_synergy = std::clamp(
+        static_cast<double>(matching_core_traits) / 2.0, 0.0, 1.0);
+    const std::int32_t current_arcanist_count = 2;
+    const std::int32_t arcanist_milestone = 2;
+    const bool completes_active_trait =
+        current_arcanist_count >= arcanist_milestone &&
+        current_arcanist_count - 1 < arcanist_milestone;
+
+    UnitPriorityContext priority_context;
+    priority_context.composition_id = runtime.active.current()
+        ? runtime.active.current()->candidate.composition_id : std::string{};
+    priority_context.composition_version = runtime.active.current()
+        ? runtime.active.current()->version : 0;
+    priority_context.owned_units = {{42, 1, 1, true, {}}};
+    UnitPriorityEvidence unit_evidence;
+    unit_evidence.champion_id = 42;
+    unit_evidence.board_contribution = 0.9;
+    unit_evidence.synergy_contribution = native_synergy;
+    unit_evidence.confidence = 0.9;
+    unit_evidence.trait_completion = completes_active_trait;
+    priority_context.evidence = {unit_evidence};
+    const auto priorities = UnitPriorityPlanner{}.resolve(
+        runtime.active.current(), priority_context);
+    assert(!priorities.stale);
+    const auto prioritized_core = std::find_if(priorities.units.begin(),
+        priorities.units.end(), [](const auto& unit) { return unit.champion_id == 42; });
+    assert(prioritized_core != priorities.units.end());
+    assert(prioritized_core->synergy_contribution > 0.0);
+    assert(std::find_if(prioritized_core->reasons.begin(), prioritized_core->reasons.end(),
+        [](const auto& reason) {
+            return reason.code == UnitReasonCode::TraitCompletionPriority;
+        }) != prioritized_core->reasons.end());
+
     CompositionEvaluationContext context;
     context.match_id = 901;
     context.player_id = 0;
@@ -56,7 +94,8 @@ void shadow_runtime_uses_native_core_and_item_evidence_without_legacy_strategy()
     owned.copies = 1;
     owned.highest_star = 1;
     owned.board_contribution = 0.9;
-    owned.synergy_contribution = 0.9;
+    owned.synergy_contribution = native_synergy;
+    owned.completes_active_trait = completes_active_trait;
     context.owned_units.push_back(owned);
     CandidateEvidence candidate_evidence;
     candidate_evidence.composition_id = candidate.composition_id;
