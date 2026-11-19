@@ -251,10 +251,17 @@ public:
                             score.board_value += 0.20;
                     }
                 }
-                const double opportunity = std::max(0.0, candidate.opportunity_cost);
-                const double lost_interest = std::max(0.0, candidate.lost_interest_cost);
-                const double direct_cost = std::max(0.0, candidate.direct_gold_cost != 0.0
-                    ? candidate.direct_gold_cost : candidate.expected_economy_cost);
+                const double opportunity = std::isfinite(candidate.opportunity_cost)
+                    ? std::max(0.0, candidate.opportunity_cost) : 0.0;
+                const double lost_interest = candidate.lost_interest_evidence_available &&
+                    std::isfinite(candidate.lost_interest_cost)
+                    ? std::max(0.0, candidate.lost_interest_cost) : 0.0;
+                // Negative direct cost is a validated sale credit, not a cost to clamp away.
+                const double direct_cost = std::isfinite(candidate.direct_gold_cost) &&
+                    candidate.direct_gold_cost != 0.0
+                    ? candidate.direct_gold_cost
+                    : (std::isfinite(candidate.expected_economy_cost)
+                        ? candidate.expected_economy_cost : 0.0);
                 double evidence_cost = 0.0;
                 if (economy_valid) {
                     if (candidate.kind == strategy::StrategicActionKind::BuyUnit)
