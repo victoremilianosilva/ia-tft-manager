@@ -26,7 +26,7 @@ template<class T> struct ContextBridgeValue {
     bool available() const noexcept{return value.has_value();}
 };
 struct ContextBridgeMetadata {
-    std::uint32_t schema_version{2};
+    std::uint32_t schema_version{3};
     ContextBridgeQuality quality{ContextBridgeQuality::Missing};
     std::string reason{"not_evaluated"};
 };
@@ -42,8 +42,8 @@ struct StrategicContextBridgeSnapshot {
         const auto field=[](const auto& v){nlohmann::json j={{"origin",context_value_origin_name(v.origin)},{"quality",context_bridge_quality_name(v.quality)},{"source",v.source},{"reason",v.reason}};j["value"]=v.value?nlohmann::json(*v.value):nlohmann::json(nullptr);return j;};
         return {
           {"metadata",{{"schema_version",metadata.schema_version},{"quality",context_bridge_quality_name(metadata.quality)},{"reason",metadata.reason}}},
-          {"observed",{{"hp",field(hp)},{"gold",field(gold)},{"level",field(level)},{"xp",field(xp)},{"xp_to_next",field(xp_to_next)},{"win_streak",field(win_streak)},{"loss_streak",field(loss_streak)},{"composition_locked",field(composition_locked)},{"direction",field(observed_direction)},{"focus",field(observed_focus)},{"core_traits",field(core_traits)}}},
-          {"derived",{{"board_power",field(board_power)},{"relative_board_power",field(relative_board_power)},{"direction_score",field(direction_score)},{"direction_viable",field(direction_viable)},{"stage",field(stage)},{"progression_plan",field(progression_plan)}}},
+          {"observed",{{"hp",field(hp)},{"gold",field(gold)},{"level",field(level)},{"xp",field(xp)},{"xp_to_next",field(xp_to_next)},{"win_streak",field(win_streak)},{"loss_streak",field(loss_streak)}}},
+          {"derived",{{"board_power",field(board_power)},{"relative_board_power",field(relative_board_power)},{"direction_score",field(direction_score)},{"direction_viable",field(direction_viable)},{"stage",field(stage)},{"progression_plan",field(progression_plan)},{"direction",field(observed_direction)},{"focus",field(observed_focus)},{"core_traits",field(core_traits)},{"composition_locked",field(composition_locked)}}},
           {"recommended",{{"direction",field(recommended_direction)},{"composition_decision",field(composition_decision)},{"economic_posture",field(economic_posture)},{"strategic_confidence",field(strategic_confidence)},{"economic_confidence",field(economic_confidence)}}}
         };
     }
@@ -74,16 +74,23 @@ public:
         set(out.xp_to_next,c.xp_to_next,ContextValueOrigin::Observed,"StrategicSharedContext","live_economy_state");
         set(out.win_streak,c.win_streak,ContextValueOrigin::Observed,"StrategicSharedContext","live_economy_state");
         set(out.loss_streak,c.loss_streak,ContextValueOrigin::Observed,"StrategicSharedContext","live_economy_state");
-        set(out.composition_locked,c.composition_locked,ContextValueOrigin::Observed,"StrategicSharedContext","live_composition_state");
-        set(out.observed_direction,c.current_composition_direction,ContextValueOrigin::Observed,"StrategicSharedContext","live_composition_state");
-        set(out.observed_focus,c.current_composition_focus,ContextValueOrigin::Observed,"StrategicSharedContext","live_composition_state");
-        set(out.core_traits,c.current_core_traits,ContextValueOrigin::Observed,"StrategicSharedContext","live_composition_state");
+        // No authoritative lock producer is wired into this bridge yet.
+        // A default false must not be serialized as an observed strategic fact.
+        out.composition_locked.origin=ContextValueOrigin::Derived;
+        out.composition_locked.quality=ContextBridgeQuality::Missing;
+        out.composition_locked.source="unavailable";
+        out.composition_locked.reason="no_authoritative_lock_source";
+        // Direction is a planner commitment; focus/core traits are generated
+        // strategic projections, not direct observations from the game state.
+        set(out.observed_direction,c.current_composition_direction,ContextValueOrigin::Derived,"StrategicPlanner::StrategicCommitment","committed_current_direction");
+        set(out.observed_focus,c.current_composition_focus,ContextValueOrigin::Derived,"NativeStrategicCompositionGenerator","generated_direction_focus");
+        set(out.core_traits,c.current_core_traits,ContextValueOrigin::Derived,"NativeStrategicCompositionGenerator","generated_completed_traits");
         set(out.stage,c.stage,ContextValueOrigin::Derived,"StrategicSharedContext","round_stage_mapping");
-        set(out.progression_plan,progression_name(c.progression_plan),ContextValueOrigin::Derived,"StrategicSharedContext","current_economic_strategy_mapping");
-        set(out.board_power,c.board_power,ContextValueOrigin::Derived,"StrategicSharedContext","board_power_estimate");
-        set(out.relative_board_power,c.relative_board_power,ContextValueOrigin::Derived,"StrategicSharedContext","relative_to_lobby_average");
-        set(out.direction_score,c.current_direction_score,ContextValueOrigin::Derived,"StrategicSharedContext","planner_direction_score");
-        set(out.direction_viable,c.current_direction_viable,ContextValueOrigin::Derived,"StrategicSharedContext","planner_viability_assessment");
+        set(out.progression_plan,progression_name(c.progression_plan),ContextValueOrigin::Derived,"StrategicPlanner::StrategicCommitment","committed_progression_plan");
+        set(out.board_power,c.board_power,ContextValueOrigin::Derived,"BoardEvaluation","board_power_estimate");
+        set(out.relative_board_power,c.relative_board_power,ContextValueOrigin::Derived,"BoardEvaluation","relative_to_lobby_average");
+        set(out.direction_score,c.current_direction_score,ContextValueOrigin::Derived,"StrategicPlanner","planner_direction_score");
+        set(out.direction_viable,c.current_direction_viable,ContextValueOrigin::Derived,"StrategicPlanner","planner_viability_assessment");
         set(out.recommended_direction,in.strategic_decision->target_composition_direction,ContextValueOrigin::Recommended,"StrategicPlanner","shadow_recommendation_only");
         set(out.composition_decision,decision_name(in.strategic_decision->composition_decision),ContextValueOrigin::Recommended,"StrategicPlanner","shadow_recommendation_only");
         set(out.economic_posture,posture_name(in.economic_decision->posture),ContextValueOrigin::Recommended,"EconomicController","shadow_recommendation_only");

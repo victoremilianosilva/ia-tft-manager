@@ -31,6 +31,17 @@ struct UnitPriorityReason {
     std::string message;
 };
 
+// Counts equivalent owned copies already accumulated toward the next star tier.
+// For a 1-star target the next threshold is 3 copies; for a 2-star target it is
+// 9 total copies. This preserves partial progress across mixed 1-star/2-star
+// instances instead of discarding lower-tier copies when a 2-star exists.
+inline std::int32_t copy_progress_toward_next_star(
+    std::int32_t copies_owned, std::int32_t highest_star) noexcept {
+    if (copies_owned <= 0 || highest_star < 1 || highest_star >= 3) return 0;
+    const std::int32_t next_star_copy_threshold = highest_star == 1 ? 3 : 9;
+    return std::min(copies_owned, next_star_copy_threshold);
+}
+
 struct UnitPriorityEvidence {
     std::int32_t champion_id{-1};
     double board_contribution{0.5}; // normalized [0,1], supplied by caller
@@ -230,9 +241,8 @@ public:
 private:
     static std::int32_t affordable_shop_copies(
         const UnitPriorityEvidence* ev, const UnitPriorityContext& context) {
-        if (!ev) return 0;
-        if (ev->unit_cost >= 0 && context.gold_available >= 0 &&
-            ev->unit_cost > context.gold_available) return 0;
+        if (!ev || ev->unit_cost < 0 || context.gold_available < 0) return 0;
+        if (ev->unit_cost > context.gold_available) return 0;
         return std::max(0, ev->copies_in_shop);
     }
     static std::int32_t tier_base(UnitPriorityTier tier) {

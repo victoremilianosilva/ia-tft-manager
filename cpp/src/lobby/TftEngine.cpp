@@ -3556,8 +3556,8 @@ struct TFTEngine::Impl {
                         evidence.synergy_contribution = std::clamp(static_cast<double>(matching_traits) / 2.0, 0.0, 1.0);
                         evidence.confidence = 0.75;
                         evidence.copies_toward_next_star =
-                            observed.highest_star == 1 ? observed.copies % 3 :
-                            (observed.highest_star == 2 ? (observed.copies / 3) % 3 : 0);
+                            ci::copy_progress_toward_next_star(
+                                observed.copies, observed.highest_star);
                     }
                 };
                 for (const auto& unit : player_envs[i].board) if (unit) collect_unit(*unit, true);
@@ -3673,11 +3673,25 @@ struct TFTEngine::Impl {
                     version > 0 ? "economy/board/item evidence bound to active version" : "no active composition version",
                     active);
 
+                // Bind shop offers and affordability to the same active-composition
+                // evidence snapshot. Unknown cost/gold must never make an offer affordable.
+                for (auto& [champion_id, priority_evidence] : unit_evidence) {
+                    if (const auto* definition = catalog->find_by_id(champion_id))
+                        priority_evidence.unit_cost = definition->cost;
+                    if (strategic_shop) {
+                        for (const auto& offer : strategic_shop->offers()) {
+                            if (offer && offer->champion_internal_id == champion_id)
+                                ++priority_evidence.copies_in_shop;
+                        }
+                    }
+                }
+
                 ci::UnitPriorityContext priority_context;
                 priority_context.planner_evidence = &evidence;
                 priority_context.match_id = episode_id;
                 priority_context.player_id = static_cast<std::int32_t>(i);
                 priority_context.round = round_id;
+                priority_context.gold_available = economy.gold;
                 if (active) {
                     priority_context.composition_id = active->candidate.composition_id;
                     priority_context.composition_version = active->version;
