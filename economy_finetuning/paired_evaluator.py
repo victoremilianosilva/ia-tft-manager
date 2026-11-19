@@ -20,8 +20,16 @@ if str(ROOT) not in sys.path:
 from cpp_lobby_env import CppTFTLobbyWrapper
 from engine_contracts import ActionType
 from policy import TFTPolicy
-from action_contract import validate_action_mask_checkpoint_contract
-from reward_contract import validate_reward_checkpoint_contract
+from action_contract import (
+    build_action_mask_checkpoint_contract,
+    build_critic_mask_input_checkpoint_contract,
+    validate_action_mask_checkpoint_contract,
+    validate_critic_mask_input_checkpoint_contract,
+)
+from reward_contract import (
+    build_reward_checkpoint_contract,
+    validate_reward_checkpoint_contract,
+)
 from semantic_observation import (
     build_semantic_state_checkpoint_contract,
     validate_semantic_state_checkpoint_contract,
@@ -70,6 +78,25 @@ def validate_evaluation_checkpoint_contracts(payload: dict, catalog_map: dict) -
         validate_action_mask_checkpoint_contract(action_contract)
         status["action_mask"] = "validated"
 
+    state = payload.get("policy", payload)
+    critic_mask_keys = {
+        key for key in state if key.startswith("critic_mask_encoder.")
+    }
+    critic_mask_contract = payload.get("critic_mask_input_contract")
+    if critic_mask_contract is None:
+        if critic_mask_keys:
+            raise ValueError(
+                "Checkpoint contém pesos do Critic mask encoder sem critic_mask_input_contract."
+            )
+        status["critic_mask_input"] = "not_present"
+    else:
+        validate_critic_mask_input_checkpoint_contract(critic_mask_contract)
+        if not critic_mask_keys:
+            raise ValueError(
+                "Checkpoint declara critic_mask_input_contract sem pesos do encoder."
+            )
+        status["critic_mask_input"] = "validated"
+
     reward_contract = payload.get("reward_contract")
     if reward_contract is None:
         allow_legacy = os.environ.get(
@@ -86,7 +113,6 @@ def validate_evaluation_checkpoint_contracts(payload: dict, catalog_map: dict) -
         validate_reward_checkpoint_contract(reward_contract)
         status["reward"] = "validated"
 
-    state = payload.get("policy", payload)
     semantic_keys = {
         key for key in state
         if key.startswith(("semantic_id_embedding.", "semantic_encoder."))
@@ -422,6 +448,9 @@ def main():
         tuned_path, obs_dim, device, catalog_map
     )
     semantic_contract = build_semantic_state_checkpoint_contract(catalog_map)
+    action_mask_contract = build_action_mask_checkpoint_contract()
+    critic_mask_contract = build_critic_mask_input_checkpoint_contract()
+    reward_contract = build_reward_checkpoint_contract()
     provenance = {
         "repository_commit": repository_commit(),
         "original_checkpoint_sha256": file_sha256(original_path),
@@ -443,6 +472,9 @@ def main():
             "original": original_contract_status,
             "finetuned": tuned_contract_status,
         },
+        "action_mask_contract": action_mask_contract,
+        "critic_mask_input_contract": critic_mask_contract,
+        "reward_contract": reward_contract,
         "semantic_state_contract": {
             "contract_id": semantic_contract["contract"]["contract_id"],
             "version": semantic_contract["contract"]["version"],
