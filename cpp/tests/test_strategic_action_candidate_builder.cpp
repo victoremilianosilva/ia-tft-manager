@@ -149,7 +149,7 @@ void missing_cost_rejects_only_the_affected_candidate() {
     composition.composition_id = "partial-candidate-set";
     composition.set_id = "TFT18";
     composition.target_board_size = 1;
-    composition.units = {{10, UnitRole::MainCarry, true, 80}};
+    composition.units = {{10, tft::composition_intelligence::UnitRole::MainCarry, true, 80}};
     composition.main_carry_id = 10;
     const std::optional<ActiveComposition> active = ActiveComposition{composition, 2};
 
