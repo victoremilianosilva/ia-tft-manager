@@ -227,6 +227,40 @@ void xp_candidate_does_not_depend_on_an_active_composition() {
     assert(result.candidates.front().gold_cost == EconomyEngine::BUY_XP_COST);
 }
 
+void native_anchor_shop_offer_is_actionable_before_composition_lock() {
+    StrategicSharedContext context;
+    context.player_id = 0; context.round = 4; context.gold = 8;
+    context.alive = true; context.evidence.gold = true;
+    StrategicAnchorCandidate anchor;
+    anchor.unit.champion_id = 44;
+    anchor.unit.board_contribution = 0.65;
+    anchor.unit.composition_fit = 0.9;
+    anchor.unit.copies_owned = 2;
+    anchor.target_composition_direction = "Invoker";
+    anchor.anchor_value = 4.2;
+    anchor.shop_available = true;
+    anchor.candidate_unit_ids = {44, 45, 46};
+    context.anchor_candidates = {anchor};
+
+    StrategicActionNativeSnapshot native;
+    native.match_id = 77; native.player_id = 0; native.round = 4;
+    native.sequence = 11; native.gold = 8; native.alive = true;
+    native.shop_champion_ids[2] = 44;
+    enables(native.masks, decision::ActionType::BUY);
+    native.masks.shop_mask[2] = decision::MASK_ENABLED;
+
+    const auto result = StrategicActionCandidateBuilder{}.build(
+        context, std::nullopt, {}, {}, native, {{44, 3}});
+    const auto buy = std::find_if(result.candidates.begin(), result.candidates.end(),
+        [](const auto& candidate) {
+            return candidate.kind == StrategicActionKind::BuyUnit && candidate.champion_id == 44;
+        });
+    assert(buy != result.candidates.end());
+    assert(buy->shop_slot == 2 && buy->source_sequence == 11);
+    assert(buy->evidence_source.find("NativeStrategicCompositionGenerator") != std::string::npos);
+    assert(buy->composition_fit == 0.9 && buy->upgrade_value == 1.0);
+}
+
 void owned_unit_candidates_require_native_physical_identity() {
     CompositionCandidate composition;
     composition.composition_id = "uuid-required";
@@ -334,6 +368,7 @@ int main() {
     xp_candidate_does_not_depend_on_an_active_composition();
     builder_refuses_stale_or_mismatched_native_snapshots();
     owned_unit_candidates_require_native_physical_identity();
+    native_anchor_shop_offer_is_actionable_before_composition_lock();
     ambiguous_owned_copy_is_not_selected_by_incidental_order();
     empty_legal_action_set_is_reported_as_no_candidates();
     std::cout << "StrategicActionCandidateBuilder tests passed\\n";
