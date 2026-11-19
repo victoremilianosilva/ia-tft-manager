@@ -474,8 +474,8 @@ def run(args):
             "action_mask_contract", "critic_mask_input_contract",
             "semantic_state_contract", "reward_contract",
         ):
-            if contract_key in checkpoint:
-                finetuned_payload[contract_key] = checkpoint[contract_key]
+            if contract_key in original_checkpoint:
+                finetuned_payload[contract_key] = original_checkpoint[contract_key]
         torch.save(finetuned_payload, output)
         metadata["finetuned_checkpoint_sha256"] = _sha256(output)
         (reports_dir / "experiment_config.json").write_text(
