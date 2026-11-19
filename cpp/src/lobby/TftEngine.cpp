@@ -3764,6 +3764,7 @@ struct TFTEngine::Impl {
                 const auto candidate_build = ci::StrategicActionCandidateBuilder{}.build(
                     strategic_context, active, priorities, lineup, native_action_state, unit_costs);
                 strategic_context.action_candidates = candidate_build.candidates;
+                evidence_context.planner_context.action_candidates = candidate_build.candidates;
                 runtime.mark_stage("action_candidate_generation",
                     candidate_build.status == "candidates_generated" ? "completed" : "unavailable",
                     candidate_build.status, active);
