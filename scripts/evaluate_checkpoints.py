@@ -98,14 +98,14 @@ def run_match(factory, baseline, candidate, candidate_slots, seed, device, max_s
             observations = lobby.reset()
         done = False
         info = {}
+        action_counts = {player_id: {"actions": 0, "item_actions": 0,
+                                     "equip_actions": 0, "craft_and_equip_actions": 0}
+                         for player_id in range(8)}
         for _ in range(max_steps):
             masks = lobby.get_action_masks()
             alive = [i for i, player in enumerate(lobby.players)
                      if getattr(player, "alive", True) and not getattr(player, "eliminated", False)]
             actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
-            action_counts = {player_id: {"actions": 0, "item_actions": 0,
-                                         "equip_actions": 0, "craft_and_equip_actions": 0}
-                             for player_id in range(8)}
             for slots, policy in ((set(range(8)) - set(candidate_slots), baseline),
                                   (set(candidate_slots), candidate)):
                 selected = sorted(set(alive).intersection(slots))
