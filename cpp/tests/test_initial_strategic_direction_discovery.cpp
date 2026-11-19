@@ -19,6 +19,7 @@ static DirectionDiscoveryUnit unit(
     u.in_shop = shop;
     u.carry_potential = carry;
     u.core_potential = core;
+    u.core_potential_available = core;
     u.board_contribution = contribution;
     u.traits = std::move(traits);
     return u;
@@ -59,6 +60,20 @@ int main() {
     result = discovery.evaluate(carry);
     assert(result.status == DirectionDiscoveryStatus::HypothesesFound);
     assert(result.hypotheses.front().anchor.direction == "Invoker");
+
+    // Unknown core potential must not be converted into an observed false or a score bonus.
+    DirectionDiscoveryInput core_unknown;
+    core_unknown.units = {
+        unit(12, {"CoreTest"}, 2, true, false, false, false, false, 1.0, 2),
+        unit(13, {"CoreTest"}, 1, false, true, false, false, false, 0.0, 2)
+    };
+    auto observed_false = core_unknown;
+    for (auto& item : observed_false.units) item.core_potential_available = true;
+    result = discovery.evaluate(core_unknown);
+    const auto unknown_core_score = result.hypotheses.front().score;
+    result = discovery.evaluate(observed_false);
+    assert(!result.hypotheses.empty());
+    assert(std::abs(result.hypotheses.front().score - unknown_core_score) < 1e-9);
 
     // Evidence spread across board, bench and shop can complete a trait.
     DirectionDiscoveryInput spread;
