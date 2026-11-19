@@ -147,6 +147,36 @@ void explicit_hold_is_selected_when_all_actions_score_below_zero() {
     assert(result.candidates[1].selected);
 }
 
+void explicit_sale_credit_is_not_discarded_as_a_positive_cost() {
+    StrategicSharedContext context;
+    context.alive = true;
+    context.gold = 0;
+    context.player_id = 0;
+    context.round = 8;
+    auto sale_priority = UnitPriority{};
+    sale_priority.champion_id = 30;
+    sale_priority.intent = UnitIntent::SellCandidate;
+    sale_priority.confidence = 0.9;
+    sale_priority.copies_owned = 1;
+    sale_priority.highest_star = 1;
+    auto p = priorities();
+    p.units.push_back(sale_priority);
+    auto sale = candidate(StrategicActionKind::SellUnit, 30);
+    sale.gold_cost = 0;
+    sale.direct_gold_cost = -3.0;
+    sale.source_slot = 1;
+    sale.source_is_bench = true;
+    auto hold = candidate(StrategicActionKind::Hold);
+    context.action_candidates = {sale, hold};
+    const auto result = ContextualActionEvaluator{}.evaluate(
+        active(), p, lineup(), context, nullptr, 77);
+    assert(!result.stale);
+    assert(result.candidates.size() == 2);
+    assert(result.candidates[0].eligible);
+    assert(result.candidates[0].economy_cost < 0.0);
+    assert(result.recommended_action == StrategicActionKind::SellUnit);
+}
+
 void validated_survival_and_streak_evidence_adjust_board_improvement_value() {
     StrategicSharedContext context;
     context.alive = true;
@@ -215,6 +245,7 @@ int main() {
     invalid_candidates_and_equipped_sales_are_rejected();
     contextual_sell_rejects_pairs_and_existing_star_progress();
     explicit_hold_is_selected_when_all_actions_score_below_zero();
+    explicit_sale_credit_is_not_discarded_as_a_positive_cost();
     validated_survival_and_streak_evidence_adjust_board_improvement_value();
     empty_candidate_set_is_not_a_hold_recommendation();
     json_is_versioned_and_shadow_only();
