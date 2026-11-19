@@ -172,6 +172,8 @@ int main(int argc, char** argv) {
         for (std::size_t index = 10; index < 17; ++index)
             require(player_observation[index] == 0.0f,
                     "StrategyInfo one-hot ainda está presente na observação PPO.");
+        require(player_observation[242] == 0.0f,
+                "Score agregado de posicionamento ainda depende do contexto estratégico legado.");
         for (std::size_t index = direction_offset;
              index < unit_fit_offset + tft::kBoardSlots + tft::kBenchSlots + tft::kShopSlots;
              ++index)
