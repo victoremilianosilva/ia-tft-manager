@@ -4034,8 +4034,39 @@ struct TFTEngine::Impl {
                 const bool evaluator_diverged = comparison_available &&
                     (composition_actions.evaluation.recommended_action != contextual_actions.recommended_action ||
                      composition_actions.evaluation.recommended_champion_id != contextual_actions.recommended_champion_id);
+                nlohmann::json candidate_generation = {
+                    {"status", candidate_build.status},
+                    {"rejected_missing_cost", candidate_build.rejected_missing_cost},
+                    {"rejected_ambiguous_instance", candidate_build.rejected_ambiguous_instance},
+                    {"candidate_count", candidate_build.candidates.size()},
+                    {"candidates", nlohmann::json::array()}
+                };
+                for (const auto& candidate : candidate_build.candidates) {
+                    candidate_generation["candidates"].push_back({
+                        {"candidate_id", candidate.candidate_id},
+                        {"source_sequence", candidate.source_sequence},
+                        {"kind", static_cast<int>(candidate.kind)},
+                        {"champion_id", candidate.champion_id},
+                        {"shop_slot", candidate.shop_slot},
+                        {"source_slot", candidate.source_slot},
+                        {"target_board_slot", candidate.target_board_slot},
+                        {"source_is_bench", candidate.source_is_bench},
+                        {"gold_cost", candidate.gold_cost},
+                        {"direct_gold_cost", candidate.direct_gold_cost},
+                        {"lost_interest_cost", candidate.lost_interest_cost},
+                        {"lost_interest_evidence_available", candidate.lost_interest_evidence_available},
+                        {"opportunity_cost", candidate.opportunity_cost},
+                        {"expected_board_delta", candidate.expected_board_delta},
+                        {"evidence_source", candidate.evidence_source},
+                        {"evidence_horizon_rounds", candidate.evidence_horizon_rounds},
+                        {"evidence_uncertainty", candidate.evidence_uncertainty},
+                        {"evidence_reason", candidate.evidence_reason},
+                        {"available", candidate.available}
+                    });
+                }
                 diagnostic_json["action_evaluator_comparison"] = {
-                    {"schema_version", 1},
+                    {"schema_version", 2},
+                    {"candidate_generation", candidate_generation},
                     {"baseline", {
                         {"implementation", "CompositionActionEvaluator#209"},
                         {"recommended_action", static_cast<int>(composition_actions.evaluation.recommended_action)},
