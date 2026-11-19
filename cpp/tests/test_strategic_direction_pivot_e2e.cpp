@@ -131,7 +131,7 @@ void composition_hierarchy_beats_an_easy_external_two_star() {
     context.composition_id = active.candidate.composition_id;
     context.composition_version = active.version;
     context.owned_units = {
-        {1, 2, 1, true, {}},
+        {1, 3, 1, true, {}},
         {4, 1, 1, false, {}},
         {9, 2, 2, true, {}}
     };
