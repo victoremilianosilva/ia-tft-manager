@@ -51,26 +51,38 @@ public:
         const auto type_enabled = [&](decision::ActionType type) {
             return native.masks.type_mask[static_cast<std::size_t>(type)] == decision::MASK_ENABLED;
         };
-        const auto make_id = [&](strategy::StrategicActionKind kind, std::int32_t champion,
-                                 std::int32_t slot) {
+        const auto make_id = [&](const strategy::StrategicActionCandidate& candidate) {
             return std::to_string(native.match_id) + ":" +
                 std::to_string(native.player_id) + ":" +
                 std::to_string(native.sequence) + ":" +
-                std::to_string(static_cast<int>(kind)) + ":" +
-                std::to_string(champion) + ":" + std::to_string(slot);
+                std::to_string(static_cast<int>(candidate.kind)) + ":" +
+                std::to_string(candidate.champion_id) + ":" +
+                std::to_string(candidate.shop_slot) + ":" +
+                std::to_string(candidate.source_slot) + ":" +
+                std::to_string(candidate.target_board_slot) + ":" +
+                (candidate.source_is_bench ? "bench" : "board");
         };
         const auto append = [&](strategy::StrategicActionCandidate candidate) {
             candidate.source_sequence = native.sequence;
-            candidate.candidate_id = make_id(candidate.kind, candidate.champion_id,
-                candidate.kind == strategy::StrategicActionKind::BuyUnit
-                    ? candidate.shop_slot : candidate.source_slot);
+            candidate.candidate_id = make_id(candidate);
             out.candidates.push_back(std::move(candidate));
+        };
+        const auto attach_marginal_interest = [&](strategy::StrategicActionCandidate& candidate) {
+            if (!context.evidence.interest_if_resolved_now || candidate.gold_cost <= 0)
+                return;
+            const auto after_spend = std::max(0, context.gold - candidate.gold_cost);
+            const auto remaining_interest = EconomyEngine{}.get_interest(after_spend);
+            candidate.lost_interest_cost = std::max(0,
+                context.interest_if_resolved_now - remaining_interest);
+            candidate.lost_interest_evidence_available = true;
         };
 
         if (type_enabled(decision::ActionType::PASS)) {
             strategy::StrategicActionCandidate hold;
             hold.kind = strategy::StrategicActionKind::Hold;
             hold.evidence_reason = "explicit_neutral_baseline_no_action_value_claimed";
+            hold.evidence_source = "native_pass_mask";
+            hold.evidence_uncertainty = 1.0;
             append(std::move(hold));
         }
 
@@ -85,6 +97,10 @@ public:
             candidate.direct_gold_cost = EconomyEngine::BUY_XP_COST;
             candidate.available = true;
             candidate.evidence_reason = "native_economy_xp_threshold_and_buy_xp_mask";
+            candidate.evidence_source = "EconomyEngine+native_BUY_XP_mask";
+            candidate.evidence_horizon_rounds = 1;
+            candidate.evidence_uncertainty = 0.0;
+            attach_marginal_interest(candidate);
             append(std::move(candidate));
         }
 
@@ -122,7 +138,12 @@ public:
                 candidate.upgrade_value = priority->second->target_star > 0 ? 1.0 : 0.0;
                 candidate.shop_slot = static_cast<std::int32_t>(slot);
                 candidate.available = cost->second <= context.gold;
+                candidate.opportunity_cost = strategy::action_opportunity_cost::kBuyUnit;
                 candidate.evidence_reason = "active_target_priority_and_exact_legal_shop_slot";
+                candidate.evidence_source = "native_shop+UnitPriorityPlanner+native_BUY_mask";
+                candidate.evidence_horizon_rounds = 1;
+                candidate.evidence_uncertainty = std::clamp(1.0 - priority->second->confidence, 0.0, 1.0);
+                attach_marginal_interest(candidate);
                 append(std::move(candidate));
             }
 
@@ -139,6 +160,10 @@ public:
                 candidate.opportunity_cost = strategy::action_opportunity_cost::kRerollWithUpgradeTarget;
                 candidate.available = true;
                 candidate.evidence_reason = "upgrade_target_exists_and_native_reroll_mask";
+                candidate.evidence_source = "UnitPriorityPlanner+native_REROLL_mask";
+                candidate.evidence_horizon_rounds = 1;
+                candidate.evidence_uncertainty = 0.85;
+                attach_marginal_interest(candidate);
                 append(std::move(candidate));
             }
 
@@ -172,6 +197,9 @@ public:
                     EconomyEngine::get_sell_value(cost->second, priority.highest_star));
                 candidate.available = true;
                 candidate.evidence_reason = "explicit_sell_candidate_unique_bench_instance";
+                candidate.evidence_source = "TransitionManager+UnitPriorityPlanner+ItemEngine+native_SELL_mask";
+                candidate.evidence_horizon_rounds = 0;
+                candidate.evidence_uncertainty = std::clamp(1.0 - priority.confidence, 0.0, 1.0);
                 append(std::move(candidate));
             }
 
@@ -218,6 +246,9 @@ public:
                 candidate.target_board_slot = proposal.target_board_slot;
                 candidate.available = true;
                 candidate.evidence_reason = "role_aware_position_proposal_with_current_native_masks";
+                candidate.evidence_source = "LineupPlanner+StrategicPositionPlanner+native_move_masks";
+                candidate.evidence_horizon_rounds = 0;
+                candidate.evidence_uncertainty = 0.35;
                 append(std::move(candidate));
                 out.positioning.push_back(std::move(proposal));
             }
