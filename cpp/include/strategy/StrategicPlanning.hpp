@@ -3,6 +3,7 @@
 // Data-only contracts for the strategic/economic planner architecture.
 // This header must not change PPO observations, masks, rewards, or execution.
 
+#include <array>
 #include <cstdint>
 #include <string>
 #include <vector>
