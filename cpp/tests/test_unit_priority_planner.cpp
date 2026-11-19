@@ -254,8 +254,9 @@ void shop_copies_advance_two_star_priority_for_core() {
     manager.publish(comp());
     const auto active = *manager.current();
     auto ctx = context(active);
+    ctx.gold_available = 1;
     ctx.owned_units = {{1, 1, 1, false, {}}};
-    ctx.evidence = {{1, 0.0, 0.0, 0.9, 1, 1, -1, false}};
+    ctx.evidence = {{1, 0.0, 0.0, 0.9, 1, 1, 1, false}};
     const auto result = UnitPriorityPlanner{}.resolve(active, ctx);
     const auto carry = std::find_if(result.units.begin(), result.units.end(),
         [](const auto& u) { return u.champion_id == 1; });
