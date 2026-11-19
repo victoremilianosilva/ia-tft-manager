@@ -279,7 +279,7 @@
         "uuid": {
           "type": "string",
           "minLength": 1,
-          "description": "Native UnitInstance::uuid. It is valid only within identity.engine_match_id and identity.player_id; engine_match_id is derived from Engine-instance and episode identity. Never join on raw UUID alone."
+          "description": "Native UnitInstance::uuid. Physical identity is scoped by identity.engine_match_id; player_id is the current ownership relation, not part of physical identity. UUID may repeat after episode reset and must never be joined without the Engine-episode scope."
         }
       }
     },
@@ -393,14 +393,14 @@
             "string",
             "null"
           ],
-          "description": "Authoritative logical game-match identity from a validated game/platform source. Must not contain ViewerSession.match_id; null when the source is unavailable."
+          "description": "Optional authoritative logical game/platform match identity. Native simulation can have a complete Engine-scoped decision identity while this external identifier remains null; never substitute Viewer session identity or infer it from episode_id."
         },
         "engine_match_id": {
           "type": [
             "string",
             "null"
           ],
-          "description": "Canonical Engine-episode scope derived from validated Engine-instance identity plus episode identity. episode_id alone is insufficient; null until the adapter publishes a canonical scoped identifier."
+          "description": "Canonical Engine-episode scope derived from the native engine_instance_id and episode_id. It distinguishes independent Engine objects and resets; null until the adapter emits this canonical composite identity."
         },
         "session_match_id": {
           "type": [
@@ -441,7 +441,7 @@
               "type": "null"
             }
           ],
-          "description": "Per-player decision counter in a registered namespace. It must not be populated from the native Engine-wide snapshot publication counter; null when no authoritative per-player producer exists."
+          "description": "Per-player decision counter in a registered namespace. Native ResetResult/StepResult.player_decision_sequences[player_id] is the authoritative producer; it is distinct from the Engine-wide snapshot publication counter."
         },
         "snapshot_sequence": {
           "oneOf": [
@@ -523,8 +523,10 @@
                 "minLength": 1
               },
               "match_id": {
-                "type": "string",
-                "minLength": 1
+                "type": [
+                  "string",
+                  "null"
+                ]
               },
               "player_id": {
                 "type": "string",
