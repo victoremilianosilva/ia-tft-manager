@@ -18,8 +18,8 @@ void builder_emits_snapshot_bound_physical_candidates() {
     composition.set_id = "TFT18";
     composition.target_board_size = 2;
     composition.units = {
-        {10, UnitRole::MainCarry, true, 80},
-        {20, UnitRole::Frontline, true, 70}
+        {10, tft::composition_intelligence::UnitRole::MainCarry, true, 80},
+        {20, tft::composition_intelligence::UnitRole::Frontline, true, 70}
     };
     const std::optional<ActiveComposition> active = ActiveComposition{composition, 3};
 
