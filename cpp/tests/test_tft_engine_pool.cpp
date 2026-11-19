@@ -711,10 +711,9 @@ int main(int argc, char** argv) {
                     "Direcao mudou imediatamente apesar do lock ativo.");
         }
 
-        // End-to-end regressions for the Viewer buy/sell loop. The same low-fit
-        // sequence is replayed with four champions present in the active Set 18 catalog.
-        // Sell the newly bought UUID specifically so a pre-existing copy cannot
-        // accidentally make the test pass without exercising RecentPurchase.
+        // Reward Contract v1 keeps action-level rewards neutral. Replay the
+        // former buy/sell reversal cases to prove both actions remain executable
+        // and observable without manufacturing a reward from RecentPurchase.
         for (const std::string target_name :
              {"Teemo", "Caitlyn", "Ezreal", "Akali"}) {
             tft::TFTEngine reversal_engine(24680, json_path);
@@ -755,7 +754,8 @@ int main(int argc, char** argv) {
                 action.values = {6, 0, 0, 0, 0, 0};
             reversal_actions[0].values = {0, 0, 0, 0, 0, 0};
             const auto buy_result = step_with_pending_anvils(reversal_engine, reversal_actions);
-            const float buy_reward = buy_result.action_rewards[0];
+            require(std::abs(buy_result.action_rewards[0]) < 1e-6f,
+                    "Compra deve permanecer neutra no Reward Contract v1.");
 
             const auto after_buy = reversal_engine.get_audit_snapshot();
             std::int32_t purchased_slot = -1;
@@ -776,18 +776,16 @@ int main(int argc, char** argv) {
                     ("Compra de " + target_name + " nao deixou a nova copia no banco.").c_str());
             reversal_actions[0].values = {5, 0, purchased_slot, 0, 0, 0};
             const auto sell_result = step_with_pending_anvils(reversal_engine, reversal_actions);
-            const float sell_reward = sell_result.action_rewards[0];
-            require(sell_reward < 0.0f,
+            require(std::abs(sell_result.action_rewards[0]) < 1e-6f,
                     ("Venda imediata de " + target_name +
-                     " recebeu recompensa nao negativa; RecentPurchase foi ignorado.").c_str());
-            // Do not require buy_reward + sell_reward to be negative:
-            // early-game purchase scoring may legitimately reward acquiring
-            // a useful piece. The negative sell_reward assertion above checks
-            // the reversal penalty without cancelling the purchase incentive.
+                     " nao permaneceu neutra no Reward Contract v1.").c_str());
+            const auto after_sell = reversal_engine.get_audit_snapshot();
+            require(!after_sell.players[0].bench[static_cast<std::size_t>(purchased_slot)].occupied,
+                    ("Venda de " + target_name + " nao removeu a unidade comprada.").c_str());
         }
 
-        // Regression: selling one copy from a pair must be worse than selling
-        // the same isolated unit, even when the sale frees a bench slot.
+        // Selling an isolated unit or one that protects a pair has the same
+        // neutral action reward; the physical sale still has to complete.
         {
             const auto& candidate = catalog.all().front();
             tft::TFTEngine isolated_sale_engine(13579, json_path);
@@ -809,8 +807,15 @@ int main(int argc, char** argv) {
             paired_actions[0].values = {5, 0, 0, 0, 0, 0};
             const auto isolated_sale = step_with_pending_anvils(isolated_sale_engine, isolated_actions);
             const auto paired_sale = step_with_pending_anvils(paired_sale_engine, paired_actions);
-            require(paired_sale.action_rewards[0] < isolated_sale.action_rewards[0] - 0.15f,
-                    "Vender uma copia que protege um par nao recebeu penalidade adicional suficiente.");
+            require(std::abs(isolated_sale.action_rewards[0]) < 1e-6f &&
+                    std::abs(paired_sale.action_rewards[0]) < 1e-6f,
+                    "Venda de unidade isolada ou de par deve ser neutra no Reward Contract v1.");
+            const auto isolated_after = isolated_sale_engine.get_audit_snapshot();
+            const auto paired_after = paired_sale_engine.get_audit_snapshot();
+            require(!isolated_after.players[0].bench[0].occupied &&
+                    !paired_after.players[0].bench[0].occupied &&
+                    paired_after.players[0].bench[1].occupied,
+                    "Venda deve remover apenas a unidade selecionada e preservar a outra copia do par.");
         }
 
         if (!item_catalog_path.empty()) {

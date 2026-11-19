@@ -338,3 +338,30 @@ New checkpoints persist `semantic_state_contract` when the policy contains `sema
 The Trainer and Viewer must validate this contract against the active native catalog before loading semantic weights. Weights without the contract, a contract without weights, or a catalog fingerprint/vocabulary mismatch are rejected. Historical checkpoints without semantic weights/contracts remain loadable through the neutral additive migration: the semantic encoder's final layer is zero-initialized, so the legacy Actor/Critic outputs are preserved at load while the new side input remains trainable.
 
 The semantic rows are part of the rollout transition and must remain aligned with the same Engine/episode/decision/player identity as observation and action masks. The next-state semantic row is used for the GAE bootstrap. This is a new independent side input; it does not alter the historical flat observation tensor or silently rewrite its offsets.
+
+
+## Reward contract binding — PR #496
+
+### Problema anterior
+O checkpoint identificava observação, Action Contract e Mask Contract, mas não identificava a semântica de reward efetivamente usada no treino. Pesos estruturalmente carregáveis podiam ser retomados com objetivos de otimização diferentes sem uma decisão explícita.
+
+### Justificativa técnica
+A semântica de reward faz parte da linhagem de treino. Dimensões de tensores e compatibilidade de pesos não provam que duas execuções otimizaram o mesmo objetivo.
+
+### Nova responsabilidade
+Trainer cria o manifesto do Reward Contract no salvamento e valida sua identidade antes de carregar pesos/estado do optimizer.
+
+### Contrato e invariantes
+- Novos checkpoints registram `tft.ppo.outcome-reward.v1`, versão e SHA-256 determinístico.
+- Manifesto ausente é baseline não versionada, não compatibilidade implícita.
+- Manifesto desconhecido ou hash divergente rejeita o checkpoint.
+- A migração explícita de baseline usa `TFT_ALLOW_UNVERSIONED_REWARD_CHECKPOINT=1` e carrega apenas pesos; optimizer/scheduler não são restaurados.
+- A identidade do reward é independente dos contratos de observação, ação e masks.
+
+### Impactos
+Checkpoints novos carregam a identidade de reward. Checkpoints históricos precisam de opt-in explícito para warm-start e reiniciam optimizer/scheduler. Isso não declara compatibilidade semântica do tensor plano de observações ainda ativo.
+
+### Critérios de validação
+- Testes cobrem manifesto válido, versão/hash incompatíveis e ausência.
+- Teste de integração estático protege o opt-in legado e o bloqueio de restauração do optimizer.
+- A CI valida o caminho completo de build/teste.
