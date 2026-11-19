@@ -1428,14 +1428,14 @@ class ViewerWindow(QMainWindow):
             f"{entry.get('champion_id')}: {entry.get('intent')} · prioridade {float(entry.get('priority', 0.0) or 0.0):.2f}"
             for entry in intentions[:8] if isinstance(entry, dict)
         ]
-        intention_text = "\\n".join(intention_lines) if intention_lines else "sem intenções de unidade publicadas"
+        intention_text = "\n".join(intention_lines) if intention_lines else "sem intenções de unidade publicadas"
         self.player_summary.setText(
-            f"JOGADOR {i + 1}\\nHP: {_value(player, 'hp', default='—')}\\n"
-            f"Ouro: {_value(player, 'gold', default='—')}\\nNível: {_value(player, 'level', default='—')} · "
-            f"XP: {_value(player, 'xp', default='—')}\\nColocação: {_value(player, 'placement', default='—')}\\n"
-            f"{shadow_status_text(audit)}\\n"
-            f"Motivo da decisão: {decision.get('reason') or '—'}\\n"
-            f"Intenções Shadow:\\n{intention_text}"
+            f"JOGADOR {i + 1}\nHP: {_value(player, 'hp', default='—')}\n"
+            f"Ouro: {_value(player, 'gold', default='—')}\nNível: {_value(player, 'level', default='—')} · "
+            f"XP: {_value(player, 'xp', default='—')}\nColocação: {_value(player, 'placement', default='—')}\n"
+            f"{shadow_status_text(audit)}\n"
+            f"Motivo da decisão: {decision.get('reason') or '—'}\n"
+            f"Intenções Shadow:\n{intention_text}"
         )
         components = list(audit.get("item_components", []) or [])
         inventory = list(audit.get("item_inventory", []) or [])
