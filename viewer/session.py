@@ -908,6 +908,8 @@ class ViewerSession:
         self.finished = False
         self._metadata_path = None
         self._session_dir = None
+        self._composition_diagnostics_written = 0
+        self._composition_diagnostics_episode_id = None
         self._sequence = 0
         self.replay_events = []
         self.live_events = []
