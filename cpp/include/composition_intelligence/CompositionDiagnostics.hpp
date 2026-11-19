@@ -13,7 +13,7 @@ namespace tft::composition_intelligence {
 
 struct CompositionOutcomeObservation {
     std::uint32_t observed_round{0};
-    std::int32_t placement{0};
+    std::optional<std::int32_t> placement;
     double health_delta{0.0};
     double board_score_delta{0.0};
     std::string note;
@@ -201,26 +201,51 @@ public:
         }
         if (outcome) {
             p["outcome_observation"] = {
-                {"observed_round", outcome->observed_round}, {"placement", outcome->placement},
+                {"observed_round", outcome->observed_round},
+                {"placement", outcome->placement ? nlohmann::json(*outcome->placement) : nlohmann::json(nullptr)},
                 {"health_delta", outcome->health_delta},
                 {"board_score_delta", outcome->board_score_delta}, {"note", outcome->note},
                 {"interpretation", "correlation_only_not_causation"}
             };
-            p["recommendation_to_later_outcome"] = {
-                {"recommendation_round", round}, {"outcome_round", outcome->observed_round},
-                {"composition_version", out.composition_version},
-                {"interpretation", "correlation_only_not_causation"}
-            };
+            const bool has_prior_recommendation = has_last_capture_ &&
+                last_capture_match_id_ == out.match_id &&
+                last_capture_player_id_ == out.player_id &&
+                last_capture_round_ < outcome->observed_round;
+            p["recommendation_to_later_outcome"] = has_prior_recommendation
+                ? nlohmann::json{
+                    {"recommendation_round", last_capture_round_},
+                    {"recommendation_sequence", last_capture_sequence_},
+                    {"recommendation_composition_id", last_capture_composition_id_},
+                    {"recommendation_composition_version", last_capture_composition_version_},
+                    {"outcome_round", outcome->observed_round},
+                    {"match_id", out.match_id}, {"player_id", out.player_id},
+                    {"interpretation", "correlation_only_not_causation"}
+                }
+                : nlohmann::json(nullptr);
         } else {
             p["outcome_observation"] = nullptr;
             p["recommendation_to_later_outcome"] = nullptr;
         }
+        last_capture_round_ = out.round;
+        last_capture_sequence_ = out.sequence;
+        last_capture_composition_id_ = out.composition_id;
+        last_capture_composition_version_ = out.composition_version;
+        last_capture_match_id_ = out.match_id;
+        last_capture_player_id_ = out.player_id;
+        has_last_capture_ = true;
         return out;
     }
 
     std::uint64_t next_sequence() const noexcept { return next_sequence_; }
 
 private:
+    bool has_last_capture_{false};
+    std::uint32_t last_capture_round_{0};
+    std::uint64_t last_capture_sequence_{0};
+    std::string last_capture_composition_id_;
+    std::uint64_t last_capture_composition_version_{0};
+    std::uint64_t last_capture_match_id_{0};
+    std::int32_t last_capture_player_id_{-1};
     static std::vector<std::int32_t> ids(const std::vector<CompositionUnit>& units) {
         std::vector<std::int32_t> out;
         for (const auto& u : units) out.push_back(u.champion_id);
