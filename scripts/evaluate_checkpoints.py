@@ -332,8 +332,8 @@ def write_paired_evaluation_artifacts(result, experiment_manifest, output_dir):
     }
     report_payload = json.dumps(report, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
     report["sha256"]["report_payload_sha256"] = hashlib.sha256(report_payload.encode("utf-8")).hexdigest()
-    (target / "raw_results.json").write_text(json.dumps(result["raw_results"], ensure_ascii=False, indent=2) + "\\n", encoding="utf-8")
-    (target / "summary.json").write_text(json.dumps(result["summary"], ensure_ascii=False, indent=2) + "\\n", encoding="utf-8")
-    (target / "experiment_manifest.json").write_text(json.dumps(experiment_manifest, ensure_ascii=False, indent=2) + "\\n", encoding="utf-8")
-    (target / "report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\\n", encoding="utf-8")
+    (target / "raw_results.json").write_text(json.dumps(result["raw_results"], ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    (target / "summary.json").write_text(json.dumps(result["summary"], ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    (target / "experiment_manifest.json").write_text(json.dumps(experiment_manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    (target / "report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return {"directory": str(target), "report": report}
