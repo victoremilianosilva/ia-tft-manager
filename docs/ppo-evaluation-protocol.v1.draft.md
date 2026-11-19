@@ -1,6 +1,6 @@
 # PPO Evaluation Protocol v1
 
-**Status:** approved documentary specification; executable evaluation and training acceptance remain blocked until Gate 8.  
+**Status:** approved documentary specification; paired evaluation helper now enforces checkpoint-lineage compatibility and deterministic seat rotation. Full experimental acceptance remains pending independent train/validation/test manifests, sufficient runs, ablations and promotion review.  
 **Scope:** experimental protocol for future PPO lineages after Gate 8.  
 **Non-goals:** this document does not authorize training, retraining, checkpoint mutation, PPO/Engine changes, Viewer changes, or runtime migration.
 
@@ -195,3 +195,19 @@ The manifest path is `spec/observation-structured-entity-temporal-contract.v1.dr
 **Impacts:** paired evaluation scheduling, checkpoint preflight, fine-tuning artifact lineage, and evaluation provenance. No training, checkpoint promotion, optimizer resume, or policy mutation is performed by this PR.
 
 **Validation:** economy_finetuning/tests/test_paired_evaluator.py covers deterministic balanced seat rotation, exact mirror complement, valid contracts, incompatible contracts, and fail-closed missing manifests. Full protocol execution remains pending: train/validation/test split enforcement, paired-seed batches, confidence intervals, ablations, promotion/rollback thresholds, and immutable final benchmark artifacts are not implemented by this change.
+
+
+## 11. Executable evaluation helper status — PR5
+
+The shared helper in `scripts/evaluate_checkpoints.py` now provides a guarded evaluation-only paired run:
+
+- Requires baseline and candidate checkpoint artifact manifests with SHA-256 artifact identity and the aggregate checkpoint-lineage contract.
+- Recomputes the canonical lineage payload hash before accepting either artifact.
+- Requires the same complete lineage payload for baseline and candidate; tensor-shape similarity alone is insufficient.
+- Requires unique, explicit integer lobby seeds and a declared `validation` or `test` split.
+- Derives a deterministic four-seat candidate assignment from each seed/master-seed pair. Across eight consecutive rotations every player seat is assigned to the candidate four times.
+- Records the exact seed-to-seat schedule, artifact hashes, lineage hash and raw per-player placements.
+- Rejects incomplete/duplicate player identities and incomplete rankings; it does not invent placements.
+- Runs deterministic policy inference only and does not train or mutate policy weights.
+
+This helper is a reproducible paired-evaluation primitive, not evidence that a new PPO lineage has already been retrained or outperformed a baseline. Final test-set freezing, split-leakage prevention, multi-seed sample sufficiency, ablations, complete behavior metrics and a promotion decision remain open.
