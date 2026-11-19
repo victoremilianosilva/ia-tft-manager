@@ -333,6 +333,7 @@ void copy_progress_preserves_mixed_star_tier_copies() {
     // The old (copies / 3) % 3 formula incorrectly reduced this to one.
     assert(copy_progress_toward_next_star(5, 2) == 5);
     assert(copy_progress_toward_next_star(8, 2) == 8);
+    assert(copy_progress_toward_next_star(9, 2) == 9);
     assert(copy_progress_toward_next_star(9, 3) == 0);
     assert(copy_progress_toward_next_star(0, 1) == 0);
 }
