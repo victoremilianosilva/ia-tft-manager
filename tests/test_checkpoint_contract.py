@@ -57,3 +57,17 @@ def test_checkpoint_lineage_rejects_missing_or_malformed_manifest():
     inputs = _inputs()
     with pytest.raises(TypeError, match="mapping"):
         validate_checkpoint_lineage_contract(None, *inputs)
+
+
+def test_trainer_persists_lineage_for_periodic_and_final_checkpoints():
+    from pathlib import Path
+
+    source = (
+        Path(__file__).resolve().parents[1] / "trainer.py"
+    ).read_text(encoding="utf-8")
+    assert source.count(
+        '"checkpoint_contract": build_checkpoint_lineage_contract('
+    ) == 2
+    assert "TFT_ALLOW_UNVERSIONED_CHECKPOINT_LINEAGE" in source
+    assert "and not legacy_checkpoint_lineage" in source
+    assert "validate_checkpoint_lineage_contract(" in source
