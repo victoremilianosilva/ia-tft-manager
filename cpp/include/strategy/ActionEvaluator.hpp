@@ -91,7 +91,9 @@ public:
                 ? std::max(0.0, candidate.direct_gold_cost)
                 : std::max(0.0, candidate.expected_economy_cost);
             const double gold_gain = std::max(0.0, -candidate.direct_gold_cost);
-            const double lost_interest = std::max(0.0, candidate.lost_interest_cost);
+            const double lost_interest = candidate.lost_interest_evidence_available &&
+                std::isfinite(candidate.lost_interest_cost)
+                ? std::max(0.0, candidate.lost_interest_cost) : 0.0;
             const double opportunity_cost = std::max(0.0, candidate.opportunity_cost);
             breakdown.direct_cost_component = -direct_cost * 0.055 + gold_gain * 0.035;
             breakdown.lost_interest_component = -lost_interest * 0.10;
