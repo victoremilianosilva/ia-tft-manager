@@ -4,6 +4,8 @@
 // This service consumes observed game facts only and has no dependency on
 // CompositionPlanner, CompositionDirectionPolicy, or StrategyInfo.
 
+#include "strategy/UnitCopyProgress.hpp"
+
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
@@ -35,6 +37,8 @@ struct NativeCompositionOwnedUnit {
     bool on_bench{false};
     double board_contribution{0.0};
     double item_fit{0.0};
+    // Appended physical counts; aggregate copies remain only a legacy-equivalent signal.
+    std::array<std::int32_t, 4> copies_by_star{};
 };
 
 struct NativeCompositionTraitThreshold {
@@ -195,7 +199,9 @@ public:
                     ? owned_it->second : NativeCompositionOwnedUnit{};
                 const double copies = has_owned
                     ? std::min(5, observed.copies) * 0.65 : 0.0;
-                const double pair_progress = has_owned && observed.copies >= 2 ? 1.1 : 0.0;
+                const double pair_progress = has_owned &&
+                    copies_toward_next_star(observed.copies_by_star, observed.star) > 0
+                    ? 1.1 : 0.0;
                 const double star_progress = has_owned
                     ? (observed.star >= 3 ? 0.9 : observed.star == 2 ? 0.55 : 0.0)
                     : 0.0;
