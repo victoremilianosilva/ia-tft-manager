@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <iostream>
+#include <unordered_set>
 
 using namespace tft;
 using namespace tft::composition_intelligence;
@@ -132,6 +133,15 @@ void builder_emits_snapshot_bound_physical_candidates() {
     const auto hold = find(StrategicActionKind::Hold);
     assert(hold != result.candidates.end());
     assert(hold->evidence_reason.find("neutral_baseline") != std::string::npos);
+
+    std::unordered_set<std::string> stable_ids;
+    for (const auto& candidate : result.candidates) {
+        assert(!candidate.candidate_id.empty());
+        assert(candidate.source_sequence == native.sequence);
+        assert(stable_ids.insert(candidate.candidate_id).second);
+        assert(candidate.evidence_uncertainty >= 0.0 &&
+            candidate.evidence_uncertainty <= 1.0);
+    }
 }
 
 void xp_candidate_does_not_depend_on_an_active_composition() {
