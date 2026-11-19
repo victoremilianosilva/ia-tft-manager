@@ -56,3 +56,10 @@ def test_item_profiles_use_only_the_new_active_composition():
     assert "target.core" in profile_builder
     assert "definition->traits" in profile_builder
     assert "preferred_traits" in profile_builder
+
+
+def test_action_comparison_requires_nonempty_exact_candidate_identity():
+    source = ENGINE_SOURCE.read_text(encoding="utf-8")
+    assert "&& !strategic_context.action_candidates.empty()" in source
+    assert "baseline_candidate.candidate_id != source.candidate_id" in source
+    assert "contextual_candidate.candidate_id != source.candidate_id" in source
