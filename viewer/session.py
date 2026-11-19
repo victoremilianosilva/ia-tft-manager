@@ -171,6 +171,7 @@ class ViewerSession:
         self._player_log_writer: PlayerJsonLogWriter | None = None
         self._session_dir: Path | None = None
         self._composition_diagnostics_written = 0
+        self._composition_diagnostics_episode_id: int | None = None
         self._metadata_path: Path | None = None
         self._sequence = 0
         self._rng = torch.Generator(device="cpu")
@@ -380,6 +381,11 @@ class ViewerSession:
     def _persist_composition_diagnostics(self):
         if self.lobby is None or self._session_dir is None:
             return
+        metadata = self.lobby.get_snapshot_metadata()
+        episode_id = int(metadata.get("episode_id", -1))
+        if episode_id != self._composition_diagnostics_episode_id:
+            self._composition_diagnostics_written = 0
+            self._composition_diagnostics_episode_id = episode_id
         lines = self.lobby.get_composition_diagnostics_jsonl()
         if self._composition_diagnostics_written >= len(lines):
             return
