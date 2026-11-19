@@ -4,7 +4,10 @@ import numpy as np
 import torch
 
 from economy_finetuning.finetune import MASK_SHAPES, _flatten_masks
-from action_contract import build_action_mask_checkpoint_contract
+from action_contract import (
+    build_action_mask_checkpoint_contract,
+    build_critic_mask_input_checkpoint_contract,
+)
 from reward_contract import build_reward_checkpoint_contract
 from semantic_observation import build_semantic_state_checkpoint_contract
 from economy_finetuning.paired_evaluator import (
@@ -125,9 +128,12 @@ class PairedEvaluatorTests(unittest.TestCase):
         semantic = build_semantic_state_checkpoint_contract(catalog)
         payload = {
             "action_mask_contract": build_action_mask_checkpoint_contract(),
+            "critic_mask_input_contract": build_critic_mask_input_checkpoint_contract(),
             "reward_contract": build_reward_checkpoint_contract(),
             "semantic_state_contract": semantic,
             "policy": {
+                "critic_mask_encoder.weight": object(),
+                "critic_mask_encoder.bias": object(),
                 "semantic_id_embedding.weight": object(),
                 "semantic_encoder.0.weight": object(),
                 "semantic_encoder.0.bias": object(),
@@ -138,6 +144,7 @@ class PairedEvaluatorTests(unittest.TestCase):
         status = validate_evaluation_checkpoint_contracts(payload, catalog)
         self.assertEqual(status, {
             "action_mask": "validated",
+            "critic_mask_input": "validated",
             "reward": "validated",
             "semantic_state": "validated",
         })
