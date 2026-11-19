@@ -115,6 +115,18 @@ int main() {
         upgraded_result.candidates.begin(), upgraded_result.candidates.end(),
         [](const auto& candidate) { return candidate.direction == "Bruiser"; });
     assert(upgraded_bruiser != upgraded_result.candidates.end());
+
+    auto star_progress_baseline = input;
+    star_progress_baseline.owned[0].copies = 1;
+    star_progress_baseline.owned[0].star = 1;
+    star_progress_baseline.owned[0].copies_by_star = {};
+    star_progress_baseline.owned[0].copies_by_star[1] = 1;
+    const auto baseline_result =
+        NativeStrategicCompositionGenerator{}.generate(star_progress_baseline);
+    const auto baseline_bruiser = std::find_if(
+        baseline_result.candidates.begin(), baseline_result.candidates.end(),
+        [](const auto& candidate) { return candidate.direction == "Bruiser"; });
+    assert(baseline_bruiser != baseline_result.candidates.end());
     assert(upgraded_bruiser->score > baseline_bruiser->score);
 
     auto without_items = input;
