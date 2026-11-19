@@ -102,8 +102,7 @@ public:
             accumulate_weight += 0.10;
         }
         if (accumulate_weight > 0.0)
-            scores[static_cast<int>(EconomicPosture::AccumulateResources)] =
-                accumulate_sum / accumulate_weight;
+            scores[static_cast<int>(EconomicPosture::AccumulateResources)] = accumulate_sum;
 
         if (streak_available && c.win_streak > 0) {
             scores[static_cast<int>(EconomicPosture::PreserveWinStreak)] =
