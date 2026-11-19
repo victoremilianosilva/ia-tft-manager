@@ -57,8 +57,9 @@ struct PivotConfirmationResult {
 class StrategicPivotTransitionCoordinator {
 public:
     explicit StrategicPivotTransitionCoordinator(
+        composition_intelligence::ActiveCompositionManager& composition_manager,
         PivotConfirmationPolicy policy = {}
-    ) : policy_(policy) {
+    ) : composition_manager_(composition_manager), policy_(policy) {
         if (policy_.required_consecutive_viable_evaluations == 0)
             policy_.required_consecutive_viable_evaluations = 1;
         if (!std::isfinite(policy_.minimum_viable_score))
@@ -71,7 +72,7 @@ public:
         const StrategicDirectionAnchor& direction
     ) {
         if (composition_manager_.current())
-            return {PivotConfirmationStatus::Rejected, "already_initialized"};
+            return {PivotConfirmationStatus::Rejected, "canonical_composition_already_published"};
         auto staged_manager = composition_manager_;
         const auto published = staged_manager.publish(composition);
         if (published.status != composition_intelligence::PublishStatus::Published)
@@ -93,8 +94,6 @@ public:
         const composition_intelligence::ActiveComposition& composition,
         const StrategicDirectionAnchor& direction
     ) {
-        if (composition_manager_.current())
-            return {PivotConfirmationStatus::Rejected, "already_initialized"};
         if (composition.version == 0 ||
             !composition_intelligence::ActiveCompositionManager::validate(
                 composition.candidate).empty()) {
@@ -106,13 +105,15 @@ public:
             direction.lifecycle != StrategicAnchorLifecycle::Active) {
             return {PivotConfirmationStatus::Rejected, "initial_direction_not_bound_to_composition"};
         }
-        auto staged_manager = composition_manager_;
-        if (!staged_manager.restore(composition))
+        if (composition_manager_.current()) {
+            if (!composition_manager_.matches(composition))
+                return {PivotConfirmationStatus::Rejected, "canonical_composition_snapshot_mismatch"};
+        } else if (!composition_manager_.restore(composition)) {
             return {PivotConfirmationStatus::Rejected, "initial_composition_snapshot_restore_failed"};
-        composition_manager_ = std::move(staged_manager);
+        }
         anchors_.direction_anchor = direction;
         anchors_.pivot_candidate = {};
-        return {PivotConfirmationStatus::Initialized, "versioned_initial_state_restored",
+        return {PivotConfirmationStatus::Initialized, "canonical_composition_bound_to_direction",
                 0, composition.version, true};
     }
 
@@ -278,8 +279,11 @@ private:
         streak_candidate_identity_.clear();
     }
 
+    // The per-player Composition Intelligence runtime owns this manager.
+    // The pivot coordinator participates in its transaction but never stores
+    // a second authoritative active-composition copy.
+    composition_intelligence::ActiveCompositionManager& composition_manager_;
     PivotConfirmationPolicy policy_;
-    composition_intelligence::ActiveCompositionManager composition_manager_;
     StrategicAnchorState anchors_;
     std::vector<StrategicPivotTransitionRecord> history_;
     std::uint64_t last_evaluation_sequence_{0};
