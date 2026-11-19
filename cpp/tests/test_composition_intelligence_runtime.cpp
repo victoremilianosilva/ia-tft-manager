@@ -1,6 +1,7 @@
 #include "composition_intelligence/CompositionIntelligenceRuntime.hpp"
 #include "composition_intelligence/PlannerEvidenceAdapters.hpp"
 
+#include <algorithm>
 #include <cassert>
 #include <iostream>
 
@@ -60,7 +61,8 @@ void shadow_runtime_uses_native_core_and_item_evidence_without_legacy_strategy()
     CandidateEvidence candidate_evidence;
     candidate_evidence.composition_id = candidate.composition_id;
     candidate_evidence.board_fit = 1.0;
-    candidate_evidence.item_fit = 1.0;
+    candidate_evidence.item_fit = std::clamp(
+        item_evidence.units.front().best_inventory_fit / 2.0, 0.0, 1.0);
     candidate_evidence.availability = 1.0;
     candidate_evidence.economy_feasibility = 1.0;
     candidate_evidence.evidence_confidence = 0.9;
