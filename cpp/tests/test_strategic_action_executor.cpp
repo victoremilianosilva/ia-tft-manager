@@ -118,7 +118,17 @@ void sell_requires_one_legal_bench_instance() {
     s.bench_champion_ids[5] = 51; s.masks.bench_source_mask[5] = 1;
     StrategicActionExecutor ambiguous_executor;
     result = resolve(ambiguous_executor, r, c, s);
-    assert(result.accepted); // exact slot identity makes the selected instance unambiguous
+    assert(result.accepted); // exact slot + UUID identity makes the selected instance unambiguous
+
+    auto replaced = native_state();
+    replaced.bench_champion_ids[4] = 51;
+    replaced.bench_unit_uuids[4] = "replacement-unit-uuid";
+    replaced.masks.type_mask[5] = 1;
+    replaced.masks.bench_source_mask[4] = 1;
+    StrategicActionExecutor stale_instance_executor;
+    result = resolve(stale_instance_executor, r, c, replaced, "replaced-instance");
+    assert(!result.accepted);
+    assert(result.validation_reason == "native_bench_mask_rejected");
 }
 void sell_does_not_resolve_board_only_unit() {
     auto s = native_state(); s.board_champion_ids[6] = 51; s.masks.type_mask[5] = 1;
