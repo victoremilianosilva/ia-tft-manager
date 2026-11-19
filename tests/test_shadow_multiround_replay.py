@@ -53,11 +53,30 @@ def test_shadow_pipeline_replays_multiple_rounds_with_correlated_sequences(monke
             assert record["engine_match_id"] == initial["episode_id"]
             assert isinstance(record["round"], int) and record["round"] >= 1
             assert 0 <= record["player_id"] < CppTFTLobbyWrapper.PLAYERS_PER_LOBBY
+            diagnostics = record.get("diagnostics")
+            assert isinstance(diagnostics, dict)
+            for component in (
+                "source_metadata", "composition_decision", "transition_plan",
+                "unit_priority_evidence_consumption", "unit_intentions",
+                "lineup_plan", "evidence", "action_recommendation",
+                "outcome_observation", "recommendation_to_later_outcome",
+            ):
+                assert component in diagnostics
+            assert isinstance(diagnostics["lineup_plan"].get("selected_board"), list)
+            assert isinstance(diagnostics["action_recommendation"].get("candidates"), list)
+
             comparison = record.get("action_evaluator_comparison")
             assert isinstance(comparison, dict)
             assert comparison.get("shadow_only") is True
+            assert comparison.get("executor_connected") is True
             assert comparison.get("execution_enabled") is False
             assert comparison.get("native_action_applied") is False
+            for component in (
+                "candidate_generation", "baseline", "contextual",
+                "strategic_positioning", "native_action_resolution", "comparison",
+            ):
+                assert component in comparison
+            assert isinstance(record.get("context_bridge"), dict)
             comparison_result = comparison.get("comparison", {})
             if comparison_result.get("initial_candidate_count") == 0:
                 assert comparison_result.get("comparison_available") is False
