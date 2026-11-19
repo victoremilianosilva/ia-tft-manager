@@ -180,3 +180,18 @@ in the current callsite and remains explicitly unavailable. Progression posture
 can still be inferred contextually from observed stage, level, XP-to-next, gold,
 board pressure and survival evidence; it does not require a legacy strategy ID
 or an invented progression_plan.
+
+### Contextual evaluator signal routing
+
+The canonical contextual evaluator consumes validated survival pressure and
+win/loss streak evidence as continuous modifiers on a candidate's positive
+board-improvement value; it does not consume EconomicPosture as an action rule.
+The same-candidate/same-gold regression proves that changing survival or streak
+evidence changes the marginal score. Board pressure is represented through the
+native BoardEvaluation gaps (missing frontline/backline and exposed carry) and
+the candidate's board delta, so the scalar board_pressure is not added again.
+Likewise economy_pressure is not added as a separate bonus/penalty: direct gold
+cost, evidenced lost interest and validated opportunity cost already express
+the marginal liquidity cost. This avoids double counting. EconomicController's
+posture remains a diagnostic/baseline input; the contextual recommendation
+continues to evaluate each candidate independently.
