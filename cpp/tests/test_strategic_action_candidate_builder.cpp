@@ -144,6 +144,55 @@ void builder_emits_snapshot_bound_physical_candidates() {
     }
 }
 
+void missing_cost_rejects_only_the_affected_candidate() {
+    CompositionCandidate composition;
+    composition.composition_id = "partial-candidate-set";
+    composition.set_id = "TFT18";
+    composition.target_board_size = 1;
+    composition.units = {{10, UnitRole::MainCarry, true, 80}};
+    composition.main_carry_id = 10;
+    const std::optional<ActiveComposition> active = ActiveComposition{composition, 2};
+
+    UnitPriority priority;
+    priority.champion_id = 10;
+    priority.intent = UnitIntent::Seek;
+    UnitPrioritySnapshot priorities;
+    priorities.composition_id = composition.composition_id;
+    priorities.composition_version = 2;
+    priorities.units = {priority};
+    LineupPlan lineup;
+    lineup.composition_id = composition.composition_id;
+    lineup.composition_version = 2;
+    lineup.endgame_target_ids = {10};
+
+    StrategicSharedContext context;
+    context.player_id = 0;
+    context.round = 10;
+    context.gold = 10;
+    context.alive = true;
+    context.evidence.gold = true;
+    StrategicActionNativeSnapshot native;
+    native.match_id = 88;
+    native.player_id = 0;
+    native.round = 10;
+    native.sequence = 7;
+    native.composition_id = composition.composition_id;
+    native.composition_version = 2;
+    native.gold = 10;
+    native.alive = true;
+    native.shop_champion_ids[0] = 10;
+    enables(native.masks, decision::ActionType::PASS);
+    enables(native.masks, decision::ActionType::BUY);
+    native.masks.shop_mask[0] = decision::MASK_ENABLED;
+
+    const auto result = StrategicActionCandidateBuilder{}.build(
+        context, active, priorities, lineup, native, {});
+    assert(result.status == "candidates_generated");
+    assert(result.rejected_missing_cost == 1);
+    assert(result.candidates.size() == 1);
+    assert(result.candidates.front().kind == StrategicActionKind::Hold);
+}
+
 void xp_candidate_does_not_depend_on_an_active_composition() {
     StrategicSharedContext context;
     context.player_id = 0;
@@ -195,6 +244,7 @@ void builder_refuses_stale_or_mismatched_native_snapshots() {
 
 int main() {
     builder_emits_snapshot_bound_physical_candidates();
+    missing_cost_rejects_only_the_affected_candidate();
     xp_candidate_does_not_depend_on_an_active_composition();
     builder_refuses_stale_or_mismatched_native_snapshots();
     std::cout << "StrategicActionCandidateBuilder tests passed\\n";
