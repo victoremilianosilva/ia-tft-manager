@@ -341,6 +341,39 @@ void copy_progress_preserves_mixed_star_tier_copies() {
     assert(copy_progress_toward_next_star(0, 1) == 0);
 }
 
+void physical_star_tiers_prevent_false_mixed_upgrade_progress() {
+    ActiveCompositionManager manager;
+    manager.publish(comp());
+    const auto active = *manager.current();
+    auto ctx = context(active);
+    UnitPriorityOwnedUnit mixed;
+    mixed.champion_id = 1;
+    mixed.copies = 5;
+    mixed.highest_star = 2;
+    mixed.on_board = true;
+    mixed.copies_by_star[1] = 2;
+    mixed.copies_by_star[2] = 1;
+    ctx.owned_units = {mixed};
+    // Deliberately misleading aggregate progress: physical tier counts win.
+    ctx.evidence = {{1, 0.8, 0.7, 0.9, 6}};
+    auto result = UnitPriorityPlanner{}.resolve(active, ctx);
+    auto found = std::find_if(result.units.begin(), result.units.end(),
+        [](const auto& unit) { return unit.champion_id == 1; });
+    assert(found != result.units.end());
+    assert(found->intent == UnitIntent::Keep);
+    assert(found->target_star == 0);
+
+    mixed.copies = 9;
+    mixed.copies_by_star[1] = 6;
+    ctx.owned_units = {mixed};
+    result = UnitPriorityPlanner{}.resolve(active, ctx);
+    found = std::find_if(result.units.begin(), result.units.end(),
+        [](const auto& unit) { return unit.champion_id == 1; });
+    assert(found != result.units.end());
+    assert(found->intent == UnitIntent::Upgrade);
+    assert(found->target_star == 3);
+}
+
 void unknown_shop_affordability_does_not_create_upgrade_priority() {
     ActiveCompositionManager manager;
     manager.publish(comp());
@@ -419,6 +452,9 @@ int main() {
     std::cerr << "RUN copy_progress_preserves_mixed_star_tier_copies\\n";
     copy_progress_preserves_mixed_star_tier_copies();
     std::cerr << "PASS copy_progress_preserves_mixed_star_tier_copies\\n";
+    std::cerr << "RUN physical_star_tiers_prevent_false_mixed_upgrade_progress\\n";
+    physical_star_tiers_prevent_false_mixed_upgrade_progress();
+    std::cerr << "PASS physical_star_tiers_prevent_false_mixed_upgrade_progress\\n";
     std::cerr << "RUN unknown_shop_affordability_does_not_create_upgrade_priority\\n";
     unknown_shop_affordability_does_not_create_upgrade_priority();
     std::cerr << "PASS unknown_shop_affordability_does_not_create_upgrade_priority\\n";
