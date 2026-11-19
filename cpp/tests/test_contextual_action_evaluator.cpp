@@ -41,6 +41,41 @@ StrategicActionCandidate candidate(StrategicActionKind kind, int id = -1) {
     if (kind == StrategicActionKind::RerollShop) { c.gold_cost = 2; c.direct_gold_cost = 2; }
     return c;
 }
+void no_active_composition_without_anchor_remains_stale() {
+    StrategicSharedContext context;
+    context.alive = true; context.player_id = 0; context.round = 8;
+    const auto result = ContextualActionEvaluator{}.evaluate(
+        std::nullopt, UnitPrioritySnapshot{}, LineupPlan{}, context, nullptr, 77);
+    assert(result.stale);
+    assert(result.stale_reason == "no active composition or native anchor hypothesis");
+    assert(result.recommended_action == StrategicActionKind::None);
+}
+
+void native_anchor_purchase_is_evaluated_before_composition_lock() {
+    StrategicSharedContext context;
+    context.alive = true; context.gold = 10; context.player_id = 0; context.round = 8;
+    StrategicAnchorCandidate anchor;
+    anchor.unit.champion_id = 20;
+    anchor.unit.composition_fit = 0.9;
+    anchor.unit.board_contribution = 0.8;
+    anchor.shop_available = true;
+    anchor.anchor_value = 4.0;
+    context.anchor_candidates = {anchor};
+    auto buy = candidate(StrategicActionKind::BuyUnit, 20);
+    buy.shop_slot = 2;
+    context.action_candidates = {buy, candidate(StrategicActionKind::Hold)};
+
+    const auto result = ContextualActionEvaluator{}.evaluate(
+        std::nullopt, UnitPrioritySnapshot{}, LineupPlan{}, context, nullptr, 77);
+    assert(!result.stale);
+    assert(result.composition_id.empty() && result.composition_version == 0);
+    assert(result.candidates.size() == 2);
+    assert(result.candidates[0].eligible);
+    assert(result.candidates[0].selected);
+    assert(result.recommended_action == StrategicActionKind::BuyUnit);
+    assert(result.rationale == "native_anchor_shop_purchase");
+}
+
 void baseline_is_unchanged_by_contextual_execution() {
     auto context = StrategicSharedContext{};
     context.alive = true; context.gold = 10; context.player_id = 0; context.round = 8;
@@ -271,6 +306,8 @@ void json_is_versioned_and_shadow_only() {
 }
 
 int main() {
+    no_active_composition_without_anchor_remains_stale();
+    native_anchor_purchase_is_evaluated_before_composition_lock();
     baseline_is_unchanged_by_contextual_execution();
     contextual_path_uses_priority_and_lineup_without_calling_baseline();
     stale_identity_disables_contextual_recommendation();

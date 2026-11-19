@@ -79,6 +79,8 @@ void builder_emits_snapshot_bound_physical_candidates() {
     native.shop_champion_ids[0] = 10;
     native.bench_champion_ids[0] = 20;
     native.bench_champion_ids[1] = 30;
+    native.bench_unit_uuids[0] = "unit-20";
+    native.bench_unit_uuids[1] = "unit-30";
     enables(native.masks, decision::ActionType::PASS);
     enables(native.masks, decision::ActionType::BUY);
     enables(native.masks, decision::ActionType::BUY_XP);
@@ -120,13 +122,17 @@ void builder_emits_snapshot_bound_physical_candidates() {
     const auto sell = find(StrategicActionKind::SellUnit, 30);
     assert(sell != result.candidates.end());
     assert(sell->source_is_bench && sell->source_slot == 1);
+    assert(sell->source_unit_uuid == "unit-30");
     assert(sell->direct_gold_cost == -1.0);
 
     const auto deploy = find(StrategicActionKind::DeployOrMove, 20);
     assert(deploy != result.candidates.end());
     assert(deploy->source_is_bench && deploy->source_slot == 0);
+    assert(deploy->source_unit_uuid == "unit-20");
     assert(deploy->target_board_slot >= 0);
     assert(deploy->candidate_id.find(std::to_string(deploy->target_board_slot)) != std::string::npos);
+    assert(deploy->candidate_id.find("candidate-builder") != std::string::npos);
+    assert(deploy->candidate_id.find("unit-20") != std::string::npos);
     assert(deploy->evidence_source.find("StrategicPositionPlanner") != std::string::npos);
     assert(!native.requested_move_targets.empty());
 
@@ -222,6 +228,121 @@ void xp_candidate_does_not_depend_on_an_active_composition() {
     assert(result.candidates.front().gold_cost == EconomyEngine::BUY_XP_COST);
 }
 
+void native_anchor_shop_offer_is_actionable_before_composition_lock() {
+    StrategicSharedContext context;
+    context.player_id = 0; context.round = 4; context.gold = 8;
+    context.alive = true; context.evidence.gold = true;
+    StrategicAnchorCandidate anchor;
+    anchor.unit.champion_id = 44;
+    anchor.unit.board_contribution = 0.65;
+    anchor.unit.composition_fit = 0.9;
+    anchor.unit.copies_owned = 2;
+    anchor.target_composition_direction = "Invoker";
+    anchor.anchor_value = 4.2;
+    anchor.shop_available = true;
+    anchor.candidate_unit_ids = {44, 45, 46};
+    context.anchor_candidates = {anchor};
+
+    StrategicActionNativeSnapshot native;
+    native.match_id = 77; native.player_id = 0; native.round = 4;
+    native.sequence = 11; native.gold = 8; native.alive = true;
+    native.shop_champion_ids[2] = 44;
+    enables(native.masks, decision::ActionType::BUY);
+    native.masks.shop_mask[2] = decision::MASK_ENABLED;
+
+    const auto result = StrategicActionCandidateBuilder{}.build(
+        context, std::nullopt, {}, {}, native, {{44, 3}});
+    const auto buy = std::find_if(result.candidates.begin(), result.candidates.end(),
+        [](const auto& candidate) {
+            return candidate.kind == StrategicActionKind::BuyUnit && candidate.champion_id == 44;
+        });
+    assert(buy != result.candidates.end());
+    assert(buy->shop_slot == 2 && buy->source_sequence == 11);
+    assert(buy->evidence_source.find("NativeStrategicCompositionGenerator") != std::string::npos);
+    assert(buy->composition_fit == 0.9 && buy->upgrade_value == 1.0);
+}
+
+void owned_unit_candidates_require_native_physical_identity() {
+    CompositionCandidate composition;
+    composition.composition_id = "uuid-required";
+    composition.set_id = "TFT18";
+    composition.target_board_size = 1;
+    composition.units = {{10, tft::composition_intelligence::UnitRole::MainCarry, true, 80}};
+    const std::optional<ActiveComposition> active = ActiveComposition{composition, 1};
+    UnitPriority sell;
+    sell.champion_id = 30; sell.intent = UnitIntent::SellCandidate;
+    sell.copies_owned = 1; sell.highest_star = 1;
+    UnitPrioritySnapshot priorities;
+    priorities.composition_id = composition.composition_id;
+    priorities.composition_version = 1;
+    priorities.units = {sell};
+    LineupPlan lineup;
+    lineup.composition_id = composition.composition_id;
+    lineup.composition_version = 1;
+    StrategicSharedContext context;
+    context.player_id = 0; context.round = 2; context.gold = 5;
+    context.alive = true; context.evidence.gold = true;
+    StrategicActionNativeSnapshot native;
+    native.match_id = 7; native.player_id = 0; native.round = 2;
+    native.sequence = 9; native.composition_id = composition.composition_id;
+    native.composition_version = 1; native.gold = 5; native.alive = true;
+    native.bench_champion_ids[0] = 30;
+    enables(native.masks, decision::ActionType::SELL);
+    native.masks.bench_source_mask[0] = decision::MASK_ENABLED;
+    const auto result = StrategicActionCandidateBuilder{}.build(
+        context, active, priorities, lineup, native, {{30, 1}});
+    assert(result.rejected_missing_instance_identity == 1);
+    assert(std::none_of(result.candidates.begin(), result.candidates.end(),
+        [](const auto& candidate) { return candidate.kind == StrategicActionKind::SellUnit; }));
+}
+
+void ambiguous_owned_copy_is_not_selected_by_incidental_order() {
+    CompositionCandidate composition;
+    composition.composition_id = "ambiguous-copy"; composition.set_id = "TFT18";
+    composition.target_board_size = 1;
+    composition.units = {{10, tft::composition_intelligence::UnitRole::MainCarry, true, 80}};
+    const std::optional<ActiveComposition> active = ActiveComposition{composition, 1};
+    UnitPriority sell;
+    sell.champion_id = 30; sell.intent = UnitIntent::SellCandidate;
+    sell.copies_owned = 1; sell.highest_star = 1;
+    UnitPrioritySnapshot priorities;
+    priorities.composition_id = composition.composition_id;
+    priorities.composition_version = 1; priorities.units = {sell};
+    LineupPlan lineup;
+    lineup.composition_id = composition.composition_id;
+    lineup.composition_version = 1;
+    StrategicSharedContext context;
+    context.player_id = 0; context.round = 2; context.gold = 5;
+    context.alive = true; context.evidence.gold = true;
+    StrategicActionNativeSnapshot native;
+    native.match_id = 7; native.player_id = 0; native.round = 2;
+    native.sequence = 9; native.composition_id = composition.composition_id;
+    native.composition_version = 1; native.gold = 5; native.alive = true;
+    native.bench_champion_ids[0] = 30; native.bench_champion_ids[1] = 30;
+    native.bench_unit_uuids[0] = "copy-a"; native.bench_unit_uuids[1] = "copy-b";
+    enables(native.masks, decision::ActionType::SELL);
+    native.masks.bench_source_mask[0] = decision::MASK_ENABLED;
+    native.masks.bench_source_mask[1] = decision::MASK_ENABLED;
+    const auto result = StrategicActionCandidateBuilder{}.build(
+        context, active, priorities, lineup, native, {{30, 1}});
+    assert(result.rejected_ambiguous_instance == 1);
+    assert(std::none_of(result.candidates.begin(), result.candidates.end(),
+        [](const auto& candidate) { return candidate.kind == StrategicActionKind::SellUnit; }));
+}
+
+void empty_legal_action_set_is_reported_as_no_candidates() {
+    StrategicSharedContext context;
+    context.player_id = 0; context.round = 2; context.gold = 5;
+    context.alive = true; context.evidence.gold = true;
+    StrategicActionNativeSnapshot native;
+    native.match_id = 7; native.player_id = 0; native.round = 2;
+    native.sequence = 9; native.gold = 5; native.alive = true;
+    const auto result = StrategicActionCandidateBuilder{}.build(
+        context, std::nullopt, {}, {}, native, {});
+    assert(result.candidates.empty());
+    assert(result.status == "no_candidates");
+}
+
 void builder_refuses_stale_or_mismatched_native_snapshots() {
     StrategicSharedContext context;
     context.player_id = 1;
@@ -247,5 +368,9 @@ int main() {
     missing_cost_rejects_only_the_affected_candidate();
     xp_candidate_does_not_depend_on_an_active_composition();
     builder_refuses_stale_or_mismatched_native_snapshots();
+    owned_unit_candidates_require_native_physical_identity();
+    native_anchor_shop_offer_is_actionable_before_composition_lock();
+    ambiguous_owned_copy_is_not_selected_by_incidental_order();
+    empty_legal_action_set_is_reported_as_no_candidates();
     std::cout << "StrategicActionCandidateBuilder tests passed\\n";
 }

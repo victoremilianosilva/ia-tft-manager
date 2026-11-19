@@ -14,11 +14,13 @@ static DirectionDiscoveryUnit unit(
     u.champion_id = id;
     u.cost = cost;
     u.copies_owned = copies;
+    u.copies_by_star[1] = copies;
     u.on_board = board;
     u.on_bench = bench;
     u.in_shop = shop;
     u.carry_potential = carry;
     u.core_potential = core;
+    u.core_potential_available = core;
     u.board_contribution = contribution;
     u.traits = std::move(traits);
     return u;
@@ -59,6 +61,32 @@ int main() {
     result = discovery.evaluate(carry);
     assert(result.status == DirectionDiscoveryStatus::HypothesesFound);
     assert(result.hypotheses.front().anchor.direction == "Invoker");
+
+    // Unknown core potential must not be converted into an observed false or a score bonus.
+    DirectionDiscoveryInput core_unknown;
+    core_unknown.units = {
+        unit(12, {"CoreTest"}, 2, true, false, false, false, false, 1.0, 2),
+        unit(13, {"CoreTest"}, 1, false, true, false, false, false, 0.0, 2)
+    };
+    auto observed_false = core_unknown;
+    for (auto& item : observed_false.units) item.core_potential_available = true;
+    result = discovery.evaluate(core_unknown);
+    const auto unknown_core_score = result.hypotheses.front().score;
+    result = discovery.evaluate(observed_false);
+    assert(!result.hypotheses.empty());
+    assert(result.hypotheses.front().score == unknown_core_score);
+
+    // A 2-star plus two 1-star copies is not a completed next-star pair.
+    DirectionDiscoveryInput mixed_tiers;
+    auto mixed_unit = unit(14, {"Mixed"}, 5, true, false, false, false, false, 2.0, 3);
+    mixed_unit.star = 2;
+    mixed_unit.copies_by_star = {0, 2, 1, 0};
+    mixed_tiers.units = {mixed_unit};
+    result = discovery.evaluate(mixed_tiers);
+    assert(result.status == DirectionDiscoveryStatus::InsufficientEvidence);
+    mixed_tiers.units[0].copies_by_star[1] = 3;
+    result = discovery.evaluate(mixed_tiers);
+    assert(result.status == DirectionDiscoveryStatus::HypothesesFound);
 
     // Evidence spread across board, bench and shop can complete a trait.
     DirectionDiscoveryInput spread;

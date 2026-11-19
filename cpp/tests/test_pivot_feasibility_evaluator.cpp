@@ -143,6 +143,31 @@ int main() {
         assert(result.status == PivotFeasibilityStatus::Rejected);
     }
 
+    {
+        auto input = viable_input();
+        auto& unit = input.observed_units[0];
+        unit.star = 1;
+        unit.owned_copies = 5; // Aggregate equivalents must not imply a 2-star copy.
+        unit.shop_copies = 1;
+        unit.copies_by_star = {0, 1, 0, 0};
+        unit.physical_tier_counts_available = true;
+        const auto result = evaluator.evaluate(input);
+        const auto found = std::find_if(result.units.begin(), result.units.end(),
+            [](const auto& value) { return value.champion_id == 1; });
+        assert(found != result.units.end());
+        assert(found->physical_tier_counts_available);
+        assert(found->copies_to_two_star == 1);
+        assert(!found->two_star_reachable);
+
+        unit.copies_by_star = {0, 2, 0, 0};
+        const auto completed = evaluator.evaluate(input);
+        const auto completed_unit = std::find_if(completed.units.begin(), completed.units.end(),
+            [](const auto& value) { return value.champion_id == 1; });
+        assert(completed_unit != completed.units.end());
+        assert(completed_unit->copies_to_two_star == 0);
+        assert(completed_unit->two_star_reachable);
+    }
+
     std::cout << "Pivot feasibility evidence tests passed\n";
     return 0;
 }

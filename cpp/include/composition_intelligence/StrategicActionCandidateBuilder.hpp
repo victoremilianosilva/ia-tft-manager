@@ -18,6 +18,8 @@ struct StrategicActionCandidateBuildResult {
     std::uint32_t rejected_missing_cost{0};
     std::uint32_t rejected_ambiguous_instance{0};
     std::string status{"not_evaluated"};
+    // Appended to preserve positional aggregate initialization.
+    std::uint32_t rejected_missing_instance_identity{0};
 };
 
 // Produces only snapshot-bound, read-only alternatives. Native masks remain the
@@ -55,8 +57,9 @@ public:
             return std::to_string(native.match_id) + ":" +
                 std::to_string(native.player_id) + ":" +
                 std::to_string(native.sequence) + ":" +
+                native.composition_id + ":" + std::to_string(native.composition_version) + ":" +
                 std::to_string(static_cast<int>(candidate.kind)) + ":" +
-                std::to_string(candidate.champion_id) + ":" +
+                candidate.source_unit_uuid + ":" + std::to_string(candidate.champion_id) + ":" +
                 std::to_string(candidate.shop_slot) + ":" +
                 std::to_string(candidate.source_slot) + ":" +
                 std::to_string(candidate.target_board_slot) + ":" +
@@ -102,6 +105,52 @@ public:
             candidate.evidence_uncertainty = 0.0;
             attach_marginal_interest(candidate);
             append(std::move(candidate));
+        }
+
+        // Before a composition is committed, native anchor hypotheses are the
+        // only strategic target source. Permit a concrete shop BUY only when the
+        // exact offer belongs to a generated anchor and the native mask allows it.
+        if (!active && !context.anchor_candidates.empty() &&
+            type_enabled(decision::ActionType::BUY)) {
+            for (std::size_t slot = 0; slot < native.shop_champion_ids.size(); ++slot) {
+                const auto id = native.shop_champion_ids[slot];
+                if (id < 0 || native.masks.shop_mask[slot] != decision::MASK_ENABLED)
+                    continue;
+                const auto anchor = std::max_element(context.anchor_candidates.begin(),
+                    context.anchor_candidates.end(), [&](const auto& left, const auto& right) {
+                        const bool left_matches = left.unit.champion_id == id && left.shop_available;
+                        const bool right_matches = right.unit.champion_id == id && right.shop_available;
+                        if (left_matches != right_matches) return !left_matches;
+                        return left.anchor_value < right.anchor_value;
+                    });
+                if (anchor == context.anchor_candidates.end() ||
+                    anchor->unit.champion_id != id || !anchor->shop_available)
+                    continue;
+                const auto cost = unit_costs.find(id);
+                if (cost == unit_costs.end() || cost->second < 0) {
+                    ++out.rejected_missing_cost;
+                    continue;
+                }
+                strategy::StrategicActionCandidate candidate;
+                candidate.kind = strategy::StrategicActionKind::BuyUnit;
+                candidate.champion_id = id;
+                candidate.shop_slot = static_cast<std::int32_t>(slot);
+                candidate.gold_cost = cost->second;
+                candidate.direct_gold_cost = cost->second;
+                candidate.expected_board_delta = std::clamp(
+                    anchor->unit.board_contribution, 0.0, 1.0);
+                candidate.composition_fit = std::clamp(
+                    anchor->unit.composition_fit, 0.0, 1.0);
+                candidate.upgrade_value = anchor->unit.copies_owned >= 2 ? 1.0 : 0.0;
+                candidate.available = cost->second <= context.gold;
+                candidate.opportunity_cost = strategy::action_opportunity_cost::kBuyUnit;
+                candidate.evidence_reason = "native_anchor_hypothesis_and_exact_legal_shop_slot";
+                candidate.evidence_source = "NativeStrategicCompositionGenerator+native_shop+native_BUY_mask";
+                candidate.evidence_horizon_rounds = 1;
+                candidate.evidence_uncertainty = 0.75;
+                attach_marginal_interest(candidate);
+                append(std::move(candidate));
+            }
         }
 
         if (active && !priorities.stale && !lineup.stale &&
@@ -183,6 +232,8 @@ public:
                 if (slot == -2) { ++out.rejected_ambiguous_instance; continue; }
                 if (slot < 0 || native.masks.bench_source_mask[static_cast<std::size_t>(slot)] != decision::MASK_ENABLED ||
                     !type_enabled(decision::ActionType::SELL)) continue;
+                const auto& source_uuid = native.bench_unit_uuids[static_cast<std::size_t>(slot)];
+                if (source_uuid.empty()) { ++out.rejected_missing_instance_identity; continue; }
                 const auto cost = unit_costs.find(priority.champion_id);
                 if (cost == unit_costs.end() || cost->second < 0) {
                     ++out.rejected_missing_cost;
@@ -193,6 +244,7 @@ public:
                 candidate.champion_id = priority.champion_id;
                 candidate.source_slot = slot;
                 candidate.source_is_bench = true;
+                candidate.source_unit_uuid = source_uuid;
                 candidate.direct_gold_cost = -static_cast<double>(
                     EconomyEngine::get_sell_value(cost->second, priority.highest_star));
                 candidate.available = true;
@@ -243,6 +295,13 @@ public:
                 candidate.composition_fit = 1.0;
                 candidate.source_slot = proposal.source_slot;
                 candidate.source_is_bench = proposal.source_zone == StrategicPositionZone::Bench;
+                candidate.source_unit_uuid = candidate.source_is_bench
+                    ? native.bench_unit_uuids[static_cast<std::size_t>(proposal.source_slot)]
+                    : native.board_unit_uuids[static_cast<std::size_t>(proposal.source_slot)];
+                if (candidate.source_unit_uuid.empty()) {
+                    ++out.rejected_missing_instance_identity;
+                    continue;
+                }
                 candidate.target_board_slot = proposal.target_board_slot;
                 candidate.available = true;
                 candidate.evidence_reason = "role_aware_position_proposal_with_current_native_masks";

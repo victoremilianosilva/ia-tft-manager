@@ -48,6 +48,9 @@ struct StrategicActionNativeSnapshot {
     PlayerActionMasks masks{};
     std::string mask_generation_error;
     std::vector<StrategicActionMoveTarget> requested_move_targets;
+    // Appended to preserve aggregate initialization of the existing snapshot contract.
+    std::array<std::string, decision::BENCH_SIZE> bench_unit_uuids{};
+    std::array<std::string, decision::BOARD_SIZE> board_unit_uuids{};
 };
 
 struct StrategicActionResolutionRequest {
@@ -215,6 +218,8 @@ public:
                 if (!source_candidate.source_is_bench || slot < 0 ||
                     slot >= static_cast<std::int32_t>(state.bench_champion_ids.size()) ||
                     state.bench_champion_ids[static_cast<std::size_t>(slot)] != selected->champion_id ||
+                    source_candidate.source_unit_uuid.empty() ||
+                    state.bench_unit_uuids[static_cast<std::size_t>(slot)] != source_candidate.source_unit_uuid ||
                     state.masks.bench_source_mask[static_cast<std::size_t>(slot)] != decision::MASK_ENABLED)
                     return reject(std::move(out), "candidate_sell_instance_missing_stale_or_illegal", "native_bench_mask_rejected");
                 values[0] = static_cast<std::int32_t>(decision::ActionType::SELL);
@@ -229,7 +234,9 @@ public:
                     return reject(std::move(out), "candidate_move_parameters_missing", "move_intent_unresolved");
                 if (source_candidate.source_is_bench) {
                     if (source_slot >= static_cast<std::int32_t>(state.bench_champion_ids.size()) ||
-                        state.bench_champion_ids[static_cast<std::size_t>(source_slot)] != selected->champion_id)
+                        state.bench_champion_ids[static_cast<std::size_t>(source_slot)] != selected->champion_id ||
+                        source_candidate.source_unit_uuid.empty() ||
+                        state.bench_unit_uuids[static_cast<std::size_t>(source_slot)] != source_candidate.source_unit_uuid)
                         return reject(std::move(out), "candidate_bench_source_stale", "stale_move_source");
                     if (!type_enabled(decision::ActionType::MOVE_BENCH) ||
                         state.masks.bench_move_source_mask[static_cast<std::size_t>(source_slot)] != decision::MASK_ENABLED ||
@@ -242,7 +249,9 @@ public:
                     values[3] = target_slot;
                 } else {
                     if (source_slot >= static_cast<std::int32_t>(state.board_champion_ids.size()) ||
-                        state.board_champion_ids[static_cast<std::size_t>(source_slot)] != selected->champion_id)
+                        state.board_champion_ids[static_cast<std::size_t>(source_slot)] != selected->champion_id ||
+                        source_candidate.source_unit_uuid.empty() ||
+                        state.board_unit_uuids[static_cast<std::size_t>(source_slot)] != source_candidate.source_unit_uuid)
                         return reject(std::move(out), "candidate_board_source_stale", "stale_move_source");
                     if (!type_enabled(decision::ActionType::MOVE_BOARD) ||
                         state.masks.board_source_mask[static_cast<std::size_t>(source_slot)] != decision::MASK_ENABLED ||

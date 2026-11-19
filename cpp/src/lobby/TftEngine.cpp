@@ -3042,6 +3042,9 @@ struct TFTEngine::Impl {
         strategy::NativeCompositionGenerationResult strategic_native_generation;
         std::unordered_map<std::int32_t, strategy::NativeCompositionOwnedUnit>
             strategic_native_owned;
+        // One physical tier-count producer feeds native composition, priorities and pivot.
+        std::unordered_map<std::int32_t, std::array<std::int32_t, 4>>
+            physical_star_counts_by_unit;
         {
             strategy::NativeCompositionGenerationInput native_input;
             native_input.match_id = episode_id;
@@ -3075,9 +3078,10 @@ struct TFTEngine::Impl {
                 if (!definition) return;
                 auto& observed = strategic_native_owned[definition->internal_id];
                 observed.champion_id = definition->internal_id;
-                const auto copies = copies_by_unit.find(definition->internal_id);
-                observed.copies = copies == copies_by_unit.end() ? 0 : copies->second;
                 observed.star = std::max(observed.star, unit.star);
+                auto& physical_tiers = physical_star_counts_by_unit[definition->internal_id];
+                ++physical_tiers[static_cast<std::size_t>(std::clamp(unit.star, 1, 3))];
+                observed.copies_by_star = physical_tiers;
                 observed.on_board = observed.on_board || on_board;
                 observed.on_bench = observed.on_bench || !on_board;
                 observed.board_contribution = std::max(
@@ -3093,7 +3097,8 @@ struct TFTEngine::Impl {
                 if (unit) append_native_owned(*unit, true);
             for (const auto& unit : player_envs[i].bench)
                 if (unit) append_native_owned(*unit, false);
-            for (const auto& [id, observed] : strategic_native_owned) {
+            for (auto& [id, observed] : strategic_native_owned) {
+                observed.copies = strategy::owned_star_equivalent_copies(observed.copies_by_star);
                 native_input.owned.push_back(observed);
                 native_input.currently_owned_unit_ids.push_back(id);
             }
@@ -3295,6 +3300,7 @@ struct TFTEngine::Impl {
             strategic_context.player_id = static_cast<std::int32_t>(i);
             strategic_context.round = static_cast<std::uint32_t>(current_round);
             strategic_context.stage = current_stage;
+            strategic_context.evidence.stage = true;
             strategic_context.hp = static_cast<double>(player.hp);
             strategic_context.gold = economy.gold;
             strategic_context.level = economy.level;
@@ -3336,6 +3342,7 @@ struct TFTEngine::Impl {
                     active_native_direction->score;
                 strategic_context.current_core_traits =
                     active_native_direction->completed_traits;
+                strategic_context.evidence.current_direction = true;
                 if (!active_native_direction->completed_traits.empty())
                     strategic_context.current_composition_focus =
                         active_native_direction->completed_traits.front();
@@ -3375,6 +3382,9 @@ struct TFTEngine::Impl {
                 const auto copies = copies_by_unit.find(definition->internal_id);
                 candidate.copies_owned = copies == copies_by_unit.end()
                     ? 0 : copies->second;
+                const auto physical_tiers = physical_star_counts_by_unit.find(definition->internal_id);
+                if (physical_tiers != physical_star_counts_by_unit.end())
+                    candidate.copies_by_star = physical_tiers->second;
                 candidate.on_board = on_board;
                 candidate.on_bench = !on_board;
                 candidate.is_core = active_native_direction !=
@@ -3613,10 +3623,12 @@ struct TFTEngine::Impl {
                         observed.synergy_contribution = 0.0;
                     }
                     observed.champion_id = id;
-                    observed.copies = copies_by_unit.count(id) ? copies_by_unit.at(id) : 0;
+                    const auto physical_tiers = physical_star_counts_by_unit.find(id);
+                    observed.copies = physical_tiers != physical_star_counts_by_unit.end()
+                        ? strategy::owned_star_equivalent_copies(physical_tiers->second) : 0;
                     observed.highest_star = std::max(observed.highest_star, unit.star);
-                    const auto star = static_cast<std::size_t>(std::clamp(unit.star, 1, 3));
-                    ++observed.copies_by_star[star];
+                    if (physical_tiers != physical_star_counts_by_unit.end())
+                        observed.copies_by_star = physical_tiers->second;
                     for (const auto& item : unit.items)
                         if (!item.api_name.empty() &&
                             std::find(observed.equipped_item_ids.begin(), observed.equipped_item_ids.end(), item.api_name) == observed.equipped_item_ids.end())
@@ -3625,7 +3637,8 @@ struct TFTEngine::Impl {
                     priority.champion_id = id;
                     priority.copies = observed.copies;
                     priority.highest_star = std::max(priority.highest_star, unit.star);
-                    ++priority.copies_by_star[star];
+                    if (physical_tiers != physical_star_counts_by_unit.end())
+                        priority.copies_by_star = physical_tiers->second;
                     priority.on_board = priority.on_board || on_board;
                     priority.equipped_item_ids = observed.equipped_item_ids;
                     const auto* definition = catalog->find_by_id(id);
@@ -3873,19 +3886,27 @@ struct TFTEngine::Impl {
                 native_action_state.shop_champion_ids.fill(-1);
                 native_action_state.bench_champion_ids.fill(-1);
                 native_action_state.board_champion_ids.fill(-1);
+                native_action_state.bench_unit_uuids.fill(std::string{});
+                native_action_state.board_unit_uuids.fill(std::string{});
                 for (std::size_t slot = 0; slot < kShopSlots; ++slot) {
                     const auto* unit = player_envs[i].shop
                         ? player_envs[i].shop->get_unit(static_cast<std::int32_t>(slot)) : nullptr;
                     if (unit) native_action_state.shop_champion_ids[slot] = unit->champion_internal_id;
                 }
                 for (std::size_t slot = 0; slot < kBenchSlots; ++slot)
-                    if (player_envs[i].bench[slot])
+                    if (player_envs[i].bench[slot]) {
                         native_action_state.bench_champion_ids[slot] =
                             player_envs[i].bench[slot]->champion_internal_id;
+                        native_action_state.bench_unit_uuids[slot] =
+                            player_envs[i].bench[slot]->uuid;
+                    }
                 for (std::size_t slot = 0; slot < kBoardSlots; ++slot)
-                    if (player_envs[i].board[slot])
+                    if (player_envs[i].board[slot]) {
                         native_action_state.board_champion_ids[slot] =
                             player_envs[i].board[slot]->champion_internal_id;
+                        native_action_state.board_unit_uuids[slot] =
+                            player_envs[i].board[slot]->uuid;
+                    }
 
                 std::unordered_map<std::int32_t, std::int32_t> unit_costs;
                 for (const auto id : native_action_state.shop_champion_ids)
@@ -4046,12 +4067,14 @@ struct TFTEngine::Impl {
                     {"status", candidate_build.status},
                     {"rejected_missing_cost", candidate_build.rejected_missing_cost},
                     {"rejected_ambiguous_instance", candidate_build.rejected_ambiguous_instance},
+                    {"rejected_missing_instance_identity", candidate_build.rejected_missing_instance_identity},
                     {"candidate_count", candidate_build.candidates.size()},
                     {"candidates", nlohmann::json::array()}
                 };
                 for (const auto& candidate : candidate_build.candidates) {
                     candidate_generation["candidates"].push_back({
                         {"candidate_id", candidate.candidate_id},
+                        {"source_unit_uuid", candidate.source_unit_uuid},
                         {"source_sequence", candidate.source_sequence},
                         {"kind", static_cast<int>(candidate.kind)},
                         {"champion_id", candidate.champion_id},
@@ -4179,6 +4202,7 @@ struct TFTEngine::Impl {
                             unit.cost = owned.cost;
                             unit.copies_owned = std::max(unit.copies_owned, owned.copies_owned);
                             unit.star = std::max(unit.star, owned.star);
+                            unit.copies_by_star = owned.copies_by_star;
                             unit.on_board = unit.on_board || owned.on_board;
                             unit.on_bench = unit.on_bench || owned.on_bench;
                             unit.board_contribution = std::max(
@@ -4207,7 +4231,10 @@ struct TFTEngine::Impl {
                                 unit.pool_remaining = pool
                                     ? pool->available(definition->internal_id) : -1;
                                 const auto owned = owned_evidence.find(definition->internal_id);
-                                if (owned != owned_evidence.end()) unit.star = owned->second.highest_star;
+                                if (owned != owned_evidence.end()) {
+                                    unit.star = owned->second.highest_star;
+                                    unit.copies_by_star = owned->second.copies_by_star;
+                                }
                             }
                         }
                         for (const auto& [id, unit] : discovery_units) {
@@ -4295,9 +4322,16 @@ struct TFTEngine::Impl {
                                         ++target_trait_counts[trait];
                                     feasibility.required_units.push_back(required);
 
-                                    const auto owned = copies_by_unit.find(target.champion_id);
-                                    const std::int32_t owned_copies = owned == copies_by_unit.end()
-                                        ? 0 : owned->second;
+                                    const auto observed = owned_evidence.find(target.champion_id);
+                                    const bool physical_tier_counts_available =
+                                        observed != owned_evidence.end();
+                                    const std::array<std::int32_t, 4> copies_by_star =
+                                        physical_tier_counts_available
+                                            ? observed->second.copies_by_star
+                                            : std::array<std::int32_t, 4>{};
+                                    const std::int32_t owned_copies =
+                                        physical_tier_counts_available
+                                            ? strategy::owned_star_equivalent_copies(copies_by_star) : 0;
                                     std::int32_t shop_copies = 0;
                                     if (strategic_shop) {
                                         for (const auto& offer : strategic_shop->offers())
@@ -4307,12 +4341,12 @@ struct TFTEngine::Impl {
                                     const std::int32_t pool_remaining = pool
                                         ? pool->available(target.champion_id) : -1;
                                     if (owned_copies > 0 || shop_copies > 0 || pool_remaining >= 0) {
-                                        const auto observed = owned_evidence.find(target.champion_id);
-                                        const std::int32_t star = observed == owned_evidence.end()
-                                            ? 1 : observed->second.highest_star;
+                                        const std::int32_t star = physical_tier_counts_available
+                                            ? observed->second.highest_star : 1;
                                         feasibility.observed_units.push_back({
                                             target.champion_id, owned_copies, star,
-                                            shop_copies, pool_remaining
+                                            shop_copies, pool_remaining, copies_by_star,
+                                            physical_tier_counts_available
                                         });
                                     }
                                     if (owned_copies > 0)

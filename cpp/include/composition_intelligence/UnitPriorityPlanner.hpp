@@ -2,6 +2,7 @@
 
 #include "composition_intelligence/CompositionEvaluation.hpp"
 #include "composition_intelligence/PlannerEvidenceAdapters.hpp"
+#include "strategy/UnitCopyProgress.hpp"
 
 #include <algorithm>
 #include <array>
@@ -40,17 +41,8 @@ inline std::int32_t copy_progress_toward_next_star(
     const std::array<std::int32_t, 4>& copies_by_star,
     std::int32_t highest_star,
     std::int32_t affordable_shop_copies = 0) noexcept {
-    if (highest_star < 1 || highest_star >= 3) return 0;
-    const auto one_star = std::max(0, copies_by_star[1]) +
-        std::max(0, affordable_shop_copies);
-    if (highest_star == 1) {
-        // One owned 1★ is the baseline; two additional 1★ copies complete 2★.
-        return std::clamp(one_star - 1, 0, 2);
-    }
-    // A 3★ requires three physical 2★ instances. Only complete groups of
-    // three 1★ copies can contribute another 2★; partial groups are not progress.
-    const auto available_two_star = std::max(0, copies_by_star[2]) + one_star / 3;
-    return std::clamp(available_two_star - 1, 0, 2);
+    return strategy::copies_toward_next_star(
+        copies_by_star, highest_star, affordable_shop_copies);
 }
 
 // Compatibility overload for callers that only have the old aggregate count.

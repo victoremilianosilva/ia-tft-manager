@@ -3,6 +3,7 @@
 // Data-only contracts for the strategic/economic planner architecture.
 // This header must not change PPO observations, masks, rewards, or execution.
 
+#include <array>
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -68,6 +69,8 @@ struct StrategicUnitCandidate {
     double composition_fit{0.0};
     double item_fit{0.0};
     std::vector<std::string> traits;
+    // Physical owned instances by star tier; index zero is unused.
+    std::array<std::int32_t, 4> copies_by_star{};
 };
 
 struct StrategicAnchorCandidate {
@@ -111,6 +114,8 @@ struct StrategicActionCandidate {
     std::uint32_t evidence_horizon_rounds{0};
     double evidence_uncertainty{1.0}; // [0,1], not a probability of success
     bool lost_interest_evidence_available{false};
+    // Native physical instance identity for owned-unit actions; empty for shop/economy actions.
+    std::string source_unit_uuid;
 };
 
 struct ActionCandidateScore {
@@ -160,6 +165,9 @@ struct StrategicEvidenceAvailability {
     bool estimated_incoming_damage{false};
     bool elimination_risk{false};
     bool progression_plan{false};
+    // True only when a native direction candidate was actually matched to the commitment.
+    bool current_direction{false};
+    bool stage{false};
 };
 
 struct StrategicSharedContext {

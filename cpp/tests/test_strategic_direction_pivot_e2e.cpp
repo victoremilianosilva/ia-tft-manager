@@ -39,6 +39,8 @@ DirectionDiscoveryInput make_early_snapshot() {
         {1, 1, 2, 1, false, true, false, false, true, 0.0, {"Bruiser"}},
         {2, 2, 1, 1, true, false, false, false, false, 3.0, {"Bruiser"}}
     };
+    input.units[0].copies_by_star[1] = 2;
+    input.units[1].copies_by_star[1] = 1;
     input.trait_thresholds = {{"Bruiser", 2}};
     return input;
 }
