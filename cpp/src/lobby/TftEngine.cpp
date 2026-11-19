@@ -6020,9 +6020,6 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         for (const auto& unit : this->board) if (unit) ++new_board_count;
         for (const auto& unit : this->bench) if (unit) ++new_bench_count;
 
-        // Shared shop-opportunity check: buy meaningful pairs/upgrades/fits
-        // before converting surplus gold into XP or passing.
-
         // Reward Contract v1 deliberately does not turn Shadow scores,
         // legacy composition fit, heuristic board scores, or action costs into
         // PPO targets. Until an outcome has a versioned causal definition and
@@ -6057,13 +6054,11 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             success = true;
         }
 
-        // MiniTFTEnv.step() returns the action-specific reward directly.
-        // RewardManager's broader state components are not called by the
-        // Python environment, so applying them here would change PPO targets.
+        // Keep the native strategy refresh for Shadow and diagnostics; it is
+        // deliberately independent from the neutral PPO action reward.
         lobby.update_strategy(player_id);
-        // Record the direction *after* this purchase has refreshed strategy.
-        // Otherwise a direction change caused by the purchase itself is mistaken
-        // for a later legitimate transition and exempts an immediate buy/sell loop.
+        // Capture post-refresh composition labels for purchase-lineage diagnostics
+        // only. These labels are not consumed by Reward Contract v1.
         if (type == 0 && success && this->strategy) {
             for (auto it = this->recent_purchases.rbegin();
                  it != this->recent_purchases.rend(); ++it) {
