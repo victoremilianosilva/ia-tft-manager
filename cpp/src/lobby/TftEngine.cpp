@@ -3986,14 +3986,13 @@ struct TFTEngine::Impl {
                                 last_external_identity != active->candidate.composition_id ||
                                 last_external_version != active->version;
                             if (external_snapshot_changed) {
-                                const auto& tracked =
-                                    strategic_shadow_runtimes[i]->machine().active_composition();
-                                if (!tracked ||
-                                    tracked->candidate.composition_id !=
-                                        active->candidate.composition_id ||
-                                    tracked->version != active->version) {
-                                    strategic_shadow_runtimes[i]->reset_machine();
-                                }
+                                // The state machine now shares this canonical
+                                // ActiveCompositionManager. The manager has
+                                // already advanced, so its snapshot cannot be
+                                // used to detect whether the direction anchor is
+                                // stale; reset only orchestration history and
+                                // rebind it to the newly published version.
+                                strategic_shadow_runtimes[i]->reset_machine();
                                 strategic_shadow_external_active_identity[i] =
                                     active->candidate.composition_id;
                                 strategic_shadow_external_active_version[i] =
