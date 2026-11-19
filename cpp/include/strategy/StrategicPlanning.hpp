@@ -105,6 +105,12 @@ struct StrategicActionCandidate {
     std::int32_t target_board_slot{-1};
     bool source_is_bench{false};
     std::string evidence_reason;
+    // Additive audit fields: estimates remain distinguishable from facts and
+    // unknown costs are never silently represented as measured zero.
+    std::string evidence_source{"unknown"};
+    std::uint32_t evidence_horizon_rounds{0};
+    double evidence_uncertainty{1.0}; // [0,1], not a probability of success
+    bool lost_interest_evidence_available{false};
 };
 
 struct ActionCandidateScore {

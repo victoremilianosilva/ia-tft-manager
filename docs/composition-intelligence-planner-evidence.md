@@ -147,3 +147,51 @@ metadata and correlation identity from the parent record.
 assert that source metadata cannot reintroduce parent identity fields and that
 snapshot identity is validated before source freshness. This consolidation
 does not alter strategic scores, PPO inputs, reward, masks or action legality.
+
+## Candidate identity, costs and unit-priority evidence — PR #495
+
+**Prior problem:** candidate records were tied to match/player/sequence and a partial physical slot, but a move's target slot was not part of its stable identity. The contextual evaluator did not retain that identity, so the executor could only correlate a recommendation by candidate index and summary fields. Buy candidates also did not expose the source/horizon/uncertainty of their estimates; marginal interest loss was not attached consistently, and the contextual scorer discarded negative direct cost from an explicitly evidenced sale. Unit upgrade progress flattened physical star tiers and counted every shop copy as affordable once one copy was affordable. The producer also left trait-completion and explicit sell-candidate evidence under-populated.
+
+**Technical rationale:** a candidate is a read-only alternative from one exact native snapshot. Correlation therefore requires all physical parameters, including source and destination slots, and the same identity must survive both evaluators and executor validation. Upgrade progress must reflect actual 1★/2★ instances and copies affordable with current gold; aggregate equivalent-copy counts cannot distinguish mixed tiers. Trait completion and sell candidacy must be derived from current board traits, active native composition, observed copies, and ItemEngine state.
+
+**New responsibility:** StrategicActionCandidateBuilder now creates stable IDs from match/player/sequence/action/champion/shop/source/target/source-zone and attaches evidence source, horizon and uncertainty. It computes marginal interest loss only when interest evidence is available. UnitPriorityPlanner uses physical star-tier counts and caps shop progress by the number of offers the current gold can actually buy. The native producer supplies trait-completion and conservative sell-candidate evidence. Both action evaluators preserve candidate identity; StrategicActionExecutor rejects a recommendation whose ID differs from the source candidate. Contextual scoring preserves sale revenue as a negative direct cost rather than clamping it away.
+
+**Contract/invariants:** PlannerEvidenceSnapshot schema v3 adds per-unit item-profile provenance: inferred combat-role source, active-composition-derived trait source, composition identity/version, composition fit and preferred traits. Observed item inventory/equipment remains separate from inferred role and composition affinity. The action-evaluator comparison envelope and ContextualActionEvaluation are schema v2 because stable candidate IDs now survive both evaluator paths and are checked by the executor. Candidate identity is immutable within its source sequence and includes every physical action parameter. Missing interest evidence remains unavailable, not a measured zero. Economic evidence now carries per-field availability independently of its valid source envelope; absent projected income and insufficient-evidence posture/pressure values serialize as null rather than zero/default posture. Evidence uncertainty is an audit score, not a success probability. Shop copies contribute only when unit cost and available gold are known. A 3★ target counts complete additional 2★ instances; partial groups of 1★ copies do not become false 3★ progress. A sell candidate remains diagnostic and requires an exact legal bench instance plus explicit transition/priority evidence. No candidate is executed by this pipeline.
+
+**Copy contract:** board and bench contribute physical owned instances to per-star-tier counts; shop offers are a separate count and contribute only up to floor(available_gold / unit_cost). Pool copies are not inferred or mixed into owned/shop totals. A 2★ target uses 1★ copies; a 3★ target counts existing 2★ instances plus only complete groups of three 1★ copies that can form another 2★ instance. The aggregate equivalent-copy field remains compatibility-only and is not used by the integrated runtime when physical tier counts exist.
+
+**Cross-component impact:** StrategicPlanning.hpp, StrategicActionCandidateBuilder, UnitPriorityPlanner, CompositionEvaluation, both action evaluators, StrategicActionExecutor, the TftEngine producer, and their native regression tests. PPO observations/rewards/checkpoints, action masks, game rules, and Viewer behavior are not changed by this contract.
+
+**Validation:** native tests cover unique physical candidate IDs, target-slot identity, evidence provenance/horizon/uncertainty, marginal interest, stable identity through both evaluators, executor rejection of mismatched candidate IDs, sale-credit scoring, mixed physical star tiers, and shop affordability with insufficient versus sufficient gold. Runtime evidence tests verify the active composition/item path; the full PR CI must pass before merge.
+
+**Known unavailable economic projections:** projected next-round income, estimated incoming damage, elimination risk and progression plan remain unavailable unless an authoritative producer supplies them for the current player/round. The controller and adapters must preserve that missingness; this PR does not synthesize projections from defaults or turn them into score inputs.
+
+### Economic signal routing
+
+EconomicController's evidence_used/evidence_missing lists now describe only
+signals consumed by its posture score: HP, gold, level, XP-to-next, win/loss
+streaks, relative board power, and any future validated damage/risk/progression
+producers. Raw XP and absolute board power remain available to their other
+consumers but do not independently affect posture. Current interest is not a
+posture signal: StrategicActionCandidateBuilder consumes it to calculate
+marginal interest lost by a known spend, and marks that cost unavailable when
+the source flag is absent. Projected next-round income has no validated producer
+in the current callsite and remains explicitly unavailable. Progression posture
+can still be inferred contextually from observed stage, level, XP-to-next, gold,
+board pressure and survival evidence; it does not require a legacy strategy ID
+or an invented progression_plan.
+
+### Contextual evaluator signal routing
+
+The canonical contextual evaluator consumes validated survival pressure and
+win/loss streak evidence as continuous modifiers on a candidate's positive
+board-improvement value; it does not consume EconomicPosture as an action rule.
+The same-candidate/same-gold regression proves that changing survival or streak
+evidence changes the marginal score. Board pressure is represented through the
+native BoardEvaluation gaps (missing frontline/backline and exposed carry) and
+the candidate's board delta, so the scalar board_pressure is not added again.
+Likewise economy_pressure is not added as a separate bonus/penalty: direct gold
+cost, evidenced lost interest and validated opportunity cost already express
+the marginal liquidity cost. This avoids double counting. EconomicController's
+posture remains a diagnostic/baseline input; the contextual recommendation
+continues to evaluate each candidate independently.

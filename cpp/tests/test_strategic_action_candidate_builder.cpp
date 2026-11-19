@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <iostream>
+#include <unordered_set>
 
 using namespace tft;
 using namespace tft::composition_intelligence;
@@ -61,6 +62,8 @@ void builder_emits_snapshot_bound_physical_candidates() {
     context.level = 5;
     context.xp_to_next = 4;
     context.evidence.gold = true;
+    context.evidence.interest_if_resolved_now = true;
+    context.interest_if_resolved_now = EconomyEngine{}.get_interest(context.gold);
     context.evidence.level = true;
     context.evidence.xp_to_next = true;
 
@@ -105,6 +108,10 @@ void builder_emits_snapshot_bound_physical_candidates() {
     assert(buy != result.candidates.end());
     assert(buy->shop_slot == 0 && buy->source_sequence == 42);
     assert(!buy->candidate_id.empty());
+    assert(buy->evidence_source.find("native_shop") != std::string::npos);
+    assert(buy->evidence_horizon_rounds == 1);
+    assert(buy->lost_interest_evidence_available);
+    assert(buy->lost_interest_cost > 0.0);
 
     const auto xp = find(StrategicActionKind::BuyExperience);
     assert(xp != result.candidates.end() && xp->gold_cost == EconomyEngine::BUY_XP_COST);
@@ -119,11 +126,71 @@ void builder_emits_snapshot_bound_physical_candidates() {
     assert(deploy != result.candidates.end());
     assert(deploy->source_is_bench && deploy->source_slot == 0);
     assert(deploy->target_board_slot >= 0);
+    assert(deploy->candidate_id.find(std::to_string(deploy->target_board_slot)) != std::string::npos);
+    assert(deploy->evidence_source.find("StrategicPositionPlanner") != std::string::npos);
     assert(!native.requested_move_targets.empty());
 
     const auto hold = find(StrategicActionKind::Hold);
     assert(hold != result.candidates.end());
     assert(hold->evidence_reason.find("neutral_baseline") != std::string::npos);
+
+    std::unordered_set<std::string> stable_ids;
+    for (const auto& candidate : result.candidates) {
+        assert(!candidate.candidate_id.empty());
+        assert(candidate.source_sequence == native.sequence);
+        assert(stable_ids.insert(candidate.candidate_id).second);
+        assert(candidate.evidence_uncertainty >= 0.0 &&
+            candidate.evidence_uncertainty <= 1.0);
+    }
+}
+
+void missing_cost_rejects_only_the_affected_candidate() {
+    CompositionCandidate composition;
+    composition.composition_id = "partial-candidate-set";
+    composition.set_id = "TFT18";
+    composition.target_board_size = 1;
+    composition.units = {{10, tft::composition_intelligence::UnitRole::MainCarry, true, 80}};
+    composition.main_carry_id = 10;
+    const std::optional<ActiveComposition> active = ActiveComposition{composition, 2};
+
+    UnitPriority priority;
+    priority.champion_id = 10;
+    priority.intent = UnitIntent::Seek;
+    UnitPrioritySnapshot priorities;
+    priorities.composition_id = composition.composition_id;
+    priorities.composition_version = 2;
+    priorities.units = {priority};
+    LineupPlan lineup;
+    lineup.composition_id = composition.composition_id;
+    lineup.composition_version = 2;
+    lineup.endgame_target_ids = {10};
+
+    StrategicSharedContext context;
+    context.player_id = 0;
+    context.round = 10;
+    context.gold = 10;
+    context.alive = true;
+    context.evidence.gold = true;
+    StrategicActionNativeSnapshot native;
+    native.match_id = 88;
+    native.player_id = 0;
+    native.round = 10;
+    native.sequence = 7;
+    native.composition_id = composition.composition_id;
+    native.composition_version = 2;
+    native.gold = 10;
+    native.alive = true;
+    native.shop_champion_ids[0] = 10;
+    enables(native.masks, decision::ActionType::PASS);
+    enables(native.masks, decision::ActionType::BUY);
+    native.masks.shop_mask[0] = decision::MASK_ENABLED;
+
+    const auto result = StrategicActionCandidateBuilder{}.build(
+        context, active, priorities, lineup, native, {});
+    assert(result.status == "candidates_generated");
+    assert(result.rejected_missing_cost == 1);
+    assert(result.candidates.size() == 1);
+    assert(result.candidates.front().kind == StrategicActionKind::Hold);
 }
 
 void xp_candidate_does_not_depend_on_an_active_composition() {
@@ -177,6 +244,7 @@ void builder_refuses_stale_or_mismatched_native_snapshots() {
 
 int main() {
     builder_emits_snapshot_bound_physical_candidates();
+    missing_cost_rejects_only_the_affected_candidate();
     xp_candidate_does_not_depend_on_an_active_composition();
     builder_refuses_stale_or_mismatched_native_snapshots();
     std::cout << "StrategicActionCandidateBuilder tests passed\\n";

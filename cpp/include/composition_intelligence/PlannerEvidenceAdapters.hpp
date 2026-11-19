@@ -28,6 +28,11 @@ struct EconomicPlannerEvidence {
  std::vector<std::string> evidence_used,evidence_missing;
  bool survival_evidence_available{false};
  bool streak_evidence_available{false};
+ // Per-field availability: a valid source envelope does not make every field present.
+ bool gold_available{false},level_available{false},xp_available{false},xp_to_next_available{false};
+ bool interest_available{false},projected_income_available{false};
+ bool win_streak_available{false},loss_streak_available{false};
+ bool board_pressure_available{false},economy_pressure_available{false};
 };
 struct BoardPlannerEvidence {
  EvidenceSourceMetadata metadata;
@@ -36,18 +41,32 @@ struct BoardPlannerEvidence {
  std::int32_t unit_count{0},frontline_count{0},carry_count{0},exposed_carry_count{0};
  std::int32_t missing_frontline_count{0},missing_backline_count{0};
 };
-struct ItemUnitBinding { std::int32_t champion_id{-1}; items::UnitProfile profile; };
+struct ItemUnitBinding {
+ std::int32_t champion_id{-1};
+ items::UnitProfile profile;
+ std::string role_source{"derived:UnitCombatClassifier"};
+ std::string composition_source{"unavailable_without_active_composition"};
+ std::string composition_id;
+ std::uint64_t composition_version{0};
+};
 struct ItemUnitPlannerEvidence {
  std::int32_t champion_id{-1}; std::vector<std::string> equipped_item_ids;
  std::string best_inventory_item_id; double equipped_fit{0},best_inventory_fit{0};
  bool has_equipped_items{false},has_inventory_candidate{false};
+ // Observed profile facts and composition-derived preferences remain distinct.
+ std::string role_source{"unknown"};
+ std::string composition_source{"unavailable"};
+ std::string composition_id;
+ std::uint64_t composition_version{0};
+ double composition_fit{0.0};
+ std::vector<std::string> preferred_traits;
 };
 struct ItemPlannerEvidence {
  EvidenceSourceMetadata metadata; std::size_t inventory_count{0},component_count{0};
  std::vector<ItemUnitPlannerEvidence> units;
 };
 struct PlannerEvidenceSnapshot {
- std::uint32_t schema_version{2}; std::uint64_t match_id{0}; std::int32_t player_id{-1};
+ std::uint32_t schema_version{3}; std::uint64_t match_id{0}; std::int32_t player_id{-1};
  std::string composition_id; std::uint64_t composition_version{0}; std::uint32_t round{0};
  EconomicPlannerEvidence economy; BoardPlannerEvidence board; ItemPlannerEvidence items;
 };
@@ -64,11 +83,18 @@ public:
   o.gold=c.gold;o.level=c.level;o.xp=c.xp;o.xp_to_next=c.xp_to_next;
   o.interest_if_resolved_now=c.interest_if_resolved_now;o.projected_next_round_income=c.projected_next_round_income;
   o.win_streak=c.win_streak;o.loss_streak=c.loss_streak;o.posture=d.posture;o.reason=d.reason;
+  o.gold_available=c.evidence.gold;o.level_available=c.evidence.level;
+  o.xp_available=c.evidence.xp;o.xp_to_next_available=c.evidence.xp_to_next;
+  o.interest_available=c.evidence.interest_if_resolved_now;
+  o.projected_income_available=c.evidence.projected_next_round_income;
+  o.win_streak_available=c.evidence.streaks;o.loss_streak_available=c.evidence.streaks;
   o.sufficient_evidence=d.sufficient_evidence;
   o.evidence_used=d.evidence_used;o.evidence_missing=d.evidence_missing;
   o.survival_evidence_available=c.evidence.hp ||
    c.evidence.estimated_incoming_damage || c.evidence.elimination_risk;
   o.streak_evidence_available=c.evidence.streaks;
+  o.board_pressure_available=c.evidence.relative_board_power;
+  o.economy_pressure_available=c.evidence.gold;
   o.survival_pressure=unit(d.survival_pressure);o.board_pressure=unit(d.board_pressure);
   o.economy_pressure=unit(d.economy_pressure);o.confidence=unit(d.confidence);
   o.buy_experience_opportunity_cost=strategy::action_opportunity_cost::kBuyExperience;
@@ -98,6 +124,10 @@ public:
   for(const auto& b:bindings) {
    if(b.champion_id<0||b.profile.uuid.empty())continue;
    ItemUnitPlannerEvidence u;u.champion_id=b.champion_id;
+   u.role_source=b.role_source;u.composition_source=b.composition_source;
+   u.composition_id=b.composition_id;u.composition_version=b.composition_version;
+   u.composition_fit=unit(b.profile.composition_fit);
+   u.preferred_traits=b.profile.preferred_traits;
    const auto eq=state.equipped_by_unit_uuid.find(b.profile.uuid);
    if(eq!=state.equipped_by_unit_uuid.end()) {
     u.equipped_item_ids=eq->second;u.has_equipped_items=!eq->second.empty();

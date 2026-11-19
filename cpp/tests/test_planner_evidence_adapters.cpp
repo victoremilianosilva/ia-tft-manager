@@ -1,19 +1,26 @@
 #include "composition_intelligence/PlannerEvidenceAdapters.hpp"
+#include "composition_intelligence/CompositionEvaluation.hpp"
 #include <cassert>
 #include <cmath>
 #include <iostream>
+#include <unordered_map>
 #include <limits>
 using namespace tft::composition_intelligence;
 
 void economy_test(){
  tft::strategy::StrategicSharedContext c;c.player_id=4;c.round=12;c.gold=38;c.level=7;c.xp=4;c.xp_to_next=8;
  c.interest_if_resolved_now=3;c.projected_next_round_income=8;c.win_streak=2;c.alive=true;
+ c.evidence.gold=true;c.evidence.level=true;c.evidence.xp=true;c.evidence.xp_to_next=true;
+ c.evidence.interest_if_resolved_now=true;c.evidence.streaks=true;
  tft::strategy::EconomicControlDecision d;d.shadow_only=true;d.posture=tft::strategy::EconomicPosture::InvestExperience;
  d.reason=tft::strategy::StrategicReason::ProgressionTiming;d.survival_pressure=.2;d.board_pressure=.4;
  d.economy_pressure=.7;d.confidence=.8;
  auto e=PlannerEvidenceAdapters::economic(c,d,12,4);
  assert(e.metadata.available&&e.metadata.quality==EvidenceQuality::Valid&&e.gold==38&&e.xp_to_next==8);
  assert(e.posture==tft::strategy::EconomicPosture::InvestExperience);
+ assert(e.gold_available&&e.level_available&&e.xp_available&&e.xp_to_next_available);
+ assert(e.interest_available&&!e.projected_income_available);
+ assert(e.win_streak_available);
  assert(e.buy_experience_opportunity_cost==tft::strategy::action_opportunity_cost::kBuyExperience);
  auto stale=PlannerEvidenceAdapters::economic(c,d,13,4);
  assert(!stale.metadata.available&&stale.metadata.quality==EvidenceQuality::Stale);
@@ -37,9 +44,16 @@ void item_test(){
  tft::items::ItemEngine engine({sword},{"bf"});tft::items::ItemPlayerState state;
  state.inventory={"test_sword"};state.equipped_by_unit_uuid["unit-1"]={"test_sword"};
  tft::items::UnitProfile profile;profile.uuid="unit-1";profile.role=1;profile.backline=true;profile.attack_damage=100;
- const std::vector<ItemUnitBinding> bindings{{42,profile}};
+ const std::vector<ItemUnitBinding> bindings{{42,profile,
+  "derived:UnitCombatClassifier(ChampionDefinition+observed_stats+ability+items)",
+  "derived:ActiveCompositionManager.core_unit_catalog_traits","comp-A",5}};
  auto e=PlannerEvidenceAdapters::item(engine,state,bindings,12,12);
  assert(e.metadata.available&&e.units.size()==1&&e.units[0].has_equipped_items&&e.units[0].has_inventory_candidate);
+ assert(e.units[0].role_source.find("UnitCombatClassifier")!=std::string::npos);
+ assert(e.units[0].composition_source.find("ActiveCompositionManager")!=std::string::npos);
+ assert(e.units[0].composition_id=="comp-A"&&e.units[0].composition_version==5);
+ assert(e.units[0].composition_fit==profile.composition_fit);
+ assert(e.units[0].preferred_traits==profile.preferred_traits);
  assert(e.units[0].best_inventory_item_id=="test_sword"&&e.inventory_count==1&&state.inventory.size()==1);
  auto stale=PlannerEvidenceAdapters::item(engine,state,bindings,11,12);
  assert(!stale.metadata.available&&stale.metadata.quality==EvidenceQuality::Stale);
@@ -72,4 +86,47 @@ void invalid_source_values_are_not_silently_zeroed(){
  auto invalid=PlannerEvidenceAdapters::board(b,3,3);
  assert(!invalid.metadata.available&&invalid.metadata.quality==EvidenceQuality::Invalid);
 }
-int main(){economy_test();board_test();item_test();identity_and_source_freshness_are_enforced();invalid_source_values_are_not_silently_zeroed();std::cout<<"Planner evidence adapter tests passed\\n";}
+
+void item_fit_uses_the_published_new_composition_traits() {
+ tft::composition_intelligence::CompositionCandidate candidate;
+ candidate.composition_id="native-core-item-fit";
+ candidate.set_id="TFT18";
+ candidate.target_board_size=1;
+ candidate.main_carry_id=42;
+ candidate.units={{42,tft::composition_intelligence::UnitRole::MainCarry,true,90}};
+ tft::composition_intelligence::ActiveCompositionManager active;
+ const auto published=active.publish(candidate);
+ assert(published.status==tft::composition_intelligence::PublishStatus::Published);
+
+ tft::items::ItemDefinition emblem;
+ emblem.id="DA_18_Blackthorn";
+ emblem.name="Blackthorn Emblem";
+ emblem.grants_trait="DA_18_Blackthorn";
+ emblem.carry_weight=0.4;
+ tft::items::ItemEngine engine({emblem});
+ tft::items::UnitProfile profile;
+ profile.uuid="native-core-carry";
+ profile.role=1;
+ profile.backline=true;
+ profile.attack_damage=100;
+ profile.composition_fit=1.0;
+ profile.traits={"Arcanist"};
+ // The preferred trait is projected from the active native composition's
+ // core-unit definition, not from a legacy StrategyInfo/default carry.
+ const std::unordered_map<std::int32_t,std::vector<std::string>> native_traits{
+  {42,{"Blackthorn","Arcanist"}}
+ };
+ for(const auto& unit:active.current()->candidate.units) {
+  if(!unit.core) continue;
+  const auto found=native_traits.find(unit.champion_id);
+  if(found!=native_traits.end())
+   profile.preferred_traits.insert(profile.preferred_traits.end(),
+    found->second.begin(),found->second.end());
+ }
+ const auto native_fit=engine.item_fit(emblem.id,profile);
+ profile.preferred_traits.clear();
+ const auto without_new_composition_fit=engine.item_fit(emblem.id,profile);
+ assert(native_fit>without_new_composition_fit);
+}
+
+int main(){economy_test();board_test();item_test();identity_and_source_freshness_are_enforced();invalid_source_values_are_not_silently_zeroed();item_fit_uses_the_published_new_composition_traits();std::cout<<"Planner evidence adapter tests passed\\n";}

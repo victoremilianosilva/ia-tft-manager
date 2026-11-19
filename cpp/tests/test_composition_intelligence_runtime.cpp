@@ -1,11 +1,140 @@
 #include "composition_intelligence/CompositionIntelligenceRuntime.hpp"
+#include "composition_intelligence/PlannerEvidenceAdapters.hpp"
+#include "composition_intelligence/UnitPriorityPlanner.hpp"
 
+#include <algorithm>
 #include <cassert>
 #include <iostream>
+#include <unordered_map>
 
 using namespace tft::composition_intelligence;
 
+
+void shadow_runtime_uses_native_core_and_item_evidence_without_legacy_strategy() {
+    CompositionIntelligencePlayerRuntime runtime;
+    runtime.begin_cycle(901, 0, 12);
+
+    CompositionCandidate candidate;
+    candidate.composition_id = "native-shadow-core";
+    candidate.set_id = "TFT18";
+    candidate.target_board_size = 1;
+    candidate.main_carry_id = 42;
+    candidate.units = {{42, UnitRole::MainCarry, true, 90}};
+
+    CompositionEvaluationContext context;
+    context.match_id = 901;
+    context.player_id = 0;
+    context.round = 12;
+    context.level = 7;
+    context.gold = 20;
+    OwnedUnitEvidence owned;
+    owned.champion_id = 42;
+    owned.copies = 1;
+    owned.highest_star = 1;
+    owned.board_contribution = 0.9;
+    context.owned_units.push_back(owned);
+    CandidateEvidence candidate_evidence;
+    candidate_evidence.composition_id = candidate.composition_id;
+    candidate_evidence.board_fit = 1.0;
+    candidate_evidence.item_fit = 0.0; // no item source has been consumed yet
+    candidate_evidence.availability = 1.0;
+    candidate_evidence.economy_feasibility = 1.0;
+    candidate_evidence.evidence_confidence = 0.9;
+    context.candidate_evidence.push_back(candidate_evidence);
+
+    const auto proposal = runtime.transitions.propose(std::nullopt, {candidate}, context);
+    assert(proposal.approved);
+    assert(proposal.decision == CompositionDecision::SelectInitial);
+    const auto published = runtime.transitions.publish_if_approved(proposal, runtime.active);
+    assert(published.has_transition);
+    assert(runtime.active.current());
+    assert(runtime.active.current()->candidate.composition_id == "native-shadow-core");
+    assert(runtime.active.current()->version == 1);
+
+    // Simulate the native catalog's trait projection and resolve it only through
+    // the now-published canonical active composition. No StrategyInfo is built.
+    const std::unordered_map<std::int32_t, std::vector<std::string>> native_traits_by_champion{
+        {42, {"Blackthorn", "Arcanist"}}
+    };
+    std::vector<std::string> preferred_traits;
+    for (const auto& target : runtime.active.current()->candidate.units) {
+        if (!target.core) continue;
+        const auto found = native_traits_by_champion.find(target.champion_id);
+        if (found != native_traits_by_champion.end())
+            preferred_traits.insert(preferred_traits.end(),
+                found->second.begin(), found->second.end());
+    }
+    assert(!preferred_traits.empty());
+
+    tft::items::ItemDefinition emblem;
+    emblem.id = "DA_18_Blackthorn";
+    emblem.name = "Blackthorn Emblem";
+    emblem.grants_trait = emblem.id;
+    emblem.carry_weight = 0.4;
+    tft::items::ItemEngine item_engine({emblem});
+    tft::items::ItemPlayerState item_state;
+    item_state.inventory = {emblem.id};
+    tft::items::UnitProfile profile;
+    profile.uuid = "native-core-unit-42";
+    profile.role = 1;
+    profile.backline = true;
+    profile.attack_damage = 100.0;
+    profile.composition_fit = 1.0;
+    profile.traits = {"Arcanist"};
+    profile.preferred_traits = preferred_traits;
+    const auto item_evidence = PlannerEvidenceAdapters::item(
+        item_engine, item_state, {{42, profile,
+            "derived:UnitCombatClassifier(ChampionDefinition+observed_stats+ability+items)",
+            "derived:ActiveCompositionManager.core_unit_catalog_traits",
+            runtime.active.current()->candidate.composition_id,
+            runtime.active.current()->version}}, 12, 12);
+    assert(item_evidence.metadata.available);
+    assert(item_evidence.units.size() == 1);
+    assert(item_evidence.units.front().has_inventory_candidate);
+    assert(item_evidence.units.front().best_inventory_fit > 0.0);
+    assert(item_evidence.units.front().composition_id == "native-shadow-core");
+    assert(item_evidence.units.front().composition_version == 1);
+    assert(item_evidence.units.front().composition_source.find("ActiveCompositionManager") != std::string::npos);
+
+    std::size_t matching_core_traits = 0;
+    for (const auto& trait : profile.traits)
+        if (std::find(preferred_traits.begin(), preferred_traits.end(), trait) !=
+            preferred_traits.end()) ++matching_core_traits;
+    const double native_synergy = std::clamp(
+        static_cast<double>(matching_core_traits) / 2.0, 0.0, 1.0);
+    const std::int32_t current_arcanist_count = 2;
+    const std::int32_t arcanist_milestone = 2;
+    const bool completes_active_trait =
+        current_arcanist_count >= arcanist_milestone &&
+        current_arcanist_count - 1 < arcanist_milestone;
+
+    UnitPriorityContext priority_context;
+    priority_context.composition_id = runtime.active.current()->candidate.composition_id;
+    priority_context.composition_version = runtime.active.current()->version;
+    priority_context.owned_units = {{42, 1, 1, true, {}}};
+    UnitPriorityEvidence unit_evidence;
+    unit_evidence.champion_id = 42;
+    unit_evidence.board_contribution = 0.9;
+    unit_evidence.synergy_contribution = native_synergy;
+    unit_evidence.confidence = 0.9;
+    unit_evidence.trait_completion = completes_active_trait;
+    priority_context.evidence = {unit_evidence};
+    const auto priorities = UnitPriorityPlanner{}.resolve(
+        runtime.active.current(), priority_context);
+    assert(!priorities.stale);
+    const auto prioritized_core = std::find_if(priorities.units.begin(),
+        priorities.units.end(), [](const auto& unit) { return unit.champion_id == 42; });
+    assert(prioritized_core != priorities.units.end());
+    assert(prioritized_core->synergy_contribution > 0.0);
+    assert(std::find_if(prioritized_core->reasons.begin(), prioritized_core->reasons.end(),
+        [](const auto& reason) {
+            return reason.code == UnitReasonCode::TraitCompletionPriority;
+        }) != prioritized_core->reasons.end());
+}
+
 int main() {
+    shadow_runtime_uses_native_core_and_item_evidence_without_legacy_strategy();
+
     CompositionIntelligencePlayerRuntime player_a;
     CompositionIntelligencePlayerRuntime player_b;
 

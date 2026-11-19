@@ -34,6 +34,8 @@ LineupPlan lineup() {
 }
 StrategicActionCandidate candidate(StrategicActionKind kind, int id = -1) {
     StrategicActionCandidate c; c.kind = kind; c.champion_id = id;
+    c.candidate_id = "candidate:" + std::to_string(static_cast<int>(kind)) + ":" + std::to_string(id);
+    c.source_sequence = 12;
     c.available = true; c.expected_board_delta = .8;
     if (kind == StrategicActionKind::BuyUnit) { c.gold_cost = 3; c.direct_gold_cost = 3; }
     if (kind == StrategicActionKind::RerollShop) { c.gold_cost = 2; c.direct_gold_cost = 2; }
@@ -68,6 +70,7 @@ void contextual_path_uses_priority_and_lineup_without_calling_baseline() {
         active(), priorities(), lineup(), context, nullptr, 77);
     assert(!result.stale);
     assert(result.candidates.size() == 3);
+    assert(result.candidates[0].candidate_id == context.action_candidates[0].candidate_id);
     assert(result.recommended_action == StrategicActionKind::BuyUnit ||
         result.recommended_action == StrategicActionKind::DeployOrMove);
     int selected = 0;
@@ -84,7 +87,7 @@ void stale_identity_disables_contextual_recommendation() {
     const auto result = ContextualActionEvaluator{}.evaluate(
         active(), priorities(), lineup(), context, &wrong_player, 77);
     assert(result.stale);
-    assert(result.recommended_action == StrategicActionKind::Hold);
+    assert(result.recommended_action == StrategicActionKind::None);
     assert(result.candidates.empty());
 }
 void invalid_candidates_and_equipped_sales_are_rejected() {
@@ -144,6 +147,36 @@ void explicit_hold_is_selected_when_all_actions_score_below_zero() {
     assert(result.candidates[1].selected);
 }
 
+void explicit_sale_credit_is_not_discarded_as_a_positive_cost() {
+    StrategicSharedContext context;
+    context.alive = true;
+    context.gold = 0;
+    context.player_id = 0;
+    context.round = 8;
+    auto sale_priority = UnitPriority{};
+    sale_priority.champion_id = 30;
+    sale_priority.intent = UnitIntent::SellCandidate;
+    sale_priority.confidence = 0.9;
+    sale_priority.copies_owned = 1;
+    sale_priority.highest_star = 1;
+    auto p = priorities();
+    p.units.push_back(sale_priority);
+    auto sale = candidate(StrategicActionKind::SellUnit, 30);
+    sale.gold_cost = 0;
+    sale.direct_gold_cost = -3.0;
+    sale.source_slot = 1;
+    sale.source_is_bench = true;
+    auto hold = candidate(StrategicActionKind::Hold);
+    context.action_candidates = {sale, hold};
+    const auto result = ContextualActionEvaluator{}.evaluate(
+        active(), p, lineup(), context, nullptr, 77);
+    assert(!result.stale);
+    assert(result.candidates.size() == 2);
+    assert(result.candidates[0].eligible);
+    assert(result.candidates[0].economy_cost < 0.0);
+    assert(result.recommended_action == StrategicActionKind::SellUnit);
+}
+
 void validated_survival_and_streak_evidence_adjust_board_improvement_value() {
     StrategicSharedContext context;
     context.alive = true;
@@ -171,13 +204,26 @@ void validated_survival_and_streak_evidence_adjust_board_improvement_value() {
     economy.streak_evidence_available = true;
     economy.win_streak = 6;
 
+    const auto baseline = ContextualActionEvaluator{}.evaluate(
+        active(), priorities(), lineup(), context, nullptr, 77);
     const auto result = ContextualActionEvaluator{}.evaluate(
         active(), priorities(), lineup(), context, &evidence, 77);
     assert(!result.stale);
     assert(result.economy_evidence_consumed);
     assert(result.candidates.size() == 2);
+    assert(baseline.candidates[0].survival_value == 0.0);
+    assert(baseline.candidates[0].streak_value == 0.0);
     assert(result.candidates[0].survival_value > 0.0);
     assert(result.candidates[0].streak_value > 0.0);
+    assert(result.candidates[0].total_score > baseline.candidates[0].total_score);
+
+    // Loss streak evidence also changes the same candidate's marginal score.
+    economy.win_streak = 0;
+    economy.loss_streak = 6;
+    const auto loss_streak_result = ContextualActionEvaluator{}.evaluate(
+        active(), priorities(), lineup(), context, &evidence, 77);
+    assert(loss_streak_result.candidates[0].streak_value > 0.0);
+    assert(loss_streak_result.candidates[0].total_score > baseline.candidates[0].total_score);
 }
 
 void empty_candidate_set_is_not_a_hold_recommendation() {
@@ -192,6 +238,25 @@ void empty_candidate_set_is_not_a_hold_recommendation() {
     assert(result.recommended_action == StrategicActionKind::None);
     assert(result.confidence_not_probability == 0.0);
     assert(result.rationale == "no_candidates");
+}
+
+void ineligible_candidates_do_not_fall_back_to_implicit_hold() {
+    StrategicSharedContext context;
+    context.alive = true;
+    context.gold = 10;
+    context.player_id = 0;
+    context.round = 8;
+    auto unavailable = candidate(StrategicActionKind::BuyUnit, 20);
+    unavailable.available = false;
+    context.action_candidates = {unavailable};
+    const auto result = ContextualActionEvaluator{}.evaluate(
+        active(), priorities(), lineup(), context, nullptr, 77);
+    assert(!result.stale);
+    assert(result.candidates.size() == 1);
+    assert(!result.candidates.front().eligible);
+    assert(!result.candidates.front().selected);
+    assert(result.recommended_action == StrategicActionKind::None);
+    assert(result.confidence_not_probability == 0.0);
 }
 
 void json_is_versioned_and_shadow_only() {
@@ -212,8 +277,10 @@ int main() {
     invalid_candidates_and_equipped_sales_are_rejected();
     contextual_sell_rejects_pairs_and_existing_star_progress();
     explicit_hold_is_selected_when_all_actions_score_below_zero();
+    explicit_sale_credit_is_not_discarded_as_a_positive_cost();
     validated_survival_and_streak_evidence_adjust_board_improvement_value();
     empty_candidate_set_is_not_a_hold_recommendation();
+    ineligible_candidates_do_not_fall_back_to_implicit_hold();
     json_is_versioned_and_shadow_only();
     std::cout << "ContextualActionEvaluator tests passed\\n";
 }

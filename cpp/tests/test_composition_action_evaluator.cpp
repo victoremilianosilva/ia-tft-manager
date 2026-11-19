@@ -33,6 +33,7 @@ LineupPlan lineup() {
 }
 StrategicActionCandidate candidate(StrategicActionKind kind, int id = -1) {
     StrategicActionCandidate c; c.kind = kind; c.champion_id = id;
+    c.candidate_id = "candidate:" + std::to_string(static_cast<int>(kind)) + ":" + std::to_string(id);
     c.available = true; c.expected_board_delta = .5;
     if (kind == StrategicActionKind::BuyUnit) { c.gold_cost = 3; c.direct_gold_cost = 3; }
     return c;
@@ -127,6 +128,7 @@ void validated_economy_and_item_evidence_reach_action_evaluator() {
     assert(result.board_evidence_validated);
     assert(result.item_evidence_consumed);
     assert(result.candidates.size() == 3);
+    assert(result.candidates[0].candidate_id == c.action_candidates[0].candidate_id);
     assert(result.candidates[1].disposition == ActionCandidateDisposition::Rejected);
     assert(result.candidates[1].reason.find("equipped-item") != std::string::npos);
     assert(result.evaluation.candidate_scores[0].opportunity_cost == 2.5);

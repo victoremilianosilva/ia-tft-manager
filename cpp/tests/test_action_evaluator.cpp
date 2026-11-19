@@ -44,6 +44,7 @@ void equivalent_candidates_select_one_occurrence() {
 
     EconomicControlDecision posture;
     posture.posture = EconomicPosture::AccumulateResources;
+    posture.sufficient_evidence = true;
 
     const auto result = ActionEvaluator{}.evaluate(context, posture);
     assert(result.recommended_action == StrategicActionKind::DeployOrMove);
@@ -65,6 +66,7 @@ void equivalent_shop_offers_select_one_occurrence() {
 
     EconomicControlDecision posture;
     posture.posture = EconomicPosture::StabilizeBoard;
+    posture.sufficient_evidence = true;
     const auto result = ActionEvaluator{}.evaluate(context, posture);
 
     assert(result.recommended_action == StrategicActionKind::BuyUnit);
@@ -124,6 +126,30 @@ void unavailable_candidates_are_not_selected() {
     assert(result.recommended_action == StrategicActionKind::Hold);
 }
 
+void unknown_lost_interest_is_not_scored_as_measured_cost() {
+    StrategicSharedContext context;
+    context.alive = true;
+    context.gold = 10;
+    StrategicActionCandidate xp;
+    xp.kind = StrategicActionKind::BuyExperience;
+    xp.available = true;
+    xp.gold_cost = 4;
+    xp.direct_gold_cost = 4.0;
+    xp.expected_board_delta = 0.5;
+    xp.lost_interest_cost = 3.0;
+    xp.lost_interest_evidence_available = false;
+    context.action_candidates = {xp};
+    EconomicControlDecision posture;
+    auto result = ActionEvaluator{}.evaluate(context, posture);
+    assert(result.candidate_scores.size() == 1);
+    assert(result.candidate_scores[0].lost_interest_component == 0.0);
+
+    context.action_candidates[0].lost_interest_evidence_available = true;
+    result = ActionEvaluator{}.evaluate(context, posture);
+    assert(result.candidate_scores.size() == 1);
+    assert(result.candidate_scores[0].lost_interest_component < 0.0);
+}
+
 void dead_player_skips_candidate_evaluation() {
     StrategicSharedContext context;
     context.alive = false;
@@ -144,6 +170,7 @@ int main() {
     tied_candidates_select_first_occurrence_only();
     no_candidates_means_no_selected_candidate();
     unavailable_candidates_are_not_selected();
+    unknown_lost_interest_is_not_scored_as_measured_cost();
     dead_player_skips_candidate_evaluation();
     std::cout << "ActionEvaluator selection tests passed\n";
     return 0;

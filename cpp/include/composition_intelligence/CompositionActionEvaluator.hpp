@@ -20,6 +20,7 @@ struct CompositionActionCandidateAudit {
     std::size_t candidate_index{0};
     strategy::StrategicActionKind kind{strategy::StrategicActionKind::None};
     std::int32_t champion_id{-1};
+    std::string candidate_id;
     ActionCandidateDisposition disposition{ActionCandidateDisposition::Rejected};
     std::string reason;
     bool selected{false};
@@ -85,10 +86,14 @@ public:
         out.economy_evidence_consumed = economy_valid;
         out.board_evidence_validated = board_valid;
         if (economy_valid) {
-            out.observed_gold = planner_evidence->economy.gold;
-            out.observed_interest = planner_evidence->economy.interest_if_resolved_now;
-            out.projected_next_round_income = planner_evidence->economy.projected_next_round_income;
-            out.observed_economic_posture = static_cast<std::int32_t>(planner_evidence->economy.posture);
+            out.observed_gold = planner_evidence->economy.gold_available
+                ? planner_evidence->economy.gold : -1;
+            out.observed_interest = planner_evidence->economy.interest_available
+                ? planner_evidence->economy.interest_if_resolved_now : -1;
+            out.projected_next_round_income = planner_evidence->economy.projected_income_available
+                ? planner_evidence->economy.projected_next_round_income : -1;
+            out.observed_economic_posture = planner_evidence->economy.sufficient_evidence
+                ? static_cast<std::int32_t>(planner_evidence->economy.posture) : -1;
         }
         if (planner_evidence && !snapshot_identity_valid)
             out.evidence_rejected.push_back("PlannerEvidenceSnapshot:identity_mismatch");
@@ -126,6 +131,7 @@ public:
             audit.candidate_index = i;
             audit.kind = candidate.kind;
             audit.champion_id = candidate.champion_id;
+            audit.candidate_id = candidate.candidate_id;
             audit.disposition = ActionCandidateDisposition::Accepted;
             audit.reason = "accepted_by_composition_context";
 

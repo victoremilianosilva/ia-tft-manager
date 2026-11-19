@@ -20,12 +20,13 @@ namespace tft::composition_intelligence {
 
 // Independent v1 contextual evaluator. It deliberately does not call or share
 // scoring code with strategy::ActionEvaluator (the frozen baseline).
-inline constexpr std::uint32_t kContextualActionEvaluatorSchemaVersion = 1;
+inline constexpr std::uint32_t kContextualActionEvaluatorSchemaVersion = 2;
 
 struct ContextualActionCandidateScore {
     std::size_t candidate_index{0};
     strategy::StrategicActionKind kind{strategy::StrategicActionKind::None};
     std::int32_t champion_id{-1};
+    std::string candidate_id;
     bool eligible{false};
     bool selected{false};
     std::string rejection_reason;
@@ -51,7 +52,7 @@ struct ContextualActionEvaluation {
     bool economy_evidence_consumed{false};
     bool board_evidence_consumed{false};
     bool item_evidence_consumed{false};
-    strategy::StrategicActionKind recommended_action{strategy::StrategicActionKind::Hold};
+    strategy::StrategicActionKind recommended_action{strategy::StrategicActionKind::None};
     std::int32_t recommended_champion_id{-1};
     double confidence_not_probability{0.0};
     std::string rationale{"no_positive_contextual_candidate"};
@@ -65,6 +66,7 @@ struct ContextualActionEvaluation {
                 {"candidate_index", c.candidate_index},
                 {"kind", static_cast<int>(c.kind)},
                 {"champion_id", c.champion_id},
+                {"candidate_id", c.candidate_id},
                 {"eligible", c.eligible},
                 {"selected", c.selected},
                 {"rejection_reason", c.rejection_reason},
@@ -181,6 +183,7 @@ public:
             score.candidate_index = i;
             score.kind = candidate.kind;
             score.champion_id = candidate.champion_id;
+            score.candidate_id = candidate.candidate_id;
             score.eligible = candidate.available && candidate.gold_cost <= context.gold;
             if (!candidate.available) score.rejection_reason = "candidate_unavailable";
             else if (candidate.gold_cost > context.gold) score.rejection_reason = "insufficient_gold";
@@ -251,10 +254,17 @@ public:
                             score.board_value += 0.20;
                     }
                 }
-                const double opportunity = std::max(0.0, candidate.opportunity_cost);
-                const double lost_interest = std::max(0.0, candidate.lost_interest_cost);
-                const double direct_cost = std::max(0.0, candidate.direct_gold_cost != 0.0
-                    ? candidate.direct_gold_cost : candidate.expected_economy_cost);
+                const double opportunity = std::isfinite(candidate.opportunity_cost)
+                    ? std::max(0.0, candidate.opportunity_cost) : 0.0;
+                const double lost_interest = candidate.lost_interest_evidence_available &&
+                    std::isfinite(candidate.lost_interest_cost)
+                    ? std::max(0.0, candidate.lost_interest_cost) : 0.0;
+                // Negative direct cost is a validated sale credit, not a cost to clamp away.
+                const double direct_cost = std::isfinite(candidate.direct_gold_cost) &&
+                    candidate.direct_gold_cost != 0.0
+                    ? candidate.direct_gold_cost
+                    : (std::isfinite(candidate.expected_economy_cost)
+                        ? candidate.expected_economy_cost : 0.0);
                 double evidence_cost = 0.0;
                 if (economy_valid) {
                     if (candidate.kind == strategy::StrategicActionKind::BuyUnit)
@@ -288,6 +298,8 @@ public:
         if (selected_index == std::numeric_limits<std::size_t>::max() &&
             hold_candidate_index != std::numeric_limits<std::size_t>::max()) {
             selected_index = hold_candidate_index;
+            out.recommended_action = strategy::StrategicActionKind::Hold;
+            out.recommended_champion_id = -1;
             out.rationale = "no_positive_contextual_candidate";
         }
         if (selected_index != std::numeric_limits<std::size_t>::max()) {

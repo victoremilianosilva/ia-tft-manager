@@ -3,6 +3,7 @@
 #include "composition_intelligence/ActiveCompositionManager.hpp"
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstdint>
 #include <map>
@@ -40,6 +41,8 @@ struct OwnedUnitEvidence {
     double synergy_contribution{0.5};
     bool completes_active_trait{false};
     bool explicit_sell_candidate{false};
+    // Physical owned instances by star tier; does not include shop or pool copies.
+    std::array<std::int32_t, 4> copies_by_star{};
 };
 
 struct CandidateEvidence {

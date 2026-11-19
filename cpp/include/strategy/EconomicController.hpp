@@ -29,11 +29,8 @@ public:
         record(c.evidence.hp, "hp");
         record(c.evidence.gold, "gold");
         record(c.evidence.level, "level");
-        record(c.evidence.xp, "xp");
         record(c.evidence.xp_to_next, "xp_to_next");
-        record(c.evidence.interest_if_resolved_now, "interest_if_resolved_now");
         record(c.evidence.streaks, "win_loss_streaks");
-        record(c.evidence.board_power, "board_power");
         record(c.evidence.relative_board_power, "relative_board_power");
         record(c.evidence.projected_next_round_income, "projected_next_round_income");
         record(c.evidence.estimated_incoming_damage, "estimated_incoming_damage");

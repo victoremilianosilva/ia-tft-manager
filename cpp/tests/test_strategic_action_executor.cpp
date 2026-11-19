@@ -41,7 +41,8 @@ ContextualActionEvaluation recommendation(StrategicActionKind kind, int champion
     r.composition_id = "comp-a"; r.composition_version = 3;
     ContextualActionCandidateScore candidate;
     candidate.candidate_index = 0; candidate.kind = kind;
-    candidate.champion_id = champion_id; candidate.eligible = true;
+    candidate.champion_id = champion_id; candidate.candidate_id = "test-candidate";
+    candidate.eligible = true;
     candidate.selected = true;
     r.candidates.push_back(candidate);
     r.recommended_action = kind; r.recommended_champion_id = champion_id;
@@ -215,6 +216,18 @@ void recommendation_summary_must_match_selected_candidate() {
     assert(result.validation_reason == "recommendation_integrity_mismatch");
 }
 
+void recommendation_must_match_stable_source_candidate_id() {
+    auto s = native_state();
+    s.masks.type_mask[1] = 1;
+    auto source = source_context(StrategicActionKind::RerollShop);
+    auto result_recommendation = recommendation(StrategicActionKind::RerollShop);
+    result_recommendation.candidates[0].candidate_id = "stale-candidate";
+    StrategicActionExecutor executor;
+    const auto result = resolve(executor, result_recommendation, source, s, "wrong-candidate-id");
+    assert(!result.accepted);
+    assert(result.validation_reason == "source_candidate_mismatch");
+}
+
 void stale_context_and_sequence_are_rejected() {
     auto s = native_state(); s.masks.type_mask[1] = 1;
     auto c = source_context(StrategicActionKind::RerollShop);
@@ -287,6 +300,7 @@ int main() {
     stale_context_and_sequence_are_rejected();
     unavailable_native_mask_generation_is_rejected_explicitly();
     recommendation_summary_must_match_selected_candidate();
+    recommendation_must_match_stable_source_candidate_id();
     recommendation_idempotency_is_scoped_by_match_and_player();
     missing_candidate_and_unsupported_intent_are_rejected();
     failed_resolution_is_audited_without_execution();
