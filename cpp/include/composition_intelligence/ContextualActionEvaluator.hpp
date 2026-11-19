@@ -30,6 +30,8 @@ struct ContextualActionCandidateScore {
     bool selected{false};
     std::string rejection_reason;
     double board_value{0.0};
+    double survival_value{0.0};
+    double streak_value{0.0};
     double unit_priority_value{0.0};
     double lineup_value{0.0};
     double upgrade_value{0.0};
@@ -68,6 +70,8 @@ struct ContextualActionEvaluation {
                 {"rejection_reason", c.rejection_reason},
                 {"components", {
                     {"board_value", c.board_value},
+                    {"survival_value", c.survival_value},
+                    {"streak_value", c.streak_value},
                     {"unit_priority_value", c.unit_priority_value},
                     {"lineup_value", c.lineup_value},
                     {"upgrade_value", c.upgrade_value},
@@ -218,7 +222,20 @@ public:
                 }
             }
             if (score.eligible) {
-                score.board_value = std::max(0.0, candidate.expected_board_delta) * 0.55;
+                const double positive_board_delta =
+                    std::max(0.0, candidate.expected_board_delta);
+                score.board_value = positive_board_delta * 0.55;
+                // Economic urgency changes the value of an evidenced board
+                // improvement; posture labels never force an action category.
+                if (economy_valid && evidence->economy.survival_evidence_available)
+                    score.survival_value = positive_board_delta * 0.20 *
+                        std::clamp(evidence->economy.survival_pressure, 0.0, 1.0);
+                if (economy_valid && evidence->economy.streak_evidence_available) {
+                    const auto streak = std::max(evidence->economy.win_streak,
+                        evidence->economy.loss_streak);
+                    score.streak_value = positive_board_delta * 0.08 *
+                        std::clamp(static_cast<double>(streak) / 6.0, 0.0, 1.0);
+                }
                 score.unit_priority_value = priority
                     ? std::clamp(static_cast<double>(priority->priority) / 100.0, 0.0, 1.0) * 0.24 : 0.0;
                 score.lineup_value = lineup_ids.count(candidate.champion_id) ? 0.12 : 0.0;
@@ -250,7 +267,8 @@ public:
                 }
                 score.economy_cost = (direct_cost * 0.045) +
                     (lost_interest * 0.12) + (std::max(opportunity, evidence_cost) * 0.14);
-                score.total_score = score.board_value + score.unit_priority_value +
+                score.total_score = score.board_value + score.survival_value +
+                    score.streak_value + score.unit_priority_value +
                     score.lineup_value + score.upgrade_value - score.economy_cost;
                 if (candidate.kind == strategy::StrategicActionKind::Hold) {
                     score.total_score = 0.0;
