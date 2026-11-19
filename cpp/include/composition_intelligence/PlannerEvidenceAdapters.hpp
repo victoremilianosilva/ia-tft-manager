@@ -21,10 +21,11 @@ struct EconomicPlannerEvidence {
  strategy::EconomicPosture posture{strategy::EconomicPosture::AccumulateResources};
  strategy::StrategicReason reason{strategy::StrategicReason::InsufficientEvidence};
  double survival_pressure{0},board_pressure{0},economy_pressure{0},confidence{0};
- bool sufficient_evidence{false};
- std::vector<std::string> evidence_used,evidence_missing;
  double buy_experience_opportunity_cost{0},reroll_with_target_opportunity_cost{0};
  double reroll_without_target_opportunity_cost{0},buy_unit_opportunity_cost{0};
+ // Appended to preserve existing aggregate initialization contracts.
+ bool sufficient_evidence{false};
+ std::vector<std::string> evidence_used,evidence_missing;
 };
 struct BoardPlannerEvidence {
  EvidenceSourceMetadata metadata;
