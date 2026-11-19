@@ -47,35 +47,6 @@ def _value(player, *keys, default=0):
     return default
 
 
-def _composition_focus_weights_text(strategy):
-    weights = strategy.get("composition_focus_weights") or {}
-    if not isinstance(weights, dict):
-        return "—"
-    ranked = sorted(weights.items(), key=lambda item: float(item[1] or 0.0), reverse=True)[:5]
-    return ", ".join(f"{name} {float(weight or 0.0):.2f}" for name, weight in ranked) or "—"
-
-
-def _composition_status_text(strategy):
-    locked = bool(strategy.get("composition_locked", False))
-    lock_text = "LOCKED" if locked else "OPEN"
-    strength = float(strategy.get("composition_strength", 0.0) or 0.0)
-    direction = strategy.get("composition_direction") or "—"
-    focus = strategy.get("composition_focus") or "—"
-    weights = _composition_focus_weights_text(strategy)
-    notes = strategy.get("planned_acquisition_notes") or []
-    opgg_note = next(
-        (str(note).split("OPGG_META_CANDIDATE:", 1)[1].split(" (score=", 1)[0].strip()
-         for note in notes if str(note).startswith("OPGG_META_CANDIDATE:")),
-        "",
-    )
-    composition_source = f"OP.GG — {opgg_note}" if opgg_note else "Nativa (não selecionada do OP.GG)"
-    return (
-        f"Comp direction: {direction} | Lock: {lock_text} | "
-        f"Strength: {strength:.2f} | Focus: {focus} | Focus weights: {weights} | "
-        f"Fonte da composição: {composition_source}"
-    )
-
-
 def _format_unit(unit):
     return unit_label(unit) or "·"
 
@@ -1275,7 +1246,6 @@ class ViewerWindow(QMainWindow):
         )
         heading.setStyleSheet("font-size:15pt;font-weight:800;color:#93c5fd;")
         outer.addWidget(heading)
-        score = float(strategy.get("planned_composition_score", 0.0) or 0.0)
         score_label = QLabel(
             f"Motivo: {decision.get('reason') or 'não informado'}"
             f"   ·   Score alvo do planner: {score:.2f}"
@@ -1345,6 +1315,28 @@ class ViewerWindow(QMainWindow):
         traits_layout.addWidget(traits_note)
         traits_layout.addStretch()
         tabs.addTab(traits_tab, "Sinergias")
+
+        priorities_tab = QWidget()
+        priorities_layout = QVBoxLayout(priorities_tab)
+        if intentions:
+            for intention in intentions:
+                if not isinstance(intention, dict):
+                    continue
+                champion_id = intention.get("champion_id", "—")
+                intent_name = intention.get("intent", "—")
+                relation = intention.get("relation", "—")
+                priority = float(intention.get("priority", 0.0) or 0.0)
+                confidence = float(intention.get("confidence_not_probability", 0.0) or 0.0)
+                line = QLabel(
+                    f"Unidade {champion_id} · {intent_name} · {relation} · "
+                    f"prioridade {priority:.2f} · confiança {confidence:.2f}"
+                )
+                line.setWordWrap(True)
+                priorities_layout.addWidget(line)
+        else:
+            priorities_layout.addWidget(QLabel("O planner não publicou intenções de unidade neste snapshot."))
+        priorities_layout.addStretch()
+        tabs.addTab(priorities_tab, "Prioridades Shadow")
 
         position_tab = QWidget()
         position_layout = QVBoxLayout(position_tab)
