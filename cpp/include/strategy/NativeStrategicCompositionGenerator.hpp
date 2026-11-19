@@ -249,7 +249,7 @@ public:
                     const auto id = unit.definition->champion_id;
                     candidate.evidence.push_back("owned_unit:" + std::to_string(id));
                     const auto& observed = owned.at(id);
-                    if (observed.copies >= 2)
+                    if (copies_toward_next_star(observed.copies_by_star, observed.star) > 0)
                         candidate.evidence.push_back("owned_pair:" + std::to_string(id));
                     if (observed.star >= 2)
                         candidate.evidence.push_back("star_progress:" +
