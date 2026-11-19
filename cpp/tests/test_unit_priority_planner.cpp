@@ -31,7 +31,7 @@ void resolves_keep_upgrade_seek_and_version() {
     manager.publish(comp());
     const auto active = *manager.current();
     auto ctx = context(active);
-    ctx.owned_units = {{1, 2, 1, true, {}}, {2, 1, 1, true, {}}};
+    ctx.owned_units = {{1, 3, 1, true, {}}, {2, 1, 1, true, {}}};
     ctx.evidence = {{1, 0.8, 0.7, 0.9, 2}, {2, 0.7, 0.8, 0.9, 0}};
     UnitPriorityPlanner planner;
     auto result = planner.resolve(active, ctx);
@@ -328,12 +328,15 @@ void priority_ties_are_deterministic_by_champion_id() {
 }
 
 void copy_progress_preserves_mixed_star_tier_copies() {
-    assert(copy_progress_toward_next_star(2, 1) == 2);
-    // One 2-star unit plus two 1-star units represents five owned copies.
-    // The old (copies / 3) % 3 formula incorrectly reduced this to one.
-    assert(copy_progress_toward_next_star(5, 2) == 5);
-    assert(copy_progress_toward_next_star(8, 2) == 8);
-    assert(copy_progress_toward_next_star(9, 2) == 9);
+    assert(copy_progress_toward_next_star(1, 1) == 0);
+    assert(copy_progress_toward_next_star(2, 1) == 1);
+    assert(copy_progress_toward_next_star(3, 1) == 2);
+    // One 2-star plus two 1-star units represents five equivalent copies:
+    // three are the 2-star baseline and two are progress toward 3-star.
+    assert(copy_progress_toward_next_star(3, 2) == 0);
+    assert(copy_progress_toward_next_star(5, 2) == 2);
+    assert(copy_progress_toward_next_star(8, 2) == 5);
+    assert(copy_progress_toward_next_star(9, 2) == 6);
     assert(copy_progress_toward_next_star(9, 3) == 0);
     assert(copy_progress_toward_next_star(0, 1) == 0);
 }
@@ -352,6 +355,22 @@ void unknown_shop_affordability_does_not_create_upgrade_priority() {
         [](const auto& u) { return u.champion_id == 1; });
     assert(carry != result.units.end());
     assert(carry->intent == UnitIntent::Keep);
+    assert(carry->target_star == 0);
+}
+
+void two_owned_one_star_copies_do_not_form_an_upgrade() {
+    ActiveCompositionManager manager;
+    manager.publish(comp());
+    const auto active = *manager.current();
+    auto ctx = context(active);
+    // Two 1-star instances are only one additional copy beyond the base unit.
+    ctx.owned_units = {{1, 2, 1, true, {}}};
+    ctx.evidence = {{1, 0.8, 0.7, 0.9, 1}};
+    const auto result = UnitPriorityPlanner{}.resolve(active, ctx);
+    const auto carry = std::find_if(result.units.begin(), result.units.end(),
+        [](const auto& unit) { return unit.champion_id == 1; });
+    assert(carry != result.units.end());
+    assert(carry->intent != UnitIntent::Upgrade);
     assert(carry->target_star == 0);
 }
 
@@ -403,6 +422,9 @@ int main() {
     std::cerr << "RUN unknown_shop_affordability_does_not_create_upgrade_priority\\n";
     unknown_shop_affordability_does_not_create_upgrade_priority();
     std::cerr << "PASS unknown_shop_affordability_does_not_create_upgrade_priority\\n";
+    std::cerr << "RUN two_owned_one_star_copies_do_not_form_an_upgrade\n";
+    two_owned_one_star_copies_do_not_form_an_upgrade();
+    std::cerr << "PASS two_owned_one_star_copies_do_not_form_an_upgrade\n";
     std::cerr << "RUN missing_active_is_safe\n";
     missing_active_is_safe();
     std::cerr << "PASS missing_active_is_safe\n";

@@ -31,15 +31,17 @@ struct UnitPriorityReason {
     std::string message;
 };
 
-// Counts equivalent owned copies already accumulated toward the next star tier.
-// For a 1-star target the next threshold is 3 copies; for a 2-star target it is
-// 9 total copies. This preserves partial progress across mixed 1-star/2-star
-// instances instead of discarding lower-tier copies when a 2-star exists.
+// Returns additional copies already accumulated beyond the strongest owned
+// instance. One 1-star unit is the 1-copy baseline for a 2-star upgrade (2
+// additional copies required); one 2-star unit is the 3-copy baseline for a
+// 3-star upgrade (6 additional copies required). Mixed tiers remain additive,
+// but the baseline is never mistaken for upgrade progress.
 inline std::int32_t copy_progress_toward_next_star(
     std::int32_t copies_owned, std::int32_t highest_star) noexcept {
     if (copies_owned <= 0 || highest_star < 1 || highest_star >= 3) return 0;
-    const std::int32_t next_star_copy_threshold = highest_star == 1 ? 3 : 9;
-    return std::min(copies_owned, next_star_copy_threshold);
+    const std::int32_t baseline = highest_star == 1 ? 1 : 3;
+    const std::int32_t additional_copy_limit = highest_star == 1 ? 2 : 6;
+    return std::clamp(copies_owned - baseline, 0, additional_copy_limit);
 }
 
 struct UnitPriorityEvidence {
