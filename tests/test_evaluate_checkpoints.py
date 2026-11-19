@@ -22,6 +22,9 @@ from scripts.evaluate_checkpoints import (
     policy_actions,
     run_match,
     summarize_paired_seeds,
+    candidate_slots_for_seed,
+    validate_candidate_slots,
+    run_paired_evaluation,
 )
 
 
