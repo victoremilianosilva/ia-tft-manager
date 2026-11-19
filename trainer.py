@@ -428,7 +428,7 @@ class Trainer:
         can_restore_optimizer = bool(
             checkpoint and "optimizer" in checkpoint
             and not migrated_checkpoint and not legacy_action_mask_checkpoint
-            and not legacy_reward_checkpoint
+            and not legacy_reward_checkpoint and not legacy_checkpoint_lineage
         )
         if can_restore_optimizer:
             self.optimizer.load_state_dict(checkpoint["optimizer"])
