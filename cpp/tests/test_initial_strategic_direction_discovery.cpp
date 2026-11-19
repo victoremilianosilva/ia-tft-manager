@@ -73,7 +73,7 @@ int main() {
     const auto unknown_core_score = result.hypotheses.front().score;
     result = discovery.evaluate(observed_false);
     assert(!result.hypotheses.empty());
-    assert(std::abs(result.hypotheses.front().score - unknown_core_score) < 1e-9);
+    assert(result.hypotheses.front().score == unknown_core_score);
 
     // Evidence spread across board, bench and shop can complete a trait.
     DirectionDiscoveryInput spread;
