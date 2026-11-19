@@ -72,6 +72,7 @@ jobs:
           tests/test_shadow_multiround_replay.py
           tests/test_structured_unit_uuid_schema_contract.py
           tests/test_viewer_shadow_planning_logs.py
+          tests/test_viewer_session_shadow_projection.py
           tests/test_policy_bench_target_conditioning.py
           tests/test_policy_item_conditioning.py
           tests/test_strategic_policy.py
