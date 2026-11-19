@@ -20,6 +20,7 @@ struct CompositionActionCandidateAudit {
     std::size_t candidate_index{0};
     strategy::StrategicActionKind kind{strategy::StrategicActionKind::None};
     std::int32_t champion_id{-1};
+    std::string candidate_id;
     ActionCandidateDisposition disposition{ActionCandidateDisposition::Rejected};
     std::string reason;
     bool selected{false};
@@ -126,6 +127,7 @@ public:
             audit.candidate_index = i;
             audit.kind = candidate.kind;
             audit.champion_id = candidate.champion_id;
+            audit.candidate_id = candidate.candidate_id;
             audit.disposition = ActionCandidateDisposition::Accepted;
             audit.reason = "accepted_by_composition_context";
 
