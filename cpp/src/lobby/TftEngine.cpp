@@ -4322,9 +4322,17 @@ struct TFTEngine::Impl {
                                         const auto observed = owned_evidence.find(target.champion_id);
                                         const std::int32_t star = observed == owned_evidence.end()
                                             ? 1 : observed->second.highest_star;
+                                        std::array<std::int32_t, 4> copies_by_star{};
+                                        bool physical_tier_counts_available = false;
+                                        const auto observed = owned_evidence.find(target.champion_id);
+                                        if (observed != owned_evidence.end()) {
+                                            copies_by_star = observed->second.copies_by_star;
+                                            physical_tier_counts_available = true;
+                                        }
                                         feasibility.observed_units.push_back({
                                             target.champion_id, owned_copies, star,
-                                            shop_copies, pool_remaining
+                                            shop_copies, pool_remaining, copies_by_star,
+                                            physical_tier_counts_available
                                         });
                                     }
                                     if (owned_copies > 0)
