@@ -4,7 +4,10 @@
 // already-normalized strategic snapshot and never mutates the active direction,
 // composition, PPO state, observations, masks, rewards, or action execution.
 
+#include "strategy/UnitCopyProgress.hpp"
+
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstdint>
 #include <string>
@@ -35,6 +38,9 @@ struct PivotObservedUnit {
     std::int32_t shop_copies{0};
     // -1 means pool availability was not supplied.
     std::int32_t pool_remaining{-1};
+    // Appended physical star-tier evidence; absent callers retain compatibility semantics.
+    std::array<std::int32_t, 4> copies_by_star{};
+    bool physical_tier_counts_available{false};
 };
 
 struct PivotTraitRequirement {
@@ -74,6 +80,8 @@ struct PivotUnitEvidence {
     bool availability_unknown{false};
     std::int32_t copies_to_two_star{0};
     bool two_star_reachable{false};
+    std::array<std::int32_t, 4> copies_by_star{};
+    bool physical_tier_counts_available{false};
 };
 
 struct PivotFeasibilityResult {
@@ -122,6 +130,9 @@ public:
             if (unit.champion_id < 0 || unit.owned_copies < 0 ||
                 unit.shop_copies < 0 || unit.star < 1 ||
                 unit.star > 3 || unit.pool_remaining < -1 ||
+                (unit.physical_tier_counts_available && std::any_of(
+                    unit.copies_by_star.begin() + 1, unit.copies_by_star.end(),
+                    [](std::int32_t count) { return count < 0; })) ||
                 !observed.emplace(unit.champion_id, unit).second) {
                 out.blockers.push_back("invalid_or_duplicate_unit_evidence");
                 continue;
@@ -162,13 +173,21 @@ public:
             const bool unknown = owned == 0 && shop == 0 && pool < 0;
             const bool available = owned > 0 || shop > 0 || pool > 0;
 
-            const std::int32_t copies_to_two_star = evidence && evidence->star >= 2
-                ? 0 : std::max(0, 3 - owned - shop);
-            const bool two_star_reachable = evidence && evidence->star >= 2
-                ? true : (owned + shop >= 3);
+            const bool physical_counts_available = evidence &&
+                evidence->physical_tier_counts_available;
+            const std::int32_t copies_to_two_star = physical_counts_available
+                ? additional_one_star_copies_to_two_star(
+                    evidence->copies_by_star, evidence->star, shop)
+                : (evidence && evidence->star >= 2 ? 0 : std::max(0, 3 - owned - shop));
+            const bool two_star_reachable = physical_counts_available
+                ? (evidence->star >= 2 ||
+                    evidence->copies_by_star[1] + shop >= 3)
+                : (evidence && evidence->star >= 2 ? true : (owned + shop >= 3));
             out.units.push_back({required.champion_id, owned, shop, pool,
                 required.core, required.carry, available, unknown,
-                copies_to_two_star, two_star_reachable});
+                copies_to_two_star, two_star_reachable,
+                physical_counts_available ? evidence->copies_by_star : std::array<std::int32_t, 4>{},
+                physical_counts_available});
             if (owned > 0 && owned < 3 && shop > 0 && two_star_reachable)
                 out.favorable_evidence.push_back(
                     "shop_completes_two_star_progress_for_unit_" +
