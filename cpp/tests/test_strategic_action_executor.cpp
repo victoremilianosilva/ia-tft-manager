@@ -160,7 +160,7 @@ void movement_requires_explicit_target_and_conditioned_native_mask() {
     StrategicActionExecutor missing_identity_executor;
     const auto missing_identity_result = resolve(missing_identity_executor, r, missing_identity, s, "missing-move-uuid");
     assert(!missing_identity_result.accepted);
-    assert(missing_identity_result.validation_reason == "native_move_mask_rejected");
+    assert(missing_identity_result.validation_reason == "stale_move_source");
 
     StrategicActionExecutor valid_executor;
     result = resolve(valid_executor, r, c, s, "move-rec");
