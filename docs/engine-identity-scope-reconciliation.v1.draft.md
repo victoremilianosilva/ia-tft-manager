@@ -151,3 +151,18 @@ Issue #346 remains open. This note does not claim the 17 structured entity kinds
 Source inspection confirms `TFTEngine` deletes copy construction/assignment and defaults move construction/assignment. The class owns `std::unique_ptr<Impl>`; constructor creates a new Impl, reset increments the Impl-local `episode_id`, and default move transfers the existing pointer/state. No independent Engine-instance token or registry is produced in the audited constructor, Impl fields, reset, result or pybind path.
 
 Therefore the semantic requirement in this proposal remains exactly `(engine_instance_scope, episode_id)`. The move operation must preserve one future scope token; construction must acquire a distinct one. Neither seed nor numeric episode counter is an acceptable substitute. This is a source-backed design requirement, not an implemented identity generator.
+
+
+## PR 1 source reconciliation — native identity producer is now present
+
+**Prior problem:** earlier versions of this audit stated that the Engine-instance token and per-player decision sequence were not produced. Those statements became stale after the native Engine added explicit identity fields.
+
+**Technical rationale:** TFTEngine::Impl now creates one random engine_instance_id for its lifetime; episode_id increments on reset. Native ResetResult/StepResult and AuditSnapshot transport both values. A separate player_decision_sequences[player_id] counter is published for every player row, while decision_sequence remains the Engine-wide snapshot publication ordinal.
+
+**New responsibility:** the native Engine owns Engine-instance identity, episode identity, per-player decision sequence and Engine-wide snapshot sequence. The adapter owns deterministic composition of (engine_instance_id, episode_id) into identity.engine_match_id and binding the selected player's counter into identity.decision_sequence.
+
+**Contract and invariants:** physical UnitInstance identity is (engine_match_id, uuid). player_id describes current ownership and is not part of physical identity. UUID values may repeat after a same-seed reset; the Engine-episode scope must therefore be present for every join. The optional external logical match_id may remain null without making an otherwise complete native Engine-scoped decision incomplete.
+
+**Cross-component impact:** TFTEngine::Impl, ResetResult/StepResult, AuditSnapshot, pybind, cpp_lobby_env.py, Observation Schema v2, identity source map, sequence namespace registry, structured-entity contract and checkpoint lineage.
+
+**Validation:** the PR adds native regression coverage for UUID uniqueness across all players' board/bench within an episode, stable Engine-instance identity across reset, advancing episode identity, deterministic UUID reuse across same-seed reset, and distinct Engine-instance scope for independently constructed Engines. The v2 validator also proves a complete native identity with match_id=null and a registered per-player decision sequence.
