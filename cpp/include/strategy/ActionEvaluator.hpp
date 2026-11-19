@@ -58,7 +58,7 @@ public:
             breakdown.upgrade_component =
                 std::clamp(candidate.upgrade_value, 0.0, 1.0) * 0.28;
 
-            switch (posture.posture) {
+            if (posture.sufficient_evidence) switch (posture.posture) {
                 case EconomicPosture::AccumulateResources:
                     if (candidate.kind == StrategicActionKind::Hold)
                         breakdown.posture_component = 0.24;
