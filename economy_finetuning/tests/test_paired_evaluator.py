@@ -4,11 +4,16 @@ import numpy as np
 import torch
 
 from economy_finetuning.finetune import MASK_SHAPES, _flatten_masks
+from action_contract import build_action_mask_checkpoint_contract
+from reward_contract import build_reward_checkpoint_contract
+from semantic_observation import build_semantic_state_checkpoint_contract
 from economy_finetuning.paired_evaluator import (
     aggregate_mirrored_runs,
     compare_final_metrics,
     extract_final_metrics,
     masks_sha256,
+    mirrored_policy_variants,
+    validate_evaluation_checkpoint_contracts,
 )
 
 
@@ -101,6 +106,51 @@ class PairedEvaluatorTests(unittest.TestCase):
         self.assertAlmostEqual(row["mean_reward_delta"], 5.0)
         self.assertEqual(len(row["final_player_deltas"]), 8)
         self.assertTrue(all(item["placement_delta"] == -4 for item in row["final_player_deltas"]))
+
+
+    def test_seed_rotated_mirror_schedule_is_balanced_deterministic_and_complementary(self):
+        first_a, first_b = mirrored_policy_variants(20261105)
+        repeated_a, repeated_b = mirrored_policy_variants(20261105)
+        next_a, next_b = mirrored_policy_variants(20261106)
+
+        self.assertEqual(first_a, repeated_a)
+        self.assertEqual(first_b, repeated_b)
+        self.assertEqual(first_a, ["finetuned" if value == "finetuned" else "original" for value in first_a])
+        self.assertEqual(first_b, ["original" if value == "finetuned" else "finetuned" for value in first_a])
+        self.assertEqual(first_a.count("finetuned"), 4)
+        self.assertEqual(first_b.count("finetuned"), 4)
+        self.assertNotEqual(first_a, next_a)
+
+    def test_evaluation_requires_matching_action_reward_and_semantic_contracts(self):
+        catalog = {"TFT_TestChampion": 17}
+        semantic = build_semantic_state_checkpoint_contract(catalog)
+        payload = {
+            "action_mask_contract": build_action_mask_checkpoint_contract(),
+            "reward_contract": build_reward_checkpoint_contract(),
+            "semantic_state_contract": semantic,
+            "policy": {
+                "semantic_id_embedding.weight": object(),
+                "semantic_encoder.0.weight": object(),
+                "semantic_encoder.0.bias": object(),
+                "semantic_encoder.2.weight": object(),
+                "semantic_encoder.2.bias": object(),
+            },
+        }
+        status = validate_evaluation_checkpoint_contracts(payload, catalog)
+        self.assertEqual(status, {
+            "action_mask": "validated",
+            "reward": "validated",
+            "semantic_state": "validated",
+        })
+
+        incompatible = dict(payload)
+        incompatible["reward_contract"] = {"contract_id": "wrong", "version": 1, "sha256": "0" * 64}
+        with self.assertRaises(ValueError):
+            validate_evaluation_checkpoint_contracts(incompatible, catalog)
+
+    def test_evaluation_rejects_unversioned_checkpoint_without_explicit_opt_in(self):
+        with self.assertRaisesRegex(ValueError, "Action/Mask Contract"):
+            validate_evaluation_checkpoint_contracts({"policy": {}}, {"TFT_TestChampion": 17})
 
     def test_compare_final_metrics_uses_finetuned_minus_original(self):
         original = [{
