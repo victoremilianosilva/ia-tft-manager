@@ -358,6 +358,22 @@ void unknown_shop_affordability_does_not_create_upgrade_priority() {
     assert(carry->target_star == 0);
 }
 
+void two_owned_one_star_copies_do_not_form_an_upgrade() {
+    ActiveCompositionManager manager;
+    manager.publish(comp());
+    const auto active = *manager.current();
+    auto ctx = context(active);
+    // Two 1-star instances are only one additional copy beyond the base unit.
+    ctx.owned_units = {{1, 2, 1, true, {}}};
+    ctx.evidence = {{1, 0.8, 0.7, 0.9, 1}};
+    const auto result = UnitPriorityPlanner{}.resolve(active, ctx);
+    const auto carry = std::find_if(result.units.begin(), result.units.end(),
+        [](const auto& unit) { return unit.champion_id == 1; });
+    assert(carry != result.units.end());
+    assert(carry->intent != UnitIntent::Upgrade);
+    assert(carry->target_star == 0);
+}
+
 void missing_active_is_safe() {
     auto result = UnitPriorityPlanner{}.resolve(std::nullopt, {});
     assert(result.stale && result.units.empty());
@@ -406,6 +422,9 @@ int main() {
     std::cerr << "RUN unknown_shop_affordability_does_not_create_upgrade_priority\\n";
     unknown_shop_affordability_does_not_create_upgrade_priority();
     std::cerr << "PASS unknown_shop_affordability_does_not_create_upgrade_priority\\n";
+    std::cerr << "RUN two_owned_one_star_copies_do_not_form_an_upgrade\n";
+    two_owned_one_star_copies_do_not_form_an_upgrade();
+    std::cerr << "PASS two_owned_one_star_copies_do_not_form_an_upgrade\n";
     std::cerr << "RUN missing_active_is_safe\n";
     missing_active_is_safe();
     std::cerr << "PASS missing_active_is_safe\n";
