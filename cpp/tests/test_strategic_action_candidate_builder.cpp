@@ -125,6 +125,35 @@ void builder_emits_snapshot_bound_physical_candidates() {
     assert(hold->evidence_reason.find("neutral_baseline") != std::string::npos);
 }
 
+void xp_candidate_does_not_depend_on_an_active_composition() {
+    StrategicSharedContext context;
+    context.player_id = 0;
+    context.round = 3;
+    context.alive = true;
+    context.gold = 8;
+    context.level = 4;
+    context.xp_to_next = 4;
+    context.evidence.gold = true;
+    context.evidence.level = true;
+    context.evidence.xp_to_next = true;
+
+    StrategicActionNativeSnapshot native;
+    native.match_id = 9;
+    native.player_id = 0;
+    native.round = 3;
+    native.sequence = 2;
+    native.gold = 8;
+    native.alive = true;
+    enables(native.masks, decision::ActionType::BUY_XP);
+
+    const auto result = StrategicActionCandidateBuilder{}.build(
+        context, std::nullopt, {}, {}, native, {});
+    assert(result.status == "candidates_generated");
+    assert(result.candidates.size() == 1);
+    assert(result.candidates.front().kind == StrategicActionKind::BuyExperience);
+    assert(result.candidates.front().gold_cost == EconomyEngine::BUY_XP_COST);
+}
+
 void builder_refuses_stale_or_mismatched_native_snapshots() {
     StrategicSharedContext context;
     context.player_id = 1;
@@ -147,6 +176,7 @@ void builder_refuses_stale_or_mismatched_native_snapshots() {
 
 int main() {
     builder_emits_snapshot_bound_physical_candidates();
+    xp_candidate_does_not_depend_on_an_active_composition();
     builder_refuses_stale_or_mismatched_native_snapshots();
     std::cout << "StrategicActionCandidateBuilder tests passed\\n";
 }
