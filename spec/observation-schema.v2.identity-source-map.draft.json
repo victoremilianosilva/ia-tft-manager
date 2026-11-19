@@ -19,21 +19,21 @@
       "field_path": "identity.match_id",
       "owner": "Validated game/platform match source",
       "source": "GEP/platform match identity",
-      "availability": "not_proven_in_runtime; real_capture_deferred_to_stage7",
+      "availability": "optional_external_source_not_proven",
       "nature": "observed",
       "scope": "logical_match",
       "canonical_decision_eligible": false,
-      "notes": "Null until a validated authoritative logical match source is delivered."
+      "notes": "Optional authoritative logical game/platform match ID. Null is valid for a complete native Engine-scoped decision identity; do not substitute Viewer session ID or infer from episode_id."
     },
     {
       "field_path": "identity.engine_match_id",
       "owner": "Native Engine identity adapter",
-      "source": "engine_instance_id + episode_id",
-      "availability": "derivable_inputs_available; canonical_adapter_field_not_yet_delivered",
+      "source": "native engine_instance_id + episode_id; canonical adapter composition",
+      "availability": "native_inputs_available_canonical_adapter_field_not_yet_emitted",
       "nature": "derived",
       "scope": "engine_instance_plus_episode",
-      "canonical_decision_eligible": false,
-      "notes": "Must distinguish Engine instance lifetime and episode; episode_id alone is insufficient."
+      "canonical_decision_eligible": true,
+      "notes": "Native engine_instance_id is generated once per TFTEngine::Impl and survives reset; episode_id increments on reset. Their deterministic composite is the Engine-episode scope. PPO identity envelope still needs to emit the canonical field."
     },
     {
       "field_path": "identity.session_match_id",
@@ -78,12 +78,12 @@
     {
       "field_path": "identity.decision_sequence",
       "owner": "Authoritative per-player decision producer",
-      "source": "registered tft.engine.decision namespace",
-      "availability": "proposed_not_implemented",
+      "source": "ResetResult/StepResult.player_decision_sequences[player_id] -> AuditSnapshot.player_decision_sequences[player_id] -> pybind -> cpp_lobby_env._last_snapshot_metadata",
+      "availability": "implemented_native_engine_and_wrapper_metadata",
       "nature": "observed",
-      "scope": "per_player_within_engine_match_id",
+      "scope": "per_player_within_engine_episode",
       "canonical_decision_eligible": true,
-      "notes": "Must remain null until an authoritative per-player decision counter exists; do not reuse the native snapshot ordinal."
+      "notes": "Authoritative per-player published-decision sequence is emitted by native ResetResult/StepResult and copied/validated by the Python wrapper. It is distinct from the Engine-wide snapshot_sequence. It is not yet serialized as identity.decision_sequence in the canonical PPO schema envelope."
     },
     {
       "field_path": "identity.snapshot_sequence",
