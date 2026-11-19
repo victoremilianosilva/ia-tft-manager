@@ -37,7 +37,11 @@ from action_contract import (
     validate_critic_mask_input_checkpoint_contract,
 )
 from rollout import RolloutBuffer
-from checkpoint_contract import (\n    build_checkpoint_lineage_contract,\n    validate_checkpoint_lineage_contract,\n)\nfrom reward_contract import (
+from checkpoint_contract import (
+    build_checkpoint_lineage_contract,
+    validate_checkpoint_lineage_contract,
+)
+from reward_contract import (
     build_reward_checkpoint_contract,
     validate_reward_checkpoint_contract,
 )
@@ -2280,7 +2284,14 @@ class Trainer:
                         "critic_mask_input_contract":
                             build_critic_mask_input_checkpoint_contract(),
                         "semantic_state_contract": self.semantic_state_contract,
-                        "reward_contract": build_reward_checkpoint_contract(),\n                        "checkpoint_contract": build_checkpoint_lineage_contract(\n                            self.policy.state_dict(),\n                            build_action_mask_checkpoint_contract(),\n                            build_critic_mask_input_checkpoint_contract(),\n                            self.semantic_state_contract,\n                            build_reward_checkpoint_contract(),\n                        ),
+                        "reward_contract": build_reward_checkpoint_contract(),
+                        "checkpoint_contract": build_checkpoint_lineage_contract(
+                            self.policy.state_dict(),
+                            build_action_mask_checkpoint_contract(),
+                            build_critic_mask_input_checkpoint_contract(),
+                            self.semantic_state_contract,
+                            build_reward_checkpoint_contract(),
+                        ),
                     },
                     self.config.checkpoint_path
                 )
@@ -2318,7 +2329,14 @@ class Trainer:
                 "action_mask_contract": build_action_mask_checkpoint_contract(),
                 "critic_mask_input_contract": build_critic_mask_input_checkpoint_contract(),
                 "semantic_state_contract": self.semantic_state_contract,
-                "reward_contract": build_reward_checkpoint_contract(),\n                "checkpoint_contract": build_checkpoint_lineage_contract(\n                    self.policy.state_dict(),\n                    build_action_mask_checkpoint_contract(),\n                    build_critic_mask_input_checkpoint_contract(),\n                    self.semantic_state_contract,\n                    build_reward_checkpoint_contract(),\n                ),
+                "reward_contract": build_reward_checkpoint_contract(),
+                "checkpoint_contract": build_checkpoint_lineage_contract(
+                    self.policy.state_dict(),
+                    build_action_mask_checkpoint_contract(),
+                    build_critic_mask_input_checkpoint_contract(),
+                    self.semantic_state_contract,
+                    build_reward_checkpoint_contract(),
+                ),
             },
             self.config.checkpoint_path,
         )
