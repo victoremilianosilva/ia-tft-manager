@@ -109,7 +109,8 @@ void early_pairs_create_a_cheap_unbound_direction() {
                      StrategicAnchorEvidenceKind::PairProgress) != hypothesis.anchor.evidence.end());
 
     ActiveCompositionManager active_composition;
-    UnifiedStrategicStateMachine machine(active_composition);
+    StrategicCommitment commitment;
+    UnifiedStrategicStateMachine machine(active_composition, commitment);
     StrategicCycleInput input;
     input.exploration = make_early_snapshot();
     auto cycle = machine.refresh(input);
@@ -187,7 +188,8 @@ void carry_two_star_is_an_alternative_to_four_or_five_cost() {
 
 void evaluation_preserves_the_current_direction() {
     ActiveCompositionManager active_composition;
-    UnifiedStrategicStateMachine machine(active_composition, {3, 60.0, 5});
+    StrategicCommitment commitment;
+    UnifiedStrategicStateMachine machine(active_composition, commitment, {3, 60.0, 5});
     auto input = make_active_input();
     auto result = machine.refresh(input);
     assert(result.phase == StrategicCyclePhase::CompositionActive);
@@ -228,6 +230,7 @@ void confirmed_pivot_commits_composition_and_direction_together() {
     assert(result.anchors.direction_anchor.composition_identity == "composition-next");
     assert(result.anchors.direction_anchor.composition_version == 2);
     assert(result.anchors.direction_anchor.identity == "direction:composition-next:v2");
+    assert(commitment.composition_direction == "composition-next");
     assert(!result.anchors.has_pivot_candidate());
     assert(machine.transition_history().size() == 1);
     const auto& transition = machine.transition_history().front();
