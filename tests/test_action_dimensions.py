@@ -196,10 +196,11 @@ def test_policy_accepts_observation_with_composition_control_features():
         hidden_size=32,
     )
     observations = torch.zeros(2, obs_dim)
-    values = policy.get_value(observations)
+    masks = _complete_mask_bundle({}, observations.shape[0])
+    values = policy.get_value(observations, masks=masks)
     actions, log_prob, entropy, values_again = policy.get_action_and_value(
         observations,
-        masks=_complete_mask_bundle({}, observations.shape[0]),
+        masks=masks,
         deterministic=True,
     )
 
