@@ -14,6 +14,7 @@ static DirectionDiscoveryUnit unit(
     u.champion_id = id;
     u.cost = cost;
     u.copies_owned = copies;
+    u.copies_by_star[1] = copies;
     u.on_board = board;
     u.on_bench = bench;
     u.in_shop = shop;
