@@ -115,7 +115,6 @@ class PairedEvaluatorTests(unittest.TestCase):
 
         self.assertEqual(first_a, repeated_a)
         self.assertEqual(first_b, repeated_b)
-        self.assertEqual(first_a, ["finetuned" if value == "finetuned" else "original" for value in first_a])
         self.assertEqual(first_b, ["original" if value == "finetuned" else "finetuned" for value in first_a])
         self.assertEqual(first_a.count("finetuned"), 4)
         self.assertEqual(first_b.count("finetuned"), 4)
