@@ -21,6 +21,8 @@ struct EconomicPlannerEvidence {
  strategy::EconomicPosture posture{strategy::EconomicPosture::AccumulateResources};
  strategy::StrategicReason reason{strategy::StrategicReason::InsufficientEvidence};
  double survival_pressure{0},board_pressure{0},economy_pressure{0},confidence{0};
+ bool sufficient_evidence{false};
+ std::vector<std::string> evidence_used,evidence_missing;
  double buy_experience_opportunity_cost{0},reroll_with_target_opportunity_cost{0};
  double reroll_without_target_opportunity_cost{0},buy_unit_opportunity_cost{0};
 };
@@ -59,6 +61,8 @@ public:
   o.gold=c.gold;o.level=c.level;o.xp=c.xp;o.xp_to_next=c.xp_to_next;
   o.interest_if_resolved_now=c.interest_if_resolved_now;o.projected_next_round_income=c.projected_next_round_income;
   o.win_streak=c.win_streak;o.loss_streak=c.loss_streak;o.posture=d.posture;o.reason=d.reason;
+  o.sufficient_evidence=d.sufficient_evidence;
+  o.evidence_used=d.evidence_used;o.evidence_missing=d.evidence_missing;
   o.survival_pressure=unit(d.survival_pressure);o.board_pressure=unit(d.board_pressure);
   o.economy_pressure=unit(d.economy_pressure);o.confidence=unit(d.confidence);
   o.buy_experience_opportunity_cost=strategy::action_opportunity_cost::kBuyExperience;
