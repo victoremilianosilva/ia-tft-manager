@@ -1680,9 +1680,6 @@ struct TFTEngine::Impl {
                         const int role = std::clamp(observation_role(*unit, *definition), 0, 4);
                         const auto& stats = definition->stats;
                         const auto& combat = definition->combat_profile;
-                        const auto profile = semantic_profile_by_uuid.find(unit->uuid);
-                        const double fit = profile == semantic_profile_by_uuid.end()
-                            ? 0.0 : profile->second->composition_fit;
                         features[0] = 1.0f;
                         features[1] = on_board ? 1.0f : 0.0f;
                         features[2] = on_board ? 0.0f : 1.0f;
@@ -1690,7 +1687,7 @@ struct TFTEngine::Impl {
                         features[4 + role] = 1.0f;
                         features[9] = on_board && row <= 1 ? 1.0f : 0.0f;
                         features[10] = on_board && row >= 2 ? 1.0f : 0.0f;
-                        features[11] = static_cast<float>(std::clamp(fit, 0.0, 1.0));
+                        features[11] = 0.0f; // retired StrategyInfo composition-fit feature
                         features[12] = static_cast<float>(std::clamp(
                             (combat.attack_damage > 0.0 ? combat.attack_damage : stats.attack_damage) / 200.0, 0.0, 1.0));
                         features[13] = static_cast<float>(std::clamp(
