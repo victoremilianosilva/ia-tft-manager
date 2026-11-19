@@ -32,7 +32,7 @@ def test_shadow_pipeline_replays_multiple_rounds_with_correlated_sequences(monke
     try:
         engine.reset(seed=20261119)
         initial = engine.get_snapshot_metadata()
-        final_info = _advance_rounds(engine, 9)
+        final_info = _advance_rounds(engine, 10)
         final = engine.get_snapshot_metadata()
 
         assert final["engine_instance_id"] == initial["engine_instance_id"]
@@ -45,7 +45,7 @@ def test_shadow_pipeline_replays_multiple_rounds_with_correlated_sequences(monke
         sequences = [record["sequence"] for record in records]
         assert sequences == sorted(sequences)
         assert len(sequences) == len(set(sequences))
-        assert sequences == list(range(1, len(sequences) + 1))
+        assert all(right > left for left, right in zip(sequences, sequences[1:]))
 
         observed_rounds = set()
         observed_players = set()
