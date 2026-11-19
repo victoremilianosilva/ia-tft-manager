@@ -36,18 +36,32 @@ struct BoardPlannerEvidence {
  std::int32_t unit_count{0},frontline_count{0},carry_count{0},exposed_carry_count{0};
  std::int32_t missing_frontline_count{0},missing_backline_count{0};
 };
-struct ItemUnitBinding { std::int32_t champion_id{-1}; items::UnitProfile profile; };
+struct ItemUnitBinding {
+ std::int32_t champion_id{-1};
+ items::UnitProfile profile;
+ std::string role_source{"ChampionDefinition+UnitCombatClassifier"};
+ std::string composition_source{"unavailable_without_active_composition"};
+ std::string composition_id;
+ std::uint64_t composition_version{0};
+};
 struct ItemUnitPlannerEvidence {
  std::int32_t champion_id{-1}; std::vector<std::string> equipped_item_ids;
  std::string best_inventory_item_id; double equipped_fit{0},best_inventory_fit{0};
  bool has_equipped_items{false},has_inventory_candidate{false};
+ // Observed profile facts and composition-derived preferences remain distinct.
+ std::string role_source{"unknown"};
+ std::string composition_source{"unavailable"};
+ std::string composition_id;
+ std::uint64_t composition_version{0};
+ double composition_fit{0.0};
+ std::vector<std::string> preferred_traits;
 };
 struct ItemPlannerEvidence {
  EvidenceSourceMetadata metadata; std::size_t inventory_count{0},component_count{0};
  std::vector<ItemUnitPlannerEvidence> units;
 };
 struct PlannerEvidenceSnapshot {
- std::uint32_t schema_version{2}; std::uint64_t match_id{0}; std::int32_t player_id{-1};
+ std::uint32_t schema_version{3}; std::uint64_t match_id{0}; std::int32_t player_id{-1};
  std::string composition_id; std::uint64_t composition_version{0}; std::uint32_t round{0};
  EconomicPlannerEvidence economy; BoardPlannerEvidence board; ItemPlannerEvidence items;
 };
@@ -98,6 +112,10 @@ public:
   for(const auto& b:bindings) {
    if(b.champion_id<0||b.profile.uuid.empty())continue;
    ItemUnitPlannerEvidence u;u.champion_id=b.champion_id;
+   u.role_source=b.role_source;u.composition_source=b.composition_source;
+   u.composition_id=b.composition_id;u.composition_version=b.composition_version;
+   u.composition_fit=unit(b.profile.composition_fit);
+   u.preferred_traits=b.profile.preferred_traits;
    const auto eq=state.equipped_by_unit_uuid.find(b.profile.uuid);
    if(eq!=state.equipped_by_unit_uuid.end()) {
     u.equipped_item_ids=eq->second;u.has_equipped_items=!eq->second.empty();
