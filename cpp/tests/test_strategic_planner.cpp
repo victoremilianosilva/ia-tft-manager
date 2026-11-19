@@ -322,6 +322,12 @@ int main() {
     streak_context.gold = 45;
     streak_context.relative_board_power = 1.15;
     streak_context.win_streak = 5;
+    // These values are observations, not defaults: expose their availability
+    // to the evidence-aware EconomicController.
+    streak_context.evidence.hp = true;
+    streak_context.evidence.gold = true;
+    streak_context.evidence.relative_board_power = true;
+    streak_context.evidence.streaks = true;
     StrategicActionCandidate streak_hold;
     streak_hold.kind = StrategicActionKind::Hold;
     streak_context.action_candidates.push_back(streak_hold);
