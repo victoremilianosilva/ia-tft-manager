@@ -34,9 +34,10 @@
         "entities.board[].unit",
         "entities.bench[].unit"
       ],
-      "identity": "unverified: native UnitInstanceFactory generates uuid, but it is deterministic from a seeded RNG, repeats after TFTEngine::reset() when the same seed is reused, and has no match/player namespace; it is not accepted as standalone canonical instance_id",
+      "identity": "Composite physical identity is (engine_instance_id, episode_id, player_id, uuid). UnitInstance::uuid is deterministic within an Engine episode factory and may repeat after reset; never use the raw UUID without its enclosing Engine/episode/player scope.",
       "scope": [
-        "engine_match_id",
+        "engine_instance_id",
+        "episode_id",
         "player_id"
       ],
       "domain": [
@@ -51,11 +52,12 @@
       "gaps": [
         "Unit.items currently contains catalog strings, not physical item-instance references.",
         "UnitInstanceFactory::create() generates uuid from a seeded mt19937_64; TFTEngine::reset() reconstructs the factory from the same seed, repeating the first generated UUID across episodes.",
-        "UUID has no encoded match/player scope and no issued-ID collision registry.",
-        "UUID is exposed through diagnostic get_audit_snapshot(), not the PPO observation tensor/rollout."
+        "UUID is exposed through diagnostic get_audit_snapshot(), not the PPO observation tensor/rollout.",
+        "Raw UUID is not globally unique and may repeat after reset; all joins must include engine_instance_id, episode_id and player_id from the enclosing snapshot envelope.",
+        "UUID is diagnostic/native snapshot identity and is not projected as a typed physical identity into PPO rollouts."
       ],
-      "native_identity_candidate": "UnitInstance::uuid (scoped/deterministic; not accepted as standalone canonical identity)",
-      "identity_status": "unverified"
+      "native_identity_candidate": "UnitInstance::uuid, valid only within the composite Engine/episode/player envelope",
+      "identity_status": "native_observed_scoped"
     },
     {
       "kind": "champion_catalog_entry",
@@ -701,5 +703,6 @@
       "future replay and observation correlation"
     ],
     "objective_validation": "The manifest agrees with the producer coverage CSV and lifecycle follow-up: native query exists, delivery is direct-pybind-only, and PPO/snapshot delivery remains absent. No runtime, schema field, tensor or training behavior changes."
-  }
+  },
+  "gaps": []
 }
