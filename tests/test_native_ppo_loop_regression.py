@@ -211,10 +211,19 @@ def _run_native_ppo_identity_replay(seed: int, decisions: int = 40):
             assert np.isfinite(rewards).all()
 
             seen_rounds.add(int(result_metadata["round"]))
+            # Semantic projection hashes intentionally bind Engine/episode/player identity.
+            # Compare the projected tensor content here because each replay owns a distinct
+            # Engine instance; identity-bound hashes are validated within each replay above.
+            semantic_content = tuple(
+                (tuple(numeric), tuple(champion_ids))
+                for numeric, champion_ids in zip(
+                    semantic_batch["numeric"], semantic_batch["champion_ids"]
+                )
+            )
             trace.append((
                 tuple(observation_hashes),
                 tuple(mask_hashes),
-                tuple(semantic_batch["hashes"]),
+                semantic_content,
                 tuple(tuple(action) for action in action_rows),
             ))
             observations = next_observations
