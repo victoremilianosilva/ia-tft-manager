@@ -12,7 +12,9 @@ def shadow_diagnostics(player_snapshot: dict) -> tuple[dict, dict]:
 
 
 def shadow_lineup_entries(player_snapshot: dict) -> list[dict]:
-    _, diagnostics = shadow_diagnostics(player_snapshot)
+    shadow, diagnostics = shadow_diagnostics(player_snapshot)
+    if shadow.get("status") == "unavailable" or shadow.get("stale"):
+        return []
     lineup = diagnostics.get("lineup_plan")
     if not isinstance(lineup, dict):
         return []
