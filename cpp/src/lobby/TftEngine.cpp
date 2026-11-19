@@ -4314,9 +4314,16 @@ struct TFTEngine::Impl {
                                         ++target_trait_counts[trait];
                                     feasibility.required_units.push_back(required);
 
-                                    const auto owned = copies_by_unit.find(target.champion_id);
-                                    const std::int32_t owned_copies = owned == copies_by_unit.end()
-                                        ? 0 : owned->second;
+                                    const auto observed = owned_evidence.find(target.champion_id);
+                                    const bool physical_tier_counts_available =
+                                        observed != owned_evidence.end();
+                                    const std::array<std::int32_t, 4> copies_by_star =
+                                        physical_tier_counts_available
+                                            ? observed->second.copies_by_star
+                                            : std::array<std::int32_t, 4>{};
+                                    const std::int32_t owned_copies =
+                                        physical_tier_counts_available
+                                            ? strategy::owned_star_equivalent_copies(copies_by_star) : 0;
                                     std::int32_t shop_copies = 0;
                                     if (strategic_shop) {
                                         for (const auto& offer : strategic_shop->offers())
@@ -4326,16 +4333,8 @@ struct TFTEngine::Impl {
                                     const std::int32_t pool_remaining = pool
                                         ? pool->available(target.champion_id) : -1;
                                     if (owned_copies > 0 || shop_copies > 0 || pool_remaining >= 0) {
-                                        const auto observed = owned_evidence.find(target.champion_id);
-                                        const std::int32_t star = observed == owned_evidence.end()
-                                            ? 1 : observed->second.highest_star;
-                                        std::array<std::int32_t, 4> copies_by_star{};
-                                        bool physical_tier_counts_available = false;
-                                        const auto observed = owned_evidence.find(target.champion_id);
-                                        if (observed != owned_evidence.end()) {
-                                            copies_by_star = observed->second.copies_by_star;
-                                            physical_tier_counts_available = true;
-                                        }
+                                        const std::int32_t star = physical_tier_counts_available
+                                            ? observed->second.highest_star : 1;
                                         feasibility.observed_units.push_back({
                                             target.champion_id, owned_copies, star,
                                             shop_copies, pool_remaining, copies_by_star,
