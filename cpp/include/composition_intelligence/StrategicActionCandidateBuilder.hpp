@@ -74,6 +74,20 @@ public:
             append(std::move(hold));
         }
 
+        // XP is an economy alternative even before an active composition exists.
+        if (context.evidence.level && context.evidence.xp_to_next &&
+            context.level < EconomyEngine::MAX_LEVEL &&
+            context.xp_to_next > 0 && context.gold >= EconomyEngine::BUY_XP_COST &&
+            type_enabled(decision::ActionType::BUY_XP)) {
+            strategy::StrategicActionCandidate candidate;
+            candidate.kind = strategy::StrategicActionKind::BuyExperience;
+            candidate.gold_cost = EconomyEngine::BUY_XP_COST;
+            candidate.direct_gold_cost = EconomyEngine::BUY_XP_COST;
+            candidate.available = true;
+            candidate.evidence_reason = "native_economy_xp_threshold_and_buy_xp_mask";
+            append(std::move(candidate));
+        }
+
         if (active && !priorities.stale && !lineup.stale &&
             priorities.composition_id == active->candidate.composition_id &&
             priorities.composition_version == active->version &&
@@ -112,18 +126,6 @@ public:
                 append(std::move(candidate));
             }
 
-            if (context.evidence.level && context.evidence.xp_to_next &&
-                context.level < EconomyEngine::MAX_LEVEL &&
-                context.xp_to_next > 0 && context.gold >= EconomyEngine::BUY_XP_COST &&
-                type_enabled(decision::ActionType::BUY_XP)) {
-                strategy::StrategicActionCandidate candidate;
-                candidate.kind = strategy::StrategicActionKind::BuyExperience;
-                candidate.gold_cost = EconomyEngine::BUY_XP_COST;
-                candidate.direct_gold_cost = EconomyEngine::BUY_XP_COST;
-                candidate.available = true;
-                candidate.evidence_reason = "native_economy_xp_threshold_and_buy_xp_mask";
-                append(std::move(candidate));
-            }
             const bool has_upgrade_target = std::any_of(priorities.units.begin(),
                 priorities.units.end(), [](const auto& unit) {
                     return unit.intent == UnitIntent::Seek || unit.intent == UnitIntent::Upgrade;
