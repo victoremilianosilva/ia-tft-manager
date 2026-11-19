@@ -392,7 +392,11 @@ if(BUILD_TESTING)
     enable_tft_test_assertions(test_strategic_action_executor)
     add_test(NAME strategic_action_executor COMMAND test_strategic_action_executor)
 
-    add_executable(test_strategic_action_candidate_builder tests/test_strategic_action_candidate_builder.cpp)
+    add_executable(
+        test_strategic_action_candidate_builder
+        tests/test_strategic_action_candidate_builder.cpp
+        src/lobby/EconomyEngine.cpp
+    )
     configure_tft_module(test_strategic_action_candidate_builder)
     target_link_libraries(test_strategic_action_candidate_builder PRIVATE nlohmann_json::nlohmann_json)
     enable_tft_test_assertions(test_strategic_action_candidate_builder)
