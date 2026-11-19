@@ -349,18 +349,34 @@ class ViewerSession:
     def _refresh_audit_snapshot(self):
         """Attach the latest canonical Shadow diagnostic without enriching native state from StrategyInfo."""
         self.audit_snapshot = self.lobby.get_audit_snapshot()
+        metadata_getter = getattr(self.lobby, "get_snapshot_metadata", None)
+        metadata = metadata_getter() if callable(metadata_getter) else {}
+        engine_episode_id = metadata.get("episode_id") if isinstance(metadata, dict) else None
+        if isinstance(engine_episode_id, bool) or not isinstance(engine_episode_id, int):
+            engine_episode_id = None
         latest_by_player = {}
         for raw_line in self.lobby.get_composition_diagnostics_jsonl():
             try:
                 record = json.loads(str(raw_line))
-                player_id = int(record.get("player_id", -1))
-                sequence = int(record.get("sequence", -1))
-            except (TypeError, ValueError, json.JSONDecodeError):
+            except (TypeError, json.JSONDecodeError):
                 continue
-            if player_id < 0 or sequence < 0:
+            if not isinstance(record, dict) or engine_episode_id is None:
+                continue
+            player_id = record.get("player_id")
+            sequence = record.get("sequence")
+            round_number = record.get("round")
+            native_episode_id = record.get("engine_match_id")
+            if any(isinstance(value, bool) or not isinstance(value, int) for value in (
+                player_id, sequence, round_number, native_episode_id,
+            )):
+                continue
+            if (
+                player_id < 0 or sequence < 0 or round_number < 1
+                or native_episode_id != engine_episode_id
+            ):
                 continue
             previous = latest_by_player.get(player_id)
-            if previous is None or sequence > int(previous.get("sequence", -1)):
+            if previous is None or sequence > previous["sequence"]:
                 latest_by_player[player_id] = record
 
         for player in self.audit_snapshot.get("players", []):
