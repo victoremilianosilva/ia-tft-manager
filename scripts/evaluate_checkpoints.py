@@ -201,6 +201,13 @@ def _validate_evaluation_artifact(artifact, label):
         raise ValueError(f"{label} checkpoint lineage contract is malformed")
     if contract.get("contract_id") != "tft.ppo-checkpoint-lineage.v1":
         raise ValueError(f"{label} checkpoint lineage contract ID is unsupported")
+    import hashlib
+    import json
+    canonical = json.dumps(
+        contract, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    ).encode("utf-8")
+    if hashlib.sha256(canonical).hexdigest() != digest:
+        raise ValueError(f"{label} checkpoint lineage hash does not match its payload")
     components = contract.get("components")
     required = {
         "action_mask_contract", "critic_mask_input_contract",
