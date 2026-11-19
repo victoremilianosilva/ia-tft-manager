@@ -3896,7 +3896,10 @@ struct TFTEngine::Impl {
                         }
                     }
                 }
-                const bool comparison_available = !composition_actions.stale && !contextual_actions.stale;
+                const bool comparison_available =
+                    !composition_actions.stale && !contextual_actions.stale &&
+                    same_initial_candidate_set &&
+                    !strategic_context.action_candidates.empty();
                 const bool evaluator_diverged = comparison_available &&
                     (composition_actions.evaluation.recommended_action != contextual_actions.recommended_action ||
                      composition_actions.evaluation.recommended_champion_id != contextual_actions.recommended_champion_id);
