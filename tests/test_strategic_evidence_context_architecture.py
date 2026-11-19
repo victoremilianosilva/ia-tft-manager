@@ -34,7 +34,19 @@ ci_end = source.index("// Correlate strategic/economic context", ci_start)
 composition_intelligence_input = source[ci_start:ci_end]
 assert "info.core_traits" not in composition_intelligence_input
 assert "strategic_context.current_core_traits" in composition_intelligence_input
-assert "profile.preferred_traits = strategic_context.current_core_traits;" in composition_intelligence_input
+# Item affinity is projected by the shared semantic profile helper from the
+# canonical active composition's core-unit catalog traits. It is intentionally
+# not copied from StrategicSharedContext or legacy StrategyInfo fields.
+assert "semantic_item_unit_profiles" in source
+semantic_profile_start = source.index("std::vector<items::UnitProfile> semantic_item_unit_profiles")
+semantic_profile_end = source.index("\\n    const UnitInstance* item_target_unit", semantic_profile_start)
+semantic_profile_source = source[semantic_profile_start:semantic_profile_end]
+assert "composition_intelligence_players[player_index].active.current()" in semantic_profile_source
+assert "target.core" in semantic_profile_source
+assert "definition->traits" in semantic_profile_source
+assert "preferred_traits" in semantic_profile_source
+assert "items::UnitProfile{" in semantic_profile_source
+assert "profile.preferred_traits = strategic_context.current_core_traits;" not in composition_intelligence_input
 assert "match_id" in context_header and "player_id" in context_header
 assert "sequence" in context_header and "provenance" in context_header
 assert "derived_core_unit_ids" not in context_header
