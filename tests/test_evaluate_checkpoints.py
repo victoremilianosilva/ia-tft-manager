@@ -1,5 +1,4 @@
-import copy
-import hashlib\nimport json\n"""Regression tests for deterministic checkpoint evaluation helpers.
+"""Regression tests for deterministic checkpoint evaluation helpers.
 
 These tests avoid training and real checkpoint files. They validate action/mask
 plumbing and ensure evaluation refuses incomplete match results instead of
@@ -7,6 +6,9 @@ silently manufacturing placements.
 """
 from __future__ import annotations
 
+import copy
+import hashlib
+import json
 import numpy as np
 import pytest
 import torch
