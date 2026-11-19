@@ -37,6 +37,10 @@ from action_contract import (
     validate_critic_mask_input_checkpoint_contract,
 )
 from rollout import RolloutBuffer
+from checkpoint_contract import (
+    build_checkpoint_lineage_contract,
+    validate_checkpoint_lineage_contract,
+)
 from reward_contract import (
     build_reward_checkpoint_contract,
     validate_reward_checkpoint_contract,
@@ -368,6 +372,36 @@ class Trainer:
                         "os pesos do encoder semântico."
                     )
 
+            saved_lineage_contract = checkpoint.get("checkpoint_contract")
+            if saved_lineage_contract is None:
+                allow_unversioned_lineage = os.environ.get(
+                    "TFT_ALLOW_UNVERSIONED_CHECKPOINT_LINEAGE", ""
+                ).strip().lower() in {"1", "true", "yes"}
+                if not allow_unversioned_lineage:
+                    raise RuntimeError(
+                        "Checkpoint sem identidade agregada de linhagem. Para carregar "
+                        "somente os pesos como baseline explícito, defina "
+                        "TFT_ALLOW_UNVERSIONED_CHECKPOINT_LINEAGE=1; optimizer/scheduler "
+                        "não serão restaurados."
+                    )
+                legacy_checkpoint_lineage = True
+            else:
+                if any(value is None for value in (
+                    saved_contract, saved_critic_mask_contract, saved_semantic_contract,
+                    saved_reward_contract,
+                )):
+                    raise RuntimeError(
+                        "Checkpoint declara linhagem agregada, mas um contrato componente está ausente."
+                    )
+                validate_checkpoint_lineage_contract(
+                    saved_lineage_contract,
+                    self.policy.state_dict(),
+                    saved_contract,
+                    saved_critic_mask_contract,
+                    saved_semantic_contract,
+                    saved_reward_contract,
+                )
+
             migrated_checkpoint = self.policy.load_compatible_state_dict(checkpoint["policy"])
             print("⚠️ Checkpoint migrado; optimizer/scheduler serão reiniciados." if migrated_checkpoint
                   else "✅ Pesos da policy carregados.")
@@ -394,7 +428,7 @@ class Trainer:
         can_restore_optimizer = bool(
             checkpoint and "optimizer" in checkpoint
             and not migrated_checkpoint and not legacy_action_mask_checkpoint
-            and not legacy_reward_checkpoint
+            and not legacy_reward_checkpoint and not legacy_checkpoint_lineage
         )
         if can_restore_optimizer:
             self.optimizer.load_state_dict(checkpoint["optimizer"])
@@ -435,8 +469,12 @@ class Trainer:
             print("ℹ️ Scheduler reiniciado: LR/schedule mudou ou checkpoint incompatível.")
 
         if checkpoint:
-            self.start_update = int(checkpoint.get("update", 0)) + 1
-            print(f"▶️ Retomando do update {self.start_update}")
+            if legacy_checkpoint_lineage:
+                self.start_update = 1
+                print("ℹ️ Checkpoint histórico carregado como baseline de pesos; nova linhagem começa no update 1.")
+            else:
+                self.start_update = int(checkpoint.get("update", 0)) + 1
+                print(f"▶️ Retomando do update {self.start_update}")
         else:
             print("⚠️ Nenhum checkpoint encontrado; iniciando do zero.")
 
@@ -2251,6 +2289,13 @@ class Trainer:
                             build_critic_mask_input_checkpoint_contract(),
                         "semantic_state_contract": self.semantic_state_contract,
                         "reward_contract": build_reward_checkpoint_contract(),
+                        "checkpoint_contract": build_checkpoint_lineage_contract(
+                            self.policy.state_dict(),
+                            build_action_mask_checkpoint_contract(),
+                            build_critic_mask_input_checkpoint_contract(),
+                            self.semantic_state_contract,
+                            build_reward_checkpoint_contract(),
+                        ),
                     },
                     self.config.checkpoint_path
                 )
@@ -2289,6 +2334,13 @@ class Trainer:
                 "critic_mask_input_contract": build_critic_mask_input_checkpoint_contract(),
                 "semantic_state_contract": self.semantic_state_contract,
                 "reward_contract": build_reward_checkpoint_contract(),
+                "checkpoint_contract": build_checkpoint_lineage_contract(
+                    self.policy.state_dict(),
+                    build_action_mask_checkpoint_contract(),
+                    build_critic_mask_input_checkpoint_contract(),
+                    self.semantic_state_contract,
+                    build_reward_checkpoint_contract(),
+                ),
             },
             self.config.checkpoint_path,
         )
