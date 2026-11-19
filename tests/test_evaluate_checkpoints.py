@@ -281,3 +281,40 @@ def test_paired_seed_summary_rejects_unknown_policy_labels():
 
     with pytest.raises(ValueError, match="Unknown policy version"):
         summarize_paired_seeds(rows)
+
+
+def test_candidate_seat_rotation_is_deterministic_and_balances_all_eight_slots():
+    schedules = [candidate_slots_for_seed(seed, master_seed=91) for seed in range(8)]
+    assert schedules == [candidate_slots_for_seed(seed, master_seed=91) for seed in range(8)]
+    assert all(len(slots) == 4 for slots in schedules)
+    appearances = {player_id: 0 for player_id in range(8)}
+    for slots in schedules:
+        for player_id in slots:
+            appearances[player_id] += 1
+    assert appearances == {player_id: 4 for player_id in range(8)}
+
+
+def test_candidate_slot_validation_rejects_duplicates_invalid_ids_and_booleans():
+    assert validate_candidate_slots({0, 1, 2, 3}) == {0, 1, 2, 3}
+    with pytest.raises(ValueError, match="exactly four"):
+        validate_candidate_slots({0, 1, 2})
+    with pytest.raises(ValueError, match="exactly four"):
+        validate_candidate_slots({0, 1, 2, 2})
+    with pytest.raises(ValueError, match="exactly four"):
+        validate_candidate_slots({0, 1, 2, 8})
+    with pytest.raises(ValueError, match="exactly four"):
+        validate_candidate_slots({False, 1, 2, 3})
+
+
+def test_paired_summary_rejects_duplicate_or_overlapping_player_identity():
+    rows = _seed_rows(500, [1, 2, 3, 4], [5, 6, 7, 8])
+    rows[-1]["player_id"] = 3
+    with pytest.raises(ValueError, match="distinct player IDs"):
+        summarize_paired_seeds(rows)
+
+
+def test_paired_summary_rejects_same_player_assigned_to_both_policies():
+    rows = _seed_rows(501, [1, 2, 3, 4], [5, 6, 7, 8])
+    rows[-1]["player_id"] = 0
+    with pytest.raises(ValueError, match="distinct player IDs|assigns a player"):
+        summarize_paired_seeds(rows)
