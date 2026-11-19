@@ -27,6 +27,8 @@ int main() {
         {1, 2, 1, true, false, 0.8, 0.0},
         {2, 1, 1, false, true, 0.0, 0.6}
     };
+    input.owned[0].copies_by_star[1] = 2;
+    input.owned[1].copies_by_star[1] = 1;
     input.shop_ids = {4, 6};
     input.pool_remaining = {{1, 10}, {2, 8}, {3, 12}, {4, 5}, {5, 7}, {6, 9}, {7, 0}};
     input.trait_thresholds = {{"Bruiser", 2}, {"Invoker", 2}};
@@ -79,6 +81,8 @@ int main() {
 
     auto upgraded = input;
     upgraded.owned[0].star = 2;
+    upgraded.owned[0].copies_by_star = {};
+    upgraded.owned[0].copies_by_star[2] = 1;
     const auto upgraded_result =
         NativeStrategicCompositionGenerator{}.generate(upgraded);
     const auto upgraded_bruiser = std::find_if(
