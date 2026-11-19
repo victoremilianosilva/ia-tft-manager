@@ -162,8 +162,12 @@ void shadow_runtime_isolates_players_and_resets_its_own_direction_history() {
 
     ActiveCompositionManager player_zero_composition;
     ActiveCompositionManager player_one_composition;
-    UnifiedStrategicShadowRuntime player_zero(player_zero_composition, player_zero_path);
-    UnifiedStrategicShadowRuntime player_one(player_one_composition, player_one_path);
+    StrategicCommitment player_zero_commitment;
+    StrategicCommitment player_one_commitment;
+    UnifiedStrategicShadowRuntime player_zero(
+        player_zero_composition, player_zero_commitment, player_zero_path);
+    UnifiedStrategicShadowRuntime player_one(
+        player_one_composition, player_one_commitment, player_one_path);
     const StrategicCycleAuditContext context_zero{42, 0, 3};
     const StrategicCycleAuditContext context_one{42, 1, 3};
 
