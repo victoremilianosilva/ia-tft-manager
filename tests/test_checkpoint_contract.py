@@ -70,4 +70,6 @@ def test_trainer_persists_lineage_for_periodic_and_final_checkpoints():
     ) == 2
     assert "TFT_ALLOW_UNVERSIONED_CHECKPOINT_LINEAGE" in source
     assert "and not legacy_checkpoint_lineage" in source
+    assert "if legacy_checkpoint_lineage:" in source
+    assert "self.start_update = 1" in source
     assert "validate_checkpoint_lineage_contract(" in source
