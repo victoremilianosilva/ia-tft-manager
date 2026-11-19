@@ -50,6 +50,32 @@ int main() {
         [](const auto& item) { return item == "owned_pair:1"; }));
     assert(std::any_of(bruiser->evidence.begin(), bruiser->evidence.end(),
         [](const auto& item) { return item == "item_fit:2"; }));
+    auto mixed_tiers = input;
+    mixed_tiers.owned[0].copies = 5; // One 2-star plus two 1-star instances.
+    mixed_tiers.owned[0].star = 2;
+    mixed_tiers.owned[0].copies_by_star = {};
+    mixed_tiers.owned[0].copies_by_star[1] = 2;
+    mixed_tiers.owned[0].copies_by_star[2] = 1;
+    const auto mixed_result = NativeStrategicCompositionGenerator{}.generate(mixed_tiers);
+    const auto mixed_bruiser = std::find_if(mixed_result.candidates.begin(),
+        mixed_result.candidates.end(), [](const auto& candidate) {
+            return candidate.direction == "Bruiser";
+        });
+    assert(mixed_bruiser != mixed_result.candidates.end());
+    assert(std::find(mixed_bruiser->evidence.begin(), mixed_bruiser->evidence.end(),
+        "owned_pair:1") == mixed_bruiser->evidence.end());
+
+    mixed_tiers.owned[0].copies_by_star[1] = 3;
+    const auto complete_three_star_progress =
+        NativeStrategicCompositionGenerator{}.generate(mixed_tiers);
+    const auto complete_bruiser = std::find_if(complete_three_star_progress.candidates.begin(),
+        complete_three_star_progress.candidates.end(), [](const auto& candidate) {
+            return candidate.direction == "Bruiser";
+        });
+    assert(complete_bruiser != complete_three_star_progress.candidates.end());
+    assert(std::find(complete_bruiser->evidence.begin(), complete_bruiser->evidence.end(),
+        "owned_pair:1") != complete_bruiser->evidence.end());
+
     assert(bruiser->transition_cost > 0.0 && bruiser->transition_cost < 1.0);
     assert(std::find(bruiser->completed_traits.begin(), bruiser->completed_traits.end(),
                      "Bruiser") != bruiser->completed_traits.end());
