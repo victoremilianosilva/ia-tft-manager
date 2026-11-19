@@ -3873,19 +3873,27 @@ struct TFTEngine::Impl {
                 native_action_state.shop_champion_ids.fill(-1);
                 native_action_state.bench_champion_ids.fill(-1);
                 native_action_state.board_champion_ids.fill(-1);
+                native_action_state.bench_unit_uuids.fill(std::string{});
+                native_action_state.board_unit_uuids.fill(std::string{});
                 for (std::size_t slot = 0; slot < kShopSlots; ++slot) {
                     const auto* unit = player_envs[i].shop
                         ? player_envs[i].shop->get_unit(static_cast<std::int32_t>(slot)) : nullptr;
                     if (unit) native_action_state.shop_champion_ids[slot] = unit->champion_internal_id;
                 }
                 for (std::size_t slot = 0; slot < kBenchSlots; ++slot)
-                    if (player_envs[i].bench[slot])
+                    if (player_envs[i].bench[slot]) {
                         native_action_state.bench_champion_ids[slot] =
                             player_envs[i].bench[slot]->champion_internal_id;
+                        native_action_state.bench_unit_uuids[slot] =
+                            player_envs[i].bench[slot]->uuid;
+                    }
                 for (std::size_t slot = 0; slot < kBoardSlots; ++slot)
-                    if (player_envs[i].board[slot])
+                    if (player_envs[i].board[slot]) {
                         native_action_state.board_champion_ids[slot] =
                             player_envs[i].board[slot]->champion_internal_id;
+                        native_action_state.board_unit_uuids[slot] =
+                            player_envs[i].board[slot]->uuid;
+                    }
 
                 std::unordered_map<std::int32_t, std::int32_t> unit_costs;
                 for (const auto id : native_action_state.shop_champion_ids)
@@ -4046,12 +4054,14 @@ struct TFTEngine::Impl {
                     {"status", candidate_build.status},
                     {"rejected_missing_cost", candidate_build.rejected_missing_cost},
                     {"rejected_ambiguous_instance", candidate_build.rejected_ambiguous_instance},
+                    {"rejected_missing_instance_identity", candidate_build.rejected_missing_instance_identity},
                     {"candidate_count", candidate_build.candidates.size()},
                     {"candidates", nlohmann::json::array()}
                 };
                 for (const auto& candidate : candidate_build.candidates) {
                     candidate_generation["candidates"].push_back({
                         {"candidate_id", candidate.candidate_id},
+                        {"source_unit_uuid", candidate.source_unit_uuid},
                         {"source_sequence", candidate.source_sequence},
                         {"kind", static_cast<int>(candidate.kind)},
                         {"champion_id", candidate.champion_id},
