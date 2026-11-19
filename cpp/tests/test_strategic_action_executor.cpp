@@ -127,13 +127,13 @@ void movement_requires_explicit_target_and_conditioned_native_mask() {
     s.masks.type_mask[3] = 1;
     s.masks.bench_move_source_mask[2] = 1;
     s.masks.bench_to_board_target_masks[2 * 28 + 9] = 1;
-    auto c = source_context(StrategicActionKind::DeployOrMove, 77, -1, 2, 9, true);
+    auto c = source_context(StrategicActionKind::DeployOrMove, 77, -1, 2, -1, true);
     auto r = recommendation(StrategicActionKind::DeployOrMove, 77);
     StrategicActionExecutor missing_target;
     auto result = resolve(missing_target, r, c, s);
     assert(!result.accepted && result.validation_reason == "move_intent_unresolved");
 
-    s.requested_move_targets.push_back({77,9});
+    c.action_candidates[0].target_board_slot = 9;
     StrategicActionExecutor valid_executor;
     result = resolve(valid_executor, r, c, s, "move-rec");
     assert(result.accepted);
