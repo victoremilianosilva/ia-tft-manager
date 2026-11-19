@@ -124,7 +124,8 @@ void exploration_waits_for_composition_and_then_binds_direction() {
 
 void machine_owns_exploratory_direction_history_without_legacy_inputs() {
     ActiveCompositionManager active_composition;
-    UnifiedStrategicStateMachine machine(active_composition);
+    StrategicCommitment commitment;
+    UnifiedStrategicStateMachine machine(active_composition, commitment);
     StrategicCycleInput input;
     input.exploration.units = {
         {10, 2, 2, 1, true, false, false, false, true, 0.0, {"Bruiser"}},
@@ -243,7 +244,8 @@ void pivot_evaluation_does_not_mutate_then_confirms_synchronized_state() {
 
 void invalidated_candidate_is_removed_and_old_direction_is_preserved() {
     ActiveCompositionManager active_composition;
-    UnifiedStrategicStateMachine machine(active_composition, {3, 60.0, 5});
+    StrategicCommitment commitment;
+    UnifiedStrategicStateMachine machine(active_composition, commitment, {3, 60.0, 5});
     StrategicCycleInput input;
     input.active_composition = ActiveComposition{composition(
         "composition-current", 1,
@@ -269,7 +271,8 @@ void invalidated_candidate_is_removed_and_old_direction_is_preserved() {
 
 void missing_candidate_invalidates_pending_pivot_without_mutation() {
     ActiveCompositionManager active_composition;
-    UnifiedStrategicStateMachine machine(active_composition, {3, 60.0, 5});
+    StrategicCommitment commitment;
+    UnifiedStrategicStateMachine machine(active_composition, commitment, {3, 60.0, 5});
     StrategicCycleInput input;
     input.active_composition = ActiveComposition{composition(
         "composition-current", 1,
@@ -296,7 +299,8 @@ void missing_candidate_invalidates_pending_pivot_without_mutation() {
 
 void reset_rebinds_to_the_canonical_composition_without_clearing_it() {
     ActiveCompositionManager active_composition;
-    UnifiedStrategicStateMachine machine(active_composition);
+    StrategicCommitment commitment;
+    UnifiedStrategicStateMachine machine(active_composition, commitment);
 
     const auto first = composition(
         "composition-current", 1,
@@ -329,7 +333,8 @@ void reset_rebinds_to_the_canonical_composition_without_clearing_it() {
 
 void insufficient_evidence_clears_pivot_and_keeps_active_composition() {
     ActiveCompositionManager active_composition;
-    UnifiedStrategicStateMachine machine(active_composition, {3, 60.0, 5});
+    StrategicCommitment commitment;
+    UnifiedStrategicStateMachine machine(active_composition, commitment, {3, 60.0, 5});
     StrategicCycleInput input;
     input.active_composition = ActiveComposition{composition(
         "composition-current", 1,
