@@ -107,6 +107,52 @@ public:
             append(std::move(candidate));
         }
 
+        // Before a composition is committed, native anchor hypotheses are the
+        // only strategic target source. Permit a concrete shop BUY only when the
+        // exact offer belongs to a generated anchor and the native mask allows it.
+        if (!active && !context.anchor_candidates.empty() &&
+            type_enabled(decision::ActionType::BUY)) {
+            for (std::size_t slot = 0; slot < native.shop_champion_ids.size(); ++slot) {
+                const auto id = native.shop_champion_ids[slot];
+                if (id < 0 || native.masks.shop_mask[slot] != decision::MASK_ENABLED)
+                    continue;
+                const auto anchor = std::max_element(context.anchor_candidates.begin(),
+                    context.anchor_candidates.end(), [&](const auto& left, const auto& right) {
+                        const bool left_matches = left.unit.champion_id == id && left.shop_available;
+                        const bool right_matches = right.unit.champion_id == id && right.shop_available;
+                        if (left_matches != right_matches) return !left_matches;
+                        return left.anchor_value < right.anchor_value;
+                    });
+                if (anchor == context.anchor_candidates.end() ||
+                    anchor->unit.champion_id != id || !anchor->shop_available)
+                    continue;
+                const auto cost = unit_costs.find(id);
+                if (cost == unit_costs.end() || cost->second < 0) {
+                    ++out.rejected_missing_cost;
+                    continue;
+                }
+                strategy::StrategicActionCandidate candidate;
+                candidate.kind = strategy::StrategicActionKind::BuyUnit;
+                candidate.champion_id = id;
+                candidate.shop_slot = static_cast<std::int32_t>(slot);
+                candidate.gold_cost = cost->second;
+                candidate.direct_gold_cost = cost->second;
+                candidate.expected_board_delta = std::clamp(
+                    anchor->unit.board_contribution, 0.0, 1.0);
+                candidate.composition_fit = std::clamp(
+                    anchor->unit.composition_fit, 0.0, 1.0);
+                candidate.upgrade_value = anchor->unit.copies_owned >= 2 ? 1.0 : 0.0;
+                candidate.available = cost->second <= context.gold;
+                candidate.opportunity_cost = strategy::action_opportunity_cost::kBuyUnit;
+                candidate.evidence_reason = "native_anchor_hypothesis_and_exact_legal_shop_slot";
+                candidate.evidence_source = "NativeStrategicCompositionGenerator+native_shop+native_BUY_mask";
+                candidate.evidence_horizon_rounds = 1;
+                candidate.evidence_uncertainty = 0.75;
+                attach_marginal_interest(candidate);
+                append(std::move(candidate));
+            }
+        }
+
         if (active && !priorities.stale && !lineup.stale &&
             priorities.composition_id == active->candidate.composition_id &&
             priorities.composition_version == active->version &&
