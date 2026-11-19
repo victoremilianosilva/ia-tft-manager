@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:tft:ppo:observation-schema:v2-draft",
   "title": "TFT PPO Observation Snapshot — Draft v2",
-  "description": "PROPOSED DOCUMENTARY SPECIFICATION; not approved for runtime use. Semantic observation contract v2 with typed, namespaced sequence references. The native Engine currently supplies an Engine-instance-scoped observation/mask snapshot sequence; a separate per-player decision sequence and authoritative logical match identity remain unavailable until their producers are proven.",
+  "description": "PROPOSED DOCUMENTARY SPECIFICATION; not approved for runtime use. Semantic observation contract v2 with typed, namespaced sequence references. Native snapshots carry Engine-instance identity, episode scope, Engine-wide snapshot sequence and per-player decision sequences; authoritative logical game-match identity remains unavailable until its external producer is proven.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -240,7 +240,7 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "instance_id",
+        "uuid",
         "champion_id",
         "star",
         "position",
@@ -248,10 +248,6 @@
         "traits"
       ],
       "properties": {
-        "instance_id": {
-          "type": "string",
-          "minLength": 1
-        },
         "champion_id": {
           "type": "string",
           "minLength": 1
@@ -279,6 +275,10 @@
           "additionalProperties": {
             "$ref": "#/$defs/field"
           }
+        },
+        "uuid": {
+          "type": "string",
+          "minLength": 1
         }
       }
     },
@@ -1258,15 +1258,15 @@
           "items": {
             "type": "object",
             "required": [
-              "instance_id",
+              "uuid",
               "role"
             ],
             "properties": {
-              "instance_id": {
-                "type": "string"
-              },
               "role": {
                 "$ref": "#/$defs/field"
+              },
+              "uuid": {
+                "type": "string"
               }
             }
           }
