@@ -5,6 +5,9 @@
 // mutate game state or connect to PPO, observations, masks, actions, or rules.
 
 #include "strategy/StrategicAnchorContracts.hpp"
+#include "strategy/UnitCopyProgress.hpp"
+
+#include <array>
 
 #include <algorithm>
 #include <cmath>
