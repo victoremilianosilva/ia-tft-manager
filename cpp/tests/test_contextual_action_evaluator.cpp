@@ -144,6 +144,42 @@ void explicit_hold_is_selected_when_all_actions_score_below_zero() {
     assert(result.candidates[1].selected);
 }
 
+void validated_survival_and_streak_evidence_adjust_board_improvement_value() {
+    StrategicSharedContext context;
+    context.alive = true;
+    context.gold = 10;
+    context.player_id = 0;
+    context.round = 8;
+    auto buy = candidate(StrategicActionKind::BuyUnit, 20);
+    buy.expected_board_delta = 0.8;
+    context.action_candidates = {buy, candidate(StrategicActionKind::Hold)};
+
+    PlannerEvidenceSnapshot evidence;
+    evidence.match_id = 77;
+    evidence.player_id = 0;
+    evidence.composition_id = "comp-a";
+    evidence.composition_version = 4;
+    evidence.round = 8;
+    auto& economy = evidence.economy;
+    economy.metadata.source = "EconomicController";
+    economy.metadata.source_round = 8;
+    economy.metadata.expected_round = 8;
+    economy.metadata.quality = EvidenceQuality::Valid;
+    economy.metadata.available = true;
+    economy.survival_evidence_available = true;
+    economy.survival_pressure = 1.0;
+    economy.streak_evidence_available = true;
+    economy.win_streak = 6;
+
+    const auto result = ContextualActionEvaluator{}.evaluate(
+        active(), priorities(), lineup(), context, &evidence, 77);
+    assert(!result.stale);
+    assert(result.economy_evidence_consumed);
+    assert(result.candidates.size() == 2);
+    assert(result.candidates[0].survival_value > 0.0);
+    assert(result.candidates[0].streak_value > 0.0);
+}
+
 void empty_candidate_set_is_not_a_hold_recommendation() {
     StrategicSharedContext context;
     context.alive = true;
@@ -176,6 +212,7 @@ int main() {
     invalid_candidates_and_equipped_sales_are_rejected();
     contextual_sell_rejects_pairs_and_existing_star_progress();
     explicit_hold_is_selected_when_all_actions_score_below_zero();
+    validated_survival_and_streak_evidence_adjust_board_improvement_value();
     empty_candidate_set_is_not_a_hold_recommendation();
     json_is_versioned_and_shadow_only();
     std::cout << "ContextualActionEvaluator tests passed\\n";
