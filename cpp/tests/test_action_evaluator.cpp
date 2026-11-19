@@ -44,6 +44,7 @@ void equivalent_candidates_select_one_occurrence() {
 
     EconomicControlDecision posture;
     posture.posture = EconomicPosture::AccumulateResources;
+    posture.sufficient_evidence = true;
 
     const auto result = ActionEvaluator{}.evaluate(context, posture);
     assert(result.recommended_action == StrategicActionKind::DeployOrMove);
@@ -65,6 +66,7 @@ void equivalent_shop_offers_select_one_occurrence() {
 
     EconomicControlDecision posture;
     posture.posture = EconomicPosture::StabilizeBoard;
+    posture.sufficient_evidence = true;
     const auto result = ActionEvaluator{}.evaluate(context, posture);
 
     assert(result.recommended_action == StrategicActionKind::BuyUnit);
