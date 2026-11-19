@@ -35,6 +35,7 @@
 #include "strategy/PositioningEngine.hpp"
 #include "strategy/BoardEvaluation.hpp"
 #include "strategy/UnitCombatClassifier.hpp"
+#include "strategy/UnitCopyProgress.hpp"
 #include "reward/RewardModel.hpp"
 #include "strategy/CompositionDirectionPolicy.hpp"
 #include "strategy/StrategyPolicy.hpp"
@@ -1769,24 +1770,22 @@ struct TFTEngine::Impl {
             // Precompute owned copies once per player. Candidate features below
             // query this table for every bench/shop slot; repeated board+bench
             // scans were doing the same work for each candidate.
-            std::unordered_map<std::int32_t, int> owned_copies;
-            std::unordered_map<std::int32_t, std::array<int, 3>> owned_star_counts;
-            owned_copies.reserve(kBoardSlots + kBenchSlots);
+            std::unordered_map<std::int32_t, std::array<std::int32_t, 4>> owned_star_counts;
             owned_star_counts.reserve(kBoardSlots + kBenchSlots);
-            const auto add_owned_copies = [&owned_copies, &owned_star_counts](const UnitInstance& unit) {
-                const int copies = unit.star == 1 ? 1 : (unit.star == 2 ? 3 : 9);
-                owned_copies[unit.champion_internal_id] += copies;
+            const auto add_owned_copies = [&owned_star_counts](const UnitInstance& unit) {
                 if (unit.star >= 1 && unit.star <= 3)
-                    ++owned_star_counts[unit.champion_internal_id][static_cast<std::size_t>(unit.star - 1)];
+                    ++owned_star_counts[unit.champion_internal_id][static_cast<std::size_t>(unit.star)];
             };
             for (const auto& unit : player_envs[i].board)
                 if (unit) add_owned_copies(*unit);
             for (const auto& unit : player_envs[i].bench)
                 if (unit) add_owned_copies(*unit);
 
-            const auto count_same_champion = [&owned_copies](const UnitInstance& candidate) {
-                const auto it = owned_copies.find(candidate.champion_internal_id);
-                return it == owned_copies.end() ? 0 : it->second;
+            const auto count_same_champion = [&owned_star_counts](const UnitInstance& candidate) {
+                const auto it = owned_star_counts.find(candidate.champion_internal_id);
+                return it == owned_star_counts.end()
+                    ? 0
+                    : strategy::owned_star_equivalent_copies(it->second);
             };
             // Distinguish a real same-star pair from a lone copy plus a
             // different-star upgrade. Exclude the candidate itself for SELL;
@@ -1798,10 +1797,10 @@ struct TFTEngine::Impl {
                         return 0.0;
                     const auto& counts = it->second;
                     const int same_star = std::max(
-                        0, counts[static_cast<std::size_t>(candidate.star - 1)] -
+                        0, counts[static_cast<std::size_t>(candidate.star)] -
                             (sale_candidate ? 1 : 0));
                     const int one_star = std::max(
-                        0, counts[0] - (sale_candidate && candidate.star == 1 ? 1 : 0));
+                        0, counts[1] - (sale_candidate && candidate.star == 1 ? 1 : 0));
                     if (sale_candidate)
                         return reward_model::upgrade_path_strength(
                             candidate.star, same_star, one_star);
