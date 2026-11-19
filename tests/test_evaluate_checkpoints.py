@@ -219,11 +219,11 @@ def test_strategic_audit_records_exact_masks_and_action_components():
 
 def _seed_rows(seed, candidate_placements, baseline_placements):
     rows = []
-    for version, placements in (
-        ("baseline", baseline_placements),
-        ("candidate", candidate_placements),
+    for version, placements, player_ids in (
+        ("baseline", baseline_placements, range(4, 8)),
+        ("candidate", candidate_placements, range(0, 4)),
     ):
-        for player_id, placement in enumerate(placements):
+        for player_id, placement in zip(player_ids, placements):
             rows.append({
                 "seed": seed,
                 "player_id": player_id,
