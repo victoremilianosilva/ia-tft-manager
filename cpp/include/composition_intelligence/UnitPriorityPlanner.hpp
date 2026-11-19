@@ -32,11 +32,10 @@ struct UnitPriorityReason {
     std::string message;
 };
 
-// Returns additional copies already accumulated beyond the strongest owned
-// instance. One 1-star unit is the 1-copy baseline for a 2-star upgrade (2
-// additional copies required); one 2-star unit is the 3-copy baseline for a
-// 3-star upgrade (6 additional copies required). Mixed tiers remain additive,
-// but the baseline is never mistaken for upgrade progress.
+// Returns additional physical progress beyond the strongest owned instance.
+// A 2-star target needs two additional 1-star copies. A 3-star target needs two
+// additional 2-star instances; only complete groups of three 1-star copies
+// can form those instances. Partial mixed-tier groups are not upgrade progress.
 inline std::int32_t copy_progress_toward_next_star(
     const std::array<std::int32_t, 4>& copies_by_star,
     std::int32_t highest_star,
