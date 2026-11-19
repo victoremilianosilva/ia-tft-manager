@@ -36,6 +36,26 @@ int main() {
     priorities.composition_id = "comp-a"; priorities.composition_version = 2; priorities.stale = false;
     lineup.composition_id = "comp-a"; lineup.composition_version = 2; lineup.stale = false;
     actions.composition_id = "comp-a"; actions.composition_version = 2; actions.stale = false;
+    evidence.economy.metadata.source = "EconomicController";
+    evidence.economy.metadata.quality = EvidenceQuality::Valid;
+    evidence.economy.metadata.available = true;
+    evidence.economy.gold = 0;
+    evidence.economy.interest_if_resolved_now = 2;
+    evidence.economy.gold_available = true;
+    evidence.economy.interest_available = true;
+    evidence.economy.projected_income_available = false;
+    evidence.items.metadata.source = "ItemEngine";
+    evidence.items.metadata.quality = EvidenceQuality::Valid;
+    evidence.items.metadata.available = true;
+    ItemUnitPlannerEvidence item_unit;
+    item_unit.champion_id = 10;
+    item_unit.role_source = "derived:UnitCombatClassifier";
+    item_unit.composition_source = "derived:ActiveCompositionManager.core_unit_catalog_traits";
+    item_unit.composition_id = "comp-a";
+    item_unit.composition_version = 2;
+    item_unit.composition_fit = 0.8;
+    item_unit.preferred_traits = {"Arcanist"};
+    evidence.items.units.push_back(item_unit);
     auto second = recorder.capture(4, active, proposal, priorities, lineup, evidence, actions,
         CompositionTransition{1,2,"comp-old","comp-a",CompositionTransitionReason::StrategicPivot,{5},{10},{7}},
         CompositionOutcomeObservation{6,4,-3.0,0.15,"later observation"});
@@ -45,5 +65,11 @@ int main() {
     assert(payload["published_transition"]["invalidates_previous_version"] == true);
     assert(payload["recommendation_to_later_outcome"]["interpretation"] == "correlation_only_not_causation");
     assert(payload["source_metadata"]["source"] == "native");
+    assert(payload["evidence"]["economy"]["gold"] == 0);
+    assert(payload["evidence"]["economy"]["interest"] == 2);
+    assert(payload["evidence"]["economy"]["projected_income"].is_null());
+    assert(payload["evidence"]["items"]["units"][0]["composition_id"] == "comp-a");
+    assert(payload["evidence"]["items"]["units"][0]["role_source"] == "derived:UnitCombatClassifier");
+    assert(payload["evidence"]["items"]["units"][0]["preferred_traits"][0] == "Arcanist");
     std::cout << "CompositionDiagnostics tests passed\n";
 }
