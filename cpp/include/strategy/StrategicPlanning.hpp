@@ -167,6 +167,7 @@ struct StrategicEvidenceAvailability {
     bool progression_plan{false};
     // True only when a native direction candidate was actually matched to the commitment.
     bool current_direction{false};
+    bool stage{false};
 };
 
 struct StrategicSharedContext {
