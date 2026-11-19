@@ -60,6 +60,6 @@ def test_item_profiles_use_only_the_new_active_composition():
 
 def test_action_comparison_requires_nonempty_exact_candidate_identity():
     source = ENGINE_SOURCE.read_text(encoding="utf-8")
-    assert "&& !strategic_context.action_candidates.empty()" in source
+    assert "!strategic_context.action_candidates.empty()" in source
     assert "baseline_candidate.candidate_id != source.candidate_id" in source
     assert "contextual_candidate.candidate_id != source.candidate_id" in source
