@@ -41,3 +41,18 @@ def test_shadow_core_and_item_fit_use_native_strategic_sources():
     assert "strategic_context.current_core_traits" in block
     assert "profile.preferred_traits = strategic_context.current_core_traits" in block
     assert "candidate.is_core = active_native_direction" in block
+
+
+def test_item_profiles_use_only_the_new_active_composition():
+    source = ENGINE_SOURCE.read_text(encoding="utf-8")
+    start = source.index("std::vector<items::UnitProfile> semantic_item_unit_profiles")
+    end = source.index("const UnitInstance* item_target_unit", start)
+    profile_builder = source[start:end]
+    forbidden = ("StrategyInfo", "planned_main_carry_id", "core_traits", "planned_traits",
+                 "composition_direction", "legacy_item_unit_profiles")
+    found = [token for token in forbidden if token in profile_builder]
+    assert not found, f"item profile builder leaked legacy strategy data: {found}"
+    assert "composition_intelligence_players[player_index].active.current()" in profile_builder
+    assert "target.core" in profile_builder
+    assert "definition->traits" in profile_builder
+    assert "preferred_traits" in profile_builder
