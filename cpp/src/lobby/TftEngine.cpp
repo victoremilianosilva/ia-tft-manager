@@ -1522,9 +1522,10 @@ struct TFTEngine::Impl {
                 out[offset++] = std::min(1.0f, value);
             }
 
-            // 7) POSITIONING: use the same tactical evaluator as rewards and viewer diagnostics.
-            const double positioning_score = board_evaluation(i).total_score;
-            out[offset++] = static_cast<float>(positioning_score);
+            // 7) POSITIONING: the old aggregate score depended on legacy
+            // StrategyInfo main-carry/direction inputs. Retire it rather than
+            // leaking that hidden dependency; factual geometry/roles follow.
+            out[offset++] = 0.0f;
             out[offset++] = board_count ? static_cast<float>(frontline) / board_count : 0.0f;
             out[offset++] = board_count ? static_cast<float>(backline) / board_count : 0.0f;
             out[offset++] = std::min(1.0f, static_cast<float>(unique_role_count) / 5.0f);
