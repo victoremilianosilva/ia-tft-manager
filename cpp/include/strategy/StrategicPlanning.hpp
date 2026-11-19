@@ -140,8 +140,25 @@ struct StrategicCandidateGenerationDiagnostics {
     std::string no_candidate_reason{"not_evaluated"};
 };
 
+struct StrategicEvidenceAvailability {
+    bool hp{false};
+    bool gold{false};
+    bool level{false};
+    bool xp{false};
+    bool xp_to_next{false};
+    bool interest_if_resolved_now{false};
+    bool streaks{false};
+    bool board_power{false};
+    bool relative_board_power{false};
+    bool projected_next_round_income{false};
+    bool estimated_incoming_damage{false};
+    bool elimination_risk{false};
+    bool progression_plan{false};
+};
+
 struct StrategicSharedContext {
     std::uint32_t schema_version{1};
+    StrategicEvidenceAvailability evidence;
     std::int32_t player_id{-1};
     std::uint32_t round{0};
     std::uint32_t stage{1};
@@ -237,6 +254,9 @@ struct EconomicControlDecision {
     double survival_pressure{0.0};
     double board_pressure{0.0};
     double economy_pressure{0.0};
+    bool sufficient_evidence{false};
+    std::vector<std::string> evidence_used;
+    std::vector<std::string> evidence_missing;
     bool shadow_only{true};
 };
 
