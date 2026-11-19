@@ -330,16 +330,21 @@ class PlayerJsonLogWriter:
 
     def _player_snapshot(self, audit: dict, public: dict) -> dict:
         audit, public = audit or {}, public or {}
-        # StrategyInfo is retained only when an older adapter explicitly
-        # supplies it. Canonical Shadow diagnostics are persisted separately.
+        # Preserve the flattened native diagnostic fields for compatibility
+        # with existing log consumers, but label StrategyInfo only when its
+        # legacy-specific fields were actually supplied.
         strategy_info = audit.get("strategy_info")
         if not isinstance(strategy_info, dict):
-            legacy_keys = {
-                "strategy_name", "strategy_id", "composition_direction",
-                "composition_focus", "planned_units", "planned_unit_ids",
-                "planned_main_carry_id", "core_traits", "active_traits",
-            }
-            strategy_info = audit if any(key in audit for key in legacy_keys) else {}
+            strategy_info = audit
+        legacy_keys = {
+            "strategy_name", "strategy_id", "composition_direction",
+            "composition_focus", "planned_units", "planned_unit_ids",
+            "planned_main_carry_id", "core_traits", "active_traits",
+        }
+        legacy_strategy_present = (
+            isinstance(audit.get("strategy_info"), dict)
+            or any(key in audit for key in legacy_keys)
+        )
         return {
             "player_id": int(public.get("player_id", audit.get("player_id", -1))),
             "hp": public.get("hp"), "gold": public.get("gold", audit.get("gold")),
@@ -371,7 +376,7 @@ class PlayerJsonLogWriter:
                 + int(audit.get("round_win_gold", 0) or 0)
             ),
             "legacy_strategy_compatibility": {
-                "status": "present" if strategy_info else "unavailable",
+                "status": "present" if legacy_strategy_present else "unavailable",
                 "source": "native StrategyInfo audit compatibility fields",
                 "authority": "compatibility_only_not_canonical_strategy_state",
                 "canonical_shadow_source": "composition_diagnostics.jsonl",
