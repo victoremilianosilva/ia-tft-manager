@@ -8,10 +8,6 @@ namespace tft::strategy {
 
 // Physical owned instances by star tier. Index zero is unused. Shop offers
 // remain separate and are included only when the caller proves affordability.
-struct UnitStarTierCounts {
-    std::array<std::int32_t, 4> owned_by_star{};
-};
-
 inline std::int32_t owned_star_equivalent_copies(
     const std::array<std::int32_t, 4>& owned_by_star) noexcept {
     return std::max(0, owned_by_star[1]) +
