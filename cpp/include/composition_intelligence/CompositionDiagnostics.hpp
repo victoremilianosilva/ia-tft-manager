@@ -290,7 +290,13 @@ private:
                 {"best_inventory_item_id", u.best_inventory_item_id},
                 {"best_inventory_fit", u.best_inventory_fit},
                 {"has_equipped_items", u.has_equipped_items},
-                {"has_inventory_candidate", u.has_inventory_candidate}});
+                {"has_inventory_candidate", u.has_inventory_candidate},
+                {"role_source", u.role_source},
+                {"composition_source", u.composition_source},
+                {"composition_id", u.composition_id},
+                {"composition_version", u.composition_version},
+                {"composition_fit", u.composition_fit},
+                {"preferred_traits", u.preferred_traits}});
         const bool economy_available = e.economy.metadata.available;
         const bool board_available = e.board.metadata.available;
         const bool items_available = e.items.metadata.available;
