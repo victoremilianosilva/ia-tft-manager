@@ -3685,13 +3685,24 @@ struct TFTEngine::Impl {
                     for (const auto& target : active->candidate.units) {
                         const auto* definition = catalog->find_by_id(target.champion_id);
                         if (!definition) continue;
-                        auto& evidence = unit_evidence[target.champion_id];
+                        auto [evidence_it, evidence_inserted] =
+                            unit_evidence.try_emplace(target.champion_id);
+                        auto& evidence = evidence_it->second;
+                        if (evidence_inserted) {
+                            evidence.board_contribution = 0.0;
+                            evidence.synergy_contribution = 0.0;
+                        }
                         evidence.champion_id = target.champion_id;
                         evidence.unit_cost = definition->cost;
-                        for (const auto& trait : definition->traits) {
-                            const auto count = board_trait_counts[trait];
-                            evidence.trait_completion = evidence.trait_completion ||
-                                trait_threshold_crossed(trait, count, false);
+                        // A unit already on board is evaluated as a removal risk
+                        // above. Only bench/missing targets are evaluated as an
+                        // additional board contribution here.
+                        if (!on_board_ids.count(target.champion_id)) {
+                            for (const auto& trait : definition->traits) {
+                                const auto count = board_trait_counts[trait];
+                                evidence.trait_completion = evidence.trait_completion ||
+                                    trait_threshold_crossed(trait, count, false);
+                            }
                         }
                         evidence.confidence = std::max(evidence.confidence, 0.75);
                     }
