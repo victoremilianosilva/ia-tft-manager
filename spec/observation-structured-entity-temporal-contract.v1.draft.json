@@ -635,7 +635,7 @@
     "Positioning and trait aggregates use open maps without complete typed key/catalog contracts.",
     "Unit assessments and anchor candidates need explicit collection completeness and source-sequence contracts.",
     "Action-opportunity producer is not populated; candidate rows remain withheld.",
-    "Physical unit UUID producer exists, but same-seed Engine reset repeats the first UUID; no match/player namespace or collision registry exists, so Schema v2 instance_id remains unverified as canonical identity.",
+    "Physical unit UUID is generated deterministically and may repeat after reset; the native snapshot scopes it with engine_instance_id, episode_id and player_id. Raw UUID alone is not globally unique. Typed UUID identity is not projected into PPO.",
     "Board slot indices and occupancy are native; canonical hex coordinate/orientation/adjacency mapping and exact source-sequence correlation are not proven.",
     "Shop offer contents are produced in five slots, but no stable offer_id, offer revision or reroll-generation token is emitted; slot and temporary unit UUID are not sufficient offer identity.",
     "Physical item copies are not produced: ItemEngine stores catalog ID strings in inventory/equipment containers and has no item_instance_id or typed owner relation.",
@@ -651,7 +651,7 @@
     "PPO receives aggregate positioning diagnostics rather than structured per-unit positions and exact destination proposals.",
     "Unit assessments exist only as champion-keyed/per-slot derived Shadow records without UnitInstance UUID; the declared unit_instance_id cannot be populated for duplicate physical copies.",
     "Native anchor/composition candidates, early direction hypotheses, active direction anchors and pivot candidates have distinct producers/lifecycles; no stable candidate_id/revision or complete immutable candidate-set envelope is emitted.",
-    "StrategicSharedContext.action_candidates is not populated in the audited TftEngine path; evaluator diagnostics can currently report comparison_available for an empty set because the flag is based on staleness rather than non-empty shared candidate identity.",
+    "The integrated runtime must retain the explicit no_candidates/no_eligible_candidates/comparison_unavailable distinction and prove same-sequence candidate identity; the evaluator comparison now rejects empty candidate sets, but multi-round runtime coverage remains pending.",
     "Temporal action memory reaches PPO only as normalized action-horizon and board-slot-age scalars; no typed decision event history or source_decision_sequence is delivered.",
     "AntiLoopHistory is internal per-player state with bounded round/episode retention but no match/player/decision-sequence fields; get_state is not serialized by the audited TftEngine/pybind path, and Python receives aggregate metrics only."
   ],
@@ -703,6 +703,5 @@
       "future replay and observation correlation"
     ],
     "objective_validation": "The manifest agrees with the producer coverage CSV and lifecycle follow-up: native query exists, delivery is direct-pybind-only, and PPO/snapshot delivery remains absent. No runtime, schema field, tensor or training behavior changes."
-  },
-  "gaps": []
+  }
 }
