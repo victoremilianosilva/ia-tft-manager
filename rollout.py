@@ -890,9 +890,18 @@ class RolloutBuffer:
                     )
 
                 # ----------------------------------------------------
-                # TD ERROR
+                # VALIDITY BOUNDARY
+                # Invalid transitions are excluded from PPO batches and must
+                # also break temporal return propagation. Otherwise an invalid
+                # reward at t+1 can leak into the preceding valid advantage.
                 # ----------------------------------------------------
+                valid_t = self.valid[t].to(dtype=torch.float32)
+                if t == self.num_steps - 1:
+                    next_step_valid = torch.ones_like(valid_t)
+                else:
+                    next_step_valid = self.valid[t + 1].to(dtype=torch.float32)
 
+                # TD ERROR
                 delta = (
                     self.rewards[t]
                     + gamma
@@ -901,15 +910,13 @@ class RolloutBuffer:
                     - self.values[t]
                 )
 
-                # ----------------------------------------------------
-                # GAE
-                # ----------------------------------------------------
-
-                gae = (
+                # GAE is isolated per agent and only crosses valid transitions.
+                gae = valid_t * (
                     delta
                     + gamma
                     * gae_lambda
                     * next_non_terminal
+                    * next_step_valid
                     * gae
                 )
 
