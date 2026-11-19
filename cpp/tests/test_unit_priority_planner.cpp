@@ -284,6 +284,29 @@ void unaffordable_shop_copy_does_not_create_upgrade_priority() {
     assert(carry->target_star == 0);
 }
 
+void shop_upgrade_progress_respects_affordable_offer_count() {
+    ActiveCompositionManager manager;
+    manager.publish(comp());
+    const auto active = *manager.current();
+    auto ctx = context(active);
+    ctx.gold_available = 3;
+    ctx.owned_units = {{1, 1, 1, false, {}}};
+    ctx.evidence = {{1, 0.0, 0.0, 0.9, 0, 2, 3, false}};
+    auto result = UnitPriorityPlanner{}.resolve(active, ctx);
+    auto carry = std::find_if(result.units.begin(), result.units.end(),
+        [](const auto& unit) { return unit.champion_id == 1; });
+    assert(carry != result.units.end());
+    assert(carry->intent == UnitIntent::Keep);
+
+    ctx.gold_available = 6;
+    result = UnitPriorityPlanner{}.resolve(active, ctx);
+    carry = std::find_if(result.units.begin(), result.units.end(),
+        [](const auto& unit) { return unit.champion_id == 1; });
+    assert(carry != result.units.end());
+    assert(carry->intent == UnitIntent::Upgrade);
+    assert(carry->target_star == 2);
+}
+
 void external_temporary_unit_requires_explicit_reason() {
     ActiveCompositionManager manager;
     manager.publish(comp());
@@ -440,6 +463,9 @@ int main() {
     std::cerr << "RUN shop_copies_advance_two_star_priority_for_core\n";
     shop_copies_advance_two_star_priority_for_core();
     std::cerr << "PASS shop_copies_advance_two_star_priority_for_core\n";
+    std::cerr << "RUN shop_upgrade_progress_respects_affordable_offer_count\n";
+    shop_upgrade_progress_respects_affordable_offer_count();
+    std::cerr << "PASS shop_upgrade_progress_respects_affordable_offer_count\n";
     std::cerr << "RUN unaffordable_shop_copy_does_not_create_upgrade_priority\n";
     unaffordable_shop_copy_does_not_create_upgrade_priority();
     std::cerr << "PASS unaffordable_shop_copy_does_not_create_upgrade_priority\n";
