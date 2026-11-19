@@ -225,6 +225,11 @@ void pivot_evaluation_does_not_mutate_then_confirms_synchronized_state() {
     assert(result.state_changed);
     assert(result.active_composition->candidate.composition_id == "composition-next");
     assert(result.active_composition->version == 2);
+    // The machine and Composition Intelligence observe the same canonical
+    // manager; pivot confirmation must update that owner, not a private copy.
+    assert(active_composition.current().has_value());
+    assert(active_composition.current()->candidate.composition_id == "composition-next");
+    assert(active_composition.current()->version == 2);
     assert(result.anchors.direction_anchor.composition_identity == "composition-next");
     assert(result.anchors.direction_anchor.composition_version == 2);
     assert(result.anchors.direction_anchor.identity == "direction:composition-next:v2");
@@ -285,6 +290,39 @@ void missing_candidate_invalidates_pending_pivot_without_mutation() {
     assert(result.active_composition->candidate.composition_id == "composition-current");
 }
 
+void reset_rebinds_to_the_canonical_composition_without_clearing_it() {
+    ActiveCompositionManager active_composition;
+    UnifiedStrategicStateMachine machine(active_composition);
+
+    const auto first = composition(
+        "composition-current", 1,
+        {{1, UnitRole::MainCarry, true, 100}});
+    const auto first_publish = active_composition.publish(first);
+    assert(first_publish.status == PublishStatus::Published);
+
+    auto result = machine.refresh({});
+    assert(result.phase == StrategicCyclePhase::CompositionActive);
+    assert(result.active_composition->candidate.composition_id == "composition-current");
+
+    const auto next = composition(
+        "composition-next", 3,
+        {{3, UnitRole::MainCarry, true, 100}});
+    const auto next_publish = active_composition.publish(next);
+    assert(next_publish.status == PublishStatus::Published);
+    assert(next_publish.active.version == 2);
+
+    // Session orchestration may be reset/re-anchored, but the canonical
+    // composition owner remains intact and is rebound on the next cycle.
+    machine.reset();
+    result = machine.refresh({});
+    assert(result.phase == StrategicCyclePhase::CompositionActive);
+    assert(result.active_composition->candidate.composition_id == "composition-next");
+    assert(result.active_composition->version == 2);
+    assert(active_composition.current()->candidate.composition_id == "composition-next");
+    assert(result.anchors.direction_anchor.composition_identity == "composition-next");
+    assert(result.anchors.direction_anchor.composition_version == 2);
+}
+
 void insufficient_evidence_clears_pivot_and_keeps_active_composition() {
     ActiveCompositionManager active_composition;
     UnifiedStrategicStateMachine machine(active_composition, {3, 60.0, 5});
@@ -316,6 +354,7 @@ int main() {
     pivot_evaluation_does_not_mutate_then_confirms_synchronized_state();
     invalidated_candidate_is_removed_and_old_direction_is_preserved();
     missing_candidate_invalidates_pending_pivot_without_mutation();
+    reset_rebinds_to_the_canonical_composition_without_clearing_it();
     insufficient_evidence_clears_pivot_and_keeps_active_composition();
     std::cout << "Unified strategic state machine tests passed\n";
     return 0;
