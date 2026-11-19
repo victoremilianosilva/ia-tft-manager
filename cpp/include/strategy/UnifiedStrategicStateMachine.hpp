@@ -243,7 +243,7 @@ public:
             }
         }
 
-        if (out.phase == StrategicCyclePhase::PivotConfirmed && out.state_changed) {
+        if (phase_ == StrategicCyclePhase::PivotConfirmed && out.state_changed) {
             const auto& committed_anchor = out.anchors.direction_anchor;
             commitment_.composition_direction = committed_anchor.direction;
             commitment_.selected_round = input.exploration.round;
