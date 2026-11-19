@@ -62,6 +62,29 @@ def _ranking_from_state(info, lobby):
     raise RuntimeError("Partida terminou sem ranking completo; não vou inferir rankings ausentes.")
 
 
+def candidate_slots_for_seed(seed: int, master_seed: int = 0) -> set[int]:
+    """Deterministic balanced four-seat rotation for one paired lobby seed."""
+    if isinstance(seed, bool) or not isinstance(seed, (int, np.integer)):
+        raise TypeError("seed must be an integer, not bool")
+    if isinstance(master_seed, bool) or not isinstance(master_seed, (int, np.integer)):
+        raise TypeError("master_seed must be an integer, not bool")
+    # A coprime step of 1 visits all eight rotations before repeating.
+    offset = (int(seed) + int(master_seed)) % 8
+    return {(offset + index) % 8 for index in range(4)}
+
+
+def validate_candidate_slots(candidate_slots) -> set[int]:
+    if candidate_slots is None:
+        raise ValueError("candidate_slots must be explicitly derived or supplied")
+    slots = set(candidate_slots)
+    if len(slots) != 4 or any(
+        isinstance(slot, bool) or not isinstance(slot, (int, np.integer))
+        or int(slot) < 0 or int(slot) >= 8 for slot in slots
+    ):
+        raise ValueError("candidate_slots must contain exactly four distinct player IDs in [0, 7]")
+    return {int(slot) for slot in slots}
+
+
 def run_match(factory, baseline, candidate, candidate_slots, seed, device, max_steps=10000):
     lobby = factory(seed)
     try:
@@ -93,7 +116,7 @@ def run_match(factory, baseline, candidate, candidate_slots, seed, device, max_s
             raise RuntimeError("Partida terminou sem ranking completo; não vou inferir rankings ausentes.")
         return [{"seed": int(seed), "player_id": player_id,
                  "version": "candidate" if player_id in candidate_slots else "baseline",
-                 "placement": ranking[player_id], "win": int(ranking[player_id] == 1)}
+                 "placement": ranking[player_id], "win": int(ranking[player_id] == 1),\n                 "candidate_slots": sorted(candidate_slots)}
                 for player_id in range(8)]
     finally:
         close = getattr(lobby, "close", None)
@@ -126,6 +149,14 @@ def summarize_paired_seeds(rows, bootstrap_samples=2000, bootstrap_seed=0):
     for seed, pair in grouped.items():
         if len(pair["baseline"]) != 4 or len(pair["candidate"]) != 4:
             raise ValueError(f"Seed {seed} must contain exactly four players per policy")
+        for version in ("baseline", "candidate"):
+            player_ids = [int(row["player_id"]) for row in pair[version]]
+            if len(set(player_ids)) != 4 or any(pid < 0 or pid >= 8 for pid in player_ids):
+                raise ValueError(f"Seed {seed} {version} must contain four distinct player IDs in [0, 7]")
+        if set(int(row["player_id"]) for row in pair["baseline"]) & set(
+            int(row["player_id"]) for row in pair["candidate"]
+        ):
+            raise ValueError(f"Seed {seed} assigns a player to both policies")
     if not grouped:
         raise ValueError("No paired seed rows supplied")
     baseline_rows = [r for p in grouped.values() for r in p["baseline"]]
