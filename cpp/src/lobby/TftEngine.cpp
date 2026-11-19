@@ -4198,6 +4198,7 @@ struct TFTEngine::Impl {
                             unit.cost = owned.cost;
                             unit.copies_owned = std::max(unit.copies_owned, owned.copies_owned);
                             unit.star = std::max(unit.star, owned.star);
+                            unit.copies_by_star = owned.copies_by_star;
                             unit.on_board = unit.on_board || owned.on_board;
                             unit.on_bench = unit.on_bench || owned.on_bench;
                             unit.board_contribution = std::max(
@@ -4226,7 +4227,10 @@ struct TFTEngine::Impl {
                                 unit.pool_remaining = pool
                                     ? pool->available(definition->internal_id) : -1;
                                 const auto owned = owned_evidence.find(definition->internal_id);
-                                if (owned != owned_evidence.end()) unit.star = owned->second.highest_star;
+                                if (owned != owned_evidence.end()) {
+                                    unit.star = owned->second.highest_star;
+                                    unit.copies_by_star = owned->second.copies_by_star;
+                                }
                             }
                         }
                         for (const auto& [id, unit] : discovery_units) {
