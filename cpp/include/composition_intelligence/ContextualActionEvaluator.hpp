@@ -26,6 +26,7 @@ struct ContextualActionCandidateScore {
     std::size_t candidate_index{0};
     strategy::StrategicActionKind kind{strategy::StrategicActionKind::None};
     std::int32_t champion_id{-1};
+    std::string candidate_id;
     bool eligible{false};
     bool selected{false};
     std::string rejection_reason;
@@ -65,6 +66,7 @@ struct ContextualActionEvaluation {
                 {"candidate_index", c.candidate_index},
                 {"kind", static_cast<int>(c.kind)},
                 {"champion_id", c.champion_id},
+                {"candidate_id", c.candidate_id},
                 {"eligible", c.eligible},
                 {"selected", c.selected},
                 {"rejection_reason", c.rejection_reason},
@@ -181,6 +183,7 @@ public:
             score.candidate_index = i;
             score.kind = candidate.kind;
             score.champion_id = candidate.champion_id;
+            score.candidate_id = candidate.candidate_id;
             score.eligible = candidate.available && candidate.gold_cost <= context.gold;
             if (!candidate.available) score.rejection_reason = "candidate_unavailable";
             else if (candidate.gold_cost > context.gold) score.rejection_reason = "insufficient_gold";
