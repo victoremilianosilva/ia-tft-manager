@@ -3381,6 +3381,9 @@ struct TFTEngine::Impl {
                 const auto copies = copies_by_unit.find(definition->internal_id);
                 candidate.copies_owned = copies == copies_by_unit.end()
                     ? 0 : copies->second;
+                const auto physical_tiers = physical_star_counts_by_unit.find(definition->internal_id);
+                if (physical_tiers != physical_star_counts_by_unit.end())
+                    candidate.copies_by_star = physical_tiers->second;
                 candidate.on_board = on_board;
                 candidate.on_bench = !on_board;
                 candidate.is_core = active_native_direction !=
