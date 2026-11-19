@@ -87,7 +87,7 @@ void stale_identity_disables_contextual_recommendation() {
     const auto result = ContextualActionEvaluator{}.evaluate(
         active(), priorities(), lineup(), context, &wrong_player, 77);
     assert(result.stale);
-    assert(result.recommended_action == StrategicActionKind::Hold);
+    assert(result.recommended_action == StrategicActionKind::None);
     assert(result.candidates.empty());
 }
 void invalid_candidates_and_equipped_sales_are_rejected() {
@@ -227,6 +227,25 @@ void empty_candidate_set_is_not_a_hold_recommendation() {
     assert(result.rationale == "no_candidates");
 }
 
+void ineligible_candidates_do_not_fall_back_to_implicit_hold() {
+    StrategicSharedContext context;
+    context.alive = true;
+    context.gold = 10;
+    context.player_id = 0;
+    context.round = 8;
+    auto unavailable = candidate(StrategicActionKind::BuyUnit, 20);
+    unavailable.available = false;
+    context.action_candidates = {unavailable};
+    const auto result = ContextualActionEvaluator{}.evaluate(
+        active(), priorities(), lineup(), context, nullptr, 77);
+    assert(!result.stale);
+    assert(result.candidates.size() == 1);
+    assert(!result.candidates.front().eligible);
+    assert(!result.candidates.front().selected);
+    assert(result.recommended_action == StrategicActionKind::None);
+    assert(result.confidence_not_probability == 0.0);
+}
+
 void json_is_versioned_and_shadow_only() {
     StrategicSharedContext context; context.alive=true; context.player_id=0; context.round=8;
     const auto result = ContextualActionEvaluator{}.evaluate(
@@ -248,6 +267,7 @@ int main() {
     explicit_sale_credit_is_not_discarded_as_a_positive_cost();
     validated_survival_and_streak_evidence_adjust_board_improvement_value();
     empty_candidate_set_is_not_a_hold_recommendation();
+    ineligible_candidates_do_not_fall_back_to_implicit_hold();
     json_is_versioned_and_shadow_only();
     std::cout << "ContextualActionEvaluator tests passed\\n";
 }
