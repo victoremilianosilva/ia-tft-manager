@@ -3570,7 +3570,12 @@ struct TFTEngine::Impl {
                     const auto id = unit.champion_internal_id;
                     if (id < 0) return;
                     if (on_board) on_board_ids.insert(id);
-                    auto& observed = owned_evidence[id];
+                    auto [observed_it, observed_inserted] = owned_evidence.try_emplace(id);
+                    auto& observed = observed_it->second;
+                    if (observed_inserted) {
+                        observed.board_contribution = 0.0;
+                        observed.synergy_contribution = 0.0;
+                    }
                     observed.champion_id = id;
                     observed.copies = copies_by_unit.count(id) ? copies_by_unit.at(id) : 0;
                     observed.highest_star = std::max(observed.highest_star, unit.star);
@@ -3589,7 +3594,12 @@ struct TFTEngine::Impl {
                     priority.equipped_item_ids = observed.equipped_item_ids;
                     const auto* definition = catalog->find_by_id(id);
                     if (definition) {
-                        auto& evidence = unit_evidence[id];
+                        auto [evidence_it, evidence_inserted] = unit_evidence.try_emplace(id);
+                        auto& evidence = evidence_it->second;
+                        if (evidence_inserted) {
+                            evidence.board_contribution = 0.0;
+                            evidence.synergy_contribution = 0.0;
+                        }
                         evidence.champion_id = id;
                         const double board_value = on_board
                             ? std::clamp(definition->cost / 5.0 * 0.5 +
