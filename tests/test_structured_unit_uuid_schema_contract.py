@@ -15,6 +15,7 @@ def test_structured_unit_identity_uses_native_uuid_and_composite_scope():
     assert "uuid" in unit["properties"]
     assert "instance_id" not in unit["required"]
     assert "instance_id" not in unit["properties"]
+    assert "identity.engine_match_id" in unit["properties"]["uuid"]["description"]
 
     role = schema["properties"]["derived_context"]["properties"]["unit_roles"]["items"]
     assert "uuid" in role["required"]
