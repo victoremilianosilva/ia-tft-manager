@@ -204,13 +204,26 @@ void validated_survival_and_streak_evidence_adjust_board_improvement_value() {
     economy.streak_evidence_available = true;
     economy.win_streak = 6;
 
+    const auto baseline = ContextualActionEvaluator{}.evaluate(
+        active(), priorities(), lineup(), context, nullptr, 77);
     const auto result = ContextualActionEvaluator{}.evaluate(
         active(), priorities(), lineup(), context, &evidence, 77);
     assert(!result.stale);
     assert(result.economy_evidence_consumed);
     assert(result.candidates.size() == 2);
+    assert(baseline.candidates[0].survival_value == 0.0);
+    assert(baseline.candidates[0].streak_value == 0.0);
     assert(result.candidates[0].survival_value > 0.0);
     assert(result.candidates[0].streak_value > 0.0);
+    assert(result.candidates[0].total_score > baseline.candidates[0].total_score);
+
+    // Loss streak evidence also changes the same candidate's marginal score.
+    economy.win_streak = 0;
+    economy.loss_streak = 6;
+    const auto loss_streak_result = ContextualActionEvaluator{}.evaluate(
+        active(), priorities(), lineup(), context, &evidence, 77);
+    assert(loss_streak_result.candidates[0].streak_value > 0.0);
+    assert(loss_streak_result.candidates[0].total_score > baseline.candidates[0].total_score);
 }
 
 void empty_candidate_set_is_not_a_hold_recommendation() {
