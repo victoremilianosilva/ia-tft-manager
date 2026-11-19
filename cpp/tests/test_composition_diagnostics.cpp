@@ -72,5 +72,22 @@ int main() {
     assert(payload["evidence"]["items"]["units"][0]["composition_id"] == "comp-a");
     assert(payload["evidence"]["items"]["units"][0]["role_source"] == "derived:UnitCombatClassifier");
     assert(payload["evidence"]["items"]["units"][0]["preferred_traits"][0] == "Arcanist");
+    const auto& prior_link = payload["recommendation_to_later_outcome"];
+    assert(prior_link["recommendation_round"] == 3);
+    assert(prior_link["recommendation_sequence"] == first.sequence);
+    assert(prior_link["outcome_round"] == 6);
+    assert(prior_link["interpretation"] == "correlation_only_not_causation");
+
+    CompositionOutcomeObservation later{7, std::nullopt, -2.0, 0.0,
+        "placement not yet available"};
+    const auto third = recorder.capture(5, active, proposal, priorities, lineup,
+        evidence, actions, std::nullopt, later);
+    const auto third_json = third.to_json();
+    const auto& third_payload = third_json["diagnostics"];
+    assert(third_payload["outcome_observation"]["placement"].is_null());
+    assert(third_payload["recommendation_to_later_outcome"]["recommendation_round"] == 4);
+    assert(third_payload["recommendation_to_later_outcome"]["recommendation_sequence"] == second.sequence);
+    assert(third_payload["recommendation_to_later_outcome"]["recommendation_composition_id"] == "comp-a");
+    assert(third_payload["recommendation_to_later_outcome"]["recommendation_composition_version"] == 2);
     std::cout << "CompositionDiagnostics tests passed\n";
 }

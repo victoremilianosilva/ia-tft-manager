@@ -211,3 +211,9 @@ The shared helper in `scripts/evaluate_checkpoints.py` now provides a guarded ev
 - Runs deterministic policy inference only and does not train or mutate policy weights.
 
 This helper is a reproducible paired-evaluation primitive, not evidence that a new PPO lineage has already been retrained or outperformed a baseline. Final test-set freezing, split-leakage prevention, multi-seed sample sufficiency, ablations, complete behavior metrics and a promotion decision remain open.
+
+## 12. Hash-linked evaluation report artifacts — PR6
+
+run_match now records per-player action totals and item/equip/craft action counts alongside placement and win outcome. write_paired_evaluation_artifacts publishes one immutable evaluation directory containing raw per-player results, paired summary, experiment manifest, and a report index. The writer fails closed unless the experiment ID, code revision, Engine build identity, catalog/split hashes, primary metric, practical-effect threshold, split, and baseline/candidate checkpoint hashes are supplied and consistent with the run.
+
+The report index carries SHA-256 hashes for raw results, summary, and experiment manifest, plus a hash of the report payload before its self-hash field is added. Existing output directories are never overwritten. This closes the artifact-persistence gap for a completed helper run; it does not itself create train/validation/test splits, run ablations, retrain PPO, prove a minimum sample size, or make a promotion decision. Those require actual experiment inputs and execution.

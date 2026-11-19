@@ -539,6 +539,15 @@ struct TFTEngine::Impl {
     // Uma instância C++ por jogador; o lobby coordena as oito.
     std::array<PlayerEnv, kPlayersPerLobby> player_envs{};
     std::array<CompositionIntelligencePlayerState, kPlayersPerLobby> composition_intelligence_players{};
+    struct CompositionOutcomeBaseline {
+        std::uint64_t episode_id{0};
+        std::uint32_t round{0};
+        double hp{0.0};
+        double board_score{0.0};
+        bool valid{false};
+    };
+    std::array<CompositionOutcomeBaseline, kPlayersPerLobby>
+        composition_outcome_baselines{};
     std::vector<composition_intelligence::CompositionCandidate> composition_intelligence_candidates;
     std::array<std::vector<composition_intelligence::CompositionCandidate>, kPlayersPerLobby>
         composition_intelligence_native_candidates{};
@@ -3941,9 +3950,37 @@ struct TFTEngine::Impl {
                         action_resolution.resolution_reason + ":" + action_resolution.validation_reason,
                     active);
 
+                // Correlate the prior round's recommendation with the next
+                // observed native state. This is diagnostic-only: it never feeds
+                // PPO, reward, action selection, or game execution.
+                std::optional<ci::CompositionOutcomeObservation> later_outcome;
+                auto& outcome_baseline = composition_outcome_baselines[i];
+                const double observed_hp = player_envs[i].info.hp;
+                const double observed_board_score = board_evaluation(i).total_score;
+                const bool same_episode_baseline =
+                    outcome_baseline.valid && outcome_baseline.episode_id == episode_id;
+                if (same_episode_baseline && round_id > outcome_baseline.round) {
+                    ci::CompositionOutcomeObservation observation;
+                    observation.observed_round = round_id;
+                    observation.placement = player_envs[i].info.placement;
+                    observation.health_delta = observed_hp - outcome_baseline.hp;
+                    observation.board_score_delta =
+                        observed_board_score - outcome_baseline.board_score;
+                    observation.note =
+                        "next-round native observation; board score delta may include intervening board changes; correlation only";
+                    later_outcome = std::move(observation);
+                }
+                if (!same_episode_baseline || round_id > outcome_baseline.round) {
+                    outcome_baseline.episode_id = episode_id;
+                    outcome_baseline.round = round_id;
+                    outcome_baseline.hp = observed_hp;
+                    outcome_baseline.board_score = observed_board_score;
+                    outcome_baseline.valid = true;
+                }
+
                 const auto diagnostic = runtime.recorder.capture(
                     round_id, active, proposal, priorities, lineup, evidence,
-                    composition_actions, published_transition);
+                    composition_actions, published_transition, later_outcome);
                 runtime.mark_stage("diagnostic_recording", "completed",
                     "read-only diagnostic snapshot assembled", active);
                 auto diagnostic_json = diagnostic.to_json();
