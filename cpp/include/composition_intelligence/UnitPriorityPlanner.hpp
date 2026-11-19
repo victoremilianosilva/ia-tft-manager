@@ -39,7 +39,7 @@ inline std::int32_t copy_progress_toward_next_star(
     std::int32_t copies_owned, std::int32_t highest_star) noexcept {
     if (copies_owned <= 0 || highest_star < 1 || highest_star >= 3) return 0;
     const std::int32_t next_star_copy_threshold = highest_star == 1 ? 3 : 9;
-    return copies_owned % next_star_copy_threshold;
+    return std::min(copies_owned, next_star_copy_threshold);
 }
 
 struct UnitPriorityEvidence {
