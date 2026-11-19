@@ -101,3 +101,4 @@ def test_player_log_keeps_shadow_owner_snapshot_and_labels_legacy_fields():
     assert snapshot["legacy_strategy_compatibility"]["authority"] == (
         "compatibility_only_not_canonical_strategy_state"
     )
+    assert snapshot["legacy_strategy_compatibility"]["status"] == "unavailable"
