@@ -2288,7 +2288,7 @@ class Trainer:
                 "action_mask_contract": build_action_mask_checkpoint_contract(),
                 "critic_mask_input_contract": build_critic_mask_input_checkpoint_contract(),
                 "semantic_state_contract": self.semantic_state_contract,
-                        "reward_contract": build_reward_checkpoint_contract(),
+                "reward_contract": build_reward_checkpoint_contract(),
             },
             self.config.checkpoint_path,
         )
