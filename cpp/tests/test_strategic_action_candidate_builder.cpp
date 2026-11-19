@@ -267,7 +267,7 @@ void owned_unit_candidates_require_native_physical_identity() {
     composition.composition_id = "uuid-required";
     composition.set_id = "TFT18";
     composition.target_board_size = 1;
-    composition.units = {{10, UnitRole::MainCarry, true, 80}};
+    composition.units = {{10, tft::composition_intelligence::UnitRole::MainCarry, true, 80}};
     const std::optional<ActiveComposition> active = ActiveComposition{composition, 1};
     UnitPriority sell;
     sell.champion_id = 30; sell.intent = UnitIntent::SellCandidate;
@@ -300,7 +300,7 @@ void ambiguous_owned_copy_is_not_selected_by_incidental_order() {
     CompositionCandidate composition;
     composition.composition_id = "ambiguous-copy"; composition.set_id = "TFT18";
     composition.target_board_size = 1;
-    composition.units = {{10, UnitRole::MainCarry, true, 80}};
+    composition.units = {{10, tft::composition_intelligence::UnitRole::MainCarry, true, 80}};
     const std::optional<ActiveComposition> active = ActiveComposition{composition, 1};
     UnitPriority sell;
     sell.champion_id = 30; sell.intent = UnitIntent::SellCandidate;
