@@ -31,7 +31,10 @@ def test_unit_identity_manifest_matches_native_engine_episode_scope():
     assert "UnitInstance::uuid" in unit["native_identity_candidate"]
     assert "engine_instance_id + episode_id" in unit["native_identity_candidate"]
     assert "player_id is the current owner relation" in unit["identity"]
-    assert "never be joined without the Engine-episode scope" in " ".join(unit["gaps"])
+    gaps = " ".join(unit["gaps"])
+    assert "Raw UUID is not globally unique" in gaps
+    assert "joins must include the canonical Engine-episode scope" in gaps
+    assert "player_id is ownership metadata, not physical identity" in gaps
 
     coverage = COVERAGE_PATH.read_text(encoding="utf-8")
     assert "entities.board[].unit.uuid" in coverage
