@@ -69,3 +69,50 @@ def test_viewer_diagnostic_sidecar_resets_cursor_for_new_engine_episode(tmp_path
     ]
     assert [record["engine_match_id"] for record in records] == [1, 2]
     assert [record["sequence"] for record in records] == [1, 1]
+
+
+
+def test_viewer_close_resets_diagnostic_cursor_for_new_engine_with_same_episode_id(tmp_path):
+    class NativeLobby:
+        def __init__(self, composition_id):
+            self.lines = [json.dumps({
+                "engine_match_id": 1, "player_id": 0, "round": 9,
+                "sequence": 1, "composition_id": composition_id,
+                "composition_version": 1,
+            })]
+
+        def get_snapshot_metadata(self):
+            return {"episode_id": 1}
+
+        def get_composition_diagnostics_jsonl(self):
+            return list(self.lines)
+
+        def close(self):
+            pass
+
+    session = ViewerSession()
+    old_dir = tmp_path / "old"
+    old_dir.mkdir()
+    session.lobby = NativeLobby("old-engine")
+    session._session_dir = old_dir
+    session.match_id = "old-session"
+    session._persist_composition_diagnostics()
+    assert session._composition_diagnostics_written == 1
+
+    session.close()
+    assert session._composition_diagnostics_written == 0
+    assert session._composition_diagnostics_episode_id is None
+
+    new_dir = tmp_path / "new"
+    new_dir.mkdir()
+    session.lobby = NativeLobby("new-engine")
+    session._session_dir = new_dir
+    session.match_id = "new-session"
+    session._persist_composition_diagnostics()
+
+    records = [
+        json.loads(line)
+        for line in (new_dir / "composition_diagnostics.jsonl").read_text().splitlines()
+    ]
+    assert len(records) == 1
+    assert records[0]["composition_id"] == "new-engine"
