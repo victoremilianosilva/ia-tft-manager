@@ -9,6 +9,8 @@ on:
       - "spec/observation-schema.v1.draft.json"
       - "spec/observation-schema.v2.draft.json"
       - "spec/sequence-namespace-registry.v2.draft.json"
+      - "spec/observation-schema.v2.identity-source-map.draft.json"
+      - "spec/observation-structured-entity-temporal-contract.v1.draft.json"
       - "spec/decision-identity-v2-hash-vectors.draft.json"
       - "spec/examples/observation-v2/**"
       - "scripts/validate_observation_schema.py"
