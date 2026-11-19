@@ -39,6 +39,8 @@ struct DirectionDiscoveryUnit {
     std::vector<std::string> traits;
     // -1 means the native pool snapshot is unavailable.
     std::int32_t pool_remaining{-1};
+    // False means unknown unless this availability bit is true.
+    bool core_potential_available{false};
 };
 
 struct DirectionDiscoveryTrait {
@@ -150,7 +152,8 @@ public:
                     a.bench = a.bench || unit.on_bench;
                     a.highest_star = std::max(a.highest_star, unit.star);
                     a.carry = a.carry || unit.carry_potential;
-                    a.core = a.core || unit.core_potential;
+                    a.core = a.core ||
+                        (unit.core_potential_available && unit.core_potential);
                     if (a.cheapest_cost == 0 || unit.cost < a.cheapest_cost)
                         a.cheapest_cost = unit.cost;
                 }
