@@ -194,12 +194,12 @@ void composition_hierarchy_beats_easy_external_upgrade() {
     const auto active = *manager.current();
     auto ctx = context(active);
     ctx.owned_units = {
-        {1, 1, 1, true, {}},
+        {1, 2, 1, true, {}},
         {4, 1, 1, false, {}},
         {9, 2, 2, true, {}}
     };
     ctx.evidence = {
-        {1, 0.2, 0.2, 0.9, 1, 1, -1, false},
+        {1, 0.2, 0.2, 0.9, 2, 1, -1, false},
         {4, 0.2, 0.2, 0.9, 0, 0, -1, false},
         {9, 1.0, 1.0, 1.0, 0, 0, -1, false}
     };
