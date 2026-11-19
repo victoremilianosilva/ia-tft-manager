@@ -327,8 +327,6 @@ class RolloutBuffer:
             )
 
         self.valid[self.ptr].copy_(valid)
-        self.semantic_numeric[self.ptr].copy_(semantic_numeric)
-        self.semantic_champion_ids[self.ptr].copy_(semantic_champion_ids)
 
         # ============================================================
         # CONVERSÃO PARA TENSOR
@@ -401,6 +399,9 @@ class RolloutBuffer:
                 raise ValueError("semantic numeric batch contains NaN or infinity")
             if semantic_champion_ids.numel() and (semantic_champion_ids < 0).any():
                 raise ValueError("semantic champion IDs must be non-negative")
+
+        self.semantic_numeric[self.ptr].copy_(semantic_numeric)
+        self.semantic_champion_ids[self.ptr].copy_(semantic_champion_ids)
 
         metadata_groups = (
             ("snapshot_metadata", snapshot_metadata),
