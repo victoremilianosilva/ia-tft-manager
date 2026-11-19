@@ -3545,6 +3545,27 @@ struct TFTEngine::Impl {
                 std::unordered_map<std::int32_t, ci::UnitPriorityOwnedUnit> owned_priority;
                 std::unordered_map<std::int32_t, ci::UnitPriorityEvidence> unit_evidence;
                 std::unordered_set<std::int32_t> on_board_ids;
+                std::unordered_map<std::string, std::int32_t> board_trait_counts;
+                for (const auto& board_unit : player_envs[i].board) {
+                    if (!board_unit) continue;
+                    const auto* definition = catalog->find_by_id(board_unit->champion_internal_id);
+                    if (!definition) continue;
+                    for (const auto& trait : definition->traits) ++board_trait_counts[trait];
+                }
+                const auto trait_threshold_crossed = [&](const std::string& trait,
+                                                          std::int32_t count,
+                                                          bool removing_owned_unit) {
+                    const auto milestones = trait_milestones.find(trait);
+                    if (milestones == trait_milestones.end()) return false;
+                    for (const auto milestone : milestones->second) {
+                        if (removing_owned_unit) {
+                            if (count >= milestone && count - 1 < milestone) return true;
+                        } else if (count < milestone && count + 1 >= milestone) {
+                            return true;
+                        }
+                    }
+                    return false;
+                };
                 const auto collect_unit = [&](const UnitInstance& unit, bool on_board) {
                     const auto id = unit.champion_internal_id;
                     if (id < 0) return;
@@ -3553,6 +3574,8 @@ struct TFTEngine::Impl {
                     observed.champion_id = id;
                     observed.copies = copies_by_unit.count(id) ? copies_by_unit.at(id) : 0;
                     observed.highest_star = std::max(observed.highest_star, unit.star);
+                    const auto star = static_cast<std::size_t>(std::clamp(unit.star, 1, 3));
+                    ++observed.copies_by_star[star];
                     for (const auto& item : unit.items)
                         if (!item.api_name.empty() &&
                             std::find(observed.equipped_item_ids.begin(), observed.equipped_item_ids.end(), item.api_name) == observed.equipped_item_ids.end())
@@ -3561,30 +3584,72 @@ struct TFTEngine::Impl {
                     priority.champion_id = id;
                     priority.copies = observed.copies;
                     priority.highest_star = std::max(priority.highest_star, unit.star);
+                    ++priority.copies_by_star[star];
                     priority.on_board = priority.on_board || on_board;
                     priority.equipped_item_ids = observed.equipped_item_ids;
                     const auto* definition = catalog->find_by_id(id);
                     if (definition) {
                         auto& evidence = unit_evidence[id];
                         evidence.champion_id = id;
-                        evidence.board_contribution = on_board
-                            ? std::clamp(definition->cost / 5.0 * 0.5 + std::clamp(unit.star, 1, 3) / 3.0 * 0.5, 0.0, 1.0)
-                            : evidence.board_contribution;
+                        const double board_value = on_board
+                            ? std::clamp(definition->cost / 5.0 * 0.5 +
+                                std::clamp(unit.star, 1, 3) / 3.0 * 0.5, 0.0, 1.0)
+                            : 0.0;
+                        evidence.board_contribution = std::max(
+                            evidence.board_contribution, board_value);
                         std::size_t matching_traits = 0;
-                        for (const auto& trait : definition->traits)
+                        for (const auto& trait : definition->traits) {
                             if (std::find(strategic_context.current_core_traits.begin(),
                                           strategic_context.current_core_traits.end(), trait) !=
                                 strategic_context.current_core_traits.end()) ++matching_traits;
-                        evidence.synergy_contribution = std::clamp(static_cast<double>(matching_traits) / 2.0, 0.0, 1.0);
+                            const auto count = board_trait_counts[trait];
+                            observed.completes_active_trait = observed.completes_active_trait ||
+                                trait_threshold_crossed(trait, count, on_board);
+                        }
+                        evidence.synergy_contribution = std::clamp(
+                            static_cast<double>(matching_traits) / 2.0, 0.0, 1.0);
+                        evidence.trait_completion = evidence.trait_completion ||
+                            observed.completes_active_trait;
                         evidence.confidence = 0.75;
                         evidence.copies_toward_next_star =
                             ci::copy_progress_toward_next_star(
-                                observed.copies, observed.highest_star);
+                                priority.copies_by_star, priority.highest_star);
                     }
                 };
                 for (const auto& unit : player_envs[i].board) if (unit) collect_unit(*unit, true);
                 for (const auto& unit : player_envs[i].bench) if (unit) collect_unit(*unit, false);
-                for (const auto& pair : owned_evidence) composition_context.owned_units.push_back(pair.second);
+                for (auto& [id, observed] : owned_evidence) {
+                    const auto priority = owned_priority.find(id);
+                    const bool single_unupgraded_bench_unit = priority != owned_priority.end() &&
+                        !priority->second.on_board && priority->second.copies_by_star[1] == 1 &&
+                        priority->second.copies_by_star[2] == 0 &&
+                        priority->second.copies_by_star[3] == 0;
+                    observed.explicit_sell_candidate = single_unupgraded_bench_unit &&
+                        observed.equipped_item_ids.empty() &&
+                        observed.board_contribution < 0.25 &&
+                        observed.synergy_contribution < 0.25 &&
+                        !observed.completes_active_trait;
+                    observed.explicit_sell_candidate = observed.explicit_sell_candidate &&
+                        observed.copies == 1 && observed.highest_star == 1;
+                    composition_context.owned_units.push_back(observed);
+                }
+                // Missing target units also receive explicit evidence so trait
+                // completion and affordable shop progress are not lost at lookup.
+                if (active) {
+                    for (const auto& target : active->candidate.units) {
+                        const auto* definition = catalog->find_by_id(target.champion_id);
+                        if (!definition) continue;
+                        auto& evidence = unit_evidence[target.champion_id];
+                        evidence.champion_id = target.champion_id;
+                        evidence.unit_cost = definition->cost;
+                        for (const auto& trait : definition->traits) {
+                            const auto count = board_trait_counts[trait];
+                            evidence.trait_completion = evidence.trait_completion ||
+                                trait_threshold_crossed(trait, count, false);
+                        }
+                        evidence.confidence = std::max(evidence.confidence, 0.75);
+                    }
+                }
 
                 // Adapt each source independently, then combine only validated candidates.
                 auto source_candidates = composition_intelligence_candidates;
