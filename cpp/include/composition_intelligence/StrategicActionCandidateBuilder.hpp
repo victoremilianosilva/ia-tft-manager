@@ -162,7 +162,7 @@ public:
                 candidate.evidence_reason = "upgrade_target_exists_and_native_reroll_mask";
                 candidate.evidence_source = "UnitPriorityPlanner+native_REROLL_mask";
                 candidate.evidence_horizon_rounds = 1;
-                candidate.evidence_uncertainty = 0.85;
+                candidate.evidence_uncertainty = 1.0; // no probability model for future shop outcomes
                 attach_marginal_interest(candidate);
                 append(std::move(candidate));
             }
@@ -248,7 +248,7 @@ public:
                 candidate.evidence_reason = "role_aware_position_proposal_with_current_native_masks";
                 candidate.evidence_source = "LineupPlanner+StrategicPositionPlanner+native_move_masks";
                 candidate.evidence_horizon_rounds = 0;
-                candidate.evidence_uncertainty = 0.35;
+                candidate.evidence_uncertainty = 1.0; // proposal has no calibrated confidence field
                 append(std::move(candidate));
                 out.positioning.push_back(std::move(proposal));
             }
