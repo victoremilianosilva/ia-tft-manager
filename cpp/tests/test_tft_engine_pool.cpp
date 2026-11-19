@@ -108,8 +108,9 @@ int main(int argc, char** argv) {
                     tft::kPlayersPerLobby * engine.observation_dim(),
                 "Tamanho do lote de observacoes nao corresponde a dimensao declarada.");
 
-        // Composition must be part of the actual PPO observation, not only
-        // diagnostic metadata. Verify its fixed layout and live values.
+        // Legacy strategy fields remain physically reserved but are no longer
+        // decision inputs. Native factual state and semantic owner projections
+        // have their own contracts and must not be backfilled from StrategyInfo.
         std::vector<std::string> trait_order;
         for (const auto& champion : catalog.all()) {
             for (const auto& trait : champion.traits) {
@@ -163,16 +164,20 @@ int main(int argc, char** argv) {
         require(!engine.set_unit_items_for_testing(0, true, 0, {invalid_item}),
                 "Bonus numerico invalido nao deve entrar no estado da unidade.");
 
-        const auto strategy_after_fixture = engine.get_strategies()[0].back();
         const auto composition_observations = engine.get_observations();
         const auto* player_observation = composition_observations.data();
         const std::size_t direction_offset = legacy_observation_dim;
-        const std::size_t core_traits_offset =
-            direction_offset + trait_order.size();
-        const std::size_t unit_fit_offset =
-            core_traits_offset + trait_order.size();
-        require(player_observation[unit_fit_offset] > 0.0f,
-                "Score de compatibilidade da unidade nao chegou a observacao PPO.");
+        const std::size_t core_traits_offset = direction_offset + trait_order.size();
+        const std::size_t unit_fit_offset = core_traits_offset + trait_order.size();
+        for (std::size_t index = 10; index < 17; ++index)
+            require(player_observation[index] == 0.0f,
+                    "StrategyInfo one-hot ainda está presente na observação PPO.");
+        for (std::size_t index = direction_offset;
+             index < unit_fit_offset + tft::kBoardSlots + tft::kBenchSlots + tft::kShopSlots;
+             ++index)
+            require(player_observation[index] == 0.0f,
+                    "Feature estratégica legada ainda está presente na observação PPO.");
+
         const std::size_t candidate_features_offset =
             expected_observation_dim - 8 * (tft::kBenchSlots + tft::kShopSlots);
         const std::size_t focus_weights_offset =
@@ -180,32 +185,10 @@ int main(int argc, char** argv) {
             (3 + 9 * 11) - trait_order.size() - 2;
         const std::size_t locked_offset = focus_weights_offset + trait_order.size();
         const std::size_t strength_offset = locked_offset + 1;
-        for (std::size_t trait_index = 0;
-             trait_index < trait_order.size(); ++trait_index) {
-            double expected_weight = 0.0;
-            for (const auto& [trait, weight] :
-                 strategy_after_fixture.composition_focus_weights) {
-                if (trait == trait_order[trait_index]) {
-                    expected_weight = weight;
-                    break;
-                }
-            }
-            const float expected_normalized_weight = static_cast<float>(
-                std::clamp(expected_weight / 10.0, 0.0, 1.0));
-            require(std::abs(player_observation[focus_weights_offset + trait_index] -
-                             expected_normalized_weight) < 1e-5f,
-                    "Focus weights nao estao alinhados com a ordem fixa de traits.");
-            require(player_observation[focus_weights_offset + trait_index] >= 0.0f &&
-                    player_observation[focus_weights_offset + trait_index] <= 1.0f,
-                    "Focus weight normalizado fora de [0, 1].");
-        }
-        require(player_observation[locked_offset] ==
-                    (strategy_after_fixture.composition_locked ? 1.0f : 0.0f),
-                "Estado composition_locked diverge do snapshot estrategico.");
-        require(std::abs(player_observation[strength_offset] -
-                         static_cast<float>(std::clamp(
-                             strategy_after_fixture.composition_strength / 10.0, 0.0, 1.0))) < 1e-5f,
-                "composition_strength nao esta normalizado/alinhado.");
+        for (std::size_t index = focus_weights_offset;
+             index <= strength_offset; ++index)
+            require(player_observation[index] == 0.0f,
+                    "Focus/lock/strength legado ainda influencia o PPO.");
         require(candidate_features_offset + 8 * (tft::kBenchSlots + tft::kShopSlots) ==
                     expected_observation_dim,
                 "Features de candidatos deixaram de ocupar a cauda da observacao.");
@@ -215,34 +198,18 @@ int main(int argc, char** argv) {
         require(player_observation[item_target_features_offset] == 1.0f &&
                 player_observation[item_target_features_offset + 1] == 1.0f,
                 "Observacao de item nao expoe unidade ocupada no tabuleiro como alvo.");
-        require(player_observation[candidate_features_offset] > 0.0f,
-                "Features estrategicas da primeira unidade do banco ausentes.");
+        require(player_observation[candidate_features_offset] == 0.0f &&
+                player_observation[candidate_features_offset + 4] == 0.0f,
+                "Fit/core legado de candidato ainda é projetado.");
+        require(player_observation[candidate_features_offset + 1] > 0.0f,
+                "Custo factual do candidato deixou de ser projetado.");
         const std::size_t shop_candidate_offset =
             candidate_features_offset + 8 * tft::kBenchSlots;
-        require(player_observation[shop_candidate_offset] > 0.0f,
-                "Features estrategicas da primeira oferta da loja ausentes.");
-        if (!strategy_after_fixture.composition_direction.empty()) {
-            const auto direction_it = std::find(
-                trait_order.begin(), trait_order.end(),
-                strategy_after_fixture.composition_direction);
-            require(direction_it != trait_order.end(),
-                    "Direcao da composicao nao existe na ordem fixa de traits.");
-            const auto direction_index = static_cast<std::size_t>(
-                std::distance(trait_order.begin(), direction_it));
-            require(player_observation[direction_offset + direction_index] == 1.0f,
-                    "Direcao da composicao nao foi codificada na observacao PPO.");
-        }
-        for (std::size_t trait_index = 0;
-             trait_index < trait_order.size(); ++trait_index) {
-            const bool expected_core_trait = std::find(
-                strategy_after_fixture.core_traits.begin(),
-                strategy_after_fixture.core_traits.end(),
-                trait_order[trait_index]) !=
-                strategy_after_fixture.core_traits.end();
-            require(player_observation[core_traits_offset + trait_index] ==
-                        (expected_core_trait ? 1.0f : 0.0f),
-                    "Core traits divergem entre StrategyInfo e observacao PPO.");
-        }
+        require(player_observation[shop_candidate_offset] == 0.0f &&
+                player_observation[shop_candidate_offset + 4] == 0.0f,
+                "Fit/core legado da oferta ainda é projetado.");
+        require(player_observation[shop_candidate_offset + 1] > 0.0f,
+                "Custo factual da oferta deixou de ser projetado.");
 
         require(
             initial_state.players.size() == tft::kPlayersPerLobby,
