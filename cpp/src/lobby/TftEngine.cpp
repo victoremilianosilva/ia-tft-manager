@@ -3081,7 +3081,9 @@ struct TFTEngine::Impl {
                 const auto copies = copies_by_unit.find(definition->internal_id);
                 observed.copies = copies == copies_by_unit.end() ? 0 : copies->second;
                 observed.star = std::max(observed.star, unit.star);
-                ++observed.copies_by_star[static_cast<std::size_t>(std::clamp(unit.star, 1, 3))];
+                auto& physical_tiers = physical_star_counts_by_unit[definition->internal_id];
+                ++physical_tiers[static_cast<std::size_t>(std::clamp(unit.star, 1, 3))];
+                observed.copies_by_star = physical_tiers;
                 observed.on_board = observed.on_board || on_board;
                 observed.on_bench = observed.on_bench || !on_board;
                 observed.board_contribution = std::max(
@@ -3620,7 +3622,6 @@ struct TFTEngine::Impl {
                     observed.champion_id = id;
                     observed.copies = copies_by_unit.count(id) ? copies_by_unit.at(id) : 0;
                     observed.highest_star = std::max(observed.highest_star, unit.star);
-                    const auto star = static_cast<std::size_t>(std::clamp(unit.star, 1, 3));
                     const auto physical_tiers = physical_star_counts_by_unit.find(id);
                     if (physical_tiers != physical_star_counts_by_unit.end())
                         observed.copies_by_star = physical_tiers->second;
