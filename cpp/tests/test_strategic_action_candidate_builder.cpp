@@ -3,6 +3,7 @@
 #include <cassert>
 #include <iostream>
 
+using namespace tft;
 using namespace tft::composition_intelligence;
 using namespace tft::strategy;
 
