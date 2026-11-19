@@ -4,6 +4,10 @@ The module keeps evaluation plumbing importable independently from training.
 """
 from __future__ import annotations
 
+import hashlib
+import json
+from pathlib import Path
+
 import numpy as np
 import torch
 
@@ -99,12 +103,23 @@ def run_match(factory, baseline, candidate, candidate_slots, seed, device, max_s
             alive = [i for i, player in enumerate(lobby.players)
                      if getattr(player, "alive", True) and not getattr(player, "eliminated", False)]
             actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+            action_counts = {player_id: {"actions": 0, "item_actions": 0,
+                                         "equip_actions": 0, "craft_and_equip_actions": 0}
+                             for player_id in range(8)}
             for slots, policy in ((set(range(8)) - set(candidate_slots), baseline),
                                   (set(candidate_slots), candidate)):
                 selected = sorted(set(alive).intersection(slots))
                 chosen = policy_actions(policy, observations, masks, selected, device)
                 for player_id, action in chosen.items():
                     actions[player_id] = action
+                    counts = action_counts[player_id]
+                    counts["actions"] += 1
+                    if action[0] in (7, 8):
+                        counts["item_actions"] += 1
+                    if action[0] == 7:
+                        counts["equip_actions"] += 1
+                    elif action[0] == 8:
+                        counts["craft_and_equip_actions"] += 1
             observations, rewards, done, info = lobby.step(
                 [action_dict(a) for a in actions])
             if done or getattr(lobby, "finished", False):
@@ -117,7 +132,7 @@ def run_match(factory, baseline, candidate, candidate_slots, seed, device, max_s
         return [{"seed": int(seed), "player_id": player_id,
                  "version": "candidate" if player_id in candidate_slots else "baseline",
                  "placement": ranking[player_id], "win": int(ranking[player_id] == 1),
-                 "candidate_slots": sorted(candidate_slots)}
+                 "candidate_slots": sorted(candidate_slots), **action_counts[player_id]}
                 for player_id in range(8)]
     finally:
         close = getattr(lobby, "close", None)
@@ -261,3 +276,64 @@ def run_paired_evaluation(
         "raw_results": raw_rows,
         "summary": summarize_paired_seeds(raw_rows),
     }
+
+
+def write_paired_evaluation_artifacts(result, experiment_manifest, output_dir):
+    """Persist immutable, hash-linked raw results and summary for one evaluation run."""
+    if not isinstance(result, dict) or result.get("evaluation_mode") != "evaluation_only":
+        raise ValueError("only evaluation_only results can be published")
+    if not isinstance(experiment_manifest, dict):
+        raise TypeError("experiment_manifest must be a dict")
+    required = (
+        "experiment_id", "code_revision", "engine_build",
+        "catalog_sha256", "split_manifest_sha256",
+        "primary_metric", "practical_effect_threshold",
+    )
+    missing = [key for key in required if experiment_manifest.get(key) in (None, "")]
+    if missing:
+        raise ValueError(f"experiment manifest is missing: {', '.join(missing)}")
+    for key in ("catalog_sha256", "split_manifest_sha256"):
+        value = experiment_manifest[key]
+        if not isinstance(value, str) or len(value) != 64 or any(ch not in "0123456789abcdef" for ch in value.lower()):
+            raise ValueError(f"{key} must be a 64-character SHA-256")
+    if experiment_manifest.get("split") != result.get("split"):
+        raise ValueError("experiment manifest split does not match evaluation result")
+    if experiment_manifest.get("baseline_checkpoint_sha256") != result.get("baseline_checkpoint_sha256"):
+        raise ValueError("baseline checkpoint hash does not match evaluation result")
+    if experiment_manifest.get("candidate_checkpoint_sha256") != result.get("candidate_checkpoint_sha256"):
+        raise ValueError("candidate checkpoint hash does not match evaluation result")
+    if not isinstance(result.get("raw_results"), list) or not result["raw_results"]:
+        raise ValueError("evaluation result must contain raw episode rows")
+    if not isinstance(result.get("summary"), dict) or result["summary"].get("seed_count", 0) < 1:
+        raise ValueError("evaluation result must contain a non-empty paired summary")
+
+    target = Path(output_dir).expanduser().resolve()
+    target.mkdir(parents=True, exist_ok=False)
+    raw_payload = json.dumps(result["raw_results"], sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    summary_payload = json.dumps(result["summary"], sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    manifest_payload = json.dumps(experiment_manifest, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    hashes = {
+        "raw_results_sha256": hashlib.sha256(raw_payload.encode("utf-8")).hexdigest(),
+        "summary_sha256": hashlib.sha256(summary_payload.encode("utf-8")).hexdigest(),
+        "experiment_manifest_sha256": hashlib.sha256(manifest_payload.encode("utf-8")).hexdigest(),
+    }
+    report = {
+        "schema_version": 1,
+        "evaluation_mode": "evaluation_only",
+        "split": result["split"],
+        "checkpoint_lineage_sha256": result["checkpoint_lineage_sha256"],
+        "experiment_id": experiment_manifest["experiment_id"],
+        "artifacts": {
+            "raw_results": "raw_results.json",
+            "summary": "summary.json",
+            "experiment_manifest": "experiment_manifest.json",
+        },
+        "sha256": hashes,
+    }
+    report_payload = json.dumps(report, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    report["sha256"]["report_payload_sha256"] = hashlib.sha256(report_payload.encode("utf-8")).hexdigest()
+    (target / "raw_results.json").write_text(json.dumps(result["raw_results"], ensure_ascii=False, indent=2) + "\\n", encoding="utf-8")
+    (target / "summary.json").write_text(json.dumps(result["summary"], ensure_ascii=False, indent=2) + "\\n", encoding="utf-8")
+    (target / "experiment_manifest.json").write_text(json.dumps(experiment_manifest, ensure_ascii=False, indent=2) + "\\n", encoding="utf-8")
+    (target / "report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\\n", encoding="utf-8")
+    return {"directory": str(target), "report": report}
