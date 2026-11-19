@@ -37,6 +37,10 @@ from action_contract import (
     validate_critic_mask_input_checkpoint_contract,
 )
 from rollout import RolloutBuffer
+from reward_contract import (
+    build_reward_checkpoint_contract,
+    validate_reward_checkpoint_contract,
+)
 from ppo import PPOTrainer, exponential_schedule_value
 from semantic_observation import (
     build_semantic_batch,
@@ -271,6 +275,7 @@ class Trainer:
         migrated_checkpoint = False
 
         legacy_action_mask_checkpoint = False
+        legacy_reward_checkpoint = False
         if os.path.exists(checkpoint_path):
             print(f"📂 Carregando checkpoint: {checkpoint_path}")
             checkpoint = torch.load(checkpoint_path, map_location=self.device)
@@ -310,6 +315,22 @@ class Trainer:
                         "Checkpoint declara critic_mask_input_contract, mas não contém "
                         "os pesos do Critic mask encoder."
                     )
+
+            saved_reward_contract = checkpoint.get("reward_contract")
+            if saved_reward_contract is None:
+                allow_legacy_reward = os.environ.get(
+                    "TFT_ALLOW_UNVERSIONED_REWARD_CHECKPOINT", ""
+                ).strip().lower() in {"1", "true", "yes"}
+                if not allow_legacy_reward:
+                    raise RuntimeError(
+                        "Checkpoint sem identidade do Reward Contract. Para carregar "
+                        "somente os pesos como baseline explícito, defina "
+                        "TFT_ALLOW_UNVERSIONED_REWARD_CHECKPOINT=1; optimizer/scheduler "
+                        "não serão restaurados."
+                    )
+                legacy_reward_checkpoint = True
+            else:
+                validate_reward_checkpoint_contract(saved_reward_contract)
 
             saved_semantic_contract = checkpoint.get("semantic_state_contract")
             semantic_state_keys = {
@@ -373,6 +394,7 @@ class Trainer:
         can_restore_optimizer = bool(
             checkpoint and "optimizer" in checkpoint
             and not migrated_checkpoint and not legacy_action_mask_checkpoint
+            and not legacy_reward_checkpoint
         )
         if can_restore_optimizer:
             self.optimizer.load_state_dict(checkpoint["optimizer"])
@@ -2228,6 +2250,7 @@ class Trainer:
                         "critic_mask_input_contract":
                             build_critic_mask_input_checkpoint_contract(),
                         "semantic_state_contract": self.semantic_state_contract,
+                        "reward_contract": build_reward_checkpoint_contract(),
                     },
                     self.config.checkpoint_path
                 )
@@ -2265,6 +2288,7 @@ class Trainer:
                 "action_mask_contract": build_action_mask_checkpoint_contract(),
                 "critic_mask_input_contract": build_critic_mask_input_checkpoint_contract(),
                 "semantic_state_contract": self.semantic_state_contract,
+                        "reward_contract": build_reward_checkpoint_contract(),
             },
             self.config.checkpoint_path,
         )
