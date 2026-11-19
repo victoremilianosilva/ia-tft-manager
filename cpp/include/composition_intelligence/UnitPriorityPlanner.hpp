@@ -4,6 +4,7 @@
 #include "composition_intelligence/PlannerEvidenceAdapters.hpp"
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstdint>
 #include <optional>
@@ -37,11 +38,29 @@ struct UnitPriorityReason {
 // 3-star upgrade (6 additional copies required). Mixed tiers remain additive,
 // but the baseline is never mistaken for upgrade progress.
 inline std::int32_t copy_progress_toward_next_star(
+    const std::array<std::int32_t, 4>& copies_by_star,
+    std::int32_t highest_star,
+    std::int32_t affordable_shop_copies = 0) noexcept {
+    if (highest_star < 1 || highest_star >= 3) return 0;
+    const auto one_star = std::max(0, copies_by_star[1]) +
+        std::max(0, affordable_shop_copies);
+    if (highest_star == 1) {
+        // One owned 1★ is the baseline; two additional 1★ copies complete 2★.
+        return std::clamp(one_star - 1, 0, 2);
+    }
+    // A 3★ requires three physical 2★ instances. Only complete groups of
+    // three 1★ copies can contribute another 2★; partial groups are not progress.
+    const auto available_two_star = std::max(0, copies_by_star[2]) + one_star / 3;
+    return std::clamp(available_two_star - 1, 0, 2);
+}
+
+// Compatibility overload for callers that only have the old aggregate count.
+// New runtime integrations must provide physical per-tier counts.
+inline std::int32_t copy_progress_toward_next_star(
     std::int32_t copies_owned, std::int32_t highest_star) noexcept {
     if (copies_owned <= 0 || highest_star < 1 || highest_star >= 3) return 0;
     const std::int32_t baseline = highest_star == 1 ? 1 : 3;
-    const std::int32_t additional_copy_limit = highest_star == 1 ? 2 : 6;
-    return std::clamp(copies_owned - baseline, 0, additional_copy_limit);
+    return std::clamp(copies_owned - baseline, 0, highest_star == 1 ? 2 : 6);
 }
 
 struct UnitPriorityEvidence {
@@ -61,6 +80,9 @@ struct UnitPriorityOwnedUnit {
     std::int32_t highest_star{1};
     bool on_board{false};
     std::vector<std::string> equipped_item_ids;
+    // Physical instance counts by star tier; index 0 is intentionally unused.
+    // This prevents mixed 1★/2★ copies from being flattened into false progress.
+    std::array<std::int32_t, 4> copies_by_star{};
 };
 
 struct UnitPriorityTemporarySupport {
@@ -326,9 +348,14 @@ private:
         if (ev && out.synergy_contribution >= config_.keep_contribution_threshold)
             out.reasons.push_back({UnitReasonCode::SynergyContribution, "Contribuição observada para sinergias acima do limite configurado."});
 
-        const auto copies_to_upgrade = ev
-            ? std::max(0, ev->copies_toward_next_star) + affordable_shop_copies(ev, context)
-            : 0;
+        const auto affordable_shop = affordable_shop_copies(ev, context);
+        const bool has_physical_tier_counts =
+            std::any_of(owned.copies_by_star.begin() + 1, owned.copies_by_star.end(),
+                [](std::int32_t count) { return count > 0; });
+        const auto copies_to_upgrade = has_physical_tier_counts
+            ? copy_progress_toward_next_star(
+                owned.copies_by_star, out.highest_star, affordable_shop)
+            : (ev ? std::max(0, ev->copies_toward_next_star) + affordable_shop : 0);
         if (ev && ev->trait_completion)
             out.reasons.push_back({UnitReasonCode::TraitCompletionPriority,
                 "Unidade completa ou ativa trait relevante da composição; prioridade acima das demais peças flexíveis."});
