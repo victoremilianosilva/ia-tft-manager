@@ -26,7 +26,7 @@ template<class T> struct ContextBridgeValue {
     bool available() const noexcept{return value.has_value();}
 };
 struct ContextBridgeMetadata {
-    std::uint32_t schema_version{2};
+    std::uint32_t schema_version{3};
     ContextBridgeQuality quality{ContextBridgeQuality::Missing};
     std::string reason{"not_evaluated"};
 };
