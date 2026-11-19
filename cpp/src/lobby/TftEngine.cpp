@@ -3078,8 +3078,6 @@ struct TFTEngine::Impl {
                 if (!definition) return;
                 auto& observed = strategic_native_owned[definition->internal_id];
                 observed.champion_id = definition->internal_id;
-                const auto copies = copies_by_unit.find(definition->internal_id);
-                observed.copies = copies == copies_by_unit.end() ? 0 : copies->second;
                 observed.star = std::max(observed.star, unit.star);
                 auto& physical_tiers = physical_star_counts_by_unit[definition->internal_id];
                 ++physical_tiers[static_cast<std::size_t>(std::clamp(unit.star, 1, 3))];
@@ -3099,7 +3097,8 @@ struct TFTEngine::Impl {
                 if (unit) append_native_owned(*unit, true);
             for (const auto& unit : player_envs[i].bench)
                 if (unit) append_native_owned(*unit, false);
-            for (const auto& [id, observed] : strategic_native_owned) {
+            for (auto& [id, observed] : strategic_native_owned) {
+                observed.copies = strategy::owned_star_equivalent_copies(observed.copies_by_star);
                 native_input.owned.push_back(observed);
                 native_input.currently_owned_unit_ids.push_back(id);
             }
@@ -3620,9 +3619,10 @@ struct TFTEngine::Impl {
                         observed.synergy_contribution = 0.0;
                     }
                     observed.champion_id = id;
-                    observed.copies = copies_by_unit.count(id) ? copies_by_unit.at(id) : 0;
-                    observed.highest_star = std::max(observed.highest_star, unit.star);
                     const auto physical_tiers = physical_star_counts_by_unit.find(id);
+                    observed.copies = physical_tiers != physical_star_counts_by_unit.end()
+                        ? strategy::owned_star_equivalent_copies(physical_tiers->second) : 0;
+                    observed.highest_star = std::max(observed.highest_star, unit.star);
                     if (physical_tiers != physical_star_counts_by_unit.end())
                         observed.copies_by_star = physical_tiers->second;
                     for (const auto& item : unit.items)
