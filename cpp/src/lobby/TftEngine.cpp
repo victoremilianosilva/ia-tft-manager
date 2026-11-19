@@ -3775,7 +3775,7 @@ struct TFTEngine::Impl {
                 if (active) {
                     composition_actions = ci::CompositionActionEvaluator{}.evaluate(
                         active, priorities, lineup, strategic_context, economic_decision,
-                        action_decision.recommended_action, &evidence, episode_id);
+                        strategy::StrategicActionKind::None, &evidence, episode_id);
                 } else {
                     composition_actions.stale = true;
                     composition_actions.stale_reason = "no active composition";
