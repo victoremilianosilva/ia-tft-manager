@@ -87,7 +87,7 @@ public:
         set_if(out.observed_direction,!c.current_composition_direction.empty(),c.current_composition_direction,ContextValueOrigin::Derived,"StrategicPlanner::StrategicCommitment","committed_current_direction","no_committed_direction");
         set_if(out.observed_focus,!c.current_composition_focus.empty(),c.current_composition_focus,ContextValueOrigin::Derived,"NativeStrategicCompositionGenerator","generated_direction_focus","no_generated_focus");
         set_if(out.core_traits,!c.current_core_traits.empty(),c.current_core_traits,ContextValueOrigin::Derived,"NativeStrategicCompositionGenerator","generated_completed_traits","no_generated_core_traits");
-        set_if(out.stage,c.stage>0,c.stage,ContextValueOrigin::Derived,"StrategicSharedContext","round_stage_mapping","stage_not_produced");
+        set_if(out.stage,c.evidence.stage,c.stage,ContextValueOrigin::Derived,"StrategicSharedContext","round_stage_mapping","stage_not_produced");
         set_if(out.progression_plan,c.evidence.progression_plan,progression_name(c.progression_plan),ContextValueOrigin::Derived,"StrategicPlanner::StrategicCommitment","committed_progression_plan","progression_plan_not_inferred");
         set_if(out.board_power,c.evidence.board_power,c.board_power,ContextValueOrigin::Derived,"BoardEvaluation","board_power_estimate","board_power_not_produced");
         set_if(out.relative_board_power,c.evidence.relative_board_power,c.relative_board_power,ContextValueOrigin::Derived,"BoardEvaluation","relative_to_lobby_average","relative_board_power_not_produced");
