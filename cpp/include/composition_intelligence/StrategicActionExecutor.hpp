@@ -162,7 +162,8 @@ public:
             source_candidate.champion_id != selected->champion_id ||
             !source_candidate.available || source_candidate.gold_cost > state.gold ||
             source_candidate.source_sequence != state.sequence ||
-            source_candidate.candidate_id.empty())
+            source_candidate.candidate_id.empty() ||
+            selected->candidate_id != source_candidate.candidate_id)
             return reject(std::move(out), "selected_candidate_does_not_match_current_source_evidence", "source_candidate_mismatch");
 
         out.recommended_kind = selected->kind;
