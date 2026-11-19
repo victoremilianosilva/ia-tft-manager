@@ -53,3 +53,24 @@ def test_viewer_projection_reports_unavailable_shadow_without_legacy_fallback():
     }
     assert shadow_lineup_entries(player) == []
     assert shadow_status_text(player) == "Shadow: aguardando diagnóstico"
+
+
+
+def test_viewer_never_offers_stale_shadow_lineup_as_current_plan():
+    player = {
+        "shadow_composition": {
+            "status": "available",
+            "stale": True,
+            "composition_id": "stale-comp",
+            "composition_version": 2,
+            "diagnostics": {
+                "composition_decision": {"decision": "KEEP"},
+                "lineup_plan": {
+                    "status": "ready",
+                    "selected_board": [{"champion_id": 42}],
+                },
+            },
+        }
+    }
+    assert shadow_lineup_entries(player) == []
+    assert "EVIDÊNCIA OBSOLETA" in shadow_status_text(player)
