@@ -68,6 +68,8 @@ struct StrategicUnitCandidate {
     double composition_fit{0.0};
     double item_fit{0.0};
     std::vector<std::string> traits;
+    // Physical owned instances by star tier; index zero is unused.
+    std::array<std::int32_t, 4> copies_by_star{};
 };
 
 struct StrategicAnchorCandidate {
