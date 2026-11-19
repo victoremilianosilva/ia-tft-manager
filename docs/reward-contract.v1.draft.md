@@ -367,15 +367,35 @@ The retained action signals are based on observed execution/state evidence (incl
 
 ## Runtime reconciliation — Reward Contract v1
 
-PR #496 introduces the explicit runtime contract `tft.ppo.outcome-reward.v1`.
+PR #496 introduces the runtime contract `tft.ppo.outcome-reward.v1`.
 
-- Action-level shaping is neutral (`0.0`) while the remaining composition-fit, shop-quality, sale-quality, movement-quality, item-fit and economic-urgency signals lack a validated causal and calibrated contract.
-- The runtime action handler still records whether the requested operation actually succeeded. This execution status is diagnostic and does not become a player reward.
-- Native PvP combat outcomes remain credited by the resolved combat event.
-- Final placement remains credited once, when a validated placement becomes known.
-- Invalid or unavailable action evidence is not converted into a negative player reward.
-- GAE remains the temporal credit mechanism; invalid transitions break recursive propagation and are excluded from PPO batches.
+### Problema anterior
+O reward de ação misturava consequências observadas com fit de composição, qualidade heurística de loja/venda, pressão econômica prescrita e scores de posicionamento/itens. Esses sinais ainda não tinham atribuição causal, horizonte validado e calibração suficientes para serem targets PPO.
 
-This is a conservative migration boundary, not a claim that action-level reward shaping is permanently unnecessary. Reintroducing a shaping component requires its own versioned definition, authoritative source, attribution horizon, non-duplication proof, calibration and regression tests. Shadow evaluator scores and recommendations are not reward targets.
+### Justificativa técnica
+Renomear os sinais ou substituir o produtor legado por uma recomendação/score Shadow manteria o mesmo acoplamento. Até haver evidência causal e avaliação, a opção correta é neutralizar shaping não validado e preservar consequências nativas observáveis.
 
-The checkpoint now persists the reward contract ID/version/hash. A checkpoint without this manifest is treated as an unversioned reward baseline: loading its policy weights requires the explicit `TFT_ALLOW_UNVERSIONED_REWARD_CHECKPOINT=1` opt-in, and its optimizer/scheduler state is not restored.
+### Nova responsabilidade
+- O handler nativo continua responsável por validar/executar a ação e registrar seu resultado para auditoria.
+- A resolução PvP continua sendo a autoridade do reward de combate.
+- A Engine/Lobby emite reward terminal de colocação uma única vez quando a posição final validada se torna conhecida.
+- PPO/GAE continua responsável pela atribuição temporal dos rewards observados.
+
+### Contrato e invariantes
+- Reward de ação é exatamente `0.0` no v1.
+- Sucesso/falha do handler é telemetria, não reward.
+- Score de avaliador Shadow, fit legado, recomendação e heurística não são targets de reward.
+- Combat reward pertence ao evento PvP resolvido; placement pertence ao evento terminal e é deduplicado.
+- Falha de contrato/dado não é convertida em penalidade do jogador.
+- Transições inválidas interrompem a recorrência GAE e não entram nos batches PPO.
+
+### Impactos
+Compra, XP, reroll, venda, movimentação, PASS, economia e item assignment deixam de receber shaping de ação não calibrado. O sinal de aprendizagem passa a vir de combate PvP e colocação terminal. Isso é uma migração conservadora e pode reduzir o shaping imediato; não significa que shaping nunca será reintroduzido.
+
+### Critérios de validação
+- Guard de arquitetura garante ausência de StrategyInfo, fit legado e scores Shadow no reward de ação.
+- Testes verificam reward de ação neutro e preservação dos rewards PvP/placement.
+- Testes do manifesto verificam ID, versão, hash e rejeição de incompatibilidade.
+- Qualquer novo shaping exige fonte autoritativa, horizonte/atribuição, prova de não duplicação, calibração e regressões próprias.
+
+O checkpoint persiste o ID/versão/hash deste contrato. Checkpoints sem manifesto só podem ser usados como baseline de pesos com `TFT_ALLOW_UNVERSIONED_REWARD_CHECKPOINT=1`; optimizer e scheduler são reiniciados.
