@@ -113,15 +113,21 @@ public:
         out.match_id = match_id;
         out.player_id = context.player_id;
         out.round = context.round;
-        if (!active) return stale(std::move(out), "no active composition");
-        out.composition_id = active->candidate.composition_id;
-        out.composition_version = active->version;
+        const bool has_active_composition = active.has_value();
+        if (has_active_composition) {
+            out.composition_id = active->candidate.composition_id;
+            out.composition_version = active->version;
+        } else if (context.anchor_candidates.empty()) {
+            return stale(std::move(out), "no active composition or native anchor hypothesis");
+        }
         if (!context.alive) return stale(std::move(out), "player is not alive");
-        if (priorities.stale || priorities.composition_id != out.composition_id ||
-            priorities.composition_version != active->version)
+        if (has_active_composition &&
+            (priorities.stale || priorities.composition_id != out.composition_id ||
+                priorities.composition_version != active->version))
             return stale(std::move(out), "unit priority identity/version mismatch");
-        if (lineup.stale || lineup.composition_id != out.composition_id ||
-            lineup.composition_version != active->version)
+        if (has_active_composition &&
+            (lineup.stale || lineup.composition_id != out.composition_id ||
+                lineup.composition_version != active->version))
             return stale(std::move(out), "lineup identity/version mismatch");
 
         const bool envelope_valid = evidence &&
@@ -148,16 +154,18 @@ public:
 
         std::unordered_map<std::int32_t, const UnitPriority*> priority_by_id;
         bool has_upgrade_target = false;
-        for (const auto& unit : priorities.units) {
+        if (has_active_composition) for (const auto& unit : priorities.units) {
             if (unit.champion_id < 0) continue;
             priority_by_id[unit.champion_id] = &unit;
             has_upgrade_target = has_upgrade_target ||
                 unit.intent == UnitIntent::Seek || unit.intent == UnitIntent::Upgrade;
         }
         std::unordered_set<std::int32_t> lineup_ids;
-        for (const auto& slot : lineup.selected_board) lineup_ids.insert(slot.champion_id);
-        std::unordered_set<std::int32_t> target_ids(lineup.endgame_target_ids.begin(),
-            lineup.endgame_target_ids.end());
+        if (has_active_composition)
+            for (const auto& slot : lineup.selected_board) lineup_ids.insert(slot.champion_id);
+        std::unordered_set<std::int32_t> target_ids;
+        if (has_active_composition)
+            target_ids.insert(lineup.endgame_target_ids.begin(), lineup.endgame_target_ids.end());
         std::unordered_map<std::int32_t, bool> equipped_item_risk;
         if (items_valid) {
             for (const auto& unit : evidence->items.units)
@@ -193,9 +201,18 @@ public:
             if (score.eligible) {
                 switch (candidate.kind) {
                     case strategy::StrategicActionKind::BuyUnit:
-                        if (!priority || !target_ids.count(candidate.champion_id) ||
-                            (priority->intent != UnitIntent::Seek && priority->intent != UnitIntent::Upgrade))
+                        if (!has_active_composition) {
+                            const auto anchor = std::find_if(context.anchor_candidates.begin(),
+                                context.anchor_candidates.end(), [&](const auto& value) {
+                                    return value.unit.champion_id == candidate.champion_id &&
+                                        value.shop_available;
+                                });
+                            if (anchor == context.anchor_candidates.end() || candidate.shop_slot < 0)
+                                reject(score, "buy_requires_native_anchor_and_exact_shop_slot");
+                        } else if (!priority || !target_ids.count(candidate.champion_id) ||
+                            (priority->intent != UnitIntent::Seek && priority->intent != UnitIntent::Upgrade)) {
                             reject(score, "buy_requires_seek_or_upgrade_in_active_target");
+                        }
                         break;
                     case strategy::StrategicActionKind::DeployOrMove:
                         if (!lineup_ids.count(candidate.champion_id))
@@ -239,11 +256,23 @@ public:
                     score.streak_value = positive_board_delta * 0.08 *
                         std::clamp(static_cast<double>(streak) / 6.0, 0.0, 1.0);
                 }
-                score.unit_priority_value = priority
-                    ? std::clamp(static_cast<double>(priority->priority) / 100.0, 0.0, 1.0) * 0.24 : 0.0;
+                if (priority) {
+                    score.unit_priority_value = std::clamp(
+                        static_cast<double>(priority->priority) / 100.0, 0.0, 1.0) * 0.24;
+                } else if (!has_active_composition &&
+                    candidate.kind == strategy::StrategicActionKind::BuyUnit) {
+                    const auto anchor = std::find_if(context.anchor_candidates.begin(),
+                        context.anchor_candidates.end(), [&](const auto& value) {
+                            return value.unit.champion_id == candidate.champion_id &&
+                                value.shop_available;
+                        });
+                    if (anchor != context.anchor_candidates.end())
+                        score.unit_priority_value = std::clamp(
+                            anchor->unit.composition_fit, 0.0, 1.0) * 0.24;
+                }
                 score.lineup_value = lineup_ids.count(candidate.champion_id) ? 0.12 : 0.0;
                 score.upgrade_value = std::clamp(candidate.upgrade_value, 0.0, 1.0) * 0.18;
-                if (board_valid && candidate.champion_id >= 0) {
+                if (board_valid && has_active_composition && candidate.champion_id >= 0) {
                     const auto target = std::find_if(active->candidate.units.begin(), active->candidate.units.end(),
                         [&](const auto& unit) { return unit.champion_id == candidate.champion_id; });
                     if (target != active->candidate.units.end()) {
@@ -290,7 +319,10 @@ public:
                     selected_index = i;
                     out.recommended_action = candidate.kind;
                     out.recommended_champion_id = candidate.champion_id;
-                    out.rationale = rationale(candidate.kind, priority, economy_valid, board_valid);
+                    out.rationale = !has_active_composition &&
+                        candidate.kind == strategy::StrategicActionKind::BuyUnit
+                        ? "native_anchor_shop_purchase" :
+                        rationale(candidate.kind, priority, economy_valid, board_valid);
                 }
             }
             out.candidates.push_back(std::move(score));
