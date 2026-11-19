@@ -154,15 +154,19 @@ public:
 
         std::unordered_map<std::int32_t, const UnitPriority*> priority_by_id;
         bool has_upgrade_target = false;
-        if (has_active_composition) for (const auto& unit : priorities.units) {
-            if (unit.champion_id < 0) continue;
-            priority_by_id[unit.champion_id] = &unit;
-            has_upgrade_target = has_upgrade_target ||
-                unit.intent == UnitIntent::Seek || unit.intent == UnitIntent::Upgrade;
+        if (has_active_composition) {
+            for (const auto& unit : priorities.units) {
+                if (unit.champion_id < 0) continue;
+                priority_by_id[unit.champion_id] = &unit;
+                has_upgrade_target = has_upgrade_target ||
+                    unit.intent == UnitIntent::Seek || unit.intent == UnitIntent::Upgrade;
+            }
         }
         std::unordered_set<std::int32_t> lineup_ids;
-        if (has_active_composition)
-            for (const auto& slot : lineup.selected_board) lineup_ids.insert(slot.champion_id);
+        if (has_active_composition) {
+            for (const auto& slot : lineup.selected_board)
+                lineup_ids.insert(slot.champion_id);
+        }
         std::unordered_set<std::int32_t> target_ids;
         if (has_active_composition)
             target_ids.insert(lineup.endgame_target_ids.begin(), lineup.endgame_target_ids.end());
