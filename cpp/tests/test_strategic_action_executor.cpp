@@ -195,6 +195,7 @@ void board_move_uses_exact_source_and_destination_mask() {
 void conditional_mask_fallback_rows_are_not_treated_as_legal_moves() {
     auto s = native_state();
     s.bench_champion_ids[2] = 77;
+    s.bench_unit_uuids[2] = "bench-unit-2";
     s.masks.type_mask[3] = 1; // Another bench unit has a real legal move.
     s.masks.bench_to_board_target_masks[2 * 28] = 1; // Dummy fallback for this source.
     auto c = source_context(StrategicActionKind::DeployOrMove, 77,-1,2,0,true);
