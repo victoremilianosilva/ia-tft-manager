@@ -298,6 +298,8 @@ public:
         if (selected_index == std::numeric_limits<std::size_t>::max() &&
             hold_candidate_index != std::numeric_limits<std::size_t>::max()) {
             selected_index = hold_candidate_index;
+            out.recommended_action = strategy::StrategicActionKind::Hold;
+            out.recommended_champion_id = -1;
             out.rationale = "no_positive_contextual_candidate";
         }
         if (selected_index != std::numeric_limits<std::size_t>::max()) {
