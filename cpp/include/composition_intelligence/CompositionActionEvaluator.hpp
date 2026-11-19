@@ -86,9 +86,12 @@ public:
         out.economy_evidence_consumed = economy_valid;
         out.board_evidence_validated = board_valid;
         if (economy_valid) {
-            out.observed_gold = planner_evidence->economy.gold;
-            out.observed_interest = planner_evidence->economy.interest_if_resolved_now;
-            out.projected_next_round_income = planner_evidence->economy.projected_next_round_income;
+            out.observed_gold = planner_evidence->economy.gold_available
+                ? planner_evidence->economy.gold : -1;
+            out.observed_interest = planner_evidence->economy.interest_available
+                ? planner_evidence->economy.interest_if_resolved_now : -1;
+            out.projected_next_round_income = planner_evidence->economy.projected_income_available
+                ? planner_evidence->economy.projected_next_round_income : -1;
             out.observed_economic_posture = static_cast<std::int32_t>(planner_evidence->economy.posture);
         }
         if (planner_evidence && !snapshot_identity_valid)
