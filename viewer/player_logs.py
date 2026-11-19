@@ -366,6 +366,16 @@ class PlayerJsonLogWriter:
                 int(audit.get("round_gold", 0) or 0)
                 + int(audit.get("round_win_gold", 0) or 0)
             ),
+            "legacy_strategy_compatibility": {
+                "status": "present" if strategy_info else "unavailable",
+                "source": "native StrategyInfo audit compatibility fields",
+                "authority": "compatibility_only_not_canonical_strategy_state",
+                "canonical_shadow_source": "composition_diagnostics.jsonl",
+            },
+            "shadow_composition": _jsonable(audit.get("shadow_composition", {
+                "status": "unavailable",
+                "reason": "shadow_diagnostics_not_attached_to_snapshot",
+            })),
             "strategy_name": strategy_info.get("strategy_name", "ECON"),
             "strategy_id": strategy_info.get("strategy", 0),
             "comp_direction": strategy_info.get("composition_direction", ""),
