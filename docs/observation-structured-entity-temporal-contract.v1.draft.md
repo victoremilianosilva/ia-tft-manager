@@ -138,7 +138,7 @@ Current disposition:
 - UUID is not globally unique by itself: same-seed resets can repeat it. The native snapshot provides Engine-instance, episode and player scope; joins must use the composite identity, never raw UUID alone.
 - Copy/move semantics preserve the UUID value; implicit copies do not mint a new identity.
 - Diagnostic audit snapshot exposure is not structured PPO delivery.
-- The semantic contract must keep physical identity unavailable for cross-episode canonical joins until the scope/lifecycle contract is accepted.
+- The semantic contract may use the composite Engine/episode/player/UUID identity for native snapshot joins. Raw UUID alone remains invalid for cross-episode/global joins, and typed UUID delivery to PPO remains unavailable.
 
 This correction supersedes the historical “generation not proven” statement only. It does not authorize a schema/runtime/tensor change.
 
