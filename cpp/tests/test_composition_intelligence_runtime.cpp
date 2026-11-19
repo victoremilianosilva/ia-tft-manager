@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cassert>
 #include <iostream>
+#include <unordered_map>
 
 using namespace tft::composition_intelligence;
 
@@ -20,9 +21,51 @@ void shadow_runtime_uses_native_core_and_item_evidence_without_legacy_strategy()
     candidate.main_carry_id = 42;
     candidate.units = {{42, UnitRole::MainCarry, true, 90}};
 
-    // This represents the native generator/catalog trait projection for the
-    // active core unit. No StrategyInfo or legacy direction is constructed.
-    const std::vector<std::string> native_core_traits{"Blackthorn", "Arcanist"};
+    CompositionEvaluationContext context;
+    context.match_id = 901;
+    context.player_id = 0;
+    context.round = 12;
+    context.level = 7;
+    context.gold = 20;
+    OwnedUnitEvidence owned;
+    owned.champion_id = 42;
+    owned.copies = 1;
+    owned.highest_star = 1;
+    owned.board_contribution = 0.9;
+    context.owned_units.push_back(owned);
+    CandidateEvidence candidate_evidence;
+    candidate_evidence.composition_id = candidate.composition_id;
+    candidate_evidence.board_fit = 1.0;
+    candidate_evidence.item_fit = 0.0; // no item source has been consumed yet
+    candidate_evidence.availability = 1.0;
+    candidate_evidence.economy_feasibility = 1.0;
+    candidate_evidence.evidence_confidence = 0.9;
+    context.candidate_evidence.push_back(candidate_evidence);
+
+    const auto proposal = runtime.transitions.propose(std::nullopt, {candidate}, context);
+    assert(proposal.approved);
+    assert(proposal.decision == CompositionDecision::SelectInitial);
+    const auto published = runtime.transitions.publish_if_approved(proposal, runtime.active);
+    assert(published.has_transition);
+    assert(runtime.active.current());
+    assert(runtime.active.current()->candidate.composition_id == "native-shadow-core");
+    assert(runtime.active.current()->version == 1);
+
+    // Simulate the native catalog's trait projection and resolve it only through
+    // the now-published canonical active composition. No StrategyInfo is built.
+    const std::unordered_map<std::int32_t, std::vector<std::string>> native_traits_by_champion{
+        {42, {"Blackthorn", "Arcanist"}}
+    };
+    std::vector<std::string> preferred_traits;
+    for (const auto& target : runtime.active.current()->candidate.units) {
+        if (!target.core) continue;
+        const auto found = native_traits_by_champion.find(target.champion_id);
+        if (found != native_traits_by_champion.end())
+            preferred_traits.insert(preferred_traits.end(),
+                found->second.begin(), found->second.end());
+    }
+    assert(!preferred_traits.empty());
+
     tft::items::ItemDefinition emblem;
     emblem.id = "DA_18_Blackthorn";
     emblem.name = "Blackthorn Emblem";
@@ -38,12 +81,13 @@ void shadow_runtime_uses_native_core_and_item_evidence_without_legacy_strategy()
     profile.attack_damage = 100.0;
     profile.composition_fit = 1.0;
     profile.traits = {"Arcanist"};
-    profile.preferred_traits = native_core_traits;
+    profile.preferred_traits = preferred_traits;
     const auto item_evidence = PlannerEvidenceAdapters::item(
         item_engine, item_state, {{42, profile,
             "derived:UnitCombatClassifier(ChampionDefinition+observed_stats+ability+items)",
             "derived:ActiveCompositionManager.core_unit_catalog_traits",
-            "native-shadow-core", 1}}, 12, 12);
+            runtime.active.current()->candidate.composition_id,
+            runtime.active.current()->version}}, 12, 12);
     assert(item_evidence.metadata.available);
     assert(item_evidence.units.size() == 1);
     assert(item_evidence.units.front().has_inventory_candidate);
@@ -54,8 +98,8 @@ void shadow_runtime_uses_native_core_and_item_evidence_without_legacy_strategy()
 
     std::size_t matching_core_traits = 0;
     for (const auto& trait : profile.traits)
-        if (std::find(native_core_traits.begin(), native_core_traits.end(), trait) !=
-            native_core_traits.end()) ++matching_core_traits;
+        if (std::find(preferred_traits.begin(), preferred_traits.end(), trait) !=
+            preferred_traits.end()) ++matching_core_traits;
     const double native_synergy = std::clamp(
         static_cast<double>(matching_core_traits) / 2.0, 0.0, 1.0);
     const std::int32_t current_arcanist_count = 2;
@@ -64,44 +108,9 @@ void shadow_runtime_uses_native_core_and_item_evidence_without_legacy_strategy()
         current_arcanist_count >= arcanist_milestone &&
         current_arcanist_count - 1 < arcanist_milestone;
 
-    CompositionEvaluationContext context;
-    context.match_id = 901;
-    context.player_id = 0;
-    context.round = 12;
-    context.level = 7;
-    context.gold = 20;
-    OwnedUnitEvidence owned;
-    owned.champion_id = 42;
-    owned.copies = 1;
-    owned.highest_star = 1;
-    owned.board_contribution = 0.9;
-    owned.synergy_contribution = native_synergy;
-    owned.completes_active_trait = completes_active_trait;
-    context.owned_units.push_back(owned);
-    CandidateEvidence candidate_evidence;
-    candidate_evidence.composition_id = candidate.composition_id;
-    candidate_evidence.board_fit = 1.0;
-    candidate_evidence.item_fit = std::clamp(
-        item_evidence.units.front().best_inventory_fit / 2.0, 0.0, 1.0);
-    candidate_evidence.availability = 1.0;
-    candidate_evidence.economy_feasibility = 1.0;
-    candidate_evidence.evidence_confidence = 0.9;
-    context.candidate_evidence.push_back(candidate_evidence);
-
-    const auto proposal = runtime.transitions.propose(std::nullopt, {candidate}, context);
-    assert(proposal.approved);
-    assert(proposal.decision == CompositionDecision::SelectInitial);
-    const auto published = runtime.transitions.publish_if_approved(proposal, runtime.active);
-    assert(published.has_transition);
-    assert(runtime.active.current());
-    assert(runtime.active.current()->candidate.composition_id == "native-shadow-core");
-    assert(runtime.active.current()->version == 1);
-
     UnitPriorityContext priority_context;
-    priority_context.composition_id = runtime.active.current()
-        ? runtime.active.current()->candidate.composition_id : std::string{};
-    priority_context.composition_version = runtime.active.current()
-        ? runtime.active.current()->version : 0;
+    priority_context.composition_id = runtime.active.current()->candidate.composition_id;
+    priority_context.composition_version = runtime.active.current()->version;
     priority_context.owned_units = {{42, 1, 1, true, {}}};
     UnitPriorityEvidence unit_evidence;
     unit_evidence.champion_id = 42;
