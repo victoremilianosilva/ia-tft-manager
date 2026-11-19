@@ -163,3 +163,18 @@ does not alter strategic scores, PPO inputs, reward, masks or action legality.
 **Validation:** native tests cover unique physical candidate IDs, target-slot identity, evidence provenance/horizon/uncertainty, marginal interest, stable identity through both evaluators, executor rejection of mismatched candidate IDs, sale-credit scoring, mixed physical star tiers, and shop affordability with insufficient versus sufficient gold. Runtime evidence tests verify the active composition/item path; the full PR CI must pass before merge.
 
 **Known unavailable economic projections:** projected next-round income, estimated incoming damage, elimination risk and progression plan remain unavailable unless an authoritative producer supplies them for the current player/round. The controller and adapters must preserve that missingness; this PR does not synthesize projections from defaults or turn them into score inputs.
+
+### Economic signal routing
+
+EconomicController's evidence_used/evidence_missing lists now describe only
+signals consumed by its posture score: HP, gold, level, XP-to-next, win/loss
+streaks, relative board power, and any future validated damage/risk/progression
+producers. Raw XP and absolute board power remain available to their other
+consumers but do not independently affect posture. Current interest is not a
+posture signal: StrategicActionCandidateBuilder consumes it to calculate
+marginal interest lost by a known spend, and marks that cost unavailable when
+the source flag is absent. Projected next-round income has no validated producer
+in the current callsite and remains explicitly unavailable. Progression posture
+can still be inferred contextually from observed stage, level, XP-to-next, gold,
+board pressure and survival evidence; it does not require a legacy strategy ID
+or an invented progression_plan.
