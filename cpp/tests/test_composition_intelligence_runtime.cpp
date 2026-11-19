@@ -40,11 +40,17 @@ void shadow_runtime_uses_native_core_and_item_evidence_without_legacy_strategy()
     profile.traits = {"Arcanist"};
     profile.preferred_traits = native_core_traits;
     const auto item_evidence = PlannerEvidenceAdapters::item(
-        item_engine, item_state, {{42, profile}}, 12, 12);
+        item_engine, item_state, {{42, profile,
+            "ChampionDefinition+observed_stats+UnitCombatClassifier",
+            "ActiveCompositionManager.core_unit_catalog_traits",
+            "native-shadow-core", 1}}, 12, 12);
     assert(item_evidence.metadata.available);
     assert(item_evidence.units.size() == 1);
     assert(item_evidence.units.front().has_inventory_candidate);
     assert(item_evidence.units.front().best_inventory_fit > 0.0);
+    assert(item_evidence.units.front().composition_id == "native-shadow-core");
+    assert(item_evidence.units.front().composition_version == 1);
+    assert(item_evidence.units.front().composition_source.find("ActiveCompositionManager") != std::string::npos);
 
     std::size_t matching_core_traits = 0;
     for (const auto& trait : profile.traits)
