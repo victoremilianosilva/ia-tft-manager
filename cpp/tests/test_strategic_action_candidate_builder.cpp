@@ -61,6 +61,8 @@ void builder_emits_snapshot_bound_physical_candidates() {
     context.level = 5;
     context.xp_to_next = 4;
     context.evidence.gold = true;
+    context.evidence.interest_if_resolved_now = true;
+    context.interest_if_resolved_now = EconomyEngine{}.get_interest(context.gold);
     context.evidence.level = true;
     context.evidence.xp_to_next = true;
 
@@ -105,6 +107,10 @@ void builder_emits_snapshot_bound_physical_candidates() {
     assert(buy != result.candidates.end());
     assert(buy->shop_slot == 0 && buy->source_sequence == 42);
     assert(!buy->candidate_id.empty());
+    assert(buy->evidence_source.find("native_shop") != std::string::npos);
+    assert(buy->evidence_horizon_rounds == 1);
+    assert(buy->lost_interest_evidence_available);
+    assert(buy->lost_interest_cost > 0.0);
 
     const auto xp = find(StrategicActionKind::BuyExperience);
     assert(xp != result.candidates.end() && xp->gold_cost == EconomyEngine::BUY_XP_COST);
@@ -119,6 +125,8 @@ void builder_emits_snapshot_bound_physical_candidates() {
     assert(deploy != result.candidates.end());
     assert(deploy->source_is_bench && deploy->source_slot == 0);
     assert(deploy->target_board_slot >= 0);
+    assert(deploy->candidate_id.find(std::to_string(deploy->target_board_slot)) != std::string::npos);
+    assert(deploy->evidence_source.find("StrategicPositionPlanner") != std::string::npos);
     assert(!native.requested_move_targets.empty());
 
     const auto hold = find(StrategicActionKind::Hold);
