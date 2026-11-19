@@ -377,7 +377,7 @@ class PlayerJsonLogWriter:
             ),
             "legacy_strategy_compatibility": {
                 "status": "present" if legacy_strategy_present else "unavailable",
-                "source": "native StrategyInfo audit compatibility fields",
+                "source": "native StrategyInfo audit compatibility fields" if legacy_strategy_present else None,
                 "authority": "compatibility_only_not_canonical_strategy_state",
                 "canonical_shadow_source": "composition_diagnostics.jsonl",
             },
