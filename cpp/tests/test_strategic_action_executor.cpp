@@ -41,7 +41,8 @@ ContextualActionEvaluation recommendation(StrategicActionKind kind, int champion
     r.composition_id = "comp-a"; r.composition_version = 3;
     ContextualActionCandidateScore candidate;
     candidate.candidate_index = 0; candidate.kind = kind;
-    candidate.champion_id = champion_id; candidate.eligible = true;
+    candidate.champion_id = champion_id; candidate.candidate_id = "test-candidate";
+    candidate.eligible = true;
     candidate.selected = true;
     r.candidates.push_back(candidate);
     r.recommended_action = kind; r.recommended_champion_id = champion_id;
