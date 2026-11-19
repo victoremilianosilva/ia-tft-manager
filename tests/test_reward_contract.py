@@ -33,3 +33,18 @@ def test_reward_checkpoint_contract_rejects_unknown_version_or_hash():
 def test_reward_checkpoint_contract_rejects_missing_manifest():
     with pytest.raises(TypeError, match="mapping"):
         validate_reward_checkpoint_contract(None)
+
+
+
+def test_trainer_binds_reward_contract_and_requires_explicit_legacy_opt_in():
+    from pathlib import Path
+
+    source = (
+        Path(__file__).resolve().parents[1] / "trainer.py"
+    ).read_text(encoding="utf-8")
+    assert 'saved_reward_contract = checkpoint.get("reward_contract")' in source
+    assert "TFT_ALLOW_UNVERSIONED_REWARD_CHECKPOINT" in source
+    assert "and not legacy_reward_checkpoint" in source
+    assert source.count(
+        '"reward_contract": build_reward_checkpoint_contract()'
+    ) == 2
