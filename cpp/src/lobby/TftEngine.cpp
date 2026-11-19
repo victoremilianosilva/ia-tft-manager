@@ -1375,8 +1375,7 @@ struct TFTEngine::Impl {
                 signals.attack_damage = def.stats.attack_damage;
                 signals.attack_speed = def.stats.attack_speed;
                 signals.ability_text = def.ability.description + " " + def.ability.name;
-                signals.planned_main_carry =
-                    unit.champion_internal_id == strategy.planned_main_carry_id;
+
                 for (const auto& item : unit.items) {
                     signals.item_health += item.health;
                     signals.item_armor += item.armor;
@@ -2233,7 +2232,7 @@ struct TFTEngine::Impl {
             signals.max_health = def.stats.max_hp; signals.armor = def.stats.armor;
             signals.magic_resist = def.stats.magic_resist; signals.attack_damage = def.stats.attack_damage;
             signals.attack_speed = def.stats.attack_speed; signals.ability_text = def.ability.description + " " + def.ability.name;
-            signals.planned_main_carry = unit.champion_internal_id == active_strategy.planned_main_carry_id;
+
             for (const auto& item : unit.items) {
                 signals.item_health += item.health; signals.item_armor += item.armor;
                 signals.item_magic_resist += item.magic_resist; signals.item_attack_damage += item.attack_damage;
