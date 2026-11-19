@@ -58,7 +58,7 @@ public:
                 std::to_string(native.sequence) + ":" +
                 native.composition_id + ":" + std::to_string(native.composition_version) + ":" +
                 std::to_string(static_cast<int>(candidate.kind)) + ":" +
-                std::to_string(candidate.champion_id) + ":" +
+                candidate.source_unit_uuid + ":" + std::to_string(candidate.champion_id) + ":" +
                 std::to_string(candidate.shop_slot) + ":" +
                 std::to_string(candidate.source_slot) + ":" +
                 std::to_string(candidate.target_board_slot) + ":" +
