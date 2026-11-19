@@ -91,7 +91,8 @@ public:
         set_if(out.progression_plan,c.evidence.progression_plan,progression_name(c.progression_plan),ContextValueOrigin::Derived,"StrategicPlanner::StrategicCommitment","committed_progression_plan","progression_plan_not_inferred");
         set_if(out.board_power,c.evidence.board_power,c.board_power,ContextValueOrigin::Derived,"BoardEvaluation","board_power_estimate","board_power_not_produced");
         set_if(out.relative_board_power,c.evidence.relative_board_power,c.relative_board_power,ContextValueOrigin::Derived,"BoardEvaluation","relative_to_lobby_average","relative_board_power_not_produced");
-        const bool direction_available=!c.current_composition_direction.empty();
+        const bool direction_available=c.evidence.current_direction &&
+            !c.current_composition_direction.empty();
         set_if(out.direction_score,direction_available,c.current_direction_score,ContextValueOrigin::Derived,"StrategicPlanner","planner_direction_score","direction_score_without_direction");
         set_if(out.direction_viable,direction_available,c.current_direction_viable,ContextValueOrigin::Derived,"StrategicPlanner","planner_viability_assessment","direction_viability_without_direction");
         set_if(out.recommended_direction,!in.strategic_decision->target_composition_direction.empty(),in.strategic_decision->target_composition_direction,ContextValueOrigin::Recommended,"StrategicPlanner","shadow_recommendation_only","no_recommended_direction");
