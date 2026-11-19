@@ -3446,7 +3446,7 @@ struct TFTEngine::Impl {
                 {"candidate_lineups", "NativeStrategicCompositionGenerator",
                     "new_architecture_candidate_generation"}
             };
-            const auto evidence_context =
+            auto evidence_context =
                 strategy::StrategicEvidenceContextBuilder{}.build(
                     std::move(evidence_input));
             if (!evidence_context.valid_for(
@@ -3503,6 +3503,8 @@ struct TFTEngine::Impl {
             static const strategy::ActionEvaluator action_evaluator{};
             const auto economic_decision =
                 economic_controller.evaluate(evidence_context.planner_context);
+            auto action_decision = action_evaluator.evaluate(
+                evidence_context.planner_context, economic_decision);
 
             // New Composition Intelligence pipeline: opt-in Viewer-only shadow state.
             if (composition_intelligence_enabled) {
@@ -3768,7 +3770,7 @@ struct TFTEngine::Impl {
                 runtime.mark_stage("action_candidate_generation",
                     candidate_build.status == "candidates_generated" ? "completed" : "unavailable",
                     candidate_build.status, active);
-                const auto action_decision = action_evaluator.evaluate(
+                action_decision = action_evaluator.evaluate(
                     evidence_context.planner_context, economic_decision);
 
                 ci::CompositionActionEvaluation composition_actions;
