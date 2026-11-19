@@ -9,6 +9,7 @@
 #include "strategy/InitialStrategicDirectionDiscovery.hpp"
 #include "strategy/PivotFeasibilityEvaluator.hpp"
 #include "strategy/StrategicPivotTransitionCoordinator.hpp"
+#include "strategy/StrategicPlanning.hpp"
 
 #include <algorithm>
 #include <cstdint>
@@ -75,8 +76,10 @@ class UnifiedStrategicStateMachine {
 public:
     explicit UnifiedStrategicStateMachine(
         composition_intelligence::ActiveCompositionManager& active_composition,
+        StrategicCommitment& commitment,
         PivotConfirmationPolicy pivot_policy = {}
-    ) : pivot_coordinator_(active_composition, pivot_policy) {}
+    ) : pivot_coordinator_(active_composition, pivot_policy),
+        commitment_(commitment) {}
 
     // Resets orchestration history while leaving the canonical composition
     // untouched. Its lifecycle owner performs match/session resets.
@@ -114,7 +117,7 @@ public:
             !pivot_coordinator_.anchors().has_direction_anchor();
         if (direction_uninitialized && canonical_active) {
             const auto projected = CompositionBoundDirectionAnchor::from_active_composition(
-                *canonical_active);
+                *canonical_active, commitment_.composition_direction);
             if (!projected) {
                 phase_ = StrategicCyclePhase::NoEvidence;
                 out.diagnostics.transition_reason = "active_composition_cannot_form_valid_direction_anchor";
@@ -127,7 +130,7 @@ public:
                 ? StrategicCyclePhase::CompositionActive : StrategicCyclePhase::NoEvidence;
         } else if (direction_uninitialized && input.active_composition.has_value()) {
             const auto projected = CompositionBoundDirectionAnchor::from_active_composition(
-                *input.active_composition);
+                *input.active_composition, commitment_.composition_direction);
             if (!projected) {
                 phase_ = StrategicCyclePhase::NoEvidence;
                 out.diagnostics.transition_reason = "active_composition_cannot_form_valid_direction_anchor";
@@ -240,6 +243,19 @@ public:
             }
         }
 
+        if (out.phase == StrategicCyclePhase::PivotConfirmed && out.state_changed) {
+            const auto& committed_anchor = out.anchors.direction_anchor;
+            commitment_.composition_direction = committed_anchor.direction;
+            commitment_.selected_round = input.exploration.round;
+            commitment_.last_review_round = input.exploration.round;
+            commitment_.selection_reason = StrategicReason::AnchorOpportunity;
+            commitment_.revision_condition = StrategicReason::None;
+            commitment_.confidence = committed_anchor.confidence;
+            commitment_.consecutive_reviews = 0;
+            commitment_.candidate_composition_direction.clear();
+            commitment_.candidate_anchor_id = -1;
+            commitment_.candidate_score = 0.0;
+        }
         return finish(std::move(out));
     }
 
@@ -338,6 +354,9 @@ private:
     std::string previous_discovery_direction_;
     PivotFeasibilityEvaluator pivot_evaluator_;
     StrategicPivotTransitionCoordinator pivot_coordinator_;
+    // The planner commitment remains the sole owner of committed direction;
+    // a confirmed pivot updates it through this explicit reference.
+    StrategicCommitment& commitment_;
     StrategicCyclePhase phase_{StrategicCyclePhase::Exploration};
 };
 
