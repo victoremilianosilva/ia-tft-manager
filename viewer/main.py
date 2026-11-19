@@ -1284,7 +1284,8 @@ class ViewerWindow(QMainWindow):
             tile_layout.addWidget(traits_label)
             ownership = "OWNED" if unit.get("shadow_owned") else "ALVO"
             placement = "NO TABULEIRO" if unit.get("shadow_currently_on_board") else "FORA DO TABULEIRO"
-            state_label = QLabel(f"{ownership} · {placement} · prioridade {unit.get('shadow_priority', 0):.2f}")
+            priority = float(unit.get("shadow_priority", 0.0) or 0.0)
+            state_label = QLabel(f"{ownership} · {placement} · prioridade {priority:.2f}")
             state_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
             state_label.setObjectName("muted")
             tile_layout.addWidget(state_label)
