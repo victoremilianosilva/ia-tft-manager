@@ -3042,6 +3042,9 @@ struct TFTEngine::Impl {
         strategy::NativeCompositionGenerationResult strategic_native_generation;
         std::unordered_map<std::int32_t, strategy::NativeCompositionOwnedUnit>
             strategic_native_owned;
+        // One physical tier-count producer feeds native composition, priorities and pivot.
+        std::unordered_map<std::int32_t, std::array<std::int32_t, 4>>
+            physical_star_counts_by_unit;
         {
             strategy::NativeCompositionGenerationInput native_input;
             native_input.match_id = episode_id;
@@ -3618,7 +3621,9 @@ struct TFTEngine::Impl {
                     observed.copies = copies_by_unit.count(id) ? copies_by_unit.at(id) : 0;
                     observed.highest_star = std::max(observed.highest_star, unit.star);
                     const auto star = static_cast<std::size_t>(std::clamp(unit.star, 1, 3));
-                    ++observed.copies_by_star[star];
+                    const auto physical_tiers = physical_star_counts_by_unit.find(id);
+                    if (physical_tiers != physical_star_counts_by_unit.end())
+                        observed.copies_by_star = physical_tiers->second;
                     for (const auto& item : unit.items)
                         if (!item.api_name.empty() &&
                             std::find(observed.equipped_item_ids.begin(), observed.equipped_item_ids.end(), item.api_name) == observed.equipped_item_ids.end())
@@ -3627,7 +3632,8 @@ struct TFTEngine::Impl {
                     priority.champion_id = id;
                     priority.copies = observed.copies;
                     priority.highest_star = std::max(priority.highest_star, unit.star);
-                    ++priority.copies_by_star[star];
+                    if (physical_tiers != physical_star_counts_by_unit.end())
+                        priority.copies_by_star = physical_tiers->second;
                     priority.on_board = priority.on_board || on_board;
                     priority.equipped_item_ids = observed.equipped_item_ids;
                     const auto* definition = catalog->find_by_id(id);
