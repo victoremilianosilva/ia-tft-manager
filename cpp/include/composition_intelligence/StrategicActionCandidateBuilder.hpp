@@ -34,8 +34,18 @@ public:
         StrategicActionCandidateBuildResult out;
         if (native.match_id == 0 || native.player_id != context.player_id ||
             native.round != context.round || native.sequence == 0 ||
-            !native.alive || !context.alive || native.gold != context.gold) {
+            !native.alive || !context.alive || native.gold != context.gold ||
+            !context.evidence.gold) {
             out.status = "invalid_or_mismatched_native_snapshot";
+            return out;
+        }
+        if (!native.mask_generation_error.empty()) {
+            out.status = "native_legality_unavailable:" + native.mask_generation_error;
+            return out;
+        }
+        if (active && (native.composition_id != active->candidate.composition_id ||
+            native.composition_version != active->version)) {
+            out.status = "active_composition_identity_mismatch";
             return out;
         }
         const auto type_enabled = [&](decision::ActionType type) {
@@ -102,7 +112,8 @@ public:
                 append(std::move(candidate));
             }
 
-            if (context.level < EconomyEngine::MAX_LEVEL &&
+            if (context.evidence.level && context.evidence.xp_to_next &&
+                context.level < EconomyEngine::MAX_LEVEL &&
                 context.xp_to_next > 0 && context.gold >= EconomyEngine::BUY_XP_COST &&
                 type_enabled(decision::ActionType::BUY_XP)) {
                 strategy::StrategicActionCandidate candidate;
