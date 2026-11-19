@@ -6330,6 +6330,7 @@ ResetResult TFTEngine::reset(
             impl_->strategic_shadow_runtimes[i] =
                 std::make_unique<strategy::UnifiedStrategicShadowRuntime>(
                     impl_->composition_intelligence_players[i].active,
+                    impl_->strategic_planner_commitments[i],
                     impl_->strategic_shadow_audit_path);
         }
     }
@@ -6856,7 +6857,8 @@ void TFTEngine::set_strategic_direction_pivot_audit_path(const std::string& path
     for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
         impl_->strategic_shadow_runtimes[i] =
             std::make_unique<strategy::UnifiedStrategicShadowRuntime>(
-                impl_->composition_intelligence_players[i].active, path);
+                impl_->composition_intelligence_players[i].active,
+                impl_->strategic_planner_commitments[i], path);
     }
 }
 
