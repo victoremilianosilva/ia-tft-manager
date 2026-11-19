@@ -41,6 +41,16 @@ StrategicActionCandidate candidate(StrategicActionKind kind, int id = -1) {
     if (kind == StrategicActionKind::RerollShop) { c.gold_cost = 2; c.direct_gold_cost = 2; }
     return c;
 }
+void no_active_composition_without_anchor_remains_stale() {
+    StrategicSharedContext context;
+    context.alive = true; context.player_id = 0; context.round = 8;
+    const auto result = ContextualActionEvaluator{}.evaluate(
+        std::nullopt, UnitPrioritySnapshot{}, LineupPlan{}, context, nullptr, 77);
+    assert(result.stale);
+    assert(result.stale_reason == "no active composition or native anchor hypothesis");
+    assert(result.recommended_action == StrategicActionKind::None);
+}
+
 void native_anchor_purchase_is_evaluated_before_composition_lock() {
     StrategicSharedContext context;
     context.alive = true; context.gold = 10; context.player_id = 0; context.round = 8;
@@ -296,6 +306,7 @@ void json_is_versioned_and_shadow_only() {
 }
 
 int main() {
+    no_active_composition_without_anchor_remains_stale();
     native_anchor_purchase_is_evaluated_before_composition_lock();
     baseline_is_unchanged_by_contextual_execution();
     contextual_path_uses_priority_and_lineup_without_calling_baseline();
