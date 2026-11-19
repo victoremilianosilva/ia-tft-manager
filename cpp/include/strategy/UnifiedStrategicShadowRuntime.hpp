@@ -15,9 +15,10 @@ class UnifiedStrategicShadowRuntime {
 public:
     explicit UnifiedStrategicShadowRuntime(
         composition_intelligence::ActiveCompositionManager& active_composition,
+        StrategicCommitment& commitment,
         std::filesystem::path audit_path,
         PivotConfirmationPolicy policy = {})
-        : machine_(active_composition, policy), recorder_(std::move(audit_path)) {}
+        : machine_(active_composition, commitment, policy), recorder_(std::move(audit_path)) {}
 
     StrategicCycleResult refresh(const StrategicCycleAuditContext& context,
                                  const StrategicCycleInput& input) noexcept {
