@@ -132,6 +132,7 @@ void builder_emits_snapshot_bound_physical_candidates() {
     assert(deploy->target_board_slot >= 0);
     assert(deploy->candidate_id.find(std::to_string(deploy->target_board_slot)) != std::string::npos);
     assert(deploy->candidate_id.find("candidate-builder") != std::string::npos);
+    assert(deploy->candidate_id.find("unit-20") != std::string::npos);
     assert(deploy->evidence_source.find("StrategicPositionPlanner") != std::string::npos);
     assert(!native.requested_move_targets.empty());
 
