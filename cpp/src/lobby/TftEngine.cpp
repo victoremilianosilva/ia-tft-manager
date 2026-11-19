@@ -3681,8 +3681,8 @@ struct TFTEngine::Impl {
                 }
                 // Missing target units also receive explicit evidence so trait
                 // completion and affordable shop progress are not lost at lookup.
-                if (active) {
-                    for (const auto& target : active->candidate.units) {
+                if (active_before) {
+                    for (const auto& target : active_before->candidate.units) {
                         const auto* definition = catalog->find_by_id(target.champion_id);
                         if (!definition) continue;
                         auto [evidence_it, evidence_inserted] =
