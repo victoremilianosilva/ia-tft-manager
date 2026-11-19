@@ -32,6 +32,7 @@ struct EconomicPlannerEvidence {
  bool gold_available{false},level_available{false},xp_available{false},xp_to_next_available{false};
  bool interest_available{false},projected_income_available{false};
  bool win_streak_available{false},loss_streak_available{false};
+ bool board_pressure_available{false},economy_pressure_available{false};
 };
 struct BoardPlannerEvidence {
  EvidenceSourceMetadata metadata;
@@ -92,6 +93,8 @@ public:
   o.survival_evidence_available=c.evidence.hp ||
    c.evidence.estimated_incoming_damage || c.evidence.elimination_risk;
   o.streak_evidence_available=c.evidence.streaks;
+  o.board_pressure_available=c.evidence.relative_board_power;
+  o.economy_pressure_available=c.evidence.gold;
   o.survival_pressure=unit(d.survival_pressure);o.board_pressure=unit(d.board_pressure);
   o.economy_pressure=unit(d.economy_pressure);o.confidence=unit(d.confidence);
   o.buy_experience_opportunity_cost=strategy::action_opportunity_cost::kBuyExperience;
