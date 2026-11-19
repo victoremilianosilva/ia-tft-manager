@@ -3985,6 +3985,8 @@ struct TFTEngine::Impl {
                     const auto& score = composition_actions.evaluation.candidate_scores[score_index];
                     baseline_candidate_scores.push_back({
                         {"candidate_index", score_index},
+                        {"candidate_id", score_index < composition_actions.candidates.size()
+                            ? composition_actions.candidates[score_index].candidate_id : std::string{}},
                         {"kind", static_cast<int>(score.kind)},
                         {"champion_id", score.champion_id},
                         {"available", score.available},
@@ -4016,8 +4018,10 @@ struct TFTEngine::Impl {
                             contextual_candidate.candidate_index != candidate_index ||
                             baseline_candidate.kind != source.kind ||
                             baseline_candidate.champion_id != source.champion_id ||
+                            baseline_candidate.candidate_id != source.candidate_id ||
                             contextual_candidate.kind != source.kind ||
-                            contextual_candidate.champion_id != source.champion_id) {
+                            contextual_candidate.champion_id != source.champion_id ||
+                            contextual_candidate.candidate_id != source.candidate_id) {
                             same_initial_candidate_set = false;
                             break;
                         }
