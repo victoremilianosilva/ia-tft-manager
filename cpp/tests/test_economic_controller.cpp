@@ -47,6 +47,11 @@ void observed_zero_and_extreme_values_remain_valid_evidence() {
     assert(contains(result.evidence_used, "gold"));
     assert(contains(result.evidence_used, "win_loss_streaks"));
     assert(contains(result.evidence_used, "relative_board_power"));
+    // XP, current interest and absolute board power are available elsewhere,
+    // but they are not inputs to this posture score.
+    assert(!contains(result.evidence_used, "xp"));
+    assert(!contains(result.evidence_used, "interest_if_resolved_now"));
+    assert(!contains(result.evidence_used, "board_power"));
     assert(result.economy_pressure == 0.0);
     assert(result.survival_pressure == 0.0);
     assert(result.board_pressure == 1.0);
