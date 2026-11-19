@@ -342,6 +342,26 @@ The semantic rows are part of the rollout transition and must remain aligned wit
 
 ## Reward contract binding — PR #496
 
-New checkpoints persist `reward_contract` independently from observation, Action Contract and Mask Contract identities. The v1 manifest is `tft.ppo.outcome-reward.v1` and contains its version and deterministic SHA-256 digest.
+### Problema anterior
+O checkpoint identificava observação, Action Contract e Mask Contract, mas não identificava a semântica de reward efetivamente usada no treino. Pesos estruturalmente carregáveis podiam ser retomados com objetivos de otimização diferentes sem uma decisão explícita.
 
-The loader rejects unknown or mismatched reward manifests even when policy tensor shapes match. A checkpoint without the manifest is an unversioned historical baseline; it can be loaded for policy weights only with `TFT_ALLOW_UNVERSIONED_REWARD_CHECKPOINT=1`. In that explicit migration path, optimizer and scheduler state are reset. This does not imply semantic compatibility of the still-active legacy flat observation projection.
+### Justificativa técnica
+A semântica de reward faz parte da linhagem de treino. Dimensões de tensores e compatibilidade de pesos não provam que duas execuções otimizaram o mesmo objetivo.
+
+### Nova responsabilidade
+Trainer cria o manifesto do Reward Contract no salvamento e valida sua identidade antes de carregar pesos/estado do optimizer.
+
+### Contrato e invariantes
+- Novos checkpoints registram `tft.ppo.outcome-reward.v1`, versão e SHA-256 determinístico.
+- Manifesto ausente é baseline não versionada, não compatibilidade implícita.
+- Manifesto desconhecido ou hash divergente rejeita o checkpoint.
+- A migração explícita de baseline usa `TFT_ALLOW_UNVERSIONED_REWARD_CHECKPOINT=1` e carrega apenas pesos; optimizer/scheduler não são restaurados.
+- A identidade do reward é independente dos contratos de observação, ação e masks.
+
+### Impactos
+Checkpoints novos carregam a identidade de reward. Checkpoints históricos precisam de opt-in explícito para warm-start e reiniciam optimizer/scheduler. Isso não declara compatibilidade semântica do tensor plano de observações ainda ativo.
+
+### Critérios de validação
+- Testes cobrem manifesto válido, versão/hash incompatíveis e ausência.
+- Teste de integração estático protege o opt-in legado e o bloqueio de restauração do optimizer.
+- A CI valida o caminho completo de build/teste.
