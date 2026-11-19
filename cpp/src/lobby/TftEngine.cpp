@@ -35,6 +35,7 @@
 #include "strategy/PositioningEngine.hpp"
 #include "strategy/BoardEvaluation.hpp"
 #include "strategy/UnitCombatClassifier.hpp"
+#include "strategy/UnitCopyProgress.hpp"
 #include "reward/RewardModel.hpp"
 #include "strategy/CompositionDirectionPolicy.hpp"
 #include "strategy/StrategyPolicy.hpp"
@@ -1371,9 +1372,6 @@ struct TFTEngine::Impl {
             }
 
             const auto& economy = player_envs[i].economy;
-            const StrategyInfo strategy =
-                player_envs[i].strategy.value_or(StrategyInfo{});
-
             std::array<int, kBoardSlots> board_roles{};
             std::array<bool, kBoardSlots> board_occupied{};
             std::array<bool, kBenchSlots> bench_occupied{};
@@ -1466,8 +1464,9 @@ struct TFTEngine::Impl {
                 static_cast<float>(std::max(1, economy.level));
             out[offset++] = static_cast<float>(bench_count) / static_cast<float>(kBenchSlots);
             out[offset++] = 1.0f; // shop vector always contains five slots in Python.
-            for (int s = 0; s < 7; ++s)
-                out[offset++] = strategy.strategy == s ? 1.0f : 0.0f;
+            // Retired strategy one-hot. The semantic native-state side input
+            // carries factual economy/state; no absent strategy is interpreted as ECON.
+            offset += 7;
             // Python's 22-wide core reserves five trailing zero features.
             offset = kCoreObservationDim;
 
@@ -1524,9 +1523,10 @@ struct TFTEngine::Impl {
                 out[offset++] = std::min(1.0f, value);
             }
 
-            // 7) POSITIONING: use the same tactical evaluator as rewards and viewer diagnostics.
-            const double positioning_score = board_evaluation(i).total_score;
-            out[offset++] = static_cast<float>(positioning_score);
+            // 7) POSITIONING: the old aggregate score depended on legacy
+            // StrategyInfo main-carry/direction inputs. Retire it rather than
+            // leaking that hidden dependency; factual geometry/roles follow.
+            out[offset++] = 0.0f;
             out[offset++] = board_count ? static_cast<float>(frontline) / board_count : 0.0f;
             out[offset++] = board_count ? static_cast<float>(backline) / board_count : 0.0f;
             out[offset++] = std::min(1.0f, static_cast<float>(unique_role_count) / 5.0f);
@@ -1546,50 +1546,10 @@ struct TFTEngine::Impl {
             out[offset++] = static_cast<float>(std::max(0, economy.level - board_count)) / 9.0f;
             out[offset++] = static_cast<float>(kBenchSlots - bench_count) / 9.0f;
 
-            // 10) COMPOSITION DIRECTION: explicit, stable one-hot over the
-            // catalog trait order. This is derived from board + bench state.
-            for (const auto& trait : observation_trait_names) {
-                out[offset++] =
-                    !strategy.composition_direction.empty() &&
-                    strategy.composition_direction == trait ? 1.0f : 0.0f;
-            }
-
-            // 11) CORE TRAITS: explicit flags, aligned with the same trait order.
-            for (const auto& trait : observation_trait_names) {
-                out[offset++] =
-                    std::find(strategy.core_traits.begin(),
-                              strategy.core_traits.end(), trait) !=
-                    strategy.core_traits.end() ? 1.0f : 0.0f;
-            }
-
-            // 12) COMPOSITION FIT: normalized per-unit compatibility score.
-            // The score is exposed for all candidates, including shop units,
-            // so PPO can compare a purchase against the current comp direction.
-            const auto append_unit_fit = [&](const UnitInstance* unit) {
-                if (!unit) {
-                    out[offset++] = 0.0f;
-                    return;
-                }
-                const auto* def = catalog->find_by_id(unit->champion_internal_id);
-                if (!def) {
-                    out[offset++] = 0.0f;
-                    return;
-                }
-                const double score =
-                    unit_composition_score(strategy, *def, unit->star, trait_milestones);
-                out[offset++] = static_cast<float>(
-                    std::clamp(score / 32.5, 0.0, 1.0));
-            };
-            for (const auto& unit : player_envs[i].board)
-                append_unit_fit(unit ? &*unit : nullptr);
-            for (const auto& unit : player_envs[i].bench)
-                append_unit_fit(unit ? &*unit : nullptr);
-            for (std::size_t slot = 0; slot < kShopSlots; ++slot) {
-                const auto* unit = player_envs[i].shop
-                    ? player_envs[i].shop->get_unit(static_cast<std::int32_t>(slot))
-                    : nullptr;
-                append_unit_fit(unit);
-            }
+            // Retired legacy composition direction/core/fit features.
+            // Keep their physical slots stable for old vector consumers, but do
+            // not source PPO inputs from StrategyInfo or legacy planners.
+            offset += 2 * observation_trait_names.size() + kCompositionUnitSlots;
 
             // 13) TEMPORAL ACTION MEMORY. These features are inserted before the
             // candidate tail so policy.py can continue reading candidate features
@@ -1605,27 +1565,10 @@ struct TFTEngine::Impl {
                     static_cast<float>(kActionMemoryHorizon);
             }
 
-            // 14) COMPOSITION CONTROL FEATURES. Keep these immediately before the
-            // candidate tail: policy.py extracts candidate records from the end,
-            // and checkpoint migration inserts new global features at this boundary.
-            // Focus weights use the stable catalog trait order shared by direction/core
-            // flags and are normalized from Python's [0, 10] scale to [0, 1].
-            for (const auto& trait : observation_trait_names) {
-                double weight = 0.0;
-                for (const auto& [focus_trait, focus_weight] :
-                     strategy.composition_focus_weights) {
-                    if (focus_trait == trait) {
-                        weight = focus_weight;
-                        break;
-                    }
-                }
-                out[offset++] = static_cast<float>(
-                    std::clamp(weight / 10.0, 0.0, 1.0));
-            }
-            out[offset++] = strategy.composition_locked ? 1.0f : 0.0f;
-            // Strategy strength is bounded to [0, 10] by its scoring formula.
-            out[offset++] = static_cast<float>(
-                std::clamp(strategy.composition_strength / 10.0, 0.0, 1.0));
+            // Retired legacy focus/lock/strength fields. These positions remain
+            // reserved until the versioned semantic owner projection replaces
+            // the flat tensor; zero is an explicit tombstone, not neutral strategy.
+            offset += observation_trait_names.size() + 2;
 
             // 15) ITEM ANVIL CHOICES. A pending anvil is a forced single-choice
             // decision. Each option exposes either a component one-hot or the
@@ -1639,6 +1582,12 @@ struct TFTEngine::Impl {
                 pending_anvil->kind == items::ItemAnvilKind::COMPLETED_ITEM ? 1.0f : 0.0f;
             const auto item_profiles = player_envs[i].item_engine
                 ? semantic_item_unit_profiles(i) : std::vector<items::UnitProfile>{};
+            // One shared profile lookup feeds PPO item-target features and the
+            // item evaluator; no StrategyInfo-derived carry/core traits are read.
+            std::unordered_map<std::string, const items::UnitProfile*> semantic_profile_by_uuid;
+            semantic_profile_by_uuid.reserve(item_profiles.size());
+            for (const auto& profile : item_profiles)
+                semantic_profile_by_uuid.emplace(profile.uuid, &profile);
             // Scoped to this observation so changed unit stats/traits never reuse stale fits.
             items::ItemFitCache item_fit_cache(player_envs[i].item_engine.get());
             for (std::size_t option_index = 0; option_index < kAnvilOptionCount; ++option_index) {
@@ -1732,8 +1681,6 @@ struct TFTEngine::Impl {
                         const int role = std::clamp(observation_role(*unit, *definition), 0, 4);
                         const auto& stats = definition->stats;
                         const auto& combat = definition->combat_profile;
-                        const auto fit = unit_composition_score(strategy, *definition,
-                            unit->star, trait_milestones);
                         features[0] = 1.0f;
                         features[1] = on_board ? 1.0f : 0.0f;
                         features[2] = on_board ? 0.0f : 1.0f;
@@ -1741,7 +1688,7 @@ struct TFTEngine::Impl {
                         features[4 + role] = 1.0f;
                         features[9] = on_board && row <= 1 ? 1.0f : 0.0f;
                         features[10] = on_board && row >= 2 ? 1.0f : 0.0f;
-                        features[11] = static_cast<float>(std::clamp(fit / 32.5, 0.0, 1.0));
+                        features[11] = 0.0f; // retired StrategyInfo composition-fit feature
                         features[12] = static_cast<float>(std::clamp(
                             (combat.attack_damage > 0.0 ? combat.attack_damage : stats.attack_damage) / 200.0, 0.0, 1.0));
                         features[13] = static_cast<float>(std::clamp(
@@ -1761,10 +1708,7 @@ struct TFTEngine::Impl {
             // Exact item-to-target compatibility for the currently held items
             // and every possible craft result. These matrices are consumed only
             // by the autoregressive target scorer, not the global encoder.
-            std::unordered_map<std::string, const items::UnitProfile*> profile_by_uuid;
-            profile_by_uuid.reserve(item_profiles.size());
-            for (const auto& profile : item_profiles)
-                profile_by_uuid.emplace(profile.uuid, &profile);
+            const auto& profile_by_uuid = semantic_profile_by_uuid;
             // Resolve each board/bench target once. The inventory and 100 recipe
             // rows reuse this compact slot table instead of repeating UUID lookups.
             std::array<const items::UnitProfile*, kBoardSlots + kBenchSlots>
@@ -1826,24 +1770,22 @@ struct TFTEngine::Impl {
             // Precompute owned copies once per player. Candidate features below
             // query this table for every bench/shop slot; repeated board+bench
             // scans were doing the same work for each candidate.
-            std::unordered_map<std::int32_t, int> owned_copies;
-            std::unordered_map<std::int32_t, std::array<int, 3>> owned_star_counts;
-            owned_copies.reserve(kBoardSlots + kBenchSlots);
+            std::unordered_map<std::int32_t, std::array<std::int32_t, 4>> owned_star_counts;
             owned_star_counts.reserve(kBoardSlots + kBenchSlots);
-            const auto add_owned_copies = [&owned_copies, &owned_star_counts](const UnitInstance& unit) {
-                const int copies = unit.star == 1 ? 1 : (unit.star == 2 ? 3 : 9);
-                owned_copies[unit.champion_internal_id] += copies;
+            const auto add_owned_copies = [&owned_star_counts](const UnitInstance& unit) {
                 if (unit.star >= 1 && unit.star <= 3)
-                    ++owned_star_counts[unit.champion_internal_id][static_cast<std::size_t>(unit.star - 1)];
+                    ++owned_star_counts[unit.champion_internal_id][static_cast<std::size_t>(unit.star)];
             };
             for (const auto& unit : player_envs[i].board)
                 if (unit) add_owned_copies(*unit);
             for (const auto& unit : player_envs[i].bench)
                 if (unit) add_owned_copies(*unit);
 
-            const auto count_same_champion = [&owned_copies](const UnitInstance& candidate) {
-                const auto it = owned_copies.find(candidate.champion_internal_id);
-                return it == owned_copies.end() ? 0 : it->second;
+            const auto count_same_champion = [&owned_star_counts](const UnitInstance& candidate) {
+                const auto it = owned_star_counts.find(candidate.champion_internal_id);
+                return it == owned_star_counts.end()
+                    ? 0
+                    : strategy::owned_star_equivalent_copies(it->second);
             };
             // Distinguish a real same-star pair from a lone copy plus a
             // different-star upgrade. Exclude the candidate itself for SELL;
@@ -1855,10 +1797,10 @@ struct TFTEngine::Impl {
                         return 0.0;
                     const auto& counts = it->second;
                     const int same_star = std::max(
-                        0, counts[static_cast<std::size_t>(candidate.star - 1)] -
+                        0, counts[static_cast<std::size_t>(candidate.star)] -
                             (sale_candidate ? 1 : 0));
                     const int one_star = std::max(
-                        0, counts[0] - (sale_candidate && candidate.star == 1 ? 1 : 0));
+                        0, counts[1] - (sale_candidate && candidate.star == 1 ? 1 : 0));
                     if (sale_candidate)
                         return reward_model::upgrade_path_strength(
                             candidate.star, same_star, one_star);
@@ -1876,17 +1818,14 @@ struct TFTEngine::Impl {
                         out[offset++] = 0.0f;
                     return;
                 }
-                const double fit = unit_composition_score(strategy, *def, unit->star, trait_milestones);
-                const bool core = std::find(strategy.core_unit_ids.begin(),
-                    strategy.core_unit_ids.end(), def->internal_id) != strategy.core_unit_ids.end() ||
-                    std::find(strategy.planned_unit_ids.begin(),
-                    strategy.planned_unit_ids.end(), def->internal_id) != strategy.planned_unit_ids.end();
                 const int copies = count_same_champion(*unit);
-                out[offset++] = static_cast<float>(std::clamp(fit / 22.5, 0.0, 1.0));
+                // Composition fit/core flags are retired until the canonical
+                // strategic-owner projection is available to the PPO contract.
+                out[offset++] = 0.0f;
                 out[offset++] = static_cast<float>(def->cost) / 5.0f;
                 out[offset++] = static_cast<float>(unit->star) / 3.0f;
                 out[offset++] = role_state_value(observation_role(*unit, *def));
-                out[offset++] = core ? 1.0f : 0.0f;
+                out[offset++] = 0.0f;
                 // Number of owned copies (including star-equivalent copies), normalized.
                 out[offset++] = static_cast<float>(std::min(copies, 9)) / 9.0f;
                 // Exact same-star upgrade risk/potential replaces trait overlap:

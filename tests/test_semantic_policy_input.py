@@ -111,3 +111,25 @@ def test_historical_policy_checkpoint_migrates_with_neutral_semantic_encoder():
         before = source.get_value(obs, masks=masks)
         after = migrated.get_value(obs, masks=masks, semantic_state=semantic)
     assert torch.allclose(before, after, atol=1e-6, rtol=1e-6)
+
+def test_legacy_economic_context_is_independent_of_strategy_one_hot():
+    obs, _, _ = _batch(batch_size=3)
+    policy = TFTPolicy(
+        obs_dim=obs.shape[-1],
+        action_dims=list(ACTION_DIMS),
+        hidden_size=32,
+        semantic_vocab_size=64,
+    )
+    obs_a = obs.clone()
+    obs_b = obs.clone()
+    obs_a[:, 10] = 1.0
+    obs_b[:, 12] = 1.0
+    obs_b[:, 10] = 0.0
+
+    with torch.no_grad():
+        context_a = policy._economic_context_features(obs_a)
+        context_b = policy._economic_context_features(obs_b)
+
+    assert context_a.shape == (obs.shape[0], 5)
+    assert torch.count_nonzero(context_a) == 0
+    assert torch.equal(context_a, context_b)

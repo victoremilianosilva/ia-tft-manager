@@ -61,3 +61,17 @@ Therefore:
 ## Legacy producer replay gate
 
 Trainer collection no longer calls the legacy `get_strategies()` compatibility API. That removes a Python-side diagnostic dependency, but it does not satisfy the producer-disabled replay gate: native `update_strategy()` still co-locates the economic Strategy ID selector, legacy composition-direction/focus maintenance, native composition generation, and the isolated Shadow evaluation pipeline. Disabling that entire function would also disable native generation and would invalidate the evidence needed by the current strategic path. The next safe step is to separate those responsibilities and publish their own owner snapshots before a replay can disable only the legacy producers without disabling the native owners.
+
+## PR3 — retirada das features estratégicas legadas do caminho PPO
+
+**Problema anterior:** o tensor plano ainda consumia StrategyInfo para one-hot ECON/FAST8/SLOWROLL, direção, core traits, fit, focus, lock, strength e sinais core/planned por candidato. A policy ainda derivava target level e reserva econômica desse one-hot, convertendo ausência em ECON por `argmax`.
+
+**Justificativa técnica:** esses campos eram saídas de produtores estratégicos legados, não fatos observados. Mantê-los no encoder fazia a policy aprender uma política nominal fixa e mascarava a ausência de evidência. A recomendação Shadow também não pode virar rótulo de imitação.
+
+**Responsabilidade nova:** o caminho PPO plano preserva somente os slots físicos por compatibilidade estrutural; slots estratégicos legados são tombstones zero. O side input semântico nativo continua responsável pelos fatos verificáveis. O perfil de item compartilhado usa `semantic_item_unit_profiles`, construído a partir do classificador factual e da composição ativa nativa, sem carry/core traits de StrategyInfo.
+
+**Contrato e invariantes:** zero nesses slots significa feature descontinuada, não postura neutra; StrategyInfo não é lido por `build_observations()`; action masks e legalidade continuam independentes; recomendações, scores e confiança Shadow não são inputs nem targets PPO; ausência de composição não fabrica fit.
+
+**Impactos:** TftEngine, Policy encoder, candidatos de compra/venda, item-target profiles, testes C++ e testes de entrada semântica. A dimensão física do vetor é preservada nesta etapa para evitar desalinhamento acidental com os leitores existentes; a semântica passa a exigir nova linhagem de treino.
+
+**Validação:** regressões verificam que o one-hot e todos os blocos estratégicos legados são zero, enquanto custo/estrela/papel/cópias e estado factual de itens permanecem disponíveis; testes Python verificam invariância às colunas antigas de estratégia. Esta entrega não declara completa a projeção dos owners estratégicos nativos no schema PPO.

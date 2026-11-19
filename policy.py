@@ -400,70 +400,15 @@ class TFTPolicy(nn.Module):
         return latent
 
     def _economic_context_features(self, obs):
-        """Expose phase target/reserve context explicitly to the PPO encoder.
+        """Deprecated legacy slots retained as zero-width-semantic placeholders.
 
-        The native observation already contains the source fields. Deriving these
-        features here keeps the engine contract stable and ensures action sampling,
-        value estimation and PPO replay all see exactly the same deterministic data.
+        The old target-level/reserve formula encoded ECON/FAST8/SLOWROLL policy
+        rules through a StrategyInfo one-hot. Native gold, HP, level, XP and
+        round facts are already available in the factual observation and the
+        versioned semantic-state side input. No fixed strategic posture is
+        synthesized here while canonical strategic-owner inputs are migrated.
         """
-        gold = (obs[:, 1] * 50.0).clamp(min=0.0)
-        hp = (obs[:, 0] * 100.0).clamp(0.0, 100.0)
-        level = (obs[:, 2] * 9.0).clamp(1.0, 10.0)
-
-        round_fraction = obs[:, 6].clamp(0.0, 0.999)
-        round_number = (10.0 * round_fraction / (1.0 - round_fraction)).clamp(1.0, 42.0)
-        stage = torch.where(
-            round_number <= 4.0,
-            torch.ones_like(round_number),
-            2.0 + torch.floor((round_number - 5.0) / 7.0),
-        ).clamp(1.0, 7.0)
-
-        # Core strategy one-hot occupies [10:17], matching the C++ observation.
-        strategy = obs[:, 10:17].argmax(dim=-1)
-        target_level = torch.where(
-            stage <= 1.0, 3.0,
-            torch.where(stage <= 2.0, 5.0,
-                torch.where(stage <= 3.0, 7.0,
-                    torch.where(stage <= 4.0, 8.0, 9.0))),
-        )
-        target_level = torch.where(strategy == 2, 8.0, target_level)  # FAST8
-        target_level = torch.where(strategy == 3, 6.0, target_level)  # SLOWROLL
-
-        reserve = torch.where(
-            stage <= 2.0, 30.0,
-            torch.where(stage <= 3.0, 15.0,
-                torch.where(stage <= 4.0, 10.0,
-                    torch.where(stage <= 5.0, 5.0, 0.0))),
-        )
-        slowroll_reserve = torch.where(
-            stage <= 3.0, 30.0,
-            torch.where(stage <= 4.0, 25.0, 15.0),
-        )
-        reserve = torch.where(strategy == 3, slowroll_reserve, reserve)
-        reserve = torch.where(hp <= 30.0, 5.0, reserve)
-        reserve = torch.where((hp <= 20.0) | (strategy == 4), 0.0, reserve)
-        reserve = torch.where(
-            (hp <= 40.0) & (hp > 20.0) & (strategy != 4),
-            (reserve - 5.0).clamp(min=0.0),
-            reserve,
-        )
-
-        level_deficit = (target_level - level).clamp(0.0, 8.0)
-        spendable_gold = (gold - reserve).clamp(0.0, 200.0)
-        phase_pressure = (
-            ((stage - 2.0) / 4.0).clamp(0.0, 1.0)
-            * (level_deficit / 3.0).clamp(0.0, 1.0)
-        )
-        return torch.stack(
-            [
-                target_level / 10.0,
-                level_deficit / 8.0,
-                reserve / 50.0,
-                spendable_gold / 200.0,
-                phase_pressure,
-            ],
-            dim=-1,
-        )
+        return obs.new_zeros((obs.shape[0], 5))
 
     def _candidate_features(self, obs):
         """Extract slot-aligned strategic features appended by the native C++ engine."""
