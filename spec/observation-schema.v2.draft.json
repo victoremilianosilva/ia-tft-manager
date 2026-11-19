@@ -278,7 +278,8 @@
         },
         "uuid": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "description": "Native UnitInstance::uuid. It is valid only within identity.engine_match_id and identity.player_id; engine_match_id is derived from Engine-instance and episode identity. Never join on raw UUID alone."
         }
       }
     },
@@ -1266,7 +1267,8 @@
                 "$ref": "#/$defs/field"
               },
               "uuid": {
-                "type": "string"
+                "type": "string",
+                "description": "Native physical-unit UUID reference; valid only within the enclosing Engine-episode and player identity scope. Not yet delivered as a typed role entity by the runtime."
               }
             }
           }
