@@ -267,6 +267,17 @@ public:
     const StrategicAnchorState& anchors() const noexcept { return anchors_; }
     const std::vector<StrategicPivotTransitionRecord>& history() const noexcept { return history_; }
 
+    // Clears only the coordinator's direction/pivot history. The canonical
+    // ActiveCompositionManager remains owned by Composition Intelligence and
+    // is reset by its lifecycle owner.
+    void reset_state() noexcept {
+        anchors_ = {};
+        history_.clear();
+        last_evaluation_sequence_ = 0;
+        last_confirmed_sequence_ = 0;
+        reset_streak();
+    }
+
 private:
     PivotConfirmationResult rejected(const std::string& reason) const {
         const auto version = composition_manager_.current()
