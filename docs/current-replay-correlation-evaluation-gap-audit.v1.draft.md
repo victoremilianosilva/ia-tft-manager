@@ -146,3 +146,12 @@ Accordingly:
 - A v2 adapter must preserve the legacy values as session/episode metadata and leave canonical identity incomplete until authoritative match_id and scoped engine_match_id producers exist.
 
 See [Observation Schema v2 Identity Field Semantics Reconciliation](observation-schema-v2-identity-field-semantics-reconciliation.v1.draft.md). No runtime changes are made.
+
+
+## 9. PR5 implementation delta — evaluation and Viewer correlation
+
+The executable evaluator now provides a paired-run entrypoint that validates the aggregate checkpoint-lineage manifest and its canonical SHA-256 payload before running. Baseline and candidate must carry identical component lineage contracts; each checkpoint artifact has its own SHA-256 identity. The helper rotates four candidate seats deterministically from the lobby seed and master seed, records the exact schedule, and summarizes paired per-lobby results only after validating eight distinct player identities with no overlap between policy groups.
+
+The Viewer Shadow projection now requires an explicit native Engine episode identity from the current snapshot and an exact `engine_match_id` match on each diagnostic record. It also rejects boolean player/sequence/round/episode identifiers instead of accepting Python's `bool`-is-an-`int` behavior. Unscoped, stale-episode, or malformed diagnostics remain unavailable; they are not silently attached to the current player card.
+
+These changes improve the evaluation and Viewer correlation boundaries. They do not by themselves close the full multi-round Shadow replay contract, prove every Viewer card/dialog/log field projection, or constitute PPO performance evidence. Those acceptance criteria remain open until the integrated runtime suite and artifact review pass.

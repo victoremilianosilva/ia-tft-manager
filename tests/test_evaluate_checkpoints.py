@@ -6,6 +6,9 @@ silently manufacturing placements.
 """
 from __future__ import annotations
 
+import copy
+import hashlib
+import json
 import numpy as np
 import pytest
 import torch
@@ -19,6 +22,9 @@ from scripts.evaluate_checkpoints import (
     policy_actions,
     run_match,
     summarize_paired_seeds,
+    candidate_slots_for_seed,
+    validate_candidate_slots,
+    run_paired_evaluation,
 )
 
 
@@ -219,11 +225,11 @@ def test_strategic_audit_records_exact_masks_and_action_components():
 
 def _seed_rows(seed, candidate_placements, baseline_placements):
     rows = []
-    for version, placements in (
-        ("baseline", baseline_placements),
-        ("candidate", candidate_placements),
+    for version, placements, player_ids in (
+        ("baseline", baseline_placements, range(4, 8)),
+        ("candidate", candidate_placements, range(0, 4)),
     ):
-        for player_id, placement in enumerate(placements):
+        for player_id, placement in zip(player_ids, placements):
             rows.append({
                 "seed": seed,
                 "player_id": player_id,
@@ -281,3 +287,141 @@ def test_paired_seed_summary_rejects_unknown_policy_labels():
 
     with pytest.raises(ValueError, match="Unknown policy version"):
         summarize_paired_seeds(rows)
+
+
+def test_candidate_seat_rotation_is_deterministic_and_balances_all_eight_slots():
+    schedules = [candidate_slots_for_seed(seed, master_seed=91) for seed in range(8)]
+    assert schedules == [candidate_slots_for_seed(seed, master_seed=91) for seed in range(8)]
+    assert all(len(slots) == 4 for slots in schedules)
+    appearances = {player_id: 0 for player_id in range(8)}
+    for slots in schedules:
+        for player_id in slots:
+            appearances[player_id] += 1
+    assert appearances == {player_id: 4 for player_id in range(8)}
+
+
+def test_candidate_slot_validation_rejects_duplicates_invalid_ids_and_booleans():
+    assert validate_candidate_slots({0, 1, 2, 3}) == {0, 1, 2, 3}
+    with pytest.raises(ValueError, match="exactly four"):
+        validate_candidate_slots({0, 1, 2})
+    with pytest.raises(ValueError, match="exactly four"):
+        validate_candidate_slots({0, 1, 2, 2})
+    with pytest.raises(ValueError, match="exactly four"):
+        validate_candidate_slots({0, 1, 2, 8})
+    with pytest.raises(ValueError, match="exactly four"):
+        validate_candidate_slots({False, 1, 2, 3})
+
+
+def test_paired_summary_rejects_duplicate_or_overlapping_player_identity():
+    rows = _seed_rows(500, [1, 2, 3, 4], [5, 6, 7, 8])
+    rows[-1]["player_id"] = 2
+    with pytest.raises(ValueError, match="distinct player IDs"):
+        summarize_paired_seeds(rows)
+
+
+def test_paired_summary_rejects_same_player_assigned_to_both_policies():
+    rows = _seed_rows(501, [1, 2, 3, 4], [5, 6, 7, 8])
+    rows[-1]["player_id"] = 4
+    with pytest.raises(ValueError, match="distinct player IDs|assigns a player"):
+        summarize_paired_seeds(rows)
+
+
+def _evaluation_artifact(checkpoint_sha):
+    contract = {
+        "contract_id": "tft.ppo-checkpoint-lineage.v1",
+        "version": 1,
+        "components": {
+            "action_mask_contract": {"contract_id": "action-mask-v1"},
+            "critic_mask_input_contract": {"contract_id": "critic-mask-v1"},
+            "semantic_state_contract": {"contract_id": "semantic-state-v1"},
+            "reward_contract": {"contract_id": "reward-v1"},
+        },
+        "policy_state_signature": [{"name": "actor.weight", "shape": [4, 3], "dtype": "torch.float32"}],
+    }
+    canonical = json.dumps(
+        contract, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    ).encode("utf-8")
+    return {
+        "checkpoint_sha256": checkpoint_sha,
+        "checkpoint_contract": {
+            "manifest_version": 1,
+            "contract": contract,
+            "sha256": hashlib.sha256(canonical).hexdigest(),
+        },
+    }
+
+
+def test_paired_evaluation_enforces_lineage_and_emits_rotated_reproducible_results():
+    artifact = _evaluation_artifact("a" * 64)
+    result = run_paired_evaluation(
+        factory=lambda seed: _FakeLobby(ranking=list(range(8))),
+        baseline=_FakePolicy(),
+        candidate=_FakePolicy(),
+        baseline_artifact=artifact,
+        candidate_artifact=artifact,
+        seeds=[100, 101, 102, 103],
+        device=torch.device("cpu"),
+        split="validation",
+        master_seed=17,
+        max_steps=2,
+    )
+    assert result["evaluation_mode"] == "evaluation_only"
+    assert result["split"] == "validation"
+    assert result["summary"]["seed_count"] == 4
+    assert len(result["raw_results"]) == 32
+    assert len(result["seat_rotation"]) == 4
+    assert all(len(item["candidate_player_ids"]) == 4 for item in result["seat_rotation"])
+
+
+def test_paired_evaluation_rejects_semantically_different_checkpoint_lineages():
+    baseline = _evaluation_artifact("a" * 64)
+    candidate = _evaluation_artifact("b" * 64)
+    candidate["checkpoint_contract"]["contract"]["components"]["reward_contract"] = {
+        "contract_id": "reward-v2"
+    }
+    contract = candidate["checkpoint_contract"]["contract"]
+    candidate["checkpoint_contract"]["sha256"] = hashlib.sha256(
+        json.dumps(contract, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    ).hexdigest()
+    with pytest.raises(ValueError, match="not semantically compatible"):
+        run_paired_evaluation(
+            factory=lambda seed: _FakeLobby(ranking=list(range(8))),
+            baseline=_FakePolicy(),
+            candidate=_FakePolicy(),
+            baseline_artifact=baseline,
+            candidate_artifact=candidate,
+            seeds=[1],
+            device=torch.device("cpu"),
+            split="test",
+            max_steps=2,
+        )
+
+
+def test_paired_evaluation_rejects_tampered_lineage_hash_and_duplicate_seeds():
+    artifact = _evaluation_artifact("a" * 64)
+    tampered = copy.deepcopy(artifact)
+    tampered["checkpoint_contract"]["contract"]["version"] = 2
+    with pytest.raises(ValueError, match="hash does not match"):
+        run_paired_evaluation(
+            factory=lambda seed: _FakeLobby(ranking=list(range(8))),
+            baseline=_FakePolicy(),
+            candidate=_FakePolicy(),
+            baseline_artifact=artifact,
+            candidate_artifact=tampered,
+            seeds=[1],
+            device=torch.device("cpu"),
+            split="test",
+            max_steps=2,
+        )
+    with pytest.raises(ValueError, match="non-empty and unique"):
+        run_paired_evaluation(
+            factory=lambda seed: _FakeLobby(ranking=list(range(8))),
+            baseline=_FakePolicy(),
+            candidate=_FakePolicy(),
+            baseline_artifact=artifact,
+            candidate_artifact=artifact,
+            seeds=[1, 1],
+            device=torch.device("cpu"),
+            split="test",
+            max_steps=2,
+        )
