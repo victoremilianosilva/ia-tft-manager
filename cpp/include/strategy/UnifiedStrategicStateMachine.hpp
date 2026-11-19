@@ -244,7 +244,10 @@ public:
         }
 
         if (phase_ == StrategicCyclePhase::PivotConfirmed && out.state_changed) {
-            const auto& committed_anchor = out.anchors.direction_anchor;
+            // finish() copies coordinator state into the result only after this
+            // method returns. Read the committed anchor from its canonical
+            // owner here, never from the not-yet-populated output snapshot.
+            const auto& committed_anchor = pivot_coordinator_.anchors().direction_anchor;
             commitment_.composition_direction = committed_anchor.direction;
             commitment_.selected_round = input.exploration.round;
             commitment_.last_review_round = input.exploration.round;
