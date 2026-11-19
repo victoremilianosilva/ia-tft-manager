@@ -17,6 +17,7 @@ struct StrategicActionCandidateBuildResult {
     std::vector<StrategicPositionProposal> positioning;
     std::uint32_t rejected_missing_cost{0};
     std::uint32_t rejected_ambiguous_instance{0};
+    std::uint32_t rejected_missing_instance_identity{0};
     std::string status{"not_evaluated"};
 };
 
@@ -55,6 +56,7 @@ public:
             return std::to_string(native.match_id) + ":" +
                 std::to_string(native.player_id) + ":" +
                 std::to_string(native.sequence) + ":" +
+                native.composition_id + ":" + std::to_string(native.composition_version) + ":" +
                 std::to_string(static_cast<int>(candidate.kind)) + ":" +
                 std::to_string(candidate.champion_id) + ":" +
                 std::to_string(candidate.shop_slot) + ":" +
@@ -183,6 +185,8 @@ public:
                 if (slot == -2) { ++out.rejected_ambiguous_instance; continue; }
                 if (slot < 0 || native.masks.bench_source_mask[static_cast<std::size_t>(slot)] != decision::MASK_ENABLED ||
                     !type_enabled(decision::ActionType::SELL)) continue;
+                const auto& source_uuid = native.bench_unit_uuids[static_cast<std::size_t>(slot)];
+                if (source_uuid.empty()) { ++out.rejected_missing_instance_identity; continue; }
                 const auto cost = unit_costs.find(priority.champion_id);
                 if (cost == unit_costs.end() || cost->second < 0) {
                     ++out.rejected_missing_cost;
@@ -193,6 +197,7 @@ public:
                 candidate.champion_id = priority.champion_id;
                 candidate.source_slot = slot;
                 candidate.source_is_bench = true;
+                candidate.source_unit_uuid = source_uuid;
                 candidate.direct_gold_cost = -static_cast<double>(
                     EconomyEngine::get_sell_value(cost->second, priority.highest_star));
                 candidate.available = true;
@@ -243,6 +248,13 @@ public:
                 candidate.composition_fit = 1.0;
                 candidate.source_slot = proposal.source_slot;
                 candidate.source_is_bench = proposal.source_zone == StrategicPositionZone::Bench;
+                candidate.source_unit_uuid = candidate.source_is_bench
+                    ? native.bench_unit_uuids[static_cast<std::size_t>(proposal.source_slot)]
+                    : native.board_unit_uuids[static_cast<std::size_t>(proposal.source_slot)];
+                if (candidate.source_unit_uuid.empty()) {
+                    ++out.rejected_missing_instance_identity;
+                    continue;
+                }
                 candidate.target_board_slot = proposal.target_board_slot;
                 candidate.available = true;
                 candidate.evidence_reason = "role_aware_position_proposal_with_current_native_masks";
