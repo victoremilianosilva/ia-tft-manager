@@ -227,6 +227,40 @@ void xp_candidate_does_not_depend_on_an_active_composition() {
     assert(result.candidates.front().gold_cost == EconomyEngine::BUY_XP_COST);
 }
 
+void owned_unit_candidates_require_native_physical_identity() {
+    CompositionCandidate composition;
+    composition.composition_id = "uuid-required";
+    composition.set_id = "TFT18";
+    composition.target_board_size = 1;
+    composition.units = {{10, UnitRole::MainCarry, true, 80}};
+    const std::optional<ActiveComposition> active = ActiveComposition{composition, 1};
+    UnitPriority sell;
+    sell.champion_id = 30; sell.intent = UnitIntent::SellCandidate;
+    sell.copies_owned = 1; sell.highest_star = 1;
+    UnitPrioritySnapshot priorities;
+    priorities.composition_id = composition.composition_id;
+    priorities.composition_version = 1;
+    priorities.units = {sell};
+    LineupPlan lineup;
+    lineup.composition_id = composition.composition_id;
+    lineup.composition_version = 1;
+    StrategicSharedContext context;
+    context.player_id = 0; context.round = 2; context.gold = 5;
+    context.alive = true; context.evidence.gold = true;
+    StrategicActionNativeSnapshot native;
+    native.match_id = 7; native.player_id = 0; native.round = 2;
+    native.sequence = 9; native.composition_id = composition.composition_id;
+    native.composition_version = 1; native.gold = 5; native.alive = true;
+    native.bench_champion_ids[0] = 30;
+    enables(native.masks, decision::ActionType::SELL);
+    native.masks.bench_source_mask[0] = decision::MASK_ENABLED;
+    const auto result = StrategicActionCandidateBuilder{}.build(
+        context, active, priorities, lineup, native, {{30, 1}});
+    assert(result.rejected_missing_instance_identity == 1);
+    assert(std::none_of(result.candidates.begin(), result.candidates.end(),
+        [](const auto& candidate) { return candidate.kind == StrategicActionKind::SellUnit; }));
+}
+
 void builder_refuses_stale_or_mismatched_native_snapshots() {
     StrategicSharedContext context;
     context.player_id = 1;
@@ -252,5 +286,6 @@ int main() {
     missing_cost_rejects_only_the_affected_candidate();
     xp_candidate_does_not_depend_on_an_active_composition();
     builder_refuses_stale_or_mismatched_native_snapshots();
+    owned_unit_candidates_require_native_physical_identity();
     std::cout << "StrategicActionCandidateBuilder tests passed\\n";
 }
