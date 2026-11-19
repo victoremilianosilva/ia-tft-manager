@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cmath>
 #include <iostream>
+#include <unordered_map>
 #include <limits>
 using namespace tft::composition_intelligence;
 
