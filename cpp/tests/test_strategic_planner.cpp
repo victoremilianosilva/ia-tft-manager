@@ -203,6 +203,12 @@ int main() {
     economy_context.stage = 4;
     economy_context.relative_board_power = 1.20;
     economy_context.win_streak = 5;
+    economy_context.evidence.hp = true;
+    economy_context.evidence.gold = true;
+    economy_context.evidence.level = true;
+    economy_context.evidence.xp_to_next = true;
+    economy_context.evidence.streaks = true;
+    economy_context.evidence.relative_board_power = true;
     auto posture = economic_controller.evaluate(economy_context);
     assert(posture.posture == EconomicPosture::PreserveWinStreak);
     assert(posture.shadow_only);
@@ -223,6 +229,12 @@ int main() {
     progression_context.stage = 4;
     progression_context.relative_board_power = 1.0;
     progression_context.progression_plan = ProgressionPlan::LevelToEight;
+    progression_context.evidence.hp = true;
+    progression_context.evidence.gold = true;
+    progression_context.evidence.level = true;
+    progression_context.evidence.xp_to_next = true;
+    progression_context.evidence.relative_board_power = true;
+    progression_context.evidence.progression_plan = true;
     const auto xp_posture = economic_controller.evaluate(progression_context);
     assert(xp_posture.posture == EconomicPosture::InvestExperience);
     progression_context.progression_plan = ProgressionPlan::RerollForThreeStar;
@@ -237,6 +249,11 @@ int main() {
     surplus_context.level = 6;
     surplus_context.stage = 4;
     surplus_context.relative_board_power = 0.70;
+    surplus_context.evidence.hp = true;
+    surplus_context.evidence.gold = true;
+    surplus_context.evidence.level = true;
+    surplus_context.evidence.xp_to_next = true;
+    surplus_context.evidence.relative_board_power = true;
     const auto surplus_posture = economic_controller.evaluate(surplus_context);
     assert(surplus_posture.posture == EconomicPosture::StabilizeBoard);
 
