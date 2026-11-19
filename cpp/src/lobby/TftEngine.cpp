@@ -3300,6 +3300,7 @@ struct TFTEngine::Impl {
             strategic_context.player_id = static_cast<std::int32_t>(i);
             strategic_context.round = static_cast<std::uint32_t>(current_round);
             strategic_context.stage = current_stage;
+            strategic_context.evidence.stage = true;
             strategic_context.hp = static_cast<double>(player.hp);
             strategic_context.gold = economy.gold;
             strategic_context.level = economy.level;
