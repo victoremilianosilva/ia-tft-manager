@@ -49,6 +49,7 @@ def test_shadow_pipeline_replays_multiple_rounds_with_correlated_sequences(monke
 
         observed_rounds = set()
         observed_players = set()
+        correlated_outcomes = []
         for record in records:
             assert record["engine_match_id"] == initial["episode_id"]
             assert isinstance(record["round"], int) and record["round"] >= 1
@@ -64,6 +65,19 @@ def test_shadow_pipeline_replays_multiple_rounds_with_correlated_sequences(monke
                 assert component in diagnostics
             assert isinstance(diagnostics["lineup_plan"].get("selected_board"), list)
             assert isinstance(diagnostics["action_recommendation"].get("candidates"), list)
+            outcome = diagnostics.get("outcome_observation")
+            correlation = diagnostics.get("recommendation_to_later_outcome")
+            if outcome is not None:
+                assert isinstance(outcome.get("observed_round"), int)
+                assert outcome["observed_round"] > record["round"] - 1
+                assert outcome.get("interpretation") == "correlation_only_not_causation"
+            if correlation is not None:
+                assert correlation["match_id"] == initial["episode_id"]
+                assert correlation["player_id"] == record["player_id"]
+                assert correlation["recommendation_round"] < correlation["outcome_round"]
+                assert correlation["recommendation_sequence"] > 0
+                assert correlation["interpretation"] == "correlation_only_not_causation"
+                correlated_outcomes.append(correlation)
 
             comparison = record.get("action_evaluator_comparison")
             assert isinstance(comparison, dict)
@@ -85,6 +99,7 @@ def test_shadow_pipeline_replays_multiple_rounds_with_correlated_sequences(monke
 
         assert len(observed_rounds) >= 2, "O replay não atravessou múltiplas rodadas Shadow."
         assert observed_players, "Nenhum jogador produziu evidência Shadow."
+        assert correlated_outcomes, "O replay não correlacionou uma recomendação anterior com um outcome posterior."
 
         # Reset must retire the previous replay history and advance the episode scope.
         engine.reset(seed=20261119)
