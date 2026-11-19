@@ -13,9 +13,11 @@ namespace tft::strategy {
 // changes the strategic result or propagates to the game/runtime caller.
 class UnifiedStrategicShadowRuntime {
 public:
-    explicit UnifiedStrategicShadowRuntime(std::filesystem::path audit_path,
-                                            PivotConfirmationPolicy policy = {})
-        : machine_(policy), recorder_(std::move(audit_path)) {}
+    explicit UnifiedStrategicShadowRuntime(
+        composition_intelligence::ActiveCompositionManager& active_composition,
+        std::filesystem::path audit_path,
+        PivotConfirmationPolicy policy = {})
+        : machine_(active_composition, policy), recorder_(std::move(audit_path)) {}
 
     StrategicCycleResult refresh(const StrategicCycleAuditContext& context,
                                  const StrategicCycleInput& input) noexcept {
@@ -44,7 +46,9 @@ public:
     }
 
     void reset_machine() noexcept {
-        machine_ = UnifiedStrategicStateMachine{};
+        // Reset only discovery/pivot orchestration. The canonical active
+        // composition is owned and reset by Composition Intelligence.
+        machine_.reset();
         last_player_id_ = -1;
         last_input_fingerprint_.clear();
         last_result_.reset();
