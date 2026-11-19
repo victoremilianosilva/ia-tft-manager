@@ -3785,8 +3785,8 @@ struct TFTEngine::Impl {
                             item_bindings.push_back({
                                 definition->internal_id,
                                 profile->second,
-                                "ChampionDefinition+observed_stats+UnitCombatClassifier",
-                                active ? "ActiveCompositionManager.core_unit_catalog_traits"
+                                "derived:UnitCombatClassifier(ChampionDefinition+observed_stats+ability+items)",
+                                active ? "derived:ActiveCompositionManager.core_unit_catalog_traits"
                                        : "unavailable_without_active_composition",
                                 active ? active->candidate.composition_id : std::string{},
                                 active ? active->version : 0
