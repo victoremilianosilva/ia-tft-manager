@@ -28,6 +28,10 @@ struct EconomicPlannerEvidence {
  std::vector<std::string> evidence_used,evidence_missing;
  bool survival_evidence_available{false};
  bool streak_evidence_available{false};
+ // Per-field availability: a valid source envelope does not make every field present.
+ bool gold_available{false},level_available{false},xp_available{false},xp_to_next_available{false};
+ bool interest_available{false},projected_income_available{false};
+ bool win_streak_available{false},loss_streak_available{false};
 };
 struct BoardPlannerEvidence {
  EvidenceSourceMetadata metadata;
@@ -78,6 +82,11 @@ public:
   o.gold=c.gold;o.level=c.level;o.xp=c.xp;o.xp_to_next=c.xp_to_next;
   o.interest_if_resolved_now=c.interest_if_resolved_now;o.projected_next_round_income=c.projected_next_round_income;
   o.win_streak=c.win_streak;o.loss_streak=c.loss_streak;o.posture=d.posture;o.reason=d.reason;
+  o.gold_available=c.evidence.gold;o.level_available=c.evidence.level;
+  o.xp_available=c.evidence.xp;o.xp_to_next_available=c.evidence.xp_to_next;
+  o.interest_available=c.evidence.interest_if_resolved_now;
+  o.projected_income_available=c.evidence.projected_next_round_income;
+  o.win_streak_available=c.evidence.streaks;o.loss_streak_available=c.evidence.streaks;
   o.sufficient_evidence=d.sufficient_evidence;
   o.evidence_used=d.evidence_used;o.evidence_missing=d.evidence_missing;
   o.survival_evidence_available=c.evidence.hp ||
