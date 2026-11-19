@@ -3336,6 +3336,7 @@ struct TFTEngine::Impl {
                     active_native_direction->score;
                 strategic_context.current_core_traits =
                     active_native_direction->completed_traits;
+                strategic_context.evidence.current_direction = true;
                 if (!active_native_direction->completed_traits.empty())
                     strategic_context.current_composition_focus =
                         active_native_direction->completed_traits.front();
