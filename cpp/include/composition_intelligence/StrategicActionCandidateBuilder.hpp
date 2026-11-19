@@ -17,8 +17,9 @@ struct StrategicActionCandidateBuildResult {
     std::vector<StrategicPositionProposal> positioning;
     std::uint32_t rejected_missing_cost{0};
     std::uint32_t rejected_ambiguous_instance{0};
-    std::uint32_t rejected_missing_instance_identity{0};
     std::string status{"not_evaluated"};
+    // Appended to preserve positional aggregate initialization.
+    std::uint32_t rejected_missing_instance_identity{0};
 };
 
 // Produces only snapshot-bound, read-only alternatives. Native masks remain the
