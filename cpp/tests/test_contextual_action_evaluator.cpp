@@ -34,6 +34,8 @@ LineupPlan lineup() {
 }
 StrategicActionCandidate candidate(StrategicActionKind kind, int id = -1) {
     StrategicActionCandidate c; c.kind = kind; c.champion_id = id;
+    c.candidate_id = "candidate:" + std::to_string(static_cast<int>(kind)) + ":" + std::to_string(id);
+    c.source_sequence = 12;
     c.available = true; c.expected_board_delta = .8;
     if (kind == StrategicActionKind::BuyUnit) { c.gold_cost = 3; c.direct_gold_cost = 3; }
     if (kind == StrategicActionKind::RerollShop) { c.gold_cost = 2; c.direct_gold_cost = 2; }
@@ -68,6 +70,7 @@ void contextual_path_uses_priority_and_lineup_without_calling_baseline() {
         active(), priorities(), lineup(), context, nullptr, 77);
     assert(!result.stale);
     assert(result.candidates.size() == 3);
+    assert(result.candidates[0].candidate_id == context.action_candidates[0].candidate_id);
     assert(result.recommended_action == StrategicActionKind::BuyUnit ||
         result.recommended_action == StrategicActionKind::DeployOrMove);
     int selected = 0;
