@@ -157,7 +157,7 @@ def summarize_paired_seeds(rows, bootstrap_samples=2000, bootstrap_seed=0):
         if set(int(row["player_id"]) for row in pair["baseline"]) & set(
             int(row["player_id"]) for row in pair["candidate"]
         ):
-            raise ValueError(f"Seed {seed} assigns a player to both policies")
+            raise ValueError(f"Seed {seed} policies must use distinct player IDs; a player is assigned to both policies")
     if not grouped:
         raise ValueError("No paired seed rows supplied")
     baseline_rows = [r for p in grouped.values() for r in p["baseline"]]
