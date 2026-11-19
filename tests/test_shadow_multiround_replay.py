@@ -53,11 +53,11 @@ def test_shadow_pipeline_replays_multiple_rounds_with_correlated_sequences(monke
             assert record["engine_match_id"] == initial["episode_id"]
             assert isinstance(record["round"], int) and record["round"] >= 1
             assert 0 <= record["player_id"] < CppTFTLobbyWrapper.PLAYERS_PER_LOBBY
-            assert record.get("shadow_only") is True
-            assert record.get("execution_enabled") is False
-            assert record.get("native_action_applied") is False
             comparison = record.get("action_evaluator_comparison")
             assert isinstance(comparison, dict)
+            assert comparison.get("shadow_only") is True
+            assert comparison.get("execution_enabled") is False
+            assert comparison.get("native_action_applied") is False
             comparison_result = comparison.get("comparison", {})
             if comparison_result.get("initial_candidate_count") == 0:
                 assert comparison_result.get("comparison_available") is False
