@@ -113,3 +113,12 @@ The tracked-source reference inventory is now complete for explicit identity/tes
 6. **Objective validation:** every lifecycle transition in the table is tied to native source lines; four targeted tests are mapped to proven and unproven behaviors; the shared pool producer is traced through TFTEngine and pybind; no runtime/schema/tensor/PPO/reward/mask/training/checkpoint/Viewer changes are made.
 
 Issue #346 remains open. This document does not approve Gate 8 or any runtime implementation.
+
+
+## PR 1 correction — Engine-instance scope and player sequence
+
+The earlier statement that no Engine-instance scope was produced is superseded. Current TFTEngine::Impl generates a random engine_instance_id once per Engine object; it is returned in ResetResult/StepResult and AuditSnapshot, exposed through pybind, and copied/validated by cpp_lobby_env.py. The value survives episode reset. episode_id increments on reset, so (engine_instance_id, episode_id) is the canonical Engine-episode scope.
+
+The native player_decision_sequences array is also emitted in ResetResult/StepResult and wrapper snapshot metadata. It is the source for identity.decision_sequence; the Engine-wide decision_sequence remains the distinct snapshot_sequence namespace.
+
+A same-seed reset can reproduce UnitInstance UUIDs because the factory is reconstructed from the base seed. This is safe only when physical identity is scoped by the canonical Engine episode. player_id is the current owner relation and is not part of the physical identity key.

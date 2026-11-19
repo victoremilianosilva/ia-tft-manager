@@ -185,3 +185,12 @@ The source audit has not yet proven that the actual Overwolf event/controller li
 The native `TFTEngine::Impl::decision_sequence` is a per-Engine snapshot-publication counter, not a per-player decision counter. It increments once for each `ResetResult`/`StepResult`, is shared by all eight player rows, and remains monotonic across episode resets. Decision Identity v2 maps it to `snapshot_sequence` under `tft.engine.observation-snapshot`. The per-player `decision_sequence` remains null until an authoritative producer exists.
 
 Consequently, current native snapshots remain `partial` identity until authoritative logical `match_id` and per-player decision sequence are supplied. A partial identity cannot carry valid mask, Critic, anti-loop, or strategic-owner context merely because local integer counters happen to match.
+
+
+## PR 1 correction — complete native identity without an external match ID
+
+The source now provides engine_instance_id, episode_id, and per-player player_decision_sequences through native results and wrapper snapshot metadata. The earlier “no Engine-instance token / no per-player sequence” conclusions are superseded.
+
+match_id remains an optional external logical match identifier. When no authoritative platform producer exists, it stays null. A native decision may still have complete identity when the canonical Engine-episode scope, player seat, round, per-player decision sequence and Engine snapshot sequence are all valid. The explicit null match_id is included in the RFC 8785 decision hash; it is never synthesized from Viewer session identity or episode counters.
+
+The canonical physical unit identity is (engine_match_id, uuid). player_id is ownership metadata, not part of the physical identity, so moving an instance between ownership domains does not create a new physical unit identity.

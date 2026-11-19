@@ -188,8 +188,12 @@ def main() -> None:
             raise SystemExit("incomplete identity source mapping: " + entry["field_path"])
     if identity_entries["identity.snapshot_sequence"]["availability"] != "implemented_native_engine_pr428":
         raise SystemExit("snapshot_sequence source mapping does not match native Engine evidence")
-    if identity_entries["identity.decision_sequence"]["availability"] != "proposed_not_implemented":
-        raise SystemExit("per-player decision_sequence must remain explicitly unavailable")
+    if identity_entries["identity.decision_sequence"]["availability"] != "implemented_native_engine_and_wrapper_metadata":
+        raise SystemExit("per-player decision_sequence source mapping drift")
+    if not identity_entries["identity.decision_sequence"]["canonical_decision_eligible"]:
+        raise SystemExit("authoritative per-player decision_sequence must be canonical-eligible")
+    if identity_entries["identity.engine_match_id"]["availability"] != "native_inputs_available_canonical_adapter_field_not_yet_emitted":
+        raise SystemExit("engine_match_id source mapping drift")
 
     namespace_names = [entry["namespace"] for entry in registry["entries"]]
     if len(namespace_names) != len(set(namespace_names)):
@@ -223,6 +227,23 @@ def main() -> None:
     verify_context_identity(snapshot)
     verify_provenance_nature(snapshot)
     verify_cardinality(snapshot)
+
+    # A native Engine-scoped decision may be complete without an external platform match ID.
+    native_complete = copy.deepcopy(snapshot)
+    native_identity = native_complete["identity"]
+    native_identity.update({
+        "match_id": None,
+        "engine_match_id": "engine-instance-uuid:episode:1",
+        "decision_sequence": {"namespace": "tft.engine.decision", "value": 1},
+        "status": "complete",
+        "decision_identity_hash": None,
+    })
+    native_identity.pop("reason", None)
+    native_identity["decision_identity_hash"] = decision_identity_hash(native_identity)
+    if list(validator.iter_errors(native_complete)):
+        raise AssertionError("complete native Engine identity with absent external match_id must validate")
+    verify_identity(native_complete, registry)
+    verify_context_identity(native_complete)
     verify_hash_vectors(vectors)
 
     # A partial identity must fail closed even when a mask reference is marked valid.

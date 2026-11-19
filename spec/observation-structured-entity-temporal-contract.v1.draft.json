@@ -34,30 +34,32 @@
         "entities.board[].unit",
         "entities.bench[].unit"
       ],
-      "identity": "Composite physical identity is (engine_instance_id, episode_id, player_id, uuid). UnitInstance::uuid is deterministic within an Engine episode factory and may repeat after reset; never use the raw UUID without its enclosing Engine/episode/player scope.",
+      "identity": "Composite physical identity is (engine_match_id, uuid), where engine_match_id is the canonical scope derived from native engine_instance_id + episode_id. player_id is the current owner relation and is deliberately excluded from physical identity so ownership transfer does not mint a new unit.",
       "scope": [
-        "engine_instance_id",
-        "episode_id",
-        "player_id"
+        "engine_match_id"
       ],
       "domain": [
         "board",
         "bench"
       ],
       "relationships": [
-        "occupies one owned slot at a source sequence",
+        "occupies one owned board/bench slot at a source sequence",
+        "has a separately tracked current owner player_id",
         "groups by champion_id only for catalog/upgrade analysis",
         "has attached item relationships"
       ],
       "gaps": [
         "Unit.items currently contains catalog strings, not physical item-instance references.",
-        "UnitInstanceFactory::create() generates uuid from a seeded mt19937_64; TFTEngine::reset() reconstructs the factory from the same seed, repeating the first generated UUID across episodes.",
+        "UnitInstanceFactory::create() generates uuid from a seeded mt19937_64; TFTEngine::reset() reconstructs the factory from the same seed, so UUID values can repeat in a later episode.",
+        "TFTEngine::Impl owns a random engine_instance_id for its lifetime; it is copied into ResetResult/StepResult and AuditSnapshot and remains stable across reset.",
+        "episode_id increments on reset. The canonical Engine-episode scope is the composite of engine_instance_id and episode_id; the adapter has not yet emitted that composite as identity.engine_match_id.",
+        "The native per-player player_decision_sequences counters are emitted in ResetResult/StepResult and copied by the Python wrapper; the canonical Observation Schema identity envelope still needs to bind them as decision_sequence.",
         "UUID is exposed through diagnostic get_audit_snapshot(), not the PPO observation tensor/rollout.",
-        "Raw UUID is not globally unique and may repeat after reset; all joins must include engine_instance_id, episode_id and player_id from the enclosing snapshot envelope.",
-        "UUID is diagnostic/native snapshot identity and is not projected as a typed physical identity into PPO rollouts."
+        "Raw UUID is not globally unique; joins must include the canonical Engine-episode scope. player_id is ownership metadata, not physical identity.",
+        "UUID is not yet projected as a typed physical identity into PPO rollouts."
       ],
-      "native_identity_candidate": "UnitInstance::uuid, valid only within the composite Engine/episode/player envelope",
-      "identity_status": "native_observed_scoped"
+      "native_identity_candidate": "UnitInstance::uuid, valid only within the canonical engine_match_id derived from engine_instance_id + episode_id",
+      "identity_status": "native_observed_scoped_adapter_pending"
     },
     {
       "kind": "champion_catalog_entry",
