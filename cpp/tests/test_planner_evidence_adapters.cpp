@@ -10,12 +10,17 @@ using namespace tft::composition_intelligence;
 void economy_test(){
  tft::strategy::StrategicSharedContext c;c.player_id=4;c.round=12;c.gold=38;c.level=7;c.xp=4;c.xp_to_next=8;
  c.interest_if_resolved_now=3;c.projected_next_round_income=8;c.win_streak=2;c.alive=true;
+ c.evidence.gold=true;c.evidence.level=true;c.evidence.xp=true;c.evidence.xp_to_next=true;
+ c.evidence.interest_if_resolved_now=true;c.evidence.streaks=true;
  tft::strategy::EconomicControlDecision d;d.shadow_only=true;d.posture=tft::strategy::EconomicPosture::InvestExperience;
  d.reason=tft::strategy::StrategicReason::ProgressionTiming;d.survival_pressure=.2;d.board_pressure=.4;
  d.economy_pressure=.7;d.confidence=.8;
  auto e=PlannerEvidenceAdapters::economic(c,d,12,4);
  assert(e.metadata.available&&e.metadata.quality==EvidenceQuality::Valid&&e.gold==38&&e.xp_to_next==8);
  assert(e.posture==tft::strategy::EconomicPosture::InvestExperience);
+ assert(e.gold_available&&e.level_available&&e.xp_available&&e.xp_to_next_available);
+ assert(e.interest_available&&!e.projected_income_available);
+ assert(e.win_streak_available);
  assert(e.buy_experience_opportunity_cost==tft::strategy::action_opportunity_cost::kBuyExperience);
  auto stale=PlannerEvidenceAdapters::economic(c,d,13,4);
  assert(!stale.metadata.available&&stale.metadata.quality==EvidenceQuality::Stale);
