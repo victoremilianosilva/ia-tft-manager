@@ -392,6 +392,12 @@ if(BUILD_TESTING)
     enable_tft_test_assertions(test_strategic_action_executor)
     add_test(NAME strategic_action_executor COMMAND test_strategic_action_executor)
 
+    add_executable(test_strategic_action_candidate_builder tests/test_strategic_action_candidate_builder.cpp)
+    configure_tft_module(test_strategic_action_candidate_builder)
+    target_link_libraries(test_strategic_action_candidate_builder PRIVATE nlohmann_json::nlohmann_json)
+    enable_tft_test_assertions(test_strategic_action_candidate_builder)
+    add_test(NAME strategic_action_candidate_builder COMMAND test_strategic_action_candidate_builder)
+
     add_executable(test_strategic_position_planner tests/test_strategic_position_planner.cpp)
     configure_tft_module(test_strategic_position_planner)
     target_link_libraries(test_strategic_position_planner PRIVATE nlohmann_json::nlohmann_json)
