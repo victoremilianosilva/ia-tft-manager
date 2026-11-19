@@ -162,6 +162,8 @@ struct StrategicEvidenceAvailability {
     bool estimated_incoming_damage{false};
     bool elimination_risk{false};
     bool progression_plan{false};
+    // True only when a native direction candidate was actually matched to the commitment.
+    bool current_direction{false};
 };
 
 struct StrategicSharedContext {
