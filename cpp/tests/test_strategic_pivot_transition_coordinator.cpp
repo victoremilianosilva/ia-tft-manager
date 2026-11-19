@@ -76,21 +76,21 @@ PivotFeasibilityResult viable_result(const PivotFeasibilityInput& input) {
     return value;
 }
 
-StrategicPivotTransitionCoordinator initialized_coordinator(
-    PivotConfirmationPolicy policy = {3, 60.0, 5}
+void initialize_coordinator(
+    StrategicPivotTransitionCoordinator& coordinator
 ) {
-    StrategicPivotTransitionCoordinator coordinator(policy);
     const auto result = coordinator.initialize(
         make_composition("composition-a", 1,
             {{1, UnitRole::MainCarry, true, 100},
              {2, UnitRole::Frontline, true, 80}}),
         make_direction("direction-a-v1", "composition-a", 1, 1));
     assert(result.status == PivotConfirmationStatus::Initialized);
-    return coordinator;
 }
 
 void confirms_and_synchronizes_both_identities_atomically() {
-    auto coordinator = initialized_coordinator();
+    ActiveCompositionManager manager;
+    StrategicPivotTransitionCoordinator coordinator(manager);
+    initialize_coordinator(coordinator);
     const auto pivot = make_pivot();
     const auto input = make_feasibility_input();
     const auto destination = make_composition("composition-b", 3,
@@ -125,7 +125,9 @@ void confirms_and_synchronizes_both_identities_atomically() {
 }
 
 void insufficient_or_rejected_evaluation_never_changes_direction() {
-    auto coordinator = initialized_coordinator();
+    ActiveCompositionManager manager;
+    StrategicPivotTransitionCoordinator coordinator(manager);
+    initialize_coordinator(coordinator);
     const auto pivot = make_pivot();
     const auto input = make_feasibility_input();
     const auto destination = make_composition("composition-b", 3,
@@ -147,7 +149,9 @@ void insufficient_or_rejected_evaluation_never_changes_direction() {
 }
 
 void mismatched_or_invalidated_source_is_rejected_without_mutation() {
-    auto coordinator = initialized_coordinator();
+    ActiveCompositionManager manager;
+    StrategicPivotTransitionCoordinator coordinator(manager);
+    initialize_coordinator(coordinator);
     auto pivot = make_pivot();
     pivot.source_composition_version = 9; // stale source version
     const auto result = coordinator.observe_and_confirm(
@@ -160,7 +164,9 @@ void mismatched_or_invalidated_source_is_rejected_without_mutation() {
 }
 
 void stale_feasibility_result_cannot_confirm_a_different_candidate() {
-    auto coordinator = initialized_coordinator();
+    ActiveCompositionManager manager;
+    StrategicPivotTransitionCoordinator coordinator(manager);
+    initialize_coordinator(coordinator);
     const auto pivot = make_pivot();
     const auto input = make_feasibility_input();
     auto stale_result = viable_result(input);
@@ -177,7 +183,9 @@ void stale_feasibility_result_cannot_confirm_a_different_candidate() {
 }
 
 void invalidated_candidate_is_cleared_without_changing_active_direction() {
-    auto coordinator = initialized_coordinator();
+    ActiveCompositionManager manager;
+    StrategicPivotTransitionCoordinator coordinator(manager);
+    initialize_coordinator(coordinator);
     auto pivot = make_pivot();
     const auto destination = make_composition("composition-b", 3,
         {{3, UnitRole::MainCarry, true, 100}});
@@ -198,7 +206,8 @@ void invalidated_candidate_is_cleared_without_changing_active_direction() {
 }
 
 void rejects_incomplete_initial_state() {
-    StrategicPivotTransitionCoordinator coordinator;
+    ActiveCompositionManager manager;
+    StrategicPivotTransitionCoordinator coordinator(manager);
     auto invalid_direction = make_direction("direction-a-v1", "composition-a", 99, 1);
     const auto result = coordinator.initialize(
         make_composition("composition-a", 1, {{1, UnitRole::MainCarry, true, 100}}),
@@ -208,7 +217,9 @@ void rejects_incomplete_initial_state() {
 }
 
 void destination_conflict_and_out_of_order_updates_are_rejected() {
-    auto coordinator = initialized_coordinator();
+    ActiveCompositionManager manager;
+    StrategicPivotTransitionCoordinator coordinator(manager);
+    initialize_coordinator(coordinator);
     auto pivot = make_pivot();
     auto input = make_feasibility_input();
     input.candidate_composition_identity = "some-other-composition";
@@ -233,7 +244,8 @@ void destination_conflict_and_out_of_order_updates_are_rejected() {
 }
 
 void cooldown_prevents_rapid_reverse_pivots() {
-    StrategicPivotTransitionCoordinator coordinator({1, 60.0, 5});
+    ActiveCompositionManager manager;
+    StrategicPivotTransitionCoordinator coordinator(manager, {1, 60.0, 5});
     assert(coordinator.initialize(
         make_composition("composition-a", 1, {{1, UnitRole::MainCarry, true, 100}}),
         make_direction("direction-a-v1", "composition-a", 1, 1)
