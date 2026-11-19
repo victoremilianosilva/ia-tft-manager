@@ -99,8 +99,6 @@ struct StrategicActionCandidate {
     bool available{true};
     // Physical parameters are tied to the source snapshot; -1 means absent.
     std::string candidate_id;
-    // Native physical instance identity for owned-unit actions; empty for shop/economy actions.
-    std::string source_unit_uuid;
     std::uint64_t source_sequence{0};
     std::int32_t shop_slot{-1};
     std::int32_t source_slot{-1};
@@ -113,6 +111,8 @@ struct StrategicActionCandidate {
     std::uint32_t evidence_horizon_rounds{0};
     double evidence_uncertainty{1.0}; // [0,1], not a probability of success
     bool lost_interest_evidence_available{false};
+    // Native physical instance identity for owned-unit actions; empty for shop/economy actions.
+    std::string source_unit_uuid;
 };
 
 struct ActionCandidateScore {
