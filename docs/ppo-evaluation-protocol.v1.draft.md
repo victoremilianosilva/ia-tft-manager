@@ -181,3 +181,17 @@ Evaluation manifests for the new PPO lineage must record the semantic projection
 Evaluation manifests should record the structured-entity/temporal contract identity and hash alongside schema, semantic consumer matrix, concrete projection, normalization, architecture, Action/Mask, reward and catalog identities. Replay and evaluation fixtures must preserve entity identity, ownership domains, completeness and temporal reset semantics. This is a documentation requirement, not proof of runtime coverage.
 
 The manifest path is `spec/observation-structured-entity-temporal-contract.v1.draft.json`; evaluation artifacts must bind its reviewed version/hash independently from the concrete tensor projection.
+
+## Executable evaluator controls — PR #497
+
+**Prior problem:** the paired evaluator used a fixed even/odd seat assignment and loaded checkpoint weights without validating their semantic Action/Mask, Reward, and semantic-observation contracts.
+
+**Technical rationale:** fixed seats retain seat-specific bias across the seed schedule, and tensor shape compatibility cannot establish semantic compatibility. Evaluation must validate checkpoint lineage before comparing outcomes.
+
+**Owner and boundaries:** economy_finetuning/paired_evaluator.py owns evaluation preflight and deterministic seat scheduling. action_contract.py, reward_contract.py, and semantic_observation.py remain canonical contract owners. Fine-tuning preserves source manifests rather than manufacturing missing contracts.
+
+**Contract and invariants:** each seed deterministically selects four tuned seats and the second lobby uses the exact complement. Checkpoints must validate Action/Mask and Reward manifests and, when semantic encoder weights exist, the semantic-state manifest against the loaded catalog. Legacy weights require the same explicit per-contract opt-ins used by the Trainer; the evaluator records validation status and semantic contract identity/hash.
+
+**Impacts:** paired evaluation scheduling, checkpoint preflight, fine-tuning artifact lineage, and evaluation provenance. No training, checkpoint promotion, optimizer resume, or policy mutation is performed by this PR.
+
+**Validation:** economy_finetuning/tests/test_paired_evaluator.py covers deterministic balanced seat rotation, exact mirror complement, valid contracts, incompatible contracts, and fail-closed missing manifests. Full protocol execution remains pending: train/validation/test split enforcement, paired-seed batches, confidence intervals, ablations, promotion/rollback thresholds, and immutable final benchmark artifacts are not implemented by this change.
