@@ -445,6 +445,11 @@ if(BUILD_TESTING)
         COMMAND test_strategic_planner
     )
 
+    add_executable(test_economic_controller tests/test_economic_controller.cpp)
+    configure_tft_module(test_economic_controller)
+    enable_tft_test_assertions(test_economic_controller)
+    add_test(NAME economic_controller COMMAND test_economic_controller)
+
     add_executable(test_initial_strategic_direction_discovery tests/test_initial_strategic_direction_discovery.cpp)
     configure_tft_module(test_initial_strategic_direction_discovery)
     enable_tft_test_assertions(test_initial_strategic_direction_discovery)
