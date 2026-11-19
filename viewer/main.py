@@ -1204,7 +1204,7 @@ class ViewerWindow(QMainWindow):
                 "champion_id": name,
                 "apiName": name,
                 "internal_id": internal_id,
-                "star": 1,
+                "star": int(entry.get("star", 0) or 0),
                 "cost": int(record.get("cost", 0) or 0),
                 "name": record.get("name") or name,
                 "traits": record.get("traits") or [],
