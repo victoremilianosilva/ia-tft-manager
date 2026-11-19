@@ -1,3 +1,4 @@
+import copy
 import hashlib\nimport json\n"""Regression tests for deterministic checkpoint evaluation helpers.
 
 These tests avoid training and real checkpoint files. They validate action/mask
