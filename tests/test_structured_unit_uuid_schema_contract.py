@@ -23,13 +23,15 @@ def test_structured_unit_identity_uses_native_uuid_and_composite_scope():
     assert "instance_id" not in role["properties"]
 
 
-def test_unit_identity_manifest_matches_native_engine_episode_player_envelope():
+def test_unit_identity_manifest_matches_native_engine_episode_scope():
     manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
     unit = next(entity for entity in manifest["entities"] if entity["kind"] == "unit_instance")
-    assert unit["identity_status"] == "native_observed_scoped"
-    assert unit["scope"] == ["engine_instance_id", "episode_id", "player_id"]
+    assert unit["identity_status"] == "native_observed_scoped_adapter_pending"
+    assert unit["scope"] == ["engine_match_id"]
     assert "UnitInstance::uuid" in unit["native_identity_candidate"]
-    assert "never use the raw UUID" in unit["identity"]
+    assert "engine_instance_id + episode_id" in unit["native_identity_candidate"]
+    assert "player_id is the current owner relation" in unit["identity"]
+    assert "never be joined without the Engine-episode scope" in " ".join(unit["gaps"])
 
     coverage = COVERAGE_PATH.read_text(encoding="utf-8")
     assert "entities.board[].unit.uuid" in coverage
