@@ -52,7 +52,7 @@ struct ContextualActionEvaluation {
     bool economy_evidence_consumed{false};
     bool board_evidence_consumed{false};
     bool item_evidence_consumed{false};
-    strategy::StrategicActionKind recommended_action{strategy::StrategicActionKind::Hold};
+    strategy::StrategicActionKind recommended_action{strategy::StrategicActionKind::None};
     std::int32_t recommended_champion_id{-1};
     double confidence_not_probability{0.0};
     std::string rationale{"no_positive_contextual_candidate"};
