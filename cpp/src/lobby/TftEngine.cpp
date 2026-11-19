@@ -3270,6 +3270,14 @@ struct TFTEngine::Impl {
             strategic_context.win_streak = economy.win_streak;
             strategic_context.loss_streak = economy.loss_streak;
             strategic_context.board_power = power;
+            strategic_context.evidence.hp = true;
+            strategic_context.evidence.gold = true;
+            strategic_context.evidence.level = true;
+            strategic_context.evidence.xp = true;
+            strategic_context.evidence.xp_to_next = true;
+            strategic_context.evidence.interest_if_resolved_now = true;
+            strategic_context.evidence.streaks = true;
+            strategic_context.evidence.board_power = true;
             strategic_context.current_composition_direction =
                 strategic_planner_commitments[i].composition_direction;
             strategic_context.current_composition_focus.clear();
@@ -3309,6 +3317,14 @@ struct TFTEngine::Impl {
             strategic_context.relative_board_power =
                 strategic_context.lobby_average_board_power > 0.0
                     ? power / strategic_context.lobby_average_board_power : 1.0;
+            strategic_context.evidence.relative_board_power =
+                lobby_alive_count > 0 && strategic_context.lobby_average_board_power > 0.0;
+            // These projections have no authoritative producer in this cycle.
+            // Keep their availability false instead of treating numeric defaults as evidence.
+            strategic_context.evidence.projected_next_round_income = false;
+            strategic_context.evidence.estimated_incoming_damage = false;
+            strategic_context.evidence.elimination_risk = false;
+            strategic_context.evidence.progression_plan = false;
 
             const auto append_owned_candidate = [&](const UnitInstance& unit,
                                                     bool on_board) {
