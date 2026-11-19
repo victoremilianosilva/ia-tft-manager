@@ -14,6 +14,7 @@
 #include <limits>
 #include <stdexcept>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 void require(bool condition, const char* message) {
@@ -61,6 +62,43 @@ int main(int argc, char** argv) {
 
         tft::ChampionCatalog catalog(json_path);
         tft::TFTEngine engine(12345, json_path);
+
+        // Physical UnitInstance UUIDs are unique across the whole Engine
+        // episode, while the Engine-instance + episode envelope scopes them.
+        const auto identity_before_reset = engine.get_audit_snapshot();
+        const auto engine_instance_before_reset = engine.engine_instance_id();
+        require(identity_before_reset.engine_instance_id == engine_instance_before_reset,
+                "AuditSnapshot perdeu a identidade da instância da Engine.");
+        require(!identity_before_reset.players[0].bench[0].uuid.empty(),
+                "Unidade inicial do banco não recebeu UUID.");
+        std::unordered_set<std::string> episode_unit_ids;
+        for (const auto& player : identity_before_reset.players) {
+            for (const auto& unit : player.board) {
+                if (unit.occupied) {
+                    require(!unit.uuid.empty(), "Unidade do tabuleiro sem UUID.");
+                    require(episode_unit_ids.insert(unit.uuid).second,
+                            "UUID físico duplicado entre jogadores/tabuleiro/banco no mesmo episódio.");
+                }
+            }
+            for (const auto& unit : player.bench) {
+                if (unit.occupied) {
+                    require(!unit.uuid.empty(), "Unidade do banco sem UUID.");
+                    require(episode_unit_ids.insert(unit.uuid).second,
+                            "UUID físico duplicado entre jogadores/tabuleiro/banco no mesmo episódio.");
+                }
+            }
+        }
+        const auto initial_episode_id = identity_before_reset.episode_id;
+        const auto initial_owned_uuid = identity_before_reset.players[0].bench[0].uuid;
+
+        // Same seed may reproduce the factory UUID stream; a different
+        // Engine-instance scope must still make the physical identity distinct.
+        tft::TFTEngine independent_engine(12345, json_path);
+        const auto independent_identity = independent_engine.get_audit_snapshot();
+        require(independent_identity.engine_instance_id != engine_instance_before_reset,
+                "Duas instâncias independentes receberam o mesmo engine_instance_id.");
+        require(independent_identity.players[0].bench[0].uuid == initial_owned_uuid,
+                "O fixture deixou de reproduzir o UUID da fábrica com seed idêntica.");
 
         const auto initial_state = engine.get_public_state();
         const auto initial_observations = engine.get_observations();
@@ -237,6 +275,15 @@ int main(int argc, char** argv) {
         // O reset devolve as ofertas antigas e gera lojas novas sem
         // duplicar nem perder cópias do pool compartilhado.
         engine.reset(12345);
+        const auto identity_after_reset = engine.get_audit_snapshot();
+        require(identity_after_reset.engine_instance_id == engine_instance_before_reset,
+                "Reset alterou a identidade da instância da Engine.");
+        require(identity_after_reset.episode_id > initial_episode_id,
+                "Reset não avançou a identidade do episódio.");
+        require(identity_after_reset.players[0].bench[0].uuid == initial_owned_uuid,
+                "O teste não confirmou a repetição esperada do UUID da fábrica após reset com mesmo seed.");
+        require(identity_after_reset.engine_instance_id != independent_identity.engine_instance_id,
+                "Escopos de Engine independentes foram confundidos após reset.");
         const auto total_after_reset = engine.pool_total_available();
         require(total_after_reset == total_with_initial_shops,
                 "Reset mudou o estoque líquido das lojas iniciais.");
