@@ -225,3 +225,12 @@ Replay fixtures and artifacts should preserve the entity/temporal semantics in t
 **Impacts:** native Shadow diagnostics, Python wrapper, replay tests, and reset lifecycle. No new schema or replay owner is introduced.
 
 **Validation:** tests/test_shadow_multiround_replay.py adds deterministic enabled/disabled and reset coverage. Full scenario coverage remains open: buy/upgrade/pivot economic consequences, stale same-round sequence rejection, contradictory evidence, outcome correlation, and all candidate/evaluator branches are not yet proven by this PASS-only replay. The replay does not execute Shadow recommendations in the game.
+
+
+## Delayed outcome correlation — PR6
+
+The native runtime now samples a per-player outcome baseline within an Engine episode and emits an outcome observation on the first Shadow cycle of a later round. The observation contains the observed round, placement when available, HP delta, and board-score delta. The board-score delta is explicitly annotated as a later-state comparison that may include intervening board changes; it is not labeled as a combat-only effect or causal impact.
+
+CompositionDiagnosticRecorder binds that later observation to the immediately preceding recommendation captured for the same match/player recorder, including recommendation round, recorder sequence, composition identity and version. A correlation is emitted only when the recommendation is from an earlier round and has the same match/player identity. Missing placement remains null rather than becoming a fabricated rank. All outcome fields remain diagnostic-only and are not consumed by PPO, reward, masks, action selection, or game execution.
+
+The deterministic native replay now requires at least one valid delayed recommendation/outcome link in addition to the existing episode reset, feature-flag, sequence, and read-only assertions. The replay still uses PASS-only preparation; it does not yet prove purchase/upgrade/pivot consequence coverage, stale same-round rejection across every producer, or a varied candidate/evaluator matrix. Those scenarios remain explicit acceptance work rather than being represented as complete by this outcome link.
