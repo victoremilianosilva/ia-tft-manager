@@ -59,6 +59,9 @@ void builder_emits_snapshot_bound_physical_candidates() {
     context.gold = 20;
     context.level = 5;
     context.xp_to_next = 4;
+    context.evidence.gold = true;
+    context.evidence.level = true;
+    context.evidence.xp_to_next = true;
 
     StrategicActionNativeSnapshot native;
     native.match_id = 77;
