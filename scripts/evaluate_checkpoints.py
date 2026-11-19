@@ -116,7 +116,8 @@ def run_match(factory, baseline, candidate, candidate_slots, seed, device, max_s
             raise RuntimeError("Partida terminou sem ranking completo; não vou inferir rankings ausentes.")
         return [{"seed": int(seed), "player_id": player_id,
                  "version": "candidate" if player_id in candidate_slots else "baseline",
-                 "placement": ranking[player_id], "win": int(ranking[player_id] == 1),\n                 "candidate_slots": sorted(candidate_slots)}
+                 "placement": ranking[player_id], "win": int(ranking[player_id] == 1),
+                 "candidate_slots": sorted(candidate_slots)}
                 for player_id in range(8)]
     finally:
         close = getattr(lobby, "close", None)
