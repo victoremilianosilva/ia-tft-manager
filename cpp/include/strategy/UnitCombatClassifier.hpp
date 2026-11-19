@@ -11,7 +11,7 @@ struct UnitCombatSignals {
  double attack_damage{0.0}, attack_speed{0.0}, ability_power{0.0};
  double item_health{0.0}, item_armor{0.0}, item_magic_resist{0.0};
  double item_attack_damage{0.0}, item_attack_speed{0.0}, item_ability_power{0.0}, item_crit{0.0};
- bool planned_main_carry{false}; std::string ability_text;
+ std::string ability_text;
 };
 struct UnitCombatClassification {
  UnitArchetype archetype{UnitArchetype::FLEXIBLE}; int positioning_role{3};
@@ -32,7 +32,7 @@ public:
   const bool magic_text=contains(text,{"magic damage","dano mágico","dano magico","scaleap","ability power","poder de habilidade"});
   const double physical=(phys_text?2.0:0.0)+std::min(2.0,ad/50.0)+std::min(1.5,as*1.2)+std::min(1.0,s.item_crit*2.0);
   const double magical=(magic_text?2.0:0.0)+std::min(2.5,ap/40.0);
-  if(range>=3.0&&(s.planned_main_carry||physical>=1.5||magical>=1.5)) {
+  if(range>=3.0&&(physical>=1.5||magical>=1.5)) {
    if(magical>physical+0.25) return {UnitArchetype::MAGIC_CARRY,1,false,true,std::min(0.98,0.62+(magical-physical)*0.08)};
    if(physical>magical+0.25) return {UnitArchetype::PHYSICAL_CARRY,1,true,false,std::min(0.98,0.62+(physical-magical)*0.08)};
   }
