@@ -202,6 +202,7 @@ void shadow_runtime_isolates_players_and_resets_its_own_direction_history() {
 void pivot_evaluation_does_not_mutate_then_confirms_synchronized_state() {
     ActiveCompositionManager active_composition;
     StrategicCommitment commitment;
+    commitment.composition_direction = "Shepherd";
     UnifiedStrategicStateMachine machine(active_composition, commitment, {3, 60.0, 5});
     StrategicCycleInput input;
     input.active_composition = ActiveComposition{composition(
@@ -210,6 +211,8 @@ void pivot_evaluation_does_not_mutate_then_confirms_synchronized_state() {
          {2, UnitRole::Frontline, true, 80}}), 1};
     auto result = machine.refresh(input);
     assert(result.phase == StrategicCyclePhase::CompositionActive);
+    assert(result.anchors.direction_anchor.direction == "Shepherd");
+    assert(result.anchors.direction_anchor.composition_identity == "composition-current");
 
     input.active_composition.reset();
     input.pivot_candidate = pivot_candidate();
