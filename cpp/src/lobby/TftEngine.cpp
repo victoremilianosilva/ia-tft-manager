@@ -1690,7 +1690,7 @@ struct TFTEngine::Impl {
                         features[4 + role] = 1.0f;
                         features[9] = on_board && row <= 1 ? 1.0f : 0.0f;
                         features[10] = on_board && row >= 2 ? 1.0f : 0.0f;
-                        features[11] = static_cast<float>(std::clamp(fit / 32.5, 0.0, 1.0));
+                        features[11] = static_cast<float>(std::clamp(fit, 0.0, 1.0));
                         features[12] = static_cast<float>(std::clamp(
                             (combat.attack_damage > 0.0 ? combat.attack_damage : stats.attack_damage) / 200.0, 0.0, 1.0));
                         features[13] = static_cast<float>(std::clamp(
