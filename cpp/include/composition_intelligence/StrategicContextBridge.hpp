@@ -68,7 +68,7 @@ public:
         const bool has_active_composition=active;
         const auto set=[](auto& dst,auto value,ContextValueOrigin origin,const char* source,const char* reason){dst.value=std::move(value);dst.origin=origin;dst.quality=ContextBridgeQuality::Valid;dst.source=source;dst.reason=reason;};
         const auto missing=[](auto& dst,const char* source,const char* reason){dst.value.reset();dst.quality=ContextBridgeQuality::Missing;dst.source=source;dst.reason=reason;};
-        const auto set_if=[](auto& dst,bool available,auto value,ContextValueOrigin origin,const char* source,const char* reason,const char* missing_reason){
+        const auto set_if=[&](auto& dst,bool available,auto value,ContextValueOrigin origin,const char* source,const char* reason,const char* missing_reason){
             if(available) set(dst,std::move(value),origin,source,reason);
             else missing(dst,source,missing_reason);
         };
