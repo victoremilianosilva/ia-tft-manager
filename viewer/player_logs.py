@@ -330,12 +330,16 @@ class PlayerJsonLogWriter:
 
     def _player_snapshot(self, audit: dict, public: dict) -> dict:
         audit, public = audit or {}, public or {}
-        # Native get_audit_snapshot() flattens StrategyInfo fields onto each
-        # audit-player record. Older adapters wrapped them in strategy_info.
-        # Normalize both contracts here so the persisted shadow snapshot is complete.
+        # StrategyInfo is retained only when an older adapter explicitly
+        # supplies it. Canonical Shadow diagnostics are persisted separately.
         strategy_info = audit.get("strategy_info")
         if not isinstance(strategy_info, dict):
-            strategy_info = audit
+            legacy_keys = {
+                "strategy_name", "strategy_id", "composition_direction",
+                "composition_focus", "planned_units", "planned_unit_ids",
+                "planned_main_carry_id", "core_traits", "active_traits",
+            }
+            strategy_info = audit if any(key in audit for key in legacy_keys) else {}
         return {
             "player_id": int(public.get("player_id", audit.get("player_id", -1))),
             "hp": public.get("hp"), "gold": public.get("gold", audit.get("gold")),
