@@ -144,6 +144,20 @@ void explicit_hold_is_selected_when_all_actions_score_below_zero() {
     assert(result.candidates[1].selected);
 }
 
+void empty_candidate_set_is_not_a_hold_recommendation() {
+    StrategicSharedContext context;
+    context.alive = true;
+    context.player_id = 0;
+    context.round = 8;
+    const auto result = ContextualActionEvaluator{}.evaluate(
+        active(), priorities(), lineup(), context, nullptr, 77);
+    assert(!result.stale);
+    assert(result.candidates.empty());
+    assert(result.recommended_action == StrategicActionKind::None);
+    assert(result.confidence_not_probability == 0.0);
+    assert(result.rationale == "no_candidates");
+}
+
 void json_is_versioned_and_shadow_only() {
     StrategicSharedContext context; context.alive=true; context.player_id=0; context.round=8;
     const auto result = ContextualActionEvaluator{}.evaluate(
@@ -162,6 +176,7 @@ int main() {
     invalid_candidates_and_equipped_sales_are_rejected();
     contextual_sell_rejects_pairs_and_existing_star_progress();
     explicit_hold_is_selected_when_all_actions_score_below_zero();
+    empty_candidate_set_is_not_a_hold_recommendation();
     json_is_versioned_and_shadow_only();
     std::cout << "ContextualActionEvaluator tests passed\\n";
 }
