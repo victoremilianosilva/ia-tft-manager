@@ -79,6 +79,8 @@ void builder_emits_snapshot_bound_physical_candidates() {
     native.shop_champion_ids[0] = 10;
     native.bench_champion_ids[0] = 20;
     native.bench_champion_ids[1] = 30;
+    native.bench_unit_uuids[0] = "unit-20";
+    native.bench_unit_uuids[1] = "unit-30";
     enables(native.masks, decision::ActionType::PASS);
     enables(native.masks, decision::ActionType::BUY);
     enables(native.masks, decision::ActionType::BUY_XP);
@@ -120,13 +122,16 @@ void builder_emits_snapshot_bound_physical_candidates() {
     const auto sell = find(StrategicActionKind::SellUnit, 30);
     assert(sell != result.candidates.end());
     assert(sell->source_is_bench && sell->source_slot == 1);
+    assert(sell->source_unit_uuid == "unit-30");
     assert(sell->direct_gold_cost == -1.0);
 
     const auto deploy = find(StrategicActionKind::DeployOrMove, 20);
     assert(deploy != result.candidates.end());
     assert(deploy->source_is_bench && deploy->source_slot == 0);
+    assert(deploy->source_unit_uuid == "unit-20");
     assert(deploy->target_board_slot >= 0);
     assert(deploy->candidate_id.find(std::to_string(deploy->target_board_slot)) != std::string::npos);
+    assert(deploy->candidate_id.find("candidate-builder") != std::string::npos);
     assert(deploy->evidence_source.find("StrategicPositionPlanner") != std::string::npos);
     assert(!native.requested_move_targets.empty());
 
