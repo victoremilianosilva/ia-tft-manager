@@ -133,6 +133,8 @@ def test_rollout_replay_keeps_semantic_identity_and_hash_with_the_same_row():
         "numeric": torch.zeros((1, SEMANTIC_NUMERIC_DIM), dtype=torch.float32),
         "champion_ids": torch.zeros((1, SEMANTIC_ENTITY_SLOTS), dtype=torch.long),
         "identities": [identity], "hashes": [digest],
+        "contract_id": "tft.ppo.semantic-native-state.v2",
+        "contract_hash": "b" * 64,
     }
     actions = torch.tensor([action], dtype=torch.long)
     buffer.add(
