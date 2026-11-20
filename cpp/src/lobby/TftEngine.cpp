@@ -2323,6 +2323,129 @@ struct TFTEngine::Impl {
             won, damage_dealt, damage_taken, enemy_alive, own_alive);
     }
 
+    template <typename Economy, typename Shop, typename Pool, typename TraitMilestones>
+    void refresh_native_strategic_runtime(
+        std::size_t i, std::int32_t current_round,
+        const Economy& economy,
+        const strategy::StrategicSharedContext& strategic_context,
+        const std::unordered_map<std::int32_t, strategy::NativeCompositionOwnedUnit>&
+            strategic_native_owned,
+        const Shop& strategic_shop, const Pool& pool,
+        const TraitMilestones& trait_milestones) {
+        // Native strategic lifecycle is independent of the optional
+        // Composition Intelligence diagnostics/Viewer pipeline. It consumes
+        // the canonical per-player ActiveCompositionManager after that
+        // optional pipeline has had its chance to publish this round.
+        if (strategic_shadow_runtimes[i]) {
+            try {
+                auto& native_runtime = *strategic_shadow_runtimes[i];
+                auto& active_manager = composition_intelligence_players[i].active;
+                const auto native_active = active_manager.current();
+        
+                if (native_active) {
+                    const auto& last_identity =
+                        strategic_shadow_external_active_identity[i];
+                    const auto last_version =
+                        strategic_shadow_external_active_version[i];
+                    if (last_identity != native_active->candidate.composition_id ||
+                        last_version != native_active->version) {
+                        native_runtime.reset_machine();
+                        strategic_shadow_external_active_identity[i] =
+                            native_active->candidate.composition_id;
+                        strategic_shadow_external_active_version[i] =
+                            native_active->version;
+                    }
+                }
+        
+                const auto& tracked_active =
+                    native_runtime.machine().active_composition();
+                const auto* source_active = tracked_active
+                    ? &*tracked_active : (native_active ? &*native_active : nullptr);
+        
+                strategy::StrategicCycleInput native_input;
+                native_input.evaluation_sequence = strategic_context_sequences[i];
+                if (!tracked_active && native_active)
+                    native_input.active_composition = native_active;
+        
+                auto& discovery = native_input.exploration;
+                discovery.round = static_cast<std::uint32_t>(current_round);
+                discovery.gold_available = economy.gold;
+                discovery.composition_defined = source_active != nullptr;
+                discovery.active_composition_identity = source_active
+                    ? source_active->candidate.composition_id : std::string{};
+                discovery.previous_direction =
+                    strategic_planner_commitments[i].composition_direction;
+        
+                std::map<std::int32_t, strategy::DirectionDiscoveryUnit> discovery_units;
+                for (const auto& owned : strategic_context.owned_units) {
+                    auto& unit = discovery_units[owned.champion_id];
+                    unit.champion_id = owned.champion_id;
+                    unit.cost = owned.cost;
+                    unit.copies_owned = owned.copies_owned;
+                    unit.star = owned.star;
+                    unit.copies_by_star = owned.copies_by_star;
+                    unit.on_board = owned.on_board;
+                    unit.on_bench = owned.on_bench;
+                    unit.board_contribution = owned.board_contribution;
+                    unit.traits = owned.traits;
+                    const auto* definition = catalog->find_by_id(owned.champion_id);
+                    unit.carry_potential = definition &&
+                        definition->combat_profile.is_carry;
+                    unit.pool_remaining = pool
+                        ? pool->available(owned.champion_id) : -1;
+                }
+                if (strategic_shop) {
+                    for (const auto& offer : strategic_shop->offers()) {
+                        if (!offer) continue;
+                        const auto* definition = catalog->find_by_id(
+                            offer->champion_internal_id);
+                        if (!definition) continue;
+                        auto& unit = discovery_units[definition->internal_id];
+                        unit.champion_id = definition->internal_id;
+                        unit.cost = definition->cost;
+                        const auto owned = strategic_native_owned.find(
+                            definition->internal_id);
+                        unit.copies_owned = owned != strategic_native_owned.end()
+                            ? owned->second.copies : 0;
+                        unit.in_shop = true;
+                        unit.traits = definition->traits;
+                        unit.carry_potential = definition->combat_profile.is_carry;
+                        unit.pool_remaining = pool
+                            ? pool->available(definition->internal_id) : -1;
+                    }
+                }
+                discovery.units.reserve(discovery_units.size());
+                for (const auto& [id, unit] : discovery_units) {
+                    (void)id;
+                    discovery.units.push_back(unit);
+                }
+                for (const auto& [trait, milestones] : trait_milestones) {
+                    if (milestones.empty()) continue;
+                    const auto first = std::min_element(
+                        milestones.begin(), milestones.end());
+                    if (first != milestones.end() && *first > 0)
+                        discovery.trait_thresholds.push_back({trait, *first});
+                }
+        
+                const strategy::StrategicCycleAuditContext native_audit_context{
+                    episode_id, static_cast<std::int32_t>(i),
+                    static_cast<std::uint32_t>(current_round)
+                };
+                const auto native_result =
+                    native_runtime.refresh(native_audit_context, native_input);
+                if (const auto& committed = active_manager.current()) {
+                    strategic_shadow_external_active_identity[i] =
+                        committed->candidate.composition_id;
+                    strategic_shadow_external_active_version[i] =
+                        committed->version;
+                }
+                (void)native_result;
+            } catch (...) {
+                // Native strategic diagnostics are isolated from PPO/game flow.
+            }
+        }
+    }
+
     void update_strategy(std::size_t i) {
         auto& strategy_snapshot = player_envs[i].strategy;
         StrategyInfo info = strategy_snapshot.value_or(StrategyInfo{});
@@ -4149,118 +4272,10 @@ struct TFTEngine::Impl {
             }
 
 
-            // Native strategic lifecycle is independent of the optional
-            // Composition Intelligence diagnostics/Viewer pipeline. It consumes
-            // the canonical per-player ActiveCompositionManager after that
-            // optional pipeline has had its chance to publish this round.
-            if (strategic_shadow_runtimes[i]) {
-                try {
-                    auto& native_runtime = *strategic_shadow_runtimes[i];
-                    auto& active_manager = composition_intelligence_players[i].active;
-                    const auto native_active = active_manager.current();
-
-                    if (native_active) {
-                        const auto& last_identity =
-                            strategic_shadow_external_active_identity[i];
-                        const auto last_version =
-                            strategic_shadow_external_active_version[i];
-                        if (last_identity != native_active->candidate.composition_id ||
-                            last_version != native_active->version) {
-                            native_runtime.reset_machine();
-                            strategic_shadow_external_active_identity[i] =
-                                native_active->candidate.composition_id;
-                            strategic_shadow_external_active_version[i] =
-                                native_active->version;
-                        }
-                    }
-
-                    const auto& tracked_active =
-                        native_runtime.machine().active_composition();
-                    const auto* source_active = tracked_active
-                        ? &*tracked_active : (native_active ? &*native_active : nullptr);
-
-                    strategy::StrategicCycleInput native_input;
-                    native_input.evaluation_sequence = strategic_context_sequences[i];
-                    if (!tracked_active && native_active)
-                        native_input.active_composition = native_active;
-
-                    auto& discovery = native_input.exploration;
-                    discovery.round = static_cast<std::uint32_t>(current_round);
-                    discovery.gold_available = economy.gold;
-                    discovery.composition_defined = source_active != nullptr;
-                    discovery.active_composition_identity = source_active
-                        ? source_active->candidate.composition_id : std::string{};
-                    discovery.previous_direction =
-                        strategic_planner_commitments[i].composition_direction;
-
-                    std::map<std::int32_t, strategy::DirectionDiscoveryUnit> discovery_units;
-                    for (const auto& owned : strategic_context.owned_units) {
-                        auto& unit = discovery_units[owned.champion_id];
-                        unit.champion_id = owned.champion_id;
-                        unit.cost = owned.cost;
-                        unit.copies_owned = owned.copies_owned;
-                        unit.star = owned.star;
-                        unit.copies_by_star = owned.copies_by_star;
-                        unit.on_board = owned.on_board;
-                        unit.on_bench = owned.on_bench;
-                        unit.board_contribution = owned.board_contribution;
-                        unit.traits = owned.traits;
-                        const auto* definition = catalog->find_by_id(owned.champion_id);
-                        unit.carry_potential = definition &&
-                            definition->combat_profile.is_carry;
-                        unit.pool_remaining = pool
-                            ? pool->available(owned.champion_id) : -1;
-                    }
-                    if (strategic_shop) {
-                        for (const auto& offer : strategic_shop->offers()) {
-                            if (!offer) continue;
-                            const auto* definition = catalog->find_by_id(
-                                offer->champion_internal_id);
-                            if (!definition) continue;
-                            auto& unit = discovery_units[definition->internal_id];
-                            unit.champion_id = definition->internal_id;
-                            unit.cost = definition->cost;
-                            const auto owned = strategic_native_owned.find(
-                                definition->internal_id);
-                            unit.copies_owned = owned != strategic_native_owned.end()
-                                ? owned->second.copies : 0;
-                            unit.in_shop = true;
-                            unit.traits = definition->traits;
-                            unit.carry_potential = definition->combat_profile.is_carry;
-                            unit.pool_remaining = pool
-                                ? pool->available(definition->internal_id) : -1;
-                        }
-                    }
-                    discovery.units.reserve(discovery_units.size());
-                    for (const auto& [id, unit] : discovery_units) {
-                        (void)id;
-                        discovery.units.push_back(unit);
-                    }
-                    for (const auto& [trait, milestones] : trait_milestones) {
-                        if (milestones.empty()) continue;
-                        const auto first = std::min_element(
-                            milestones.begin(), milestones.end());
-                        if (first != milestones.end() && *first > 0)
-                            discovery.trait_thresholds.push_back({trait, *first});
-                    }
-
-                    const strategy::StrategicCycleAuditContext native_audit_context{
-                        episode_id, static_cast<std::int32_t>(i),
-                        static_cast<std::uint32_t>(current_round)
-                    };
-                    const auto native_result =
-                        native_runtime.refresh(native_audit_context, native_input);
-                    if (const auto& committed = active_manager.current()) {
-                        strategic_shadow_external_active_identity[i] =
-                            committed->candidate.composition_id;
-                        strategic_shadow_external_active_version[i] =
-                            committed->version;
-                    }
-                    (void)native_result;
-                } catch (...) {
-                    // Native strategic diagnostics are isolated from PPO/game flow.
-                }
-            }
+            // The native owner refresh has its own lifecycle entry point.
+            refresh_native_strategic_runtime(
+                i, current_round, economy, strategic_context,
+                strategic_native_owned, strategic_shop, pool, trait_milestones);
 
             static const std::array<const char*, 7> economic_posture_names{
                 "ACCUMULATE_RESOURCES", "PRESERVE_WIN_STREAK",
