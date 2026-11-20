@@ -100,6 +100,10 @@ def test_policy_actions_returns_one_six_component_action_per_requested_index():
     semantic_state = {
         "numeric": torch.zeros((2, SEMANTIC_NUMERIC_DIM), dtype=torch.float32),
         "champion_ids": torch.zeros((2, SEMANTIC_ENTITY_SLOTS), dtype=torch.long),
+        "identities": [{"player_id": 1}, {"player_id": 3}],
+        "hashes": ["a" * 64, "b" * 64],
+        "contract_id": "tft.ppo.semantic-native-state.v2",
+        "contract_hash": "c" * 64,
     }
     result = policy_actions(
         _FakePolicy(),
