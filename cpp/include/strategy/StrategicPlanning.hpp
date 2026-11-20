@@ -275,6 +275,7 @@ struct EconomicControlDecision {
     bool sufficient_evidence{false};
     std::vector<std::string> evidence_used;
     std::vector<std::string> evidence_missing;
+    std::vector<std::string> evidence_invalid;
 };
 
 struct ActionEvaluation {
