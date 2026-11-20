@@ -125,9 +125,25 @@ def build_semantic_state_checkpoint_contract(catalog_map: Mapping[str, int]) -> 
     }
 
 
+def validate_semantic_state_checkpoint_integrity(manifest: Mapping) -> None:
+    """Validate an old semantic manifest's own hash before an explicit warm-start."""
+    if not isinstance(manifest, Mapping):
+        raise TypeError("semantic_state_contract must be a mapping")
+    if type(manifest.get("manifest_version")) is not int or manifest.get("manifest_version") != 1:
+        raise ValueError("semantic_state_contract manifest version is unsupported")
+    payload = manifest.get("contract")
+    if not isinstance(payload, Mapping):
+        raise TypeError("semantic_state_contract.contract must be a mapping")
+    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    expected_hash = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+    if manifest.get("sha256") != expected_hash:
+        raise ValueError("semantic_state_contract hash is invalid")
+
+
 def validate_semantic_state_checkpoint_contract(manifest: Mapping, catalog_map: Mapping[str, int]) -> None:
+    validate_semantic_state_checkpoint_integrity(manifest)
     expected = build_semantic_state_checkpoint_contract(catalog_map)
-    if not isinstance(manifest, Mapping) or dict(manifest) != expected:
+    if dict(manifest) != expected:
         raise ValueError("semantic_state_contract is incompatible with the native source/catalog projection")
 
 
