@@ -118,10 +118,10 @@ void early_pairs_create_a_cheap_unbound_direction() {
     auto cycle = machine.refresh(input);
     assert(cycle.phase == StrategicCyclePhase::Exploration);
     assert(!cycle.active_composition);
-    input.initial_composition_candidates.push_back(make_composition("composition-bruiser"));
+    input.initial_composition_candidates.push_back(make_composition("native:Bruiser"));
     cycle = machine.refresh(input);
     assert(cycle.phase == StrategicCyclePhase::CompositionActive);
-    assert(cycle.anchors.direction_anchor.composition_identity == "composition-bruiser");
+    assert(cycle.anchors.direction_anchor.composition_identity == "native:Bruiser");
 }
 
 void composition_hierarchy_beats_an_easy_external_two_star() {
