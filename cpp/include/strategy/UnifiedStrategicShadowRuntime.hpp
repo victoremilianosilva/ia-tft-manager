@@ -137,9 +137,10 @@ private:
         if (input.active_composition)
             value["active_composition_version"] = input.active_composition->version;
 
-        value["initial_composition_candidate"] = input.initial_composition_candidate
-            ? composition_fingerprint(*input.initial_composition_candidate)
-            : nlohmann::json(nullptr);
+        value["initial_composition_candidates"] = nlohmann::json::array();
+        for (const auto& candidate : input.initial_composition_candidates)
+            value["initial_composition_candidates"].push_back(
+                composition_fingerprint(candidate));
 
         if (input.pivot_candidate) {
             value["pivot_candidate"] = {
