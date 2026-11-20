@@ -786,6 +786,7 @@ int main(int argc, char** argv) {
                     ("Nao foi possivel colocar " + target_name + " na loja de teste.").c_str());
 
             const auto before_buy = reversal_engine.get_audit_snapshot();
+            require_unique_active_uuid_ownership(before_buy);
             std::array<tft::PlayerAction, tft::kPlayersPerLobby> reversal_actions{};
             for (auto& action : reversal_actions)
                 action.values = {6, 0, 0, 0, 0, 0};
