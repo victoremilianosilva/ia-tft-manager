@@ -119,3 +119,13 @@ def test_native_runtime_entrypoint_uses_only_native_cycle_inputs():
     assert "strategic_context_sequences[i] + 1" in runtime
     assert "strategic_native_owned" in runtime
     assert "native_runtime.refresh(native_audit_context, native_input)" in runtime
+
+def test_native_runtime_is_the_only_composition_publisher():
+    source = ENGINE_SOURCE.read_text(encoding="utf-8")
+    start = source.index("// New Composition Intelligence pipeline:")
+    end = source.index(
+        "static const std::array<const char*, 7> economic_posture_names", start
+    )
+    optional_pipeline = source[start:end]
+    assert "publish_if_approved" not in optional_pipeline
+    assert "native_strategic_runtime_owns_composition_publication" in optional_pipeline
