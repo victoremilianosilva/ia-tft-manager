@@ -8,13 +8,13 @@
       "namespace": "tft.engine.decision",
       "producer": "Native Engine",
       "owner": "Native Engine",
-      "scope": "per_player_within_engine_episode",
+      "scope": "per_player_within_engine_instance",
       "counter_meaning": "Canonical per-player decision counter; distinct from the Engine-wide snapshot publication counter.",
       "monotonicity": "strictly_increasing_within_scope_no_wrap",
-      "reset_boundary": "new_engine_episode",
+      "reset_boundary": "new_engine_instance; counter continues across episode resets",
       "availability": "implemented_native_engine_and_wrapper_metadata",
       "canonical_decision_eligible": true,
-      "evidence": "TFTEngine maintains one player_decision_sequences counter per player and increments each on every published ResetResult/StepResult. The array is returned in native results, exposed in AuditSnapshot through pybind, and copied/validated by cpp_lobby_env._copy_player_decision_sequences into _last_snapshot_metadata. It is distinct from the Engine-wide observation-snapshot counter."
+      "evidence": "TFTEngine maintains one player_decision_sequences counter per player and increments each on every published ResetResult/StepResult. The array is returned in native results, exposed in AuditSnapshot through pybind, and copied/validated by cpp_lobby_env._copy_player_decision_sequences into _last_snapshot_metadata. PR #504 composes it into the canonical per-player envelope and validates it through Trainer and Rollout. The counter is monotonic across episode resets within one Engine instance and is distinct from the Engine-wide observation-snapshot counter."
     },
     {
       "namespace": "tft.engine.observation-snapshot",
