@@ -2339,6 +2339,158 @@ struct TFTEngine::Impl {
         const auto& player = player_envs[i].info;
         const auto& economy = player_envs[i].economy;
         const double power = board_power(i);
+        const auto current_stage = stage_for_round(round + 1);
+        const auto current_round = static_cast<std::int32_t>(round + 1);
+
+        // Legacy compatibility lineup: this result continues to populate only
+        // the existing PPO/Viewer-facing planned-unit fields. The new strategic
+        // and CompositionIntelligence candidate paths consume the independent
+        // NativeStrategicCompositionGenerator output assembled above.
+        composition_intelligence_native_candidates[i].clear();
+        composition_intelligence_native_diagnostics[i].clear();
+
+        // Generate once from raw facts and reuse the same result for the new
+        // strategic planner and CompositionIntelligence. The legacy plan below
+        // remains isolated to the existing PPO/Viewer compatibility path.
+        strategy::NativeCompositionGenerationResult strategic_native_generation;
+        std::unordered_map<std::int32_t, strategy::NativeCompositionOwnedUnit>
+            strategic_native_owned;
+        // One physical tier-count producer feeds native composition, priorities and pivot.
+        std::unordered_map<std::int32_t, std::array<std::int32_t, 4>>
+            physical_star_counts_by_unit;
+        {
+            strategy::NativeCompositionGenerationInput native_input;
+            native_input.match_id = episode_id;
+            native_input.player_id = static_cast<std::int32_t>(i);
+            native_input.round = static_cast<std::uint32_t>(current_round);
+            if (strategic_context_sequences[i] ==
+                std::numeric_limits<std::uint64_t>::max()) {
+                throw std::overflow_error("strategic_candidate_sequence_overflow");
+            }
+            // The evidence context below increments this exact per-player
+            // sequence once in the same decision cycle.
+            native_input.sequence = strategic_context_sequences[i] + 1;
+            native_input.level = economy.level;
+            native_input.gold = economy.gold;
+            native_input.target_slots = std::clamp(economy.level, 1, 10);
+            native_input.maximum_candidates = 8;
+            native_input.catalog.reserve(catalog->all().size());
+            for (const auto& definition : catalog->all()) {
+                native_input.catalog.push_back({
+                    definition.internal_id, definition.api_name, definition.cost,
+                    definition.traits, definition.combat_profile.is_carry,
+                    definition.combat_profile.frontline ||
+                        definition.combat_profile.is_tank,
+                    definition.combat_profile.is_support
+                });
+            }
+            const auto append_native_owned = [&](const UnitInstance& unit,
+                                                  bool on_board) {
+                const auto* definition = catalog->find_by_id(
+                    unit.champion_internal_id);
+                if (!definition) return;
+                auto& observed = strategic_native_owned[definition->internal_id];
+                observed.champion_id = definition->internal_id;
+                observed.star = std::max(observed.star, unit.star);
+                auto& physical_tiers = physical_star_counts_by_unit[definition->internal_id];
+                ++physical_tiers[static_cast<std::size_t>(std::clamp(unit.star, 1, 3))];
+                observed.copies_by_star = physical_tiers;
+                observed.on_board = observed.on_board || on_board;
+                observed.on_bench = observed.on_bench || !on_board;
+                observed.board_contribution = std::max(
+                    observed.board_contribution, on_board
+                        ? std::clamp(definition->cost / 5.0 * 0.5 +
+                            std::clamp(unit.star, 1, 3) / 3.0 * 0.5, 0.0, 1.0)
+                        : 0.0);
+                observed.item_fit = std::max(observed.item_fit,
+                    std::clamp(static_cast<double>(unit.items.size()) / 3.0,
+                               0.0, 1.0));
+            };
+            for (const auto& unit : player_envs[i].board)
+                if (unit) append_native_owned(*unit, true);
+            for (const auto& unit : player_envs[i].bench)
+                if (unit) append_native_owned(*unit, false);
+            for (auto& [id, observed] : strategic_native_owned) {
+                observed.copies = strategy::owned_star_equivalent_copies(observed.copies_by_star);
+                native_input.owned.push_back(observed);
+                native_input.currently_owned_unit_ids.push_back(id);
+            }
+            const auto& native_shop = player_envs[i].shop;
+            if (native_shop) {
+                for (const auto& offer : native_shop->offers())
+                    if (offer) native_input.shop_ids.insert(
+                        offer->champion_internal_id);
+            }
+            if (pool) {
+                for (const auto& definition : catalog->all())
+                    native_input.pool_remaining[definition.internal_id] =
+                        pool->available(definition.internal_id);
+            }
+            for (const auto& [trait, milestones] : trait_milestones) {
+                if (!milestones.empty()) {
+                    native_input.trait_thresholds.push_back({
+                        trait, *std::min_element(milestones.begin(), milestones.end())
+                    });
+                }
+            }
+            strategic_native_generation =
+                strategy::NativeStrategicCompositionGenerator{}.generate(native_input);
+        }
+
+        if (composition_intelligence_enabled) {
+            composition_intelligence_native_diagnostics[i].push_back(
+                strategic_native_generation.reason);
+            for (const auto& generated : strategic_native_generation.candidates) {
+                composition_intelligence::CompositionCandidate candidate;
+                candidate.composition_id = generated.identity;
+                candidate.candidate_set_id = generated.candidate_set_id;
+                candidate.producer_id = generated.producer_id;
+                candidate.source_match_id = generated.match_id;
+                candidate.source_player_id = generated.player_id;
+                candidate.source_round = generated.round;
+                candidate.source_sequence = generated.source_sequence;
+                candidate.source = composition_intelligence::CompositionSource::Native;
+                candidate.source_reference = "native-strategic-composition-generator";
+                candidate.source_score = generated.score;
+                candidate.main_carry_id = generated.main_carry_id;
+                candidate.target_board_size = generated.unit_ids.size();
+                if (!generated.unit_ids.empty()) {
+                    const auto* first = catalog->find_by_id(generated.unit_ids.front());
+                    if (first) candidate.set_id =
+                        composition_intelligence::composition_champion_set(
+                            first->api_name, first->character_name);
+                }
+                for (std::size_t unit_index = 0;
+                     unit_index < generated.unit_ids.size(); ++unit_index) {
+                    const auto id = generated.unit_ids[unit_index];
+                    const auto* definition = catalog->find_by_id(id);
+                    if (!definition) continue;
+                    composition_intelligence::CompositionUnit unit;
+                    unit.champion_id = id;
+                    unit.core = id == generated.main_carry_id;
+                    unit.priority = static_cast<int>(generated.unit_ids.size() -
+                        unit_index);
+                    if (id == generated.main_carry_id) {
+                        unit.role = composition_intelligence::UnitRole::MainCarry;
+                    } else if (definition->combat_profile.frontline ||
+                               definition->combat_profile.is_tank) {
+                        unit.role = composition_intelligence::UnitRole::Frontline;
+                    } else if (definition->combat_profile.is_carry) {
+                        unit.role = composition_intelligence::UnitRole::SecondaryCarry;
+                    } else if (definition->combat_profile.is_support) {
+                        unit.role = composition_intelligence::UnitRole::Support;
+                    } else {
+                        unit.role = composition_intelligence::UnitRole::Flex;
+                    }
+                    candidate.units.push_back(std::move(unit));
+                }
+                if (!candidate.units.empty())
+                    composition_intelligence_native_candidates[i].push_back(
+                        std::move(candidate));
+            }
+        }
+
+
         double bench_strength = 0.0;
         for (const auto& unit : player_envs[i].bench) {
             if (!unit) continue;
@@ -2521,7 +2673,7 @@ struct TFTEngine::Impl {
             }
         };
         const auto current_stage = stage_for_round(round + 1);
-        const auto current_round = static_cast<std::int32_t>(round + 1);
+
         const auto count_occupied = [](const auto& slots) {
             return static_cast<std::size_t>(std::count_if(
                 slots.begin(), slots.end(),
@@ -2965,154 +3117,6 @@ struct TFTEngine::Impl {
         for (const auto& [trait, count] : ordered_traits) {
             if (count >= 2 && info.core_traits.size() < 3)
                 info.core_traits.push_back(trait);
-        }
-
-        // Legacy compatibility lineup: this result continues to populate only
-        // the existing PPO/Viewer-facing planned-unit fields. The new strategic
-        // and CompositionIntelligence candidate paths consume the independent
-        // NativeStrategicCompositionGenerator output assembled above.
-        composition_intelligence_native_candidates[i].clear();
-        composition_intelligence_native_diagnostics[i].clear();
-
-        // Generate once from raw facts and reuse the same result for the new
-        // strategic planner and CompositionIntelligence. The legacy plan below
-        // remains isolated to the existing PPO/Viewer compatibility path.
-        strategy::NativeCompositionGenerationResult strategic_native_generation;
-        std::unordered_map<std::int32_t, strategy::NativeCompositionOwnedUnit>
-            strategic_native_owned;
-        // One physical tier-count producer feeds native composition, priorities and pivot.
-        std::unordered_map<std::int32_t, std::array<std::int32_t, 4>>
-            physical_star_counts_by_unit;
-        {
-            strategy::NativeCompositionGenerationInput native_input;
-            native_input.match_id = episode_id;
-            native_input.player_id = static_cast<std::int32_t>(i);
-            native_input.round = static_cast<std::uint32_t>(current_round);
-            if (strategic_context_sequences[i] ==
-                std::numeric_limits<std::uint64_t>::max()) {
-                throw std::overflow_error("strategic_candidate_sequence_overflow");
-            }
-            // The evidence context below increments this exact per-player
-            // sequence once in the same decision cycle.
-            native_input.sequence = strategic_context_sequences[i] + 1;
-            native_input.level = economy.level;
-            native_input.gold = economy.gold;
-            native_input.target_slots = std::clamp(economy.level, 1, 10);
-            native_input.maximum_candidates = 8;
-            native_input.catalog.reserve(catalog->all().size());
-            for (const auto& definition : catalog->all()) {
-                native_input.catalog.push_back({
-                    definition.internal_id, definition.api_name, definition.cost,
-                    definition.traits, definition.combat_profile.is_carry,
-                    definition.combat_profile.frontline ||
-                        definition.combat_profile.is_tank,
-                    definition.combat_profile.is_support
-                });
-            }
-            const auto append_native_owned = [&](const UnitInstance& unit,
-                                                  bool on_board) {
-                const auto* definition = catalog->find_by_id(
-                    unit.champion_internal_id);
-                if (!definition) return;
-                auto& observed = strategic_native_owned[definition->internal_id];
-                observed.champion_id = definition->internal_id;
-                observed.star = std::max(observed.star, unit.star);
-                auto& physical_tiers = physical_star_counts_by_unit[definition->internal_id];
-                ++physical_tiers[static_cast<std::size_t>(std::clamp(unit.star, 1, 3))];
-                observed.copies_by_star = physical_tiers;
-                observed.on_board = observed.on_board || on_board;
-                observed.on_bench = observed.on_bench || !on_board;
-                observed.board_contribution = std::max(
-                    observed.board_contribution, on_board
-                        ? std::clamp(definition->cost / 5.0 * 0.5 +
-                            std::clamp(unit.star, 1, 3) / 3.0 * 0.5, 0.0, 1.0)
-                        : 0.0);
-                observed.item_fit = std::max(observed.item_fit,
-                    std::clamp(static_cast<double>(unit.items.size()) / 3.0,
-                               0.0, 1.0));
-            };
-            for (const auto& unit : player_envs[i].board)
-                if (unit) append_native_owned(*unit, true);
-            for (const auto& unit : player_envs[i].bench)
-                if (unit) append_native_owned(*unit, false);
-            for (auto& [id, observed] : strategic_native_owned) {
-                observed.copies = strategy::owned_star_equivalent_copies(observed.copies_by_star);
-                native_input.owned.push_back(observed);
-                native_input.currently_owned_unit_ids.push_back(id);
-            }
-            const auto& native_shop = player_envs[i].shop;
-            if (native_shop) {
-                for (const auto& offer : native_shop->offers())
-                    if (offer) native_input.shop_ids.insert(
-                        offer->champion_internal_id);
-            }
-            if (pool) {
-                for (const auto& definition : catalog->all())
-                    native_input.pool_remaining[definition.internal_id] =
-                        pool->available(definition.internal_id);
-            }
-            for (const auto& [trait, milestones] : trait_milestones) {
-                if (!milestones.empty()) {
-                    native_input.trait_thresholds.push_back({
-                        trait, *std::min_element(milestones.begin(), milestones.end())
-                    });
-                }
-            }
-            strategic_native_generation =
-                strategy::NativeStrategicCompositionGenerator{}.generate(native_input);
-        }
-
-        if (composition_intelligence_enabled) {
-            composition_intelligence_native_diagnostics[i].push_back(
-                strategic_native_generation.reason);
-            for (const auto& generated : strategic_native_generation.candidates) {
-                composition_intelligence::CompositionCandidate candidate;
-                candidate.composition_id = generated.identity;
-                candidate.candidate_set_id = generated.candidate_set_id;
-                candidate.producer_id = generated.producer_id;
-                candidate.source_match_id = generated.match_id;
-                candidate.source_player_id = generated.player_id;
-                candidate.source_round = generated.round;
-                candidate.source_sequence = generated.source_sequence;
-                candidate.source = composition_intelligence::CompositionSource::Native;
-                candidate.source_reference = "native-strategic-composition-generator";
-                candidate.source_score = generated.score;
-                candidate.main_carry_id = generated.main_carry_id;
-                candidate.target_board_size = generated.unit_ids.size();
-                if (!generated.unit_ids.empty()) {
-                    const auto* first = catalog->find_by_id(generated.unit_ids.front());
-                    if (first) candidate.set_id =
-                        composition_intelligence::composition_champion_set(
-                            first->api_name, first->character_name);
-                }
-                for (std::size_t unit_index = 0;
-                     unit_index < generated.unit_ids.size(); ++unit_index) {
-                    const auto id = generated.unit_ids[unit_index];
-                    const auto* definition = catalog->find_by_id(id);
-                    if (!definition) continue;
-                    composition_intelligence::CompositionUnit unit;
-                    unit.champion_id = id;
-                    unit.core = id == generated.main_carry_id;
-                    unit.priority = static_cast<int>(generated.unit_ids.size() -
-                        unit_index);
-                    if (id == generated.main_carry_id) {
-                        unit.role = composition_intelligence::UnitRole::MainCarry;
-                    } else if (definition->combat_profile.frontline ||
-                               definition->combat_profile.is_tank) {
-                        unit.role = composition_intelligence::UnitRole::Frontline;
-                    } else if (definition->combat_profile.is_carry) {
-                        unit.role = composition_intelligence::UnitRole::SecondaryCarry;
-                    } else if (definition->combat_profile.is_support) {
-                        unit.role = composition_intelligence::UnitRole::Support;
-                    } else {
-                        unit.role = composition_intelligence::UnitRole::Flex;
-                    }
-                    candidate.units.push_back(std::move(unit));
-                }
-                if (!candidate.units.empty())
-                    composition_intelligence_native_candidates[i].push_back(
-                        std::move(candidate));
-            }
         }
 
         if (current_round >= 9 && !info.composition_direction.empty()) {
