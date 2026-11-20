@@ -87,3 +87,21 @@ def test_action_comparison_requires_nonempty_exact_candidate_identity():
     assert "!strategic_context.action_candidates.empty()" in source
     assert "baseline_candidate.candidate_id != source.candidate_id" in source
     assert "contextual_candidate.candidate_id != source.candidate_id" in source
+
+def test_unified_native_runtime_refresh_is_outside_optional_composition_intelligence():
+    source = ENGINE_SOURCE.read_text(encoding="utf-8")
+    marker = "// Native strategic lifecycle is independent of the optional"
+    start = source.index(marker)
+    refresh = source.index("native_runtime.refresh(native_audit_context, native_input)", start)
+    optional_pipeline = source.index("if (composition_intelligence_enabled) {", source.index(
+        "// BEGIN SHADOW-ONLY EVALUATION BOUNDARY."
+    ))
+    end_optional = source.index(
+        "static const std::array<const char*, 7> economic_posture_names", optional_pipeline
+    )
+    assert optional_pipeline < start < refresh < end_optional
+    assert "strategic_shadow_runtimes[i]" in source[start:refresh]
+    assert "strategic_context_sequences[i]" in source[start:refresh]
+    assert "strategic_native_owned" in source[start:refresh]
+    assert "strategic audit sidecar path not configured" not in source[start:end_optional]
+
