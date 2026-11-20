@@ -83,15 +83,22 @@ int main() {
     assert(std::find(invoker->unit_ids.begin(), invoker->unit_ids.end(), 7) ==
            invoker->unit_ids.end());
 
-    // Level controls target capacity, not the identity or source of strategy.
+    // Endgame target capacity is independent of the current board level.
+    // LineupPlanner later selects only the units that fit the live board and
+    // records the rest as deferred targets.
     auto lower_level = input;
     lower_level.level = 2;
     lower_level.target_slots = 8;
     const auto lower_level_result =
         NativeStrategicCompositionGenerator{}.generate(lower_level);
+    assert(!lower_level_result.candidates.empty());
     assert(std::all_of(lower_level_result.candidates.begin(),
         lower_level_result.candidates.end(), [](const auto& candidate) {
-            return candidate.unit_ids.size() <= 2;
+            return candidate.unit_ids.size() <= 8;
+        }));
+    assert(std::any_of(lower_level_result.candidates.begin(),
+        lower_level_result.candidates.end(), [](const auto& candidate) {
+            return candidate.unit_ids.size() > 2;
         }));
 
     // Gold, star progress and item fit contribute to candidate estimates.
