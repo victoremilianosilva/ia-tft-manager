@@ -575,6 +575,10 @@ class ViewerSession:
             "champion_ids": torch.as_tensor(
                 [semantic["champion_ids"]], dtype=torch.long, device=obs.device
             ),
+            "identities": [semantic["identity"]],
+            "hashes": [semantic["sha256"]],
+            "contract_id": self.semantic_state_contract["contract"]["contract_id"],
+            "contract_hash": self.semantic_state_contract["sha256"],
         }
         infer = self.policy.get_action_and_value_with_diagnostics
         with torch.inference_mode():
