@@ -440,272 +440,272 @@ class RolloutBuffer:
 
         normalized_groups = {}
         if all(supplied_groups):
-            for group_name, group in metadata_groups:
-                if len(group) != self.num_envs:
-                    raise ValueError(
-                        f"{group_name} deve conter uma identidade por agente: "
-                        f"{len(group)} != {self.num_envs}"
-                    )
-                normalized = []
-                for index, metadata in enumerate(group):
-                    if not isinstance(metadata, dict):
-                        raise TypeError(f"{group_name}[{index}] deve ser um dicionário.")
-                    required = (
-                        "engine_instance_id", "episode_id",
-                        "decision_sequence", "player_decision_sequence", "player_id", "lobby_index",
-                    )
-                    missing = [key for key in required if key not in metadata]
-                    if missing:
-                        raise ValueError(
-                            f"{group_name}[{index}] sem campos obrigatórios: {missing}"
-                        )
-                    engine_instance_id = metadata["engine_instance_id"]
-                    if not isinstance(engine_instance_id, str) or not engine_instance_id.strip():
-                        raise ValueError(
-                            f"{group_name}[{index}].engine_instance_id deve ser texto não vazio."
-                        )
-                    for identity_field in ("episode_id", "decision_sequence", "player_id", "lobby_index"):
-                        identity_value = metadata[identity_field]
-                        if (
-                            isinstance(identity_value, bool)
-                            or not isinstance(identity_value, int)
-                            or identity_value < 0
-                        ):
-                            raise ValueError(
-                                f"{group_name}[{index}].{identity_field} deve ser inteiro não negativo."
-                            )
-                    envelope = metadata.get("identity")
-                    if envelope is not None:
-                        try:
-                            validate_player_identity_envelope(
-                                envelope,
-                                engine_instance_id=engine_instance_id,
-                                episode_id=metadata["episode_id"],
-                                snapshot_sequence=metadata["decision_sequence"],
-                                player_decision_sequence=metadata["player_decision_sequence"],
-                                player_id=metadata["player_id"],
-                                round_number=metadata.get("round", 0),
-                            )
-                        except (TypeError, ValueError) as exc:
-                            raise ValueError(
-                                f"{group_name}[{index}].identity inválida: {exc}"
-                            ) from exc
-                    normalized.append(copy.deepcopy(metadata))
-                normalized_groups[group_name] = normalized
-
-            identity_presence = [
-                metadata.get("identity") is not None
-                for group in normalized_groups.values()
-                for metadata in group
-            ]
-            if any(identity_presence) and not all(identity_presence):
+        for group_name, group in metadata_groups:
+            if len(group) != self.num_envs:
                 raise ValueError(
-                    "O rollout não pode misturar linhas com e sem envelope canônico de identidade."
+                    f"{group_name} deve conter uma identidade por agente: "
+                    f"{len(group)} != {self.num_envs}"
+                )
+            normalized = []
+            for index, metadata in enumerate(group):
+                if not isinstance(metadata, dict):
+                    raise TypeError(f"{group_name}[{index}] deve ser um dicionário.")
+                required = (
+                    "engine_instance_id", "episode_id",
+                    "decision_sequence", "player_decision_sequence", "player_id", "lobby_index",
+                )
+                missing = [key for key in required if key not in metadata]
+                if missing:
+                    raise ValueError(
+                        f"{group_name}[{index}] sem campos obrigatórios: {missing}"
+                    )
+                engine_instance_id = metadata["engine_instance_id"]
+                if not isinstance(engine_instance_id, str) or not engine_instance_id.strip():
+                    raise ValueError(
+                        f"{group_name}[{index}].engine_instance_id deve ser texto não vazio."
+                    )
+                for identity_field in ("episode_id", "decision_sequence", "player_id", "lobby_index"):
+                    identity_value = metadata[identity_field]
+                    if (
+                        isinstance(identity_value, bool)
+                        or not isinstance(identity_value, int)
+                        or identity_value < 0
+                    ):
+                        raise ValueError(
+                            f"{group_name}[{index}].{identity_field} deve ser inteiro não negativo."
+                        )
+                envelope = metadata.get("identity")
+                if envelope is not None:
+                    try:
+                        validate_player_identity_envelope(
+                            envelope,
+                            engine_instance_id=engine_instance_id,
+                            episode_id=metadata["episode_id"],
+                            snapshot_sequence=metadata["decision_sequence"],
+                            player_decision_sequence=metadata["player_decision_sequence"],
+                            player_id=metadata["player_id"],
+                            round_number=metadata.get("round", 0),
+                        )
+                    except (TypeError, ValueError) as exc:
+                        raise ValueError(
+                            f"{group_name}[{index}].identity inválida: {exc}"
+                        ) from exc
+                normalized.append(copy.deepcopy(metadata))
+            normalized_groups[group_name] = normalized
+
+        identity_presence = [
+            metadata.get("identity") is not None
+            for group in normalized_groups.values()
+            for metadata in group
+        ]
+        if any(identity_presence) and not all(identity_presence):
+            raise ValueError(
+                "O rollout não pode misturar linhas com e sem envelope canônico de identidade."
+            )
+
+        for index, (decision, result, next_state) in enumerate(zip(
+            normalized_groups["snapshot_metadata"],
+            normalized_groups["result_snapshot_metadata"],
+            normalized_groups["next_snapshot_metadata"],
+        )):
+            if decision["player_id"] != result["player_id"] or decision["player_id"] != next_state["player_id"]:
+                raise ValueError(f"Identidade de player divergente na transição {index}.")
+            if decision["lobby_index"] != result["lobby_index"] or decision["lobby_index"] != next_state["lobby_index"]:
+                raise ValueError(f"Identidade de lobby divergente na transição {index}.")
+            if decision["engine_instance_id"] != result["engine_instance_id"] or decision["engine_instance_id"] != next_state["engine_instance_id"]:
+                raise ValueError(f"Engine divergente na transição {index}.")
+            if decision["episode_id"] != result["episode_id"]:
+                raise ValueError(f"Episode divergente entre decisão e resultado na transição {index}.")
+            if result["player_decision_sequence"] <= decision["player_decision_sequence"]:
+                raise ValueError(f"Sequência individual do resultado não avança na transição {index}.")
+            action_trace = result.get("action_trace")
+            if action_trace is None:
+                raise ValueError(
+                    f"result_snapshot_metadata[{index}].action_trace é obrigatório para transições identificadas."
+                )
+            if not isinstance(action_trace, dict):
+                raise TypeError(
+                    f"result_snapshot_metadata[{index}].action_trace deve ser um dicionário."
+                )
+            trace_player_id = action_trace.get("player_id")
+            if (
+                isinstance(trace_player_id, bool)
+                or not isinstance(trace_player_id, int)
+                or trace_player_id != decision["player_id"]
+            ):
+                raise ValueError(
+                    f"result_snapshot_metadata[{index}].action_trace.player_id "
+                    "não corresponde ao jogador da transição."
+                )
+            for action_field in ("requested_action", "effective_action"):
+                action_values = action_trace.get(action_field)
+                if not isinstance(action_values, (list, tuple)) or len(action_values) != actions.shape[1]:
+                    raise ValueError(
+                        f"result_snapshot_metadata[{index}].action_trace.{action_field} "
+                        f"deve conter {actions.shape[1]} parâmetros."
+                    )
+                try:
+                    normalized_values = [int(value) for value in action_values]
+                except (TypeError, ValueError, OverflowError) as exc:
+                    raise ValueError(
+                        f"result_snapshot_metadata[{index}].action_trace.{action_field} "
+                        "deve conter inteiros."
+                    ) from exc
+                if any(isinstance(value, bool) or int(value) != value for value in action_values):
+                    raise ValueError(
+                        f"result_snapshot_metadata[{index}].action_trace.{action_field} "
+                        "deve conter inteiros sem coerção."
+                    )
+                if action_field == "requested_action":
+                    stored_action = actions[index].detach().cpu().tolist()
+                    if normalized_values != stored_action:
+                        raise ValueError(
+                            f"Ação PPO diverge da ação solicitada à Engine na transição {index}: "
+                            f"{stored_action} != {normalized_values}."
+                        )
+            if not isinstance(action_trace.get("handler_applied"), bool):
+                raise ValueError(
+                    f"result_snapshot_metadata[{index}].action_trace.handler_applied deve ser booleano."
+                )
+            status_reason = action_trace.get("status_reason")
+            if not isinstance(status_reason, str) or not status_reason.strip():
+                raise ValueError(
+                    f"result_snapshot_metadata[{index}].action_trace.status_reason deve ser texto não vazio."
+                )
+            if result["decision_sequence"] <= decision["decision_sequence"]:
+                raise ValueError(f"Sequência do resultado não avança na transição {index}.")
+            if next_state["episode_id"] == result["episode_id"]:
+                if next_state["decision_sequence"] != result["decision_sequence"]:
+                    raise ValueError(f"Próximo snapshot não corresponde ao resultado na transição {index}.")
+                if next_state["player_decision_sequence"] != result["player_decision_sequence"]:
+                    raise ValueError(f"Próxima sequência individual não corresponde ao resultado na transição {index}.")
+            elif (
+                next_state["episode_id"] <= result["episode_id"]
+                or next_state["decision_sequence"] <= result["decision_sequence"]
+                or next_state["player_decision_sequence"] <= result["player_decision_sequence"]
+            ):
+                raise ValueError(f"Auto-reset não avança identidade na transição {index}.")
+
+            mask_hash = decision.get("mask_snapshot_hash")
+            if not isinstance(mask_hash, str) or len(mask_hash) != 64 or any(
+                char not in "0123456789abcdef" for char in mask_hash
+            ):
+                raise ValueError(
+                    f"snapshot_metadata[{index}].mask_snapshot_hash deve ser SHA-256 hexadecimal."
+                )
+            if decision.get("mask_snapshot_hash_algorithm") != MASK_SNAPSHOT_HASH_ALGORITHM:
+                raise ValueError(
+                    f"snapshot_metadata[{index}] usa algoritmo de hash de mask desconhecido."
                 )
 
-            for index, (decision, result, next_state) in enumerate(zip(
-                normalized_groups["snapshot_metadata"],
-                normalized_groups["result_snapshot_metadata"],
-                normalized_groups["next_snapshot_metadata"],
-            )):
-                if decision["player_id"] != result["player_id"] or decision["player_id"] != next_state["player_id"]:
-                    raise ValueError(f"Identidade de player divergente na transição {index}.")
-                if decision["lobby_index"] != result["lobby_index"] or decision["lobby_index"] != next_state["lobby_index"]:
-                    raise ValueError(f"Identidade de lobby divergente na transição {index}.")
-                if decision["engine_instance_id"] != result["engine_instance_id"] or decision["engine_instance_id"] != next_state["engine_instance_id"]:
-                    raise ValueError(f"Engine divergente na transição {index}.")
-                if decision["episode_id"] != result["episode_id"]:
-                    raise ValueError(f"Episode divergente entre decisão e resultado na transição {index}.")
-                if result["player_decision_sequence"] <= decision["player_decision_sequence"]:
-                    raise ValueError(f"Sequência individual do resultado não avança na transição {index}.")
-                action_trace = result.get("action_trace")
-                if action_trace is None:
+            # Production collection supplies the complete bundle. Recompute
+            # its digest at the storage boundary instead of trusting a
+            # well-formed SHA-256 string detached from the actual tensors.
+            if self.masks:
+                expected_contract = {
+                    "action_contract_id": ACTION_CONTRACT_ID,
+                    "action_contract_version": ACTION_CONTRACT_VERSION,
+                    "action_contract_hash": ACTION_CONTRACT_HASH,
+                    "mask_contract_id": MASK_CONTRACT_ID,
+                    "mask_contract_version": MASK_CONTRACT_VERSION,
+                    "mask_contract_hash": MASK_CONTRACT_HASH,
+                }
+                for field, expected_value in expected_contract.items():
+                    if decision.get(field) != expected_value:
+                        raise ValueError(
+                            f"snapshot_metadata[{index}].{field} ausente ou incompatível."
+                        )
+                if set(masks_dict) != set(MASK_SHAPES):
                     raise ValueError(
-                        f"result_snapshot_metadata[{index}].action_trace é obrigatório para transições identificadas."
+                        "Rollout exige exatamente as 12 action masks do contrato v1."
                     )
-                if not isinstance(action_trace, dict):
-                    raise TypeError(
-                        f"result_snapshot_metadata[{index}].action_trace deve ser um dicionário."
+                for mask_name, mask_shape in MASK_SHAPES.items():
+                    mask_tensor = masks_dict[mask_name]
+                    if not isinstance(mask_tensor, torch.Tensor):
+                        raise TypeError(f"Máscara '{mask_name}' deve ser torch.Tensor.")
+                    if mask_tensor.dtype != torch.bool:
+                        raise TypeError(f"Máscara '{mask_name}' deve usar torch.bool.")
+                    if tuple(mask_tensor.shape) != (self.num_envs, *mask_shape):
+                        raise ValueError(
+                            f"Shape inválido para máscara '{mask_name}' no rollout: "
+                            f"{tuple(mask_tensor.shape)}."
+                        )
+                actual_mask_hash = hash_mask_row({
+                    name: masks_dict[name][index]
+                    for name in MASK_SHAPES
+                })
+                if actual_mask_hash != mask_hash:
+                    raise ValueError(
+                        f"Hash da máscara não corresponde ao conteúdo armazenado "
+                        f"na transição {index}."
                     )
-                trace_player_id = action_trace.get("player_id")
+
+        for group_name, group in normalized_groups.items():
+            by_lobby = {}
+            for metadata in group:
+                key = metadata["lobby_index"]
+                identity = (
+                    metadata["engine_instance_id"],
+                    metadata["episode_id"],
+                    metadata["decision_sequence"],
+                )
+                previous = by_lobby.setdefault(key, identity)
+                if previous != identity:
+                    raise ValueError(
+                        f"Snapshot inconsistente em {group_name} dentro da lobby {key}."
+                    )
+
+        # Semantic projection is part of the same decision record, not an
+        # independently shuffled feature batch. Bind every row to its native
+        # snapshot hash and full decision identity before storing it.
+    if all(supplied_groups):
+            decision_metadata = normalized_groups["snapshot_metadata"]
+            if any("semantic_projection_hash" in row for row in decision_metadata):
+                if semantic_state is None:
+                    raise ValueError("Transição identificada exige semantic_state nativo.")
+                semantic_identities = semantic_state.get("identities")
+                semantic_hashes = semantic_state.get("hashes")
+                contract_hash = semantic_state.get("contract_hash")
                 if (
-                    isinstance(trace_player_id, bool)
-                    or not isinstance(trace_player_id, int)
-                    or trace_player_id != decision["player_id"]
+                    semantic_state.get("contract_id") != "tft.ppo.semantic-native-state.v2"
+                    or not isinstance(contract_hash, str)
+                    or len(contract_hash) != 64
+                    or any(char not in "0123456789abcdef" for char in contract_hash)
                 ):
-                    raise ValueError(
-                        f"result_snapshot_metadata[{index}].action_trace.player_id "
-                        "não corresponde ao jogador da transição."
-                    )
-                for action_field in ("requested_action", "effective_action"):
-                    action_values = action_trace.get(action_field)
-                    if not isinstance(action_values, (list, tuple)) or len(action_values) != actions.shape[1]:
-                        raise ValueError(
-                            f"result_snapshot_metadata[{index}].action_trace.{action_field} "
-                            f"deve conter {actions.shape[1]} parâmetros."
-                        )
-                    try:
-                        normalized_values = [int(value) for value in action_values]
-                    except (TypeError, ValueError, OverflowError) as exc:
-                        raise ValueError(
-                            f"result_snapshot_metadata[{index}].action_trace.{action_field} "
-                            "deve conter inteiros."
-                        ) from exc
-                    if any(isinstance(value, bool) or int(value) != value for value in action_values):
-                        raise ValueError(
-                            f"result_snapshot_metadata[{index}].action_trace.{action_field} "
-                            "deve conter inteiros sem coerção."
-                        )
-                    if action_field == "requested_action":
-                        stored_action = actions[index].detach().cpu().tolist()
-                        if normalized_values != stored_action:
-                            raise ValueError(
-                                f"Ação PPO diverge da ação solicitada à Engine na transição {index}: "
-                                f"{stored_action} != {normalized_values}."
-                            )
-                if not isinstance(action_trace.get("handler_applied"), bool):
-                    raise ValueError(
-                        f"result_snapshot_metadata[{index}].action_trace.handler_applied deve ser booleano."
-                    )
-                status_reason = action_trace.get("status_reason")
-                if not isinstance(status_reason, str) or not status_reason.strip():
-                    raise ValueError(
-                        f"result_snapshot_metadata[{index}].action_trace.status_reason deve ser texto não vazio."
-                    )
-                if result["decision_sequence"] <= decision["decision_sequence"]:
-                    raise ValueError(f"Sequência do resultado não avança na transição {index}.")
-                if next_state["episode_id"] == result["episode_id"]:
-                    if next_state["decision_sequence"] != result["decision_sequence"]:
-                        raise ValueError(f"Próximo snapshot não corresponde ao resultado na transição {index}.")
-                    if next_state["player_decision_sequence"] != result["player_decision_sequence"]:
-                        raise ValueError(f"Próxima sequência individual não corresponde ao resultado na transição {index}.")
-                elif (
-                    next_state["episode_id"] <= result["episode_id"]
-                    or next_state["decision_sequence"] <= result["decision_sequence"]
-                    or next_state["player_decision_sequence"] <= result["player_decision_sequence"]
+                    raise ValueError("Semantic state is missing its versioned projection contract identity.")
+                if (
+                    not isinstance(semantic_identities, Sequence)
+                    or len(semantic_identities) != self.num_envs
+                    or not isinstance(semantic_hashes, Sequence)
+                    or len(semantic_hashes) != self.num_envs
                 ):
-                    raise ValueError(f"Auto-reset não avança identidade na transição {index}.")
-
-                mask_hash = decision.get("mask_snapshot_hash")
-                if not isinstance(mask_hash, str) or len(mask_hash) != 64 or any(
-                    char not in "0123456789abcdef" for char in mask_hash
-                ):
-                    raise ValueError(
-                        f"snapshot_metadata[{index}].mask_snapshot_hash deve ser SHA-256 hexadecimal."
-                    )
-                if decision.get("mask_snapshot_hash_algorithm") != MASK_SNAPSHOT_HASH_ALGORITHM:
-                    raise ValueError(
-                        f"snapshot_metadata[{index}] usa algoritmo de hash de mask desconhecido."
-                    )
-
-                # Production collection supplies the complete bundle. Recompute
-                # its digest at the storage boundary instead of trusting a
-                # well-formed SHA-256 string detached from the actual tensors.
-                if self.masks:
-                    expected_contract = {
-                        "action_contract_id": ACTION_CONTRACT_ID,
-                        "action_contract_version": ACTION_CONTRACT_VERSION,
-                        "action_contract_hash": ACTION_CONTRACT_HASH,
-                        "mask_contract_id": MASK_CONTRACT_ID,
-                        "mask_contract_version": MASK_CONTRACT_VERSION,
-                        "mask_contract_hash": MASK_CONTRACT_HASH,
-                    }
-                    for field, expected_value in expected_contract.items():
-                        if decision.get(field) != expected_value:
-                            raise ValueError(
-                                f"snapshot_metadata[{index}].{field} ausente ou incompatível."
-                            )
-                    if set(masks_dict) != set(MASK_SHAPES):
-                        raise ValueError(
-                            "Rollout exige exatamente as 12 action masks do contrato v1."
-                        )
-                    for mask_name, mask_shape in MASK_SHAPES.items():
-                        mask_tensor = masks_dict[mask_name]
-                        if not isinstance(mask_tensor, torch.Tensor):
-                            raise TypeError(f"Máscara '{mask_name}' deve ser torch.Tensor.")
-                        if mask_tensor.dtype != torch.bool:
-                            raise TypeError(f"Máscara '{mask_name}' deve usar torch.bool.")
-                        if tuple(mask_tensor.shape) != (self.num_envs, *mask_shape):
-                            raise ValueError(
-                                f"Shape inválido para máscara '{mask_name}' no rollout: "
-                                f"{tuple(mask_tensor.shape)}."
-                            )
-                    actual_mask_hash = hash_mask_row({
-                        name: masks_dict[name][index]
-                        for name in MASK_SHAPES
-                    })
-                    if actual_mask_hash != mask_hash:
-                        raise ValueError(
-                            f"Hash da máscara não corresponde ao conteúdo armazenado "
-                            f"na transição {index}."
-                        )
-
-            for group_name, group in normalized_groups.items():
-                by_lobby = {}
-                for metadata in group:
-                    key = metadata["lobby_index"]
-                    identity = (
-                        metadata["engine_instance_id"],
-                        metadata["episode_id"],
-                        metadata["decision_sequence"],
-                    )
-                    previous = by_lobby.setdefault(key, identity)
-                    if previous != identity:
-                        raise ValueError(
-                            f"Snapshot inconsistente em {group_name} dentro da lobby {key}."
-                        )
-
-            # Semantic projection is part of the same decision record, not an
-            # independently shuffled feature batch. Bind every row to its native
-            # snapshot hash and full decision identity before storing it.
-        if all(supplied_groups):
-                decision_metadata = normalized_groups["snapshot_metadata"]
-                if any("semantic_projection_hash" in row for row in decision_metadata):
-                    if semantic_state is None:
-                        raise ValueError("Transição identificada exige semantic_state nativo.")
-                    semantic_identities = semantic_state.get("identities")
-                    semantic_hashes = semantic_state.get("hashes")
-                    contract_hash = semantic_state.get("contract_hash")
+                    raise ValueError("Semantic state não contém identidade/hash por transição.")
+                identity_fields = (
+                    "engine_instance_id", "episode_id", "decision_sequence",
+                    "player_decision_sequence", "player_id", "round", "lobby_index",
+                )
+                for index, metadata in enumerate(decision_metadata):
+                    expected_identity = {field: metadata.get(field) for field in identity_fields}
                     if (
-                        semantic_state.get("contract_id") != "tft.ppo.semantic-native-state.v2"
-                        or not isinstance(contract_hash, str)
-                        or len(contract_hash) != 64
-                        or any(char not in "0123456789abcdef" for char in contract_hash)
+                        not isinstance(semantic_identities[index], dict)
+                        or dict(semantic_identities[index]) != expected_identity
+                        or metadata.get("semantic_identity") != expected_identity
                     ):
-                        raise ValueError("Semantic state is missing its versioned projection contract identity.")
+                        raise ValueError(
+                            f"Semantic identity diverge do snapshot na transição {index}."
+                        )
+                    digest = semantic_hashes[index]
                     if (
-                        not isinstance(semantic_identities, Sequence)
-                        or len(semantic_identities) != self.num_envs
-                        or not isinstance(semantic_hashes, Sequence)
-                        or len(semantic_hashes) != self.num_envs
+                        not isinstance(digest, str)
+                        or len(digest) != 64
+                        or any(char not in "0123456789abcdef" for char in digest)
+                        or digest != metadata.get("semantic_projection_hash")
+                        or metadata.get("semantic_projection_contract_id") != semantic_state.get("contract_id")
+                        or metadata.get("semantic_projection_contract_hash") != semantic_state.get("contract_hash")
                     ):
-                        raise ValueError("Semantic state não contém identidade/hash por transição.")
-                    identity_fields = (
-                        "engine_instance_id", "episode_id", "decision_sequence",
-                        "player_decision_sequence", "player_id", "round", "lobby_index",
-                    )
-                    for index, metadata in enumerate(decision_metadata):
-                        expected_identity = {field: metadata.get(field) for field in identity_fields}
-                        if (
-                            not isinstance(semantic_identities[index], dict)
-                            or dict(semantic_identities[index]) != expected_identity
-                            or metadata.get("semantic_identity") != expected_identity
-                        ):
-                            raise ValueError(
-                                f"Semantic identity diverge do snapshot na transição {index}."
-                            )
-                        digest = semantic_hashes[index]
-                        if (
-                            not isinstance(digest, str)
-                            or len(digest) != 64
-                            or any(char not in "0123456789abcdef" for char in digest)
-                            or digest != metadata.get("semantic_projection_hash")
-                            or metadata.get("semantic_projection_contract_id") != semantic_state.get("contract_id")
-                            or metadata.get("semantic_projection_contract_hash") != semantic_state.get("contract_hash")
-                        ):
-                            raise ValueError(
-                                f"Semantic projection hash/contract diverge do snapshot na transição {index}."
-                            )
+                        raise ValueError(
+                            f"Semantic projection hash/contract diverge do snapshot na transição {index}."
+                        )
 
         for group_name, normalized in normalized_groups.items():
             getattr(self, group_name)[self.ptr] = normalized
