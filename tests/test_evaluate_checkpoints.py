@@ -248,6 +248,7 @@ def test_run_match_rejects_match_that_exceeds_step_limit():
             candidate_slots={0, 1, 2, 3},
             seed=123,
             device=torch.device("cpu"),
+            catalog_map={"TFT_TestChampion": 0},
             max_steps=1,
         )
 
@@ -419,6 +420,7 @@ def test_paired_evaluation_enforces_lineage_and_emits_rotated_reproducible_resul
         seeds=[100, 101, 102, 103],
         device=torch.device("cpu"),
         split="validation",
+        catalog_map={"TFT_TestChampion": 0},
         master_seed=17,
         max_steps=2,
     )
@@ -469,6 +471,7 @@ def test_paired_evaluation_rejects_tampered_lineage_hash_and_duplicate_seeds():
             seeds=[1],
             device=torch.device("cpu"),
             split="test",
+            catalog_map={"TFT_TestChampion": 0},
             max_steps=2,
         )
     with pytest.raises(ValueError, match="non-empty and unique"):
