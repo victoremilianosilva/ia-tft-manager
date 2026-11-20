@@ -82,6 +82,9 @@ struct ContextualActionEvaluation {
     std::vector<std::string> economic_evidence_used;
     std::vector<std::string> economic_evidence_missing;
     bool projected_income_available{false};
+    std::string projected_income_source{"unavailable"};
+    std::uint32_t projected_income_horizon_rounds{0};
+    double projected_income_uncertainty{1.0};
     bool incoming_damage_available{false};
     bool elimination_risk_available{false};
     bool progression_available{false};
@@ -155,6 +158,9 @@ struct ContextualActionEvaluation {
                 {"evidence_used", economic_evidence_used},
                 {"evidence_missing", economic_evidence_missing},
                 {"projected_income_available", projected_income_available},
+                {"projected_income_source", projected_income_source},
+                {"projected_income_horizon_rounds", projected_income_horizon_rounds},
+                {"projected_income_uncertainty", projected_income_uncertainty},
                 {"incoming_damage_available", incoming_damage_available},
                 {"elimination_risk_available", elimination_risk_available},
                 {"progression_available", progression_available}}},
@@ -229,6 +235,9 @@ public:
             out.economic_evidence_used = evidence->economy.evidence_used;
             out.economic_evidence_missing = evidence->economy.evidence_missing;
             out.projected_income_available = evidence->economy.projected_income_available;
+            out.projected_income_source = evidence->economy.projected_income_source;
+            out.projected_income_horizon_rounds = evidence->economy.projected_income_horizon_rounds;
+            out.projected_income_uncertainty = evidence->economy.projected_income_uncertainty;
             out.incoming_damage_available = evidence->economy.incoming_damage_available;
             out.elimination_risk_available = evidence->economy.elimination_risk_available;
             out.progression_available = evidence->economy.progression_available;
