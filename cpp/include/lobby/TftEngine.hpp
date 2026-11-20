@@ -311,8 +311,6 @@ struct AuditStrategicOwnerSnapshot {
     std::string producer{"TFTEngine::get_audit_snapshot"};
     std::uint64_t episode_id{0};
     std::uint64_t player_decision_sequence{0};
-    // Sequence consumed by strategic evidence/candidate/action owners; a distinct scope.
-    std::uint64_t strategic_context_sequence{0};
     std::int32_t player_id{-1};
     std::uint32_t round{0};
     bool active_composition_valid{false};
@@ -335,6 +333,9 @@ struct AuditStrategicOwnerSnapshot {
     std::vector<AuditUnitCopyProgressSnapshot> unit_copy_progress;
     // False means unavailable, never a measured zero.
     bool opportunity_cost_available{false};
+    // Sequence consumed by strategic evidence/candidate/action owners; a distinct scope.
+    // Appended to preserve existing aggregate initialization.
+    std::uint64_t strategic_context_sequence{0};
 };
 
 struct AuditPlayerSnapshot {
