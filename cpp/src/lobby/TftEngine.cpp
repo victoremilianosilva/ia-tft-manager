@@ -2374,6 +2374,7 @@ struct TFTEngine::Impl {
                 planner_context.level = economy.level;
                 planner_context.board_power = board_power;
                 planner_context.alive = player.alive;
+                planner_context.current_direction_viable = false;
                 planner_context.evidence.hp = true;
                 planner_context.evidence.gold = true;
                 planner_context.evidence.level = true;
