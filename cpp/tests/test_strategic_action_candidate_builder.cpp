@@ -48,6 +48,7 @@ void builder_emits_snapshot_bound_physical_candidates() {
     LineupPlan lineup;
     lineup.composition_id = "candidate-builder";
     lineup.composition_version = 3;
+    lineup.match_id = 77; lineup.player_id = 0; lineup.round = 9; lineup.sequence = 42;
     lineup.endgame_target_ids = {10, 20};
     lineup.selected_board = {
         {10, LineupSlotKind::ActiveTarget, 90, true, true},
@@ -182,6 +183,7 @@ void missing_cost_rejects_only_the_affected_candidate() {
     LineupPlan lineup;
     lineup.composition_id = composition.composition_id;
     lineup.composition_version = 2;
+    lineup.match_id = 88; lineup.player_id = 0; lineup.round = 10; lineup.sequence = 7;
     lineup.endgame_target_ids = {10};
 
     StrategicSharedContext context;
@@ -292,6 +294,7 @@ void owned_unit_candidates_require_native_physical_identity() {
     LineupPlan lineup;
     lineup.composition_id = composition.composition_id;
     lineup.composition_version = 1;
+    lineup.match_id = 7; lineup.player_id = 0; lineup.round = 2; lineup.sequence = 9;
     StrategicSharedContext context;
     context.player_id = 0; context.round = 2; context.gold = 5;
     context.alive = true; context.evidence.gold = true;
