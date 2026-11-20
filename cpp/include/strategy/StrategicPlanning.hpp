@@ -175,6 +175,7 @@ struct StrategicSharedContext {
     std::uint32_t schema_version{1};
     std::int32_t player_id{-1};
     std::uint32_t round{0};
+    std::uint64_t sequence{0};
     std::uint32_t stage{1};
     double hp{100.0};
     std::int32_t gold{0};
