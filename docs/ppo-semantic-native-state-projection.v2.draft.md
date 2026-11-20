@@ -31,7 +31,7 @@ Normalizations are explicit in `semantic_observation.py` and versioned by this c
 
 The existing AuditSnapshot carries one strategic_state object per player, produced by TFTEngine::get_audit_snapshot from the existing ActiveCompositionManager and StrategicCommitment, plus the unified state machine direction/pivot anchors. PPO training enables the native owner pipeline; the optional JSONL audit sidecar is not required for state updates. Its independent contract is tft.strategic-owner-observation v1 and repeats episode, player, round and player-decision sequence so stale or cross-player state is rejected.
 
-The semantic tensor receives only membership/reference features, not recommendation scores or confidence. Pair and upgrade progress is derived from the exact board/bench unit facts in the same snapshot; shop offers are not counted as owned copies. Four global validity values distinguish unavailable owners from valid empty membership.
+The semantic tensor receives only membership/reference features, not recommendation scores or confidence. Pair and upgrade progress is produced once by the existing C++ UnitCopyProgress helpers from the exact board/bench units and carried in the same strategic_state snapshot. Python only projects that native result; it does not reimplement copy/upgrade rules. Shop offers are not counted as owned copies. Four global validity values distinguish unavailable owners from valid empty membership.
 
 Opportunity cost remains explicitly unavailable in this snapshot: PR2 found no validated per-action producer published here. The availability flag is false and no numeric cost is fabricated. This remains an integration gap for the full #286 acceptance criteria.
 

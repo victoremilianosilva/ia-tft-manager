@@ -68,6 +68,14 @@ def _metadata():
         "pivot_target_composition_identity": "comp-b",
         "pivot_source_composition_version": 3,
         "pivot_reference_unit_ids": [17],
+        "unit_copy_progress": [
+            {
+                "champion_internal_id": 17,
+                "owned_copy_equivalent": 4,
+                "copies_toward_next_star": 0,
+                "highest_star": 2,
+            }
+        ],
         "opportunity_cost_available": False,
     }
     return {
@@ -104,9 +112,18 @@ def test_native_semantic_projection_has_stable_shape_and_explicit_identity():
     assert projected["numeric"][29] == 1.0  # direction reference
     assert projected["numeric"][30] == 1.0  # pivot reference
     assert projected["numeric"][31] == 4.0 / 9.0  # one 2-star plus one 1-star copy
-    assert projected["numeric"][32] == 1.0 / 3.0  # one owned 2-star unit
+    assert projected["numeric"][32] == 0.0  # native UnitCopyProgress reports no 2-star progress
     assert projected["identity"]["player_id"] == 2
     assert len(projected["sha256"]) == 64
+
+
+def test_copy_progress_consumes_native_unit_copy_progress_without_recounting():
+    row = _metadata()
+    row["native_player_state"]["strategic_state"]["unit_copy_progress"][0][
+        "copies_toward_next_star"
+    ] = 2
+    projected = project_native_player_state(row, {"TFT_TestChampion": 17})
+    assert projected["numeric"][32] == 1.0
 
 
 def test_semantic_batch_is_deterministic_and_catalog_contract_is_bound():

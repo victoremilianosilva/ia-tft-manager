@@ -462,6 +462,27 @@ class CppTFTLobbyWrapper:
             core_ids = validate_ids("active_core_unit_ids")
             direction_ids = validate_ids("direction_reference_unit_ids")
             pivot_ids = validate_ids("pivot_reference_unit_ids")
+            progress_rows = strategic.get("unit_copy_progress")
+            if not isinstance(progress_rows, list):
+                raise RuntimeError("Strategic owner snapshot sem unit_copy_progress nativo.")
+            progress_ids = set()
+            for row in progress_rows:
+                if not isinstance(row, dict):
+                    raise RuntimeError("unit_copy_progress contém registro inválido.")
+                champion_id = row.get("champion_internal_id")
+                copies = row.get("owned_copy_equivalent")
+                toward_next = row.get("copies_toward_next_star")
+                highest_star = row.get("highest_star")
+                if (
+                    isinstance(champion_id, bool) or not isinstance(champion_id, int) or champion_id < 0
+                    or champion_id in progress_ids
+                    or isinstance(copies, bool) or not isinstance(copies, int) or not 1 <= copies <= 9
+                    or isinstance(toward_next, bool) or not isinstance(toward_next, int) or not 0 <= toward_next <= 2
+                    or isinstance(highest_star, bool) or not isinstance(highest_star, int) or not 1 <= highest_star <= 3
+                    or (highest_star == 3 and toward_next != 0)
+                ):
+                    raise RuntimeError("unit_copy_progress contém valores nativos inválidos.")
+                progress_ids.add(champion_id)
             if not core_ids.issubset(active_ids):
                 raise RuntimeError("Core units devem pertencer à composição ativa.")
             if not strategic["active_composition_valid"] and (active_ids or core_ids):

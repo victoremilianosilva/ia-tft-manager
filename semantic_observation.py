@@ -193,6 +193,28 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
     core_ids = _id_set("active_core_unit_ids")
     direction_ids = _id_set("direction_reference_unit_ids")
     pivot_ids = _id_set("pivot_reference_unit_ids")
+    progress_rows = strategic.get("unit_copy_progress")
+    if not isinstance(progress_rows, list):
+        raise TypeError("strategic owner unit_copy_progress must be a list")
+    copy_progress = {}
+    for row in progress_rows:
+        if not isinstance(row, Mapping):
+            raise TypeError("unit_copy_progress rows must be objects")
+        champion_id = _non_negative_int(row.get("champion_internal_id"), "unit_copy_progress.champion_internal_id")
+        copies = _non_negative_int(row.get("owned_copy_equivalent"), "unit_copy_progress.owned_copy_equivalent")
+        toward_next = _non_negative_int(row.get("copies_toward_next_star"), "unit_copy_progress.copies_toward_next_star")
+        highest_star = _non_negative_int(row.get("highest_star"), "unit_copy_progress.highest_star")
+        if champion_id in copy_progress:
+            raise ValueError("unit_copy_progress contains duplicate champion IDs")
+        if not 1 <= highest_star <= 3 or not 1 <= copies <= 9 or toward_next > 2:
+            raise ValueError("unit_copy_progress values are outside native ranges")
+        if highest_star == 3 and toward_next != 0:
+            raise ValueError("three-star units cannot have progress toward another upgrade")
+        copy_progress[champion_id] = {
+            "owned_copy_equivalent": copies,
+            "copies_toward_next_star": toward_next,
+            "highest_star": highest_star,
+        }
     if not core_ids.issubset(active_ids):
         raise ValueError("active core units must belong to the active composition")
     if not active_valid and (active_ids or core_ids):
@@ -271,19 +293,6 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
     ]
 
     catalog = dict(catalog_map)
-    owned = {}
-    for group_name in ("board", "bench"):
-        group = state.get(group_name)
-        if not isinstance(group, Sequence) or isinstance(group, (str, bytes)):
-            raise ValueError(f"native {group_name} is required for copy progression")
-        for entity in group:
-            if isinstance(entity, Mapping) and entity.get("occupied") is True:
-                name = entity.get("champion_id")
-                star = _non_negative_int(entity.get("star"), f"{group_name}.star")
-                if not isinstance(name, str) or not name or not 1 <= star <= 3:
-                    raise ValueError("owned unit has invalid champion/star facts")
-                owned.setdefault(name, []).append(star)
-
     numeric = list(global_values)
     champion_ids = []
     for group_name, expected_count in (("board", 28), ("bench", 9), ("shop", 5)):
@@ -313,11 +322,10 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
                 raise TypeError(f"occupied {group_name}[{slot}] requires items and trait_names lists")
             internal_id = catalog.get(champion_name)
             champion_valid = internal_id is not None
-            owned_stars = owned.get(champion_name, [])
-            same_star_count = sum(1 for owned_star in owned_stars if owned_star == star)
-            copy_equivalent = sum({1: 1, 2: 3, 3: 9}[owned_star] for owned_star in owned_stars)
-            upgrade_progress = 1.0 if star == 3 else min(same_star_count, 3) / 3.0
             native_id = None if internal_id is None else int(internal_id)
+            native_progress = copy_progress.get(native_id, {})
+            copy_equivalent = native_progress.get("owned_copy_equivalent", 0)
+            upgrade_progress = native_progress.get("copies_toward_next_star", 0) / 2.0
             numeric.extend([
                 1.0,
                 star / 3.0,
