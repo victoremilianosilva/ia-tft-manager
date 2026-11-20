@@ -479,6 +479,16 @@ class RolloutBuffer:
                     normalized.append(copy.deepcopy(metadata))
                 normalized_groups[group_name] = normalized
 
+            identity_presence = [
+                metadata.get("identity") is not None
+                for group in normalized_groups.values()
+                for metadata in group
+            ]
+            if any(identity_presence) and not all(identity_presence):
+                raise ValueError(
+                    "O rollout não pode misturar linhas com e sem envelope canônico de identidade."
+                )
+
             for index, (decision, result, next_state) in enumerate(zip(
                 normalized_groups["snapshot_metadata"],
                 normalized_groups["result_snapshot_metadata"],
