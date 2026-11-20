@@ -1,8 +1,10 @@
 {
   "manifest_id": "tft.ppo.observation-projection",
   "version": "1.0.0-draft",
-  "status": "stage0_projection_inventory_for_domain_review_not_frozen_tensor_layout",
+  "status": "semantic_projection_approved_tensor_layout_pending",
   "canonical_architecture": "TFT Strategic Engine",
+  "semantic_decision": "docs/observation-projection-semantic-decision.v1.md",
+  "tensor_layout_status": "not_frozen_until_pr3_encoder_and_checkpoint_lineage",
   "schema_contract": "spec/observation-schema.v2.draft.json",
   "consumer_matrix_source": "spec/observation-projection-consumer-matrix.v1.draft.json",
   "source_map_source": "spec/observation-schema.v1.source-map.json",
