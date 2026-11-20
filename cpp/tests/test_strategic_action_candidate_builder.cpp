@@ -163,6 +163,20 @@ void builder_emits_snapshot_bound_physical_candidates() {
             candidate.evidence_uncertainty <= 1.0);
     }
 
+    auto protected_lineup = lineup;
+    protected_lineup.selected_board.push_back(
+        {30, LineupSlotKind::Bridge, 50, false, true});
+    auto protected_native = native;
+    const auto protected_result = StrategicActionCandidateBuilder{}.build(
+        context, active, priorities, protected_lineup, protected_native, costs);
+    const auto protected_sale = std::find_if(
+        protected_result.candidates.begin(), protected_result.candidates.end(),
+        [](const auto& candidate) {
+            return candidate.kind == StrategicActionKind::SellUnit &&
+                candidate.champion_id == 30;
+        });
+    assert(protected_sale == protected_result.candidates.end());
+
     auto stale_lineup = lineup;
     stale_lineup.sequence = native.sequence - 1;
     auto stale_native = native;
