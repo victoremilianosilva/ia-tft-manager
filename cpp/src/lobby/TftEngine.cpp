@@ -2514,14 +2514,6 @@ struct TFTEngine::Impl {
                     if (first != milestones.end() && *first > 0)
                         discovery.trait_thresholds.push_back({trait, *first});
                 }
-        
-                for (const auto& [trait, milestones] : trait_milestones) {
-                    if (milestones.empty()) continue;
-                    const auto first = std::min_element(
-                        milestones.begin(), milestones.end());
-                    if (first != milestones.end() && *first > 0)
-                        discovery.trait_thresholds.push_back({trait, *first});
-                }
 
                 // Discovery defines which directions have enough owned support
                 // to be considered at initialization. StrategicPlanner remains
