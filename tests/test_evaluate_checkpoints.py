@@ -389,13 +389,16 @@ def test_paired_summary_rejects_same_player_assigned_to_both_policies():
 
 
 def _evaluation_artifact(checkpoint_sha):
+    from semantic_observation import build_semantic_state_checkpoint_contract
+
+    semantic_contract = build_semantic_state_checkpoint_contract({"TFT_TestChampion": 0})
     contract = {
         "contract_id": "tft.ppo-checkpoint-lineage.v1",
         "version": 1,
         "components": {
             "action_mask_contract": {"contract_id": "action-mask-v1"},
             "critic_mask_input_contract": {"contract_id": "critic-mask-v1"},
-            "semantic_state_contract": {"contract_id": "semantic-state-v1"},
+            "semantic_state_contract": semantic_contract,
             "reward_contract": {"contract_id": "reward-v1"},
         },
         "policy_state_signature": [{"name": "actor.weight", "shape": [4, 3], "dtype": "torch.float32"}],
