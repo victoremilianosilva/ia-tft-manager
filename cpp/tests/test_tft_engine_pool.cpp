@@ -88,6 +88,26 @@ int main(int argc, char** argv) {
                 }
             }
         }
+        const auto require_unique_active_uuid_ownership = [](const auto& snapshot) {
+            std::unordered_set<std::string> active_uuids;
+            for (const auto& player : snapshot.players) {
+                for (const auto& unit : player.board) {
+                    if (unit.occupied) {
+                        require(!unit.uuid.empty(), "Unidade ativa no board sem UUID.");
+                        require(active_uuids.insert(unit.uuid).second,
+                                "UUID duplicado entre owners ativos do board/bench.");
+                    }
+                }
+                for (const auto& unit : player.bench) {
+                    if (unit.occupied) {
+                        require(!unit.uuid.empty(), "Unidade ativa no bench sem UUID.");
+                        require(active_uuids.insert(unit.uuid).second,
+                                "UUID duplicado entre owners ativos do board/bench.");
+                    }
+                }
+            }
+        };
+        require_unique_active_uuid_ownership(identity_before_reset);
         const auto initial_episode_id = identity_before_reset.episode_id;
         const auto initial_owned_uuid = identity_before_reset.players[0].bench[0].uuid;
 
@@ -251,6 +271,7 @@ int main(int argc, char** argv) {
                 "Reset não avançou a identidade do episódio.");
         require(identity_after_reset.players[0].bench[0].uuid == initial_owned_uuid,
                 "O teste não confirmou a repetição esperada do UUID da fábrica após reset com mesmo seed.");
+        require_unique_active_uuid_ownership(identity_after_reset);
         require(identity_after_reset.engine_instance_id != independent_identity.engine_instance_id,
                 "Escopos de Engine independentes foram confundidos após reset.");
         const auto total_after_reset = engine.pool_total_available();
@@ -774,6 +795,7 @@ int main(int argc, char** argv) {
                     "Compra deve permanecer neutra no Reward Contract v1.");
 
             const auto after_buy = reversal_engine.get_audit_snapshot();
+            require_unique_active_uuid_ownership(after_buy);
             std::int32_t purchased_slot = -1;
             for (std::size_t slot = 0; slot < after_buy.players[0].bench.size(); ++slot) {
                 const auto& unit = after_buy.players[0].bench[slot];
@@ -796,6 +818,7 @@ int main(int argc, char** argv) {
                     ("Venda imediata de " + target_name +
                      " nao permaneceu neutra no Reward Contract v1.").c_str());
             const auto after_sell = reversal_engine.get_audit_snapshot();
+            require_unique_active_uuid_ownership(after_sell);
             require(!after_sell.players[0].bench[static_cast<std::size_t>(purchased_slot)].occupied,
                     ("Venda de " + target_name + " nao removeu a unidade comprada.").c_str());
         }
