@@ -39,7 +39,6 @@
 #include "reward/RewardModel.hpp"
 #include "strategy/CompositionDirectionPolicy.hpp"
 #include "strategy/StrategyPolicy.hpp"
-#include "strategy/CompositionPlanner.hpp"
 #include "strategy/NativeStrategicCompositionGenerator.hpp"
 #include "strategy/StrategicEvidenceContext.hpp"
 #include "strategy/StrategicPlanner.hpp"
@@ -2733,16 +2732,7 @@ struct TFTEngine::Impl {
     void update_strategy(std::size_t i) {
         auto& strategy_snapshot = player_envs[i].strategy;
         StrategyInfo info = strategy_snapshot.value_or(StrategyInfo{});
-        // Keep the last confirmed lineup so small score fluctuations do not
-        // repeatedly replace the strategic plan on every refresh.
-        const auto previous_planned_units = info.planned_units;
-        const auto previous_planned_unit_ids = info.planned_unit_ids;
-        const auto previous_planned_traits = info.planned_traits;
-        const auto previous_planned_main_carry_id = info.planned_main_carry_id;
-        const double previous_planned_score = info.planned_composition_score;
-        const auto previous_planned_notes = info.planned_acquisition_notes;
-        const bool previous_composition_locked = info.composition_locked;
-        const std::string previous_direction = info.composition_direction;
+        // Strategic direction and composition are projected from native owners below.
         const auto& player = player_envs[i].info;
         const auto& economy = player_envs[i].economy;
         const double power = board_power(i);
@@ -2755,9 +2745,8 @@ struct TFTEngine::Impl {
         composition_intelligence_native_candidates[i].clear();
         composition_intelligence_native_diagnostics[i].clear();
 
-        // Generate once from raw facts and reuse the same result for the new
-        // strategic planner and CompositionIntelligence. The legacy plan below
-        // remains isolated to the existing PPO/Viewer compatibility path.
+        // Generate once from raw facts and reuse the same candidate set for
+        // native direction discovery, composition ownership and lineup planning.
         strategy::NativeCompositionGenerationResult strategic_native_generation;
         std::unordered_map<std::int32_t, strategy::NativeCompositionOwnedUnit>
             strategic_native_owned;
@@ -2918,11 +2907,11 @@ struct TFTEngine::Impl {
         }
         // A estratégia econômica é selecionada por uma única política.
         // FAST8 e SLOWROLL só ficam elegíveis quando a composição os solicita.
+        const auto& active_composition = composition_intelligence_players[i].active.current();
         const auto composition_has_unit = [&](std::int32_t id) {
-            return std::find(info.planned_unit_ids.begin(), info.planned_unit_ids.end(), id)
-                    != info.planned_unit_ids.end() ||
-                std::find(info.core_unit_ids.begin(), info.core_unit_ids.end(), id)
-                    != info.core_unit_ids.end();
+            return active_composition && std::any_of(
+                active_composition->candidate.units.begin(), active_composition->candidate.units.end(),
+                [&](const auto& unit) { return unit.champion_id == id; });
         };
         std::unordered_map<std::int32_t, int> owned_copies;
         const auto count_owned_copy = [&](const UnitInstance& unit) {
@@ -2971,9 +2960,8 @@ struct TFTEngine::Impl {
             }
         }
         const bool composition_requests_fast8 =
-            !info.composition_direction.empty() &&
-            info.planned_unit_ids.size() >= 8 &&
-            economy.level < 8;
+            active_composition && !strategic_planner_commitments[i].composition_direction.empty() &&
+            active_composition->candidate.units.size() >= 8 && economy.level < 8;
         const strategy::EconomicStrategyContext strategy_context{
             economy.gold,
             static_cast<double>(player.hp),
@@ -3012,56 +3000,14 @@ struct TFTEngine::Impl {
         info.board_power = power;
         info.bench_strength = bench_strength;
 
-        // Equivalente ao CompositionManager.update(board, bench).
-        std::unordered_map<std::string, int> trait_counts;
-        std::unordered_map<std::int32_t, int> copies_by_unit;
-        std::unordered_map<std::int32_t, double> focus_scores;
-        std::unordered_map<std::int32_t, std::string> unit_names;
-        // Preserve Python dict/Counter insertion order for tie-breaking.
-        std::vector<std::string> trait_order;
-        std::vector<std::int32_t> unit_order;
-        const auto add_owned_unit = [&](const UnitInstance& unit) {
-            const auto* def = catalog->find_by_id(unit.champion_internal_id);
-            if (!def) return;
-            const std::int32_t id = def->internal_id;
-            if (copies_by_unit.find(id) == copies_by_unit.end()) unit_order.push_back(id);
-            unit_names[id] = def->api_name;
-            copies_by_unit[id] += star_copies(unit.star);
-            // Trait emblems count as a trait-bearing unit in the owned-team
-            // planner, just as they do in combat. Deduplicate per unit so two
-            // copies of the same emblem cannot count as two units for a breakpoint.
-            std::unordered_set<std::string> unit_traits(def->traits.begin(), def->traits.end());
-            for (const auto& item : unit.items) {
-                if (!item.grants_trait.empty()) unit_traits.insert(item.grants_trait);
-            }
-            for (const auto& trait : unit_traits) {
-                if (trait_counts.find(trait) == trait_counts.end())
-                    trait_order.push_back(trait);
-                ++trait_counts[trait];
-            }
-        };
-        for (const auto& unit : player_envs[i].board) if (unit) add_owned_unit(*unit);
-        for (const auto& unit : player_envs[i].bench) if (unit) add_owned_unit(*unit);
-
-        const auto score_owned_unit = [&](const UnitInstance& unit) {
-            const auto* def = catalog->find_by_id(unit.champion_internal_id);
-            if (!def) return;
-            const std::int32_t id = def->internal_id;
-            const double score = (unit.star - 1) * 3.0 + def->cost * 1.5
-                + def->traits.size() + std::min(copies_by_unit[id], 9) * 0.5;
-            focus_scores[id] = std::max(focus_scores[id], score);
-        };
-        for (const auto& unit : player_envs[i].board) if (unit) score_owned_unit(*unit);
-        for (const auto& unit : player_envs[i].bench) if (unit) score_owned_unit(*unit);
-
-        // Retain the previous focus/core snapshot before rebuilding candidates.
-        // Owned, still-viable pieces should not churn merely because a refresh
-        // produces a tiny score fluctuation.
-        const std::int32_t previous_focus_id = info.composition_focus_id;
-        const auto previous_core_unit_ids = info.core_unit_ids;
+        // Compatibility projection only: canonical composition and lineup data
+        // come from the native ActiveCompositionManager and its planner owners.
+        const auto& active_composition = composition_intelligence_players[i].active.current();
+        info.composition_direction = strategic_planner_commitments[i].composition_direction;
+        info.composition_locked = false; // no authoritative lock producer exists yet
         info.composition_focus.clear();
         info.composition_focus_id = -1;
-        // Keep composition_direction persistent while composition_locked is true.
+        info.composition_focus_weights.clear();
         info.core_units.clear();
         info.core_unit_ids.clear();
         info.core_traits.clear();
@@ -3070,578 +3016,66 @@ struct TFTEngine::Impl {
         info.planned_traits.clear();
         info.planned_main_carry_id = -1;
         info.planned_composition_score = 0.0;
+        info.planned_acquisition_notes.clear();
         info.active_traits.clear();
         info.unit_counts.clear();
         info.unit_counts_by_id.clear();
 
-        // Port of Python _update_comp_direction(), _update_comp_focus(), and
-        // _should_lock_comp(). Python's _get_offensive_factor() helper is not
-        // part of this native engine, so champion role is used as a proxy.
-        const auto offensive_factor = [](const ChampionDefinition& def) {
-            switch (def.combat_profile.role) {
-                case 1: // carry
-                case 4: // assassin
-                    return 1.20;
-                case 3: // fighter
-                    return 1.05;
-                case 0: // tank
-                case 2: // support
-                    return 0.90;
-                default:
-                    return 1.0;
-            }
-        };
-
-
-        const auto count_occupied = [](const auto& slots) {
-            return static_cast<std::size_t>(std::count_if(
-                slots.begin(), slots.end(),
-                [](const auto& unit) { return unit.has_value(); }));
-        };
-        const auto unit_count = count_occupied(player_envs[i].board) +
-            count_occupied(player_envs[i].bench);
-
-        std::map<std::string, double> focus;
-        for (const auto& [trait, value] : info.composition_focus_weights)
-            focus[trait] = value;
-
-        std::unordered_map<std::string, int> board_trait_counts;
+        // Preserve factual board traits and owned copy counts for legacy
+        // telemetry. They are not used to generate a composition or priorities.
+        std::unordered_map<std::string, std::int32_t> observed_board_traits;
         for (const auto& unit : player_envs[i].board) {
             if (!unit) continue;
-            const auto* def = catalog->find_by_id(unit->champion_internal_id);
-            if (!def) continue;
-            std::unordered_set<std::string> unit_traits(def->traits.begin(), def->traits.end());
-            for (const auto& item : unit->items) {
-                if (!item.grants_trait.empty()) unit_traits.insert(item.grants_trait);
-            }
-            for (const auto& trait : unit_traits) ++board_trait_counts[trait];
+            const auto* definition = catalog->find_by_id(unit->champion_internal_id);
+            if (!definition) continue;
+            std::unordered_set<std::string> traits(definition->traits.begin(), definition->traits.end());
+            for (const auto& item : unit->items)
+                if (!item.grants_trait.empty()) traits.insert(item.grants_trait);
+            for (const auto& trait : traits) ++observed_board_traits[trait];
         }
-        // Active traits mirror Python's board-only SynergyManager.active_traits.
-        for (const auto& trait : trait_order) {
-            const auto found = board_trait_counts.find(trait);
-            if (found != board_trait_counts.end()) info.active_traits.emplace_back(trait, found->second);
-        }
-        const auto trait_level = [&](const std::string& trait, int count) {
-            const auto found = trait_milestones.find(trait);
-            if (found == trait_milestones.end()) return count >= 2 ? 1 : 0;
-            int level = 0;
-            for (const int milestone : found->second) {
-                if (count >= milestone) ++level;
-            }
-            return level;
+        for (const auto& [trait, count] : observed_board_traits)
+            info.active_traits.emplace_back(trait, count);
+
+        std::unordered_map<std::int32_t, std::int32_t> observed_owned_copies;
+        std::unordered_map<std::int32_t, std::string> observed_unit_names;
+        const auto collect_owned_count = [&](const UnitInstance& unit) {
+            const auto* definition = catalog->find_by_id(unit.champion_internal_id);
+            if (!definition) return;
+            observed_unit_names[definition->internal_id] = definition->api_name;
+            observed_owned_copies[definition->internal_id] += star_copies(unit.star);
         };
-
-        std::unordered_map<std::string, double> trait_score;
-        const auto score_composition_unit = [&](const UnitInstance& unit) {
-            const auto* def = catalog->find_by_id(unit.champion_internal_id);
-            if (!def) return;
-            const double base = 1.0 + def->cost * 0.15 +
-                (std::clamp(unit.star, 1, 3) - 1) * 0.5;
-            const double weighted = base * offensive_factor(*def);
-            std::unordered_set<std::string> unit_traits(def->traits.begin(), def->traits.end());
-            for (const auto& item : unit.items) {
-                if (!item.grants_trait.empty()) unit_traits.insert(item.grants_trait);
-            }
-            for (const auto& trait : unit_traits) trait_score[trait] += weighted;
-        };
-        for (const auto& unit : player_envs[i].board) if (unit) score_composition_unit(*unit);
-        for (const auto& unit : player_envs[i].bench) if (unit) score_composition_unit(*unit);
-
-        for (const auto& [trait, count] : board_trait_counts) {
-            if (trait_score.find(trait) == trait_score.end()) continue;
-            const int level = trait_level(trait, count);
-            if (level > 0) {
-                double avg_off = 0.0;
-                int matching = 0;
-                const auto accumulate_offense = [&](const auto& slots) {
-                    for (const auto& unit : slots) {
-                        if (!unit) continue;
-                        const auto* def = catalog->find_by_id(unit->champion_internal_id);
-                        if (def && std::find(def->traits.begin(), def->traits.end(), trait) != def->traits.end()) {
-                            avg_off += offensive_factor(*def);
-                            ++matching;
-                        }
-                    }
-                };
-                accumulate_offense(player_envs[i].board);
-                if (matching > 0) avg_off /= matching;
-                else avg_off = 1.0;
-                trait_score[trait] += (level * 2.0 + count * 0.3) * avg_off;
-            }
-        }
-        for (const auto& [trait, count] : trait_counts) {
-            if (board_trait_counts.find(trait) == board_trait_counts.end() ||
-                trait_level(trait, board_trait_counts[trait]) == 0) {
-                if (trait_score.find(trait) != trait_score.end())
-                    trait_score[trait] += 1.0 + count * 0.2;
-            }
-        }
-        for (auto& [trait, score] : trait_score) {
-            const auto found = focus.find(trait);
-            if (found != focus.end())
-                score *= 1.0 + std::min(0.4, found->second * 0.08);
+        for (const auto& unit : player_envs[i].board) if (unit) collect_owned_count(*unit);
+        for (const auto& unit : player_envs[i].bench) if (unit) collect_owned_count(*unit);
+        for (const auto& [unit_id, copies] : observed_owned_copies) {
+            info.unit_counts_by_id.emplace_back(unit_id, copies);
+            const auto name = observed_unit_names.find(unit_id);
+            if (name != observed_unit_names.end()) info.unit_counts.emplace_back(name->second, copies);
         }
 
-        std::vector<std::pair<std::string, double>> sorted_traits(
-            trait_score.begin(), trait_score.end());
-        std::stable_sort(sorted_traits.begin(), sorted_traits.end(),
-            [&](const auto& lhs, const auto& rhs) {
-                if (lhs.second != rhs.second) return lhs.second > rhs.second;
-                const auto left_pos = std::find(trait_order.begin(), trait_order.end(), lhs.first);
-                const auto right_pos = std::find(trait_order.begin(), trait_order.end(), rhs.first);
-                return left_pos < right_pos;
-            });
-
-        const auto current_trait_score = trait_score.find(info.composition_direction);
-        const bool current_direction_viable =
-            !info.composition_direction.empty() &&
-            current_trait_score != trait_score.end() && current_trait_score->second > 2.0;
-        bool composition_transition_unlocked_this_update = false;
-
-        std::map<std::string, double> new_comp_traits;
-        // The first composition decision is made at round 9 (stage 2-5),
-        // after the opening PvE rounds and enough shop/board evidence.
-        if (current_round < 9) {
-            info.composition_locked = false;
-            info.composition_direction.clear();
-            info.composition_strength = 0.0;
-            info.composition_candidate_direction.clear();
-            info.composition_candidate_strength = 0.0;
-            info.composition_candidate_streak = 0;
-        } else if (unit_count == 0) {
-            info.composition_locked = false;
-            info.composition_direction.clear();
-            info.composition_strength = 0.0;
-            info.composition_candidate_direction.clear();
-            info.composition_candidate_strength = 0.0;
-            info.composition_candidate_streak = 0;
-            focus.clear();
-        } else {
-            ++info.comp_direction_update_steps;
-            if (info.comp_direction_update_steps >= 2 ||
-                (current_round == 9 && info.composition_direction.empty())) {
-                info.comp_direction_update_steps = 0;
-                if (!sorted_traits.empty()) {
-                    const auto& top = sorted_traits.front();
-                    const double second = sorted_traits.size() > 1
-                        ? sorted_traits[1].second : 0.0;
-                    const double gap = top.second - second;
-                    const double ratio = top.second / (second + 1e-5);
-                    if (!info.composition_locked && current_stage >= 3 &&
-                        unit_count >= 6 && (ratio > 1.6 || gap > 2.5)) {
-                        info.composition_locked = true;
-                    }
-                    if (info.composition_locked && current_direction_viable && !focus.empty()) {
-                        std::map<std::string, double> combined;
-                        for (const auto& [trait, weight] : focus)
-                            combined[trait] = weight * 0.6;
-                        for (const auto& [trait, score] : trait_score)
-                            combined[trait] += score * 0.4;
-                        std::vector<std::pair<std::string, double>> ordered(
-                            combined.begin(), combined.end());
-                        std::stable_sort(ordered.begin(), ordered.end(),
-                            [](const auto& lhs, const auto& rhs) {
-                                return lhs.second > rhs.second;
-                            });
-                        if (!ordered.empty()) {
-                            new_comp_traits[ordered[0].first] = ordered[0].second * 1.4;
-                            for (std::size_t index = 1;
-                                 index < std::min<std::size_t>(4, ordered.size()); ++index) {
-                                if (ordered[index].second > ordered[0].second * 0.35)
-                                    new_comp_traits[ordered[index].first] = ordered[index].second * 0.5;
-                            }
-                        }
-                    } else {
-                        new_comp_traits[top.first] = top.second * 1.4;
-                        for (std::size_t index = 1;
-                             index < std::min<std::size_t>(4, sorted_traits.size()); ++index) {
-                            if (sorted_traits[index].second > top.second * 0.35)
-                                new_comp_traits[sorted_traits[index].first] =
-                                    sorted_traits[index].second * 0.5;
-                        }
-                    }
+        if (active_composition) {
+            const auto& candidate = active_composition->candidate;
+            info.planned_main_carry_id = candidate.main_carry_id;
+            info.planned_composition_score = candidate.source_score;
+            for (const auto& target : candidate.units) {
+                info.planned_unit_ids.push_back(target.champion_id);
+                const auto* definition = catalog->find_by_id(target.champion_id);
+                if (!definition) continue;
+                info.planned_units.push_back(definition->api_name);
+                for (const auto& trait : definition->traits)
+                    if (std::find(info.planned_traits.begin(), info.planned_traits.end(), trait) ==
+                        info.planned_traits.end()) info.planned_traits.push_back(trait);
+                if (target.core) {
+                    info.core_unit_ids.push_back(target.champion_id);
+                    info.core_units.push_back(definition->api_name);
+                    for (const auto& trait : definition->traits)
+                        if (std::find(info.core_traits.begin(), info.core_traits.end(), trait) ==
+                            info.core_traits.end()) info.core_traits.push_back(trait);
                 }
-
-                for (auto& [trait, weight] : focus) weight *= 0.95;
-                for (auto it = focus.begin(); it != focus.end();) {
-                    if (it->second < 0.05) it = focus.erase(it);
-                    else ++it;
-                }
-                for (const auto& [trait, value] : new_comp_traits)
-                    focus[trait] += value * 0.04;
-                if (!new_comp_traits.empty()) {
-                    const auto main = std::max_element(
-                        new_comp_traits.begin(), new_comp_traits.end(),
-                        [](const auto& lhs, const auto& rhs) { return lhs.second < rhs.second; });
-                    focus[main->first] += 0.8;
-                }
-                if (!info.composition_direction.empty() && !new_comp_traits.empty()) {
-                    const bool overlap = new_comp_traits.find(info.composition_direction) != new_comp_traits.end();
-                    if (!overlap && current_stage >= 4)
-                        focus[info.composition_direction] = std::max(
-                            0.1, focus[info.composition_direction]) * 1.1;
-                }
-                for (auto& [trait, weight] : focus) weight = std::min(weight, 5.0);
-
-                // The candidate is recalculated each refresh, but a locked direction
-                // only changes through explicit hysteresis or loss-of-viability.
-                strategy::CompositionDirectionState direction_state;
-                direction_state.direction = info.composition_direction;
-                direction_state.strength = info.composition_strength;
-                direction_state.locked = info.composition_locked;
-                direction_state.candidate_direction = info.composition_candidate_direction;
-                direction_state.candidate_strength = info.composition_candidate_strength;
-                direction_state.candidate_streak = info.composition_candidate_streak;
-                direction_state.previous_direction = info.previous_composition_direction;
-                direction_state.change_reason = info.composition_direction_change_reason;
-                direction_state.change_count = info.composition_direction_change_count;
-
-                std::string candidate_direction;
-                double candidate_strength = 0.0;
-                if (!new_comp_traits.empty()) {
-                    const auto main = std::max_element(
-                        new_comp_traits.begin(), new_comp_traits.end(),
-                        [](const auto& lhs, const auto& rhs) { return lhs.second < rhs.second; });
-                    candidate_direction = main->first;
-                    double total = 0.0;
-                    for (const auto& [trait, value] : new_comp_traits)
-                        total += std::min(value, 10.0);
-                    candidate_strength = total / new_comp_traits.size();
-                }
-
-                // If the current direction has lost viability but still wins the
-                // stale focus-weighted ranking, select the best different trait
-                // instead of repeatedly proposing the direction we are abandoning.
-                if (!current_direction_viable &&
-                    candidate_direction == info.composition_direction) {
-                    const auto alternative = std::find_if(
-                        sorted_traits.begin(), sorted_traits.end(),
-                        [&](const auto& item) {
-                            return item.first != info.composition_direction;
-                        });
-                    if (alternative != sorted_traits.end()) {
-                        candidate_direction = alternative->first;
-                        candidate_strength = alternative->second * 1.4;
-                    }
-                }
-
-                static const strategy::CompositionDirectionPolicy direction_policy{
-                    strategy::CompositionDirectionConfig{
-                        TFT_COMP_DIRECTION_MIN_RELATIVE_ADVANTAGE,
-                        TFT_COMP_DIRECTION_MIN_ABSOLUTE_ADVANTAGE,
-                        TFT_COMP_DIRECTION_REQUIRED_UPDATES
-                    }
-                };
-                const std::string direction_before = info.composition_direction;
-                const double strength_before = info.composition_strength;
-                const bool locked_before = info.composition_locked;
-                const auto direction_result = direction_policy.update(
-                    direction_state,
-                    strategy::CompositionDirectionInput{
-                        candidate_direction,
-                        candidate_strength,
-                        current_direction_viable,
-                        false
-                    });
-
-                if (direction_result.changed) {
-                    info.previous_composition_direction = direction_before;
-                    info.previous_composition_strength = strength_before;
-                    info.composition_direction_change_was_locked = locked_before;
-                    info.composition_direction_change_round = current_round;
-                    const auto focus_weight = focus.find(direction_state.direction);
-                    info.composition_direction_change_focus_weight =
-                        focus_weight == focus.end() ? 0.0 : focus_weight->second;
-                    info.composition_direction_change_reason = direction_state.change_reason;
-                }
-                composition_transition_unlocked_this_update = direction_result.unlocked;
-                info.composition_direction = direction_state.direction;
-                info.composition_strength = direction_state.strength;
-                info.composition_candidate_direction = direction_state.candidate_direction;
-                info.composition_candidate_strength = direction_state.candidate_strength;
-                info.composition_candidate_streak = direction_state.candidate_streak;
-                info.previous_composition_direction = direction_state.previous_direction;
-                info.composition_direction_change_count = direction_state.change_count;
-
-                // A successful strategic transition must not be re-locked by the
-                // generic stage/board-stability heuristic in the same update.
-                if (direction_result.unlocked)
-                    info.composition_locked = false;
-            }
-        }
-
-        // Python focus decay runs every decision step; direction refresh has its own
-        // 0.95 decay every two steps above.
-        const double focus_decay = current_stage <= 3 ? 0.88 : 0.92;
-        for (auto& [trait, weight] : focus) weight *= focus_decay;
-        std::string main_focus_trait;
-        if (!new_comp_traits.empty()) {
-            const auto main = std::max_element(new_comp_traits.begin(), new_comp_traits.end(),
-                [](const auto& lhs, const auto& rhs) { return lhs.second < rhs.second; });
-            main_focus_trait = main->first;
-        } else if (!info.composition_direction.empty()) main_focus_trait = info.composition_direction;
-        for (const auto& [trait, count] : board_trait_counts) {
-            const int level = trait_level(trait, count);
-            const double base = count * 0.2 + level * 0.9;
-            double gain = trait == main_focus_trait ? base * 2.5
-                : (new_comp_traits.find(trait) != new_comp_traits.end() ? base * 0.9 : base * 0.25);
-            if (current_stage <= 2) gain *= 0.6;
-            focus[trait] += gain;
-        }
-        for (const auto& [trait, count] : trait_counts) {
-            const auto it = board_trait_counts.find(trait);
-            const int deployed = it == board_trait_counts.end() ? 0 : it->second;
-            const int partial = std::max(0, count - deployed);
-            if (partial == 0) continue;
-            const double base = partial * 0.08 + 0.35;
-            focus[trait] += trait == main_focus_trait ? base * 1.6
-                : (new_comp_traits.find(trait) != new_comp_traits.end() ? base * 0.7 : base * 0.15);
-        }
-        if (info.composition_locked && !main_focus_trait.empty()) focus[main_focus_trait] *= 1.25;
-        if (!main_focus_trait.empty()) {
-            const double main_value = focus[main_focus_trait];
-            for (auto& [trait, weight] : focus)
-                if (trait != main_focus_trait && weight < main_value * 0.3) weight *= 0.75;
-            focus[main_focus_trait] += 1.2;
-        }
-        if (focus.size() > 5) {
-            std::vector<std::pair<std::string, double>> ordered(focus.begin(), focus.end());
-            std::stable_sort(ordered.begin(), ordered.end(),
-                [](const auto& lhs, const auto& rhs) { return lhs.second > rhs.second; });
-            focus.clear();
-            for (std::size_t index = 0; index < 5; ++index)
-                focus[ordered[index].first] = ordered[index].second;
-        }
-        double focus_total = 0.0;
-        for (const auto& [trait, weight] : focus) focus_total += std::max(0.0, weight);
-        if (focus_total > 0.0) {
-            for (auto& [trait, weight] : focus)
-                weight = std::min(10.0, weight * 10.0 / focus_total);
-        }
-
-        // _should_lock_comp(): stage 4+ requires an active offensive synergy;
-        // STABILIZE can release the lock after three rounds without a win.
-        const bool stabilize_lock_suppressed =
-            info.strategy == 1 && info.comp_stabilize_start_round >= 0 &&
-            current_round - info.comp_stabilize_start_round >= 3 &&
-            economy.win_streak == 0;
-        if (!stabilize_lock_suppressed && !composition_transition_unlocked_this_update) {
-            bool has_offensive_synergy = false;
-            if (current_stage >= 4) {
-                for (const auto& [trait, count] : board_trait_counts) {
-                    if (trait_level(trait, count) < 2) continue;
-                    double avg_off = 0.0;
-                    int matching = 0;
-                    const auto inspect = [&](const auto& slots) {
-                        for (const auto& unit : slots) {
-                            if (!unit) continue;
-                            const auto* def = catalog->find_by_id(unit->champion_internal_id);
-                            if (def && std::find(def->traits.begin(), def->traits.end(), trait) != def->traits.end()) {
-                                avg_off += offensive_factor(*def);
-                                ++matching;
-                            }
-                        }
-                    };
-                    inspect(player_envs[i].board);
-                    inspect(player_envs[i].bench);
-                    if (matching > 0 && avg_off / matching > 1.0) {
-                        has_offensive_synergy = true;
-                        break;
-                    }
+                if (target.champion_id == candidate.main_carry_id) {
+                    info.composition_focus = definition->api_name;
+                    info.composition_focus_id = definition->internal_id;
                 }
             }
-            if (current_stage < 4 || has_offensive_synergy) {
-                double avg_board_power = 0.0;
-                int alive_count = 0;
-                for (std::size_t other = 0; other < kPlayersPerLobby; ++other) {
-                    if (!player_envs[other].info.alive) continue;
-                    avg_board_power += board_power(other);
-                    ++alive_count;
-                }
-                if (alive_count > 0) avg_board_power /= alive_count;
-                const bool board_stable = power >= avg_board_power * 0.9;
-                if (economy.win_streak >= 3 ||
-                    (current_stage >= 4 && board_stable) ||
-                    current_stage >= 5) {
-                    info.composition_locked = true;
-                }
-            }
-        }
-        info.composition_focus_weights.assign(focus.begin(), focus.end());
-
-        for (const auto& unit_id : unit_order) {
-            info.unit_counts.emplace_back(unit_names[unit_id], copies_by_unit.at(unit_id));
-            info.unit_counts_by_id.emplace_back(unit_id, copies_by_unit.at(unit_id));
-        }
-
-        if (!focus_scores.empty()) {
-            auto best_score = -std::numeric_limits<double>::infinity();
-            std::int32_t best_id = -1;
-            for (const auto& unit_id : unit_order) {
-                const auto found = focus_scores.find(unit_id);
-                if (found != focus_scores.end() && found->second > best_score) {
-                    best_score = found->second;
-                    best_id = unit_id;
-                }
-            }
-            const auto previous = focus_scores.find(previous_focus_id);
-            // A challenger must be materially stronger (20% and at least 0.5
-            // points) before replacing a still-owned focus unit.
-            if (previous != focus_scores.end() &&
-                (best_id == previous_focus_id ||
-                 best_score < previous->second * 1.20 + 0.5)) {
-                best_id = previous_focus_id;
-            }
-            if (best_id >= 0) {
-                info.composition_focus_id = best_id;
-                info.composition_focus = unit_names[best_id];
-            }
-        }
-
-        std::vector<std::pair<std::int32_t, double>> ordered_units;
-        ordered_units.reserve(focus_scores.size());
-        for (const auto& unit_id : unit_order) {
-            const auto found = focus_scores.find(unit_id);
-            if (found != focus_scores.end()) ordered_units.emplace_back(unit_id, found->second);
-        }
-        std::stable_sort(ordered_units.begin(), ordered_units.end(),
-            [](const auto& lhs, const auto& rhs) { return lhs.second > rhs.second; });
-        // Preserve viable core IDs first; fill vacancies with the strongest
-        // newly observed units. This avoids core churn on near-tied scores.
-        for (const auto id : previous_core_unit_ids) {
-            if (info.core_unit_ids.size() >= 3) break;
-            if (focus_scores.find(id) == focus_scores.end()) continue;
-            if (std::find(info.core_unit_ids.begin(), info.core_unit_ids.end(), id) !=
-                info.core_unit_ids.end()) continue;
-            info.core_unit_ids.push_back(id);
-            info.core_units.push_back(unit_names[id]);
-        }
-        for (const auto& [id, score] : ordered_units) {
-            (void)score;
-            if (info.core_unit_ids.size() >= 3) break;
-            if (std::find(info.core_unit_ids.begin(), info.core_unit_ids.end(), id) !=
-                info.core_unit_ids.end()) continue;
-            info.core_unit_ids.push_back(id);
-            info.core_units.push_back(unit_names[id]);
-        }
-
-        std::vector<std::pair<std::string, int>> ordered_traits;
-        ordered_traits.reserve(trait_order.size());
-        for (const auto& trait : trait_order)
-            ordered_traits.emplace_back(trait, trait_counts.at(trait));
-        std::stable_sort(ordered_traits.begin(), ordered_traits.end(),
-            [](const auto& lhs, const auto& rhs) {
-                return lhs.second > rhs.second;
-            });
-        for (const auto& [trait, count] : ordered_traits) {
-            if (count >= 2 && info.core_traits.size() < 3)
-                info.core_traits.push_back(trait);
-        }
-
-        if (current_round >= 9 && !info.composition_direction.empty()) {
-            strategy::CompositionPlanner::OwnedCopies owned_copies;
-            for (const auto& [unit_id, copies] : copies_by_unit)
-                owned_copies[unit_id] = copies;
-            const strategy::CompositionPlanner::FocusWeights plan_focus(
-                focus.begin(), focus.end());
-            // Plan the complete level-8 core even while the player is below
-            // level 8. At levels 9/10, recompute a larger plan from the latest
-            // direction, focus weights, and owned copies so the extra slots can
-            // adapt to the live state instead of being fixed in the early game.
-            const auto planning_slots =
-                strategy::CompositionPlanner::target_slots_for_level(economy.level);
-            strategy::CompositionPlanner::AvailableCopies available_copies;
-            std::unordered_set<std::int32_t> currently_offered;
-            for (const auto& champion : catalog->all())
-                available_copies[champion.internal_id] = pool
-                    ? pool->available(champion.internal_id) : 0;
-            const auto& current_shop = player_envs[i].shop;
-            if (current_shop) {
-                for (const auto& offer : current_shop->offers()) {
-                    if (!offer) continue;
-                    currently_offered.insert(offer->champion_internal_id);
-                    available_copies[offer->champion_internal_id] =
-                        std::max(1, available_copies[offer->champion_internal_id]);
-                }
-            }
-            strategy::CompositionPlanner::LiveUnitContext live_context;
-            const auto& live_player = player_envs[i];
-            if (live_player.item_engine) {
-                for (const auto& item_id : live_player.item_engine->inventory())
-                    live_context.inventory_item_ids.insert(item_id);
-                // Count a recommended item as feasible when the player already
-                // owns it or currently has both components for its active recipe.
-                if (item_catalog) {
-                    for (const auto& item : item_catalog->items) {
-                        const auto& first = item.recipe_components[0];
-                        const auto& second = item.recipe_components[1];
-                        if (!first.empty() && !second.empty() &&
-                            live_player.item_engine->can_craft(first, second))
-                            live_context.inventory_item_ids.insert(item.id);
-                    }
-                }
-                const auto collect_live_unit = [&](const UnitInstance& unit, int board_slot) {
-                    auto& equipped = live_context.equipped_items_by_champion[unit.champion_internal_id];
-                    for (const auto& item_id : live_player.item_engine->equipped(unit.uuid))
-                        equipped.push_back(item_id);
-                    for (const auto& item : unit.items)
-                        if (!item.api_name.empty()) equipped.push_back(item.api_name);
-                    if (board_slot >= 0)
-                        live_context.board_slot_by_champion[unit.champion_internal_id] = board_slot;
-                };
-                for (std::size_t slot = 0; slot < live_player.board.size(); ++slot)
-                    if (live_player.board[slot])
-                        collect_live_unit(*live_player.board[slot], static_cast<int>(slot));
-                for (const auto& unit : live_player.bench)
-                    if (unit) collect_live_unit(*unit, -1);
-            }
-            const auto plan = strategy::CompositionPlanner::build(
-                catalog->all(), trait_milestones, info.composition_direction,
-                plan_focus, owned_copies, planning_slots, economy.level,
-                available_copies, currently_offered, &live_context,
-                -1, composition_intelligence_enabled);
-            const bool direction_transitioned =
-                info.composition_direction != previous_direction;
-            const bool keep_previous_plan = !direction_transitioned &&
-                !previous_planned_unit_ids.empty() &&
-                !strategy::should_replace_composition_plan(
-                    previous_planned_unit_ids, plan.unit_ids,
-                    previous_planned_score, plan.score,
-                    previous_composition_locked);
-            if (keep_previous_plan) {
-                info.planned_units = previous_planned_units;
-                info.planned_unit_ids = previous_planned_unit_ids;
-                info.planned_traits = previous_planned_traits;
-                info.planned_main_carry_id = previous_planned_main_carry_id;
-                info.planned_composition_score = previous_planned_score;
-                info.planned_acquisition_notes.clear();
-                for (const auto& note : previous_planned_notes) {
-                    if (note.rfind("OPGG_META_CANDIDATE:", 0) == 0)
-                        info.planned_acquisition_notes.push_back(note);
-                }
-                for (const auto& note : plan.acquisition_notes) {
-                    if (note.rfind("OPGG_META_AUDIT:", 0) == 0 ||
-                        note.rfind("OPGG_META_CANDIDATE:", 0) == 0)
-                        info.planned_acquisition_notes.push_back(note);
-                }
-                info.planned_acquisition_notes.push_back(
-                    "COMPOSITION_HYSTERESIS: kept_previous_plan (previous_score=" +
-                    std::to_string(previous_planned_score) + ", candidate_score=" +
-                    std::to_string(plan.score) + ", direction_locked=" +
-                    std::string(previous_composition_locked ? "true" : "false") + ")");
-            } else {
-                info.planned_units = plan.unit_names;
-                info.planned_unit_ids = plan.unit_ids;
-                info.planned_traits = plan.core_traits;
-                info.planned_main_carry_id = plan.main_carry_id;
-                info.planned_composition_score = plan.score;
-                info.planned_acquisition_notes = plan.acquisition_notes;
-            }
-        } else if (composition_intelligence_enabled) {
-            composition_intelligence_native_diagnostics[i].push_back(
-                current_round < 9
-                    ? "Native candidate not generated: planner starts at round 9"
-                    : "Native candidate not generated: composition direction is unavailable");
         }
 
         // Raw shop snapshot shared by the independent shadow composition pipeline.
