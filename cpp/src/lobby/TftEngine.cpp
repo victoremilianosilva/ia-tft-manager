@@ -3403,7 +3403,6 @@ struct TFTEngine::Impl {
                             evidence.synergy_contribution = 0.0;
                         }
                         evidence.champion_id = target.champion_id;
-                        evidence.unit_cost = definition->cost;
                         // A unit already on board is evaluated as a removal risk
                         // above. Only bench/missing targets are evaluated as an
                         // additional board contribution here.
