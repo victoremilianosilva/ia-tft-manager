@@ -57,6 +57,7 @@ from semantic_observation import (
     build_semantic_state_checkpoint_contract,
     catalog_identity,
     validate_semantic_state_checkpoint_contract,
+    validate_semantic_batch_alignment,
 )
 
 from engine_contracts import ActionType
@@ -1493,6 +1494,8 @@ class Trainer:
                     "champion_ids": torch.as_tensor(
                         semantic_batch["champion_ids"], dtype=torch.long, device=self.device
                     ),
+                    "identities": semantic_batch["identities"],
+                    "hashes": semantic_batch["hashes"],
                 }
                 for metadata, semantic_hash in zip(
                     flat_snapshot_metadata, semantic_batch["hashes"]
@@ -1504,6 +1507,9 @@ class Trainer:
                     metadata["semantic_projection_contract_hash"] = (
                         self.semantic_state_contract["sha256"]
                     )
+                validate_semantic_batch_alignment(
+                    semantic_batch, flat_snapshot_metadata, self.semantic_state_contract
+                )
                 semantic_entities = np.asarray(
                     semantic_batch["numeric"], dtype=np.float32
                 )[:, SEMANTIC_GLOBAL_FEATURES:].reshape(
@@ -1712,6 +1718,8 @@ class Trainer:
                     "champion_ids": torch.as_tensor(
                         next_semantic_batch["champion_ids"], dtype=torch.long, device=self.device
                     ),
+                    "identities": next_semantic_batch["identities"],
+                    "hashes": next_semantic_batch["hashes"],
                 }
                 for metadata, semantic_hash in zip(
                     flat_next_snapshot_metadata, next_semantic_batch["hashes"]
@@ -1723,6 +1731,9 @@ class Trainer:
                     metadata["semantic_projection_contract_hash"] = (
                         self.semantic_state_contract["sha256"]
                     )
+                validate_semantic_batch_alignment(
+                    next_semantic_batch, flat_next_snapshot_metadata, self.semantic_state_contract
+                )
 
                 # Resultado final, colocação e duração de cada partida.
                 for lobby_idx, info in enumerate(infos):
