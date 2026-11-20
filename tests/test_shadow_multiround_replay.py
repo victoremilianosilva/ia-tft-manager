@@ -120,3 +120,27 @@ def test_shadow_pipeline_feature_flag_off_emits_no_composition_snapshots(monkeyp
         assert _records(engine) == []
     finally:
         engine.close()
+
+
+def test_generated_strategic_replay_artifact_is_loadable_by_viewer():
+    from pathlib import Path
+    from viewer.session import ViewerSession
+
+    artifact = Path(__file__).resolve().parents[1] / "cpp" / "build" / "strategic_integrated_replay.jsonl"
+    if not artifact.is_file():
+        pytest.skip("O artefato CTest só existe após executar o replay nativo integrado.")
+
+    session = ViewerSession()
+    count = session.load_replay(artifact)
+    assert count == 8
+    events = [session.replay_event(index) for index in range(count)]
+    assert [item["sequence_id"] for item in events] == list(range(1, 9))
+    assert all(item["event_type"] == "strategic_replay_scenario" for item in events)
+    scenarios = [item["payload"]["scenario"] for item in events]
+    assert scenarios == [
+        "buy_upgrade", "sell", "positioning", "stale_same_round",
+        "pivot_invalidates_old_recommendation", "contradictory_evidence",
+        "no_candidates", "executor_reset",
+    ]
+    assert all(item["payload"].get("native_action_applied") is False for item in events[:5])
+    assert all(item["payload"].get("execution_attempted") is False for item in events[:5])

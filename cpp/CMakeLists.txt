@@ -405,6 +405,23 @@ if(BUILD_TESTING)
     add_test(NAME strategic_action_executor COMMAND test_strategic_action_executor)
 
     add_executable(
+        test_strategic_integrated_replay
+        tests/test_strategic_integrated_replay.cpp
+        src/lobby/EconomyEngine.cpp
+    )
+    configure_tft_module(test_strategic_integrated_replay)
+    target_link_libraries(test_strategic_integrated_replay PRIVATE nlohmann_json::nlohmann_json)
+    target_compile_definitions(test_strategic_integrated_replay PRIVATE
+        TFT_STRATEGIC_REPLAY_FIXTURE=\"${CMAKE_CURRENT_SOURCE_DIR}/../tests/fixtures/strategic_integrated_replay.v1.json\"
+    )
+    enable_tft_test_assertions(test_strategic_integrated_replay)
+    add_test(
+        NAME strategic_integrated_replay
+        COMMAND test_strategic_integrated_replay
+            "${CMAKE_CURRENT_BINARY_DIR}/strategic_integrated_replay.jsonl"
+    )
+
+    add_executable(
         test_strategic_action_candidate_builder
         tests/test_strategic_action_candidate_builder.cpp
         src/lobby/EconomyEngine.cpp

@@ -379,12 +379,52 @@ class ViewerSession:
             if previous is None or sequence > previous["sequence"]:
                 latest_by_player[player_id] = record
 
+        current_round = self.audit_snapshot.get("round")
+        current_round = current_round if type(current_round) is int and current_round >= 1 else None
         for player in self.audit_snapshot.get("players", []):
             try:
                 player_id = int(player.get("player_id", -1))
             except (TypeError, ValueError):
                 continue
             shadow = latest_by_player.get(player_id)
+            if shadow is not None:
+                stale_reason = None
+                if current_round is not None and shadow.get("round") != current_round:
+                    stale_reason = "diagnostic_round_does_not_match_current_native_snapshot"
+
+                strategic_state = player.get("strategic_state")
+                if stale_reason is None and isinstance(strategic_state, dict):
+                    state_episode = strategic_state.get("episode_id")
+                    if type(state_episode) is int and state_episode != engine_episode_id:
+                        stale_reason = "strategic_owner_episode_mismatch"
+                    state_round = strategic_state.get("round")
+                    if stale_reason is None and type(state_round) is int and state_round != shadow.get("round"):
+                        stale_reason = "strategic_owner_round_mismatch"
+
+                    expected_sequence = strategic_state.get("player_decision_sequence")
+                    comparison = shadow.get("action_evaluator_comparison")
+                    resolution = comparison.get("native_action_resolution") if isinstance(comparison, dict) else None
+                    identity = resolution.get("identity") if isinstance(resolution, dict) else None
+                    source_sequence = identity.get("source_sequence") if isinstance(identity, dict) else None
+                    if stale_reason is None and (
+                        type(expected_sequence) is not int or expected_sequence <= 0
+                        or type(source_sequence) is not int
+                        or source_sequence != expected_sequence
+                    ):
+                        stale_reason = "diagnostic_sequence_does_not_match_current_native_player_state"
+
+                    if stale_reason is None and strategic_state.get("active_composition_valid") is True:
+                        if (
+                            shadow.get("composition_id") != strategic_state.get("active_composition_id")
+                            or shadow.get("composition_version") != strategic_state.get("active_composition_version")
+                        ):
+                            stale_reason = "diagnostic_composition_identity_does_not_match_current_native_state"
+
+                if stale_reason is not None:
+                    shadow = dict(shadow)
+                    shadow["stale"] = True
+                    shadow["stale_reason"] = stale_reason
+
             player["shadow_composition"] = (
                 shadow if shadow is not None else {
                     "status": "unavailable",
@@ -444,8 +484,12 @@ class ViewerSession:
                     "composition_id": record.get("composition_id"),
                     "composition_version": record.get("composition_version"),
                     "identity_complete": (
-                        isinstance(player_id, int) and isinstance(round_number, int)
-                        and isinstance(sequence, int)
+                        type(player_id) is int and player_id >= 0
+                        and type(round_number) is int and round_number >= 1
+                        and type(sequence) is int and sequence > 0
+                        and type(record.get("engine_match_id")) is int
+                        and record.get("engine_match_id") > 0
+                        and bool(self.match_id)
                     ),
                     "timestamp_available": timestamp is not None,
                 }
