@@ -33,6 +33,7 @@ struct StrategicPositionSnapshot {
     std::int32_t player_id{-1};
     std::uint32_t round{0};
     std::uint64_t sequence{0};
+    std::uint64_t lineup_sequence{0};
     std::string composition_id;
     std::uint64_t composition_version{0};
     bool alive{false};
@@ -67,6 +68,7 @@ struct StrategicPositionProposal {
             {"schema_version", schema_version},
             {"identity", {{"match_id", match_id}, {"player_id", player_id},
                 {"round", round}, {"sequence", sequence},
+                {"lineup_sequence", lineup_sequence},
                 {"composition_id", composition_id},
                 {"composition_version", composition_version}}},
             {"unit", {{"champion_id", champion_id}, {"role", static_cast<int>(role)}}},
@@ -95,11 +97,13 @@ public:
         out.player_id = snapshot.player_id;
         out.round = snapshot.round;
         out.sequence = snapshot.sequence;
+        out.lineup_sequence = snapshot.lineup_sequence;
         out.composition_id = snapshot.composition_id;
         out.composition_version = snapshot.composition_version;
 
         if (snapshot.schema_version != 1 || snapshot.match_id == 0 ||
             snapshot.player_id < 0 || snapshot.sequence == 0 ||
+            snapshot.lineup_sequence == 0 || snapshot.lineup_sequence != snapshot.sequence ||
             snapshot.composition_id.empty() || snapshot.composition_version == 0) {
             out.reason = "positioning_snapshot_identity_or_schema_invalid";
             return out;
