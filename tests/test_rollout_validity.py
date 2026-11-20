@@ -120,3 +120,17 @@ def test_optimization_valid_must_be_subset_of_trajectory_valid():
             values=torch.zeros(1), masks_dict={},
             trajectory_valid=torch.tensor([False]), optimization_valid=torch.tensor([True]),
         )
+
+
+
+def test_terminal_done_disables_bootstrap_even_with_valid_next_state():
+    buffer = _buffer(num_steps=1, num_envs=1)
+    buffer.rewards[0, 0] = 1.0
+    buffer.values.zero_()
+    buffer.trajectory_valid[0, 0] = True
+    buffer.optimization_valid[0, 0] = True
+    buffer.compute_returns_and_advantages(
+        next_value=torch.tensor([100.0]), next_done=torch.tensor([1.0]),
+        next_state_valid=torch.tensor([True]), gamma=1.0, gae_lambda=1.0,
+    )
+    assert buffer.advantages[0, 0].item() == 1.0
