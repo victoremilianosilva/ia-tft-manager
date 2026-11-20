@@ -2778,7 +2778,10 @@ struct TFTEngine::Impl {
             native_input.sequence = strategic_context_sequences[i] + 1;
             native_input.level = economy.level;
             native_input.gold = economy.gold;
-            native_input.target_slots = std::clamp(economy.level, 1, 10);
+            // Native composition is the full endgame target. The live board
+            // capacity is enforced by LineupPlanner, which records unowned and
+            // capacity-deferred targets separately.
+            native_input.target_slots = std::clamp(std::max(8, economy.level), 1, 10);
             native_input.maximum_candidates = 8;
             native_input.catalog.reserve(catalog->all().size());
             for (const auto& definition : catalog->all()) {
