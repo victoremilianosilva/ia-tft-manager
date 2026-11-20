@@ -109,17 +109,17 @@ void exploration_waits_for_composition_and_then_binds_direction() {
     assert(!result.anchors.has_direction_anchor());
 
     input.initial_composition_candidates.push_back(composition(
-        "composition-unrelated", 99,
+        "native:Invoker", 99,
         {{99, UnitRole::MainCarry, true, 100}}));
     input.initial_composition_candidates.push_back(composition(
-        "composition-bruiser", 1,
+        "native:Bruiser", 1,
         {{1, UnitRole::MainCarry, true, 100},
          {2, UnitRole::Frontline, true, 80}}));
     result = machine.refresh(input);
     assert(result.phase == StrategicCyclePhase::CompositionActive);
     assert(result.state_changed);
     assert(result.active_composition->version == 1);
-    assert(result.anchors.direction_anchor.composition_identity == "composition-bruiser");
+    assert(result.anchors.direction_anchor.composition_identity == "native:Bruiser");
     assert(result.anchors.direction_anchor.composition_version == 1);
     assert(result.anchors.direction_anchor.direction == "composition-bruiser");
     assert(result.anchors.direction_anchor.lifecycle == StrategicAnchorLifecycle::Active);
