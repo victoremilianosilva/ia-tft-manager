@@ -279,7 +279,8 @@ int main() {
     posture = economic_controller.evaluate(economy_context);
     const auto action = action_evaluator.evaluate(economy_context, posture);
     assert(action.recommended_action == StrategicActionKind::BuyUnit);
-    assert(action.expected_economy_cost == 3.0);
+    // expected_economy_cost without a same-snapshot marginal proof is unknown.
+    assert(action.expected_economy_cost == 0.0);
     assert(action.expected_board_delta == 0.62);
     assert(action.confidence >= 0.50);
     assert(economy_context.action_candidates.size() == 2);
