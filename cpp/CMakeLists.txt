@@ -358,7 +358,11 @@ if(BUILD_TESTING)
         COMMAND test_lineup_planner
     )
 
-    add_executable(test_planner_evidence_adapters tests/test_planner_evidence_adapters.cpp)
+    add_executable(
+        test_planner_evidence_adapters
+        tests/test_planner_evidence_adapters.cpp
+        src/lobby/EconomyEngine.cpp
+    )
     configure_tft_module(test_planner_evidence_adapters)
     enable_tft_test_assertions(test_planner_evidence_adapters)
     add_test(NAME planner_evidence_adapters COMMAND test_planner_evidence_adapters)
@@ -441,6 +445,7 @@ if(BUILD_TESTING)
     add_executable(
         test_strategic_planner
         tests/test_strategic_planner.cpp
+        src/lobby/EconomyEngine.cpp
     )
     configure_tft_module(test_strategic_planner)
     enable_tft_test_assertions(test_strategic_planner)
