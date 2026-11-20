@@ -2450,8 +2450,14 @@ struct TFTEngine::Impl {
                 }
 
                 auto planner_commitment = strategic_planner_commitments[i];
-                const auto planner_decision =
-                    strategy::StrategicPlanner{}.evaluate(planner_context, planner_commitment);
+                strategy::StrategicPlanDecision planner_decision;
+                if (planner_context.current_composition_direction.empty()) {
+                    planner_decision =
+                        strategy::StrategicPlanner{}.evaluate(planner_context, planner_commitment);
+                } else {
+                    planner_decision.target_composition_direction =
+                        planner_context.current_composition_direction;
+                }
 
                 strategy::StrategicCycleInput native_input;
                 native_input.evaluation_sequence = strategic_context_sequences[i] + 1;
