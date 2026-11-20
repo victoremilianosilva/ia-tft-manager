@@ -2532,8 +2532,17 @@ struct TFTEngine::Impl {
                 };
                 const auto native_result =
                     native_runtime.refresh(native_audit_context, native_input);
-                if (native_result.active_composition || active_manager.current()) {
-                    strategic_planner_commitments[i] = std::move(planner_commitment);
+                if ((native_result.active_composition || active_manager.current()) &&
+                    strategic_planner_commitments[i].composition_direction.empty() &&
+                    !planner_commitment.composition_direction.empty()) {
+                    strategic_planner_commitments[i].composition_direction =
+                        planner_commitment.composition_direction;
+                    strategic_planner_commitments[i].selected_round =
+                        planner_commitment.selected_round;
+                    strategic_planner_commitments[i].selection_reason =
+                        planner_commitment.selection_reason;
+                    strategic_planner_commitments[i].confidence =
+                        planner_commitment.confidence;
                 }
                 if (const auto& committed = active_manager.current()) {
                     strategic_shadow_external_active_identity[i] =
