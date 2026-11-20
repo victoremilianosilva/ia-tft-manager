@@ -34,6 +34,9 @@ public:
                 const StrategicCycleInput& input,
                 const StrategicCycleResult& result) noexcept {
         try {
+            // No sidecar means no audit serialization or file work. The
+            // state machine is still updated by its caller independently.
+            if (output_.empty()) return false;
             if (context.player_id < 0 || context.match_id == 0) return false;
             std::lock_guard<std::mutex> lock(mutex_);
             const auto next_sequence = sequences_[context.player_id] + 1;
