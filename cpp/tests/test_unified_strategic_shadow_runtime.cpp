@@ -104,15 +104,23 @@ void runtime_advances_confirmation_only_for_new_evidence_sequences() {
     assert(duplicate.phase == StrategicCyclePhase::PivotEvaluation);
     assert(duplicate.diagnostics.pivot_confirmation->consecutive_viable_evaluations == 1);
 
-    // A new evaluation sequence is new evidence even within the same round.
+    // A new sequence with identical facts is still a duplicate observation.
     input.evaluation_sequence = 2;
+    const auto same_facts = runtime.refresh(context, input);
+    assert(same_facts.phase == StrategicCyclePhase::PivotEvaluation);
+    assert(same_facts.diagnostics.pivot_confirmation->consecutive_viable_evaluations == 1);
+
+    // Confirmation advances only after the evidence itself changes.
+    input.pivot_feasibility->gold_available = 39;
+    input.evaluation_sequence = 3;
     result = runtime.refresh(context, input);
     assert(result.phase == StrategicCyclePhase::PivotEvaluation);
     assert(result.diagnostics.pivot_confirmation->consecutive_viable_evaluations == 2);
     assert(result.active_composition->candidate.composition_id == "composition-current");
     assert(result.active_composition->version == 1);
 
-    input.evaluation_sequence = 3;
+    input.pivot_feasibility->gold_available = 38;
+    input.evaluation_sequence = 4;
     result = runtime.refresh(context, input);
     assert(result.phase == StrategicCyclePhase::PivotConfirmed);
     assert(result.state_changed);
