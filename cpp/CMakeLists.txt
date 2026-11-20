@@ -531,6 +531,20 @@ if(BUILD_TESTING)
     enable_tft_test_assertions(test_unified_strategic_state_machine)
     add_test(NAME unified_strategic_state_machine COMMAND test_unified_strategic_state_machine)
 
+    add_executable(
+        test_unified_strategic_shadow_runtime
+        tests/test_unified_strategic_shadow_runtime.cpp
+    )
+    configure_tft_module(test_unified_strategic_shadow_runtime)
+    target_link_libraries(
+        test_unified_strategic_shadow_runtime
+        PRIVATE nlohmann_json::nlohmann_json
+    )
+    enable_tft_test_assertions(test_unified_strategic_shadow_runtime)
+    add_test(
+        NAME unified_strategic_shadow_runtime
+        COMMAND test_unified_strategic_shadow_runtime
+    )
     # Deterministic end-to-end scenarios spanning discovery, unit priorities,
     # pivot feasibility and atomic direction/composition transitions.
     add_executable(

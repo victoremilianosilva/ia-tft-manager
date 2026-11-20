@@ -100,6 +100,7 @@ private:
                 {"gold_available", input.exploration.gold_available},
                 {"composition_defined", input.exploration.composition_defined},
                 {"active_composition_identity", input.exploration.active_composition_identity},
+                {"selected_initial_direction", input.selected_initial_direction},
                 {"previous_direction", input.exploration.previous_direction},
                 {"maximum_hypotheses", input.exploration.maximum_hypotheses}
             }}
@@ -137,9 +138,10 @@ private:
         if (input.active_composition)
             value["active_composition_version"] = input.active_composition->version;
 
-        value["initial_composition_candidate"] = input.initial_composition_candidate
-            ? composition_fingerprint(*input.initial_composition_candidate)
-            : nlohmann::json(nullptr);
+        value["initial_composition_candidates"] = nlohmann::json::array();
+        for (const auto& candidate : input.initial_composition_candidates)
+            value["initial_composition_candidates"].push_back(
+                composition_fingerprint(candidate));
 
         if (input.pivot_candidate) {
             value["pivot_candidate"] = {

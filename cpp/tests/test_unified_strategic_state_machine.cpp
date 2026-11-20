@@ -101,6 +101,7 @@ void exploration_waits_for_composition_and_then_binds_direction() {
     UnifiedStrategicStateMachine machine(active_composition, commitment);
     StrategicCycleInput input;
     input.exploration = discovery_input();
+    input.selected_initial_direction = "Bruiser";
 
     auto result = machine.refresh(input);
     assert(result.phase == StrategicCyclePhase::Exploration);
@@ -108,18 +109,46 @@ void exploration_waits_for_composition_and_then_binds_direction() {
     assert(result.diagnostics.discovery.status == DirectionDiscoveryStatus::HypothesesFound);
     assert(!result.anchors.has_direction_anchor());
 
-    input.initial_composition_candidate = composition(
-        "composition-bruiser", 1,
+    input.initial_composition_candidates.push_back(composition(
+        "native:Invoker", 99,
+        {{99, UnitRole::MainCarry, true, 100}}));
+    input.initial_composition_candidates.push_back(composition(
+        "native:Bruiser", 1,
         {{1, UnitRole::MainCarry, true, 100},
-         {2, UnitRole::Frontline, true, 80}});
+         {2, UnitRole::Frontline, true, 80}}));
     result = machine.refresh(input);
     assert(result.phase == StrategicCyclePhase::CompositionActive);
     assert(result.state_changed);
     assert(result.active_composition->version == 1);
-    assert(result.anchors.direction_anchor.composition_identity == "composition-bruiser");
+    assert(result.anchors.direction_anchor.composition_identity == "native:Bruiser");
     assert(result.anchors.direction_anchor.composition_version == 1);
-    assert(result.anchors.direction_anchor.direction == "composition-bruiser");
+    assert(result.anchors.direction_anchor.direction == "Bruiser");
     assert(result.anchors.direction_anchor.lifecycle == StrategicAnchorLifecycle::Active);
+}
+
+void strategic_planner_selected_direction_overrides_discovery_ranking() {
+    ActiveCompositionManager active_composition;
+    StrategicCommitment commitment;
+    UnifiedStrategicStateMachine machine(active_composition, commitment);
+    StrategicCycleInput input;
+    input.exploration = competing_discovery_input(0.0, 0.0);
+    input.selected_initial_direction = "Invoker";
+    input.initial_composition_candidates.push_back(composition(
+        "native:Bruiser", 10,
+        {{10, UnitRole::MainCarry, true, 100},
+         {11, UnitRole::Frontline, true, 80}}));
+    input.initial_composition_candidates.push_back(composition(
+        "native:Invoker", 20,
+        {{20, UnitRole::MainCarry, true, 100},
+         {21, UnitRole::Frontline, true, 80}}));
+
+    const auto result = machine.refresh(input);
+    assert(result.diagnostics.discovery.hypotheses.size() == 2);
+    assert(result.diagnostics.discovery.hypotheses.front().anchor.direction == "Bruiser");
+    assert(result.phase == StrategicCyclePhase::CompositionActive);
+    assert(result.active_composition.has_value());
+    assert(result.active_composition->candidate.composition_id == "native:Invoker");
+    assert(result.anchors.direction_anchor.direction == "Invoker");
 }
 
 void machine_owns_exploratory_direction_history_without_legacy_inputs() {
@@ -197,6 +226,22 @@ void shadow_runtime_isolates_players_and_resets_its_own_direction_history() {
 
     std::filesystem::remove(player_zero_path, ignored);
     std::filesystem::remove(player_one_path, ignored);
+}
+
+void shadow_runtime_refreshes_without_an_audit_sidecar() {
+    ActiveCompositionManager active_composition;
+    StrategicCommitment commitment;
+    // Audit output is optional; it must not be an activation prerequisite.
+    UnifiedStrategicShadowRuntime runtime(
+        active_composition, commitment, std::filesystem::path{});
+    StrategicCycleInput input;
+    input.exploration = discovery_input();
+
+    const auto result = runtime.refresh({42, 0, 3}, input);
+    assert(result.shadow_only);
+    assert(result.phase == StrategicCyclePhase::Exploration);
+    assert(result.diagnostics.discovery.status == DirectionDiscoveryStatus::HypothesesFound);
+    assert(!active_composition.current().has_value());
 }
 
 void pivot_evaluation_does_not_mutate_then_confirms_synchronized_state() {
@@ -365,8 +410,10 @@ void insufficient_evidence_clears_pivot_and_keeps_active_composition() {
 
 int main() {
     exploration_waits_for_composition_and_then_binds_direction();
+    strategic_planner_selected_direction_overrides_discovery_ranking();
     machine_owns_exploratory_direction_history_without_legacy_inputs();
     shadow_runtime_isolates_players_and_resets_its_own_direction_history();
+    shadow_runtime_refreshes_without_an_audit_sidecar();
     pivot_evaluation_does_not_mutate_then_confirms_synchronized_state();
     invalidated_candidate_is_removed_and_old_direction_is_preserved();
     missing_candidate_invalidates_pending_pivot_without_mutation();

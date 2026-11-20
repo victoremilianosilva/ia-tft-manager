@@ -27,12 +27,36 @@ def test_composition_intelligence_shadow_does_not_read_legacy_strategy_info():
         "info.composition_direction",
         "legacy_item_unit_profiles",
         "CompositionDirectionPolicy",
+        "copies_by_unit",
     )
     found = [token for token in forbidden if token in block]
     assert not found, (
         "Composition Intelligence Shadow must not read legacy strategy state: "
         f"{found}"
     )
+
+
+def test_native_composition_evidence_is_built_before_legacy_strategy():
+    source = ENGINE_SOURCE.read_text(encoding="utf-8")
+    start = source.index(
+        "// Native strategic evidence is generated directly from live engine facts"
+    )
+    end = source.index(
+        "if (current_round >= 9 && !info.composition_direction.empty())", start
+    )
+    native_generation = source[start:end]
+    assert "NativeStrategicCompositionGenerator{}.generate(native_input)" in native_generation
+    assert "strategic_native_owned" in native_generation
+    assert "StrategyInfo" not in native_generation
+    assert "info." not in native_generation
+    assert "copies_by_unit" not in native_generation
+
+    # The native fact snapshot must exist before legacy economic and direction
+    # generation, so its producer cannot depend on those derived values.
+    legacy_economy = source.index("strategy::select_economic_strategy(strategy_context)")
+    legacy_direction = source.index("Port of Python _update_comp_direction()")
+    assert start < legacy_economy
+    assert start < legacy_direction
 
 
 def test_shadow_core_and_item_fit_use_native_strategic_sources():
@@ -63,3 +87,46 @@ def test_action_comparison_requires_nonempty_exact_candidate_identity():
     assert "!strategic_context.action_candidates.empty()" in source
     assert "baseline_candidate.candidate_id != source.candidate_id" in source
     assert "contextual_candidate.candidate_id != source.candidate_id" in source
+
+
+def test_native_runtime_refresh_precedes_legacy_strategy_generation():
+    source = ENGINE_SOURCE.read_text(encoding="utf-8")
+    call = source.index(
+        "refresh_native_strategic_runtime(\n            i, current_round, economy, strategic_native_owned"
+    )
+    native_generation = source.index(
+        "NativeStrategicCompositionGenerator{}.generate(native_input)"
+    )
+    legacy_economy = source.index(
+        "strategy::select_economic_strategy(strategy_context)"
+    )
+    legacy_direction = source.index("Port of Python _update_comp_direction()")
+    assert native_generation < call < legacy_economy
+    assert call < legacy_direction
+
+
+def test_native_runtime_entrypoint_uses_only_native_cycle_inputs():
+    source = ENGINE_SOURCE.read_text(encoding="utf-8")
+    start = source.index("void refresh_native_strategic_runtime(")
+    end = source.index("void update_strategy(std::size_t i)", start)
+    runtime = source[start:end]
+    forbidden = ("StrategyInfo", "strategy_snapshot", "copies_by_unit",
+                 "select_economic_strategy",
+                 "composition_intelligence_enabled")
+    found = [token for token in forbidden if token in runtime]
+    assert not found, f"Native runtime entrypoint depends on legacy/optional state: {found}"
+    assert "strategic_shadow_runtimes[i]" in runtime
+    assert "strategic_context_sequences[i] + 1" in runtime
+    assert "strategic_native_owned" in runtime
+    assert "StrategicPlanner{}.evaluate(planner_context, planner_commitment)" in runtime
+    assert "native_runtime.refresh(native_audit_context, native_input)" in runtime
+
+def test_native_runtime_is_the_only_composition_publisher():
+    source = ENGINE_SOURCE.read_text(encoding="utf-8")
+    start = source.index("// New Composition Intelligence pipeline:")
+    end = source.index(
+        "static const std::array<const char*, 7> economic_posture_names", start
+    )
+    optional_pipeline = source[start:end]
+    assert "publish_if_approved" not in optional_pipeline
+    assert "native_strategic_runtime_owns_composition_publication" in optional_pipeline

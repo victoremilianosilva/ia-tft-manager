@@ -34,8 +34,11 @@ struct StrategicCycleInput {
     // The orchestrator takes a value snapshot and never mutates the source.
     std::optional<composition_intelligence::ActiveComposition> active_composition;
 
-    // Candidate generated from the selected discovery hypothesis.
-    std::optional<composition_intelligence::CompositionCandidate> initial_composition_candidate;
+    // Native candidates are matched against the selected discovery hypothesis;
+    // the state machine alone chooses which candidate can initialize the owner.
+    std::vector<composition_intelligence::CompositionCandidate> initial_composition_candidates;
+    // Final initial direction selected by StrategicPlanner from native anchors.
+    std::string selected_initial_direction;
     DirectionDiscoveryInput exploration;
 
     // Optional independent pivot candidate and the exact normalized evidence
@@ -144,25 +147,54 @@ public:
         } else if (!had_active) {
             if (out.diagnostics.discovery.status == DirectionDiscoveryStatus::HypothesesFound &&
                 !out.diagnostics.discovery.hypotheses.empty()) {
-                const auto& hypothesis = out.diagnostics.discovery.hypotheses.front();
-                if (!input.initial_composition_candidate.has_value()) {
-                    phase_ = StrategicCyclePhase::Exploration;
-                    out.diagnostics.transition_reason = "direction_hypothesis_waiting_for_composition_candidate";
-                } else if (!composition_contains_units(
-                               *input.initial_composition_candidate,
-                               hypothesis.anchor.reference_unit_ids)) {
+                const auto hypothesis = std::find_if(
+                    out.diagnostics.discovery.hypotheses.begin(),
+                    out.diagnostics.discovery.hypotheses.end(),
+                    [&](const auto& value) {
+                        return !input.selected_initial_direction.empty() &&
+                            value.anchor.direction == input.selected_initial_direction;
+                    });
+                if (hypothesis == out.diagnostics.discovery.hypotheses.end()) {
                     phase_ = StrategicCyclePhase::Exploration;
                     out.diagnostics.transition_reason =
-                        "initial_composition_does_not_contain_discovered_support_units";
+                        "discovery_waiting_for_strategic_planner_direction";
                 } else {
-                    auto initial_direction = hypothesis.anchor;
-                    bind_initial_direction(initial_direction, *input.initial_composition_candidate);
-                    const auto initialized = pivot_coordinator_.initialize(
-                        *input.initial_composition_candidate, initial_direction);
-                    out.state_changed = initialized.state_changed;
-                    out.diagnostics.transition_reason = initialized.reason;
-                    phase_ = initialized.status == PivotConfirmationStatus::Initialized
-                        ? StrategicCyclePhase::CompositionActive : StrategicCyclePhase::NoEvidence;
+                    const auto candidate = std::find_if(
+                        input.initial_composition_candidates.begin(),
+                        input.initial_composition_candidates.end(),
+                        [&](const auto& value) {
+                            const auto expected_identity =
+                                "native:" + hypothesis->anchor.direction;
+                            // Engine-generated identities are snapshot-scoped:
+                            // <candidate-set-id>:native:<direction>:<unit-ids>.
+                            // Keep compatibility with compact native identities
+                            // used by focused state-machine callers, but match
+                            // the canonical direction segment rather than
+                            // requiring the entire identity to equal a prefix.
+                            const bool direction_matches =
+                                value.composition_id == expected_identity ||
+                                value.composition_id.find(
+                                    ":" + expected_identity + ":") != std::string::npos;
+                            return value.source ==
+                                    composition_intelligence::CompositionSource::Native &&
+                                direction_matches &&
+                                composition_contains_units(
+                                    value, hypothesis->anchor.reference_unit_ids);
+                        });
+                    if (candidate == input.initial_composition_candidates.end()) {
+                        phase_ = StrategicCyclePhase::Exploration;
+                        out.diagnostics.transition_reason =
+                            "direction_hypothesis_waiting_for_matching_native_composition";
+                    } else {
+                        auto initial_direction = hypothesis->anchor;
+                        bind_initial_direction(initial_direction, *candidate);
+                        const auto initialized = pivot_coordinator_.initialize(
+                            *candidate, initial_direction);
+                        out.state_changed = initialized.state_changed;
+                        out.diagnostics.transition_reason = initialized.reason;
+                        phase_ = initialized.status == PivotConfirmationStatus::Initialized
+                            ? StrategicCyclePhase::CompositionActive : StrategicCyclePhase::NoEvidence;
+                    }
                 }
             } else {
                 phase_ = StrategicCyclePhase::NoEvidence;
@@ -319,7 +351,7 @@ private:
     ) {
         const auto discovered_direction = anchor.direction;
         anchor.identity = "direction:" + composition.composition_id + ":v1";
-        anchor.direction = composition.composition_id;
+        anchor.direction = discovered_direction;
         anchor.reason = "initial_composition_selected_from_discovery:" + discovered_direction;
         anchor.composition_identity = composition.composition_id;
         anchor.composition_version = 1;
