@@ -17,6 +17,7 @@ from rich.progress import (
 )
 
 from training_config import TrainingConfig, cosine_lr_factor
+from decision_identity import build_player_identity_envelopes
 
 from cpp_lobby_env import CppTFTLobbyWrapper
 
@@ -597,6 +598,11 @@ class Trainer:
                 metadata["lobby_index"] = lobby_idx
                 metadata["player_id"] = player_idx
                 envelopes = snapshot.get("player_identity_envelopes")
+                # Isolated fake environments without native snapshots may build
+                # deterministic fixtures; production native adapters must provide
+                # envelopes from their authoritative Engine result.
+                if envelopes is None and native_snapshot is None:
+                    envelopes = build_player_identity_envelopes(snapshot)
                 if not isinstance(envelopes, (list, tuple)) or len(envelopes) != players_per_lobby:
                     raise RuntimeError(
                         f"Lobby {lobby_idx} não forneceu envelopes canônicos para {players_per_lobby} jogadores."
