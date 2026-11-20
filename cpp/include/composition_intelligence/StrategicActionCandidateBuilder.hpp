@@ -209,12 +209,10 @@ public:
                 candidate.upgrade_value = priority->second->target_star > 0 ? 1.0 : 0.0;
                 candidate.shop_slot = static_cast<std::int32_t>(slot);
                 candidate.available = cost->second <= context.gold;
-                candidate.opportunity_cost = strategy::action_opportunity_cost::kBuyUnit;
                 candidate.evidence_reason = "active_target_priority_and_exact_legal_shop_slot";
                 candidate.evidence_source = "native_shop+UnitPriorityPlanner+native_BUY_mask";
                 candidate.evidence_horizon_rounds = 1;
                 candidate.evidence_uncertainty = std::clamp(1.0 - priority->second->confidence, 0.0, 1.0);
-                attach_marginal_interest(candidate);
                 append(std::move(candidate));
             }
 
