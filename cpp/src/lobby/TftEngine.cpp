@@ -6160,13 +6160,15 @@ ResetResult TFTEngine::reset(
     if (!impl_->strategic_shadow_audit_path.empty()) {
         std::error_code remove_error;
         std::filesystem::remove(impl_->strategic_shadow_audit_path, remove_error);
-        for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
-            impl_->strategic_shadow_runtimes[i] =
-                std::make_unique<strategy::UnifiedStrategicShadowRuntime>(
-                    impl_->composition_intelligence_players[i].active,
-                    impl_->strategic_planner_commitments[i],
-                    impl_->strategic_shadow_audit_path);
-        }
+    }
+    // The unified state machine is a native strategic owner used by PPO;
+    // the JSONL sidecar is optional diagnostics, not a runtime activation gate.
+    for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+        impl_->strategic_shadow_runtimes[i] =
+            std::make_unique<strategy::UnifiedStrategicShadowRuntime>(
+                impl_->composition_intelligence_players[i].active,
+                impl_->strategic_planner_commitments[i],
+                impl_->strategic_shadow_audit_path);
     }
 
     impl_->round = 0;
@@ -6682,12 +6684,10 @@ void TFTEngine::set_strategic_direction_pivot_audit_path(const std::string& path
     impl_->strategic_shadow_audit_path = path;
     impl_->strategic_shadow_external_active_identity.fill(std::string{});
     impl_->strategic_shadow_external_active_version.fill(0);
-    if (path.empty()) {
-        for (auto& runtime : impl_->strategic_shadow_runtimes) runtime.reset();
-        return;
+    if (!path.empty()) {
+        std::error_code remove_error;
+        std::filesystem::remove(path, remove_error);
     }
-    std::error_code remove_error;
-    std::filesystem::remove(path, remove_error);
     for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
         impl_->strategic_shadow_runtimes[i] =
             std::make_unique<strategy::UnifiedStrategicShadowRuntime>(
@@ -6803,6 +6803,80 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
         target.round_streak_gold = source.economy.round_streak_gold;
         target.round_win_gold = source.economy.last_round_win_gold;
         target.masks = source.action_masks;
+
+        auto& strategic = target.strategic_state;
+        strategic.episode_id = impl_->episode_id;
+        strategic.player_decision_sequence = impl_->player_decision_sequences[i];
+        strategic.player_id = static_cast<std::int32_t>(i);
+        strategic.round = snapshot.round;
+
+        std::unordered_map<std::int32_t, std::array<std::int32_t, 4>> owned_by_star;
+        const auto count_owned_copy = [&owned_by_star](const std::optional<UnitInstance>& unit) {
+            if (!unit) return;
+            const auto star = static_cast<std::size_t>(std::clamp(unit->star, 1, 3));
+            ++owned_by_star[unit->champion_internal_id][star];
+        };
+        for (const auto& unit : source.board) count_owned_copy(unit);
+        for (const auto& unit : source.bench) count_owned_copy(unit);
+        std::vector<std::int32_t> copy_progress_ids;
+        copy_progress_ids.reserve(owned_by_star.size());
+        for (const auto& [champion_id, _] : owned_by_star)
+            copy_progress_ids.push_back(champion_id);
+        std::sort(copy_progress_ids.begin(), copy_progress_ids.end());
+        for (const auto champion_id : copy_progress_ids) {
+            const auto& counts = owned_by_star.at(champion_id);
+            std::int32_t highest_star = 3;
+            while (highest_star > 0 && counts[static_cast<std::size_t>(highest_star)] == 0)
+                --highest_star;
+            strategic.unit_copy_progress.push_back(AuditUnitCopyProgressSnapshot{
+                champion_id,
+                strategy::owned_star_equivalent_copies(counts),
+                strategy::copies_toward_next_star(counts, highest_star),
+                highest_star
+            });
+        }
+
+        const auto active_composition =
+            impl_->composition_intelligence_players[i].active.current();
+        if (active_composition && active_composition->version > 0 &&
+            !active_composition->candidate.composition_id.empty()) {
+            const auto& candidate = active_composition->candidate;
+            strategic.active_composition_valid = true;
+            strategic.active_composition_id = candidate.composition_id;
+            strategic.active_composition_version = active_composition->version;
+            strategic.active_source_sequence = candidate.source_sequence;
+            for (const auto& unit : candidate.units) {
+                strategic.active_unit_ids.push_back(unit.champion_id);
+                if (unit.core) strategic.active_core_unit_ids.push_back(unit.champion_id);
+            }
+        }
+
+        const auto& commitment = impl_->strategic_planner_commitments[i];
+        if (!commitment.composition_direction.empty()) {
+            strategic.direction_valid = true;
+            strategic.direction_identity = commitment.composition_direction;
+            strategic.direction_selected_round = commitment.selected_round;
+        }
+
+        if (impl_->strategic_shadow_runtimes[i]) {
+            const auto& anchors = impl_->strategic_shadow_runtimes[i]->machine().anchors();
+            if (anchors.direction_anchor.is_valid()) {
+                strategic.direction_valid = true;
+                strategic.direction_identity = anchors.direction_anchor.identity;
+                strategic.direction_reference_unit_ids =
+                    anchors.direction_anchor.reference_unit_ids;
+            }
+            if (anchors.pivot_candidate.is_valid()) {
+                strategic.pivot_candidate_valid = true;
+                strategic.pivot_candidate_identity = anchors.pivot_candidate.identity;
+                strategic.pivot_target_composition_identity =
+                    anchors.pivot_candidate.target_composition_identity;
+                strategic.pivot_source_composition_version =
+                    anchors.pivot_candidate.source_composition_version;
+                strategic.pivot_reference_unit_ids =
+                    anchors.pivot_candidate.reference_unit_ids;
+            }
+        }
 
         for (std::size_t slot = 0; slot < kBoardSlots; ++slot)
             target.board[slot] = describe_unit(

@@ -48,6 +48,9 @@ from reward_contract import (
 )
 from ppo import PPOTrainer, exponential_schedule_value
 from semantic_observation import (
+    SEMANTIC_ENTITY_FEATURES,
+    SEMANTIC_ENTITY_SLOTS,
+    SEMANTIC_GLOBAL_FEATURES,
     build_semantic_batch,
     build_semantic_state_checkpoint_contract,
     catalog_identity,
@@ -221,6 +224,10 @@ class Trainer:
 
         print("🧩 Engine selecionada: C++ (única engine)")
 
+        # PPO consumes the native strategic owners as part of its semantic
+        # observation. The optional JSONL audit sidecar remains disabled unless
+        # separately configured; it must not gate the state machine itself.
+        os.environ["TFT_COMPOSITION_INTELLIGENCE_SHADOW"] = "1"
         resolved_item_catalog = item_catalog_path or os.environ.get("TFT_ITEM_CATALOG_PATH")
         def make_env():
             return CppTFTLobbyWrapper(item_catalog_path=resolved_item_catalog)
@@ -1415,7 +1422,9 @@ class Trainer:
                     )
                 semantic_entities = np.asarray(
                     semantic_batch["numeric"], dtype=np.float32
-                )[:, 17:].reshape(-1, 42, 6)
+                )[:, SEMANTIC_GLOBAL_FEATURES:].reshape(
+                    -1, SEMANTIC_ENTITY_SLOTS, SEMANTIC_ENTITY_FEATURES
+                )
                 unknown_semantic_champions = int(
                     ((semantic_entities[:, :, 0] > 0.5) &
                      (semantic_entities[:, :, 5] < 0.5)).sum()

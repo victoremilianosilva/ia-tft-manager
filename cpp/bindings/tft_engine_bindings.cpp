@@ -340,6 +340,43 @@ py::dict audit_snapshot_to_dict(
     for (const auto& player : snapshot.players) {
         py::dict p;
         p["player_id"] = player.player_id;
+        const auto& strategic = player.strategic_state;
+        py::dict strategic_state;
+        strategic_state["contract_id"] = strategic.contract_id;
+        strategic_state["contract_version"] = strategic.contract_version;
+        strategic_state["source_namespace"] = strategic.source_namespace;
+        strategic_state["producer"] = strategic.producer;
+        strategic_state["episode_id"] = strategic.episode_id;
+        strategic_state["player_decision_sequence"] = strategic.player_decision_sequence;
+        strategic_state["player_id"] = strategic.player_id;
+        strategic_state["round"] = strategic.round;
+        strategic_state["active_composition_valid"] = strategic.active_composition_valid;
+        strategic_state["active_composition_id"] = strategic.active_composition_id;
+        strategic_state["active_composition_version"] = strategic.active_composition_version;
+        strategic_state["active_source_sequence"] = strategic.active_source_sequence;
+        strategic_state["active_unit_ids"] = strategic.active_unit_ids;
+        strategic_state["active_core_unit_ids"] = strategic.active_core_unit_ids;
+        strategic_state["direction_valid"] = strategic.direction_valid;
+        strategic_state["direction_identity"] = strategic.direction_identity;
+        strategic_state["direction_selected_round"] = strategic.direction_selected_round;
+        strategic_state["direction_reference_unit_ids"] = strategic.direction_reference_unit_ids;
+        strategic_state["pivot_candidate_valid"] = strategic.pivot_candidate_valid;
+        strategic_state["pivot_candidate_identity"] = strategic.pivot_candidate_identity;
+        strategic_state["pivot_target_composition_identity"] = strategic.pivot_target_composition_identity;
+        strategic_state["pivot_source_composition_version"] = strategic.pivot_source_composition_version;
+        strategic_state["pivot_reference_unit_ids"] = strategic.pivot_reference_unit_ids;
+        py::list unit_copy_progress;
+        for (const auto& progress : strategic.unit_copy_progress) {
+            py::dict row;
+            row["champion_internal_id"] = progress.champion_internal_id;
+            row["owned_copy_equivalent"] = progress.owned_copy_equivalent;
+            row["copies_toward_next_star"] = progress.copies_toward_next_star;
+            row["highest_star"] = progress.highest_star;
+            unit_copy_progress.append(std::move(row));
+        }
+        strategic_state["unit_copy_progress"] = std::move(unit_copy_progress);
+        strategic_state["opportunity_cost_available"] = strategic.opportunity_cost_available;
+        p["strategic_state"] = std::move(strategic_state);
         p["hp"] = player.hp;
         p["damage_taken"] = player.damage_taken;
         p["alive"] = player.alive;

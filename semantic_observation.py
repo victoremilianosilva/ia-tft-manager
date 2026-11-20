@@ -11,11 +11,11 @@ import json
 import math
 from collections.abc import Mapping, Sequence
 
-SEMANTIC_STATE_CONTRACT_ID = "tft.ppo.semantic-native-state.v1"
-SEMANTIC_STATE_CONTRACT_VERSION = 1
+SEMANTIC_STATE_CONTRACT_ID = "tft.ppo.semantic-native-state.v2"
+SEMANTIC_STATE_CONTRACT_VERSION = 2
 SEMANTIC_ENTITY_SLOTS = 28 + 9 + 5
-SEMANTIC_ENTITY_FEATURES = 6
-SEMANTIC_GLOBAL_FEATURES = 17
+SEMANTIC_ENTITY_FEATURES = 12
+SEMANTIC_GLOBAL_FEATURES = 21
 SEMANTIC_NUMERIC_DIM = (
     SEMANTIC_GLOBAL_FEATURES
     + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ENTITY_FEATURES
@@ -68,19 +68,30 @@ def build_semantic_state_checkpoint_contract(catalog_map: Mapping[str, int]) -> 
             "producer": "TFTEngine::get_audit_snapshot",
             "source_namespace": "tft.engine.observation-snapshot",
         },
+        "strategic_owner_source": {
+            "contract_id": "tft.strategic-owner-observation",
+            "contract_version": 1,
+            "producer": "TFTEngine::get_audit_snapshot",
+            "source_namespace": "tft.engine.strategic-owners",
+            "identity": ["episode_id", "player_id", "round", "player_decision_sequence"],
+        },
         "catalog": identity,
         "global_features": [
             "hp/100", "damage_taken/100", "alive", "wins/100", "losses/100",
             "gold/200", "level/10", "xp/10", "win_streak/10", "loss_streak/10",
             "gold_before_interest/200", "interest_if_resolved_now/5",
             "placement/8", "placement_valid", "opponent_present",
-            "stage/7", "round/50",
+            "stage/7", "round/50", "active_composition_valid",
+            "direction_valid", "pivot_candidate_valid", "opportunity_cost_available",
         ],
         "entity_slots": {
             "order": ["board[0:28]", "bench[0:9]", "shop[0:5]"],
             "features": [
                 "occupied", "star/3", "cost/5", "item_count/9",
                 "static_trait_count/10", "champion_id_valid",
+                "active_composition_member", "active_composition_core_member",
+                "direction_reference_member", "pivot_reference_member",
+                "owned_copy_equivalent/9", "same_star_upgrade_progress/3",
             ],
             "champion_id": "catalog_internal_id_plus_one; zero=unknown_or_empty",
         },
@@ -103,6 +114,7 @@ def build_semantic_state_checkpoint_contract(catalog_map: Mapping[str, int]) -> 
             "legacy_strategy_id", "legacy_strategy_one_hot", "legacy_composition_direction",
             "shadow_recommendation", "shadow_score", "shadow_confidence",
             "unverified_action_candidates", "legacy_flat_observation_offsets",
+            "strategy_recommendations", "strategy_scores", "strategy_confidence",
         ],
     }
     canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
@@ -138,6 +150,105 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
         raise ValueError("unexpected native state producer")
     if metadata.get("native_state_source_namespace") != "tft.engine.observation-snapshot":
         raise ValueError("unexpected native state source namespace")
+
+    strategic = state.get("strategic_state")
+    if not isinstance(strategic, Mapping):
+        raise ValueError("native strategic owner snapshot is required for PPO projection")
+    strategic_version = strategic.get("contract_version")
+    if (
+        strategic.get("contract_id") != "tft.strategic-owner-observation"
+        or isinstance(strategic_version, bool)
+        or not isinstance(strategic_version, int)
+        or strategic_version != 1
+        or strategic.get("producer") != "TFTEngine::get_audit_snapshot"
+        or strategic.get("source_namespace") != "tft.engine.strategic-owners"
+    ):
+        raise ValueError("unsupported strategic owner snapshot contract")
+    for field, expected in (
+        ("episode_id", metadata["episode_id"]),
+        ("player_decision_sequence", metadata["player_decision_sequence"]),
+        ("player_id", player_id),
+        ("round", metadata["round"]),
+    ):
+        actual = strategic.get(field)
+        if isinstance(actual, bool) or not isinstance(actual, int) or actual != expected:
+            raise ValueError(f"strategic owner snapshot diverges in {field}")
+
+    def _id_set(field):
+        values = strategic.get(field)
+        if not isinstance(values, list):
+            raise TypeError(f"strategic owner field {field} must be a list")
+        result = set()
+        for value in values:
+            result.add(_non_negative_int(value, f"strategic_state.{field}"))
+        if len(result) != len(values):
+            raise ValueError(f"strategic owner field {field} contains duplicate IDs")
+        return result
+
+    active_valid = strategic.get("active_composition_valid")
+    direction_valid = strategic.get("direction_valid")
+    pivot_valid = strategic.get("pivot_candidate_valid")
+    opportunity_available = strategic.get("opportunity_cost_available")
+    if not all(isinstance(value, bool) for value in (
+        active_valid, direction_valid, pivot_valid, opportunity_available
+    )):
+        raise TypeError("strategic owner validity fields must be boolean")
+    active_ids = _id_set("active_unit_ids")
+    core_ids = _id_set("active_core_unit_ids")
+    direction_ids = _id_set("direction_reference_unit_ids")
+    pivot_ids = _id_set("pivot_reference_unit_ids")
+    progress_rows = strategic.get("unit_copy_progress")
+    if not isinstance(progress_rows, list):
+        raise TypeError("strategic owner unit_copy_progress must be a list")
+    copy_progress = {}
+    for row in progress_rows:
+        if not isinstance(row, Mapping):
+            raise TypeError("unit_copy_progress rows must be objects")
+        champion_id = _non_negative_int(row.get("champion_internal_id"), "unit_copy_progress.champion_internal_id")
+        copies = _non_negative_int(row.get("owned_copy_equivalent"), "unit_copy_progress.owned_copy_equivalent")
+        toward_next = _non_negative_int(row.get("copies_toward_next_star"), "unit_copy_progress.copies_toward_next_star")
+        highest_star = _non_negative_int(row.get("highest_star"), "unit_copy_progress.highest_star")
+        if champion_id in copy_progress:
+            raise ValueError("unit_copy_progress contains duplicate champion IDs")
+        if not 1 <= highest_star <= 3 or not 1 <= copies <= 9 or toward_next > 2:
+            raise ValueError("unit_copy_progress values are outside native ranges")
+        if highest_star == 3 and toward_next != 0:
+            raise ValueError("three-star units cannot have progress toward another upgrade")
+        copy_progress[champion_id] = {
+            "owned_copy_equivalent": copies,
+            "copies_toward_next_star": toward_next,
+            "highest_star": highest_star,
+        }
+    if not core_ids.issubset(active_ids):
+        raise ValueError("active core units must belong to the active composition")
+    if not active_valid and (active_ids or core_ids):
+        raise ValueError("invalid active composition cannot publish unit membership")
+    if active_valid and (
+        not isinstance(strategic.get("active_composition_id"), str)
+        or not strategic["active_composition_id"]
+        or _non_negative_int(strategic.get("active_composition_version"), "active_composition_version") == 0
+    ):
+        raise ValueError("active composition identity/version is incomplete")
+    if not direction_valid and direction_ids:
+        raise ValueError("invalid direction cannot publish reference units")
+    if direction_valid and (
+        not isinstance(strategic.get("direction_identity"), str)
+        or not strategic["direction_identity"]
+    ):
+        raise ValueError("direction identity is incomplete")
+    if not pivot_valid and pivot_ids:
+        raise ValueError("invalid pivot cannot publish reference units")
+    if pivot_valid and (
+        not isinstance(strategic.get("pivot_candidate_identity"), str)
+        or not strategic["pivot_candidate_identity"]
+        or not isinstance(strategic.get("pivot_target_composition_identity"), str)
+        or not strategic["pivot_target_composition_identity"]
+        or _non_negative_int(strategic.get("pivot_source_composition_version"), "pivot_source_composition_version") == 0
+    ):
+        raise ValueError("pivot candidate identity/version is incomplete")
+    # No validated per-action opportunity-cost producer is published here yet.
+    if opportunity_available:
+        raise ValueError("opportunity-cost evidence is not yet published by a native action producer")
 
     placement = state.get("placement")
     if placement is not None:
@@ -179,9 +290,28 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
         float(opponent_id is not None),
         stage / 7.0,
         round_number / 50.0,
+        float(active_valid),
+        float(direction_valid),
+        float(pivot_valid),
+        float(opportunity_available),
     ]
 
     catalog = dict(catalog_map)
+    observed_owned_ids = set()
+    for group_name in ("board", "bench"):
+        for entity in state[group_name]:
+            if isinstance(entity, Mapping) and entity.get("occupied") is True:
+                champion_name = entity.get("champion_id")
+                internal_id = catalog.get(champion_name)
+                if internal_id is not None:
+                    observed_owned_ids.add(int(internal_id))
+                    if int(internal_id) not in copy_progress:
+                        raise ValueError(
+                            f"native UnitCopyProgress is missing owned champion {champion_name}"
+                        )
+    known_catalog_ids = set(catalog.values())
+    if not (set(copy_progress) & known_catalog_ids).issubset(observed_owned_ids):
+        raise ValueError("native UnitCopyProgress contains known champions absent from board/bench")
     numeric = list(global_values)
     champion_ids = []
     for group_name, expected_count in (("board", 28), ("bench", 9), ("shop", 5)):
@@ -211,6 +341,10 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
                 raise TypeError(f"occupied {group_name}[{slot}] requires items and trait_names lists")
             internal_id = catalog.get(champion_name)
             champion_valid = internal_id is not None
+            native_id = None if internal_id is None else int(internal_id)
+            native_progress = copy_progress.get(native_id, {})
+            copy_equivalent = native_progress.get("owned_copy_equivalent", 0)
+            upgrade_progress = native_progress.get("copies_toward_next_star", 0) / 2.0
             numeric.extend([
                 1.0,
                 star / 3.0,
@@ -218,6 +352,12 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
                 min(len(items), 9) / 9.0,
                 min(len(traits), 10) / 10.0,
                 float(champion_valid),
+                float(native_id in active_ids) if native_id is not None else 0.0,
+                float(native_id in core_ids) if native_id is not None else 0.0,
+                float(native_id in direction_ids) if native_id is not None else 0.0,
+                float(native_id in pivot_ids) if native_id is not None else 0.0,
+                min(copy_equivalent, 9) / 9.0,
+                upgrade_progress,
             ])
             champion_ids.append(0 if internal_id is None else int(internal_id) + 1)
 
@@ -236,7 +376,13 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
     }
     digest = hashlib.sha256(
         json.dumps(
-            {"identity": identity, "numeric": numeric, "champion_ids": champion_ids},
+            {
+                "identity": identity,
+                "numeric": numeric,
+                "champion_ids": champion_ids,
+                "strategic_owner_contract": strategic.get("contract_id"),
+                "strategic_owner_version": strategic.get("contract_version"),
+            },
             sort_keys=True, separators=(",", ":"), ensure_ascii=False,
         ).encode("utf-8")
     ).hexdigest()

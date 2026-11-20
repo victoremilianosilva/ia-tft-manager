@@ -297,8 +297,47 @@ struct AuditPvpResultCreditEvent {
     std::int32_t win_streak_after{0};
 };
 
+struct AuditUnitCopyProgressSnapshot {
+    std::int32_t champion_internal_id{-1};
+    std::int32_t owned_copy_equivalent{0};
+    std::int32_t copies_toward_next_star{0};
+    std::int32_t highest_star{0};
+};
+
+struct AuditStrategicOwnerSnapshot {
+    std::string contract_id{"tft.strategic-owner-observation"};
+    std::uint32_t contract_version{1};
+    std::string source_namespace{"tft.engine.strategic-owners"};
+    std::string producer{"TFTEngine::get_audit_snapshot"};
+    std::uint64_t episode_id{0};
+    std::uint64_t player_decision_sequence{0};
+    std::int32_t player_id{-1};
+    std::uint32_t round{0};
+    bool active_composition_valid{false};
+    std::string active_composition_id;
+    std::uint64_t active_composition_version{0};
+    std::uint64_t active_source_sequence{0};
+    std::vector<std::int32_t> active_unit_ids;
+    std::vector<std::int32_t> active_core_unit_ids;
+    bool direction_valid{false};
+    std::string direction_identity;
+    std::uint32_t direction_selected_round{0};
+    std::vector<std::int32_t> direction_reference_unit_ids;
+    bool pivot_candidate_valid{false};
+    std::string pivot_candidate_identity;
+    std::string pivot_target_composition_identity;
+    std::uint64_t pivot_source_composition_version{0};
+    std::vector<std::int32_t> pivot_reference_unit_ids;
+    // Values are produced by strategy::UnitCopyProgress from this snapshot's
+    // physical board/bench copies; the Python projection must not recalculate.
+    std::vector<AuditUnitCopyProgressSnapshot> unit_copy_progress;
+    // False means unavailable, never a measured zero.
+    bool opportunity_cost_available{false};
+};
+
 struct AuditPlayerSnapshot {
     std::int32_t player_id{-1};
+    AuditStrategicOwnerSnapshot strategic_state{};
     // Player survival and standing facts, correlated by the enclosing snapshot identity.
     double hp{100.0};
     double damage_taken{0.0};

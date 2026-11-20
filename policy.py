@@ -12,6 +12,8 @@ from action_contract import (
 from semantic_observation import (
     SEMANTIC_NUMERIC_DIM,
     SEMANTIC_ENTITY_SLOTS,
+    SEMANTIC_ENTITY_FEATURES,
+    SEMANTIC_GLOBAL_FEATURES,
     SEMANTIC_ID_EMBED_DIM,
 )
 
@@ -324,6 +326,27 @@ class TFTPolicy(nn.Module):
             ):
                 expanded = torch.zeros_like(target_value)
                 expanded[:, :source_value.shape[1]] = source_value
+                loaded[key] = expanded
+                migrated = True
+                continue
+
+            if (
+                key == "semantic_encoder.0.weight"
+                and source_value.ndim == 2
+                and target_value.ndim == 2
+                and source_value.shape[0] == target_value.shape[0]
+                and source_value.shape[1] == 269 + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ID_EMBED_DIM
+                and target_value.shape[1] == SEMANTIC_NUMERIC_DIM + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ID_EMBED_DIM
+            ):
+                # Map v1's named global/entity blocks; initialize only new fields.
+                old_numeric_dim = 269
+                expanded = torch.zeros_like(target_value)
+                expanded[:, :17] = source_value[:, :17]
+                for slot in range(SEMANTIC_ENTITY_SLOTS):
+                    old_start = 17 + slot * 6
+                    new_start = SEMANTIC_GLOBAL_FEATURES + slot * SEMANTIC_ENTITY_FEATURES
+                    expanded[:, new_start:new_start + 6] = source_value[:, old_start:old_start + 6]
+                expanded[:, SEMANTIC_NUMERIC_DIM:] = source_value[:, old_numeric_dim:]
                 loaded[key] = expanded
                 migrated = True
                 continue
