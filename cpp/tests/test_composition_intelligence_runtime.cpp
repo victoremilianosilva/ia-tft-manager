@@ -165,7 +165,13 @@ int main() {
     assert(player_b.snapshots.back()["player_id"] == 1);
 
     // A new round is a new logical state and receives the next player sequence.
+    player_a.unit_priorities.composition_id = "comp-a";
+    player_a.lineup.composition_id = "comp-a";
+    player_a.planner_outputs_valid = true;
     player_a.begin_cycle(77, 0, 13);
+    assert(!player_a.planner_outputs_valid);
+    assert(player_a.unit_priorities.composition_id.empty());
+    assert(player_a.lineup.composition_id.empty());
     player_a.mark_stage("candidate_evaluation", "completed");
     a["round"] = 13;
     assert(player_a.append_snapshot(a));
