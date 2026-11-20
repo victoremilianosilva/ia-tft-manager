@@ -35,24 +35,34 @@ public:
                 candidate.gold_cost <= c.gold;
             // Cost fields are consumed only when the candidate carries a
             // same-snapshot, deterministic marginal cash/interest proof.
+            const bool direct_cost_in_range =
+                std::isfinite(candidate.direct_gold_cost) &&
+                candidate.direct_gold_cost >= static_cast<double>(
+                    std::numeric_limits<std::int32_t>::min()) &&
+                candidate.direct_gold_cost <= static_cast<double>(
+                    std::numeric_limits<std::int32_t>::max());
+            const auto expected_gold_after = direct_cost_in_range
+                ? static_cast<std::int64_t>(c.gold) -
+                    static_cast<std::int64_t>(std::llround(candidate.direct_gold_cost))
+                : -1;
             const bool marginal_valid =
+                c.gold >= 0 && direct_cost_in_range &&
                 candidate.marginal_economy_evidence_available &&
                 candidate.marginal_cost_source ==
                     "native_gold+EconomyEngine::get_interest" &&
                 candidate.marginal_cost_horizon_rounds == 1 &&
                 candidate.marginal_cost_uncertainty == 0.0 &&
                 candidate.marginal_gold_before == c.gold &&
-                candidate.marginal_gold_after == std::max<std::int32_t>(
-                    0, c.gold - static_cast<std::int32_t>(
-                        std::llround(candidate.direct_gold_cost))) &&
+                expected_gold_after >= 0 &&
+                expected_gold_after <= std::numeric_limits<std::int32_t>::max() &&
+                candidate.marginal_gold_after == expected_gold_after &&
                 candidate.marginal_interest_before ==
                     EconomyEngine{}.get_interest(c.gold) &&
                 candidate.marginal_interest_after ==
                     EconomyEngine{}.get_interest(candidate.marginal_gold_after) &&
                 candidate.marginal_interest_delta ==
                     candidate.marginal_interest_after -
-                        candidate.marginal_interest_before &&
-                std::isfinite(candidate.direct_gold_cost);
+                        candidate.marginal_interest_before;
             breakdown.direct_gold_cost = marginal_valid
                 ? candidate.direct_gold_cost : 0.0;
             breakdown.lost_interest_cost = marginal_valid
