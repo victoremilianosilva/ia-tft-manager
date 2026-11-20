@@ -309,7 +309,7 @@ void shop_upgrade_progress_respects_affordable_offer_count() {
     assert(carry->affordable_shop_copies == 2);
     assert(carry->copies_toward_next_star == 2);
     assert(carry->copies_needed_for_next_star == 0);
-    assert(carry->has_pair && carry->copies_needed_for_pair == 0);
+    assert(!carry->has_pair && carry->copies_needed_for_pair == 1);
 }
 
 void missing_targets_keep_shop_and_pool_facts_separate() {
