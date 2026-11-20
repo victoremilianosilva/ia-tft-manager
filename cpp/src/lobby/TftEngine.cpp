@@ -3002,7 +3002,6 @@ struct TFTEngine::Impl {
 
         // Compatibility projection only: canonical composition and lineup data
         // come from the native ActiveCompositionManager and its planner owners.
-        const auto& active_composition = composition_intelligence_players[i].active.current();
         info.composition_direction = strategic_planner_commitments[i].composition_direction;
         info.composition_locked = false; // no authoritative lock producer exists yet
         info.composition_focus.clear();
