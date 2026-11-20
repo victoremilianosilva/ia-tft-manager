@@ -4199,6 +4199,10 @@ struct TFTEngine::Impl {
                                 ++priority_evidence.copies_in_shop;
                         }
                     }
+                    // Pool availability is a separate source from owned and shop
+                    // copies. Unknown pool state stays unknown, never zero.
+                    if (pool)
+                        priority_evidence.pool_remaining = pool->available(champion_id);
                 }
 
                 ci::UnitPriorityContext priority_context;
