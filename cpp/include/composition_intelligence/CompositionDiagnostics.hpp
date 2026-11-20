@@ -151,9 +151,32 @@ public:
                 {"confidence_not_probability", u.confidence},
                 {"copies_owned", u.copies_owned}, {"highest_star", u.highest_star},
                 {"target_star", u.target_star}, {"on_board", u.on_board},
+                {"target_unit", u.target_unit},
+                {"copies_by_star", std::vector<std::int32_t>(u.copies_by_star.begin(), u.copies_by_star.end())},
+                {"copies_in_shop", u.copies_in_shop},
+                {"affordable_shop_copies", u.affordable_shop_copies},
+                {"copies_toward_next_star", u.copies_toward_next_star},
+                {"copies_needed_for_next_star", u.copies_needed_for_next_star},
+                {"pool_known", u.pool_known},
+                {"pool_remaining", u.pool_known ? nlohmann::json(u.pool_remaining) : nlohmann::json(nullptr)},
                 {"sale_restricted", u.sale_restricted},
                 {"board_contribution", u.board_contribution},
                 {"synergy_contribution", u.synergy_contribution}, {"reasons", reasons}
+            });
+        }
+        p["lineup_target_states"] = nlohmann::json::array();
+        for (const auto& target : lineup.target_states) {
+            p["lineup_target_states"].push_back({
+                {"champion_id", target.champion_id},
+                {"availability", target.availability},
+                {"copies_owned", target.copies_owned},
+                {"copies_in_shop", target.copies_in_shop},
+                {"affordable_shop_copies", target.affordable_shop_copies},
+                {"pool_known", target.pool_known},
+                {"pool_remaining", target.pool_known ? nlohmann::json(target.pool_remaining) : nlohmann::json(nullptr)},
+                {"owned", target.owned}, {"selected", target.selected},
+                {"deferred", target.deferred},
+                {"deferred_reason", target.deferred_reason}
             });
         }
         p["lineup_plan"] = {
@@ -171,6 +194,7 @@ public:
             {"selected_board", lineup_json(lineup)},
             {"entries", lineup.entries}, {"exits", lineup.exits},
             {"deferred_target_ids", lineup.deferred_target_ids},
+            {"target_states", p["lineup_target_states"]},
             {"bridge_ids", lineup.bridge_ids}, {"status", lineup.status}
         };
         p["evidence"] = evidence_json(evidence);
