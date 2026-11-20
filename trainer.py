@@ -568,6 +568,8 @@ class Trainer:
                         raise RuntimeError(f"Snapshot estruturado diverge em {field} na lobby {lobby_idx}.")
                 if native_snapshot.get("snapshot_sequence") != snapshot.get("decision_sequence"):
                     raise RuntimeError(f"Snapshot estruturado diverge na sequência da lobby {lobby_idx}.")
+                if native_snapshot.get("round") != snapshot.get("round"):
+                    raise RuntimeError(f"Snapshot estruturado diverge no round da lobby {lobby_idx}.")
                 if native_snapshot.get("player_decision_sequences") != player_sequences:
                     raise RuntimeError(f"Snapshot estruturado diverge nas sequências individuais da lobby {lobby_idx}.")
                 native_players = native_snapshot.get("players")
