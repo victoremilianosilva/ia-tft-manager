@@ -101,6 +101,7 @@ void exploration_waits_for_composition_and_then_binds_direction() {
     UnifiedStrategicStateMachine machine(active_composition, commitment);
     StrategicCycleInput input;
     input.exploration = discovery_input();
+    input.selected_initial_direction = "Bruiser";
 
     auto result = machine.refresh(input);
     assert(result.phase == StrategicCyclePhase::Exploration);
