@@ -21,13 +21,33 @@ void economy_test(){
  assert(e.gold_available&&e.level_available&&e.xp_available&&e.xp_to_next_available);
  assert(e.interest_available&&!e.projected_income_available);
  assert(e.win_streak_available);
- assert(e.buy_experience_opportunity_cost==tft::strategy::action_opportunity_cost::kBuyExperience);
+ assert(!e.projected_income_available&&!e.incoming_damage_available&&
+  !e.elimination_risk_available&&!e.progression_available);
  auto stale=PlannerEvidenceAdapters::economic(c,d,13,4);
  assert(!stale.metadata.available&&stale.metadata.quality==EvidenceQuality::Stale);
  d.shadow_only=false;assert(!PlannerEvidenceAdapters::economic(c,d,12,4).metadata.available);
  auto wrong_player=PlannerEvidenceAdapters::economic(c,d,12,5);
  assert(!wrong_player.metadata.available&&wrong_player.metadata.quality==EvidenceQuality::Invalid);
 }
+void contradictory_economic_sources_are_rejected() {
+ tft::strategy::StrategicSharedContext c;
+ c.player_id=4;c.round=12;c.gold=38;c.interest_if_resolved_now=4;c.alive=true;
+ c.evidence.gold=true;c.evidence.interest_if_resolved_now=true;
+ tft::strategy::EconomicControlDecision d;d.shadow_only=true;
+ const auto result=PlannerEvidenceAdapters::economic(c,d,12,4);
+ assert(!result.metadata.available);
+ assert(result.metadata.quality==EvidenceQuality::Invalid);
+ assert(result.metadata.reason=="interest_gold_inconsistency");
+ assert(!result.interest_available);
+
+ c.interest_if_resolved_now=3;
+ d.evidence_invalid={"elimination_risk"};
+ const auto rejected=PlannerEvidenceAdapters::economic(c,d,12,4);
+ assert(!rejected.metadata.available);
+ assert(rejected.metadata.reason=="economic_controller_rejected_contradictory_evidence");
+ assert(rejected.evidence_invalid.size()==1);
+}
+
 void board_test(){
  tft::strategy::BoardEvaluationResult r;r.unit_count=6;r.frontline_count=2;r.carry_count=2;
  r.positional_score=.8;r.structural_score=.7;r.synergy_score=.6;r.total_score=.72;
@@ -129,4 +149,4 @@ void item_fit_uses_the_published_new_composition_traits() {
  assert(native_fit>without_new_composition_fit);
 }
 
-int main(){economy_test();board_test();item_test();identity_and_source_freshness_are_enforced();invalid_source_values_are_not_silently_zeroed();item_fit_uses_the_published_new_composition_traits();std::cout<<"Planner evidence adapter tests passed\\n";}
+int main(){economy_test();contradictory_economic_sources_are_rejected();board_test();item_test();identity_and_source_freshness_are_enforced();invalid_source_values_are_not_silently_zeroed();item_fit_uses_the_published_new_composition_traits();std::cout<<"Planner evidence adapter tests passed\\n";}
