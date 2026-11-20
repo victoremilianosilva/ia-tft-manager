@@ -22,6 +22,42 @@ public:
             return out;
         }
 
+        // Reject contradictory or out-of-domain evidence before scoring. A
+        // clamped invalid value would look plausible and conceal a producer bug.
+        const auto reject_if = [&](bool invalid, const char* field) {
+            if (invalid) out.evidence_invalid.emplace_back(field);
+        };
+        reject_if(c.evidence.hp &&
+            (!std::isfinite(c.hp) || c.hp < 0.0 || c.hp > 100.0), "hp");
+        reject_if(c.evidence.gold && c.gold < 0, "gold");
+        reject_if(c.evidence.level && (c.level < 1 || c.level > 10), "level");
+        reject_if(c.evidence.xp && c.xp < 0, "xp");
+        reject_if(c.evidence.xp_to_next && c.xp_to_next < 0, "xp_to_next");
+        reject_if(c.evidence.interest_if_resolved_now &&
+            c.interest_if_resolved_now < 0, "interest_if_resolved_now");
+        reject_if(c.evidence.streaks &&
+            (c.win_streak < 0 || c.loss_streak < 0 ||
+                (c.win_streak > 0 && c.loss_streak > 0)), "win_loss_streaks");
+        reject_if(c.evidence.board_power &&
+            (!std::isfinite(c.board_power) || c.board_power < 0.0), "board_power");
+        reject_if(c.evidence.relative_board_power &&
+            (!std::isfinite(c.relative_board_power) || c.relative_board_power < 0.0),
+            "relative_board_power");
+        reject_if(c.evidence.projected_next_round_income &&
+            c.projected_next_round_income < 0, "projected_next_round_income");
+        reject_if(c.evidence.estimated_incoming_damage &&
+            (!std::isfinite(c.estimated_incoming_damage) ||
+                c.estimated_incoming_damage < 0.0), "estimated_incoming_damage");
+        reject_if(c.evidence.elimination_risk &&
+            (!std::isfinite(c.elimination_risk) || c.elimination_risk < 0.0 ||
+                c.elimination_risk > 1.0), "elimination_risk");
+        if (!out.evidence_invalid.empty()) {
+            out.reason = StrategicReason::InsufficientEvidence;
+            out.sufficient_evidence = false;
+            out.confidence = 0.0;
+            return out;
+        }
+
         const auto record = [&](bool available, const char* name) {
             if (available) out.evidence_used.emplace_back(name);
             else out.evidence_missing.emplace_back(name);
