@@ -43,6 +43,33 @@ def _metadata():
     player["board"][0] = _unit(True, "TFT_TestChampion", 2, 3)
     player["board"][0]["items"] = ["ItemA"]
     player["board"][0]["trait_names"] = ["TraitA", "TraitB"]
+    player["bench"][0] = _unit(True, "TFT_TestChampion", 1, 3)
+    player["strategic_state"] = {
+        "contract_id": "tft.strategic-owner-observation",
+        "contract_version": 1,
+        "source_namespace": "tft.engine.strategic-owners",
+        "producer": "TFTEngine::get_audit_snapshot",
+        "episode_id": 5,
+        "player_decision_sequence": 7,
+        "player_id": 2,
+        "round": 12,
+        "active_composition_valid": True,
+        "active_composition_id": "comp-a",
+        "active_composition_version": 3,
+        "active_source_sequence": 6,
+        "active_unit_ids": [17],
+        "active_core_unit_ids": [17],
+        "direction_valid": True,
+        "direction_identity": "direction-a",
+        "direction_selected_round": 8,
+        "direction_reference_unit_ids": [17],
+        "pivot_candidate_valid": True,
+        "pivot_candidate_identity": "pivot-b",
+        "pivot_target_composition_identity": "comp-b",
+        "pivot_source_composition_version": 3,
+        "pivot_reference_unit_ids": [17],
+        "opportunity_cost_available": False,
+    }
     return {
         "engine_instance_id": "engine-1",
         "episode_id": 5,
@@ -70,8 +97,14 @@ def test_native_semantic_projection_has_stable_shape_and_explicit_identity():
     assert len(projected["numeric"]) == SEMANTIC_NUMERIC_DIM
     assert len(projected["champion_ids"]) == SEMANTIC_ENTITY_SLOTS
     assert projected["champion_ids"][0] == 18
-    assert projected["numeric"][17] == 1.0  # occupied
-    assert projected["numeric"][22] == 1.0  # mapped champion identity valid
+    assert projected["numeric"][21] == 1.0  # occupied
+    assert projected["numeric"][26] == 1.0  # mapped champion identity valid
+    assert projected["numeric"][27] == 1.0  # active composition member
+    assert projected["numeric"][28] == 1.0  # active core member
+    assert projected["numeric"][29] == 1.0  # direction reference
+    assert projected["numeric"][30] == 1.0  # pivot reference
+    assert projected["numeric"][31] == 1.0  # owned copy equivalent, capped at nine
+    assert projected["numeric"][32] == 1.0  # same-star upgrade progress
     assert projected["identity"]["player_id"] == 2
     assert len(projected["sha256"]) == 64
 
@@ -99,7 +132,7 @@ def test_unknown_champion_is_not_fabricated_and_is_marked_invalid():
     row["native_player_state"]["board"][0]["champion_id"] = "TFT_UnknownChampion"
     projected = project_native_player_state(row, {"TFT_TestChampion": 17})
     assert projected["champion_ids"][0] == 0
-    assert projected["numeric"][22] == 0.0
+    assert projected["numeric"][26] == 0.0
 
 
 def test_projection_rejects_missing_native_provenance_or_player_mismatch():
@@ -111,6 +144,15 @@ def test_projection_rejects_missing_native_provenance_or_player_mismatch():
         pass
     else:
         raise AssertionError("unverified producer must be rejected")
+
+    row = _metadata()
+    row["native_player_state"]["strategic_state"]["player_decision_sequence"] = 99
+    try:
+        project_native_player_state(row, {"TFT_TestChampion": 17})
+    except ValueError as exc:
+        assert "player_decision_sequence" in str(exc)
+    else:
+        raise AssertionError("stale strategic owner state must be rejected")
 
     row = _metadata()
     row["native_player_state"]["player_id"] = 1
