@@ -218,6 +218,16 @@ def test_reset_masks_are_taken_from_same_native_snapshot(monkeypatch):
         assert metadata["episode_id"] == 1
         assert metadata["decision_sequence"] == 1
         assert metadata["player_decision_sequences"] == [1] * 8
+        envelopes = metadata["player_identity_envelopes"]
+        assert len(envelopes) == 8
+        assert envelopes[0]["engine_match_id"] == f"{metadata['engine_instance_id']}/episode/1"
+        assert envelopes[0]["decision_sequence"] == {
+            "namespace": "tft.engine.decision", "value": 1,
+        }
+        assert envelopes[0]["snapshot_sequence"] == {
+            "namespace": "tft.engine.observation-snapshot", "value": 1,
+        }
+        assert envelopes[0]["decision_identity_hash"].startswith("sha256:")
         assert metadata["native_state_snapshot"]["snapshot_sequence"] == 1
         pool = metadata["native_state_snapshot"]["shared_pool"]
         assert "snapshot_sequence" not in pool
