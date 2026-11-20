@@ -108,10 +108,10 @@ void exploration_waits_for_composition_and_then_binds_direction() {
     assert(result.diagnostics.discovery.status == DirectionDiscoveryStatus::HypothesesFound);
     assert(!result.anchors.has_direction_anchor());
 
-    input.initial_composition_candidate = composition(
+    input.initial_composition_candidates.push_back(composition(
         "composition-bruiser", 1,
         {{1, UnitRole::MainCarry, true, 100},
-         {2, UnitRole::Frontline, true, 80}});
+         {2, UnitRole::Frontline, true, 80}}));
     result = machine.refresh(input);
     assert(result.phase == StrategicCyclePhase::CompositionActive);
     assert(result.state_changed);
