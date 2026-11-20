@@ -3062,9 +3062,12 @@ struct TFTEngine::Impl {
                     ? power / strategic_context.lobby_average_board_power : 1.0;
             strategic_context.evidence.relative_board_power =
                 lobby_alive_count > 0 && strategic_context.lobby_average_board_power > 0.0;
-            // These projections have no authoritative producer in this cycle.
-            // Keep their availability false instead of treating numeric defaults as evidence.
-            strategic_context.evidence.projected_next_round_income = false;
+            // Only the guaranteed base-gold component is projected. Interest,
+            // streak and victory gold depend on the later combat/action state and
+            // remain separate from this one-round deterministic fact.
+            strategic_context.projected_next_round_income =
+                EconomyEngine::get_round_gold(static_cast<std::int32_t>(current_round + 1));
+            strategic_context.evidence.projected_next_round_income = true;
             strategic_context.evidence.estimated_incoming_damage = false;
             strategic_context.evidence.elimination_risk = false;
             strategic_context.evidence.progression_plan = false;
