@@ -456,7 +456,7 @@ class CppTFTLobbyWrapper:
             "episode_id": int(result["episode_id"]),
             "decision_sequence": int(result["decision_sequence"]),
             "player_decision_sequences": self._copy_player_decision_sequences(result.get("player_decision_sequences")),
-            "round": 0,
+            "round": int(result.get("native_state_snapshot", {}).get("round", 0)),
             "stage": 1,
             "snapshot_kind": "reset",
         }
