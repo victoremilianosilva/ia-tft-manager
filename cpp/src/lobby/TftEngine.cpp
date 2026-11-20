@@ -2794,8 +2794,8 @@ struct TFTEngine::Impl {
 
 
 
-        // Refresh native strategic owners before any legacy direction/economy
-        // generation. This path consumes only live native facts and its own state.
+        // Refresh native strategic owners before the remaining economic
+        // compatibility policy. This path consumes live native facts and its own state.
         refresh_native_strategic_runtime(
             i, current_round, economy, player_envs[i].info, power,
             strategic_native_generation, strategic_native_owned,
@@ -2823,8 +2823,8 @@ struct TFTEngine::Impl {
         for (const auto& unit : player_envs[i].board) if (unit) count_owned_copy(*unit);
         for (const auto& unit : player_envs[i].bench) if (unit) count_owned_copy(*unit);
 
-        // SLOWROLL is enabled only while at least one concrete planned/core
-        // low-cost target remains realistically obtainable. Count copies held
+        // SLOWROLL is enabled only while a concrete native composition target
+        // remains realistically obtainable. Count copies held
         // by opponents and check remaining pool supply so a completed, exhausted,
         // or heavily contested target cannot keep the strategy active forever.
         bool composition_requests_three_star = false;
@@ -2850,7 +2850,9 @@ struct TFTEngine::Impl {
                         if (unit) count_opponent_copy(*unit);
                 }
 
-                const int pool_available = pool ? pool->available(unit_id) : 0;
+                // Unknown pool state cannot be treated as exhausted supply.
+                if (!pool) continue;
+                const int pool_available = pool->available(unit_id);
                 const int copies_still_needed = 9 - copies;
                 const int minimum_supply_check = std::min(copies_still_needed, 3);
                 if (pool_available < minimum_supply_check || contested_copies >= 6)
