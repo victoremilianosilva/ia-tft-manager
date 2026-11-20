@@ -92,6 +92,14 @@ void no_role_evidence_does_not_invent_a_position() {
     assert(proposal.reason == "no_role_evidence_for_active_composition");
 }
 
+void stale_lineup_sequence_is_rejected() {
+    auto s = snapshot();
+    s.lineup_sequence = s.sequence - 1;
+    const auto proposal = StrategicPositionPlanner{}.plan(s);
+    assert(!proposal.available());
+    assert(proposal.reason == "positioning_snapshot_identity_or_schema_invalid");
+}
+
 void audit_contains_identity_and_shadow_proposal() {
     auto s = snapshot();
     s.bench_ids[2] = 77;
@@ -114,6 +122,7 @@ int main() {
     duplicate_champion_instances_are_never_guessed();
     invalid_or_unversioned_snapshot_is_rejected();
     no_role_evidence_does_not_invent_a_position();
+    stale_lineup_sequence_is_rejected();
     audit_contains_identity_and_shadow_proposal();
     std::cout << "StrategicPositionPlanner tests passed\\n";
 }
