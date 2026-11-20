@@ -1213,6 +1213,93 @@ int main(int argc, char** argv) {
                     !reinitialized_native_snapshot.players[1].strategic_state.active_composition_valid,
                 "Runtime nativo nao reinicializou com versao e isolamento corretos apos reset.");
 
+        // Exercise a real engine-produced pivot without Composition Intelligence
+        // or an audit sidecar. Pick two compact native trait groups so every
+        // generated destination unit can be physically owned in this fixture.
+        std::map<std::string, std::vector<const tft::ChampionDefinition*>> trait_groups;
+        for (const auto& definition : catalog.all()) {
+            for (const auto& trait : definition.traits)
+                if (!trait.empty()) trait_groups[trait].push_back(&definition);
+        }
+        std::vector<const tft::ChampionDefinition*> pivot_fixture_units;
+        bool found_pivot_trait_pair = false;
+        for (auto first = trait_groups.begin();
+             first != trait_groups.end() && !found_pivot_trait_pair; ++first) {
+            if (first->second.size() < 2 || first->second.size() > 10 ||
+                std::none_of(first->second.begin(), first->second.end(),
+                    [](const auto* unit) { return unit->combat_profile.is_carry; }) ||
+                std::none_of(first->second.begin(), first->second.end(),
+                    [](const auto* unit) {
+                        return unit->combat_profile.frontline ||
+                            unit->combat_profile.is_tank;
+                    })) {
+                continue;
+            }
+            for (auto second = std::next(first); second != trait_groups.end(); ++second) {
+                if (second->second.size() < 2 || second->second.size() > 10 ||
+                    std::none_of(second->second.begin(), second->second.end(),
+                        [](const auto* unit) { return unit->combat_profile.is_carry; }) ||
+                    std::none_of(second->second.begin(), second->second.end(),
+                        [](const auto* unit) {
+                            return unit->combat_profile.frontline ||
+                                unit->combat_profile.is_tank;
+                        })) {
+                    continue;
+                }
+                std::unordered_set<std::int32_t> ids;
+                for (const auto* unit : first->second) ids.insert(unit->internal_id);
+                for (const auto* unit : second->second) ids.insert(unit->internal_id);
+                if (ids.size() > tft::kBoardSlots + tft::kBenchSlots) continue;
+                for (const auto id : ids) {
+                    const auto* definition = catalog.find_by_id(id);
+                    if (definition) pivot_fixture_units.push_back(definition);
+                }
+                found_pivot_trait_pair = true;
+                break;
+            }
+        }
+        require(found_pivot_trait_pair && !pivot_fixture_units.empty(),
+                "Catalogo nao possui dois grupos compactos com carry e frontline para pivot nativo.");
+
+        tft::TFTEngine native_pivot_engine(20261116, json_path);
+        (void)native_pivot_engine.reset(20261116);
+        require(native_pivot_engine.set_player_economy_for_testing(0, 100, 10, 0),
+                "Nao foi possivel preparar economia do teste de pivot nativo.");
+        for (std::size_t index = 0; index < pivot_fixture_units.size(); ++index) {
+            const auto* definition = pivot_fixture_units[index];
+            const auto star = definition->combat_profile.is_carry ? 2 : 1;
+            const bool on_board = index < tft::kBoardSlots;
+            const auto slot = static_cast<std::int32_t>(
+                on_board ? index : index - tft::kBoardSlots);
+            require(native_pivot_engine.set_unit_for_testing(
+                        0, on_board, slot, definition->api_name, star),
+                    "Nao foi possivel preparar unidade fisica para pivot nativo.");
+        }
+        auto native_pivot_snapshot = native_pivot_engine.get_audit_snapshot();
+        require(native_pivot_snapshot.players[0].strategic_state.direction_valid &&
+                    native_pivot_snapshot.players[0].strategic_state.active_composition_valid,
+                "Fixture nativo nao inicializou direcao e composicao antes do pivot.");
+        // Re-publishing the same physical fixture advances the native strategic
+        // observation sequence without changing candidate identity/evidence.
+        const auto* refresh_unit = pivot_fixture_units.front();
+        const auto refresh_on_board = pivot_fixture_units.size() <= tft::kBoardSlots;
+        const auto refresh_slot = static_cast<std::int32_t>(
+            refresh_on_board ? 0 : tft::kBoardSlots);
+        for (int evaluation = 0; evaluation < 3; ++evaluation) {
+            require(native_pivot_engine.set_unit_for_testing(
+                        0, refresh_on_board, refresh_slot,
+                        refresh_unit->api_name,
+                        refresh_unit->combat_profile.is_carry ? 2 : 1),
+                    "Nao foi possivel avancar evidencia consecutiva do pivot nativo.");
+        }
+        native_pivot_snapshot = native_pivot_engine.get_audit_snapshot();
+        require(native_pivot_snapshot.players[0].strategic_state.active_composition_valid &&
+                    native_pivot_snapshot.players[0].strategic_state.active_composition_version == 2,
+                "Pivot gerado pelo engine nao confirmou e publicou a nova composicao.");
+        require(native_pivot_snapshot.players[0].strategic_state.direction_valid &&
+                    native_pivot_snapshot.players[0].strategic_state.pivot_candidate_valid == false,
+                "Pivot confirmado nao sincronizou a direcao ou nao limpou o candidato pendente.");
+
 #ifdef _WIN32
         _putenv_s("TFT_COMPOSITION_INTELLIGENCE_SHADOW", "1");
 #else
