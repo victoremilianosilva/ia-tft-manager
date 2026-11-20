@@ -1315,7 +1315,7 @@ int main(int argc, char** argv) {
         const auto* refresh_unit = pivot_fixture_units.front();
         const bool refresh_on_board = true;
         const std::int32_t refresh_slot = 0;
-        for (int evaluation = 0; evaluation < 3; ++evaluation) {
+        for (int evaluation = 0; evaluation < 5; ++evaluation) {
             require(native_pivot_engine.set_unit_for_testing(
                         0, refresh_on_board, refresh_slot,
                         refresh_unit->api_name,
