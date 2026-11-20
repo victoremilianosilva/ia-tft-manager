@@ -115,6 +115,7 @@ void early_pairs_create_a_cheap_unbound_direction() {
     UnifiedStrategicStateMachine machine(active_composition, commitment);
     StrategicCycleInput input;
     input.exploration = make_early_snapshot();
+    input.selected_initial_direction = "Bruiser";
     auto cycle = machine.refresh(input);
     assert(cycle.phase == StrategicCyclePhase::Exploration);
     assert(!cycle.active_composition);
