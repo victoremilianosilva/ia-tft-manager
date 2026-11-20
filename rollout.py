@@ -664,9 +664,12 @@ class RolloutBuffer:
                     raise ValueError("Transição identificada exige semantic_state nativo.")
                 semantic_identities = semantic_state.get("identities")
                 semantic_hashes = semantic_state.get("hashes")
+                contract_hash = semantic_state.get("contract_hash")
                 if (
                     semantic_state.get("contract_id") != "tft.ppo.semantic-native-state.v2"
-                    or not isinstance(semantic_state.get("contract_hash"), str)
+                    or not isinstance(contract_hash, str)
+                    or len(contract_hash) != 64
+                    or any(char not in "0123456789abcdef" for char in contract_hash)
                 ):
                     raise ValueError("Semantic state is missing its versioned projection contract identity.")
                 if (
@@ -682,13 +685,19 @@ class RolloutBuffer:
                 )
                 for index, metadata in enumerate(decision_metadata):
                     expected_identity = {field: metadata.get(field) for field in identity_fields}
-                    if dict(semantic_identities[index]) != expected_identity:
+                    if (
+                        not isinstance(semantic_identities[index], dict)
+                        or dict(semantic_identities[index]) != expected_identity
+                        or metadata.get("semantic_identity") != expected_identity
+                    ):
                         raise ValueError(
                             f"Semantic identity diverge do snapshot na transição {index}."
                         )
                     digest = semantic_hashes[index]
                     if (
                         not isinstance(digest, str)
+                        or len(digest) != 64
+                        or any(char not in "0123456789abcdef" for char in digest)
                         or digest != metadata.get("semantic_projection_hash")
                         or metadata.get("semantic_projection_contract_id") != semantic_state.get("contract_id")
                         or metadata.get("semantic_projection_contract_hash") != semantic_state.get("contract_hash")
