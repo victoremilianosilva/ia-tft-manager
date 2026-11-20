@@ -285,29 +285,24 @@ int main() {
     assert(economy_context.action_candidates.size() == 2);
     assert(!action.candidate_scores.empty());
 
-    // Reroll's search opportunity cost is intentionally higher than buying XP.
+    // No action-family opportunity premium is fabricated. Until a producer
+    // supplies a validated marginal opportunity value, the evaluator reports
+    // zero contribution for that component.
     StrategicActionCandidate xp_candidate;
     xp_candidate.kind = StrategicActionKind::BuyExperience;
     xp_candidate.gold_cost = 4;
     xp_candidate.direct_gold_cost = 4.0;
-    xp_candidate.opportunity_cost = 0.25;
+    xp_candidate.opportunity_cost = 999.0;
     StrategicActionCandidate reroll_candidate;
     reroll_candidate.kind = StrategicActionKind::RerollShop;
     reroll_candidate.gold_cost = 2;
     reroll_candidate.direct_gold_cost = 2.0;
-    reroll_candidate.opportunity_cost = 2.50;
-    reroll_candidate.opportunity_cost =
-        action_opportunity_cost::kRerollWithUpgradeTarget;
-    xp_candidate.opportunity_cost = action_opportunity_cost::kBuyExperience;
-    assert(reroll_candidate.opportunity_cost > xp_candidate.opportunity_cost);
-    // Even if XP crosses one extra interest threshold, reroll remains the
-    // more expensive opportunity once its search premium is included.
-    reroll_candidate.lost_interest_cost = 0.0;
-    xp_candidate.lost_interest_cost = 1.0;
-    assert(reroll_candidate.direct_gold_cost + reroll_candidate.lost_interest_cost +
-               reroll_candidate.opportunity_cost >
-           xp_candidate.direct_gold_cost + xp_candidate.lost_interest_cost +
-               xp_candidate.opportunity_cost);
+    reroll_candidate.opportunity_cost = 999.0;
+    economy_context.action_candidates = {hold, xp_candidate, reroll_candidate};
+    const auto no_prior_scores = action_evaluator.evaluate(economy_context, posture);
+    assert(no_prior_scores.candidate_scores.size() == 3);
+    for (const auto& score : no_prior_scores.candidate_scores)
+        assert(score.opportunity_cost == 0.0);
 
     economy_context.action_candidates.clear();
     const auto no_candidate = action_evaluator.evaluate(economy_context, posture);
