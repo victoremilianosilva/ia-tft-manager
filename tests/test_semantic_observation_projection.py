@@ -7,6 +7,7 @@ from semantic_observation import (
     build_semantic_state_checkpoint_contract,
     project_native_player_state,
     validate_semantic_state_checkpoint_contract,
+    validate_semantic_batch_alignment,
 )
 
 
@@ -212,3 +213,33 @@ def test_semantic_projection_rejects_invalid_strategic_context_sequence():
     row["native_player_state"]["strategic_state"]["strategic_context_sequence"] = True
     with pytest.raises(ValueError, match="strategic_context_sequence"):
         project_native_player_state(row, {"TFT_TestChampion": 17})
+
+def test_semantic_batch_alignment_rejects_cross_snapshot_and_contract_drift():
+    row = _metadata()
+    catalog = {"TFT_TestChampion": 17}
+    batch = build_semantic_batch([row], catalog)
+    contract = build_semantic_state_checkpoint_contract(catalog)
+    row["semantic_projection_hash"] = batch["hashes"][0]
+    row["semantic_projection_contract_id"] = batch["contract_id"]
+    row["semantic_projection_contract_hash"] = batch["contract_hash"]
+    validate_semantic_batch_alignment(batch, [row], contract)
+
+    crossed = dict(batch)
+    crossed["identities"] = [dict(batch["identities"][0], player_decision_sequence=99)]
+    with pytest.raises(ValueError, match="identity"):
+        validate_semantic_batch_alignment(crossed, [row], contract)
+
+    stale = dict(row, semantic_projection_hash="0" * 64)
+    with pytest.raises(ValueError, match="projection hash"):
+        validate_semantic_batch_alignment(batch, [stale], contract)
+
+
+def test_semantic_projection_hash_binds_owner_identity_even_when_tensor_is_equal():
+    first_row = _metadata()
+    second_row = _metadata()
+    second_row["native_player_state"]["strategic_state"]["active_composition_id"] = "comp-other"
+    first = project_native_player_state(first_row, {"TFT_TestChampion": 17})
+    second = project_native_player_state(second_row, {"TFT_TestChampion": 17})
+    assert first["numeric"] == second["numeric"]
+    assert first["champion_ids"] == second["champion_ids"]
+    assert first["sha256"] != second["sha256"]
