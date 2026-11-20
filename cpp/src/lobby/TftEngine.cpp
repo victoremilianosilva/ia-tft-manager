@@ -2672,6 +2672,11 @@ struct TFTEngine::Impl {
                                 feasibility.required_traits.push_back({trait, minimum});
                         }
 
+                        if (feasibility.required_units.size() !=
+                            destination_it->units.size()) {
+                            continue;
+                        }
+
                         // A zero transition cost is evidence-backed only when
                         // every destination unit is already physically owned.
                         // Until a native marginal-cost producer is available,
