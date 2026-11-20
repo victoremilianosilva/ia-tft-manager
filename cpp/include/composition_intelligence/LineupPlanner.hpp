@@ -47,10 +47,6 @@ struct LineupPlannerConfig {
 };
 struct LineupPlan {
     std::string composition_id;
-    std::uint64_t match_id{0};
-    std::int32_t player_id{-1};
-    std::uint32_t round{0};
-    std::uint64_t sequence{0};
     std::uint64_t composition_version{0};
     std::uint32_t level{0};
     std::uint32_t board_capacity{0};
@@ -71,6 +67,11 @@ struct LineupPlan {
     std::int32_t observed_missing_frontline_count{-1};
     std::int32_t observed_missing_backline_count{-1};
     std::string board_evidence_reason{"not_provided"};
+    // Appended to preserve aggregate initialization of the original plan contract.
+    std::uint64_t match_id{0};
+    std::int32_t player_id{-1};
+    std::uint32_t round{0};
+    std::uint64_t sequence{0};
 };
 class LineupPlanner {
 public:
