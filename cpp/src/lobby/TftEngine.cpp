@@ -2561,10 +2561,11 @@ struct TFTEngine::Impl {
 
         }
 
-        if (composition_intelligence_enabled)
+        if (composition_intelligence_enabled) {
             composition_intelligence_native_diagnostics[i].push_back(
                 strategic_native_generation.reason);
-            for (const auto& generated : strategic_native_generation.candidates) {
+        }
+        for (const auto& generated : strategic_native_generation.candidates) {
                 composition_intelligence::CompositionCandidate candidate;
                 candidate.composition_id = generated.identity;
                 candidate.candidate_set_id = generated.candidate_set_id;
@@ -3839,17 +3840,16 @@ struct TFTEngine::Impl {
                 runtime.mark_stage("candidate_evaluation",
                     proposal.target ? "completed" : "partial",
                     proposal.reason, active_before);
-                std::optional<ci::CompositionTransition> published_transition;
-                if (proposal.approved && proposal.target) {
-                    const auto published = runtime.transitions.publish_if_approved(proposal, runtime.active);
-                    if (published.has_transition) published_transition = published.transition;
-                }
+                // Composition publication belongs exclusively to the native
+                // UnifiedStrategicShadowRuntime. This pipeline may propose and
+                // record alternatives, but must not compete for the canonical owner.
+                const std::optional<ci::CompositionTransition> published_transition;
                 const auto active = runtime.active.current();
                 runtime.mark_stage("transition_publication",
-                    published_transition ? "completed" :
-                        (proposal.approved ? "failed" : "skipped"),
-                    published_transition ? "approved transition published" :
-                        (proposal.approved ? "publication rejected or stale" : "proposal not approved"),
+                    proposal.approved ? "diagnostic_only" : "skipped",
+                    proposal.approved
+                        ? "native_strategic_runtime_owns_composition_publication"
+                        : "proposal not approved",
                     active);
                 ci::PlannerEvidenceSnapshot evidence;
                 const auto version = active ? active->version : 0;
