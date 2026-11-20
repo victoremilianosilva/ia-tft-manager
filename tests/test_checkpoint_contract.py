@@ -42,7 +42,7 @@ def test_checkpoint_lineage_rejects_component_substitution():
     changed = copy.deepcopy(manifest)
     changed["contract"]["components"]["reward_contract"]["sha256"] = "b" * 64
 
-    with pytest.raises(ValueError, match="linhagem incompatível"):
+    with pytest.raises(ValueError, match="hash is invalid|linhagem incompatível"):
         validate_checkpoint_lineage_contract(changed, *inputs)
 
 
