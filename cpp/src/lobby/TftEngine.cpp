@@ -6807,6 +6807,7 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
         auto& strategic = target.strategic_state;
         strategic.episode_id = impl_->episode_id;
         strategic.player_decision_sequence = impl_->player_decision_sequences[i];
+        strategic.strategic_context_sequence = impl_->strategic_context_sequences[i];
         strategic.player_id = static_cast<std::int32_t>(i);
         strategic.round = snapshot.round;
 

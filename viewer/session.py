@@ -401,7 +401,7 @@ class ViewerSession:
                     if stale_reason is None and type(state_round) is int and state_round != shadow.get("round"):
                         stale_reason = "strategic_owner_round_mismatch"
 
-                    expected_sequence = strategic_state.get("player_decision_sequence")
+                    expected_sequence = strategic_state.get("strategic_context_sequence")
                     comparison = shadow.get("action_evaluator_comparison")
                     resolution = comparison.get("native_action_resolution") if isinstance(comparison, dict) else None
                     identity = resolution.get("identity") if isinstance(resolution, dict) else None

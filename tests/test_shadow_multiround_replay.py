@@ -42,6 +42,20 @@ def test_shadow_pipeline_replays_multiple_rounds_with_correlated_sequences(monke
 
         records = _records(engine)
         assert records, "A pipeline Shadow habilitada não publicou snapshots multi-round."
+        native_audit = engine.get_audit_snapshot()
+        latest_by_player = {}
+        for record in records:
+            previous = latest_by_player.get(record["player_id"])
+            if previous is None or record["sequence"] > previous["sequence"]:
+                latest_by_player[record["player_id"]] = record
+        for player in native_audit.get("players", []):
+            record = latest_by_player.get(player.get("player_id"))
+            if record is None:
+                continue
+            resolution = record["action_evaluator_comparison"]["native_action_resolution"]
+            assert player["strategic_state"]["strategic_context_sequence"] == (
+                resolution["identity"]["source_sequence"]
+            )
         sequences = [record["sequence"] for record in records]
         assert sequences == sorted(sequences)
         assert len(sequences) == len(set(sequences))

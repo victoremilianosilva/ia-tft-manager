@@ -191,7 +191,8 @@ def _native_snapshot(*, round_number=9, player_sequence=12, composition_id="comp
             "player_id": 2,
             "strategic_state": {
                 "episode_id": 77,
-                "player_decision_sequence": player_sequence,
+                "player_decision_sequence": player_sequence + 1,
+                "strategic_context_sequence": player_sequence,
                 "round": round_number,
                 "active_composition_valid": True,
                 "active_composition_id": composition_id,

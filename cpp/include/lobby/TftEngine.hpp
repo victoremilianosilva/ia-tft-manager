@@ -306,11 +306,13 @@ struct AuditUnitCopyProgressSnapshot {
 
 struct AuditStrategicOwnerSnapshot {
     std::string contract_id{"tft.strategic-owner-observation"};
-    std::uint32_t contract_version{1};
+    std::uint32_t contract_version{2};
     std::string source_namespace{"tft.engine.strategic-owners"};
     std::string producer{"TFTEngine::get_audit_snapshot"};
     std::uint64_t episode_id{0};
     std::uint64_t player_decision_sequence{0};
+    // Sequence consumed by strategic evidence/candidate/action owners; a distinct scope.
+    std::uint64_t strategic_context_sequence{0};
     std::int32_t player_id{-1};
     std::uint32_t round{0};
     bool active_composition_valid{false};
