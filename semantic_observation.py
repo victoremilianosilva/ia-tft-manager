@@ -305,8 +305,9 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
                         raise ValueError(
                             f"native UnitCopyProgress is missing owned champion {champion_name}"
                         )
-    if not set(copy_progress).issubset(observed_owned_ids):
-        raise ValueError("native UnitCopyProgress contains champions absent from board/bench")
+    known_catalog_ids = set(catalog.values())
+    if not (set(copy_progress) & known_catalog_ids).issubset(observed_owned_ids):
+        raise ValueError("native UnitCopyProgress contains known champions absent from board/bench")
     numeric = list(global_values)
     champion_ids = []
     for group_name, expected_count in (("board", 28), ("bench", 9), ("shop", 5)):
