@@ -15,6 +15,7 @@ import sys
 
 import numpy as np
 
+from decision_identity import build_player_identity_envelopes
 
 _REPO_ROOT = Path(__file__).resolve().parent
 # CMake builds may live at the repository root (build/) or under cpp/.
@@ -459,6 +460,9 @@ class CppTFTLobbyWrapper:
             "stage": 1,
             "snapshot_kind": "reset",
         }
+        self._last_snapshot_metadata["player_identity_envelopes"] = build_player_identity_envelopes(
+            self._last_snapshot_metadata
+        )
         self._last_snapshot_metadata["native_state_snapshot"] = self._copy_native_state_snapshot(
             result.get("native_state_snapshot"), self._last_snapshot_metadata
         )
@@ -495,6 +499,9 @@ class CppTFTLobbyWrapper:
             "stage": int(result.get("stage", 1)),
             "snapshot_kind": "step",
         }
+        self._last_snapshot_metadata["player_identity_envelopes"] = build_player_identity_envelopes(
+            self._last_snapshot_metadata
+        )
         self._last_snapshot_metadata["native_state_snapshot"] = self._copy_native_state_snapshot(
             result.get("native_state_snapshot"), self._last_snapshot_metadata
         )
