@@ -2,6 +2,7 @@
 
 #include "composition_intelligence/LineupPlanner.hpp"
 #include "composition_intelligence/UnitPriorityPlanner.hpp"
+#include "lobby/EconomyEngine.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -37,6 +38,14 @@ struct ContextualActionCandidateScore {
     double lineup_value{0.0};
     double upgrade_value{0.0};
     double economy_cost{0.0};
+    bool marginal_economy_evidence_available{false};
+    std::int32_t gold_before{0};
+    std::int32_t gold_after{0};
+    std::int32_t interest_before{0};
+    std::int32_t interest_after{0};
+    std::int32_t interest_delta{0};
+    std::uint32_t marginal_horizon_rounds{0};
+    std::string marginal_cost_source{"unavailable"};
     double total_score{0.0};
 };
 
@@ -78,6 +87,14 @@ struct ContextualActionEvaluation {
                     {"lineup_value", c.lineup_value},
                     {"upgrade_value", c.upgrade_value},
                     {"economy_cost", c.economy_cost},
+                    {"marginal_economy_evidence_available", c.marginal_economy_evidence_available},
+                    {"gold_before", c.gold_before},
+                    {"gold_after", c.gold_after},
+                    {"interest_before", c.interest_before},
+                    {"interest_after", c.interest_after},
+                    {"interest_delta", c.interest_delta},
+                    {"marginal_horizon_rounds", c.marginal_horizon_rounds},
+                    {"marginal_cost_source", c.marginal_cost_source},
                     {"total_score", c.total_score}
                 }}
             });
@@ -287,29 +304,38 @@ public:
                             score.board_value += 0.20;
                     }
                 }
-                const double opportunity = std::isfinite(candidate.opportunity_cost)
-                    ? std::max(0.0, candidate.opportunity_cost) : 0.0;
-                const double lost_interest = candidate.lost_interest_evidence_available &&
-                    std::isfinite(candidate.lost_interest_cost)
-                    ? std::max(0.0, candidate.lost_interest_cost) : 0.0;
-                // Negative direct cost is a validated sale credit, not a cost to clamp away.
-                const double direct_cost = std::isfinite(candidate.direct_gold_cost) &&
-                    candidate.direct_gold_cost != 0.0
-                    ? candidate.direct_gold_cost
-                    : (std::isfinite(candidate.expected_economy_cost)
-                        ? candidate.expected_economy_cost : 0.0);
-                double evidence_cost = 0.0;
-                if (economy_valid) {
-                    if (candidate.kind == strategy::StrategicActionKind::BuyUnit)
-                        evidence_cost = evidence->economy.buy_unit_opportunity_cost;
-                    else if (candidate.kind == strategy::StrategicActionKind::BuyExperience)
-                        evidence_cost = evidence->economy.buy_experience_opportunity_cost;
-                    else if (candidate.kind == strategy::StrategicActionKind::RerollShop)
-                        evidence_cost = has_upgrade_target ? evidence->economy.reroll_with_target_opportunity_cost
-                            : evidence->economy.reroll_without_target_opportunity_cost;
+                const auto expected_interest_before =
+                    EconomyEngine{}.get_interest(context.gold);
+                const bool marginal_valid =
+                    candidate.marginal_economy_evidence_available &&
+                    candidate.marginal_cost_source ==
+                        "native_gold+EconomyEngine::get_interest" &&
+                    candidate.marginal_cost_horizon_rounds == 1 &&
+                    candidate.marginal_cost_uncertainty == 0.0 &&
+                    candidate.marginal_gold_before == context.gold &&
+                    candidate.marginal_gold_after >= 0 &&
+                    candidate.marginal_interest_before == expected_interest_before &&
+                    candidate.marginal_interest_after ==
+                        EconomyEngine{}.get_interest(candidate.marginal_gold_after) &&
+                    std::isfinite(candidate.direct_gold_cost);
+                score.marginal_economy_evidence_available = marginal_valid;
+                if (marginal_valid) {
+                    score.gold_before = candidate.marginal_gold_before;
+                    score.gold_after = candidate.marginal_gold_after;
+                    score.interest_before = candidate.marginal_interest_before;
+                    score.interest_after = candidate.marginal_interest_after;
+                    score.interest_delta = candidate.marginal_interest_delta;
+                    score.marginal_horizon_rounds =
+                        candidate.marginal_cost_horizon_rounds;
+                    score.marginal_cost_source = candidate.marginal_cost_source;
+                    const double direct_cost = candidate.direct_gold_cost;
+                    const double lost_interest = std::max(
+                        0.0, static_cast<double>(-candidate.marginal_interest_delta));
+                    // Direct spend/credit and the exact interest delta are
+                    // counted once. Unproduced shop/opportunity values add no prior.
+                    score.economy_cost = (direct_cost * 0.045) +
+                        (lost_interest * 0.12);
                 }
-                score.economy_cost = (direct_cost * 0.045) +
-                    (lost_interest * 0.12) + (std::max(opportunity, evidence_cost) * 0.14);
                 score.total_score = score.board_value + score.survival_value +
                     score.streak_value + score.unit_priority_value +
                     score.lineup_value + score.upgrade_value - score.economy_cost;
