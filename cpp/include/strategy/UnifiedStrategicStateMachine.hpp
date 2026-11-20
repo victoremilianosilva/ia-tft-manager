@@ -34,8 +34,9 @@ struct StrategicCycleInput {
     // The orchestrator takes a value snapshot and never mutates the source.
     std::optional<composition_intelligence::ActiveComposition> active_composition;
 
-    // Candidate generated from the selected discovery hypothesis.
-    std::optional<composition_intelligence::CompositionCandidate> initial_composition_candidate;
+    // Native candidates are matched against the selected discovery hypothesis;
+    // the state machine alone chooses which candidate can initialize the owner.
+    std::vector<composition_intelligence::CompositionCandidate> initial_composition_candidates;
     DirectionDiscoveryInput exploration;
 
     // Optional independent pivot candidate and the exact normalized evidence
@@ -145,20 +146,22 @@ public:
             if (out.diagnostics.discovery.status == DirectionDiscoveryStatus::HypothesesFound &&
                 !out.diagnostics.discovery.hypotheses.empty()) {
                 const auto& hypothesis = out.diagnostics.discovery.hypotheses.front();
-                if (!input.initial_composition_candidate.has_value()) {
-                    phase_ = StrategicCyclePhase::Exploration;
-                    out.diagnostics.transition_reason = "direction_hypothesis_waiting_for_composition_candidate";
-                } else if (!composition_contains_units(
-                               *input.initial_composition_candidate,
-                               hypothesis.anchor.reference_unit_ids)) {
+                const auto candidate = std::find_if(
+                    input.initial_composition_candidates.begin(),
+                    input.initial_composition_candidates.end(),
+                    [&](const auto& value) {
+                        return composition_contains_units(
+                            value, hypothesis.anchor.reference_unit_ids);
+                    });
+                if (candidate == input.initial_composition_candidates.end()) {
                     phase_ = StrategicCyclePhase::Exploration;
                     out.diagnostics.transition_reason =
-                        "initial_composition_does_not_contain_discovered_support_units";
+                        "direction_hypothesis_waiting_for_matching_native_composition";
                 } else {
                     auto initial_direction = hypothesis.anchor;
-                    bind_initial_direction(initial_direction, *input.initial_composition_candidate);
+                    bind_initial_direction(initial_direction, *candidate);
                     const auto initialized = pivot_coordinator_.initialize(
-                        *input.initial_composition_candidate, initial_direction);
+                        *candidate, initial_direction);
                     out.state_changed = initialized.state_changed;
                     out.diagnostics.transition_reason = initialized.reason;
                     phase_ = initialized.status == PivotConfirmationStatus::Initialized
