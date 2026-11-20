@@ -884,3 +884,18 @@ def test_wrapper_rejects_anvil_sequence_without_pending_choice():
     }
     with pytest.raises(RuntimeError, match="Sequência de bigorna presente"):
         cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
+
+
+
+def test_wrapper_rejects_invalid_strategic_context_sequence():
+    native = FakeNativeLobby()
+    snapshot = native._native_state_snapshot()
+    snapshot["players"][0]["strategic_state"]["strategic_context_sequence"] = True
+    identity = {
+        "engine_instance_id": f"fake-engine-{id(native)}",
+        "episode_id": 0,
+        "decision_sequence": 0,
+        "player_decision_sequences": [0] * 8,
+    }
+    with pytest.raises(RuntimeError, match="strategic_context_sequence"):
+        cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)

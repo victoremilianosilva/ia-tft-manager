@@ -433,7 +433,7 @@ class CppTFTLobbyWrapper:
                 strategic.get("contract_id") != "tft.strategic-owner-observation"
                 or isinstance(strategic_version, bool)
                 or not isinstance(strategic_version, int)
-                or strategic_version != 1
+                or strategic_version != 2
                 or strategic.get("producer") != "TFTEngine::get_audit_snapshot"
                 or strategic.get("source_namespace") != "tft.engine.strategic-owners"
             ):
@@ -447,6 +447,13 @@ class CppTFTLobbyWrapper:
                 actual = strategic.get(field)
                 if isinstance(actual, bool) or not isinstance(actual, int) or actual != expected:
                     raise RuntimeError(f"Strategic owner snapshot diverge em {field}.")
+            strategic_context_sequence = strategic.get("strategic_context_sequence")
+            if (
+                isinstance(strategic_context_sequence, bool)
+                or not isinstance(strategic_context_sequence, int)
+                or strategic_context_sequence < 0
+            ):
+                raise RuntimeError("Strategic owner snapshot inválido em strategic_context_sequence.")
             valid_fields = (
                 "active_composition_valid", "direction_valid",
                 "pivot_candidate_valid", "opportunity_cost_available",
