@@ -1,3 +1,5 @@
+import pytest
+
 from semantic_observation import (
     SEMANTIC_ENTITY_SLOTS,
     SEMANTIC_NUMERIC_DIM,
