@@ -38,8 +38,8 @@ ReplayFixture make_fixture() {
     composition.target_board_size = 2;
     composition.main_carry_id = 10;
     composition.units = {
-        {10, UnitRole::MainCarry, true, 100},
-        {20, UnitRole::Frontline, true, 90}
+        {10, tft::composition_intelligence::UnitRole::MainCarry, true, 100},
+        {20, tft::composition_intelligence::UnitRole::Frontline, true, 90}
     };
     f.active = ActiveComposition{composition, 3};
 
