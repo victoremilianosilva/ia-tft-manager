@@ -126,6 +126,31 @@ void exploration_waits_for_composition_and_then_binds_direction() {
     assert(result.anchors.direction_anchor.lifecycle == StrategicAnchorLifecycle::Active);
 }
 
+void strategic_planner_selected_direction_overrides_discovery_ranking() {
+    ActiveCompositionManager active_composition;
+    StrategicCommitment commitment;
+    UnifiedStrategicStateMachine machine(active_composition, commitment);
+    StrategicCycleInput input;
+    input.exploration = competing_discovery_input(0.0, 0.0);
+    input.selected_initial_direction = "Invoker";
+    input.initial_composition_candidates.push_back(composition(
+        "native:Bruiser", 10,
+        {{10, UnitRole::MainCarry, true, 100},
+         {11, UnitRole::Frontline, true, 80}}));
+    input.initial_composition_candidates.push_back(composition(
+        "native:Invoker", 20,
+        {{20, UnitRole::MainCarry, true, 100},
+         {21, UnitRole::Frontline, true, 80}}));
+
+    const auto result = machine.refresh(input);
+    assert(result.diagnostics.discovery.hypotheses.size() == 2);
+    assert(result.diagnostics.discovery.hypotheses.front().anchor.direction == "Bruiser");
+    assert(result.phase == StrategicCyclePhase::CompositionActive);
+    assert(result.active_composition.has_value());
+    assert(result.active_composition->candidate.composition_id == "native:Invoker");
+    assert(result.anchors.direction_anchor.direction == "Invoker");
+}
+
 void machine_owns_exploratory_direction_history_without_legacy_inputs() {
     ActiveCompositionManager active_composition;
     StrategicCommitment commitment;
@@ -385,6 +410,7 @@ void insufficient_evidence_clears_pivot_and_keeps_active_composition() {
 
 int main() {
     exploration_waits_for_composition_and_then_binds_direction();
+    strategic_planner_selected_direction_overrides_discovery_ranking();
     machine_owns_exploratory_direction_history_without_legacy_inputs();
     shadow_runtime_isolates_players_and_resets_its_own_direction_history();
     shadow_runtime_refreshes_without_an_audit_sidecar();
