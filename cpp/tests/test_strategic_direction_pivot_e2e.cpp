@@ -118,7 +118,7 @@ void early_pairs_create_a_cheap_unbound_direction() {
     auto cycle = machine.refresh(input);
     assert(cycle.phase == StrategicCyclePhase::Exploration);
     assert(!cycle.active_composition);
-    input.initial_composition_candidate = make_composition("composition-bruiser");
+    input.initial_composition_candidates.push_back(make_composition("composition-bruiser"));
     cycle = machine.refresh(input);
     assert(cycle.phase == StrategicCyclePhase::CompositionActive);
     assert(cycle.anchors.direction_anchor.composition_identity == "composition-bruiser");
