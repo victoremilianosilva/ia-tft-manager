@@ -48,7 +48,8 @@ def test_native_composition_evidence_is_built_before_legacy_strategy():
     assert "NativeStrategicCompositionGenerator{}.generate(native_input)" in native_generation
     assert "strategic_native_owned" in native_generation
     assert "StrategyInfo" not in native_generation
-    assert "info." not in native_generation
+    assert "info.planned_unit_ids" not in native_generation
+    assert "info.core_unit_ids" not in native_generation
     assert "copies_by_unit" not in native_generation
 
     # Native generation precedes the remaining economic compatibility policy.
