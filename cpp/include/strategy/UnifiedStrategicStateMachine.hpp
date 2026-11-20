@@ -37,6 +37,8 @@ struct StrategicCycleInput {
     // Native candidates are matched against the selected discovery hypothesis;
     // the state machine alone chooses which candidate can initialize the owner.
     std::vector<composition_intelligence::CompositionCandidate> initial_composition_candidates;
+    // Final initial direction selected by StrategicPlanner from native anchors.
+    std::string selected_initial_direction;
     DirectionDiscoveryInput exploration;
 
     // Optional independent pivot candidate and the exact normalized evidence
@@ -145,29 +147,41 @@ public:
         } else if (!had_active) {
             if (out.diagnostics.discovery.status == DirectionDiscoveryStatus::HypothesesFound &&
                 !out.diagnostics.discovery.hypotheses.empty()) {
-                const auto& hypothesis = out.diagnostics.discovery.hypotheses.front();
-                const auto candidate = std::find_if(
-                    input.initial_composition_candidates.begin(),
-                    input.initial_composition_candidates.end(),
+                const auto hypothesis = std::find_if(
+                    out.diagnostics.discovery.hypotheses.begin(),
+                    out.diagnostics.discovery.hypotheses.end(),
                     [&](const auto& value) {
-                        return value.composition_id ==
-                                "native:" + hypothesis.anchor.direction &&
-                            composition_contains_units(
-                                value, hypothesis.anchor.reference_unit_ids);
+                        return !input.selected_initial_direction.empty() &&
+                            value.anchor.direction == input.selected_initial_direction;
                     });
-                if (candidate == input.initial_composition_candidates.end()) {
+                if (hypothesis == out.diagnostics.discovery.hypotheses.end()) {
                     phase_ = StrategicCyclePhase::Exploration;
                     out.diagnostics.transition_reason =
-                        "direction_hypothesis_waiting_for_matching_native_composition";
+                        "discovery_waiting_for_strategic_planner_direction";
                 } else {
-                    auto initial_direction = hypothesis.anchor;
-                    bind_initial_direction(initial_direction, *candidate);
-                    const auto initialized = pivot_coordinator_.initialize(
-                        *candidate, initial_direction);
-                    out.state_changed = initialized.state_changed;
-                    out.diagnostics.transition_reason = initialized.reason;
-                    phase_ = initialized.status == PivotConfirmationStatus::Initialized
-                        ? StrategicCyclePhase::CompositionActive : StrategicCyclePhase::NoEvidence;
+                    const auto candidate = std::find_if(
+                        input.initial_composition_candidates.begin(),
+                        input.initial_composition_candidates.end(),
+                        [&](const auto& value) {
+                            return value.composition_id ==
+                                    "native:" + hypothesis->anchor.direction &&
+                                composition_contains_units(
+                                    value, hypothesis->anchor.reference_unit_ids);
+                        });
+                    if (candidate == input.initial_composition_candidates.end()) {
+                        phase_ = StrategicCyclePhase::Exploration;
+                        out.diagnostics.transition_reason =
+                            "direction_hypothesis_waiting_for_matching_native_composition";
+                    } else {
+                        auto initial_direction = hypothesis->anchor;
+                        bind_initial_direction(initial_direction, *candidate);
+                        const auto initialized = pivot_coordinator_.initialize(
+                            *candidate, initial_direction);
+                        out.state_changed = initialized.state_changed;
+                        out.diagnostics.transition_reason = initialized.reason;
+                        phase_ = initialized.status == PivotConfirmationStatus::Initialized
+                            ? StrategicCyclePhase::CompositionActive : StrategicCyclePhase::NoEvidence;
+                    }
                 }
             } else {
                 phase_ = StrategicCyclePhase::NoEvidence;
@@ -324,7 +338,7 @@ private:
     ) {
         const auto discovered_direction = anchor.direction;
         anchor.identity = "direction:" + composition.composition_id + ":v1";
-        anchor.direction = composition.composition_id;
+        anchor.direction = discovered_direction;
         anchor.reason = "initial_composition_selected_from_discovery:" + discovered_direction;
         anchor.composition_identity = composition.composition_id;
         anchor.composition_version = 1;
