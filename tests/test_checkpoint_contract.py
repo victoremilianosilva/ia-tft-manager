@@ -109,3 +109,17 @@ def test_trainer_persists_and_requires_training_resume_contract():
     assert "TFT_WARM_START_OUTPUT_CHECKPOINT" in source
     assert source.count('"warm_start_source": warm_start_source_metadata') == 2
     assert source.count('"training_resume_contract": build_training_resume_contract(self.config.to_dict())') == 2
+
+
+
+def test_semantic_contract_change_requires_explicit_weights_only_warm_start():
+    from pathlib import Path
+
+    source = (
+        Path(__file__).resolve().parents[1] / "trainer.py"
+    ).read_text(encoding="utf-8")
+    assert "TFT_ALLOW_SEMANTIC_STATE_WARM_START" in source
+    assert "TFT_WARM_START_OUTPUT_CHECKPOINT" in source
+    assert "validate_semantic_state_checkpoint_integrity(saved_semantic_contract)" in source
+    assert 'if not key.startswith(("semantic_id_embedding.", "semantic_encoder."))' in source
+    assert "not semantic_state_warm_start" in source
