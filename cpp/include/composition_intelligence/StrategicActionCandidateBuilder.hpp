@@ -4,6 +4,7 @@
 #include "lobby/EconomyEngine.hpp"
 
 #include <algorithm>
+#include <cmath>
 #include <cstdint>
 #include <string>
 #include <unordered_map>
@@ -65,19 +66,43 @@ public:
                 std::to_string(candidate.target_board_slot) + ":" +
                 (candidate.source_is_bench ? "bench" : "board");
         };
+        const auto attach_marginal_economy = [&](strategy::StrategicActionCandidate& candidate) {
+            if (!context.evidence.gold || context.gold < 0 ||
+                !std::isfinite(candidate.direct_gold_cost))
+                return;
+
+            // Compare the candidate with HOLD from the exact same native
+            // snapshot. Current interest is a deterministic EconomyEngine
+            // function of gold; future income and reroll/shop opportunity
+            // values are deliberately not synthesized here.
+            const auto gold_before = context.gold;
+            const auto gold_delta = static_cast<std::int32_t>(
+                std::llround(candidate.direct_gold_cost));
+            const auto gold_after = std::max<std::int32_t>(
+                0, gold_before - gold_delta);
+            const EconomyEngine economy;
+            const auto interest_before = economy.get_interest(gold_before);
+            const auto interest_after = economy.get_interest(gold_after);
+
+            candidate.marginal_economy_evidence_available = true;
+            candidate.marginal_gold_before = gold_before;
+            candidate.marginal_gold_after = gold_after;
+            candidate.marginal_interest_before = interest_before;
+            candidate.marginal_interest_after = interest_after;
+            candidate.marginal_interest_delta = interest_after - interest_before;
+            candidate.marginal_cost_source =
+                "native_gold+EconomyEngine::get_interest";
+            candidate.marginal_cost_horizon_rounds = 1;
+            candidate.marginal_cost_uncertainty = 0.0;
+            candidate.lost_interest_cost = std::max<std::int32_t>(
+                0, interest_before - interest_after);
+            candidate.lost_interest_evidence_available = true;
+        };
         const auto append = [&](strategy::StrategicActionCandidate candidate) {
+            attach_marginal_economy(candidate);
             candidate.source_sequence = native.sequence;
             candidate.candidate_id = make_id(candidate);
             out.candidates.push_back(std::move(candidate));
-        };
-        const auto attach_marginal_interest = [&](strategy::StrategicActionCandidate& candidate) {
-            if (!context.evidence.interest_if_resolved_now || candidate.gold_cost <= 0)
-                return;
-            const auto after_spend = std::max(0, context.gold - candidate.gold_cost);
-            const auto remaining_interest = EconomyEngine{}.get_interest(after_spend);
-            candidate.lost_interest_cost = std::max(0,
-                context.interest_if_resolved_now - remaining_interest);
-            candidate.lost_interest_evidence_available = true;
         };
 
         if (type_enabled(decision::ActionType::PASS)) {
@@ -103,7 +128,6 @@ public:
             candidate.evidence_source = "EconomyEngine+native_BUY_XP_mask";
             candidate.evidence_horizon_rounds = 1;
             candidate.evidence_uncertainty = 0.0;
-            attach_marginal_interest(candidate);
             append(std::move(candidate));
         }
 
@@ -143,12 +167,10 @@ public:
                     anchor->unit.composition_fit, 0.0, 1.0);
                 candidate.upgrade_value = anchor->unit.copies_owned >= 2 ? 1.0 : 0.0;
                 candidate.available = cost->second <= context.gold;
-                candidate.opportunity_cost = strategy::action_opportunity_cost::kBuyUnit;
                 candidate.evidence_reason = "native_anchor_hypothesis_and_exact_legal_shop_slot";
                 candidate.evidence_source = "NativeStrategicCompositionGenerator+native_shop+native_BUY_mask";
                 candidate.evidence_horizon_rounds = 1;
                 candidate.evidence_uncertainty = 0.75;
-                attach_marginal_interest(candidate);
                 append(std::move(candidate));
             }
         }
@@ -206,7 +228,6 @@ public:
                 candidate.kind = strategy::StrategicActionKind::RerollShop;
                 candidate.gold_cost = EconomyEngine::REROLL_COST;
                 candidate.direct_gold_cost = EconomyEngine::REROLL_COST;
-                candidate.opportunity_cost = strategy::action_opportunity_cost::kRerollWithUpgradeTarget;
                 candidate.available = true;
                 candidate.evidence_reason = "upgrade_target_exists_and_native_reroll_mask";
                 candidate.evidence_source = "UnitPriorityPlanner+native_REROLL_mask";
