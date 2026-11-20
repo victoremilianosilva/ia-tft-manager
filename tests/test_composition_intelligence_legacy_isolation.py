@@ -27,6 +27,7 @@ def test_composition_intelligence_shadow_does_not_read_legacy_strategy_info():
         "info.composition_direction",
         "legacy_item_unit_profiles",
         "CompositionDirectionPolicy",
+        "copies_by_unit",
     )
     found = [token for token in forbidden if token in block]
     assert not found, (
