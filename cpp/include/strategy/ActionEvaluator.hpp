@@ -34,7 +34,9 @@ public:
                 candidate.gold_cost <= c.gold;
             breakdown.direct_gold_cost = candidate.direct_gold_cost;
             breakdown.lost_interest_cost = candidate.lost_interest_cost;
-            breakdown.opportunity_cost = candidate.opportunity_cost;
+            // No opportunity-cost producer is currently authoritative. Keep it
+            // unavailable instead of consuming a fixed action-family prior.
+            breakdown.opportunity_cost = 0.0;
             if (!breakdown.available) {
                 breakdown.total_score = -1.0e9;
                 breakdown.available = false;
@@ -94,17 +96,16 @@ public:
             const double lost_interest = candidate.lost_interest_evidence_available &&
                 std::isfinite(candidate.lost_interest_cost)
                 ? std::max(0.0, candidate.lost_interest_cost) : 0.0;
-            const double opportunity_cost = std::max(0.0, candidate.opportunity_cost);
+            const double opportunity_cost = 0.0;
             breakdown.direct_cost_component = -direct_cost * 0.055 + gold_gain * 0.035;
             breakdown.lost_interest_component = -lost_interest * 0.10;
-            breakdown.opportunity_cost_component = -opportunity_cost * 0.10;
+            breakdown.opportunity_cost_component = 0.0;
             breakdown.total_score =
                 breakdown.board_component + breakdown.survival_component +
                 breakdown.streak_component + breakdown.composition_component +
                 breakdown.upgrade_component +
                 breakdown.posture_component + breakdown.direct_cost_component +
-                breakdown.lost_interest_component +
-                breakdown.opportunity_cost_component;
+                breakdown.lost_interest_component;
 
             if (breakdown.total_score > best_score) {
                 second_score = best_score;
