@@ -223,16 +223,16 @@ def test_semantic_batch_alignment_rejects_cross_snapshot_and_contract_drift():
     row["semantic_projection_hash"] = batch["hashes"][0]
     row["semantic_projection_contract_id"] = batch["contract_id"]
     row["semantic_projection_contract_hash"] = batch["contract_hash"]
-    validate_semantic_batch_alignment(batch, [row], contract)
+    validate_semantic_batch_alignment(batch, [row], contract, catalog)
 
     crossed = dict(batch)
     crossed["identities"] = [dict(batch["identities"][0], player_decision_sequence=99)]
     with pytest.raises(ValueError, match="identity"):
-        validate_semantic_batch_alignment(crossed, [row], contract)
+        validate_semantic_batch_alignment(crossed, [row], contract, catalog)
 
     stale = dict(row, semantic_projection_hash="0" * 64)
     with pytest.raises(ValueError, match="projection hash"):
-        validate_semantic_batch_alignment(batch, [stale], contract)
+        validate_semantic_batch_alignment(batch, [stale], contract, catalog)
 
 
 def test_semantic_projection_hash_binds_owner_identity_even_when_tensor_is_equal():
