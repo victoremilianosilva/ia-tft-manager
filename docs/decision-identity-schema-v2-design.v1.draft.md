@@ -1,10 +1,10 @@
 # Decision Identity Schema v2 — Versioning Boundary and Migration Design
 
-**Status:** documentary design decision proposal; no runtime changes or implementation authorization.  
+**Status:** approved v2 design; native adapter and rollout envelope integration implemented in PR #504. External logical match identity remains unavailable.  
 **Target:** `new-arquiteture`  
 **Related:** #338, Observation Schema v1, Decision Identity and Mask Correlation Contract v1, Action / Mask Contract v1, PPO Architecture and Checkpoint Contract v1, Observation Tensor Projection Requirements v1, Strategic Shadow Integrated Replay Contract v1.
 
-> This document resolves the versioning boundary for typed decision sequences. It is a design proposal for review, not a populated production schema or runtime implementation.
+> This document resolves the versioning boundary for typed decision sequences. PR #504 implements the native Engine-episode and per-player decision envelope path; the remaining producer and consumer gaps are tracked separately.
 
 ## 1. Decision
 
@@ -225,3 +225,13 @@ This design does not approve a concrete tensor projection, PPO encoder, action-s
 ## 12. Status
 
 **Proposed decision:** Observation Schema v2 plus Decision Identity Envelope v2. The machine-readable `spec/observation-schema.v2.draft.json`, namespace registry, hash vectors and v1→v2 crosswalk are now draft review artifacts under issue #340. They are not approved for runtime use. Issue #338 tracks the versioning-boundary decision; issue #340 tracks the detailed v2 schema/registry/hash specification. Gate 8 and explicit authorization remain mandatory for runtime work.
+
+## PR #504 runtime reconciliation
+
+- `engine_match_id` is emitted as `<engine_instance_id>/episode/<episode_id>`; the Engine-instance UUID is owned by `TFTEngine::Impl`, remains stable across reset and differs across independent Engine objects.
+- `decision_sequence` uses `tft.engine.decision` and the native per-player counter. That counter is monotonic within one Engine instance and continues across episode resets.
+- `snapshot_sequence` uses `tft.engine.observation-snapshot` and the separate Engine-wide publication counter shared by all eight player rows.
+- The adapter emits one complete v2 envelope per player, including `match_id: null`, `status: complete`, the exact hash scope and RFC 8785/SHA-256 identity hash. Null logical match identity is valid because it is optional and no authoritative external producer has been proven.
+- Trainer verifies each player envelope against native counters and attaches only the selected player's envelope to its row. Rollout validates it again before storage.
+- Raw UnitInstance UUIDs remain episode-local physical tokens; every cross-episode reference must use `(engine_match_id, uuid)`.
+- The namespace registry now records the per-player sequence as scoped to the Engine instance, not reset per episode.
