@@ -665,6 +665,11 @@ class RolloutBuffer:
                 semantic_identities = semantic_state.get("identities")
                 semantic_hashes = semantic_state.get("hashes")
                 if (
+                    semantic_state.get("contract_id") != "tft.ppo.semantic-native-state.v2"
+                    or not isinstance(semantic_state.get("contract_hash"), str)
+                ):
+                    raise ValueError("Semantic state is missing its versioned projection contract identity.")
+                if (
                     not isinstance(semantic_identities, Sequence)
                     or len(semantic_identities) != self.num_envs
                     or not isinstance(semantic_hashes, Sequence)
@@ -685,8 +690,8 @@ class RolloutBuffer:
                     if (
                         not isinstance(digest, str)
                         or digest != metadata.get("semantic_projection_hash")
-                        or metadata.get("semantic_projection_contract_id") != "tft.ppo.semantic-native-state.v2"
-                        or not isinstance(metadata.get("semantic_projection_contract_hash"), str)
+                        or metadata.get("semantic_projection_contract_id") != semantic_state.get("contract_id")
+                        or metadata.get("semantic_projection_contract_hash") != semantic_state.get("contract_hash")
                     ):
                         raise ValueError(
                             f"Semantic projection hash/contract diverge do snapshot na transição {index}."
@@ -1148,6 +1153,18 @@ class RolloutBuffer:
                 semantic_batch["hashes"] = [
                     row.get("semantic_projection_hash") for row in batch_snapshot_metadata
                 ]
+                semantic_batch["contract_id"] = batch_snapshot_metadata[0].get(
+                    "semantic_projection_contract_id"
+                )
+                semantic_batch["contract_hash"] = batch_snapshot_metadata[0].get(
+                    "semantic_projection_contract_hash"
+                )
+                if any(
+                    row.get("semantic_projection_contract_id") != semantic_batch["contract_id"]
+                    or row.get("semantic_projection_contract_hash") != semantic_batch["contract_hash"]
+                    for row in batch_snapshot_metadata
+                ):
+                    raise RuntimeError("Semantic contract drift inside PPO minibatch.")
 
             yield {
                 "obs": flat_obs[batch_idx],
