@@ -168,6 +168,6 @@ def test_lineup_and_upgrade_diagnostics_preserve_physical_evidence():
     assert "pool_remaining" in priority
     assert "LineupTargetEntry" in lineup
     assert "availability" in lineup and "deferred_reason" in lineup
-    assert "lineup_target_states" in diagnostics
+    assert '"target_states"' in diagnostics
     assert '"copies_by_star"' in diagnostics
 
