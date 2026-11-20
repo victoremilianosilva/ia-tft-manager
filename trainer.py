@@ -2469,6 +2469,7 @@ class Trainer:
                 "semantic_state_contract": self.semantic_state_contract,
                 "reward_contract": build_reward_checkpoint_contract(),
                 "training_resume_contract": build_training_resume_contract(self.config.to_dict()),
+                "warm_start_source": warm_start_source_metadata,
                 "checkpoint_contract": build_checkpoint_lineage_contract(
                     self.policy.state_dict(),
                     build_action_mask_checkpoint_contract(),
