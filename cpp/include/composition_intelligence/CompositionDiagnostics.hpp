@@ -347,7 +347,13 @@ private:
                 {"progression_available", e.economy.progression_available},
                 {"evidence_used", e.economy.evidence_used},
                 {"evidence_missing", e.economy.evidence_missing},
-                {"evidence_invalid", e.economy.evidence_invalid}}},
+                {"evidence_invalid", e.economy.evidence_invalid},
+                // Preserve the diagnostic JSON keys, but report unavailable
+                // rather than reviving the removed fixed opportunity priors.
+                {"buy_xp_opportunity_cost", nullptr},
+                {"reroll_with_target_opportunity_cost", nullptr},
+                {"reroll_without_target_opportunity_cost", nullptr},
+                {"buy_unit_opportunity_cost", nullptr}}},
             {"board", {{"metadata", metadata_json(e.board.metadata)},
                 {"positional_score", value_or_null(board_available, e.board.positional_score)},
                 {"structural_score", value_or_null(board_available, e.board.structural_score)},
