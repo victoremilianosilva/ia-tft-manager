@@ -654,6 +654,43 @@ class RolloutBuffer:
                             f"Snapshot inconsistente em {group_name} dentro da lobby {key}."
                         )
 
+            # Semantic projection is part of the same decision record, not an
+            # independently shuffled feature batch. Bind every row to its native
+            # snapshot hash and full decision identity before storing it.
+            decision_metadata = normalized_groups["snapshot_metadata"]
+            if any("semantic_projection_hash" in row for row in decision_metadata):
+                if semantic_state is None:
+                    raise ValueError("Transição identificada exige semantic_state nativo.")
+                semantic_identities = semantic_state.get("identities")
+                semantic_hashes = semantic_state.get("hashes")
+                if (
+                    not isinstance(semantic_identities, Sequence)
+                    or len(semantic_identities) != self.num_envs
+                    or not isinstance(semantic_hashes, Sequence)
+                    or len(semantic_hashes) != self.num_envs
+                ):
+                    raise ValueError("Semantic state não contém identidade/hash por transição.")
+                identity_fields = (
+                    "engine_instance_id", "episode_id", "decision_sequence",
+                    "player_decision_sequence", "player_id", "round", "lobby_index",
+                )
+                for index, metadata in enumerate(decision_metadata):
+                    expected_identity = {field: metadata.get(field) for field in identity_fields}
+                    if dict(semantic_identities[index]) != expected_identity:
+                        raise ValueError(
+                            f"Semantic identity diverge do snapshot na transição {index}."
+                        )
+                    digest = semantic_hashes[index]
+                    if (
+                        not isinstance(digest, str)
+                        or digest != metadata.get("semantic_projection_hash")
+                        or metadata.get("semantic_projection_contract_id") != "tft.ppo.semantic-native-state.v2"
+                        or not isinstance(metadata.get("semantic_projection_contract_hash"), str)
+                    ):
+                        raise ValueError(
+                            f"Semantic projection hash/contract diverge do snapshot na transição {index}."
+                        )
+
         for group_name, normalized in normalized_groups.items():
             getattr(self, group_name)[self.ptr] = normalized
         if not all(supplied_groups):
@@ -1090,6 +1127,27 @@ class RolloutBuffer:
                     batch_advantages.std(unbiased=False) + 1e-8
                 )
 
+            batch_snapshot_metadata = self._metadata_for_batch(
+                self.snapshot_metadata, batch_idx
+            )
+            batch_result_metadata = self._metadata_for_batch(
+                self.result_snapshot_metadata, batch_idx
+            )
+            batch_next_metadata = self._metadata_for_batch(
+                self.next_snapshot_metadata, batch_idx
+            )
+            semantic_batch = {
+                "numeric": flat_semantic_numeric[batch_idx],
+                "champion_ids": flat_semantic_champion_ids[batch_idx],
+            }
+            if batch_snapshot_metadata is not None:
+                semantic_batch["identities"] = [
+                    row.get("semantic_identity") for row in batch_snapshot_metadata
+                ]
+                semantic_batch["hashes"] = [
+                    row.get("semantic_projection_hash") for row in batch_snapshot_metadata
+                ]
+
             yield {
                 "obs": flat_obs[batch_idx],
                 "actions": flat_actions[batch_idx],
@@ -1097,23 +1155,14 @@ class RolloutBuffer:
                 "advantages": batch_advantages,
                 "returns": flat_returns[batch_idx],
                 "values": flat_values[batch_idx],
-                "semantic_state": {
-                    "numeric": flat_semantic_numeric[batch_idx],
-                    "champion_ids": flat_semantic_champion_ids[batch_idx],
-                },
+                "semantic_state": semantic_batch,
                 "masks": {
                     key: value[batch_idx]
                     for key, value in flat_masks.items()
                 },
-                "snapshot_metadata": self._metadata_for_batch(
-                    self.snapshot_metadata, batch_idx
-                ),
-                "result_snapshot_metadata": self._metadata_for_batch(
-                    self.result_snapshot_metadata, batch_idx
-                ),
-                "next_snapshot_metadata": self._metadata_for_batch(
-                    self.next_snapshot_metadata, batch_idx
-                ),
+                "snapshot_metadata": batch_snapshot_metadata,
+                "result_snapshot_metadata": batch_result_metadata,
+                "next_snapshot_metadata": batch_next_metadata,
             }
 
     @staticmethod
