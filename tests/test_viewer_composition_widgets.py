@@ -13,8 +13,14 @@ from PySide6.QtWidgets import QApplication, QLabel, QMessageBox
 from viewer.main import PlayerCard, ViewerWindow
 
 
+class _NoopSignal:
+    def connect(self, *_args, **_kwargs):
+        pass
+
+
 class _IconLoader:
     catalog = []
+    loaded = _NoopSignal()
 
     def __init__(self, *_args, **_kwargs):
         pass
