@@ -33,7 +33,6 @@ struct StrategicPositionSnapshot {
     std::int32_t player_id{-1};
     std::uint32_t round{0};
     std::uint64_t sequence{0};
-    std::uint64_t lineup_sequence{0};
     std::string composition_id;
     std::uint64_t composition_version{0};
     bool alive{false};
@@ -42,6 +41,7 @@ struct StrategicPositionSnapshot {
     std::array<std::int32_t, decision::BENCH_SIZE> bench_ids{};
     PlayerActionMasks masks{};
     std::vector<StrategicPositionUnit> composition_units;
+    std::uint64_t lineup_sequence{0};
 };
 
 struct StrategicPositionProposal {
@@ -50,7 +50,6 @@ struct StrategicPositionProposal {
     std::int32_t player_id{-1};
     std::uint32_t round{0};
     std::uint64_t sequence{0};
-    std::uint64_t lineup_sequence{0};
     std::string composition_id;
     std::uint64_t composition_version{0};
     std::int32_t champion_id{-1};
@@ -63,6 +62,7 @@ struct StrategicPositionProposal {
     double improvement{0.0};
     std::string reason;
     std::string status{"no_positioning_proposal"};
+    std::uint64_t lineup_sequence{0};
 
     nlohmann::json to_json() const {
         return {
