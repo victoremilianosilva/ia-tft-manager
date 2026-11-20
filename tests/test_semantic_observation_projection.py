@@ -8,6 +8,7 @@ from semantic_observation import (
     project_native_player_state,
     validate_semantic_state_checkpoint_contract,
     validate_semantic_state_checkpoint_integrity,
+    validate_semantic_state_warm_start_migration,
     validate_semantic_batch_alignment,
 )
 
@@ -262,8 +263,13 @@ def test_semantic_checkpoint_manifest_integrity_is_separate_from_runtime_compati
     ).encode("utf-8")
     changed["sha256"] = hashlib.sha256(canonical).hexdigest()
     validate_semantic_state_checkpoint_integrity(changed)
+    validate_semantic_state_warm_start_migration(changed, catalog)
     with pytest.raises(ValueError, match="incompatible"):
         validate_semantic_state_checkpoint_contract(changed, catalog)
+    with pytest.raises(ValueError, match="catalog, layout, normalization"):
+        validate_semantic_state_warm_start_migration(
+            changed, {"TFT_TestChampion": 18}
+        )
     changed["sha256"] = "0" * 64
     with pytest.raises(ValueError, match="hash is invalid"):
         validate_semantic_state_checkpoint_integrity(changed)
