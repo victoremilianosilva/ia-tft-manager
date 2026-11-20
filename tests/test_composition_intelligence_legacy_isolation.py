@@ -116,6 +116,6 @@ def test_native_runtime_entrypoint_uses_only_native_cycle_inputs():
     found = [token for token in forbidden if token in runtime]
     assert not found, f"Native runtime entrypoint depends on legacy/optional state: {found}"
     assert "strategic_shadow_runtimes[i]" in runtime
-    assert "strategic_context_sequences[i]" in runtime
+    assert "strategic_context_sequences[i] + 1" in runtime
     assert "strategic_native_owned" in runtime
     assert "native_runtime.refresh(native_audit_context, native_input)" in runtime
