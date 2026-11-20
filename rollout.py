@@ -238,11 +238,14 @@ class RolloutBuffer:
             device=self.device
         )
 
-        self.valid = torch.zeros(
+        self.trajectory_valid = torch.zeros(
             (self.num_steps, self.num_envs),
             dtype=torch.bool,
             device=self.device,
         )
+        self.optimization_valid = torch.zeros_like(self.trajectory_valid)
+        # Backwards-compatible alias for historical PPO batch eligibility.
+        self.valid = self.optimization_valid
 
         # ============================================================
         # ACTION MASKS
@@ -282,6 +285,8 @@ class RolloutBuffer:
         result_snapshot_metadata=None,
         next_snapshot_metadata=None,
         semantic_state=None,
+        trajectory_valid=None,
+        optimization_valid=None,
     ):
         """
         Adiciona uma transição de todos os agentes.
@@ -311,24 +316,32 @@ class RolloutBuffer:
                 f"num_steps={self.num_steps}"
             )
 
-        if valid is None:
-            valid = torch.ones(
-                self.num_envs,
-                dtype=torch.bool,
-                device=self.device,
+        if valid is not None and optimization_valid is not None:
+            raise ValueError("Use valid (legado) ou optimization_valid, não ambos.")
+        if optimization_valid is None:
+            optimization_valid = valid
+        if optimization_valid is None:
+            optimization_valid = torch.ones(
+                self.num_envs, dtype=torch.bool, device=self.device
             )
         else:
-            valid = self._to_tensor(
-                valid,
-                dtype=torch.bool,
-            )
+            optimization_valid = self._to_tensor(optimization_valid, dtype=torch.bool)
 
-        if tuple(valid.shape) != (self.num_envs,):
-            raise ValueError(
-                f"Shape inválido para valid: {tuple(valid.shape)}"
-            )
+        if trajectory_valid is None:
+            trajectory_valid = optimization_valid
+        else:
+            trajectory_valid = self._to_tensor(trajectory_valid, dtype=torch.bool)
 
-        self.valid[self.ptr].copy_(valid)
+        expected_valid_shape = (self.num_envs,)
+        if tuple(trajectory_valid.shape) != expected_valid_shape:
+            raise ValueError("Shape inválido para trajectory_valid.")
+        if tuple(optimization_valid.shape) != expected_valid_shape:
+            raise ValueError("Shape inválido para optimization_valid.")
+        if bool((optimization_valid & ~trajectory_valid).any()):
+            raise ValueError("optimization_valid deve ser subconjunto de trajectory_valid.")
+
+        self.trajectory_valid[self.ptr].copy_(trajectory_valid)
+        self.optimization_valid[self.ptr].copy_(optimization_valid)
 
         # ============================================================
         # CONVERSÃO PARA TENSOR
@@ -831,7 +844,8 @@ class RolloutBuffer:
         next_value,
         next_done,
         gamma=0.99,
-        gae_lambda=0.95
+        gae_lambda=0.95,
+        next_state_valid=None,
     ):
         """
         Calcula GAE separadamente para cada agente.
@@ -872,6 +886,14 @@ class RolloutBuffer:
                 next_done,
                 dtype=torch.float32
             ).reshape(self.num_envs)
+            if next_state_valid is None:
+                next_state_valid = torch.ones(
+                    self.num_envs, dtype=torch.bool, device=self.device
+                )
+            else:
+                next_state_valid = self._to_tensor(
+                    next_state_valid, dtype=torch.bool
+                ).reshape(self.num_envs)
 
             # --------------------------------------------------------
             # GAE atual de cada agente
@@ -917,35 +939,25 @@ class RolloutBuffer:
                         self.values[t + 1]
                     )
 
-                # ----------------------------------------------------
-                # VALIDITY BOUNDARY
-                # Invalid transitions are excluded from PPO batches and must
-                # also break temporal return propagation. Otherwise an invalid
-                # reward at t+1 can leak into the preceding valid advantage.
-                # ----------------------------------------------------
-                valid_t = self.valid[t].to(dtype=torch.float32)
+                # Trajectory integrity controls TD/GAE. Optimizer eligibility
+                # is independent: a trustworthy row may carry temporal credit
+                # without entering a PPO minibatch.
+                trajectory_valid_t = self.trajectory_valid[t]
                 if t == self.num_steps - 1:
-                    next_step_valid = torch.ones_like(valid_t)
+                    next_state_is_valid = next_state_valid
                 else:
-                    next_step_valid = self.valid[t + 1].to(dtype=torch.float32)
+                    next_state_is_valid = self.trajectory_valid[t + 1]
 
-                # TD ERROR
+                bootstrap_mask = (
+                    next_non_terminal * next_state_is_valid.to(dtype=torch.float32)
+                )
                 delta = (
                     self.rewards[t]
-                    + gamma
-                    * next_values
-                    * next_non_terminal
+                    + gamma * next_values * bootstrap_mask
                     - self.values[t]
                 )
-
-                # GAE is isolated per agent and only crosses valid transitions.
-                gae = valid_t * (
-                    delta
-                    + gamma
-                    * gae_lambda
-                    * next_non_terminal
-                    * next_step_valid
-                    * gae
+                gae = trajectory_valid_t.to(dtype=torch.float32) * (
+                    delta + gamma * gae_lambda * bootstrap_mask * gae
                 )
 
                 self.advantages[t] = gae
@@ -971,7 +983,7 @@ class RolloutBuffer:
         if self.ptr <= 0:
             return
 
-        valid_mask = self.valid[:self.ptr]
+        valid_mask = self.optimization_valid[:self.ptr]
 
         if not valid_mask.any():
             return
@@ -1012,7 +1024,7 @@ class RolloutBuffer:
 
         # 🔎 Seleciona apenas experiências válidas.
         valid_indices = torch.nonzero(
-            self.valid[:steps].reshape(-1),
+            self.optimization_valid[:steps].reshape(-1),
             as_tuple=False,
         ).squeeze(-1)
 
@@ -1173,6 +1185,8 @@ class RolloutBuffer:
 
         return {
             "num_steps": self.num_steps,
+            "trajectory_valid_count": int(self.trajectory_valid[:self.ptr].sum().item()),
+            "optimization_valid_count": int(self.optimization_valid[:self.ptr].sum().item()),
             "num_agents": self.num_envs,
             "total_transitions": self.size(),
             "obs_dim": self.obs_dim,

@@ -225,3 +225,24 @@ Observation Schema v1 and Action/Mask Contract v1 remain immutable documentary c
 **Impactos:** `policy.py`, `trainer.py`, `rollout.py`, checkpoints futuros e testes de contrato. A integração efetiva das masks como side input do Critic permanece na migração de arquitetura PPO/Stage 4 (#286), sem alterar aqui a arquitetura da value head.
 
 **Validação objetiva:** testes determinísticos dos hashes independentes, rejeição de contrato divergente, rejeição de ação com dtype/argumentos inválidos, verificação do hash recalculado no limite do RolloutBuffer e testes de checkpoint versionado/legado explícito.
+
+
+## Runtime matrix reconciliation — PR #507
+
+The executable matrix remains independent from Observation Schema and strategic recommendations. The policy consumes the exact decision-correlated mask snapshot; the Engine remains final legality authority.
+
+| Action family | Required conditional masks | Runtime behavior |
+|---|---|---|
+| BUY | shop_mask | Sample/evaluate selected shop slot against the mask |
+| REROLL / BUY_XP / PASS | type_mask | No parameter head; action type remains Engine-validated |
+| MOVE_BENCH | bench_move_source_mask, bench_to_board_target_masks[source] | Destination is conditioned on the selected source |
+| MOVE_BOARD | board_source_mask, board_move_target_masks[source] | Destination is conditioned on the selected source |
+| SELL | bench_source_mask | Selected bench slot is validated |
+| EQUIP_FROM_INVENTORY | item_inventory_mask, item_target_mask | Item and target are both validated |
+| CRAFT_AND_EQUIP | item_component_first_mask, item_component_pair_masks[first], item_target_mask | First component, conditional second component and target are validated |
+
+Masks consumed by an action head reject empty rows before categorical distribution construction. The legacy board_target_mask remains in the hashed snapshot and Critic side input, but is not an independent actor constraint in the current action catalog; MOVE destinations are governed by the source-conditioned masks. Active players with an empty action-type mask fail closed; the PASS transport fallback is restricted to players explicitly reported eliminated by the native lobby state. Rollout recomputes the mask hash from the persisted payload and checks decision/result/next-state identity sequence, preventing a stale or cross-player mask from being silently reused.
+
+**Validation added:** parameterized empty-row rejection for every declared mask shape and a negative PPO-evaluation case for a masked BUY slot. Existing tests continue to cover all nine action types, conditional source/destination sampling, collection/evaluation log-probability parity, and native snapshot/hash correlation.
+
+**Boundary:** this PR does not change action IDs, dimensions, argument encoding, mask producers or Engine legality. Full cross-round replay and persistence of separate PPO/baseline/strategic recommendation traces remain coordinated with #289 and the replay work in PR5.

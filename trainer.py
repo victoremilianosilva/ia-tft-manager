@@ -41,6 +41,8 @@ from rollout import RolloutBuffer
 from checkpoint_contract import (
     build_checkpoint_lineage_contract,
     validate_checkpoint_lineage_contract,
+    build_training_resume_contract,
+    validate_training_resume_contract,
 )
 from reward_contract import (
     build_reward_checkpoint_contract,
@@ -288,6 +290,8 @@ class Trainer:
 
         legacy_action_mask_checkpoint = False
         legacy_reward_checkpoint = False
+        training_contract_warm_start = False
+        warm_start_source_metadata = None
         if os.path.exists(checkpoint_path):
             print(f"📂 Carregando checkpoint: {checkpoint_path}")
             checkpoint = torch.load(checkpoint_path, map_location=self.device)
@@ -410,9 +414,31 @@ class Trainer:
                     saved_reward_contract,
                 )
 
+            saved_training_contract = checkpoint.get("training_resume_contract")
+            training_contract_matches = (
+                saved_training_contract is not None
+                and validate_training_resume_contract(
+                    saved_training_contract, self.config.to_dict()
+                )
+            )
+            if not training_contract_matches:
+                allow_training_warm_start = os.environ.get(
+                    "TFT_ALLOW_TRAINING_CONFIG_WARM_START", ""
+                ).strip().lower() in {"1", "true", "yes"}
+                if not allow_training_warm_start:
+                    raise RuntimeError(
+                        "Checkpoint sem contrato de retraining compatível. "
+                        "Para importar somente os pesos em uma nova linhagem, "
+                        "defina TFT_ALLOW_TRAINING_CONFIG_WARM_START=1; "
+                        "optimizer/scheduler serão reiniciados."
+                    )
+                training_contract_warm_start = True
+
             migrated_checkpoint = self.policy.load_compatible_state_dict(checkpoint["policy"])
             print("⚠️ Checkpoint migrado; optimizer/scheduler serão reiniciados." if migrated_checkpoint
                   else "✅ Pesos da policy carregados.")
+
+
 
         self.optimizer = optim.Adam(
             self.policy.parameters(),
@@ -433,10 +459,64 @@ class Trainer:
             self.config.min_learning_rate,
             self.config.learning_rate,
         )
+        resume_state_complete = bool(
+            checkpoint
+            and "optimizer" in checkpoint
+            and "scheduler" in checkpoint
+            and checkpoint.get("scheduler_type") == "cosine_clamped"
+            and saved_schedule == current_schedule
+        )
+        if checkpoint and training_contract_matches and not resume_state_complete:
+            allow_training_warm_start = os.environ.get(
+                "TFT_ALLOW_TRAINING_CONFIG_WARM_START", ""
+            ).strip().lower() in {"1", "true", "yes"}
+            if not allow_training_warm_start:
+                raise RuntimeError(
+                    "Checkpoint tem contrato de retraining compatível, mas falta "
+                    "estado completo de optimizer/scheduler. Use o opt-in de warm-start "
+                    "para importar somente os pesos."
+                )
+            training_contract_warm_start = True
+
+        weights_only_warm_start = bool(
+            checkpoint and (
+                legacy_checkpoint_lineage or training_contract_warm_start
+                or legacy_action_mask_checkpoint or legacy_reward_checkpoint
+                or migrated_checkpoint
+            )
+        )
+        if weights_only_warm_start:
+            output_checkpoint_path = os.environ.get(
+                "TFT_WARM_START_OUTPUT_CHECKPOINT", ""
+            ).strip()
+            if (
+                not output_checkpoint_path
+                or os.path.realpath(output_checkpoint_path) == os.path.realpath(checkpoint_path)
+            ):
+                raise RuntimeError(
+                    "Warm-start exige TFT_WARM_START_OUTPUT_CHECKPOINT apontando "
+                    "para um artefato diferente do checkpoint de origem; o baseline "
+                    "histórico nunca será sobrescrito."
+                )
+            with open(checkpoint_path, "rb") as source_file:
+                source_checkpoint_sha256 = hashlib.sha256(source_file.read()).hexdigest()
+            source_lineage = checkpoint.get("checkpoint_contract")
+            warm_start_source_metadata = {
+                "source_sha256": source_checkpoint_sha256,
+                "source_update": checkpoint.get("update"),
+                "source_lineage_sha256": (
+                    source_lineage.get("sha256")
+                    if isinstance(source_lineage, dict) else None
+                ),
+                "mode": "weights_only_warm_start",
+            }
+            self.config.checkpoint_path = output_checkpoint_path
+
         can_restore_optimizer = bool(
-            checkpoint and "optimizer" in checkpoint
+            resume_state_complete
             and not migrated_checkpoint and not legacy_action_mask_checkpoint
             and not legacy_reward_checkpoint and not legacy_checkpoint_lineage
+            and not training_contract_warm_start
         )
         if can_restore_optimizer:
             self.optimizer.load_state_dict(checkpoint["optimizer"])
@@ -477,9 +557,13 @@ class Trainer:
             print("ℹ️ Scheduler reiniciado: LR/schedule mudou ou checkpoint incompatível.")
 
         if checkpoint:
-            if legacy_checkpoint_lineage:
+            if (
+                legacy_checkpoint_lineage or training_contract_warm_start
+                or legacy_action_mask_checkpoint or legacy_reward_checkpoint
+                or migrated_checkpoint
+            ):
                 self.start_update = 1
-                print("ℹ️ Checkpoint histórico carregado como baseline de pesos; nova linhagem começa no update 1.")
+                print("ℹ️ Checkpoint carregado como warm-start de pesos; optimizer/scheduler reiniciados e nova linhagem começa no update 1.")
             else:
                 self.start_update = int(checkpoint.get("update", 0)) + 1
                 print(f"▶️ Retomando do update {self.start_update}")
@@ -1831,7 +1915,8 @@ class Trainer:
                     next_dones,
                     values,
                     masks,
-                    valid=transition_valid,
+                    trajectory_valid=transition_valid,
+                    optimization_valid=transition_valid,
                     snapshot_metadata=flat_snapshot_metadata,
                     result_snapshot_metadata=flat_result_snapshot_metadata,
                     next_snapshot_metadata=flat_next_snapshot_metadata,
@@ -1912,6 +1997,9 @@ class Trainer:
                 dones,
                 gamma=self.config.gamma,
                 gae_lambda=self.config.gae_lambda,
+                next_state_valid=torch.ones(
+                    self.num_agents, dtype=torch.bool, device=self.device
+                ),
             )
 
             # ========================================================
@@ -1942,7 +2030,7 @@ class Trainer:
                 # ----------------------------------------------------
 
                 valid_indices = torch.nonzero(
-                    rollout.valid[:rollout.ptr].reshape(-1),
+                    rollout.optimization_valid[:rollout.ptr].reshape(-1),
                     as_tuple=False,
                 ).squeeze(-1)
 
@@ -2072,7 +2160,7 @@ class Trainer:
             # 📊 GENERAL LOGS
             # ========================================================
             mean_reward = None
-            valid_mask = rollout.valid[:rollout.ptr]
+            valid_mask = rollout.optimization_valid[:rollout.ptr]
 
             if valid_mask.any():
 
@@ -2333,6 +2421,8 @@ class Trainer:
                             build_critic_mask_input_checkpoint_contract(),
                         "semantic_state_contract": self.semantic_state_contract,
                         "reward_contract": build_reward_checkpoint_contract(),
+                        "training_resume_contract": build_training_resume_contract(self.config.to_dict()),
+                        "warm_start_source": warm_start_source_metadata,
                         "checkpoint_contract": build_checkpoint_lineage_contract(
                             self.policy.state_dict(),
                             build_action_mask_checkpoint_contract(),
@@ -2378,6 +2468,8 @@ class Trainer:
                 "critic_mask_input_contract": build_critic_mask_input_checkpoint_contract(),
                 "semantic_state_contract": self.semantic_state_contract,
                 "reward_contract": build_reward_checkpoint_contract(),
+                "training_resume_contract": build_training_resume_contract(self.config.to_dict()),
+                "warm_start_source": warm_start_source_metadata,
                 "checkpoint_contract": build_checkpoint_lineage_contract(
                     self.policy.state_dict(),
                     build_action_mask_checkpoint_contract(),

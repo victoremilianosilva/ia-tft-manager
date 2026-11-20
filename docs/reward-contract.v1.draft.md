@@ -399,3 +399,18 @@ Compra, XP, reroll, venda, movimentação, PASS, economia e item assignment deix
 - Qualquer novo shaping exige fonte autoritativa, horizonte/atribuição, prova de não duplicação, calibração e regressões próprias.
 
 O checkpoint persiste o ID/versão/hash deste contrato. Checkpoints sem manifesto só podem ser usados como baseline de pesos com `TFT_ALLOW_UNVERSIONED_REWARD_CHECKPOINT=1`; optimizer e scheduler são reiniciados.
+
+
+## Runtime reconciliation — PR #507: temporal validity and calibration boundary
+
+**Prior problem:** RolloutBuffer used one validity bit both to select PPO optimization rows and to decide whether GAE could cross a transition. The documentary contract already distinguished trajectory integrity from optimizer eligibility, but the runtime representation did not.
+
+**Technical rationale:** optimizer exclusion is not proof that the underlying transition is false. Conversely, an untrusted transition must not contribute a TD error, bootstrap, or GAE recursion. Terminal states and rollout truncation also require different bootstrap behavior.
+
+**New responsibility:** RolloutBuffer now stores trajectory_valid and optimization_valid independently. The former gates TD/GAE and temporal continuation; the latter gates minibatches and advantage normalization. The Trainer currently supplies both from the same active-agent eligibility snapshot because native collection either validates the full correlated transition or fails closed before insertion. The separate contract supports future valid-but-not-optimized rows without changing current collection semantics.
+
+**Contract and invariants:** optimization_valid must be a subset of trajectory_valid. An invalid trajectory contributes zero advantage and cuts bootstrap from an untrusted next state and recursive GAE propagation. A terminal done disables bootstrap. A rollout boundary is truncation, not termination: bootstrap is allowed only from the independently validated correlated next state. A trajectory-valid but optimizer-ineligible row can carry delayed credit to a preceding eligible row, but is never emitted in a PPO minibatch. Legacy valid remains a compatibility alias for optimizer eligibility.
+
+**Calibration boundary remains conservative:** action reward remains neutral (0.0); resolved PvP combat and one-time validated terminal placement remain the only active learning outcomes. Pair/upgrade progress, purchases, rerolls, XP/level, item assignment, positioning, economy and opportunity cost remain candidates for future calibration, not current reward terms. Native identity/progress evidence is necessary but not sufficient for causal attribution or calibrated reward weights. No future-income, expected-damage or elimination-risk estimate is synthesized.
+
+**Validation:** executable tests cover per-player invalid-transition isolation, valid-but-not-optimized temporal propagation, invalid next-state bootstrap suppression, rollout-truncation bootstrap, and the optimization-valid subset invariant. Empirical reward calibration/ablation remains in #295; no performance improvement is claimed.
