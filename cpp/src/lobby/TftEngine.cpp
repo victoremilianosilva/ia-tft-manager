@@ -2333,8 +2333,8 @@ struct TFTEngine::Impl {
         const TraitMilestones& trait_milestones) {
         // Native strategic lifecycle is independent of the optional
         // Composition Intelligence diagnostics/Viewer pipeline. It consumes
-        // the canonical per-player ActiveCompositionManager after that
-        // optional pipeline has had its chance to publish this round.
+        // the canonical per-player ActiveCompositionManager and live native
+        // evidence without waiting for optional Viewer/diagnostic processing.
         if (strategic_shadow_runtimes[i]) {
             try {
                 auto& native_runtime = *strategic_shadow_runtimes[i];
