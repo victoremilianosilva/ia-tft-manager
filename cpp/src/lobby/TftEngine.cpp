@@ -2682,8 +2682,13 @@ struct TFTEngine::Impl {
                         // Until a native marginal-cost producer is available,
                         // do not turn missing acquisition/opportunity costs into
                         // an invented zero or approve an unaffordable pivot.
-                        feasibility.protected_gold_floor =
-                            all_destination_units_owned ? 0 : -1;
+                        if (!all_destination_units_owned) {
+                            // Until the native marginal-cost owner can price an
+                            // acquisition, retain only zero-acquisition pivots.
+                            // Missing purchase/opportunity cost is never zero.
+                            continue;
+                        }
+                        feasibility.protected_gold_floor = 0;
                         feasibility.transition_economic_cost =
                             all_destination_units_owned ? 0.0 : -1.0;
 
