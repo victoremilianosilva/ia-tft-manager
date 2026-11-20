@@ -93,6 +93,10 @@ struct ContextualActionEvaluation {
     std::string rationale{"no_positive_contextual_candidate"};
     std::vector<std::string> evidence_rejected;
     std::vector<ContextualActionCandidateScore> candidates;
+    // Appended to preserve aggregate initialization of the evaluator result.
+    std::string projected_income_source{"unavailable"};
+    std::uint32_t projected_income_horizon_rounds{0};
+    double projected_income_uncertainty{1.0};
 
     nlohmann::json to_json() const {
         nlohmann::json items = nlohmann::json::array();
@@ -155,6 +159,9 @@ struct ContextualActionEvaluation {
                 {"evidence_used", economic_evidence_used},
                 {"evidence_missing", economic_evidence_missing},
                 {"projected_income_available", projected_income_available},
+                {"projected_income_source", projected_income_source},
+                {"projected_income_horizon_rounds", projected_income_horizon_rounds},
+                {"projected_income_uncertainty", projected_income_uncertainty},
                 {"incoming_damage_available", incoming_damage_available},
                 {"elimination_risk_available", elimination_risk_available},
                 {"progression_available", progression_available}}},
@@ -197,6 +204,10 @@ public:
             (lineup.stale || lineup.composition_id != out.composition_id ||
                 lineup.composition_version != active->version))
             return stale(std::move(out), "lineup identity/version mismatch");
+        if (context.sequence != 0 &&
+            (lineup.match_id != match_id || lineup.player_id != context.player_id ||
+                lineup.round != context.round || lineup.sequence != context.sequence))
+            return stale(std::move(out), "lineup match/player/round/sequence mismatch");
 
         const bool envelope_valid = evidence &&
             PlannerEvidenceAdapters::snapshot_identity_matches(*evidence, match_id,
@@ -225,6 +236,9 @@ public:
             out.economic_evidence_used = evidence->economy.evidence_used;
             out.economic_evidence_missing = evidence->economy.evidence_missing;
             out.projected_income_available = evidence->economy.projected_income_available;
+            out.projected_income_source = evidence->economy.projected_income_source;
+            out.projected_income_horizon_rounds = evidence->economy.projected_income_horizon_rounds;
+            out.projected_income_uncertainty = evidence->economy.projected_income_uncertainty;
             out.incoming_damage_available = evidence->economy.incoming_damage_available;
             out.elimination_risk_available = evidence->economy.elimination_risk_available;
             out.progression_available = evidence->economy.progression_available;

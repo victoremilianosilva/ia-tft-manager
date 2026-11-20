@@ -79,6 +79,10 @@ ReplayFixture make_fixture() {
 
     f.lineup.composition_id = composition.composition_id;
     f.lineup.composition_version = 3;
+    f.lineup.match_id = 77;
+    f.lineup.player_id = 0;
+    f.lineup.round = 9;
+    f.lineup.sequence = 42;
     f.lineup.level = 5;
     f.lineup.board_capacity = 5;
     f.lineup.endgame_target_ids = {10, 20};
@@ -89,6 +93,7 @@ ReplayFixture make_fixture() {
 
     f.context.player_id = 0;
     f.context.round = 9;
+    f.context.sequence = 42;
     f.context.gold = 20;
     f.context.level = 5;
     f.context.xp_to_next = 4;

@@ -55,6 +55,23 @@ void attach_exact_marginal(StrategicActionCandidate& c, std::int32_t gold_before
     c.marginal_cost_horizon_rounds = 1;
     c.marginal_cost_uncertainty = 0.0;
 }
+void stale_lineup_identity_is_rejected_before_scoring() {
+    StrategicSharedContext context;
+    context.alive = true; context.gold = 10; context.player_id = 0;
+    context.round = 8; context.sequence = 12; context.evidence.gold = true;
+    auto stale = lineup();
+    stale.match_id = 77; stale.player_id = 0; stale.round = 8;
+    stale.sequence = 11;
+    auto buy = candidate(StrategicActionKind::BuyUnit, 20);
+    attach_exact_marginal(buy, context.gold);
+    context.action_candidates = {buy, candidate(StrategicActionKind::Hold)};
+    const auto result = ContextualActionEvaluator{}.evaluate(
+        active(), priorities(), stale, context, nullptr, 77);
+    assert(result.stale);
+    assert(result.stale_reason == "lineup match/player/round/sequence mismatch");
+    assert(result.recommended_action == StrategicActionKind::None);
+}
+
 void no_active_composition_without_anchor_remains_stale() {
     StrategicSharedContext context;
     context.alive = true; context.player_id = 0; context.round = 8;
@@ -586,6 +603,7 @@ void json_is_versioned_and_shadow_only() {
 }
 
 int main() {
+    stale_lineup_identity_is_rejected_before_scoring();
     no_active_composition_without_anchor_remains_stale();
     native_anchor_purchase_is_evaluated_before_composition_lock();
     baseline_is_unchanged_by_contextual_execution();

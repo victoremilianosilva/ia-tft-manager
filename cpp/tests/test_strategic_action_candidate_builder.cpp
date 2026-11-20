@@ -1,4 +1,6 @@
 #include "composition_intelligence/StrategicActionCandidateBuilder.hpp"
+#include "composition_intelligence/ContextualActionEvaluator.hpp"
+#include "composition_intelligence/StrategicActionExecutor.hpp"
 
 #include <cassert>
 #include <iostream>
@@ -48,6 +50,7 @@ void builder_emits_snapshot_bound_physical_candidates() {
     LineupPlan lineup;
     lineup.composition_id = "candidate-builder";
     lineup.composition_version = 3;
+    lineup.match_id = 77; lineup.player_id = 0; lineup.round = 9; lineup.sequence = 42;
     lineup.endgame_target_ids = {10, 20};
     lineup.selected_board = {
         {10, LineupSlotKind::ActiveTarget, 90, true, true},
@@ -153,6 +156,29 @@ void builder_emits_snapshot_bound_physical_candidates() {
     assert(hold->marginal_gold_before == hold->marginal_gold_after);
     assert(hold->marginal_interest_delta == 0);
 
+    // Prove the complete native chain using the exact lineup and physical unit.
+    auto integrated_context = context;
+    integrated_context.sequence = native.sequence;
+    integrated_context.action_candidates = {*deploy, *hold};
+    const auto contextual = ContextualActionEvaluator{}.evaluate(
+        active, priorities, lineup, integrated_context, nullptr, native.match_id);
+    assert(!contextual.stale);
+    assert(contextual.recommended_action == StrategicActionKind::DeployOrMove);
+    StrategicActionResolutionRequest request;
+    request.recommendation_id = "lineup-position-executor-integration";
+    request.expected_snapshot_sequence = native.sequence;
+    request.recommendation = &contextual;
+    request.source_context = &integrated_context;
+    request.current_state = &native;
+    const auto resolution = StrategicActionExecutor{}.resolve(request);
+    assert(resolution.accepted);
+    assert(resolution.recommended_kind == StrategicActionKind::DeployOrMove);
+    assert(resolution.recommended_champion_id == 20);
+    assert(resolution.native_action.values[0] ==
+        static_cast<std::int32_t>(decision::ActionType::MOVE_BENCH));
+    assert(resolution.native_action.values[2] == deploy->source_slot);
+    assert(resolution.native_action.values[3] == deploy->target_board_slot);
+
     std::unordered_set<std::string> stable_ids;
     for (const auto& candidate : result.candidates) {
         assert(!candidate.candidate_id.empty());
@@ -161,6 +187,28 @@ void builder_emits_snapshot_bound_physical_candidates() {
         assert(candidate.evidence_uncertainty >= 0.0 &&
             candidate.evidence_uncertainty <= 1.0);
     }
+
+    auto protected_lineup = lineup;
+    protected_lineup.selected_board.push_back(
+        {30, LineupSlotKind::Bridge, 50, false, true});
+    auto protected_native = native;
+    const auto protected_result = StrategicActionCandidateBuilder{}.build(
+        context, active, priorities, protected_lineup, protected_native, costs);
+    const auto protected_sale = std::find_if(
+        protected_result.candidates.begin(), protected_result.candidates.end(),
+        [](const auto& candidate) {
+            return candidate.kind == StrategicActionKind::SellUnit &&
+                candidate.champion_id == 30;
+        });
+    assert(protected_sale == protected_result.candidates.end());
+
+    auto stale_lineup = lineup;
+    stale_lineup.sequence = native.sequence - 1;
+    auto stale_native = native;
+    const auto rejected = StrategicActionCandidateBuilder{}.build(
+        context, active, priorities, stale_lineup, stale_native, costs);
+    assert(rejected.candidates.empty());
+    assert(rejected.status == "lineup_identity_or_sequence_mismatch");
 }
 
 void missing_cost_rejects_only_the_affected_candidate() {
@@ -182,6 +230,7 @@ void missing_cost_rejects_only_the_affected_candidate() {
     LineupPlan lineup;
     lineup.composition_id = composition.composition_id;
     lineup.composition_version = 2;
+    lineup.match_id = 88; lineup.player_id = 0; lineup.round = 10; lineup.sequence = 7;
     lineup.endgame_target_ids = {10};
 
     StrategicSharedContext context;
@@ -292,6 +341,7 @@ void owned_unit_candidates_require_native_physical_identity() {
     LineupPlan lineup;
     lineup.composition_id = composition.composition_id;
     lineup.composition_version = 1;
+    lineup.match_id = 7; lineup.player_id = 0; lineup.round = 2; lineup.sequence = 9;
     StrategicSharedContext context;
     context.player_id = 0; context.round = 2; context.gold = 5;
     context.alive = true; context.evidence.gold = true;
@@ -324,6 +374,7 @@ void ambiguous_owned_copy_is_not_selected_by_incidental_order() {
     LineupPlan lineup;
     lineup.composition_id = composition.composition_id;
     lineup.composition_version = 1;
+    lineup.match_id = 7; lineup.player_id = 0; lineup.round = 2; lineup.sequence = 9;
     StrategicSharedContext context;
     context.player_id = 0; context.round = 2; context.gold = 5;
     context.alive = true; context.evidence.gold = true;

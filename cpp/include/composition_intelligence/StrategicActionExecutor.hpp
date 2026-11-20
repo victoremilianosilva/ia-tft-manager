@@ -141,7 +141,9 @@ public:
             return reject(std::move(out), "native_snapshot_sequence_mismatch", "stale_native_snapshot");
         if (recommendation.match_id != state.match_id || source.player_id != state.player_id ||
             recommendation.player_id != state.player_id || recommendation.round != state.round ||
-            source.round != state.round || recommendation.composition_id != state.composition_id ||
+            source.round != state.round ||
+            (source.sequence != 0 && source.sequence != state.sequence) ||
+            recommendation.composition_id != state.composition_id ||
             recommendation.composition_version != state.composition_version)
             return reject(std::move(out), "recommendation_context_identity_mismatch", "stale_or_incompatible_context");
         if (state.gold < 0 || source.gold != state.gold)

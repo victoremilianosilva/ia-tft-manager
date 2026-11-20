@@ -71,6 +71,12 @@ public:
     static constexpr std::int32_t MAX_INTEREST = 5;
     static constexpr std::int32_t WIN_GOLD = 1;
 
+    // Read-only deterministic base income for a future round. Excludes
+    // interest, streak and victory bonuses, which depend on resolution state.
+    [[nodiscard]] static std::int32_t get_base_round_gold(
+        std::int32_t round_number
+    ) noexcept { return get_round_gold(round_number); }
+
     void reset(PlayerEconomy& economy) const noexcept;
 
     [[nodiscard]] bool can_spend(

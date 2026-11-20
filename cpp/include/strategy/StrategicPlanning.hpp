@@ -205,6 +205,7 @@ struct StrategicSharedContext {
     std::vector<StrategicActionCandidate> action_candidates;
     // Appended to preserve existing aggregate initialization contracts.
     StrategicEvidenceAvailability evidence;
+    std::uint64_t sequence{0};
 };
 
 struct StrategicCommitment {

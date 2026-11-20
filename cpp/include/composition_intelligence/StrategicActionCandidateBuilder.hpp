@@ -52,6 +52,14 @@ public:
             out.status = "active_composition_identity_mismatch";
             return out;
         }
+        if (active && (lineup.stale || lineup.match_id != native.match_id ||
+            lineup.player_id != native.player_id || lineup.round != native.round ||
+            lineup.sequence == 0 || lineup.sequence != native.sequence ||
+            lineup.composition_id != native.composition_id ||
+            lineup.composition_version != native.composition_version)) {
+            out.status = "lineup_identity_or_sequence_mismatch";
+            return out;
+        }
         const auto type_enabled = [&](decision::ActionType type) {
             return native.masks.type_mask[static_cast<std::size_t>(type)] == decision::MASK_ENABLED;
         };
@@ -246,10 +254,13 @@ public:
             // Sell only a uniquely identified bench instance explicitly marked
             // SellCandidate by UnitPriorityPlanner; never choose by incidental order.
             for (const auto& priority : priorities.units) {
+                const bool selected_in_lineup = std::any_of(
+                    lineup.selected_board.begin(), lineup.selected_board.end(),
+                    [&](const auto& slot) { return slot.champion_id == priority.champion_id; });
                 if (priority.intent != UnitIntent::SellCandidate ||
                     priority.sale_restricted || priority.copies_owned >= 2 ||
                     priority.highest_star > 1 || priority.target_star > 0 ||
-                    target_ids.count(priority.champion_id)) continue;
+                    target_ids.count(priority.champion_id) || selected_in_lineup) continue;
                 std::int32_t slot = -1;
                 for (std::size_t i = 0; i < native.bench_champion_ids.size(); ++i) {
                     if (native.bench_champion_ids[i] != priority.champion_id) continue;
@@ -295,6 +306,7 @@ public:
                 snapshot.player_id = native.player_id;
                 snapshot.round = native.round;
                 snapshot.sequence = native.sequence;
+                snapshot.lineup_sequence = lineup.sequence;
                 snapshot.composition_id = native.composition_id;
                 snapshot.composition_version = native.composition_version;
                 snapshot.alive = native.alive;
@@ -302,6 +314,8 @@ public:
                 snapshot.board_ids = native.board_champion_ids;
                 snapshot.bench_ids = native.bench_champion_ids;
                 snapshot.masks = native.masks;
+                snapshot.board_unit_uuids = native.board_unit_uuids;
+                snapshot.bench_unit_uuids = native.bench_unit_uuids;
                 StrategicPositionRole role = StrategicPositionRole::Flex;
                 switch (unit->role) {
                     case UnitRole::MainCarry: role = StrategicPositionRole::MainCarry; break;
@@ -322,10 +336,12 @@ public:
                 candidate.composition_fit = 1.0;
                 candidate.source_slot = proposal.source_slot;
                 candidate.source_is_bench = proposal.source_zone == StrategicPositionZone::Bench;
-                candidate.source_unit_uuid = candidate.source_is_bench
+                candidate.source_unit_uuid = proposal.source_unit_uuid;
+                const auto& current_source_uuid = candidate.source_is_bench
                     ? native.bench_unit_uuids[static_cast<std::size_t>(proposal.source_slot)]
                     : native.board_unit_uuids[static_cast<std::size_t>(proposal.source_slot)];
-                if (candidate.source_unit_uuid.empty()) {
+                if (candidate.source_unit_uuid.empty() ||
+                    candidate.source_unit_uuid != current_source_uuid) {
                     ++out.rejected_missing_instance_identity;
                     continue;
                 }
