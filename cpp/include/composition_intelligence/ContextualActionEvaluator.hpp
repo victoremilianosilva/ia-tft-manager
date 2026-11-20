@@ -313,10 +313,15 @@ public:
                     candidate.marginal_cost_horizon_rounds == 1 &&
                     candidate.marginal_cost_uncertainty == 0.0 &&
                     candidate.marginal_gold_before == context.gold &&
-                    candidate.marginal_gold_after >= 0 &&
+                    candidate.marginal_gold_after == std::max<std::int32_t>(
+                        0, context.gold - static_cast<std::int32_t>(
+                            std::llround(candidate.direct_gold_cost))) &&
                     candidate.marginal_interest_before == expected_interest_before &&
                     candidate.marginal_interest_after ==
                         EconomyEngine{}.get_interest(candidate.marginal_gold_after) &&
+                    candidate.marginal_interest_delta ==
+                        candidate.marginal_interest_after -
+                            candidate.marginal_interest_before &&
                     std::isfinite(candidate.direct_gold_cost);
                 score.marginal_economy_evidence_available = marginal_valid;
                 if (marginal_valid) {
