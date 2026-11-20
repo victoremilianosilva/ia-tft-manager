@@ -94,6 +94,13 @@ def policy_actions(policy, observations, masks, indices, device, semantic_state)
         raise ValueError("PPO checkpoint evaluation requires native semantic_state for every sampled player.")
     if semantic_state["numeric"].shape[0] != len(indices) or semantic_state["champion_ids"].shape[0] != len(indices):
         raise ValueError("native semantic_state rows do not match sampled player indices")
+    if (
+        len(semantic_state.get("identities", [])) != len(indices)
+        or len(semantic_state.get("hashes", [])) != len(indices)
+        or not semantic_state.get("contract_id")
+        or not semantic_state.get("contract_hash")
+    ):
+        raise ValueError("checkpoint inference requires semantic identity, projection hashes and contract lineage")
     with torch.no_grad():
         actions = policy.get_action(
             obs, masks=batch_masks, deterministic=True, semantic_state=semantic_state
