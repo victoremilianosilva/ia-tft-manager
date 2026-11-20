@@ -2362,7 +2362,7 @@ struct TFTEngine::Impl {
                     ? &*tracked_active : (native_active ? &*native_active : nullptr);
         
                 strategy::StrategicCycleInput native_input;
-                native_input.evaluation_sequence = strategic_context_sequences[i];
+                native_input.evaluation_sequence = strategic_context_sequences[i] + 1;
                 if (!tracked_active && native_active)
                     native_input.active_composition = native_active;
         
