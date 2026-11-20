@@ -327,6 +327,7 @@ void ambiguous_owned_copy_is_not_selected_by_incidental_order() {
     LineupPlan lineup;
     lineup.composition_id = composition.composition_id;
     lineup.composition_version = 1;
+    lineup.match_id = 7; lineup.player_id = 0; lineup.round = 2; lineup.sequence = 9;
     StrategicSharedContext context;
     context.player_id = 0; context.round = 2; context.gold = 5;
     context.alive = true; context.evidence.gold = true;
