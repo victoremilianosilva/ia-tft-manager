@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
     assert(first.uuid != second.uuid);
 
     // Value copies/moves preserve physical identity; they do not mint a new unit.
-    const auto copied = first;
+    auto copied = first;
     assert(copied.uuid == first.uuid);
     auto moved = std::move(copied);
     assert(moved.uuid == first.uuid);
