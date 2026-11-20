@@ -784,6 +784,7 @@ def test_trainer_expands_native_state_snapshot_to_exact_player_rows():
             "engine_instance_id": "engine-A",
             "episode_id": 4,
             "snapshot_sequence": 9,
+            "round": 1,
             "player_decision_sequences": [9] * 8,
             "players": [
                 {
