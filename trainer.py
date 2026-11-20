@@ -438,37 +438,7 @@ class Trainer:
             print("⚠️ Checkpoint migrado; optimizer/scheduler serão reiniciados." if migrated_checkpoint
                   else "✅ Pesos da policy carregados.")
 
-            weights_only_warm_start = bool(
-                legacy_checkpoint_lineage or training_contract_warm_start
-                or legacy_action_mask_checkpoint or legacy_reward_checkpoint
-                or migrated_checkpoint
-            )
-            if weights_only_warm_start:
-                output_checkpoint_path = os.environ.get(
-                    "TFT_WARM_START_OUTPUT_CHECKPOINT", ""
-                ).strip()
-                if (
-                    not output_checkpoint_path
-                    or os.path.realpath(output_checkpoint_path) == os.path.realpath(checkpoint_path)
-                ):
-                    raise RuntimeError(
-                        "Warm-start exige TFT_WARM_START_OUTPUT_CHECKPOINT apontando "
-                        "para um artefato diferente do checkpoint de origem; o baseline "
-                        "histórico nunca será sobrescrito."
-                    )
-                with open(checkpoint_path, "rb") as source_file:
-                    source_checkpoint_sha256 = hashlib.sha256(source_file.read()).hexdigest()
-                source_lineage = checkpoint.get("checkpoint_contract")
-                warm_start_source_metadata = {
-                    "source_sha256": source_checkpoint_sha256,
-                    "source_update": checkpoint.get("update"),
-                    "source_lineage_sha256": (
-                        source_lineage.get("sha256")
-                        if isinstance(source_lineage, dict) else None
-                    ),
-                    "mode": "weights_only_warm_start",
-                }
-                self.config.checkpoint_path = output_checkpoint_path
+
 
         self.optimizer = optim.Adam(
             self.policy.parameters(),
@@ -507,6 +477,40 @@ class Trainer:
                     "para importar somente os pesos."
                 )
             training_contract_warm_start = True
+
+        weights_only_warm_start = bool(
+            checkpoint and (
+                legacy_checkpoint_lineage or training_contract_warm_start
+                or legacy_action_mask_checkpoint or legacy_reward_checkpoint
+                or migrated_checkpoint
+            )
+        )
+        if weights_only_warm_start:
+            output_checkpoint_path = os.environ.get(
+                "TFT_WARM_START_OUTPUT_CHECKPOINT", ""
+            ).strip()
+            if (
+                not output_checkpoint_path
+                or os.path.realpath(output_checkpoint_path) == os.path.realpath(checkpoint_path)
+            ):
+                raise RuntimeError(
+                    "Warm-start exige TFT_WARM_START_OUTPUT_CHECKPOINT apontando "
+                    "para um artefato diferente do checkpoint de origem; o baseline "
+                    "histórico nunca será sobrescrito."
+                )
+            with open(checkpoint_path, "rb") as source_file:
+                source_checkpoint_sha256 = hashlib.sha256(source_file.read()).hexdigest()
+            source_lineage = checkpoint.get("checkpoint_contract")
+            warm_start_source_metadata = {
+                "source_sha256": source_checkpoint_sha256,
+                "source_update": checkpoint.get("update"),
+                "source_lineage_sha256": (
+                    source_lineage.get("sha256")
+                    if isinstance(source_lineage, dict) else None
+                ),
+                "mode": "weights_only_warm_start",
+            }
+            self.config.checkpoint_path = output_checkpoint_path
 
         can_restore_optimizer = bool(
             resume_state_complete
