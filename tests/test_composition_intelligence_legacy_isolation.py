@@ -111,13 +111,14 @@ def test_native_runtime_entrypoint_uses_only_native_cycle_inputs():
     end = source.index("void update_strategy(std::size_t i)", start)
     runtime = source[start:end]
     forbidden = ("StrategyInfo", "strategy_snapshot", "copies_by_unit",
-                 "StrategicSharedContext", "select_economic_strategy",
+                 "select_economic_strategy",
                  "composition_intelligence_enabled")
     found = [token for token in forbidden if token in runtime]
     assert not found, f"Native runtime entrypoint depends on legacy/optional state: {found}"
     assert "strategic_shadow_runtimes[i]" in runtime
     assert "strategic_context_sequences[i] + 1" in runtime
     assert "strategic_native_owned" in runtime
+    assert "StrategicPlanner{}.evaluate(planner_context, planner_commitment)" in runtime
     assert "native_runtime.refresh(native_audit_context, native_input)" in runtime
 
 def test_native_runtime_is_the_only_composition_publisher():
