@@ -4791,15 +4791,23 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
 
         // Compare a candidate against the current composition before mutating
         // the board. This makes a replacement's reward relative, not absolute.
-        const StrategyInfo strategy_before =
-            this->strategy.value_or(StrategyInfo{});
+        const auto& planner_runtime = lobby.composition_intelligence_players[player_id];
+        const auto& unit_priorities = planner_runtime.unit_priorities;
+        const auto& active_composition = planner_runtime.active.current();
+        const auto unit_priority_for = [&](std::int32_t champion_id)
+            -> const composition_intelligence::UnitPriority* {
+            if (!planner_runtime.planner_outputs_valid) return nullptr;
+            const auto found = std::find_if(unit_priorities.units.begin(), unit_priorities.units.end(),
+                [&](const auto& unit) { return unit.champion_id == champion_id; });
+            return found == unit_priorities.units.end() ? nullptr : &*found;
+        };
         double board_comp_score_sum = 0.0;
         int board_comp_score_count = 0;
         for (const auto& unit : this->board) {
             if (!unit) continue;
             const auto* def = lobby.catalog->find_by_id(unit->champion_internal_id);
             if (!def) continue;
-            board_comp_score_sum += unit_composition_score(strategy_before, *def, unit->star, lobby.trait_milestones);
+            board_comp_score_sum += unit_composition_score(unit_priorities, def->internal_id, unit->star);
             ++board_comp_score_count;
         }
         double candidate_comp_score = 0.0;
@@ -4814,7 +4822,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 const auto* def = lobby.catalog->find_by_id(
                     offer->champion_internal_id);
                 if (def) {
-                    candidate_comp_score = unit_composition_score(strategy_before, *def, offer->star, lobby.trait_milestones);
+                    candidate_comp_score = unit_composition_score(unit_priorities, def->internal_id, offer->star);
                     has_candidate_comp_score = true;
                     int same_star_copies = 0;
                     for (const auto& unit : this->board) {
@@ -4827,35 +4835,18 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     }
                     buy_completes_upgrade = same_star_copies >= 2;
                     candidate_board_impact = unit_board_impact_score(
-                        strategy_before, *def, offer->star, lobby.trait_milestones,
-                        old_board_count, economy.level, static_cast<int>(stage_for_round(lobby.round + 1)));
+                        unit_priorities, *def, offer->star, old_board_count, economy.level);
                     const double upgrade_value = same_star_copies >= 3 ? 1.0
                         : (same_star_copies == 2 ? 0.6 : (same_star_copies == 1 ? 0.2 : 0.0));
-                    const bool in_top_trait = (!strategy_before.composition_direction.empty() &&
-                        std::find(def->traits.begin(), def->traits.end(),
-                            strategy_before.composition_direction) != def->traits.end()) ||
-                        std::any_of(def->traits.begin(), def->traits.end(), [&](const auto& trait) {
-                            return std::find(strategy_before.core_traits.begin(),
-                                strategy_before.core_traits.end(), trait) != strategy_before.core_traits.end();
-                        });
-                    // A unit explicitly selected by the current plan (including
-                    // an OP.GG-derived plan) is strategically relevant even when
-                    // it does not share the single anchor trait.
-                    const bool in_planned_comp =
-                        std::find(strategy_before.core_unit_ids.begin(),
-                            strategy_before.core_unit_ids.end(), def->internal_id) !=
-                                strategy_before.core_unit_ids.end() ||
-                        std::find(strategy_before.planned_unit_ids.begin(),
-                            strategy_before.planned_unit_ids.end(), def->internal_id) !=
-                                strategy_before.planned_unit_ids.end();
+                    const auto* unit_priority = unit_priority_for(def->internal_id);
+                    const bool in_active_target = unit_priority && unit_priority->target_unit;
                     const int offer_stage =
                         static_cast<int>(stage_for_round(lobby.round + 1));
                     const bool early_flex_purchase =
                         offer_stage <= 2 && def->cost <= 2 &&
                         old_bench_count < 6 && candidate_comp_score >= -2.0;
                     buy_plan_evidence_approved = should_buy_unit(candidate_board_impact, upgrade_value,
-                        in_top_trait || in_planned_comp, old_bench_count,
-                        offer_stage, def->cost) || early_flex_purchase;
+                        in_active_target, old_bench_count, offer_stage, def->cost) || early_flex_purchase;
                     // A second matching copy has real upgrade option value
                     // even if temporary comp fit is negative. Fit still scales
                     // the pair reward; it does not gate pair recognition.
@@ -4869,7 +4860,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 const auto* def = lobby.catalog->find_by_id(
                     this->bench[source]->champion_internal_id);
                 if (def) {
-                    candidate_comp_score = unit_composition_score(strategy_before, *def, this->bench[source]->star, lobby.trait_milestones);
+                    candidate_comp_score = unit_composition_score(unit_priorities, def->internal_id, this->bench[source]->star);
                     has_candidate_comp_score = true;
                 }
             }
@@ -4877,15 +4868,10 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 const auto* def = lobby.catalog->find_by_id(
                     this->board[target]->champion_internal_id);
                 if (def) {
-                    displaced_comp_score = unit_composition_score(strategy_before, *def, this->board[target]->star, lobby.trait_milestones);
+                    displaced_comp_score = unit_composition_score(unit_priorities, def->internal_id, this->board[target]->star);
                     has_displaced_comp_score = true;
-                    displaced_core_unit =
-                        std::find(strategy_before.core_unit_ids.begin(),
-                            strategy_before.core_unit_ids.end(), def->internal_id) !=
-                                strategy_before.core_unit_ids.end() ||
-                        std::find(strategy_before.planned_unit_ids.begin(),
-                            strategy_before.planned_unit_ids.end(), def->internal_id) !=
-                                strategy_before.planned_unit_ids.end();
+                    const auto* displaced_priority = unit_priority_for(def->internal_id);
+                    displaced_core_unit = displaced_priority && displaced_priority->target_unit;
                 }
             }
         }
