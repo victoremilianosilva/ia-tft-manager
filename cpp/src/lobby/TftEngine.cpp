@@ -3568,6 +3568,7 @@ struct TFTEngine::Impl {
                 lineup_context.match_id = episode_id;
                 lineup_context.player_id = static_cast<std::int32_t>(i);
                 lineup_context.round = round_id;
+                lineup_context.sequence = strategic_context_sequences[i];
                 const auto lineup = ci::LineupPlanner{}.plan(active, priorities, lineup_context);
                 // Keep the planner products attached to this player's runtime so
                 // engine consumers read the exact same composition version and
