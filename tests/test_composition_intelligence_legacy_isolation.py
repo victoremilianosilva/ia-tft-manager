@@ -36,6 +36,29 @@ def test_composition_intelligence_shadow_does_not_read_legacy_strategy_info():
     )
 
 
+def test_native_composition_evidence_is_built_before_legacy_strategy():
+    source = ENGINE_SOURCE.read_text(encoding="utf-8")
+    start = source.index(
+        "// Native strategic evidence is generated directly from live engine facts"
+    )
+    end = source.index(
+        "if (current_round >= 9 && !info.composition_direction.empty())", start
+    )
+    native_generation = source[start:end]
+    assert "NativeStrategicCompositionGenerator{}.generate(native_input)" in native_generation
+    assert "strategic_native_owned" in native_generation
+    assert "StrategyInfo" not in native_generation
+    assert "info." not in native_generation
+    assert "copies_by_unit" not in native_generation
+
+    # The native fact snapshot must exist before legacy economic and direction
+    # generation, so its producer cannot depend on those derived values.
+    legacy_economy = source.index("strategy::select_economic_strategy(strategy_context)")
+    legacy_direction = source.index("Port of Python _update_comp_direction()")
+    assert start < legacy_economy
+    assert start < legacy_direction
+
+
 def test_shadow_core_and_item_fit_use_native_strategic_sources():
     block = _shadow_block()
     assert "strategic_native_generation" in block
