@@ -377,7 +377,7 @@ Checkpoints novos carregam a identidade de reward. Checkpoints históricos preci
 
 **Resume policy:**
 1. Exact semantic component contracts plus exact training-resume contract: restore weights, optimizer and scheduler; continue update numbering.
-2. Missing or different training-resume contract: reject by default. With explicit TFT_ALLOW_TRAINING_CONFIG_WARM_START=1, import compatible policy weights only, reset optimizer/scheduler, and start a new update lineage at update 1.
+2. Missing or different training-resume contract: reject by default. With explicit TFT_ALLOW_TRAINING_CONFIG_WARM_START=1, import compatible policy weights only, reset optimizer/scheduler, and start a new update lineage at update 1. Also require TFT_WARM_START_OUTPUT_CHECKPOINT to point to a different artifact path; the source checkpoint is never overwritten. The new checkpoint records the source file SHA-256, source update and source lineage hash.
 3. Changing total_updates or checkpoint output path alone does not invalidate resume; changing gamma, gae_lambda, rollout length, batch size, PPO epochs, clipping, optimizer or scheduler settings does.
 4. A mismatch in observation, action/mask, reward or policy semantics is not authorized by the training-config warm-start flag. It still requires its own explicit, reviewed migration path.
 5. Historical checkpoints remain immutable. A warm-start never overwrites the source artifact and is not described as a resume or as semantic compatibility.

@@ -106,3 +106,6 @@ def test_trainer_persists_and_requires_training_resume_contract():
     assert source.count('"training_resume_contract": build_training_resume_contract(self.config.to_dict())') == 2
     assert "TFT_ALLOW_TRAINING_CONFIG_WARM_START" in source
     assert "and not training_contract_warm_start" in source
+    assert "TFT_WARM_START_OUTPUT_CHECKPOINT" in source
+    assert source.count('"warm_start_source": warm_start_source_metadata') == 2
+    assert source.count('"training_resume_contract": build_training_resume_contract(self.config.to_dict())') == 2
