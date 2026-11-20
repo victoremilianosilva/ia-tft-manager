@@ -658,53 +658,54 @@ class RolloutBuffer:
             # Semantic projection is part of the same decision record, not an
             # independently shuffled feature batch. Bind every row to its native
             # snapshot hash and full decision identity before storing it.
-            decision_metadata = normalized_groups["snapshot_metadata"]
-            if any("semantic_projection_hash" in row for row in decision_metadata):
-                if semantic_state is None:
-                    raise ValueError("Transição identificada exige semantic_state nativo.")
-                semantic_identities = semantic_state.get("identities")
-                semantic_hashes = semantic_state.get("hashes")
-                contract_hash = semantic_state.get("contract_hash")
-                if (
-                    semantic_state.get("contract_id") != "tft.ppo.semantic-native-state.v2"
-                    or not isinstance(contract_hash, str)
-                    or len(contract_hash) != 64
-                    or any(char not in "0123456789abcdef" for char in contract_hash)
-                ):
-                    raise ValueError("Semantic state is missing its versioned projection contract identity.")
-                if (
-                    not isinstance(semantic_identities, Sequence)
-                    or len(semantic_identities) != self.num_envs
-                    or not isinstance(semantic_hashes, Sequence)
-                    or len(semantic_hashes) != self.num_envs
-                ):
-                    raise ValueError("Semantic state não contém identidade/hash por transição.")
-                identity_fields = (
-                    "engine_instance_id", "episode_id", "decision_sequence",
-                    "player_decision_sequence", "player_id", "round", "lobby_index",
-                )
-                for index, metadata in enumerate(decision_metadata):
-                    expected_identity = {field: metadata.get(field) for field in identity_fields}
+        if all(supplied_groups):
+                decision_metadata = normalized_groups["snapshot_metadata"]
+                if any("semantic_projection_hash" in row for row in decision_metadata):
+                    if semantic_state is None:
+                        raise ValueError("Transição identificada exige semantic_state nativo.")
+                    semantic_identities = semantic_state.get("identities")
+                    semantic_hashes = semantic_state.get("hashes")
+                    contract_hash = semantic_state.get("contract_hash")
                     if (
-                        not isinstance(semantic_identities[index], dict)
-                        or dict(semantic_identities[index]) != expected_identity
-                        or metadata.get("semantic_identity") != expected_identity
+                        semantic_state.get("contract_id") != "tft.ppo.semantic-native-state.v2"
+                        or not isinstance(contract_hash, str)
+                        or len(contract_hash) != 64
+                        or any(char not in "0123456789abcdef" for char in contract_hash)
                     ):
-                        raise ValueError(
-                            f"Semantic identity diverge do snapshot na transição {index}."
-                        )
-                    digest = semantic_hashes[index]
+                        raise ValueError("Semantic state is missing its versioned projection contract identity.")
                     if (
-                        not isinstance(digest, str)
-                        or len(digest) != 64
-                        or any(char not in "0123456789abcdef" for char in digest)
-                        or digest != metadata.get("semantic_projection_hash")
-                        or metadata.get("semantic_projection_contract_id") != semantic_state.get("contract_id")
-                        or metadata.get("semantic_projection_contract_hash") != semantic_state.get("contract_hash")
+                        not isinstance(semantic_identities, Sequence)
+                        or len(semantic_identities) != self.num_envs
+                        or not isinstance(semantic_hashes, Sequence)
+                        or len(semantic_hashes) != self.num_envs
                     ):
-                        raise ValueError(
-                            f"Semantic projection hash/contract diverge do snapshot na transição {index}."
-                        )
+                        raise ValueError("Semantic state não contém identidade/hash por transição.")
+                    identity_fields = (
+                        "engine_instance_id", "episode_id", "decision_sequence",
+                        "player_decision_sequence", "player_id", "round", "lobby_index",
+                    )
+                    for index, metadata in enumerate(decision_metadata):
+                        expected_identity = {field: metadata.get(field) for field in identity_fields}
+                        if (
+                            not isinstance(semantic_identities[index], dict)
+                            or dict(semantic_identities[index]) != expected_identity
+                            or metadata.get("semantic_identity") != expected_identity
+                        ):
+                            raise ValueError(
+                                f"Semantic identity diverge do snapshot na transição {index}."
+                            )
+                        digest = semantic_hashes[index]
+                        if (
+                            not isinstance(digest, str)
+                            or len(digest) != 64
+                            or any(char not in "0123456789abcdef" for char in digest)
+                            or digest != metadata.get("semantic_projection_hash")
+                            or metadata.get("semantic_projection_contract_id") != semantic_state.get("contract_id")
+                            or metadata.get("semantic_projection_contract_hash") != semantic_state.get("contract_hash")
+                        ):
+                            raise ValueError(
+                                f"Semantic projection hash/contract diverge do snapshot na transição {index}."
+                            )
 
         for group_name, normalized in normalized_groups.items():
             getattr(self, group_name)[self.ptr] = normalized
