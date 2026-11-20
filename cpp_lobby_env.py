@@ -428,9 +428,12 @@ class CppTFTLobbyWrapper:
             strategic = player.get("strategic_state")
             if not isinstance(strategic, dict):
                 raise RuntimeError("Snapshot estruturado sem strategic_state dos owners nativos.")
+            strategic_version = strategic.get("contract_version")
             if (
                 strategic.get("contract_id") != "tft.strategic-owner-observation"
-                or strategic.get("contract_version") != 1
+                or isinstance(strategic_version, bool)
+                or not isinstance(strategic_version, int)
+                or strategic_version != 1
                 or strategic.get("producer") != "TFTEngine::get_audit_snapshot"
                 or strategic.get("source_namespace") != "tft.engine.strategic-owners"
             ):
@@ -441,7 +444,8 @@ class CppTFTLobbyWrapper:
                 ("player_id", player_id),
                 ("round", value.get("round")),
             ):
-                if strategic.get(field) != expected:
+                actual = strategic.get(field)
+                if isinstance(actual, bool) or not isinstance(actual, int) or actual != expected:
                     raise RuntimeError(f"Strategic owner snapshot diverge em {field}.")
             valid_fields = (
                 "active_composition_valid", "direction_valid",

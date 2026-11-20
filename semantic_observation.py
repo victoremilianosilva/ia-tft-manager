@@ -154,9 +154,12 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
     strategic = state.get("strategic_state")
     if not isinstance(strategic, Mapping):
         raise ValueError("native strategic owner snapshot is required for PPO projection")
+    strategic_version = strategic.get("contract_version")
     if (
         strategic.get("contract_id") != "tft.strategic-owner-observation"
-        or strategic.get("contract_version") != 1
+        or isinstance(strategic_version, bool)
+        or not isinstance(strategic_version, int)
+        or strategic_version != 1
         or strategic.get("producer") != "TFTEngine::get_audit_snapshot"
         or strategic.get("source_namespace") != "tft.engine.strategic-owners"
     ):
@@ -167,7 +170,8 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
         ("player_id", player_id),
         ("round", metadata["round"]),
     ):
-        if strategic.get(field) != expected:
+        actual = strategic.get(field)
+        if isinstance(actual, bool) or not isinstance(actual, int) or actual != expected:
             raise ValueError(f"strategic owner snapshot diverges in {field}")
 
     def _id_set(field):
