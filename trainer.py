@@ -456,8 +456,27 @@ class Trainer:
             self.config.min_learning_rate,
             self.config.learning_rate,
         )
+        resume_state_complete = bool(
+            checkpoint
+            and "optimizer" in checkpoint
+            and "scheduler" in checkpoint
+            and checkpoint.get("scheduler_type") == "cosine_clamped"
+            and saved_schedule == current_schedule
+        )
+        if checkpoint and training_contract_matches and not resume_state_complete:
+            allow_training_warm_start = os.environ.get(
+                "TFT_ALLOW_TRAINING_CONFIG_WARM_START", ""
+            ).strip().lower() in {"1", "true", "yes"}
+            if not allow_training_warm_start:
+                raise RuntimeError(
+                    "Checkpoint tem contrato de retraining compatível, mas falta "
+                    "estado completo de optimizer/scheduler. Use o opt-in de warm-start "
+                    "para importar somente os pesos."
+                )
+            training_contract_warm_start = True
+
         can_restore_optimizer = bool(
-            checkpoint and "optimizer" in checkpoint
+            resume_state_complete
             and not migrated_checkpoint and not legacy_action_mask_checkpoint
             and not legacy_reward_checkpoint and not legacy_checkpoint_lineage
             and not training_contract_warm_start
