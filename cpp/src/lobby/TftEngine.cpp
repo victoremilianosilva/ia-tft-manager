@@ -2329,6 +2329,8 @@ struct TFTEngine::Impl {
         const Economy& economy,
         const std::unordered_map<std::int32_t, strategy::NativeCompositionOwnedUnit>&
             strategic_native_owned,
+        const std::vector<composition_intelligence::CompositionCandidate>&
+            native_composition_candidates,
         const Shop& strategic_shop, const Pool& pool,
         const TraitMilestones& trait_milestones) {
         // Native strategic lifecycle is independent of the optional
@@ -2363,6 +2365,7 @@ struct TFTEngine::Impl {
         
                 strategy::StrategicCycleInput native_input;
                 native_input.evaluation_sequence = strategic_context_sequences[i] + 1;
+                native_input.initial_composition_candidates = native_composition_candidates;
                 if (!tracked_active && native_active)
                     native_input.active_composition = native_active;
         
@@ -2556,15 +2559,9 @@ struct TFTEngine::Impl {
             strategic_native_generation =
                 strategy::NativeStrategicCompositionGenerator{}.generate(native_input);
 
-        // Refresh native strategic owners before any legacy direction/economy
-        // generation. This path consumes only live native facts and its own state.
-        refresh_native_strategic_runtime(
-            i, current_round, economy, strategic_native_owned,
-            player_envs[i].shop, pool, trait_milestones);
-
         }
 
-        if (composition_intelligence_enabled) {
+        if (composition_intelligence_enabled)
             composition_intelligence_native_diagnostics[i].push_back(
                 strategic_native_generation.reason);
             for (const auto& generated : strategic_native_generation.candidates) {
@@ -2615,8 +2612,15 @@ struct TFTEngine::Impl {
                     composition_intelligence_native_candidates[i].push_back(
                         std::move(candidate));
             }
-        }
 
+
+
+        // Refresh native strategic owners before any legacy direction/economy
+        // generation. This path consumes only live native facts and its own state.
+        refresh_native_strategic_runtime(
+            i, current_round, economy, strategic_native_owned,
+            composition_intelligence_native_candidates[i],
+            player_envs[i].shop, pool, trait_milestones);
 
         double bench_strength = 0.0;
         for (const auto& unit : player_envs[i].bench) {
