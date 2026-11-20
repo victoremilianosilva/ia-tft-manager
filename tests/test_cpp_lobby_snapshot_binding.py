@@ -217,6 +217,7 @@ def test_reset_masks_are_taken_from_same_native_snapshot(monkeypatch):
         assert metadata["engine_instance_id"] == f"fake-engine-{id(lobby._engine)}"
         assert metadata["episode_id"] == 1
         assert metadata["decision_sequence"] == 1
+        assert metadata["round"] == 1
         assert metadata["player_decision_sequences"] == [1] * 8
         envelopes = metadata["player_identity_envelopes"]
         assert len(envelopes) == 8
