@@ -1149,8 +1149,45 @@ int main(int argc, char** argv) {
                     0, false, 1, strategic_fixture->api_name, 1),
                 "Nao foi possivel preparar par para o runtime nativo sem CI.");
         const auto native_only_snapshot = native_only_engine.get_audit_snapshot();
-        require(native_only_snapshot.players[0].strategic_state.direction_valid,
-                "Runtime nativo nao atualizou a direcao com Composition Intelligence desligada.");
+        require(native_only_snapshot.players[0].strategic_state.direction_valid &&
+                    native_only_snapshot.players[0].strategic_state.active_composition_valid,
+                "Runtime nativo nao inicializou direcao/composicao com Composition Intelligence desligada.");
+
+        require(native_only_engine.set_unit_for_testing(
+                    1, true, 0, strategic_fixture->api_name, 1) &&
+                native_only_engine.set_unit_for_testing(
+                    1, false, 1, strategic_fixture->api_name, 1),
+                "Nao foi possivel inicializar o runtime nativo do segundo jogador.");
+        const auto two_player_native_snapshot = native_only_engine.get_audit_snapshot();
+        require(two_player_native_snapshot.players[0].strategic_state.active_composition_version == 1 &&
+                    two_player_native_snapshot.players[1].strategic_state.active_composition_version == 1,
+                "Managers nativos nao mantiveram versoes isoladas por jogador.");
+
+        require(native_only_engine.set_unit_for_testing(
+                    0, false, 2, strategic_fixture->api_name, 1),
+                "Nao foi possivel atualizar evidencias durante a manutencao nativa.");
+        const auto maintained_native_snapshot = native_only_engine.get_audit_snapshot();
+        require(maintained_native_snapshot.players[0].strategic_state.active_composition_version == 1,
+                "A manutencao nativa substituiu indevidamente a composicao ativa.");
+
+        (void)native_only_engine.reset(20261115);
+        const auto reset_native_snapshot = native_only_engine.get_audit_snapshot();
+        require(!reset_native_snapshot.players[0].strategic_state.active_composition_valid &&
+                    !reset_native_snapshot.players[0].strategic_state.direction_valid &&
+                    !reset_native_snapshot.players[1].strategic_state.active_composition_valid &&
+                    !reset_native_snapshot.players[1].strategic_state.direction_valid,
+                "Reset nao limpou o estado nativo isolado dos jogadores.");
+
+        require(native_only_engine.set_unit_for_testing(
+                    0, true, 0, strategic_fixture->api_name, 1) &&
+                native_only_engine.set_unit_for_testing(
+                    0, false, 1, strategic_fixture->api_name, 1),
+                "Nao foi possivel reinicializar o runtime apos reset.");
+        const auto reinitialized_native_snapshot = native_only_engine.get_audit_snapshot();
+        require(reinitialized_native_snapshot.players[0].strategic_state.active_composition_valid &&
+                    reinitialized_native_snapshot.players[0].strategic_state.active_composition_version == 1 &&
+                    !reinitialized_native_snapshot.players[1].strategic_state.active_composition_valid,
+                "Runtime nativo nao reinicializou com versao e isolamento corretos apos reset.");
 
 #ifdef _WIN32
         _putenv_s("TFT_COMPOSITION_INTELLIGENCE_SHADOW", "1");
