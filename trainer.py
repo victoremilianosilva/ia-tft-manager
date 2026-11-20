@@ -17,6 +17,7 @@ from rich.progress import (
 )
 
 from training_config import TrainingConfig, cosine_lr_factor
+from decision_identity import build_player_identity_envelopes
 
 from cpp_lobby_env import CppTFTLobbyWrapper
 
@@ -567,6 +568,8 @@ class Trainer:
                         raise RuntimeError(f"Snapshot estruturado diverge em {field} na lobby {lobby_idx}.")
                 if native_snapshot.get("snapshot_sequence") != snapshot.get("decision_sequence"):
                     raise RuntimeError(f"Snapshot estruturado diverge na sequência da lobby {lobby_idx}.")
+                if native_snapshot.get("round") != snapshot.get("round"):
+                    raise RuntimeError(f"Snapshot estruturado diverge no round da lobby {lobby_idx}.")
                 if native_snapshot.get("player_decision_sequences") != player_sequences:
                     raise RuntimeError(f"Snapshot estruturado diverge nas sequências individuais da lobby {lobby_idx}.")
                 native_players = native_snapshot.get("players")
@@ -596,6 +599,38 @@ class Trainer:
                 metadata["player_decision_sequence"] = player_sequence
                 metadata["lobby_index"] = lobby_idx
                 metadata["player_id"] = player_idx
+                envelopes = snapshot.get("player_identity_envelopes")
+                # Isolated fake environments without native snapshots may build
+                # deterministic fixtures; production native adapters must provide
+                # envelopes from their authoritative Engine result.
+                if envelopes is None and native_snapshot is None:
+                    envelopes = build_player_identity_envelopes(snapshot)
+                if not isinstance(envelopes, (list, tuple)) or len(envelopes) != players_per_lobby:
+                    raise RuntimeError(
+                        f"Lobby {lobby_idx} não forneceu envelopes canônicos para {players_per_lobby} jogadores."
+                    )
+                envelope = envelopes[player_idx]
+                if not isinstance(envelope, dict):
+                    raise RuntimeError(
+                        f"Envelope canônico inválido para lobby {lobby_idx}, jogador {player_idx}."
+                    )
+                expected_engine_match_id = f"{snapshot.get('engine_instance_id')}/episode/{snapshot.get('episode_id')}"
+                if (
+                    envelope.get("engine_match_id") != expected_engine_match_id
+                    or envelope.get("player_id") != f"player-{player_idx}"
+                    or envelope.get("decision_sequence") != {
+                        "namespace": "tft.engine.decision", "value": player_sequence,
+                    }
+                    or envelope.get("snapshot_sequence") != {
+                        "namespace": "tft.engine.observation-snapshot",
+                        "value": snapshot.get("decision_sequence"),
+                    }
+                ):
+                    raise RuntimeError(
+                        f"Envelope canônico diverge da identidade nativa para lobby {lobby_idx}, jogador {player_idx}."
+                    )
+                metadata.pop("player_identity_envelopes", None)
+                metadata["identity"] = copy.deepcopy(envelope)
                 expanded.append(metadata)
         return expanded
 

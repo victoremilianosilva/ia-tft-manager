@@ -1,5 +1,7 @@
 import copy
 
+from decision_identity import validate_player_identity_envelope
+
 import torch
 
 from action_contract import (
@@ -458,8 +460,34 @@ class RolloutBuffer:
                             raise ValueError(
                                 f"{group_name}[{index}].{identity_field} deve ser inteiro não negativo."
                             )
+                    envelope = metadata.get("identity")
+                    if envelope is not None:
+                        try:
+                            validate_player_identity_envelope(
+                                envelope,
+                                engine_instance_id=engine_instance_id,
+                                episode_id=metadata["episode_id"],
+                                snapshot_sequence=metadata["decision_sequence"],
+                                player_decision_sequence=metadata["player_decision_sequence"],
+                                player_id=metadata["player_id"],
+                                round_number=metadata.get("round", 0),
+                            )
+                        except (TypeError, ValueError) as exc:
+                            raise ValueError(
+                                f"{group_name}[{index}].identity inválida: {exc}"
+                            ) from exc
                     normalized.append(copy.deepcopy(metadata))
                 normalized_groups[group_name] = normalized
+
+            identity_presence = [
+                metadata.get("identity") is not None
+                for group in normalized_groups.values()
+                for metadata in group
+            ]
+            if any(identity_presence) and not all(identity_presence):
+                raise ValueError(
+                    "O rollout não pode misturar linhas com e sem envelope canônico de identidade."
+                )
 
             for index, (decision, result, next_state) in enumerate(zip(
                 normalized_groups["snapshot_metadata"],

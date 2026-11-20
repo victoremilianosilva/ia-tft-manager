@@ -15,6 +15,7 @@ import sys
 
 import numpy as np
 
+from decision_identity import build_player_identity_envelopes
 
 _REPO_ROOT = Path(__file__).resolve().parent
 # CMake builds may live at the repository root (build/) or under cpp/.
@@ -164,6 +165,14 @@ class CppTFTLobbyWrapper:
             raise RuntimeError("Snapshot estruturado contém episode_id inválido.")
         if episode_id != expected_identity["episode_id"]:
             raise RuntimeError("Snapshot estruturado pertence a outro episódio.")
+        if "round" in expected_identity:
+            snapshot_round = value.get("round")
+            if (
+                isinstance(snapshot_round, bool)
+                or not isinstance(snapshot_round, int)
+                or snapshot_round != expected_identity["round"]
+            ):
+                raise RuntimeError("Snapshot estruturado pertence a outro round.")
         snapshot_sequence = value.get("snapshot_sequence")
         if isinstance(snapshot_sequence, bool) or not isinstance(snapshot_sequence, int) or snapshot_sequence < 0:
             raise RuntimeError("Snapshot estruturado contém snapshot_sequence inválida.")
@@ -455,10 +464,13 @@ class CppTFTLobbyWrapper:
             "episode_id": int(result["episode_id"]),
             "decision_sequence": int(result["decision_sequence"]),
             "player_decision_sequences": self._copy_player_decision_sequences(result.get("player_decision_sequences")),
-            "round": 0,
+            "round": int(result.get("native_state_snapshot", {}).get("round", 0)),
             "stage": 1,
             "snapshot_kind": "reset",
         }
+        self._last_snapshot_metadata["player_identity_envelopes"] = build_player_identity_envelopes(
+            self._last_snapshot_metadata
+        )
         self._last_snapshot_metadata["native_state_snapshot"] = self._copy_native_state_snapshot(
             result.get("native_state_snapshot"), self._last_snapshot_metadata
         )
@@ -495,6 +507,9 @@ class CppTFTLobbyWrapper:
             "stage": int(result.get("stage", 1)),
             "snapshot_kind": "step",
         }
+        self._last_snapshot_metadata["player_identity_envelopes"] = build_player_identity_envelopes(
+            self._last_snapshot_metadata
+        )
         self._last_snapshot_metadata["native_state_snapshot"] = self._copy_native_state_snapshot(
             result.get("native_state_snapshot"), self._last_snapshot_metadata
         )

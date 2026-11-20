@@ -34,6 +34,7 @@ class FakeNativeLobby:
         self.mask_reads = 0
         self.episode_id = 0
         self.decision_sequence = 0
+        self.round = 1
         self.player_decision_sequences = [0] * 8
         self.fail_reset = False
         self.fail_step = False
@@ -53,7 +54,7 @@ class FakeNativeLobby:
             "episode_id": self.episode_id,
             "snapshot_sequence": self.decision_sequence,
             "player_decision_sequences": list(self.player_decision_sequences),
-            "round": 1,
+            "round": self.round,
             "stage": 1,
             "finished": False,
             "combat_sequence": 0,
@@ -98,6 +99,7 @@ class FakeNativeLobby:
             self.fail_reset = False
             raise RuntimeError("synthetic reset failure")
         self.episode_id += 1
+        self.round = 1
         self.decision_sequence += 1
         self.player_decision_sequences = [value + 1 for value in self.player_decision_sequences]
         return {
@@ -116,6 +118,7 @@ class FakeNativeLobby:
             self.fail_step = False
             raise RuntimeError("synthetic step failure")
         self.decision_sequence += 1
+        self.round = 3
         self.player_decision_sequences = [value + 1 for value in self.player_decision_sequences]
         return {
             "observations": np.full((8, 4), 2, dtype=np.float32),
@@ -217,7 +220,18 @@ def test_reset_masks_are_taken_from_same_native_snapshot(monkeypatch):
         assert metadata["engine_instance_id"] == f"fake-engine-{id(lobby._engine)}"
         assert metadata["episode_id"] == 1
         assert metadata["decision_sequence"] == 1
+        assert metadata["round"] == 1
         assert metadata["player_decision_sequences"] == [1] * 8
+        envelopes = metadata["player_identity_envelopes"]
+        assert len(envelopes) == 8
+        assert envelopes[0]["engine_match_id"] == f"{metadata['engine_instance_id']}/episode/1"
+        assert envelopes[0]["decision_sequence"] == {
+            "namespace": "tft.engine.decision", "value": 1,
+        }
+        assert envelopes[0]["snapshot_sequence"] == {
+            "namespace": "tft.engine.observation-snapshot", "value": 1,
+        }
+        assert envelopes[0]["decision_identity_hash"].startswith("sha256:")
         assert metadata["native_state_snapshot"]["snapshot_sequence"] == 1
         pool = metadata["native_state_snapshot"]["shared_pool"]
         assert "snapshot_sequence" not in pool

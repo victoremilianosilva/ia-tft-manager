@@ -6,6 +6,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <string>
+#include <utility>
 #include <unordered_set>
 
 int main(int argc, char** argv) {
@@ -27,6 +28,17 @@ int main(int argc, char** argv) {
     assert(first.is_valid());
     assert(second.is_valid());
     assert(first.uuid != second.uuid);
+
+    // Value copies/moves preserve physical identity; they do not mint a new unit.
+    auto copied = first;
+    assert(copied.uuid == first.uuid);
+    auto moved = std::move(copied);
+    assert(moved.uuid == first.uuid);
+
+    // A same-seed factory reproduces its local UUID stream. Cross-episode joins
+    // must therefore include the Engine-episode scope, not the raw UUID alone.
+    tft::UnitInstanceFactory replay_factory(catalog, 12345);
+    assert(replay_factory.create(0).uuid == first.uuid);
 
     // UUID issuance remains unique for the full lifetime of this episode factory.
     std::unordered_set<std::string> issued{first.uuid, second.uuid};
