@@ -197,6 +197,10 @@ public:
             (lineup.stale || lineup.composition_id != out.composition_id ||
                 lineup.composition_version != active->version))
             return stale(std::move(out), "lineup identity/version mismatch");
+        if (context.sequence != 0 &&
+            (lineup.match_id != match_id || lineup.player_id != context.player_id ||
+                lineup.round != context.round || lineup.sequence != context.sequence))
+            return stale(std::move(out), "lineup match/player/round/sequence mismatch");
 
         const bool envelope_valid = evidence &&
             PlannerEvidenceAdapters::snapshot_identity_matches(*evidence, match_id,
