@@ -150,8 +150,10 @@ public:
                     input.initial_composition_candidates.begin(),
                     input.initial_composition_candidates.end(),
                     [&](const auto& value) {
-                        return composition_contains_units(
-                            value, hypothesis.anchor.reference_unit_ids);
+                        return value.composition_id ==
+                                "native:" + hypothesis.anchor.direction &&
+                            composition_contains_units(
+                                value, hypothesis.anchor.reference_unit_ids);
                     });
                 if (candidate == input.initial_composition_candidates.end()) {
                     phase_ = StrategicCyclePhase::Exploration;
