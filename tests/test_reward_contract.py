@@ -48,3 +48,21 @@ def test_trainer_binds_reward_contract_and_requires_explicit_legacy_opt_in():
     assert source.count(
         '"reward_contract": build_reward_checkpoint_contract()'
     ) == 2
+
+
+
+def test_active_engine_action_reward_does_not_consume_legacy_or_shadow_shaping():
+    from pathlib import Path
+
+    source = (
+        Path(__file__).resolve().parents[1] / "cpp" / "src" / "lobby" / "TftEngine.cpp"
+    ).read_text(encoding="utf-8")
+    reward_start = source.index("double action_reward = 0.0;")
+    reward_end = source.index("return PlayerTransition{", reward_start)
+    active_reward_path = source[reward_start:reward_end]
+    assert "reward_model::" not in active_reward_path
+    assert "strategy_action_reward" not in active_reward_path
+    assert "shadow" not in active_reward_path.lower()
+    # The broad legacy state_reward implementation remains only as an unused
+    # helper; it must not become a second source of PPO targets.
+    assert source.count("state_reward(") == 1
