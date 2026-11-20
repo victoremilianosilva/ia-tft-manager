@@ -144,7 +144,22 @@ void unknown_lost_interest_is_not_scored_as_measured_cost() {
     assert(result.candidate_scores.size() == 1);
     assert(result.candidate_scores[0].lost_interest_component == 0.0);
 
+    // A legacy availability flag alone is not sufficient proof.
     context.action_candidates[0].lost_interest_evidence_available = true;
+    result = ActionEvaluator{}.evaluate(context, posture);
+    assert(result.candidate_scores.size() == 1);
+    assert(result.candidate_scores[0].lost_interest_component == 0.0);
+
+    auto& evidenced = context.action_candidates[0];
+    evidenced.marginal_economy_evidence_available = true;
+    evidenced.marginal_gold_before = 10;
+    evidenced.marginal_gold_after = 6;
+    evidenced.marginal_interest_before = 1;
+    evidenced.marginal_interest_after = 0;
+    evidenced.marginal_interest_delta = -1;
+    evidenced.marginal_cost_source = "native_gold+EconomyEngine::get_interest";
+    evidenced.marginal_cost_horizon_rounds = 1;
+    evidenced.marginal_cost_uncertainty = 0.0;
     result = ActionEvaluator{}.evaluate(context, posture);
     assert(result.candidate_scores.size() == 1);
     assert(result.candidate_scores[0].lost_interest_component < 0.0);
