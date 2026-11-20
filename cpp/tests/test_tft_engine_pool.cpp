@@ -1282,9 +1282,8 @@ int main(int argc, char** argv) {
         // Re-publishing the same physical fixture advances the native strategic
         // observation sequence without changing candidate identity/evidence.
         const auto* refresh_unit = pivot_fixture_units.front();
-        const auto refresh_on_board = pivot_fixture_units.size() <= tft::kBoardSlots;
-        const auto refresh_slot = static_cast<std::int32_t>(
-            refresh_on_board ? 0 : tft::kBoardSlots);
+        const bool refresh_on_board = true;
+        const std::int32_t refresh_slot = 0;
         for (int evaluation = 0; evaluation < 3; ++evaluation) {
             require(native_pivot_engine.set_unit_for_testing(
                         0, refresh_on_board, refresh_slot,
