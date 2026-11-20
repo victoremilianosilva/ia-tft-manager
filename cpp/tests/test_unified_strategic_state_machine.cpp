@@ -109,6 +109,9 @@ void exploration_waits_for_composition_and_then_binds_direction() {
     assert(!result.anchors.has_direction_anchor());
 
     input.initial_composition_candidates.push_back(composition(
+        "composition-unrelated", 99,
+        {{99, UnitRole::MainCarry, true, 100}}));
+    input.initial_composition_candidates.push_back(composition(
         "composition-bruiser", 1,
         {{1, UnitRole::MainCarry, true, 100},
          {2, UnitRole::Frontline, true, 80}}));
