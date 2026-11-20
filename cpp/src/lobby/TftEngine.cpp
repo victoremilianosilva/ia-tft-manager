@@ -222,91 +222,29 @@ float unit_strength(const ChampionDefinition& def, const UnitInstance& unit) {
 }
 
 double unit_composition_score(
-    const StrategyInfo& strategy, const ChampionDefinition& def, std::int32_t star,
-    const std::unordered_map<std::string, std::vector<int>>& trait_milestones
+    const composition_intelligence::UnitPrioritySnapshot& priorities,
+    std::int32_t champion_id, std::int32_t star
 ) {
-    // Strategic fit adapted from old/env.py::_compute_unit_comp_score().
-    double score = 0.0;
-    const bool core_unit = std::find(strategy.core_unit_ids.begin(), strategy.core_unit_ids.end(),
-        def.internal_id) != strategy.core_unit_ids.end();
-    const bool planned_unit = std::find(strategy.planned_unit_ids.begin(),
-        strategy.planned_unit_ids.end(), def.internal_id) != strategy.planned_unit_ids.end();
-    if (core_unit) score += 5.0;
-    if (planned_unit) score += 4.5;
-    const bool main_trait = !strategy.composition_direction.empty() &&
-        std::find(def.traits.begin(), def.traits.end(), strategy.composition_direction) != def.traits.end();
-    if (main_trait) score += 3.5;
-    const auto active_count = [&](const std::string& trait) {
-        const auto it = std::find_if(strategy.active_traits.begin(), strategy.active_traits.end(),
-            [&](const auto& x) { return x.first == trait; });
-        return it == strategy.active_traits.end() ? 0 : it->second;
-    };
-    const auto focus = [&](const std::string& trait) {
-        const auto it = std::find_if(strategy.composition_focus_weights.begin(),
-            strategy.composition_focus_weights.end(), [&](const auto& x) { return x.first == trait; });
-        return it == strategy.composition_focus_weights.end() ? 0.0 : it->second;
-    };
-    for (const auto& trait : def.traits) {
-        const bool core_trait = std::find(strategy.core_traits.begin(), strategy.core_traits.end(), trait)
-            != strategy.core_traits.end();
-        const bool planned_trait = std::find(strategy.planned_traits.begin(),
-            strategy.planned_traits.end(), trait) != strategy.planned_traits.end();
-        score += core_trait ? 1.2 : (planned_trait ? 1.0 : -0.5);
-        const int count = active_count(trait);
-        int next = 0;
-        const auto ms = trait_milestones.find(trait);
-        if (ms != trait_milestones.end()) {
-            for (const int milestone : ms->second) if (milestone > count) { next = milestone; break; }
-        } else if (count < 2) next = 2;
-        if (next > 0) {
-            const int needed = next - count;
-            score += needed == 1 ? 5.0 : (needed == 2 ? 2.5 : 1.0);
-        } else score += 0.5;
-        const double f = focus(trait);
-        score += f > 0.0 ? std::min(3.5, f * 0.45) : -0.1;
-    }
-    const auto copies = std::find_if(strategy.unit_counts_by_id.begin(), strategy.unit_counts_by_id.end(),
-        [&](const auto& x) { return x.first == def.internal_id; });
-    const int same = copies == strategy.unit_counts_by_id.end() ? 0 : copies->second;
-    if (same >= 9) score += 6.0;
-    else if (same >= 3) score += 4.0;
-    else if (same >= 2) score += 2.0;
-    score += (std::clamp(star, 1, 3) - 1) * 2.5;
-    score += std::min(1.5, std::max(0, def.cost) * 0.25);
-    // A planned bridge/support unit is allowed to sit outside the anchor
-    // trait; otherwise a locked direction would punish flexible compositions.
-    if (!main_trait && !planned_unit && !strategy.composition_direction.empty()) {
-        score -= 1.2;
-        if (strategy.composition_locked) score -= 2.0;
-    }
-    return score;
+    // Compatibility reward adapter over the canonical UnitPriorityPlanner output.
+    // It does not rebuild composition fit from StrategyInfo, traits or planned_units.
+    if (priorities.stale) return 0.0;
+    const auto found = std::find_if(priorities.units.begin(), priorities.units.end(),
+        [&](const auto& unit) { return unit.champion_id == champion_id; });
+    if (found == priorities.units.end()) return -1.2;
+    double score = static_cast<double>(std::max(0, found->priority)) / 30.0;
+    if (found->intent == composition_intelligence::UnitIntent::Upgrade)
+        score += 1.5;
+    score += std::clamp(star - 1, 0, 2) * 0.25;
+    return std::clamp(score, -1.2, 18.0);
 }
 
-// Approximation of Python _compute_unit_board_impact(). This is deliberately a
-// heuristic for reward shaping, not a replacement for simulated combat.
+// Legacy reward shaping now consumes the same unit-priority owner as Shadow.
+// Board combat quality remains a small observed champion-stat contribution.
 double unit_board_impact_score(
-    const StrategyInfo& strategy, const ChampionDefinition& def, std::int32_t star,
-    const std::unordered_map<std::string, std::vector<int>>& milestones,
-    int board_count, int level, int stage
+    const composition_intelligence::UnitPrioritySnapshot& priorities,
+    const ChampionDefinition& def, std::int32_t star,
+    int board_count, int level
 ) {
-    const auto trait_count = [&](const std::string& trait) {
-        const auto it = std::find_if(strategy.active_traits.begin(), strategy.active_traits.end(),
-            [&](const auto& x) { return x.first == trait; });
-        return it == strategy.active_traits.end() ? 0 : it->second;
-    };
-    const auto focus_weight = [&](const std::string& trait) {
-        const auto it = std::find_if(strategy.composition_focus_weights.begin(),
-            strategy.composition_focus_weights.end(), [&](const auto& x) { return x.first == trait; });
-        return it == strategy.composition_focus_weights.end() ? 0.0 : it->second;
-    };
-    const auto next_milestone = [&](const std::string& trait, int count) {
-        const auto it = milestones.find(trait);
-        if (it != milestones.end()) {
-            for (const int milestone : it->second) if (milestone > count) return milestone;
-        }
-        return count < 2 ? 2 : 0;
-    };
-
     const auto& profile = def.combat_profile;
     const double hp = profile.max_hp > 0.0 ? profile.max_hp : def.stats.max_hp;
     const double attack_speed = std::max(0.5, profile.attack_speed > 0.0
@@ -318,44 +256,10 @@ double unit_board_impact_score(
     const double star_multiplier = star >= 3 ? 9.0 : (star == 2 ? 3.0 : 1.0);
     const double combat_power = (hp / 1000.0) * (effective_dps / 50.0) *
         attack_speed * star_multiplier * std::pow(std::max(1, def.cost), 0.7);
-
-    const double comp_score = unit_composition_score(strategy, def, star, milestones);
-    double synergy_score = 0.0;
-    double score = combat_power * 0.5 + comp_score * 0.25;
-    for (const auto& trait : def.traits) {
-        const int count = trait_count(trait);
-        const int next = next_milestone(trait, count);
-        const int before_level = [&]() {
-            const auto it = milestones.find(trait);
-            if (it == milestones.end()) return count >= 2 ? 1 : 0;
-            int reached = 0;
-            for (const int milestone : it->second) if (count >= milestone) ++reached;
-            return reached;
-        }();
-        const int after_level = next > 0 && count + 1 >= next ? before_level + 1 : before_level;
-        if (after_level > before_level) score += 1.5 + before_level * 0.3;
-        synergy_score += std::max(0, count) * 0.15 + std::min(2.2, focus_weight(trait) * 0.12);
-    }
-    score += synergy_score * 0.6;
-
-    const auto copies = std::find_if(strategy.unit_counts_by_id.begin(), strategy.unit_counts_by_id.end(),
-        [&](const auto& x) { return x.first == def.internal_id; });
-    const int owned_copies = copies == strategy.unit_counts_by_id.end() ? 0 : copies->second;
-    if (owned_copies < 3) score += 1.2 + (owned_copies / 3.0) * 2.0;
-    else if (owned_copies < 9) score += 3.5 + ((owned_copies - 3) / 6.0) * 5.5;
-    else score += 0.5;
+    const double priority_score = unit_composition_score(priorities, def.internal_id, star);
+    double score = combat_power * 0.5 + priority_score * 0.25;
     if (board_count < level) score += 1.5;
-    if (comp_score < 0.0 && synergy_score <= 0.0 && combat_power < 1.5) score -= 3.0;
-
-    const bool main = !strategy.composition_direction.empty() &&
-        std::find(def.traits.begin(), def.traits.end(), strategy.composition_direction) != def.traits.end();
-    const bool secondary = std::any_of(def.traits.begin(), def.traits.end(), [&](const auto& trait) {
-        return std::find(strategy.core_traits.begin(), strategy.core_traits.end(), trait) != strategy.core_traits.end();
-    });
-    if (main) score *= 1.5;
-    else if (secondary) score *= 1.1;
-    else score *= stage <= 3 ? 0.9 : 0.6;
-    if (synergy_score <= 0.0 && combat_power < 1.5) score -= 2.5;
+    if (priority_score < 0.0 && combat_power < 1.5) score -= 3.0;
     return std::tanh(score / 5.0) * 4.0;
 }
 
