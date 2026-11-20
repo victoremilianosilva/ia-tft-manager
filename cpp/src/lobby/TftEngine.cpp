@@ -2671,7 +2671,7 @@ struct TFTEngine::Impl {
                     return 1.0;
             }
         };
-        const auto current_stage = stage_for_round(round + 1);
+
 
         const auto count_occupied = [](const auto& slots) {
             return static_cast<std::size_t>(std::count_if(
