@@ -2549,6 +2549,146 @@ struct TFTEngine::Impl {
                 native_input.selected_initial_direction =
                     planner_decision.target_composition_direction;
 
+                // Build a pivot proposal from the same native candidate set and
+                // physical evidence used by initial direction discovery. The
+                // source direction/version always comes from the already-active
+                // native owner; this producer never publishes a composition.
+                const auto& active_direction_anchor =
+                    native_runtime.machine().anchors().direction_anchor;
+                if (source_active && active_direction_anchor.is_valid() &&
+                    active_direction_anchor.composition_bound &&
+                    active_direction_anchor.composition_identity ==
+                        source_active->candidate.composition_id &&
+                    active_direction_anchor.composition_version ==
+                        source_active->version) {
+                    for (const auto& generated : native_generation.candidates) {
+                        if (generated.direction.empty() ||
+                            generated.direction == active_direction_anchor.direction ||
+                            generated.main_carry_id < 0 ||
+                            generated.unit_ids.empty()) {
+                            continue;
+                        }
+                        const auto destination_it = std::find_if(
+                            native_composition_candidates.begin(),
+                            native_composition_candidates.end(),
+                            [&](const auto& candidate) {
+                                return candidate.composition_id == generated.identity &&
+                                    candidate.source ==
+                                        composition_intelligence::CompositionSource::Native;
+                            });
+                        if (destination_it == native_composition_candidates.end() ||
+                            destination_it->units.empty() ||
+                            destination_it->main_carry_id != generated.main_carry_id) {
+                            continue;
+                        }
+
+                        strategy::StrategicPivotAnchorCandidate pivot;
+                        pivot.target_direction = generated.direction;
+                        pivot.target_composition_identity = destination_it->composition_id;
+                        pivot.source_direction_anchor_identity =
+                            active_direction_anchor.identity;
+                        pivot.source_composition_version =
+                            active_direction_anchor.composition_version;
+                        pivot.reference_unit_ids = generated.unit_ids;
+                        std::sort(pivot.reference_unit_ids.begin(),
+                                  pivot.reference_unit_ids.end());
+                        pivot.reference_unit_ids.erase(
+                            std::unique(pivot.reference_unit_ids.begin(),
+                                        pivot.reference_unit_ids.end()),
+                            pivot.reference_unit_ids.end());
+                        // Candidate identity is stable across snapshots so the
+                        // coordinator can accumulate consecutive evidence. The
+                        // destination identity remains snapshot-scoped.
+                        pivot.identity = "native-pivot:" + generated.direction;
+                        for (const auto id : pivot.reference_unit_ids)
+                            pivot.identity += ":" + std::to_string(id);
+                        pivot.lifecycle = strategy::StrategicAnchorLifecycle::Proposed;
+                        pivot.reason = "native_candidate_from_live_owned_shop_and_pool_facts";
+
+                        strategy::PivotFeasibilityInput feasibility;
+                        feasibility.candidate_composition_identity =
+                            destination_it->composition_id;
+                        feasibility.source_direction_anchor_identity =
+                            active_direction_anchor.identity;
+                        feasibility.source_composition_version =
+                            active_direction_anchor.composition_version;
+                        feasibility.gold_available = economy.gold;
+
+                        std::unordered_map<std::int32_t, std::int32_t> shop_copies;
+                        if (strategic_shop) {
+                            for (const auto& offer : strategic_shop->offers()) {
+                                if (offer)
+                                    ++shop_copies[offer->champion_internal_id];
+                            }
+                        }
+                        bool all_destination_units_owned = true;
+                        feasibility.required_units.reserve(destination_it->units.size());
+                        feasibility.observed_units.reserve(destination_it->units.size());
+                        for (const auto& destination_unit : destination_it->units) {
+                            const auto* definition = catalog->find_by_id(
+                                destination_unit.champion_id);
+                            if (!definition) {
+                                all_destination_units_owned = false;
+                                continue;
+                            }
+                            const bool is_carry =
+                                destination_unit.champion_id == destination_it->main_carry_id;
+                            strategy::PivotRequiredUnit required;
+                            required.champion_id = destination_unit.champion_id;
+                            required.cost = definition->cost;
+                            required.core = destination_unit.core;
+                            required.carry = is_carry;
+                            required.traits = definition->traits;
+                            feasibility.required_units.push_back(std::move(required));
+
+                            strategy::PivotObservedUnit observed;
+                            observed.champion_id = destination_unit.champion_id;
+                            observed.star = 1;
+                            const auto owned = strategic_native_owned.find(
+                                destination_unit.champion_id);
+                            if (owned != strategic_native_owned.end()) {
+                                observed.owned_copies = owned->second.copies;
+                                observed.star = owned->second.star;
+                                observed.copies_by_star = owned->second.copies_by_star;
+                                observed.physical_tier_counts_available = true;
+                            } else {
+                                all_destination_units_owned = false;
+                            }
+                            observed.shop_copies =
+                                shop_copies[destination_unit.champion_id];
+                            observed.pool_remaining = pool
+                                ? pool->available(destination_unit.champion_id) : -1;
+                            feasibility.observed_units.push_back(std::move(observed));
+                        }
+                        for (const auto& trait : generated.completed_traits) {
+                            const auto threshold = trait_milestones.find(trait);
+                            if (threshold == trait_milestones.end() ||
+                                threshold->second.empty()) {
+                                continue;
+                            }
+                            const auto minimum = *std::min_element(
+                                threshold->second.begin(), threshold->second.end());
+                            if (minimum > 0)
+                                feasibility.required_traits.push_back({trait, minimum});
+                        }
+
+                        // A zero transition cost is evidence-backed only when
+                        // every destination unit is already physically owned.
+                        // Until a native marginal-cost producer is available,
+                        // do not turn missing acquisition/opportunity costs into
+                        // an invented zero or approve an unaffordable pivot.
+                        feasibility.protected_gold_floor =
+                            all_destination_units_owned ? 0 : -1;
+                        feasibility.transition_economic_cost =
+                            all_destination_units_owned ? 0.0 : -1.0;
+
+                        native_input.pivot_candidate = std::move(pivot);
+                        native_input.pivot_destination = *destination_it;
+                        native_input.pivot_feasibility = std::move(feasibility);
+                        break;
+                    }
+                }
+
                 const strategy::StrategicCycleAuditContext native_audit_context{
                     episode_id, static_cast<std::int32_t>(i),
                     static_cast<std::uint32_t>(current_round)
