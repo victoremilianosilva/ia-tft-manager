@@ -24,7 +24,7 @@ Equal integer counters do not prove equal decision identity when they come from 
 ## 4. Contract and invariants
 
 1. Native `TFTEngine::Impl::decision_sequence` maps to `snapshot_sequence` in namespace `tft.engine.observation-snapshot`; it increments once per ResetResult/StepResult, is shared by all eight player rows and continues across episode resets within one Engine instance.
-2. `tft.engine.decision` remains a future per-player counter. It must not be populated from the Engine-wide snapshot counter.
+2. `tft.engine.decision` is now populated from native `player_decision_sequences[player_id]` and emitted by the adapter in PR #504. It is distinct from the Engine-wide snapshot counter and remains monotonic across episode resets within one Engine instance.
 3. Until authoritative logical `match_id` and per-player decision sequence are available, identity remains `partial`, decision identity hash is null, and mask/Critic/anti-loop/strategic-owner contexts cannot be marked valid.
 4. Decision identity hash uses RFC 8785 canonical JSON and SHA-256 over the exact v2 scope; producer namespace is part of each sequence reference.
 5. Derived, estimated, inferred and recommended field provenance requires formula ID and formula version; provenance nature must equal field nature.
@@ -44,3 +44,7 @@ The contract affects schema/registry fixtures, schema validation CI, native iden
 - Provenance nature/formula identity, field missingness, slot cardinality/order and physical unit uniqueness are checked.
 - CI continues running the v1 validator and adds the v2 validator.
 - No runtime acceptance or Stage 1 completion is claimed until producer delivery, wrapper/rollout binding, checkpoint lineage and integrated replay are proven.
+
+## PR #504 adapter delivery
+
+The adapter now composes `engine_match_id` from native `engine_instance_id` and `episode_id`, emits one canonical Decision Identity v2 envelope per player, maps the native per-player counter to `tft.engine.decision`, and maps the Engine-wide counter to `tft.engine.observation-snapshot`. Trainer and Rollout validate the envelope against the native snapshot before it is stored. `match_id` remains null until an authoritative logical game-match producer is available; it is not substituted with Viewer session identity.
