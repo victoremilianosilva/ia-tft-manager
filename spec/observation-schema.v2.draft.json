@@ -400,7 +400,7 @@
             "string",
             "null"
           ],
-          "description": "Canonical Engine-episode scope derived from the native engine_instance_id and episode_id. It distinguishes independent Engine objects and resets; null until the adapter emits this canonical composite identity."
+          "description": "Canonical Engine-episode scope emitted by the native Python adapter as <engine_instance_id>/episode/<episode_id>. The native Engine-instance UUID is stable across reset and distinct across independently constructed Engine objects; episode_id advances within that instance. This scope distinguishes independent Engine objects and resets."
         },
         "session_match_id": {
           "type": [
@@ -441,7 +441,7 @@
               "type": "null"
             }
           ],
-          "description": "Per-player decision counter in a registered namespace. Native ResetResult/StepResult.player_decision_sequences[player_id] is the authoritative producer; it is distinct from the Engine-wide snapshot publication counter."
+          "description": "Per-player decision counter in namespace tft.engine.decision. Native ResetResult/StepResult.player_decision_sequences[player_id] is the authoritative producer and the adapter emits it as a typed namespace/value reference; it is distinct from the Engine-wide snapshot publication counter."
         },
         "snapshot_sequence": {
           "oneOf": [
@@ -452,7 +452,7 @@
               "type": "null"
             }
           ],
-          "description": "Exact observation/action-mask snapshot publication counter in a registered namespace. Native TFTEngine::Impl decision_sequence is mapped here because it increments once per ResetResult/StepResult and is shared by all eight player rows."
+          "description": "Exact observation/action-mask snapshot publication counter in namespace tft.engine.observation-snapshot. Native TFTEngine::Impl decision_sequence is mapped here because it increments once per ResetResult/StepResult and is shared by all eight player rows."
         },
         "player_sequence": {
           "oneOf": [
