@@ -590,7 +590,11 @@ if(BUILD_TESTING)
     enable_tft_test_assertions(test_strategy_policy)
     add_test(NAME test_strategy_policy COMMAND test_strategy_policy)
 
-    add_executable(test_action_evaluator tests/test_action_evaluator.cpp)
+    add_executable(
+        test_action_evaluator
+        tests/test_action_evaluator.cpp
+        src/lobby/EconomyEngine.cpp
+    )
     configure_tft_module(test_action_evaluator)
     enable_tft_test_assertions(test_action_evaluator)
     add_test(NAME test_action_evaluator COMMAND test_action_evaluator)
