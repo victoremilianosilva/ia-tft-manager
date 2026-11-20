@@ -26,7 +26,7 @@ void economy_test(){
  const auto projected=PlannerEvidenceAdapters::economic(c,d,12,4);
  assert(projected.projected_income_available);
  assert(projected.projected_next_round_income==8);
- assert(projected.projected_income_source=="EconomyEngine::get_round_gold:base_only");
+ assert(projected.projected_income_source=="EconomyEngine::get_base_round_gold:base_only");
  assert(projected.projected_income_horizon_rounds==1);
  assert(projected.projected_income_uncertainty==0.0);
  assert(!e.projected_income_available&&!e.incoming_damage_available&&
