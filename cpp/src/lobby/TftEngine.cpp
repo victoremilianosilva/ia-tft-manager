@@ -2985,8 +2985,9 @@ struct TFTEngine::Impl {
         // Raw shop snapshot shared by the independent shadow composition pipeline.
         const auto& strategic_shop = player_envs[i].shop;
 
-        // BEGIN SHADOW-ONLY EVALUATION BOUNDARY.
-        // Every operation in this block is diagnostic-only. Exceptions must never
+        // BEGIN ISOLATED NATIVE PLANNER BOUNDARY.
+        // This block derives version-bound priorities/lineup and records diagnostics.
+        // It never publishes a composition or executes actions; exceptions must not
         // escape update_strategy() into the PPO-facing engine path.
         const bool shadow_evaluation_completed =
             composition_intelligence::run_shadow_isolated([&]() {
