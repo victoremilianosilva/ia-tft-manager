@@ -314,6 +314,8 @@ public:
                 snapshot.board_ids = native.board_champion_ids;
                 snapshot.bench_ids = native.bench_champion_ids;
                 snapshot.masks = native.masks;
+                snapshot.board_unit_uuids = native.board_unit_uuids;
+                snapshot.bench_unit_uuids = native.bench_unit_uuids;
                 StrategicPositionRole role = StrategicPositionRole::Flex;
                 switch (unit->role) {
                     case UnitRole::MainCarry: role = StrategicPositionRole::MainCarry; break;
@@ -334,10 +336,12 @@ public:
                 candidate.composition_fit = 1.0;
                 candidate.source_slot = proposal.source_slot;
                 candidate.source_is_bench = proposal.source_zone == StrategicPositionZone::Bench;
-                candidate.source_unit_uuid = candidate.source_is_bench
+                candidate.source_unit_uuid = proposal.source_unit_uuid;
+                const auto& current_source_uuid = candidate.source_is_bench
                     ? native.bench_unit_uuids[static_cast<std::size_t>(proposal.source_slot)]
                     : native.board_unit_uuids[static_cast<std::size_t>(proposal.source_slot)];
-                if (candidate.source_unit_uuid.empty()) {
+                if (candidate.source_unit_uuid.empty() ||
+                    candidate.source_unit_uuid != current_source_uuid) {
                     ++out.rejected_missing_instance_identity;
                     continue;
                 }
