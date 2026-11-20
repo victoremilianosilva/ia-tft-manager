@@ -163,8 +163,21 @@ public:
                         input.initial_composition_candidates.begin(),
                         input.initial_composition_candidates.end(),
                         [&](const auto& value) {
-                            return value.composition_id ==
-                                    "native:" + hypothesis->anchor.direction &&
+                            const auto expected_identity =
+                                "native:" + hypothesis->anchor.direction;
+                            // Engine-generated identities are snapshot-scoped:
+                            // <candidate-set-id>:native:<direction>:<unit-ids>.
+                            // Keep compatibility with compact native identities
+                            // used by focused state-machine callers, but match
+                            // the canonical direction segment rather than
+                            // requiring the entire identity to equal a prefix.
+                            const bool direction_matches =
+                                value.composition_id == expected_identity ||
+                                value.composition_id.find(
+                                    ":" + expected_identity + ":") != std::string::npos;
+                            return value.source ==
+                                    composition_intelligence::CompositionSource::Native &&
+                                direction_matches &&
                                 composition_contains_units(
                                     value, hypothesis->anchor.reference_unit_ids);
                         });
