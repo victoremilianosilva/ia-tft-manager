@@ -449,6 +449,7 @@ def validate_semantic_batch_alignment(
     batch: Mapping,
     metadata_rows: Sequence[Mapping],
     expected_contract: Mapping,
+    catalog_map: Mapping[str, int],
 ) -> None:
     """Fail closed unless each semantic row is bound to its exact native snapshot."""
     if not isinstance(batch, Mapping):
@@ -461,6 +462,9 @@ def validate_semantic_batch_alignment(
     champion_ids = batch.get("champion_ids")
     expected_id = expected_contract.get("contract", {}).get("contract_id")
     expected_hash = expected_contract.get("sha256")
+    active_contract = build_semantic_state_checkpoint_contract(catalog_map)
+    if dict(expected_contract) != active_contract:
+        raise ValueError("active semantic checkpoint contract does not match the native catalog")
     if batch.get("contract_id") != expected_id or batch.get("contract_hash") != expected_hash:
         raise ValueError("semantic batch contract identity/hash diverges from the active checkpoint contract")
     row_count = len(metadata_rows)
@@ -488,3 +492,12 @@ def validate_semantic_batch_alignment(
             raise ValueError(f"semantic row {index} contract ID is not bound to its snapshot metadata")
         if metadata.get("semantic_projection_contract_hash") != expected_hash:
             raise ValueError(f"semantic row {index} contract hash is not bound to its snapshot metadata")
+        # Re-project from the native source so a detached/mutated tensor cannot
+        # retain a stale digest merely because its metadata still looks valid.
+        expected_row = project_native_player_state(metadata, catalog_map)
+        if (
+            list(numeric[index]) != expected_row["numeric"]
+            or list(champion_ids[index]) != expected_row["champion_ids"]
+            or digest != expected_row["sha256"]
+        ):
+            raise ValueError(f"semantic row {index} tensor content does not match its native projection hash")
