@@ -137,7 +137,8 @@ public:
         if (!state.alive || !source.alive)
             return reject(std::move(out), "player_not_alive_in_native_or_source_context", "player_not_alive");
         if (state.sequence == 0 || request.expected_snapshot_sequence == 0 ||
-            state.sequence != request.expected_snapshot_sequence)
+            state.sequence != request.expected_snapshot_sequence ||
+            (source.sequence != 0 && source.sequence != state.sequence))
             return reject(std::move(out), "native_snapshot_sequence_mismatch", "stale_native_snapshot");
         if (recommendation.match_id != state.match_id || source.player_id != state.player_id ||
             recommendation.player_id != state.player_id || recommendation.round != state.round ||
