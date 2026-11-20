@@ -157,6 +157,8 @@ public:
                 {"affordable_shop_copies", u.affordable_shop_copies},
                 {"copies_toward_next_star", u.copies_toward_next_star},
                 {"copies_needed_for_next_star", u.copies_needed_for_next_star},
+                {"has_pair", u.has_pair},
+                {"copies_needed_for_pair", u.copies_needed_for_pair},
                 {"pool_known", u.pool_known},
                 {"pool_remaining", u.pool_known ? nlohmann::json(u.pool_remaining) : nlohmann::json(nullptr)},
                 {"sale_restricted", u.sale_restricted},
