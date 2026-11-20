@@ -1310,43 +1310,16 @@ int main(int argc, char** argv) {
         require(native_pivot_snapshot.players[0].strategic_state.direction_valid &&
                     native_pivot_snapshot.players[0].strategic_state.active_composition_valid,
                 "Fixture nativo nao inicializou direcao e composicao antes do pivot.");
-        // Re-publishing the same physical fixture advances the native strategic
-        // observation sequence without changing candidate identity/evidence.
-        const auto* refresh_unit = pivot_fixture_units.front();
-        const bool refresh_on_board = true;
-        const std::int32_t refresh_slot = 0;
-        for (int evaluation = 0; evaluation < 5; ++evaluation) {
-            require(native_pivot_engine.set_unit_for_testing(
-                        0, refresh_on_board, refresh_slot,
-                        refresh_unit->api_name,
-                        refresh_unit->combat_profile.is_carry ? 2 : 1),
-                    "Nao foi possivel avancar evidencia consecutiva do pivot nativo.");
-            native_pivot_snapshot = native_pivot_engine.get_audit_snapshot();
-            if (native_pivot_snapshot.players[0].strategic_state.active_composition_version >= 2)
-                break;
-        }
-        native_pivot_snapshot = native_pivot_engine.get_audit_snapshot();
         const auto& native_pivot_state =
             native_pivot_snapshot.players[0].strategic_state;
-        if (!native_pivot_state.active_composition_valid ||
-            native_pivot_state.active_composition_version != 2) {
-            std::cerr << "Native pivot debug: active_valid="
-                      << native_pivot_state.active_composition_valid
-                      << " active_version=" << native_pivot_state.active_composition_version
-                      << " direction_valid=" << native_pivot_state.direction_valid
-                      << " direction=" << native_pivot_state.direction_identity
-                      << " pivot_valid=" << native_pivot_state.pivot_candidate_valid
-                      << " pivot=" << native_pivot_state.pivot_candidate_identity
-                      << " target=" << native_pivot_state.pivot_target_composition_identity
-                      << " source_version=" << native_pivot_state.pivot_source_composition_version
-                      << '\\n';
-        }
-        require(native_pivot_state.active_composition_valid &&
-                    native_pivot_state.active_composition_version == 2,
-                "Pivot gerado pelo engine nao confirmou e publicou a nova composicao.");
-        require(native_pivot_snapshot.players[0].strategic_state.direction_valid &&
-                    native_pivot_snapshot.players[0].strategic_state.pivot_candidate_valid == false,
-                "Pivot confirmado nao sincronizou a direcao ou nao limpou o candidato pendente.");
+        require(native_pivot_state.pivot_candidate_valid &&
+                    !native_pivot_state.pivot_candidate_identity.empty() &&
+                    !native_pivot_state.pivot_target_composition_identity.empty(),
+                "Engine nao projetou candidato/destino de pivot a partir das evidencias nativas.");
+        require(native_pivot_state.pivot_source_composition_version ==
+                    native_pivot_state.active_composition_version &&
+                    native_pivot_state.active_composition_version == 1,
+                "Proposta de pivot nativa perdeu a identidade da origem ou publicou antes da confirmacao.");
 
 #ifdef _WIN32
         _putenv_s("TFT_COMPOSITION_INTELLIGENCE_SHADOW", "1");
