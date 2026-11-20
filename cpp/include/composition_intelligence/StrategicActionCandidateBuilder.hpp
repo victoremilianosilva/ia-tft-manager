@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
+#include <limits>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -68,7 +69,11 @@ public:
         };
         const auto attach_marginal_economy = [&](strategy::StrategicActionCandidate& candidate) {
             if (!context.evidence.gold || context.gold < 0 ||
-                !std::isfinite(candidate.direct_gold_cost))
+                !std::isfinite(candidate.direct_gold_cost) ||
+                candidate.direct_gold_cost <
+                    static_cast<double>(std::numeric_limits<std::int32_t>::min()) ||
+                candidate.direct_gold_cost >
+                    static_cast<double>(std::numeric_limits<std::int32_t>::max()))
                 return;
 
             // Compare the candidate with HOLD from the exact same native
@@ -78,8 +83,12 @@ public:
             const auto gold_before = context.gold;
             const auto gold_delta = static_cast<std::int32_t>(
                 std::llround(candidate.direct_gold_cost));
-            const auto gold_after = std::max<std::int32_t>(
-                0, gold_before - gold_delta);
+            const auto gold_after_wide = static_cast<std::int64_t>(gold_before) -
+                static_cast<std::int64_t>(gold_delta);
+            if (gold_after_wide < 0 ||
+                gold_after_wide > std::numeric_limits<std::int32_t>::max())
+                return;
+            const auto gold_after = static_cast<std::int32_t>(gold_after_wide);
             const EconomyEngine economy;
             const auto interest_before = economy.get_interest(gold_before);
             const auto interest_after = economy.get_interest(gold_after);
