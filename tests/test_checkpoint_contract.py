@@ -123,3 +123,14 @@ def test_semantic_contract_change_requires_explicit_weights_only_warm_start():
     assert "validate_semantic_state_checkpoint_integrity(saved_semantic_contract)" in source
     assert 'if not key.startswith(("semantic_id_embedding.", "semantic_encoder."))' in source
     assert "not semantic_state_warm_start" in source
+
+
+
+def test_historical_lineage_integrity_can_be_checked_without_claiming_compatibility():
+    inputs = _inputs()
+    manifest = build_checkpoint_lineage_contract(*inputs)
+    validate_checkpoint_lineage_integrity(manifest)
+    tampered = copy.deepcopy(manifest)
+    tampered["contract"]["components"]["semantic_state_contract"]["contract_id"] = "old-owner-v1"
+    with pytest.raises(ValueError, match="hash is invalid"):
+        validate_checkpoint_lineage_integrity(tampered)
