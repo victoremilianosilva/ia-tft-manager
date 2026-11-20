@@ -154,6 +154,29 @@ void builder_emits_snapshot_bound_physical_candidates() {
     assert(hold->marginal_gold_before == hold->marginal_gold_after);
     assert(hold->marginal_interest_delta == 0);
 
+    // Prove the complete native chain using the exact lineup and physical unit.
+    auto integrated_context = context;
+    integrated_context.sequence = native.sequence;
+    integrated_context.action_candidates = {*deploy, *hold};
+    const auto contextual = ContextualActionEvaluator{}.evaluate(
+        active, priorities, lineup, integrated_context, nullptr, native.match_id);
+    assert(!contextual.stale);
+    assert(contextual.recommended_action == StrategicActionKind::DeployOrMove);
+    StrategicActionResolutionRequest request;
+    request.recommendation_id = "lineup-position-executor-integration";
+    request.expected_snapshot_sequence = native.sequence;
+    request.recommendation = &contextual;
+    request.source_context = &integrated_context;
+    request.current_state = &native;
+    const auto resolution = StrategicActionExecutor{}.resolve(request);
+    assert(resolution.accepted);
+    assert(resolution.recommended_kind == StrategicActionKind::DeployOrMove);
+    assert(resolution.recommended_champion_id == 20);
+    assert(resolution.native_action.values[0] ==
+        static_cast<std::int32_t>(decision::ActionType::MOVE_BENCH));
+    assert(resolution.native_action.values[2] == deploy->source_slot);
+    assert(resolution.native_action.values[3] == deploy->target_board_slot);
+
     std::unordered_set<std::string> stable_ids;
     for (const auto& candidate : result.candidates) {
         assert(!candidate.candidate_id.empty());
