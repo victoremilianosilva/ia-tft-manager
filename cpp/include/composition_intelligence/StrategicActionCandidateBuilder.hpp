@@ -254,10 +254,13 @@ public:
             // Sell only a uniquely identified bench instance explicitly marked
             // SellCandidate by UnitPriorityPlanner; never choose by incidental order.
             for (const auto& priority : priorities.units) {
+                const bool selected_in_lineup = std::any_of(
+                    lineup.selected_board.begin(), lineup.selected_board.end(),
+                    [&](const auto& slot) { return slot.champion_id == priority.champion_id; });
                 if (priority.intent != UnitIntent::SellCandidate ||
                     priority.sale_restricted || priority.copies_owned >= 2 ||
                     priority.highest_star > 1 || priority.target_star > 0 ||
-                    target_ids.count(priority.champion_id)) continue;
+                    target_ids.count(priority.champion_id) || selected_in_lineup) continue;
                 std::int32_t slot = -1;
                 for (std::size_t i = 0; i < native.bench_champion_ids.size(); ++i) {
                     if (native.bench_champion_ids[i] != priority.champion_id) continue;
