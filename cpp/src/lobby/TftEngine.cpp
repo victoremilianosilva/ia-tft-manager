@@ -6160,13 +6160,15 @@ ResetResult TFTEngine::reset(
     if (!impl_->strategic_shadow_audit_path.empty()) {
         std::error_code remove_error;
         std::filesystem::remove(impl_->strategic_shadow_audit_path, remove_error);
-        for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
-            impl_->strategic_shadow_runtimes[i] =
-                std::make_unique<strategy::UnifiedStrategicShadowRuntime>(
-                    impl_->composition_intelligence_players[i].active,
-                    impl_->strategic_planner_commitments[i],
-                    impl_->strategic_shadow_audit_path);
-        }
+    }
+    // The unified state machine is a native strategic owner used by PPO;
+    // the JSONL sidecar is optional diagnostics, not a runtime activation gate.
+    for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+        impl_->strategic_shadow_runtimes[i] =
+            std::make_unique<strategy::UnifiedStrategicShadowRuntime>(
+                impl_->composition_intelligence_players[i].active,
+                impl_->strategic_planner_commitments[i],
+                impl_->strategic_shadow_audit_path);
     }
 
     impl_->round = 0;
@@ -6682,12 +6684,10 @@ void TFTEngine::set_strategic_direction_pivot_audit_path(const std::string& path
     impl_->strategic_shadow_audit_path = path;
     impl_->strategic_shadow_external_active_identity.fill(std::string{});
     impl_->strategic_shadow_external_active_version.fill(0);
-    if (path.empty()) {
-        for (auto& runtime : impl_->strategic_shadow_runtimes) runtime.reset();
-        return;
+    if (!path.empty()) {
+        std::error_code remove_error;
+        std::filesystem::remove(path, remove_error);
     }
-    std::error_code remove_error;
-    std::filesystem::remove(path, remove_error);
     for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
         impl_->strategic_shadow_runtimes[i] =
             std::make_unique<strategy::UnifiedStrategicShadowRuntime>(

@@ -221,6 +221,10 @@ class Trainer:
 
         print("🧩 Engine selecionada: C++ (única engine)")
 
+        # PPO consumes the native strategic owners as part of its semantic
+        # observation. The optional JSONL audit sidecar remains disabled unless
+        # separately configured; it must not gate the state machine itself.
+        os.environ["TFT_COMPOSITION_INTELLIGENCE_SHADOW"] = "1"
         resolved_item_catalog = item_catalog_path or os.environ.get("TFT_ITEM_CATALOG_PATH")
         def make_env():
             return CppTFTLobbyWrapper(item_catalog_path=resolved_item_catalog)
