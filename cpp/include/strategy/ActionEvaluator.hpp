@@ -1,6 +1,7 @@
 #pragma once
 
 #include "strategy/StrategicPlanning.hpp"
+#include "lobby/EconomyEngine.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -32,10 +33,32 @@ public:
             breakdown.champion_id = candidate.champion_id;
             breakdown.available = candidate.available &&
                 candidate.gold_cost <= c.gold;
-            breakdown.direct_gold_cost = candidate.direct_gold_cost;
-            breakdown.lost_interest_cost = candidate.lost_interest_cost;
-            // No opportunity-cost producer is currently authoritative. Keep it
-            // unavailable instead of consuming a fixed action-family prior.
+            // Cost fields are consumed only when the candidate carries a
+            // same-snapshot, deterministic marginal cash/interest proof.
+            const bool marginal_valid =
+                candidate.marginal_economy_evidence_available &&
+                candidate.marginal_cost_source ==
+                    "native_gold+EconomyEngine::get_interest" &&
+                candidate.marginal_cost_horizon_rounds == 1 &&
+                candidate.marginal_cost_uncertainty == 0.0 &&
+                candidate.marginal_gold_before == c.gold &&
+                candidate.marginal_gold_after == std::max<std::int32_t>(
+                    0, c.gold - static_cast<std::int32_t>(
+                        std::llround(candidate.direct_gold_cost))) &&
+                candidate.marginal_interest_before ==
+                    EconomyEngine{}.get_interest(c.gold) &&
+                candidate.marginal_interest_after ==
+                    EconomyEngine{}.get_interest(candidate.marginal_gold_after) &&
+                candidate.marginal_interest_delta ==
+                    candidate.marginal_interest_after -
+                        candidate.marginal_interest_before &&
+                std::isfinite(candidate.direct_gold_cost);
+            breakdown.direct_gold_cost = marginal_valid
+                ? candidate.direct_gold_cost : 0.0;
+            breakdown.lost_interest_cost = marginal_valid
+                ? std::max(0.0, static_cast<double>(
+                    -candidate.marginal_interest_delta)) : 0.0;
+            // No opportunity-cost producer is currently authoritative.
             breakdown.opportunity_cost = 0.0;
             if (!breakdown.available) {
                 breakdown.total_score = -1.0e9;
@@ -89,13 +112,11 @@ public:
                     break;
             }
 
-            const double direct_cost = candidate.direct_gold_cost != 0.0
-                ? std::max(0.0, candidate.direct_gold_cost)
-                : std::max(0.0, candidate.expected_economy_cost);
-            const double gold_gain = std::max(0.0, -candidate.direct_gold_cost);
-            const double lost_interest = candidate.lost_interest_evidence_available &&
-                std::isfinite(candidate.lost_interest_cost)
-                ? std::max(0.0, candidate.lost_interest_cost) : 0.0;
+            const double direct_cost = marginal_valid
+                ? std::max(0.0, candidate.direct_gold_cost) : 0.0;
+            const double gold_gain = marginal_valid
+                ? std::max(0.0, -candidate.direct_gold_cost) : 0.0;
+            const double lost_interest = breakdown.lost_interest_cost;
             const double opportunity_cost = 0.0;
             breakdown.direct_cost_component = -direct_cost * 0.055 + gold_gain * 0.035;
             breakdown.lost_interest_component = -lost_interest * 0.10;
