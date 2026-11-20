@@ -59,6 +59,7 @@ from semantic_observation import (
     catalog_identity,
     validate_semantic_state_checkpoint_contract,
     validate_semantic_state_checkpoint_integrity,
+    validate_semantic_state_warm_start_migration,
     validate_semantic_batch_alignment,
 )
 
@@ -400,7 +401,9 @@ class Trainer:
                             "defina TFT_ALLOW_SEMANTIC_STATE_WARM_START=1; o encoder semântico "
                             "será reinicializado e optimizer/scheduler não serão restaurados."
                         ) from exc
-                    validate_semantic_state_checkpoint_integrity(saved_semantic_contract)
+                    validate_semantic_state_warm_start_migration(
+                        saved_semantic_contract, self.champion_id_map
+                    )
                     semantic_state_warm_start = True
 
             saved_lineage_contract = checkpoint.get("checkpoint_contract")
