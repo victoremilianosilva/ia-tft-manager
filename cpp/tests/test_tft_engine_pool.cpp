@@ -1138,25 +1138,49 @@ int main(int argc, char** argv) {
 #else
         setenv("TFT_COMPOSITION_INTELLIGENCE_SHADOW", "0", 1);
 #endif
+        const auto native_carry_fixture = std::find_if(
+            catalog.all().begin(), catalog.all().end(),
+            [](const auto& champion) {
+                return champion.combat_profile.is_carry && !champion.traits.empty();
+            });
+        require(native_carry_fixture != catalog.all().end(),
+                "Catalogo nao possui carry nativo para o teste sem CI.");
+        const auto native_frontline_fixture = std::find_if(
+            catalog.all().begin(), catalog.all().end(),
+            [&](const auto& champion) {
+                if (&champion == &*native_carry_fixture ||
+                    !(champion.combat_profile.frontline || champion.combat_profile.is_tank))
+                    return false;
+                return std::any_of(champion.traits.begin(), champion.traits.end(),
+                    [&](const auto& trait) {
+                        return std::find(native_carry_fixture->traits.begin(),
+                            native_carry_fixture->traits.end(), trait) !=
+                            native_carry_fixture->traits.end();
+                    });
+            });
+        require(native_frontline_fixture != catalog.all().end(),
+                "Catalogo nao possui frontline com trait compartilhado para o teste sem CI.");
+
         tft::TFTEngine native_only_engine(20261114, json_path);
         (void)native_only_engine.reset(20261114);
-        require(native_only_engine.set_player_economy_for_testing(0, 10, 8, 0),
+        require(native_only_engine.set_player_economy_for_testing(0, 100, 10, 0),
                 "Nao foi possivel ampliar o tabuleiro para o teste do runtime nativo.");
         require(native_only_engine.set_unit_for_testing(
-                    0, true, 0, strategic_fixture->api_name, 1),
-                "Nao foi possivel preparar unidade do runtime nativo sem CI.");
+                    0, true, 0, native_carry_fixture->api_name, 1),
+                "Nao foi possivel preparar carry do runtime nativo sem CI.");
         require(native_only_engine.set_unit_for_testing(
-                    0, false, 1, strategic_fixture->api_name, 1),
-                "Nao foi possivel preparar par para o runtime nativo sem CI.");
+                    0, false, 1, native_frontline_fixture->api_name, 1),
+                "Nao foi possivel preparar frontline do runtime nativo sem CI.");
         const auto native_only_snapshot = native_only_engine.get_audit_snapshot();
-        require(native_only_snapshot.players[0].strategic_state.direction_valid &&
-                    native_only_snapshot.players[0].strategic_state.active_composition_valid,
-                "Runtime nativo nao inicializou direcao/composicao com Composition Intelligence desligada.");
+        require(native_only_snapshot.players[0].strategic_state.direction_valid,
+                "Runtime nativo nao selecionou direcao com Composition Intelligence desligada.");
+        require(native_only_snapshot.players[0].strategic_state.active_composition_valid,
+                "Runtime nativo nao publicou composicao com Composition Intelligence desligada.");
 
         require(native_only_engine.set_unit_for_testing(
-                    1, true, 0, strategic_fixture->api_name, 1) &&
+                    1, true, 0, native_carry_fixture->api_name, 1) &&
                 native_only_engine.set_unit_for_testing(
-                    1, false, 1, strategic_fixture->api_name, 1),
+                    1, false, 1, native_frontline_fixture->api_name, 1),
                 "Nao foi possivel inicializar o runtime nativo do segundo jogador.");
         const auto two_player_native_snapshot = native_only_engine.get_audit_snapshot();
         require(two_player_native_snapshot.players[0].strategic_state.active_composition_version == 1 &&
@@ -1164,7 +1188,7 @@ int main(int argc, char** argv) {
                 "Managers nativos nao mantiveram versoes isoladas por jogador.");
 
         require(native_only_engine.set_unit_for_testing(
-                    0, false, 2, strategic_fixture->api_name, 1),
+                    0, false, 2, native_carry_fixture->api_name, 1),
                 "Nao foi possivel atualizar evidencias durante a manutencao nativa.");
         const auto maintained_native_snapshot = native_only_engine.get_audit_snapshot();
         require(maintained_native_snapshot.players[0].strategic_state.active_composition_version == 1,
@@ -1179,9 +1203,9 @@ int main(int argc, char** argv) {
                 "Reset nao limpou o estado nativo isolado dos jogadores.");
 
         require(native_only_engine.set_unit_for_testing(
-                    0, true, 0, strategic_fixture->api_name, 1) &&
+                    0, true, 0, native_carry_fixture->api_name, 1) &&
                 native_only_engine.set_unit_for_testing(
-                    0, false, 1, strategic_fixture->api_name, 1),
+                    0, false, 1, native_frontline_fixture->api_name, 1),
                 "Nao foi possivel reinicializar o runtime apos reset.");
         const auto reinitialized_native_snapshot = native_only_engine.get_audit_snapshot();
         require(reinitialized_native_snapshot.players[0].strategic_state.active_composition_valid &&
