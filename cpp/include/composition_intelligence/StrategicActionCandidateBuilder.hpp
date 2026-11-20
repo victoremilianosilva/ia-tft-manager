@@ -231,7 +231,6 @@ public:
                 candidate.evidence_source = "UnitPriorityPlanner+native_REROLL_mask";
                 candidate.evidence_horizon_rounds = 1;
                 candidate.evidence_uncertainty = 1.0; // no probability model for future shop outcomes
-                attach_marginal_interest(candidate);
                 append(std::move(candidate));
             }
 
