@@ -39,6 +39,7 @@ struct LineupPlannerContext {
     std::uint64_t match_id{0};
     std::int32_t player_id{-1};
     std::uint32_t round{0};
+    std::uint64_t sequence{0};
 };
 struct LineupPlannerConfig {
     bool preserve_bridge_units{true};
@@ -46,6 +47,10 @@ struct LineupPlannerConfig {
 };
 struct LineupPlan {
     std::string composition_id;
+    std::uint64_t match_id{0};
+    std::int32_t player_id{-1};
+    std::uint32_t round{0};
+    std::uint64_t sequence{0};
     std::uint64_t composition_version{0};
     std::uint32_t level{0};
     std::uint32_t board_capacity{0};
@@ -74,6 +79,10 @@ public:
                     const UnitPrioritySnapshot& priorities,
                     const LineupPlannerContext& context) const {
         LineupPlan out;
+        out.match_id = context.match_id;
+        out.player_id = context.player_id;
+        out.round = context.round;
+        out.sequence = context.sequence;
         out.level = context.level;
         out.board_capacity = context.board_capacity;
         if (!active) { out.stale = true; out.stale_reason = "no active composition"; return out; }
