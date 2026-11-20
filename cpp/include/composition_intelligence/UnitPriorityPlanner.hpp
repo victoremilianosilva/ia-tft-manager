@@ -63,6 +63,8 @@ struct UnitPriorityEvidence {
     std::int32_t copies_in_shop{0};
     std::int32_t unit_cost{-1}; // -1 means unknown; never infer affordability.
     bool trait_completion{false};
+    // Pool availability is separate from owned/shop copies. -1 means unknown.
+    std::int32_t pool_remaining{-1};
 };
 
 struct UnitPriorityOwnedUnit {
@@ -120,6 +122,15 @@ struct UnitPriority {
     std::vector<UnitPriorityReason> reasons;
     // Appended to preserve positional aggregate initialization in existing consumers.
     UnitPriorityTier tier{UnitPriorityTier::OutsideTarget};
+    // Canonical upgrade evidence; physical counts never include shop or pool.
+    std::array<std::int32_t, 4> copies_by_star{};
+    std::int32_t copies_in_shop{0};
+    std::int32_t affordable_shop_copies{0};
+    std::int32_t copies_toward_next_star{0};
+    std::int32_t copies_needed_for_next_star{0};
+    std::int32_t pool_remaining{-1};
+    bool pool_known{false};
+    bool target_unit{false};
 };
 
 struct UnitPrioritySnapshot {
@@ -185,7 +196,7 @@ public:
             const auto found = owned.find(target.champion_id);
             if (found == owned.end()) {
                 const auto* ev = find_evidence(evidence, target.champion_id);
-                auto item = missing_target(target);
+                auto item = missing_target(target, ev, context);
                 item.tier = priority_tier(target, ev);
                 item.priority = tier_base(item.tier) + std::clamp(target.priority, 0, 49);
                 const auto affordable_shop = affordable_shop_copies(ev, context);
@@ -307,12 +318,21 @@ private:
             return unit.core ? UnitStrategicRelation::SharedCore : UnitStrategicRelation::SharedFlex;
         return unit.core ? UnitStrategicRelation::ActiveCore : UnitStrategicRelation::ActiveFlex;
     }
-    static UnitPriority missing_target(const CompositionUnit& target) {
+    static UnitPriority missing_target(const CompositionUnit& target,
+                                       const UnitPriorityEvidence* ev,
+                                       const UnitPriorityContext& context) {
         UnitPriority out;
         out.champion_id = target.champion_id;
         out.intent = UnitIntent::Seek;
         out.relation = UnitStrategicRelation::MissingTarget;
         out.priority = target.priority;
+        out.target_unit = true;
+        if (ev) {
+            out.copies_in_shop = std::max(0, ev->copies_in_shop);
+            out.affordable_shop_copies = affordable_shop_copies(ev, context);
+            out.pool_known = ev->pool_remaining >= 0;
+            out.pool_remaining = out.pool_known ? ev->pool_remaining : -1;
+        }
         out.reasons.push_back({UnitReasonCode::TargetUnitMissing, "Unidade prevista na composição, mas ainda não possuída."});
         return out;
     }
@@ -326,6 +346,11 @@ private:
         out.copies_owned = owned.copies;
         out.highest_star = std::clamp(owned.highest_star, 1, 3);
         out.on_board = owned.on_board;
+        out.target_unit = true;
+        out.copies_by_star = owned.copies_by_star;
+        out.copies_in_shop = ev ? std::max(0, ev->copies_in_shop) : 0;
+        out.pool_known = ev && ev->pool_remaining >= 0;
+        out.pool_remaining = out.pool_known ? ev->pool_remaining : -1;
         out.board_contribution = ev ? clamp01(ev->board_contribution) : 0.5;
         out.synergy_contribution = ev ? clamp01(ev->synergy_contribution) : 0.5;
         out.confidence = ev ? clamp01(ev->confidence) : 0.25;
@@ -347,6 +372,10 @@ private:
             ? copy_progress_toward_next_star(
                 owned.copies_by_star, out.highest_star, affordable_shop)
             : (ev ? std::max(0, ev->copies_toward_next_star) + affordable_shop : 0);
+        out.affordable_shop_copies = affordable_shop;
+        out.copies_toward_next_star = copies_to_upgrade;
+        out.copies_needed_for_next_star = out.highest_star < 3
+            ? std::max(0, 2 - copies_to_upgrade) : 0;
         if (ev && ev->trait_completion)
             out.reasons.push_back({UnitReasonCode::TraitCompletionPriority,
                 "Unidade completa ou ativa trait relevante da composição; prioridade acima das demais peças flexíveis."});
@@ -386,6 +415,15 @@ private:
         out.copies_owned = owned.copies;
         out.highest_star = std::clamp(owned.highest_star, 1, 3);
         out.on_board = owned.on_board;
+        out.copies_by_star = owned.copies_by_star;
+        out.copies_in_shop = ev ? std::max(0, ev->copies_in_shop) : 0;
+        out.pool_known = ev && ev->pool_remaining >= 0;
+        out.pool_remaining = out.pool_known ? ev->pool_remaining : -1;
+        out.affordable_shop_copies = affordable_shop_copies(ev, context);
+        out.copies_toward_next_star = copy_progress_toward_next_star(
+            owned.copies_by_star, out.highest_star, out.affordable_shop_copies);
+        out.copies_needed_for_next_star = out.highest_star < 3
+            ? std::max(0, 2 - out.copies_toward_next_star) : 0;
         out.board_contribution = ev ? clamp01(ev->board_contribution) : 0.0;
         out.synergy_contribution = ev ? clamp01(ev->synergy_contribution) : 0.0;
         out.confidence = ev ? clamp01(ev->confidence) : 0.2;
