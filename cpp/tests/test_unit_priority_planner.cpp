@@ -334,7 +334,7 @@ void missing_targets_keep_shop_and_pool_facts_separate() {
     assert(target->affordable_shop_copies == 1);
     assert(target->pool_known && target->pool_remaining == 4);
     assert(target->copies_by_star[1] == 0 && target->copies_toward_next_star == 0);
-    assert(!target->has_pair && target->copies_needed_for_pair == 1);
+    assert(!target->has_pair && target->copies_needed_for_pair == 2);
 }
 
 void external_temporary_unit_requires_explicit_reason() {
