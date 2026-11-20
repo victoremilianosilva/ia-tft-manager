@@ -1251,6 +1251,28 @@ int main(int argc, char** argv) {
                 for (const auto* unit : first->second) ids.insert(unit->internal_id);
                 for (const auto* unit : second->second) ids.insert(unit->internal_id);
                 if (ids.size() > tft::kBoardSlots + tft::kBenchSlots) continue;
+                std::map<std::string, std::int32_t> fixture_trait_counts;
+                for (const auto id : ids) {
+                    const auto* definition = catalog.find_by_id(id);
+                    if (!definition) continue;
+                    for (const auto& trait : definition->traits)
+                        if (!trait.empty()) ++fixture_trait_counts[trait];
+                }
+                std::vector<std::pair<std::string, std::int32_t>> ranked_fixture_traits(
+                    fixture_trait_counts.begin(), fixture_trait_counts.end());
+                std::stable_sort(ranked_fixture_traits.begin(), ranked_fixture_traits.end(),
+                    [](const auto& lhs, const auto& rhs) {
+                        if (lhs.second != rhs.second) return lhs.second > rhs.second;
+                        return lhs.first < rhs.first;
+                    });
+                const auto is_generated_direction = [&](const std::string& trait) {
+                    const auto limit = std::min<std::size_t>(8, ranked_fixture_traits.size());
+                    for (std::size_t rank = 0; rank < limit; ++rank)
+                        if (ranked_fixture_traits[rank].first == trait) return true;
+                    return false;
+                };
+                if (!is_generated_direction(first->first) ||
+                    !is_generated_direction(second->first)) continue;
                 for (const auto id : ids) {
                     const auto* definition = catalog.find_by_id(id);
                     if (definition) pivot_fixture_units.push_back(definition);
