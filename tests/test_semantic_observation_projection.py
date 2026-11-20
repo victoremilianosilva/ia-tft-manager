@@ -103,8 +103,8 @@ def test_native_semantic_projection_has_stable_shape_and_explicit_identity():
     assert projected["numeric"][28] == 1.0  # active core member
     assert projected["numeric"][29] == 1.0  # direction reference
     assert projected["numeric"][30] == 1.0  # pivot reference
-    assert projected["numeric"][31] == 1.0  # owned copy equivalent, capped at nine
-    assert projected["numeric"][32] == 1.0  # same-star upgrade progress
+    assert projected["numeric"][31] == 4.0 / 9.0  # one 2-star plus one 1-star copy
+    assert projected["numeric"][32] == 1.0 / 3.0  # one owned 2-star unit
     assert projected["identity"]["player_id"] == 2
     assert len(projected["sha256"]) == 64
 

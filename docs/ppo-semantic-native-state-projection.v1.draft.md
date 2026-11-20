@@ -1,4 +1,4 @@
-# PPO semantic native-state projection v1 — draft
+# PPO semantic native-state projection v2 — draft
 
 ## Purpose
 
@@ -14,18 +14,26 @@ Provide PPO with a structured, versioned projection of native game-state facts w
 
 ## Projected feature layout
 
-The numeric block has 269 float32 features:
+The numeric block has 525 float32 features in v2. The original 269 factual features retain their order and meaning; strategic owner and copy-progress features are appended through an explicit v1-to-v2 mapping.
 
 | Block | Width | Meaning |
 |---|---:|---|
-| Global facts | 17 | HP, damage taken, alive, wins/losses, gold, level/XP, streaks, pre-interest gold, current interest, optional placement/value-validity, opponent-presence, stage and round |
-| Board | 28 × 6 | Occupancy, star, cost, item count, static trait count, champion-ID validity |
-| Bench | 9 × 6 | Same slot-local facts |
-| Shop | 5 × 6 | Same slot-local facts |
+| Global facts | 21 | Existing 17 facts plus active-composition, direction, pivot and opportunity-cost availability |
+| Board | 28 × 12 | Existing six facts plus composition/core membership, direction/pivot references and copy/upgrade progress |
+| Bench | 9 × 12 | Same slot-local facts |
+| Shop | 5 × 12 | Candidate slot facts plus owned-copy and upgrade context |
 
 Champion IDs are a separate int64 tensor with 42 stable slots and a shared 16-dimensional embedding. ID zero is reserved for empty or unknown identities. Unknown catalog names are not mapped to a guessed ID; the slot's validity feature remains false. The trait count is derived from the snapshot's static catalog `trait_names` only; as documented by the native producer, it does not include item-granted traits.
 
 Normalizations are explicit in `semantic_observation.py` and versioned by this contract. Missing optional placement/opponent values have separate validity/presence features. Invalid required source fields, non-finite values, identity mismatch, wrong slot counts, or incompatible producers fail closed.
+
+## Strategic owner source
+
+The existing AuditSnapshot carries one strategic_state object per player, produced by TFTEngine::get_audit_snapshot from the existing ActiveCompositionManager, StrategicCommitment and (when configured) unified state machine direction/pivot anchors. Its independent contract is tft.strategic-owner-observation v1 and repeats episode, player, round and player-decision sequence so stale or cross-player state is rejected.
+
+The semantic tensor receives only membership/reference features, not recommendation scores or confidence. Pair and upgrade progress is derived from the exact board/bench unit facts in the same snapshot; shop offers are not counted as owned copies. Four global validity values distinguish unavailable owners from valid empty membership.
+
+Opportunity cost remains explicitly unavailable in this snapshot: PR2 found no validated per-action producer published here. The availability flag is false and no numeric cost is fabricated. This remains an integration gap for the full #286 acceptance criteria.
 
 ## Exclusions
 

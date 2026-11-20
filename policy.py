@@ -12,6 +12,8 @@ from action_contract import (
 from semantic_observation import (
     SEMANTIC_NUMERIC_DIM,
     SEMANTIC_ENTITY_SLOTS,
+    SEMANTIC_ENTITY_FEATURES,
+    SEMANTIC_GLOBAL_FEATURES,
     SEMANTIC_ID_EMBED_DIM,
 )
 
