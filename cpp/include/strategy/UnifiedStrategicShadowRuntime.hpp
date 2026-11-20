@@ -95,7 +95,6 @@ private:
             {"match_id", context.match_id},
             {"player_id", context.player_id},
             {"round", context.round},
-            {"evaluation_sequence", input.evaluation_sequence},
             {"exploration", {
                 {"round", input.exploration.round},
                 {"gold_available", input.exploration.gold_available},
