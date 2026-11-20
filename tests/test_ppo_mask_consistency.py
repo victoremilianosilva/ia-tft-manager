@@ -1,6 +1,8 @@
 
+import pytest
 import torch
 
+from action_contract import MASK_SHAPES
 from policy import TFTPolicy
 from trainer import Trainer
 from rollout import RolloutBuffer
@@ -889,3 +891,36 @@ def test_critic_mask_checkpoint_contract_is_versioned_and_rejects_drift():
         pass
     else:
         raise AssertionError("Critic mask input contract drift must be rejected.")
+
+
+
+@pytest.mark.parametrize(("mask_name", "shape"), list(MASK_SHAPES.items()))
+def test_every_action_mask_family_fails_closed_when_its_row_is_empty(mask_name, shape):
+    logits = torch.zeros((1, *shape), dtype=torch.float32)
+    mask = torch.zeros((1, *shape), dtype=torch.bool)
+    with pytest.raises(ValueError, match="sem opções válidas"):
+        TFTPolicy._mask_logits(logits, mask)
+
+
+def test_masked_action_parameter_is_rejected_during_ppo_evaluation():
+    obs = torch.randn(1, 162)
+    masks = {
+        "type_mask": torch.zeros(1, 9, dtype=torch.bool),
+        "shop_mask": torch.zeros(1, 5, dtype=torch.bool),
+        "bench_source_mask": torch.zeros(1, 9, dtype=torch.bool),
+        "board_target_mask": torch.zeros(1, 28, dtype=torch.bool),
+        "board_source_mask": torch.zeros(1, 28, dtype=torch.bool),
+        "board_move_target_masks": torch.zeros(1, 28, 28, dtype=torch.bool),
+        "bench_move_source_mask": torch.zeros(1, 9, dtype=torch.bool),
+        "bench_to_board_target_masks": torch.zeros(1, 9, 28, dtype=torch.bool),
+        "item_inventory_mask": torch.zeros(1, 9, dtype=torch.bool),
+        "item_component_first_mask": torch.zeros(1, 10, dtype=torch.bool),
+        "item_component_pair_masks": torch.zeros(1, 10, 10, dtype=torch.bool),
+        "item_target_mask": torch.zeros(1, 37, dtype=torch.bool),
+    }
+    masks["type_mask"][0, 0] = True
+    masks["shop_mask"][0, 1] = True
+    policy = TFTPolicy(obs_dim=162, action_dims=Trainer.ACTION_DIMS, hidden_size=32)
+    invalid_action = torch.tensor([[0, 2, 0, 0, 0, 0]], dtype=torch.long)
+    with pytest.raises(ValueError, match="bloqueada pela máscara"):
+        policy.evaluate_actions(obs, invalid_action, masks)

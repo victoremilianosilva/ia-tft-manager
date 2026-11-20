@@ -90,3 +90,50 @@ def validate_checkpoint_lineage_contract(
             "checkpoint lineage incompatível: "
             "componentes, assinatura estrutural ou hash não correspondem ao runtime."
         )
+
+
+TRAINING_RESUME_CONTRACT_ID = "tft.ppo-training-resume.v1"
+TRAINING_RESUME_CONTRACT_VERSION = 1
+ROLLOUT_TEMPORAL_CONTRACT_ID = "tft.ppo-trajectory-validity.v1"
+
+
+def build_training_resume_contract(training_config: Mapping) -> dict:
+    """Bind the settings that determine optimizer and temporal training continuity."""
+    if not isinstance(training_config, Mapping):
+        raise TypeError("training_config deve ser um mapping.")
+    semantic_config = {
+        str(key): value
+        for key, value in training_config.items()
+        if key not in {"checkpoint_path", "total_updates"}
+    }
+    payload = {
+        "contract_id": TRAINING_RESUME_CONTRACT_ID,
+        "version": TRAINING_RESUME_CONTRACT_VERSION,
+        "training_config": semantic_config,
+        "optimizer": "torch.optim.Adam",
+        "scheduler": "cosine_clamped",
+        "rollout_temporal_contract": {
+            "contract_id": ROLLOUT_TEMPORAL_CONTRACT_ID,
+            "version": 1,
+            "trajectory_valid": "controls_td_error_and_gae_continuity",
+            "optimization_valid": "controls_ppo_loss_and_advantage_normalization",
+            "invalid_trajectory": "zero_td_error_and_hard_recursion_boundary",
+            "termination": "disable_bootstrap_and_recursion",
+            "rollout_truncation": "bootstrap_from_valid_correlated_next_state_only",
+        },
+    }
+    return {"manifest_version": 1, "contract": payload, "sha256": _canonical_hash(payload)}
+
+
+def validate_training_resume_contract(manifest: Mapping, training_config: Mapping) -> bool:
+    """Validate manifest integrity and report whether it matches this run's settings."""
+    if not isinstance(manifest, Mapping):
+        raise TypeError("training_resume_contract deve ser um mapping.")
+    if type(manifest.get("manifest_version")) is not int or manifest.get("manifest_version") != 1:
+        raise ValueError("Versão do training_resume_contract desconhecida.")
+    payload = manifest.get("contract")
+    if not isinstance(payload, Mapping):
+        raise TypeError("training_resume_contract.contract deve ser um mapping.")
+    if manifest.get("sha256") != _canonical_hash(payload):
+        raise ValueError("Hash do training_resume_contract inválido.")
+    return dict(manifest) == build_training_resume_contract(training_config)

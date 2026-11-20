@@ -365,3 +365,21 @@ Checkpoints novos carregam a identidade de reward. Checkpoints históricos preci
 - Testes cobrem manifesto válido, versão/hash incompatíveis e ausência.
 - Teste de integração estático protege o opt-in legado e o bloqueio de restauração do optimizer.
 - A CI valida o caminho completo de build/teste.
+
+
+## Runtime reconciliation — PR #507: training-resume identity and retraining policy
+
+**Prior problem:** checkpoints persisted training_config, reward/action/observation contracts and optimizer/scheduler state, but the loader did not bind the full set of PPO/GAE settings to optimizer restoration. A run could therefore restore Adam moments while changing gamma, gae_lambda, rollout length, batch/epoch settings or optimizer configuration.
+
+**Technical rationale:** weight compatibility and optimizer-resume compatibility are different. PPO weights may be a useful initialization even when training dynamics change, but Adam moments and scheduler progress are only meaningful under the exact training-resume contract.
+
+**New responsibility:** new checkpoints carry training_resume_contract, a deterministic manifest binding the training settings (excluding only artifact path and requested total run length), Adam identity, cosine scheduler identity, and the rollout temporal-validity contract.
+
+**Resume policy:**
+1. Exact semantic component contracts plus exact training-resume contract: restore weights, optimizer and scheduler; continue update numbering.
+2. Missing or different training-resume contract: reject by default. With explicit TFT_ALLOW_TRAINING_CONFIG_WARM_START=1, import compatible policy weights only, reset optimizer/scheduler, and start a new update lineage at update 1.
+3. Changing total_updates or checkpoint output path alone does not invalidate resume; changing gamma, gae_lambda, rollout length, batch size, PPO epochs, clipping, optimizer or scheduler settings does.
+4. A mismatch in observation, action/mask, reward or policy semantics is not authorized by the training-config warm-start flag. It still requires its own explicit, reviewed migration path.
+5. Historical checkpoints remain immutable. A warm-start never overwrites the source artifact and is not described as a resume or as semantic compatibility.
+
+**Validation:** tests cover deterministic manifest creation, path/total-update non-semantic fields, GAE and optimizer mismatch, and tampered manifest hashes. Actual retraining, paired baseline evaluation and promotion remain in #295; this PR defines safe loader behavior, not empirical success.
