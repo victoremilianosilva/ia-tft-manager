@@ -1130,6 +1130,32 @@ int main(int argc, char** argv) {
         }
         std::filesystem::remove(strategic_audit_path, strategic_remove_error);
 
+        // The native direction owner must refresh even when the optional
+        // Composition Intelligence/Viewer pipeline is disabled and no sidecar
+        // is configured.
+#ifdef _WIN32
+        _putenv_s("TFT_COMPOSITION_INTELLIGENCE_SHADOW", "0");
+#else
+        setenv("TFT_COMPOSITION_INTELLIGENCE_SHADOW", "0", 1);
+#endif
+        tft::TFTEngine native_only_engine(20261114, json_path);
+        (void)native_only_engine.reset(20261114);
+        require(native_only_engine.set_unit_for_testing(
+                    0, true, 0, strategic_fixture->api_name, 1),
+                "Nao foi possivel preparar unidade do runtime nativo sem CI.");
+        require(native_only_engine.set_unit_for_testing(
+                    0, false, 1, strategic_fixture->api_name, 1),
+                "Nao foi possivel preparar par para o runtime nativo sem CI.");
+        const auto native_only_snapshot = native_only_engine.get_audit_snapshot();
+        require(native_only_snapshot.players[0].strategic_state.direction_valid,
+                "Runtime nativo nao atualizou a direcao com Composition Intelligence desligada.");
+
+#ifdef _WIN32
+        _putenv_s("TFT_COMPOSITION_INTELLIGENCE_SHADOW", "1");
+#else
+        setenv("TFT_COMPOSITION_INTELLIGENCE_SHADOW", "1", 1);
+#endif
+
         std::cout << "TFTEngine + loja/economia/ActionMask/AntiLoop/CompLock: OK\n";
         return 0;
     } catch (const std::exception& e) {
