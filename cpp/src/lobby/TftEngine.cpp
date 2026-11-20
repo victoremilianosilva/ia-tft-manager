@@ -2327,7 +2327,6 @@ struct TFTEngine::Impl {
     void refresh_native_strategic_runtime(
         std::size_t i, std::int32_t current_round,
         const Economy& economy,
-        const strategy::StrategicSharedContext& strategic_context,
         const std::unordered_map<std::int32_t, strategy::NativeCompositionOwnedUnit>&
             strategic_native_owned,
         const Shop& strategic_shop, const Pool& pool,
@@ -2377,22 +2376,21 @@ struct TFTEngine::Impl {
                     strategic_planner_commitments[i].composition_direction;
         
                 std::map<std::int32_t, strategy::DirectionDiscoveryUnit> discovery_units;
-                for (const auto& owned : strategic_context.owned_units) {
-                    auto& unit = discovery_units[owned.champion_id];
-                    unit.champion_id = owned.champion_id;
-                    unit.cost = owned.cost;
-                    unit.copies_owned = owned.copies_owned;
+                for (const auto& [champion_id, owned] : strategic_native_owned) {
+                    const auto* definition = catalog->find_by_id(champion_id);
+                    if (!definition) continue;
+                    auto& unit = discovery_units[champion_id];
+                    unit.champion_id = champion_id;
+                    unit.cost = definition->cost;
+                    unit.copies_owned = owned.copies;
                     unit.star = owned.star;
                     unit.copies_by_star = owned.copies_by_star;
                     unit.on_board = owned.on_board;
                     unit.on_bench = owned.on_bench;
                     unit.board_contribution = owned.board_contribution;
-                    unit.traits = owned.traits;
-                    const auto* definition = catalog->find_by_id(owned.champion_id);
-                    unit.carry_potential = definition &&
-                        definition->combat_profile.is_carry;
-                    unit.pool_remaining = pool
-                        ? pool->available(owned.champion_id) : -1;
+                    unit.traits = definition->traits;
+                    unit.carry_potential = definition->combat_profile.is_carry;
+                    unit.pool_remaining = pool ? pool->available(champion_id) : -1;
                 }
                 if (strategic_shop) {
                     for (const auto& offer : strategic_shop->offers()) {
@@ -2557,6 +2555,13 @@ struct TFTEngine::Impl {
             }
             strategic_native_generation =
                 strategy::NativeStrategicCompositionGenerator{}.generate(native_input);
+
+        // Refresh native strategic owners before any legacy direction/economy
+        // generation. This path consumes only live native facts and its own state.
+        refresh_native_strategic_runtime(
+            i, current_round, economy, strategic_native_owned,
+            player_envs[i].shop, pool, trait_milestones);
+
         }
 
         if (composition_intelligence_enabled) {
@@ -4271,11 +4276,6 @@ struct TFTEngine::Impl {
             }
             }
 
-
-            // The native owner refresh has its own lifecycle entry point.
-            refresh_native_strategic_runtime(
-                i, current_round, economy, strategic_context,
-                strategic_native_owned, strategic_shop, pool, trait_milestones);
 
             static const std::array<const char*, 7> economic_posture_names{
                 "ACCUMULATE_RESOURCES", "PRESERVE_WIN_STREAK",
