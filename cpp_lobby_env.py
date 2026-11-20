@@ -165,6 +165,13 @@ class CppTFTLobbyWrapper:
             raise RuntimeError("Snapshot estruturado contém episode_id inválido.")
         if episode_id != expected_identity["episode_id"]:
             raise RuntimeError("Snapshot estruturado pertence a outro episódio.")
+        snapshot_round = value.get("round")
+        if (
+            isinstance(snapshot_round, bool)
+            or not isinstance(snapshot_round, int)
+            or snapshot_round != expected_identity["round"]
+        ):
+            raise RuntimeError("Snapshot estruturado pertence a outro round.")
         snapshot_sequence = value.get("snapshot_sequence")
         if isinstance(snapshot_sequence, bool) or not isinstance(snapshot_sequence, int) or snapshot_sequence < 0:
             raise RuntimeError("Snapshot estruturado contém snapshot_sequence inválida.")
