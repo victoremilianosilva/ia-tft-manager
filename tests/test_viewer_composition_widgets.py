@@ -16,6 +16,9 @@ from viewer.main import PlayerCard, ViewerWindow
 class _IconLoader:
     catalog = []
 
+    def __init__(self, *_args, **_kwargs):
+        pass
+
     def profile_for(self, _champion_id):
         return {}
 
