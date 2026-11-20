@@ -1,5 +1,6 @@
 #pragma once
 #include "items/ItemEngine.hpp"
+#include "lobby/EconomyEngine.hpp"
 #include "strategy/BoardEvaluation.hpp"
 #include "strategy/EconomicController.hpp"
 #include <algorithm>
@@ -21,8 +22,6 @@ struct EconomicPlannerEvidence {
  strategy::EconomicPosture posture{strategy::EconomicPosture::AccumulateResources};
  strategy::StrategicReason reason{strategy::StrategicReason::InsufficientEvidence};
  double survival_pressure{0},board_pressure{0},economy_pressure{0},confidence{0};
- double buy_experience_opportunity_cost{0},reroll_with_target_opportunity_cost{0};
- double reroll_without_target_opportunity_cost{0},buy_unit_opportunity_cost{0};
  // Appended to preserve existing aggregate initialization contracts.
  bool sufficient_evidence{false};
  std::vector<std::string> evidence_used,evidence_missing;
@@ -31,6 +30,8 @@ struct EconomicPlannerEvidence {
  // Per-field availability: a valid source envelope does not make every field present.
  bool gold_available{false},level_available{false},xp_available{false},xp_to_next_available{false};
  bool interest_available{false},projected_income_available{false};
+ bool incoming_damage_available{false},elimination_risk_available{false},progression_available{false};
+ std::vector<std::string> evidence_invalid;
  bool win_streak_available{false},loss_streak_available{false};
  bool board_pressure_available{false},economy_pressure_available{false};
 };
@@ -79,6 +80,12 @@ public:
   o.metadata=make_metadata("EconomicController",c.round,expected_round,c.alive&&d.shadow_only);
   if(c.player_id!=expected_player_id){o.metadata.available=false;o.metadata.quality=EvidenceQuality::Invalid;o.metadata.reason="player_id_mismatch";return o;}
   if(!std::isfinite(d.survival_pressure)||!std::isfinite(d.board_pressure)||!std::isfinite(d.economy_pressure)||!std::isfinite(d.confidence)){o.metadata.available=false;o.metadata.quality=EvidenceQuality::Invalid;o.metadata.reason="non_finite_economic_metric";return o;}
+  if(!d.evidence_invalid.empty()){o.metadata.available=false;o.metadata.quality=EvidenceQuality::Invalid;o.metadata.reason="economic_controller_rejected_contradictory_evidence";o.evidence_invalid=d.evidence_invalid;return o;}
+  if(c.evidence.interest_if_resolved_now &&
+      (!c.evidence.gold || c.interest_if_resolved_now != EconomyEngine{}.get_interest(c.gold))){
+   o.metadata.available=false;o.metadata.quality=EvidenceQuality::Invalid;
+   o.metadata.reason="interest_gold_inconsistency";o.evidence_invalid.push_back("interest_if_resolved_now");return o;
+  }
   if(!o.metadata.available)return o;
   o.gold=c.gold;o.level=c.level;o.xp=c.xp;o.xp_to_next=c.xp_to_next;
   o.interest_if_resolved_now=c.interest_if_resolved_now;o.projected_next_round_income=c.projected_next_round_income;
@@ -87,6 +94,9 @@ public:
   o.xp_available=c.evidence.xp;o.xp_to_next_available=c.evidence.xp_to_next;
   o.interest_available=c.evidence.interest_if_resolved_now;
   o.projected_income_available=c.evidence.projected_next_round_income;
+  o.incoming_damage_available=c.evidence.estimated_incoming_damage;
+  o.elimination_risk_available=c.evidence.elimination_risk;
+  o.progression_available=c.evidence.progression_plan;
   o.win_streak_available=c.evidence.streaks;o.loss_streak_available=c.evidence.streaks;
   o.sufficient_evidence=d.sufficient_evidence;
   o.evidence_used=d.evidence_used;o.evidence_missing=d.evidence_missing;
@@ -97,10 +107,7 @@ public:
   o.economy_pressure_available=c.evidence.gold;
   o.survival_pressure=unit(d.survival_pressure);o.board_pressure=unit(d.board_pressure);
   o.economy_pressure=unit(d.economy_pressure);o.confidence=unit(d.confidence);
-  o.buy_experience_opportunity_cost=strategy::action_opportunity_cost::kBuyExperience;
-  o.reroll_with_target_opportunity_cost=strategy::action_opportunity_cost::kRerollWithUpgradeTarget;
-  o.reroll_without_target_opportunity_cost=strategy::action_opportunity_cost::kRerollWithoutUpgradeTarget;
-  o.buy_unit_opportunity_cost=strategy::action_opportunity_cost::kBuyUnit;return o;
+  return o;
  }
  static BoardPlannerEvidence board(const strategy::BoardEvaluationResult& r,
   std::uint32_t source_round,std::uint32_t expected_round) {
