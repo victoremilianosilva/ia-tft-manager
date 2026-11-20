@@ -365,6 +365,16 @@ py::dict audit_snapshot_to_dict(
         strategic_state["pivot_target_composition_identity"] = strategic.pivot_target_composition_identity;
         strategic_state["pivot_source_composition_version"] = strategic.pivot_source_composition_version;
         strategic_state["pivot_reference_unit_ids"] = strategic.pivot_reference_unit_ids;
+        py::list unit_copy_progress;
+        for (const auto& progress : strategic.unit_copy_progress) {
+            py::dict row;
+            row["champion_internal_id"] = progress.champion_internal_id;
+            row["owned_copy_equivalent"] = progress.owned_copy_equivalent;
+            row["copies_toward_next_star"] = progress.copies_toward_next_star;
+            row["highest_star"] = progress.highest_star;
+            unit_copy_progress.append(std::move(row));
+        }
+        strategic_state["unit_copy_progress"] = std::move(unit_copy_progress);
         strategic_state["opportunity_cost_available"] = strategic.opportunity_cost_available;
         p["strategic_state"] = std::move(strategic_state);
         p["hp"] = player.hp;

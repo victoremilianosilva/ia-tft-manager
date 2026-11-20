@@ -297,6 +297,13 @@ struct AuditPvpResultCreditEvent {
     std::int32_t win_streak_after{0};
 };
 
+struct AuditUnitCopyProgressSnapshot {
+    std::int32_t champion_internal_id{-1};
+    std::int32_t owned_copy_equivalent{0};
+    std::int32_t copies_toward_next_star{0};
+    std::int32_t highest_star{0};
+};
+
 struct AuditStrategicOwnerSnapshot {
     std::string contract_id{"tft.strategic-owner-observation"};
     std::uint32_t contract_version{1};
@@ -321,6 +328,9 @@ struct AuditStrategicOwnerSnapshot {
     std::string pivot_target_composition_identity;
     std::uint64_t pivot_source_composition_version{0};
     std::vector<std::int32_t> pivot_reference_unit_ids;
+    // Values are produced by strategy::UnitCopyProgress from this snapshot's
+    // physical board/bench copies; the Python projection must not recalculate.
+    std::vector<AuditUnitCopyProgressSnapshot> unit_copy_progress;
     // False means unavailable, never a measured zero.
     bool opportunity_cost_available{false};
 };

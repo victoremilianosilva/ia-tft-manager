@@ -6810,6 +6810,32 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
         strategic.player_id = static_cast<std::int32_t>(i);
         strategic.round = snapshot.round;
 
+        std::unordered_map<std::int32_t, std::array<std::int32_t, 4>> owned_by_star;
+        const auto count_owned_copy = [&owned_by_star](const std::optional<UnitInstance>& unit) {
+            if (!unit) return;
+            const auto star = static_cast<std::size_t>(std::clamp(unit->star, 1, 3));
+            ++owned_by_star[unit->champion_internal_id][star];
+        };
+        for (const auto& unit : source.board) count_owned_copy(unit);
+        for (const auto& unit : source.bench) count_owned_copy(unit);
+        std::vector<std::int32_t> copy_progress_ids;
+        copy_progress_ids.reserve(owned_by_star.size());
+        for (const auto& [champion_id, _] : owned_by_star)
+            copy_progress_ids.push_back(champion_id);
+        std::sort(copy_progress_ids.begin(), copy_progress_ids.end());
+        for (const auto champion_id : copy_progress_ids) {
+            const auto& counts = owned_by_star.at(champion_id);
+            std::int32_t highest_star = 3;
+            while (highest_star > 0 && counts[static_cast<std::size_t>(highest_star)] == 0)
+                --highest_star;
+            strategic.unit_copy_progress.push_back(AuditUnitCopyProgressSnapshot{
+                champion_id,
+                strategy::owned_star_equivalent_copies(counts),
+                strategy::copies_toward_next_star(counts, highest_star),
+                highest_star
+            });
+        }
+
         const auto active_composition =
             impl_->composition_intelligence_players[i].active.current();
         if (active_composition && active_composition->version > 0 &&
