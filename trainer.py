@@ -41,6 +41,7 @@ from rollout import RolloutBuffer
 from checkpoint_contract import (
     build_checkpoint_lineage_contract,
     validate_checkpoint_lineage_contract,
+    validate_checkpoint_lineage_integrity,
     build_training_resume_contract,
     validate_training_resume_contract,
 )
@@ -57,6 +58,7 @@ from semantic_observation import (
     build_semantic_state_checkpoint_contract,
     catalog_identity,
     validate_semantic_state_checkpoint_contract,
+    validate_semantic_state_checkpoint_integrity,
     validate_semantic_batch_alignment,
 )
 
@@ -291,6 +293,8 @@ class Trainer:
 
         legacy_action_mask_checkpoint = False
         legacy_reward_checkpoint = False
+        legacy_checkpoint_lineage = False
+        semantic_state_warm_start = False
         training_contract_warm_start = False
         warm_start_source_metadata = None
         if os.path.exists(checkpoint_path):
@@ -376,14 +380,28 @@ class Trainer:
                 # Historical checkpoint: semantic branch migrates from its
                 # neutral initialization; optimizer/scheduler are reset.
             else:
-                validate_semantic_state_checkpoint_contract(
-                    saved_semantic_contract, self.champion_id_map
-                )
                 if not checkpoint_has_semantic_weights:
                     raise RuntimeError(
                         "Checkpoint declara semantic_state_contract, mas não contém "
                         "os pesos do encoder semântico."
                     )
+                try:
+                    validate_semantic_state_checkpoint_contract(
+                        saved_semantic_contract, self.champion_id_map
+                    )
+                except (TypeError, ValueError) as exc:
+                    allow_semantic_warm_start = os.environ.get(
+                        "TFT_ALLOW_SEMANTIC_STATE_WARM_START", ""
+                    ).strip().lower() in {"1", "true", "yes"}
+                    if not allow_semantic_warm_start:
+                        raise RuntimeError(
+                            "Checkpoint usa uma projeção semântica incompatível. "
+                            "Para importar apenas pesos não semânticos em uma nova linhagem, "
+                            "defina TFT_ALLOW_SEMANTIC_STATE_WARM_START=1; o encoder semântico "
+                            "será reinicializado e optimizer/scheduler não serão restaurados."
+                        ) from exc
+                    validate_semantic_state_checkpoint_integrity(saved_semantic_contract)
+                    semantic_state_warm_start = True
 
             saved_lineage_contract = checkpoint.get("checkpoint_contract")
             if saved_lineage_contract is None:
@@ -406,14 +424,17 @@ class Trainer:
                     raise RuntimeError(
                         "Checkpoint declara linhagem agregada, mas um contrato componente está ausente."
                     )
-                validate_checkpoint_lineage_contract(
-                    saved_lineage_contract,
-                    self.policy.state_dict(),
-                    saved_contract,
-                    saved_critic_mask_contract,
-                    saved_semantic_contract,
-                    saved_reward_contract,
-                )
+                if semantic_state_warm_start:
+                    validate_checkpoint_lineage_integrity(saved_lineage_contract)
+                else:
+                    validate_checkpoint_lineage_contract(
+                        saved_lineage_contract,
+                        self.policy.state_dict(),
+                        saved_contract,
+                        saved_critic_mask_contract,
+                        saved_semantic_contract,
+                        saved_reward_contract,
+                    )
 
             saved_training_contract = checkpoint.get("training_resume_contract")
             training_contract_matches = (
@@ -435,7 +456,16 @@ class Trainer:
                     )
                 training_contract_warm_start = True
 
-            migrated_checkpoint = self.policy.load_compatible_state_dict(checkpoint["policy"])
+            policy_weights = checkpoint["policy"]
+            if semantic_state_warm_start:
+                # The old semantic encoder was trained against a different owner
+                # contract. Keep only unrelated policy weights; the new semantic
+                # branch starts from its neutral initialization.
+                policy_weights = {
+                    key: value for key, value in policy_weights.items()
+                    if not key.startswith(("semantic_id_embedding.", "semantic_encoder."))
+                }
+            migrated_checkpoint = self.policy.load_compatible_state_dict(policy_weights)
             print("⚠️ Checkpoint migrado; optimizer/scheduler serão reiniciados." if migrated_checkpoint
                   else "✅ Pesos da policy carregados.")
 
@@ -481,7 +511,7 @@ class Trainer:
 
         weights_only_warm_start = bool(
             checkpoint and (
-                legacy_checkpoint_lineage or training_contract_warm_start
+                legacy_checkpoint_lineage or semantic_state_warm_start or training_contract_warm_start
                 or legacy_action_mask_checkpoint or legacy_reward_checkpoint
                 or migrated_checkpoint
             )
@@ -517,7 +547,7 @@ class Trainer:
             resume_state_complete
             and not migrated_checkpoint and not legacy_action_mask_checkpoint
             and not legacy_reward_checkpoint and not legacy_checkpoint_lineage
-            and not training_contract_warm_start
+            and not semantic_state_warm_start and not training_contract_warm_start
         )
         if can_restore_optimizer:
             self.optimizer.load_state_dict(checkpoint["optimizer"])
@@ -559,7 +589,7 @@ class Trainer:
 
         if checkpoint:
             if (
-                legacy_checkpoint_lineage or training_contract_warm_start
+                legacy_checkpoint_lineage or semantic_state_warm_start or training_contract_warm_start
                 or legacy_action_mask_checkpoint or legacy_reward_checkpoint
                 or migrated_checkpoint
             ):
