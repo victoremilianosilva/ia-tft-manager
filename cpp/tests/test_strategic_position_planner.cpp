@@ -9,7 +9,7 @@ using namespace tft::composition_intelligence;
 namespace {
 StrategicPositionSnapshot snapshot() {
     StrategicPositionSnapshot s;
-    s.match_id = 11; s.player_id = 0; s.round = 8; s.sequence = 19;
+    s.match_id = 11; s.player_id = 0; s.round = 8; s.sequence = 19; s.lineup_sequence = 19;
     s.composition_id = "active-comp"; s.composition_version = 3; s.alive = true;
     s.board_ids.fill(-1); s.bench_ids.fill(-1);
     return s;
@@ -101,6 +101,7 @@ void audit_contains_identity_and_shadow_proposal() {
     s.masks.bench_to_board_target_masks[2 * decision::BOARD_SIZE + 7] = decision::MASK_ENABLED;
     const auto json = StrategicPositionPlanner{}.plan(s).to_json();
     assert(json["identity"]["sequence"] == 19);
+    assert(json["identity"]["lineup_sequence"] == 19);
     assert(json["target"]["slot"] == 7);
     assert(json["status"] == "positioning_proposal_available");
 }
