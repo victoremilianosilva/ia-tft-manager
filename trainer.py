@@ -596,6 +596,32 @@ class Trainer:
                 metadata["player_decision_sequence"] = player_sequence
                 metadata["lobby_index"] = lobby_idx
                 metadata["player_id"] = player_idx
+                envelopes = snapshot.get("player_identity_envelopes")
+                if not isinstance(envelopes, (list, tuple)) or len(envelopes) != players_per_lobby:
+                    raise RuntimeError(
+                        f"Lobby {lobby_idx} não forneceu envelopes canônicos para {players_per_lobby} jogadores."
+                    )
+                envelope = envelopes[player_idx]
+                if not isinstance(envelope, dict):
+                    raise RuntimeError(
+                        f"Envelope canônico inválido para lobby {lobby_idx}, jogador {player_idx}."
+                    )
+                expected_engine_match_id = f"{snapshot.get('engine_instance_id')}/episode/{snapshot.get('episode_id')}"
+                if (
+                    envelope.get("engine_match_id") != expected_engine_match_id
+                    or envelope.get("player_id") != f"player-{player_idx}"
+                    or envelope.get("decision_sequence") != {
+                        "namespace": "tft.engine.decision", "value": player_sequence,
+                    }
+                    or envelope.get("snapshot_sequence") != {
+                        "namespace": "tft.engine.observation-snapshot",
+                        "value": snapshot.get("decision_sequence"),
+                    }
+                ):
+                    raise RuntimeError(
+                        f"Envelope canônico diverge da identidade nativa para lobby {lobby_idx}, jogador {player_idx}."
+                    )
+                metadata["identity"] = copy.deepcopy(envelope)
                 expanded.append(metadata)
         return expanded
 
