@@ -162,6 +162,14 @@ void builder_emits_snapshot_bound_physical_candidates() {
         assert(candidate.evidence_uncertainty >= 0.0 &&
             candidate.evidence_uncertainty <= 1.0);
     }
+
+    auto stale_lineup = lineup;
+    stale_lineup.sequence = native.sequence - 1;
+    auto stale_native = native;
+    const auto rejected = StrategicActionCandidateBuilder{}.build(
+        context, active, priorities, stale_lineup, stale_native, costs);
+    assert(rejected.candidates.empty());
+    assert(rejected.status == "lineup_identity_or_sequence_mismatch");
 }
 
 void missing_cost_rejects_only_the_affected_candidate() {
