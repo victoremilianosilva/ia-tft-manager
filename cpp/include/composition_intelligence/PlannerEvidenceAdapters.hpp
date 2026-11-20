@@ -99,7 +99,7 @@ public:
   o.interest_available=c.evidence.interest_if_resolved_now;
   o.projected_income_available=c.evidence.projected_next_round_income;
   if (o.projected_income_available) {
-   o.projected_income_source = "EconomyEngine::get_round_gold:base_only";
+   o.projected_income_source = "EconomyEngine::get_base_round_gold:base_only";
    o.projected_income_horizon_rounds = 1;
    o.projected_income_uncertainty = 0.0;
   }
