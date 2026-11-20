@@ -772,12 +772,14 @@ def test_rollout_rejects_malformed_identity_field_types(field, invalid_value):
 
 def test_trainer_expands_native_state_snapshot_to_exact_player_rows():
     from trainer import Trainer
+    from decision_identity import build_player_identity_envelopes
 
     snapshot = {
         "engine_instance_id": "engine-A",
         "episode_id": 4,
         "decision_sequence": 9,
         "player_decision_sequences": [9] * 8,
+        "round": 1,
         "native_state_snapshot": {
             "engine_instance_id": "engine-A",
             "episode_id": 4,
@@ -794,6 +796,7 @@ def test_trainer_expands_native_state_snapshot_to_exact_player_rows():
             ],
         },
     }
+    snapshot["player_identity_envelopes"] = build_player_identity_envelopes(snapshot)
     rows = Trainer._expand_lobby_snapshot_metadata([snapshot], 8, "teste")
     assert len(rows) == 8
     assert [row["native_player_state"]["player_id"] for row in rows] == list(range(8))
