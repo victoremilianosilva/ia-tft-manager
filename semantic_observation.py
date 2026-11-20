@@ -140,6 +140,31 @@ def validate_semantic_state_checkpoint_integrity(manifest: Mapping) -> None:
         raise ValueError("semantic_state_contract hash is invalid")
 
 
+def validate_semantic_state_warm_start_migration(
+    manifest: Mapping, catalog_map: Mapping[str, int]
+) -> None:
+    """Allow only the reviewed strategic-owner v1-to-v2 provenance transition."""
+    validate_semantic_state_checkpoint_integrity(manifest)
+    expected = build_semantic_state_checkpoint_contract(catalog_map)
+    historical_payload = manifest.get("contract")
+    if not isinstance(historical_payload, Mapping):
+        raise TypeError("semantic_state_contract.contract must be a mapping")
+    historical_payload = dict(historical_payload)
+    historical_owner_source = historical_payload.get("strategic_owner_source")
+    if not isinstance(historical_owner_source, Mapping):
+        raise ValueError("historical semantic contract has no strategic owner source")
+    historical_owner_source = dict(historical_owner_source)
+    if historical_owner_source.get("contract_version") != 1:
+        raise ValueError("only strategic-owner contract v1-to-v2 warm-start is approved")
+    historical_owner_source["contract_version"] = 2
+    historical_payload["strategic_owner_source"] = historical_owner_source
+    if historical_payload != expected["contract"]:
+        raise ValueError(
+            "semantic warm-start is limited to owner provenance v1-to-v2; "
+            "catalog, layout, normalization or other contract drift is not migratable"
+        )
+
+
 def validate_semantic_state_checkpoint_contract(manifest: Mapping, catalog_map: Mapping[str, int]) -> None:
     validate_semantic_state_checkpoint_integrity(manifest)
     expected = build_semantic_state_checkpoint_contract(catalog_map)
