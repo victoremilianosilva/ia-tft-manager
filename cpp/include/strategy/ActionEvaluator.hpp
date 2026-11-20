@@ -100,8 +100,10 @@ public:
                     break;
                 case EconomicPosture::PreserveWinStreak:
                 case EconomicPosture::PreserveLossStreak:
-                    if (candidate.kind == StrategicActionKind::BuyUnit ||
-                        candidate.kind == StrategicActionKind::DeployOrMove)
+                    if (candidate.kind == StrategicActionKind::Hold)
+                        breakdown.posture_component = 0.12;
+                    else if (candidate.kind == StrategicActionKind::BuyUnit ||
+                             candidate.kind == StrategicActionKind::DeployOrMove)
                         breakdown.posture_component = board_gain > 0.20 ? 0.18 : -0.08;
                     break;
                 case EconomicPosture::InvestExperience:
