@@ -12,6 +12,10 @@ StrategicPositionSnapshot snapshot() {
     s.match_id = 11; s.player_id = 0; s.round = 8; s.sequence = 19; s.lineup_sequence = 19;
     s.composition_id = "active-comp"; s.composition_version = 3; s.alive = true;
     s.board_ids.fill(-1); s.bench_ids.fill(-1);
+    for (std::size_t i = 0; i < s.board_unit_uuids.size(); ++i)
+        s.board_unit_uuids[i] = "board-" + std::to_string(i);
+    for (std::size_t i = 0; i < s.bench_unit_uuids.size(); ++i)
+        s.bench_unit_uuids[i] = "bench-" + std::to_string(i);
     return s;
 }
 
@@ -28,6 +32,7 @@ void deploy_from_bench_uses_exact_conditioned_mask_and_role() {
     assert(proposal.champion_id == 77);
     assert(proposal.source_zone == StrategicPositionZone::Bench);
     assert(proposal.source_slot == 2);
+    assert(proposal.source_unit_uuid == "bench-2");
     assert(proposal.target_board_slot == 7);
     assert(proposal.reason.find("frontline_role_fit") != std::string::npos);
 }
@@ -45,6 +50,7 @@ void board_reposition_requires_improved_role_fit_and_exact_mask() {
     assert(proposal.available());
     assert(proposal.source_zone == StrategicPositionZone::Board);
     assert(proposal.source_slot == 0);
+    assert(proposal.source_unit_uuid == "board-0");
     assert(proposal.target_board_slot == 21);
     assert(proposal.improvement > 1.0);
     assert(proposal.reason.find("carry_backline_and_protection_fit") != std::string::npos);
@@ -110,6 +116,7 @@ void audit_contains_identity_and_shadow_proposal() {
     const auto json = StrategicPositionPlanner{}.plan(s).to_json();
     assert(json["identity"]["sequence"] == 19);
     assert(json["identity"]["lineup_sequence"] == 19);
+    assert(json["source"]["unit_uuid"] == "bench-2");
     assert(json["target"]["slot"] == 7);
     assert(json["status"] == "positioning_proposal_available");
 }
