@@ -17,6 +17,19 @@ struct LineupSlot {
     bool currently_on_board{false};
     bool owned{false};
 };
+struct LineupTargetEntry {
+    std::int32_t champion_id{-1};
+    std::string availability{"priority_missing"};
+    std::int32_t copies_owned{0};
+    std::int32_t copies_in_shop{0};
+    std::int32_t affordable_shop_copies{0};
+    std::int32_t pool_remaining{-1};
+    bool pool_known{false};
+    bool owned{false};
+    bool selected{false};
+    bool deferred{true};
+    std::string deferred_reason;
+};
 struct LineupPlannerContext {
     std::uint32_t level{1};
     std::uint32_t board_capacity{0};
@@ -37,6 +50,7 @@ struct LineupPlan {
     std::uint32_t board_capacity{0};
     std::vector<std::int32_t> endgame_target_ids;
     std::vector<LineupSlot> selected_board;
+    std::vector<LineupTargetEntry> target_states;
     std::vector<std::int32_t> entries;
     std::vector<std::int32_t> exits;
     std::vector<std::int32_t> deferred_target_ids;
@@ -107,11 +121,37 @@ public:
             out.endgame_target_ids.push_back(target_unit.champion_id);
             target_ids.insert(target_unit.champion_id);
             const auto found = by_id.find(target_unit.champion_id);
-            if (found == by_id.end() || found->second->copies_owned <= 0) {
+            LineupTargetEntry target_state;
+            target_state.champion_id = target_unit.champion_id;
+            if (found == by_id.end()) {
+                target_state.deferred_reason = "unit_priority_missing";
+                out.target_states.push_back(std::move(target_state));
                 out.deferred_target_ids.push_back(target_unit.champion_id);
                 continue;
             }
             const auto& p = *found->second;
+            target_state.copies_owned = std::max(0, p.copies_owned);
+            target_state.copies_in_shop = std::max(0, p.copies_in_shop);
+            target_state.affordable_shop_copies = std::max(0, p.affordable_shop_copies);
+            target_state.pool_known = p.pool_known;
+            target_state.pool_remaining = p.pool_known ? p.pool_remaining : -1;
+            target_state.owned = p.copies_owned > 0;
+            if (target_state.owned) {
+                target_state.availability = p.on_board ? "owned_on_board" : "owned_on_bench";
+            } else if (p.copies_in_shop > 0) {
+                target_state.availability = "missing_in_shop";
+            } else if (p.pool_known && p.pool_remaining == 0) {
+                target_state.availability = "pool_exhausted";
+            } else if (p.pool_known) {
+                target_state.availability = "available_in_pool";
+            } else {
+                target_state.availability = "pool_unknown";
+            }
+            out.target_states.push_back(std::move(target_state));
+            if (p.copies_owned <= 0) {
+                out.deferred_target_ids.push_back(target_unit.champion_id);
+                continue;
+            }
             const auto role_gap_priority = out.board_evidence_available &&
                 ((target_unit.role == UnitRole::Frontline && out.observed_missing_frontline_count > 0) ||
                  (target_unit.role == UnitRole::MainCarry &&
@@ -149,7 +189,15 @@ public:
             if (slot.kind == LineupSlotKind::Bridge) out.bridge_ids.push_back(slot.champion_id);
         }
         // A target can be owned yet still deferred when the current capacity
-        // cannot fit it. Keep that distinct from the complete endgame target.
+        // cannot fit it. Keep that distinct from a missing target or unavailable pool.
+        for (auto& target_state : out.target_states) {
+            target_state.selected = selected.count(target_state.champion_id) != 0;
+            target_state.deferred = !target_state.selected;
+            if (target_state.deferred && target_state.deferred_reason.empty()) {
+                target_state.deferred_reason = target_state.owned
+                    ? "board_capacity" : "target_not_owned";
+            }
+        }
         for (const auto id : out.endgame_target_ids)
             if (!selected.count(id)) out.deferred_target_ids.push_back(id);
         std::sort(out.deferred_target_ids.begin(), out.deferred_target_ids.end());
