@@ -201,6 +201,15 @@ void explicit_sale_credit_is_not_discarded_as_a_positive_cost() {
     sale.direct_gold_cost = -3.0;
     sale.source_slot = 1;
     sale.source_is_bench = true;
+    sale.marginal_economy_evidence_available = true;
+    sale.marginal_gold_before = 0;
+    sale.marginal_gold_after = 3;
+    sale.marginal_interest_before = 0;
+    sale.marginal_interest_after = 0;
+    sale.marginal_interest_delta = 0;
+    sale.marginal_cost_source = "native_gold+EconomyEngine::get_interest";
+    sale.marginal_cost_horizon_rounds = 1;
+    sale.marginal_cost_uncertainty = 0.0;
     auto hold = candidate(StrategicActionKind::Hold);
     context.action_candidates = {sale, hold};
     const auto result = ContextualActionEvaluator{}.evaluate(
@@ -210,6 +219,25 @@ void explicit_sale_credit_is_not_discarded_as_a_positive_cost() {
     assert(result.candidates[0].eligible);
     assert(result.candidates[0].economy_cost < 0.0);
     assert(result.recommended_action == StrategicActionKind::SellUnit);
+}
+
+void unproduced_opportunity_cost_is_not_consumed() {
+    StrategicSharedContext context;
+    context.alive = true; context.gold = 10; context.player_id = 0; context.round = 8;
+    auto without_prior = candidate(StrategicActionKind::BuyUnit, 20);
+    without_prior.expected_board_delta = 0.8;
+    auto with_unproduced_prior = without_prior;
+    with_unproduced_prior.opportunity_cost = 1000.0;
+    context.action_candidates = {without_prior, candidate(StrategicActionKind::Hold)};
+    const auto baseline = ContextualActionEvaluator{}.evaluate(
+        active(), priorities(), lineup(), context, nullptr, 77);
+    context.action_candidates = {with_unproduced_prior, candidate(StrategicActionKind::Hold)};
+    const auto changed = ContextualActionEvaluator{}.evaluate(
+        active(), priorities(), lineup(), context, nullptr, 77);
+    assert(baseline.candidates.size() == changed.candidates.size());
+    assert(baseline.candidates[0].economy_cost == changed.candidates[0].economy_cost);
+    assert(baseline.candidates[0].total_score == changed.candidates[0].total_score);
+    assert(!changed.candidates[0].marginal_economy_evidence_available);
 }
 
 void validated_survival_and_streak_evidence_adjust_board_improvement_value() {
@@ -315,6 +343,7 @@ int main() {
     contextual_sell_rejects_pairs_and_existing_star_progress();
     explicit_hold_is_selected_when_all_actions_score_below_zero();
     explicit_sale_credit_is_not_discarded_as_a_positive_cost();
+    unproduced_opportunity_cost_is_not_consumed();
     validated_survival_and_streak_evidence_adjust_board_improvement_value();
     empty_candidate_set_is_not_a_hold_recommendation();
     ineligible_candidates_do_not_fall_back_to_implicit_hold();
