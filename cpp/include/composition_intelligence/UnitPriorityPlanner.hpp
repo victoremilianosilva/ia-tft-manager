@@ -325,7 +325,8 @@ private:
         out.champion_id = target.champion_id;
         out.intent = UnitIntent::Seek;
         out.relation = UnitStrategicRelation::MissingTarget;
-        out.priority = target.priority;
+        out.tier = priority_tier(target, ev);
+        out.priority = tier_base(out.tier) + std::clamp(target.priority, 0, 49);
         out.target_unit = true;
         if (ev) {
             out.copies_in_shop = std::max(0, ev->copies_in_shop);
