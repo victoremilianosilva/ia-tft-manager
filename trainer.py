@@ -1539,7 +1539,8 @@ class Trainer:
                         self.semantic_state_contract["sha256"]
                     )
                 validate_semantic_batch_alignment(
-                    semantic_batch, flat_snapshot_metadata, self.semantic_state_contract
+                    semantic_batch, flat_snapshot_metadata, self.semantic_state_contract,
+                    self.champion_id_map,
                 )
                 semantic_entities = np.asarray(
                     semantic_batch["numeric"], dtype=np.float32
@@ -1764,7 +1765,8 @@ class Trainer:
                         self.semantic_state_contract["sha256"]
                     )
                 validate_semantic_batch_alignment(
-                    next_semantic_batch, flat_next_snapshot_metadata, self.semantic_state_contract
+                    next_semantic_batch, flat_next_snapshot_metadata, self.semantic_state_contract,
+                    self.champion_id_map,
                 )
 
                 # Resultado final, colocação e duração de cada partida.
