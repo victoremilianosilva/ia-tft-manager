@@ -3317,9 +3317,9 @@ struct TFTEngine::Impl {
                 candidate.champion_key = definition->api_name;
                 candidate.cost = definition->cost;
                 candidate.star = unit.star;
-                const auto copies = copies_by_unit.find(definition->internal_id);
-                candidate.copies_owned = copies == copies_by_unit.end()
-                    ? 0 : copies->second;
+                const auto copies = strategic_native_owned.find(definition->internal_id);
+                candidate.copies_owned = copies == strategic_native_owned.end()
+                    ? 0 : copies->second.copies;
                 const auto physical_tiers = physical_star_counts_by_unit.find(definition->internal_id);
                 if (physical_tiers != physical_star_counts_by_unit.end())
                     candidate.copies_by_star = physical_tiers->second;
@@ -4189,8 +4189,10 @@ struct TFTEngine::Impl {
                                 auto& unit = discovery_units[definition->internal_id];
                                 unit.champion_id = definition->internal_id;
                                 unit.cost = definition->cost;
-                                unit.copies_owned = copies_by_unit.count(definition->internal_id)
-                                    ? copies_by_unit.at(definition->internal_id) : 0;
+                                const auto owned_native =
+                                    strategic_native_owned.find(definition->internal_id);
+                                unit.copies_owned = owned_native != strategic_native_owned.end()
+                                    ? owned_native->second.copies : 0;
                                 unit.in_shop = true;
                                 unit.traits = definition->traits;
                                 unit.carry_potential = definition->combat_profile.is_carry;
@@ -4229,9 +4231,9 @@ struct TFTEngine::Impl {
                                     continue;
                                 std::size_t support_count = 0;
                                 for (const auto& target : candidate.units) {
-                                    const auto owned = copies_by_unit.find(target.champion_id);
-                                    const bool owned_unit = owned != copies_by_unit.end() &&
-                                        owned->second > 0;
+                                    const auto owned = strategic_native_owned.find(target.champion_id);
+                                    const bool owned_unit = owned != strategic_native_owned.end() &&
+                                        owned->second.copies > 0;
                                     bool shop_unit = false;
                                     if (strategic_shop) {
                                         for (const auto& offer : strategic_shop->offers())
