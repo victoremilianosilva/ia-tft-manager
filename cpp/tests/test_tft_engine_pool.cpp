@@ -1315,8 +1315,23 @@ int main(int argc, char** argv) {
                     "Nao foi possivel avancar evidencia consecutiva do pivot nativo.");
         }
         native_pivot_snapshot = native_pivot_engine.get_audit_snapshot();
-        require(native_pivot_snapshot.players[0].strategic_state.active_composition_valid &&
-                    native_pivot_snapshot.players[0].strategic_state.active_composition_version == 2,
+        const auto& native_pivot_state =
+            native_pivot_snapshot.players[0].strategic_state;
+        if (!native_pivot_state.active_composition_valid ||
+            native_pivot_state.active_composition_version != 2) {
+            std::cerr << "Native pivot debug: active_valid="
+                      << native_pivot_state.active_composition_valid
+                      << " active_version=" << native_pivot_state.active_composition_version
+                      << " direction_valid=" << native_pivot_state.direction_valid
+                      << " direction=" << native_pivot_state.direction_identity
+                      << " pivot_valid=" << native_pivot_state.pivot_candidate_valid
+                      << " pivot=" << native_pivot_state.pivot_candidate_identity
+                      << " target=" << native_pivot_state.pivot_target_composition_identity
+                      << " source_version=" << native_pivot_state.pivot_source_composition_version
+                      << '\\n';
+        }
+        require(native_pivot_state.active_composition_valid &&
+                    native_pivot_state.active_composition_version == 2,
                 "Pivot gerado pelo engine nao confirmou e publicou a nova composicao.");
         require(native_pivot_snapshot.players[0].strategic_state.direction_valid &&
                     native_pivot_snapshot.players[0].strategic_state.pivot_candidate_valid == false,
