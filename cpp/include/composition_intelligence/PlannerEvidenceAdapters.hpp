@@ -34,6 +34,10 @@ struct EconomicPlannerEvidence {
  std::vector<std::string> evidence_invalid;
  bool win_streak_available{false},loss_streak_available{false};
  bool board_pressure_available{false},economy_pressure_available{false};
+ // Per-field provenance; projected income is the deterministic base-gold component only.
+ std::string projected_income_source{"unavailable"};
+ std::uint32_t projected_income_horizon_rounds{0};
+ double projected_income_uncertainty{1.0};
 };
 struct BoardPlannerEvidence {
  EvidenceSourceMetadata metadata;
@@ -94,6 +98,11 @@ public:
   o.xp_available=c.evidence.xp;o.xp_to_next_available=c.evidence.xp_to_next;
   o.interest_available=c.evidence.interest_if_resolved_now;
   o.projected_income_available=c.evidence.projected_next_round_income;
+  if (o.projected_income_available) {
+   o.projected_income_source = "EconomyEngine::get_round_gold:base_only";
+   o.projected_income_horizon_rounds = 1;
+   o.projected_income_uncertainty = 0.0;
+  }
   o.incoming_damage_available=c.evidence.estimated_incoming_damage;
   o.elimination_risk_available=c.evidence.elimination_risk;
   o.progression_available=c.evidence.progression_plan;
