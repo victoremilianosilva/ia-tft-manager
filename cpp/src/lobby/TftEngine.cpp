@@ -2989,10 +2989,9 @@ struct TFTEngine::Impl {
         const bool shadow_evaluation_completed =
             composition_intelligence::run_shadow_isolated([&]() {
         {
-            // Strategic Planner shadow evaluation. It reads the same live board,
-            // shop, item and composition data but only writes audit diagnostics.
-            // The existing composition direction, planned lineup, PPO observations,
-            // masks, rewards and executed actions remain authoritative and unchanged.
+            // Native strategic planners consume the canonical active composition
+            // and publish same-version priorities/lineup for engine consumers.
+            // PPO observations, masks, rewards and executed actions remain unchanged.
             strategy::StrategicSharedContext strategic_context;
             strategic_context.player_id = static_cast<std::int32_t>(i);
             strategic_context.round = static_cast<std::uint32_t>(current_round);
