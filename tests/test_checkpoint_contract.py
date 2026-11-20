@@ -7,6 +7,7 @@ from checkpoint_contract import (
     CHECKPOINT_LINEAGE_ID,
     build_checkpoint_lineage_contract,
     validate_checkpoint_lineage_contract,
+    validate_checkpoint_lineage_integrity,
     build_training_resume_contract,
     validate_training_resume_contract,
 )
