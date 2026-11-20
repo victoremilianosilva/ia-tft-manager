@@ -52,6 +52,14 @@ public:
             out.status = "active_composition_identity_mismatch";
             return out;
         }
+        if (active && (lineup.stale || lineup.match_id != native.match_id ||
+            lineup.player_id != native.player_id || lineup.round != native.round ||
+            lineup.sequence == 0 || lineup.sequence != native.sequence ||
+            lineup.composition_id != native.composition_id ||
+            lineup.composition_version != native.composition_version)) {
+            out.status = "lineup_identity_or_sequence_mismatch";
+            return out;
+        }
         const auto type_enabled = [&](decision::ActionType type) {
             return native.masks.type_mask[static_cast<std::size_t>(type)] == decision::MASK_ENABLED;
         };
@@ -295,6 +303,7 @@ public:
                 snapshot.player_id = native.player_id;
                 snapshot.round = native.round;
                 snapshot.sequence = native.sequence;
+                snapshot.lineup_sequence = lineup.sequence;
                 snapshot.composition_id = native.composition_id;
                 snapshot.composition_version = native.composition_version;
                 snapshot.alive = native.alive;
