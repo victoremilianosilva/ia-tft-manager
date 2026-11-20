@@ -1497,9 +1497,10 @@ class Trainer:
                     "identities": semantic_batch["identities"],
                     "hashes": semantic_batch["hashes"],
                 }
-                for metadata, semantic_hash in zip(
-                    flat_snapshot_metadata, semantic_batch["hashes"]
+                for metadata, semantic_hash, semantic_identity in zip(
+                    flat_snapshot_metadata, semantic_batch["hashes"], semantic_batch["identities"]
                 ):
+                    metadata["semantic_identity"] = semantic_identity
                     metadata["semantic_projection_hash"] = semantic_hash
                     metadata["semantic_projection_contract_id"] = (
                         self.semantic_state_contract["contract"]["contract_id"]
@@ -1721,9 +1722,10 @@ class Trainer:
                     "identities": next_semantic_batch["identities"],
                     "hashes": next_semantic_batch["hashes"],
                 }
-                for metadata, semantic_hash in zip(
-                    flat_next_snapshot_metadata, next_semantic_batch["hashes"]
+                for metadata, semantic_hash, semantic_identity in zip(
+                    flat_next_snapshot_metadata, next_semantic_batch["hashes"], next_semantic_batch["identities"]
                 ):
+                    metadata["semantic_identity"] = semantic_identity
                     metadata["semantic_projection_hash"] = semantic_hash
                     metadata["semantic_projection_contract_id"] = (
                         self.semantic_state_contract["contract"]["contract_id"]
