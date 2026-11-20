@@ -328,6 +328,7 @@ private:
         out.intent = UnitIntent::Seek;
         out.relation = UnitStrategicRelation::MissingTarget;
         out.target_unit = true;
+        out.copies_needed_for_pair = 2;
         if (ev) {
             out.copies_in_shop = std::max(0, ev->copies_in_shop);
             out.pool_known = ev->pool_remaining >= 0;
