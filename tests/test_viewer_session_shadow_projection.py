@@ -258,7 +258,7 @@ def test_viewer_accepts_diagnostic_only_when_round_sequence_and_composition_matc
     session.lobby = NativeLobby()
     player = session._refresh_audit_snapshot()["players"][0]
 
-    assert player["shadow_composition"]["stale"] is not True
+    assert player["shadow_composition"].get("stale") is not True
     assert player["shadow_composition"]["composition_version"] == 3
 
 

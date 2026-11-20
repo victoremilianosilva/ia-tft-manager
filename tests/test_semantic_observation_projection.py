@@ -46,11 +46,12 @@ def _metadata():
     player["bench"][0] = _unit(True, "TFT_TestChampion", 1, 3)
     player["strategic_state"] = {
         "contract_id": "tft.strategic-owner-observation",
-        "contract_version": 1,
+        "contract_version": 2,
         "source_namespace": "tft.engine.strategic-owners",
         "producer": "TFTEngine::get_audit_snapshot",
         "episode_id": 5,
         "player_decision_sequence": 7,
+        "strategic_context_sequence": 5,
         "player_id": 2,
         "round": 12,
         "active_composition_valid": True,
@@ -202,3 +203,10 @@ def test_semantic_projection_and_trainer_do_not_query_legacy_strategy_api():
         Path(__file__).resolve().parents[1] / "trainer.py"
     ).read_text(encoding="utf-8")
     assert 'env_method(\n                        "get_strategies"' not in trainer_source
+
+
+def test_semantic_projection_rejects_invalid_strategic_context_sequence():
+    row = _metadata()
+    row["native_player_state"]["strategic_state"]["strategic_context_sequence"] = True
+    with pytest.raises(ValueError, match="strategic_context_sequence"):
+        project_native_player_state(row, {"TFT_TestChampion": 17})

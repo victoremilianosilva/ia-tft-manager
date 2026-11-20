@@ -14,6 +14,8 @@ from viewer.main import PlayerCard, ViewerWindow
 
 
 class _IconLoader:
+    catalog = []
+
     def profile_for(self, _champion_id):
         return {}
 
@@ -77,10 +79,12 @@ def test_player_card_renders_native_projection_without_strategy_info(qt_app):
     assert "viewer-native-comp v4" in card.strategy_line.text()
     assert card.composition_button.isHidden() is False
     assert card.composition_button.isEnabled() is True
-    card.close()
+    card.deleteLater()
+    qt_app.processEvents()
 
 
-def test_composition_dialog_uses_native_lineup_without_strategy_info(qt_app):
+def test_composition_dialog_uses_native_lineup_without_strategy_info(qt_app, monkeypatch):
+    monkeypatch.setattr("viewer.main.ChampionIconLoader", _IconLoader)
     window = ViewerWindow()
     try:
         audit = _player_snapshot()
@@ -96,8 +100,12 @@ def test_composition_dialog_uses_native_lineup_without_strategy_info(qt_app):
         assert any("viewer-native-comp v4" in text for text in labels)
         assert any("Unidades planejadas: 1" in text for text in labels)
         dialog.close()
+        dialog.deleteLater()
+        qt_app.processEvents()
     finally:
         window.close()
+        window.deleteLater()
+        qt_app.processEvents()
 
 
 def test_stale_native_projection_hides_card_action_and_blocks_dialog(qt_app, monkeypatch):
@@ -113,8 +121,10 @@ def test_stale_native_projection_hides_card_action_and_blocks_dialog(qt_app, mon
     )
     assert card.composition_button.isHidden() is True
     assert "EVIDÊNCIA OBSOLETA" in card.strategy_line.text()
-    card.close()
+    card.deleteLater()
+    qt_app.processEvents()
 
+    monkeypatch.setattr("viewer.main.ChampionIconLoader", _IconLoader)
     window = ViewerWindow()
     messages = []
     monkeypatch.setattr(QMessageBox, "information", lambda *args: messages.append(args[2]))
@@ -126,3 +136,5 @@ def test_stale_native_projection_hides_card_action_and_blocks_dialog(qt_app, mon
         assert getattr(window, "_composition_dialog", None) is None
     finally:
         window.close()
+        window.deleteLater()
+        qt_app.processEvents()
