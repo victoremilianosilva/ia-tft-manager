@@ -199,3 +199,31 @@ The contextual evaluator revalidates the source, horizon, current gold, post-act
 ### 11.5 Remaining boundary
 
 This PR does not invent expected next-round income, incoming damage, elimination risk, progression hypotheses or shop opportunity value. Those fields remain explicitly unavailable until an authoritative producer and horizon/calibration contract exist. Therefore #282 remains open for those producers and for replay validation of contradictory/incomplete scenarios. The current implementation completes exact same-snapshot marginal cash/interest accounting and prevents unsupported values from influencing the evaluator; it does not claim the missing predictive models are solved.
+
+
+## 11. Runtime integration update — contextual marginal economy (2026-11-20)
+
+**Prior problem:** the contextual evaluator consumed validated survival and streak evidence, but its economic score treated direct spend with a fixed per-gold coefficient. It did not expose the liquidity impact of the same spend relative to the player's observed starting balance, and the EconomicController posture/evidence coverage was not carried into the contextual diagnostic result.
+
+**Technical rationale:** an action must be compared with HOLD from the same player/round snapshot. The immediate gold delta and signed deterministic interest delta (loss or gain) are separate, auditable consequences. Normalizing the principal delta by observed starting liquidity makes the marginal impact contextual without inventing projected income or treating a posture label as an action rule.
+
+**New responsibility:** `ContextualActionEvaluator` owns the final contextual consumption and serialization of candidate-level economic evidence. `EconomicController` remains the owner of posture and its supporting/missing evidence. `StrategicActionCandidateBuilder` remains the producer of concrete candidate costs and same-snapshot marginal gold/interest facts.
+
+**Contract and invariants:**
+- Candidate cost provenance, horizon, and uncertainty are copied into the contextual score.
+- Marginal gold and interest are accepted only when the same-snapshot gold field is explicitly available and the exact `EconomyEngine::get_interest` calculation validates.
+- BUY, BUY_XP, REROLL, and SELL candidates are not scored as free when gold or their marginal economy evidence is unavailable; they are marked ineligible with an explicit reason. HOLD remains the explicit neutral reference, not a measured future opportunity value.
+- Liquidity impact is computed from `(gold_before - gold_after) / max(1, gold_before)` and is a relative measure of the observed principal delta, not a projection.
+- Current score weights are `0.18` for normalized liquidity impact and `0.12` per gold of exact lost interest. They are heuristic ranking weights, not thresholds or calibrated probabilities; they do not gate action legality.
+- The contextual score uses the liquidity impact and exact signed interest delta once each, preserving verified interest gains as well as losses; it does not additionally consume an unproduced generic `opportunity_cost`.
+- Generic opportunity cost remains explicitly unavailable until a producer can supply its own source, horizon, and uncertainty without duplicating principal or interest.
+- Economic posture and reason are serialized as explanatory context. They do not force BUY, XP, REROLL, SELL, or HOLD and do not independently add a posture bonus.
+- Controller confidence (explicitly not a probability), survival pressure, board pressure, economy pressure, and used/missing evidence are preserved with per-signal availability in the contextual output. Only validated survival pressure and streak currently change candidate scoring; board/economy pressure remain explanatory to avoid double counting.
+- Controller `economy_pressure` is retained as diagnostic context only; the contextual score uses the candidate's exact marginal liquidity delta instead, avoiding a second gold-pressure term.
+- Projected next-round income, incoming damage, elimination risk, and progression remain unavailable unless their dedicated producers are validated. Their numeric struct defaults are never promoted to evidence.
+- Survival pressure and streak evidence continue to affect only evidenced board improvements when their source envelope and per-field availability are valid.
+- The evaluator remains Shadow/read-only; PPO, rewards, observations, masks, action execution, and training are unchanged.
+
+**Impacts:** contextual evaluation schema advances to v3 with additive economic provenance, availability, liquidity, and posture fields. No PPO or reward schema changes.
+
+**Validation:** tests compare identical spend against HOLD at different observed liquidity levels; verify exact signed interest deltas, including sale proceeds that cross an interest breakpoint; prove that missing gold availability disables marginal scoring despite populated numeric fields; verify posture changes are diagnostic rather than action-family rules; and assert unproduced projections/opportunity costs remain unavailable.
