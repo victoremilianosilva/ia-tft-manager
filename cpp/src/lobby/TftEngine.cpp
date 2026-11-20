@@ -226,7 +226,7 @@ double unit_composition_score(
 ) {
     // Compatibility reward adapter over the canonical UnitPriorityPlanner output.
     // It does not rebuild composition fit from StrategyInfo, traits or planned_units.
-    if (priorities.stale) return 0.0;
+    if (priorities.stale || priorities.units.empty()) return 0.0;
     const auto found = std::find_if(priorities.units.begin(), priorities.units.end(),
         [&](const auto& unit) { return unit.champion_id == champion_id; });
     if (found == priorities.units.end()) return -1.2;
