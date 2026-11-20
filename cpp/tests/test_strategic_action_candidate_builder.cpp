@@ -1,4 +1,6 @@
 #include "composition_intelligence/StrategicActionCandidateBuilder.hpp"
+#include "composition_intelligence/ContextualActionEvaluator.hpp"
+#include "composition_intelligence/StrategicActionExecutor.hpp"
 
 #include <cassert>
 #include <iostream>
