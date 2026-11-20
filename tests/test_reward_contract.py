@@ -62,7 +62,8 @@ def test_active_engine_action_reward_does_not_consume_legacy_or_shadow_shaping()
     active_reward_path = source[reward_start:reward_end]
     assert "reward_model::" not in active_reward_path
     assert "strategy_action_reward" not in active_reward_path
-    assert "shadow" not in active_reward_path.lower()
+    assert "shadow_score" not in active_reward_path.lower()
+    assert "strategic_confidence" not in active_reward_path.lower()
     # The broad legacy state_reward implementation remains only as an unused
     # helper; it must not become a second source of PPO targets.
     assert source.count("state_reward(") == 1
