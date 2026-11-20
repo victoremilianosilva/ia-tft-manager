@@ -58,7 +58,6 @@ from semantic_observation import (
     build_semantic_state_checkpoint_contract,
     catalog_identity,
     validate_semantic_state_checkpoint_contract,
-    validate_semantic_state_checkpoint_integrity,
     validate_semantic_state_warm_start_migration,
     validate_semantic_batch_alignment,
 )
