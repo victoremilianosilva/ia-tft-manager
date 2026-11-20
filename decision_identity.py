@@ -10,6 +10,8 @@ import hashlib
 import json
 from typing import Any, Mapping
 
+MAX_SAFE_JSON_INTEGER = (1 << 53) - 1
+
 IDENTITY_VERSION = "tft.decision-identity.v2"
 DECISION_NAMESPACE = "tft.engine.decision"
 SNAPSHOT_NAMESPACE = "tft.engine.observation-snapshot"
@@ -47,7 +49,7 @@ def build_player_identity_envelopes(metadata: Mapping[str, Any]) -> list[dict[st
     if not isinstance(engine_instance_id, str) or not engine_instance_id.strip():
         raise ValueError("engine_instance_id nativo ausente ou inválido")
     for name, value in (("episode_id", episode_id), ("decision_sequence", snapshot_sequence), ("round", round_number)):
-        if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+        if isinstance(value, bool) or not isinstance(value, int) or not 0 <= value <= MAX_SAFE_JSON_INTEGER:
             raise ValueError(f"{name} deve ser inteiro não negativo")
     if not isinstance(player_sequences, (list, tuple)) or len(player_sequences) != 8:
         raise ValueError("player_decision_sequences deve conter oito contadores")
@@ -56,7 +58,7 @@ def build_player_identity_envelopes(metadata: Mapping[str, Any]) -> list[dict[st
     snapshot_ref = {"namespace": SNAPSHOT_NAMESPACE, "value": snapshot_sequence}
     envelopes = []
     for player_id, decision_sequence in enumerate(player_sequences):
-        if isinstance(decision_sequence, bool) or not isinstance(decision_sequence, int) or decision_sequence < 0:
+        if isinstance(decision_sequence, bool) or not isinstance(decision_sequence, int) or not 0 <= decision_sequence <= MAX_SAFE_JSON_INTEGER:
             raise ValueError(f"player_decision_sequences[{player_id}] deve ser inteiro não negativo")
         decision_ref = {"namespace": DECISION_NAMESPACE, "value": decision_sequence}
         hash_payload = {
