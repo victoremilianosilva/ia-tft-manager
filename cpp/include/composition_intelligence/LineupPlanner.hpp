@@ -194,8 +194,16 @@ public:
             target_state.selected = selected.count(target_state.champion_id) != 0;
             target_state.deferred = !target_state.selected;
             if (target_state.deferred && target_state.deferred_reason.empty()) {
-                target_state.deferred_reason = target_state.owned
-                    ? "board_capacity" : "target_not_owned";
+                if (target_state.owned) target_state.deferred_reason = "board_capacity";
+                else if (target_state.availability == "missing_in_shop")
+                    target_state.deferred_reason = "target_available_in_shop";
+                else if (target_state.availability == "pool_exhausted")
+                    target_state.deferred_reason = "pool_exhausted";
+                else if (target_state.availability == "available_in_pool")
+                    target_state.deferred_reason = "target_available_in_pool";
+                else if (target_state.availability == "pool_unknown")
+                    target_state.deferred_reason = "pool_availability_unknown";
+                else target_state.deferred_reason = "target_not_owned";
             }
         }
         for (const auto id : out.endgame_target_ids)
