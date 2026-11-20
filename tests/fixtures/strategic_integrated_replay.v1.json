@@ -9,6 +9,7 @@
     "stale_same_round",
     "pivot_invalidates_old_recommendation",
     "contradictory_evidence",
+    "contradictory_economic_evidence",
     "no_candidates",
     "executor_reset"
   ]

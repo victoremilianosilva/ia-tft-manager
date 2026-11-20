@@ -275,6 +275,40 @@ std::vector<json> run_replay() {
         {"candidates", contradiction.candidates.size()}
     });
 
+    auto inconsistent_context = buy.source;
+    inconsistent_context.evidence.interest_if_resolved_now = true;
+    inconsistent_context.interest_if_resolved_now = 99;
+    EconomicControlDecision economic_decision;
+    economic_decision.shadow_only = true;
+    const auto rejected_economy = PlannerEvidenceAdapters::economic(
+        inconsistent_context, economic_decision,
+        inconsistent_context.round, inconsistent_context.player_id);
+    assert(!rejected_economy.metadata.available);
+    assert(rejected_economy.metadata.reason == "interest_gold_inconsistency");
+    PlannerEvidenceSnapshot contradictory_economy;
+    contradictory_economy.match_id = f.native.match_id;
+    contradictory_economy.player_id = f.native.player_id;
+    contradictory_economy.composition_id = f.native.composition_id;
+    contradictory_economy.composition_version = f.native.composition_version;
+    contradictory_economy.round = f.native.round;
+    contradictory_economy.economy = rejected_economy;
+    const auto economic_contradiction = ContextualActionEvaluator{}.evaluate(
+        f.active, f.priorities, f.lineup, buy.source,
+        &contradictory_economy, f.native.match_id);
+    assert(!economic_contradiction.stale);
+    assert(!economic_contradiction.economy_evidence_consumed);
+    assert(std::any_of(economic_contradiction.evidence_rejected.begin(),
+        economic_contradiction.evidence_rejected.end(), [](const auto& item) {
+            return item.find("interest_gold_inconsistency") != std::string::npos;
+        }));
+    records.push_back({
+        {"scenario", "contradictory_economic_evidence"},
+        {"stale", economic_contradiction.stale},
+        {"economy_evidence_consumed", economic_contradiction.economy_evidence_consumed},
+        {"evidence_rejected", economic_contradiction.evidence_rejected},
+        {"recommendation", static_cast<int>(economic_contradiction.recommended_action)}
+    });
+
     auto empty_source = f.context;
     empty_source.action_candidates.clear();
     const auto no_candidates = ContextualActionEvaluator{}.evaluate(
