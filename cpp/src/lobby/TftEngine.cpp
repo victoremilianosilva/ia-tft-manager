@@ -2342,10 +2342,9 @@ struct TFTEngine::Impl {
         const auto current_stage = stage_for_round(round + 1);
         const auto current_round = static_cast<std::int32_t>(round + 1);
 
-        // Legacy compatibility lineup: this result continues to populate only
-        // the existing PPO/Viewer-facing planned-unit fields. The new strategic
-        // and CompositionIntelligence candidate paths consume the independent
-        // NativeStrategicCompositionGenerator output assembled above.
+        // Native strategic evidence is generated directly from live engine facts
+        // before any legacy direction, focus, lock or economic strategy is built.
+        // The same candidate snapshot is reused by the strategic runtime and CI.
         composition_intelligence_native_candidates[i].clear();
         composition_intelligence_native_diagnostics[i].clear();
 
