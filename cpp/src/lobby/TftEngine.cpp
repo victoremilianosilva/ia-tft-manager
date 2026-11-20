@@ -37,7 +37,6 @@
 #include "strategy/UnitCombatClassifier.hpp"
 #include "strategy/UnitCopyProgress.hpp"
 #include "reward/RewardModel.hpp"
-#include "strategy/CompositionDirectionPolicy.hpp"
 #include "strategy/StrategyPolicy.hpp"
 #include "strategy/NativeStrategicCompositionGenerator.hpp"
 #include "strategy/StrategicEvidenceContext.hpp"
