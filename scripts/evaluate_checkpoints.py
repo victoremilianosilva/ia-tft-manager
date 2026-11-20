@@ -317,6 +317,15 @@ def run_paired_evaluation(
     candidate_lineage = _validate_evaluation_artifact(candidate_artifact, "candidate")
     if baseline_lineage != candidate_lineage:
         raise ValueError("baseline and candidate checkpoint lineages are not semantically compatible")
+    from semantic_observation import build_semantic_state_checkpoint_contract
+    runtime_semantic_contract = build_semantic_state_checkpoint_contract(catalog_map)
+    saved_semantic_contract = (
+        baseline_lineage.get("contract", {}).get("components", {}).get("semantic_state_contract")
+    )
+    if saved_semantic_contract != runtime_semantic_contract:
+        raise ValueError(
+            "evaluation catalog/native semantic projection does not match checkpoint lineage"
+        )
     normalized_seeds = []
     for seed in seeds:
         if isinstance(seed, bool) or not isinstance(seed, (int, np.integer)):
