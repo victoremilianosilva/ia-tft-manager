@@ -21,7 +21,7 @@ namespace tft::composition_intelligence {
 
 // Independent v1 contextual evaluator. It deliberately does not call or share
 // scoring code with strategy::ActionEvaluator (the frozen baseline).
-inline constexpr std::uint32_t kContextualActionEvaluatorSchemaVersion = 2;
+inline constexpr std::uint32_t kContextualActionEvaluatorSchemaVersion = 3;
 
 struct ContextualActionCandidateScore {
     std::size_t candidate_index{0};
@@ -38,6 +38,14 @@ struct ContextualActionCandidateScore {
     double lineup_value{0.0};
     double upgrade_value{0.0};
     double economy_cost{0.0};
+    // Signed cost against HOLD: positive consumes liquidity; negative releases it.
+    double liquidity_cost{0.0};
+    bool opportunity_cost_available{false};
+    std::string opportunity_cost_source{"unavailable_no_validated_producer"};
+    std::int32_t marginal_gold_delta{0};
+    std::string evidence_source{"unknown"};
+    std::uint32_t evidence_horizon_rounds{0};
+    double evidence_uncertainty{1.0};
     bool marginal_economy_evidence_available{false};
     std::int32_t gold_before{0};
     std::int32_t gold_after{0};
@@ -45,6 +53,7 @@ struct ContextualActionCandidateScore {
     std::int32_t interest_after{0};
     std::int32_t interest_delta{0};
     std::uint32_t marginal_horizon_rounds{0};
+    double marginal_cost_uncertainty{1.0};
     std::string marginal_cost_source{"unavailable"};
     double total_score{0.0};
 };
@@ -59,6 +68,23 @@ struct ContextualActionEvaluation {
     bool stale{false};
     std::string stale_reason;
     bool economy_evidence_consumed{false};
+    bool economic_posture_available{false};
+    strategy::EconomicPosture economic_posture{strategy::EconomicPosture::AccumulateResources};
+    strategy::StrategicReason economic_reason{strategy::StrategicReason::InsufficientEvidence};
+    bool economic_confidence_available{false};
+    double economic_confidence{0.0};
+    bool survival_pressure_available{false};
+    double survival_pressure{0.0};
+    bool board_pressure_available{false};
+    double board_pressure{0.0};
+    bool economy_pressure_available{false};
+    double economy_pressure{0.0}; // diagnostic only; liquidity is scored from marginal gold delta
+    std::vector<std::string> economic_evidence_used;
+    std::vector<std::string> economic_evidence_missing;
+    bool projected_income_available{false};
+    bool incoming_damage_available{false};
+    bool elimination_risk_available{false};
+    bool progression_available{false};
     bool board_evidence_consumed{false};
     bool item_evidence_consumed{false};
     strategy::StrategicActionKind recommended_action{strategy::StrategicActionKind::None};
@@ -87,6 +113,13 @@ struct ContextualActionEvaluation {
                     {"lineup_value", c.lineup_value},
                     {"upgrade_value", c.upgrade_value},
                     {"economy_cost", c.economy_cost},
+                    {"liquidity_cost", c.liquidity_cost},
+                    {"opportunity_cost_available", c.opportunity_cost_available},
+                    {"opportunity_cost_source", c.opportunity_cost_source},
+                    {"marginal_gold_delta", c.marginal_gold_delta},
+                    {"evidence_source", c.evidence_source},
+                    {"evidence_horizon_rounds", c.evidence_horizon_rounds},
+                    {"evidence_uncertainty", c.evidence_uncertainty},
                     {"marginal_economy_evidence_available", c.marginal_economy_evidence_available},
                     {"gold_before", c.gold_before},
                     {"gold_after", c.gold_after},
@@ -94,6 +127,7 @@ struct ContextualActionEvaluation {
                     {"interest_after", c.interest_after},
                     {"interest_delta", c.interest_delta},
                     {"marginal_horizon_rounds", c.marginal_horizon_rounds},
+                    {"marginal_cost_uncertainty", c.marginal_cost_uncertainty},
                     {"marginal_cost_source", c.marginal_cost_source},
                     {"total_score", c.total_score}
                 }}
@@ -107,6 +141,23 @@ struct ContextualActionEvaluation {
             {"stale", stale}, {"stale_reason", stale_reason},
             {"evidence_consumed", {{"economy", economy_evidence_consumed},
                 {"board", board_evidence_consumed}, {"items", item_evidence_consumed}}},
+            {"economic_context", {{"posture_available", economic_posture_available},
+                {"posture", static_cast<int>(economic_posture)},
+                {"reason", static_cast<int>(economic_reason)},
+                {"confidence_available", economic_confidence_available},
+                {"confidence_not_probability", economic_confidence},
+                {"survival_pressure_available", survival_pressure_available},
+                {"survival_pressure", survival_pressure},
+                {"board_pressure_available", board_pressure_available},
+                {"board_pressure", board_pressure},
+                {"economy_pressure_available", economy_pressure_available},
+                {"economy_pressure", economy_pressure},
+                {"evidence_used", economic_evidence_used},
+                {"evidence_missing", economic_evidence_missing},
+                {"projected_income_available", projected_income_available},
+                {"incoming_damage_available", incoming_damage_available},
+                {"elimination_risk_available", elimination_risk_available},
+                {"progression_available", progression_available}}},
             {"evidence_rejected", evidence_rejected},
             {"recommended_action", static_cast<int>(recommended_action)},
             {"recommended_champion_id", recommended_champion_id},
@@ -159,6 +210,25 @@ public:
         if (evidence && !envelope_valid)
             return stale(std::move(out), "planner evidence match/player/round/composition identity mismatch");
         out.economy_evidence_consumed = economy_valid;
+        if (economy_valid) {
+            out.economic_posture_available = evidence->economy.sufficient_evidence;
+            out.economic_posture = evidence->economy.posture;
+            out.economic_reason = evidence->economy.reason;
+            out.economic_confidence_available = true;
+            out.economic_confidence = evidence->economy.confidence;
+            out.survival_pressure_available = evidence->economy.survival_evidence_available;
+            out.survival_pressure = evidence->economy.survival_pressure;
+            out.board_pressure_available = evidence->economy.board_pressure_available;
+            out.board_pressure = evidence->economy.board_pressure;
+            out.economy_pressure_available = evidence->economy.economy_pressure_available;
+            out.economy_pressure = evidence->economy.economy_pressure;
+            out.economic_evidence_used = evidence->economy.evidence_used;
+            out.economic_evidence_missing = evidence->economy.evidence_missing;
+            out.projected_income_available = evidence->economy.projected_income_available;
+            out.incoming_damage_available = evidence->economy.incoming_damage_available;
+            out.elimination_risk_available = evidence->economy.elimination_risk_available;
+            out.progression_available = evidence->economy.progression_available;
+        }
         out.board_evidence_consumed = board_valid;
         out.item_evidence_consumed = items_valid;
         if (evidence && !envelope_valid) {
@@ -213,9 +283,24 @@ public:
             score.kind = candidate.kind;
             score.champion_id = candidate.champion_id;
             score.candidate_id = candidate.candidate_id;
-            score.eligible = candidate.available && candidate.gold_cost <= context.gold;
+            score.evidence_source = candidate.evidence_source;
+            score.evidence_horizon_rounds = candidate.evidence_horizon_rounds;
+            score.evidence_uncertainty = std::isfinite(candidate.evidence_uncertainty)
+                ? std::clamp(candidate.evidence_uncertainty, 0.0, 1.0) : 1.0;
+            const bool requires_observed_gold =
+                candidate.kind == strategy::StrategicActionKind::BuyUnit ||
+                candidate.kind == strategy::StrategicActionKind::BuyExperience ||
+                candidate.kind == strategy::StrategicActionKind::RerollShop ||
+                candidate.kind == strategy::StrategicActionKind::SellUnit;
+            const bool requires_marginal_economy = requires_observed_gold;
+            score.eligible = candidate.available &&
+                (!requires_observed_gold || context.evidence.gold) &&
+                candidate.gold_cost <= context.gold;
             if (!candidate.available) score.rejection_reason = "candidate_unavailable";
-            else if (candidate.gold_cost > context.gold) score.rejection_reason = "insufficient_gold";
+            else if (requires_observed_gold && !context.evidence.gold)
+                score.rejection_reason = "gold_evidence_unavailable";
+            else if (candidate.gold_cost > context.gold)
+                score.rejection_reason = "insufficient_gold";
 
             const auto found = priority_by_id.find(candidate.champion_id);
             const UnitPriority* priority = found == priority_by_id.end() ? nullptr : found->second;
@@ -317,7 +402,7 @@ public:
                 const auto expected_interest_before =
                     context.gold >= 0 ? EconomyEngine{}.get_interest(context.gold) : -1;
                 const bool marginal_valid =
-                    context.gold >= 0 && direct_cost_in_range &&
+                    context.evidence.gold && context.gold >= 0 && direct_cost_in_range &&
                     candidate.marginal_economy_evidence_available &&
                     candidate.marginal_cost_source ==
                         "native_gold+EconomyEngine::get_interest" &&
@@ -340,26 +425,39 @@ public:
                     score.interest_before = candidate.marginal_interest_before;
                     score.interest_after = candidate.marginal_interest_after;
                     score.interest_delta = candidate.marginal_interest_delta;
+                    score.marginal_gold_delta = candidate.marginal_gold_after -
+                        candidate.marginal_gold_before;
                     score.marginal_horizon_rounds =
                         candidate.marginal_cost_horizon_rounds;
+                    score.marginal_cost_uncertainty = candidate.marginal_cost_uncertainty;
                     score.marginal_cost_source = candidate.marginal_cost_source;
-                    const double direct_cost = candidate.direct_gold_cost;
-                    const double lost_interest = std::max(
-                        0.0, static_cast<double>(-candidate.marginal_interest_delta));
-                    // Direct spend/credit and the exact interest delta are
-                    // counted once. Unproduced shop/opportunity values add no prior.
-                    score.economy_cost = (direct_cost * 0.045) +
-                        (lost_interest * 0.12);
+                    const double liquidity_base = static_cast<double>(
+                        std::max<std::int32_t>(1, candidate.marginal_gold_before));
+                    // Normalize the exact gold delta by observed starting liquidity.
+                    // This is a relative liquidity impact, not a future-income estimate.
+                    score.liquidity_cost = std::clamp(
+                        -static_cast<double>(score.marginal_gold_delta) / liquidity_base,
+                        -1.0, 1.0) * 0.18;
+                    const double interest_cost =
+                        -static_cast<double>(candidate.marginal_interest_delta);
+                    // The signed interest delta preserves both lost interest and
+                    // a verified interest gain. Principal and interest are counted once.
+                    // No projected income or unproduced opportunity cost is added.
+                    score.economy_cost = score.liquidity_cost + (interest_cost * 0.12);
                 }
-                score.total_score = score.board_value + score.survival_value +
-                    score.streak_value + score.unit_priority_value +
-                    score.lineup_value + score.upgrade_value - score.economy_cost;
+                if (requires_marginal_economy && !marginal_valid)
+                    reject(score, "marginal_economy_evidence_unavailable");
+                score.total_score = score.eligible
+                    ? score.board_value + score.survival_value +
+                        score.streak_value + score.unit_priority_value +
+                        score.lineup_value + score.upgrade_value - score.economy_cost
+                    : 0.0;
                 if (candidate.kind == strategy::StrategicActionKind::Hold) {
                     score.total_score = 0.0;
                     if (hold_candidate_index == std::numeric_limits<std::size_t>::max())
                         hold_candidate_index = i;
                 }
-                if (score.total_score > best_score) {
+                if (score.eligible && score.total_score > best_score) {
                     best_score = score.total_score;
                     selected_index = i;
                     out.recommended_action = candidate.kind;
