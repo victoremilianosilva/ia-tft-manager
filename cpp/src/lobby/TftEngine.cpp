@@ -2450,24 +2450,12 @@ struct TFTEngine::Impl {
                     }
                 }
 
-                auto planner_commitment = strategic_planner_commitments[i];
-                strategy::StrategicPlanDecision planner_decision;
-                if (planner_context.current_composition_direction.empty()) {
-                    planner_decision =
-                        strategy::StrategicPlanner{}.evaluate(planner_context, planner_commitment);
-                } else {
-                    planner_decision.target_composition_direction =
-                        planner_context.current_composition_direction;
-                }
-
                 strategy::StrategicCycleInput native_input;
                 native_input.evaluation_sequence = strategic_context_sequences[i] + 1;
                 native_input.initial_composition_candidates = native_composition_candidates;
-                native_input.selected_initial_direction =
-                    planner_decision.target_composition_direction;
                 if (!tracked_active && native_active)
                     native_input.active_composition = native_active;
-        
+
                 auto& discovery = native_input.exploration;
                 discovery.round = static_cast<std::uint32_t>(current_round);
                 discovery.gold_available = economy.gold;
@@ -2527,6 +2515,48 @@ struct TFTEngine::Impl {
                         discovery.trait_thresholds.push_back({trait, *first});
                 }
         
+                for (const auto& [trait, milestones] : trait_milestones) {
+                    if (milestones.empty()) continue;
+                    const auto first = std::min_element(
+                        milestones.begin(), milestones.end());
+                    if (first != milestones.end() && *first > 0)
+                        discovery.trait_thresholds.push_back({trait, *first});
+                }
+
+                // Discovery defines which directions have enough owned support
+                // to be considered at initialization. StrategicPlanner remains
+                // the final authority, but it must choose among those proposals
+                // rather than selecting a shop-only trait that the state machine
+                // cannot bind to an owned-evidence hypothesis.
+                const auto discovery_result =
+                    strategy::InitialStrategicDirectionDiscovery{}.evaluate(discovery);
+                std::unordered_set<std::string> discoverable_directions;
+                for (const auto& hypothesis : discovery_result.hypotheses)
+                    discoverable_directions.insert(hypothesis.anchor.direction);
+                if (planner_context.current_composition_direction.empty()) {
+                    planner_context.anchor_candidates.erase(
+                        std::remove_if(
+                            planner_context.anchor_candidates.begin(),
+                            planner_context.anchor_candidates.end(),
+                            [&](const auto& candidate) {
+                                return discoverable_directions.count(
+                                    candidate.target_composition_direction) == 0;
+                            }),
+                        planner_context.anchor_candidates.end());
+                }
+
+                auto planner_commitment = strategic_planner_commitments[i];
+                strategy::StrategicPlanDecision planner_decision;
+                if (planner_context.current_composition_direction.empty()) {
+                    planner_decision =
+                        strategy::StrategicPlanner{}.evaluate(planner_context, planner_commitment);
+                } else {
+                    planner_decision.target_composition_direction =
+                        planner_context.current_composition_direction;
+                }
+                native_input.selected_initial_direction =
+                    planner_decision.target_composition_direction;
+
                 const strategy::StrategicCycleAuditContext native_audit_context{
                     episode_id, static_cast<std::int32_t>(i),
                     static_cast<std::uint32_t>(current_round)
