@@ -122,7 +122,7 @@ void exploration_waits_for_composition_and_then_binds_direction() {
     assert(result.active_composition->version == 1);
     assert(result.anchors.direction_anchor.composition_identity == "native:Bruiser");
     assert(result.anchors.direction_anchor.composition_version == 1);
-    assert(result.anchors.direction_anchor.direction == "composition-bruiser");
+    assert(result.anchors.direction_anchor.direction == "Bruiser");
     assert(result.anchors.direction_anchor.lifecycle == StrategicAnchorLifecycle::Active);
 }
 
