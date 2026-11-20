@@ -113,7 +113,15 @@ void builder_emits_snapshot_bound_physical_candidates() {
     assert(buy->evidence_source.find("native_shop") != std::string::npos);
     assert(buy->evidence_horizon_rounds == 1);
     assert(buy->lost_interest_evidence_available);
-    assert(buy->lost_interest_cost > 0.0);
+    assert(buy->lost_interest_cost == 1.0);
+    assert(buy->marginal_economy_evidence_available);
+    assert(buy->marginal_gold_before == 20 && buy->marginal_gold_after == 17);
+    assert(buy->marginal_interest_before == 2 && buy->marginal_interest_after == 1);
+    assert(buy->marginal_interest_delta == -1);
+    assert(buy->marginal_cost_horizon_rounds == 1);
+    assert(buy->marginal_cost_uncertainty == 0.0);
+    assert(buy->marginal_cost_source == "native_gold+EconomyEngine::get_interest");
+    assert(buy->opportunity_cost == 0.0);
 
     const auto xp = find(StrategicActionKind::BuyExperience);
     assert(xp != result.candidates.end() && xp->gold_cost == EconomyEngine::BUY_XP_COST);
@@ -124,6 +132,8 @@ void builder_emits_snapshot_bound_physical_candidates() {
     assert(sell->source_is_bench && sell->source_slot == 1);
     assert(sell->source_unit_uuid == "unit-30");
     assert(sell->direct_gold_cost == -1.0);
+    assert(sell->marginal_economy_evidence_available);
+    assert(sell->marginal_gold_before == 20 && sell->marginal_gold_after == 21);
 
     const auto deploy = find(StrategicActionKind::DeployOrMove, 20);
     assert(deploy != result.candidates.end());
@@ -139,6 +149,9 @@ void builder_emits_snapshot_bound_physical_candidates() {
     const auto hold = find(StrategicActionKind::Hold);
     assert(hold != result.candidates.end());
     assert(hold->evidence_reason.find("neutral_baseline") != std::string::npos);
+    assert(hold->marginal_economy_evidence_available);
+    assert(hold->marginal_gold_before == hold->marginal_gold_after);
+    assert(hold->marginal_interest_delta == 0);
 
     std::unordered_set<std::string> stable_ids;
     for (const auto& candidate : result.candidates) {
@@ -363,8 +376,38 @@ void builder_refuses_stale_or_mismatched_native_snapshots() {
 }
 }
 
+void interest_breakpoints_are_compared_to_the_same_hold_snapshot() {
+    const auto evaluate = [](std::int32_t gold) {
+        StrategicSharedContext context;
+        context.player_id = 0; context.round = 5; context.gold = gold;
+        context.level = 4; context.xp_to_next = 4; context.alive = true;
+        context.evidence.gold = true; context.evidence.level = true;
+        context.evidence.xp_to_next = true;
+        StrategicActionNativeSnapshot native;
+        native.match_id = 19; native.player_id = 0; native.round = 5;
+        native.sequence = 3; native.gold = gold; native.alive = true;
+        enables(native.masks, decision::ActionType::PASS);
+        enables(native.masks, decision::ActionType::BUY_XP);
+        return StrategicActionCandidateBuilder{}.build(
+            context, std::nullopt, {}, {}, native, {});
+    };
+    for (const auto gold : {9, 10, 11}) {
+        const auto result = evaluate(gold);
+        const auto xp = std::find_if(result.candidates.begin(), result.candidates.end(),
+            [](const auto& value) { return value.kind == StrategicActionKind::BuyExperience; });
+        assert(xp != result.candidates.end());
+        assert(xp->marginal_economy_evidence_available);
+        const auto expected_before = EconomyEngine{}.get_interest(gold);
+        const auto expected_after = EconomyEngine{}.get_interest(gold - EconomyEngine::BUY_XP_COST);
+        assert(xp->marginal_interest_before == expected_before);
+        assert(xp->marginal_interest_after == expected_after);
+        assert(xp->lost_interest_cost == std::max(0, expected_before - expected_after));
+    }
+}
+
 int main() {
     builder_emits_snapshot_bound_physical_candidates();
+    interest_breakpoints_are_compared_to_the_same_hold_snapshot();
     missing_cost_rejects_only_the_affected_candidate();
     xp_candidate_does_not_depend_on_an_active_composition();
     builder_refuses_stale_or_mismatched_native_snapshots();

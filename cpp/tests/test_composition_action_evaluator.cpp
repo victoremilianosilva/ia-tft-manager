@@ -118,7 +118,6 @@ void validated_economy_and_item_evidence_reach_action_evaluator() {
     set_valid(evidence.economy.metadata, "EconomicController");
     set_valid(evidence.board.metadata, "BoardEvaluation");
     set_valid(evidence.items.metadata, "ItemEngine");
-    evidence.economy.buy_unit_opportunity_cost = 2.5;
     evidence.board.missing_frontline_count = 1;
     evidence.items.units.push_back({30, {"equipped-item"}, {}, 0.0, 0.0, true, false});
     const auto result = CompositionActionEvaluator{}.evaluate(
@@ -131,7 +130,7 @@ void validated_economy_and_item_evidence_reach_action_evaluator() {
     assert(result.candidates[0].candidate_id == c.action_candidates[0].candidate_id);
     assert(result.candidates[1].disposition == ActionCandidateDisposition::Rejected);
     assert(result.candidates[1].reason.find("equipped-item") != std::string::npos);
-    assert(result.evaluation.candidate_scores[0].opportunity_cost == 2.5);
+    assert(result.evaluation.candidate_scores[0].opportunity_cost == 0.0);
     assert(result.evaluation.candidate_scores[2].composition_component > 0.0);
 }
 

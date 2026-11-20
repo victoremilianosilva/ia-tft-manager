@@ -46,16 +46,6 @@ enum class StrategicReason : std::uint8_t {
     EconomyConstraint = 10, InsufficientEvidence = 11
 };
 
-// Explicit heuristic opportunity premiums. Reroll is intentionally more
-// expensive than XP because it consumes a shop search without guaranteeing
-// a unit or advancing level progression.
-namespace action_opportunity_cost {
-inline constexpr double kBuyExperience = 0.25;
-inline constexpr double kRerollWithUpgradeTarget = 3.50;
-inline constexpr double kRerollWithoutUpgradeTarget = 4.00;
-inline constexpr double kBuyUnit = 0.35;
-} // namespace action_opportunity_cost
-
 struct StrategicUnitCandidate {
     std::int32_t champion_id{-1};
     std::string champion_key;
@@ -116,6 +106,17 @@ struct StrategicActionCandidate {
     bool lost_interest_evidence_available{false};
     // Native physical instance identity for owned-unit actions; empty for shop/economy actions.
     std::string source_unit_uuid;
+    // Exact same-snapshot marginal economy delta. Opportunity costs that lack
+    // a validated producer remain unavailable rather than receiving priors.
+    bool marginal_economy_evidence_available{false};
+    std::int32_t marginal_gold_before{0};
+    std::int32_t marginal_gold_after{0};
+    std::int32_t marginal_interest_before{0};
+    std::int32_t marginal_interest_after{0};
+    std::int32_t marginal_interest_delta{0};
+    std::string marginal_cost_source{"unavailable"};
+    std::uint32_t marginal_cost_horizon_rounds{0};
+    double marginal_cost_uncertainty{1.0};
 };
 
 struct ActionCandidateScore {
@@ -274,6 +275,7 @@ struct EconomicControlDecision {
     bool sufficient_evidence{false};
     std::vector<std::string> evidence_used;
     std::vector<std::string> evidence_missing;
+    std::vector<std::string> evidence_invalid;
 };
 
 struct ActionEvaluation {

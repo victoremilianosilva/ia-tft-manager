@@ -137,18 +137,8 @@ public:
 
             const auto found = by_id.find(candidate.champion_id);
             const UnitPriority* priority = found == by_id.end() ? nullptr : found->second;
-            if (economy_valid) {
-                double evidence_cost = 0.0;
-                if (candidate.kind == strategy::StrategicActionKind::BuyUnit)
-                    evidence_cost = planner_evidence->economy.buy_unit_opportunity_cost;
-                else if (candidate.kind == strategy::StrategicActionKind::BuyExperience)
-                    evidence_cost = planner_evidence->economy.buy_experience_opportunity_cost;
-                else if (candidate.kind == strategy::StrategicActionKind::RerollShop)
-                    evidence_cost = has_upgrade_target
-                        ? planner_evidence->economy.reroll_with_target_opportunity_cost
-                        : planner_evidence->economy.reroll_without_target_opportunity_cost;
-                candidate.opportunity_cost = std::max(candidate.opportunity_cost, evidence_cost);
-            }
+            // The economic adapter no longer supplies action-family priors.
+            // Candidate opportunity cost stays unavailable until a real producer exists.
             if (board_valid && candidate.champion_id >= 0 &&
                 (candidate.kind == strategy::StrategicActionKind::BuyUnit ||
                  candidate.kind == strategy::StrategicActionKind::DeployOrMove)) {

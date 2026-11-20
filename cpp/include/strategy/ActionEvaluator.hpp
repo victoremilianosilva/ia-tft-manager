@@ -1,6 +1,7 @@
 #pragma once
 
 #include "strategy/StrategicPlanning.hpp"
+#include "lobby/EconomyEngine.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -32,9 +33,43 @@ public:
             breakdown.champion_id = candidate.champion_id;
             breakdown.available = candidate.available &&
                 candidate.gold_cost <= c.gold;
-            breakdown.direct_gold_cost = candidate.direct_gold_cost;
-            breakdown.lost_interest_cost = candidate.lost_interest_cost;
-            breakdown.opportunity_cost = candidate.opportunity_cost;
+            // Cost fields are consumed only when the candidate carries a
+            // same-snapshot, deterministic marginal cash/interest proof.
+            const bool direct_cost_in_range =
+                std::isfinite(candidate.direct_gold_cost) &&
+                candidate.direct_gold_cost >= static_cast<double>(
+                    std::numeric_limits<std::int32_t>::min()) &&
+                candidate.direct_gold_cost <= static_cast<double>(
+                    std::numeric_limits<std::int32_t>::max());
+            const auto expected_gold_after = direct_cost_in_range
+                ? static_cast<std::int64_t>(c.gold) -
+                    static_cast<std::int64_t>(std::llround(candidate.direct_gold_cost))
+                : -1;
+            const bool marginal_valid =
+                c.gold >= 0 && direct_cost_in_range &&
+                candidate.marginal_economy_evidence_available &&
+                candidate.marginal_cost_source ==
+                    "native_gold+EconomyEngine::get_interest" &&
+                candidate.marginal_cost_horizon_rounds == 1 &&
+                candidate.marginal_cost_uncertainty == 0.0 &&
+                candidate.marginal_gold_before == c.gold &&
+                expected_gold_after >= 0 &&
+                expected_gold_after <= std::numeric_limits<std::int32_t>::max() &&
+                candidate.marginal_gold_after == expected_gold_after &&
+                candidate.marginal_interest_before ==
+                    EconomyEngine{}.get_interest(c.gold) &&
+                candidate.marginal_interest_after ==
+                    EconomyEngine{}.get_interest(candidate.marginal_gold_after) &&
+                candidate.marginal_interest_delta ==
+                    candidate.marginal_interest_after -
+                        candidate.marginal_interest_before;
+            breakdown.direct_gold_cost = marginal_valid
+                ? candidate.direct_gold_cost : 0.0;
+            breakdown.lost_interest_cost = marginal_valid
+                ? std::max(0.0, static_cast<double>(
+                    -candidate.marginal_interest_delta)) : 0.0;
+            // No opportunity-cost producer is currently authoritative.
+            breakdown.opportunity_cost = 0.0;
             if (!breakdown.available) {
                 breakdown.total_score = -1.0e9;
                 breakdown.available = false;
@@ -65,8 +100,10 @@ public:
                     break;
                 case EconomicPosture::PreserveWinStreak:
                 case EconomicPosture::PreserveLossStreak:
-                    if (candidate.kind == StrategicActionKind::BuyUnit ||
-                        candidate.kind == StrategicActionKind::DeployOrMove)
+                    if (candidate.kind == StrategicActionKind::Hold)
+                        breakdown.posture_component = 0.12;
+                    else if (candidate.kind == StrategicActionKind::BuyUnit ||
+                             candidate.kind == StrategicActionKind::DeployOrMove)
                         breakdown.posture_component = board_gain > 0.20 ? 0.18 : -0.08;
                     break;
                 case EconomicPosture::InvestExperience:
@@ -87,24 +124,21 @@ public:
                     break;
             }
 
-            const double direct_cost = candidate.direct_gold_cost != 0.0
-                ? std::max(0.0, candidate.direct_gold_cost)
-                : std::max(0.0, candidate.expected_economy_cost);
-            const double gold_gain = std::max(0.0, -candidate.direct_gold_cost);
-            const double lost_interest = candidate.lost_interest_evidence_available &&
-                std::isfinite(candidate.lost_interest_cost)
-                ? std::max(0.0, candidate.lost_interest_cost) : 0.0;
-            const double opportunity_cost = std::max(0.0, candidate.opportunity_cost);
+            const double direct_cost = marginal_valid
+                ? std::max(0.0, candidate.direct_gold_cost) : 0.0;
+            const double gold_gain = marginal_valid
+                ? std::max(0.0, -candidate.direct_gold_cost) : 0.0;
+            const double lost_interest = breakdown.lost_interest_cost;
+            const double opportunity_cost = 0.0;
             breakdown.direct_cost_component = -direct_cost * 0.055 + gold_gain * 0.035;
             breakdown.lost_interest_component = -lost_interest * 0.10;
-            breakdown.opportunity_cost_component = -opportunity_cost * 0.10;
+            breakdown.opportunity_cost_component = 0.0;
             breakdown.total_score =
                 breakdown.board_component + breakdown.survival_component +
                 breakdown.streak_component + breakdown.composition_component +
                 breakdown.upgrade_component +
                 breakdown.posture_component + breakdown.direct_cost_component +
-                breakdown.lost_interest_component +
-                breakdown.opportunity_cost_component;
+                breakdown.lost_interest_component;
 
             if (breakdown.total_score > best_score) {
                 second_score = best_score;

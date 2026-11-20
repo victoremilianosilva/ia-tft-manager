@@ -1,11 +1,11 @@
 # Economic Evidence and Progression Contract v1
 
-**Status:** approved documentary specification; runtime implementation and executable acceptance blocked until Gate 8  
+**Status:** approved contract; partial runtime implementation and executable acceptance in PR 2  
 **Contract ID:** `tft.economic-evidence.v1`  
 **Target:** `new-arquiteture`  
 **Related:** #282, #281, #283, #284, #289; Observation #293; Reward #287
 
-> Documentation only. This contract does not implement economic calculations, alter PPO/rewards/observations, change Engine rules/masks, or modify Viewer behavior.
+> Runtime scope: this contract evolves the existing read-only economic evaluators and evidence adapters. It does not alter PPO, rewards, observations, Engine rules/masks, or Viewer behavior.
 
 ## 1. Purpose
 
@@ -104,7 +104,7 @@ For each signal, the implementation design must state whether it is consumed by:
 4. contextual candidate evaluator;
 5. diagnostics only.
 
-A signal not consumed by a component must not be described as influencing that component's score. In particular, the audited ContextualActionEvaluator currently does not consume EconomicControlDecision or the listed urgency/posture fields directly, while the baseline CompositionActionEvaluator path receives EconomicControlDecision. This contract does not silently add those dependencies. The future design must justify each signal's marginal effect and prove it with tests.
+A signal not consumed by a component must not be described as influencing that component's score. In PR 2, the contextual candidate evaluator consumes only validated survival pressure, streak evidence, and exact same-snapshot gold/interest deltas. It does not consume nominal posture labels or unavailable future-income/damage/risk fields. The baseline CompositionActionEvaluator path still receives EconomicControlDecision, but unproduced action-family opportunity premiums are no longer added.
 
 ## 7. Marginal cost and opportunity-cost accounting
 
@@ -159,3 +159,43 @@ Tests must also prove which evidence reaches each evaluator and which score comp
 This document specifies the economic evidence and ownership contract. #282 remains open until the source map is validated, field-level provenance is propagated, consumer decisions are documented, and executable evidence is produced after Gate 8.
 
 No runtime files/tests, PPO, observations, rewards, checkpoints, masks, Engine rules, Viewer behavior, or game actions are changed. Gate 8 and explicit implementation authorization remain mandatory.
+
+## 11. Runtime source audit and PR 2 implementation
+
+### 11.1 Authoritative sources and unavailable projections
+
+The runtime source audit found the following:
+
+| Field | Authoritative source found | PR 2 disposition |
+|---|---|---|
+| Current gold / level / XP / streak | Native player economy snapshot | Observed when the native field is present |
+| Current interest | `EconomyEngine::get_interest(gold)` | Deterministic derived value; cross-checked against observed gold |
+| Immediate post-action gold | Candidate direct cost/proceeds + same native gold snapshot | Exact marginal cash delta |
+| Post-action interest | `EconomyEngine::get_interest(gold_after)` | Exact marginal delta under the current Engine rules |
+| Next-round total income | `EconomyEngine::resolve_round` produces realized income after round resolution; it includes round base income, interest, streak income and accumulated PvP win gold | No trustworthy pre-combat expected total. Remains unavailable; no expected win/streak outcome is fabricated |
+| Incoming damage | `CombatEngine::simulate` returns damage for a fully specified actual simulation | No calibrated future-opponent/future-round predictor in the decision path. Actual combat result is not mislabeled as expected damage |
+| Elimination risk | No calibrated risk producer found | Remains unavailable; HP alone is not converted into a probability |
+| Progression plan | No authoritative native producer in the integrated callsite | `Flexible` default remains unavailable, not a confirmed hypothesis |
+| Reroll/shop opportunity value | No validated producer for future shop outcomes | No fixed BUY/XP/REROLL premiums; opportunity cost remains unavailable |
+
+### 11.2 Implemented marginal contract
+
+The candidate builder now compares each candidate with HOLD using the same native gold snapshot. It records gold before/after, interest before/after, signed interest delta, source, one-round horizon and zero uncertainty for the deterministic cash/interest calculation itself. This uncertainty does **not** claim that future board, shop, combat or income outcomes are certain.
+
+The contextual evaluator revalidates the source, horizon, current gold, post-action gold and both interest values against `EconomyEngine::get_interest` before consuming the marginal fields. Direct spend/credit and lost interest are counted once. The baseline action evaluator and composition evaluator no longer add fixed action-family opportunity premiums. An unproduced opportunity value has no score contribution.
+
+### 11.3 Contradictory evidence
+
+`EconomicController` rejects out-of-domain or contradictory fields before posture scoring, including negative observed quantities, non-finite/negative damage, risk outside [0,1], negative streaks, and simultaneous positive win/loss streaks. `PlannerEvidenceAdapters` additionally rejects interest that does not match the current gold under `EconomyEngine::get_interest`. Invalid evidence is surfaced separately from missing evidence; it is not clamped into a plausible value.
+
+### 11.4 Executable evidence in PR 2
+
+- Exact buy/sell/HOLD gold and interest deltas, including interest breakpoints.
+- Marginal evidence source, horizon and uncertainty metadata.
+- Contextual evaluator rejects stale/mismatched marginal values and ignores arbitrary unproduced opportunity-cost numbers.
+- Controller tests for contradictory streaks, out-of-range elimination risk, real zero values and incomplete projections.
+- Adapter tests for gold/interest inconsistency and propagation of invalid evidence.
+
+### 11.5 Remaining boundary
+
+This PR does not invent expected next-round income, incoming damage, elimination risk, progression hypotheses or shop opportunity value. Those fields remain explicitly unavailable until an authoritative producer and horizon/calibration contract exist. Therefore #282 remains open for those producers and for replay validation of contradictory/incomplete scenarios. The current implementation completes exact same-snapshot marginal cash/interest accounting and prevents unsupported values from influencing the evaluator; it does not claim the missing predictive models are solved.
