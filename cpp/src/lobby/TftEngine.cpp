@@ -6926,26 +6926,32 @@ double TFTEngine::get_unit_comp_score(
     impl_->ensure_open();
     const auto* def = impl_->catalog->find_by_api_name(champion_api_name);
     if (!def || star < 1 || star > 3) return 0.0;
-    const auto& strategy =
-        impl_->player_envs[static_cast<std::size_t>(player_id)].strategy;
-    if (!strategy) return 0.0;
-    return unit_composition_score(*strategy, *def, star, impl_->trait_milestones);
+    const auto& runtime = impl_->composition_intelligence_players[static_cast<std::size_t>(player_id)];
+    if (!runtime.planner_outputs_valid) return 0.0;
+    return unit_composition_score(runtime.unit_priorities, def->internal_id, star);
 }
 bool TFTEngine::is_core_unit(std::int32_t player_id, const std::string& champion_api_name) const {
     if (!impl_ || player_id < 0 || player_id >= static_cast<std::int32_t>(kPlayersPerLobby)) return false;
     impl_->ensure_open();
     const auto* def = impl_->catalog->find_by_api_name(champion_api_name);
     if (!def) return false;
-    const auto& strategy = impl_->player_envs[static_cast<std::size_t>(player_id)].strategy;
-    return strategy && std::find(strategy->core_unit_ids.begin(),
-        strategy->core_unit_ids.end(), def->internal_id) != strategy->core_unit_ids.end();
+    const auto& active = impl_->composition_intelligence_players[static_cast<std::size_t>(player_id)].active.current();
+    if (!active) return false;
+    return std::any_of(active->candidate.units.begin(), active->candidate.units.end(),
+        [&](const auto& unit) { return unit.champion_id == def->internal_id && unit.core; });
 }
 bool TFTEngine::is_core_trait(std::int32_t player_id, const std::string& trait) const {
     if (!impl_ || player_id < 0 || player_id >= static_cast<std::int32_t>(kPlayersPerLobby)) return false;
     impl_->ensure_open();
-    const auto& strategy = impl_->player_envs[static_cast<std::size_t>(player_id)].strategy;
-    return strategy && std::find(strategy->core_traits.begin(),
-        strategy->core_traits.end(), trait) != strategy->core_traits.end();
+    const auto& active = impl_->composition_intelligence_players[static_cast<std::size_t>(player_id)].active.current();
+    if (!active) return false;
+    for (const auto& unit : active->candidate.units) {
+        if (!unit.core) continue;
+        const auto* definition = impl_->catalog->find_by_id(unit.champion_id);
+        if (definition && std::find(definition->traits.begin(), definition->traits.end(), trait) !=
+            definition->traits.end()) return true;
+    }
+    return false;
 }
 
 std::array<AntiLoopMetrics, kPlayersPerLobby>
