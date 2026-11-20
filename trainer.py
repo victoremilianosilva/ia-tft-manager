@@ -426,6 +426,21 @@ class Trainer:
                     )
                 if semantic_state_warm_start:
                     validate_checkpoint_lineage_integrity(saved_lineage_contract)
+                    historical_components = (
+                        saved_lineage_contract.get("contract", {}).get("components", {})
+                    )
+                    if not isinstance(historical_components, dict) or any(
+                        historical_components.get(key) != expected
+                        for key, expected in (
+                            ("action_mask_contract", saved_contract),
+                            ("critic_mask_input_contract", saved_critic_mask_contract),
+                            ("semantic_state_contract", saved_semantic_contract),
+                            ("reward_contract", saved_reward_contract),
+                        )
+                    ):
+                        raise RuntimeError(
+                            "Checkpoint top-level contracts divergem dos componentes da linhagem histórica."
+                        )
                 else:
                     validate_checkpoint_lineage_contract(
                         saved_lineage_contract,
