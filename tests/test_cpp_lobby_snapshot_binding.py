@@ -34,6 +34,7 @@ class FakeNativeLobby:
         self.mask_reads = 0
         self.episode_id = 0
         self.decision_sequence = 0
+        self.round = 1
         self.player_decision_sequences = [0] * 8
         self.fail_reset = False
         self.fail_step = False
@@ -53,7 +54,7 @@ class FakeNativeLobby:
             "episode_id": self.episode_id,
             "snapshot_sequence": self.decision_sequence,
             "player_decision_sequences": list(self.player_decision_sequences),
-            "round": 1,
+            "round": self.round,
             "stage": 1,
             "finished": False,
             "combat_sequence": 0,
@@ -98,6 +99,7 @@ class FakeNativeLobby:
             self.fail_reset = False
             raise RuntimeError("synthetic reset failure")
         self.episode_id += 1
+        self.round = 1
         self.decision_sequence += 1
         self.player_decision_sequences = [value + 1 for value in self.player_decision_sequences]
         return {
@@ -116,6 +118,7 @@ class FakeNativeLobby:
             self.fail_step = False
             raise RuntimeError("synthetic step failure")
         self.decision_sequence += 1
+        self.round = 3
         self.player_decision_sequences = [value + 1 for value in self.player_decision_sequences]
         return {
             "observations": np.full((8, 4), 2, dtype=np.float32),
