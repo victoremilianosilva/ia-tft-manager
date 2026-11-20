@@ -50,6 +50,7 @@ struct StrategicPositionProposal {
     std::int32_t player_id{-1};
     std::uint32_t round{0};
     std::uint64_t sequence{0};
+    std::uint64_t lineup_sequence{0};
     std::string composition_id;
     std::uint64_t composition_version{0};
     std::int32_t champion_id{-1};
