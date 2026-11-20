@@ -421,15 +421,32 @@ int main(int argc, char** argv) {
         require(bought.action_rewards[0] > -0.25f && bought.action_rewards[0] < 0.50f,
                 "Recompensa de compra com shaping economico deve permanecer limitada.");
 
-        // CompositionManager/StrategyManager devem refletir as unidades
-        // compradas no snapshot público, sem depender de combate.
+        // The legacy StrategyInfo row is a compatibility projection. A focus
+        // is valid only when the native ActiveCompositionManager has published
+        // a versioned composition; a shop purchase alone must not invent one.
         const auto strategy_snapshot = engine.get_strategies()[0];
         require(!strategy_snapshot.empty(),
                 "StrategyManager não publicou estado para o jogador.");
-        require(!strategy_snapshot.back().composition_focus.empty(),
-                "CompositionManager não identificou unidade foco.");
+        const auto native_strategy_snapshot = engine.get_audit_snapshot();
+        const auto& native_strategy =
+            native_strategy_snapshot.players[0].strategic_state;
+        if (native_strategy.active_composition_valid) {
+            require(native_strategy.active_composition_version > 0 &&
+                        !native_strategy.active_composition_id.empty() &&
+                        !strategy_snapshot.back().composition_focus.empty() &&
+                        std::find(native_strategy.active_unit_ids.begin(),
+                                  native_strategy.active_unit_ids.end(),
+                                  strategy_snapshot.back().composition_focus_id) !=
+                            native_strategy.active_unit_ids.end(),
+                    "Focus de compatibilidade não corresponde à composição nativa ativa.");
+        } else {
+            require(strategy_snapshot.back().composition_focus.empty() &&
+                        strategy_snapshot.back().composition_focus_id == -1 &&
+                        strategy_snapshot.back().planned_unit_ids.empty(),
+                    "Projeção legada inventou foco/alvos sem composição nativa ativa.");
+        }
         require(!strategy_snapshot.back().unit_counts.empty(),
-                "CompositionManager não contabilizou cópias do jogador.");
+                "StrategyManager não contabilizou cópias físicas do jogador.");
         require(strategy_snapshot.back().strategy >= 0 &&
                     strategy_snapshot.back().strategy <= 6,
                 "StrategyManager publicou estratégia fora do enum válido.");
