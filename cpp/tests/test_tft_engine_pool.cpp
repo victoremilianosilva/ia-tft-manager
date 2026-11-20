@@ -1321,6 +1321,9 @@ int main(int argc, char** argv) {
                         refresh_unit->api_name,
                         refresh_unit->combat_profile.is_carry ? 2 : 1),
                     "Nao foi possivel avancar evidencia consecutiva do pivot nativo.");
+            native_pivot_snapshot = native_pivot_engine.get_audit_snapshot();
+            if (native_pivot_snapshot.players[0].strategic_state.active_composition_version >= 2)
+                break;
         }
         native_pivot_snapshot = native_pivot_engine.get_audit_snapshot();
         const auto& native_pivot_state =
