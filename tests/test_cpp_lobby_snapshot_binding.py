@@ -76,32 +76,6 @@ class FakeNativeLobby:
             "players": [
                 {
                     "player_id": player_id,
-                    "strategic_state": {
-                        "contract_id": "tft.strategic-owner-observation",
-                        "contract_version": 1,
-                        "source_namespace": "tft.engine.strategic-owners",
-                        "producer": "TFTEngine::get_audit_snapshot",
-                        "episode_id": self.episode_id,
-                        "player_decision_sequence": self.player_decision_sequences[player_id],
-                        "player_id": player_id,
-                        "round": self.round,
-                        "active_composition_valid": False,
-                        "active_composition_id": "",
-                        "active_composition_version": 0,
-                        "active_source_sequence": 0,
-                        "active_unit_ids": [],
-                        "active_core_unit_ids": [],
-                        "direction_valid": False,
-                        "direction_identity": "",
-                        "direction_selected_round": 0,
-                        "direction_reference_unit_ids": [],
-                        "pivot_candidate_valid": False,
-                        "pivot_candidate_identity": "",
-                        "pivot_target_composition_identity": "",
-                        "pivot_source_composition_version": 0,
-                        "pivot_reference_unit_ids": [],
-                        "opportunity_cost_available": False,
-                    },
                     "board": [{"occupied": False, "champion_id": "", "uuid": "", "star": 0, "cost": 0, "items": [], "trait_names": []} for _ in range(28)],
                     "bench": [{"occupied": False, "champion_id": "", "uuid": "", "star": 0, "cost": 0, "items": [], "trait_names": []} for _ in range(9)],
                     "shop": [{"occupied": False, "champion_id": "", "uuid": "", "star": 0, "cost": 0, "items": [], "trait_names": []} for _ in range(5)],
@@ -209,6 +183,20 @@ def test_wrapper_rejects_duplicate_unit_instance_uuid_across_active_owners():
         cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
 
 
+def test_wrapper_rejects_stale_strategic_owner_snapshot():
+    native = FakeNativeLobby()
+    snapshot = native._native_state_snapshot()
+    snapshot["players"][3]["strategic_state"]["player_decision_sequence"] = 99
+    identity = {
+        "engine_instance_id": f"fake-engine-{id(native)}",
+        "episode_id": 0,
+        "decision_sequence": 0,
+        "player_decision_sequences": [0] * 8,
+    }
+    with pytest.raises(RuntimeError, match="Strategic owner snapshot diverge"):
+        cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
+
+
 def test_wrapper_rejects_invalid_unit_trait_membership():
     native = FakeNativeLobby()
     snapshot = native._native_state_snapshot()
@@ -248,6 +236,11 @@ def test_reset_masks_are_taken_from_same_native_snapshot(monkeypatch):
         assert metadata["decision_sequence"] == 1
         assert metadata["round"] == 1
         assert metadata["player_decision_sequences"] == [1] * 8
+        strategic = metadata["native_state_snapshot"]["players"][0]["strategic_state"]
+        assert strategic["contract_id"] == "tft.strategic-owner-observation"
+        assert strategic["player_decision_sequence"] == 1
+        assert strategic["active_composition_valid"] is False
+        assert strategic["opportunity_cost_available"] is False
         envelopes = metadata["player_identity_envelopes"]
         assert len(envelopes) == 8
         assert envelopes[0]["engine_match_id"] == f"{metadata['engine_instance_id']}/episode/1"
