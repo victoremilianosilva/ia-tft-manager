@@ -100,6 +100,7 @@ private:
                 {"gold_available", input.exploration.gold_available},
                 {"composition_defined", input.exploration.composition_defined},
                 {"active_composition_identity", input.exploration.active_composition_identity},
+                {"selected_initial_direction", input.selected_initial_direction},
                 {"previous_direction", input.exploration.previous_direction},
                 {"maximum_hypotheses", input.exploration.maximum_hypotheses}
             }}
