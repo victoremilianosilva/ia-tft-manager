@@ -34,6 +34,11 @@ void owned_target_can_be_deferred_by_capacity() {
     assert(!r.stale && r.selected_board.size()==2);
     assert(r.endgame_target_ids.size()==4 && r.deferred_target_ids.size()==2);
     assert(r.status=="partial_target_waiting_for_units_or_capacity");
+    const auto deferred = std::find_if(r.target_states.begin(), r.target_states.end(),
+        [](const auto& state) { return state.champion_id == 3; });
+    assert(deferred != r.target_states.end());
+    assert(deferred->availability == "owned_on_bench");
+    assert(deferred->deferred && deferred->deferred_reason == "board_capacity");
 }
 void pivot_keeps_bridge_only_as_temporary_capacity_fill() {
     ActiveCompositionManager manager; manager.publish(comp()); auto next=comp();
