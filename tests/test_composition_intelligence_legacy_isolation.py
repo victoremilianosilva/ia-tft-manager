@@ -105,3 +105,15 @@ def test_unified_native_runtime_refresh_is_outside_optional_composition_intellig
     assert "strategic_native_owned" in source[start:refresh]
     assert "strategic audit sidecar path not configured" not in source[start:end_optional]
 
+
+def test_native_runtime_entrypoint_uses_only_native_cycle_inputs():
+    source = ENGINE_SOURCE.read_text(encoding="utf-8")
+    start = source.index("void refresh_native_strategic_runtime(")
+    end = source.index("void update_strategy(std::size_t i)", start)
+    runtime = source[start:end]
+    forbidden = ("StrategyInfo", "strategy_snapshot", "copies_by_unit",
+                 "info.composition_direction", "select_economic_strategy")
+    found = [token for token in forbidden if token in runtime]
+    assert not found, f"Native runtime entrypoint depends on legacy strategy: {found}"
+    assert "strategic_shadow_runtimes[i]" in runtime
+    assert "native_runtime.refresh(native_audit_context, native_input)" in runtime
