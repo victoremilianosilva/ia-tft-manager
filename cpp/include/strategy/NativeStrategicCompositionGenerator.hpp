@@ -169,8 +169,11 @@ public:
                 return lhs < rhs;
             });
 
+        // Candidate composition is the endgame target; current board capacity
+        // is applied later by LineupPlanner. Capping here erased deferred targets
+        // and made a level-4 player appear to have a four-unit endgame composition.
         const auto effective_target_slots = static_cast<std::size_t>(
-            std::clamp(std::min(input.target_slots, input.level), 1, 10));
+            std::clamp(input.target_slots, 1, 10));
 
         struct ScoredUnit {
             const NativeCompositionUnitDefinition* definition{nullptr};
