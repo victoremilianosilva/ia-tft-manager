@@ -78,11 +78,12 @@ class FakeNativeLobby:
                     "player_id": player_id,
                     "strategic_state": {
                         "contract_id": "tft.strategic-owner-observation",
-                        "contract_version": 1,
+                        "contract_version": 2,
                         "source_namespace": "tft.engine.strategic-owners",
                         "producer": "TFTEngine::get_audit_snapshot",
                         "episode_id": self.episode_id,
                         "player_decision_sequence": self.player_decision_sequences[player_id],
+                        "strategic_context_sequence": 0,
                         "player_id": player_id,
                         "round": self.round,
                         "active_composition_valid": False,
@@ -265,7 +266,9 @@ def test_reset_masks_are_taken_from_same_native_snapshot(monkeypatch):
         assert metadata["player_decision_sequences"] == [1] * 8
         strategic = metadata["native_state_snapshot"]["players"][0]["strategic_state"]
         assert strategic["contract_id"] == "tft.strategic-owner-observation"
+        assert strategic["contract_version"] == 2
         assert strategic["player_decision_sequence"] == 1
+        assert strategic["strategic_context_sequence"] == 0
         assert strategic["active_composition_valid"] is False
         assert strategic["opportunity_cost_available"] is False
         envelopes = metadata["player_identity_envelopes"]
@@ -880,4 +883,19 @@ def test_wrapper_rejects_anvil_sequence_without_pending_choice():
         "player_decision_sequences": [0] * 8,
     }
     with pytest.raises(RuntimeError, match="Sequência de bigorna presente"):
+        cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
+
+
+
+def test_wrapper_rejects_invalid_strategic_context_sequence():
+    native = FakeNativeLobby()
+    snapshot = native._native_state_snapshot()
+    snapshot["players"][0]["strategic_state"]["strategic_context_sequence"] = True
+    identity = {
+        "engine_instance_id": f"fake-engine-{id(native)}",
+        "episode_id": 0,
+        "decision_sequence": 0,
+        "player_decision_sequences": [0] * 8,
+    }
+    with pytest.raises(RuntimeError, match="strategic_context_sequence"):
         cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)

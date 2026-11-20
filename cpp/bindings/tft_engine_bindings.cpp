@@ -348,6 +348,7 @@ py::dict audit_snapshot_to_dict(
         strategic_state["producer"] = strategic.producer;
         strategic_state["episode_id"] = strategic.episode_id;
         strategic_state["player_decision_sequence"] = strategic.player_decision_sequence;
+        strategic_state["strategic_context_sequence"] = strategic.strategic_context_sequence;
         strategic_state["player_id"] = strategic.player_id;
         strategic_state["round"] = strategic.round;
         strategic_state["active_composition_valid"] = strategic.active_composition_valid;

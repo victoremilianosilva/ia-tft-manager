@@ -306,7 +306,7 @@ struct AuditUnitCopyProgressSnapshot {
 
 struct AuditStrategicOwnerSnapshot {
     std::string contract_id{"tft.strategic-owner-observation"};
-    std::uint32_t contract_version{1};
+    std::uint32_t contract_version{2};
     std::string source_namespace{"tft.engine.strategic-owners"};
     std::string producer{"TFTEngine::get_audit_snapshot"};
     std::uint64_t episode_id{0};
@@ -333,6 +333,9 @@ struct AuditStrategicOwnerSnapshot {
     std::vector<AuditUnitCopyProgressSnapshot> unit_copy_progress;
     // False means unavailable, never a measured zero.
     bool opportunity_cost_available{false};
+    // Sequence consumed by strategic evidence/candidate/action owners; a distinct scope.
+    // Appended to preserve existing aggregate initialization.
+    std::uint64_t strategic_context_sequence{0};
 };
 
 struct AuditPlayerSnapshot {

@@ -42,6 +42,20 @@ def test_shadow_pipeline_replays_multiple_rounds_with_correlated_sequences(monke
 
         records = _records(engine)
         assert records, "A pipeline Shadow habilitada não publicou snapshots multi-round."
+        native_audit = engine.get_audit_snapshot()
+        latest_by_player = {}
+        for record in records:
+            previous = latest_by_player.get(record["player_id"])
+            if previous is None or record["sequence"] > previous["sequence"]:
+                latest_by_player[record["player_id"]] = record
+        for player in native_audit.get("players", []):
+            record = latest_by_player.get(player.get("player_id"))
+            if record is None:
+                continue
+            resolution = record["action_evaluator_comparison"]["native_action_resolution"]
+            assert player["strategic_state"]["strategic_context_sequence"] == (
+                resolution["identity"]["source_sequence"]
+            )
         sequences = [record["sequence"] for record in records]
         assert sequences == sorted(sequences)
         assert len(sequences) == len(set(sequences))
@@ -107,6 +121,11 @@ def test_shadow_pipeline_replays_multiple_rounds_with_correlated_sequences(monke
         assert reset["engine_instance_id"] == initial["engine_instance_id"]
         assert reset["episode_id"] > initial["episode_id"]
         assert _records(engine) == []
+        reset_audit = engine.get_audit_snapshot()
+        assert all(
+            player["strategic_state"]["strategic_context_sequence"] == 0
+            for player in reset_audit.get("players", [])
+        )
     finally:
         engine.close()
 
@@ -120,3 +139,27 @@ def test_shadow_pipeline_feature_flag_off_emits_no_composition_snapshots(monkeyp
         assert _records(engine) == []
     finally:
         engine.close()
+
+
+def test_generated_strategic_replay_artifact_is_loadable_by_viewer():
+    from pathlib import Path
+    from viewer.session import ViewerSession
+
+    artifact = Path(__file__).resolve().parents[1] / "cpp" / "build" / "strategic_integrated_replay.jsonl"
+    if not artifact.is_file():
+        pytest.skip("O artefato CTest só existe após executar o replay nativo integrado.")
+
+    session = ViewerSession()
+    count = session.load_replay(artifact)
+    assert count == 9
+    events = [session.replay_event(index) for index in range(count)]
+    assert [item["sequence_id"] for item in events] == list(range(1, 10))
+    assert all(item["event_type"] == "strategic_replay_scenario" for item in events)
+    scenarios = [item["payload"]["scenario"] for item in events]
+    assert scenarios == [
+        "buy_upgrade", "sell", "positioning", "stale_same_round",
+        "pivot_invalidates_old_recommendation", "contradictory_evidence",
+        "contradictory_economic_evidence", "no_candidates", "executor_reset",
+    ]
+    assert all(item["payload"].get("native_action_applied") is False for item in events[:5])
+    assert all(item["payload"].get("execution_attempted") is False for item in events[:5])

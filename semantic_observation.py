@@ -159,11 +159,19 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
         strategic.get("contract_id") != "tft.strategic-owner-observation"
         or isinstance(strategic_version, bool)
         or not isinstance(strategic_version, int)
-        or strategic_version != 1
+        or strategic_version != 2
         or strategic.get("producer") != "TFTEngine::get_audit_snapshot"
         or strategic.get("source_namespace") != "tft.engine.strategic-owners"
     ):
         raise ValueError("unsupported strategic owner snapshot contract")
+    strategic_context_sequence = strategic.get("strategic_context_sequence")
+    if (
+        isinstance(strategic_context_sequence, bool)
+        or not isinstance(strategic_context_sequence, int)
+        or strategic_context_sequence < 0
+    ):
+        raise ValueError("invalid strategic owner strategic_context_sequence")
+
     for field, expected in (
         ("episode_id", metadata["episode_id"]),
         ("player_decision_sequence", metadata["player_decision_sequence"]),

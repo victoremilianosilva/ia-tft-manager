@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "replay_id": "strategic-integrated-replay-v1",
+  "execution_enabled": false,
+  "scenarios": [
+    "buy_upgrade",
+    "sell",
+    "positioning",
+    "stale_same_round",
+    "pivot_invalidates_old_recommendation",
+    "contradictory_evidence",
+    "contradictory_economic_evidence",
+    "no_candidates",
+    "executor_reset"
+  ]
+}
