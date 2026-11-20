@@ -121,6 +121,11 @@ def test_shadow_pipeline_replays_multiple_rounds_with_correlated_sequences(monke
         assert reset["engine_instance_id"] == initial["engine_instance_id"]
         assert reset["episode_id"] > initial["episode_id"]
         assert _records(engine) == []
+        reset_audit = engine.get_audit_snapshot()
+        assert all(
+            player["strategic_state"]["strategic_context_sequence"] == 0
+            for player in reset_audit.get("players", [])
+        )
     finally:
         engine.close()
 

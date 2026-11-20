@@ -281,3 +281,32 @@ def test_persisted_diagnostic_identity_requires_engine_episode_id(tmp_path):
 
     record = json.loads((tmp_path / "composition_diagnostics.jsonl").read_text().strip())
     assert record["correlation"]["identity_complete"] is False
+
+
+def test_viewer_marks_same_round_diagnostic_stale_after_composition_pivot():
+    class NativeLobby:
+        def get_audit_snapshot(self):
+            return _native_snapshot(
+                round_number=9,
+                player_sequence=12,
+                composition_id="comp-b",
+                version=4,
+            )
+
+        def get_snapshot_metadata(self):
+            return {"episode_id": 77}
+
+        def get_composition_diagnostics_jsonl(self):
+            return [json.dumps(_shadow_record(
+                round_number=9,
+                source_sequence=12,
+                composition_id="comp-a",
+                version=3,
+            ))]
+
+    session = ViewerSession()
+    session.lobby = NativeLobby()
+    shadow = session._refresh_audit_snapshot()["players"][0]["shadow_composition"]
+
+    assert shadow["stale"] is True
+    assert shadow["stale_reason"] == "diagnostic_composition_identity_does_not_match_current_native_state"

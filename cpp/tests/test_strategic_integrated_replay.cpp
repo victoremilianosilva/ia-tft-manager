@@ -381,6 +381,7 @@ int main(int argc, char** argv) {
     const auto manifest = json::parse(manifest_file);
     assert(manifest.at("schema_version") == 1);
     assert(manifest.at("replay_id") == "strategic-integrated-replay-v1");
+    assert(manifest.at("execution_enabled") == false);
     const auto records = run_replay();
     assert(manifest.at("scenarios").size() == records.size());
     for (std::size_t i = 0; i < records.size(); ++i)
