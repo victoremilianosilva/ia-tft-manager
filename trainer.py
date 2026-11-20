@@ -1974,7 +1974,7 @@ class Trainer:
                 # ----------------------------------------------------
 
                 valid_indices = torch.nonzero(
-                    rollout.valid[:rollout.ptr].reshape(-1),
+                    rollout.optimization_valid[:rollout.ptr].reshape(-1),
                     as_tuple=False,
                 ).squeeze(-1)
 
@@ -2104,7 +2104,7 @@ class Trainer:
             # 📊 GENERAL LOGS
             # ========================================================
             mean_reward = None
-            valid_mask = rollout.valid[:rollout.ptr]
+            valid_mask = rollout.optimization_valid[:rollout.ptr]
 
             if valid_mask.any():
 
