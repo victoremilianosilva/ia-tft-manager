@@ -17,6 +17,11 @@ public:
     TransitionManager transitions;
     CompositionDiagnosticRecorder recorder;
     std::vector<nlohmann::json> snapshots;
+    // Latest canonical planner outputs are retained for same-snapshot consumers.
+    PlannerEvidenceSnapshot planner_evidence;
+    UnitPrioritySnapshot unit_priorities;
+    LineupPlan lineup;
+    bool planner_outputs_valid{false};
 
     void begin_cycle(std::uint64_t match_id, std::int32_t player_id,
                      std::uint32_t round) {
@@ -25,6 +30,10 @@ public:
         round_ = round;
         stage_trace_.clear();
         next_stage_sequence_ = 0;
+        planner_evidence = PlannerEvidenceSnapshot{};
+        unit_priorities = UnitPrioritySnapshot{};
+        lineup = LineupPlan{};
+        planner_outputs_valid = false;
     }
 
     void mark_stage(std::string name, std::string status, std::string reason = {},
@@ -76,6 +85,10 @@ public:
         transitions = TransitionManager{};
         recorder = CompositionDiagnosticRecorder{};
         snapshots.clear();
+        planner_evidence = PlannerEvidenceSnapshot{};
+        unit_priorities = UnitPrioritySnapshot{};
+        lineup = LineupPlan{};
+        planner_outputs_valid = false;
         match_id_ = 0;
         player_id_ = -1;
         round_ = 0;

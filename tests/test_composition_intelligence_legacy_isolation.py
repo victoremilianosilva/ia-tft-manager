@@ -42,21 +42,19 @@ def test_native_composition_evidence_is_built_before_legacy_strategy():
         "// Native strategic evidence is generated directly from live engine facts"
     )
     end = source.index(
-        "if (current_round >= 9 && !info.composition_direction.empty())", start
+        "strategy::select_economic_strategy(strategy_context)", start
     )
     native_generation = source[start:end]
     assert "NativeStrategicCompositionGenerator{}.generate(native_input)" in native_generation
     assert "strategic_native_owned" in native_generation
     assert "StrategyInfo" not in native_generation
-    assert "info." not in native_generation
+    assert "info.planned_unit_ids" not in native_generation
+    assert "info.core_unit_ids" not in native_generation
     assert "copies_by_unit" not in native_generation
 
-    # The native fact snapshot must exist before legacy economic and direction
-    # generation, so its producer cannot depend on those derived values.
+    # Native generation precedes the remaining economic compatibility policy.
     legacy_economy = source.index("strategy::select_economic_strategy(strategy_context)")
-    legacy_direction = source.index("Port of Python _update_comp_direction()")
     assert start < legacy_economy
-    assert start < legacy_direction
 
 
 def test_shadow_core_and_item_fit_use_native_strategic_sources():
@@ -92,7 +90,7 @@ def test_action_comparison_requires_nonempty_exact_candidate_identity():
 def test_native_runtime_refresh_precedes_legacy_strategy_generation():
     source = ENGINE_SOURCE.read_text(encoding="utf-8")
     call = source.index(
-        "refresh_native_strategic_runtime(\n            i, current_round, economy, strategic_native_owned"
+        "refresh_native_strategic_runtime(\n            i, current_round, economy, player_envs[i].info"
     )
     native_generation = source.index(
         "NativeStrategicCompositionGenerator{}.generate(native_input)"
@@ -100,9 +98,7 @@ def test_native_runtime_refresh_precedes_legacy_strategy_generation():
     legacy_economy = source.index(
         "strategy::select_economic_strategy(strategy_context)"
     )
-    legacy_direction = source.index("Port of Python _update_comp_direction()")
     assert native_generation < call < legacy_economy
-    assert call < legacy_direction
 
 
 def test_native_runtime_entrypoint_uses_only_native_cycle_inputs():
@@ -130,3 +126,49 @@ def test_native_runtime_is_the_only_composition_publisher():
     optional_pipeline = source[start:end]
     assert "publish_if_approved" not in optional_pipeline
     assert "native_strategic_runtime_owns_composition_publication" in optional_pipeline
+
+def test_legacy_composition_generation_is_removed_from_engine():
+    source = ENGINE_SOURCE.read_text(encoding="utf-8")
+    assert "CompositionPlanner::build" not in source
+    assert "strategy/CompositionPlanner.hpp" not in source
+    assert "CompositionDirectionPolicy.hpp" not in source
+    assert "should_replace_composition_plan" not in source
+    assert "Port of Python _update_comp_direction()" not in source
+    # StrategyInfo fields are compatibility projections only; no consumer
+    # searches or branches on the legacy planned-unit vectors.
+    assert "std::find(info.planned_unit_ids.begin()" not in source
+    assert "std::find(strategy_before.planned_unit_ids.begin()" not in source
+    assert "std::find(current_strategy.planned_unit_ids.begin()" not in source
+    assert "composition_intelligence_players[i].active.current()" in source
+
+
+def test_native_priority_and_lineup_outputs_are_version_bound_and_reused():
+    source = ENGINE_SOURCE.read_text(encoding="utf-8")
+    assert "ci::UnitPriorityPlanner{}.resolve(active, priority_context)" in source
+    assert "ci::LineupPlanner{}.plan(active, priorities, lineup_context)" in source
+    assert "runtime.unit_priorities = priorities" in source
+    assert "runtime.lineup = lineup" in source
+    assert "runtime.planner_outputs_valid" in source
+    assert "priority_evidence.pool_remaining = pool->available(champion_id)" in source
+    assert "priority_evidence.copies_in_shop" in source
+    assert "if (!pool) continue;" in source
+    assert "native_input.target_slots = std::clamp(std::max(8, economy.level), 1, 10)" in source
+
+
+def test_lineup_and_upgrade_diagnostics_preserve_physical_evidence():
+    priority = (ROOT / "cpp" / "include" / "composition_intelligence" /
+                "UnitPriorityPlanner.hpp").read_text(encoding="utf-8")
+    lineup = (ROOT / "cpp" / "include" / "composition_intelligence" /
+              "LineupPlanner.hpp").read_text(encoding="utf-8")
+    diagnostics = (ROOT / "cpp" / "include" / "composition_intelligence" /
+                   "CompositionDiagnostics.hpp").read_text(encoding="utf-8")
+    assert "copies_by_star" in priority
+    assert "copies_toward_next_star" in priority
+    assert "copies_needed_for_next_star" in priority
+    assert "affordable_shop_copies" in priority
+    assert "pool_remaining" in priority
+    assert "LineupTargetEntry" in lineup
+    assert "availability" in lineup and "deferred_reason" in lineup
+    assert '"target_states"' in diagnostics
+    assert '"copies_by_star"' in diagnostics
+

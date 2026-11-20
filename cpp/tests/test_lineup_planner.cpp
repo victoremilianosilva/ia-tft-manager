@@ -34,6 +34,11 @@ void owned_target_can_be_deferred_by_capacity() {
     assert(!r.stale && r.selected_board.size()==2);
     assert(r.endgame_target_ids.size()==4 && r.deferred_target_ids.size()==2);
     assert(r.status=="partial_target_waiting_for_units_or_capacity");
+    const auto deferred = std::find_if(r.target_states.begin(), r.target_states.end(),
+        [](const auto& state) { return state.champion_id == 3; });
+    assert(deferred != r.target_states.end());
+    assert(deferred->availability == "owned_on_bench");
+    assert(deferred->deferred && deferred->deferred_reason == "board_capacity");
 }
 void pivot_keeps_bridge_only_as_temporary_capacity_fill() {
     ActiveCompositionManager manager; manager.publish(comp()); auto next=comp();
@@ -123,6 +128,36 @@ void board_gap_changes_role_selection_within_target_priority_tier() {
     assert(!result.stale && result.selected_board.size() == 1);
     assert(result.selected_board.front().champion_id == 4);
 }
+void target_availability_is_distinct_from_owned_and_capacity_deferred() {
+    ActiveCompositionManager manager; manager.publish(comp()); const auto active=*manager.current();
+    UnitPrioritySnapshot p; p.composition_id=active.candidate.composition_id; p.composition_version=active.version;
+    UnitPriority owned_carry; owned_carry.champion_id=1; owned_carry.copies_owned=1;
+    owned_carry.highest_star=1; owned_carry.on_board=true; owned_carry.target_unit=true;
+    UnitPriority owned_frontline; owned_frontline.champion_id=2; owned_frontline.copies_owned=1;
+    owned_frontline.highest_star=1; owned_frontline.on_board=true; owned_frontline.target_unit=true;
+    UnitPriority shop_target; shop_target.champion_id=3; shop_target.intent=UnitIntent::Seek;
+    shop_target.relation=UnitStrategicRelation::MissingTarget; shop_target.target_unit=true;
+    shop_target.copies_in_shop=1; shop_target.affordable_shop_copies=1;
+    shop_target.pool_known=true; shop_target.pool_remaining=4;
+    UnitPriority exhausted_target; exhausted_target.champion_id=4;
+    exhausted_target.intent=UnitIntent::Seek; exhausted_target.relation=UnitStrategicRelation::MissingTarget;
+    exhausted_target.target_unit=true; exhausted_target.pool_known=true;
+    exhausted_target.pool_remaining=0;
+    p.units={owned_carry,owned_frontline,shop_target,exhausted_target};
+    LineupPlannerContext context; context.level=2; context.board_capacity=2;
+    context.current_board_ids={1,2};
+    const auto result=LineupPlanner{}.plan(active,p,context);
+    assert(!result.stale && result.target_states.size()==4);
+    const auto shop=std::find_if(result.target_states.begin(),result.target_states.end(),
+        [](const auto& state){return state.champion_id==3;});
+    const auto exhausted=std::find_if(result.target_states.begin(),result.target_states.end(),
+        [](const auto& state){return state.champion_id==4;});
+    assert(shop!=result.target_states.end() && shop->availability=="missing_in_shop");
+    assert(shop->copies_in_shop==1 && shop->affordable_shop_copies==1 && shop->deferred);
+    assert(exhausted!=result.target_states.end() && exhausted->availability=="pool_exhausted");
+    assert(exhausted->deferred && exhausted->deferred_reason=="pool_exhausted");
+}
+
 void stale_snapshot_is_rejected() {
     ActiveCompositionManager manager; manager.publish(comp()); const auto active=*manager.current();
     UnitPrioritySnapshot p; p.composition_id=active.candidate.composition_id; p.composition_version=active.version+1;
@@ -136,6 +171,7 @@ int main() {
     pivot_keeps_bridge_only_as_temporary_capacity_fill();
     valid_board_evidence_is_bound_to_lineup_version();
     board_gap_changes_role_selection_within_target_priority_tier();
+    target_availability_is_distinct_from_owned_and_capacity_deferred();
     stale_snapshot_is_rejected();
     std::cout << "Lineup planner tests passed\n";
 }

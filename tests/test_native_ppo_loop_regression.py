@@ -106,24 +106,49 @@ def test_native_mask_blocks_reverse_swap_and_executor_rejects_forced_reverse():
         lobby.close()
 
 
-def test_native_composition_score_rewards_two_star_upgrade_separately():
-    champion_id = _active_champion_ids(1)[0]
+def test_native_composition_score_requires_a_published_active_composition():
     lobby = CppTFTLobbyWrapper(seed=20261023)
     try:
         lobby.reset(seed=20261023)
         native = lobby._engine
+        player_state = native.get_audit_snapshot()["players"][0]["strategic_state"]
+        champion_ids = player_state.get("active_unit_ids", [])
+        api_by_id = {
+            int(internal_id): api_name
+            for api_name, internal_id in native.get_champion_id_map().items()
+        }
 
-        one_star = float(native.get_unit_comp_score(0, champion_id, 1))
-        two_star = float(native.get_unit_comp_score(0, champion_id, 2))
-        three_star = float(native.get_unit_comp_score(0, champion_id, 3))
+        if not player_state.get("active_composition_valid", False):
+            # No active composition means no authoritative unit-priority snapshot.
+            # The compatibility score must stay unavailable rather than inventing
+            # a score for an arbitrary first catalog entry.
+            assert not champion_ids
+            for champion_id in _active_champion_ids(1):
+                scores = [
+                    float(native.get_unit_comp_score(0, champion_id, star))
+                    for star in (1, 2, 3)
+                ]
+                assert scores == [0.0, 0.0, 0.0], (
+                    "O score de composição foi publicado sem composição ativa: "
+                    f"{champion_id}={scores}"
+                )
+            return
 
-        assert two_star > one_star, (
-            f"O sinal estratégico nativo não valoriza {champion_id} 2★ acima de 1★: "
-            f"1★={one_star}, 2★={two_star}"
+        assert champion_ids, "Composição ativa publicada sem unidades-alvo."
+        champion_id = api_by_id.get(int(champion_ids[0]))
+        assert champion_id, (
+            "Unidade da composição ativa não existe no mapa do catálogo nativo."
         )
-        assert three_star > two_star, (
-            f"O sinal estratégico nativo não valoriza {champion_id} 3★ acima de 2★: "
-            f"2★={two_star}, 3★={three_star}"
+        scores = [
+            float(native.get_unit_comp_score(0, champion_id, star))
+            for star in (1, 2, 3)
+        ]
+        assert all(np.isfinite(score) for score in scores), (
+            f"Scores nativos não finitos para {champion_id}: {scores}"
+        )
+        assert scores[1] > scores[0] and scores[2] > scores[1], (
+            f"O sinal estratégico não diferencia tiers para unidade-alvo "
+            f"{champion_id}: 1★={scores[0]}, 2★={scores[1]}, 3★={scores[2]}"
         )
     finally:
         lobby.close()

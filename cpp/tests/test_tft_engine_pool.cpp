@@ -421,15 +421,32 @@ int main(int argc, char** argv) {
         require(bought.action_rewards[0] > -0.25f && bought.action_rewards[0] < 0.50f,
                 "Recompensa de compra com shaping economico deve permanecer limitada.");
 
-        // CompositionManager/StrategyManager devem refletir as unidades
-        // compradas no snapshot público, sem depender de combate.
+        // The legacy StrategyInfo row is a compatibility projection. A focus
+        // is valid only when the native ActiveCompositionManager has published
+        // a versioned composition; a shop purchase alone must not invent one.
         const auto strategy_snapshot = engine.get_strategies()[0];
         require(!strategy_snapshot.empty(),
                 "StrategyManager não publicou estado para o jogador.");
-        require(!strategy_snapshot.back().composition_focus.empty(),
-                "CompositionManager não identificou unidade foco.");
+        const auto native_strategy_snapshot = engine.get_audit_snapshot();
+        const auto& native_strategy =
+            native_strategy_snapshot.players[0].strategic_state;
+        if (native_strategy.active_composition_valid) {
+            require(native_strategy.active_composition_version > 0 &&
+                        !native_strategy.active_composition_id.empty() &&
+                        !strategy_snapshot.back().composition_focus.empty() &&
+                        std::find(native_strategy.active_unit_ids.begin(),
+                                  native_strategy.active_unit_ids.end(),
+                                  strategy_snapshot.back().composition_focus_id) !=
+                            native_strategy.active_unit_ids.end(),
+                    "Focus de compatibilidade não corresponde à composição nativa ativa.");
+        } else {
+            require(strategy_snapshot.back().composition_focus.empty() &&
+                        strategy_snapshot.back().composition_focus_id == -1 &&
+                        strategy_snapshot.back().planned_unit_ids.empty(),
+                    "Projeção legada inventou foco/alvos sem composição nativa ativa.");
+        }
         require(!strategy_snapshot.back().unit_counts.empty(),
-                "CompositionManager não contabilizou cópias do jogador.");
+                "StrategyManager não contabilizou cópias físicas do jogador.");
         require(strategy_snapshot.back().strategy >= 0 &&
                     strategy_snapshot.back().strategy <= 6,
                 "StrategyManager publicou estratégia fora do enum válido.");
@@ -691,8 +708,9 @@ int main(int argc, char** argv) {
             "Reset apagou os bloqueios acumulados do AntiLoop."
         );
 
-        // Regression: a dominant trait with six owned units should lock in
-        // stage 3, and the direction must survive a small off-comp addition.
+        // Native composition migration intentionally has no legacy lock producer.
+        // A six-unit trait fixture must not fabricate StrategyInfo lock state;
+        // direction/composition authority is exposed by the native owner snapshot.
         tft::TFTEngine comp_engine(56789, json_path);
         std::map<std::string, std::vector<std::string>> champions_by_trait;
         for (const auto& champion : catalog.all()) {
@@ -703,12 +721,12 @@ int main(int argc, char** argv) {
             champions_by_trait.begin(), champions_by_trait.end(),
             [](const auto& entry) { return entry.second.size() >= 6; });
         require(dominant != champions_by_trait.end(),
-                "Catalogo nao possui trait com seis campeoes para testar comp lock.");
+                "Catalogo nao possui trait com seis campeoes para testar a projecao nativa.");
         for (std::size_t slot = 0; slot < 6; ++slot) {
             require(comp_engine.set_unit_for_testing(
                         0, false, static_cast<std::int32_t>(slot),
                         dominant->second[slot], 1),
-                    "Nao foi possivel montar fixture de seis unidades para comp lock.");
+                    "Nao foi possivel montar fixture de seis unidades.");
         }
         std::array<tft::PlayerAction, tft::kPlayersPerLobby> pass_actions{};
         for (auto& action : pass_actions) action.values = {6, 0, 0, 0, 0, 0};
@@ -719,34 +737,21 @@ int main(int argc, char** argv) {
                 (void)step_with_pending_anvils(comp_engine, pass_actions);
         }
         require(comp_engine.stage() >= 3,
-                "Fixture nao alcancou stage 3 para validar o comp lock.");
-        // Stage is advanced after combat resolution; let the strategy update
-        // run twice in the newly opened stage-3 preparation phase.
+                "Fixture nao alcancou stage 3 para validar a projecao nativa.");
         (void)step_with_pending_anvils(comp_engine, pass_actions);
         (void)step_with_pending_anvils(comp_engine, pass_actions);
-        auto comp_state = comp_engine.get_strategies()[0].back();
-        require(comp_state.composition_locked,
-                "Composicao dominante com seis unidades nao ativou o lock no stage 3.");
-        require(!comp_state.composition_direction.empty(),
-                "Lock ativo nao preservou uma direcao de composicao.");
-        const auto locked_direction = comp_state.composition_direction;
-        const auto off_comp = std::find_if(
-            catalog.all().begin(), catalog.all().end(),
-            [&](const auto& champion) {
-                return std::find(champion.traits.begin(), champion.traits.end(),
-                                 locked_direction) == champion.traits.end();
-            });
-        if (off_comp != catalog.all().end()) {
-            require(comp_engine.set_unit_for_testing(
-                        0, false, 6, off_comp->api_name, 1),
-                    "Nao foi possivel adicionar unidade fora da composicao.");
-            (void)comp_engine.set_unit_for_testing(
-                0, false, 7, off_comp->api_name, 1);
-            comp_state = comp_engine.get_strategies()[0].back();
-            require(comp_state.composition_locked,
-                    "Lock foi perdido apos adicionar uma unidade fora da composicao.");
-            require(comp_state.composition_direction == locked_direction,
-                    "Direcao mudou imediatamente apesar do lock ativo.");
+        const auto native_composition_state =
+            comp_engine.get_audit_snapshot().players[0].strategic_state;
+        const auto compatibility_strategy = comp_engine.get_strategies()[0].back();
+        require(!compatibility_strategy.composition_locked,
+                "Projecao de compatibilidade inventou lock sem owner nativo.");
+        require(compatibility_strategy.composition_focus.empty() &&
+                    compatibility_strategy.composition_focus_id == -1,
+                "Projecao de compatibilidade inventou foco sem composicao ativa.");
+        if (native_composition_state.active_composition_valid) {
+            require(native_composition_state.active_composition_version > 0 &&
+                        !native_composition_state.active_composition_id.empty(),
+                    "Composicao ativa nativa nao possui identidade/versionamento.");
         }
 
         // Reward Contract v1 keeps action-level rewards neutral. Replay the

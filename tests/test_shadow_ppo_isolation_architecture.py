@@ -62,7 +62,7 @@ class ShadowPpoIsolationArchitectureTests(unittest.TestCase):
         cls.source = ENGINE.read_text(encoding="utf-8")
         cls.engine_header = ENGINE_HEADER.read_text(encoding="utf-8")
         cls.boundary_header = BOUNDARY_HEADER.read_text(encoding="utf-8")
-        start_marker = "// BEGIN SHADOW-ONLY EVALUATION BOUNDARY."
+        start_marker = "// BEGIN ISOLATED NATIVE PLANNER BOUNDARY."
         end_marker = "// END SHADOW-ONLY EVALUATION BOUNDARY."
         start = cls.source.index(start_marker)
         end = cls.source.index(end_marker, start)
