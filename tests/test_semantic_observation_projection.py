@@ -7,6 +7,7 @@ from semantic_observation import (
     build_semantic_state_checkpoint_contract,
     project_native_player_state,
     validate_semantic_state_checkpoint_contract,
+    validate_semantic_state_checkpoint_integrity,
     validate_semantic_batch_alignment,
 )
 
@@ -243,3 +244,26 @@ def test_semantic_projection_hash_binds_owner_identity_even_when_tensor_is_equal
     assert first["numeric"] == second["numeric"]
     assert first["champion_ids"] == second["champion_ids"]
     assert first["sha256"] != second["sha256"]
+
+
+
+def test_semantic_checkpoint_manifest_integrity_is_separate_from_runtime_compatibility():
+    import copy
+
+    catalog = {"TFT_TestChampion": 17}
+    historical = build_semantic_state_checkpoint_contract(catalog)
+    validate_semantic_state_checkpoint_integrity(historical)
+    changed = copy.deepcopy(historical)
+    changed["contract"]["strategic_owner_source"]["contract_version"] = 1
+    import hashlib
+    import json
+    canonical = json.dumps(
+        changed["contract"], sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    ).encode("utf-8")
+    changed["sha256"] = hashlib.sha256(canonical).hexdigest()
+    validate_semantic_state_checkpoint_integrity(changed)
+    with pytest.raises(ValueError, match="incompatible"):
+        validate_semantic_state_checkpoint_contract(changed, catalog)
+    changed["sha256"] = "0" * 64
+    with pytest.raises(ValueError, match="hash is invalid"):
+        validate_semantic_state_checkpoint_integrity(changed)
