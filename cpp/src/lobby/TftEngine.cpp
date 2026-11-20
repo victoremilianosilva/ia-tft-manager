@@ -2998,6 +2998,7 @@ struct TFTEngine::Impl {
             strategy::StrategicSharedContext strategic_context;
             strategic_context.player_id = static_cast<std::int32_t>(i);
             strategic_context.round = static_cast<std::uint32_t>(current_round);
+            strategic_context.sequence = strategic_context_sequences[i] + 1;
             strategic_context.stage = current_stage;
             strategic_context.evidence.stage = true;
             strategic_context.hp = static_cast<double>(player.hp);
