@@ -121,7 +121,7 @@ def test_semantic_contract_change_requires_explicit_weights_only_warm_start():
     ).read_text(encoding="utf-8")
     assert "TFT_ALLOW_SEMANTIC_STATE_WARM_START" in source
     assert "TFT_WARM_START_OUTPUT_CHECKPOINT" in source
-    assert "validate_semantic_state_checkpoint_integrity(saved_semantic_contract)" in source
+    assert "validate_semantic_state_warm_start_migration(" in source
     assert 'if not key.startswith(("semantic_id_embedding.", "semantic_encoder."))' in source
     assert "not semantic_state_warm_start" in source
 
