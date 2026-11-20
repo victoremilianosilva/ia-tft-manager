@@ -76,3 +76,23 @@ def build_player_identity_envelopes(metadata: Mapping[str, Any]) -> list[dict[st
             "episode_id": episode_id,
         })
     return envelopes
+
+
+def validate_player_identity_envelope(
+    envelope: Mapping[str, Any], *, engine_instance_id: str, episode_id: int,
+    snapshot_sequence: int, player_decision_sequence: int, player_id: int, round_number: int,
+) -> None:
+    """Reject an envelope that is not the exact canonical identity for a native row."""
+    if isinstance(player_id, bool) or not isinstance(player_id, int) or not 0 <= player_id < 8:
+        raise ValueError("player_id deve estar no intervalo nativo 0..7")
+    expected = build_player_identity_envelopes({
+        "engine_instance_id": engine_instance_id,
+        "episode_id": episode_id,
+        "decision_sequence": snapshot_sequence,
+        "player_decision_sequences": [
+            player_decision_sequence if index == player_id else 0 for index in range(8)
+        ],
+        "round": round_number,
+    })[player_id]
+    if dict(envelope) != expected:
+        raise ValueError("envelope canônico diverge da identidade/sequence nativa")
