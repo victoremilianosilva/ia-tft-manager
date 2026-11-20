@@ -4232,6 +4232,18 @@ struct TFTEngine::Impl {
                 lineup_context.player_id = static_cast<std::int32_t>(i);
                 lineup_context.round = round_id;
                 const auto lineup = ci::LineupPlanner{}.plan(active, priorities, lineup_context);
+                // Keep the planner products attached to this player's runtime so
+                // engine consumers read the exact same composition version and
+                // evidence snapshot instead of reconstructing legacy planned_units.
+                runtime.planner_evidence = evidence;
+                runtime.unit_priorities = priorities;
+                runtime.lineup = lineup;
+                runtime.planner_outputs_valid = active.has_value() &&
+                    !priorities.stale && !lineup.stale &&
+                    priorities.composition_id == active->candidate.composition_id &&
+                    priorities.composition_version == active->version &&
+                    lineup.composition_id == active->candidate.composition_id &&
+                    lineup.composition_version == active->version;
                 runtime.mark_stage("lineup", lineup.stale ? "unavailable" : "completed",
                     lineup.stale ? lineup.stale_reason : lineup.status, active);
 
