@@ -155,7 +155,7 @@ void target_availability_is_distinct_from_owned_and_capacity_deferred() {
     assert(shop!=result.target_states.end() && shop->availability=="missing_in_shop");
     assert(shop->copies_in_shop==1 && shop->affordable_shop_copies==1 && shop->deferred);
     assert(exhausted!=result.target_states.end() && exhausted->availability=="pool_exhausted");
-    assert(exhausted->deferred && exhausted->deferred_reason=="target_not_owned");
+    assert(exhausted->deferred && exhausted->deferred_reason=="pool_exhausted");
 }
 
 void stale_snapshot_is_rejected() {
