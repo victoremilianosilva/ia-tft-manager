@@ -6804,6 +6804,54 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
         target.round_win_gold = source.economy.last_round_win_gold;
         target.masks = source.action_masks;
 
+        auto& strategic = target.strategic_state;
+        strategic.episode_id = impl_->episode_id;
+        strategic.player_decision_sequence = impl_->player_decision_sequences[i];
+        strategic.player_id = static_cast<std::int32_t>(i);
+        strategic.round = snapshot.round;
+
+        const auto active_composition =
+            impl_->composition_intelligence_players[i].active.current();
+        if (active_composition && active_composition->version > 0 &&
+            !active_composition->candidate.composition_id.empty()) {
+            const auto& candidate = active_composition->candidate;
+            strategic.active_composition_valid = true;
+            strategic.active_composition_id = candidate.composition_id;
+            strategic.active_composition_version = active_composition->version;
+            strategic.active_source_sequence = candidate.source_sequence;
+            for (const auto& unit : candidate.units) {
+                strategic.active_unit_ids.push_back(unit.champion_id);
+                if (unit.core) strategic.active_core_unit_ids.push_back(unit.champion_id);
+            }
+        }
+
+        const auto& commitment = impl_->strategic_planner_commitments[i];
+        if (!commitment.composition_direction.empty()) {
+            strategic.direction_valid = true;
+            strategic.direction_identity = commitment.composition_direction;
+            strategic.direction_selected_round = commitment.selected_round;
+        }
+
+        if (impl_->strategic_shadow_runtimes[i]) {
+            const auto& anchors = impl_->strategic_shadow_runtimes[i]->machine().anchors();
+            if (anchors.direction_anchor.is_valid()) {
+                strategic.direction_valid = true;
+                strategic.direction_identity = anchors.direction_anchor.identity;
+                strategic.direction_reference_unit_ids =
+                    anchors.direction_anchor.reference_unit_ids;
+            }
+            if (anchors.pivot_candidate.is_valid()) {
+                strategic.pivot_candidate_valid = true;
+                strategic.pivot_candidate_identity = anchors.pivot_candidate.identity;
+                strategic.pivot_target_composition_identity =
+                    anchors.pivot_candidate.target_composition_identity;
+                strategic.pivot_source_composition_version =
+                    anchors.pivot_candidate.source_composition_version;
+                strategic.pivot_reference_unit_ids =
+                    anchors.pivot_candidate.reference_unit_ids;
+            }
+        }
+
         for (std::size_t slot = 0; slot < kBoardSlots; ++slot)
             target.board[slot] = describe_unit(
                 source.board[slot] ? &*source.board[slot] : nullptr
