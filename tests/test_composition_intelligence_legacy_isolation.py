@@ -151,6 +151,7 @@ def test_native_priority_and_lineup_outputs_are_version_bound_and_reused():
     assert "runtime.planner_outputs_valid" in source
     assert "priority_evidence.pool_remaining = pool->available(champion_id)" in source
     assert "priority_evidence.copies_in_shop" in source
+    assert "if (!pool) continue;" in source
     assert "native_input.target_slots = std::clamp(std::max(8, economy.level), 1, 10)" in source
 
 
