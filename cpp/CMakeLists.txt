@@ -379,12 +379,20 @@ if(BUILD_TESTING)
     enable_tft_test_assertions(test_composition_intelligence_runtime)
     add_test(NAME composition_intelligence_runtime COMMAND test_composition_intelligence_runtime)
 
-    add_executable(test_composition_action_evaluator tests/test_composition_action_evaluator.cpp)
+    add_executable(
+        test_composition_action_evaluator
+        tests/test_composition_action_evaluator.cpp
+        src/lobby/EconomyEngine.cpp
+    )
     configure_tft_module(test_composition_action_evaluator)
     enable_tft_test_assertions(test_composition_action_evaluator)
     add_test(NAME composition_action_evaluator COMMAND test_composition_action_evaluator)
 
-    add_executable(test_contextual_action_evaluator tests/test_contextual_action_evaluator.cpp)
+    add_executable(
+        test_contextual_action_evaluator
+        tests/test_contextual_action_evaluator.cpp
+        src/lobby/EconomyEngine.cpp
+    )
     configure_tft_module(test_contextual_action_evaluator)
     target_link_libraries(test_contextual_action_evaluator PRIVATE nlohmann_json::nlohmann_json)
     enable_tft_test_assertions(test_contextual_action_evaluator)
