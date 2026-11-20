@@ -425,6 +425,77 @@ class CppTFTLobbyWrapper:
                 if (not isinstance(row, dict) or isinstance(row.get("sequence"), bool) or not isinstance(row.get("sequence"), int) or row["sequence"] <= 0 or row["sequence"] in retired_anvil_sequences or isinstance(row.get("kind"), bool) or row.get("kind") not in (0, 1) or not isinstance(row.get("options"), list) or not row["options"] or any(not isinstance(option, str) or not option for option in row["options"])):
                     raise RuntimeError("Snapshot estruturado contém retired_pending_anvils inválido.")
                 retired_anvil_sequences.add(row["sequence"])
+            strategic = player.get("strategic_state")
+            if not isinstance(strategic, dict):
+                raise RuntimeError("Snapshot estruturado sem strategic_state dos owners nativos.")
+            if (
+                strategic.get("contract_id") != "tft.strategic-owner-observation"
+                or strategic.get("contract_version") != 1
+                or strategic.get("producer") != "TFTEngine::get_audit_snapshot"
+                or strategic.get("source_namespace") != "tft.engine.strategic-owners"
+            ):
+                raise RuntimeError("Contrato de strategic_state incompatível.")
+            for field, expected in (
+                ("episode_id", episode_id),
+                ("player_decision_sequence", player_sequences[player_id]),
+                ("player_id", player_id),
+                ("round", value.get("round")),
+            ):
+                if strategic.get(field) != expected:
+                    raise RuntimeError(f"Strategic owner snapshot diverge em {field}.")
+            valid_fields = (
+                "active_composition_valid", "direction_valid",
+                "pivot_candidate_valid", "opportunity_cost_available",
+            )
+            if any(not isinstance(strategic.get(field), bool) for field in valid_fields):
+                raise RuntimeError("Validade dos strategic owners deve ser booleana.")
+            def validate_ids(field):
+                ids = strategic.get(field)
+                if (
+                    not isinstance(ids, list)
+                    or any(isinstance(item, bool) or not isinstance(item, int) or item < 0 for item in ids)
+                    or len(ids) != len(set(ids))
+                ):
+                    raise RuntimeError(f"Strategic owner contém IDs inválidos em {field}.")
+                return set(ids)
+            active_ids = validate_ids("active_unit_ids")
+            core_ids = validate_ids("active_core_unit_ids")
+            direction_ids = validate_ids("direction_reference_unit_ids")
+            pivot_ids = validate_ids("pivot_reference_unit_ids")
+            if not core_ids.issubset(active_ids):
+                raise RuntimeError("Core units devem pertencer à composição ativa.")
+            if not strategic["active_composition_valid"] and (active_ids or core_ids):
+                raise RuntimeError("Composição inválida não pode publicar membros.")
+            if strategic["active_composition_valid"] and (
+                not isinstance(strategic.get("active_composition_id"), str)
+                or not strategic["active_composition_id"]
+                or isinstance(strategic.get("active_composition_version"), bool)
+                or not isinstance(strategic.get("active_composition_version"), int)
+                or strategic["active_composition_version"] <= 0
+            ):
+                raise RuntimeError("Identidade/versão da composição ativa inválida.")
+            if not strategic["direction_valid"] and direction_ids:
+                raise RuntimeError("Direção inválida não pode publicar referências.")
+            if strategic["direction_valid"] and (
+                not isinstance(strategic.get("direction_identity"), str)
+                or not strategic["direction_identity"]
+            ):
+                raise RuntimeError("Identidade da direção nativa inválida.")
+            if not strategic["pivot_candidate_valid"] and pivot_ids:
+                raise RuntimeError("Pivot inválido não pode publicar referências.")
+            if strategic["pivot_candidate_valid"] and (
+                not isinstance(strategic.get("pivot_candidate_identity"), str)
+                or not strategic["pivot_candidate_identity"]
+                or not isinstance(strategic.get("pivot_target_composition_identity"), str)
+                or not strategic["pivot_target_composition_identity"]
+                or isinstance(strategic.get("pivot_source_composition_version"), bool)
+                or not isinstance(strategic.get("pivot_source_composition_version"), int)
+                or strategic["pivot_source_composition_version"] <= 0
+            ):
+                raise RuntimeError("Identidade/versão do pivot nativo inválida.")
+            if strategic["opportunity_cost_available"]:
+                raise RuntimeError("Custo de oportunidade sem produtor nativo validado.")
+
             retired_has_evidence = any(player[field] for field in retired_count_fields) or bool(retired_equipped) or bool(retired_anvils)
             active_has_ownership = bool(player["item_components"] or player["item_inventory"] or player["item_component_counts"] or player["item_inventory_counts"] or equipped or pending_flag or pending_sequence or player["pending_anvil_options"])
             if retired_flag and active_has_ownership:
