@@ -198,10 +198,11 @@ public:
             const auto found = owned.find(target.champion_id);
             if (found == owned.end()) {
                 const auto* ev = find_evidence(evidence, target.champion_id);
-                auto item = missing_target(target, ev, context);
+                auto item = missing_target(target, ev);
                 item.tier = priority_tier(target, ev);
                 item.priority = tier_base(item.tier) + std::clamp(target.priority, 0, 49);
                 const auto affordable_shop = affordable_shop_copies(ev, context);
+                item.affordable_shop_copies = affordable_shop;
                 if (affordable_shop > 0) {
                     item.priority += std::min(15, affordable_shop * 5);
                     item.reasons.push_back({UnitReasonCode::UpgradeProgress,
@@ -321,8 +322,7 @@ private:
         return unit.core ? UnitStrategicRelation::ActiveCore : UnitStrategicRelation::ActiveFlex;
     }
     static UnitPriority missing_target(const CompositionUnit& target,
-                                       const UnitPriorityEvidence* ev,
-                                       const UnitPriorityContext& context) {
+                                       const UnitPriorityEvidence* ev) {
         UnitPriority out;
         out.champion_id = target.champion_id;
         out.intent = UnitIntent::Seek;
@@ -330,7 +330,6 @@ private:
         out.target_unit = true;
         if (ev) {
             out.copies_in_shop = std::max(0, ev->copies_in_shop);
-            out.affordable_shop_copies = affordable_shop_copies(ev, context);
             out.pool_known = ev->pool_remaining >= 0;
             out.pool_remaining = out.pool_known ? ev->pool_remaining : -1;
         }
