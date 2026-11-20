@@ -82,9 +82,6 @@ struct ContextualActionEvaluation {
     std::vector<std::string> economic_evidence_used;
     std::vector<std::string> economic_evidence_missing;
     bool projected_income_available{false};
-    std::string projected_income_source{"unavailable"};
-    std::uint32_t projected_income_horizon_rounds{0};
-    double projected_income_uncertainty{1.0};
     bool incoming_damage_available{false};
     bool elimination_risk_available{false};
     bool progression_available{false};
@@ -96,6 +93,10 @@ struct ContextualActionEvaluation {
     std::string rationale{"no_positive_contextual_candidate"};
     std::vector<std::string> evidence_rejected;
     std::vector<ContextualActionCandidateScore> candidates;
+    // Appended to preserve aggregate initialization of the evaluator result.
+    std::string projected_income_source{"unavailable"};
+    std::uint32_t projected_income_horizon_rounds{0};
+    double projected_income_uncertainty{1.0};
 
     nlohmann::json to_json() const {
         nlohmann::json items = nlohmann::json::array();
