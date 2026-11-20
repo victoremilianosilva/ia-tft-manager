@@ -1,7 +1,6 @@
 {
   "schema_version": 1,
   "replay_id": "strategic-integrated-replay-v1",
-  "seed": 20261120,
   "execution_enabled": false,
   "scenarios": [
     "buy_upgrade",
