@@ -1217,6 +1217,10 @@ int main(int argc, char** argv) {
         // Exercise a real engine-produced pivot without Composition Intelligence
         // or an audit sidecar. Pick two compact native trait groups so every
         // generated destination unit can be physically owned in this fixture.
+        tft::TFTEngine native_pivot_engine(20261116, json_path);
+        (void)native_pivot_engine.reset(20261116);
+        const auto initial_pivot_shop =
+            native_pivot_engine.get_audit_snapshot().players[0].shop;
         std::map<std::string, std::vector<const tft::ChampionDefinition*>> trait_groups;
         for (const auto& definition : catalog.all()) {
             for (const auto& trait : definition.traits)
@@ -1258,6 +1262,12 @@ int main(int argc, char** argv) {
                     for (const auto& trait : definition->traits)
                         if (!trait.empty()) ++fixture_trait_counts[trait];
                 }
+                // Native candidate discovery counts both owned units and the
+                // live shop. Include those same offers when selecting directions
+                // so the fixture mirrors the generator's top-eight ordering.
+                for (const auto& offer : initial_pivot_shop)
+                    for (const auto& trait : offer.trait_names)
+                        if (!trait.empty()) ++fixture_trait_counts[trait];
                 std::vector<std::pair<std::string, std::int32_t>> ranked_fixture_traits(
                     fixture_trait_counts.begin(), fixture_trait_counts.end());
                 std::stable_sort(ranked_fixture_traits.begin(), ranked_fixture_traits.end(),
@@ -1284,8 +1294,6 @@ int main(int argc, char** argv) {
         require(found_pivot_trait_pair && !pivot_fixture_units.empty(),
                 "Catalogo nao possui dois grupos compactos com carry e frontline para pivot nativo.");
 
-        tft::TFTEngine native_pivot_engine(20261116, json_path);
-        (void)native_pivot_engine.reset(20261116);
         require(native_pivot_engine.set_player_economy_for_testing(0, 100, 10, 0),
                 "Nao foi possivel preparar economia do teste de pivot nativo.");
         for (std::size_t index = 0; index < pivot_fixture_units.size(); ++index) {
