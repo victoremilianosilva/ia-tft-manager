@@ -377,7 +377,10 @@ private:
         out.copies_toward_next_star = copies_to_upgrade;
         out.copies_needed_for_next_star = out.highest_star < 3
             ? std::max(0, 2 - copies_to_upgrade) : 0;
-        out.has_pair = out.highest_star < 3 && copies_to_upgrade >= 1;
+        const auto owned_upgrade_progress = has_physical_tier_counts
+            ? copy_progress_toward_next_star(owned.copies_by_star, out.highest_star, 0)
+            : (ev ? std::max(0, ev->copies_toward_next_star) : 0);
+        out.has_pair = out.highest_star < 3 && owned_upgrade_progress >= 1;
         out.copies_needed_for_pair = out.highest_star < 3 && !out.has_pair ? 1 : 0;
         if (ev && ev->trait_completion)
             out.reasons.push_back({UnitReasonCode::TraitCompletionPriority,
@@ -427,7 +430,9 @@ private:
             owned.copies_by_star, out.highest_star, out.affordable_shop_copies);
         out.copies_needed_for_next_star = out.highest_star < 3
             ? std::max(0, 2 - out.copies_toward_next_star) : 0;
-        out.has_pair = out.highest_star < 3 && out.copies_toward_next_star >= 1;
+        const auto owned_upgrade_progress = copy_progress_toward_next_star(
+            owned.copies_by_star, out.highest_star, 0);
+        out.has_pair = out.highest_star < 3 && owned_upgrade_progress >= 1;
         out.copies_needed_for_pair = out.highest_star < 3 && !out.has_pair ? 1 : 0;
         out.board_contribution = ev ? clamp01(ev->board_contribution) : 0.0;
         out.synergy_contribution = ev ? clamp01(ev->synergy_contribution) : 0.0;
