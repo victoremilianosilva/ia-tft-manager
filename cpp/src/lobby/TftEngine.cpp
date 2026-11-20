@@ -4977,8 +4977,8 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                                 false,
                                 std::clamp(std::max(0.0, candidate_comp_score) / 40.0, 0.0, 1.0),
                                 0.0,
-                                strategy_before.composition_direction,
-                                strategy_before.composition_focus
+                                active_composition ? active_composition->candidate.composition_id : std::string{},
+                                active_composition ? std::to_string(active_composition->candidate.main_carry_id) : std::string{}
                             });
                         }
                         lobby.register_position_state(player_id);
@@ -5001,7 +5001,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     const auto* def = lobby.catalog->find_by_id(offer->champion_internal_id);
                     if (!def || available_gold < def->cost) continue;
                     double value = unit_composition_score(
-                        strategy_before, *def, offer->star, lobby.trait_milestones);
+                        unit_priorities, def->internal_id, offer->star);
                     int owned_same_star = 0;
                     for (const auto& unit : this->board)
                         if (unit && unit->champion_internal_id == offer->champion_internal_id &&
@@ -5357,18 +5357,17 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                             return !sold_uuid.empty() && purchase.uuid == sold_uuid;
                         });
                     if (recent != this->recent_purchases.rend()) {
-                        const StrategyInfo current_strategy =
-                            this->strategy.value_or(StrategyInfo{});
-                        const bool still_core_or_planned =
-                            std::find(current_strategy.core_unit_ids.begin(),
-                                      current_strategy.core_unit_ids.end(),
-                                      unit.champion_internal_id) != current_strategy.core_unit_ids.end() ||
-                            std::find(current_strategy.planned_unit_ids.begin(),
-                                      current_strategy.planned_unit_ids.end(),
-                                      unit.champion_internal_id) != current_strategy.planned_unit_ids.end();
+                        const std::string current_composition_identity = active_composition
+                            ? active_composition->candidate.composition_id : std::string{};
+                        const std::string current_main_carry_identity = active_composition
+                            ? std::to_string(active_composition->candidate.main_carry_id) : std::string{};
+                        const bool still_core_or_planned = active_composition && std::any_of(
+                            active_composition->candidate.units.begin(),
+                            active_composition->candidate.units.end(),
+                            [&](const auto& target) { return target.champion_id == unit.champion_internal_id; });
                         const bool composition_changed =
-                            (recent->comp_direction != current_strategy.composition_direction ||
-                             recent->comp_focus != current_strategy.composition_focus) &&
+                            (recent->comp_direction != current_composition_identity ||
+                             recent->comp_focus != current_main_carry_identity) &&
                             (!recent->comp_direction.empty() || !recent->comp_focus.empty()) &&
                             !still_core_or_planned;
                         sale_has_legitimate_context = sale_has_legitimate_context ||
@@ -5419,19 +5418,13 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                             reversed_purchase_prior_reward = recent->reward;
                         }
                     }
-                    const auto& current_strategy = strategy_before;
-                    if (this->strategy) {
-                        const auto& core_unit_ids = current_strategy.core_unit_ids;
-                        const auto& planned_unit_ids = current_strategy.planned_unit_ids;
-                        sold_core_unit =
-                            std::find(core_unit_ids.begin(), core_unit_ids.end(),
-                                unit.champion_internal_id) != core_unit_ids.end() ||
-                            std::find(planned_unit_ids.begin(), planned_unit_ids.end(),
-                                unit.champion_internal_id) != planned_unit_ids.end();
-                        sold_unit_fit_score = std::clamp(
-                            unit_composition_score(current_strategy, *definition, unit.star, lobby.trait_milestones) / 18.0,
-                            0.0, 1.0);
-                    }
+                    sold_core_unit = active_composition && std::any_of(
+                        active_composition->candidate.units.begin(),
+                        active_composition->candidate.units.end(),
+                        [&](const auto& target) { return target.champion_id == unit.champion_internal_id; });
+                    sold_unit_fit_score = std::clamp(
+                        unit_composition_score(unit_priorities, definition->internal_id, unit.star) / 18.0,
+                        0.0, 1.0);
                     int same_star_copies = 0;
                     int one_star_copies = 0;
                     const auto count_upgrade_copies = [&](const auto& candidate) {
@@ -5455,7 +5448,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     // A genuinely stronger owned option can justify releasing a
                     // planned/core slot. Compare only against units that fit the
                     // active plan materially better, not merely any owned unit.
-                    if (sold_core_unit && this->strategy) {
+                    if (sold_core_unit && active_composition) {
                         const auto has_better_owned_fit = [&](const auto& candidate) {
                             if (!candidate ||
                                 candidate->champion_internal_id == unit.champion_internal_id)
@@ -5464,8 +5457,8 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                                 candidate->champion_internal_id);
                             if (!candidate_def) return false;
                             const double candidate_fit = std::clamp(
-                                unit_composition_score(current_strategy, *candidate_def,
-                                    candidate->star, lobby.trait_milestones) / 18.0,
+                                unit_composition_score(unit_priorities, candidate_def->internal_id,
+                                    candidate->star) / 18.0,
                                 0.0, 1.0);
                             return candidate_fit >= sold_unit_fit_score + 0.10;
                         };
