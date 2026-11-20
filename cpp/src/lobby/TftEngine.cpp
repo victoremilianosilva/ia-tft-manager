@@ -2323,10 +2323,11 @@ struct TFTEngine::Impl {
             won, damage_dealt, damage_taken, enemy_alive, own_alive);
     }
 
-    template <typename Economy, typename Shop, typename Pool, typename TraitMilestones>
+    template <typename Economy, typename Player, typename Shop, typename Pool, typename TraitMilestones>
     void refresh_native_strategic_runtime(
         std::size_t i, std::int32_t current_round,
-        const Economy& economy,
+        const Economy& economy, const Player& player, double board_power,
+        const strategy::NativeCompositionGenerationResult& native_generation,
         const std::unordered_map<std::int32_t, strategy::NativeCompositionOwnedUnit>&
             strategic_native_owned,
         const std::vector<composition_intelligence::CompositionCandidate>&
@@ -2363,9 +2364,100 @@ struct TFTEngine::Impl {
                 const auto* source_active = tracked_active
                     ? &*tracked_active : (native_active ? &*native_active : nullptr);
         
+                // StrategicPlanner is the final initial-direction authority.
+                // It evaluates only native candidate and owned-unit evidence.
+                strategy::StrategicSharedContext planner_context;
+                planner_context.player_id = static_cast<std::int32_t>(i);
+                planner_context.round = static_cast<std::uint32_t>(current_round);
+                planner_context.hp = static_cast<double>(player.hp);
+                planner_context.gold = economy.gold;
+                planner_context.level = economy.level;
+                planner_context.board_power = board_power;
+                planner_context.alive = player.alive;
+                planner_context.evidence.hp = true;
+                planner_context.evidence.gold = true;
+                planner_context.evidence.level = true;
+                planner_context.evidence.board_power = true;
+                planner_context.current_composition_direction =
+                    strategic_planner_commitments[i].composition_direction;
+                if (planner_context.current_composition_direction.empty() && native_active &&
+                    native_active->candidate.composition_id.compare(0, 7, "native:") == 0) {
+                    planner_context.current_composition_direction =
+                        native_active->candidate.composition_id.substr(7);
+                }
+
+                for (const auto& [champion_id, owned] : strategic_native_owned) {
+                    const auto* definition = catalog->find_by_id(champion_id);
+                    if (!definition) continue;
+                    strategy::StrategicUnitCandidate unit;
+                    unit.champion_id = champion_id;
+                    unit.champion_key = definition->api_name;
+                    unit.cost = definition->cost;
+                    unit.star = owned.star;
+                    unit.copies_owned = owned.copies;
+                    unit.on_board = owned.on_board;
+                    unit.on_bench = owned.on_bench;
+                    unit.board_contribution = owned.board_contribution;
+                    unit.item_fit = owned.item_fit;
+                    unit.traits = definition->traits;
+                    unit.copies_by_star = owned.copies_by_star;
+                    planner_context.owned_units.push_back(std::move(unit));
+                }
+
+                for (const auto& generated : native_generation.candidates) {
+                    const auto* definition = catalog->find_by_id(
+                        generated.anchor_champion_id);
+                    if (!definition) continue;
+                    strategy::StrategicAnchorCandidate anchor;
+                    anchor.unit.champion_id = generated.anchor_champion_id;
+                    anchor.unit.champion_key = definition->api_name;
+                    anchor.unit.cost = definition->cost;
+                    anchor.unit.traits = definition->traits;
+                    anchor.unit.is_core =
+                        generated.anchor_champion_id == generated.main_carry_id;
+                    anchor.unit.composition_fit = std::find(
+                        generated.completed_traits.begin(),
+                        generated.completed_traits.end(), generated.direction) !=
+                            generated.completed_traits.end() ? 1.0 : 0.0;
+                    const auto owned = strategic_native_owned.find(
+                        generated.anchor_champion_id);
+                    if (owned != strategic_native_owned.end()) {
+                        anchor.unit.star = owned->second.star;
+                        anchor.unit.copies_owned = owned->second.copies;
+                        anchor.unit.on_board = owned->second.on_board;
+                        anchor.unit.on_bench = owned->second.on_bench;
+                        anchor.unit.board_contribution = owned->second.board_contribution;
+                        anchor.unit.item_fit = owned->second.item_fit;
+                        anchor.unit.copies_by_star = owned->second.copies_by_star;
+                    }
+                    anchor.target_composition_direction = generated.direction;
+                    anchor.composition_identity = generated.identity;
+                    anchor.candidate_unit_ids = generated.unit_ids;
+                    anchor.main_carry_id = generated.main_carry_id;
+                    anchor.candidate_traits = generated.completed_traits;
+                    anchor.evidence = generated.evidence;
+                    anchor.anchor_value = generated.score;
+                    anchor.transition_cost = generated.transition_cost;
+                    anchor.reusable_owned_units = generated.reusable_owned_units;
+                    anchor.shop_available = generated.anchor_available_in_shop;
+                    planner_context.anchor_candidates.push_back(std::move(anchor));
+                    if (generated.direction == planner_context.current_composition_direction) {
+                        planner_context.current_direction_viable = true;
+                        planner_context.current_direction_score = generated.score;
+                        planner_context.evidence.current_direction = true;
+                        planner_context.current_core_traits = generated.completed_traits;
+                    }
+                }
+
+                auto planner_commitment = strategic_planner_commitments[i];
+                const auto planner_decision =
+                    strategy::StrategicPlanner{}.evaluate(planner_context, planner_commitment);
+
                 strategy::StrategicCycleInput native_input;
                 native_input.evaluation_sequence = strategic_context_sequences[i] + 1;
                 native_input.initial_composition_candidates = native_composition_candidates;
+                native_input.selected_initial_direction =
+                    planner_decision.target_composition_direction;
                 if (!tracked_active && native_active)
                     native_input.active_composition = native_active;
         
@@ -2434,6 +2526,9 @@ struct TFTEngine::Impl {
                 };
                 const auto native_result =
                     native_runtime.refresh(native_audit_context, native_input);
+                if (native_result.active_composition || active_manager.current()) {
+                    strategic_planner_commitments[i] = std::move(planner_commitment);
+                }
                 if (const auto& committed = active_manager.current()) {
                     strategic_shadow_external_active_identity[i] =
                         committed->candidate.composition_id;
@@ -2619,7 +2714,8 @@ struct TFTEngine::Impl {
         // Refresh native strategic owners before any legacy direction/economy
         // generation. This path consumes only live native facts and its own state.
         refresh_native_strategic_runtime(
-            i, current_round, economy, strategic_native_owned,
+            i, current_round, economy, player_envs[i].info, power,
+            strategic_native_generation, strategic_native_owned,
             composition_intelligence_native_candidates[i],
             player_envs[i].shop, pool, trait_milestones);
 
@@ -3592,8 +3688,9 @@ struct TFTEngine::Impl {
                     evidence_context.quality_reason);
             }
             static const strategy::StrategicPlanner strategic_planner{};
+            auto diagnostic_commitment = strategic_planner_commitments[i];
             const auto shadow_decision = strategic_planner.evaluate(
-                evidence_context, strategic_planner_commitments[i]);
+                evidence_context, diagnostic_commitment);
             info.strategic_decision_path_reason =
                 shadow_decision.decision_path_reason;
             info.strategic_current_direction_score =
