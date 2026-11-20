@@ -658,7 +658,7 @@ class RolloutBuffer:
         # Semantic projection is part of the same decision record, not an
         # independently shuffled feature batch. Bind every row to its native
         # snapshot hash and full decision identity before storing it.
-    if all(supplied_groups):
+        if all(supplied_groups):
             decision_metadata = normalized_groups["snapshot_metadata"]
             if any("semantic_projection_hash" in row for row in decision_metadata):
                 if semantic_state is None:
