@@ -293,6 +293,20 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
     ]
 
     catalog = dict(catalog_map)
+    observed_owned_ids = set()
+    for group_name in ("board", "bench"):
+        for entity in state[group_name]:
+            if isinstance(entity, Mapping) and entity.get("occupied") is True:
+                champion_name = entity.get("champion_id")
+                internal_id = catalog.get(champion_name)
+                if internal_id is not None:
+                    observed_owned_ids.add(int(internal_id))
+                    if int(internal_id) not in copy_progress:
+                        raise ValueError(
+                            f"native UnitCopyProgress is missing owned champion {champion_name}"
+                        )
+    if not set(copy_progress).issubset(observed_owned_ids):
+        raise ValueError("native UnitCopyProgress contains champions absent from board/bench")
     numeric = list(global_values)
     champion_ids = []
     for group_name, expected_count in (("board", 28), ("bench", 9), ("shop", 5)):
