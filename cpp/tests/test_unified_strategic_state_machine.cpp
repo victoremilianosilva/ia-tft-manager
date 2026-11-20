@@ -199,6 +199,22 @@ void shadow_runtime_isolates_players_and_resets_its_own_direction_history() {
     std::filesystem::remove(player_one_path, ignored);
 }
 
+void shadow_runtime_refreshes_without_an_audit_sidecar() {
+    ActiveCompositionManager active_composition;
+    StrategicCommitment commitment;
+    // Audit output is optional; it must not be an activation prerequisite.
+    UnifiedStrategicShadowRuntime runtime(
+        active_composition, commitment, std::filesystem::path{});
+    StrategicCycleInput input;
+    input.exploration = discovery_input();
+
+    const auto result = runtime.refresh({42, 0, 3}, input);
+    assert(result.shadow_only);
+    assert(result.phase == StrategicCyclePhase::Exploration);
+    assert(result.diagnostics.discovery.status == DirectionDiscoveryStatus::HypothesesFound);
+    assert(!active_composition.current().has_value());
+}
+
 void pivot_evaluation_does_not_mutate_then_confirms_synchronized_state() {
     ActiveCompositionManager active_composition;
     StrategicCommitment commitment;
@@ -367,6 +383,7 @@ int main() {
     exploration_waits_for_composition_and_then_binds_direction();
     machine_owns_exploratory_direction_history_without_legacy_inputs();
     shadow_runtime_isolates_players_and_resets_its_own_direction_history();
+    shadow_runtime_refreshes_without_an_audit_sidecar();
     pivot_evaluation_does_not_mutate_then_confirms_synchronized_state();
     invalidated_candidate_is_removed_and_old_direction_is_preserved();
     missing_candidate_invalidates_pending_pivot_without_mutation();
