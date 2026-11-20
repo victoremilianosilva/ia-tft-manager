@@ -166,21 +166,6 @@ public:
                 {"synergy_contribution", u.synergy_contribution}, {"reasons", reasons}
             });
         }
-        p["lineup_target_states"] = nlohmann::json::array();
-        for (const auto& target : lineup.target_states) {
-            p["lineup_target_states"].push_back({
-                {"champion_id", target.champion_id},
-                {"availability", target.availability},
-                {"copies_owned", target.copies_owned},
-                {"copies_in_shop", target.copies_in_shop},
-                {"affordable_shop_copies", target.affordable_shop_copies},
-                {"pool_known", target.pool_known},
-                {"pool_remaining", target.pool_known ? nlohmann::json(target.pool_remaining) : nlohmann::json(nullptr)},
-                {"owned", target.owned}, {"selected", target.selected},
-                {"deferred", target.deferred},
-                {"deferred_reason", target.deferred_reason}
-            });
-        }
         p["lineup_plan"] = {
             {"composition_id", lineup.composition_id}, {"composition_version", lineup.composition_version},
             {"stale", lineup.stale}, {"stale_reason", lineup.stale_reason},
@@ -196,9 +181,23 @@ public:
             {"selected_board", lineup_json(lineup)},
             {"entries", lineup.entries}, {"exits", lineup.exits},
             {"deferred_target_ids", lineup.deferred_target_ids},
-            {"target_states", p["lineup_target_states"]},
             {"bridge_ids", lineup.bridge_ids}, {"status", lineup.status}
         };
+        p["lineup_plan"]["target_states"] = nlohmann::json::array();
+        for (const auto& target : lineup.target_states) {
+            p["lineup_plan"]["target_states"].push_back({
+                {"champion_id", target.champion_id},
+                {"availability", target.availability},
+                {"copies_owned", target.copies_owned},
+                {"copies_in_shop", target.copies_in_shop},
+                {"affordable_shop_copies", target.affordable_shop_copies},
+                {"pool_known", target.pool_known},
+                {"pool_remaining", target.pool_known ? nlohmann::json(target.pool_remaining) : nlohmann::json(nullptr)},
+                {"owned", target.owned}, {"selected", target.selected},
+                {"deferred", target.deferred},
+                {"deferred_reason", target.deferred_reason}
+            });
+        }
         p["evidence"] = evidence_json(evidence);
         p["action_recommendation"] = {
             {"stale", actions.stale}, {"stale_reason", actions.stale_reason},
