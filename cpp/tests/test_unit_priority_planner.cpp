@@ -309,6 +309,7 @@ void shop_upgrade_progress_respects_affordable_offer_count() {
     assert(carry->affordable_shop_copies == 2);
     assert(carry->copies_toward_next_star == 2);
     assert(carry->copies_needed_for_next_star == 0);
+    assert(carry->has_pair && carry->copies_needed_for_pair == 0);
 }
 
 void missing_targets_keep_shop_and_pool_facts_separate() {
@@ -333,6 +334,7 @@ void missing_targets_keep_shop_and_pool_facts_separate() {
     assert(target->affordable_shop_copies == 1);
     assert(target->pool_known && target->pool_remaining == 4);
     assert(target->copies_by_star[1] == 0 && target->copies_toward_next_star == 0);
+    assert(!target->has_pair && target->copies_needed_for_pair == 1);
 }
 
 void external_temporary_unit_requires_explicit_reason() {
@@ -416,6 +418,7 @@ void physical_star_tiers_prevent_false_mixed_upgrade_progress() {
     assert(found->copies_by_star[1] == 2 && found->copies_by_star[2] == 1);
     assert(found->copies_toward_next_star == 0);
     assert(found->copies_needed_for_next_star == 2);
+    assert(!found->has_pair && found->copies_needed_for_pair == 1);
 
     mixed.copies = 9;
     mixed.copies_by_star[1] = 6;
@@ -429,6 +432,7 @@ void physical_star_tiers_prevent_false_mixed_upgrade_progress() {
     assert(found->copies_by_star[1] == 6 && found->copies_by_star[2] == 1);
     assert(found->copies_toward_next_star == 2);
     assert(found->copies_needed_for_next_star == 0);
+    assert(found->has_pair && found->copies_needed_for_pair == 0);
 }
 
 void unknown_shop_affordability_does_not_create_upgrade_priority() {
