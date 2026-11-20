@@ -1140,6 +1140,8 @@ int main(int argc, char** argv) {
 #endif
         tft::TFTEngine native_only_engine(20261114, json_path);
         (void)native_only_engine.reset(20261114);
+        require(native_only_engine.set_player_economy_for_testing(0, 10, 8, 0),
+                "Nao foi possivel ampliar o tabuleiro para o teste do runtime nativo.");
         require(native_only_engine.set_unit_for_testing(
                     0, true, 0, strategic_fixture->api_name, 1),
                 "Nao foi possivel preparar unidade do runtime nativo sem CI.");
