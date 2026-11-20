@@ -131,6 +131,8 @@ struct UnitPriority {
     std::int32_t pool_remaining{-1};
     bool pool_known{false};
     bool target_unit{false};
+    bool has_pair{false};
+    std::int32_t copies_needed_for_pair{0};
 };
 
 struct UnitPrioritySnapshot {
@@ -377,6 +379,8 @@ private:
         out.copies_toward_next_star = copies_to_upgrade;
         out.copies_needed_for_next_star = out.highest_star < 3
             ? std::max(0, 2 - copies_to_upgrade) : 0;
+        out.has_pair = out.highest_star < 3 && copies_to_upgrade >= 1;
+        out.copies_needed_for_pair = out.highest_star < 3 && !out.has_pair ? 1 : 0;
         if (ev && ev->trait_completion)
             out.reasons.push_back({UnitReasonCode::TraitCompletionPriority,
                 "Unidade completa ou ativa trait relevante da composição; prioridade acima das demais peças flexíveis."});
@@ -425,6 +429,8 @@ private:
             owned.copies_by_star, out.highest_star, out.affordable_shop_copies);
         out.copies_needed_for_next_star = out.highest_star < 3
             ? std::max(0, 2 - out.copies_toward_next_star) : 0;
+        out.has_pair = out.highest_star < 3 && out.copies_toward_next_star >= 1;
+        out.copies_needed_for_pair = out.highest_star < 3 && !out.has_pair ? 1 : 0;
         out.board_contribution = ev ? clamp01(ev->board_contribution) : 0.0;
         out.synergy_contribution = ev ? clamp01(ev->synergy_contribution) : 0.0;
         out.confidence = ev ? clamp01(ev->confidence) : 0.2;
