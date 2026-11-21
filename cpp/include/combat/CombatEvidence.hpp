@@ -95,6 +95,10 @@ struct CombatCoverage {
     std::uint32_t missing_ability_metadata{0};
     std::uint32_t missing_item_effect_metadata{0};
     std::uint32_t missing_trait_effect_metadata{0};
+    std::uint32_t abilities_seen{0}, abilities_supported{0};
+    std::uint32_t items_seen{0}, items_supported{0};
+    std::uint32_t traits_seen{0}, traits_supported{0};
+    std::uint32_t effects_seen{0}, effects_supported{0};
 };
 
 struct CombatCoverageResult {
@@ -142,14 +146,20 @@ public:
                 std::isfinite(effect.health_threshold);
         };
         const auto inspect_effects = [&](const std::vector<CombatEffectDefinition>& effects) {
-            for (const auto& effect : effects)
-                if (!supported_effect(effect)) ++coverage.unsupported_effects;
+            for (const auto& effect : effects) {
+                ++coverage.effects_seen;
+                if (supported_effect(effect)) ++coverage.effects_supported;
+                else ++coverage.unsupported_effects;
+            }
         };
         const auto inspect_team = [&](const CombatTeam& team) {
             for (const auto& unit : team.units) {
                 ++coverage.units_seen;
                 bool unit_supported = !unit.api_name.empty();
-                if (unit.ability.api_name.empty() || !unit.ability.metadata_complete) {
+                ++coverage.abilities_seen;
+                bool ability_supported = !unit.ability.api_name.empty() &&
+                    unit.ability.metadata_complete;
+                if (!ability_supported) {
                     ++coverage.missing_scripts;
                     ++coverage.missing_ability_metadata;
                     unit_supported = false;
@@ -157,9 +167,12 @@ public:
                 if (unit.ability.has_buff || unit.ability.has_debuff ||
                     unit.ability.has_area_effect) {
                     ++coverage.unsupported_abilities;
+                    ability_supported = false;
                     unit_supported = false;
                 }
+                if (ability_supported) ++coverage.abilities_supported;
                 for (const auto& item : unit.items) {
+                    ++coverage.items_seen;
                     if (!item.effects_complete) {
                         ++coverage.missing_item_effect_metadata;
                         ++coverage.unsupported_items;
@@ -170,11 +183,14 @@ public:
                         if (coverage.unsupported_effects != before) {
                             ++coverage.unsupported_items;
                             unit_supported = false;
+                        } else {
+                            ++coverage.items_supported;
                         }
                     }
                 }
                 for (const auto& trait : unit.traits) {
                     if (!(trait.active || trait.active_count > 0)) continue;
+                    ++coverage.traits_seen;
                     if (!trait.effects_complete) {
                         ++coverage.missing_trait_effect_metadata;
                         ++coverage.unsupported_traits;
@@ -185,6 +201,8 @@ public:
                         if (coverage.unsupported_effects != before) {
                             ++coverage.unsupported_traits;
                             unit_supported = false;
+                        } else {
+                            ++coverage.traits_supported;
                         }
                     }
                 }
@@ -193,9 +211,14 @@ public:
         };
         inspect_team(input.player_a);
         inspect_team(input.player_b);
-        coverage.all_effects_catalogued = coverage.unsupported_effects == 0 &&
-            coverage.missing_scripts == 0 && coverage.unsupported_abilities == 0 &&
-            coverage.unsupported_items == 0 && coverage.unsupported_traits == 0;
+        coverage.all_effects_catalogued =
+            coverage.abilities_supported == coverage.abilities_seen &&
+            coverage.items_supported == coverage.items_seen &&
+            coverage.traits_supported == coverage.traits_seen &&
+            coverage.effects_supported == coverage.effects_seen &&
+            coverage.unsupported_effects == 0 && coverage.missing_scripts == 0 &&
+            coverage.unsupported_abilities == 0 && coverage.unsupported_items == 0 &&
+            coverage.unsupported_traits == 0;
         return coverage;
     }
 
