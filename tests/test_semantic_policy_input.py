@@ -2,7 +2,7 @@ import torch
 
 from action_contract import MASK_SHAPES
 from policy import ACTION_DIMS, TFTPolicy
-from semantic_observation import SEMANTIC_ENTITY_FEATURES, SEMANTIC_ENTITY_SLOTS, SEMANTIC_GLOBAL_FEATURES, SEMANTIC_NUMERIC_DIM
+from semantic_observation import SEMANTIC_ENTITY_FEATURES, SEMANTIC_ENTITY_SLOTS, SEMANTIC_GLOBAL_FEATURES, SEMANTIC_NUMERIC_DIM, semantic_item_state_tensors
 
 
 def _batch(batch_size=2):
@@ -21,8 +21,10 @@ def _batch(batch_size=2):
         for name, shape in MASK_SHAPES.items()
     }
     masks["type_mask"][:, 6] = True
+    semantic_numeric = torch.zeros(batch_size, SEMANTIC_NUMERIC_DIM, dtype=torch.float32)
     semantic = {
-        "numeric": torch.zeros(batch_size, SEMANTIC_NUMERIC_DIM, dtype=torch.float32),
+        "numeric": semantic_numeric,
+        "items": semantic_item_state_tensors(semantic_numeric),
         "champion_ids": torch.zeros(batch_size, SEMANTIC_ENTITY_SLOTS, dtype=torch.long),
     }
     return obs, masks, semantic
