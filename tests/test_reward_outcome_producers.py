@@ -47,6 +47,7 @@ def _snapshot(sequence, player_sequence, round_number=4):
         "player_decision_sequences": [player_sequence] * 8,
         "round": round_number,
         "economy_resolution_events": [],
+        "pvp_result_credit_events": [],
         "players": [_player(i) for i in range(8)],
     }
 
@@ -205,3 +206,22 @@ def test_does_not_attribute_automatic_round_shop_refresh_to_reroll():
     assert events[0]["facts"]["shop_revision_changes"] is None
     assert len(events[0]["facts"]["shop_revision_changes_unattributed"]) == 5
     assert events[0]["facts"]["shop_refresh_overlapped_with_round_resolution"] is True
+
+
+def test_does_not_attribute_pvp_win_gold_credit_to_action_economy():
+    before = _snapshot(5, 10)
+    after = _snapshot(6, 11)
+    before["players"][0]["gold"] = 30
+    after["players"][0]["gold"] = 31
+    after["pvp_result_credit_events"] = [{
+        "winner_player_id": 0, "loser_player_id": 1,
+        "credited_gold": 1, "gold_before_credit": 30, "gold_after_credit": 31,
+    }]
+
+    events = build_action_outcome_events(
+        before_snapshot=before, after_snapshot=after, action_traces=_traces(action_type=5)
+    )
+
+    assert events[0]["facts"]["gold_delta"] is None
+    assert events[0]["facts"]["pvp_credit_overlapped"] is True
+    assert events[0]["facts"]["pvp_result_credit_events"][0]["credited_gold"] == 1
