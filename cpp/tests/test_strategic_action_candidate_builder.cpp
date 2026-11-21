@@ -350,7 +350,7 @@ void missing_cost_rejects_only_the_affected_candidate() {
     native.masks.shop_mask[0] = decision::MASK_ENABLED;
 
     const auto result = StrategicActionCandidateBuilder{}.build(
-        context, active, priorities, lineup, native, {});
+        context, active, priorities, lineup, native, {{10, 3}});
     assert(result.status == "candidates_generated");
     assert(result.rejected_missing_cost == 1);
     assert(result.candidates.size() == 1);
@@ -450,7 +450,7 @@ void xp_level_up_values_only_a_verified_selected_bench_unit() {
     native.bench_unit_uuids[0] = "unit-20";
     native.shop_champion_ids[0] = 10;
     native.unit_costs[10] = 3;
-    native.masks.shop_mask[0] = MASK_ENABLED;
+    native.masks.shop_mask[0] = decision::MASK_ENABLED;
     enables(native.masks, decision::ActionType::PASS);
     enables(native.masks, decision::ActionType::BUY);
     enables(native.masks, decision::ActionType::BUY_XP);
