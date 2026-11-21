@@ -57,6 +57,7 @@ def build_attribution_candidates(
     if not isinstance(action_events, Sequence) or not isinstance(outcome_events, Sequence):
         raise TypeError("Coleções de eventos são obrigatórias.")
     actions = []
+    action_ids = set()
     for event in action_events:
         if not isinstance(event, Mapping):
             raise ValueError("Action event inválido.")
@@ -67,6 +68,10 @@ def build_attribution_candidates(
         family = event.get("action", {}).get("family")
         if family not in FAMILY_POLICIES and family not in _NON_ACTION_FAMILIES:
             raise ValueError(f"Família sem política causal: {family!r}.")
+        event_id = str(event.get("event_id", "")).strip()
+        if not event_id or event_id in action_ids:
+            raise ValueError("Action event_id ausente ou duplicado.")
+        action_ids.add(event_id)
         if event.get("action", {}).get("handler_applied") is not True:
             continue
         _identity(event)
@@ -75,12 +80,17 @@ def build_attribution_candidates(
         actions.append(event)
 
     outcomes = []
+    outcome_ids = set()
     for event in outcome_events:
         if not isinstance(event, Mapping):
             raise ValueError("Outcome event inválido.")
         if event.get("source") not in ("native_pvp_resolution", "validated_terminal_placement"):
             raise ValueError("Outcome sem produtor nativo aceito.")
         _identity(event)
+        event_id = str(event.get("event_id", "")).strip()
+        if not event_id or event_id in outcome_ids:
+            raise ValueError("Outcome event_id ausente ou duplicado.")
+        outcome_ids.add(event_id)
         if not isinstance(event.get("reward"), (int, float)) or isinstance(event.get("reward"), bool):
             raise ValueError("Outcome reward inválido.")
         if not math.isfinite(float(event["reward"])):
