@@ -286,7 +286,7 @@ def test_semantic_projection_hash_binds_owner_identity_even_when_tensor_is_equal
 
 
 
-def test_semantic_v2_checkpoint_has_only_explicit_v5_warm_start_path():
+def test_semantic_v2_checkpoint_has_only_explicit_v6_warm_start_path():
     import copy
     import hashlib
     import json
