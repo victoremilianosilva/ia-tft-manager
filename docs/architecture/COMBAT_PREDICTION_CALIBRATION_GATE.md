@@ -73,3 +73,18 @@ identity-safe integration into EconomicController and ContextualActionEvaluator.
 Replay collection/calibration results depend on #518 and remain non-blocking
 for merge under the project's agreed rule; no empirical quality is claimed by
 this implementation.
+
+
+## Cohort isolation
+
+Only `experimental_replay_cohort_distribution.v1` can be promoted. It must
+come from independent matches with exact engine version, composition
+signature, mechanics signature, round and single-round horizon. The target
+match is excluded, each match contributes at most one sample, and all
+artifacts must belong to one dataset version. The legacy same-match summary
+is diagnostic-only and is rejected by `approve_calibration`.
+
+The acceptance protocol also requires minimum validation and test sample
+counts, not only a training sample count. `derive_survival_risk` revalidates
+the stored report hash, all three distinct manifest hashes, metrics, cohort
+identity and replay artifact provenance before exposing a risk value.
