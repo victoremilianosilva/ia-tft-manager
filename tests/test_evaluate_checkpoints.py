@@ -167,7 +167,7 @@ class _FakeLobby:
             "decision_sequence": self.sequence, "stage": 1, "round": 1,
             "player_decision_sequences": [self.sequence] * 8,
             "native_state_snapshot": {
-                "contract_id": "tft.native-state-snapshot", "contract_version": 3,
+                "contract_id": "tft.native-state-snapshot", "contract_version": 5,
                 "producer": "TFTEngine::get_audit_snapshot",
                 "source_namespace": "tft.engine.observation-snapshot",
                 "players": [_native_player(i, self.sequence) for i in range(8)],
