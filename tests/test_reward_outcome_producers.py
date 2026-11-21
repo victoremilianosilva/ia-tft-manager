@@ -180,7 +180,7 @@ def test_detects_merge_upgrade_from_physical_star_tier_counts():
         before_snapshot=before, after_snapshot=after, action_traces=traces
     )
 
-    assert events[0]["facts"]["owned_copy_equivalent_delta"] == {"A": -1}
+    assert events[0]["facts"]["owned_copy_equivalent_delta"] == {"A": 1}
     assert events[0]["facts"]["star_tier_count_deltas"] == [
         {"champion_id": "A", "star": 1, "count_delta": -2},
         {"champion_id": "A", "star": 2, "count_delta": 1},
