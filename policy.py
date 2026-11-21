@@ -15,6 +15,9 @@ from semantic_observation import (
     SEMANTIC_ENTITY_FEATURES,
     SEMANTIC_GLOBAL_FEATURES,
     SEMANTIC_ID_EMBED_DIM,
+    SEMANTIC_TRAIT_SLOTS,
+    SEMANTIC_TRAIT_VOCAB_SIZE,
+    SEMANTIC_TRAIT_EMBED_DIM,
 )
 
 
@@ -192,8 +195,13 @@ class TFTPolicy(nn.Module):
         self.semantic_id_embedding = nn.Embedding(
             int(semantic_vocab_size), SEMANTIC_ID_EMBED_DIM, padding_idx=0
         )
+        self.semantic_trait_embedding = nn.Embedding(
+            SEMANTIC_TRAIT_VOCAB_SIZE + 1, SEMANTIC_TRAIT_EMBED_DIM, padding_idx=0
+        )
         semantic_input_dim = (
-            SEMANTIC_NUMERIC_DIM + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ID_EMBED_DIM
+            SEMANTIC_NUMERIC_DIM
+            + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ID_EMBED_DIM
+            + SEMANTIC_ENTITY_SLOTS * SEMANTIC_TRAIT_EMBED_DIM
         )
         self.semantic_encoder = nn.Sequential(
             nn.Linear(semantic_input_dim, 256),
@@ -237,7 +245,7 @@ class TFTPolicy(nn.Module):
         critic_mask_keys = {key for key in target if key.startswith("critic_mask_encoder.")}
         semantic_keys = {
             key for key in target
-            if key.startswith(("semantic_id_embedding.", "semantic_encoder."))
+            if key.startswith(("semantic_id_embedding.", "semantic_trait_embedding.", "semantic_encoder."))
         }
         present_semantic_keys = set(state_dict) & semantic_keys
         if present_semantic_keys and present_semantic_keys != semantic_keys:
@@ -468,7 +476,32 @@ class TFTPolicy(nn.Module):
             ):
                 raise ValueError("semantic champion ID is outside the checkpoint catalog vocabulary")
             embedded_ids = self.semantic_id_embedding(champion_ids).reshape(obs.shape[0], -1)
-            semantic_input = torch.cat([numeric, embedded_ids], dim=-1)
+            item_state = semantic_state.get("items")
+            trait_ids = item_state.get("trait_ids") if isinstance(item_state, Mapping) else None
+            if (
+                not isinstance(trait_ids, torch.Tensor)
+                or tuple(trait_ids.shape) != (
+                    obs.shape[0], SEMANTIC_ENTITY_SLOTS, SEMANTIC_TRAIT_SLOTS
+                )
+                or trait_ids.dtype != torch.long
+                or trait_ids.device != obs.device
+            ):
+                raise ValueError("semantic trait IDs are missing or misaligned")
+            if trait_ids.numel() and (
+                (trait_ids < 0).any()
+                or (trait_ids > SEMANTIC_TRAIT_VOCAB_SIZE).any()
+            ):
+                raise ValueError("semantic trait ID is outside the stable hash vocabulary")
+            trait_embeddings = self.semantic_trait_embedding(trait_ids)
+            trait_mask = (trait_ids != 0).unsqueeze(-1)
+            trait_counts = trait_mask.sum(dim=2).clamp_min(1)
+            pooled_trait_embeddings = (
+                trait_embeddings * trait_mask.to(trait_embeddings.dtype)
+            ).sum(dim=2) / trait_counts.to(trait_embeddings.dtype)
+            semantic_input = torch.cat(
+                [numeric, embedded_ids, pooled_trait_embeddings.reshape(obs.shape[0], -1)],
+                dim=-1,
+            )
             # The first semantic encoder stage is the global MLP input path.
             # It consumes native facts and entity identity instead of flat
             # global/trait/capacity/action-memory offsets.
