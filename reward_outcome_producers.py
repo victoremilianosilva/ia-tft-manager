@@ -259,6 +259,10 @@ def build_action_outcome_events(
         post_position = _finite(after.get("positioning_score", 0.0), "after.positioning_score")
         pre_quality = _finite(before.get("board_quality_score", 0.0), "before.board_quality_score")
         post_quality = _finite(after.get("board_quality_score", 0.0), "after.board_quality_score")
+        pre_positional = _finite(before.get("board_positional_score", 0.0), "before.board_positional_score")
+        post_positional = _finite(after.get("board_positional_score", 0.0), "after.board_positional_score")
+        pre_structural = _finite(before.get("board_structural_score", 0.0), "before.board_structural_score")
+        post_structural = _finite(after.get("board_structural_score", 0.0), "after.board_structural_score")
 
         event = {
             "contract_id": "tft.reward-action-outcome.v1",
@@ -311,6 +315,20 @@ def build_action_outcome_events(
                 "board_quality_before": pre_quality,
                 "board_quality_after": post_quality,
                 "board_quality_delta": post_quality - pre_quality,
+                "board_positional_before": pre_positional,
+                "board_positional_after": post_positional,
+                "board_positional_delta": post_positional - pre_positional,
+                "board_structural_before": pre_structural,
+                "board_structural_after": post_structural,
+                "board_structural_delta": post_structural - pre_structural,
+                "exposed_carries_before": _int(before.get("board_exposed_carries", 0), "before.board_exposed_carries"),
+                "exposed_carries_after": _int(after.get("board_exposed_carries", 0), "after.board_exposed_carries"),
+                "frontline_count_before": _int(before.get("board_frontline_count", 0), "before.board_frontline_count"),
+                "frontline_count_after": _int(after.get("board_frontline_count", 0), "after.board_frontline_count"),
+                "isolated_frontline_count_before": _int(before.get("board_isolated_frontline_count", 0), "before.board_isolated_frontline_count"),
+                "isolated_frontline_count_after": _int(after.get("board_isolated_frontline_count", 0), "after.board_isolated_frontline_count"),
+                "important_bench_units_unplayed_before": _int(before.get("board_important_bench_units_unplayed", 0), "before.board_important_bench_units_unplayed"),
+                "important_bench_units_unplayed_after": _int(after.get("board_important_bench_units_unplayed", 0), "after.board_important_bench_units_unplayed"),
             },
             "causal_attribution": "not_established",
             "reward": None,
