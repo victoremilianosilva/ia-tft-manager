@@ -1,7 +1,9 @@
 import pytest
 
 from reward_signal_calibration import (
-    analyze_action_lifecycles,\n    audit_reward_hacking_patterns,\n    build_attribution_candidates,
+    analyze_action_lifecycles,
+    audit_reward_hacking_patterns,
+    build_attribution_candidates,
     extract_native_outcome_events,
     validate_calibration_manifest,
 )
