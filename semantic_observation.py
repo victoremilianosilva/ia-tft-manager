@@ -717,6 +717,14 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
     if len(item_inventory) > 9 or len(pending_options) > 9:
         raise ValueError("native item inventory/anvil options exceed their canonical slot counts")
 
+    item_catalog_sha256 = hashlib.sha256(json.dumps(
+        {
+            "component_ids": item_component_catalog,
+            "recipe_features": recipe_features,
+        },
+        sort_keys=True, separators=(",", ":"), ensure_ascii=False,
+    ).encode("utf-8")).hexdigest()
+
     numeric.extend(component_features)
     numeric.extend(inventory_features)
     numeric.extend(recipe_features)
@@ -754,6 +762,7 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
                     "item_inventory": item_inventory,
                     "equipped_items": equipped_items,
                     "item_component_catalog": item_component_catalog,
+                    "item_catalog_sha256": item_catalog_sha256,
                     "pending_anvil": pending_anvil,
                     "pending_anvil_sequence": pending_sequence,
                     "pending_anvil_kind": pending_kind,
@@ -787,6 +796,7 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
             "item_inventory": item_inventory,
             "equipped_items": equipped_items,
             "item_component_catalog": item_component_catalog,
+            "item_catalog_sha256": item_catalog_sha256,
             "pending_anvil": pending_anvil,
             "pending_anvil_sequence": pending_sequence,
             "pending_anvil_kind": pending_kind,
