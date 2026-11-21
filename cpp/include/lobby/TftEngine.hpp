@@ -211,6 +211,13 @@ struct AuditUnitSnapshot {
     // Exact static catalog membership from ChampionDefinition::traits.
     // This excludes item-granted traits and active trait counts.
     std::vector<std::string> trait_names;
+    // Native target profile consumed by item-target action heads.
+    std::int32_t role{3};
+    double attack_damage{0.0};
+    double attack_speed{0.0};
+    double max_health{0.0};
+    double armor{0.0};
+    double magic_resist{0.0};
 };
 
 struct AuditItemCount { std::string catalog_id; std::uint32_t count{0}; };
