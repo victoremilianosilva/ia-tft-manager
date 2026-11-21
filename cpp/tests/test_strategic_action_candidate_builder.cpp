@@ -448,8 +448,8 @@ void xp_level_up_values_only_a_verified_selected_bench_unit() {
     native.bench_champion_ids[0] = 20;
     native.bench_unit_uuids[0] = "unit-20";
     native.shop_champion_ids[0] = 10;
-    native.shop_costs[0] = 3;
-    native.masks.shop_slot_mask[0] = MASK_ENABLED;
+    native.unit_costs[10] = 3;
+    native.masks.shop_mask[0] = MASK_ENABLED;
     enables(native.masks, decision::ActionType::PASS);
     enables(native.masks, decision::ActionType::BUY);
     enables(native.masks, decision::ActionType::BUY_XP);
