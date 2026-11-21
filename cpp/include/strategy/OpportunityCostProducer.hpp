@@ -33,6 +33,7 @@ struct OpportunityCostResult {
     bool available{false};
     double cost{0.0};
     std::string source{"unavailable_no_validated_alternative"};
+    std::string value_basis;
     std::string sacrificed_candidate_id;
     std::uint32_t horizon_rounds{0};
     double uncertainty{1.0};
@@ -104,6 +105,7 @@ public:
         out.available = true;
         out.cost = std::max(0.0, best_value);
         out.source = "same_snapshot_competing_alternative.v1";
+        out.value_basis = selected_value_basis;
         out.sacrificed_candidate_id = best->candidate_id;
         out.horizon_rounds = selected_horizon_rounds;
         out.uncertainty = best->uncertainty;
