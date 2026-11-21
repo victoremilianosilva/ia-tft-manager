@@ -467,6 +467,8 @@ inline bool approve_calibration(
         metrics.train_manifest_sha256 != metrics.test_manifest_sha256 &&
         metrics.validation_manifest_sha256 != metrics.test_manifest_sha256 &&
         metrics.episode_splits_disjoint &&
+        metrics.training_sample_count == distribution.sample_count &&
+        metrics.training_sample_count >= criteria.minimum_training_samples &&
         metrics.validation_sample_count >= criteria.minimum_validation_samples &&
         metrics.test_sample_count >= criteria.minimum_test_samples &&
         std::isfinite(metrics.mae) && metrics.mae >= 0.0 &&
