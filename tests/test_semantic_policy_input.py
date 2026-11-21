@@ -32,6 +32,17 @@ def _batch(batch_size=2):
 
 
 
+def test_native_carrier_rejects_legacy_policy_fallback():
+    with pytest.raises(ValueError, match="neutral carrier"):
+        TFTPolicy(
+            obs_dim=1,
+            action_dims=list(ACTION_DIMS),
+            hidden_size=32,
+            semantic_vocab_size=64,
+            require_semantic_state=False,
+        )
+
+
 def test_strict_semantic_policy_uses_only_neutral_observation_carrier():
     _, _, semantic = _batch(batch_size=1)
     carrier = torch.zeros((1, 1), dtype=torch.float32)
