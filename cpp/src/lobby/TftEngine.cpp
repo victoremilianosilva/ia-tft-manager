@@ -30,6 +30,7 @@
 #include "lobby/UnitPool.hpp"
 #include "lobby/EconomyEngine.hpp"
 #include "combat/CombatEngine.hpp"
+#include "combat/CombatEvidence.hpp"
 #include "lobby/ShopEngine.hpp"
 #include "strategy/SynergyCounter.hpp"
 #include "strategy/PositioningEngine.hpp"
@@ -4110,6 +4111,66 @@ struct TFTEngine::Impl {
                 events.emplace_back("AUTO_WIN_EMPTY_BOARD: jogador " +
                     std::to_string(winner) + " venceu jogador " + std::to_string(loser));
             } else {
+                // Bind the actual matchmaking pair and exact board instances
+                // before simulation. This snapshot is observational evidence
+                // only; it is not yet a calibrated damage prediction.
+                if (episode_id != 0 && decision_sequence != 0) {
+                    combat_evidence::CombatSnapshot snapshot;
+                    snapshot.match_id = episode_id;
+                    snapshot.player_id = static_cast<std::int32_t>(a);
+                    snapshot.opponent_id = static_cast<std::int32_t>(b);
+                    snapshot.round = round + 1;
+                    snapshot.sequence = decision_sequence;
+                    snapshot.player_hp = static_cast<std::int32_t>(
+                        player_envs[a].info.hp);
+                    snapshot.opponent_hp = static_cast<std::int32_t>(
+                        player_envs[b].info.hp);
+                    const auto append_roster_ids = [&](std::size_t player_id,
+                                                       const CombatTeam& team,
+                                                       std::vector<std::string>& ids,
+                                                       bool& complete) {
+                        complete = true;
+                        for (const auto& combat_unit : team.units) {
+                            const auto slot = combat_unit.source_board_position;
+                            if (slot < 0 || slot >= static_cast<std::int32_t>(kBoardSlots)) {
+                                complete = false;
+                                continue;
+                            }
+                            const auto& instance = player_envs[player_id].board[
+                                static_cast<std::size_t>(slot)];
+                            if (!instance || instance->uuid.empty()) {
+                                complete = false;
+                                continue;
+                            }
+                            ids.push_back(instance->uuid);
+                        }
+                        complete = complete && ids.size() == team.units.size();
+                    };
+                    append_roster_ids(a, input.player_a, snapshot.player_unit_ids,
+                                      snapshot.player_roster_complete);
+                    append_roster_ids(b, input.player_b, snapshot.opponent_unit_ids,
+                                      snapshot.opponent_roster_complete);
+                    const auto validation =
+                        combat_evidence::CombatSnapshotBuilder{}.validate(
+                            snapshot, decision_sequence);
+                    std::int32_t resolved_opponent = -1;
+                    const bool matchup_valid =
+                        combat_evidence::MatchupResolver{}.resolve(
+                            snapshot, static_cast<std::int32_t>(b), resolved_opponent);
+                    if (!validation.valid || !matchup_valid ||
+                        resolved_opponent != static_cast<std::int32_t>(b)) {
+                        events.emplace_back(
+                            "COMBAT_EVIDENCE_UNAVAILABLE: " + validation.reason);
+                    } else {
+                        events.emplace_back(
+                            "COMBAT_SNAPSHOT_VALIDATED: match=" +
+                            std::to_string(snapshot.match_id) + ", player=" +
+                            std::to_string(snapshot.player_id) + ", opponent=" +
+                            std::to_string(snapshot.opponent_id) + ", round=" +
+                            std::to_string(snapshot.round) + ", sequence=" +
+                            std::to_string(snapshot.sequence));
+                    }
+                }
                 const auto combat = combat_engine.simulate(input);
                 if (!combat.success || !combat.completed)
                     throw std::runtime_error("CombatEngine falhou no confronto " +
