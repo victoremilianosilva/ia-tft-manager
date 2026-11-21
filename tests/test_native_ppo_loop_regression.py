@@ -208,8 +208,10 @@ def _run_native_ppo_identity_replay(seed: int, decisions: int = 40):
                     "native_player_state": native_player,
                 })
             semantic_batch = build_semantic_batch(semantic_rows, champion_id_map)
+            semantic_numeric = torch.as_tensor(semantic_batch["numeric"], dtype=torch.float32)
             semantic_state = {
-                "numeric": torch.as_tensor(semantic_batch["numeric"], dtype=torch.float32),
+                "numeric": semantic_numeric,
+                "items": semantic_item_state_tensors(semantic_numeric),
                 "champion_ids": torch.as_tensor(semantic_batch["champion_ids"], dtype=torch.long),
             }
 
