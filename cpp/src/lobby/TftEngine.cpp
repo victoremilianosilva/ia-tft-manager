@@ -2574,6 +2574,7 @@ struct TFTEngine::Impl {
             // and publish same-version priorities/lineup for engine consumers.
             // PPO observations, masks, rewards and executed actions remain unchanged.
             strategy::StrategicSharedContext strategic_context;
+            strategic_context.match_id = episode_id;
             strategic_context.player_id = static_cast<std::int32_t>(i);
             strategic_context.round = static_cast<std::uint32_t>(current_round);
             strategic_context.sequence = strategic_context_sequences[i] + 1;
@@ -4120,7 +4121,8 @@ struct TFTEngine::Impl {
                     snapshot.player_id = static_cast<std::int32_t>(a);
                     snapshot.opponent_id = static_cast<std::int32_t>(b);
                     snapshot.round = round + 1;
-                    snapshot.sequence = decision_sequence;
+                    snapshot.sequence = strategic_context_sequences[a];
+                    snapshot.engine_decision_sequence = decision_sequence;
                     snapshot.player_hp = static_cast<double>(player_envs[a].info.hp);
                     snapshot.opponent_hp = static_cast<double>(player_envs[b].info.hp);
                     const auto append_roster_ids = [&](std::size_t player_id,
@@ -4150,7 +4152,7 @@ struct TFTEngine::Impl {
                                       snapshot.opponent_roster_complete);
                     const auto validation =
                         combat_evidence::CombatSnapshotBuilder{}.validate(
-                            snapshot, decision_sequence);
+                            snapshot, strategic_context_sequences[a]);
                     std::int32_t resolved_opponent = -1;
                     const bool matchup_valid =
                         combat_evidence::MatchupResolver{}.resolve(
@@ -4171,7 +4173,8 @@ struct TFTEngine::Impl {
                         {"player_id", snapshot.player_id},
                         {"opponent_id", snapshot.opponent_id},
                         {"round", snapshot.round},
-                        {"decision_sequence", snapshot.sequence},
+                        {"decision_sequence", snapshot.engine_decision_sequence},
+                        {"strategic_context_sequence", snapshot.sequence},
                         {"player_hp_before", snapshot.player_hp},
                         {"opponent_hp_before", snapshot.opponent_hp},
                         {"player_unit_uuids", snapshot.player_unit_ids},
