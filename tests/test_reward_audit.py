@@ -36,6 +36,7 @@ def _inputs(*, action=None, combat=None, placement=None, combat_sequence=4,
             "engine_instance_id": "engine-test",
             "episode_id": episode_id,
             "snapshot_sequence": decision_sequence,
+            "player_decision_sequences": [decision_sequence] * 8,
             "combat_sequence": combat_sequence,
             "round": 7,
         },
@@ -139,3 +140,22 @@ def test_reward_audit_rejects_cross_episode_or_snapshot_misalignment():
 
     with pytest.raises(RuntimeError, match="desalinhados"):
         _build(ledger, values)
+
+
+
+def test_reward_audit_deduplicates_terminal_placement_across_steps():
+    ledger = RewardAuditLedger()
+    ledger.reset("engine-test", 2)
+    first = _inputs(
+        placement=[0, 0, 0, 0, 0, 0, 0, -1],
+        placements=[None, None, None, None, None, None, None, 8],
+    )
+    _build(ledger, first)
+
+    repeated = _inputs(
+        placement=[0, 0, 0, 0, 0, 0, 0, -1],
+        placements=[None, None, None, None, None, None, None, 8],
+        decision_sequence=11,
+    )
+    with pytest.raises(RuntimeError, match="crédito repetido"):
+        _build(ledger, repeated)
