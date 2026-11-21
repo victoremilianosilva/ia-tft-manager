@@ -493,7 +493,7 @@ void xp_level_up_values_only_a_verified_selected_bench_unit() {
     competing_buy.marginal_interest_before = 2;
     competing_buy.marginal_interest_after = 1;
     competing_buy.marginal_interest_delta = -1;
-    competing_buy.marginal_cost_source = "native_economy_delta";
+    competing_buy.marginal_cost_source = "native_gold+EconomyEngine::get_interest";
     competing_buy.marginal_cost_horizon_rounds = 1;
     competing_buy.marginal_cost_uncertainty = 0.0;
     context.action_candidates = {*xp, competing_buy, *hold};
