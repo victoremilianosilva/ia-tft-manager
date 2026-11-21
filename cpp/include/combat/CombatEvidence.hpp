@@ -415,6 +415,8 @@ struct SurvivalRiskEvidence {
     std::uint64_t sequence{0};
     double expected_damage{0.0};
     double elimination_risk{0.0};
+    std::uint32_t horizon_rounds{1};
+    double uncertainty{1.0};
     std::string source{"unavailable_uncalibrated_damage"};
 };
 
@@ -447,6 +449,8 @@ inline SurvivalRiskEvidence derive_survival_risk(
     out.expected_damage = distribution.mean;
     out.elimination_risk = static_cast<double>(lethal_outcomes) /
         static_cast<double>(distribution.sample_count);
+    out.horizon_rounds = 1;
+    out.uncertainty = distribution.uncertainty;
     out.source = "observed_hp+approved_replay_calibration.v1";
     return out;
 }
@@ -454,7 +458,10 @@ inline SurvivalRiskEvidence derive_survival_risk(
 inline bool apply_to_economic_context(
     const SurvivalRiskEvidence& risk, strategy::StrategicSharedContext& context) {
     if (!risk.available || risk.match_id == 0 || risk.player_id < 0 ||
-        risk.round == 0 || risk.sequence == 0 ||
+        risk.round == 0 || risk.sequence == 0 || risk.horizon_rounds != 1 ||
+        risk.source != "observed_hp+approved_replay_calibration.v1" ||
+        !std::isfinite(risk.uncertainty) || risk.uncertainty < 0.0 ||
+        risk.uncertainty > 1.0 ||
         context.match_id != risk.match_id ||
         context.player_id != risk.player_id || context.round != risk.round ||
         context.sequence != risk.sequence ||
@@ -464,6 +471,11 @@ inline bool apply_to_economic_context(
         return false;
     context.estimated_incoming_damage = risk.expected_damage;
     context.elimination_risk = risk.elimination_risk;
+    context.incoming_damage_source = risk.source;
+    context.elimination_risk_source = risk.source;
+    context.combat_evidence_horizon_rounds = risk.horizon_rounds;
+    context.combat_evidence_sequence = risk.sequence;
+    context.combat_evidence_uncertainty = risk.uncertainty;
     context.evidence.estimated_incoming_damage = true;
     context.evidence.elimination_risk = true;
     return true;
