@@ -269,6 +269,8 @@ def test_item_assignment_rejects_unidentifiable_or_duplicate_items():
 def test_item_action_records_equipped_item_and_inventory_component_deltas():
     before = _snapshot(5, 10)
     after = _snapshot(6, 11)
+    before["players"][0]["bench"][0] = _unit(uuid="carrier")
+    after["players"][0]["board"][4] = _unit(uuid="carrier")
     before["players"][0]["equipped_items"] = [{
         "unit_uuid": "carrier", "catalog_id": "item-a", "location": "bench", "slot": 0
     }]
