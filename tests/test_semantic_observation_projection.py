@@ -255,6 +255,34 @@ def test_semantic_projection_hash_binds_owner_identity_even_when_tensor_is_equal
 
 
 
+
+def test_semantic_v2_checkpoint_has_only_explicit_v3_warm_start_path():
+    import copy
+    import hashlib
+    import json
+
+    catalog = {"TFT_TestChampion": 17}
+    current = build_semantic_state_checkpoint_contract(catalog)
+    historical = copy.deepcopy(current)
+    payload = historical["contract"]
+    payload["contract_id"] = "tft.ppo.semantic-native-state.v2"
+    payload["version"] = 2
+    payload["source"]["contract_version"] = 3
+    payload["global_features"] = payload["global_features"][:21]
+    payload["numeric_dimension"] = 21 + SEMANTIC_ENTITY_SLOTS * 12
+    payload["encoder"]["fusion"] = "additive_to_shared_actor_critic_latent"
+    payload["encoder"].pop("board_cnn_source")
+    payload["encoder"].pop("action_candidate_source")
+    canonical = json.dumps(
+        payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    ).encode("utf-8")
+    historical["sha256"] = hashlib.sha256(canonical).hexdigest()
+
+    validate_semantic_state_checkpoint_integrity(historical)
+    validate_semantic_state_warm_start_migration(historical, catalog)
+    with pytest.raises(ValueError, match="incompatible"):
+        validate_semantic_state_checkpoint_contract(historical, catalog)
+
 def test_semantic_checkpoint_manifest_integrity_is_separate_from_runtime_compatibility():
     import copy
 
