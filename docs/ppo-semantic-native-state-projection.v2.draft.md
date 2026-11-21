@@ -115,7 +115,7 @@ Trainer collection no longer calls the legacy `get_strategies()` compatibility A
 **Nova responsabilidade implementada:**
 - **Board/CNN:** 28 entidades semânticas em ordem row-major 4x7; a CNN recebe ocupação, custo, estrela, itens equipados e contagem de traits.
 - **Encoder global:** fatos globais, identidade de campeões e identidades de traits com buckets SHA-256 estáveis (65.536 buckets) e embeddings próprios.
-- **Capacidade/memória:** snapshot nativo v4 publica capacidade de board/bench, ações no round e idade de movimento por slot.
+- **Capacidade/memória:** snapshot nativo v5 publica capacidade de board/bench, ações no round e idade de movimento por slot.
 - **Candidatos e alvos:** compra/venda/posicionamento consomem entidades de bench/shop; alvos de item consomem perfis nativos board/bench com role classifier, posição, AD/AS/HP/armadura/resistência mágica e contagem de itens.
 - **Itens:** snapshot nativo publica componentes, inventário, features canônicas de itens/receitas e matrizes de compatibilidade por alvo, usando ItemEngine, catálogo e perfis nativos.
 - **Anvil:** pendência, sequência, tipo e nove opções estruturadas são projetados a partir da Engine; o scorer recebe features de opção e flags explícitas de componente/item completo.
