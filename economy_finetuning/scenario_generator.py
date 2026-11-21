@@ -177,9 +177,12 @@ def decode_semantic_observation(semantic_state, player_id: int | None = None) ->
         numeric = numeric.detach().cpu().numpy()
     if hasattr(numeric, "tolist"):
         numeric = numeric.tolist()
-    if not isinstance(numeric, (list, tuple)) or len(numeric) != 1:
-        raise ValueError("semantic scenario input must contain exactly one v6 row")
-    row = numeric[0]
+    if not isinstance(numeric, (list, tuple)) or not numeric:
+        raise ValueError("semantic scenario input must contain v6 rows")
+    row_index = 0 if player_id is None else player_id
+    if isinstance(row_index, bool) or not isinstance(row_index, int) or not 0 <= row_index < len(numeric):
+        raise ValueError("semantic scenario player index is outside the v6 batch")
+    row = numeric[row_index]
     if not isinstance(row, (list, tuple)) or len(row) < 52:
         raise ValueError("semantic scenario row is shorter than the v6 global projection")
     values = [float(value) for value in row[:52]]
