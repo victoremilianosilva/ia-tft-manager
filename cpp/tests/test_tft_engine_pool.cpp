@@ -286,21 +286,62 @@ int main(int argc, char** argv) {
         for (auto& action : actions) action.values = {6, 0, 0, 0, 0, 0};
         // Only a calibrated, identity/sequence-bound prediction may enter
         // the Shadow economic context; experimental or stale predictions fail closed.
-        tft::combat_evidence::SurvivalRiskEvidence calibrated_combat_risk;
-        calibrated_combat_risk.available = true;
-        calibrated_combat_risk.match_id = identity_after_reset.episode_id;
-        calibrated_combat_risk.player_id = 0;
-        calibrated_combat_risk.round = 1;
-        calibrated_combat_risk.sequence = 1;
-        calibrated_combat_risk.expected_damage = 5.0;
-        calibrated_combat_risk.elimination_risk = 0.10;
-        calibrated_combat_risk.horizon_rounds = 1;
-        calibrated_combat_risk.uncertainty = 0.20;
-        calibrated_combat_risk.calibration_protocol_id = "combat-calibration.v1";
-        calibrated_combat_risk.calibration_report_sha256 = std::string(64, 'a');
-        calibrated_combat_risk.dataset_version = "combat-dataset.v1";
-        calibrated_combat_risk.replay_artifact_ids = {"replay-artifact-1"};
-        calibrated_combat_risk.source = "observed_hp+approved_replay_calibration.v1";
+        tft::combat_evidence::CombatCalibrationCohort combat_cohort;
+        combat_cohort.round = 1;
+        combat_cohort.horizon_rounds = 1;
+        combat_cohort.engine_version = "combat-engine-generic.v1";
+        combat_cohort.composition_signature = "fixture-composition";
+        combat_cohort.mechanics_signature = "fixture-mechanics";
+        std::vector<tft::combat_evidence::ObservedCombatOutcome> combat_outcomes;
+        for (std::uint64_t sample = 0; sample < 30; ++sample) {
+            tft::combat_evidence::ObservedCombatOutcome outcome;
+            outcome.match_id = 1000 + sample;
+            outcome.player_id = static_cast<std::int32_t>(sample % 8);
+            outcome.round = 1;
+            outcome.sequence = 1;
+            outcome.incoming_damage = 5.0;
+            outcome.observed = true;
+            outcome.source = "versioned_replay_outcome.v1";
+            outcome.replay_artifact_id = "fixture-replay-" + std::to_string(sample % 3);
+            outcome.dataset_version = "fixture-combat-dataset.v1";
+            outcome.engine_version = combat_cohort.engine_version;
+            outcome.composition_signature = combat_cohort.composition_signature;
+            outcome.mechanics_signature = combat_cohort.mechanics_signature;
+            outcome.horizon_rounds = 1;
+            combat_outcomes.push_back(std::move(outcome));
+        }
+        auto combat_distribution =
+            tft::combat_evidence::CombatPredictionCalibrator{}.calibrate_for_cohort(
+                combat_outcomes, identity_after_reset.episode_id, 0, 1, 1,
+                combat_cohort, 30);
+        tft::combat_evidence::CalibrationAcceptanceCriteria combat_criteria;
+        combat_criteria.approved = true;
+        combat_criteria.protocol_id = "combat-calibration.v1";
+        combat_criteria.minimum_training_samples = 30;
+        combat_criteria.minimum_validation_samples = 20;
+        combat_criteria.minimum_test_samples = 30;
+        combat_criteria.maximum_mae = 5.0;
+        combat_criteria.minimum_p90_coverage = 0.85;
+        combat_criteria.maximum_p90_coverage = 0.95;
+        combat_criteria.maximum_brier_score = 0.10;
+        tft::combat_evidence::CalibrationValidationMetrics combat_metrics;
+        combat_metrics.report_sha256 = std::string(64, 'a');
+        combat_metrics.train_manifest_sha256 = std::string(64, 'b');
+        combat_metrics.validation_manifest_sha256 = std::string(64, 'c');
+        combat_metrics.test_manifest_sha256 = std::string(64, 'd');
+        combat_metrics.episode_splits_disjoint = true;
+        combat_metrics.validation_sample_count = 25;
+        combat_metrics.test_sample_count = 40;
+        combat_metrics.mae = 1.2;
+        combat_metrics.p90_coverage = 0.90;
+        combat_metrics.brier_score = 0.05;
+        require(tft::combat_evidence::approve_calibration(
+                    combat_distribution, combat_metrics, combat_criteria),
+                "Fixture cohort de combate não passou pelo gate de calibração.");
+        auto calibrated_combat_risk =
+            tft::combat_evidence::derive_survival_risk(100.0, combat_distribution);
+        require(calibrated_combat_risk.available,
+                "Não foi possível derivar risco do cohort aprovado.");
         require(engine.publish_combat_prediction_evidence(calibrated_combat_risk),
                 "A Engine deveria aceitar risco calibrado para a próxima sequência.");
         auto experimental_combat_risk = calibrated_combat_risk;
