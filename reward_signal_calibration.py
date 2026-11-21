@@ -359,6 +359,17 @@ def audit_reward_hacking_patterns(action_events):
             pattern = "repeated_positioning_farming_candidate"
         elif family == "pass" and sum(row[2] == "pass" for row in window) >= 4:
             pattern = "pass_streak_candidate"
+        elif family == "sale":
+            sold_uuids = {str(unit.get("uuid", "")) for unit in
+                (event.get("facts", {}).get("units_removed", []) or []) if isinstance(unit, Mapping)}
+            churned = any(
+                row[2] == "purchase" and
+                bool(sold_uuids & {str(unit.get("uuid", "")) for unit in
+                    (row[3].get("facts", {}).get("units_added", []) or []) if isinstance(unit, Mapping)})
+                for row in window if row[1] < seq
+            )
+            if churned:
+                pattern = "purchase_sale_churn_candidate"
         if pattern:
             findings.append({"contract_id": "tft.reward-hacking-audit.v1", "pattern": pattern,
                 "engine_instance_id": identity[0], "episode_id": identity[1], "player_id": identity[2],
