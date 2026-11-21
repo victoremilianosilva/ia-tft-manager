@@ -113,14 +113,19 @@ def test_native_semantic_projection_has_stable_shape_and_explicit_identity():
     assert len(projected["numeric"]) == SEMANTIC_NUMERIC_DIM
     assert len(projected["champion_ids"]) == SEMANTIC_ENTITY_SLOTS
     assert projected["champion_ids"][0] == 18
-    assert projected["numeric"][21] == 1.0  # occupied
-    assert projected["numeric"][26] == 1.0  # mapped champion identity valid
-    assert projected["numeric"][27] == 1.0  # active composition member
-    assert projected["numeric"][28] == 1.0  # active core member
-    assert projected["numeric"][29] == 1.0  # direction reference
-    assert projected["numeric"][30] == 1.0  # pivot reference
-    assert projected["numeric"][31] == 4.0 / 9.0  # one 2-star plus one 1-star copy
-    assert projected["numeric"][32] == 0.0  # native UnitCopyProgress reports no 2-star progress
+    assert projected["numeric"][52] == 1.0  # occupied
+    assert projected["numeric"][57] == 1.0  # mapped champion identity valid
+    assert projected["numeric"][58] == 1.0  # active composition member
+    assert projected["numeric"][59] == 1.0  # active core member
+    assert projected["numeric"][60] == 1.0  # direction reference
+    assert projected["numeric"][61] == 1.0  # pivot reference
+    assert projected["numeric"][62] == 4.0 / 9.0  # one 2-star plus one 1-star copy
+    assert projected["numeric"][63] == 0.0  # native UnitCopyProgress reports no 2-star progress
+    assert projected["numeric"][21] == 5.0 / 9.0  # board capacity
+    assert projected["numeric"][22] == 8.0 / 9.0  # bench capacity
+    assert projected["numeric"][23] == 0.3  # actions taken this round
+    assert projected["numeric"][24] == 0.0  # current board slot move age
+    assert projected["numeric"][25] == 1.0  # empty slot move age is capped
     assert projected["identity"]["player_id"] == 2
     assert len(projected["sha256"]) == 64
 
@@ -131,7 +136,7 @@ def test_copy_progress_consumes_native_unit_copy_progress_without_recounting():
         "copies_toward_next_star"
     ] = 2
     projected = project_native_player_state(row, {"TFT_TestChampion": 17})
-    assert projected["numeric"][32] == 1.0
+    assert projected["numeric"][63] == 1.0
 
 
 def test_semantic_batch_is_deterministic_and_catalog_contract_is_bound():
@@ -157,7 +162,7 @@ def test_unknown_champion_is_not_fabricated_and_is_marked_invalid():
     row["native_player_state"]["board"][0]["champion_id"] = "TFT_UnknownChampion"
     projected = project_native_player_state(row, {"TFT_TestChampion": 17})
     assert projected["champion_ids"][0] == 0
-    assert projected["numeric"][26] == 0.0
+    assert projected["numeric"][57] == 0.0
 
 
 def test_projection_rejects_missing_native_provenance_or_player_mismatch():
