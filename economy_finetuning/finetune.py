@@ -368,7 +368,8 @@ def run(args):
                         semantic_state=semantic_state,
                     )
                     candidate_greedy_actions, _, _, _ = policy.get_action_and_value(
-                        obs_tensor, masks=masks, deterministic=True
+                        obs_tensor, masks=masks, deterministic=True,
+                        semantic_state=semantic_state,
                     )
                 action_array = actions.cpu().numpy().astype(np.int64)
                 reference_array = reference_actions.cpu().numpy().astype(np.int64)
