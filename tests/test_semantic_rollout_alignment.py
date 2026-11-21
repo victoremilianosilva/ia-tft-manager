@@ -7,7 +7,7 @@ from action_contract import (
     hash_mask_row,
 )
 from rollout import RolloutBuffer
-from semantic_observation import SEMANTIC_ENTITY_SLOTS, SEMANTIC_NUMERIC_DIM
+from semantic_observation import SEMANTIC_ENTITY_SLOTS, SEMANTIC_NUMERIC_DIM, semantic_item_state_tensors
 
 
 def test_rollout_keeps_semantic_projection_aligned_with_each_transition():
@@ -25,10 +25,10 @@ def test_rollout_keeps_semantic_projection_aligned_with_each_transition():
         for name, shape in MASK_SHAPES.items()
     }
     masks["type_mask"][:, 6] = True
+    semantic_numeric = torch.zeros((batch_size, SEMANTIC_NUMERIC_DIM), dtype=torch.float32)
     semantic = {
-        "numeric": torch.arange(
-            batch_size * SEMANTIC_NUMERIC_DIM, dtype=torch.float32
-        ).reshape(batch_size, SEMANTIC_NUMERIC_DIM),
+        "numeric": semantic_numeric,
+        "items": semantic_item_state_tensors(semantic_numeric),
         "champion_ids": torch.arange(
             batch_size * SEMANTIC_ENTITY_SLOTS, dtype=torch.long
         ).reshape(batch_size, SEMANTIC_ENTITY_SLOTS),
@@ -129,8 +129,10 @@ def test_rollout_replay_keeps_semantic_identity_and_hash_with_the_same_row():
     next_state = {
         **identity, "decision_sequence": 11, "player_decision_sequence": 3,
     }
+    semantic_numeric = torch.zeros((1, SEMANTIC_NUMERIC_DIM), dtype=torch.float32)
     semantic = {
-        "numeric": torch.zeros((1, SEMANTIC_NUMERIC_DIM), dtype=torch.float32),
+        "numeric": semantic_numeric,
+        "items": semantic_item_state_tensors(semantic_numeric),
         "champion_ids": torch.zeros((1, SEMANTIC_ENTITY_SLOTS), dtype=torch.long),
         "identities": [identity], "hashes": [digest],
         "contract_id": "tft.ppo.semantic-native-state.v6",
