@@ -606,6 +606,80 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
             numeric.extend(target_features)
             champion_ids.append(0 if internal_id is None else int(internal_id) + 1)
 
+    def read_feature_block(field, shape):
+        value = state.get(field)
+        if not isinstance(value, Sequence) or isinstance(value, (str, bytes)):
+            raise TypeError(f"native semantic item field {field} must be a sequence")
+        flat = []
+        def visit(node, depth=0):
+            if depth == len(shape):
+                flat.append(_finite_number(node, field))
+                return
+            if (
+                not isinstance(node, Sequence) or isinstance(node, (str, bytes))
+                or len(node) != shape[depth]
+            ):
+                raise ValueError(f"native semantic item field {field} has invalid shape")
+            for child in node:
+                visit(child, depth + 1)
+        visit(value)
+        if any(value < 0.0 or value > 1.0 for value in flat):
+            raise ValueError(f"native semantic item field {field} is outside [0, 1]")
+        return flat
+
+    component_features = read_feature_block("item_component_features", (10,))
+    inventory_features = read_feature_block("item_inventory_features", (9, 17))
+    recipe_features = read_feature_block("item_recipe_features", (100, 17))
+    inventory_target_fit = read_feature_block("item_inventory_target_fit", (9, 37))
+    recipe_target_fit = read_feature_block("item_recipe_target_fit", (100, 37))
+    anvil_option_features = read_feature_block("pending_anvil_option_features", (9, 11))
+
+    pending_anvil = state.get("pending_anvil")
+    pending_sequence = _non_negative_int(
+        state.get("pending_anvil_sequence"), "pending_anvil_sequence"
+    )
+    pending_kind = state.get("pending_anvil_kind")
+    pending_options = state.get("pending_anvil_options")
+    if not isinstance(pending_anvil, bool):
+        raise TypeError("native pending_anvil must be boolean")
+    if isinstance(pending_kind, bool) or not isinstance(pending_kind, int):
+        raise TypeError("native pending_anvil_kind must be an integer")
+    if not isinstance(pending_options, list) or any(
+        not isinstance(option, str) or not option for option in pending_options
+    ):
+        raise TypeError("native pending_anvil_options must be non-empty string IDs")
+    if pending_anvil:
+        if pending_sequence <= 0 or pending_kind not in (0, 1) or not pending_options:
+            raise ValueError("pending anvil lacks a valid sequence, kind or options")
+    elif pending_sequence != 0 or pending_kind != -1 or pending_options:
+        raise ValueError("non-pending anvil must not publish sequence, kind or options")
+
+    item_components = state.get("item_components")
+    item_inventory = state.get("item_inventory")
+    item_component_catalog = state.get("item_component_catalog")
+    equipped_items = state.get("equipped_items")
+    for field, values in (
+        ("item_components", item_components),
+        ("item_inventory", item_inventory),
+        ("item_component_catalog", item_component_catalog),
+    ):
+        if not isinstance(values, list) or any(not isinstance(value, str) or not value for value in values):
+            raise TypeError(f"native {field} must contain non-empty string IDs")
+    if not isinstance(equipped_items, list) or any(not isinstance(row, Mapping) for row in equipped_items):
+        raise TypeError("native equipped_items must be a list of structured ownership rows")
+
+    numeric.extend(component_features)
+    numeric.extend(inventory_features)
+    numeric.extend(recipe_features)
+    numeric.extend(inventory_target_fit)
+    numeric.extend(recipe_target_fit)
+    numeric.extend([
+        float(pending_anvil),
+        float(pending_anvil and pending_kind == 0),
+        float(pending_anvil and pending_kind == 1),
+    ])
+    numeric.extend(anvil_option_features)
+
     if len(numeric) != SEMANTIC_NUMERIC_DIM or len(champion_ids) != SEMANTIC_ENTITY_SLOTS:
         raise RuntimeError("semantic projection produced an invalid tensor layout")
     if not all(math.isfinite(value) for value in numeric):
@@ -626,6 +700,16 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
                 "identity": identity,
                 "numeric": numeric,
                 "champion_ids": champion_ids,
+                "item_state_identity": {
+                    "item_components": item_components,
+                    "item_inventory": item_inventory,
+                    "equipped_items": equipped_items,
+                    "item_component_catalog": item_component_catalog,
+                    "pending_anvil": pending_anvil,
+                    "pending_anvil_sequence": pending_sequence,
+                    "pending_anvil_kind": pending_kind,
+                    "pending_anvil_options": pending_options,
+                },
                 "strategic_owner_provenance": {
                     "contract_id": strategic.get("contract_id"),
                     "contract_version": strategic.get("contract_version"),
@@ -649,6 +733,16 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
         "numeric": numeric,
         "champion_ids": champion_ids,
         "identity": identity,
+        "item_state_identity": {
+            "item_components": item_components,
+            "item_inventory": item_inventory,
+            "equipped_items": equipped_items,
+            "item_component_catalog": item_component_catalog,
+            "pending_anvil": pending_anvil,
+            "pending_anvil_sequence": pending_sequence,
+            "pending_anvil_kind": pending_kind,
+            "pending_anvil_options": pending_options,
+        },
         "sha256": digest,
     }
 
