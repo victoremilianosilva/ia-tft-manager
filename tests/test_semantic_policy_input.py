@@ -32,6 +32,34 @@ def _batch(batch_size=2):
 
 
 
+def test_strict_semantic_policy_uses_only_neutral_observation_carrier():
+    _, _, semantic = _batch(batch_size=1)
+    carrier = torch.zeros((1, 1), dtype=torch.float32)
+    policy = TFTPolicy(
+        obs_dim=1,
+        action_dims=list(ACTION_DIMS),
+        hidden_size=32,
+        semantic_vocab_size=64,
+        require_semantic_state=True,
+    ).eval()
+
+    assert isinstance(policy.global_mlp, torch.nn.Identity)
+    assert not any(key.startswith("global_mlp.") for key in policy.state_dict())
+
+    historical_weights = dict(policy.state_dict())
+    historical_weights.update({
+        "global_mlp.0.weight": torch.zeros((256, 128)),
+        "global_mlp.0.bias": torch.zeros(256),
+        "global_mlp.2.weight": torch.zeros((256, 256)),
+        "global_mlp.2.bias": torch.zeros(256),
+    })
+    policy.load_compatible_state_dict(historical_weights)
+
+    first = policy.encode(carrier, semantic_state=semantic)
+    second = policy.encode(carrier + 1.0, semantic_state=semantic)
+    torch.testing.assert_close(first, second)
+
+
 def test_native_semantic_entities_drive_board_cnn_and_action_candidates():
     obs, _, semantic = _batch(batch_size=1)
     policy = TFTPolicy(obs_dim=obs.shape[-1], action_dims=list(ACTION_DIMS), hidden_size=32, semantic_vocab_size=64).eval()
