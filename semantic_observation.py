@@ -144,7 +144,7 @@ def build_semantic_state_checkpoint_contract(catalog_map: Mapping[str, int]) -> 
         "version": SEMANTIC_STATE_CONTRACT_VERSION,
         "source": {
             "contract_id": "tft.native-state-snapshot",
-            "contract_version": 4,
+            "contract_version": 5,
             "producer": "TFTEngine::get_audit_snapshot",
             "source_namespace": "tft.engine.observation-snapshot",
         },
@@ -290,13 +290,13 @@ def validate_semantic_state_warm_start_migration(
         and historical_payload.get("source", {}).get("contract_version") == 3
         and historical_owner_source.get("contract_version") == 2
     ):
-        # Reviewed v2 -> v6 migration: native snapshot v3 -> v4 adds capacity,
+        # Reviewed v2 -> v6 migration: native snapshot v3 -> v5 adds capacity,
         # temporal facts, board/bench item-target profiles and structured item/anvil blocks. The semantic
         # entity stride expands while historical identity remains bound.
         historical_payload["contract_id"] = expected["contract"]["contract_id"]
         historical_payload["version"] = expected["contract"]["version"]
         historical_source = dict(historical_payload.get("source", {}))
-        historical_source["contract_version"] = 4
+        historical_source["contract_version"] = 5
         historical_payload["source"] = historical_source
         historical_payload["global_features"] = expected["contract"]["global_features"]
         historical_payload["numeric_dimension"] = expected["contract"]["numeric_dimension"]
@@ -353,7 +353,7 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
         raise ValueError("semantic projection requires Engine identity")
     for field in ("episode_id", "decision_sequence", "player_decision_sequence", "lobby_index"):
         _non_negative_int(metadata.get(field), f"metadata.{field}")
-    if metadata.get("native_state_contract_id") != "tft.native-state-snapshot" or metadata.get("native_state_contract_version") != 4:
+    if metadata.get("native_state_contract_id") != "tft.native-state-snapshot" or metadata.get("native_state_contract_version") != 5:
         raise ValueError("unsupported native state snapshot contract")
     if metadata.get("native_state_producer") != "TFTEngine::get_audit_snapshot":
         raise ValueError("unexpected native state producer")
