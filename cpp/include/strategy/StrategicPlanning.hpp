@@ -85,6 +85,11 @@ struct StrategicActionCandidate {
     double direct_gold_cost{0.0};
     double lost_interest_cost{0.0};
     double opportunity_cost{0.0};
+    bool opportunity_cost_evidence_available{false};
+    std::string opportunity_cost_source{"unavailable_no_validated_alternative"};
+    std::string opportunity_cost_forgone_candidate_id;
+    std::uint32_t opportunity_cost_horizon_rounds{0};
+    double opportunity_cost_uncertainty{1.0};
     double expected_economy_cost{0.0};
     double expected_board_delta{0.0};
     double composition_fit{0.0};
@@ -206,6 +211,8 @@ struct StrategicSharedContext {
     // Appended to preserve existing aggregate initialization contracts.
     StrategicEvidenceAvailability evidence;
     std::uint64_t sequence{0};
+    // Match identity for cross-round evidence correlation; appended for aggregate compatibility.
+    std::uint64_t match_id{0};
 };
 
 struct StrategicCommitment {

@@ -30,6 +30,7 @@
 #include "lobby/UnitPool.hpp"
 #include "lobby/EconomyEngine.hpp"
 #include "combat/CombatEngine.hpp"
+#include "combat/CombatEvidence.hpp"
 #include "lobby/ShopEngine.hpp"
 #include "strategy/SynergyCounter.hpp"
 #include "strategy/PositioningEngine.hpp"
@@ -2573,6 +2574,7 @@ struct TFTEngine::Impl {
             // and publish same-version priorities/lineup for engine consumers.
             // PPO observations, masks, rewards and executed actions remain unchanged.
             strategy::StrategicSharedContext strategic_context;
+            strategic_context.match_id = episode_id;
             strategic_context.player_id = static_cast<std::int32_t>(i);
             strategic_context.round = static_cast<std::uint32_t>(current_round);
             strategic_context.sequence = strategic_context_sequences[i] + 1;
@@ -4110,6 +4112,83 @@ struct TFTEngine::Impl {
                 events.emplace_back("AUTO_WIN_EMPTY_BOARD: jogador " +
                     std::to_string(winner) + " venceu jogador " + std::to_string(loser));
             } else {
+                // Bind the actual matchmaking pair and exact board instances
+                // before simulation. This snapshot is observational evidence
+                // only; it is not yet a calibrated damage prediction.
+                if (episode_id != 0 && decision_sequence != 0) {
+                    combat_evidence::CombatSnapshot snapshot;
+                    snapshot.match_id = episode_id;
+                    snapshot.player_id = static_cast<std::int32_t>(a);
+                    snapshot.opponent_id = static_cast<std::int32_t>(b);
+                    snapshot.round = round + 1;
+                    snapshot.sequence = strategic_context_sequences[a];
+                    snapshot.engine_decision_sequence = decision_sequence;
+                    snapshot.player_hp = static_cast<double>(player_envs[a].info.hp);
+                    snapshot.opponent_hp = static_cast<double>(player_envs[b].info.hp);
+                    const auto append_roster_ids = [&](std::size_t player_id,
+                                                       const CombatTeam& team,
+                                                       std::vector<std::string>& ids,
+                                                       bool& complete) {
+                        complete = true;
+                        for (const auto& combat_unit : team.units) {
+                            const auto slot = combat_unit.source_board_position;
+                            if (slot < 0 || slot >= static_cast<std::int32_t>(kBoardSlots)) {
+                                complete = false;
+                                continue;
+                            }
+                            const auto& instance = player_envs[player_id].board[
+                                static_cast<std::size_t>(slot)];
+                            if (!instance || instance->uuid.empty()) {
+                                complete = false;
+                                continue;
+                            }
+                            ids.push_back(instance->uuid);
+                        }
+                        complete = complete && ids.size() == team.units.size();
+                    };
+                    append_roster_ids(a, input.player_a, snapshot.player_unit_ids,
+                                      snapshot.player_roster_complete);
+                    append_roster_ids(b, input.player_b, snapshot.opponent_unit_ids,
+                                      snapshot.opponent_roster_complete);
+                    const auto validation =
+                        combat_evidence::CombatSnapshotBuilder{}.validate(
+                            snapshot, strategic_context_sequences[a]);
+                    std::int32_t resolved_opponent = -1;
+                    const bool matchup_valid =
+                        combat_evidence::MatchupResolver{}.resolve(
+                            snapshot, static_cast<std::int32_t>(b), resolved_opponent);
+                    const bool snapshot_valid = validation.valid && matchup_valid &&
+                        resolved_opponent == static_cast<std::int32_t>(b);
+                    const std::string validation_reason = !validation.valid
+                        ? validation.reason
+                        : (!matchup_valid || resolved_opponent != static_cast<std::int32_t>(b)
+                            ? "actual_opponent_identity_mismatch" : "valid");
+                    // Publish the complete factual pair as a versioned structured
+                    // event in StepResult.events so replay/audit consumers can
+                    // persist it. Do not discard the roster or emit only a text
+                    // summary; invalid snapshots are retained with their reason.
+                    const nlohmann::json combat_snapshot_event{
+                        {"contract_id", "tft.combat-snapshot.v1"},
+                        {"match_id", snapshot.match_id},
+                        {"player_id", snapshot.player_id},
+                        {"opponent_id", snapshot.opponent_id},
+                        {"round", snapshot.round},
+                        {"decision_sequence", snapshot.engine_decision_sequence},
+                        {"strategic_context_sequence", snapshot.sequence},
+                        {"player_hp_before", snapshot.player_hp},
+                        {"opponent_hp_before", snapshot.opponent_hp},
+                        {"player_unit_uuids", snapshot.player_unit_ids},
+                        {"opponent_unit_uuids", snapshot.opponent_unit_ids},
+                        {"player_roster_complete", snapshot.player_roster_complete},
+                        {"opponent_roster_complete", snapshot.opponent_roster_complete},
+                        {"mechanics_coverage_status", "not_measured_catalog_support_unavailable"},
+                        {"mechanics_coverage_complete", false},
+                        {"validated", snapshot_valid},
+                        {"validation_reason", validation_reason}
+                    };
+                    events.emplace_back(
+                        "COMBAT_SNAPSHOT_V1:" + combat_snapshot_event.dump());
+                }
                 const auto combat = combat_engine.simulate(input);
                 if (!combat.success || !combat.completed)
                     throw std::runtime_error("CombatEngine falhou no confronto " +

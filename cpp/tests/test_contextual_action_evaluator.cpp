@@ -334,6 +334,33 @@ void unproduced_opportunity_cost_is_not_consumed() {
         "unavailable_no_validated_producer");
 }
 
+void validated_opportunity_cost_uses_the_same_board_value_basis() {
+    StrategicSharedContext context;
+    context.alive = true; context.gold = 10; context.player_id = 0; context.round = 8;
+    context.evidence.gold = true;
+    auto buy = candidate(StrategicActionKind::BuyUnit, 20);
+    buy.expected_board_delta = 0.8;
+    attach_exact_marginal(buy, context.gold);
+    buy.opportunity_cost = 0.4;
+    buy.opportunity_cost_evidence_available = true;
+    buy.opportunity_cost_source = "same_snapshot_competing_alternative.v1";
+    buy.opportunity_cost_forgone_candidate_id = "competing-buy";
+    buy.opportunity_cost_horizon_rounds = 1;
+    buy.opportunity_cost_uncertainty = 0.2;
+    context.action_candidates = {buy, candidate(StrategicActionKind::Hold)};
+    const auto result = ContextualActionEvaluator{}.evaluate(
+        active(), priorities(), lineup(), context, nullptr, 77);
+    const auto& score = result.candidates.front();
+    const double expected_opportunity_cost = 0.4 * 0.8 * 0.55;
+    const double expected_interest_cost =
+        -(static_cast<double>(score.interest_delta) * 0.12);
+    assert(score.opportunity_cost_available);
+    assert(score.opportunity_cost_value_basis == "native_board_contribution.v1");
+    assert(score.opportunity_cost_forgone_candidate_id == "competing-buy");
+    assert(std::abs(score.economy_cost -
+        (score.liquidity_cost + expected_interest_cost + expected_opportunity_cost)) < 1e-9);
+}
+
 void marginal_liquidity_and_interest_are_compared_to_hold_once() {
     const auto evaluate_buy = [](std::int32_t gold) {
         StrategicSharedContext context;
@@ -615,6 +642,7 @@ int main() {
     explicit_sale_credit_is_not_discarded_as_a_positive_cost();
     sale_credit_preserves_verified_interest_gain();
     unproduced_opportunity_cost_is_not_consumed();
+    validated_opportunity_cost_uses_the_same_board_value_basis();
     marginal_liquidity_and_interest_are_compared_to_hold_once();
     economic_posture_is_explanatory_not_a_fixed_action_rule();
     spending_candidate_without_marginal_evidence_is_not_scored_as_free();
