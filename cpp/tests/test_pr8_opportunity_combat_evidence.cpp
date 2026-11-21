@@ -6,6 +6,8 @@
 #include <cassert>
 #include <cmath>
 #include <iostream>
+#include <string>
+#include <utility>
 
 using namespace tft;
 
