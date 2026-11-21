@@ -409,7 +409,7 @@ class TFTPolicy(nn.Module):
                 and target_value.ndim == 2
                 and source_value.shape[0] == target_value.shape[0]
                 and source_value.shape[1] == 269 + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ID_EMBED_DIM
-                and target_value.shape[1] == SEMANTIC_NUMERIC_DIM + SEMANTIC_ENTITY_SLOTS * (SEMANTIC_ID_EMBED_DIM + SEMANTIC_TRAIT_EMBED_DIM)
+                and target_value.shape[1] == SEMANTIC_ITEM_OFFSET + SEMANTIC_ENTITY_SLOTS * (SEMANTIC_ID_EMBED_DIM + SEMANTIC_TRAIT_EMBED_DIM)
             ):
                 # Map v1's named global/entity blocks; initialize only new fields.
                 old_numeric_dim = 269
@@ -421,8 +421,8 @@ class TFTPolicy(nn.Module):
                     new_start = SEMANTIC_GLOBAL_FEATURES + slot * SEMANTIC_ENTITY_FEATURES
                     expanded[:, new_start:new_start + old_entity_features] = source_value[:, old_start:old_start + old_entity_features]
                 expanded[
-                    :, SEMANTIC_NUMERIC_DIM:
-                    SEMANTIC_NUMERIC_DIM + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ID_EMBED_DIM
+                    :, SEMANTIC_ITEM_OFFSET:
+                    SEMANTIC_ITEM_OFFSET + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ID_EMBED_DIM
                 ] = source_value[:, old_numeric_dim:]
                 loaded[key] = expanded
                 migrated = True
