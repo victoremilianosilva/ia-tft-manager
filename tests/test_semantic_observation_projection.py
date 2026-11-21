@@ -1,8 +1,13 @@
+import hashlib
+
 import pytest
+import torch
 
 from semantic_observation import (
     SEMANTIC_ENTITY_SLOTS,
     SEMANTIC_NUMERIC_DIM,
+    SEMANTIC_TRAIT_VOCAB_SIZE,
+    semantic_item_state_tensors,
     build_semantic_batch,
     build_semantic_state_checkpoint_contract,
     project_native_player_state,
@@ -167,6 +172,25 @@ def test_copy_progress_consumes_native_unit_copy_progress_without_recounting():
     ] = 2
     projected = project_native_player_state(row, {"TFT_TestChampion": 17})
     assert projected["numeric"][63] == 1.0
+
+
+def test_native_trait_identities_are_stably_hashed_and_exposed_to_policy():
+    metadata = _metadata()
+    metadata["board"][0]["trait_names"] = ["TraitAlpha", "TraitBeta"]
+    projected = project_native_player_state(metadata, {"Test_A": 0})
+    trait_ids = semantic_item_state_tensors(
+        torch.tensor([projected["numeric"]], dtype=torch.float32)
+    )["trait_ids"]
+
+    expected = [
+        int.from_bytes(hashlib.sha256(name.encode("utf-8")).digest()[:4], "big")
+        % SEMANTIC_TRAIT_VOCAB_SIZE + 1
+        for name in ("TraitAlpha", "TraitBeta")
+    ]
+    assert trait_ids.shape == (1, SEMANTIC_ENTITY_SLOTS, 10)
+    assert trait_ids[0, 0, :2].tolist() == expected
+    assert trait_ids[0, 0, 2:].count_nonzero().item() == 0
+    assert trait_ids[0, 1].count_nonzero().item() == 0
 
 
 def test_semantic_batch_is_deterministic_and_catalog_contract_is_bound():
