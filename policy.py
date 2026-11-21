@@ -211,7 +211,7 @@ class TFTPolicy(nn.Module):
         two now represent equipped-item and trait counts instead of role/strength.
         Candidate feature columns changed from strategy-fit fields to native
         entity facts, so only those input columns are reset on an explicit
-        v2 -> v3 warm-start.
+        v2 -> v4 warm-start.
         """
         self.board_cnn[0].weight[:, 3:5, :, :].zero_()
         for head in (self.shop_head, self.sell_head):
