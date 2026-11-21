@@ -213,6 +213,8 @@ struct StrategicSharedContext {
     std::uint64_t sequence{0};
     // Match identity for cross-round evidence correlation; appended for aggregate compatibility.
     std::uint64_t match_id{0};
+    // Engine-wide snapshot sequence; sequence above remains per-player strategic context.
+    std::uint64_t engine_decision_sequence{0};
 };
 
 struct StrategicCommitment {
