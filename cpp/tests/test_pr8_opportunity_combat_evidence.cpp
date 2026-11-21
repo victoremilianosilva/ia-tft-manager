@@ -45,6 +45,11 @@ int main() {
     assert(risk_adjusted.sacrificed_candidate_id == "lower-uncertainty");
     assert(std::abs(risk_adjusted.cost - 0.6) < 1e-9);
 
+    auto no_confidence = reroll;
+    no_confidence.candidate_id = "no-confidence";
+    no_confidence.uncertainty = 1.0;
+    assert(!producer.evaluate("buy-xp", {no_confidence}, 2, "shared_utility.v1").available);
+
     reroll.identity_valid = false;
     assert(!producer.evaluate("buy-xp", {reroll}, 2, "shared_utility.v1").available);
 
