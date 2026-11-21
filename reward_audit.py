@@ -77,10 +77,17 @@ class RewardAuditLedger:
             str(native.get("engine_instance_id", "")) != engine_id
             or int(native.get("episode_id", -1)) != episode_id
             or int(native.get("snapshot_sequence", -1)) != decision_sequence
+            or int(native.get("round", -1)) != int(decision_snapshot.get("round", -2))
         ):
             raise RuntimeError("Reward audit e snapshot nativo estão desalinhados.")
         if not isinstance(player_sequences, Sequence) or len(player_sequences) != _PLAYERS_PER_LOBBY:
             raise RuntimeError("Sequências de decisão por jogador inválidas.")
+        native_player_sequences = native.get("player_decision_sequences")
+        if (
+            not isinstance(native_player_sequences, Sequence)
+            or list(map(int, native_player_sequences)) != list(map(int, player_sequences))
+        ):
+            raise RuntimeError("Reward audit e sequências nativas por jogador estão desalinhados.")
         if not isinstance(action_traces, Sequence) or len(action_traces) != _PLAYERS_PER_LOBBY:
             raise RuntimeError("Action traces incompletos para reward audit.")
         if not isinstance(players, Sequence) or len(players) != _PLAYERS_PER_LOBBY:
