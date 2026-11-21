@@ -42,11 +42,11 @@ def test_native_semantic_entities_drive_board_cnn_and_action_candidates():
     entities[0, 0, 3] = 1.0 / 3.0
     entities[0, 0, 4] = 0.2
     entities[0, 28, 0] = 1.0
-    entities[0, 28, 1] = 1.0
+    entities[0, 28, 1] = 1.0 / 3.0
     entities[0, 28, 2] = 3.0 / 5.0
-    entities[0, 28, 3] = 2.0 / 3.0
-    entities[0, 28, 4] = 0.3
-    entities[0, 28, 10] = 4.0 / 9.0
+    entities[0, 28, 4] = 2.0 / 3.0
+    entities[0, 28, 10] = 0.3
+    entities[0, 28, 11] = 4.0 / 9.0
     entities[0, 37, 0] = 1.0
     entities[0, 37, 1] = 1.0 / 3.0
     entities[0, 37, 2] = 2.0 / 5.0
