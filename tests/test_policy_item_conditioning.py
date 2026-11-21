@@ -29,10 +29,10 @@ ACTION_DIMS = [9, 5, 9, 28, 28, 28]
 
 def _policy_with_native_item_block():
     hidden = 64
-    candidate_dim = (ACTION_DIMS[2] + ACTION_DIMS[1]) * 8
-    item_dim = 10 + 9 * 17 + 100 * 17 + 37 * 18 + (9 + 100) * 37
+    candidate_dim = (ACTION_DIMS[2] + ACTION_DIMS[1]) * 6
+    item_dim = 10 + 9 * 17 + 100 * 17 + 37 * 17 + (9 + 100) * 37
     anvil_dim = 3 + 9 * 11
-    obs_dim = 22 + 4 * 7 * 5 + anvil_dim + item_dim + candidate_dim
+    obs_dim = 10 + 4 * 7 * 5 + anvil_dim + item_dim + candidate_dim
     policy = TFTPolicy(obs_dim=obs_dim, action_dims=ACTION_DIMS, hidden_size=hidden)
     return policy, torch.zeros(1, obs_dim)
 
@@ -49,8 +49,8 @@ def test_item_observation_exposes_components_inventory_recipes_and_all_targets()
     recipe_start = start + 10 + 9 * 17
     obs[0, recipe_start + 4 * 17 + 2] = 0.6  # recipe [0,4], AP feature
     target_start = recipe_start + 100 * 17
-    obs[0, target_start + 28 * 18 + 4 + 1] = 1.0  # first bench target role
-    inventory_fit_start = target_start + 37 * 18
+    obs[0, target_start + 28 * 17 + 4 + 1] = 1.0  # first bench target role
+    inventory_fit_start = target_start + 37 * 17
     recipe_fit_start = inventory_fit_start + 9 * 37
     obs[0, inventory_fit_start + 2 * 37 + 4] = 0.7
     obs[0, recipe_fit_start + 5 * 37 + 6] = 0.8
