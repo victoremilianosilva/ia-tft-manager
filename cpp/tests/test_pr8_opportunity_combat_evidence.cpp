@@ -36,6 +36,7 @@ int main() {
     snapshot.player_unit_ids = {"p1", "p2"};
     snapshot.opponent_unit_ids = {"o1"};
     assert(combat_evidence::CombatSnapshotBuilder{}.validate(snapshot).valid);
+    assert(!combat_evidence::CombatSnapshotBuilder{}.validate(snapshot, 11).valid);
     std::int32_t opponent = -1;
     assert(combat_evidence::MatchupResolver{}.resolve(snapshot, 1, opponent));
     assert(opponent == 1);
@@ -55,11 +56,15 @@ int main() {
     assert(distribution.calibrated && distribution.sample_count == 40);
     assert(distribution.p50 == 20.0 && distribution.p90 == 36.0);
     auto risk = combat_evidence::derive_survival_risk(34, distribution);
-    assert(risk.available && risk.elimination_risk == 1.0);
+    assert(risk.available && std::abs(risk.elimination_risk - 0.175) < 1e-9);
     strategy::StrategicSharedContext context;
     assert(combat_evidence::apply_to_economic_context(risk, context));
     assert(context.evidence.estimated_incoming_damage);
     assert(context.evidence.elimination_risk);
     assert(!combat_evidence::derive_survival_risk(34, {}).available);
+    outcomes.push_back(outcomes.front());
+    const auto duplicate = calibrator.calibrate(outcomes, 7, 0, 50, 30);
+    assert(!duplicate.calibrated);
+    assert(duplicate.source == "invalid_duplicate_outcome_sequence");
     std::cout << "PR8 opportunity and combat evidence tests passed\n";
 }
