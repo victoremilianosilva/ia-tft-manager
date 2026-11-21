@@ -15,7 +15,7 @@ SEMANTIC_STATE_CONTRACT_ID = "tft.ppo.semantic-native-state.v2"
 SEMANTIC_STATE_CONTRACT_VERSION = 2
 SEMANTIC_ENTITY_SLOTS = 28 + 9 + 5
 SEMANTIC_ENTITY_FEATURES = 12
-SEMANTIC_GLOBAL_FEATURES = 21
+SEMANTIC_GLOBAL_FEATURES = 52
 SEMANTIC_NUMERIC_DIM = (
     SEMANTIC_GLOBAL_FEATURES
     + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ENTITY_FEATURES
@@ -64,7 +64,7 @@ def build_semantic_state_checkpoint_contract(catalog_map: Mapping[str, int]) -> 
         "version": SEMANTIC_STATE_CONTRACT_VERSION,
         "source": {
             "contract_id": "tft.native-state-snapshot",
-            "contract_version": 3,
+            "contract_version": 4,
             "producer": "TFTEngine::get_audit_snapshot",
             "source_namespace": "tft.engine.observation-snapshot",
         },
@@ -83,6 +83,8 @@ def build_semantic_state_checkpoint_contract(catalog_map: Mapping[str, int]) -> 
             "placement/8", "placement_valid", "opponent_present",
             "stage/7", "round/50", "active_composition_valid",
             "direction_valid", "pivot_candidate_valid", "opportunity_cost_available",
+            "board_capacity/9", "bench_capacity/9", "actions_taken_this_round/10",
+            "board_move_age[0:28]/10",
         ],
         "entity_slots": {
             "order": ["board[0:28]", "bench[0:9]", "shop[0:5]"],
@@ -200,7 +202,7 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
         raise ValueError("semantic projection requires Engine identity")
     for field in ("episode_id", "decision_sequence", "player_decision_sequence", "lobby_index"):
         _non_negative_int(metadata.get(field), f"metadata.{field}")
-    if metadata.get("native_state_contract_id") != "tft.native-state-snapshot" or metadata.get("native_state_contract_version") != 3:
+    if metadata.get("native_state_contract_id") != "tft.native-state-snapshot" or metadata.get("native_state_contract_version") != 4:
         raise ValueError("unsupported native state snapshot contract")
     if metadata.get("native_state_producer") != "TFTEngine::get_audit_snapshot":
         raise ValueError("unexpected native state producer")
@@ -336,6 +338,37 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
     if not 0.0 <= hp <= 100.0 or damage_taken < 0.0:
         raise ValueError("native HP/damage facts are outside their valid range")
 
+    board_rows = state.get("board")
+    bench_rows = state.get("bench")
+    if (
+        not isinstance(board_rows, Sequence) or isinstance(board_rows, (str, bytes))
+        or len(board_rows) != 28
+        or not isinstance(bench_rows, Sequence) or isinstance(bench_rows, (str, bytes))
+        or len(bench_rows) != 9
+    ):
+        raise ValueError("native board/bench slots are required for capacity projection")
+    board_count = sum(
+        1 for row in board_rows
+        if isinstance(row, Mapping) and row.get("occupied") is True
+    )
+    bench_count = sum(
+        1 for row in bench_rows
+        if isinstance(row, Mapping) and row.get("occupied") is True
+    )
+    action_count = _non_negative_int(
+        state.get("actions_taken_this_round"), "actions_taken_this_round"
+    )
+    move_ages = state.get("board_move_age")
+    if (
+        not isinstance(move_ages, Sequence) or isinstance(move_ages, (str, bytes))
+        or len(move_ages) != 28
+    ):
+        raise ValueError("native board_move_age must contain 28 slot-aligned values")
+    move_age_values = [
+        min(_non_negative_int(age, f"board_move_age[{index}]"), 10) / 10.0
+        for index, age in enumerate(move_ages)
+    ]
+
     global_values = [
         hp / 100.0,
         damage_taken / 100.0,
@@ -358,6 +391,10 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
         float(direction_valid),
         float(pivot_valid),
         float(opportunity_available),
+        min(max(_non_negative_int(state.get("level"), "level") - board_count, 0), 9) / 9.0,
+        (9 - bench_count) / 9.0,
+        min(action_count, 10) / 10.0,
+        *move_age_values,
     ]
 
     catalog = dict(catalog_map)
