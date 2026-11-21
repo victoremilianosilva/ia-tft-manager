@@ -129,9 +129,9 @@ int main(int argc, char** argv) {
                     tft::kPlayersPerLobby * engine.observation_dim(),
                 "Tamanho do lote de observacoes nao corresponde a dimensao declarada.");
 
-        // Legacy strategy fields remain physically reserved but are no longer
-        // decision inputs. Native factual state and semantic owner projections
-        // have their own contracts and must not be backfilled from StrategyInfo.
+        // The flat tensor is now a compact factual transport during the
+        // staged semantic migration. Its remaining live blocks are dimensioned
+        // explicitly; retired strategy/tombstone slots must not reappear.
         std::vector<std::string> trait_order;
         for (const auto& champion : catalog.all()) {
             for (const auto& trait : champion.traits) {
@@ -141,22 +141,22 @@ int main(int argc, char** argv) {
                 }
             }
         }
-        const std::size_t legacy_observation_dim = 248 + trait_order.size();
         const std::size_t item_global_observation_dim =
-            10 + 9 * 17 + 100 * 17 + (tft::kBoardSlots + tft::kBenchSlots) * 18;
+            10 + 9 * 17 + 100 * 17 + (tft::kBoardSlots + tft::kBenchSlots) * 17;
         const std::size_t item_compatibility_observation_dim =
             (9 + 100) * (tft::kBoardSlots + tft::kBenchSlots);
         const std::size_t item_state_observation_dim =
             item_global_observation_dim + item_compatibility_observation_dim;
+        const std::size_t candidate_feature_dim = 6;
+        const std::size_t candidate_observation_dim =
+            candidate_feature_dim * (tft::kBenchSlots + tft::kShopSlots);
         const std::size_t expected_observation_dim =
-            legacy_observation_dim + 2 * trait_order.size() +
-            tft::kBoardSlots + tft::kBenchSlots + tft::kShopSlots +
-            1 + tft::kBoardSlots + trait_order.size() + 2 +
-            3 + 9 * 11 + // pending-anvil state and nine option feature records
-            item_state_observation_dim +
-            8 * (tft::kBenchSlots + tft::kShopSlots);
+            10 + 5 * (tft::kBoardSlots + tft::kBenchSlots + tft::kShopSlots) +
+            5 + 5 + 3 + trait_order.size() + 2 +
+            (1 + tft::kBoardSlots) + (3 + 9 * 11) +
+            item_state_observation_dim + candidate_observation_dim;
         require(engine.observation_dim() == expected_observation_dim,
-                "Dimensao PPO nao inclui os novos recursos de composicao.");
+                "Dimensao PPO diverge do contrato factual compacto.");
 
         const auto comp_champion = std::find_if(
             catalog.all().begin(), catalog.all().end(),
@@ -187,32 +187,20 @@ int main(int argc, char** argv) {
 
         const auto composition_observations = engine.get_observations();
         const auto* player_observation = composition_observations.data();
-        const std::size_t direction_offset = legacy_observation_dim;
-        const std::size_t core_traits_offset = direction_offset + trait_order.size();
-        const std::size_t unit_fit_offset = core_traits_offset + trait_order.size();
-        for (std::size_t index = 10; index < 17; ++index)
-            require(player_observation[index] == 0.0f,
-                    "StrategyInfo one-hot ainda está presente na observação PPO.");
-        require(player_observation[242] == 0.0f,
-                "Score agregado de posicionamento ainda depende do contexto estratégico legado.");
-        for (std::size_t index = direction_offset;
-             index < unit_fit_offset + tft::kBoardSlots + tft::kBenchSlots + tft::kShopSlots;
-             ++index)
-            require(player_observation[index] == 0.0f,
-                    "Feature estratégica legada ainda está presente na observação PPO.");
+        const std::size_t board_offset = 10;
+        const std::size_t positioning_offset =
+            10 + 5 * (tft::kBoardSlots + tft::kBenchSlots + tft::kShopSlots) + 5 + 5;
+        require(player_observation[board_offset] == 1.0f,
+                "Board factual nao começa após o prefixo compacto de dez campos.");
+        for (std::size_t index = positioning_offset;
+             index < positioning_offset + 3; ++index)
+            require(player_observation[index] >= 0.0f &&
+                        player_observation[index] <= 1.0f,
+                    "Features posicionais devem ser fatos normalizados.");
 
         const std::size_t candidate_features_offset =
-            expected_observation_dim - 8 * (tft::kBenchSlots + tft::kShopSlots);
-        const std::size_t focus_weights_offset =
-            candidate_features_offset - item_state_observation_dim -
-            (3 + 9 * 11) - trait_order.size() - 2;
-        const std::size_t locked_offset = focus_weights_offset + trait_order.size();
-        const std::size_t strength_offset = locked_offset + 1;
-        for (std::size_t index = focus_weights_offset;
-             index <= strength_offset; ++index)
-            require(player_observation[index] == 0.0f,
-                    "Focus/lock/strength legado ainda influencia o PPO.");
-        require(candidate_features_offset + 8 * (tft::kBenchSlots + tft::kShopSlots) ==
+            expected_observation_dim - candidate_observation_dim;
+        require(candidate_features_offset + candidate_observation_dim ==
                     expected_observation_dim,
                 "Features de candidatos deixaram de ocupar a cauda da observacao.");
         const std::size_t item_target_features_offset =
@@ -221,18 +209,13 @@ int main(int argc, char** argv) {
         require(player_observation[item_target_features_offset] == 1.0f &&
                 player_observation[item_target_features_offset + 1] == 1.0f,
                 "Observacao de item nao expoe unidade ocupada no tabuleiro como alvo.");
-        require(player_observation[candidate_features_offset] == 0.0f &&
-                player_observation[candidate_features_offset + 4] == 0.0f,
-                "Fit/core legado de candidato ainda é projetado.");
-        require(player_observation[candidate_features_offset + 1] > 0.0f,
-                "Custo factual do candidato deixou de ser projetado.");
+        require(player_observation[candidate_features_offset] == 0.0f,
+                "Bench vazio deve manter o custo candidato zerado.");
         const std::size_t shop_candidate_offset =
-            candidate_features_offset + 8 * tft::kBenchSlots;
-        require(player_observation[shop_candidate_offset] == 0.0f &&
-                player_observation[shop_candidate_offset + 4] == 0.0f,
-                "Fit/core legado da oferta ainda é projetado.");
-        require(player_observation[shop_candidate_offset + 1] > 0.0f,
-                "Custo factual da oferta deixou de ser projetado.");
+            candidate_features_offset + candidate_feature_dim * tft::kBenchSlots;
+        require(player_observation[shop_candidate_offset] > 0.0f &&
+                    player_observation[shop_candidate_offset + 1] > 0.0f,
+                "Oferta deve expor custo e estrela como features factuais.");
 
         require(
             initial_state.players.size() == tft::kPlayersPerLobby,
