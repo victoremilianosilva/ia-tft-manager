@@ -23,7 +23,7 @@ Opportunity cost must describe a concrete alternative forgone on the same decisi
 - No PPO, reward, action-dimension or action-mask changes.
 
 ## Impacts
-Adds reusable evidence contracts and a native regression test. The builder integrates the producer only for comparable BUY-vs-BUY alternatives; unsupported action-family comparisons remain unavailable rather than receiving arbitrary constants. Existing marginal economy scoring is unchanged. The real matchup now emits structured, identity-bound snapshot evidence for replay/audit consumers. Combat risk remains unavailable until replay outcomes support calibration.
+Adds reusable evidence contracts and a native regression test. The builder integrates the producer only for comparable BUY-vs-BUY alternatives using native board-contribution units. The evaluator converts that opportunity value with the same 0.55 coefficient used for board value; unsupported action-family comparisons remain unavailable rather than receiving arbitrary constants. Existing marginal economy scoring is unchanged. The real matchup now emits structured, identity-bound snapshot evidence for replay/audit consumers. Combat risk remains unavailable until replay outcomes support calibration.
 
 ## Validation
 The new test covers alternative selection, invalid identity, snapshot validation, actual-opponent matching, partial coverage, empirical quantiles, HP-bound risk and refusal to publish uncalibrated evidence.
