@@ -313,8 +313,12 @@ def validate_semantic_state_warm_start_migration(
         historical_encoder["numeric_plus_embedding_input_dim"] = (
             expected["contract"]["encoder"]["numeric_plus_embedding_input_dim"]
         )
-        historical_encoder.pop("board_cnn_source", None)
-        historical_encoder.pop("action_candidate_source", None)
+        historical_encoder["board_cnn_source"] = (
+            expected["contract"]["encoder"]["board_cnn_source"]
+        )
+        historical_encoder["action_candidate_source"] = (
+            expected["contract"]["encoder"]["action_candidate_source"]
+        )
         historical_payload["encoder"] = historical_encoder
     elif historical_owner_source.get("contract_version") == 1:
         historical_owner_source["contract_version"] = 2
