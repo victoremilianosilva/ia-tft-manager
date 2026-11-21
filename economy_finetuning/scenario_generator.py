@@ -91,7 +91,7 @@ SCENARIOS: tuple[ScenarioSpec, ...] = (
         "econ_surplus_strong_board",
         "Excedente de ouro com tabuleiro forte",
         "Com board forte, converter apenas o excedente acima de 50 em XP; manter compra útil como prioridade quando houver oportunidade.",
-        3, 7, 50.01, 250, 1, 10, 1, 100, (0,), True,
+        3, 7, 50.01, 250, 1, 10, 1, 100, (), True,
         "upar_com_excedente_sem_quebrar_reserva", reward_mode="native",
     ),
     ScenarioSpec(
