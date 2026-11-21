@@ -406,7 +406,13 @@ void xp_level_up_values_only_a_verified_selected_bench_unit() {
     UnitPrioritySnapshot priorities;
     priorities.composition_id = composition.composition_id;
     priorities.composition_version = 2;
-    priorities.units = {bench_priority};
+    UnitPriority carry_priority;
+    carry_priority.champion_id = 10;
+    carry_priority.intent = UnitIntent::Seek;
+    carry_priority.priority = 90;
+    carry_priority.board_contribution = 0.8;
+    carry_priority.confidence = 0.9;
+    priorities.units = {bench_priority, carry_priority};
 
     LineupPlan lineup;
     lineup.composition_id = composition.composition_id;
@@ -466,6 +472,41 @@ void xp_level_up_values_only_a_verified_selected_bench_unit() {
     assert(xp_score != evaluation.candidates.end());
     assert(xp_score->board_value > 0.0);
     assert(xp_score->total_score > 0.0);
+
+    StrategicActionCandidate competing_buy;
+    competing_buy.kind = StrategicActionKind::BuyUnit;
+    competing_buy.champion_id = 10;
+    competing_buy.candidate_id = "buy-competing";
+    competing_buy.source_sequence = 42;
+    competing_buy.gold_cost = 3;
+    competing_buy.direct_gold_cost = 3.0;
+    competing_buy.expected_board_delta = 0.8;
+    competing_buy.composition_fit = 1.0;
+    competing_buy.available = true;
+    competing_buy.evidence_source = "UnitPriorityPlanner+native_shop";
+    competing_buy.evidence_horizon_rounds = 1;
+    competing_buy.evidence_uncertainty = 0.1;
+    competing_buy.lost_interest_evidence_available = true;
+    competing_buy.marginal_economy_evidence_available = true;
+    competing_buy.marginal_gold_before = 20;
+    competing_buy.marginal_gold_after = 17;
+    competing_buy.marginal_interest_before = 2;
+    competing_buy.marginal_interest_after = 1;
+    competing_buy.marginal_interest_delta = -1;
+    competing_buy.marginal_cost_source = "native_economy_delta";
+    competing_buy.marginal_cost_horizon_rounds = 1;
+    competing_buy.marginal_cost_uncertainty = 0.0;
+    context.action_candidates = {*xp, competing_buy, *hold};
+    const auto cross_action = ContextualActionEvaluator{}.evaluate(
+        active, priorities, lineup, context, nullptr, native.match_id);
+    assert(cross_action.recommended_action == StrategicActionKind::BuyUnit);
+    const auto progression_score = std::find_if(
+        cross_action.candidates.begin(), cross_action.candidates.end(),
+        [&](const auto& score) { return score.candidate_id == xp->candidate_id; });
+    assert(progression_score != cross_action.candidates.end());
+    assert(progression_score->opportunity_cost_available);
+    assert(progression_score->opportunity_cost_value_basis == "contextual_action_score.v1");
+    assert(progression_score->opportunity_cost_forgone_candidate_id == "buy-competing");
 }
 
 void native_anchor_shop_offer_is_actionable_before_composition_lock() {
