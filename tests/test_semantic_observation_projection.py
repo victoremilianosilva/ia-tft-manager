@@ -275,6 +275,7 @@ def test_semantic_v2_checkpoint_has_only_explicit_v4_warm_start_path():
     payload["version"] = 2
     payload["source"]["contract_version"] = 3
     payload["global_features"] = payload["global_features"][:21]
+    payload["entity_slots"]["features"] = payload["entity_slots"]["features"][:12]
     payload["numeric_dimension"] = 21 + SEMANTIC_ENTITY_SLOTS * 12
     payload["encoder"]["numeric_plus_embedding_input_dim"] = (
         payload["numeric_dimension"] + SEMANTIC_ENTITY_SLOTS * 16
