@@ -388,12 +388,23 @@ class CppTFTLobbyWrapper:
                     raise RuntimeError("Oferta ocupada sem revisão nativa de identidade.")
             pending_flag = player.get("pending_anvil")
             pending_sequence = player.get("pending_anvil_sequence")
-            if not isinstance(pending_flag, bool) or isinstance(pending_sequence, bool) or not isinstance(pending_sequence, int) or pending_sequence < 0:
+            pending_kind = player.get("pending_anvil_kind")
+            if (
+                not isinstance(pending_flag, bool)
+                or isinstance(pending_sequence, bool)
+                or not isinstance(pending_sequence, int)
+                or pending_sequence < 0
+                or isinstance(pending_kind, bool)
+                or not isinstance(pending_kind, int)
+            ):
                 raise RuntimeError(f"Snapshot do jogador {player_id} contém identidade de bigorna inválida.")
-            if pending_flag and (pending_sequence == 0 or not player.get("pending_anvil_options")):
-                raise RuntimeError("Bigorna pendente sem sequência ou opções válidas.")
-            if not pending_flag and pending_sequence != 0:
-                raise RuntimeError("Sequência de bigorna presente sem escolha pendente.")
+            if pending_flag and (
+                pending_sequence == 0 or pending_kind not in (0, 1)
+                or not player.get("pending_anvil_options")
+            ):
+                raise RuntimeError("Bigorna pendente sem sequência, tipo ou opções válidas.")
+            if not pending_flag and (pending_sequence != 0 or pending_kind != -1 or player.get("pending_anvil_options")):
+                raise RuntimeError("Identidade de bigorna presente sem escolha pendente.")
             action_count = player.get("actions_taken_this_round")
             move_ages = player.get("board_move_age")
             if isinstance(action_count, bool) or not isinstance(action_count, int) or action_count < 0:
