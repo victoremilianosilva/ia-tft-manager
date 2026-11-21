@@ -2630,7 +2630,6 @@ struct TFTEngine::Impl {
     NativeCompositionRefresh refresh_native_composition_candidates(
         std::size_t i, std::int32_t current_round
     ) {
-        const auto& player = player_envs[i].info;
         const auto& economy = player_envs[i].economy;
         // Native strategic evidence is generated directly from live engine facts
         // before any legacy direction, focus, lock or economic strategy is built.
@@ -2794,9 +2793,8 @@ struct TFTEngine::Impl {
     // Legacy StrategyInfo/economic fields are a compatibility projection only.
     // Keeping this producer separate prevents it from owning or feeding the native
     // strategic candidate/active-composition refresh.
-    void update_legacy_strategy_compatibility_projection(
-        std::size_t i, StrategyInfo& info,
-        std::int32_t current_round, double power
+    auto update_legacy_strategy_compatibility_projection(
+        std::size_t i, StrategyInfo& info, double power
     ) {
         const auto& player = player_envs[i].info;
         const auto& economy = player_envs[i].economy;
@@ -2980,6 +2978,7 @@ struct TFTEngine::Impl {
             }
         }
 
+        return std::make_pair(strategy_decision, chosen);
     }
 
     void update_strategy(std::size_t i) {
@@ -3009,10 +3008,10 @@ struct TFTEngine::Impl {
 
         // This legacy compatibility producer is intentionally downstream
         // of the native owner refresh and cannot feed native composition state.
-        update_legacy_strategy_compatibility_projection(
-            i, info, current_round, power);
-        const auto& active_composition =
-            composition_intelligence_players[i].active.current();
+        const auto legacy_projection =
+            update_legacy_strategy_compatibility_projection(i, info, power);
+        const auto& strategy_decision = legacy_projection.first;
+        const auto chosen = legacy_projection.second;
 
         // Raw shop snapshot shared by the independent shadow composition pipeline.
         const auto& strategic_shop = player_envs[i].shop;
