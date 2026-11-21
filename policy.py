@@ -1231,7 +1231,7 @@ class TFTPolicy(nn.Module):
             raise ValueError("Ações e observação devem estar no mesmo device.")
         self._validate_canonical_action_parameters(actions)
         hidden = self.encode(obs, semantic_state=semantic_state)
-        bench_candidate_features, shop_candidate_features = self._candidate_features(obs)
+        bench_candidate_features, shop_candidate_features = self._candidate_features(obs, semantic_state)
         (
             item_component_features, item_inventory_features, item_recipe_features,
             item_target_features, item_inventory_target_fit, item_recipe_target_fit,
