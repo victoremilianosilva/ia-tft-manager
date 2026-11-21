@@ -121,7 +121,7 @@ def _metadata():
         "stage": 3,
         "round": 12,
         "native_state_contract_id": "tft.native-state-snapshot",
-        "native_state_contract_version": 4,
+        "native_state_contract_version": 5,
         "native_state_producer": "TFTEngine::get_audit_snapshot",
         "native_state_source_namespace": "tft.engine.observation-snapshot",
         "native_player_state": player,
