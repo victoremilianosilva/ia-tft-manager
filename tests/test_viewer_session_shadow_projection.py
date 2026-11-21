@@ -1,6 +1,9 @@
+import pytest
+
 import json
 
-from viewer.session import ViewerSession
+from viewer.session import ViewerSession, _validate_semantic_checkpoint_payload
+from semantic_observation import build_semantic_state_checkpoint_contract
 
 
 def test_viewer_refresh_uses_shadow_diagnostics_without_strategyinfo_enrichment():
@@ -310,3 +313,28 @@ def test_viewer_marks_same_round_diagnostic_stale_after_composition_pivot():
 
     assert shadow["stale"] is True
     assert shadow["stale_reason"] == "diagnostic_composition_identity_does_not_match_current_native_state"
+
+
+def test_viewer_requires_trait_embedding_in_semantic_v6_checkpoint():
+    catalog_map = {"TFT_TestChampion": 0}
+    contract = build_semantic_state_checkpoint_contract(catalog_map)
+    expected = {
+        "semantic_id_embedding.weight",
+        "semantic_trait_embedding.weight",
+        "semantic_encoder.0.weight",
+        "semantic_encoder.0.bias",
+        "semantic_encoder.2.weight",
+        "semantic_encoder.2.bias",
+    }
+    state = {key: object() for key in expected}
+
+    _validate_semantic_checkpoint_payload(
+        {"semantic_state_contract": contract}, state, catalog_map
+    )
+
+    incomplete = dict(state)
+    incomplete.pop("semantic_trait_embedding.weight")
+    with pytest.raises(ValueError, match="encoder semântico parcial"):
+        _validate_semantic_checkpoint_payload(
+            {"semantic_state_contract": contract}, incomplete, catalog_map
+        )
