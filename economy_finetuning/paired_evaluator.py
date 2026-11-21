@@ -32,6 +32,9 @@ from reward_contract import (
 )
 from semantic_observation import (
     build_semantic_state_checkpoint_contract,
+    catalog_identity,
+    build_semantic_batch,
+    semantic_item_state_tensors,
     validate_semantic_state_checkpoint_contract,
 )
 from economy_finetuning.finetune import ACTION_DIMS, _actions_to_native, _flatten_masks
@@ -147,7 +150,10 @@ def load_policy(checkpoint_path: Path, obs_dim: int, device, catalog_map: dict):
     payload = torch.load(checkpoint_path, map_location=device, weights_only=False)
     contract_status = validate_evaluation_checkpoint_contracts(payload, catalog_map)
     state = payload.get("policy", payload)
-    policy = TFTPolicy(obs_dim, ACTION_DIMS).to(device)
+    policy = TFTPolicy(
+        obs_dim, ACTION_DIMS,
+        semantic_vocab_size=catalog_identity(catalog_map)["vocab_size"],
+    ).to(device)
     policy.load_compatible_state_dict(state)
     policy.eval()
     return policy, contract_status
@@ -259,7 +265,7 @@ def compare_final_metrics(original_metrics, tuned_metrics):
     return result
 
 
-def run_match(policies_by_player, policy_variants, seed: int, max_steps: int, device):
+def run_match(policies_by_player, policy_variants, seed: int, max_steps: int, device, catalog_map):
     """Run one 4-vs-4 lobby. Policy assignment is mirrored in the paired run."""
     if len(policies_by_player) != 8 or len(policy_variants) != 8:
         raise ValueError("A lobby requires exactly eight player policies and variants.")
@@ -277,6 +283,39 @@ def run_match(policies_by_player, policy_variants, seed: int, max_steps: int, de
             raw_masks = env.get_action_masks()
             if step == 0:
                 initial_masks_sha256 = masks_sha256(raw_masks)
+            snapshot = env.get_snapshot_metadata()
+            native = snapshot.get("native_state_snapshot") if isinstance(snapshot, dict) else None
+            native_players = native.get("players") if isinstance(native, dict) else None
+            if not isinstance(native_players, list) or len(native_players) != 8:
+                raise RuntimeError("Paired evaluation requires all eight native semantic player snapshots.")
+            metadata_rows = []
+            for player_id, native_player in enumerate(native_players):
+                strategic = native_player.get("strategic_state") if isinstance(native_player, dict) else None
+                player_sequence = strategic.get("player_decision_sequence") if isinstance(strategic, dict) else None
+                if isinstance(player_sequence, bool) or not isinstance(player_sequence, int) or player_sequence < 0:
+                    raise RuntimeError(f"Missing native decision sequence for paired-evaluation player {player_id}.")
+                metadata_rows.append({
+                    "engine_instance_id": snapshot.get("engine_instance_id"),
+                    "episode_id": snapshot.get("episode_id"),
+                    "decision_sequence": snapshot.get("decision_sequence"),
+                    "player_decision_sequence": player_sequence,
+                    "player_id": player_id,
+                    "lobby_index": 0,
+                    "stage": snapshot.get("stage"),
+                    "round": snapshot.get("round"),
+                    "native_state_contract_id": native.get("contract_id"),
+                    "native_state_contract_version": native.get("contract_version"),
+                    "native_state_producer": native.get("producer"),
+                    "native_state_source_namespace": native.get("source_namespace"),
+                    "native_player_state": native_player,
+                })
+            semantic_batch = build_semantic_batch(metadata_rows, catalog_map)
+            semantic_numeric = torch.as_tensor(
+                semantic_batch["numeric"], dtype=torch.float32, device=device
+            )
+            semantic_champion_ids = torch.as_tensor(
+                semantic_batch["champion_ids"], dtype=torch.long, device=device
+            )
             action_array = np.zeros((8, len(ACTION_DIMS)), dtype=np.int64)
             # Batch the four agents controlled by each policy.
             policy_groups = {}
@@ -287,9 +326,21 @@ def run_match(policies_by_player, policy_variants, seed: int, max_steps: int, de
                 obs_subset = torch.as_tensor(
                     obs[player_ids], dtype=torch.float32, device=device
                 )
+                row_indices = torch.as_tensor(player_ids, dtype=torch.long, device=device)
+                semantic_numeric_subset = semantic_numeric.index_select(0, row_indices)
+                semantic_state_subset = {
+                    "numeric": semantic_numeric_subset,
+                    "items": semantic_item_state_tensors(semantic_numeric_subset),
+                    "champion_ids": semantic_champion_ids.index_select(0, row_indices),
+                    "identities": [semantic_batch["identities"][i] for i in player_ids],
+                    "hashes": [semantic_batch["hashes"][i] for i in player_ids],
+                    "contract_id": semantic_batch["contract_id"],
+                    "contract_hash": semantic_batch["contract_hash"],
+                }
                 with torch.no_grad():
                     selected, _, _, _ = policy.get_action_and_value(
-                        obs_subset, masks=mask_subset, deterministic=True
+                        obs_subset, masks=mask_subset, deterministic=True,
+                        semantic_state=semantic_state_subset,
                     )
                 action_array[player_ids] = selected.cpu().numpy().astype(np.int64)
             for player_id, row in enumerate(action_array):
@@ -493,10 +544,10 @@ def main():
             # Rotate the four candidate seats by seed, then run the exact complement.
             variants_a, variants_b = mirrored_policy_variants(seed)
             policies_a = [tuned if variant == "finetuned" else original for variant in variants_a]
-            run_a = run_match(policies_a, variants_a, seed, args.max_steps, device)
+            run_a = run_match(policies_a, variants_a, seed, args.max_steps, device, catalog_map)
 
             policies_b = [original if variant == "original" else tuned for variant in variants_b]
-            run_b = run_match(policies_b, variants_b, seed, args.max_steps, device)
+            run_b = run_match(policies_b, variants_b, seed, args.max_steps, device, catalog_map)
 
             row = aggregate_mirrored_runs(run_a, run_b, provenance)
             if not row["same_initial_state"]:
