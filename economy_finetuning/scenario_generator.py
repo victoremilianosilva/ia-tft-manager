@@ -9,17 +9,6 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from typing import Any
 
-STRATEGY_NAMES = {
-    0: "ECON",
-    1: "STABILIZE",
-    2: "FAST8",
-    3: "SLOWROLL",
-    4: "ALL_IN",
-    5: "WINSTREAK",
-    6: "LEGACY_UNUSED",
-}
-
-
 @dataclass(frozen=True)
 class ScenarioSpec:
     scenario_id: str
@@ -78,14 +67,14 @@ SCENARIOS: tuple[ScenarioSpec, ...] = (
     # Historical runs: keep their IDs and checkpoints in the approval chain.
     ScenarioSpec(
         "critical_hp_high_gold",
-        "HP crítico / 50+ ouro",
+        "HP crítico / reserva alta",
         "Treino histórico preservado: escolher compra útil, XP, roll ou PASS sob pressão real de vida.",
         3, 7, 50, 250, 1, 10, 0, 30, (0, 1, 2, 3, 4, 5), True,
         "historico_estabilizacao_com_reward_nativo", reward_mode="native",
     ),
     ScenarioSpec(
         "late_game_high_gold_underleveled",
-        "Late game / 60+ ouro / abaixo do nível-alvo",
+        "Fim de jogo / reserva alta / nível baixo",
         "Treino histórico preservado: converter reserva em força sem gastar indiscriminadamente.",
         4, 5, 60, 250, 1, 7.99, 30.01, 100, (0, 1, 2, 4, 5), True,
         "historico_conversao_tardia_com_reward_nativo",
@@ -93,42 +82,42 @@ SCENARIOS: tuple[ScenarioSpec, ...] = (
     ),
     ScenarioSpec(
         "econ_gold_reserve",
-        "ECON / acumular até 50 comprando peças úteis",
+        "Reserva de ouro abaixo de 50",
         "Proteger breakpoints de juros até 50, mas comprar pares, upgrades e peças de composição com valor real.",
         1, 7, 0, 49.99, 1, 10, 1, 100, (0,), True,
         "preservar_juros_e_comprar_unidades_uteis", reward_mode="native",
     ),
     ScenarioSpec(
         "econ_surplus_strong_board",
-        "ECON / excedente acima de 50 / tabuleiro forte",
+        "Excedente de ouro com tabuleiro forte",
         "Com board forte, converter apenas o excedente acima de 50 em XP; manter compra útil como prioridade quando houver oportunidade.",
         3, 7, 50.01, 250, 1, 10, 1, 100, (0,), True,
         "upar_com_excedente_sem_quebrar_reserva", reward_mode="native",
     ),
     ScenarioSpec(
         "stabilize_weak_board",
-        "STABILIZE / tabuleiro fraco sob pressão",
+        "Tabuleiro fraco sob pressão",
         "Com board fraco e sob pressão, gastar seletivamente em XP, roll melhorado e peças que fortaleçam o board.",
         2, 7, 0, 250, 1, 10, 1, 65, (1,), True,
         "estabilizar_board_com_gasto_seletivo", reward_mode="native",
     ),
     ScenarioSpec(
         "fast8_strong_board",
-        "FAST8 / tabuleiro forte / caminho ao nível 8",
+        "Tabuleiro forte / nível abaixo de 8",
         "Combinar economia, board forte e XP; não ativar FAST8 com tabuleiro fraco.",
         3, 7, 0, 250, 6, 7.99, 38.01, 100, (2,), True,
         "fast8_com_board_forte", reward_mode="native",
     ),
     ScenarioSpec(
         "all_in_emergency",
-        "ALL_IN / converter recursos para sobreviver",
+        "HP crítico / recursos disponíveis",
         "Em HP crítico, gastar o ouro restante em compras, roll melhorado, XP e implantação para tentar estabilizar imediatamente.",
         3, 7, 0, 250, 1, 10, 0, 25, (4,), True,
         "all_in_para_sobreviver", reward_mode="native",
     ),
     ScenarioSpec(
         "slowroll_winstreak",
-        "SLOWROLL / alvo de 3 estrelas / winstreak",
+        "Progresso de upgrade / winstreak",
         "Padrão do exemplo Kha'Zix: buscar cópias úteis e gastar controladamente em nível, peças e implantação para prolongar a winstreak.",
         3, 4, 30, 250, 5, 6.99, 38.01, 100, (3,), True,
         "slowroll_com_winstreak_e_gasto_controlado",
@@ -140,8 +129,8 @@ SCENARIOS: tuple[ScenarioSpec, ...] = (
 def decode_observation(observation, player_id: int | None = None) -> dict[str, Any]:
     """Decode only stable, documented core observation fields."""
     obs = observation.tolist() if hasattr(observation, "tolist") else list(observation)
-    if len(obs) < 17:
-        raise ValueError(f"Observação curta para cenário econômico: {len(obs)} < 17")
+    if len(obs) < 10:
+        raise ValueError(f"Observação compacta curta para cenário econômico: {len(obs)} < 10")
     hp = max(0.0, min(100.0, float(obs[0]) * 100.0))
     gold = max(0.0, float(obs[1]) * 50.0)
     level = max(1.0, min(10.0, float(obs[2]) * 9.0))
@@ -159,8 +148,6 @@ def decode_observation(observation, player_id: int | None = None) -> dict[str, A
         "level": level,
         "stage": stage,
         "round_number": round_number,
-        "strategy": None,
-        "strategy_name": None,
         "win_streak": max(0.0, float(obs[4]) * 10.0),
         "loss_streak": max(0.0, float(obs[5]) * 10.0),
         "player_id": int(player_id) if player_id is not None else -1,
