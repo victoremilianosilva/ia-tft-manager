@@ -367,23 +367,43 @@ class TFTPolicy(nn.Module):
             f"obs_dim mismatch: esperado {self.obs_dim}, recebido {obs.shape[-1]}. "
             f"Verifique se pre_board_dim={self.pre_board_dim} está alinhado com _get_state()."
         )
-        # Extrai a seção geométrica do tabuleiro usando o deslocamento inicial fixo
-        board_part = obs[:, self.pre_board_dim : self.pre_board_dim + self.board_flat_dim]
+        # Native board facts are projected from the identity-bound semantic
+        # entity records. The flat board slice remains only for isolated legacy
+        # fixtures; production native transitions must use the semantic path.
+        semantic_entities = self._semantic_entity_features(semantic_state, obs)
+        if semantic_entities is not None:
+            board_entities = semantic_entities[:, :28, :]
+            board_part = torch.stack(
+                (
+                    board_entities[:, :, 0],  # occupied
+                    board_entities[:, :, 2],  # cost
+                    board_entities[:, :, 1],  # star
+                    board_entities[:, :, 3],  # equipped item count
+                    board_entities[:, :, 4],  # trait count
+                ),
+                dim=-1,
+            ).reshape(obs.shape[0], self.board_flat_dim)
+            # The native semantic state is the source for global facts too.
+            pre_part = semantic_state["numeric"][:, :SEMANTIC_GLOBAL_FEATURES]
+            entity_context = semantic_state["numeric"][:, SEMANTIC_GLOBAL_FEATURES:]
+            embedded_ids = self.semantic_id_embedding(
+                semantic_state["champion_ids"]
+            ).reshape(obs.shape[0], -1)
+            global_part = torch.cat([pre_part, entity_context, embedded_ids], dim=-1)
+        else:
+            board_part = obs[:, self.pre_board_dim : self.pre_board_dim + self.board_flat_dim]
+            pre_part = obs[:, :self.pre_board_dim]
+            post_part = obs[:, self.pre_board_dim + self.board_flat_dim :]
+            candidate_tail = post_part[:, -self.candidate_observation_dim:]
+            middle_part = post_part[:, :-self.candidate_observation_dim]
+            if self.has_item_compatibility_observation:
+                middle_part = middle_part[:, :-self.item_compatibility_observation_dim]
+            economic_context = self._economic_context_features(obs)
+            global_part = torch.cat(
+                [pre_part, middle_part, economic_context, candidate_tail], dim=-1
+            )
 
-        # Keep candidate records at the tail. Native item semantics live in the
-        # middle block; derived economic context follows it before candidate slots.
-        pre_part = obs[:, :self.pre_board_dim]
-        post_part = obs[:, self.pre_board_dim + self.board_flat_dim :]
-        candidate_tail = post_part[:, -self.candidate_observation_dim:]
-        middle_part = post_part[:, :-self.candidate_observation_dim]
-        if self.has_item_compatibility_observation:
-            middle_part = middle_part[:, :-self.item_compatibility_observation_dim]
-        economic_context = self._economic_context_features(obs)
-        global_part = torch.cat(
-            [pre_part, middle_part, economic_context, candidate_tail], dim=-1
-        )
-
-        # Transforma o vetor plano em uma imagem estruturada (Batch, Features, Rows, Cols) -> (B, 5, 4, 7)
+        # (B, 5, 4, 7): semantic board facts replace positional CNN input.
         board_2d = board_part.view(-1, self.num_cell_features, 4, 7)
         
         # Processamento paralelo nas sub-redes dedicadas
@@ -433,8 +453,45 @@ class TFTPolicy(nn.Module):
         """
         return obs.new_zeros((obs.shape[0], 5))
 
-    def _candidate_features(self, obs):
-        """Extract slot-aligned strategic features appended by the native C++ engine."""
+    @staticmethod
+    def _semantic_entity_features(semantic_state, obs):
+        if semantic_state is None:
+            return None
+        if not isinstance(semantic_state, Mapping):
+            raise TypeError("semantic_state must be a mapping")
+        numeric = semantic_state.get("numeric")
+        expected = (obs.shape[0], SEMANTIC_NUMERIC_DIM)
+        if not isinstance(numeric, torch.Tensor) or tuple(numeric.shape) != expected:
+            raise ValueError(f"semantic numeric input must have shape {expected}")
+        if numeric.dtype != torch.float32 or numeric.device != obs.device:
+            raise TypeError("semantic numeric input must be float32 on the observation device")
+        if not torch.isfinite(numeric).all():
+            raise ValueError("semantic numeric input contains NaN or infinity")
+        return numeric[:, SEMANTIC_GLOBAL_FEATURES:].reshape(
+            obs.shape[0], SEMANTIC_ENTITY_SLOTS, SEMANTIC_ENTITY_FEATURES
+        )
+
+    def _candidate_features(self, obs, semantic_state=None):
+        """Build candidate conditioning from native identity-bound entities."""
+        entities = self._semantic_entity_features(semantic_state, obs)
+        if entities is not None:
+            # Entity layout: board[0:28], bench[28:37], shop[37:42].
+            # All six features are factual and share the same semantic projection
+            # used by the CNN/global encoder; no positional candidate tail read.
+            candidates = entities[:, 28:, :]
+            features = torch.stack(
+                (
+                    candidates[:, :, 0],   # occupied
+                    candidates[:, :, 2],   # cost
+                    candidates[:, :, 1],   # star
+                    candidates[:, :, 3],   # equipped item count
+                    candidates[:, :, 4],   # trait count
+                    candidates[:, :, 10],  # owned copy-equivalent progress
+                ),
+                dim=-1,
+            )
+            return features[:, :self.action_dims[2], :], features[:, self.action_dims[2]:, :]
+
         if obs.shape[-1] < self.candidate_observation_dim:
             raise ValueError(
                 f"Observação curta para features de candidatos: {obs.shape[-1]} < "
@@ -784,7 +841,7 @@ class TFTPolicy(nn.Module):
         device = obs.device
         batch_size = obs.shape[0]
         player_diagnostics = [[] for _ in range(batch_size)]
-        bench_candidate_features, shop_candidate_features = self._candidate_features(obs)
+        bench_candidate_features, shop_candidate_features = self._candidate_features(obs, semantic_state)
         (
             item_component_features, item_inventory_features, item_recipe_features,
             item_target_features, item_inventory_target_fit, item_recipe_target_fit,
