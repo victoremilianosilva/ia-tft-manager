@@ -491,6 +491,7 @@ def test_paired_evaluation_rejects_tampered_lineage_hash_and_duplicate_seeds():
             seeds=[1, 1],
             device=torch.device("cpu"),
             split="test",
+            catalog_map={"TFT_TestChampion": 0},
             max_steps=2,
         )
 
