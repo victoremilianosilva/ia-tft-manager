@@ -119,10 +119,11 @@ def validate_evaluation_checkpoint_contracts(payload: dict, catalog_map: dict) -
 
     semantic_keys = {
         key for key in state
-        if key.startswith(("semantic_id_embedding.", "semantic_encoder."))
+        if key.startswith(("semantic_id_embedding.", "semantic_trait_embedding.", "semantic_encoder."))
     }
     expected_keys = {
         "semantic_id_embedding.weight",
+        "semantic_trait_embedding.weight",
         "semantic_encoder.0.weight",
         "semantic_encoder.0.bias",
         "semantic_encoder.2.weight",
