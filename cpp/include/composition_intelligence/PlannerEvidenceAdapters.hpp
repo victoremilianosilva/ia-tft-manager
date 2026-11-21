@@ -43,6 +43,10 @@ struct EconomicPlannerEvidence {
  std::uint32_t combat_horizon_rounds{0};
  std::uint64_t combat_evidence_sequence{0};
  double combat_evidence_uncertainty{1.0};
+ std::string combat_calibration_protocol_id;
+ std::string combat_calibration_report_sha256;
+ std::string combat_dataset_version;
+ std::vector<std::string> combat_replay_artifact_ids;
 };
 struct BoardPlannerEvidence {
  EvidenceSourceMetadata metadata;
@@ -118,6 +122,10 @@ public:
    o.combat_horizon_rounds=c.combat_evidence_horizon_rounds;
    o.combat_evidence_sequence=c.combat_evidence_sequence;
    o.combat_evidence_uncertainty=c.combat_evidence_uncertainty;
+   o.combat_calibration_protocol_id=c.combat_calibration_protocol_id;
+   o.combat_calibration_report_sha256=c.combat_calibration_report_sha256;
+   o.combat_dataset_version=c.combat_dataset_version;
+   o.combat_replay_artifact_ids=c.combat_replay_artifact_ids;
   }
   o.progression_available=c.evidence.progression_plan;
   o.win_streak_available=c.evidence.streaks;o.loss_streak_available=c.evidence.streaks;
