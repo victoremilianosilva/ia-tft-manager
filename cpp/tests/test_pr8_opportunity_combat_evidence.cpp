@@ -173,6 +173,10 @@ int main() {
         diagnostic_distribution, metrics, criteria));
     assert(combat_evidence::approve_calibration(distribution, metrics, criteria));
     assert(distribution.calibrated);
+    auto tampered_distribution = distribution;
+    tampered_distribution.observed_damage_samples.front() = 999.0;
+    assert(!combat_evidence::derive_survival_risk(
+        34.5, tampered_distribution).available);
     auto unapproved_distribution = cohort_distribution;
     assert(!combat_evidence::derive_survival_risk(34.5, unapproved_distribution).available);
     auto unapproved_criteria = criteria;
