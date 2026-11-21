@@ -39,8 +39,13 @@ class TFTPolicy(nn.Module):
                 f"Esperado: {expected_dims}"
             )
 
-        self.obs_dim = obs_dim
+        self.obs_dim = int(obs_dim)
         self.require_semantic_state = bool(require_semantic_state)
+        if self.obs_dim == 1 and not self.require_semantic_state:
+            raise ValueError(
+                "Native observation is a neutral carrier; "
+                "TFTPolicy requires require_semantic_state=True."
+            )
         self.action_dims = action_dims
         self.num_action_types = action_dims[0]
         
