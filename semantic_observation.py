@@ -11,8 +11,8 @@ import json
 import math
 from collections.abc import Mapping, Sequence
 
-SEMANTIC_STATE_CONTRACT_ID = "tft.ppo.semantic-native-state.v3"
-SEMANTIC_STATE_CONTRACT_VERSION = 3
+SEMANTIC_STATE_CONTRACT_ID = "tft.ppo.semantic-native-state.v4"
+SEMANTIC_STATE_CONTRACT_VERSION = 4
 SEMANTIC_ENTITY_SLOTS = 28 + 9 + 5
 SEMANTIC_ENTITY_FEATURES = 29
 SEMANTIC_GLOBAL_FEATURES = 52
@@ -94,6 +94,12 @@ def build_semantic_state_checkpoint_contract(catalog_map: Mapping[str, int]) -> 
                 "active_composition_member", "active_composition_core_member",
                 "direction_reference_member", "pivot_reference_member",
                 "owned_copy_equivalent/9", "same_star_upgrade_progress/3",
+                "item_target.occupied", "item_target.on_board", "item_target.on_bench",
+                "item_target.star/3", "item_target.role_one_hot[0:5]",
+                "item_target.frontline", "item_target.backline",
+                "item_target.attack_damage/200", "item_target.attack_speed/2",
+                "item_target.max_health/2000", "item_target.armor/150",
+                "item_target.magic_resist/150", "item_target.equipped_item_count/3",
             ],
             "champion_id": "catalog_internal_id_plus_one; zero=unknown_or_empty",
         },
