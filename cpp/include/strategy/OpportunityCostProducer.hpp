@@ -83,20 +83,22 @@ public:
                 !std::isfinite(alternative.liquidity_value) ||
                 alternative.liquidity_value < 0.0 ||
                 !std::isfinite(alternative.uncertainty) ||
-                alternative.uncertainty < 0.0 || alternative.uncertainty > 1.0 ||
+                alternative.uncertainty < 0.0 || alternative.uncertainty >= 1.0 ||
                 !std::isfinite(alternative.direct_economy_cost) ||
                 !std::isfinite(alternative.interest_cost)) {
                 continue;
             }
-            // Economic costs are deliberately not included: they are already
-            // compared to HOLD by the marginal liquidity/interest envelope.
+            // The caller supplies net value after direct gold, liquidity and
+            // interest. Cost fields are audit metadata and are never re-applied.
             const double value = alternative.marginal_strategic_value +
                 alternative.progression_value + alternative.unit_value +
                 alternative.upgrade_value + alternative.liquidity_value;
-            if (!std::isfinite(value)) continue;
-            if (best == nullptr || value > best_value) {
+            const double risk_adjusted_value = value * (1.0 - alternative.uncertainty);
+            if (!std::isfinite(value) || !std::isfinite(risk_adjusted_value)) continue;
+            if (best == nullptr || risk_adjusted_value > best_risk_adjusted_value) {
                 best = &alternative;
                 best_value = value;
+                best_risk_adjusted_value = risk_adjusted_value;
             }
         }
         if (best == nullptr) {
