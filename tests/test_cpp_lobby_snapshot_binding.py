@@ -200,6 +200,12 @@ def test_wrapper_rejects_duplicate_unit_instance_uuid_across_active_owners():
         "cost": 1,
         "items": [],
         "trait_names": ["TestTrait"],
+        "role": 3,
+        "attack_damage": 0.0,
+        "attack_speed": 0.0,
+        "max_health": 0.0,
+        "armor": 0.0,
+        "magic_resist": 0.0,
     }
     snapshot["players"][0]["board"][0] = dict(unit)
     snapshot["players"][1]["bench"][0] = dict(unit)
