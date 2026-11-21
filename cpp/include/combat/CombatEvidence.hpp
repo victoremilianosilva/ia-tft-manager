@@ -143,6 +143,82 @@ struct DamageDistribution {
     std::string source{"unavailable_no_replay_dataset"};
 };
 
+// Empirical calibration is promoted only by an explicit evaluation report.
+// Sample count alone is never evidence that a predictor is calibrated.
+struct CalibrationAcceptanceCriteria {
+    bool approved{false};
+    std::string protocol_id;
+    std::uint32_t minimum_training_samples{0};
+    std::uint32_t minimum_test_samples{0};
+    double maximum_mae{0.0};
+    double minimum_p90_coverage{0.0};
+    double maximum_p90_coverage{1.0};
+    double maximum_brier_score{1.0};
+};
+
+struct CalibrationValidationMetrics {
+    std::string report_sha256;
+    std::string train_manifest_sha256;
+    std::string validation_manifest_sha256;
+    std::string test_manifest_sha256;
+    bool episode_splits_disjoint{false};
+    std::uint32_t test_sample_count{0};
+    double mae{0.0};
+    double p90_coverage{0.0};
+    double brier_score{0.0};
+};
+
+inline bool is_sha256(const std::string& value) {
+    return value.size() == 64 &&
+        std::all_of(value.begin(), value.end(), [](unsigned char c) {
+            return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f');
+        });
+}
+
+inline bool approve_calibration(
+    DamageDistribution& distribution,
+    const CalibrationValidationMetrics& metrics,
+    const CalibrationAcceptanceCriteria& criteria) {
+    const bool valid_criteria = criteria.approved && !criteria.protocol_id.empty() &&
+        criteria.minimum_training_samples > 0 && criteria.minimum_test_samples > 0 &&
+        std::isfinite(criteria.maximum_mae) && criteria.maximum_mae >= 0.0 &&
+        std::isfinite(criteria.minimum_p90_coverage) &&
+        std::isfinite(criteria.maximum_p90_coverage) &&
+        criteria.minimum_p90_coverage >= 0.0 &&
+        criteria.maximum_p90_coverage <= 1.0 &&
+        criteria.minimum_p90_coverage <= criteria.maximum_p90_coverage &&
+        std::isfinite(criteria.maximum_brier_score) &&
+        criteria.maximum_brier_score >= 0.0 && criteria.maximum_brier_score <= 1.0;
+    const bool valid_metrics = is_sha256(metrics.report_sha256) &&
+        is_sha256(metrics.train_manifest_sha256) &&
+        is_sha256(metrics.validation_manifest_sha256) &&
+        is_sha256(metrics.test_manifest_sha256) &&
+        metrics.train_manifest_sha256 != metrics.validation_manifest_sha256 &&
+        metrics.train_manifest_sha256 != metrics.test_manifest_sha256 &&
+        metrics.validation_manifest_sha256 != metrics.test_manifest_sha256 &&
+        metrics.episode_splits_disjoint &&
+        metrics.test_sample_count >= criteria.minimum_test_samples &&
+        std::isfinite(metrics.mae) && metrics.mae >= 0.0 &&
+        std::isfinite(metrics.p90_coverage) &&
+        metrics.p90_coverage >= 0.0 && metrics.p90_coverage <= 1.0 &&
+        std::isfinite(metrics.brier_score) &&
+        metrics.brier_score >= 0.0 && metrics.brier_score <= 1.0;
+    if (!valid_criteria || !valid_metrics || distribution.calibrated ||
+        distribution.sample_count < criteria.minimum_training_samples ||
+        distribution.replay_artifact_id.empty() ||
+        distribution.dataset_version.empty() ||
+        distribution.source != "experimental_replay_distribution.v1" ||
+        metrics.mae > criteria.maximum_mae ||
+        metrics.p90_coverage < criteria.minimum_p90_coverage ||
+        metrics.p90_coverage > criteria.maximum_p90_coverage ||
+        metrics.brier_score > criteria.maximum_brier_score)
+        return false;
+
+    distribution.calibrated = true;
+    distribution.source = "approved_replay_calibration.v1";
+    return true;
+}
+
 // Calibration is empirical only: synthetic simulations and uncalibrated
 // CombatEngine output cannot be passed off as observed opponent damage.
 class CombatPredictionCalibrator {
@@ -206,8 +282,8 @@ public:
         out.replay_artifact_id = replay_artifact_id;
         out.dataset_version = dataset_version;
         out.uncertainty = 1.0 / std::sqrt(static_cast<double>(values.size()));
-        out.calibrated = true;
-        out.source = "observed_replay_outcomes.v1";
+        out.calibrated = false;
+        out.source = "experimental_replay_distribution.v1";
         return out;
     }
 };
@@ -228,7 +304,7 @@ inline SurvivalRiskEvidence derive_survival_risk(
     SurvivalRiskEvidence out;
     if (!std::isfinite(observed_hp) || observed_hp < 0.0 ||
         !distribution.calibrated ||
-        distribution.source != "observed_replay_outcomes.v1" ||
+        distribution.source != "approved_replay_calibration.v1" ||
         distribution.replay_artifact_id.empty() ||
         distribution.dataset_version.empty() ||
         distribution.minimum_sample_count == 0 ||
@@ -252,7 +328,7 @@ inline SurvivalRiskEvidence derive_survival_risk(
     out.expected_damage = distribution.mean;
     out.elimination_risk = static_cast<double>(lethal_outcomes) /
         static_cast<double>(distribution.sample_count);
-    out.source = "observed_hp+calibrated_damage_distribution.v1";
+    out.source = "observed_hp+approved_replay_calibration.v1";
     return out;
 }
 
