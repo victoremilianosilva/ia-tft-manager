@@ -185,7 +185,7 @@ def test_v1_semantic_encoder_checkpoint_maps_old_feature_offsets():
     assert torch.equal(migrated[:, :17], old_weight[:, :17])
     for slot in range(SEMANTIC_ENTITY_SLOTS):
         old_start = 17 + slot * 6
-        new_start = SEMANTIC_GLOBAL_FEATURES + slot * 12
+        new_start = SEMANTIC_GLOBAL_FEATURES + slot * SEMANTIC_ENTITY_FEATURES
         assert torch.equal(migrated[:, new_start:new_start + 6], old_weight[:, old_start:old_start + 6])
         assert torch.count_nonzero(migrated[:, new_start + 6:new_start + SEMANTIC_ENTITY_FEATURES]) == 0
     assert torch.equal(migrated[:, SEMANTIC_NUMERIC_DIM:], old_weight[:, old_numeric_dim:])
@@ -193,7 +193,7 @@ def test_v1_semantic_encoder_checkpoint_maps_old_feature_offsets():
 
 
 
-def test_semantic_v3_warm_start_resets_only_reinterpreted_consumer_columns():
+def test_semantic_v4_warm_start_resets_only_reinterpreted_consumer_columns():
     obs, _, _ = _batch(batch_size=1)
     policy = TFTPolicy(
         obs_dim=obs.shape[-1], action_dims=list(ACTION_DIMS),
@@ -214,7 +214,7 @@ def test_semantic_v3_warm_start_resets_only_reinterpreted_consumer_columns():
     assert torch.count_nonzero(policy.sell_head[0].weight[:, -6:]) == 0
     assert torch.count_nonzero(policy.bench_to_board_head.weight[:, -6:]) == 0
 
-def test_v2_semantic_encoder_checkpoint_maps_capacity_and_temporal_extension():
+def test_v2_semantic_encoder_checkpoint_maps_global_and_target_profile_extensions():
     torch.manual_seed(20261122)
     obs, _, _ = _batch()
     policy = TFTPolicy(
@@ -244,6 +244,7 @@ def test_v2_semantic_encoder_checkpoint_maps_capacity_and_temporal_extension():
         old_start = 21 + slot * 12
         new_start = SEMANTIC_GLOBAL_FEATURES + slot * 12
         assert torch.equal(migrated[:, new_start:new_start + 12], old_weight[:, old_start:old_start + 12])
+        assert torch.count_nonzero(migrated[:, new_start + 12:new_start + SEMANTIC_ENTITY_FEATURES]) == 0
     assert torch.equal(migrated[:, SEMANTIC_NUMERIC_DIM:], old_weight[:, old_numeric_dim:])
 
 def test_compact_observation_prefix_has_no_strategy_or_padding_slots():
