@@ -26,6 +26,23 @@ def _inputs(*, action=None, combat=None, placement=None, combat_sequence=4,
         }
         for player_id in range(8)
     ]
+    source_sequence = decision_sequence - 1
+    source_player_sequences = [source_sequence] * 8
+    source_metadata = {
+        "engine_instance_id": "engine-test",
+        "episode_id": episode_id,
+        "decision_sequence": source_sequence,
+        "player_decision_sequences": source_player_sequences,
+        "round": 6,
+        "native_state_snapshot": {
+            "engine_instance_id": "engine-test",
+            "episode_id": episode_id,
+            "snapshot_sequence": source_sequence,
+            "player_decision_sequences": source_player_sequences,
+            "combat_sequence": combat_sequence,
+            "round": 6,
+        },
+    }
     metadata = {
         "engine_instance_id": "engine-test",
         "episode_id": episode_id,
@@ -49,6 +66,7 @@ def _inputs(*, action=None, combat=None, placement=None, combat_sequence=4,
         "action_traces": traces,
         "players": players,
         "decision_snapshot": metadata,
+        "source_decision_snapshot": source_metadata,
     }
 
 
@@ -69,7 +87,11 @@ def test_reward_audit_records_action_trace_and_authoritative_delayed_outcomes():
 
     assert record["contract_id"] == "tft.ppo.reward-audit.v1"
     assert record["temporal_credit_owner"] == "per_player_gae"
+    assert record["source_decision_sequence"] == 9
     first = record["player_rewards"][0]
+    assert first["player_decision_sequence"] == 9
+    assert first["outcome_player_decision_sequence"] == 10
+    assert first["action_decision"]["source_snapshot_sequence"] == 9
     assert first["action_decision"]["reward"] == 0.0
     assert first["combat_outcome"]["source"] == "native_pvp_resolution"
     assert first["combat_outcome"]["combat_sequence"] == 4
