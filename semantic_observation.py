@@ -180,7 +180,7 @@ def build_semantic_state_checkpoint_contract(catalog_map: Mapping[str, int]) -> 
                 "item_target.attack_damage/200", "item_target.attack_speed/2",
                 "item_target.max_health/2000", "item_target.armor/150",
                 "item_target.magic_resist/150", "item_target.equipped_item_count/3",
-                "trait_id_hash_bucket[0:10]/4096",
+                "trait_id_hash_bucket[0:10]/65536",
             ],
             "champion_id": "catalog_internal_id_plus_one; zero=unknown_or_empty",
         },
