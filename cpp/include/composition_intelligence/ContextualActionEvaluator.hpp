@@ -458,8 +458,7 @@ public:
                     score.opportunity_cost_uncertainty = candidate.opportunity_cost_uncertainty;
                     // Strategic opportunity is distinct from principal and interest;
                     // its own uncertainty discounts its contribution conservatively.
-                    score.economy_cost += candidate.opportunity_cost *
-                        (1.0 - candidate.opportunity_cost_uncertainty) * 0.10;
+                    // Applied after the marginal envelope is assembled below.
                 }
                 if (marginal_valid) {
                     score.gold_before = candidate.marginal_gold_before;
@@ -487,6 +486,9 @@ public:
                     // No projected income or unproduced opportunity cost is added.
                     score.economy_cost = score.liquidity_cost + (interest_cost * 0.12);
                 }
+                if (opportunity_valid)
+                    score.economy_cost += candidate.opportunity_cost *
+                        (1.0 - candidate.opportunity_cost_uncertainty) * 0.10;
                 if (requires_marginal_economy && !marginal_valid)
                     reject(score, "marginal_economy_evidence_unavailable");
                 score.total_score = score.eligible
