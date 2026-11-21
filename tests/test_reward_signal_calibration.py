@@ -1,7 +1,7 @@
 import pytest
 
 from reward_signal_calibration import (
-    build_attribution_candidates,
+    analyze_action_lifecycles,\n    audit_reward_hacking_patterns,\n    build_attribution_candidates,
     extract_native_outcome_events,
     validate_calibration_manifest,
 )
@@ -121,3 +121,60 @@ def test_duplicate_native_outcome_event_id_is_rejected():
             action_events=[_action(1)],
             outcome_events=[duplicate, dict(duplicate)],
         )
+
+
+
+def _action_event(seq, family="purchase", *, units_added=(), units_removed=(), applied=True):
+    return {"contract_id":"tft.reward-action-outcome.v1","event_id":f"action-{seq}",
+        "engine_instance_id":"engine","episode_id":1,"player_id":0,
+        "action":{"family":family,"handler_applied":applied},
+        "source_decision":{"player_decision_sequence":seq},
+        "outcome_snapshot":{"player_decision_sequence":seq+1},
+        "facts":{"units_added":list(units_added),"units_removed":list(units_removed)},
+        "causal_attribution":"not_established","reward_eligible":False}
+
+
+def test_lifecycle_records_delayed_outcome_without_moving_reward():
+    result=analyze_action_lifecycles(action_events=[_action_event(1)],outcome_events=[_outcome(3)])
+    assert result["delayed_outcome_candidates"][0]["decision_gap"]==2
+    assert result["delayed_outcome_candidates"][0]["status"]=="temporal_candidate_only"
+    assert result["reward"] is None and result["reward_moved"] is False
+
+
+def test_lifecycle_marks_later_sale_as_reversal_not_negative_reward():
+    unit={"uuid":"u1","champion_id":"A"}
+    result=analyze_action_lifecycles(action_events=[
+        _action_event(1,"purchase",units_added=[unit]),_action_event(3,"sale",units_removed=[unit])])
+    assert result["reversals"][0]["kind"]=="purchase_reversed_by_sale"
+    assert result["reversals"][0]["unit_uuid"]=="u1"
+    assert result["reversals"][0]["reward"] is None
+
+
+def test_lifecycle_marks_composition_change_as_unproven_pivot_candidate():
+    result=analyze_action_lifecycles(action_events=[
+        _action_event(1,"sale",units_removed=[{"uuid":"u1","champion_id":"A"}]),
+        _action_event(3,"purchase",units_added=[{"uuid":"u2","champion_id":"B"}])])
+    assert result["pivot_candidates"][0]["kind"]=="pivot_candidate"
+    assert result["pivot_candidates"][0]["causal_attribution"]=="not_established"
+
+
+def test_reward_hacking_audit_flags_repeated_reroll_without_assigning_reward():
+    findings=audit_reward_hacking_patterns([_action_event(seq,"reroll") for seq in (1,2,3)])
+    assert findings[0]["pattern"]=="repeated_reroll_farming_candidate"
+    assert findings[0]["reward"] is None and findings[0]["reward_moved"] is False
+
+
+def test_reward_hacking_audit_flags_pass_streak_and_positioning_loop():
+    pass_findings=audit_reward_hacking_patterns([_action_event(seq,"pass") for seq in (1,2,3,4)])
+    position_findings=audit_reward_hacking_patterns([_action_event(seq,"positioning") for seq in (1,2,3)])
+    assert pass_findings[-1]["pattern"]=="pass_streak_candidate"
+    assert position_findings[-1]["pattern"]=="repeated_positioning_farming_candidate"
+
+
+def test_lifecycle_rejects_duplicate_delivery_and_never_links_other_player():
+    duplicate=_action_event(1)
+    with pytest.raises(ValueError,match="duplicado"):
+        analyze_action_lifecycles(action_events=[duplicate,dict(duplicate)])
+    outcome=_outcome(3); outcome["player_id"]=1
+    result=analyze_action_lifecycles(action_events=[_action_event(1)],outcome_events=[outcome])
+    assert result["delayed_outcome_candidates"]==[]
