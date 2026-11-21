@@ -44,6 +44,8 @@ def _metadata():
         "board": [_unit() for _ in range(28)],
         "bench": [_unit() for _ in range(9)],
         "shop": [_unit() for _ in range(5)],
+        "actions_taken_this_round": 3,
+        "board_move_age": [0] + [10] * 27,
     }
     player["board"][0] = _unit(True, "TFT_TestChampion", 2, 3)
     player["board"][0]["items"] = ["ItemA"]
@@ -94,7 +96,7 @@ def _metadata():
         "stage": 3,
         "round": 12,
         "native_state_contract_id": "tft.native-state-snapshot",
-        "native_state_contract_version": 3,
+        "native_state_contract_version": 4,
         "native_state_producer": "TFTEngine::get_audit_snapshot",
         "native_state_source_namespace": "tft.engine.observation-snapshot",
         "native_player_state": player,
