@@ -179,6 +179,7 @@ void builder_emits_snapshot_bound_physical_candidates() {
     assert(buy_score->opportunity_cost_available);
     assert(buy_score->opportunity_cost > 0.0);
     assert(buy_score->opportunity_cost_source == "same_snapshot_competing_alternative.v1");
+    assert(buy_score->opportunity_cost_value_basis == "contextual_action_score.v1");
     assert(buy_score->opportunity_cost_forgone_candidate_id != buy->candidate_id);
     assert(buy_score->opportunity_cost_forgone_candidate_id == competing_buy->candidate_id ||
         buy_score->opportunity_cost_forgone_candidate_id == deploy->candidate_id);
