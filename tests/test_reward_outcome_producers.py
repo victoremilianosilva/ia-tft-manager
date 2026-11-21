@@ -225,3 +225,40 @@ def test_does_not_attribute_pvp_win_gold_credit_to_action_economy():
     assert events[0]["facts"]["gold_delta"] is None
     assert events[0]["facts"]["pvp_credit_overlapped"] is True
     assert events[0]["facts"]["pvp_result_credit_events"][0]["credited_gold"] == 1
+
+
+
+def test_records_item_assignment_and_removal_by_stable_item_identity():
+    before = _snapshot(5, 10)
+    after = _snapshot(6, 11)
+    before["players"][0]["board"][0] = _unit(uuid="carrier")
+    after["players"][0]["board"][0] = _unit(uuid="carrier")
+    before["players"][0]["board"][0]["item_ids"] = ["component-a", "component-b"]
+    after["players"][0]["board"][0]["item_ids"] = ["completed-item"]
+    traces = _traces(action_type=7)
+    events = build_action_outcome_events(
+        before_snapshot=before, after_snapshot=after, action_traces=traces
+    )
+    changes = events[0]["facts"]["item_assignment_changes"]
+    assert changes == [{
+        "unit_uuid": "carrier",
+        "item_ids_before": ["component-a", "component-b"],
+        "item_ids_after": ["completed-item"],
+        "items_added": ["completed-item"],
+        "items_removed": ["component-a", "component-b"],
+    }]
+    assert events[0]["reward"] is None
+    assert events[0]["reward_eligible"] is False
+
+
+def test_item_assignment_rejects_unidentifiable_or_duplicate_items():
+    before = _snapshot(5, 10)
+    after = _snapshot(6, 11)
+    before["players"][0]["board"][0] = _unit(uuid="carrier")
+    after["players"][0]["board"][0] = _unit(uuid="carrier")
+    before["players"][0]["board"][0]["item_ids"] = [{"name": "unknown"}]
+    after["players"][0]["board"][0]["item_ids"] = []
+    with pytest.raises(ValueError, match="identidade estável"):
+        build_action_outcome_events(
+            before_snapshot=before, after_snapshot=after, action_traces=_traces(action_type=7)
+        )
