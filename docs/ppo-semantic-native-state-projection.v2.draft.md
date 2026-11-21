@@ -114,7 +114,7 @@ Trainer collection no longer calls the legacy `get_strategies()` compatibility A
 
 **Nova responsabilidade implementada:**
 - **Board/CNN:** 28 entidades semânticas em ordem row-major 4x7; a CNN recebe ocupação, custo, estrela, itens equipados e contagem de traits.
-- **Encoder global:** fatos globais, identidade de campeões e identidades de traits com buckets SHA-256 estáveis e embeddings próprios.
+- **Encoder global:** fatos globais, identidade de campeões e identidades de traits com buckets SHA-256 estáveis (65.536 buckets) e embeddings próprios.
 - **Capacidade/memória:** snapshot nativo v4 publica capacidade de board/bench, ações no round e idade de movimento por slot.
 - **Candidatos e alvos:** compra/venda/posicionamento consomem entidades de bench/shop; alvos de item consomem perfis nativos board/bench com role classifier, posição, AD/AS/HP/armadura/resistência mágica e contagem de itens.
 - **Itens:** snapshot nativo publica componentes, inventário, features canônicas de itens/receitas e matrizes de compatibilidade por alvo, usando ItemEngine, catálogo e perfis nativos.
@@ -124,7 +124,7 @@ Trainer collection no longer calls the legacy `get_strategies()` compatibility A
 - **Checkpoint:** contrato semântico v6 e warm-start v2→v6 explícito. A migração preserva campos antigos compatíveis, inicializa campos novos e reinicia pesos/otimizador semânticos e colunas de consumidores reinterpretadas.
 
 **Contrato e invariantes:**
-- Projeção semântica v6: 52 fatos globais, 42 entidades com 39 features cada (12 fatos de entidade, 17 atributos de alvo e 10 IDs de trait normalizados), além de blocos item/anvil nomeados.
+- Projeção semântica v6: 52 fatos globais, 42 entidades com 39 features cada (12 fatos de entidade, 17 atributos de alvo e 10 IDs de trait normalizados em 65.536 buckets), além de blocos item/anvil nomeados.
 - Hash de cada decisão cobre identidade completa, proveniência estratégica, traits, inventário, componentes, itens equipados, fingerprint do catálogo de itens, sequência/tipo/opções de anvil e valores projetados.
 - Campos ausentes, inválidos, stale ou desalinhados falham fechados.
 - PPO permanece a política aprendida. GAE, RolloutBuffer, replay e action masks permanecem preservados; Engine masks continuam sendo a autoridade de legalidade.
