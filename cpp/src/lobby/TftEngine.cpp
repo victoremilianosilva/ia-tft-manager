@@ -2791,31 +2791,15 @@ struct TFTEngine::Impl {
         };
     }
 
-    void update_strategy(std::size_t i) {
-        auto& strategy_snapshot = player_envs[i].strategy;
-        StrategyInfo info = strategy_snapshot.value_or(StrategyInfo{});
-        // Strategic direction and composition are projected from native owners below.
+    // Legacy StrategyInfo/economic fields are a compatibility projection only.
+    // Keeping this producer separate prevents it from owning or feeding the native
+    // strategic candidate/active-composition refresh.
+    void update_legacy_strategy_compatibility_projection(
+        std::size_t i, StrategyInfo& info,
+        std::int32_t current_round, double power
+    ) {
         const auto& player = player_envs[i].info;
         const auto& economy = player_envs[i].economy;
-        const double power = board_power(i);
-        const auto current_stage = stage_for_round(round + 1);
-        const auto current_round = static_cast<std::int32_t>(round + 1);
-
-        // Native owners receive a dedicated refresh from live engine facts.
-        // The compatibility strategy projection below cannot mutate this snapshot.
-        auto native_composition = refresh_native_composition_candidates(i, current_round);
-        auto& strategic_native_generation = native_composition.generation;
-        auto& strategic_native_owned = native_composition.owned;
-        auto& physical_star_counts_by_unit = native_composition.physical_star_counts_by_unit;
-
-        // Refresh native strategic owners before the remaining economic
-        // compatibility policy. This path consumes live native facts and its own state.
-        refresh_native_strategic_runtime(
-            i, current_round, economy, player_envs[i].info, power,
-            strategic_native_generation, strategic_native_owned,
-            composition_intelligence_native_candidates[i],
-            player_envs[i].shop, pool, trait_milestones);
-
         double bench_strength = 0.0;
         for (const auto& unit : player_envs[i].bench) {
             if (!unit) continue;
@@ -2995,6 +2979,40 @@ struct TFTEngine::Impl {
                 }
             }
         }
+
+    }
+
+    void update_strategy(std::size_t i) {
+        auto& strategy_snapshot = player_envs[i].strategy;
+        StrategyInfo info = strategy_snapshot.value_or(StrategyInfo{});
+        // Strategic direction and composition are projected from native owners below.
+        const auto& player = player_envs[i].info;
+        const auto& economy = player_envs[i].economy;
+        const double power = board_power(i);
+        const auto current_stage = stage_for_round(round + 1);
+        const auto current_round = static_cast<std::int32_t>(round + 1);
+
+        // Native owners receive a dedicated refresh from live engine facts.
+        // The compatibility strategy projection below cannot mutate this snapshot.
+        auto native_composition = refresh_native_composition_candidates(i, current_round);
+        auto& strategic_native_generation = native_composition.generation;
+        auto& strategic_native_owned = native_composition.owned;
+        auto& physical_star_counts_by_unit = native_composition.physical_star_counts_by_unit;
+
+        // Refresh native strategic owners before the remaining economic
+        // compatibility policy. This path consumes live native facts and its own state.
+        refresh_native_strategic_runtime(
+            i, current_round, economy, player_envs[i].info, power,
+            strategic_native_generation, strategic_native_owned,
+            composition_intelligence_native_candidates[i],
+            player_envs[i].shop, pool, trait_milestones);
+
+        // This legacy compatibility producer is intentionally downstream
+        // of the native owner refresh and cannot feed native composition state.
+        update_legacy_strategy_compatibility_projection(
+            i, info, current_round, power);
+        const auto& active_composition =
+            composition_intelligence_players[i].active.current();
 
         // Raw shop snapshot shared by the independent shadow composition pipeline.
         const auto& strategic_shop = player_envs[i].shop;
