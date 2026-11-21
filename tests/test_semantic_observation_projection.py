@@ -156,7 +156,7 @@ def test_native_semantic_projection_has_stable_shape_and_explicit_identity():
     assert projected["numeric"][73] == 1.0  # frontline row
     assert projected["numeric"][75] == 0.5  # attack damage / 200
     assert projected["numeric"][80] == 1.0 / 3.0  # equipped item count / 3
-    bench_target_start = 52 + 28 * 29 + 12
+    bench_target_start = 52 + 28 * 39 + 12
     assert projected["numeric"][bench_target_start + 2] == 1.0
     assert projected["numeric"][bench_target_start + 9] == 0.0
     assert projected["numeric"][21] == 5.0 / 9.0  # board capacity
@@ -179,7 +179,7 @@ def test_copy_progress_consumes_native_unit_copy_progress_without_recounting():
 
 def test_native_trait_identities_are_stably_hashed_and_exposed_to_policy():
     metadata = _metadata()
-    metadata["board"][0]["trait_names"] = ["TraitAlpha", "TraitBeta"]
+    metadata["native_player_state"]["board"][0]["trait_names"] = ["TraitAlpha", "TraitBeta"]
     projected = project_native_player_state(metadata, {"Test_A": 0})
     trait_ids = semantic_item_state_tensors(
         torch.tensor([projected["numeric"]], dtype=torch.float32)
@@ -198,24 +198,24 @@ def test_native_trait_identities_are_stably_hashed_and_exposed_to_policy():
 
 def test_item_identity_and_anvil_sequence_are_bound_to_projection_hash():
     base = _metadata()
-    base["item_inventory"] = ["completed_item_alpha"]
+    base["native_player_state"]["item_inventory"] = ["completed_item_alpha"]
     first = project_native_player_state(base, {"Test_A": 0})
 
     changed_item = _metadata()
-    changed_item["item_inventory"] = ["completed_item_beta"]
+    changed_item["native_player_state"]["item_inventory"] = ["completed_item_beta"]
     second = project_native_player_state(changed_item, {"Test_A": 0})
     assert first["sha256"] != second["sha256"]
 
     pending = _metadata()
-    pending["pending_anvil"] = True
-    pending["pending_anvil_sequence"] = 7
-    pending["pending_anvil_kind"] = 0
-    pending["pending_anvil_options"] = ["component_0"]
-    pending["pending_anvil_option_features"][0][0] = 1.0
+    pending["native_player_state"]["pending_anvil"] = True
+    pending["native_player_state"]["pending_anvil_sequence"] = 7
+    pending["native_player_state"]["pending_anvil_kind"] = 0
+    pending["native_player_state"]["pending_anvil_options"] = ["component_0"]
+    pending["native_player_state"]["pending_anvil_option_features"][0][0] = 1.0
     pending_first = project_native_player_state(pending, {"Test_A": 0})
 
     next_sequence = dict(pending)
-    next_sequence["pending_anvil_sequence"] = 8
+    next_sequence["native_player_state"]["pending_anvil_sequence"] = 8
     pending_second = project_native_player_state(next_sequence, {"Test_A": 0})
     assert pending_first["sha256"] != pending_second["sha256"]
 
@@ -389,7 +389,7 @@ def test_semantic_checkpoint_manifest_integrity_is_separate_from_runtime_compati
     validate_semantic_state_warm_start_migration(changed, catalog)
     with pytest.raises(ValueError, match="incompatible"):
         validate_semantic_state_checkpoint_contract(changed, catalog)
-    with pytest.raises(ValueError, match="catalog, layout, normalization"):
+    with pytest.raises(ValueError, match="catalog, normalization"):
         validate_semantic_state_warm_start_migration(
             changed, {"TFT_TestChampion": 18}
         )
