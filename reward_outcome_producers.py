@@ -72,6 +72,22 @@ def _owned_units(player: Mapping[str, Any]) -> dict[str, dict[str, Any]]:
     return result
 
 
+def _item_key(value: Any) -> str:
+    if isinstance(value, Mapping):
+        for key in ("item_instance_id", "instance_id", "uuid", "item_id", "id"):
+            candidate = value.get(key)
+            if candidate is not None and str(candidate).strip():
+                return str(candidate).strip()
+        raise ValueError("Item nativo sem identidade estável.")
+    if isinstance(value, bool) or value is None:
+        raise ValueError("Identidade de item inválida.")
+    if isinstance(value, (str, int)):
+        result = str(value).strip()
+        if result:
+            return result
+    raise ValueError("Formato de identidade de item não suportado.")
+
+
 def _copy_equivalents(units: Mapping[str, Mapping[str, Any]]) -> Counter:
     copies = Counter()
     for unit in units.values():
@@ -262,6 +278,26 @@ def build_action_outcome_events(
                 _int(event.get("loser_player_id"), "pvp_credit.loser_player_id"),
             )
         ]
+        item_changes = []
+        if family == "item_action":
+            for uuid in sorted(set(before_units) & set(after_units)):
+                previous_items = before_units[uuid]["item_ids"]
+                current_items = after_units[uuid]["item_ids"]
+                previous_keys = [_item_key(item) for item in previous_items]
+                current_keys = [_item_key(item) for item in current_items]
+                if len(previous_keys) != len(set(previous_keys)) or len(current_keys) != len(set(current_keys)):
+                    raise RuntimeError("Snapshot contém identidade de item duplicada na mesma unidade.")
+                added_items = [item for item, key in zip(current_items, current_keys) if key not in set(previous_keys)]
+                removed_items = [item for item, key in zip(previous_items, previous_keys) if key not in set(current_keys)]
+                if added_items or removed_items:
+                    item_changes.append({
+                        "unit_uuid": uuid,
+                        "item_ids_before": previous_keys,
+                        "item_ids_after": current_keys,
+                        "items_added": [_item_key(item) for item in added_items],
+                        "items_removed": [_item_key(item) for item in removed_items],
+                    })
+
         moved = []
         for uuid, current in after_units.items():
             previous = before_units.get(uuid)
@@ -343,6 +379,7 @@ def build_action_outcome_events(
                 "pvp_credit_overlapped": pvp_credit_overlapped,
                 "round_income_events": round_income_events,
                 "pvp_result_credit_events": player_pvp_credit_events,
+                "item_assignment_changes": item_changes if family == "item_action" else [],
                 "board_unit_moves": moved if family in ("deploy", "positioning") else [],
                 "positioning_score_before": pre_position,
                 "positioning_score_after": post_position,
