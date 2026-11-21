@@ -124,6 +124,8 @@ def test_semantic_contract_change_requires_explicit_weights_only_warm_start():
     assert "validate_semantic_state_warm_start_migration(" in source
     assert "semantic_policy_state_keys(checkpoint.get(\"policy\", {}))" in source
     assert "not semantic_state_warm_start" in source
+    assert "Checkpoint histórico sem semantic_state v6" in source
+    assert "semantic_state_warm_start = True" in source
 
 
 
