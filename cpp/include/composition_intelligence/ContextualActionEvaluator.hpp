@@ -486,9 +486,14 @@ public:
                     // No projected income or unproduced opportunity cost is added.
                     score.economy_cost = score.liquidity_cost + (interest_cost * 0.12);
                 }
-                if (opportunity_valid)
+                if (opportunity_valid) {
+                    // Opportunity values from the builder use native board-
+                    // contribution units; apply the same coefficient as this
+                    // evaluator's board-value component instead of a second,
+                    // unrelated action-family discount.
                     score.economy_cost += candidate.opportunity_cost *
-                        (1.0 - candidate.opportunity_cost_uncertainty) * 0.10;
+                        (1.0 - candidate.opportunity_cost_uncertainty) * 0.55;
+                }
                 if (requires_marginal_economy && !marginal_valid)
                     reject(score, "marginal_economy_evidence_unavailable");
                 score.total_score = score.eligible
