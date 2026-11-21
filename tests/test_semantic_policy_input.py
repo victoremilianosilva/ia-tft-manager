@@ -61,7 +61,7 @@ def test_native_semantic_entities_drive_board_cnn_and_action_candidates():
     assert captured["board"].shape == (1, 5, 4, 7)
     assert torch.allclose(captured["board"][0, :, 0, 0], torch.tensor([1.0, 0.8, 2.0 / 3.0, 1.0 / 3.0, 0.2]))
     assert torch.allclose(bench[0, 0], torch.tensor([1.0, 0.6, 1.0 / 3.0, 2.0 / 3.0, 0.3, 4.0 / 9.0]))
-    assert torch.allclose(shop[0, 0], torch.tensor([1.0, 0.4, 1.0 / 3.0, 0.0, 0.0, 2.0 / 9.0]))
+    assert torch.allclose(shop[0, 0], torch.tensor([1.0, 0.4, 1.0 / 3.0, 0.0, 2.0 / 9.0, 0.0]))
     entities[0, 0, 12] = 1.0
     entities[0, 0, 13] = 1.0
     entities[0, 0, 15] = 2.0 / 3.0
