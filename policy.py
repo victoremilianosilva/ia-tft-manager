@@ -1230,7 +1230,7 @@ class TFTPolicy(nn.Module):
             logits = self._item_inventory_logits(
                 conditioned_item, item_inventory_features[equip_item_mask],
                 item_inventory_target_fit[equip_item_mask], item_anvil_options[equip_item_mask],
-                item_anvil_pending[equip_item_mask],
+                item_anvil_pending[equip_item_mask], item_anvil_kind_features[equip_item_mask],
             )
             inventory_mask = masks["item_inventory_mask"][equip_item_mask] if masks is not None else None
             if inventory_mask is not None:
@@ -1542,7 +1542,7 @@ class TFTPolicy(nn.Module):
                 self._item_inventory_logits(
                     conditioned_item, item_inventory_features[equip_item_mask],
                     item_inventory_target_fit[equip_item_mask], item_anvil_options[equip_item_mask],
-                    item_anvil_pending[equip_item_mask],
+                    item_anvil_pending[equip_item_mask], item_anvil_kind_features[equip_item_mask],
                 ), inventory_mask
             )
             self._validate_selected_actions(item_index, inventory_mask, "item_inventory")
