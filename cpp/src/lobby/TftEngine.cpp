@@ -3925,6 +3925,14 @@ struct TFTEngine::Impl {
             unit.items = instance.items;
             unit.provenance.items = "observed:player_board_instance_items";
             unit.provenance.ability = "catalog:ability_name_description_variables_only_mapping_incomplete";
+            unit.provenance.mana = "engine_default_not_observed";
+            unit.provenance.max_mana = "engine_default_not_catalogued";
+            unit.provenance.ability_power = "engine_default_not_catalogued";
+            unit.provenance.critical_strike_chance = "engine_default_not_catalogued";
+            unit.provenance.critical_strike_damage = "engine_default_not_catalogued";
+            unit.provenance.damage_amplification = "engine_default_not_catalogued";
+            unit.provenance.damage_reduction = "engine_default_not_catalogued";
+            unit.provenance.omnivamp = "engine_default_not_catalogued";
 
             std::unordered_set<std::string> unit_traits(
                 definition->traits.begin(), definition->traits.end());
@@ -4312,6 +4320,7 @@ struct TFTEngine::Impl {
                             const auto& ability = unit.ability;
                             units.push_back({
                                 {"engine_unit_id", unit.id},
+                                {"unit_uuid", unit.source_unit_uuid},
                                 {"api_name", unit.api_name},
                                 {"name", unit.name},
                                 {"star", unit.star},
@@ -4367,6 +4376,30 @@ struct TFTEngine::Impl {
                                 }},
                                 {"items", std::move(items)},
                                 {"traits", std::move(traits)},
+                                {"value_provenance", {
+                                    {"identity", unit.provenance.identity},
+                                    {"star", unit.provenance.star},
+                                    {"position", unit.provenance.position},
+                                    {"hp", unit.provenance.hp},
+                                    {"max_hp", unit.provenance.max_hp},
+                                    {"attack_damage", unit.provenance.attack_damage},
+                                    {"attack_speed", unit.provenance.attack_speed},
+                                    {"attack_range", unit.provenance.attack_range},
+                                    {"armor", unit.provenance.armor},
+                                    {"magic_resist", unit.provenance.magic_resist},
+                                    {"mana", unit.provenance.mana},
+                                    {"max_mana", unit.provenance.max_mana},
+                                    {"ability_power", unit.provenance.ability_power},
+                                    {"critical_strike_chance", unit.provenance.critical_strike_chance},
+                                    {"critical_strike_damage", unit.provenance.critical_strike_damage},
+                                    {"damage_amplification", unit.provenance.damage_amplification},
+                                    {"damage_reduction", unit.provenance.damage_reduction},
+                                    {"omnivamp", unit.provenance.omnivamp},
+                                    {"role", unit.provenance.role},
+                                    {"ability", unit.provenance.ability},
+                                    {"items", unit.provenance.items},
+                                    {"traits", unit.provenance.traits}
+                                }},
                                 {"champion_script_metadata_present", ability.metadata_complete}
                             });
                         }
