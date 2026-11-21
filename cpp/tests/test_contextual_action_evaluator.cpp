@@ -466,6 +466,10 @@ void economic_posture_is_explanatory_not_a_fixed_action_rule() {
     economy.combat_horizon_rounds = 1;
     economy.combat_evidence_sequence = 99;
     economy.combat_evidence_uncertainty = 0.15;
+    economy.combat_calibration_protocol_id = "combat-calibration.v1";
+    economy.combat_calibration_report_sha256 = std::string(64, 'a');
+    economy.combat_dataset_version = "combat-dataset.v2";
+    economy.combat_replay_artifact_ids = {"replay-a", "replay-b"};
     economy.posture = EconomicPosture::AccumulateResources;
     const auto accumulate = ContextualActionEvaluator{}.evaluate(
         active(), priorities(), lineup(), context, &evidence, 77);
@@ -494,6 +498,10 @@ void economic_posture_is_explanatory_not_a_fixed_action_rule() {
     assert(accumulate.combat_horizon_rounds == 1);
     assert(accumulate.combat_evidence_sequence == 99);
     assert(accumulate.combat_evidence_uncertainty == 0.15);
+    assert(accumulate.combat_calibration_protocol_id == "combat-calibration.v1");
+    assert(accumulate.combat_calibration_report_sha256 == std::string(64, 'a'));
+    assert(accumulate.combat_dataset_version == "combat-dataset.v2");
+    assert(accumulate.combat_replay_artifact_ids.size() == 2);
     assert(accumulate.economic_posture != emergency.economic_posture);
     assert(accumulate.candidates[0].total_score == emergency.candidates[0].total_score);
     assert(accumulate.recommended_action == emergency.recommended_action);
@@ -510,6 +518,10 @@ void economic_posture_is_explanatory_not_a_fixed_action_rule() {
     assert(json["economic_context"]["combat_horizon_rounds"] == 1);
     assert(json["economic_context"]["combat_evidence_sequence"] == 99);
     assert(json["economic_context"]["combat_evidence_uncertainty"] == 0.15);
+    assert(json["economic_context"]["combat_calibration_protocol_id"] == "combat-calibration.v1");
+    assert(json["economic_context"]["combat_calibration_report_sha256"] == std::string(64, 'a'));
+    assert(json["economic_context"]["combat_dataset_version"] == "combat-dataset.v2");
+    assert(json["economic_context"]["combat_replay_artifact_ids"].size() == 2);
     assert(json["economic_context"]["progression_available"] == false);
 }
 
