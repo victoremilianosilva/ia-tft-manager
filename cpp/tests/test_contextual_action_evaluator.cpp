@@ -501,7 +501,6 @@ void economic_posture_is_explanatory_not_a_fixed_action_rule() {
     assert(json["economic_context"]["posture_available"] == true);
     assert(json["economic_context"]["evidence_missing"][0] == "projected_next_round_income");
     assert(json["economic_context"]["projected_income_available"] == false);
-    assert(json["economic_context"]["incoming_damage_available"] == false);
     assert(json["economic_context"]["incoming_damage_available"] == true);
     assert(json["economic_context"]["incoming_damage"] == 12.5);
     assert(json["economic_context"]["incoming_damage_source"] ==
