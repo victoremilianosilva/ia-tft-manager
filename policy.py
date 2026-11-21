@@ -40,7 +40,7 @@ class TFTPolicy(nn.Module):
         self.num_action_types = action_dims[0]
         
         # --- DIMENSÕES BLINDADAS (Lendo de frente para trás) ---
-        self.num_cell_features = 5  # [cost/5, star/3, impact, comp_score, role]
+        self.num_cell_features = 5  # [occupied, cost/5, star/3, role, strength]
         self.pre_board_dim = 10     # Apenas fatos globais; sem slots de estratégia/padding legado
         self.board_flat_dim = 4 * 7 * self.num_cell_features  # 140
         self.economic_context_dim = 5
@@ -107,7 +107,7 @@ class TFTPolicy(nn.Module):
         # --- Cabeças de Decisão Autorregressivas ---
         self.type_head = nn.Linear(hidden_size, action_dims[0])
         # The native observation ends with 9 bench + 5 shop candidate records,
-        # each with 8 explicit strategic features. Shared per-slot scorers make
+        # each with 6 factual/action-conditioning features. Shared per-slot scorers make
         # each action logit depend on that candidate, not only its slot index.
         self.shop_head = nn.Sequential(
             nn.Linear(hidden_size + self.num_action_types + self.candidate_feature_dim, 256),
