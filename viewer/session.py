@@ -22,6 +22,8 @@ from semantic_observation import (
     catalog_identity,
     project_native_player_state,
     semantic_item_state_tensors,
+    SEMANTIC_POLICY_STATE_KEYS,
+    semantic_policy_state_keys,
     validate_semantic_state_checkpoint_contract,
 )
 
@@ -77,18 +79,8 @@ def _validate_critic_mask_checkpoint_payload(payload: dict, state_dict: dict) ->
 
 def _validate_semantic_checkpoint_payload(payload: dict, state_dict: dict, catalog_map: dict) -> None:
     contract = payload.get("semantic_state_contract")
-    expected_semantic_keys = {
-        "semantic_id_embedding.weight",
-        "semantic_trait_embedding.weight",
-        "semantic_encoder.0.weight",
-        "semantic_encoder.0.bias",
-        "semantic_encoder.2.weight",
-        "semantic_encoder.2.bias",
-    }
-    present_semantic_keys = {
-        key for key in state_dict
-        if key.startswith(("semantic_id_embedding.", "semantic_trait_embedding.", "semantic_encoder."))
-    }
+    expected_semantic_keys = SEMANTIC_POLICY_STATE_KEYS
+    present_semantic_keys = semantic_policy_state_keys(state_dict)
     has_encoder = bool(present_semantic_keys)
     if present_semantic_keys and present_semantic_keys != expected_semantic_keys:
         raise ValueError("Checkpoint contém um encoder semântico parcial.")
