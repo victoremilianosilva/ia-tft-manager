@@ -51,11 +51,16 @@ public:
         reject_if(c.evidence.elimination_risk &&
             (!std::isfinite(c.elimination_risk) || c.elimination_risk < 0.0 ||
                 c.elimination_risk > 1.0), "elimination_risk");
+        const auto approved_combat_source = [](const std::string& source) {
+            return source == "observed_hp+approved_replay_calibration.v1" ||
+                source == "observed_hp+approved_replay_trajectory.v1";
+        };
         const bool combat_provenance_valid =
             c.sequence > 0 && c.combat_evidence_sequence == c.sequence &&
-            c.combat_evidence_horizon_rounds == 1 &&
-            c.incoming_damage_source == "observed_hp+approved_replay_calibration.v1" &&
-            c.elimination_risk_source == "observed_hp+approved_replay_calibration.v1" &&
+            c.combat_evidence_horizon_rounds > 0 &&
+            c.combat_evidence_horizon_rounds <= 10 &&
+            approved_combat_source(c.incoming_damage_source) &&
+            approved_combat_source(c.elimination_risk_source) &&
             std::isfinite(c.combat_evidence_uncertainty) &&
             c.combat_evidence_uncertainty >= 0.0 &&
             c.combat_evidence_uncertainty <= 1.0;
