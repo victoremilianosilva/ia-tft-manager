@@ -6405,6 +6405,138 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
                 target.pending_anvil_kind = static_cast<std::int32_t>(pending->kind);
                 target.pending_anvil_options = pending->options;
             }
+
+            if (impl_->item_catalog) {
+                const auto& item_catalog = *impl_->item_catalog;
+                for (std::size_t component = 0; component < 10; ++component) {
+                    double count = 0.0;
+                    if (component < item_catalog.components.size()) {
+                        const auto& id = item_catalog.components[component].first;
+                        count = static_cast<double>(std::count(
+                            source.item_engine->components().begin(),
+                            source.item_engine->components().end(), id));
+                    }
+                    target.item_component_features[component] =
+                        static_cast<float>(std::clamp(count / 6.0, 0.0, 1.0));
+                }
+
+                for (std::size_t slot = 0; slot < 9; ++slot) {
+                    if (slot >= source.item_engine->inventory().size()) continue;
+                    if (const auto* definition =
+                            source.item_engine->find(source.item_engine->inventory()[slot])) {
+                        target.item_inventory_features[slot] =
+                            encode_item_semantic_features(*definition);
+                    }
+                }
+                target.item_recipe_features = impl_->recipe_observation_features;
+
+                const auto profiles = impl_->semantic_item_unit_profiles(i);
+                std::unordered_map<std::string, const items::UnitProfile*> profile_by_uuid;
+                profile_by_uuid.reserve(profiles.size());
+                for (const auto& profile : profiles)
+                    profile_by_uuid.emplace(profile.uuid, &profile);
+                std::array<const items::UnitProfile*, kBoardSlots + kBenchSlots>
+                    profile_by_target{};
+                for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
+                    if (!source.board[slot]) continue;
+                    const auto found = profile_by_uuid.find(source.board[slot]->uuid);
+                    if (found != profile_by_uuid.end()) profile_by_target[slot] = found->second;
+                }
+                for (std::size_t slot = 0; slot < kBenchSlots; ++slot) {
+                    if (!source.bench[slot]) continue;
+                    const auto found = profile_by_uuid.find(source.bench[slot]->uuid);
+                    if (found != profile_by_uuid.end())
+                        profile_by_target[kBoardSlots + slot] = found->second;
+                }
+                items::ItemFitCache fit_cache(source.item_engine.get());
+                for (std::size_t item_slot = 0; item_slot < 9; ++item_slot) {
+                    if (item_slot >= source.item_engine->inventory().size()) continue;
+                    const auto& item_id = source.item_engine->inventory()[item_slot];
+                    for (std::size_t target_slot = 0;
+                         target_slot < profile_by_target.size(); ++target_slot) {
+                        const auto* profile = profile_by_target[target_slot];
+                        if (!profile) continue;
+                        const double fit = fit_cache.get(item_id, *profile);
+                        target.item_inventory_target_fit[item_slot][target_slot] =
+                            static_cast<float>(std::clamp(fit / 50.0, 0.0, 1.0));
+                    }
+                }
+
+                std::array<bool, 100> recipe_available{};
+                for (std::size_t first = 0; first < 10; ++first) {
+                    for (std::size_t second = first; second < 10; ++second) {
+                        bool available = false;
+                        if (first < item_catalog.components.size() &&
+                            second < item_catalog.components.size()) {
+                            available = source.item_engine->can_craft(
+                                item_catalog.components[first].first,
+                                item_catalog.components[second].first);
+                        }
+                        recipe_available[first * 10 + second] = available;
+                        recipe_available[second * 10 + first] = available;
+                    }
+                }
+                for (std::size_t recipe = 0; recipe < 100; ++recipe) {
+                    const auto& item_id = impl_->recipe_observation_item_ids[recipe];
+                    if (!recipe_available[recipe] || item_id.empty()) continue;
+                    for (std::size_t target_slot = 0;
+                         target_slot < profile_by_target.size(); ++target_slot) {
+                        const auto* profile = profile_by_target[target_slot];
+                        if (!profile) continue;
+                        const double fit = fit_cache.get(item_id, *profile);
+                        target.item_recipe_target_fit[recipe][target_slot] =
+                            static_cast<float>(std::clamp(fit / 50.0, 0.0, 1.0));
+                    }
+                }
+
+                if (const auto* pending = source.item_engine->pending_anvil()) {
+                    for (std::size_t option_index = 0;
+                         option_index < pending->options.size() && option_index < 9;
+                         ++option_index) {
+                        const auto& option_id = pending->options[option_index];
+                        auto& features = target.pending_anvil_option_features[option_index];
+                        double best_fit = 0.0;
+                        if (pending->kind == items::ItemAnvilKind::COMPONENT) {
+                            const auto component = std::find_if(
+                                item_catalog.components.begin(), item_catalog.components.end(),
+                                [&](const auto& entry) { return entry.first == option_id; });
+                            if (component != item_catalog.components.end()) {
+                                const auto component_index = static_cast<std::size_t>(
+                                    std::distance(item_catalog.components.begin(), component));
+                                if (component_index < 10) features[component_index] = 1.0f;
+                            }
+                            for (const auto& candidate_item : item_catalog.items) {
+                                if (candidate_item.recipe_components[0] != option_id &&
+                                    candidate_item.recipe_components[1] != option_id) continue;
+                                for (const auto& profile : profiles)
+                                    best_fit = std::max(best_fit,
+                                        fit_cache.get(candidate_item.id, profile));
+                            }
+                        } else if (const auto* definition = source.item_engine->find(option_id)) {
+                            const std::array<double, 10> stats{
+                                definition->attack_damage / 100.0,
+                                definition->attack_speed / 2.0,
+                                definition->ability_power / 100.0,
+                                definition->critical_strike_chance,
+                                definition->critical_strike_damage / 2.0,
+                                definition->max_health / 2000.0,
+                                definition->armor / 100.0,
+                                definition->magic_resist / 100.0,
+                                definition->omnivamp,
+                                definition->damage_amplification
+                            };
+                            for (std::size_t stat = 0; stat < stats.size(); ++stat)
+                                features[stat] = static_cast<float>(
+                                    std::clamp(stats[stat], 0.0, 1.0));
+                            for (const auto& profile : profiles)
+                                best_fit = std::max(best_fit,
+                                    fit_cache.get(option_id, profile));
+                        }
+                        features[10] = static_cast<float>(
+                            std::clamp(best_fit / 20.0, 0.0, 1.0));
+                    }
+                }
+            }
             const auto& retirement = source.item_engine->retirement_snapshot();
             target.item_ownership_retired = retirement.retired;
             append_counts(retirement.components, target.retired_item_component_counts);
