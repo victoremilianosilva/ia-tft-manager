@@ -56,7 +56,7 @@ def test_semantic_scenario_decoder_rejects_nonfinite_or_misaligned_rows():
 
 def test_semantic_scenario_decoder_uses_native_player_identity_not_batch_position():
     semantic = _semantic_batch()
-    semantic["numeric"][1, 5] = 0.45
+    semantic["numeric"][7, 5] = 0.45
     semantic["snapshot_metadata"] = [
         {"player_id": index} for index in [7, 6, 5, 4, 3, 2, 1, 0]
     ]
