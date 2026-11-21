@@ -421,6 +421,7 @@ void xp_level_up_values_only_a_verified_selected_bench_unit() {
     lineup.composition_id = composition.composition_id;
     lineup.composition_version = 2;
     lineup.match_id = 77; lineup.player_id = 0; lineup.round = 9; lineup.sequence = 42;
+    lineup.endgame_target_ids = {10, 20};
     lineup.selected_board = {
         {10, LineupSlotKind::ActiveTarget, 90, true, true},
         {20, LineupSlotKind::ActiveTarget, 80, false, true}
