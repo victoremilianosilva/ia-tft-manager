@@ -6269,6 +6269,12 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
         target.round_interest = source.economy.round_interest;
         target.round_streak_gold = source.economy.round_streak_gold;
         target.round_win_gold = source.economy.last_round_win_gold;
+        target.actions_taken_this_round = static_cast<std::uint32_t>(
+            std::max(0, source.actions_taken_this_round));
+        for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
+            target.board_move_age[slot] = static_cast<std::uint32_t>(
+                std::max(0, source.board_move_age[slot]));
+        }
         target.masks = source.action_masks;
 
         auto& strategic = target.strategic_state;
