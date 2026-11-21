@@ -84,7 +84,7 @@ def test_item_target_scorer_uses_each_candidates_role_and_position_features():
     conditioned = torch.zeros(1, 64 + ACTION_DIMS[0] * 0 + 9)
     target_context = torch.zeros(1, 20)
     item_features = torch.zeros(1, 17)
-    target_features = torch.zeros(1, 37, 18)
+    target_features = torch.zeros(1, 37, 17)
 
     first = policy.item_target_candidate_head[0]
     last = policy.item_target_candidate_head[-1]
@@ -116,7 +116,7 @@ def test_target_scorer_uses_exact_item_to_unit_compatibility():
     conditioned = torch.zeros(1, 64 + ACTION_DIMS[0])
     target_context = torch.zeros(1, 20)
     item_features = torch.zeros(1, 17)
-    target_features = torch.zeros(1, 37, 18)
+    target_features = torch.zeros(1, 37, 17)
     compatibility = torch.zeros(1, 37)
     compatibility[0, 3] = 0.2
     compatibility[0, 4] = 0.9
@@ -207,7 +207,7 @@ def test_anvil_candidate_scorer_uses_anvil_option_features():
         policy.item_inventory_candidate_head[-1].bias.zero_()
         first.weight.zero_()
         first.bias.zero_()
-        first.weight[0, -11] = 1.0
+        first.weight[0, -13] = 1.0
         last.weight.zero_()
         last.bias.zero_()
         last.weight[0, 0] = 1.0
