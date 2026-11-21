@@ -52,7 +52,7 @@ def test_checkpoint_lineage_rejects_policy_shape_change_even_when_components_mat
     changed_policy = dict(inputs[0])
     changed_policy["actor.weight"] = torch.zeros((5, 3), dtype=torch.float32)
 
-    with pytest.raises(ValueError, match="linhagem incompatível"):
+    with pytest.raises(ValueError, match="lineage incompatível"):
         validate_checkpoint_lineage_contract(manifest, changed_policy, *inputs[1:])
 
 
@@ -73,7 +73,7 @@ def test_trainer_persists_lineage_for_periodic_and_final_checkpoints():
     ) == 2
     assert "TFT_ALLOW_UNVERSIONED_CHECKPOINT_LINEAGE" in source
     assert "and not legacy_checkpoint_lineage" in source
-    assert "legacy_checkpoint_lineage or training_contract_warm_start" in source
+    assert "legacy_checkpoint_lineage or semantic_state_warm_start or training_contract_warm_start" in source
     assert "self.start_update = 1" in source
     assert "validate_checkpoint_lineage_contract(" in source
 
