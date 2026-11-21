@@ -2618,16 +2618,20 @@ struct TFTEngine::Impl {
         }
     }
 
-    void update_strategy(std::size_t i) {
-        auto& strategy_snapshot = player_envs[i].strategy;
-        StrategyInfo info = strategy_snapshot.value_or(StrategyInfo{});
-        // Strategic direction and composition are projected from native owners below.
+    struct NativeCompositionRefresh {
+        strategy::NativeCompositionGenerationResult generation;
+        std::unordered_map<std::int32_t, strategy::NativeCompositionOwnedUnit> owned;
+        std::unordered_map<std::int32_t, std::array<std::int32_t, 4>> physical_star_counts_by_unit;
+    };
+
+    // Native candidate generation is an owner refresh boundary of its own.
+    // It consumes only live engine facts and publishes one versioned candidate
+    // set reused by direction discovery, active composition and lineup planning.
+    NativeCompositionRefresh refresh_native_composition_candidates(
+        std::size_t i, std::int32_t current_round
+    ) {
         const auto& player = player_envs[i].info;
         const auto& economy = player_envs[i].economy;
-        const double power = board_power(i);
-        const auto current_stage = stage_for_round(round + 1);
-        const auto current_round = static_cast<std::int32_t>(round + 1);
-
         // Native strategic evidence is generated directly from live engine facts
         // before any legacy direction, focus, lock or economic strategy is built.
         // The same candidate snapshot is reused by the strategic runtime and CI.
@@ -2779,6 +2783,30 @@ struct TFTEngine::Impl {
             }
 
 
+
+        return {
+            std::move(strategic_native_generation),
+            std::move(strategic_native_owned),
+            std::move(physical_star_counts_by_unit)
+        };
+    }
+
+    void update_strategy(std::size_t i) {
+        auto& strategy_snapshot = player_envs[i].strategy;
+        StrategyInfo info = strategy_snapshot.value_or(StrategyInfo{});
+        // Strategic direction and composition are projected from native owners below.
+        const auto& player = player_envs[i].info;
+        const auto& economy = player_envs[i].economy;
+        const double power = board_power(i);
+        const auto current_stage = stage_for_round(round + 1);
+        const auto current_round = static_cast<std::int32_t>(round + 1);
+
+        // Native owners receive a dedicated refresh from live engine facts.
+        // The compatibility strategy projection below cannot mutate this snapshot.
+        auto native_composition = refresh_native_composition_candidates(i, current_round);
+        auto& strategic_native_generation = native_composition.generation;
+        auto& strategic_native_owned = native_composition.owned;
+        auto& physical_star_counts_by_unit = native_composition.physical_star_counts_by_unit;
 
         // Refresh native strategic owners before the remaining economic
         // compatibility policy. This path consumes live native facts and its own state.
