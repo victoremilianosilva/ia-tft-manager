@@ -72,11 +72,13 @@ def build_attribution_candidates(
         if not event_id or event_id in action_ids:
             raise ValueError("Action event_id ausente ou duplicado.")
         action_ids.add(event_id)
+        _identity(event)
+        source_sequence = _sequence(event.get("source_decision", {}), "player_decision_sequence")
+        outcome_sequence = _sequence(event.get("outcome_snapshot", {}), "player_decision_sequence")
+        if outcome_sequence <= source_sequence:
+            raise ValueError("Outcome snapshot não sucede a decisão de origem.")
         if event.get("action", {}).get("handler_applied") is not True:
             continue
-        _identity(event)
-        _sequence(event.get("source_decision", {}), "player_decision_sequence")
-        _sequence(event.get("outcome_snapshot", {}), "player_decision_sequence")
         actions.append(event)
 
     outcomes = []
