@@ -211,6 +211,23 @@ struct CombatAbility
 // Unit
 // ============================================================
 
+struct CombatInputProvenance {
+    std::string identity{"unavailable"};
+    std::string star{"unavailable"};
+    std::string position{"unavailable"};
+    std::string hp{"unavailable"};
+    std::string max_hp{"unavailable"};
+    std::string attack_damage{"unavailable"};
+    std::string attack_speed{"unavailable"};
+    std::string attack_range{"unavailable"};
+    std::string armor{"unavailable"};
+    std::string magic_resist{"unavailable"};
+    std::string role{"unavailable"};
+    std::string ability{"unavailable"};
+    std::string items{"unavailable"};
+    std::string traits{"unavailable"};
+};
+
 struct CombatUnit
 {
     // --------------------------------------------------------
@@ -305,6 +322,8 @@ struct CombatUnit
     // --------------------------------------------------------
 
     int source_board_position = -1;
+    std::string source_unit_uuid;
+    CombatInputProvenance provenance;
 };
 
 
