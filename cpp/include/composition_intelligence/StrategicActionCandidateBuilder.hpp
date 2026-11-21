@@ -38,6 +38,8 @@ public:
         StrategicActionCandidateBuildResult out;
         if (native.match_id == 0 || native.player_id != context.player_id ||
             native.round != context.round || native.sequence == 0 ||
+            (context.engine_decision_sequence > 0 &&
+                native.sequence != context.engine_decision_sequence) ||
             !native.alive || !context.alive || native.gold != context.gold ||
             !context.evidence.gold) {
             out.status = "invalid_or_mismatched_native_snapshot";
@@ -379,9 +381,14 @@ public:
                         lineup.selected_board.begin(), lineup.selected_board.end(),
                         [&](const auto& slot) { return slot.champion_id == owned.champion_id; });
                     if (!selected_after_level) continue;
-                    const bool physical_bench_identity = std::any_of(
-                        native.bench_champion_ids.begin(), native.bench_champion_ids.end(),
-                        [&](const auto id) { return id == owned.champion_id; });
+                    bool physical_bench_identity = false;
+                    for (std::size_t slot = 0; slot < native.bench_champion_ids.size(); ++slot) {
+                        if (native.bench_champion_ids[slot] == owned.champion_id &&
+                            !native.bench_unit_uuids[slot].empty()) {
+                            physical_bench_identity = true;
+                            break;
+                        }
+                    }
                     if (!physical_bench_identity) continue;
                     const auto priority = std::find_if(
                         priorities.units.begin(), priorities.units.end(),
