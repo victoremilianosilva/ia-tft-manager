@@ -571,3 +571,41 @@ def test_evaluation_artifact_writer_rejects_missing_or_mismatched_manifest(tmp_p
     }
     with pytest.raises(ValueError, match="split does not match"):
         write_paired_evaluation_artifacts(result, manifest, tmp_path / "mismatch")
+
+
+def test_paired_evaluator_requires_trait_embedding_for_semantic_v6_checkpoint():
+    from action_contract import (
+        build_action_mask_checkpoint_contract,
+        build_critic_mask_input_checkpoint_contract,
+    )
+    from economy_finetuning.paired_evaluator import validate_evaluation_checkpoint_contracts
+    from reward_contract import build_reward_checkpoint_contract
+    from semantic_observation import build_semantic_state_checkpoint_contract
+
+    catalog_map = {"TFT_TestChampion": 0}
+    state = {
+        "semantic_id_embedding.weight": torch.zeros(2, 16),
+        "semantic_trait_embedding.weight": torch.zeros(65537, 16),
+        "semantic_encoder.0.weight": torch.zeros(256, 8),
+        "semantic_encoder.0.bias": torch.zeros(256),
+        "semantic_encoder.2.weight": torch.zeros(32, 256),
+        "semantic_encoder.2.bias": torch.zeros(32),
+    }
+    payload = {
+        "policy": state,
+        "action_mask_contract": build_action_mask_checkpoint_contract(),
+        "critic_mask_input_contract": build_critic_mask_input_checkpoint_contract(),
+        "reward_contract": build_reward_checkpoint_contract(),
+        "semantic_state_contract": build_semantic_state_checkpoint_contract(catalog_map),
+    }
+
+    status = validate_evaluation_checkpoint_contracts(payload, catalog_map)
+    assert status["semantic_state"] == "validated"
+
+    incomplete = dict(payload)
+    incomplete["policy"] = {
+        key: value for key, value in state.items()
+        if key != "semantic_trait_embedding.weight"
+    }
+    with pytest.raises(ValueError, match="encoder semântico parcial"):
+        validate_evaluation_checkpoint_contracts(incomplete, catalog_map)
