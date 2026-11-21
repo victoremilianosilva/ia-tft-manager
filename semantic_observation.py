@@ -819,7 +819,13 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
 def build_semantic_batch(metadata_rows, catalog_map: Mapping[str, int]):
     projected = [project_native_player_state(row, catalog_map) for row in metadata_rows]
     contract = build_semantic_state_checkpoint_contract(catalog_map)
+    item_catalog_hashes = {
+        row["item_state_identity"]["item_catalog_sha256"] for row in projected
+    }
+    if len(item_catalog_hashes) > 1:
+        raise ValueError("native players in one batch disagree on the item catalog fingerprint")
     return {
+        "item_catalog_sha256": next(iter(item_catalog_hashes), None),
         "numeric": [row["numeric"] for row in projected],
         "champion_ids": [row["champion_ids"] for row in projected],
         "hashes": [row["sha256"] for row in projected],
