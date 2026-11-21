@@ -172,7 +172,7 @@ def test_v1_semantic_encoder_checkpoint_maps_old_feature_offsets():
     assert torch.equal(migrated[:, :17], old_weight[:, :17])
     for slot in range(SEMANTIC_ENTITY_SLOTS):
         old_start = 17 + slot * 6
-        new_start = 21 + slot * 12
+        new_start = SEMANTIC_GLOBAL_FEATURES + slot * 12
         assert torch.equal(migrated[:, new_start:new_start + 6], old_weight[:, old_start:old_start + 6])
         assert torch.count_nonzero(migrated[:, new_start + 6:new_start + 12]) == 0
     assert torch.equal(migrated[:, SEMANTIC_NUMERIC_DIM:], old_weight[:, old_numeric_dim:])
