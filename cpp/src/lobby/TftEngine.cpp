@@ -4163,12 +4163,121 @@ struct TFTEngine::Impl {
                         ? validation.reason
                         : (!matchup_valid || resolved_opponent != static_cast<std::int32_t>(b)
                             ? "actual_opponent_identity_mismatch" : "valid");
-                    // Publish the complete factual pair as a versioned structured
-                    // event in StepResult.events so replay/audit consumers can
-                    // persist it. Do not discard the roster or emit only a text
-                    // summary; invalid snapshots are retained with their reason.
+                    // Preserve the exact immutable CombatInput projection used by
+                    // the authoritative simulator. Catalog fallbacks remain explicit
+                    // in the serialized values and coverage metadata; they are not
+                    // relabeled as raw observed champion stats.
+                    const auto serialize_effects = [](const auto& effects) {
+                        nlohmann::json serialized = nlohmann::json::array();
+                        for (const auto& effect : effects) {
+                            serialized.push_back({
+                                {"trigger", effect.trigger}, {"operation", effect.operation},
+                                {"stat", effect.stat}, {"target", effect.target},
+                                {"condition", effect.condition},
+                                {"condition_trait", effect.condition_trait},
+                                {"stack_key", effect.stack_key},
+                                {"damage_type", static_cast<int>(effect.damage_type)},
+                                {"value", effect.value}, {"duration", effect.duration},
+                                {"interval", effect.interval}, {"delay", effect.delay},
+                                {"health_threshold", effect.health_threshold},
+                                {"max_stacks", effect.max_stacks},
+                                {"min_trait_count", effect.min_trait_count},
+                                {"percent_of_max_health", effect.percent_of_max_health},
+                                {"percent_of_stat", effect.percent_of_stat}
+                            });
+                        }
+                        return serialized;
+                    };
+                    const auto serialize_team = [&](const CombatTeam& team) {
+                        nlohmann::json units = nlohmann::json::array();
+                        for (const auto& unit : team.units) {
+                            nlohmann::json items = nlohmann::json::array();
+                            for (const auto& item : unit.items) {
+                                items.push_back({
+                                    {"api_name", item.api_name}, {"name", item.name},
+                                    {"attack_damage", item.attack_damage},
+                                    {"ability_power", item.ability_power},
+                                    {"attack_speed", item.attack_speed},
+                                    {"critical_strike_chance", item.critical_strike_chance},
+                                    {"critical_strike_damage", item.critical_strike_damage},
+                                    {"health", item.health}, {"armor", item.armor},
+                                    {"magic_resist", item.magic_resist}, {"mana", item.mana},
+                                    {"omnivamp", item.omnivamp},
+                                    {"damage_amplification", item.damage_amplification},
+                                    {"damage_reduction", item.damage_reduction},
+                                    {"is_temporary", item.is_temporary},
+                                    {"grants_trait", item.grants_trait},
+                                    {"effects", serialize_effects(item.effects)},
+                                    {"effect_metadata_present", !item.effects.empty()}
+                                });
+                            }
+                            nlohmann::json traits = nlohmann::json::array();
+                            for (const auto& trait : unit.traits) {
+                                traits.push_back({
+                                    {"api_name", trait.api_name},
+                                    {"active", trait.active},
+                                    {"active_count", trait.active_count},
+                                    {"tier", trait.tier},
+                                    {"effects", serialize_effects(trait.effects)},
+                                    {"effect_metadata_present", !trait.effects.empty()}
+                                });
+                            }
+                            const auto& ability = unit.ability;
+                            units.push_back({
+                                {"engine_unit_id", unit.id},
+                                {"api_name", unit.api_name},
+                                {"name", unit.name},
+                                {"star", unit.star},
+                                {"role", static_cast<int>(unit.role)},
+                                {"source_board_position", unit.source_board_position},
+                                {"position", {{"x", unit.position.x}, {"y", unit.position.y}}},
+                                {"stats", {
+                                    {"hp", unit.hp}, {"max_hp", unit.max_hp},
+                                    {"mana", unit.mana}, {"max_mana", unit.max_mana},
+                                    {"attack_damage", unit.attack_damage},
+                                    {"ability_power", unit.ability_power},
+                                    {"attack_speed", unit.attack_speed},
+                                    {"attack_range", unit.attack_range},
+                                    {"critical_strike_chance", unit.critical_strike_chance},
+                                    {"critical_strike_damage", unit.critical_strike_damage},
+                                    {"armor", unit.armor}, {"magic_resist", unit.magic_resist},
+                                    {"damage_amplification", unit.damage_amplification},
+                                    {"damage_reduction", unit.damage_reduction},
+                                    {"omnivamp", unit.omnivamp}
+                                }},
+                                {"ability", {
+                                    {"api_name", ability.api_name},
+                                    {"mana_cost", ability.mana_cost},
+                                    {"initial_mana", ability.initial_mana},
+                                    {"target_type", static_cast<int>(ability.target_type)},
+                                    {"damage_type", static_cast<int>(ability.damage_type)},
+                                    {"base_damage", ability.base_damage},
+                                    {"base_healing", ability.base_healing},
+                                    {"shield_amount", ability.shield_amount},
+                                    {"ability_power_ratio", ability.ability_power_ratio},
+                                    {"attack_damage_ratio", ability.attack_damage_ratio},
+                                    {"area_radius", ability.area_radius},
+                                    {"duration", ability.duration},
+                                    {"has_damage", ability.has_damage},
+                                    {"has_healing", ability.has_healing},
+                                    {"has_shield", ability.has_shield},
+                                    {"has_buff", ability.has_buff},
+                                    {"has_debuff", ability.has_debuff},
+                                    {"has_area_effect", ability.has_area_effect},
+                                    {"metadata_present", !ability.api_name.empty()}
+                                }},
+                                {"items", std::move(items)},
+                                {"traits", std::move(traits)},
+                                {"champion_script_metadata_present", !ability.api_name.empty()}
+                            });
+                        }
+                        return units;
+                    };
+                    const auto coverage = combat_evidence::CombatCoverageValidator{}.inspect(input);
+                    const auto coverage_result =
+                        combat_evidence::CombatCoverageValidator{}.validate(coverage);
                     const nlohmann::json combat_snapshot_event{
-                        {"contract_id", "tft.combat-snapshot.v1"},
+                        {"contract_id", "tft.combat-snapshot.v2"},
                         {"match_id", snapshot.match_id},
                         {"player_id", snapshot.player_id},
                         {"opponent_id", snapshot.opponent_id},
@@ -4181,8 +4290,35 @@ struct TFTEngine::Impl {
                         {"opponent_unit_uuids", snapshot.opponent_unit_ids},
                         {"player_roster_complete", snapshot.player_roster_complete},
                         {"opponent_roster_complete", snapshot.opponent_roster_complete},
-                        {"mechanics_coverage_status", "not_measured_catalog_support_unavailable"},
-                        {"mechanics_coverage_complete", false},
+                        {"player_units", serialize_team(input.player_a)},
+                        {"opponent_units", serialize_team(input.player_b)},
+                        {"simulator", {
+                            {"name", "CombatEngine"},
+                            {"version", "combat-engine-generic.v1"},
+                            {"seed", input.seed},
+                            {"deterministic", input.config.deterministic},
+                            {"max_duration", input.config.max_duration},
+                            {"max_events", input.config.max_events}
+                        }},
+                        {"snapshot_value_source", "authoritative_combat_engine_input_projection"},
+                        {"mechanics_coverage_status", coverage_result.status},
+                        {"mechanics_coverage_complete", coverage_result.complete},
+                        {"mechanics_coverage_fraction", coverage_result.supported_fraction},
+                        {"mechanics_coverage", {
+                            {"units_seen", coverage.units_seen},
+                            {"units_supported", coverage.units_supported},
+                            {"unsupported_abilities", coverage.unsupported_abilities},
+                            {"unsupported_traits", coverage.unsupported_traits},
+                            {"unsupported_items", coverage.unsupported_items},
+                            {"missing_scripts", coverage.missing_scripts},
+                            {"unsupported_effects", coverage.unsupported_effects},
+                            {"missing_ability_metadata", coverage.missing_ability_metadata},
+                            {"missing_item_effect_metadata", coverage.missing_item_effect_metadata},
+                            {"missing_trait_effect_metadata", coverage.missing_trait_effect_metadata},
+                            {"all_effects_catalogued", coverage.all_effects_catalogued}
+                        }},
+                        {"projection_status", "not_published_actual_matchup_resolved_after_decision_cycle"},
+                        {"decision_eligible", false},
                         {"validated", snapshot_valid},
                         {"validation_reason", validation_reason}
                     };
