@@ -103,6 +103,6 @@ The new unit tests cover exclusive candidates, intervening-action rejection, amb
 
 `analyze_action_lifecycles` correlates native outcomes by Engine/episode/player identity and decision sequence, but emits only temporal candidates. It records a later sale of the same physical UUID as a reversal of the earlier acquisition, and a sale followed by acquisition of a different champion as an unproven pivot candidate. Neither is converted into positive or negative reward; the native PvP/placement outcome remains owned by its original producer.
 
-`audit_reward_hacking_patterns` reports synthetic sequence patterns (repeated rerolls, repeated positioning, and PASS streaks) as audit findings. These are adversarial diagnostics, not runtime penalties or reward coefficients. Duplicate event delivery and identity collisions fail closed.
+`audit_reward_hacking_patterns` reports synthetic sequence patterns (repeated rerolls, repeated positioning, PASS streaks, and purchase/sale churn) as audit findings. These are adversarial diagnostics, not runtime penalties or reward coefficients. Duplicate event delivery and identity collisions fail closed.
 
 The tests use constructed event sequences and validate bookkeeping and safety invariants only. They do not establish causal effects, optimal horizons, calibrated weights, or match-performance improvements. Replay/training data remains an empirical dependency, not a blocker for this implementation.
