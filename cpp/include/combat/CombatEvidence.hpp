@@ -6,6 +6,7 @@
 #include <cmath>
 #include <cstdint>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 namespace tft::combat_evidence {
@@ -31,10 +32,12 @@ struct CombatSnapshotValidation {
 
 class CombatSnapshotBuilder {
 public:
-    CombatSnapshotValidation validate(const CombatSnapshot& s) const {
+    CombatSnapshotValidation validate(const CombatSnapshot& s, std::uint64_t expected_sequence = 0) const {
         if (s.match_id == 0 || s.player_id < 0 || s.opponent_id < 0 ||
             s.player_id == s.opponent_id || s.round == 0 || s.sequence == 0)
             return {false, "invalid_or_missing_identity"};
+        if (expected_sequence != 0 && s.sequence != expected_sequence)
+            return {false, "stale_snapshot_sequence"};
         if (s.player_hp < 0 || s.opponent_hp < 0)
             return {false, "hp_unavailable"};
         if (!s.player_roster_complete || !s.opponent_roster_complete ||
@@ -114,6 +117,7 @@ struct DamageDistribution {
     double p50{0.0};
     double p90{0.0};
     double uncertainty{1.0};
+    std::vector<double> observed_damage_samples;
     std::string source{"unavailable_no_replay_dataset"};
 };
 
@@ -127,11 +131,16 @@ public:
         std::uint32_t before_round, std::uint32_t minimum_samples = 30) const {
         DamageDistribution out;
         std::vector<double> values;
+        std::unordered_set<std::uint64_t> seen_sequences;
         for (const auto& e : outcomes) {
             if (!e.observed || e.match_id != match_id || e.player_id != player_id ||
                 e.round >= before_round || e.sequence == 0 ||
                 !std::isfinite(e.incoming_damage) || e.incoming_damage < 0.0)
                 continue;
+            if (!seen_sequences.insert(e.sequence).second) {
+                out.source = "invalid_duplicate_outcome_sequence";
+                return out;
+            }
             values.push_back(e.incoming_damage);
         }
         out.sample_count = static_cast<std::uint32_t>(values.size());
@@ -147,6 +156,7 @@ public:
         out.mean = sum / static_cast<double>(values.size());
         out.p50 = quantile(0.50);
         out.p90 = quantile(0.90);
+        out.observed_damage_samples = values;
         out.uncertainty = 1.0 / std::sqrt(static_cast<double>(values.size()));
         out.calibrated = true;
         out.source = "observed_replay_outcomes.v1";
@@ -165,13 +175,18 @@ inline SurvivalRiskEvidence derive_survival_risk(
     std::int32_t observed_hp, const DamageDistribution& distribution) {
     SurvivalRiskEvidence out;
     if (observed_hp < 0 || !distribution.calibrated ||
-        distribution.sample_count == 0 || !std::isfinite(distribution.p90) ||
-        distribution.p90 < 0.0) return out;
+        distribution.sample_count == 0 ||
+        distribution.observed_damage_samples.size() != distribution.sample_count ||
+        !std::isfinite(distribution.mean) || distribution.mean < 0.0) return out;
+    std::size_t lethal_outcomes = 0;
+    for (const double damage : distribution.observed_damage_samples) {
+        if (!std::isfinite(damage) || damage < 0.0) return out;
+        if (damage >= static_cast<double>(observed_hp)) ++lethal_outcomes;
+    }
     out.available = true;
     out.expected_damage = distribution.mean;
-    // Conservative empirical tail indicator, not a fitted probability.
-    out.elimination_risk = distribution.p90 >= static_cast<double>(observed_hp)
-        ? 1.0 : 0.0;
+    out.elimination_risk = static_cast<double>(lethal_outcomes) /
+        static_cast<double>(distribution.sample_count);
     out.source = "observed_hp+calibrated_damage_distribution.v1";
     return out;
 }
