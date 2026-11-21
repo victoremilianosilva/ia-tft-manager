@@ -96,6 +96,7 @@ def semantic_item_state_tensors(numeric):
         "anvil_pending": anvil_state[:, 0] > 0.5,
         "anvil_component": anvil_state[:, 1] > 0.5,
         "anvil_completed_item": anvil_state[:, 2] > 0.5,
+        "anvil_kind_features": anvil_state[:, 1:3],
         "anvil_options": anvil_options,
     }
 
