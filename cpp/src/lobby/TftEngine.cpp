@@ -6231,7 +6231,7 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
         result.cost = definition ? definition->cost : 0;
         if (definition) {
             result.trait_names = definition->traits;
-            result.role = std::clamp(observation_role(*unit, *definition), 0, 4);
+            result.role = std::clamp(native_observation_role(*unit, *definition), 0, 4);
             const auto& stats = definition->stats;
             const auto& combat = definition->combat_profile;
             result.attack_damage = combat.attack_damage > 0.0
