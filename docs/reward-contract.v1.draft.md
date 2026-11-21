@@ -414,3 +414,24 @@ O checkpoint persiste o ID/versão/hash deste contrato. Checkpoints sem manifest
 **Calibration boundary remains conservative:** action reward remains neutral (0.0); resolved PvP combat and one-time validated terminal placement remain the only active learning outcomes. Pair/upgrade progress, purchases, rerolls, XP/level, item assignment, positioning, economy and opportunity cost remain candidates for future calibration, not current reward terms. Native identity/progress evidence is necessary but not sufficient for causal attribution or calibrated reward weights. No future-income, expected-damage or elimination-risk estimate is synthesized.
 
 **Validation:** executable tests cover per-player invalid-transition isolation, valid-but-not-optimized temporal propagation, invalid next-state bootstrap suppression, rollout-truncation bootstrap, and the optimization-valid subset invariant. Empirical reward calibration/ablation remains in #295; no performance improvement is claimed.
+
+## Runtime audit trail — causal outcome provenance (#287)
+
+**Prior problem:** \`StepResult\` already exposed action, PvP-combat, placement, and total reward arrays, alongside action traces and a correlated native snapshot. The Python wrapper forwarded these fields independently, however, it did not verify that the total was exactly the sum of its components, that each component belonged to the same Engine/episode/decision snapshot, or that a delayed outcome event was credited only once across successive wrapper steps. Its compatibility fallback could also substitute the combined reward for a missing action component, which is not valid provenance.
+
+**Technical rationale:** reward values and their provenance must be checked at the boundary where the native result becomes a Python transition. The audit must use only authoritative action traces, native combat sequence, validated terminal placement, and the existing per-player decision identity. It must not infer causal ownership from a Shadow score, strategy direction, composition fit, or mere temporal proximity.
+
+**New responsibility:** \`RewardAuditLedger\` validates each native step and adds an audit-only \`info["reward_audit"]\` record. It checks the component decomposition, binds every player row to the correlated snapshot, records the applied action trace, assigns stable event identities to non-zero PvP and terminal-placement outcomes, and rejects duplicate outcome event IDs across successive wrapper steps. The ledger is reset only after a successful native episode reset.
+
+**Contract and invariants:**
+- The scalar \`rewards\` array remains the sole reward input consumed by PPO; the audit record is metadata only.
+- Reward v1 action shaping remains exactly \`0.0\`; action-handler success is execution telemetry, not reward.
+- \`rewards == action_rewards + combat_rewards + placement_rewards\` within the documented floating-point tolerance; absent component arrays fail closed rather than being reconstructed from the total.
+- PvP outcome identity is \`(engine_instance_id, episode_id, combat_sequence, player_id)\`; terminal placement identity is \`(engine_instance_id, episode_id, player_id)\`.
+- Combat events require a positive native \`combat_sequence\`; placement events require a validated final rank in \`[1, 8]\`.
+- Duplicate outcome identities, non-finite values, invalid vector sizes, or snapshot/player-sequence mismatches are contract errors, not player penalties.
+- GAE remains the only temporal credit mechanism. This audit does not manually assign a combat or placement reward to a preceding purchase, XP, reroll, sale, item, or movement action.
+
+**Impacts:** no reward coefficient, scalar reward, PPO loss, GAE behavior, action mask, Engine rule, or checkpoint contract changes. The wrapper now exposes a machine-checkable audit record and rejects stale native extensions that omit component/provenance fields.
+
+**Validation:** unit tests cover decomposition, action-neutrality, native combat identity, terminal-placement identity, duplicate-event rejection, and snapshot alignment; wrapper tests verify the audit record is attached to the exact step result. This establishes provenance and deduplication, not empirical calibration. Purchase/upgrade, XP, reroll, sale, economy, and positioning shaping remain disabled until each proposed signal has an independently authoritative outcome, defensible attribution horizon, non-overlap proof, and replay-based calibration/ablation under #295.
