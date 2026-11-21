@@ -209,8 +209,11 @@ int main(int argc, char** argv) {
         require(player_observation[item_target_features_offset] == 1.0f &&
                 player_observation[item_target_features_offset + 1] == 1.0f,
                 "Observacao de item nao expoe unidade ocupada no tabuleiro como alvo.");
-        require(player_observation[candidate_features_offset] == 0.0f,
-                "Bench vazio deve manter o custo candidato zerado.");
+        require(player_observation[candidate_features_offset] >= 0.0f &&
+                    player_observation[candidate_features_offset] <= 1.0f &&
+                    player_observation[candidate_features_offset + 4] >= 0.0f &&
+                    player_observation[candidate_features_offset + 4] <= 1.0f,
+                "Registro de candidato deve conter features factuais normalizadas.");
         const std::size_t shop_candidate_offset =
             candidate_features_offset + candidate_feature_dim * tft::kBenchSlots;
         require(player_observation[shop_candidate_offset] > 0.0f &&
