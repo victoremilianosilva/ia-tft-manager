@@ -88,6 +88,44 @@ def _item_key(value: Any) -> str:
     raise ValueError("Formato de identidade de item não suportado.")
 
 
+def _catalog_counts(player: Mapping[str, Any], field: str) -> dict[str, int]:
+    rows = player.get(field)
+    if not isinstance(rows, Sequence):
+        raise ValueError(f"Snapshot sem {field} nativo.")
+    result = {}
+    for row in rows:
+        if not isinstance(row, Mapping):
+            raise ValueError(f"Registro inválido em {field}.")
+        catalog_id = str(row.get("catalog_id", "")).strip()
+        count = _int(row.get("count"), f"{field}.count")
+        if not catalog_id or count is None or count <= 0 or catalog_id in result:
+            raise ValueError(f"Identidade/contagem inválida ou duplicada em {field}.")
+        result[catalog_id] = count
+    return result
+
+
+def _equipped_items(player: Mapping[str, Any]) -> dict[tuple[str, str], dict[str, Any]]:
+    rows = player.get("equipped_items")
+    if not isinstance(rows, Sequence):
+        raise ValueError("Snapshot sem equipped_items nativo.")
+    result = {}
+    for row in rows:
+        if not isinstance(row, Mapping):
+            raise ValueError("Registro equipped_items inválido.")
+        unit_uuid = str(row.get("unit_uuid", "")).strip()
+        catalog_id = str(row.get("catalog_id", "")).strip()
+        location = row.get("location")
+        slot = _int(row.get("slot"), "equipped_items.slot")
+        if not unit_uuid or not catalog_id or location not in ("board", "bench") or slot is None:
+            raise ValueError("Identidade/localização inválida em equipped_items.")
+        key = (unit_uuid, catalog_id)
+        if key in result:
+            raise ValueError("Item equipado duplicado para unidade/catálogo.")
+        result[key] = {"unit_uuid": unit_uuid, "catalog_id": catalog_id,
+            "location": location, "slot": slot}
+    return result
+
+
 def _copy_equivalents(units: Mapping[str, Mapping[str, Any]]) -> Counter:
     copies = Counter()
     for unit in units.values():
@@ -278,6 +316,30 @@ def build_action_outcome_events(
                 _int(event.get("loser_player_id"), "pvp_credit.loser_player_id"),
             )
         ]
+        equipped_item_changes = []
+        item_inventory_deltas = {}
+        item_component_deltas = {}
+        if family == "item_action":
+            before_equipped = _equipped_items(before)
+            after_equipped = _equipped_items(after)
+            for key in sorted(set(before_equipped) | set(after_equipped)):
+                previous = before_equipped.get(key)
+                current = after_equipped.get(key)
+                if previous is None:
+                    equipped_item_changes.append({"kind": "equipped", **current})
+                elif current is None:
+                    equipped_item_changes.append({"kind": "unequipped", **previous})
+                elif previous != current:
+                    equipped_item_changes.append({"kind": "moved", "before": previous, "after": current})
+            for field, target in (("item_inventory_counts", item_inventory_deltas),
+                                  ("item_component_counts", item_component_deltas)):
+                before_counts = _catalog_counts(before, field)
+                after_counts = _catalog_counts(after, field)
+                for catalog_id in sorted(set(before_counts) | set(after_counts)):
+                    delta = after_counts.get(catalog_id, 0) - before_counts.get(catalog_id, 0)
+                    if delta:
+                        target[catalog_id] = delta
+
         item_changes = []
         if family == "item_action":
             for uuid in sorted(set(before_units) & set(after_units)):
@@ -380,6 +442,9 @@ def build_action_outcome_events(
                 "round_income_events": round_income_events,
                 "pvp_result_credit_events": player_pvp_credit_events,
                 "item_assignment_changes": item_changes if family == "item_action" else [],
+                "equipped_item_changes": equipped_item_changes if family == "item_action" else [],
+                "item_inventory_count_deltas": item_inventory_deltas if family == "item_action" else {},
+                "item_component_count_deltas": item_component_deltas if family == "item_action" else {},
                 "board_unit_moves": moved if family in ("deploy", "positioning") else [],
                 "positioning_score_before": pre_position,
                 "positioning_score_after": post_position,
