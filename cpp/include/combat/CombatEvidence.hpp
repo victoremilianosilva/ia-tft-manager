@@ -277,6 +277,7 @@ struct CalibrationAcceptanceCriteria {
     bool approved{false};
     std::string protocol_id;
     std::uint32_t minimum_training_samples{0};
+    std::uint32_t minimum_validation_samples{0};
     std::uint32_t minimum_test_samples{0};
     double maximum_mae{0.0};
     double minimum_p90_coverage{0.0};
@@ -290,6 +291,7 @@ struct CalibrationValidationMetrics {
     std::string validation_manifest_sha256;
     std::string test_manifest_sha256;
     bool episode_splits_disjoint{false};
+    std::uint32_t validation_sample_count{0};
     std::uint32_t test_sample_count{0};
     double mae{0.0};
     double p90_coverage{0.0};
@@ -308,7 +310,9 @@ inline bool approve_calibration(
     const CalibrationValidationMetrics& metrics,
     const CalibrationAcceptanceCriteria& criteria) {
     const bool valid_criteria = criteria.approved && !criteria.protocol_id.empty() &&
-        criteria.minimum_training_samples > 0 && criteria.minimum_test_samples > 0 &&
+        criteria.minimum_training_samples > 0 &&
+        criteria.minimum_validation_samples > 0 &&
+        criteria.minimum_test_samples > 0 &&
         std::isfinite(criteria.maximum_mae) && criteria.maximum_mae >= 0.0 &&
         std::isfinite(criteria.minimum_p90_coverage) &&
         std::isfinite(criteria.maximum_p90_coverage) &&
@@ -325,6 +329,7 @@ inline bool approve_calibration(
         metrics.train_manifest_sha256 != metrics.test_manifest_sha256 &&
         metrics.validation_manifest_sha256 != metrics.test_manifest_sha256 &&
         metrics.episode_splits_disjoint &&
+        metrics.validation_sample_count >= criteria.minimum_validation_samples &&
         metrics.test_sample_count >= criteria.minimum_test_samples &&
         std::isfinite(metrics.mae) && metrics.mae >= 0.0 &&
         std::isfinite(metrics.p90_coverage) &&
@@ -544,8 +549,28 @@ inline SurvivalRiskEvidence derive_survival_risk(
         distribution.minimum_sample_count == 0 ||
         distribution.sample_count < distribution.minimum_sample_count ||
         distribution.observed_damage_samples.size() != distribution.sample_count ||
+        distribution.calibration_protocol_id.empty() ||
+        !is_sha256(distribution.calibration_report_sha256) ||
+        !is_sha256(distribution.calibration_train_manifest_sha256) ||
+        !is_sha256(distribution.calibration_validation_manifest_sha256) ||
+        !is_sha256(distribution.calibration_test_manifest_sha256) ||
+        distribution.calibration_train_manifest_sha256 ==
+            distribution.calibration_validation_manifest_sha256 ||
+        distribution.calibration_train_manifest_sha256 ==
+            distribution.calibration_test_manifest_sha256 ||
+        distribution.calibration_validation_manifest_sha256 ==
+            distribution.calibration_test_manifest_sha256 ||
+        !std::isfinite(distribution.calibration_mae) ||
+        distribution.calibration_mae < 0.0 ||
+        !std::isfinite(distribution.calibration_p90_coverage) ||
+        distribution.calibration_p90_coverage < 0.0 ||
+        distribution.calibration_p90_coverage > 1.0 ||
+        !std::isfinite(distribution.calibration_brier_score) ||
+        distribution.calibration_brier_score < 0.0 ||
+        distribution.calibration_brier_score > 1.0 ||
         !std::isfinite(distribution.mean) || distribution.mean < 0.0 ||
-        !std::isfinite(distribution.p50) || !std::isfinite(distribution.p90) ||
+        !std::isfinite(distribution.p50) || distribution.p50 < 0.0 ||
+        !std::isfinite(distribution.p90) || distribution.p90 < distribution.p50 ||
         !std::isfinite(distribution.uncertainty) ||
         distribution.uncertainty < 0.0 || distribution.uncertainty > 1.0)
         return out;
