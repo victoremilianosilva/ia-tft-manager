@@ -195,6 +195,13 @@ int main() {
         trajectory.calibrated = true;
         trajectory.calibration_protocol_id = "combat-horizon.v1";
         trajectory.calibration_report_sha256 = std::string(64, 'e');
+        trajectory.calibration_train_manifest_sha256 = std::string(64, 'b');
+        trajectory.calibration_validation_manifest_sha256 = std::string(64, 'c');
+        trajectory.calibration_test_manifest_sha256 = std::string(64, 'd');
+        trajectory.episode_splits_disjoint = true;
+        trajectory.calibration_mae = 1.0;
+        trajectory.calibration_p90_coverage = 0.90;
+        trajectory.calibration_brier_score = 0.05;
         trajectory.replay_artifact_id = "trajectory-replay-" + std::to_string(i % 4);
         trajectory.dataset_version = "combat-trajectories.v1";
         trajectory.source = "approved_replay_trajectory.v1";
