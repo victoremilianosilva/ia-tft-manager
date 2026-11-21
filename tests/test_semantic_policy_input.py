@@ -69,7 +69,7 @@ def test_native_semantic_entities_drive_board_cnn_and_action_candidates():
     assert targets[0, 0, 0].item() == 1.0
     assert targets[0, 0, 1].item() == 1.0
     assert targets[0, 0, 2].item() == 0.0
-    assert targets[0, 0, 5].item() == 1.0
+    assert targets[0, 0, 4].item() == 1.0
     assert targets[0, 0, 11].item() == 0.5
 
 
