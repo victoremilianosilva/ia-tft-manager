@@ -353,18 +353,19 @@ class TFTPolicy(nn.Module):
                 and source_value.shape[1] == 525 + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ID_EMBED_DIM
                 and target_value.shape[1] == SEMANTIC_NUMERIC_DIM + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ID_EMBED_DIM
             ):
-                # v2 -> v3 adds 31 global capacity/temporal facts. Preserve the
-                # existing 21 globals, shift all 42 entity records, and retain
-                # the champion embedding columns; only new facts start at zero.
+                # v2 -> v4 adds 31 global capacity/temporal facts and 17
+                # target-profile facts per entity. Preserve the old 21 globals
+                # and 12 entity facts; initialize only newly sourced fields.
                 old_numeric_dim = 525
                 old_global_dim = 21
+                old_entity_features = 12
                 expanded = torch.zeros_like(target_value)
                 expanded[:, :old_global_dim] = source_value[:, :old_global_dim]
                 for slot in range(SEMANTIC_ENTITY_SLOTS):
-                    old_start = old_global_dim + slot * SEMANTIC_ENTITY_FEATURES
+                    old_start = old_global_dim + slot * old_entity_features
                     new_start = SEMANTIC_GLOBAL_FEATURES + slot * SEMANTIC_ENTITY_FEATURES
-                    expanded[:, new_start:new_start + SEMANTIC_ENTITY_FEATURES] = (
-                        source_value[:, old_start:old_start + SEMANTIC_ENTITY_FEATURES]
+                    expanded[:, new_start:new_start + old_entity_features] = (
+                        source_value[:, old_start:old_start + old_entity_features]
                     )
                 expanded[:, SEMANTIC_NUMERIC_DIM:] = source_value[:, old_numeric_dim:]
                 loaded[key] = expanded
@@ -381,12 +382,13 @@ class TFTPolicy(nn.Module):
             ):
                 # Map v1's named global/entity blocks; initialize only new fields.
                 old_numeric_dim = 269
+                old_entity_features = 6
                 expanded = torch.zeros_like(target_value)
                 expanded[:, :17] = source_value[:, :17]
                 for slot in range(SEMANTIC_ENTITY_SLOTS):
-                    old_start = 17 + slot * 6
+                    old_start = 17 + slot * old_entity_features
                     new_start = SEMANTIC_GLOBAL_FEATURES + slot * SEMANTIC_ENTITY_FEATURES
-                    expanded[:, new_start:new_start + 6] = source_value[:, old_start:old_start + 6]
+                    expanded[:, new_start:new_start + old_entity_features] = source_value[:, old_start:old_start + old_entity_features]
                 expanded[:, SEMANTIC_NUMERIC_DIM:] = source_value[:, old_numeric_dim:]
                 loaded[key] = expanded
                 migrated = True
