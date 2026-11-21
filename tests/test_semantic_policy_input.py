@@ -91,6 +91,24 @@ def test_native_semantic_global_encoder_produces_finite_features():
     assert torch.isfinite(semantic_values).all()
 
 
+
+def test_semantic_global_encoder_embeds_trait_identity_and_receives_gradients():
+    obs, _, semantic = _batch(batch_size=1)
+    policy = TFTPolicy(
+        obs_dim=obs.shape[-1], action_dims=list(ACTION_DIMS),
+        hidden_size=32, semantic_vocab_size=64,
+    )
+    semantic["items"]["trait_ids"][0, 0, 0] = 123
+    semantic["items"]["trait_ids"][0, 0, 1] = 456
+
+    latent = policy.encode(obs, semantic_state=semantic)
+    latent.square().mean().backward()
+
+    gradient = policy.semantic_trait_embedding.weight.grad
+    assert gradient is not None
+    assert gradient[123].abs().sum().item() > 0.0
+    assert gradient[456].abs().sum().item() > 0.0
+
 def test_semantic_side_input_changes_actor_and_critic_and_receives_gradients():
     torch.manual_seed(20261119)
     obs, masks, semantic = _batch()
@@ -190,7 +208,11 @@ def test_v1_semantic_encoder_checkpoint_maps_old_feature_offsets():
         new_start = SEMANTIC_GLOBAL_FEATURES + slot * SEMANTIC_ENTITY_FEATURES
         assert torch.equal(migrated[:, new_start:new_start + 6], old_weight[:, old_start:old_start + 6])
         assert torch.count_nonzero(migrated[:, new_start + 6:new_start + SEMANTIC_ENTITY_FEATURES]) == 0
-    assert torch.equal(migrated[:, SEMANTIC_NUMERIC_DIM:], old_weight[:, old_numeric_dim:])
+    champion_end = SEMANTIC_NUMERIC_DIM + SEMANTIC_ENTITY_SLOTS * 16
+    assert torch.equal(
+        migrated[:, SEMANTIC_NUMERIC_DIM:champion_end], old_weight[:, old_numeric_dim:]
+    )
+    assert torch.count_nonzero(migrated[:, champion_end:]) == 0
 
 
 
@@ -247,7 +269,11 @@ def test_v2_semantic_encoder_checkpoint_maps_global_and_target_profile_extension
         new_start = SEMANTIC_GLOBAL_FEATURES + slot * SEMANTIC_ENTITY_FEATURES
         assert torch.equal(migrated[:, new_start:new_start + 12], old_weight[:, old_start:old_start + 12])
         assert torch.count_nonzero(migrated[:, new_start + 12:new_start + SEMANTIC_ENTITY_FEATURES]) == 0
-    assert torch.equal(migrated[:, SEMANTIC_NUMERIC_DIM:], old_weight[:, old_numeric_dim:])
+    champion_end = SEMANTIC_NUMERIC_DIM + SEMANTIC_ENTITY_SLOTS * 16
+    assert torch.equal(
+        migrated[:, SEMANTIC_NUMERIC_DIM:champion_end], old_weight[:, old_numeric_dim:]
+    )
+    assert torch.count_nonzero(migrated[:, champion_end:]) == 0
 
 def test_compact_observation_prefix_has_no_strategy_or_padding_slots():
     obs, _, _ = _batch(batch_size=3)
