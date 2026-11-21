@@ -185,10 +185,6 @@ class PairedEvaluatorTests(unittest.TestCase):
         self.assertAlmostEqual(delta["board_structural_score_delta"], 0.15)
 
 
-if __name__ == "__main__":
-    unittest.main()
-
-
     def test_economic_finetuning_loads_only_complete_semantic_v6_checkpoints(self):
         catalog = {"TFT_TestChampion": 0}
         policy = TFTPolicy(
@@ -257,3 +253,6 @@ if __name__ == "__main__":
         self.assertEqual(result[3]["action_trace"]["player_id"], 3)
         self.assertEqual(next_state[3]["decision_sequence"], 11)
         self.assertEqual(len(decision[3]["mask_snapshot_hash"]), 64)
+
+if __name__ == "__main__":
+    unittest.main()
