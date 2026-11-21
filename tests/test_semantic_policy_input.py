@@ -2,7 +2,7 @@ import torch
 
 from action_contract import MASK_SHAPES
 from policy import ACTION_DIMS, TFTPolicy
-from semantic_observation import SEMANTIC_ENTITY_SLOTS, SEMANTIC_NUMERIC_DIM
+from semantic_observation import SEMANTIC_ENTITY_SLOTS, SEMANTIC_GLOBAL_FEATURES, SEMANTIC_NUMERIC_DIM
 
 
 def _batch(batch_size=2):
