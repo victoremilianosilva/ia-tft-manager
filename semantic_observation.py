@@ -198,7 +198,7 @@ def build_semantic_state_checkpoint_contract(catalog_map: Mapping[str, int]) -> 
             },
             "identity_bound_fields": [
                 "item_components", "item_inventory", "equipped_items",
-                "item_component_catalog", "pending_anvil_sequence",
+                "item_component_catalog", "item_catalog_sha256", "pending_anvil_sequence",
                 "pending_anvil_kind", "pending_anvil_options",
             ],
         },
