@@ -89,7 +89,10 @@ def _validate_semantic_checkpoint_payload(payload: dict, state_dict: dict, catal
             raise ValueError(
                 "Checkpoint contém pesos do encoder sem semantic_state_contract."
             )
-        return
+        raise ValueError(
+            "Viewer exige checkpoint semântico v6; checkpoints históricos precisam "
+            "passar pelo warm-start explícito no Trainer."
+        )
     validate_semantic_state_checkpoint_contract(contract, catalog_map)
     if not has_encoder:
         raise ValueError(
