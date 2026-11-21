@@ -310,6 +310,8 @@ int main(int argc, char** argv) {
 
         // O treinamento só resolve a preparação depois de 15 ações de cada
         // jogador; PASS conta como ação, mas não encerra a rodada sozinho.
+        for (int action = 0; action < 14; ++action)
+            (void)step_with_pending_anvils(engine, actions);
         const auto first_prediction_step = step_with_pending_anvils(engine, actions);
         require(std::any_of(first_prediction_step.events.begin(),
             first_prediction_step.events.end(), [](const auto& event) {
@@ -317,7 +319,7 @@ int main(int argc, char** argv) {
             }), "Risco calibrado não chegou ao contexto econômico Shadow.");
         require(!engine.publish_combat_prediction_evidence(calibrated_combat_risk),
                 "A Engine não pode reutilizar evidência de uma sequência anterior.");
-        for (int action = 1; action < 30; ++action) {
+        for (int action = 0; action < 15; ++action) {
             (void)step_with_pending_anvils(engine, actions);
         } // duas rodadas completas de 15 ações
 
