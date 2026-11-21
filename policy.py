@@ -44,13 +44,13 @@ class TFTPolicy(nn.Module):
         self.pre_board_dim = 10     # Apenas fatos globais; sem slots de estratégia/padding legado
         self.board_flat_dim = 4 * 7 * self.num_cell_features  # 140
         self.economic_context_dim = 5
-        self.candidate_feature_dim = 8
+        self.candidate_feature_dim = 6
         self.candidate_observation_dim = (
             action_dims[2] + action_dims[1]
         ) * self.candidate_feature_dim
         self.item_component_feature_dim = 10
         self.item_semantic_feature_dim = 17
-        self.item_target_feature_dim = 18
+        self.item_target_feature_dim = 17
         self.item_anvil_observation_dim = 3 + 9 * 11
         self.item_compatibility_observation_dim = (9 + 100) * 37
         self.item_global_observation_dim = (
