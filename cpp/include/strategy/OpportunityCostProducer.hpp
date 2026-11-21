@@ -6,6 +6,7 @@
 #include <cmath>
 #include <cstdint>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 namespace tft::strategy {
@@ -14,6 +15,7 @@ namespace tft::strategy {
 // sacrificed by an alternative on the exact same decision snapshot.
 struct OpportunityAlternativeEvidence {
     std::string candidate_id;
+    std::string value_basis;
     double marginal_strategic_value{0.0};
     double direct_economy_cost{0.0};
     double interest_cost{0.0};
@@ -45,25 +47,39 @@ class OpportunityCostProducer {
 public:
     OpportunityCostResult evaluate(
         const std::string& selected_candidate_id,
-        const std::vector<OpportunityAlternativeEvidence>& alternatives
+        const std::vector<OpportunityAlternativeEvidence>& alternatives,
+        std::uint32_t selected_horizon_rounds,
+        const std::string& selected_value_basis
     ) const {
         OpportunityCostResult out;
-        if (selected_candidate_id.empty()) {
-            out.reason = "selected_candidate_identity_missing";
+        if (selected_candidate_id.empty() || selected_horizon_rounds == 0 ||
+            selected_value_basis.empty()) {
+            out.reason = "selected_candidate_contract_missing";
             return out;
         }
         const OpportunityAlternativeEvidence* best = nullptr;
         double best_value = 0.0;
+        std::unordered_set<std::string> seen_candidate_ids;
         for (const auto& alternative : alternatives) {
-            if (alternative.candidate_id.empty() ||
-                alternative.candidate_id == selected_candidate_id ||
+            if (alternative.candidate_id.empty()) continue;
+            if (!seen_candidate_ids.insert(alternative.candidate_id).second) {
+                out.reason = "duplicate_competing_candidate_identity";
+                return out;
+            }
+            if (alternative.candidate_id == selected_candidate_id ||
                 !alternative.available || !alternative.identity_valid ||
-                alternative.horizon_rounds == 0 ||
+                alternative.horizon_rounds != selected_horizon_rounds ||
+                alternative.value_basis != selected_value_basis ||
                 !std::isfinite(alternative.marginal_strategic_value) ||
+                alternative.marginal_strategic_value < 0.0 ||
                 !std::isfinite(alternative.progression_value) ||
+                alternative.progression_value < 0.0 ||
                 !std::isfinite(alternative.unit_value) ||
+                alternative.unit_value < 0.0 ||
                 !std::isfinite(alternative.upgrade_value) ||
+                alternative.upgrade_value < 0.0 ||
                 !std::isfinite(alternative.liquidity_value) ||
+                alternative.liquidity_value < 0.0 ||
                 !std::isfinite(alternative.uncertainty) ||
                 alternative.uncertainty < 0.0 || alternative.uncertainty > 1.0 ||
                 !std::isfinite(alternative.direct_economy_cost) ||
@@ -89,7 +105,7 @@ public:
         out.cost = std::max(0.0, best_value);
         out.source = "same_snapshot_competing_alternative.v1";
         out.sacrificed_candidate_id = best->candidate_id;
-        out.horizon_rounds = best->horizon_rounds;
+        out.horizon_rounds = selected_horizon_rounds;
         out.uncertainty = best->uncertainty;
         out.reason = "best_valid_forgone_alternative";
         return out;
