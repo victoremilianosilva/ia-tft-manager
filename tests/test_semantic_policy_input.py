@@ -98,8 +98,10 @@ def test_semantic_global_encoder_embeds_trait_identity_and_receives_gradients():
         obs_dim=obs.shape[-1], action_dims=list(ACTION_DIMS),
         hidden_size=32, semantic_vocab_size=64,
     )
-    semantic["items"]["trait_ids"][0, 0, 0] = 123
-    semantic["items"]["trait_ids"][0, 0, 1] = 456
+    trait_offset = SEMANTIC_GLOBAL_FEATURES + 29
+    semantic["numeric"][0, trait_offset] = 123.0
+    semantic["numeric"][0, trait_offset + 1] = 456.0
+    semantic["items"] = semantic_item_state_tensors(semantic["numeric"])
 
     latent = policy.encode(obs, semantic_state=semantic)
     latent.square().mean().backward()
