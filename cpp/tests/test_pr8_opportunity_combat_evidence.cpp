@@ -96,7 +96,7 @@ int main() {
     cohort.composition_signature = "composition-sha256";
     cohort.mechanics_signature = "mechanics-sha256";
     std::vector<combat_evidence::ObservedCombatOutcome> cohort_outcomes;
-    for (std::uint64_t i = 0; i < 30; ++i) {
+    for (std::uint64_t i = 0; i < 40; ++i) {
         combat_evidence::ObservedCombatOutcome sample;
         sample.match_id = 100 + i;
         sample.player_id = static_cast<std::int32_t>(i % 8);
@@ -119,7 +119,7 @@ int main() {
     cohort_outcomes.push_back(target_match_leak);
     const auto cohort_distribution = calibrator.calibrate_for_cohort(
         cohort_outcomes, 7, 0, 50, 50, cohort, 30);
-    assert(cohort_distribution.sample_count == 30);
+    assert(cohort_distribution.sample_count == 40);
     assert(cohort_distribution.source == "experimental_replay_cohort_distribution.v1");
     assert(cohort_distribution.replay_artifact_ids.size() == 3);
     assert(!cohort_distribution.calibrated);
@@ -138,10 +138,18 @@ int main() {
         "synthetic-run", "tft-replay-dataset.v1"}); // simulation is not an observed replay
     outcomes.push_back({7, 0, 1, 50, 999.0, true, "versioned_replay_outcome.v1",
         "replay-artifact-7", "tft-replay-dataset.v1"}); // sequence at/after decision is stale
-    auto distribution = calibrator.calibrate(outcomes, 7, 0, 50, 50, 30);
-    assert(!distribution.calibrated && distribution.sample_count == 40);
-    assert(distribution.source == "experimental_replay_distribution.v1");
-    assert(distribution.p50 == 20.0 && distribution.p90 == 36.0);
+    auto diagnostic_distribution =
+        calibrator.calibrate(outcomes, 7, 0, 50, 50, 30);
+    assert(!diagnostic_distribution.calibrated &&
+        diagnostic_distribution.sample_count == 40);
+    assert(diagnostic_distribution.source ==
+        "experimental_same_match_diagnostic_distribution.v1");
+    assert(diagnostic_distribution.p50 == 20.0 &&
+        diagnostic_distribution.p90 == 36.0);
+    assert(!combat_evidence::approve_calibration(
+        diagnostic_distribution, metrics, criteria));
+
+    auto distribution = cohort_distribution;
 
     combat_evidence::CalibrationAcceptanceCriteria criteria;
     criteria.approved = true;
@@ -166,7 +174,7 @@ int main() {
     metrics.brier_score = 0.05;
     assert(combat_evidence::approve_calibration(distribution, metrics, criteria));
     assert(distribution.calibrated);
-    auto unapproved_distribution = calibrator.calibrate(outcomes, 7, 0, 50, 50, 30);
+    auto unapproved_distribution = cohort_distribution;
     assert(!combat_evidence::derive_survival_risk(34.5, unapproved_distribution).available);
     auto unapproved_criteria = criteria;
     unapproved_criteria.approved = false;
