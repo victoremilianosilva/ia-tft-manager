@@ -357,23 +357,24 @@ public:
             }
         }
 
-        // Compare each concrete candidate against the strongest other
-        // same-snapshot alternative. Only producers with a non-default evidence
-        // source, finite strategic values and a bounded horizon participate.
+        // Compare only alternatives whose strategic value is expressed by the
+        // same native UnitPriority/anchor board-contribution signal. Do not
+        // invent progression, composition-fit or upgrade priors here: those
+        // dimensions need their own factual producers before they can be added
+        // to a comparable opportunity value. HOLD, XP, reroll, sale and
+        // positioning therefore remain unavailable unless a producer supplies
+        // a validated value through the OpportunityCostProducer contract.
         std::vector<strategy::OpportunityAlternativeEvidence> alternatives;
         alternatives.reserve(out.candidates.size());
         for (const auto& candidate : out.candidates) {
             strategy::OpportunityAlternativeEvidence evidence;
             evidence.candidate_id = candidate.candidate_id;
-            evidence.marginal_strategic_value = std::max(0.0, candidate.expected_board_delta);
-            evidence.progression_value = candidate.kind == strategy::StrategicActionKind::BuyExperience
-                ? 0.10 : 0.0;
-            evidence.unit_value = std::max(0.0, candidate.composition_fit) * 0.10;
-            evidence.upgrade_value = std::max(0.0, candidate.upgrade_value) * 0.10;
-            evidence.liquidity_value = 0.0; // handled by the exact marginal HOLD envelope
+            evidence.marginal_strategic_value =
+                std::max(0.0, candidate.expected_board_delta);
             evidence.horizon_rounds = candidate.evidence_horizon_rounds;
             evidence.uncertainty = candidate.evidence_uncertainty;
-            evidence.available = candidate.available &&
+            evidence.available = candidate.kind == strategy::StrategicActionKind::BuyUnit &&
+                candidate.available &&
                 candidate.evidence_source != "unknown" &&
                 candidate.evidence_horizon_rounds > 0 &&
                 candidate.evidence_uncertainty < 1.0;
