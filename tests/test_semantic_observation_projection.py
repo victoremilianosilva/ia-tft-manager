@@ -21,6 +21,12 @@ def _unit(occupied=False, champion_id="", star=0, cost=0):
         "cost": cost,
         "items": [],
         "trait_names": [],
+        "role": 3,
+        "attack_damage": 100.0,
+        "attack_speed": 1.0,
+        "max_health": 1000.0,
+        "armor": 50.0,
+        "magic_resist": 50.0,
     }
 
 
