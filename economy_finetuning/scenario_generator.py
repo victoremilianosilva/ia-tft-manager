@@ -181,6 +181,18 @@ def decode_semantic_observation(semantic_state, player_id: int | None = None) ->
     if not isinstance(numeric, (list, tuple)) or not numeric:
         raise ValueError("semantic scenario input must contain v6 rows")
     row_index = 0 if player_id is None else player_id
+    metadata_rows = semantic_state.get("snapshot_metadata", [])
+    if metadata_rows:
+        if not isinstance(metadata_rows, list) or len(metadata_rows) != len(numeric):
+            raise ValueError("semantic scenario metadata rows are misaligned")
+        matching_rows = [
+            index for index, metadata in enumerate(metadata_rows)
+            if isinstance(metadata, dict) and metadata.get("player_id") == player_id
+        ]
+        if player_id is not None and len(matching_rows) != 1:
+            raise ValueError("semantic scenario player identity is missing or ambiguous")
+        if matching_rows:
+            row_index = matching_rows[0]
     if isinstance(row_index, bool) or not isinstance(row_index, int) or not 0 <= row_index < len(numeric):
         raise ValueError("semantic scenario player index is outside the v6 batch")
     row = numeric[row_index]
