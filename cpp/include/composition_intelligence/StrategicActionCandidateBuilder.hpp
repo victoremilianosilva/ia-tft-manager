@@ -374,7 +374,8 @@ public:
                 for (const auto& owned : context.owned_units) {
                     if (!owned.on_bench || owned.on_board || owned.champion_id < 0 ||
                         !std::isfinite(owned.board_contribution) ||
-                        owned.board_contribution <= 0.0)
+                        owned.board_contribution <= 0.0 ||
+                        lineup.selected_board.size() <= static_cast<std::size_t>(board_count))
                         continue;
                     const bool selected_after_level = std::any_of(
                         lineup.selected_board.begin(), lineup.selected_board.end(),
@@ -395,7 +396,7 @@ public:
                             return item.champion_id == owned.champion_id &&
                                 (item.intent == UnitIntent::Seek || item.intent == UnitIntent::Upgrade) &&
                                 std::isfinite(item.confidence) && item.confidence > 0.0 &&
-                                item.confidence < 1.0;
+                                item.confidence <= 1.0;
                         });
                     if (priority == priorities.units.end()) continue;
                     if (!best_unlocked_unit ||
