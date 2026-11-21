@@ -41,7 +41,7 @@ class TFTPolicy(nn.Module):
         
         # --- DIMENSÕES BLINDADAS (Lendo de frente para trás) ---
         self.num_cell_features = 5  # [cost/5, star/3, impact, comp_score, role]
-        self.pre_board_dim = 22     # Tamanho fixo do início: 10 do Core + 12 de Strategy
+        self.pre_board_dim = 10     # Apenas fatos globais; sem slots de estratégia/padding legado
         self.board_flat_dim = 4 * 7 * self.num_cell_features  # 140
         self.economic_context_dim = 5
         self.candidate_feature_dim = 8
