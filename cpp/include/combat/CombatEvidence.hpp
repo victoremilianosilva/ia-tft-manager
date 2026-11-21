@@ -223,7 +223,11 @@ public:
     }
 
     CombatCoverageResult validate(const CombatCoverage& c) const {
-        if (c.units_seen == 0 || c.units_supported > c.units_seen)
+        if (c.units_seen == 0 || c.units_supported > c.units_seen ||
+            c.abilities_supported > c.abilities_seen ||
+            c.items_supported > c.items_seen || c.traits_supported > c.traits_seen ||
+            c.effects_supported > c.effects_seen ||
+            c.abilities_seen != c.units_seen)
             return {false, 0.0, "invalid_coverage_counts"};
         const double fraction = static_cast<double>(c.units_supported) /
             static_cast<double>(c.units_seen);
@@ -232,7 +236,11 @@ public:
             c.unsupported_items == 0 && c.missing_scripts == 0 &&
             c.unsupported_effects == 0 && c.missing_ability_metadata == 0 &&
             c.missing_item_effect_metadata == 0 &&
-            c.missing_trait_effect_metadata == 0 && c.all_effects_catalogued;
+            c.missing_trait_effect_metadata == 0 &&
+            c.abilities_supported == c.abilities_seen &&
+            c.items_supported == c.items_seen &&
+            c.traits_supported == c.traits_seen &&
+            c.effects_supported == c.effects_seen && c.all_effects_catalogued;
         return {complete, fraction, complete ? "complete" : "partial_unsupported_mechanics"};
     }
 };
