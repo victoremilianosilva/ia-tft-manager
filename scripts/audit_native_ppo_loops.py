@@ -26,7 +26,10 @@ if str(ROOT) not in sys.path:
 
 from cpp_lobby_env import CppTFTLobbyWrapper
 from policy import TFTPolicy
-from semantic_observation import (\n    catalog_identity, validate_semantic_state_checkpoint_contract,\n    validate_semantic_policy_state_dict,\n)
+from semantic_observation import (
+    catalog_identity, validate_semantic_state_checkpoint_contract,
+    validate_semantic_policy_state_dict,
+)
 from scripts.evaluate_checkpoints import native_semantic_state_for_players
 
 ACTION_DIMS = [9, 5, 9, 28, 28, 28]
