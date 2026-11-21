@@ -196,6 +196,25 @@ void builder_emits_snapshot_bound_physical_candidates() {
     assert(sale_score != opportunity_evaluation.candidates.end());
     assert(sale_score->unit_priority_value < 0.0);
 
+    const auto net_score_against_hold = [&](const StrategicActionCandidate& alternative) {
+        auto baseline_context = context;
+        baseline_context.action_candidates = {alternative, *hold};
+        const auto baseline = ContextualActionEvaluator{}.evaluate(
+            active, priorities, lineup, baseline_context, nullptr, native.match_id);
+        const auto baseline_score = std::find_if(
+            baseline.candidates.begin(), baseline.candidates.end(),
+            [&](const auto& score) { return score.candidate_id == alternative.candidate_id; });
+        assert(baseline_score != baseline.candidates.end());
+        return baseline_score->eligible ? baseline_score->total_score : 0.0;
+    };
+    const double best_competing_net_score = std::max({
+        net_score_against_hold(*competing_buy),
+        net_score_against_hold(*deploy),
+        net_score_against_hold(*sale_candidate)
+    });
+    assert(best_competing_net_score > 0.0);
+    assert(std::abs(buy_score->opportunity_cost - best_competing_net_score) < 1e-9);
+
     // Prove the complete native chain using the exact lineup and physical unit.
     auto integrated_context = context;
     integrated_context.sequence = native.sequence;
