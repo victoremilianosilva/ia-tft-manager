@@ -181,3 +181,13 @@ def test_reward_audit_deduplicates_terminal_placement_across_steps():
     )
     with pytest.raises(RuntimeError, match="crédito repetido"):
         _build(ledger, repeated)
+
+
+def test_reward_audit_rejects_misaligned_source_decision_snapshot():
+    ledger = RewardAuditLedger()
+    ledger.reset("engine-test", 2)
+    values = _inputs()
+    values["source_decision_snapshot"]["native_state_snapshot"]["snapshot_sequence"] = 8
+
+    with pytest.raises(RuntimeError, match="pré-ação sem identidade nativa"):
+        _build(ledger, values)
