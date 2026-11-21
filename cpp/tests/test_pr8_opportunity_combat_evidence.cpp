@@ -197,7 +197,7 @@ int main() {
         trajectory.scenario_id = "scenario-" + std::to_string(i);
         trajectory.match_id = 7;
         trajectory.player_id = 0;
-        trajectory.scenario_weight = 1.0;
+        trajectory.scenario_weight = 1.0 / 40.0;
         trajectory.uncertainty = 0.10;
         trajectory.calibrated = true;
         trajectory.calibration_protocol_id = "combat-horizon.v1";
