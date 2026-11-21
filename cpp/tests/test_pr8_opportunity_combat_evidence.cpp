@@ -160,6 +160,7 @@ int main() {
     criteria.maximum_brier_score = 0.10;
     combat_evidence::CalibrationValidationMetrics metrics;
     metrics.report_sha256 = std::string(64, 'a');
+    metrics.training_sample_count = 40;
     metrics.train_manifest_sha256 = std::string(64, 'b');
     metrics.validation_manifest_sha256 = std::string(64, 'c');
     metrics.test_manifest_sha256 = std::string(64, 'd');
