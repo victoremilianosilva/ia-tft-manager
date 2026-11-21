@@ -245,7 +245,10 @@ class TFTPolicy(nn.Module):
         critic_mask_keys = {key for key in target if key.startswith("critic_mask_encoder.")}
         semantic_keys = {
             key for key in target
-            if key.startswith(("semantic_id_embedding.", "semantic_trait_embedding.", "semantic_encoder."))
+            if key.startswith(("semantic_id_embedding.", "semantic_encoder."))
+        }
+        optional_trait_keys = {
+            key for key in target if key.startswith("semantic_trait_embedding.")
         }
         present_semantic_keys = set(state_dict) & semantic_keys
         if present_semantic_keys and present_semantic_keys != semantic_keys:
@@ -254,7 +257,7 @@ class TFTPolicy(nn.Module):
                 "Checkpoint semântico incompleto; pesos ausentes: "
                 f"{missing_semantic}"
             )
-        optional_new_keys = item_head_keys | critic_mask_keys | semantic_keys
+        optional_new_keys = item_head_keys | critic_mask_keys | semantic_keys | optional_trait_keys
         missing = sorted((set(target) - set(state_dict)) - optional_new_keys)
         unexpected = sorted(set(state_dict) - set(target))
         if missing or unexpected:
@@ -359,7 +362,7 @@ class TFTPolicy(nn.Module):
                 and target_value.ndim == 2
                 and source_value.shape[0] == target_value.shape[0]
                 and source_value.shape[1] == 525 + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ID_EMBED_DIM
-                and target_value.shape[1] == SEMANTIC_NUMERIC_DIM + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ID_EMBED_DIM
+                and target_value.shape[1] == SEMANTIC_NUMERIC_DIM + SEMANTIC_ENTITY_SLOTS * (SEMANTIC_ID_EMBED_DIM + SEMANTIC_TRAIT_EMBED_DIM)
             ):
                 # v2 -> v5 adds 31 global capacity/temporal facts and 17
                 # target-profile facts per entity. Preserve the old 21 globals
@@ -375,7 +378,10 @@ class TFTPolicy(nn.Module):
                     expanded[:, new_start:new_start + old_entity_features] = (
                         source_value[:, old_start:old_start + old_entity_features]
                     )
-                expanded[:, SEMANTIC_NUMERIC_DIM:] = source_value[:, old_numeric_dim:]
+                expanded[
+                    :, SEMANTIC_NUMERIC_DIM:
+                    SEMANTIC_NUMERIC_DIM + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ID_EMBED_DIM
+                ] = source_value[:, old_numeric_dim:]
                 loaded[key] = expanded
                 migrated = True
                 continue
@@ -397,7 +403,10 @@ class TFTPolicy(nn.Module):
                     old_start = 17 + slot * old_entity_features
                     new_start = SEMANTIC_GLOBAL_FEATURES + slot * SEMANTIC_ENTITY_FEATURES
                     expanded[:, new_start:new_start + old_entity_features] = source_value[:, old_start:old_start + old_entity_features]
-                expanded[:, SEMANTIC_NUMERIC_DIM:] = source_value[:, old_numeric_dim:]
+                expanded[
+                    :, SEMANTIC_NUMERIC_DIM:
+                    SEMANTIC_NUMERIC_DIM + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ID_EMBED_DIM
+                ] = source_value[:, old_numeric_dim:]
                 loaded[key] = expanded
                 migrated = True
                 continue
