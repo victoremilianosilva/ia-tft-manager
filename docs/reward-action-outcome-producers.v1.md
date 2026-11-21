@@ -33,7 +33,7 @@ The current factual fields are:
 | XP | XP and level deltas, gold/interest changes | XP/gold deltas are unavailable when round-income resolution overlaps the action |
 | Reroll | Per-slot offer revision and before/after offer identities | If round resolution also refreshes the shop, the revision delta is retained only as unattributed evidence; it is not assigned to the reroll |
 | Sale | Removed physical unit UUIDs and copy-equivalent delta | Proceeds are not inferred from a mixed action-plus-income gold delta |
-| Economy | Before/after gold and interest-if-resolved-now, realized EconomyEngine resolution events, plus overlap marker | Native EconomyEngine::resolve_round events remain a separate income source |
+| Economy | Before/after gold and interest-if-resolved-now, realized EconomyEngine income and PvP gold-credit events, plus overlap markers | Native EconomyEngine::resolve_round events remain a separate income source |
 | Positioning | Same-unit physical slot transitions plus total, positional, structural, exposed-carry, frontline, and unplayed-bench diagnostics | Scores are diagnostics only; no score delta becomes reward |
 
 An event's causal_attribution is always not_established, reward is always null, and reward_eligible is always false under this telemetry contract. The producer never changes the scalar reward consumed by PPO.
@@ -45,7 +45,7 @@ An event's causal_attribution is always not_established, reward is always null, 
 3. Exactly eight player records and eight action traces are required; player IDs must match their array positions.
 4. Owned-unit identity is UUID-based and scoped to the player snapshot. Occupied units without UUID/champion identity fail closed.
 5. Shop revision arrays must contain exactly five native revisions.
-6. When EconomyEngine::resolve_round overlaps the action, action-attributable gold and XP deltas are null; they are not reconstructed from the combined balance.
+6. When EconomyEngine::resolve_round overlaps the action, action-attributable gold/XP/level/interest deltas are null. A same-step PvP win/loss credit also makes action gold/interest deltas unavailable. These values are not reconstructed from a combined balance.
 7. A positioning/deploy change is identified by the same unit UUID changing physical location or slot. Board-quality and positioning-score deltas remain descriptive diagnostics.
 8. No event contains a reward coefficient, reward label, Shadow score, or evaluator score.
 
