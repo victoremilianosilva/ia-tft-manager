@@ -357,7 +357,7 @@ class Trainer:
             saved_semantic_contract = checkpoint.get("semantic_state_contract")
             semantic_state_keys = {
                 key for key in self.policy.state_dict()
-                if key.startswith(("semantic_id_embedding.", "semantic_encoder."))
+                if key.startswith(("semantic_id_embedding.", "semantic_trait_embedding.", "semantic_encoder."))
             }
             present_semantic_state_keys = {
                 key for key in checkpoint.get("policy", {})
