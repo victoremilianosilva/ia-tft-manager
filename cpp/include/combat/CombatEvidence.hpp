@@ -407,9 +407,13 @@ inline bool approve_calibration(
         metrics.brier_score >= 0.0 && metrics.brier_score <= 1.0;
     if (!valid_criteria || !valid_metrics || distribution.calibrated ||
         distribution.sample_count < criteria.minimum_training_samples ||
-        (distribution.replay_artifact_id.empty() &&
-            distribution.replay_artifact_ids.empty()) ||
-        distribution.dataset_version.empty() ||
+        distribution.replay_artifact_ids.empty() ||
+        std::any_of(distribution.replay_artifact_ids.begin(),
+            distribution.replay_artifact_ids.end(),
+            [](const std::string& artifact) { return artifact.empty(); }) ||
+        distribution.dataset_version.empty() || distribution.engine_version.empty() ||
+        distribution.composition_signature.empty() ||
+        distribution.mechanics_signature.empty() || distribution.horizon_rounds != 1 ||
         distribution.source != "experimental_replay_cohort_distribution.v1" ||
         metrics.mae > criteria.maximum_mae ||
         metrics.p90_coverage < criteria.minimum_p90_coverage ||
@@ -522,7 +526,7 @@ public:
         out.horizon_rounds = cohort.horizon_rounds;
         if (target_match_id == 0 || target_player_id < 0 || before_round == 0 ||
             before_sequence == 0 || minimum_samples == 0 || cohort.round != before_round ||
-            cohort.horizon_rounds == 0 || cohort.engine_version.empty() ||
+            cohort.horizon_rounds != 1 || cohort.engine_version.empty() ||
             cohort.composition_signature.empty() || cohort.mechanics_signature.empty()) {
             out.source = "invalid_calibration_cohort_identity";
             return out;
@@ -613,7 +617,10 @@ inline SurvivalRiskEvidence derive_survival_risk(
         distribution.source != "approved_replay_calibration.v1" ||
         (distribution.replay_artifact_id.empty() &&
             distribution.replay_artifact_ids.empty()) ||
-        distribution.dataset_version.empty() ||
+        distribution.dataset_version.empty() || distribution.engine_version.empty() ||
+        distribution.composition_signature.empty() ||
+        distribution.mechanics_signature.empty() || distribution.horizon_rounds != 1 ||
+        distribution.replay_artifact_ids.empty() ||
         distribution.minimum_sample_count == 0 ||
         distribution.sample_count < distribution.minimum_sample_count ||
         distribution.observed_damage_samples.size() != distribution.sample_count ||
