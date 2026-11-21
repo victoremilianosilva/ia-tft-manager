@@ -213,7 +213,7 @@ class TFTPolicy(nn.Module):
         entity facts, so only those input columns are reset on an explicit
         v2 -> v3 warm-start.
         """
-        self.board_cnn[0].weight[:, :, 3:5].zero_()
+        self.board_cnn[0].weight[:, 3:5, :, :].zero_()
         for head in (self.shop_head, self.sell_head):
             head[0].weight[:, -self.candidate_feature_dim:].zero_()
         self.bench_to_board_head.weight[:, -self.candidate_feature_dim:].zero_()
