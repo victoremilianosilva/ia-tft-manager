@@ -1,3 +1,4 @@
+import hashlib
 """Versioned semantic projection of the native AuditSnapshot player facts.
 
 This projection deliberately excludes StrategyInfo, Shadow recommendations,
@@ -622,6 +623,15 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
                 target_features[15] = min(magic_resist / 150.0, 1.0)
                 target_features[16] = min(len(items) / 3.0, 1.0)
             numeric.extend(target_features)
+            if len(traits) > SEMANTIC_TRAIT_SLOTS:
+                raise ValueError(f"{group_name}[{slot}] exceeds the native trait slot limit")
+            trait_ids = [
+                int.from_bytes(hashlib.sha256(trait.encode("utf-8")).digest()[:4], "big")
+                % SEMANTIC_TRAIT_VOCAB_SIZE + 1
+                for trait in traits
+            ]
+            numeric.extend(float(trait_id) for trait_id in trait_ids)
+            numeric.extend([0.0] * (SEMANTIC_TRAIT_SLOTS - len(trait_ids)))
             champion_ids.append(0 if internal_id is None else int(internal_id) + 1)
 
     def read_feature_block(field, shape):
