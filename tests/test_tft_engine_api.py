@@ -24,8 +24,8 @@ def test_lobby_reset_contract():
 
         assert isinstance(observations, np.ndarray)
         assert observations.ndim == 2
-        assert observations.shape[0] == 8
-        assert observations.shape[1] > 0
+        assert observations.shape == (8, 1)
+        np.testing.assert_array_equal(observations, np.zeros((8, 1), dtype=np.float32))
 
         assert len(result["action_masks"]) == 8
     finally:
@@ -69,8 +69,11 @@ def test_lobby_step_contract():
         assert state["round_index"] == 1
         assert state["stage"] == 1
 
-        # O índice 6 do core contém a rodada normalizada pelo contrato Python.
-        assert np.allclose(result["observations"][:, 6], 2.0 / 12.0)
+        # Native observations are a neutral carrier; semantic v6 is authoritative.
+        assert result["observations"].shape == (8, 1)
+        np.testing.assert_array_equal(
+            result["observations"], np.zeros((8, 1), dtype=np.float32)
+        )
         
     finally:
         engine.close()
