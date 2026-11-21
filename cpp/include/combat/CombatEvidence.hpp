@@ -989,6 +989,9 @@ inline SurvivalRiskEvidence derive_multi_round_survival_risk(
     std::string dataset_version;
     std::string calibration_protocol_id;
     std::string calibration_report_sha256;
+    std::string engine_version;
+    std::string composition_signature;
+    std::string mechanics_signature;
     std::string calibration_train_manifest_sha256;
     std::string calibration_validation_manifest_sha256;
     std::string calibration_test_manifest_sha256;
