@@ -97,11 +97,30 @@ def validate_checkpoint_lineage_contract(
         semantic_state_contract,
         reward_contract,
     )
-    if dict(manifest) != expected:
-        raise ValueError(
-            "checkpoint lineage incompatível: "
-            "componentes, assinatura estrutural ou hash não correspondem ao runtime."
-        )
+    if dict(manifest) == expected:
+        return
+
+    # The semantic-v6 policy no longer owns the retired positional global MLP.
+    # Historical manifests remain immutable and hash-validated above; accept
+    # them only when their sole structural difference is those unused weights.
+    historical_payload = manifest.get("contract", {})
+    expected_payload = expected["contract"]
+    historical_signature = historical_payload.get("policy_state_signature", [])
+    expected_signature = expected_payload.get("policy_state_signature", [])
+    historical_without_retired_flat = [
+        row for row in historical_signature
+        if not str(row.get("name", "")).startswith("global_mlp.")
+    ]
+    if (
+        historical_payload.get("components") == expected_payload["components"]
+        and historical_without_retired_flat == expected_signature
+    ):
+        return
+
+    raise ValueError(
+        "checkpoint lineage incompatível: "
+        "componentes, assinatura estrutural ou hash não correspondem ao runtime."
+    )
 
 
 TRAINING_RESUME_CONTRACT_ID = "tft.ppo-training-resume.v1"
