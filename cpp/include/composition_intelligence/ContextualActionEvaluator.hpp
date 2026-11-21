@@ -3,6 +3,7 @@
 #include "composition_intelligence/LineupPlanner.hpp"
 #include "composition_intelligence/UnitPriorityPlanner.hpp"
 #include "lobby/EconomyEngine.hpp"
+#include "strategy/OpportunityCostProducer.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -19,7 +20,7 @@
 
 namespace tft::composition_intelligence {
 
-// Independent v1 contextual evaluator. It deliberately does not call or share
+// Independent contextual evaluator. It deliberately does not call or share
 // scoring code with strategy::ActionEvaluator (the frozen baseline).
 inline constexpr std::uint32_t kContextualActionEvaluatorSchemaVersion = 4;
 
