@@ -122,6 +122,10 @@ struct ObservedCombatOutcome {
 
 struct DamageDistribution {
     bool calibrated{false};
+    std::uint64_t match_id{0};
+    std::int32_t player_id{-1};
+    std::uint32_t before_round{0};
+    std::uint64_t before_sequence{0};
     std::uint32_t sample_count{0};
     std::uint32_t minimum_sample_count{30};
     double mean{0.0};
@@ -142,7 +146,16 @@ public:
         std::uint32_t before_round, std::uint64_t before_sequence,
         std::uint32_t minimum_samples = 30) const {
         DamageDistribution out;
+        out.match_id = match_id;
+        out.player_id = player_id;
+        out.before_round = before_round;
+        out.before_sequence = before_sequence;
         out.minimum_sample_count = minimum_samples;
+        if (match_id == 0 || player_id < 0 || before_round == 0 ||
+            before_sequence == 0 || minimum_samples == 0) {
+            out.source = "invalid_calibration_identity_or_window";
+            return out;
+        }
         std::vector<double> values;
         std::unordered_set<std::uint64_t> seen_sequences;
         for (const auto& e : outcomes) {
@@ -180,6 +193,10 @@ public:
 
 struct SurvivalRiskEvidence {
     bool available{false};
+    std::uint64_t match_id{0};
+    std::int32_t player_id{-1};
+    std::uint32_t round{0};
+    std::uint64_t sequence{0};
     double expected_damage{0.0};
     double elimination_risk{0.0};
     std::string source{"unavailable_uncalibrated_damage"};
@@ -205,6 +222,10 @@ inline SurvivalRiskEvidence derive_survival_risk(
         if (damage >= observed_hp) ++lethal_outcomes;
     }
     out.available = true;
+    out.match_id = distribution.match_id;
+    out.player_id = distribution.player_id;
+    out.round = distribution.before_round;
+    out.sequence = distribution.before_sequence;
     out.expected_damage = distribution.mean;
     out.elimination_risk = static_cast<double>(lethal_outcomes) /
         static_cast<double>(distribution.sample_count);
@@ -214,7 +235,11 @@ inline SurvivalRiskEvidence derive_survival_risk(
 
 inline bool apply_to_economic_context(
     const SurvivalRiskEvidence& risk, strategy::StrategicSharedContext& context) {
-    if (!risk.available || !std::isfinite(risk.expected_damage) ||
+    if (!risk.available || risk.match_id == 0 || risk.player_id < 0 ||
+        risk.round == 0 || risk.sequence == 0 ||
+        context.player_id != risk.player_id || context.round != risk.round ||
+        context.sequence != risk.sequence ||
+        !std::isfinite(risk.expected_damage) ||
         !std::isfinite(risk.elimination_risk) || risk.expected_damage < 0.0 ||
         risk.elimination_risk < 0.0 || risk.elimination_risk > 1.0)
         return false;
