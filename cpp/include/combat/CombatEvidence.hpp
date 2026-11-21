@@ -398,6 +398,12 @@ struct DamageDistribution {
     std::uint32_t horizon_rounds{1};
     std::string calibration_protocol_id;
     std::string calibration_report_sha256;
+    std::string engine_version;
+    std::string composition_signature;
+    std::string mechanics_signature;
+    std::uint32_t training_sample_count{0};
+    std::uint32_t validation_sample_count{0};
+    std::uint32_t test_sample_count{0};
     std::string calibration_train_manifest_sha256;
     std::string calibration_validation_manifest_sha256;
     std::string calibration_test_manifest_sha256;
@@ -842,7 +848,110 @@ struct CombatHorizonTrajectory {
     std::string dataset_version;
     std::string source{"unavailable"};
     std::vector<CombatHorizonStep> steps;
+    CalibrationApprovalToken approval;
 };
+
+inline bool approve_trajectory_calibration(
+    CombatHorizonTrajectory& trajectory,
+    const CalibrationValidationMetrics& metrics,
+    const CalibrationAcceptanceCriteria& criteria) {
+    const bool valid_criteria = criteria.approved && !criteria.protocol_id.empty() &&
+        criteria.minimum_training_samples > 0 &&
+        criteria.minimum_validation_samples > 0 && criteria.minimum_test_samples > 0 &&
+        std::isfinite(criteria.maximum_mae) && criteria.maximum_mae >= 0.0 &&
+        std::isfinite(criteria.minimum_p90_coverage) &&
+        std::isfinite(criteria.maximum_p90_coverage) &&
+        criteria.minimum_p90_coverage >= 0.0 &&
+        criteria.maximum_p90_coverage <= 1.0 &&
+        criteria.minimum_p90_coverage <= criteria.maximum_p90_coverage &&
+        std::isfinite(criteria.maximum_brier_score) &&
+        criteria.maximum_brier_score >= 0.0 && criteria.maximum_brier_score <= 1.0;
+    const bool valid_metrics = is_sha256(metrics.report_sha256) &&
+        is_sha256(metrics.train_manifest_sha256) &&
+        is_sha256(metrics.validation_manifest_sha256) &&
+        is_sha256(metrics.test_manifest_sha256) &&
+        metrics.train_manifest_sha256 != metrics.validation_manifest_sha256 &&
+        metrics.train_manifest_sha256 != metrics.test_manifest_sha256 &&
+        metrics.validation_manifest_sha256 != metrics.test_manifest_sha256 &&
+        metrics.episode_splits_disjoint &&
+        metrics.training_sample_count >= criteria.minimum_training_samples &&
+        metrics.validation_sample_count >= criteria.minimum_validation_samples &&
+        metrics.test_sample_count >= criteria.minimum_test_samples &&
+        std::isfinite(metrics.mae) && metrics.mae >= 0.0 &&
+        std::isfinite(metrics.p90_coverage) &&
+        metrics.p90_coverage >= 0.0 && metrics.p90_coverage <= 1.0 &&
+        std::isfinite(metrics.brier_score) &&
+        metrics.brier_score >= 0.0 && metrics.brier_score <= 1.0;
+    if (!valid_criteria || !valid_metrics || trajectory.calibrated ||
+        trajectory.source != "experimental_replay_trajectory.v1" ||
+        trajectory.scenario_id.empty() || trajectory.match_id == 0 ||
+        trajectory.player_id < 0 || trajectory.steps.size() < 2 ||
+        trajectory.steps.size() > 10 ||
+        !std::isfinite(trajectory.scenario_weight) || trajectory.scenario_weight <= 0.0 ||
+        !std::isfinite(trajectory.uncertainty) ||
+        trajectory.uncertainty < 0.0 || trajectory.uncertainty > 1.0 ||
+        trajectory.replay_artifact_id.empty() || trajectory.dataset_version.empty() ||
+        trajectory.engine_version.empty() || trajectory.composition_signature.empty() ||
+        trajectory.mechanics_signature.empty() ||
+        metrics.mae > criteria.maximum_mae ||
+        metrics.p90_coverage < criteria.minimum_p90_coverage ||
+        metrics.p90_coverage > criteria.maximum_p90_coverage ||
+        metrics.brier_score > criteria.maximum_brier_score)
+        return false;
+    const auto& first = trajectory.steps.front();
+    if (first.round == 0 || first.sequence == 0) return false;
+    for (std::size_t i = 0; i < trajectory.steps.size(); ++i) {
+        const auto& step = trajectory.steps[i];
+        if (step.round != first.round + i || step.opponent_id < 0 ||
+            step.sequence == 0 || !std::isfinite(step.incoming_damage) ||
+            step.incoming_damage < 0.0 || !std::isfinite(step.non_combat_hp_delta) ||
+            (i == 0 && step.sequence != first.sequence) ||
+            (i > 0 && step.sequence <= trajectory.steps[i - 1].sequence))
+            return false;
+    }
+
+    trajectory.calibration_protocol_id = criteria.protocol_id;
+    trajectory.calibration_report_sha256 = metrics.report_sha256;
+    trajectory.calibration_train_manifest_sha256 = metrics.train_manifest_sha256;
+    trajectory.calibration_validation_manifest_sha256 = metrics.validation_manifest_sha256;
+    trajectory.calibration_test_manifest_sha256 = metrics.test_manifest_sha256;
+    trajectory.episode_splits_disjoint = metrics.episode_splits_disjoint;
+    trajectory.training_sample_count = metrics.training_sample_count;
+    trajectory.validation_sample_count = metrics.validation_sample_count;
+    trajectory.test_sample_count = metrics.test_sample_count;
+    trajectory.calibration_mae = metrics.mae;
+    trajectory.calibration_p90_coverage = metrics.p90_coverage;
+    trajectory.calibration_brier_score = metrics.brier_score;
+    trajectory.calibrated = true;
+    trajectory.source = "approved_replay_trajectory.v1";
+    trajectory.approval.valid_ = true;
+    trajectory.approval.match_id_ = trajectory.match_id;
+    trajectory.approval.player_id_ = trajectory.player_id;
+    trajectory.approval.round_ = first.round;
+    trajectory.approval.sequence_ = first.sequence;
+    trajectory.approval.horizon_rounds_ =
+        static_cast<std::uint32_t>(trajectory.steps.size());
+    trajectory.approval.uncertainty_ = trajectory.uncertainty;
+    trajectory.approval.scenario_weight_ = trajectory.scenario_weight;
+    trajectory.approval.trajectory_steps_ = trajectory.steps;
+    trajectory.approval.source_ = trajectory.source;
+    trajectory.approval.protocol_id_ = trajectory.calibration_protocol_id;
+    trajectory.approval.report_sha256_ = trajectory.calibration_report_sha256;
+    trajectory.approval.dataset_version_ = trajectory.dataset_version;
+    trajectory.approval.engine_version_ = trajectory.engine_version;
+    trajectory.approval.composition_signature_ = trajectory.composition_signature;
+    trajectory.approval.mechanics_signature_ = trajectory.mechanics_signature;
+    trajectory.approval.train_manifest_sha256_ = trajectory.calibration_train_manifest_sha256;
+    trajectory.approval.validation_manifest_sha256_ =
+        trajectory.calibration_validation_manifest_sha256;
+    trajectory.approval.test_manifest_sha256_ = trajectory.calibration_test_manifest_sha256;
+    trajectory.approval.sample_count_ = trajectory.training_sample_count;
+    trajectory.approval.calibration_mae_ = trajectory.calibration_mae;
+    trajectory.approval.calibration_p90_coverage_ = trajectory.calibration_p90_coverage;
+    trajectory.approval.calibration_brier_score_ = trajectory.calibration_brier_score;
+    trajectory.approval.replay_artifact_ids_ = {trajectory.replay_artifact_id};
+    return true;
+}
 
 // Multi-round survival is computed over complete, weighted trajectories.
 // Marginal per-round means are never multiplied or treated as independent.
