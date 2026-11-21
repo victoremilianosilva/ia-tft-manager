@@ -476,9 +476,9 @@ class Trainer:
 
             policy_weights = checkpoint["policy"]
             if semantic_state_warm_start:
-                # The old semantic encoder was trained against a different owner
-                # contract. Keep only unrelated policy weights; the new semantic
-                # branch starts from its neutral initialization.
+                # The old semantic encoder/trait vocabulary was trained against a different
+                # projection contract. Keep only unrelated policy weights; the new
+                # semantic branch starts from its new initialization.
                 policy_weights = {
                     key: value for key, value in policy_weights.items()
                     if not key.startswith(("semantic_id_embedding.", "semantic_trait_embedding.", "semantic_encoder."))
