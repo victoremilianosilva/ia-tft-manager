@@ -12,7 +12,7 @@ from action_contract import (
     MASK_CONTRACT_ID, MASK_CONTRACT_VERSION, MASK_CONTRACT_HASH,
     hash_mask_row,
 )
-from semantic_observation import SEMANTIC_NUMERIC_DIM, SEMANTIC_ENTITY_SLOTS
+from semantic_observation import SEMANTIC_NUMERIC_DIM, SEMANTIC_ENTITY_SLOTS, semantic_item_state_tensors
 
 
 class RolloutBuffer:
@@ -1152,8 +1152,10 @@ class RolloutBuffer:
             batch_next_metadata = self._metadata_for_batch(
                 self.next_snapshot_metadata, batch_idx
             )
+            semantic_numeric_batch = flat_semantic_numeric[batch_idx]
             semantic_batch = {
-                "numeric": flat_semantic_numeric[batch_idx],
+                "numeric": semantic_numeric_batch,
+                "items": semantic_item_state_tensors(semantic_numeric_batch),
                 "champion_ids": flat_semantic_champion_ids[batch_idx],
             }
             if batch_snapshot_metadata is not None:
