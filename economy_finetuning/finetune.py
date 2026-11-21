@@ -32,7 +32,7 @@ from policy import TFTPolicy
 from ppo import PPOTrainer
 from rollout import RolloutBuffer
 from economy_finetuning.scenario_generator import (
-    SCENARIOS, decode_observation, matching_scenarios, shaped_action_reward,
+    SCENARIOS, decode_semantic_observation, matching_scenarios, shaped_action_reward,
 )
 from economy_finetuning.chain_manager import check_scenario, record_training
 from scripts.evaluate_checkpoints import native_semantic_state_for_players
@@ -425,7 +425,7 @@ def run(args):
                 shaped_rewards = []
                 valid = []
                 for player_id in range(8):
-                    state = decode_observation(observations[player_id], player_id=player_id)
+                    state = decode_semantic_observation(semantic_state, player_id=player_id)
                     action_type = int(action_array[player_id, 0])
                     shaping, matched_ids = shaped_action_reward(
                         state, action_type, selected_scenario_id=selected_scenario.scenario_id
