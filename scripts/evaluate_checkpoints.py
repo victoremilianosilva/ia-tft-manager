@@ -14,6 +14,67 @@ import torch
 ACTION_DIMS = [9, 5, 9, 28, 28, 28]
 
 
+def action_dict(values):
+    """Serialize the six PPO action components for the native engine adapter."""
+    action = {
+        "type": int(values[0]),
+        "shop_slot": int(values[1]),
+        "bench_slot": int(values[2]),
+        "board_target": int(values[3]),
+        "board_source": int(values[4]),
+        "conditioned_board_target": int(values[5]),
+    }
+    action_type = action["type"]
+    if action_type == 7:
+        action.update({
+            "item_slot": int(values[1]),
+            "item_target": int(values[2]),
+        })
+    elif action_type == 8:
+        action.update({
+            "component_first": int(values[1]),
+            "component_second": int(values[2]),
+            "item_target": int(values[3]),
+        })
+    return action
+
+
+def as_mask_batch(masks, indices, device):
+    """Select per-player legal-action masks and preserve boolean semantics."""
+    if not indices:
+        return {}
+    if not isinstance(masks, (list, tuple)):
+        raise TypeError("action masks must be a per-player list or tuple")
+    selected = []
+    for index in indices:
+        if isinstance(index, bool) or not isinstance(index, (int, np.integer)):
+            raise TypeError("mask player indices must be integers")
+        if index < 0 or index >= len(masks):
+            raise IndexError(f"mask player index {index} is outside the available batch")
+        row = masks[index]
+        if not isinstance(row, dict):
+            raise TypeError(f"action masks for player {index} must be a mapping")
+        selected.append(row)
+    keys = set(selected[0])
+    if any(set(row) != keys for row in selected[1:]):
+        raise ValueError("selected players expose different action-mask contracts")
+    result = {}
+    for key in sorted(keys):
+        tensors = []
+        expected_shape = None
+        for row in selected:
+            value = torch.as_tensor(row[key], dtype=torch.bool, device=device)
+            if value.ndim != 1:
+                raise ValueError(f"action mask {key!r} must be one-dimensional per player")
+            if expected_shape is None:
+                expected_shape = tuple(value.shape)
+            elif tuple(value.shape) != expected_shape:
+                raise ValueError(f"action mask {key!r} has inconsistent player dimensions")
+            tensors.append(value)
+        result[key] = torch.stack(tensors, dim=0)
+    return result
+
+
 def native_semantic_state_for_players(lobby, player_ids, catalog_map, device):
     """Build and validate the exact native semantic rows required by live PPO inference."""
     from semantic_observation import (
