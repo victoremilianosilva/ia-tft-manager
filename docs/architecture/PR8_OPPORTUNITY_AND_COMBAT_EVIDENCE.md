@@ -7,7 +7,7 @@ The marginal envelope against HOLD already accounts for direct gold, liquidity a
 Opportunity cost must describe a concrete alternative forgone on the same decision snapshot. Direct gold and interest stay exclusively in the marginal economy envelope to prevent double counting. Combat evidence must distinguish snapshot identity, actual opponent identity, mechanics coverage, observed replay outcomes and calibrated distributions.
 
 ## New responsibilities
-- `strategy::OpportunityCostProducer`: select the strongest valid competing alternative and expose its identity, horizon and uncertainty. Missing or stale alternatives remain unavailable.
+- `strategy::OpportunityCostProducer`: select the strongest valid competing alternative and expose its identity, horizon and uncertainty. The candidate builder currently supplies only same-snapshot BUY alternatives with a shared native board-contribution signal; it does not invent progression, composition-fit or upgrade priors. Other action families remain unavailable until their producers supply comparable evidence.
 - `combat_evidence::CombatSnapshotBuilder`: validate match/player/opponent/round/sequence, HP and unique roster identities.
 - `MatchupResolver`: accept only the opponent identity actually supplied by the lobby.
 - `CombatCoverageValidator`: report partial mechanics coverage explicitly.
@@ -23,7 +23,7 @@ Opportunity cost must describe a concrete alternative forgone on the same decisi
 - No PPO, reward, action-dimension or action-mask changes.
 
 ## Impacts
-Adds reusable evidence contracts and a native regression test. Existing economy scoring remains unchanged unless a validated producer supplies evidence. Combat risk remains unavailable until real replay outcomes support calibration.
+Adds reusable evidence contracts and a native regression test. The builder integrates the producer only for comparable BUY-vs-BUY alternatives; unsupported action-family comparisons remain unavailable rather than receiving arbitrary constants. Existing marginal economy scoring is unchanged. Combat risk remains unavailable until real replay outcomes support calibration.
 
 ## Validation
 The new test covers alternative selection, invalid identity, snapshot validation, actual-opponent matching, partial coverage, empirical quantiles, HP-bound risk and refusal to publish uncalibrated evidence.
