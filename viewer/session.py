@@ -21,6 +21,7 @@ from semantic_observation import (
     build_semantic_state_checkpoint_contract,
     catalog_identity,
     project_native_player_state,
+    semantic_item_state_tensors,
     validate_semantic_state_checkpoint_contract,
 )
 
@@ -78,6 +79,7 @@ def _validate_semantic_checkpoint_payload(payload: dict, state_dict: dict, catal
     contract = payload.get("semantic_state_contract")
     expected_semantic_keys = {
         "semantic_id_embedding.weight",
+        "semantic_trait_embedding.weight",
         "semantic_encoder.0.weight",
         "semantic_encoder.0.bias",
         "semantic_encoder.2.weight",
@@ -85,7 +87,7 @@ def _validate_semantic_checkpoint_payload(payload: dict, state_dict: dict, catal
     }
     present_semantic_keys = {
         key for key in state_dict
-        if key.startswith(("semantic_id_embedding.", "semantic_encoder."))
+        if key.startswith(("semantic_id_embedding.", "semantic_trait_embedding.", "semantic_encoder."))
     }
     has_encoder = bool(present_semantic_keys)
     if present_semantic_keys and present_semantic_keys != expected_semantic_keys:
@@ -249,6 +251,7 @@ class ViewerSession:
         self.policy = TFTPolicy(
             current_obs_dim, list(action_dims), hidden_size=int(hidden_size),
             semantic_vocab_size=semantic_vocab_size,
+            require_semantic_state=True,
         )
         try:
             migrated_checkpoint = self.policy.load_compatible_state_dict(state_dict)
@@ -568,10 +571,12 @@ class ViewerSession:
         semantic = project_native_player_state(
             semantic_metadata, self.champion_id_map
         )
+        semantic_numeric = torch.as_tensor(
+            [semantic["numeric"]], dtype=torch.float32, device=obs.device
+        )
         semantic_state = {
-            "numeric": torch.as_tensor(
-                [semantic["numeric"]], dtype=torch.float32, device=obs.device
-            ),
+            "numeric": semantic_numeric,
+            "items": semantic_item_state_tensors(semantic_numeric),
             "champion_ids": torch.as_tensor(
                 [semantic["champion_ids"]], dtype=torch.long, device=obs.device
             ),
