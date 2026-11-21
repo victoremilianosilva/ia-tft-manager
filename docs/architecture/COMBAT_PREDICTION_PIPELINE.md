@@ -163,3 +163,46 @@ ablation require versioned datasets from #518. Under the project's agreed
 merge rule, absence of those datasets/model is not a merge blocker. Until the
 evidence exists, prediction remains experimental/unavailable and cannot
 influence economic decisions.
+
+
+## Field-level snapshot provenance
+
+Every simulator unit now carries its source player-unit UUID and explicit
+provenance for identity, star, board position, HP, max HP, attack damage,
+attack speed, attack range, armor, magic resist, role, ability, items and
+traits. Catalog combat-profile values, base catalog values, engine fallbacks,
+and values derived for combat initialization remain distinguishable. Ability
+name/description/level variables are preserved from the champion catalog, but
+they do not mark the simulator mapping complete. Item and trait effect lists
+also require explicit completeness flags; an empty or absent list is not
+silently treated as “no effects”.
+
+The snapshot serializes the UUID beside each unit, not only as a detached
+roster list. The projection builder verifies that each simulator unit's UUID
+matches the roster UUID at the same board-order index.
+
+## Explicit candidate matchups
+
+When the actual opponent is not available, `MatchupResolver::resolve_candidates`
+accepts only an externally supplied candidate set with unique opponent IDs,
+finite positive probabilities, and a total probability of one. An empty,
+duplicate, incomplete, or non-normalized candidate set is unavailable.
+
+`CombatProjectionEngine::project_matchups` runs each candidate through the
+same CombatEngine and aggregates scenario damage using the supplied matchup
+probabilities. It preserves each opponent and scenario weight in the output,
+computes weighted expected damage/P50/P90, and includes matchup uncertainty.
+It does not manufacture a uniform distribution. Results remain experimental
+and ineligible for economic use until replay calibration is approved.
+
+## Calibration cohort boundaries
+
+Only cross-match cohort distributions can be promoted. The same-match
+calibrator is retained for diagnostic summaries but emits
+`experimental_same_match_diagnostic_distribution.v1`, which the approval
+gate explicitly rejects. Cohort promotion requires exact engine,
+composition/mechanics signature, round and single-round horizon; excludes the
+target match; requires one independent sample per match; and permits multiple
+replay artifacts only when they belong to the same immutable dataset version.
+Multi-round risk is handled separately through complete weighted trajectories,
+not through the single-round damage distribution.
