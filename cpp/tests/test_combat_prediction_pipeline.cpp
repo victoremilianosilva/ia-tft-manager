@@ -132,5 +132,46 @@ int main() {
     assert(!CombatProjectionEngine{}.project(snapshot, 6, 0, 300).simulation_completed);
     assert(!CombatProjectionEngine{}.project(snapshot, 6, 33, 300).simulation_completed);
 
+    auto second_opponent_input = input;
+    second_opponent_input.player_b.player_id = 2;
+    second_opponent_input.player_b.units.front().source_unit_uuid = "opponent-two-unit-uuid";
+    auto second_opponent_identity = identity;
+    second_opponent_identity.opponent_id = 2;
+    second_opponent_identity.opponent_hp = 60.0;
+    second_opponent_identity.opponent_unit_ids = {"opponent-two-unit-uuid"};
+    const auto second_opponent_snapshot =
+        builder.build(second_opponent_identity, second_opponent_input, 31);
+    assert(second_opponent_snapshot.valid);
+    const std::vector<CombatMatchupProjectionCandidate> matchup_candidates{
+        {0.75, snapshot}, {0.25, second_opponent_snapshot}};
+    const auto matchup_projection =
+        CombatProjectionEngine{}.project_matchups(matchup_candidates, 6, 2, 500);
+    assert(matchup_projection.simulation_completed);
+    assert(!matchup_projection.decision_eligible);
+    assert(matchup_projection.opponent_id == -1);
+    assert(matchup_projection.weighted_scenarios.size() == 4);
+    double probability_sum = 0.0;
+    double weighted_damage = 0.0;
+    bool saw_first_opponent = false;
+    bool saw_second_opponent = false;
+    for (const auto& scenario : matchup_projection.weighted_scenarios) {
+        probability_sum += scenario.probability;
+        weighted_damage += scenario.probability * scenario.incoming_damage;
+        saw_first_opponent = saw_first_opponent || scenario.opponent_id == 1;
+        saw_second_opponent = saw_second_opponent || scenario.opponent_id == 2;
+    }
+    assert(std::abs(probability_sum - 1.0) < 1e-9);
+    assert(std::abs(weighted_damage - matchup_projection.expected_incoming_damage) < 1e-9);
+    assert(saw_first_opponent && saw_second_opponent);
+    assert(matchup_projection.status == "experimental_uncalibrated");
+    auto invalid_matchup_candidates = matchup_candidates;
+    invalid_matchup_candidates[0].probability = 0.50;
+    invalid_matchup_candidates[1].probability = 0.25;
+    const auto invalid_matchup_projection =
+        CombatProjectionEngine{}.project_matchups(invalid_matchup_candidates, 6, 2, 600);
+    assert(!invalid_matchup_projection.simulation_completed);
+    assert(invalid_matchup_projection.reason ==
+        "matchup_probabilities_do_not_sum_to_one");
+
     std::cout << "combat prediction pipeline tests passed\n";
 }
