@@ -11,8 +11,8 @@ import json
 import math
 from collections.abc import Mapping, Sequence
 
-SEMANTIC_STATE_CONTRACT_ID = "tft.ppo.semantic-native-state.v2"
-SEMANTIC_STATE_CONTRACT_VERSION = 2
+SEMANTIC_STATE_CONTRACT_ID = "tft.ppo.semantic-native-state.v3"
+SEMANTIC_STATE_CONTRACT_VERSION = 3
 SEMANTIC_ENTITY_SLOTS = 28 + 9 + 5
 SEMANTIC_ENTITY_FEATURES = 12
 SEMANTIC_GLOBAL_FEATURES = 52
