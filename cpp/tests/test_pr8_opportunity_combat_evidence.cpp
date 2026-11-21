@@ -142,6 +142,7 @@ int main() {
     criteria.approved = true;
     criteria.protocol_id = "combat-calibration.v1";
     criteria.minimum_training_samples = 30;
+    criteria.minimum_validation_samples = 20;
     criteria.minimum_test_samples = 30;
     criteria.maximum_mae = 5.0;
     criteria.minimum_p90_coverage = 0.85;
@@ -153,6 +154,7 @@ int main() {
     metrics.validation_manifest_sha256 = std::string(64, 'c');
     metrics.test_manifest_sha256 = std::string(64, 'd');
     metrics.episode_splits_disjoint = true;
+    metrics.validation_sample_count = 25;
     metrics.test_sample_count = 40;
     metrics.mae = 1.2;
     metrics.p90_coverage = 0.90;
