@@ -549,7 +549,50 @@ class TFTPolicy(nn.Module):
         return bench, shop
 
     def _item_state_features(self, obs, semantic_state=None):
-        """Decode the semantic item block appended immediately before the candidate tail."""
+        """Return named native item/anvil tensors and semantic target profiles."""
+        if semantic_state is not None:
+            entities = self._semantic_entity_features(semantic_state, obs)
+            item_state = semantic_state.get("items")
+            if entities is None or not isinstance(item_state, Mapping):
+                raise ValueError("native semantic item state is missing")
+            expected = {
+                "components": (obs.shape[0], 10),
+                "inventory": (obs.shape[0], 9, self.item_semantic_feature_dim),
+                "recipes": (obs.shape[0], 100, self.item_semantic_feature_dim),
+                "inventory_target_fit": (obs.shape[0], 9, 37),
+                "recipe_target_fit": (obs.shape[0], 100, 37),
+                "anvil_options": (obs.shape[0], 9, 11),
+            }
+            for field, shape in expected.items():
+                value = item_state.get(field)
+                if (
+                    not isinstance(value, torch.Tensor)
+                    or tuple(value.shape) != shape
+                    or value.dtype != torch.float32
+                    or value.device != obs.device
+                    or not torch.isfinite(value).all()
+                ):
+                    raise ValueError(f"native semantic item field {field} is missing or misaligned")
+            anvil_pending = item_state.get("anvil_pending")
+            if (
+                not isinstance(anvil_pending, torch.Tensor)
+                or tuple(anvil_pending.shape) != (obs.shape[0],)
+                or anvil_pending.dtype != torch.bool
+                or anvil_pending.device != obs.device
+            ):
+                raise ValueError("native semantic anvil pending flag is missing or misaligned")
+            targets = entities[:, :37, 12:29]
+            return (
+                item_state["components"],
+                item_state["inventory"],
+                item_state["recipes"],
+                targets,
+                item_state["inventory_target_fit"],
+                item_state["recipe_target_fit"],
+                item_state["anvil_options"],
+                anvil_pending,
+            )
+
         start = obs.shape[-1] - self.candidate_observation_dim - self.item_state_observation_dim
         end = obs.shape[-1] - self.candidate_observation_dim
         if start < self.item_anvil_observation_dim:
