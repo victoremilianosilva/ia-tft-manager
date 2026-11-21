@@ -55,6 +55,7 @@ from semantic_observation import (
     SEMANTIC_ENTITY_SLOTS,
     SEMANTIC_GLOBAL_FEATURES,
     build_semantic_batch,
+    semantic_item_state_tensors,
     build_semantic_state_checkpoint_contract,
     catalog_identity,
     validate_semantic_state_checkpoint_contract,
@@ -1536,10 +1537,12 @@ class Trainer:
                 semantic_batch = build_semantic_batch(
                     flat_snapshot_metadata, self.champion_id_map
                 )
+                semantic_numeric = torch.as_tensor(
+                    semantic_batch["numeric"], dtype=torch.float32, device=self.device
+                )
                 semantic_state = {
-                    "numeric": torch.as_tensor(
-                        semantic_batch["numeric"], dtype=torch.float32, device=self.device
-                    ),
+                    "numeric": semantic_numeric,
+                    "items": semantic_item_state_tensors(semantic_numeric),
                     "champion_ids": torch.as_tensor(
                         semantic_batch["champion_ids"], dtype=torch.long, device=self.device
                     ),
@@ -1764,10 +1767,12 @@ class Trainer:
                 next_semantic_batch = build_semantic_batch(
                     flat_next_snapshot_metadata, self.champion_id_map
                 )
+                next_semantic_numeric = torch.as_tensor(
+                    next_semantic_batch["numeric"], dtype=torch.float32, device=self.device
+                )
                 next_semantic_state = {
-                    "numeric": torch.as_tensor(
-                        next_semantic_batch["numeric"], dtype=torch.float32, device=self.device
-                    ),
+                    "numeric": next_semantic_numeric,
+                    "items": semantic_item_state_tensors(next_semantic_numeric),
                     "champion_ids": torch.as_tensor(
                         next_semantic_batch["champion_ids"], dtype=torch.long, device=self.device
                     ),
