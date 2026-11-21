@@ -820,7 +820,7 @@ inline SurvivalRiskEvidence derive_multi_round_survival_risk(
         weighted_uncertainty += trajectory.scenario_weight * trajectory.uncertainty;
         artifact_ids.insert(trajectory.replay_artifact_id);
     }
-    if (!std::isfinite(total_weight) || total_weight <= 0.0 ||
+    if (!std::isfinite(total_weight) || std::abs(total_weight - 1.0) > 1e-6 ||
         artifact_ids.empty() || calibration_protocol_id.empty() ||
         !is_sha256(calibration_report_sha256) || dataset_version.empty()) return out;
 
