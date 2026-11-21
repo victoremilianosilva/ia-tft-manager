@@ -31,7 +31,7 @@ The current factual fields are:
 | Purchase | Selected shop offer, newly owned physical unit UUIDs, owned copy-equivalent delta | No value is assigned to a purchase merely because it was accepted |
 | Upgrade | Physical UUID changes, per-champion star-tier count deltas, and copy-equivalent changes | Physical tier change is evidence, not a calibrated utility score |
 | XP | XP and level deltas, gold/interest changes | XP/gold deltas are unavailable when round-income resolution overlaps the action |
-| Reroll | Per-slot offer revision and before/after offer identities | A changed shop is not automatically a successful or valuable reroll |
+| Reroll | Per-slot offer revision and before/after offer identities | If round resolution also refreshes the shop, the revision delta is retained only as unattributed evidence; it is not assigned to the reroll |
 | Sale | Removed physical unit UUIDs and copy-equivalent delta | Proceeds are not inferred from a mixed action-plus-income gold delta |
 | Economy | Before/after gold and interest-if-resolved-now, realized EconomyEngine resolution events, plus overlap marker | Native EconomyEngine::resolve_round events remain a separate income source |
 | Positioning | Same-unit physical slot transitions plus total, positional, structural, exposed-carry, frontline, and unplayed-bench diagnostics | Scores are diagnostics only; no score delta becomes reward |
