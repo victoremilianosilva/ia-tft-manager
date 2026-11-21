@@ -76,6 +76,12 @@ class FakeNativeLobby:
             "players": [
                 {
                     "player_id": player_id,
+                    "gold": 30,
+                    "level": 5,
+                    "xp": 0,
+                    "interest_if_resolved_now": 1,
+                    "positioning_score": 0.0,
+                    "board_quality_score": 0.0,
                     "strategic_state": {
                         "contract_id": "tft.strategic-owner-observation",
                         "contract_version": 2,
