@@ -20,6 +20,15 @@ struct CalibrationAcceptanceCriteria;
 struct SurvivalRiskEvidence;
 struct CombatHorizonTrajectory;
 
+struct CombatHorizonStep {
+    std::uint32_t round{0};
+    std::uint64_t sequence{0};
+    std::int32_t opponent_id{-1};
+    double incoming_damage{0.0};
+    double non_combat_hp_delta{0.0};
+    bool operator==(const CombatHorizonStep&) const = default;
+};
+
 class CalibrationApprovalToken {
 public:
     bool valid() const noexcept { return valid_; }
@@ -34,6 +43,8 @@ private:
     double expected_damage_{0.0};
     double elimination_risk_{0.0};
     double uncertainty_{1.0};
+    double scenario_weight_{0.0};
+    std::vector<CombatHorizonStep> trajectory_steps_;
     std::string source_;
     std::string protocol_id_;
     std::string report_sha256_;
@@ -57,6 +68,9 @@ private:
 
     friend bool approve_calibration(
         DamageDistribution&, const CalibrationValidationMetrics&,
+        const CalibrationAcceptanceCriteria&);
+    friend bool approve_trajectory_calibration(
+        CombatHorizonTrajectory&, const CalibrationValidationMetrics&,
         const CalibrationAcceptanceCriteria&);
     friend SurvivalRiskEvidence derive_survival_risk(
         double, const DamageDistribution&);
@@ -410,6 +424,7 @@ struct CalibrationAcceptanceCriteria {
 
 struct CalibrationValidationMetrics {
     std::string report_sha256;
+    std::uint32_t training_sample_count{0};
     std::string train_manifest_sha256;
     std::string validation_manifest_sha256;
     std::string test_manifest_sha256;
@@ -804,14 +819,6 @@ inline SurvivalRiskEvidence derive_survival_risk(
     out.approval.replay_artifact_ids_ = out.replay_artifact_ids;
     return out;
 }
-
-struct CombatHorizonStep {
-    std::uint32_t round{0};
-    std::uint64_t sequence{0};
-    std::int32_t opponent_id{-1};
-    double incoming_damage{0.0};
-    double non_combat_hp_delta{0.0};
-};
 
 struct CombatHorizonTrajectory {
     std::string scenario_id;
