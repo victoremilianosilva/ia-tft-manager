@@ -2,6 +2,7 @@
 #include "combat/CombatEvidence.hpp"
 #include "strategy/EconomicController.hpp"
 
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <iostream>
