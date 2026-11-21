@@ -67,7 +67,7 @@ def test_native_semantic_entities_drive_board_cnn_and_action_candidates():
     entities[0, 0, 15] = 2.0 / 3.0
     entities[0, 0, 16] = 1.0
     entities[0, 0, 23] = 0.5
-    _, _, _, targets, _, _, _, _ = policy._item_state_features(obs, semantic_state=semantic)
+    _, _, _, targets, _, _, _, _, _ = policy._item_state_features(obs, semantic_state=semantic)
     assert targets[0, 0, 0].item() == 1.0
     assert targets[0, 0, 1].item() == 1.0
     assert targets[0, 0, 2].item() == 0.0
