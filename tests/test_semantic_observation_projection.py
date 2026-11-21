@@ -7,6 +7,9 @@ from semantic_observation import (
     SEMANTIC_ENTITY_SLOTS,
     SEMANTIC_NUMERIC_DIM,
     SEMANTIC_TRAIT_VOCAB_SIZE,
+    SEMANTIC_POLICY_STATE_KEYS,
+    semantic_policy_state_keys,
+    validate_semantic_policy_state_dict,
     semantic_item_state_tensors,
     build_semantic_batch,
     build_semantic_state_checkpoint_contract,
@@ -393,3 +396,15 @@ def test_semantic_checkpoint_manifest_integrity_is_separate_from_runtime_compati
     changed["sha256"] = "0" * 64
     with pytest.raises(ValueError, match="hash is invalid"):
         validate_semantic_state_checkpoint_integrity(changed)
+
+
+def test_semantic_v6_checkpoint_weight_contract_requires_trait_embedding():
+    complete = {key: object() for key in SEMANTIC_POLICY_STATE_KEYS}
+    assert semantic_policy_state_keys(complete) == SEMANTIC_POLICY_STATE_KEYS
+    validate_semantic_policy_state_dict(complete)
+
+    incomplete = dict(complete)
+    incomplete.pop("semantic_trait_embedding.weight")
+    assert semantic_policy_state_keys(incomplete) != SEMANTIC_POLICY_STATE_KEYS
+    with pytest.raises(ValueError, match="Semantic v6 policy weights are incomplete"):
+        validate_semantic_policy_state_dict(incomplete)
