@@ -106,31 +106,34 @@ Trainer collection no longer calls the legacy `get_strategies()` compatibility A
 **Limites:** esta entrega não declara concluído o replay com produtores legados desligados, a atribuição de custo de oportunidade nem a remoção física dos tombstones do tensor plano. Esses pontos permanecem abertos até que o consumidor posicional remanescente seja migrado e a prova integrada seja executada.
 
 
-## PR6 — migração progressiva dos consumidores para estado semântico nativo
+## PR6 — migração completa dos consumidores para estado semântico nativo
 
-**Problema anterior:** além dos tombstones físicos, CNN do board, encoder global, candidatos e cabeças de itens/anvil ainda liam fatias posicionais do vetor PPO. Isso acoplava decisões a offsets e impedia que a projeção semântica fosse a fonte única de fatos.
+**Problema anterior:** CNN do board, encoder global, traits, candidatos, perfis de alvo, inventário, receitas, compatibilidade e anvil ainda dependiam de fatias posicionais do vetor PPO. Isso acoplava a política a offsets e deixava o snapshot nativo sem autoridade única para os dados consumidos.
 
-**Justificativa técnica:** a migração deve manter uma única origem nativa por decisão, com identidade, sequência e hash preservados em sampling, avaliação, value/bootstrap e replay. Não basta renomear fatias do tensor: cada consumidor precisa receber campos estruturados derivados do snapshot nativo.
+**Justificativa técnica:** cada consumidor precisa receber campos nomeados derivados do mesmo snapshot nativo da decisão, com identidade, sequência, proveniência e hash preservados em sampling, avaliação, value/bootstrap, rollout, replay e inferência. A migração não pode fabricar fatos nem deixar o consumidor reconstruir dados a partir de recomendações.
 
-**Nova responsabilidade já implementada nesta etapa:**
-- Board/CNN recebe os 28 slots de board da projeção semântica, reconstrói a grade 4x7 em ordem row-major e consome ocupação, custo, estrela, quantidade de itens equipados e quantidade de traits.
-- Cabeças de compra/venda/posicionamento recebem candidatos de bench/shop dos mesmos registros de entidade, incluindo cópias equivalentes nativas. Não leem mais a cauda posicional de candidatos no caminho semântico.
-- Encoder global do caminho nativo consome fatos globais, atributos de entidade e embeddings de identidade da projeção semântica, sem ler os offsets globais planos.
-- Snapshot nativo v4 publica capacidade do board/bench, ações realizadas no round e idade de movimento por slot; a projeção semântica v5 valida e inclui esses fatos.
-- A migração explícita de checkpoint v2→v4 permite apenas warm-start controlado, com nova linhagem e reset de pesos/otimizador semânticos conforme o contrato de checkpoint.
+**Nova responsabilidade implementada:**
+- **Board/CNN:** 28 entidades semânticas em ordem row-major 4x7; a CNN recebe fatos de ocupação, custo, estrela, itens equipados e traits.
+- **Encoder global:** fatos globais, identidade de campeões e identidades de traits com buckets SHA-256 estáveis e embeddings próprios.
+- **Capacidade/memória:** snapshot nativo v4 publica capacidade de board/bench, ações no round e idade de movimento por slot.
+- **Candidatos e alvos:** compra/venda/posicionamento consomem entidades de bench/shop; alvos de item consomem perfis nativos board/bench com role classifier, posição, AD/AS/HP/armadura/resistência mágica e contagem de itens.
+- **Itens:** snapshot nativo publica componentes, inventário, features canônicas de itens/receitas e matrizes de compatibilidade por alvo, usando ItemEngine, catálogo e perfis nativos.
+- **Anvil:** pendência, sequência, tipo e nove opções estruturadas são projetados a partir da Engine; o scorer recebe features de opção e flags explícitas de componente/item completo.
+- **Rollout/replay:** os blocos semânticos nomeados são reconstruídos da mesma linha numérica versionada; RolloutBuffer.add rejeita divergência entre blocos nomeados e a projeção persistida.
+- **Inferência/avaliação:** trainer, avaliação de checkpoints e paired evaluator fornecem a mesma projeção semântica à Policy.
+- **Checkpoint:** contrato semântico v6 e warm-start v2→v6 explícito. A migração preserva os campos antigos compatíveis, inicializa campos novos e reinicia pesos/otimizador semânticos e colunas de consumidores reinterpretadas.
 
 **Contrato e invariantes:**
-- A projeção semântica v5 contém 52 fatos globais e 42 entidades estáveis (board[28], bench[9], shop[5]), cada uma com 12 fatos de entidade e 17 atributos de perfil-alvo; cada linha continua ligada à identidade completa da decisão.
-- O board CNN usa ordem row-major 4x7 e os candidatos usam os mesmos registros de entidade do encoder.
-- Capacidade e memória temporal são publicadas pela Engine; não são inferidas de recomendações ou de observações antigas.
-- PPO, GAE, RolloutBuffer, replay e action masks permanecem preservados; masks continuam sendo a autoridade de legalidade.
+- Projeção semântica v6: 52 fatos globais, 42 entidades com 39 features cada, identidades de traits e blocos item/anvil nomeados.
+- Hash de cada decisão cobre identidade completa, proveniência estratégica, traits, inventário, componentes, itens equipados, catálogo de componentes, sequência/tipo/opções de anvil e valores projetados.
+- Campos ausentes, inválidos, stale ou desalinhados falham fechados.
+- PPO permanece a política aprendida. GAE, RolloutBuffer, replay e action masks permanecem preservados; Engine masks continuam sendo a autoridade de legalidade.
 - Recomendações estratégicas não são labels de imitação nem substituem a política aprendida.
 
-**Ainda pendente antes de fechar #286/#293:**
-- Vocabulário/identidade explícita de traits (a projeção atual ainda carrega contagem por entidade, não o conjunto semântico de traits).
-- Inventário, componentes, receitas, compatibilidade por alvo e opções de anvil como blocos semânticos nativos.
-- Anvil: identidade/sequence/options e seus atributos ligados às masks.
-- Cabeças de inventário/crafting sem leitura de offsets do tensor plano. O perfil dos 37 alvos board/bench já vem das entidades semânticas.
-- Testes integrados de replay/inferência com todos esses consumidores posicionais desligados e CI verde.
+**Validação ainda necessária antes de concluir #286/#293:**
+- Executar e corrigir toda a CI C++/Python/native após a ampliação do contrato.
+- Confirmar testes end-to-end de sampling, evaluate_actions, value/bootstrap, minibatches, replay, paired evaluation e inferência com os produtores legados desligados.
+- Auditar que nenhum caminho nativo de produção chama a Policy sem semantic_state v6.
+- Remover os blocos posicionais aposentados do vetor PPO depois da prova end-to-end, preservando apenas o transporte necessário para interfaces externas.
 
-**Validação:** testes de projeção, identidade, capacidade/memória, mapeamento de checkpoint e prova de que CNN/candidatos usam a mesma projeção semântica. A CI do head atual ainda precisa terminar; não declarar este PR pronto nem fechar as issues antes de concluir os itens pendentes.
+**Status:** migração funcional implementada no código do PR, mas ainda não validada como entrega concluída. Manter Draft e não fechar #286/#293 até CI verde e prova integrada.
