@@ -350,7 +350,7 @@ void missing_cost_rejects_only_the_affected_candidate() {
     native.masks.shop_mask[0] = decision::MASK_ENABLED;
 
     const auto result = StrategicActionCandidateBuilder{}.build(
-        context, active, priorities, lineup, native, {{10, 3}});
+        context, active, priorities, lineup, native, {});
     assert(result.status == "candidates_generated");
     assert(result.rejected_missing_cost == 1);
     assert(result.candidates.size() == 1);
@@ -455,7 +455,7 @@ void xp_level_up_values_only_a_verified_selected_bench_unit() {
     enables(native.masks, decision::ActionType::BUY_XP);
 
     const auto result = StrategicActionCandidateBuilder{}.build(
-        context, active, priorities, lineup, native, {});
+        context, active, priorities, lineup, native, {{10, 3}});
     const auto xp = std::find_if(result.candidates.begin(), result.candidates.end(),
         [](const auto& candidate) {
             return candidate.kind == StrategicActionKind::BuyExperience;
