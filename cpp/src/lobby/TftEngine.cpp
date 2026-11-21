@@ -4267,7 +4267,7 @@ struct TFTEngine::Impl {
                                     {"is_temporary", item.is_temporary},
                                     {"grants_trait", item.grants_trait},
                                     {"effects", serialize_effects(item.effects)},
-                                    {"effect_metadata_present", !item.effects.empty()}
+                                    {"effect_metadata_present", item.effects_complete}
                                 });
                             }
                             nlohmann::json traits = nlohmann::json::array();
