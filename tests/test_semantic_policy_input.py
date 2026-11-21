@@ -393,7 +393,7 @@ def test_sampling_value_and_action_re_evaluation_share_the_same_semantic_row():
     obs, masks, semantic = _batch(batch_size=1)
     policy = TFTPolicy(
         obs_dim=obs.shape[-1], action_dims=list(ACTION_DIMS),
-        hidden_size=32, semantic_vocab_size=64,
+        hidden_size=32, semantic_vocab_size=64, require_semantic_state=True,
     ).eval()
     with torch.no_grad():
         policy.semantic_encoder[0].weight.fill_(0.001)
@@ -408,8 +408,10 @@ def test_sampling_value_and_action_re_evaluation_share_the_same_semantic_row():
         replay_logprob, replay_entropy, replay_value = policy.evaluate_actions(
             obs, actions, masks=masks, semantic_state=semantic
         )
+        changed_numeric = torch.ones_like(semantic["numeric"])
         missing_context_value = policy.get_value(obs, masks=masks, semantic_state={
-            "numeric": torch.ones_like(semantic["numeric"]),
+            "numeric": changed_numeric,
+            "items": semantic_item_state_tensors(changed_numeric),
             "champion_ids": torch.ones_like(semantic["champion_ids"]),
         })
 
