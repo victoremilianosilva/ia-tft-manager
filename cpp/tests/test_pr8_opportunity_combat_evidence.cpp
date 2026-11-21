@@ -68,7 +68,10 @@ int main() {
     assert(distribution.calibrated && distribution.sample_count == 40);
     assert(distribution.p50 == 20.0 && distribution.p90 == 36.0);
     auto risk = combat_evidence::derive_survival_risk(34.5, distribution);
-    assert(risk.available && std::abs(risk.elimination_risk - 0.175) < 1e-9);
+    assert(risk.available && std::abs(risk.elimination_risk - 0.15) < 1e-9);
+    const auto integer_hp_risk = combat_evidence::derive_survival_risk(34.0, distribution);
+    assert(integer_hp_risk.available &&
+        std::abs(integer_hp_risk.elimination_risk - 0.175) < 1e-9);
     strategy::StrategicSharedContext context;
     context.match_id = 7;
     context.player_id = 0;
