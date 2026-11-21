@@ -260,8 +260,8 @@ def validate_semantic_state_warm_start_migration(
         and historical_payload.get("source", {}).get("contract_version") == 3
         and historical_owner_source.get("contract_version") == 2
     ):
-        # Reviewed v2 -> v4 migration: native snapshot v3 -> v4 adds capacity,
-        # temporal facts and board/bench item-target profiles. The semantic
+        # Reviewed v2 -> v5 migration: native snapshot v3 -> v4 adds capacity,
+        # temporal facts, board/bench item-target profiles and structured item/anvil blocks. The semantic
         # entity stride expands while historical identity remains bound.
         historical_payload["contract_id"] = expected["contract"]["contract_id"]
         historical_payload["version"] = expected["contract"]["version"]
@@ -277,6 +277,7 @@ def validate_semantic_state_warm_start_migration(
         historical_entity_slots = dict(historical_payload.get("entity_slots", {}))
         historical_entity_slots["features"] = expected["contract"]["entity_slots"]["features"]
         historical_payload["entity_slots"] = historical_entity_slots
+        historical_payload["item_state"] = expected["contract"]["item_state"]
         historical_encoder["numeric_plus_embedding_input_dim"] = (
             expected["contract"]["encoder"]["numeric_plus_embedding_input_dim"]
         )
