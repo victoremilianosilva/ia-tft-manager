@@ -191,3 +191,15 @@ def test_reward_hacking_audit_flags_buy_sell_churn_by_physical_uuid():
     ])
     assert findings[-1]["pattern"]=="purchase_sale_churn_candidate"
     assert findings[-1]["reward"] is None
+
+
+
+def test_failed_action_still_requires_valid_identity_and_monotonic_snapshot():
+    malformed = _action(1, applied=False)
+    malformed["engine_instance_id"] = ""
+    with pytest.raises(ValueError, match="Identidade Engine"):
+        build_attribution_candidates(action_events=[malformed], outcome_events=[])
+    malformed = _action(1, applied=False)
+    malformed["outcome_snapshot"]["player_decision_sequence"] = 1
+    with pytest.raises(ValueError, match="não sucede"):
+        build_attribution_candidates(action_events=[malformed], outcome_events=[])
