@@ -432,3 +432,17 @@ def test_sampling_value_and_action_re_evaluation_share_the_same_semantic_row():
     assert torch.allclose(replay_value, perturbed_replay_value, atol=1e-7, rtol=1e-7)
     assert replay_entropy.shape == (1,)
     assert not torch.allclose(sampled_value, missing_context_value)
+
+def test_policy_checkpoint_migration_rejects_missing_semantic_trait_embedding():
+    obs, _, _ = _batch(batch_size=1)
+    policy = TFTPolicy(
+        obs_dim=obs.shape[-1],
+        action_dims=list(ACTION_DIMS),
+        hidden_size=32,
+        semantic_vocab_size=64,
+    )
+    incomplete = dict(policy.state_dict())
+    incomplete.pop("semantic_trait_embedding.weight")
+
+    with pytest.raises(RuntimeError, match="semantic v6 incompleto"):
+        policy.load_compatible_state_dict(incomplete)
