@@ -470,6 +470,19 @@ inline bool approve_calibration(
     distribution.calibration_p90_coverage = metrics.p90_coverage;
     distribution.calibration_brier_score = metrics.brier_score;
     distribution.source = "approved_replay_calibration.v1";
+    distribution.approval.valid_ = true;
+    distribution.approval.match_id_ = distribution.match_id;
+    distribution.approval.player_id_ = distribution.player_id;
+    distribution.approval.round_ = distribution.before_round;
+    distribution.approval.sequence_ = distribution.before_sequence;
+    distribution.approval.horizon_rounds_ = distribution.horizon_rounds;
+    distribution.approval.expected_damage_ = distribution.mean;
+    distribution.approval.uncertainty_ = distribution.uncertainty;
+    distribution.approval.source_ = distribution.source;
+    distribution.approval.protocol_id_ = distribution.calibration_protocol_id;
+    distribution.approval.report_sha256_ = distribution.calibration_report_sha256;
+    distribution.approval.dataset_version_ = distribution.dataset_version;
+    distribution.approval.replay_artifact_ids_ = distribution.replay_artifact_ids;
     return true;
 }
 
@@ -661,6 +674,18 @@ inline SurvivalRiskEvidence derive_survival_risk(
         distribution.composition_signature.empty() ||
         distribution.mechanics_signature.empty() || distribution.horizon_rounds != 1 ||
         distribution.replay_artifact_ids.empty() ||
+        !distribution.approval.valid_ ||
+        distribution.approval.match_id_ != distribution.match_id ||
+        distribution.approval.player_id_ != distribution.player_id ||
+        distribution.approval.round_ != distribution.before_round ||
+        distribution.approval.sequence_ != distribution.before_sequence ||
+        distribution.approval.horizon_rounds_ != distribution.horizon_rounds ||
+        distribution.approval.expected_damage_ != distribution.mean ||
+        distribution.approval.source_ != "approved_replay_calibration.v1" ||
+        distribution.approval.protocol_id_ != distribution.calibration_protocol_id ||
+        distribution.approval.report_sha256_ != distribution.calibration_report_sha256 ||
+        distribution.approval.dataset_version_ != distribution.dataset_version ||
+        distribution.approval.replay_artifact_ids_ != distribution.replay_artifact_ids ||
         distribution.minimum_sample_count == 0 ||
         distribution.sample_count < distribution.minimum_sample_count ||
         distribution.observed_damage_samples.size() != distribution.sample_count ||
@@ -711,6 +736,20 @@ inline SurvivalRiskEvidence derive_survival_risk(
     if (out.replay_artifact_ids.empty() && !distribution.replay_artifact_id.empty())
         out.replay_artifact_ids.push_back(distribution.replay_artifact_id);
     out.source = "observed_hp+approved_replay_calibration.v1";
+    out.approval.valid_ = true;
+    out.approval.match_id_ = out.match_id;
+    out.approval.player_id_ = out.player_id;
+    out.approval.round_ = out.round;
+    out.approval.sequence_ = out.sequence;
+    out.approval.horizon_rounds_ = out.horizon_rounds;
+    out.approval.expected_damage_ = out.expected_damage;
+    out.approval.elimination_risk_ = out.elimination_risk;
+    out.approval.uncertainty_ = out.uncertainty;
+    out.approval.source_ = out.source;
+    out.approval.protocol_id_ = out.calibration_protocol_id;
+    out.approval.report_sha256_ = out.calibration_report_sha256;
+    out.approval.dataset_version_ = out.dataset_version;
+    out.approval.replay_artifact_ids_ = out.replay_artifact_ids;
     return out;
 }
 
