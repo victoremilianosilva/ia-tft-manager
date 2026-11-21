@@ -26,7 +26,7 @@ if str(ROOT) not in sys.path:
 
 from cpp_lobby_env import CppTFTLobbyWrapper
 from policy import TFTPolicy
-from semantic_observation import catalog_identity
+from semantic_observation import catalog_identity, validate_semantic_state_checkpoint_contract
 from scripts.evaluate_checkpoints import native_semantic_state_for_players
 
 ACTION_DIMS = [9, 5, 9, 28, 28, 28]
@@ -321,6 +321,10 @@ def _effect_for_action(action, before, after):
 def load_policy(checkpoint_path, obs_dim, device, catalog_map):
     checkpoint = torch.load(checkpoint_path, map_location=device)
     state = checkpoint.get("policy", checkpoint)
+    semantic_contract = checkpoint.get("semantic_state_contract")
+    if semantic_contract is None:
+        raise RuntimeError("Native semantic audit requires a checkpoint with semantic_state_contract v6.")
+    validate_semantic_state_checkpoint_contract(semantic_contract, catalog_map)
     policy = TFTPolicy(
         obs_dim, ACTION_DIMS,
         semantic_vocab_size=catalog_identity(catalog_map)["vocab_size"],
