@@ -455,6 +455,7 @@ struct TFTEngine::Impl {
         strategic_context_sequences{};
     std::array<std::optional<combat_evidence::SurvivalRiskEvidence>, kPlayersPerLobby>
         pending_combat_prediction_evidence{};
+    std::vector<std::string> pending_combat_prediction_events;
     std::array<std::string, kPlayersPerLobby>
         strategic_shadow_external_active_identity{};
     std::array<std::uint64_t, kPlayersPerLobby>
@@ -2660,7 +2661,7 @@ struct TFTEngine::Impl {
             if (pending_combat_prediction_evidence[i].has_value()) {
                 const bool applied = combat_evidence::apply_to_economic_context(
                     *pending_combat_prediction_evidence[i], strategic_context);
-                round_events.emplace_back(
+                pending_combat_prediction_events.emplace_back(
                     std::string(applied ? "COMBAT_PREDICTION_EVIDENCE_APPLIED"
                                         : "COMBAT_PREDICTION_EVIDENCE_REJECTED") +
                     " player=" + std::to_string(i) +
@@ -5615,6 +5616,7 @@ ResetResult TFTEngine::reset(
     for (auto& executor : impl_->strategic_action_executors) executor.reset();
     impl_->strategic_context_sequences.fill(0);
     for (auto& evidence : impl_->pending_combat_prediction_evidence) evidence.reset();
+    impl_->pending_combat_prediction_events.clear();
     if (!impl_->strategic_shadow_audit_path.empty()) {
         std::error_code remove_error;
         std::filesystem::remove(impl_->strategic_shadow_audit_path, remove_error);
@@ -6058,6 +6060,12 @@ StepResult TFTEngine::step(
         round_events.begin(),
         round_events.end()
     );
+    result.events.insert(
+        result.events.end(),
+        impl_->pending_combat_prediction_events.begin(),
+        impl_->pending_combat_prediction_events.end()
+    );
+    impl_->pending_combat_prediction_events.clear();
 
     return result;
 }
