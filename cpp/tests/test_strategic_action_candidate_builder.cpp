@@ -47,6 +47,9 @@ void builder_emits_snapshot_bound_physical_candidates() {
     sale.intent = UnitIntent::SellCandidate;
     sale.copies_owned = 1;
     sale.highest_star = 1;
+    sale.priority = 40;
+    sale.confidence = 0.8;
+    sale.board_contribution = 0.3;
     priorities.units = {carry, frontline, sale};
 
     LineupPlan lineup;
@@ -168,7 +171,10 @@ void builder_emits_snapshot_bound_physical_candidates() {
     // The evaluator compares the net candidate scores across action families,
     // after each alternative's own economy/liquidity costs have been applied.
     auto opportunity_context = context;
-    opportunity_context.action_candidates = {*buy, *competing_buy, *deploy, *hold};
+    const auto sale_candidate = find(StrategicActionKind::SellUnit, 30);
+    assert(sale_candidate != result.candidates.end());
+    opportunity_context.action_candidates = {
+        *buy, *competing_buy, *deploy, *sale_candidate, *hold};
     const auto opportunity_evaluation = ContextualActionEvaluator{}.evaluate(
         active, priorities, lineup, opportunity_context, nullptr, native.match_id);
     assert(!opportunity_evaluation.stale);
@@ -182,7 +188,13 @@ void builder_emits_snapshot_bound_physical_candidates() {
     assert(buy_score->opportunity_cost_value_basis == "contextual_action_score.v1");
     assert(buy_score->opportunity_cost_forgone_candidate_id != buy->candidate_id);
     assert(buy_score->opportunity_cost_forgone_candidate_id == competing_buy->candidate_id ||
-        buy_score->opportunity_cost_forgone_candidate_id == deploy->candidate_id);
+        buy_score->opportunity_cost_forgone_candidate_id == deploy->candidate_id ||
+        buy_score->opportunity_cost_forgone_candidate_id == sale_candidate->candidate_id);
+    const auto sale_score = std::find_if(
+        opportunity_evaluation.candidates.begin(), opportunity_evaluation.candidates.end(),
+        [&](const auto& score) { return score.candidate_id == sale_candidate->candidate_id; });
+    assert(sale_score != opportunity_evaluation.candidates.end());
+    assert(sale_score->unit_priority_value < 0.0);
 
     // Prove the complete native chain using the exact lineup and physical unit.
     auto integrated_context = context;
