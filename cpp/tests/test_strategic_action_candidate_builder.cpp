@@ -60,8 +60,10 @@ void builder_emits_snapshot_bound_physical_candidates() {
     };
 
     StrategicSharedContext context;
+    context.match_id = 77;
     context.player_id = 0;
     context.round = 9;
+    context.sequence = 42;
     context.alive = true;
     context.gold = 20;
     context.level = 5;
@@ -130,11 +132,8 @@ void builder_emits_snapshot_bound_physical_candidates() {
     assert(buy->marginal_cost_source == "native_gold+EconomyEngine::get_interest");
     const auto competing_buy = find(StrategicActionKind::BuyUnit, 20);
     assert(competing_buy != result.candidates.end());
-    assert(buy->opportunity_cost_evidence_available);
-    assert(std::abs(buy->opportunity_cost - 0.7) < 1e-9);
-    assert(buy->opportunity_cost_forgone_candidate_id == competing_buy->candidate_id);
-    assert(competing_buy->opportunity_cost_evidence_available);
-    assert(std::abs(competing_buy->opportunity_cost - 0.8) < 1e-9);
+    assert(!buy->opportunity_cost_evidence_available);
+    assert(!competing_buy->opportunity_cost_evidence_available);
 
     const auto xp = find(StrategicActionKind::BuyExperience);
     assert(xp != result.candidates.end() && xp->gold_cost == EconomyEngine::BUY_XP_COST);
@@ -165,6 +164,24 @@ void builder_emits_snapshot_bound_physical_candidates() {
     assert(hold->marginal_economy_evidence_available);
     assert(hold->marginal_gold_before == hold->marginal_gold_after);
     assert(hold->marginal_interest_delta == 0);
+
+    // The evaluator compares the net candidate scores across action families,
+    // after each alternative's own economy/liquidity costs have been applied.
+    auto opportunity_context = context;
+    opportunity_context.action_candidates = {*buy, *competing_buy, *deploy, *hold};
+    const auto opportunity_evaluation = ContextualActionEvaluator{}.evaluate(
+        active, priorities, lineup, opportunity_context, nullptr, native.match_id);
+    assert(!opportunity_evaluation.stale);
+    const auto buy_score = std::find_if(
+        opportunity_evaluation.candidates.begin(), opportunity_evaluation.candidates.end(),
+        [&](const auto& score) { return score.candidate_id == buy->candidate_id; });
+    assert(buy_score != opportunity_evaluation.candidates.end());
+    assert(buy_score->opportunity_cost_available);
+    assert(buy_score->opportunity_cost > 0.0);
+    assert(buy_score->opportunity_cost_source == "same_snapshot_competing_alternative.v1");
+    assert(buy_score->opportunity_cost_forgone_candidate_id != buy->candidate_id);
+    assert(buy_score->opportunity_cost_forgone_candidate_id == competing_buy->candidate_id ||
+        buy_score->opportunity_cost_forgone_candidate_id == deploy->candidate_id);
 
     // Prove the complete native chain using the exact lineup and physical unit.
     auto integrated_context = context;
@@ -298,6 +315,74 @@ void xp_candidate_does_not_depend_on_an_active_composition() {
     assert(result.candidates.size() == 1);
     assert(result.candidates.front().kind == StrategicActionKind::BuyExperience);
     assert(result.candidates.front().gold_cost == EconomyEngine::BUY_XP_COST);
+}
+
+void xp_level_up_values_only_a_verified_selected_bench_unit() {
+    CompositionCandidate composition;
+    composition.composition_id = "xp-progression";
+    composition.set_id = "TFT18";
+    composition.target_board_size = 2;
+    composition.units = {
+        {10, tft::composition_intelligence::UnitRole::MainCarry, true, 80},
+        {20, tft::composition_intelligence::UnitRole::Frontline, true, 70}
+    };
+    const std::optional<ActiveComposition> active = ActiveComposition{composition, 2};
+
+    UnitPriority bench_priority;
+    bench_priority.champion_id = 20;
+    bench_priority.intent = UnitIntent::Seek;
+    bench_priority.priority = 80;
+    bench_priority.board_contribution = 0.7;
+    bench_priority.confidence = 0.8;
+    UnitPrioritySnapshot priorities;
+    priorities.composition_id = composition.composition_id;
+    priorities.composition_version = 2;
+    priorities.units = {bench_priority};
+
+    LineupPlan lineup;
+    lineup.composition_id = composition.composition_id;
+    lineup.composition_version = 2;
+    lineup.match_id = 77; lineup.player_id = 0; lineup.round = 9; lineup.sequence = 42;
+    lineup.selected_board = {
+        {10, LineupSlotKind::ActiveTarget, 90, true, true},
+        {20, LineupSlotKind::ActiveTarget, 80, false, true}
+    };
+
+    StrategicSharedContext context;
+    context.match_id = 77; context.player_id = 0; context.round = 9;
+    context.sequence = 42; context.alive = true; context.gold = 20;
+    context.level = 1; context.xp_to_next = EconomyEngine::XP_PER_BUY;
+    context.evidence.gold = true; context.evidence.level = true;
+    context.evidence.xp_to_next = true;
+    StrategicUnitCandidate owned_bench_unit;
+    owned_bench_unit.champion_id = 20;
+    owned_bench_unit.on_bench = true;
+    owned_bench_unit.board_contribution = 0.7;
+    owned_bench_unit.composition_fit = 0.8;
+    context.owned_units = {owned_bench_unit};
+
+    StrategicActionNativeSnapshot native;
+    native.match_id = 77; native.player_id = 0; native.round = 9;
+    native.sequence = 42; native.composition_id = composition.composition_id;
+    native.composition_version = 2; native.gold = 20; native.alive = true;
+    native.board_champion_ids[0] = 10;
+    native.board_unit_uuids[0] = "unit-10";
+    native.bench_champion_ids[0] = 20;
+    native.bench_unit_uuids[0] = "unit-20";
+    enables(native.masks, decision::ActionType::PASS);
+    enables(native.masks, decision::ActionType::BUY_XP);
+
+    const auto result = StrategicActionCandidateBuilder{}.build(
+        context, active, priorities, lineup, native, {});
+    const auto xp = std::find_if(result.candidates.begin(), result.candidates.end(),
+        [](const auto& candidate) {
+            return candidate.kind == StrategicActionKind::BuyExperience;
+        });
+    assert(xp != result.candidates.end());
+    assert(std::abs(xp->expected_board_delta - 0.7) < 1e-9);
+    assert(xp->evidence_source.find("UnitPriorityPlanner") != std::string::npos);
+    assert(xp->evidence_horizon_rounds == 1);
+    assert(std::abs(xp->evidence_uncertainty - 0.2) < 1e-9);
 }
 
 void native_anchor_shop_offer_is_actionable_before_composition_lock() {
@@ -471,6 +556,7 @@ int main() {
     interest_breakpoints_are_compared_to_the_same_hold_snapshot();
     missing_cost_rejects_only_the_affected_candidate();
     xp_candidate_does_not_depend_on_an_active_composition();
+    xp_level_up_values_only_a_verified_selected_bench_unit();
     builder_refuses_stale_or_mismatched_native_snapshots();
     owned_unit_candidates_require_native_physical_identity();
     native_anchor_shop_offer_is_actionable_before_composition_lock();
