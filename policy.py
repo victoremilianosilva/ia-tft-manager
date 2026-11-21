@@ -381,8 +381,8 @@ class TFTPolicy(nn.Module):
                 and source_value.shape[1] == 525 + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ID_EMBED_DIM
                 and target_value.shape[1] == SEMANTIC_ITEM_OFFSET + SEMANTIC_ENTITY_SLOTS * (SEMANTIC_ID_EMBED_DIM + SEMANTIC_TRAIT_EMBED_DIM)
             ):
-                # v2 -> v6 adds 31 global capacity/temporal facts and 17
-                # target-profile facts per entity. Preserve the old 21 globals
+                # v2 -> v6 adds capacity/temporal facts, target profiles, trait IDs,
+                # and structured item/anvil blocks. Preserve the old 21 globals
                 # and 12 entity facts; initialize only newly sourced fields.
                 old_numeric_dim = 525
                 old_global_dim = 21
