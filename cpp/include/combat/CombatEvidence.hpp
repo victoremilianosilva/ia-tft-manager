@@ -3,6 +3,7 @@
 #include "strategy/StrategicPlanning.hpp"
 
 #include <algorithm>
+#include <cstddef>
 #include <cmath>
 #include <cstdint>
 #include <string>
