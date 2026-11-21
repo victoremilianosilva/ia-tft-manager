@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <cmath>
 #include <cstdint>
+#include <limits>
 #include <string>
 #include <unordered_set>
 #include <vector>
@@ -18,8 +19,8 @@ struct CombatSnapshot {
     std::int32_t opponent_id{-1};
     std::uint32_t round{0};
     std::uint64_t sequence{0};
-    std::int32_t player_hp{-1};
-    std::int32_t opponent_hp{-1};
+    double player_hp{-1.0};
+    double opponent_hp{-1.0};
     std::vector<std::string> player_unit_ids;
     std::vector<std::string> opponent_unit_ids;
     bool player_roster_complete{false};
@@ -39,7 +40,8 @@ public:
             return {false, "invalid_or_missing_identity"};
         if (expected_sequence != 0 && s.sequence != expected_sequence)
             return {false, "stale_snapshot_sequence"};
-        if (s.player_hp < 0 || s.opponent_hp < 0)
+        if (!std::isfinite(s.player_hp) || !std::isfinite(s.opponent_hp) ||
+            s.player_hp < 0.0 || s.opponent_hp < 0.0)
             return {false, "hp_unavailable"};
         if (!s.player_roster_complete || !s.opponent_roster_complete ||
             s.player_unit_ids.empty() || s.opponent_unit_ids.empty())
@@ -54,6 +56,11 @@ public:
         };
         if (!unique_nonempty(s.player_unit_ids) || !unique_nonempty(s.opponent_unit_ids))
             return {false, "unit_identity_missing_or_duplicate"};
+        for (const auto& player_unit_id : s.player_unit_ids) {
+            if (std::find(s.opponent_unit_ids.begin(), s.opponent_unit_ids.end(),
+                          player_unit_id) != s.opponent_unit_ids.end())
+                return {false, "unit_identity_shared_between_opponents"};
+        }
         return {true, "valid"};
     }
 };
@@ -64,8 +71,10 @@ class MatchupResolver {
 public:
     bool resolve(const CombatSnapshot& snapshot, std::int32_t actual_opponent_id,
                  std::int32_t& resolved_opponent_id) const {
-        if (actual_opponent_id < 0 || snapshot.opponent_id != actual_opponent_id ||
-            snapshot.player_id == actual_opponent_id) return false;
+        if (snapshot.match_id == 0 || snapshot.player_id < 0 ||
+            snapshot.opponent_id < 0 || actual_opponent_id < 0 ||
+            snapshot.player_id == snapshot.opponent_id ||
+            snapshot.opponent_id != actual_opponent_id) return false;
         resolved_opponent_id = actual_opponent_id;
         return true;
     }
@@ -114,6 +123,7 @@ struct ObservedCombatOutcome {
 struct DamageDistribution {
     bool calibrated{false};
     std::uint32_t sample_count{0};
+    std::uint32_t minimum_sample_count{30};
     double mean{0.0};
     double p50{0.0};
     double p90{0.0};
@@ -129,13 +139,16 @@ public:
     DamageDistribution calibrate(
         const std::vector<ObservedCombatOutcome>& outcomes,
         std::uint64_t match_id, std::int32_t player_id,
-        std::uint32_t before_round, std::uint32_t minimum_samples = 30) const {
+        std::uint32_t before_round, std::uint64_t before_sequence,
+        std::uint32_t minimum_samples = 30) const {
         DamageDistribution out;
+        out.minimum_sample_count = minimum_samples;
         std::vector<double> values;
         std::unordered_set<std::uint64_t> seen_sequences;
         for (const auto& e : outcomes) {
             if (!e.observed || e.match_id != match_id || e.player_id != player_id ||
                 e.round >= before_round || e.sequence == 0 ||
+                e.sequence >= before_sequence ||
                 !std::isfinite(e.incoming_damage) || e.incoming_damage < 0.0)
                 continue;
             if (!seen_sequences.insert(e.sequence).second) {
@@ -173,16 +186,23 @@ struct SurvivalRiskEvidence {
 };
 
 inline SurvivalRiskEvidence derive_survival_risk(
-    std::int32_t observed_hp, const DamageDistribution& distribution) {
+    double observed_hp, const DamageDistribution& distribution) {
     SurvivalRiskEvidence out;
-    if (observed_hp < 0 || !distribution.calibrated ||
-        distribution.sample_count == 0 ||
+    if (!std::isfinite(observed_hp) || observed_hp < 0.0 ||
+        !distribution.calibrated ||
+        distribution.source != "observed_replay_outcomes.v1" ||
+        distribution.minimum_sample_count == 0 ||
+        distribution.sample_count < distribution.minimum_sample_count ||
         distribution.observed_damage_samples.size() != distribution.sample_count ||
-        !std::isfinite(distribution.mean) || distribution.mean < 0.0) return out;
+        !std::isfinite(distribution.mean) || distribution.mean < 0.0 ||
+        !std::isfinite(distribution.p50) || !std::isfinite(distribution.p90) ||
+        !std::isfinite(distribution.uncertainty) ||
+        distribution.uncertainty < 0.0 || distribution.uncertainty > 1.0)
+        return out;
     std::size_t lethal_outcomes = 0;
     for (const double damage : distribution.observed_damage_samples) {
         if (!std::isfinite(damage) || damage < 0.0) return out;
-        if (damage >= static_cast<double>(observed_hp)) ++lethal_outcomes;
+        if (damage >= observed_hp) ++lethal_outcomes;
     }
     out.available = true;
     out.expected_damage = distribution.mean;
