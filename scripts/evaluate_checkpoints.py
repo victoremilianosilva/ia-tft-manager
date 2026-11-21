@@ -24,20 +24,34 @@ def native_semantic_state_for_players(lobby, player_ids, catalog_map, device):
     snapshot = lobby.get_snapshot_metadata()
     native = snapshot.get("native_state_snapshot") if isinstance(snapshot, dict) else None
     players = native.get("players") if isinstance(native, dict) else None
-    sequences = native.get("player_decision_sequences") if isinstance(native, dict) else None
     if not isinstance(players, list) or len(players) != 8:
         raise RuntimeError("Checkpoint evaluation requires all eight native semantic player snapshots.")
-    if not isinstance(sequences, list) or len(sequences) != 8:
-        raise RuntimeError("Checkpoint evaluation requires eight native player decision sequences.")
     rows = []
     for player_id in player_ids:
         if isinstance(player_id, bool) or not isinstance(player_id, int) or not 0 <= player_id < 8:
             raise ValueError("semantic player IDs must be integers in [0, 7]")
+        native_player = players[player_id]
+        strategic_state = (
+            native_player.get("strategic_state")
+            if isinstance(native_player, dict) else None
+        )
+        player_sequence = (
+            strategic_state.get("player_decision_sequence")
+            if isinstance(strategic_state, dict) else None
+        )
+        if (
+            isinstance(player_sequence, bool)
+            or not isinstance(player_sequence, int)
+            or player_sequence < 0
+        ):
+            raise RuntimeError(
+                f"Checkpoint evaluation requires a valid native decision sequence for player {player_id}."
+            )
         metadata = {
             "engine_instance_id": snapshot.get("engine_instance_id"),
             "episode_id": snapshot.get("episode_id"),
             "decision_sequence": snapshot.get("decision_sequence"),
-            "player_decision_sequence": sequences[player_id],
+            "player_decision_sequence": player_sequence,
             "player_id": player_id,
             "lobby_index": 0,
             "stage": snapshot.get("stage"),
@@ -46,7 +60,7 @@ def native_semantic_state_for_players(lobby, player_ids, catalog_map, device):
             "native_state_contract_version": native.get("contract_version"),
             "native_state_producer": native.get("producer"),
             "native_state_source_namespace": native.get("source_namespace"),
-            "native_player_state": players[player_id],
+            "native_player_state": native_player,
         }
         rows.append(project_native_player_state(metadata, catalog_map))
     contract = build_semantic_state_checkpoint_contract(catalog_map)
