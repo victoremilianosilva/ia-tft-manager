@@ -140,6 +140,14 @@ struct DamageDistribution {
     std::vector<double> observed_damage_samples;
     std::string replay_artifact_id;
     std::string dataset_version;
+    std::string calibration_protocol_id;
+    std::string calibration_report_sha256;
+    std::string calibration_train_manifest_sha256;
+    std::string calibration_validation_manifest_sha256;
+    std::string calibration_test_manifest_sha256;
+    double calibration_mae{0.0};
+    double calibration_p90_coverage{0.0};
+    double calibration_brier_score{0.0};
     std::string source{"unavailable_no_replay_dataset"};
 };
 
@@ -215,6 +223,14 @@ inline bool approve_calibration(
         return false;
 
     distribution.calibrated = true;
+    distribution.calibration_protocol_id = criteria.protocol_id;
+    distribution.calibration_report_sha256 = metrics.report_sha256;
+    distribution.calibration_train_manifest_sha256 = metrics.train_manifest_sha256;
+    distribution.calibration_validation_manifest_sha256 = metrics.validation_manifest_sha256;
+    distribution.calibration_test_manifest_sha256 = metrics.test_manifest_sha256;
+    distribution.calibration_mae = metrics.mae;
+    distribution.calibration_p90_coverage = metrics.p90_coverage;
+    distribution.calibration_brier_score = metrics.brier_score;
     distribution.source = "approved_replay_calibration.v1";
     return true;
 }
