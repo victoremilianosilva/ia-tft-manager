@@ -127,7 +127,10 @@ def test_records_sale_and_physical_board_position_changes():
     assert events[0]["facts"]["units_removed"][0]["uuid"] == "unit-a"
     assert events[1]["action"]["family"] == "positioning"
     assert events[1]["facts"]["board_unit_moves"] == [
-        {"uuid": "mover", "from_slot": 0, "to_slot": 1}
+        {
+            "uuid": "mover", "from_location": "board", "from_slot": 0,
+            "to_location": "board", "to_slot": 1,
+        }
     ]
     assert events[1]["facts"]["positioning_score_delta"] == 1.5
     assert events[1]["facts"]["board_quality_delta"] == 2.0
@@ -163,3 +166,24 @@ def test_rejects_snapshot_or_player_sequence_misalignment():
         build_action_outcome_events(
             before_snapshot=before, after_snapshot=after, action_traces=_traces()
         )
+
+
+def test_detects_merge_upgrade_from_physical_star_tier_counts():
+    before = _snapshot(5, 10)
+    after = _snapshot(6, 11)
+    before["players"][0]["bench"][0] = _unit(uuid="copy-a", champion="A", star=1)
+    before["players"][0]["bench"][1] = _unit(uuid="copy-b", champion="A", star=1)
+    after["players"][0]["bench"][0] = _unit(uuid="merged-a", champion="A", star=2)
+    traces = _traces(action_type=0)
+
+    events = build_action_outcome_events(
+        before_snapshot=before, after_snapshot=after, action_traces=traces
+    )
+
+    assert events[0]["facts"]["owned_copy_equivalent_delta"] == {"A": -1}
+    assert events[0]["facts"]["star_tier_count_deltas"] == [
+        {"champion_id": "A", "star": 1, "count_delta": -2},
+        {"champion_id": "A", "star": 2, "count_delta": 1},
+    ]
+    assert events[0]["causal_attribution"] == "not_established"
+    assert events[0]["reward_eligible"] is False
