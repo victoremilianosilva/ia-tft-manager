@@ -77,15 +77,18 @@ def semantic_item_state_tensors(numeric):
     entity_numeric = numeric[:, SEMANTIC_ENTITY_OFFSET:SEMANTIC_ITEM_OFFSET].reshape(
         batch, SEMANTIC_ENTITY_SLOTS, SEMANTIC_ENTITY_FEATURES
     )
-    raw_trait_ids = entity_numeric[:, :, 29:29 + SEMANTIC_TRAIT_SLOTS]
+    raw_trait_ids = (
+        entity_numeric[:, :, 29:29 + SEMANTIC_TRAIT_SLOTS]
+        * SEMANTIC_TRAIT_VOCAB_SIZE
+    )
     if (
         not torch.isfinite(raw_trait_ids).all()
         or (raw_trait_ids < 0).any()
         or (raw_trait_ids > SEMANTIC_TRAIT_VOCAB_SIZE).any()
-        or not torch.equal(raw_trait_ids, raw_trait_ids.round())
+        or not torch.allclose(raw_trait_ids, raw_trait_ids.round(), atol=1e-4, rtol=0.0)
     ):
         raise ValueError("semantic trait hash IDs are outside the canonical integer vocabulary")
-    trait_ids = raw_trait_ids.long()
+    trait_ids = raw_trait_ids.round().long()
     return {
         "trait_ids": trait_ids,
         "components": components,
@@ -647,7 +650,7 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
                 % SEMANTIC_TRAIT_VOCAB_SIZE + 1
                 for trait in traits
             ]
-            numeric.extend(float(trait_id) for trait_id in trait_ids)
+            numeric.extend(float(trait_id / SEMANTIC_TRAIT_VOCAB_SIZE) for trait_id in trait_ids)
             numeric.extend([0.0] * (SEMANTIC_TRAIT_SLOTS - len(trait_ids)))
             champion_ids.append(0 if internal_id is None else int(internal_id) + 1)
 
