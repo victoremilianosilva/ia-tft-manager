@@ -402,6 +402,14 @@ struct AuditPlayerSnapshot {
     std::uint64_t pending_anvil_sequence{0};
     std::int32_t pending_anvil_kind{-1};
     std::vector<std::string> pending_anvil_options;
+    // Structured native item observations. These are populated from the same
+    // ItemEngine/catalog/profile producers as the legacy observation writer.
+    std::array<float, 10> item_component_features{};
+    std::array<std::array<float, 17>, 9> item_inventory_features{};
+    std::array<std::array<float, 17>, 100> item_recipe_features{};
+    std::array<std::array<float, 37>, 9> item_inventory_target_fit{};
+    std::array<std::array<float, 37>, 100> item_recipe_target_fit{};
+    std::array<std::array<float, 11>, 9> pending_anvil_option_features{};
     // Native temporal facts used by the PPO semantic global encoder.
     std::uint32_t actions_taken_this_round{0};
     std::array<std::uint32_t, kBoardSlots> board_move_age{};
