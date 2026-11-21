@@ -67,20 +67,25 @@ class TFTPolicy(nn.Module):
         self.item_state_observation_dim = (
             self.item_global_observation_dim + self.item_compatibility_observation_dim
         )
-        self.has_item_compatibility_observation = obs_dim >= (
-            self.pre_board_dim + self.board_flat_dim
-            + self.item_anvil_observation_dim + self.item_state_observation_dim
-            + self.candidate_observation_dim
+        self.has_item_compatibility_observation = (
+            not self.require_semantic_state
+            and obs_dim >= (
+                self.pre_board_dim + self.board_flat_dim
+                + self.item_anvil_observation_dim + self.item_state_observation_dim
+                + self.candidate_observation_dim
+            )
         )
 
-        # Compatibility matrices are consumed by the autoregressive item-target
-        # scorer and excluded from the global MLP to avoid a 4k-wide global input.
-        # The semantic inventory/recipe/target block remains in the global encoder.
-        self.global_features_dim = (
+        # Native PPO has no positional observation payload. Its one-scalar
+        # carrier supplies only batch/device identity; semantic_encoder owns
+        # every decision feature. Keep the legacy dimension only for isolated
+        # non-production fixtures that explicitly opt out of strict semantics.
+        self.global_features_dim = 1 if self.require_semantic_state else max(
+            1,
             obs_dim - self.board_flat_dim
             - (self.item_compatibility_observation_dim
                if self.has_item_compatibility_observation else 0)
-            + self.economic_context_dim
+            + self.economic_context_dim,
         )
 
         # Encoder Convolucional (Percepção Espacial Geométrica)
@@ -94,11 +99,13 @@ class TFTPolicy(nn.Module):
         cnn_output_dim = 4 * 7 * 64  # 1792 neurônios de mapas de características
 
         # Encoder MLP para Dados Globais e Contextuais combinados
-        self.global_mlp = nn.Sequential(
-            nn.Linear(self.global_features_dim, 256),
-            nn.ReLU(),
-            nn.Linear(256, 256),
-            nn.ReLU()
+        self.global_mlp = (
+            nn.Identity() if self.require_semantic_state else nn.Sequential(
+                nn.Linear(self.global_features_dim, 256),
+                nn.ReLU(),
+                nn.Linear(256, 256),
+                nn.ReLU()
+            )
         )
 
         # Camada de Fusão de Alta Performance
@@ -262,7 +269,11 @@ class TFTPolicy(nn.Module):
             )
         optional_new_keys = item_head_keys | critic_mask_keys | semantic_keys | optional_trait_keys
         missing = sorted((set(target) - set(state_dict)) - optional_new_keys)
-        unexpected = sorted(set(state_dict) - set(target))
+        ignored_retired_flat_keys = {
+            key for key in state_dict
+            if self.require_semantic_state and key.startswith("global_mlp.")
+        }
+        unexpected = sorted(set(state_dict) - set(target) - ignored_retired_flat_keys)
         if missing or unexpected:
             raise RuntimeError(
                 f"Checkpoint keys incompatible: missing={missing[:8]}, "
