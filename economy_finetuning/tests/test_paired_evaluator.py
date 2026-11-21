@@ -5,7 +5,7 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from economy_finetuning.finetune import MASK_SHAPES, _flatten_masks, _load_checkpoint
+from economy_finetuning.finetune import (\n    MASK_SHAPES, _flatten_masks, _load_checkpoint, _rollout_snapshot_metadata,\n)
 from action_contract import (
     build_action_mask_checkpoint_contract,
     build_critic_mask_input_checkpoint_contract,
@@ -210,3 +210,48 @@ if __name__ == "__main__":
 
         self.assertFalse(migrated)
         self.assertTrue(loaded.require_semantic_state)
+
+
+    def test_economic_finetuning_binds_decision_result_and_next_semantic_rows(self):
+        raw_masks = [
+            {key: np.ones(shape, dtype=np.bool_) for key, shape in MASK_SHAPES.items()}
+            for _ in range(8)
+        ]
+        masks = _flatten_masks(raw_masks, torch.device("cpu"))
+        decision_rows = [
+            {
+                "engine_instance_id": "engine-a", "episode_id": 7,
+                "decision_sequence": 10, "player_decision_sequence": 20 + i,
+                "player_id": i, "lobby_index": 0, "round": 3,
+            }
+            for i in range(8)
+        ]
+        next_rows = [
+            {
+                "engine_instance_id": "engine-a", "episode_id": 7,
+                "decision_sequence": 11, "player_decision_sequence": 21 + i,
+                "player_id": i, "lobby_index": 0, "round": 3,
+            }
+            for i in range(8)
+        ]
+        traces = [
+            {"player_id": i, "requested_action": [6, 0, 0, 0, 0, 0],
+             "effective_action": [6, 0, 0, 0, 0, 0], "handler_applied": True,
+             "status_reason": "accepted"}
+            for i in range(8)
+        ]
+
+        decision, result, next_state = _rollout_snapshot_metadata(
+            {"snapshot_metadata": decision_rows},
+            {"snapshot_metadata": next_rows},
+            masks,
+            traces,
+        )
+
+        self.assertEqual(len(decision), 8)
+        self.assertEqual(len(result), 8)
+        self.assertEqual(len(next_state), 8)
+        self.assertEqual(decision[3]["player_id"], 3)
+        self.assertEqual(result[3]["action_trace"]["player_id"], 3)
+        self.assertEqual(next_state[3]["decision_sequence"], 11)
+        self.assertEqual(len(decision[3]["mask_snapshot_hash"]), 64)
