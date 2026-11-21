@@ -237,6 +237,19 @@ void builder_emits_snapshot_bound_physical_candidates() {
     assert(buy_score->opportunity_cost_forgone_candidate_id ==
         expected_forgone_candidate_id);
 
+    auto baseline_buy_context = context;
+    baseline_buy_context.action_candidates = {*buy, *hold};
+    const auto baseline_buy = ContextualActionEvaluator{}.evaluate(
+        active, priorities, lineup, baseline_buy_context, nullptr, native.match_id);
+    const auto baseline_buy_score = std::find_if(
+        baseline_buy.candidates.begin(), baseline_buy.candidates.end(),
+        [&](const auto& score) { return score.candidate_id == buy->candidate_id; });
+    assert(baseline_buy_score != baseline_buy.candidates.end());
+    const double effective_opportunity_cost =
+        buy_score->opportunity_cost * (1.0 - buy_score->opportunity_cost_uncertainty);
+    assert(std::abs(buy_score->economy_cost -
+        (baseline_buy_score->economy_cost + effective_opportunity_cost)) < 1e-9);
+
     // Prove the complete native chain using the exact lineup and physical unit.
     auto integrated_context = context;
     integrated_context.sequence = native.sequence;
