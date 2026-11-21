@@ -1,6 +1,7 @@
 #pragma once
 
 #include "strategy/StrategicPlanning.hpp"
+#include "combat/CombatInput.hpp"
 
 #include <algorithm>
 #include <cstddef>
@@ -90,6 +91,10 @@ struct CombatCoverage {
     std::uint32_t unsupported_items{0};
     std::uint32_t missing_scripts{0};
     bool all_effects_catalogued{false};
+    std::uint32_t unsupported_effects{0};
+    std::uint32_t missing_ability_metadata{0};
+    std::uint32_t missing_item_effect_metadata{0};
+    std::uint32_t missing_trait_effect_metadata{0};
 };
 
 struct CombatCoverageResult {
@@ -100,6 +105,102 @@ struct CombatCoverageResult {
 
 class CombatCoverageValidator {
 public:
+    // Inspect the exact CombatInput consumed by CombatEngine. Unknown or
+    // absent mechanics metadata is unsupported, never silently assumed safe.
+    CombatCoverage inspect(const CombatInput& input) const {
+        CombatCoverage coverage;
+        const auto supported_effect = [](const CombatEffectDefinition& effect) {
+            const bool trigger_supported =
+                effect.trigger.empty() || effect.trigger == "combat_start" ||
+                effect.trigger == "on_attack" || effect.trigger == "on_kill" ||
+                effect.trigger == "after_delay" || effect.trigger == "while_hp_below" ||
+                effect.trigger == "on_ally_shield";
+            const bool operation_supported =
+                effect.operation == "add_stat" || effect.operation == "bonus_damage" ||
+                effect.operation == "heal_max_hp_pct" ||
+                effect.operation == "grant_charges" || effect.operation == "mana_regen";
+            const bool target_supported =
+                effect.target.empty() || effect.target == "self" ||
+                effect.target == "allies" ||
+                effect.target == "allies_same_row_within_1";
+            const bool condition_supported =
+                effect.condition.empty() || effect.condition == "has_trait" ||
+                effect.condition == "trait_count_at_least" ||
+                effect.condition == "role_tank" || effect.condition == "role_fighter" ||
+                effect.condition == "role_assassin" || effect.condition == "role_other";
+            const bool stat_supported =
+                effect.operation != "add_stat" ||
+                effect.stat == "attack_damage" || effect.stat == "attack_speed" ||
+                effect.stat == "ability_power" || effect.stat == "armor" ||
+                effect.stat == "magic_resist" || effect.stat == "omnivamp" ||
+                effect.stat == "damage_amplification" ||
+                effect.stat == "damage_reduction" || effect.stat == "max_hp";
+            return trigger_supported && operation_supported && target_supported &&
+                condition_supported && stat_supported &&
+                std::isfinite(effect.value) && std::isfinite(effect.duration) &&
+                std::isfinite(effect.interval) && std::isfinite(effect.delay) &&
+                std::isfinite(effect.health_threshold);
+        };
+        const auto inspect_effects = [&](const std::vector<CombatEffectDefinition>& effects) {
+            for (const auto& effect : effects)
+                if (!supported_effect(effect)) ++coverage.unsupported_effects;
+        };
+        const auto inspect_team = [&](const CombatTeam& team) {
+            for (const auto& unit : team.units) {
+                ++coverage.units_seen;
+                bool unit_supported = !unit.api_name.empty();
+                if (unit.ability.api_name.empty()) {
+                    ++coverage.missing_scripts;
+                    ++coverage.missing_ability_metadata;
+                    unit_supported = false;
+                }
+                if (unit.ability.has_buff || unit.ability.has_debuff ||
+                    unit.ability.has_area_effect) {
+                    ++coverage.unsupported_abilities;
+                    unit_supported = false;
+                }
+                for (const auto& item : unit.items) {
+                    if (item.effects.empty()) {
+                        // A name-only item cannot prove that its complete
+                        // passive behavior is represented by the generic engine.
+                        ++coverage.missing_item_effect_metadata;
+                        ++coverage.unsupported_items;
+                        unit_supported = false;
+                    } else {
+                        const auto before = coverage.unsupported_effects;
+                        inspect_effects(item.effects);
+                        if (coverage.unsupported_effects != before) {
+                            ++coverage.unsupported_items;
+                            unit_supported = false;
+                        }
+                    }
+                }
+                for (const auto& trait : unit.traits) {
+                    if (!(trait.active || trait.active_count > 0)) continue;
+                    if (trait.effects.empty()) {
+                        ++coverage.missing_trait_effect_metadata;
+                        ++coverage.unsupported_traits;
+                        unit_supported = false;
+                    } else {
+                        const auto before = coverage.unsupported_effects;
+                        inspect_effects(trait.effects);
+                        if (coverage.unsupported_effects != before) {
+                            ++coverage.unsupported_traits;
+                            unit_supported = false;
+                        }
+                    }
+                }
+                if (unit_supported) ++coverage.units_supported;
+            }
+        };
+        inspect_team(input.player_a);
+        inspect_team(input.player_b);
+        coverage.all_effects_catalogued = coverage.unsupported_effects == 0 &&
+            coverage.missing_scripts == 0 && coverage.unsupported_abilities == 0 &&
+            coverage.unsupported_items == 0 && coverage.unsupported_traits == 0;
+        return coverage;
+    }
+
     CombatCoverageResult validate(const CombatCoverage& c) const {
         if (c.units_seen == 0 || c.units_supported > c.units_seen)
             return {false, 0.0, "invalid_coverage_counts"};
@@ -108,7 +209,9 @@ public:
         const bool complete = c.units_supported == c.units_seen &&
             c.unsupported_abilities == 0 && c.unsupported_traits == 0 &&
             c.unsupported_items == 0 && c.missing_scripts == 0 &&
-            c.all_effects_catalogued;
+            c.unsupported_effects == 0 && c.missing_ability_metadata == 0 &&
+            c.missing_item_effect_metadata == 0 &&
+            c.missing_trait_effect_metadata == 0 && c.all_effects_catalogued;
         return {complete, fraction, complete ? "complete" : "partial_unsupported_mechanics"};
     }
 };
