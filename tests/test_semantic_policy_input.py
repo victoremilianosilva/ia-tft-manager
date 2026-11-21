@@ -128,8 +128,8 @@ def test_semantic_global_encoder_embeds_trait_identity_and_receives_gradients():
         hidden_size=32, semantic_vocab_size=64,
     )
     trait_offset = SEMANTIC_GLOBAL_FEATURES + 29
-    semantic["numeric"][0, trait_offset] = 123.0
-    semantic["numeric"][0, trait_offset + 1] = 456.0
+    semantic["numeric"][0, trait_offset] = 123.0 / 4096.0
+    semantic["numeric"][0, trait_offset + 1] = 456.0 / 4096.0
     semantic["items"] = semantic_item_state_tensors(semantic["numeric"])
 
     latent = policy.encode(obs, semantic_state=semantic)
