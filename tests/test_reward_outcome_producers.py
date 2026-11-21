@@ -31,7 +31,7 @@ def _player(player_id):
         "board": [_empty() for _ in range(28)],
         "bench": [_empty() for _ in range(9)],
         "shop": [_empty() for _ in range(5)],
-        "shop_offer_revisions": [0] * 5,
+        "shop_offer_revisions": [0] * 5,\n        "equipped_items": [], "item_inventory_counts": [], "item_component_counts": [],
     }
 
 
@@ -262,3 +262,28 @@ def test_item_assignment_rejects_unidentifiable_or_duplicate_items():
         build_action_outcome_events(
             before_snapshot=before, after_snapshot=after, action_traces=_traces(action_type=7)
         )
+
+
+
+def test_item_action_records_equipped_item_and_inventory_component_deltas():
+    before = _snapshot(5, 10)
+    after = _snapshot(6, 11)
+    before["players"][0]["equipped_items"] = [{
+        "unit_uuid": "carrier", "catalog_id": "item-a", "location": "bench", "slot": 0
+    }]
+    after["players"][0]["equipped_items"] = [{
+        "unit_uuid": "carrier", "catalog_id": "item-a", "location": "board", "slot": 4
+    }, {
+        "unit_uuid": "carrier", "catalog_id": "item-b", "location": "board", "slot": 4
+    }]
+    before["players"][0]["item_inventory_counts"] = [{"catalog_id": "item-c", "count": 2}]
+    after["players"][0]["item_inventory_counts"] = [{"catalog_id": "item-c", "count": 1}]
+    before["players"][0]["item_component_counts"] = [{"catalog_id": "component-a", "count": 2}]
+    after["players"][0]["item_component_counts"] = [{"catalog_id": "component-a", "count": 1}]
+    events = build_action_outcome_events(
+        before_snapshot=before, after_snapshot=after, action_traces=_traces(action_type=7)
+    )
+    facts = events[0]["facts"]
+    assert {row["kind"] for row in facts["equipped_item_changes"]} == {"moved", "equipped"}
+    assert facts["item_inventory_count_deltas"] == {"item-c": -1}
+    assert facts["item_component_count_deltas"] == {"component-a": -1}
