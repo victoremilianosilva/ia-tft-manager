@@ -2,8 +2,10 @@
 
 The wrapper intentionally contains no game rules. The C++ lobby owns the
 match state, the eight player environments, action execution, combat,
-rewards, observations and masks. Python keeps only the interface expected by
-LobbyVectorEnv/Trainer.
+rewards, the neutral observation carrier and masks. The observation array is
+only a [players, 1] batch/device carrier; PPO decision features must be built
+from the correlated native semantic-v6 snapshot. Python keeps only the
+interface expected by LobbyVectorEnv/Trainer.
 """
 from __future__ import annotations
 
