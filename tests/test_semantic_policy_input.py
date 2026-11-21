@@ -159,6 +159,33 @@ def test_semantic_global_encoder_embeds_trait_identity_and_receives_gradients():
     assert gradient[123].abs().sum().item() > 0.0
     assert gradient[456].abs().sum().item() > 0.0
 
+def test_native_semantic_consumers_ignore_legacy_flat_board_item_and_candidate_blocks():
+    obs, _, semantic = _batch(batch_size=2)
+    policy = TFTPolicy(
+        obs_dim=obs.shape[-1], action_dims=list(ACTION_DIMS),
+        hidden_size=32, semantic_vocab_size=64,
+    )
+    unrelated_flat = torch.randn_like(obs) * 100.0
+
+    assert torch.equal(
+        policy.encode(obs, semantic_state=semantic),
+        policy.encode(unrelated_flat, semantic_state=semantic),
+    )
+    candidates = policy._candidate_features(obs, semantic_state=semantic)
+    changed_candidates = policy._candidate_features(
+        unrelated_flat, semantic_state=semantic
+    )
+    for left, right in zip(candidates, changed_candidates):
+        assert torch.equal(left, right)
+
+    item_features = policy._item_state_features(obs, semantic_state=semantic)
+    changed_item_features = policy._item_state_features(
+        unrelated_flat, semantic_state=semantic
+    )
+    for left, right in zip(item_features, changed_item_features):
+        assert torch.equal(left, right)
+
+
 def test_semantic_side_input_changes_actor_and_critic_and_receives_gradients():
     torch.manual_seed(20261119)
     obs, masks, semantic = _batch()
