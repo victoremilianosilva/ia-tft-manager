@@ -169,6 +169,19 @@ class PairedEvaluatorTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Action/Mask Contract"):
             validate_evaluation_checkpoint_contracts({"policy": {}}, {"TFT_TestChampion": 17})
 
+    def test_paired_evaluation_rejects_legacy_checkpoint_without_explicit_v6_warm_start(self):
+        payload = {
+            "action_mask_contract": build_action_mask_checkpoint_contract(),
+            "critic_mask_input_contract": build_critic_mask_input_checkpoint_contract(),
+            "reward_contract": build_reward_checkpoint_contract(),
+            "policy": {
+                "critic_mask_encoder.weight": object(),
+                "critic_mask_encoder.bias": object(),
+            },
+        }
+        with self.assertRaisesRegex(ValueError, "semantic_state v6"):
+            validate_evaluation_checkpoint_contracts(payload, {"TFT_TestChampion": 17})
+
     def test_compare_final_metrics_uses_finetuned_minus_original(self):
         original = [{
             "player_id": 0, "placement": 6, "top4": False, "hp": 10,
