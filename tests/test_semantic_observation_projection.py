@@ -59,7 +59,7 @@ def _metadata():
         "board_move_age": [0] + [10] * 27,
         "item_components": [],
         "item_inventory": [],
-        "item_component_catalog": ["component_a"],
+        "item_component_catalog": [f"component_{index}" for index in range(10)],
         "equipped_items": [],
         "pending_anvil": False,
         "pending_anvil_sequence": 0,
