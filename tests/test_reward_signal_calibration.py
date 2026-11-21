@@ -2,6 +2,7 @@ import pytest
 
 from reward_signal_calibration import (
     build_attribution_candidates,
+    extract_native_outcome_events,
     validate_calibration_manifest,
 )
 
@@ -82,3 +83,31 @@ def test_calibration_manifest_rejects_missing_evidence_and_split_overlap():
     manifest["test_episode_ids"] = ["a"]
     with pytest.raises(ValueError, match="se sobrepõem"):
         validate_calibration_manifest(manifest)
+
+
+
+def test_extracts_native_outcomes_from_reward_audit_identity():
+    audit = {
+        "contract_id": "tft.ppo.reward-audit.v1",
+        "engine_instance_id": "engine",
+        "episode_id": 1,
+        "player_rewards": [
+            {
+                "player_id": player_id,
+                "outcome_player_decision_sequence": 12,
+                "combat_outcome": ({
+                    "event_id": f"combat-{player_id}",
+                    "source": "native_pvp_resolution",
+                    "reward": 0.5,
+                    "combat_sequence": 4,
+                } if player_id == 0 else None),
+                "terminal_placement": None,
+            }
+            for player_id in range(8)
+        ],
+    }
+    outcomes = extract_native_outcome_events(audit)
+    assert len(outcomes) == 1
+    assert outcomes[0]["event_id"] == "combat-0"
+    assert outcomes[0]["player_decision_sequence"] == 12
+    assert outcomes[0]["engine_instance_id"] == "engine"
