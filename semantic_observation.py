@@ -233,8 +233,8 @@ def build_semantic_state_checkpoint_contract(catalog_map: Mapping[str, int]) -> 
             "action_candidate_source": {
                 "entity_ranges": ["bench[0:9]", "shop[0:5]"],
                 "features": [
-                    "occupied", "cost/5", "star/3", "equipped_item_count/9",
-                    "trait_count/10", "owned_copy_equivalent/9",
+                    "occupied", "cost/5", "star/3", "trait_count/10",
+                    "owned_copy_equivalent/9", "same_star_upgrade_progress/3",
                 ],
             },
         },
