@@ -189,6 +189,8 @@ def run_match(factory, baseline, candidate, candidate_slots, seed, device, catal
             for slots, policy in ((set(range(8)) - set(candidate_slots), baseline),
                                   (set(candidate_slots), candidate)):
                 selected = sorted(set(alive).intersection(slots))
+                if not selected:
+                    continue
                 semantic_state = native_semantic_state_for_players(
                     lobby, selected, catalog_map, device
                 )
