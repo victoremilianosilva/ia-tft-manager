@@ -71,7 +71,9 @@ ReplayFixture make_fixture() {
     sale.relation = UnitStrategicRelation::OutsideTarget;
     sale.copies_owned = 1;
     sale.highest_star = 1;
-    sale.priority = 10;
+    // The replay exercises a viable sale: avoid inventing retained strategic value
+    // for an explicitly classified outside-target unit with zero priority.
+    sale.priority = 0;
     sale.confidence = 0.9;
     f.priorities.composition_id = composition.composition_id;
     f.priorities.composition_version = 3;
