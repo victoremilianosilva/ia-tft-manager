@@ -42,6 +42,9 @@ struct ContextualActionCandidateScore {
     double liquidity_cost{0.0};
     bool opportunity_cost_available{false};
     std::string opportunity_cost_source{"unavailable_no_validated_producer"};
+    std::string opportunity_cost_forgone_candidate_id;
+    std::uint32_t opportunity_cost_horizon_rounds{0};
+    double opportunity_cost_uncertainty{1.0};
     std::int32_t marginal_gold_delta{0};
     std::string evidence_source{"unknown"};
     std::uint32_t evidence_horizon_rounds{0};
@@ -120,6 +123,9 @@ struct ContextualActionEvaluation {
                     {"liquidity_cost", c.liquidity_cost},
                     {"opportunity_cost_available", c.opportunity_cost_available},
                     {"opportunity_cost_source", c.opportunity_cost_source},
+                    {"opportunity_cost_forgone_candidate_id", c.opportunity_cost_forgone_candidate_id},
+                    {"opportunity_cost_horizon_rounds", c.opportunity_cost_horizon_rounds},
+                    {"opportunity_cost_uncertainty", c.opportunity_cost_uncertainty},
                     {"marginal_gold_delta", c.marginal_gold_delta},
                     {"evidence_source", c.evidence_source},
                     {"evidence_horizon_rounds", c.evidence_horizon_rounds},
@@ -433,6 +439,28 @@ public:
                         candidate.marginal_interest_after -
                             candidate.marginal_interest_before;
                 score.marginal_economy_evidence_available = marginal_valid;
+                const bool opportunity_valid =
+                    candidate.opportunity_cost_evidence_available &&
+                    candidate.opportunity_cost_source == "same_snapshot_competing_alternative.v1" &&
+                    !candidate.opportunity_cost_forgone_candidate_id.empty() &&
+                    candidate.opportunity_cost_horizon_rounds > 0 &&
+                    std::isfinite(candidate.opportunity_cost) && candidate.opportunity_cost >= 0.0 &&
+                    std::isfinite(candidate.opportunity_cost_uncertainty) &&
+                    candidate.opportunity_cost_uncertainty >= 0.0 &&
+                    candidate.opportunity_cost_uncertainty < 1.0;
+                score.opportunity_cost_available = opportunity_valid;
+                if (opportunity_valid) {
+                    score.opportunity_cost_source = candidate.opportunity_cost_source;
+                    score.opportunity_cost_forgone_candidate_id =
+                        candidate.opportunity_cost_forgone_candidate_id;
+                    score.opportunity_cost_horizon_rounds =
+                        candidate.opportunity_cost_horizon_rounds;
+                    score.opportunity_cost_uncertainty = candidate.opportunity_cost_uncertainty;
+                    // Strategic opportunity is distinct from principal and interest;
+                    // its own uncertainty discounts its contribution conservatively.
+                    score.economy_cost += candidate.opportunity_cost *
+                        (1.0 - candidate.opportunity_cost_uncertainty) * 0.10;
+                }
                 if (marginal_valid) {
                     score.gold_before = candidate.marginal_gold_before;
                     score.gold_after = candidate.marginal_gold_after;
