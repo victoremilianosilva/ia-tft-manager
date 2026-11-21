@@ -50,7 +50,6 @@ class ScenarioSpec:
     def matches(self, state: dict[str, Any]) -> bool:
         if self.requires_candidate_semantics:
             return False
-        strategy = int(state["strategy"])
         return (
             (not self.player_ids or int(state.get("player_id", -1)) in self.player_ids)
             and self.round_min <= float(state.get("round_number", 1.0)) <= self.round_max
@@ -58,13 +57,13 @@ class ScenarioSpec:
             and self.gold_min <= float(state["gold"]) <= self.gold_max
             and self.level_min <= float(state["level"]) <= self.level_max
             and self.hp_min <= float(state["hp"]) <= self.hp_max
-            and (not self.strategies or strategy in self.strategies)
             and float(state.get("win_streak", 0.0)) >= self.win_streak_min
         )
 
     def to_dict(self) -> dict[str, Any]:
         value = asdict(self)
-        value["strategies"] = [STRATEGY_NAMES.get(x, str(x)) for x in self.strategies]
+        # Historical selectors remain load-compatible but are not used by v6 matching.
+        value["strategies"] = []
         value["player_ids"] = list(self.player_ids)
         value["trainable_heads"] = list(self.trainable_heads)
         return value
@@ -163,6 +162,44 @@ def decode_observation(observation, player_id: int | None = None) -> dict[str, A
         "strategy_name": STRATEGY_NAMES.get(strategy, "UNKNOWN"),
         "win_streak": max(0.0, float(obs[4]) * 10.0),
         "loss_streak": max(0.0, float(obs[5]) * 10.0),
+        "player_id": int(player_id) if player_id is not None else -1,
+    }
+
+
+def decode_semantic_observation(semantic_state, player_id: int | None = None) -> dict[str, Any]:
+    """Decode scenario facts from the authoritative semantic v6 global projection.
+
+    StrategyInfo is intentionally excluded: scenario selection must not infer
+    a strategic posture from retired flat-observation offsets.
+    """
+    numeric = semantic_state.get("numeric") if isinstance(semantic_state, dict) else None
+    if hasattr(numeric, "detach"):
+        numeric = numeric.detach().cpu().numpy()
+    if hasattr(numeric, "tolist"):
+        numeric = numeric.tolist()
+    if not isinstance(numeric, (list, tuple)) or len(numeric) != 1:
+        raise ValueError("semantic scenario input must contain exactly one v6 row")
+    row = numeric[0]
+    if not isinstance(row, (list, tuple)) or len(row) < 52:
+        raise ValueError("semantic scenario row is shorter than the v6 global projection")
+    values = [float(value) for value in row[:52]]
+    import math
+    if any(not math.isfinite(value) for value in values):
+        raise ValueError("semantic scenario row contains NaN or infinity")
+
+    hp = max(0.0, min(100.0, values[0] * 100.0))
+    gold = max(0.0, values[5] * 200.0)
+    level = max(1.0, min(10.0, values[6] * 10.0))
+    stage = max(1, min(7, int(round(values[15] * 7.0))))
+    round_number = max(1.0, min(50.0, values[16] * 50.0))
+    return {
+        "hp": hp,
+        "gold": gold,
+        "level": level,
+        "stage": stage,
+        "round_number": round_number,
+        "win_streak": max(0.0, values[8] * 10.0),
+        "loss_streak": max(0.0, values[9] * 10.0),
         "player_id": int(player_id) if player_id is not None else -1,
     }
 
