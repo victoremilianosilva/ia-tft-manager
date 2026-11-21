@@ -13,7 +13,7 @@ from action_contract import MASK_SHAPES, hash_mask_rows
 from policy import TFTPolicy, ACTION_DIMS
 from trainer import Trainer
 from cpp_lobby_env import CppTFTLobbyWrapper
-from semantic_observation import build_semantic_batch, catalog_identity
+from semantic_observation import build_semantic_batch, catalog_identity, semantic_item_state_tensors
 
 
 ROOT = Path(__file__).resolve().parents[1]
