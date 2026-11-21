@@ -73,6 +73,10 @@ int main() {
     const auto coverage = CombatCoverageValidator{}.validate(snapshot.coverage);
     assert(coverage.complete);
     assert(coverage.status == "complete");
+    assert(snapshot.coverage.abilities_seen == 2);
+    assert(snapshot.coverage.abilities_supported == 2);
+    assert(snapshot.coverage.items_seen == 0);
+    assert(snapshot.coverage.traits_seen == 0);
 
     const auto projection = CombatProjectionEngine{}.project(snapshot, 6, 4, 100);
     assert(projection.simulation_completed);
@@ -109,6 +113,8 @@ int main() {
     const auto trait_snapshot = builder.build(identity, missing_trait_metadata, 31);
     assert(!CombatCoverageValidator{}.validate(trait_snapshot.coverage).complete);
     assert(trait_snapshot.coverage.missing_trait_effect_metadata == 1);
+    assert(trait_snapshot.coverage.traits_seen == 1);
+    assert(trait_snapshot.coverage.traits_supported == 0);
 
     auto stale = identity;
     stale.sequence = 30;
