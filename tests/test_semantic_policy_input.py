@@ -2,7 +2,7 @@ import torch
 
 from action_contract import MASK_SHAPES
 from policy import ACTION_DIMS, TFTPolicy
-from semantic_observation import SEMANTIC_ENTITY_SLOTS, SEMANTIC_GLOBAL_FEATURES, SEMANTIC_NUMERIC_DIM
+from semantic_observation import SEMANTIC_ENTITY_FEATURES, SEMANTIC_ENTITY_SLOTS, SEMANTIC_GLOBAL_FEATURES, SEMANTIC_NUMERIC_DIM
 
 
 def _batch(batch_size=2):
@@ -32,7 +32,7 @@ def _batch(batch_size=2):
 def test_native_semantic_entities_drive_board_cnn_and_action_candidates():
     obs, _, semantic = _batch(batch_size=1)
     policy = TFTPolicy(obs_dim=obs.shape[-1], action_dims=list(ACTION_DIMS), hidden_size=32, semantic_vocab_size=64).eval()
-    entities = semantic["numeric"][:, SEMANTIC_GLOBAL_FEATURES:].view(1, SEMANTIC_ENTITY_SLOTS, 12)
+    entities = semantic["numeric"][:, SEMANTIC_GLOBAL_FEATURES:].view(1, SEMANTIC_ENTITY_SLOTS, SEMANTIC_ENTITY_FEATURES)
     entities[0, 0, 0] = 1.0
     entities[0, 0, 1] = 2.0 / 3.0
     entities[0, 0, 2] = 4.0 / 5.0
@@ -60,6 +60,17 @@ def test_native_semantic_entities_drive_board_cnn_and_action_candidates():
     assert torch.allclose(captured["board"][0, :, 0, 0], torch.tensor([1.0, 0.8, 2.0 / 3.0, 1.0 / 3.0, 0.2]))
     assert torch.allclose(bench[0, 0], torch.tensor([1.0, 0.6, 1.0 / 3.0, 2.0 / 3.0, 0.3, 4.0 / 9.0]))
     assert torch.allclose(shop[0, 0], torch.tensor([1.0, 0.4, 1.0 / 3.0, 0.0, 0.0, 2.0 / 9.0]))
+    entities[0, 0, 12] = 1.0
+    entities[0, 0, 13] = 1.0
+    entities[0, 0, 15] = 2.0 / 3.0
+    entities[0, 0, 16] = 1.0
+    entities[0, 0, 23] = 0.5
+    _, _, _, targets, _, _, _, _ = policy._item_state_features(obs, semantic_state=semantic)
+    assert targets[0, 0, 0].item() == 1.0
+    assert targets[0, 0, 1].item() == 1.0
+    assert targets[0, 0, 2].item() == 0.0
+    assert targets[0, 0, 5].item() == 1.0
+    assert targets[0, 0, 11].item() == 0.5
 
 
 def test_native_semantic_global_encoder_produces_finite_features():
@@ -176,7 +187,7 @@ def test_v1_semantic_encoder_checkpoint_maps_old_feature_offsets():
         old_start = 17 + slot * 6
         new_start = SEMANTIC_GLOBAL_FEATURES + slot * 12
         assert torch.equal(migrated[:, new_start:new_start + 6], old_weight[:, old_start:old_start + 6])
-        assert torch.count_nonzero(migrated[:, new_start + 6:new_start + 12]) == 0
+        assert torch.count_nonzero(migrated[:, new_start + 6:new_start + SEMANTIC_ENTITY_FEATURES]) == 0
     assert torch.equal(migrated[:, SEMANTIC_NUMERIC_DIM:], old_weight[:, old_numeric_dim:])
 
 
