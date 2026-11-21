@@ -18,6 +18,7 @@ import sys
 import numpy as np
 
 from decision_identity import build_player_identity_envelopes
+from reward_audit import RewardAuditLedger
 
 _REPO_ROOT = Path(__file__).resolve().parent
 # CMake builds may live at the repository root (build/) or under cpp/.
@@ -68,6 +69,7 @@ class CppTFTLobbyWrapper:
         self._last_dones = np.zeros(self.PLAYERS_PER_LOBBY, dtype=np.bool_)
         self._last_action_masks = None
         self._last_snapshot_metadata = None
+        self._reward_audit_ledger = RewardAuditLedger()
         self._players = [
             SimpleNamespace(player_id=i, alive=True, eliminated=False)
             for i in range(self.PLAYERS_PER_LOBBY)
@@ -629,6 +631,10 @@ class CppTFTLobbyWrapper:
         self._last_snapshot_metadata["native_state_snapshot"] = self._copy_native_state_snapshot(
             result.get("native_state_snapshot"), self._last_snapshot_metadata
         )
+        self._reward_audit_ledger.reset(
+            self._last_snapshot_metadata["engine_instance_id"],
+            self._last_snapshot_metadata["episode_id"],
+        )
         return np.asarray(result["observations"], dtype=np.float32)
 
     def step(self, actions, *, timer_enabled: bool = False, timer_expired: bool = False):
@@ -678,24 +684,42 @@ class CppTFTLobbyWrapper:
             for idx, player in enumerate(player_info)
         ]
 
+        # Reward component arrays are mandatory for the audit contract. Falling
+        # back to the combined reward would fabricate component provenance.
+        if not all(key in result for key in (
+            "action_rewards", "combat_rewards", "placement_rewards",
+            "action_traces", "players",
+        )):
+            raise RuntimeError(
+                "Native StepResult sem os componentes/proveniência exigidos "
+                "pelo RewardAuditLedger."
+            )
+        action_rewards = np.asarray(result["action_rewards"], dtype=np.float32)
+        combat_rewards = np.asarray(result["combat_rewards"], dtype=np.float32)
+        placement_rewards = np.asarray(result["placement_rewards"], dtype=np.float32)
+        action_traces = [dict(item) for item in result["action_traces"]]
+        reward_audit = self._reward_audit_ledger.build_record(
+            rewards=rewards,
+            action_rewards=action_rewards,
+            combat_rewards=combat_rewards,
+            placement_rewards=placement_rewards,
+            action_traces=action_traces,
+            players=player_info,
+            decision_snapshot=self._last_snapshot_metadata,
+        )
         info = {
-            "players": result.get("players", []),
-            "action_trace": [dict(item) for item in result.get("action_traces", [])],
+            "players": player_info,
+            "action_trace": action_traces,
             "decision_snapshot": copy.deepcopy(self._last_snapshot_metadata),
             "round": int(result.get("round", 0)),
             "stage": int(result.get("stage", 1)),
             "finished": bool(result.get("lobby_done", False)),
             "lobby_done": bool(result.get("lobby_done", False)),
             "events": list(result.get("events", [])),
-            "action_rewards": np.asarray(
-                result.get("action_rewards", rewards), dtype=np.float32
-            ),
-            "combat_rewards": np.asarray(
-                result.get("combat_rewards", np.zeros(8)), dtype=np.float32
-            ),
-            "placement_rewards": np.asarray(
-                result.get("placement_rewards", np.zeros(8)), dtype=np.float32
-            ),
+            "action_rewards": action_rewards,
+            "combat_rewards": combat_rewards,
+            "placement_rewards": placement_rewards,
+            "reward_audit": reward_audit,
         }
         return observations, rewards, bool(result.get("lobby_done", False)), info
 
