@@ -29,6 +29,22 @@ int main() {
     assert(!producer.evaluate("buy-xp", {}, 2, "shared_utility.v1").available);
     assert(!producer.evaluate("buy-xp", {reroll}, 3, "shared_utility.v1").available);
     assert(!producer.evaluate("buy-xp", {reroll}, 2, "different_utility.v1").available);
+    auto high_uncertainty = reroll;
+    high_uncertainty.candidate_id = "high-uncertainty";
+    high_uncertainty.marginal_strategic_value = 5.0;
+    high_uncertainty.upgrade_value = 0.0;
+    high_uncertainty.uncertainty = 0.95;
+    auto lower_uncertainty = reroll;
+    lower_uncertainty.candidate_id = "lower-uncertainty";
+    lower_uncertainty.marginal_strategic_value = 0.6;
+    lower_uncertainty.upgrade_value = 0.0;
+    lower_uncertainty.uncertainty = 0.0;
+    const auto risk_adjusted = producer.evaluate(
+        "buy-xp", {high_uncertainty, lower_uncertainty}, 2, "shared_utility.v1");
+    assert(risk_adjusted.available);
+    assert(risk_adjusted.sacrificed_candidate_id == "lower-uncertainty");
+    assert(std::abs(risk_adjusted.cost - 0.6) < 1e-9);
+
     reroll.identity_valid = false;
     assert(!producer.evaluate("buy-xp", {reroll}, 2, "shared_utility.v1").available);
 
