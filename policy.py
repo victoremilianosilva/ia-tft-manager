@@ -335,6 +335,32 @@ class TFTPolicy(nn.Module):
                 and source_value.ndim == 2
                 and target_value.ndim == 2
                 and source_value.shape[0] == target_value.shape[0]
+                and source_value.shape[1] == 525 + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ID_EMBED_DIM
+                and target_value.shape[1] == SEMANTIC_NUMERIC_DIM + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ID_EMBED_DIM
+            ):
+                # v2 -> v3 adds 31 global capacity/temporal facts. Preserve the
+                # existing 21 globals, shift all 42 entity records, and retain
+                # the champion embedding columns; only new facts start at zero.
+                old_numeric_dim = 525
+                old_global_dim = 21
+                expanded = torch.zeros_like(target_value)
+                expanded[:, :old_global_dim] = source_value[:, :old_global_dim]
+                for slot in range(SEMANTIC_ENTITY_SLOTS):
+                    old_start = old_global_dim + slot * SEMANTIC_ENTITY_FEATURES
+                    new_start = SEMANTIC_GLOBAL_FEATURES + slot * SEMANTIC_ENTITY_FEATURES
+                    expanded[:, new_start:new_start + SEMANTIC_ENTITY_FEATURES] = (
+                        source_value[:, old_start:old_start + SEMANTIC_ENTITY_FEATURES]
+                    )
+                expanded[:, SEMANTIC_NUMERIC_DIM:] = source_value[:, old_numeric_dim:]
+                loaded[key] = expanded
+                migrated = True
+                continue
+
+            if (
+                key == "semantic_encoder.0.weight"
+                and source_value.ndim == 2
+                and target_value.ndim == 2
+                and source_value.shape[0] == target_value.shape[0]
                 and source_value.shape[1] == 269 + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ID_EMBED_DIM
                 and target_value.shape[1] == SEMANTIC_NUMERIC_DIM + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ID_EMBED_DIM
             ):
