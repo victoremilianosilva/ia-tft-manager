@@ -33,7 +33,8 @@ int main() {
 
     combat_evidence::CombatSnapshot snapshot;
     snapshot.match_id = 7; snapshot.player_id = 0; snapshot.opponent_id = 1;
-    snapshot.round = 8; snapshot.sequence = 10; snapshot.player_hp = 34.5;
+    snapshot.round = 8; snapshot.sequence = 10; snapshot.engine_decision_sequence = 100;
+    snapshot.player_hp = 34.5;
     snapshot.opponent_hp = 51; snapshot.player_roster_complete = true;
     snapshot.opponent_roster_complete = true;
     snapshot.player_unit_ids = {"p1", "p2"};
@@ -65,6 +66,7 @@ int main() {
     auto risk = combat_evidence::derive_survival_risk(34.5, distribution);
     assert(risk.available && std::abs(risk.elimination_risk - 0.175) < 1e-9);
     strategy::StrategicSharedContext context;
+    context.match_id = 7;
     context.player_id = 0;
     context.round = 50;
     context.sequence = 50;
