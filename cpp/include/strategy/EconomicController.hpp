@@ -61,6 +61,15 @@ public:
             c.combat_evidence_horizon_rounds <= 10 &&
             approved_combat_source(c.incoming_damage_source) &&
             approved_combat_source(c.elimination_risk_source) &&
+            !c.combat_calibration_protocol_id.empty() &&
+            c.combat_calibration_report_sha256.size() == 64 &&
+            std::all_of(c.combat_calibration_report_sha256.begin(),
+                c.combat_calibration_report_sha256.end(), [](unsigned char value) {
+                    return (value >= '0' && value <= '9') ||
+                        (value >= 'a' && value <= 'f');
+                }) &&
+            !c.combat_dataset_version.empty() &&
+            !c.combat_replay_artifact_ids.empty() &&
             std::isfinite(c.combat_evidence_uncertainty) &&
             c.combat_evidence_uncertainty >= 0.0 &&
             c.combat_evidence_uncertainty <= 1.0;
