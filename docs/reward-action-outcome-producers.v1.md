@@ -34,7 +34,7 @@ The current factual fields are:
 | Reroll | Per-slot offer revision and before/after offer identities | If round resolution also refreshes the shop, the revision delta is retained only as unattributed evidence; it is not assigned to the reroll |
 | Sale | Removed physical unit UUIDs and copy-equivalent delta | Proceeds are not inferred from a mixed action-plus-income gold delta |
 | Economy | Before/after gold and interest-if-resolved-now, realized EconomyEngine income and PvP gold-credit events, plus overlap markers | Native EconomyEngine::resolve_round events remain a separate income source |
-| Positioning | Same-unit physical slot transitions plus total, positional, structural, exposed-carry, frontline, and unplayed-bench diagnostics | Scores are diagnostics only; no score delta becomes reward |
+| Positioning | Same-unit physical slot transitions plus total, positional, structural, exposed-carry, frontline, and unplayed-bench diagnostics | Scores are diagnostics only; no score delta becomes reward |\n| Item action | Per-unit stable item identity additions/removals across paired snapshots | Only units present in both snapshots are compared; unidentified/duplicate item identities fail closed; no item value or reward is inferred |
 
 An event's causal_attribution is always not_established, reward is always null, and reward_eligible is always false under this telemetry contract. The producer never changes the scalar reward consumed by PPO.
 
@@ -106,3 +106,6 @@ The new unit tests cover exclusive candidates, intervening-action rejection, amb
 `audit_reward_hacking_patterns` reports synthetic sequence patterns (repeated rerolls, repeated positioning, PASS streaks, and purchase/sale churn) as audit findings. These are adversarial diagnostics, not runtime penalties or reward coefficients. Duplicate event delivery and identity collisions fail closed.
 
 The tests use constructed event sequences and validate bookkeeping and safety invariants only. They do not establish causal effects, optimal horizons, calibrated weights, or match-performance improvements. Replay/training data remains an empirical dependency, not a blocker for this implementation.
+
+
+Item assignment telemetry is emitted as `facts.item_assignment_changes` for item-action traces only. It uses stable item instance/item IDs from the native snapshot and reports physical before/after membership on the same unit UUID. It does not infer item utility, combine value, anvil choice quality, or combat contribution.
