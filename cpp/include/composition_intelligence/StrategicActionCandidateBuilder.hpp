@@ -38,8 +38,7 @@ public:
         StrategicActionCandidateBuildResult out;
         if (native.match_id == 0 || native.player_id != context.player_id ||
             native.round != context.round || native.sequence == 0 ||
-            (context.engine_decision_sequence > 0 &&
-                native.sequence != context.engine_decision_sequence) ||
+            (context.sequence > 0 && native.sequence != context.sequence) ||
             !native.alive || !context.alive || native.gold != context.gold ||
             !context.evidence.gold) {
             out.status = "invalid_or_mismatched_native_snapshot";
