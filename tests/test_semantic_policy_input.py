@@ -32,7 +32,7 @@ def _batch(batch_size=2):
 def test_native_semantic_entities_drive_board_cnn_and_action_candidates():
     obs, _, semantic = _batch(batch_size=1)
     policy = TFTPolicy(obs_dim=obs.shape[-1], action_dims=list(ACTION_DIMS), hidden_size=32, semantic_vocab_size=64).eval()
-    entities = semantic["numeric"][:, 21:].view(1, SEMANTIC_ENTITY_SLOTS, 12)
+    entities = semantic["numeric"][:, SEMANTIC_GLOBAL_FEATURES:].view(1, SEMANTIC_ENTITY_SLOTS, 12)
     entities[0, 0, 0] = 1.0
     entities[0, 0, 1] = 2.0 / 3.0
     entities[0, 0, 2] = 4.0 / 5.0
