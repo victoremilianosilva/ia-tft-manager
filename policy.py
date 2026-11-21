@@ -203,6 +203,21 @@ class TFTPolicy(nn.Module):
         nn.init.zeros_(self.semantic_encoder[-1].weight)
         nn.init.zeros_(self.semantic_encoder[-1].bias)
 
+    @torch.no_grad()
+    def reset_migrated_semantic_consumer_columns(self):
+        """Neutralize columns whose meaning changed in semantic observation v3.
+
+        The first three board channels retain their factual meaning. The final
+        two now represent equipped-item and trait counts instead of role/strength.
+        Candidate feature columns changed from strategy-fit fields to native
+        entity facts, so only those input columns are reset on an explicit
+        v2 -> v3 warm-start.
+        """
+        self.board_cnn[0].weight[:, :, 3:5].zero_()
+        for head in (self.shop_head, self.sell_head):
+            head[0].weight[:, -self.candidate_feature_dim:].zero_()
+        self.bench_to_board_head.weight[:, -self.candidate_feature_dim:].zero_()
+
     def load_compatible_state_dict(self, state_dict):
         """Load current weights or migrate supported input-shape changes.
 
