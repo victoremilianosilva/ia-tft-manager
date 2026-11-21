@@ -180,6 +180,10 @@ int main() {
     context.round = 50;
     context.sequence = 50;
     assert(combat_evidence::apply_to_economic_context(risk, context));
+    assert(context.combat_calibration_protocol_id == "combat-calibration.v1");
+    assert(context.combat_calibration_report_sha256 == std::string(64, 'a'));
+    assert(context.combat_dataset_version == "tft-replay-dataset.v1");
+    assert(context.combat_replay_artifact_ids.size() == 1);
     std::vector<combat_evidence::CombatHorizonTrajectory> trajectories;
     for (std::uint64_t i = 0; i < 40; ++i) {
         combat_evidence::CombatHorizonTrajectory trajectory;
@@ -227,6 +231,10 @@ int main() {
     multi_context.sequence = 50;
     assert(combat_evidence::apply_to_economic_context(multi_round_risk, multi_context));
     assert(multi_context.combat_evidence_horizon_rounds == 2);
+    assert(multi_context.combat_calibration_protocol_id == "combat-horizon.v1");
+    assert(multi_context.combat_calibration_report_sha256 == std::string(64, 'e'));
+    assert(multi_context.combat_dataset_version == "combat-trajectories.v1");
+    assert(multi_context.combat_replay_artifact_ids.size() == 4);
     multi_context.alive = true;
     multi_context.hp = 20.0;
     multi_context.gold = 35;
