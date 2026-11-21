@@ -1,14 +1,18 @@
 import unittest
+import tempfile
+from pathlib import Path
 
 import numpy as np
 import torch
 
-from economy_finetuning.finetune import MASK_SHAPES, _flatten_masks
+from economy_finetuning.finetune import MASK_SHAPES, _flatten_masks, _load_checkpoint
 from action_contract import (
     build_action_mask_checkpoint_contract,
     build_critic_mask_input_checkpoint_contract,
 )
 from reward_contract import build_reward_checkpoint_contract
+from policy import ACTION_DIMS, TFTPolicy
+from semantic_observation import catalog_identity
 from semantic_observation import build_semantic_state_checkpoint_contract
 from economy_finetuning.paired_evaluator import (
     aggregate_mirrored_runs,
@@ -181,3 +185,28 @@ class PairedEvaluatorTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+    def test_economic_finetuning_loads_only_complete_semantic_v6_checkpoints(self):
+        catalog = {"TFT_TestChampion": 0}
+        policy = TFTPolicy(
+            10000, ACTION_DIMS,
+            semantic_vocab_size=catalog_identity(catalog)["vocab_size"],
+            require_semantic_state=True,
+        )
+        payload = {
+            "policy": policy.state_dict(),
+            "action_mask_contract": build_action_mask_checkpoint_contract(),
+            "critic_mask_input_contract": build_critic_mask_input_checkpoint_contract(),
+            "reward_contract": build_reward_checkpoint_contract(),
+            "semantic_state_contract": build_semantic_state_checkpoint_contract(catalog),
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            checkpoint_path = Path(directory) / "semantic-v6.pt"
+            torch.save(payload, checkpoint_path)
+            _, loaded, migrated = _load_checkpoint(
+                checkpoint_path, 10000, torch.device("cpu"), catalog
+            )
+
+        self.assertFalse(migrated)
+        self.assertTrue(loaded.require_semantic_state)
