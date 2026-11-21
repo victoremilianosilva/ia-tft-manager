@@ -49,11 +49,18 @@ public:
             out.validation_reason = "combat_input_roster_size_mismatch";
             return out;
         }
-        const auto valid_team = [](const CombatTeam& team) {
+        const auto valid_team = [](
+            const CombatTeam& team, const std::vector<std::string>& expected_uuids) {
+            if (team.units.size() != expected_uuids.size()) return false;
             std::unordered_set<int> unit_ids;
             std::unordered_set<int> board_positions;
-            for (const auto& unit : team.units) {
+            std::unordered_set<std::string> source_uuids;
+            for (std::size_t index = 0; index < team.units.size(); ++index) {
+                const auto& unit = team.units[index];
                 if (unit.id < 0 || unit.api_name.empty() ||
+                    unit.source_unit_uuid.empty() ||
+                    unit.source_unit_uuid != expected_uuids[index] ||
+                    !source_uuids.insert(unit.source_unit_uuid).second ||
                     unit.source_board_position < 0 || unit.source_board_position >= 28 ||
                     !unit_ids.insert(unit.id).second ||
                     !board_positions.insert(unit.source_board_position).second)
@@ -61,7 +68,8 @@ public:
             }
             return true;
         };
-        if (!valid_team(input.player_a) || !valid_team(input.player_b)) {
+        if (!valid_team(input.player_a, identity.player_unit_ids) ||
+            !valid_team(input.player_b, identity.opponent_unit_ids)) {
             out.validation_reason = "combat_input_unit_identity_or_board_position_invalid";
             return out;
         }
