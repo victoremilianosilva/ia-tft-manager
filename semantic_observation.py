@@ -11,8 +11,8 @@ import json
 import math
 from collections.abc import Mapping, Sequence
 
-SEMANTIC_STATE_CONTRACT_ID = "tft.ppo.semantic-native-state.v4"
-SEMANTIC_STATE_CONTRACT_VERSION = 4
+SEMANTIC_STATE_CONTRACT_ID = "tft.ppo.semantic-native-state.v5"
+SEMANTIC_STATE_CONTRACT_VERSION = 5
 SEMANTIC_ENTITY_SLOTS = 28 + 9 + 5
 SEMANTIC_ENTITY_FEATURES = 29
 SEMANTIC_GLOBAL_FEATURES = 52
@@ -43,7 +43,7 @@ def semantic_item_state_tensors(numeric):
     if not isinstance(numeric, __import__("torch").Tensor):
         raise TypeError("semantic numeric input must be a torch tensor")
     if numeric.ndim != 2 or numeric.shape[-1] != SEMANTIC_NUMERIC_DIM:
-        raise ValueError("semantic numeric input has an incompatible v4 shape")
+        raise ValueError("semantic numeric input has an incompatible v5 shape")
     import torch
     batch = numeric.shape[0]
     offset = SEMANTIC_ITEM_OFFSET
@@ -162,6 +162,23 @@ def build_semantic_state_checkpoint_contract(catalog_map: Mapping[str, int]) -> 
                 "item_target.magic_resist/150", "item_target.equipped_item_count/3",
             ],
             "champion_id": "catalog_internal_id_plus_one; zero=unknown_or_empty",
+        },
+        "item_state": {
+            "source": "AuditPlayerSnapshot native ItemEngine/catalog projection",
+            "blocks": {
+                "components": [10],
+                "inventory": [9, 17],
+                "recipes": [100, 17],
+                "inventory_target_fit": [9, 37],
+                "recipe_target_fit": [100, 37],
+                "anvil_state": [3],
+                "anvil_options": [9, 11],
+            },
+            "identity_bound_fields": [
+                "item_components", "item_inventory", "equipped_items",
+                "item_component_catalog", "pending_anvil_sequence",
+                "pending_anvil_kind", "pending_anvil_options",
+            ],
         },
         "numeric_dimension": SEMANTIC_NUMERIC_DIM,
         "entity_slot_count": SEMANTIC_ENTITY_SLOTS,
