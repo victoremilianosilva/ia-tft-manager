@@ -337,6 +337,12 @@ def test_step_masks_are_taken_from_same_native_snapshot(monkeypatch):
         assert all(mask["type_mask"][2] for mask in masks)
         assert all(not mask["type_mask"][8] for mask in masks)
         assert len(info["action_trace"]) == 8
+        assert len(info["action_outcome_events"]) == 8
+        assert info["action_outcome_events"][0]["contract_id"] == "tft.reward-action-outcome.v1"
+        assert info["action_outcome_events"][0]["action"]["family"] == "pass"
+        assert info["action_outcome_events"][0]["source_decision"]["snapshot_sequence"] == 1
+        assert info["action_outcome_events"][0]["outcome_snapshot"]["snapshot_sequence"] == 2
+        assert info["action_outcome_events"][0]["reward"] is None
         assert info["reward_audit"]["contract_id"] == "tft.ppo.reward-audit.v1"
         assert info["reward_audit"]["decision_sequence"] == 2
         assert info["reward_audit"]["player_rewards"][0]["components"] == {
