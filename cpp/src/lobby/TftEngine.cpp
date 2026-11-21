@@ -4062,7 +4062,9 @@ struct TFTEngine::Impl {
                                           std::int32_t attempted_damage,
                                           double hp_before,
                                           double hp_after,
-                                          const char* outcome_kind) {
+                                          const char* outcome_kind,
+                                          const std::string& simulator_version,
+                                          const std::string& coverage_status) {
             if (episode_id == 0 || decision_sequence == 0 ||
                 strategic_context_sequences[player_index] == 0) return;
             const nlohmann::json outcome{
@@ -4078,6 +4080,8 @@ struct TFTEngine::Impl {
                 {"incoming_damage", std::max(0.0, hp_before - hp_after)},
                 {"hp_after", hp_after},
                 {"outcome_kind", outcome_kind},
+                {"simulator_version", simulator_version},
+                {"mechanics_coverage_status", coverage_status},
                 {"source", "native_lobby_resolved_combat.v1"},
                 {"observed", true},
                 {"replay_artifact_id", nullptr},
@@ -4091,6 +4095,7 @@ struct TFTEngine::Impl {
         for (const auto& [a, b] : matchups) {
             if (!player_envs[a].info.alive || !player_envs[b].info.alive) continue;
             CombatInput input{};
+            std::string combat_coverage_status{"unavailable_not_measured"};
             input.context = CombatContext::PVP;
             // Python TFTLobby sends the lobby seed unchanged for each
             // deterministic combat; unit IDs are sequential across both teams.
@@ -4318,6 +4323,7 @@ struct TFTEngine::Impl {
                     const auto& coverage = projection_snapshot.coverage;
                     const auto coverage_result =
                         combat_evidence::CombatCoverageValidator{}.validate(coverage);
+                    combat_coverage_status = coverage_result.status;
                     const nlohmann::json combat_snapshot_event{
                         {"contract_id", "tft.combat-snapshot.v2"},
                         {"match_id", snapshot.match_id},
@@ -4512,9 +4518,11 @@ struct TFTEngine::Impl {
                     apply_damage(a, damage_to_a);
                     apply_damage(b, damage_to_b);
                     publish_combat_outcome(a, b, damage_to_a, hp_a_before,
-                        player_envs[a].info.hp, "draw");
+                        player_envs[a].info.hp, "draw", "combat-engine-generic.v1",
+                        combat_coverage_status);
                     publish_combat_outcome(b, a, damage_to_b, hp_b_before,
-                        player_envs[b].info.hp, "draw");
+                        player_envs[b].info.hp, "draw", "combat-engine-generic.v1",
+                        combat_coverage_status);
                     sync_player_economy(a);
                     sync_player_economy(b);
                     events.emplace_back("COMBAT_DRAW_DAMAGE: jogadores " +
@@ -4546,7 +4554,8 @@ struct TFTEngine::Impl {
             const double loser_hp_before = player_envs[loser].info.hp;
             apply_damage(loser, damage);
             publish_combat_outcome(loser, winner, damage, loser_hp_before,
-                player_envs[loser].info.hp, "resolved");
+                player_envs[loser].info.hp, "resolved", "combat-engine-generic.v1",
+                combat_coverage_status);
             const double winner_reward = combat_reward(
                 true, damage, 0, loser_survivors, winner_survivors);
             const double loser_reward = combat_reward(
