@@ -3,6 +3,7 @@ import torch
 
 from economy_finetuning.scenario_generator import (
     SCENARIOS,
+    decode_observation,
     decode_semantic_observation,
 )
 
@@ -64,3 +65,11 @@ def test_semantic_scenario_decoder_uses_native_player_identity_not_batch_positio
     state = decode_semantic_observation(semantic, player_id=0)
     assert state["player_id"] == 0
     assert state["gold"] == 90.0
+
+
+def test_legacy_compact_decoder_never_interprets_board_offsets_as_strategy():
+    observation = [0.5, 0.4, 0.6, 0.0, 0.2, 0.1, 0.5, 0.0, 0.0, 0.0]
+    state = decode_observation(observation, player_id=2)
+    assert state["hp"] == 50.0
+    assert "strategy" not in state
+    assert "strategy_name" not in state
