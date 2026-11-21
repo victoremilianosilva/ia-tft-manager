@@ -99,6 +99,27 @@ public:
    o.metadata.available=false;o.metadata.quality=EvidenceQuality::Invalid;
    o.metadata.reason="interest_gold_inconsistency";o.evidence_invalid.push_back("interest_if_resolved_now");return o;
   }
+  const bool has_combat_evidence =
+   c.evidence.estimated_incoming_damage || c.evidence.elimination_risk;
+  const auto approved_combat_source=[](const std::string& source) {
+   return source=="observed_hp+approved_replay_calibration.v1" ||
+    source=="observed_hp+approved_replay_trajectory.v1";
+  };
+  if(has_combat_evidence &&
+   (c.sequence==0||c.combat_evidence_sequence!=c.sequence||
+    c.combat_evidence_horizon_rounds==0||c.combat_evidence_horizon_rounds>10||
+    !approved_combat_source(c.incoming_damage_source)||
+    !approved_combat_source(c.elimination_risk_source)||
+    c.combat_calibration_protocol_id.empty()||
+    !is_sha256(c.combat_calibration_report_sha256)||
+    c.combat_dataset_version.empty()||c.combat_replay_artifact_ids.empty()||
+    !std::isfinite(c.combat_evidence_uncertainty)||
+    c.combat_evidence_uncertainty<0.0||c.combat_evidence_uncertainty>1.0)) {
+   o.metadata.available=false;o.metadata.quality=EvidenceQuality::Invalid;
+   o.metadata.reason="combat_evidence_provenance_horizon_or_sequence_invalid";
+   o.evidence_invalid.push_back("combat_evidence_provenance");
+   return o;
+  }
   if(!o.metadata.available)return o;
   o.gold=c.gold;o.level=c.level;o.xp=c.xp;o.xp_to_next=c.xp_to_next;
   o.interest_if_resolved_now=c.interest_if_resolved_now;o.projected_next_round_income=c.projected_next_round_income;
@@ -204,5 +225,10 @@ private:
  }
  static double unit(double v){return std::isfinite(v)?std::clamp(v,0.0,1.0):0.0;}
  static double signed_unit(double v){return std::isfinite(v)?std::clamp(v,-1.0,1.0):0.0;}
+ static bool is_sha256(const std::string& value) {
+  return value.size()==64&&std::all_of(value.begin(),value.end(),[](unsigned char c) {
+   return (c>='0'&&c<='9')||(c>='a'&&c<='f');
+  });
+ }
 };
 } // namespace tft::composition_intelligence
