@@ -1,0 +1,165 @@
+from copy import deepcopy
+
+import pytest
+
+from reward_outcome_producers import build_action_outcome_events
+
+
+def _unit(uuid="unit-a", champion="A", star=1):
+    return {
+        "occupied": True, "uuid": uuid, "champion_id": champion,
+        "star": star, "cost": 2, "items": [], "trait_names": [],
+        "role": 3, "attack_damage": 0.0, "attack_speed": 0.0,
+        "max_health": 0.0, "armor": 0.0, "magic_resist": 0.0,
+    }
+
+
+def _empty():
+    return {
+        "occupied": False, "uuid": "", "champion_id": "",
+        "star": 0, "cost": 0, "items": [], "trait_names": [],
+        "role": 3, "attack_damage": 0.0, "attack_speed": 0.0,
+        "max_health": 0.0, "armor": 0.0, "magic_resist": 0.0,
+    }
+
+
+def _player(player_id):
+    return {
+        "player_id": player_id, "gold": 30, "level": 5, "xp": 2,
+        "interest_if_resolved_now": 2, "positioning_score": 0.0,
+        "board_quality_score": 0.0,
+        "board": [_empty() for _ in range(28)],
+        "bench": [_empty() for _ in range(9)],
+        "shop": [_empty() for _ in range(5)],
+        "shop_offer_revisions": [0] * 5,
+    }
+
+
+def _snapshot(sequence, player_sequence, round_number=4):
+    return {
+        "contract_id": "tft.native-state-snapshot",
+        "contract_version": 5,
+        "engine_instance_id": "engine-1",
+        "episode_id": 7,
+        "snapshot_sequence": sequence,
+        "player_decision_sequences": [player_sequence] * 8,
+        "round": round_number,
+        "economy_resolution_events": [],
+        "players": [_player(i) for i in range(8)],
+    }
+
+
+def _traces(action_type=6, selected=0):
+    return [
+        {
+            "player_id": player_id,
+            "effective_action": [action_type if player_id == 0 else 6, selected, 0, 0, 0, 0],
+            "handler_applied": True,
+            "status_reason": "applied",
+        }
+        for player_id in range(8)
+    ]
+
+
+def test_produces_factual_purchase_and_upgrade_events_without_reward_labels():
+    before = _snapshot(5, 10)
+    after = _snapshot(6, 11)
+    before["players"][0]["shop"][0] = _unit(uuid="offer-a")
+    before["players"][0]["shop_offer_revisions"][0] = 3
+    after["players"][0]["bench"][0] = _unit(uuid="owned-a")
+    after["players"][0]["gold"] = 28
+    traces = _traces(action_type=0)
+
+    events = build_action_outcome_events(
+        before_snapshot=before, after_snapshot=after, action_traces=traces
+    )
+
+    event = events[0]
+    assert event["contract_id"] == "tft.reward-action-outcome.v1"
+    assert event["action"]["family"] == "purchase"
+    assert event["facts"]["selected_shop_offer"]["champion_id"] == "A"
+    assert event["facts"]["units_added"][0]["uuid"] == "owned-a"
+    assert event["facts"]["owned_copy_equivalent_delta"] == {"A": 1}
+    assert event["reward"] is None
+    assert event["reward_eligible"] is False
+
+
+def test_records_reroll_shop_revision_changes_and_xp_progress():
+    before = _snapshot(5, 10)
+    after = _snapshot(6, 11)
+    before["players"][0]["shop_offer_revisions"] = [1, 1, 1, 1, 1]
+    after["players"][0]["shop_offer_revisions"] = [2, 2, 2, 2, 2]
+    before["players"][1]["xp"] = 2
+    after["players"][1]["xp"] = 6
+    before["players"][1]["gold"] = 30
+    after["players"][1]["gold"] = 24
+    traces = _traces(action_type=1)
+    traces[1]["effective_action"] = [2, 0, 0, 0, 0, 0]
+
+    events = build_action_outcome_events(
+        before_snapshot=before, after_snapshot=after, action_traces=traces
+    )
+
+    assert len(events[0]["facts"]["shop_revision_changes"]) == 5
+    assert events[0]["action"]["family"] == "reroll"
+    assert events[1]["action"]["family"] == "xp_purchase"
+    assert events[1]["facts"]["xp_delta"] == 4
+    assert events[1]["facts"]["gold_delta"] == -6
+
+
+def test_records_sale_and_physical_board_position_changes():
+    before = _snapshot(5, 10)
+    after = _snapshot(6, 11)
+    before["players"][0]["bench"][0] = _unit()
+    after["players"][0]["gold"] = 33
+    before["players"][1]["board"][0] = _unit(uuid="mover")
+    after["players"][1]["board"][1] = _unit(uuid="mover")
+    after["players"][1]["positioning_score"] = 1.5
+    after["players"][1]["board_quality_score"] = 2.0
+    traces = _traces(action_type=5)
+    traces[1]["effective_action"] = [4, 0, 0, 0, 0, 1]
+
+    events = build_action_outcome_events(
+        before_snapshot=before, after_snapshot=after, action_traces=traces
+    )
+
+    assert events[0]["action"]["family"] == "sale"
+    assert events[0]["facts"]["units_removed"][0]["uuid"] == "unit-a"
+    assert events[1]["action"]["family"] == "positioning"
+    assert events[1]["facts"]["board_unit_moves"] == [
+        {"uuid": "mover", "from_slot": 0, "to_slot": 1}
+    ]
+    assert events[1]["facts"]["positioning_score_delta"] == 1.5
+    assert events[1]["facts"]["board_quality_delta"] == 2.0
+
+
+def test_does_not_claim_action_gold_or_xp_delta_when_round_income_overlaps():
+    before = _snapshot(5, 10)
+    after = _snapshot(6, 11)
+    before["players"][0]["gold"] = 49
+    after["players"][0]["gold"] = 55
+    after["economy_resolution_events"] = [{"player_id": 0, "producer": "EconomyEngine::resolve_round"}]
+
+    events = build_action_outcome_events(
+        before_snapshot=before, after_snapshot=after, action_traces=_traces(action_type=2)
+    )
+
+    assert events[0]["facts"]["economy_resolution_overlapped"] is True
+    assert events[0]["facts"]["gold_delta"] is None
+    assert events[0]["facts"]["xp_delta"] is None
+
+
+def test_rejects_snapshot_or_player_sequence_misalignment():
+    before = _snapshot(5, 10)
+    after = _snapshot(6, 10)
+    with pytest.raises(RuntimeError, match="Sequência por jogador não avançou"):
+        build_action_outcome_events(
+            before_snapshot=before, after_snapshot=after, action_traces=_traces()
+        )
+
+    after = _snapshot(6, 11)
+    after["engine_instance_id"] = "other-engine"
+    with pytest.raises(RuntimeError, match="divergem em engine_instance_id"):
+        build_action_outcome_events(
+            before_snapshot=before, after_snapshot=after, action_traces=_traces()
+        )
