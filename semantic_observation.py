@@ -183,7 +183,7 @@ def validate_semantic_state_warm_start_migration(
         and historical_payload.get("source", {}).get("contract_version") == 3
         and historical_owner_source.get("contract_version") == 2
     ):
-        # Reviewed v2 -> v3 migration: native snapshot v3 -> v4 adds capacity
+        # Reviewed v2 -> v4 migration: native snapshot v3 -> v4 adds capacity
         # and temporal facts; the policy consumes board/candidate entities
         # through the identity-bound semantic projection.
         historical_payload["contract_id"] = expected["contract"]["contract_id"]
@@ -191,14 +191,15 @@ def validate_semantic_state_warm_start_migration(
         historical_source = dict(historical_payload.get("source", {}))
         historical_source["contract_version"] = 4
         historical_payload["source"] = historical_source
-        historical_payload["global_features"] = expected["contract"]["global_features"][:21]
-        historical_payload["numeric_dimension"] = 21 + (
-            SEMANTIC_ENTITY_SLOTS * SEMANTIC_ENTITY_FEATURES
-        )
+        historical_payload["global_features"] = expected["contract"]["global_features"]
+        historical_payload["numeric_dimension"] = expected["contract"]["numeric_dimension"]
         historical_encoder = dict(historical_payload.get("encoder", {}))
         historical_encoder["fusion"] = (
             "semantic_global_mlp_plus_additive_to_shared_actor_critic_latent"
         )
+        historical_entity_slots = dict(historical_payload.get("entity_slots", {}))
+        historical_entity_slots["features"] = expected["contract"]["entity_slots"]["features"]
+        historical_payload["entity_slots"] = historical_entity_slots
         historical_encoder["numeric_plus_embedding_input_dim"] = (
             expected["contract"]["encoder"]["numeric_plus_embedding_input_dim"]
         )
