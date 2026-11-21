@@ -165,6 +165,7 @@ def test_native_semantic_consumers_ignore_legacy_flat_board_item_and_candidate_b
         obs_dim=obs.shape[-1], action_dims=list(ACTION_DIMS),
         hidden_size=32, semantic_vocab_size=64,
     )
+    policy.eval()
     unrelated_flat = torch.randn_like(obs) * 100.0
 
     assert torch.equal(
