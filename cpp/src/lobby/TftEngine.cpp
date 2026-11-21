@@ -4157,19 +4157,34 @@ struct TFTEngine::Impl {
                     const bool matchup_valid =
                         combat_evidence::MatchupResolver{}.resolve(
                             snapshot, static_cast<std::int32_t>(b), resolved_opponent);
-                    if (!validation.valid || !matchup_valid ||
-                        resolved_opponent != static_cast<std::int32_t>(b)) {
-                        events.emplace_back(
-                            "COMBAT_EVIDENCE_UNAVAILABLE: " + validation.reason);
-                    } else {
-                        events.emplace_back(
-                            "COMBAT_SNAPSHOT_VALIDATED: match=" +
-                            std::to_string(snapshot.match_id) + ", player=" +
-                            std::to_string(snapshot.player_id) + ", opponent=" +
-                            std::to_string(snapshot.opponent_id) + ", round=" +
-                            std::to_string(snapshot.round) + ", sequence=" +
-                            std::to_string(snapshot.sequence));
-                    }
+                    const bool snapshot_valid = validation.valid && matchup_valid &&
+                        resolved_opponent == static_cast<std::int32_t>(b);
+                    const std::string validation_reason = !validation.valid
+                        ? validation.reason
+                        : (!matchup_valid || resolved_opponent != static_cast<std::int32_t>(b)
+                            ? "actual_opponent_identity_mismatch" : "valid");
+                    // Publish the complete factual pair as a versioned structured
+                    // event in StepResult.events so replay/audit consumers can
+                    // persist it. Do not discard the roster or emit only a text
+                    // summary; invalid snapshots are retained with their reason.
+                    const nlohmann::json combat_snapshot_event{
+                        {"contract_id", "tft.combat-snapshot.v1"},
+                        {"match_id", snapshot.match_id},
+                        {"player_id", snapshot.player_id},
+                        {"opponent_id", snapshot.opponent_id},
+                        {"round", snapshot.round},
+                        {"decision_sequence", snapshot.sequence},
+                        {"player_hp_before", snapshot.player_hp},
+                        {"opponent_hp_before", snapshot.opponent_hp},
+                        {"player_unit_uuids", snapshot.player_unit_ids},
+                        {"opponent_unit_uuids", snapshot.opponent_unit_ids},
+                        {"player_roster_complete", snapshot.player_roster_complete},
+                        {"opponent_roster_complete", snapshot.opponent_roster_complete},
+                        {"validated", snapshot_valid},
+                        {"validation_reason", validation_reason}
+                    };
+                    events.emplace_back(
+                        "COMBAT_SNAPSHOT_V1:" + combat_snapshot_event.dump());
                 }
                 const auto combat = combat_engine.simulate(input);
                 if (!combat.success || !combat.completed)
