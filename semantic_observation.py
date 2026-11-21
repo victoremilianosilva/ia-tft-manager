@@ -866,6 +866,7 @@ def validate_semantic_batch_alignment(
         "engine_instance_id", "episode_id", "decision_sequence",
         "player_decision_sequence", "player_id", "round", "lobby_index",
     )
+    observed_item_catalog_hashes = set()
     for index, (metadata, identity, digest) in enumerate(zip(metadata_rows, identities, hashes)):
         if not isinstance(metadata, Mapping) or not isinstance(identity, Mapping):
             raise TypeError(f"semantic row {index} identity/metadata must be mappings")
@@ -885,9 +886,20 @@ def validate_semantic_batch_alignment(
         # Re-project from the native source so a detached/mutated tensor cannot
         # retain a stale digest merely because its metadata still looks valid.
         expected_row = project_native_player_state(metadata, catalog_map)
+        observed_item_catalog_hashes.add(
+            expected_row["item_state_identity"]["item_catalog_sha256"]
+        )
         if (
             list(numeric[index]) != expected_row["numeric"]
             or list(champion_ids[index]) != expected_row["champion_ids"]
             or digest != expected_row["sha256"]
         ):
             raise ValueError(f"semantic row {index} tensor content does not match its native projection hash")
+    expected_item_catalog_hash = (
+        next(iter(observed_item_catalog_hashes)) if len(observed_item_catalog_hashes) == 1 else None
+    )
+    if (
+        len(observed_item_catalog_hashes) > 1
+        or batch.get("item_catalog_sha256") != expected_item_catalog_hash
+    ):
+        raise ValueError("semantic batch item catalog fingerprint diverges from native player snapshots")
