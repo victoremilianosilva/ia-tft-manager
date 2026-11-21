@@ -95,6 +95,7 @@ def native_semantic_state_for_players(lobby, player_ids, catalog_map, device):
             "champion_ids": torch.zeros((0, SEMANTIC_ENTITY_SLOTS), dtype=torch.long, device=device),
             "identities": [],
             "hashes": [],
+            "snapshot_metadata": [],
             "contract_id": contract["contract"]["contract_id"],
             "contract_hash": contract["sha256"],
         }
@@ -157,6 +158,7 @@ def native_semantic_state_for_players(lobby, player_ids, catalog_map, device):
         ),
         "identities": batch["identities"],
         "hashes": batch["hashes"],
+        "snapshot_metadata": metadata_rows,
         "contract_id": batch["contract_id"],
         "contract_hash": batch["contract_hash"],
         "item_catalog_sha256": batch["item_catalog_sha256"],
