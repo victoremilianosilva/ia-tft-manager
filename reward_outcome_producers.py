@@ -155,6 +155,19 @@ def build_action_outcome_events(
         _int(event.get("player_id"), "economy_resolution.player_id")
         for event in economy_events
     }
+    pvp_credit_events = after_snapshot.get("pvp_result_credit_events")
+    if not isinstance(pvp_credit_events, Sequence) or any(
+        not isinstance(event, Mapping) for event in pvp_credit_events
+    ):
+        raise RuntimeError("Snapshot pós-ação sem eventos nativos de crédito PvP.")
+    pvp_credit_players = {
+        player_id
+        for event in pvp_credit_events
+        for player_id in (
+            _int(event.get("winner_player_id"), "pvp_credit.winner_player_id"),
+            _int(event.get("loser_player_id"), "pvp_credit.loser_player_id"),
+        )
+    }
     events = []
     for player_id in range(_PLAYERS):
         before = before_players[player_id]
@@ -230,7 +243,8 @@ def build_action_outcome_events(
         before_interest = _int(before.get("interest_if_resolved_now"), "before.interest")
         after_interest = _int(after.get("interest_if_resolved_now"), "after.interest")
         resolved = player_id in economy_resolved
-        gold_delta = None if resolved else after_gold - before_gold
+        pvp_credit_overlapped = player_id in pvp_credit_players
+        gold_delta = None if resolved or pvp_credit_overlapped else after_gold - before_gold
         xp_delta = None if resolved else (
             _int(after.get("xp"), "after.xp") - _int(before.get("xp"), "before.xp")
         )
@@ -240,6 +254,13 @@ def build_action_outcome_events(
         round_income_events = [
             dict(event) for event in economy_events
             if _int(event.get("player_id"), "economy_resolution.player_id") == player_id
+        ]
+        player_pvp_credit_events = [
+            dict(event) for event in pvp_credit_events
+            if player_id in (
+                _int(event.get("winner_player_id"), "pvp_credit.winner_player_id"),
+                _int(event.get("loser_player_id"), "pvp_credit.loser_player_id"),
+            )
         ]
         moved = []
         for uuid, current in after_units.items():
@@ -314,9 +335,14 @@ def build_action_outcome_events(
                 "gold_delta": gold_delta,
                 "interest_if_resolved_now_before": before_interest,
                 "interest_if_resolved_now_after": after_interest,
-                "interest_if_resolved_now_delta": None if resolved else after_interest - before_interest,
+                "interest_if_resolved_now_delta": (
+                    None if resolved or pvp_credit_overlapped
+                    else after_interest - before_interest
+                ),
                 "economy_resolution_overlapped": resolved,
+                "pvp_credit_overlapped": pvp_credit_overlapped,
                 "round_income_events": round_income_events,
+                "pvp_result_credit_events": player_pvp_credit_events,
                 "board_unit_moves": moved if family in ("deploy", "positioning") else [],
                 "positioning_score_before": pre_position,
                 "positioning_score_after": post_position,
