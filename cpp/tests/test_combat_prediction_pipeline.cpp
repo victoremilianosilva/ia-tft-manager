@@ -22,6 +22,7 @@ CombatUnit make_unit(int id, UnitTeam team, int x, int source_slot) {
     unit.attack_speed = 1.0f;
     unit.attack_range = 1.0f;
     unit.ability.api_name = "generic_basic_attack_only";
+    unit.ability.metadata_complete = true;
     return unit;
 }
 
@@ -89,6 +90,7 @@ int main() {
 
     auto missing_ability = input;
     missing_ability.player_a.units.front().ability.api_name.clear();
+    missing_ability.player_a.units.front().ability.metadata_complete = false;
     auto incomplete_snapshot = builder.build(identity, missing_ability, 31);
     assert(incomplete_snapshot.valid);
     assert(!CombatCoverageValidator{}.validate(incomplete_snapshot.coverage).complete);
