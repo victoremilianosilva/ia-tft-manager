@@ -56,6 +56,27 @@ def test_checkpoint_lineage_rejects_policy_shape_change_even_when_components_mat
         validate_checkpoint_lineage_contract(manifest, changed_policy, *inputs[1:])
 
 
+def test_checkpoint_lineage_accepts_only_retired_flat_global_mlp_weights():
+    inputs = _inputs()
+    historical_policy = dict(inputs[0])
+    historical_policy["global_mlp.0.weight"] = torch.zeros((256, 128), dtype=torch.float32)
+    historical_policy["global_mlp.0.bias"] = torch.zeros((256,), dtype=torch.float32)
+    historical_policy["global_mlp.2.weight"] = torch.zeros((256, 256), dtype=torch.float32)
+    historical_policy["global_mlp.2.bias"] = torch.zeros((256,), dtype=torch.float32)
+    historical_manifest = build_checkpoint_lineage_contract(
+        historical_policy, *inputs[1:]
+    )
+
+    # The historical manifest remains intact and hash-validated. Only its
+    # retired flat-observation MLP weights are ignored by semantic-v6 runtime.
+    validate_checkpoint_lineage_contract(historical_manifest, *inputs)
+
+    changed_policy = dict(inputs[0])
+    changed_policy["critic.weight"] = torch.zeros((2, 4), dtype=torch.float32)
+    with pytest.raises(ValueError, match="lineage incompatível"):
+        validate_checkpoint_lineage_contract(historical_manifest, changed_policy, *inputs[1:])
+
+
 def test_checkpoint_lineage_rejects_missing_or_malformed_manifest():
     inputs = _inputs()
     with pytest.raises(TypeError, match="mapping"):
