@@ -166,7 +166,7 @@ def validate_semantic_state_checkpoint_integrity(manifest: Mapping) -> None:
 def validate_semantic_state_warm_start_migration(
     manifest: Mapping, catalog_map: Mapping[str, int]
 ) -> None:
-    """Allow only the reviewed strategic-owner v1-to-v2 provenance transition."""
+    """Allow only the reviewed semantic v2-to-v4 and owner v1-to-v2 warm-starts."""
     validate_semantic_state_checkpoint_integrity(manifest)
     expected = build_semantic_state_checkpoint_contract(catalog_map)
     historical_payload = manifest.get("contract")
@@ -183,9 +183,9 @@ def validate_semantic_state_warm_start_migration(
         and historical_payload.get("source", {}).get("contract_version") == 3
         and historical_owner_source.get("contract_version") == 2
     ):
-        # Reviewed v2 -> v4 migration: native snapshot v3 -> v4 adds capacity
-        # and temporal facts; the policy consumes board/candidate entities
-        # through the identity-bound semantic projection.
+        # Reviewed v2 -> v4 migration: native snapshot v3 -> v4 adds capacity,
+        # temporal facts and board/bench item-target profiles. The semantic
+        # entity stride expands while historical identity remains bound.
         historical_payload["contract_id"] = expected["contract"]["contract_id"]
         historical_payload["version"] = expected["contract"]["version"]
         historical_source = dict(historical_payload.get("source", {}))
