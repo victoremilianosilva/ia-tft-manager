@@ -483,6 +483,8 @@ class Trainer:
                     if not key.startswith(("semantic_id_embedding.", "semantic_encoder."))
                 }
             migrated_checkpoint = self.policy.load_compatible_state_dict(policy_weights)
+            if semantic_state_warm_start:
+                self.policy.reset_migrated_semantic_consumer_columns()
             print("⚠️ Checkpoint migrado; optimizer/scheduler serão reiniciados." if migrated_checkpoint
                   else "✅ Pesos da policy carregados.")
 
