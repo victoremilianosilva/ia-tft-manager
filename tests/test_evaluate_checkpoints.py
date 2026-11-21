@@ -15,6 +15,8 @@ import torch
 
 from scripts.audit_strategic_policy import _action_dict as strategic_action_dict, _json_masks, _player_gold
 
+from semantic_observation import SEMANTIC_NUMERIC_DIM, SEMANTIC_ENTITY_SLOTS
+
 from scripts.evaluate_checkpoints import (
     ACTION_DIMS,
     action_dict,
@@ -80,10 +82,12 @@ def test_as_mask_batch_selects_requested_players_and_keeps_boolean_dtype():
 
 
 class _FakePolicy:
-    def get_action(self, observations, masks, deterministic):
+    def get_action(self, observations, masks, deterministic, semantic_state):
         assert deterministic is True
         assert observations.ndim == 2
         assert all(mask.dtype == torch.bool for mask in masks.values())
+        assert semantic_state["numeric"].shape == (observations.shape[0], SEMANTIC_NUMERIC_DIM)
+        assert semantic_state["champion_ids"].shape == (observations.shape[0], SEMANTIC_ENTITY_SLOTS)
         actions = torch.zeros((observations.shape[0], 6), dtype=torch.int64)
         actions[:, 0] = 6  # PASS
         return actions, None, None
@@ -93,12 +97,21 @@ def test_policy_actions_returns_one_six_component_action_per_requested_index():
     observations = np.zeros((4, 12), dtype=np.float32)
     masks = [{"type_mask": np.ones(9, dtype=np.bool_)} for _ in range(4)]
 
+    semantic_state = {
+        "numeric": torch.zeros((2, SEMANTIC_NUMERIC_DIM), dtype=torch.float32),
+        "champion_ids": torch.zeros((2, SEMANTIC_ENTITY_SLOTS), dtype=torch.long),
+        "identities": [{"player_id": 1}, {"player_id": 3}],
+        "hashes": ["a" * 64, "b" * 64],
+        "contract_id": "tft.ppo.semantic-native-state.v2",
+        "contract_hash": "c" * 64,
+    }
     result = policy_actions(
         _FakePolicy(),
         observations,
         masks,
         [1, 3],
         torch.device("cpu"),
+        semantic_state,
     )
 
     assert result == {1: [6, 0, 0, 0, 0, 0], 3: [6, 0, 0, 0, 0, 0]}
@@ -109,6 +122,36 @@ class _FakePlayer:
         self.alive = alive
 
 
+def _empty_unit():
+    return {"occupied": False, "champion_id": "", "star": 0, "cost": 0,
+            "items": [], "trait_names": []}
+
+
+def _native_player(player_id, sequence=1):
+    return {
+        "player_id": player_id, "hp": 100, "damage_taken": 0, "alive": True,
+        "wins": 0, "losses": 0, "placement": None,
+        "opponent_id": (player_id + 1) % 8, "gold": 10, "level": 1, "xp": 0,
+        "win_streak": 0, "loss_streak": 0, "gold_before_interest": 10,
+        "interest_if_resolved_now": 1,
+        "board": [_empty_unit() for _ in range(28)],
+        "bench": [_empty_unit() for _ in range(9)],
+        "shop": [_empty_unit() for _ in range(5)],
+        "strategic_state": {
+            "contract_id": "tft.strategic-owner-observation", "contract_version": 2,
+            "source_namespace": "tft.engine.strategic-owners",
+            "producer": "TFTEngine::get_audit_snapshot",
+            "episode_id": 1, "player_decision_sequence": sequence,
+            "strategic_context_sequence": sequence, "player_id": player_id, "round": 1,
+            "active_composition_valid": False, "active_unit_ids": [],
+            "active_core_unit_ids": [], "direction_valid": False,
+            "direction_reference_unit_ids": [], "pivot_candidate_valid": False,
+            "pivot_reference_unit_ids": [], "opportunity_cost_available": False,
+            "unit_copy_progress": [],
+        },
+    }
+
+
 class _FakeLobby:
     def __init__(self, ranking=None, finish=True):
         self.finished = False
@@ -116,6 +159,20 @@ class _FakeLobby:
         self._ranking = ranking
         self._finish = finish
         self.last_actions = None
+        self.sequence = 1
+
+    def get_snapshot_metadata(self):
+        return {
+            "engine_instance_id": "fake-engine", "episode_id": 1,
+            "decision_sequence": self.sequence, "stage": 1, "round": 1,
+            "player_decision_sequences": [self.sequence] * 8,
+            "native_state_snapshot": {
+                "contract_id": "tft.native-state-snapshot", "contract_version": 3,
+                "producer": "TFTEngine::get_audit_snapshot",
+                "source_namespace": "tft.engine.observation-snapshot",
+                "players": [_native_player(i, self.sequence) for i in range(8)],
+            },
+        }
 
     def reset(self):
         return np.zeros((8, 12), dtype=np.float32)
@@ -125,6 +182,7 @@ class _FakeLobby:
 
     def step(self, actions):
         self.last_actions = actions
+        self.sequence += 1
         self.finished = self._finish
         ranking = self._ranking or []
         players = [
@@ -156,6 +214,7 @@ def test_run_match_reports_all_eight_players_without_inventing_results():
         candidate_slots={0, 1, 2, 3},
         seed=123,
         device=torch.device("cpu"),
+        catalog_map={"TFT_TestChampion": 0},
         max_steps=2,
     )
 
@@ -177,6 +236,7 @@ def test_run_match_rejects_incomplete_final_ranking():
             candidate_slots={0, 1, 2, 3},
             seed=123,
             device=torch.device("cpu"),
+            catalog_map={"TFT_TestChampion": 0},
             max_steps=2,
         )
 
@@ -192,6 +252,7 @@ def test_run_match_rejects_match_that_exceeds_step_limit():
             candidate_slots={0, 1, 2, 3},
             seed=123,
             device=torch.device("cpu"),
+            catalog_map={"TFT_TestChampion": 0},
             max_steps=1,
         )
 
@@ -328,13 +389,16 @@ def test_paired_summary_rejects_same_player_assigned_to_both_policies():
 
 
 def _evaluation_artifact(checkpoint_sha):
+    from semantic_observation import build_semantic_state_checkpoint_contract
+
+    semantic_contract = build_semantic_state_checkpoint_contract({"TFT_TestChampion": 0})
     contract = {
         "contract_id": "tft.ppo-checkpoint-lineage.v1",
         "version": 1,
         "components": {
             "action_mask_contract": {"contract_id": "action-mask-v1"},
             "critic_mask_input_contract": {"contract_id": "critic-mask-v1"},
-            "semantic_state_contract": {"contract_id": "semantic-state-v1"},
+            "semantic_state_contract": semantic_contract,
             "reward_contract": {"contract_id": "reward-v1"},
         },
         "policy_state_signature": [{"name": "actor.weight", "shape": [4, 3], "dtype": "torch.float32"}],
@@ -363,6 +427,7 @@ def test_paired_evaluation_enforces_lineage_and_emits_rotated_reproducible_resul
         seeds=[100, 101, 102, 103],
         device=torch.device("cpu"),
         split="validation",
+        catalog_map={"TFT_TestChampion": 0},
         master_seed=17,
         max_steps=2,
     )
@@ -394,6 +459,7 @@ def test_paired_evaluation_rejects_semantically_different_checkpoint_lineages():
             seeds=[1],
             device=torch.device("cpu"),
             split="test",
+            catalog_map={"TFT_TestChampion": 0},
             max_steps=2,
         )
 
@@ -412,6 +478,7 @@ def test_paired_evaluation_rejects_tampered_lineage_hash_and_duplicate_seeds():
             seeds=[1],
             device=torch.device("cpu"),
             split="test",
+            catalog_map={"TFT_TestChampion": 0},
             max_steps=2,
         )
     with pytest.raises(ValueError, match="non-empty and unique"):
@@ -424,6 +491,7 @@ def test_paired_evaluation_rejects_tampered_lineage_hash_and_duplicate_seeds():
             seeds=[1, 1],
             device=torch.device("cpu"),
             split="test",
+            catalog_map={"TFT_TestChampion": 0},
             max_steps=2,
         )
 

@@ -70,7 +70,7 @@ def build_semantic_state_checkpoint_contract(catalog_map: Mapping[str, int]) -> 
         },
         "strategic_owner_source": {
             "contract_id": "tft.strategic-owner-observation",
-            "contract_version": 1,
+            "contract_version": 2,
             "producer": "TFTEngine::get_audit_snapshot",
             "source_namespace": "tft.engine.strategic-owners",
             "identity": ["episode_id", "player_id", "round", "player_decision_sequence"],
@@ -125,9 +125,50 @@ def build_semantic_state_checkpoint_contract(catalog_map: Mapping[str, int]) -> 
     }
 
 
-def validate_semantic_state_checkpoint_contract(manifest: Mapping, catalog_map: Mapping[str, int]) -> None:
+def validate_semantic_state_checkpoint_integrity(manifest: Mapping) -> None:
+    """Validate an old semantic manifest's own hash before an explicit warm-start."""
+    if not isinstance(manifest, Mapping):
+        raise TypeError("semantic_state_contract must be a mapping")
+    if type(manifest.get("manifest_version")) is not int or manifest.get("manifest_version") != 1:
+        raise ValueError("semantic_state_contract manifest version is unsupported")
+    payload = manifest.get("contract")
+    if not isinstance(payload, Mapping):
+        raise TypeError("semantic_state_contract.contract must be a mapping")
+    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    expected_hash = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+    if manifest.get("sha256") != expected_hash:
+        raise ValueError("semantic_state_contract hash is invalid")
+
+
+def validate_semantic_state_warm_start_migration(
+    manifest: Mapping, catalog_map: Mapping[str, int]
+) -> None:
+    """Allow only the reviewed strategic-owner v1-to-v2 provenance transition."""
+    validate_semantic_state_checkpoint_integrity(manifest)
     expected = build_semantic_state_checkpoint_contract(catalog_map)
-    if not isinstance(manifest, Mapping) or dict(manifest) != expected:
+    historical_payload = manifest.get("contract")
+    if not isinstance(historical_payload, Mapping):
+        raise TypeError("semantic_state_contract.contract must be a mapping")
+    historical_payload = dict(historical_payload)
+    historical_owner_source = historical_payload.get("strategic_owner_source")
+    if not isinstance(historical_owner_source, Mapping):
+        raise ValueError("historical semantic contract has no strategic owner source")
+    historical_owner_source = dict(historical_owner_source)
+    if historical_owner_source.get("contract_version") != 1:
+        raise ValueError("only strategic-owner contract v1-to-v2 warm-start is approved")
+    historical_owner_source["contract_version"] = 2
+    historical_payload["strategic_owner_source"] = historical_owner_source
+    if historical_payload != expected["contract"]:
+        raise ValueError(
+            "semantic warm-start is limited to owner provenance v1-to-v2; "
+            "catalog, layout, normalization or other contract drift is not migratable"
+        )
+
+
+def validate_semantic_state_checkpoint_contract(manifest: Mapping, catalog_map: Mapping[str, int]) -> None:
+    validate_semantic_state_checkpoint_integrity(manifest)
+    expected = build_semantic_state_checkpoint_contract(catalog_map)
+    if dict(manifest) != expected:
         raise ValueError("semantic_state_contract is incompatible with the native source/catalog projection")
 
 
@@ -380,6 +421,7 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
         "decision_sequence": metadata["decision_sequence"],
         "player_decision_sequence": metadata["player_decision_sequence"],
         "player_id": player_id,
+        "round": round_number,
         "lobby_index": metadata["lobby_index"],
     }
     digest = hashlib.sha256(
@@ -388,8 +430,21 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
                 "identity": identity,
                 "numeric": numeric,
                 "champion_ids": champion_ids,
-                "strategic_owner_contract": strategic.get("contract_id"),
-                "strategic_owner_version": strategic.get("contract_version"),
+                "strategic_owner_provenance": {
+                    "contract_id": strategic.get("contract_id"),
+                    "contract_version": strategic.get("contract_version"),
+                    "strategic_context_sequence": strategic_context_sequence,
+                    "active_composition_id": strategic.get("active_composition_id"),
+                    "active_composition_version": strategic.get("active_composition_version"),
+                    "direction_identity": strategic.get("direction_identity"),
+                    "pivot_candidate_identity": strategic.get("pivot_candidate_identity"),
+                    "pivot_target_composition_identity": strategic.get("pivot_target_composition_identity"),
+                    "pivot_source_composition_version": strategic.get("pivot_source_composition_version"),
+                    "active_composition_valid": active_valid,
+                    "direction_valid": direction_valid,
+                    "pivot_candidate_valid": pivot_valid,
+                    "opportunity_cost_available": opportunity_available,
+                },
             },
             sort_keys=True, separators=(",", ":"), ensure_ascii=False,
         ).encode("utf-8")
@@ -404,9 +459,70 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
 
 def build_semantic_batch(metadata_rows, catalog_map: Mapping[str, int]):
     projected = [project_native_player_state(row, catalog_map) for row in metadata_rows]
+    contract = build_semantic_state_checkpoint_contract(catalog_map)
     return {
         "numeric": [row["numeric"] for row in projected],
         "champion_ids": [row["champion_ids"] for row in projected],
         "hashes": [row["sha256"] for row in projected],
         "identities": [row["identity"] for row in projected],
+        "contract_id": contract["contract"]["contract_id"],
+        "contract_hash": contract["sha256"],
     }
+
+
+def validate_semantic_batch_alignment(
+    batch: Mapping,
+    metadata_rows: Sequence[Mapping],
+    expected_contract: Mapping,
+    catalog_map: Mapping[str, int],
+) -> None:
+    """Fail closed unless each semantic row is bound to its exact native snapshot."""
+    if not isinstance(batch, Mapping):
+        raise TypeError("semantic batch must be a mapping")
+    if not isinstance(metadata_rows, Sequence) or isinstance(metadata_rows, (str, bytes)):
+        raise TypeError("semantic metadata rows must be a sequence")
+    identities = batch.get("identities")
+    hashes = batch.get("hashes")
+    numeric = batch.get("numeric")
+    champion_ids = batch.get("champion_ids")
+    expected_id = expected_contract.get("contract", {}).get("contract_id")
+    expected_hash = expected_contract.get("sha256")
+    active_contract = build_semantic_state_checkpoint_contract(catalog_map)
+    if dict(expected_contract) != active_contract:
+        raise ValueError("active semantic checkpoint contract does not match the native catalog")
+    if batch.get("contract_id") != expected_id or batch.get("contract_hash") != expected_hash:
+        raise ValueError("semantic batch contract identity/hash diverges from the active checkpoint contract")
+    row_count = len(metadata_rows)
+    if not all(isinstance(value, Sequence) and len(value) == row_count for value in (
+        identities, hashes, numeric, champion_ids
+    )):
+        raise ValueError("semantic batch rows do not match native metadata row count")
+    identity_fields = (
+        "engine_instance_id", "episode_id", "decision_sequence",
+        "player_decision_sequence", "player_id", "round", "lobby_index",
+    )
+    for index, (metadata, identity, digest) in enumerate(zip(metadata_rows, identities, hashes)):
+        if not isinstance(metadata, Mapping) or not isinstance(identity, Mapping):
+            raise TypeError(f"semantic row {index} identity/metadata must be mappings")
+        expected_identity = {field: metadata.get(field) for field in identity_fields}
+        if dict(identity) != expected_identity:
+            raise ValueError(f"semantic row {index} identity does not match its native snapshot")
+        if not isinstance(digest, str) or len(digest) != 64 or any(
+            char not in "0123456789abcdef" for char in digest
+        ):
+            raise ValueError(f"semantic row {index} has an invalid projection hash")
+        if metadata.get("semantic_projection_hash") != digest:
+            raise ValueError(f"semantic row {index} projection hash is not bound to its snapshot metadata")
+        if metadata.get("semantic_projection_contract_id") != expected_id:
+            raise ValueError(f"semantic row {index} contract ID is not bound to its snapshot metadata")
+        if metadata.get("semantic_projection_contract_hash") != expected_hash:
+            raise ValueError(f"semantic row {index} contract hash is not bound to its snapshot metadata")
+        # Re-project from the native source so a detached/mutated tensor cannot
+        # retain a stale digest merely because its metadata still looks valid.
+        expected_row = project_native_player_state(metadata, catalog_map)
+        if (
+            list(numeric[index]) != expected_row["numeric"]
+            or list(champion_ids[index]) != expected_row["champion_ids"]
+            or digest != expected_row["sha256"]
+        ):
+            raise ValueError(f"semantic row {index} tensor content does not match its native projection hash")

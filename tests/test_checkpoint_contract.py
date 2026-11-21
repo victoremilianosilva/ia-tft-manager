@@ -7,6 +7,7 @@ from checkpoint_contract import (
     CHECKPOINT_LINEAGE_ID,
     build_checkpoint_lineage_contract,
     validate_checkpoint_lineage_contract,
+    validate_checkpoint_lineage_integrity,
     build_training_resume_contract,
     validate_training_resume_contract,
 )
@@ -41,7 +42,7 @@ def test_checkpoint_lineage_rejects_component_substitution():
     changed = copy.deepcopy(manifest)
     changed["contract"]["components"]["reward_contract"]["sha256"] = "b" * 64
 
-    with pytest.raises(ValueError, match="linhagem incompatível"):
+    with pytest.raises(ValueError, match="hash is invalid|linhagem incompatível"):
         validate_checkpoint_lineage_contract(changed, *inputs)
 
 
@@ -109,3 +110,28 @@ def test_trainer_persists_and_requires_training_resume_contract():
     assert "TFT_WARM_START_OUTPUT_CHECKPOINT" in source
     assert source.count('"warm_start_source": warm_start_source_metadata') == 2
     assert source.count('"training_resume_contract": build_training_resume_contract(self.config.to_dict())') == 2
+
+
+
+def test_semantic_contract_change_requires_explicit_weights_only_warm_start():
+    from pathlib import Path
+
+    source = (
+        Path(__file__).resolve().parents[1] / "trainer.py"
+    ).read_text(encoding="utf-8")
+    assert "TFT_ALLOW_SEMANTIC_STATE_WARM_START" in source
+    assert "TFT_WARM_START_OUTPUT_CHECKPOINT" in source
+    assert "validate_semantic_state_warm_start_migration(" in source
+    assert 'if not key.startswith(("semantic_id_embedding.", "semantic_encoder."))' in source
+    assert "not semantic_state_warm_start" in source
+
+
+
+def test_historical_lineage_integrity_can_be_checked_without_claiming_compatibility():
+    inputs = _inputs()
+    manifest = build_checkpoint_lineage_contract(*inputs)
+    validate_checkpoint_lineage_integrity(manifest)
+    tampered = copy.deepcopy(manifest)
+    tampered["contract"]["components"]["semantic_state_contract"]["contract_id"] = "old-owner-v1"
+    with pytest.raises(ValueError, match="hash is invalid"):
+        validate_checkpoint_lineage_integrity(tampered)

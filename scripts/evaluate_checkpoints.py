@@ -14,6 +14,70 @@ import torch
 ACTION_DIMS = [9, 5, 9, 28, 28, 28]
 
 
+def native_semantic_state_for_players(lobby, player_ids, catalog_map, device):
+    """Build the exact native semantic rows required by live PPO inference."""
+    from semantic_observation import (
+        project_native_player_state,
+        build_semantic_state_checkpoint_contract,
+    )
+
+    snapshot = lobby.get_snapshot_metadata()
+    native = snapshot.get("native_state_snapshot") if isinstance(snapshot, dict) else None
+    players = native.get("players") if isinstance(native, dict) else None
+    if not isinstance(players, list) or len(players) != 8:
+        raise RuntimeError("Checkpoint evaluation requires all eight native semantic player snapshots.")
+    rows = []
+    for player_id in player_ids:
+        if isinstance(player_id, bool) or not isinstance(player_id, int) or not 0 <= player_id < 8:
+            raise ValueError("semantic player IDs must be integers in [0, 7]")
+        native_player = players[player_id]
+        strategic_state = (
+            native_player.get("strategic_state")
+            if isinstance(native_player, dict) else None
+        )
+        player_sequence = (
+            strategic_state.get("player_decision_sequence")
+            if isinstance(strategic_state, dict) else None
+        )
+        if (
+            isinstance(player_sequence, bool)
+            or not isinstance(player_sequence, int)
+            or player_sequence < 0
+        ):
+            raise RuntimeError(
+                f"Checkpoint evaluation requires a valid native decision sequence for player {player_id}."
+            )
+        metadata = {
+            "engine_instance_id": snapshot.get("engine_instance_id"),
+            "episode_id": snapshot.get("episode_id"),
+            "decision_sequence": snapshot.get("decision_sequence"),
+            "player_decision_sequence": player_sequence,
+            "player_id": player_id,
+            "lobby_index": 0,
+            "stage": snapshot.get("stage"),
+            "round": snapshot.get("round"),
+            "native_state_contract_id": native.get("contract_id"),
+            "native_state_contract_version": native.get("contract_version"),
+            "native_state_producer": native.get("producer"),
+            "native_state_source_namespace": native.get("source_namespace"),
+            "native_player_state": native_player,
+        }
+        rows.append(project_native_player_state(metadata, catalog_map))
+    contract = build_semantic_state_checkpoint_contract(catalog_map)
+    return {
+        "numeric": torch.as_tensor(
+            [row["numeric"] for row in rows], dtype=torch.float32, device=device
+        ),
+        "champion_ids": torch.as_tensor(
+            [row["champion_ids"] for row in rows], dtype=torch.long, device=device
+        ),
+        "identities": [row["identity"] for row in rows],
+        "hashes": [row["sha256"] for row in rows],
+        "contract_id": contract["contract"]["contract_id"],
+        "contract_hash": contract["sha256"],
+    }
+
+
 def action_dict(values):
     values = [int(x) for x in values]
     result = {"type": values[0], "shop_slot": values[1], "bench_slot": values[2],
@@ -35,13 +99,26 @@ def as_mask_batch(masks, indices, device):
                                  dtype=torch.bool, device=device) for key in keys}
 
 
-def policy_actions(policy, observations, masks, indices, device):
+def policy_actions(policy, observations, masks, indices, device, semantic_state):
     if not indices:
         return {}
     obs = torch.as_tensor(np.asarray(observations)[indices], dtype=torch.float32, device=device)
     batch_masks = as_mask_batch(masks, indices, device)
+    if semantic_state is None:
+        raise ValueError("PPO checkpoint evaluation requires native semantic_state for every sampled player.")
+    if semantic_state["numeric"].shape[0] != len(indices) or semantic_state["champion_ids"].shape[0] != len(indices):
+        raise ValueError("native semantic_state rows do not match sampled player indices")
+    if (
+        len(semantic_state.get("identities", [])) != len(indices)
+        or len(semantic_state.get("hashes", [])) != len(indices)
+        or not semantic_state.get("contract_id")
+        or not semantic_state.get("contract_hash")
+    ):
+        raise ValueError("checkpoint inference requires semantic identity, projection hashes and contract lineage")
     with torch.no_grad():
-        actions = policy.get_action(obs, masks=batch_masks, deterministic=True)[0]
+        actions = policy.get_action(
+            obs, masks=batch_masks, deterministic=True, semantic_state=semantic_state
+        )[0]
     actions = actions.detach().cpu().numpy()
     return {player_id: [int(v) for v in actions[row]]
             for row, player_id in enumerate(indices)}
@@ -89,7 +166,7 @@ def validate_candidate_slots(candidate_slots) -> set[int]:
     return {int(slot) for slot in slots}
 
 
-def run_match(factory, baseline, candidate, candidate_slots, seed, device, max_steps=10000):
+def run_match(factory, baseline, candidate, candidate_slots, seed, device, catalog_map, max_steps=10000):
     lobby = factory(seed)
     try:
         try:
@@ -109,7 +186,12 @@ def run_match(factory, baseline, candidate, candidate_slots, seed, device, max_s
             for slots, policy in ((set(range(8)) - set(candidate_slots), baseline),
                                   (set(candidate_slots), candidate)):
                 selected = sorted(set(alive).intersection(slots))
-                chosen = policy_actions(policy, observations, masks, selected, device)
+                semantic_state = native_semantic_state_for_players(
+                    lobby, selected, catalog_map, device
+                )
+                chosen = policy_actions(
+                    policy, observations, masks, selected, device, semantic_state
+                )
                 for player_id, action in chosen.items():
                     actions[player_id] = action
                     counts = action_counts[player_id]
@@ -236,7 +318,7 @@ def _validate_evaluation_artifact(artifact, label):
 
 def run_paired_evaluation(
     factory, baseline, candidate, baseline_artifact, candidate_artifact,
-    seeds, device, *, split, master_seed=0, max_steps=10000,
+    seeds, device, *, split, catalog_map, master_seed=0, max_steps=10000,
 ):
     """Run paired, seat-rotated lobbies only for semantically identical lineages.
 
@@ -249,6 +331,15 @@ def run_paired_evaluation(
     candidate_lineage = _validate_evaluation_artifact(candidate_artifact, "candidate")
     if baseline_lineage != candidate_lineage:
         raise ValueError("baseline and candidate checkpoint lineages are not semantically compatible")
+    from semantic_observation import build_semantic_state_checkpoint_contract
+    runtime_semantic_contract = build_semantic_state_checkpoint_contract(catalog_map)
+    saved_semantic_contract = (
+        baseline_lineage.get("contract", {}).get("components", {}).get("semantic_state_contract")
+    )
+    if saved_semantic_contract != runtime_semantic_contract:
+        raise ValueError(
+            "evaluation catalog/native semantic projection does not match checkpoint lineage"
+        )
     normalized_seeds = []
     for seed in seeds:
         if isinstance(seed, bool) or not isinstance(seed, (int, np.integer)):
@@ -262,7 +353,7 @@ def run_paired_evaluation(
         slots = candidate_slots_for_seed(seed, master_seed)
         schedule.append({"seed": seed, "candidate_player_ids": sorted(slots)})
         raw_rows.extend(run_match(
-            factory, baseline, candidate, slots, seed, device, max_steps=max_steps
+            factory, baseline, candidate, slots, seed, device, catalog_map, max_steps=max_steps
         ))
     return {
         "schema_version": 1,

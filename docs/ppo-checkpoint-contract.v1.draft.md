@@ -383,3 +383,18 @@ Checkpoints novos carregam a identidade de reward. Checkpoints históricos preci
 5. Historical checkpoints remain immutable. A warm-start never overwrites the source artifact and is not described as a resume or as semantic compatibility.
 
 **Validation:** tests cover deterministic manifest creation, path/total-update non-semantic fields, GAE and optimizer mismatch, and tampered manifest hashes. Actual retraining, paired baseline evaluation and promotion remain in #295; this PR defines safe loader behavior, not empirical success.
+
+
+## PR5 — migração explícita da proveniência semântica v2
+
+**Prior problem:** o manifesto semantic_state_contract identificava a projeção e o catálogo, mas a proveniência do strategic owner ainda estava registrada como v1, enquanto o produtor nativo ativo publica tft.strategic-owner-observation v2. Uma comparação estrita correta rejeitaria esse checkpoint, mas não havia uma migração explícita que preservasse o baseline e impedisse o reaproveitamento de pesos do encoder semântico treinado sob a proveniência antiga.
+
+**Technical rationale:** compatibilidade estrutural não autoriza reaproveitar pesos semânticos quando a identidade/proveniência de origem muda. A migração pode preservar pesos não semânticos, mas deve reinicializar o ramo semântico e o estado do optimizer/scheduler.
+
+**New responsibility:** o Trainer valida a integridade do manifesto histórico separadamente da compatibilidade com o contrato atual. Com o opt-in TFT_ALLOW_SEMANTIC_STATE_WARM_START=1, somente a transição aprovada strategic-owner-observation v1→v2 é migrável, e apenas com catálogo/layout/normalização idênticos. O Trainer filtra os pesos do semantic_id_embedding e semantic_encoder, importa somente os demais pesos, exige TFT_WARM_START_OUTPUT_CHECKPOINT diferente da origem e inicia nova linhagem no update 1. Qualquer outro drift continua rejeitado. A linhagem histórica é validada pelo próprio hash, sem ser declarada compatível com o runtime atual.
+
+**Contract and invariants:** sem opt-in, incompatibilidade semântica é erro. Com opt-in, o ramo semântico começa da inicialização neutra, optimizer/scheduler são reiniciados, o checkpoint de origem permanece imutável e a nova saída registra hash/linhagem de origem. A nova linhagem registra strategic-owner-observation v2 no semantic_state_contract.
+
+**Validation:** testes distinguem integridade do manifesto histórico de compatibilidade runtime, rejeitam hash adulterado e protegem o opt-in, filtro dos pesos semânticos e política de saída separada.
+
+**Limits:** warm-start não é resume nem prova de compatibilidade semântica; retraining e avaliação pareada continuam dependendo do protocolo #295.

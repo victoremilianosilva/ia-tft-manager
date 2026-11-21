@@ -167,3 +167,36 @@ def test_legacy_economic_context_is_independent_of_strategy_one_hot():
     assert context_a.shape == (obs.shape[0], 5)
     assert torch.count_nonzero(context_a) == 0
     assert torch.equal(context_a, context_b)
+
+
+
+def test_sampling_value_and_action_re_evaluation_share_the_same_semantic_row():
+    torch.manual_seed(20261120)
+    obs, masks, semantic = _batch(batch_size=1)
+    policy = TFTPolicy(
+        obs_dim=obs.shape[-1], action_dims=list(ACTION_DIMS),
+        hidden_size=32, semantic_vocab_size=64,
+    ).eval()
+    with torch.no_grad():
+        policy.semantic_encoder[0].weight.fill_(0.001)
+        policy.semantic_encoder[0].bias.fill_(0.1)
+        policy.semantic_encoder[-1].weight.fill_(0.01)
+        policy.semantic_encoder[-1].bias.zero_()
+
+    with torch.no_grad():
+        actions, sampled_logprob, _, sampled_value = policy.get_action(
+            obs, masks=masks, deterministic=True, semantic_state=semantic
+        )
+        replay_logprob, replay_entropy, replay_value = policy.evaluate_actions(
+            obs, actions, masks=masks, semantic_state=semantic
+        )
+        missing_context_value = policy.get_value(obs, masks=masks, semantic_state={
+            "numeric": torch.ones_like(semantic["numeric"]),
+            "champion_ids": torch.ones_like(semantic["champion_ids"]),
+        })
+
+    assert actions[0, 0].item() == 6
+    assert torch.allclose(sampled_logprob, replay_logprob, atol=1e-7, rtol=1e-7)
+    assert torch.allclose(sampled_value, replay_value, atol=1e-7, rtol=1e-7)
+    assert replay_entropy.shape == (1,)
+    assert not torch.allclose(sampled_value, missing_context_value)

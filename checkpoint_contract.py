@@ -68,6 +68,19 @@ def build_checkpoint_lineage_contract(
     }
 
 
+def validate_checkpoint_lineage_integrity(manifest: Mapping) -> None:
+    """Validate a historical lineage's own digest before an explicit component migration."""
+    if not isinstance(manifest, Mapping):
+        raise TypeError("checkpoint_contract deve ser um mapping.")
+    if type(manifest.get("manifest_version")) is not int or manifest.get("manifest_version") != 1:
+        raise ValueError("checkpoint_contract manifest version is unsupported.")
+    payload = manifest.get("contract")
+    if not isinstance(payload, Mapping):
+        raise TypeError("checkpoint_contract.contract deve ser um mapping.")
+    if manifest.get("sha256") != _canonical_hash(payload):
+        raise ValueError("checkpoint_contract hash is invalid.")
+
+
 def validate_checkpoint_lineage_contract(
     manifest: Mapping,
     policy_state_dict: Mapping,
@@ -76,8 +89,7 @@ def validate_checkpoint_lineage_contract(
     semantic_state_contract: Mapping,
     reward_contract: Mapping,
 ) -> None:
-    if not isinstance(manifest, Mapping):
-        raise TypeError("checkpoint_contract deve ser um mapping.")
+    validate_checkpoint_lineage_integrity(manifest)
     expected = build_checkpoint_lineage_contract(
         policy_state_dict,
         action_mask_contract,
