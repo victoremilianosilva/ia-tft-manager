@@ -3838,6 +3838,17 @@ struct TFTEngine::Impl {
             unit.id = next_unit_id++;
             unit.api_name = definition->api_name;
             unit.name = definition->name;
+            // Preserve catalog ability identity/description/level variables,
+            // but leave simulator completeness false until an authoritative
+            // generic mapping or champion script is actually available.
+            unit.ability.name = definition->ability.name;
+            unit.ability.description = definition->ability.description;
+            for (const auto& source_variable : definition->ability.variables) {
+                CombatAbilityVariable variable;
+                variable.name = source_variable.name;
+                variable.values = source_variable.values;
+                unit.ability.variables.push_back(std::move(variable));
+            }
             unit.star = std::clamp(instance.star, 1, 3);
             unit.team = team;
 
@@ -4242,6 +4253,7 @@ struct TFTEngine::Impl {
                             for (const auto& item : unit.items) {
                                 items.push_back({
                                     {"api_name", item.api_name}, {"name", item.name},
+                                    {"effects_complete", item.effects_complete},
                                     {"attack_damage", item.attack_damage},
                                     {"ability_power", item.ability_power},
                                     {"attack_speed", item.attack_speed},
@@ -4266,7 +4278,8 @@ struct TFTEngine::Impl {
                                     {"active_count", trait.active_count},
                                     {"tier", trait.tier},
                                     {"effects", serialize_effects(trait.effects)},
-                                    {"effect_metadata_present", !trait.effects.empty()}
+                                    {"effects_complete", trait.effects_complete},
+                                    {"effect_metadata_present", trait.effects_complete}
                                 });
                             }
                             const auto& ability = unit.ability;
@@ -4294,6 +4307,18 @@ struct TFTEngine::Impl {
                                 }},
                                 {"ability", {
                                     {"api_name", ability.api_name},
+                                    {"name", ability.name},
+                                    {"description", ability.description},
+                                    {"variables", [&]() {
+                                        nlohmann::json variables = nlohmann::json::array();
+                                        for (const auto& variable : ability.variables)
+                                            variables.push_back({
+                                                {"name", variable.name},
+                                                {"values", variable.values}
+                                            });
+                                        return variables;
+                                    }()},
+                                    {"metadata_complete", ability.metadata_complete},
                                     {"mana_cost", ability.mana_cost},
                                     {"initial_mana", ability.initial_mana},
                                     {"target_type", static_cast<int>(ability.target_type)},
