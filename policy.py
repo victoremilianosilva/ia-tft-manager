@@ -211,7 +211,7 @@ class TFTPolicy(nn.Module):
         two now represent equipped-item and trait counts instead of role/strength.
         Candidate feature columns changed from strategy-fit fields to native
         entity facts, so only those input columns are reset on an explicit
-        v2 -> v4 warm-start.
+        v2 -> v5 warm-start.
         """
         self.board_cnn[0].weight[:, 3:5, :, :].zero_()
         for head in (self.shop_head, self.sell_head):
@@ -353,7 +353,7 @@ class TFTPolicy(nn.Module):
                 and source_value.shape[1] == 525 + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ID_EMBED_DIM
                 and target_value.shape[1] == SEMANTIC_NUMERIC_DIM + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ID_EMBED_DIM
             ):
-                # v2 -> v4 adds 31 global capacity/temporal facts and 17
+                # v2 -> v5 adds 31 global capacity/temporal facts and 17
                 # target-profile facts per entity. Preserve the old 21 globals
                 # and 12 entity facts; initialize only newly sourced fields.
                 old_numeric_dim = 525
