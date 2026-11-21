@@ -1382,7 +1382,8 @@ class Trainer:
             self.obs_dim,
             self.ACTION_DIM,
             self.device,
-            self.MASK_SHAPES
+            self.MASK_SHAPES,
+            require_semantic_state=True,
         )
 
         # ============================================================
