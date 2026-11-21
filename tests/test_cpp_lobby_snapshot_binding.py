@@ -111,6 +111,7 @@ class FakeNativeLobby:
                     "item_components": [], "item_inventory": [], "item_component_counts": [], "item_inventory_counts": [], "equipped_items": [], "item_component_catalog": [],
                     "pending_anvil": False,
                     "pending_anvil_sequence": 0,
+                    "pending_anvil_kind": -1,
                     "pending_anvil_options": [],
                     "item_component_features": [0.0] * 10,
                     "item_inventory_features": [[0.0] * 17 for _ in range(9)],
