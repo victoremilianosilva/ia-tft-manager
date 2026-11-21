@@ -23,6 +23,11 @@ if str(ROOT) not in sys.path:
 
 from cpp_lobby_env import CppTFTLobbyWrapper
 from engine_contracts import ActionType
+from action_contract import (
+    ACTION_CONTRACT_ID, ACTION_CONTRACT_VERSION, ACTION_CONTRACT_HASH,
+    MASK_CONTRACT_ID, MASK_CONTRACT_VERSION, MASK_CONTRACT_HASH,
+    MASK_SNAPSHOT_HASH_ALGORITHM, hash_mask_rows,
+)
 from policy import TFTPolicy
 from ppo import PPOTrainer
 from rollout import RolloutBuffer
@@ -142,6 +147,46 @@ def _type_probabilities(policy, observations, masks, semantic_state):
         logits = policy.type_head(features)
         logits = policy._mask_logits(logits, masks["type_mask"])
         return torch.softmax(logits, dim=-1).cpu().numpy()
+
+
+def _rollout_snapshot_metadata(semantic_state, next_semantic_state, masks, action_traces):
+    """Bind one fine-tuning transition to its native decision/result/next snapshots."""
+    decision_rows = semantic_state.get("snapshot_metadata")
+    next_rows = next_semantic_state.get("snapshot_metadata")
+    if (
+        not isinstance(decision_rows, list) or len(decision_rows) != 8
+        or not isinstance(next_rows, list) or len(next_rows) != 8
+        or not isinstance(action_traces, (list, tuple)) or len(action_traces) != 8
+    ):
+        raise RuntimeError("Fine-tuning requires eight aligned native semantic/action-trace rows.")
+
+    mask_hashes = hash_mask_rows(masks)
+    decision_metadata = []
+    result_metadata = []
+    next_metadata = []
+    contract_fields = {
+        "action_contract_id": ACTION_CONTRACT_ID,
+        "action_contract_version": ACTION_CONTRACT_VERSION,
+        "action_contract_hash": ACTION_CONTRACT_HASH,
+        "mask_contract_id": MASK_CONTRACT_ID,
+        "mask_contract_version": MASK_CONTRACT_VERSION,
+        "mask_contract_hash": MASK_CONTRACT_HASH,
+    }
+    for player_id, (decision, next_row, trace, mask_hash) in enumerate(
+        zip(decision_rows, next_rows, action_traces, mask_hashes)
+    ):
+        decision_row = dict(decision)
+        decision_row.update(contract_fields)
+        decision_row["mask_snapshot_hash"] = mask_hash
+        decision_row["mask_snapshot_hash_algorithm"] = MASK_SNAPSHOT_HASH_ALGORITHM
+        result_row = dict(next_row)
+        result_row["action_trace"] = dict(trace)
+        if result_row["action_trace"].get("player_id") != player_id:
+            raise RuntimeError("Native action trace is not aligned with its player row.")
+        decision_metadata.append(decision_row)
+        result_metadata.append(result_row)
+        next_metadata.append(dict(next_row))
+    return decision_metadata, result_metadata, next_metadata
 
 
 def _freeze_non_target_heads(policy, trainable_heads):
@@ -404,6 +449,17 @@ def run(args):
                     })
 
                 next_observations, rewards, lobby_done, info = env.step(_actions_to_native(action_array))
+                next_semantic_state_for_transition = native_semantic_state_for_players(
+                    env, list(range(8)), catalog_map, device
+                )
+                (
+                    decision_snapshot_metadata,
+                    result_snapshot_metadata,
+                    next_snapshot_metadata,
+                ) = _rollout_snapshot_metadata(
+                    semantic_state, next_semantic_state_for_transition, masks,
+                    info.get("action_trace", []),
+                )
                 rewards = np.asarray(rewards, dtype=np.float32) + np.asarray(shaped_rewards, dtype=np.float32)
                 episode_reward += rewards
                 matched_transitions += int(sum(valid))
@@ -416,6 +472,9 @@ def run(args):
                     torch.as_tensor(dones, dtype=torch.float32, device=device), values,
                     masks, valid=torch.as_tensor(valid, dtype=torch.bool, device=device),
                     semantic_state=semantic_state,
+                    snapshot_metadata=decision_snapshot_metadata,
+                    result_snapshot_metadata=result_snapshot_metadata,
+                    next_snapshot_metadata=next_snapshot_metadata,
                 )
                 observations = next_observations
                 last_done = dones
