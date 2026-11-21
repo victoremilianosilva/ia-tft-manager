@@ -154,6 +154,7 @@ def load_policy(checkpoint_path: Path, obs_dim: int, device, catalog_map: dict):
     policy = TFTPolicy(
         obs_dim, ACTION_DIMS,
         semantic_vocab_size=catalog_identity(catalog_map)["vocab_size"],
+        require_semantic_state=True,
     ).to(device)
     policy.load_compatible_state_dict(state)
     policy.eval()
