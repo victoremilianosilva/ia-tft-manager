@@ -40,7 +40,7 @@ def test_scenario_matching_does_not_depend_on_legacy_strategy_selectors():
     state = decode_semantic_observation(_semantic_batch(), player_id=0)
     reserve_scenario = next(item for item in SCENARIOS if item.scenario_id == "econ_gold_reserve")
 
-    assert reserve_scenario.strategies == (0,)  # historical metadata only
+    assert reserve_scenario.strategies == ()
     assert reserve_scenario.matches(state)
     assert reserve_scenario.to_dict()["strategies"] == []
 
