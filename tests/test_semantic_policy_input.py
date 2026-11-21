@@ -14,7 +14,7 @@ def _batch(batch_size=2):
     item_state = item_global + item_compatibility
     anvil = 3 + 9 * 11
     candidate = (9 + 5) * 8
-    obs_dim = 22 + 4 * 7 * 5 + anvil + item_state + candidate
+    obs_dim = 10 + 4 * 7 * 5 + anvil + item_state + candidate
     obs = torch.zeros(batch_size, obs_dim, dtype=torch.float32)
     masks = {
         name: torch.zeros((batch_size, *shape), dtype=torch.bool)
@@ -146,7 +146,7 @@ def test_v1_semantic_encoder_checkpoint_maps_old_feature_offsets():
     assert torch.equal(migrated[:, SEMANTIC_NUMERIC_DIM:], old_weight[:, old_numeric_dim:])
 
 
-def test_legacy_economic_context_is_independent_of_strategy_one_hot():
+def test_compact_observation_prefix_has_no_strategy_or_padding_slots():
     obs, _, _ = _batch(batch_size=3)
     policy = TFTPolicy(
         obs_dim=obs.shape[-1],
@@ -154,19 +154,15 @@ def test_legacy_economic_context_is_independent_of_strategy_one_hot():
         hidden_size=32,
         semantic_vocab_size=64,
     )
-    obs_a = obs.clone()
-    obs_b = obs.clone()
-    obs_a[:, 10] = 1.0
-    obs_b[:, 12] = 1.0
-    obs_b[:, 10] = 0.0
+    assert policy.pre_board_dim == 10
+    assert policy.board_flat_dim == 4 * 7 * 5
+    assert policy.obs_dim == obs.shape[-1]
 
     with torch.no_grad():
-        context_a = policy._economic_context_features(obs_a)
-        context_b = policy._economic_context_features(obs_b)
+        context = policy._economic_context_features(obs)
 
-    assert context_a.shape == (obs.shape[0], 5)
-    assert torch.count_nonzero(context_a) == 0
-    assert torch.equal(context_a, context_b)
+    assert context.shape == (obs.shape[0], 5)
+    assert torch.count_nonzero(context) == 0
 
 
 
