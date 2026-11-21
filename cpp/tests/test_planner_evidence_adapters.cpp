@@ -31,6 +31,36 @@ void economy_test(){
  assert(projected.projected_income_uncertainty==0.0);
  assert(!e.projected_income_available&&!e.incoming_damage_available&&
   !e.elimination_risk_available&&!e.progression_available);
+
+ c.sequence=19;
+ c.estimated_incoming_damage=12.5;
+ c.elimination_risk=0.25;
+ c.incoming_damage_source="observed_hp+approved_replay_calibration.v1";
+ c.elimination_risk_source=c.incoming_damage_source;
+ c.combat_evidence_horizon_rounds=1;
+ c.combat_evidence_sequence=19;
+ c.combat_evidence_uncertainty=0.15;
+ c.combat_calibration_protocol_id="combat-calibration.v1";
+ c.combat_calibration_report_sha256=std::string(64,'a');
+ c.combat_dataset_version="combat-dataset.v2";
+ c.combat_replay_artifact_ids={"replay-a","replay-b"};
+ c.evidence.estimated_incoming_damage=true;
+ c.evidence.elimination_risk=true;
+ const auto combat=PlannerEvidenceAdapters::economic(c,d,12,4);
+ assert(combat.metadata.available&&combat.incoming_damage_available&&
+  combat.elimination_risk_available);
+ assert(combat.incoming_damage==12.5&&combat.elimination_risk==0.25);
+ assert(combat.combat_horizon_rounds==1&&combat.combat_evidence_sequence==19);
+ assert(combat.combat_calibration_report_sha256==std::string(64,'a'));
+ auto missing_combat_provenance=c;
+ missing_combat_provenance.combat_calibration_report_sha256.clear();
+ const auto rejected_combat=PlannerEvidenceAdapters::economic(
+  missing_combat_provenance,d,12,4);
+ assert(!rejected_combat.metadata.available&&
+  rejected_combat.metadata.quality==EvidenceQuality::Invalid);
+ assert(rejected_combat.metadata.reason==
+  "combat_evidence_provenance_horizon_or_sequence_invalid");
+
  auto stale=PlannerEvidenceAdapters::economic(c,d,13,4);
  assert(!stale.metadata.available&&stale.metadata.quality==EvidenceQuality::Stale);
  d.shadow_only=false;assert(!PlannerEvidenceAdapters::economic(c,d,12,4).metadata.available);
