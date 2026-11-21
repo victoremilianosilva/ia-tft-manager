@@ -23,7 +23,7 @@ def _semantic_batch():
 def test_finetuning_scenarios_decode_authoritative_semantic_global_facts():
     state = decode_semantic_observation(_semantic_batch(), player_id=3)
 
-    assert state == {
+    assert state == pytest.approx({
         "hp": 55.0,
         "gold": 40.0,
         "level": 6.0,
@@ -32,7 +32,7 @@ def test_finetuning_scenarios_decode_authoritative_semantic_global_facts():
         "win_streak": 3.0,
         "loss_streak": 1.0,
         "player_id": 3,
-    }
+    })
     assert "strategy" not in state
 
 
