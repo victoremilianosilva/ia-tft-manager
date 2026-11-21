@@ -564,11 +564,139 @@ inline SurvivalRiskEvidence derive_survival_risk(
     return out;
 }
 
+struct CombatHorizonStep {
+    std::uint32_t round{0};
+    std::uint64_t sequence{0};
+    std::int32_t opponent_id{-1};
+    double incoming_damage{0.0};
+    double non_combat_hp_delta{0.0};
+};
+
+struct CombatHorizonTrajectory {
+    std::string scenario_id;
+    std::uint64_t match_id{0};
+    std::int32_t player_id{-1};
+    double scenario_weight{0.0};
+    double uncertainty{1.0};
+    bool calibrated{false};
+    std::string calibration_protocol_id;
+    std::string calibration_report_sha256;
+    std::string replay_artifact_id;
+    std::string dataset_version;
+    std::string source{"unavailable"};
+    std::vector<CombatHorizonStep> steps;
+};
+
+// Multi-round survival is computed over complete, weighted trajectories.
+// Marginal per-round means are never multiplied or treated as independent.
+inline SurvivalRiskEvidence derive_multi_round_survival_risk(
+    double observed_hp,
+    std::uint64_t match_id,
+    std::int32_t player_id,
+    std::uint32_t first_round,
+    std::uint64_t first_sequence,
+    std::uint32_t horizon_rounds,
+    const std::vector<CombatHorizonTrajectory>& trajectories,
+    std::uint32_t minimum_scenarios = 30) {
+    SurvivalRiskEvidence out;
+    if (!std::isfinite(observed_hp) || observed_hp < 0.0 || match_id == 0 ||
+        player_id < 0 || first_round == 0 || first_sequence == 0 ||
+        horizon_rounds < 2 || horizon_rounds > 10 ||
+        minimum_scenarios == 0 || trajectories.size() < minimum_scenarios)
+        return out;
+
+    std::unordered_set<std::string> scenario_ids;
+    std::unordered_set<std::string> artifact_ids;
+    std::string dataset_version;
+    std::string calibration_protocol_id;
+    std::string calibration_report_sha256;
+    std::vector<std::uint64_t> expected_sequences;
+    double total_weight = 0.0;
+    double weighted_damage = 0.0;
+    double weighted_elimination = 0.0;
+    double weighted_uncertainty = 0.0;
+
+    for (const auto& trajectory : trajectories) {
+        if (!trajectory.calibrated ||
+            trajectory.source != "approved_replay_trajectory.v1" ||
+            trajectory.match_id != match_id || trajectory.player_id != player_id ||
+            trajectory.scenario_id.empty() || trajectory.replay_artifact_id.empty() ||
+            trajectory.dataset_version.empty() || trajectory.calibration_protocol_id.empty() ||
+            !is_sha256(trajectory.calibration_report_sha256) ||
+            trajectory.steps.size() != horizon_rounds ||
+            !std::isfinite(trajectory.scenario_weight) ||
+            trajectory.scenario_weight <= 0.0 ||
+            !std::isfinite(trajectory.uncertainty) ||
+            trajectory.uncertainty < 0.0 || trajectory.uncertainty > 1.0)
+            return out;
+        if (!scenario_ids.insert(trajectory.scenario_id).second) return out;
+        if (dataset_version.empty()) {
+            dataset_version = trajectory.dataset_version;
+            calibration_protocol_id = trajectory.calibration_protocol_id;
+            calibration_report_sha256 = trajectory.calibration_report_sha256;
+        } else if (dataset_version != trajectory.dataset_version ||
+                   calibration_protocol_id != trajectory.calibration_protocol_id ||
+                   calibration_report_sha256 != trajectory.calibration_report_sha256) {
+            return out;
+        }
+
+        double hp = observed_hp;
+        double cumulative_damage = 0.0;
+        bool eliminated = false;
+        std::uint64_t previous_sequence = 0;
+        for (std::uint32_t step_index = 0; step_index < horizon_rounds; ++step_index) {
+            const auto& step = trajectory.steps[step_index];
+            if (step.round != first_round + step_index || step.opponent_id < 0 ||
+                step.sequence == 0 || !std::isfinite(step.incoming_damage) ||
+                step.incoming_damage < 0.0 ||
+                !std::isfinite(step.non_combat_hp_delta) ||
+                (step_index == 0 && step.sequence != first_sequence) ||
+                (step_index > 0 && step.sequence <= previous_sequence))
+                return out;
+            if (expected_sequences.size() <= step_index)
+                expected_sequences.push_back(step.sequence);
+            else if (expected_sequences[step_index] != step.sequence)
+                return out;
+            previous_sequence = step.sequence;
+            cumulative_damage += step.incoming_damage;
+            hp += step.non_combat_hp_delta - step.incoming_damage;
+            if (hp <= 0.0) {
+                eliminated = true;
+                break;
+            }
+        }
+        total_weight += trajectory.scenario_weight;
+        weighted_damage += trajectory.scenario_weight * cumulative_damage;
+        weighted_elimination += trajectory.scenario_weight * (eliminated ? 1.0 : 0.0);
+        weighted_uncertainty += trajectory.scenario_weight * trajectory.uncertainty;
+        artifact_ids.insert(trajectory.replay_artifact_id);
+    }
+    if (!std::isfinite(total_weight) || total_weight <= 0.0) return out;
+
+    out.available = true;
+    out.match_id = match_id;
+    out.player_id = player_id;
+    out.round = first_round;
+    out.sequence = first_sequence;
+    out.horizon_rounds = horizon_rounds;
+    out.expected_damage = weighted_damage / total_weight;
+    out.elimination_risk = weighted_elimination / total_weight;
+    out.uncertainty = std::clamp(
+        weighted_uncertainty / total_weight +
+            1.0 / std::sqrt(static_cast<double>(trajectories.size())),
+        0.0, 1.0);
+    out.source = "observed_hp+approved_replay_trajectory.v1";
+    return out;
+}
+
 inline bool apply_to_economic_context(
     const SurvivalRiskEvidence& risk, strategy::StrategicSharedContext& context) {
+    const bool approved_source =
+        risk.source == "observed_hp+approved_replay_calibration.v1" ||
+        risk.source == "observed_hp+approved_replay_trajectory.v1";
     if (!risk.available || risk.match_id == 0 || risk.player_id < 0 ||
-        risk.round == 0 || risk.sequence == 0 || risk.horizon_rounds != 1 ||
-        risk.source != "observed_hp+approved_replay_calibration.v1" ||
+        risk.round == 0 || risk.sequence == 0 || risk.horizon_rounds == 0 ||
+        risk.horizon_rounds > 10 || !approved_source ||
         !std::isfinite(risk.uncertainty) || risk.uncertainty < 0.0 ||
         risk.uncertainty > 1.0 ||
         context.match_id != risk.match_id ||
