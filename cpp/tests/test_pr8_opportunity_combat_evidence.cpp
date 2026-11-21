@@ -87,8 +87,40 @@ int main() {
     outcomes.push_back({7, 0, 1, 50, 999.0, true, "versioned_replay_outcome.v1",
         "replay-artifact-7", "tft-replay-dataset.v1"}); // sequence at/after decision is stale
     auto distribution = calibrator.calibrate(outcomes, 7, 0, 50, 50, 30);
-    assert(distribution.calibrated && distribution.sample_count == 40);
+    assert(!distribution.calibrated && distribution.sample_count == 40);
+    assert(distribution.source == "experimental_replay_distribution.v1");
     assert(distribution.p50 == 20.0 && distribution.p90 == 36.0);
+
+    combat_evidence::CalibrationAcceptanceCriteria criteria;
+    criteria.approved = true;
+    criteria.protocol_id = "combat-calibration.v1";
+    criteria.minimum_training_samples = 30;
+    criteria.minimum_test_samples = 30;
+    criteria.maximum_mae = 5.0;
+    criteria.minimum_p90_coverage = 0.85;
+    criteria.maximum_p90_coverage = 0.95;
+    criteria.maximum_brier_score = 0.10;
+    combat_evidence::CalibrationValidationMetrics metrics;
+    metrics.report_sha256 = std::string(64, 'a');
+    metrics.train_manifest_sha256 = std::string(64, 'b');
+    metrics.validation_manifest_sha256 = std::string(64, 'c');
+    metrics.test_manifest_sha256 = std::string(64, 'd');
+    metrics.episode_splits_disjoint = true;
+    metrics.test_sample_count = 40;
+    metrics.mae = 1.2;
+    metrics.p90_coverage = 0.90;
+    metrics.brier_score = 0.05;
+    assert(combat_evidence::approve_calibration(distribution, metrics, criteria));
+    assert(distribution.calibrated);
+    auto unapproved_distribution = calibrator.calibrate(outcomes, 7, 0, 50, 50, 30);
+    auto unapproved_criteria = criteria;
+    unapproved_criteria.approved = false;
+    assert(!combat_evidence::approve_calibration(
+        unapproved_distribution, metrics, unapproved_criteria));
+    auto overlapping_splits = metrics;
+    overlapping_splits.test_manifest_sha256 = overlapping_splits.train_manifest_sha256;
+    assert(!combat_evidence::approve_calibration(
+        unapproved_distribution, overlapping_splits, criteria));
     auto risk = combat_evidence::derive_survival_risk(34.5, distribution);
     assert(risk.available && std::abs(risk.elimination_risk - 0.15) < 1e-9);
     const auto integer_hp_risk = combat_evidence::derive_survival_risk(34.0, distribution);
