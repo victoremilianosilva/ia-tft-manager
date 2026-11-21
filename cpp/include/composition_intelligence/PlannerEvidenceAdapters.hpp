@@ -86,6 +86,50 @@ struct PlannerEvidenceSnapshot {
 };
 class PlannerEvidenceAdapters {
 public:
+ static bool combat_context_valid(const strategy::StrategicSharedContext& c) {
+  const bool has_combat = c.evidence.estimated_incoming_damage ||
+   c.evidence.elimination_risk;
+  if(!has_combat)return true;
+  const auto approved_source=[](const std::string& source) {
+   return source=="observed_hp+approved_replay_calibration.v1" ||
+    source=="observed_hp+approved_replay_trajectory.v1";
+  };
+  return c.sequence>0&&c.combat_evidence_sequence==c.sequence&&
+   c.combat_evidence_horizon_rounds>0&&c.combat_evidence_horizon_rounds<=10&&
+   approved_source(c.incoming_damage_source)&&
+   approved_source(c.elimination_risk_source)&&
+   c.combat_calibration_protocol_id.size()>0&&
+   is_sha256(c.combat_calibration_report_sha256)&&
+   !c.combat_dataset_version.empty()&&!c.combat_replay_artifact_ids.empty()&&
+   std::isfinite(c.combat_evidence_uncertainty)&&
+   c.combat_evidence_uncertainty>=0.0&&c.combat_evidence_uncertainty<=1.0&&
+   (!c.evidence.estimated_incoming_damage||
+    (std::isfinite(c.estimated_incoming_damage)&&c.estimated_incoming_damage>=0.0))&&
+   (!c.evidence.elimination_risk||
+    (std::isfinite(c.elimination_risk)&&c.elimination_risk>=0.0&&c.elimination_risk<=1.0));
+ }
+
+ static bool combat_evidence_valid(
+  const strategy::StrategicSharedContext& c,const EconomicPlannerEvidence& e) {
+  if(c.evidence.estimated_incoming_damage!=e.incoming_damage_available||
+     c.evidence.elimination_risk!=e.elimination_risk_available||
+     !combat_context_valid(c))return false;
+  if(!e.incoming_damage_available&&!e.elimination_risk_available)return true;
+  return e.incoming_damage_source==c.incoming_damage_source&&
+   e.elimination_risk_source==c.elimination_risk_source&&
+   e.combat_horizon_rounds==c.combat_evidence_horizon_rounds&&
+   e.combat_evidence_sequence==c.combat_evidence_sequence&&
+   e.combat_calibration_protocol_id==c.combat_calibration_protocol_id&&
+   e.combat_calibration_report_sha256==c.combat_calibration_report_sha256&&
+   e.combat_dataset_version==c.combat_dataset_version&&
+   e.combat_replay_artifact_ids==c.combat_replay_artifact_ids&&
+   std::abs(e.combat_evidence_uncertainty-c.combat_evidence_uncertainty)<=1e-9&&
+   (!e.incoming_damage_available||
+    std::abs(e.incoming_damage-c.estimated_incoming_damage)<=1e-9)&&
+   (!e.elimination_risk_available||
+    std::abs(e.elimination_risk-c.elimination_risk)<=1e-9);
+ }
+
  static EconomicPlannerEvidence economic(const strategy::StrategicSharedContext& c,
   const strategy::EconomicControlDecision& d,std::uint32_t expected_round,
   std::int32_t expected_player_id) {
@@ -99,22 +143,8 @@ public:
    o.metadata.available=false;o.metadata.quality=EvidenceQuality::Invalid;
    o.metadata.reason="interest_gold_inconsistency";o.evidence_invalid.push_back("interest_if_resolved_now");return o;
   }
-  const bool has_combat_evidence =
-   c.evidence.estimated_incoming_damage || c.evidence.elimination_risk;
-  const auto approved_combat_source=[](const std::string& source) {
-   return source=="observed_hp+approved_replay_calibration.v1" ||
-    source=="observed_hp+approved_replay_trajectory.v1";
-  };
-  if(has_combat_evidence &&
-   (c.sequence==0||c.combat_evidence_sequence!=c.sequence||
-    c.combat_evidence_horizon_rounds==0||c.combat_evidence_horizon_rounds>10||
-    !approved_combat_source(c.incoming_damage_source)||
-    !approved_combat_source(c.elimination_risk_source)||
-    c.combat_calibration_protocol_id.empty()||
-    !is_sha256(c.combat_calibration_report_sha256)||
-    c.combat_dataset_version.empty()||c.combat_replay_artifact_ids.empty()||
-    !std::isfinite(c.combat_evidence_uncertainty)||
-    c.combat_evidence_uncertainty<0.0||c.combat_evidence_uncertainty>1.0)) {
+  if(!combat_context_valid(c) &&
+   (c.evidence.estimated_incoming_damage || c.evidence.elimination_risk)) {
    o.metadata.available=false;o.metadata.quality=EvidenceQuality::Invalid;
    o.metadata.reason="combat_evidence_provenance_horizon_or_sequence_invalid";
    o.evidence_invalid.push_back("combat_evidence_provenance");
