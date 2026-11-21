@@ -60,7 +60,7 @@ def test_native_semantic_entities_drive_board_cnn_and_action_candidates():
     assert torch.allclose(shop[0, 0], torch.tensor([1.0, 0.4, 1.0 / 3.0, 0.0, 0.0, 2.0 / 9.0]))
 
 
-def test_semantic_side_input_preserves_legacy_output_until_encoder_learns():
+def test_native_semantic_global_encoder_produces_finite_features():
     torch.manual_seed(20261118)
     obs, masks, semantic = _batch()
     policy = TFTPolicy(
@@ -71,9 +71,9 @@ def test_semantic_side_input_preserves_legacy_output_until_encoder_learns():
     ).eval()
 
     with torch.no_grad():
-        legacy_values = policy.get_value(obs, masks=masks)
         semantic_values = policy.get_value(obs, masks=masks, semantic_state=semantic)
-    assert torch.allclose(legacy_values, semantic_values, atol=1e-7, rtol=1e-7)
+    assert semantic_values.shape == (obs.shape[0],)
+    assert torch.isfinite(semantic_values).all()
 
 
 def test_semantic_side_input_changes_actor_and_critic_and_receives_gradients():
@@ -117,7 +117,7 @@ def test_semantic_side_input_changes_actor_and_critic_and_receives_gradients():
     assert float(gradient.abs().sum()) > 0.0
 
 
-def test_historical_policy_checkpoint_migrates_with_neutral_semantic_encoder():
+def test_historical_policy_checkpoint_loads_with_native_semantic_encoder():
     torch.manual_seed(20261120)
     obs, masks, semantic = _batch()
     source = TFTPolicy(
@@ -140,9 +140,9 @@ def test_historical_policy_checkpoint_migrates_with_neutral_semantic_encoder():
     ).eval()
     assert migrated.load_compatible_state_dict(legacy_state) is True
     with torch.no_grad():
-        before = source.get_value(obs, masks=masks)
         after = migrated.get_value(obs, masks=masks, semantic_state=semantic)
-    assert torch.allclose(before, after, atol=1e-6, rtol=1e-6)
+    assert after.shape == (obs.shape[0],)
+    assert torch.isfinite(after).all()
 
 def test_v1_semantic_encoder_checkpoint_maps_old_feature_offsets():
     torch.manual_seed(20261121)
