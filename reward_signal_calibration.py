@@ -101,21 +101,20 @@ def build_attribution_candidates(
             and 0 < outcome_seq - _sequence(action["source_decision"], "player_decision_sequence")
                 <= FAMILY_POLICIES[action["action"]["family"]]["max_decision_gap"]
         ]
-        eligible = []
-        for action in prior:
-            source_seq = _sequence(action["source_decision"], "player_decision_sequence")
-            family = action["action"]["family"]
-            horizon = FAMILY_POLICIES[family]["max_decision_gap"]
+        if len(prior) == 1:
+            selected = prior[0]
+            source_seq = _sequence(selected["source_decision"], "player_decision_sequence")
             intervening = [
-                other for other in actions
-                if _identity(other) == identity
-                and source_seq < _sequence(other["source_decision"], "player_decision_sequence") < outcome_seq
-                and other["action"]["family"] not in _NON_ACTION_FAMILIES
+                action for action in actions
+                if _identity(action) == identity
+                and source_seq < _sequence(action["source_decision"], "player_decision_sequence") < outcome_seq
+                and action is not selected
+                and action["action"]["family"] not in _NON_ACTION_FAMILIES
             ]
-            if not intervening:
-                eligible.append(action)
-        if len(eligible) == 1:
-            selected = eligible[0]
+        else:
+            selected = None
+            intervening = []
+        if selected is not None and not intervening:
             results.append({
                 "contract_id": CONTRACT_ID,
                 "outcome_event_id": outcome.get("event_id"),
