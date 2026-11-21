@@ -111,3 +111,13 @@ def test_extracts_native_outcomes_from_reward_audit_identity():
     assert outcomes[0]["event_id"] == "combat-0"
     assert outcomes[0]["player_decision_sequence"] == 12
     assert outcomes[0]["engine_instance_id"] == "engine"
+
+
+
+def test_duplicate_native_outcome_event_id_is_rejected():
+    duplicate = _outcome(3)
+    with pytest.raises(ValueError, match="duplicado"):
+        build_attribution_candidates(
+            action_events=[_action(1)],
+            outcome_events=[duplicate, dict(duplicate)],
+        )
