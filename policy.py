@@ -11,6 +11,7 @@ from action_contract import (
 )
 from semantic_observation import (
     SEMANTIC_NUMERIC_DIM,
+    SEMANTIC_ITEM_OFFSET,
     SEMANTIC_ENTITY_SLOTS,
     SEMANTIC_ENTITY_FEATURES,
     SEMANTIC_GLOBAL_FEATURES,
@@ -199,7 +200,7 @@ class TFTPolicy(nn.Module):
             SEMANTIC_TRAIT_VOCAB_SIZE + 1, SEMANTIC_TRAIT_EMBED_DIM, padding_idx=0
         )
         semantic_input_dim = (
-            SEMANTIC_NUMERIC_DIM
+            SEMANTIC_ITEM_OFFSET
             + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ID_EMBED_DIM
             + SEMANTIC_ENTITY_SLOTS * SEMANTIC_TRAIT_EMBED_DIM
         )
@@ -378,7 +379,7 @@ class TFTPolicy(nn.Module):
                 and target_value.ndim == 2
                 and source_value.shape[0] == target_value.shape[0]
                 and source_value.shape[1] == 525 + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ID_EMBED_DIM
-                and target_value.shape[1] == SEMANTIC_NUMERIC_DIM + SEMANTIC_ENTITY_SLOTS * (SEMANTIC_ID_EMBED_DIM + SEMANTIC_TRAIT_EMBED_DIM)
+                and target_value.shape[1] == SEMANTIC_ITEM_OFFSET + SEMANTIC_ENTITY_SLOTS * (SEMANTIC_ID_EMBED_DIM + SEMANTIC_TRAIT_EMBED_DIM)
             ):
                 # v2 -> v6 adds 31 global capacity/temporal facts and 17
                 # target-profile facts per entity. Preserve the old 21 globals
@@ -395,8 +396,8 @@ class TFTPolicy(nn.Module):
                         source_value[:, old_start:old_start + old_entity_features]
                     )
                 expanded[
-                    :, SEMANTIC_NUMERIC_DIM:
-                    SEMANTIC_NUMERIC_DIM + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ID_EMBED_DIM
+                    :, SEMANTIC_ITEM_OFFSET:
+                    SEMANTIC_ITEM_OFFSET + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ID_EMBED_DIM
                 ] = source_value[:, old_numeric_dim:]
                 loaded[key] = expanded
                 migrated = True
@@ -487,6 +488,7 @@ class TFTPolicy(nn.Module):
         semantic_input = None
         if semantic_entities is not None:
             numeric = semantic_state["numeric"]
+            global_numeric = numeric[:, :SEMANTIC_ITEM_OFFSET]
             champion_ids = semantic_state.get("champion_ids")
             if (
                 not isinstance(champion_ids, torch.Tensor)
@@ -524,7 +526,7 @@ class TFTPolicy(nn.Module):
                 trait_embeddings * trait_mask.to(trait_embeddings.dtype)
             ).sum(dim=2) / trait_counts.to(trait_embeddings.dtype)
             semantic_input = torch.cat(
-                [numeric, embedded_ids, pooled_trait_embeddings.reshape(obs.shape[0], -1)],
+                [global_numeric, embedded_ids, pooled_trait_embeddings.reshape(obs.shape[0], -1)],
                 dim=-1,
             )
             # The first semantic encoder stage is the global MLP input path.
