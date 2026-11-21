@@ -151,7 +151,7 @@ class TFTPolicy(nn.Module):
             nn.Linear(64, 1),
         )
         self.item_anvil_candidate_head = nn.Sequential(
-            nn.Linear(hidden_size + self.num_action_types + 11, 64),
+            nn.Linear(hidden_size + self.num_action_types + 13, 64),
             nn.ReLU(),
             nn.Linear(64, 1),
         )
@@ -225,6 +225,7 @@ class TFTPolicy(nn.Module):
         for head in (self.shop_head, self.sell_head):
             head[0].weight[:, -self.candidate_feature_dim:].zero_()
         self.bench_to_board_head.weight[:, -self.candidate_feature_dim:].zero_()
+        self.item_anvil_candidate_head[0].weight[:, -2:].zero_()
 
     def load_compatible_state_dict(self, state_dict):
         """Load current weights or migrate supported input-shape changes.
@@ -616,13 +617,18 @@ class TFTPolicy(nn.Module):
                 ):
                     raise ValueError(f"native semantic item field {field} is missing or misaligned")
             anvil_pending = item_state.get("anvil_pending")
+            anvil_kind_features = item_state.get("anvil_kind_features")
             if (
                 not isinstance(anvil_pending, torch.Tensor)
                 or tuple(anvil_pending.shape) != (obs.shape[0],)
                 or anvil_pending.dtype != torch.bool
                 or anvil_pending.device != obs.device
+                or not isinstance(anvil_kind_features, torch.Tensor)
+                or tuple(anvil_kind_features.shape) != (obs.shape[0], 2)
+                or anvil_kind_features.dtype != torch.float32
+                or anvil_kind_features.device != obs.device
             ):
-                raise ValueError("native semantic anvil pending flag is missing or misaligned")
+                raise ValueError("native semantic anvil identity/kind is missing or misaligned")
             targets = entities[:, :37, 12:29]
             return (
                 item_state["components"],
@@ -633,6 +639,7 @@ class TFTPolicy(nn.Module):
                 item_state["recipe_target_fit"],
                 item_state["anvil_options"],
                 anvil_pending,
+                anvil_kind_features,
             )
 
         start = obs.shape[-1] - self.candidate_observation_dim - self.item_state_observation_dim
@@ -652,6 +659,7 @@ class TFTPolicy(nn.Module):
                 zeros.view(batch, 1, 1).expand(-1, 100, 37),
                 zeros.view(batch, 1, 1).expand(-1, 9, 11),
                 torch.zeros(batch, device=obs.device, dtype=torch.bool),
+                zeros.view(batch, 1).expand(-1, 2),
             )
         block = obs[:, start:end]
         offset = 0
@@ -687,20 +695,23 @@ class TFTPolicy(nn.Module):
         anvil_index = start - self.item_anvil_observation_dim
         if anvil_index >= 0:
             anvil_pending = obs[:, anvil_index] > 0.5
+            anvil_kind_features = obs[:, anvil_index + 1:anvil_index + 3]
             anvil_options = obs[:, anvil_index + 3:anvil_index + self.item_anvil_observation_dim].reshape(
                 -1, 9, 11
             )
         else:
             anvil_pending = torch.zeros(obs.shape[0], device=obs.device, dtype=torch.bool)
+            anvil_kind_features = torch.zeros(obs.shape[0], 2, device=obs.device, dtype=obs.dtype)
             anvil_options = torch.zeros(obs.shape[0], 9, 11, device=obs.device, dtype=obs.dtype)
         return (
             components, inventory, recipes, targets,
-            inventory_target_fit, recipe_target_fit, anvil_options, anvil_pending
+            inventory_target_fit, recipe_target_fit, anvil_options, anvil_pending,
+            anvil_kind_features,
         )
 
     def _item_inventory_logits(
         self, conditioned, inventory_features, inventory_target_fit,
-        anvil_option_features, anvil_pending
+        anvil_option_features, anvil_pending, anvil_kind_features
     ):
         logits = self.item_inventory_head(conditioned)
         context = conditioned.unsqueeze(1).expand(-1, 9, -1)
@@ -716,7 +727,8 @@ class TFTPolicy(nn.Module):
             ], dim=-1
         )).squeeze(-1)
         anvil_scores = self.item_anvil_candidate_head(torch.cat(
-            [context, anvil_option_features.to(dtype=conditioned.dtype)], dim=-1
+            [context, anvil_option_features.to(dtype=conditioned.dtype),
+             anvil_kind_features.unsqueeze(1).expand(-1, 9, -1).to(dtype=conditioned.dtype)], dim=-1
         )).squeeze(-1)
         scores = torch.where(anvil_pending.unsqueeze(-1), anvil_scores, bag_scores)
         return logits + scores
