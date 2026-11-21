@@ -107,7 +107,7 @@ def build_semantic_state_checkpoint_contract(catalog_map: Mapping[str, int]) -> 
             ),
             "hidden_dim": 256,
             "output_dim": "policy_hidden_size",
-            "fusion": "additive_to_shared_actor_critic_latent",
+            "fusion": "semantic_global_mlp_plus_additive_to_shared_actor_critic_latent",
             "final_layer_initialization": "zero",
             "board_cnn_source": {
                 "entity_range": "board[0:28]",
@@ -171,14 +171,41 @@ def validate_semantic_state_warm_start_migration(
     if not isinstance(historical_owner_source, Mapping):
         raise ValueError("historical semantic contract has no strategic owner source")
     historical_owner_source = dict(historical_owner_source)
-    if historical_owner_source.get("contract_version") != 1:
-        raise ValueError("only strategic-owner contract v1-to-v2 warm-start is approved")
-    historical_owner_source["contract_version"] = 2
-    historical_payload["strategic_owner_source"] = historical_owner_source
+    if (
+        historical_payload.get("contract_id") == "tft.ppo.semantic-native-state.v2"
+        and historical_payload.get("version") == 2
+        and historical_payload.get("source", {}).get("contract_version") == 3
+        and historical_owner_source.get("contract_version") == 2
+    ):
+        # Reviewed v2 -> v3 migration: native snapshot v3 -> v4 adds capacity
+        # and temporal facts; the policy consumes board/candidate entities
+        # through the identity-bound semantic projection.
+        historical_payload["contract_id"] = expected["contract"]["contract_id"]
+        historical_payload["version"] = expected["contract"]["version"]
+        historical_source = dict(historical_payload.get("source", {}))
+        historical_source["contract_version"] = 4
+        historical_payload["source"] = historical_source
+        historical_payload["global_features"] = expected["contract"]["global_features"][:21]
+        historical_payload["numeric_dimension"] = 21 + (
+            SEMANTIC_ENTITY_SLOTS * SEMANTIC_ENTITY_FEATURES
+        )
+        historical_encoder = dict(historical_payload.get("encoder", {}))
+        historical_encoder["fusion"] = (
+            "semantic_global_mlp_plus_additive_to_shared_actor_critic_latent"
+        )
+        historical_encoder.pop("board_cnn_source", None)
+        historical_encoder.pop("action_candidate_source", None)
+        historical_payload["encoder"] = historical_encoder
+    elif historical_owner_source.get("contract_version") == 1:
+        historical_owner_source["contract_version"] = 2
+        historical_payload["strategic_owner_source"] = historical_owner_source
+    else:
+        raise ValueError("semantic warm-start source contract is not an approved migration")
+
     if historical_payload != expected["contract"]:
         raise ValueError(
-            "semantic warm-start is limited to owner provenance v1-to-v2; "
-            "catalog, layout, normalization or other contract drift is not migratable"
+            "semantic warm-start requires the approved provenance/layout migration; "
+            "catalog, normalization, and all other contract fields must match"
         )
 
 
