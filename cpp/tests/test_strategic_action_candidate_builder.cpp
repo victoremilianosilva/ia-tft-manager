@@ -396,6 +396,20 @@ void xp_level_up_values_only_a_verified_selected_bench_unit() {
     assert(xp->evidence_source.find("UnitPriorityPlanner") != std::string::npos);
     assert(xp->evidence_horizon_rounds == 1);
     assert(std::abs(xp->evidence_uncertainty - 0.2) < 1e-9);
+
+    const auto hold = std::find_if(result.candidates.begin(), result.candidates.end(),
+        [](const auto& candidate) { return candidate.kind == StrategicActionKind::Hold; });
+    assert(hold != result.candidates.end());
+    context.action_candidates = {*xp, *hold};
+    const auto evaluation = ContextualActionEvaluator{}.evaluate(
+        active, priorities, lineup, context, nullptr, native.match_id);
+    assert(!evaluation.stale);
+    assert(evaluation.recommended_action == StrategicActionKind::BuyExperience);
+    const auto xp_score = std::find_if(evaluation.candidates.begin(), evaluation.candidates.end(),
+        [&](const auto& score) { return score.candidate_id == xp->candidate_id; });
+    assert(xp_score != evaluation.candidates.end());
+    assert(xp_score->board_value > 0.0);
+    assert(xp_score->total_score > 0.0);
 }
 
 void native_anchor_shop_offer_is_actionable_before_composition_lock() {
