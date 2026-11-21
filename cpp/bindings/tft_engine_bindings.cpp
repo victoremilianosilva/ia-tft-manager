@@ -335,6 +335,12 @@ py::dict audit_snapshot_to_dict(
         d["cost"] = unit.cost;
         d["items"] = unit.item_ids;
         d["trait_names"] = unit.trait_names;
+        d["role"] = unit.role;
+        d["attack_damage"] = unit.attack_damage;
+        d["attack_speed"] = unit.attack_speed;
+        d["max_health"] = unit.max_health;
+        d["armor"] = unit.armor;
+        d["magic_resist"] = unit.magic_resist;
         return d;
     };
     for (const auto& player : snapshot.players) {
