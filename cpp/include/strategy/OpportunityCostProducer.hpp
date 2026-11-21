@@ -41,9 +41,9 @@ struct OpportunityCostResult {
 };
 
 // Computes the best *forgone* alternative, not a fixed cost by action family.
-// All values must originate from the same native snapshot. Direct gold and
-// interest are excluded here because the marginal economy envelope already
-// accounts for them; including either would double count.
+// All values must originate from the same native snapshot. The caller supplies
+// a value already net of the alternative's direct gold, liquidity and interest;
+// the cost fields are audit metadata and are never re-applied here.
 class OpportunityCostProducer {
 public:
     OpportunityCostResult evaluate(
