@@ -28,6 +28,7 @@ struct ContextualActionCandidateScore {
     strategy::StrategicActionKind kind{strategy::StrategicActionKind::None};
     std::int32_t champion_id{-1};
     std::string candidate_id;
+    std::uint64_t source_sequence{0};
     bool eligible{false};
     bool selected{false};
     std::string rejection_reason;
@@ -41,6 +42,7 @@ struct ContextualActionCandidateScore {
     // Signed cost against HOLD: positive consumes liquidity; negative releases it.
     double liquidity_cost{0.0};
     bool opportunity_cost_available{false};
+    double opportunity_cost{0.0};
     std::string opportunity_cost_source{"unavailable_no_validated_producer"};
     std::string opportunity_cost_forgone_candidate_id;
     std::uint32_t opportunity_cost_horizon_rounds{0};
@@ -109,6 +111,7 @@ struct ContextualActionEvaluation {
                 {"kind", static_cast<int>(c.kind)},
                 {"champion_id", c.champion_id},
                 {"candidate_id", c.candidate_id},
+                {"source_sequence", c.source_sequence},
                 {"eligible", c.eligible},
                 {"selected", c.selected},
                 {"rejection_reason", c.rejection_reason},
@@ -303,6 +306,7 @@ public:
             score.kind = candidate.kind;
             score.champion_id = candidate.champion_id;
             score.candidate_id = candidate.candidate_id;
+            score.source_sequence = candidate.source_sequence;
             score.evidence_source = candidate.evidence_source;
             score.evidence_horizon_rounds = candidate.evidence_horizon_rounds;
             score.evidence_uncertainty = std::isfinite(candidate.evidence_uncertainty)
@@ -519,6 +523,94 @@ public:
             }
             out.candidates.push_back(std::move(score));
         }
+        // Compare every eligible action family on the same net contextual
+        // score against HOLD. The score already includes its own board,
+        // unit/upgrade, liquidity, principal and interest components, so the
+        // alternative's costs are counted once and no action-family priors are
+        // fabricated. Uncertain or horizon-mismatched alternatives are omitted.
+        std::vector<strategy::OpportunityAlternativeEvidence> opportunity_alternatives;
+        opportunity_alternatives.reserve(out.candidates.size());
+        const bool opportunity_identity_valid = context.match_id > 0 &&
+            context.player_id >= 0 && context.round > 0 && context.sequence > 0;
+        for (const auto& candidate_score : out.candidates) {
+            strategy::OpportunityAlternativeEvidence alternative;
+            alternative.candidate_id = candidate_score.candidate_id;
+            alternative.value_basis = "contextual_action_score.v1";
+            alternative.marginal_strategic_value =
+                std::max(0.0, candidate_score.total_score);
+            alternative.horizon_rounds = candidate_score.evidence_horizon_rounds;
+            alternative.uncertainty = candidate_score.evidence_uncertainty;
+            alternative.available = candidate_score.eligible &&
+                candidate_score.kind != strategy::StrategicActionKind::Hold &&
+                candidate_score.total_score > 0.0 &&
+                candidate_score.evidence_horizon_rounds > 0 &&
+                std::isfinite(candidate_score.evidence_uncertainty) &&
+                candidate_score.evidence_uncertainty >= 0.0 &&
+                candidate_score.evidence_uncertainty < 1.0;
+            alternative.identity_valid = opportunity_identity_valid &&
+                !candidate_score.candidate_id.empty() &&
+                candidate_score.source_sequence == context.sequence;
+            opportunity_alternatives.push_back(std::move(alternative));
+        }
+
+        const strategy::OpportunityCostProducer opportunity_producer;
+        for (auto& candidate_score : out.candidates) {
+            if (!candidate_score.eligible ||
+                candidate_score.kind == strategy::StrategicActionKind::Hold ||
+                candidate_score.opportunity_cost_available ||
+                candidate_score.evidence_horizon_rounds == 0 ||
+                !opportunity_identity_valid ||
+                candidate_score.source_sequence != context.sequence)
+                continue;
+            const auto opportunity = opportunity_producer.evaluate(
+                candidate_score.candidate_id, opportunity_alternatives,
+                candidate_score.evidence_horizon_rounds,
+                "contextual_action_score.v1");
+            if (!opportunity.available) continue;
+            const double effective_cost =
+                opportunity.cost * (1.0 - opportunity.uncertainty);
+            candidate_score.opportunity_cost = opportunity.cost;
+            candidate_score.opportunity_cost_available = true;
+            candidate_score.opportunity_cost_source = opportunity.source;
+            candidate_score.opportunity_cost_forgone_candidate_id =
+                opportunity.sacrificed_candidate_id;
+            candidate_score.opportunity_cost_horizon_rounds =
+                opportunity.horizon_rounds;
+            candidate_score.opportunity_cost_uncertainty = opportunity.uncertainty;
+            candidate_score.economy_cost += effective_cost;
+            candidate_score.total_score -= effective_cost;
+        }
+
+        // Re-select after opportunity costs have been applied. The first pass
+        // only establishes each candidate's net value against HOLD.
+        selected_index = std::numeric_limits<std::size_t>::max();
+        hold_candidate_index = std::numeric_limits<std::size_t>::max();
+        best_score = 0.0;
+        out.recommended_action = strategy::StrategicActionKind::None;
+        out.recommended_champion_id = -1;
+        out.rationale = "no_positive_contextual_candidate";
+        for (std::size_t i = 0; i < out.candidates.size(); ++i) {
+            const auto& candidate_score = out.candidates[i];
+            if (candidate_score.kind == strategy::StrategicActionKind::Hold) {
+                if (hold_candidate_index == std::numeric_limits<std::size_t>::max())
+                    hold_candidate_index = i;
+                continue;
+            }
+            if (!candidate_score.eligible || candidate_score.total_score <= best_score)
+                continue;
+            best_score = candidate_score.total_score;
+            selected_index = i;
+            out.recommended_action = candidate_score.kind;
+            out.recommended_champion_id = candidate_score.champion_id;
+            const auto priority_it = priority_by_id.find(candidate_score.champion_id);
+            const UnitPriority* selected_priority = priority_it == priority_by_id.end()
+                ? nullptr : priority_it->second;
+            out.rationale = !has_active_composition &&
+                candidate_score.kind == strategy::StrategicActionKind::BuyUnit
+                ? "native_anchor_shop_purchase"
+                : rationale(candidate_score.kind, selected_priority, economy_valid, board_valid);
+        }
+
         if (selected_index == std::numeric_limits<std::size_t>::max() &&
             hold_candidate_index != std::numeric_limits<std::size_t>::max()) {
             selected_index = hold_candidate_index;
