@@ -8,7 +8,7 @@ Opportunity cost must describe a concrete alternative forgone on the same decisi
 
 ## New responsibilities
 - `strategy::OpportunityCostProducer`: select the strongest valid competing alternative and expose its identity, horizon and uncertainty. The candidate builder currently supplies only same-snapshot BUY alternatives with a shared native board-contribution signal; it does not invent progression, composition-fit or upgrade priors. Other action families remain unavailable until their producers supply comparable evidence.
-- `combat_evidence::CombatSnapshotBuilder`: validate match/player/opponent/round/sequence, HP and unique roster identities.
+- `combat_evidence::CombatSnapshotBuilder`: validate match/player/opponent/round/sequence, HP and unique roster identities. The real `TftEngine` pair emits the complete result as a versioned `COMBAT_SNAPSHOT_V1` structured event in `StepResult.events`, including invalid snapshots and their rejection reason.
 - `MatchupResolver`: accept only the opponent identity actually supplied by the lobby.
 - `CombatCoverageValidator`: report partial mechanics coverage explicitly.
 - `CombatPredictionCalibrator`: derive empirical quantiles only from observed, identity-bound outcomes.
@@ -23,9 +23,9 @@ Opportunity cost must describe a concrete alternative forgone on the same decisi
 - No PPO, reward, action-dimension or action-mask changes.
 
 ## Impacts
-Adds reusable evidence contracts and a native regression test. The builder integrates the producer only for comparable BUY-vs-BUY alternatives; unsupported action-family comparisons remain unavailable rather than receiving arbitrary constants. Existing marginal economy scoring is unchanged. Combat risk remains unavailable until real replay outcomes support calibration.
+Adds reusable evidence contracts and a native regression test. The builder integrates the producer only for comparable BUY-vs-BUY alternatives; unsupported action-family comparisons remain unavailable rather than receiving arbitrary constants. Existing marginal economy scoring is unchanged. The real matchup now emits structured, identity-bound snapshot evidence for replay/audit consumers. Combat risk remains unavailable until replay outcomes support calibration.
 
 ## Validation
 The new test covers alternative selection, invalid identity, snapshot validation, actual-opponent matching, partial coverage, empirical quantiles, HP-bound risk and refusal to publish uncalibrated evidence.
 
-Empirical calibration quality and champion-mechanics completeness remain pending real replay datasets and catalog coverage; they are non-blocking for merge of this implementation.
+Empirical calibration quality, champion-mechanics completeness, replay persistence and downstream consumption of calibrated risk remain pending real replay datasets and catalog coverage; they are non-blocking for merge of this infrastructure. The emitted snapshot event is the collection boundary, not proof that replay storage or calibration has already run.
