@@ -43,6 +43,7 @@ struct ContextualActionCandidateScore {
     double liquidity_cost{0.0};
     bool opportunity_cost_available{false};
     double opportunity_cost{0.0};
+    std::string opportunity_cost_value_basis{"unavailable"};
     std::string opportunity_cost_source{"unavailable_no_validated_producer"};
     std::string opportunity_cost_forgone_candidate_id;
     std::uint32_t opportunity_cost_horizon_rounds{0};
@@ -463,6 +464,7 @@ public:
                 score.opportunity_cost_available = opportunity_valid;
                 if (opportunity_valid) {
                     score.opportunity_cost = candidate.opportunity_cost;
+                    score.opportunity_cost_value_basis = "native_board_contribution.v1";
                     score.opportunity_cost_source = candidate.opportunity_cost_source;
                     score.opportunity_cost_forgone_candidate_id =
                         candidate.opportunity_cost_forgone_candidate_id;
@@ -579,6 +581,7 @@ public:
             const double effective_cost =
                 opportunity.cost * (1.0 - opportunity.uncertainty);
             candidate_score.opportunity_cost = opportunity.cost;
+            candidate_score.opportunity_cost_value_basis = opportunity.value_basis;
             candidate_score.opportunity_cost_available = true;
             candidate_score.opportunity_cost_source = opportunity.source;
             candidate_score.opportunity_cost_forgone_candidate_id =
