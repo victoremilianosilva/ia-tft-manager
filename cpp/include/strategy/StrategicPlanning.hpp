@@ -211,6 +211,8 @@ struct StrategicSharedContext {
     // Appended to preserve existing aggregate initialization contracts.
     StrategicEvidenceAvailability evidence;
     std::uint64_t sequence{0};
+    // Match identity for cross-round evidence correlation; appended for aggregate compatibility.
+    std::uint64_t match_id{0};
 };
 
 struct StrategicCommitment {
