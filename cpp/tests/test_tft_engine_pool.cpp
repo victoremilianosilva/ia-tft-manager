@@ -865,33 +865,44 @@ int main(int argc, char** argv) {
                               initial_item_audit.players[0].item_component_catalog.end(), "sword") !=
                         initial_item_audit.players[0].item_component_catalog.end(),
                     "Snapshot nao expoe catalogo ordenado de componentes.");
-            const auto item_observations = item_action_engine.get_observations();
-            const auto* item_observation = item_observations.data();
-            const auto item_candidate_offset = item_action_engine.observation_dim() -
-                8 * (tft::kBenchSlots + tft::kShopSlots);
-            const auto item_block_offset = item_candidate_offset - item_state_observation_dim;
-            const auto bag_feature_offset = item_block_offset + 10;
-            const auto recipe_feature_offset = bag_feature_offset + 9 * 17;
-            const auto target_feature_offset = recipe_feature_offset + 100 * 17;
-            require(item_observation[item_block_offset] > 0.0f &&
-                    item_observation[item_block_offset + 1] > 0.0f,
-                    "Contagens de componentes nao chegaram a observacao PPO.");
-            require(item_observation[bag_feature_offset + 5] > 0.0f,
-                    "Atributos do item completo na bag nao chegaram a observacao PPO.");
-            require(std::any_of(item_observation + recipe_feature_offset,
-                                item_observation + target_feature_offset,
-                                [](float value) { return value > 0.0f; }),
-                    "Atributos dos resultados de receitas nao chegaram a observacao PPO.");
-            require(item_observation[target_feature_offset] == 1.0f,
-                    "Perfil da unidade-alvo nao chegou a observacao PPO.");
-            const auto inventory_fit_offset =
-                target_feature_offset + (tft::kBoardSlots + tft::kBenchSlots) * 18;
-            const auto recipe_fit_offset = inventory_fit_offset +
-                9 * (tft::kBoardSlots + tft::kBenchSlots);
-            require(item_observation[inventory_fit_offset] > 0.0f,
-                    "Compatibilidade do item da bag com o alvo nao chegou a observacao PPO.");
-            require(item_observation[recipe_fit_offset + 37] > 0.0f,
-                    "Compatibilidade do item craftavel com o alvo nao chegou a observacao PPO.");
+            const auto& item_player = initial_item_audit.players[0];
+            const auto sword_component = std::find(
+                item_player.item_component_catalog.begin(),
+                item_player.item_component_catalog.end(), "sword"
+            );
+            const auto bow_component = std::find(
+                item_player.item_component_catalog.begin(),
+                item_player.item_component_catalog.end(), "bow"
+            );
+            require(sword_component != item_player.item_component_catalog.end() &&
+                    bow_component != item_player.item_component_catalog.end(),
+                    "Snapshot nao expoe as identidades canonicas dos componentes.");
+            const auto sword_index = static_cast<std::size_t>(
+                std::distance(item_player.item_component_catalog.begin(), sword_component)
+            );
+            const auto bow_index = static_cast<std::size_t>(
+                std::distance(item_player.item_component_catalog.begin(), bow_component)
+            );
+            require(item_player.item_component_features[sword_index] > 0.0f &&
+                    item_player.item_component_features[bow_index] > 0.0f,
+                    "Contagens de componentes nao chegaram ao bloco semantico nativo.");
+            require(item_player.item_inventory_features[0][5] > 0.0f,
+                    "Atributos do item completo na bag nao chegaram ao bloco semantico nativo.");
+            require(std::any_of(
+                        item_player.item_recipe_features.begin(),
+                        item_player.item_recipe_features.end(),
+                        [](const auto& recipe) {
+                            return std::any_of(recipe.begin(), recipe.end(),
+                                [](float value) { return value > 0.0f; });
+                        }),
+                    "Atributos dos resultados de receitas nao chegaram ao bloco semantico nativo.");
+            require(item_player.board[0].occupied &&
+                    item_player.board[0].max_health > 0.0,
+                    "Perfil da unidade-alvo nao chegou ao snapshot semantico nativo.");
+            require(item_player.item_inventory_target_fit[0][0] > 0.0f,
+                    "Compatibilidade do item da bag com o alvo nao chegou ao snapshot semantico nativo.");
+            require(item_player.item_recipe_target_fit[1][0] > 0.0f,
+                    "Compatibilidade do item craftavel com o alvo nao chegou ao snapshot semantico nativo.");
             auto masks = item_action_engine.get_action_masks();
             require(masks[0].type_mask[8] == 1,
                     "CRAFT_AND_EQUIP deveria estar habilitada com receita e alvo validos.");
