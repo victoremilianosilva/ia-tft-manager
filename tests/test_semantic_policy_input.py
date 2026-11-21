@@ -178,6 +178,39 @@ def test_v1_semantic_encoder_checkpoint_maps_old_feature_offsets():
     assert torch.equal(migrated[:, SEMANTIC_NUMERIC_DIM:], old_weight[:, old_numeric_dim:])
 
 
+
+def test_v2_semantic_encoder_checkpoint_maps_capacity_and_temporal_extension():
+    torch.manual_seed(20261122)
+    obs, _, _ = _batch()
+    policy = TFTPolicy(
+        obs_dim=obs.shape[-1], action_dims=list(ACTION_DIMS),
+        hidden_size=32, semantic_vocab_size=64,
+    )
+    old_numeric_dim = 21 + SEMANTIC_ENTITY_SLOTS * 12
+    old_weight = torch.arange(
+        256 * (old_numeric_dim + SEMANTIC_ENTITY_SLOTS * 16),
+        dtype=torch.float32,
+    ).reshape(256, old_numeric_dim + SEMANTIC_ENTITY_SLOTS * 16)
+    state = {
+        key: value.detach().clone()
+        for key, value in policy.state_dict().items()
+        if not key.startswith("semantic_encoder.")
+    }
+    state["semantic_encoder.0.weight"] = old_weight
+    state["semantic_encoder.0.bias"] = torch.zeros(256)
+    state["semantic_encoder.2.weight"] = policy.semantic_encoder[2].weight.detach().clone()
+    state["semantic_encoder.2.bias"] = policy.semantic_encoder[2].bias.detach().clone()
+
+    assert policy.load_compatible_state_dict(state) is True
+    migrated = policy.semantic_encoder[0].weight.detach()
+    assert torch.equal(migrated[:, :21], old_weight[:, :21])
+    assert torch.count_nonzero(migrated[:, 21:SEMANTIC_GLOBAL_FEATURES]) == 0
+    for slot in range(SEMANTIC_ENTITY_SLOTS):
+        old_start = 21 + slot * 12
+        new_start = SEMANTIC_GLOBAL_FEATURES + slot * 12
+        assert torch.equal(migrated[:, new_start:new_start + 12], old_weight[:, old_start:old_start + 12])
+    assert torch.equal(migrated[:, SEMANTIC_NUMERIC_DIM:], old_weight[:, old_numeric_dim:])
+
 def test_compact_observation_prefix_has_no_strategy_or_padding_slots():
     obs, _, _ = _batch(batch_size=3)
     policy = TFTPolicy(
