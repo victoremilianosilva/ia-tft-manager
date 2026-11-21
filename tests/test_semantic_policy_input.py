@@ -159,6 +159,17 @@ def test_semantic_global_encoder_embeds_trait_identity_and_receives_gradients():
     assert gradient[123].abs().sum().item() > 0.0
     assert gradient[456].abs().sum().item() > 0.0
 
+def test_native_policy_fails_closed_when_semantic_state_is_missing():
+    obs, _, semantic = _batch(batch_size=1)
+    policy = TFTPolicy(
+        obs_dim=obs.shape[-1], action_dims=list(ACTION_DIMS),
+        hidden_size=32, semantic_vocab_size=64, require_semantic_state=True,
+    )
+    with pytest.raises(ValueError, match="semantic_state v6"):
+        policy.get_value(obs)
+    assert torch.isfinite(policy.get_value(obs, semantic_state=semantic)).all()
+
+
 def test_native_semantic_consumers_ignore_legacy_flat_board_item_and_candidate_blocks():
     obs, _, semantic = _batch(batch_size=2)
     policy = TFTPolicy(
