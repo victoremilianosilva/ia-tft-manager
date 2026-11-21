@@ -395,6 +395,9 @@ struct AuditPlayerSnapshot {
     std::uint64_t pending_anvil_sequence{0};
     std::int32_t pending_anvil_kind{-1};
     std::vector<std::string> pending_anvil_options;
+    // Native temporal facts used by the PPO semantic global encoder.
+    std::uint32_t actions_taken_this_round{0};
+    std::array<std::uint32_t, kBoardSlots> board_move_age{};
     // Last item decision is carried by the post-action snapshot for exact
     // Viewer attribution (normal equip/craft versus forced anvil selection).
     std::string last_item_action_kind;
@@ -429,7 +432,7 @@ struct AuditSharedPoolSnapshot {
 struct AuditSnapshot {
     AuditSharedPoolSnapshot shared_pool;
     std::string contract_id{"tft.native-state-snapshot"};
-    std::uint32_t contract_version{3};
+    std::uint32_t contract_version{4};
     // Current native board-slot geometry: rectangular 4x7, not canonical hex.
     std::string board_geometry_id{"tft.board-grid.rectangular-4x7"};
     std::uint32_t board_geometry_version{1};
