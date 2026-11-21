@@ -481,7 +481,7 @@ class Trainer:
                 # branch starts from its neutral initialization.
                 policy_weights = {
                     key: value for key, value in policy_weights.items()
-                    if not key.startswith(("semantic_id_embedding.", "semantic_encoder."))
+                    if not key.startswith(("semantic_id_embedding.", "semantic_trait_embedding.", "semantic_encoder."))
                 }
             migrated_checkpoint = self.policy.load_compatible_state_dict(policy_weights)
             if semantic_state_warm_start:
