@@ -87,18 +87,14 @@ namespace tft {
 namespace {
 
 constexpr std::uint32_t kRoundsPerStage = 7;
-constexpr std::size_t kCoreObservationDim = 22;
+constexpr std::size_t kCoreObservationDim = 10;
 constexpr std::size_t kBoardObservationDim = kBoardSlots * 5;
 constexpr std::size_t kBenchObservationDim = kBenchSlots * 5;
 constexpr std::size_t kShopObservationDim = kShopSlots * 5;
 constexpr std::size_t kExtraObservationDim = 5;
 constexpr std::size_t kSynergyObservationDim = 5;
-constexpr std::size_t kPositioningObservationDim = 4;
+constexpr std::size_t kPositioningObservationDim = 3;
 constexpr std::size_t kCapacityObservationDim = 2;
-// Composition-aware features: direction and core-trait flags, plus fit scores
-// for each board, bench, and shop slot.
-constexpr std::size_t kCompositionUnitSlots =
-    kBoardSlots + kBenchSlots + kShopSlots;
 // Per-slot strategic features used by the policy's shared candidate scorers.
 constexpr std::size_t kCandidateFeatureDim = 8;
 constexpr std::size_t kStrategicCandidateObservationDim =
@@ -1261,9 +1257,7 @@ struct TFTEngine::Impl {
             kExtraObservationDim + kSynergyObservationDim +
             kPositioningObservationDim + observation_trait_names.size() +
             kCapacityObservationDim +
-            2 * observation_trait_names.size() + kCompositionUnitSlots +
             kActionMemoryObservationDim +
-            observation_trait_names.size() + 2 +
             kAnvilObservationDim + kItemStateObservationDim +
             kStrategicCandidateObservationDim;
     }
@@ -1375,10 +1369,8 @@ struct TFTEngine::Impl {
                 static_cast<float>(std::max(1, economy.level));
             out[offset++] = static_cast<float>(bench_count) / static_cast<float>(kBenchSlots);
             out[offset++] = 1.0f; // shop vector always contains five slots in Python.
-            // Retired strategy one-hot. The semantic native-state side input
-            // carries factual economy/state; no absent strategy is interpreted as ECON.
-            offset += 7;
-            // Python's 22-wide core reserves five trailing zero features.
+            // The compact core contains only ten factual player-state features.
+            // Strategy IDs and their five historical padding slots no longer exist.
             offset = kCoreObservationDim;
 
             // 2) BOARD: occupied, cost, stars, role, strength per slot.
@@ -1434,10 +1426,7 @@ struct TFTEngine::Impl {
                 out[offset++] = std::min(1.0f, value);
             }
 
-            // 7) POSITIONING: the old aggregate score depended on legacy
-            // StrategyInfo main-carry/direction inputs. Retire it rather than
-            // leaking that hidden dependency; factual geometry/roles follow.
-            out[offset++] = 0.0f;
+            // 7) POSITIONING: factual frontline/backline/role counts only.
             out[offset++] = board_count ? static_cast<float>(frontline) / board_count : 0.0f;
             out[offset++] = board_count ? static_cast<float>(backline) / board_count : 0.0f;
             out[offset++] = std::min(1.0f, static_cast<float>(unique_role_count) / 5.0f);
@@ -1457,11 +1446,6 @@ struct TFTEngine::Impl {
             out[offset++] = static_cast<float>(std::max(0, economy.level - board_count)) / 9.0f;
             out[offset++] = static_cast<float>(kBenchSlots - bench_count) / 9.0f;
 
-            // Retired legacy composition direction/core/fit features.
-            // Keep their physical slots stable for old vector consumers, but do
-            // not source PPO inputs from StrategyInfo or legacy planners.
-            offset += 2 * observation_trait_names.size() + kCompositionUnitSlots;
-
             // 13) TEMPORAL ACTION MEMORY. These features are inserted before the
             // candidate tail so policy.py can continue reading candidate features
             // from the end of the observation without changing its offsets.
@@ -1475,11 +1459,6 @@ struct TFTEngine::Impl {
                 out[offset++] = static_cast<float>(age) /
                     static_cast<float>(kActionMemoryHorizon);
             }
-
-            // Retired legacy focus/lock/strength fields. These positions remain
-            // reserved until the versioned semantic owner projection replaces
-            // the flat tensor; zero is an explicit tombstone, not neutral strategy.
-            offset += observation_trait_names.size() + 2;
 
             // 15) ITEM ANVIL CHOICES. A pending anvil is a forced single-choice
             // decision. Each option exposes either a component one-hot or the
