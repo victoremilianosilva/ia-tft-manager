@@ -135,6 +135,7 @@ class PairedEvaluatorTests(unittest.TestCase):
                 "critic_mask_encoder.weight": object(),
                 "critic_mask_encoder.bias": object(),
                 "semantic_id_embedding.weight": object(),
+                "semantic_trait_embedding.weight": object(),
                 "semantic_encoder.0.weight": object(),
                 "semantic_encoder.0.bias": object(),
                 "semantic_encoder.2.weight": object(),
