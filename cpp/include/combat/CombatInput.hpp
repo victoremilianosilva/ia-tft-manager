@@ -131,6 +131,7 @@ struct CombatItem
     std::string grants_trait;
     int granted_trait_active_count = 1;
     std::vector<CombatEffectDefinition> effects;
+    bool effects_complete{false};
 };
 
 
@@ -151,12 +152,18 @@ struct CombatTrait
     bool active = false;
 
     std::vector<CombatEffectDefinition> effects;
+    bool effects_complete{false};
 };
 
 
 // ============================================================
 // Ability
 // ============================================================
+
+struct CombatAbilityVariable {
+    std::string name;
+    std::vector<double> values;
+};
 
 struct CombatAbility
 {
@@ -165,6 +172,10 @@ struct CombatAbility
     std::string api_name;
     std::string name;
     std::string description;
+    std::vector<CombatAbilityVariable> variables;
+    // True only when every simulator-relevant field is populated from an
+    // authoritative adapter; a name/description alone is not complete.
+    bool metadata_complete{false};
 
     float mana_cost = 0.0f;
     float initial_mana = 0.0f;
