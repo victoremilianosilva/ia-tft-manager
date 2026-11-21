@@ -383,13 +383,20 @@ class TFTPolicy(nn.Module):
                 ),
                 dim=-1,
             ).reshape(obs.shape[0], self.board_flat_dim)
-            # The native semantic state is the source for global facts too.
-            pre_part = semantic_state["numeric"][:, :SEMANTIC_GLOBAL_FEATURES]
-            entity_context = semantic_state["numeric"][:, SEMANTIC_GLOBAL_FEATURES:]
-            embedded_ids = self.semantic_id_embedding(
-                semantic_state["champion_ids"]
-            ).reshape(obs.shape[0], -1)
-            global_part = torch.cat([pre_part, entity_context, embedded_ids], dim=-1)
+            # The global MLP retains its established input width while the
+            # identity-bound semantic encoder supplies native global/entity facts
+            # through its dedicated side path below. Global positional consumers
+            # are migrated separately from this CNN/candidate change.
+            pre_part = obs[:, :self.pre_board_dim]
+            post_part = obs[:, self.pre_board_dim + self.board_flat_dim :]
+            candidate_tail = post_part[:, -self.candidate_observation_dim:]
+            middle_part = post_part[:, :-self.candidate_observation_dim]
+            if self.has_item_compatibility_observation:
+                middle_part = middle_part[:, :-self.item_compatibility_observation_dim]
+            economic_context = self._economic_context_features(obs)
+            global_part = torch.cat(
+                [pre_part, middle_part, economic_context, candidate_tail], dim=-1
+            )
         else:
             board_part = obs[:, self.pre_board_dim : self.pre_board_dim + self.board_flat_dim]
             pre_part = obs[:, :self.pre_board_dim]
