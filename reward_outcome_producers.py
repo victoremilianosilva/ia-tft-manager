@@ -82,6 +82,13 @@ def _copy_equivalents(units: Mapping[str, Mapping[str, Any]]) -> Counter:
     return copies
 
 
+def _star_tiers(units: Mapping[str, Mapping[str, Any]]) -> Counter:
+    tiers = Counter()
+    for unit in units.values():
+        tiers[(str(unit["champion_id"]), int(unit["star"]))] += 1
+    return tiers
+
+
 def _shop(player: Mapping[str, Any]) -> list[dict[str, Any]]:
     rows = player.get("shop")
     revisions = player.get("shop_offer_revisions")
@@ -164,6 +171,17 @@ def build_action_outcome_events(
         after_units = _owned_units(after)
         before_copies = _copy_equivalents(before_units)
         after_copies = _copy_equivalents(after_units)
+        before_tiers = _star_tiers(before_units)
+        after_tiers = _star_tiers(after_units)
+        star_tier_deltas = [
+            {
+                "champion_id": champion,
+                "star": star,
+                "count_delta": int(after_tiers[(champion, star)] - before_tiers[(champion, star)]),
+            }
+            for champion, star in sorted(set(before_tiers) | set(after_tiers))
+            if after_tiers[(champion, star)] != before_tiers[(champion, star)]
+        ]
         upgrades = []
         for uuid, current in after_units.items():
             previous = before_units.get(uuid)
@@ -201,12 +219,27 @@ def build_action_outcome_events(
         xp_delta = None if resolved else (
             _int(after.get("xp"), "after.xp") - _int(before.get("xp"), "before.xp")
         )
-        level_delta = _int(after.get("level"), "after.level") - _int(before.get("level"), "before.level")
+        level_delta = None if resolved else (
+            _int(after.get("level"), "after.level") - _int(before.get("level"), "before.level")
+        )
+        round_income_events = [
+            dict(event) for event in (after_snapshot.get("economy_resolution_events") or [])
+            if isinstance(event, Mapping) and _int(event.get("player_id"), "economy_resolution.player_id") == player_id
+        ]
         moved = []
         for uuid, current in after_units.items():
             previous = before_units.get(uuid)
-            if previous and previous["location"] == "board" and current["location"] == "board" and previous["slot"] != current["slot"]:
-                moved.append({"uuid": uuid, "from_slot": previous["slot"], "to_slot": current["slot"]})
+            if previous and (
+                previous["location"] != current["location"] or
+                previous["slot"] != current["slot"]
+            ):
+                moved.append({
+                    "uuid": uuid,
+                    "from_location": previous["location"],
+                    "from_slot": previous["slot"],
+                    "to_location": current["location"],
+                    "to_slot": current["slot"],
+                })
         pre_position = _finite(before.get("positioning_score", 0.0), "before.positioning_score")
         post_position = _finite(after.get("positioning_score", 0.0), "after.positioning_score")
         pre_quality = _finite(before.get("board_quality_score", 0.0), "before.board_quality_score")
@@ -242,6 +275,7 @@ def build_action_outcome_events(
                 "selected_shop_offer": selected_offer if family == "purchase" else None,
                 "owned_copy_equivalent_delta": copy_delta if family in ("purchase", "sale") else {},
                 "upgrades_observed": upgrades if family in ("purchase", "sale") else [],
+                "star_tier_count_deltas": star_tier_deltas if family in ("purchase", "sale") else [],
                 "units_added": added if family == "purchase" else [],
                 "units_removed": removed if family == "sale" else [],
                 "shop_revision_changes": shop_revision_changes if family == "reroll" else [],
@@ -250,10 +284,11 @@ def build_action_outcome_events(
                 "gold_before": before_gold,
                 "gold_after": after_gold,
                 "gold_delta": gold_delta,
-                "interest_before": before_interest,
-                "interest_after": after_interest,
-                "interest_delta": after_interest - before_interest,
+                "interest_if_resolved_now_before": before_interest,
+                "interest_if_resolved_now_after": after_interest,
+                "interest_if_resolved_now_delta": None if resolved else after_interest - before_interest,
                 "economy_resolution_overlapped": resolved,
+                "round_income_events": round_income_events,
                 "board_unit_moves": moved if family in ("deploy", "positioning") else [],
                 "positioning_score_before": pre_position,
                 "positioning_score_after": post_position,
@@ -262,6 +297,7 @@ def build_action_outcome_events(
                 "board_quality_after": post_quality,
                 "board_quality_delta": post_quality - pre_quality,
             },
+            "causal_attribution": "not_established",
             "reward": None,
             "reward_eligible": False,
         }
