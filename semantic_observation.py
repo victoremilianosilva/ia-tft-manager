@@ -11,10 +11,10 @@ import json
 import math
 from collections.abc import Mapping, Sequence
 
-SEMANTIC_STATE_CONTRACT_ID = "tft.ppo.semantic-native-state.v5"
-SEMANTIC_STATE_CONTRACT_VERSION = 5
+SEMANTIC_STATE_CONTRACT_ID = "tft.ppo.semantic-native-state.v6"
+SEMANTIC_STATE_CONTRACT_VERSION = 6
 SEMANTIC_ENTITY_SLOTS = 28 + 9 + 5
-SEMANTIC_ENTITY_FEATURES = 29
+SEMANTIC_ENTITY_FEATURES = 39
 SEMANTIC_GLOBAL_FEATURES = 52
 SEMANTIC_ITEM_COMPONENT_FEATURES = 10
 SEMANTIC_ITEM_SEMANTIC_FEATURES = 17
@@ -36,6 +36,9 @@ SEMANTIC_ITEM_STATE_DIM = (
 )
 SEMANTIC_NUMERIC_DIM = SEMANTIC_ITEM_OFFSET + SEMANTIC_ITEM_STATE_DIM
 SEMANTIC_ID_EMBED_DIM = 16
+SEMANTIC_TRAIT_SLOTS = 10
+SEMANTIC_TRAIT_VOCAB_SIZE = 4096
+SEMANTIC_TRAIT_EMBED_DIM = 16
 
 
 def semantic_item_state_tensors(numeric):
@@ -43,7 +46,7 @@ def semantic_item_state_tensors(numeric):
     if not isinstance(numeric, __import__("torch").Tensor):
         raise TypeError("semantic numeric input must be a torch tensor")
     if numeric.ndim != 2 or numeric.shape[-1] != SEMANTIC_NUMERIC_DIM:
-        raise ValueError("semantic numeric input has an incompatible v5 shape")
+        raise ValueError("semantic numeric input has an incompatible v6 shape")
     import torch
     batch = numeric.shape[0]
     offset = SEMANTIC_ITEM_OFFSET
@@ -70,7 +73,12 @@ def semantic_item_state_tensors(numeric):
     anvil_options = numeric[:, offset:].reshape(
         batch, SEMANTIC_ANVIL_OPTIONS, SEMANTIC_ANVIL_OPTION_FEATURES
     )
+    entity_numeric = numeric[:, SEMANTIC_ENTITY_OFFSET:SEMANTIC_ITEM_OFFSET].reshape(
+        batch, SEMANTIC_ENTITY_SLOTS, SEMANTIC_ENTITY_FEATURES
+    )
+    trait_ids = entity_numeric[:, :, 29:29 + SEMANTIC_TRAIT_SLOTS].long()
     return {
+        "trait_ids": trait_ids,
         "components": components,
         "inventory": inventory,
         "recipes": recipes,
@@ -160,6 +168,7 @@ def build_semantic_state_checkpoint_contract(catalog_map: Mapping[str, int]) -> 
                 "item_target.attack_damage/200", "item_target.attack_speed/2",
                 "item_target.max_health/2000", "item_target.armor/150",
                 "item_target.magic_resist/150", "item_target.equipped_item_count/3",
+                "trait_id_hash_bucket[0:10]/4096",
             ],
             "champion_id": "catalog_internal_id_plus_one; zero=unknown_or_empty",
         },
@@ -183,10 +192,19 @@ def build_semantic_state_checkpoint_contract(catalog_map: Mapping[str, int]) -> 
         "numeric_dimension": SEMANTIC_NUMERIC_DIM,
         "entity_slot_count": SEMANTIC_ENTITY_SLOTS,
         "id_embedding_dimension": SEMANTIC_ID_EMBED_DIM,
+        "trait_embedding": {
+            "kind": "stable_sha256_bucket_embedding",
+            "vocabulary_buckets": SEMANTIC_TRAIT_VOCAB_SIZE,
+            "slots_per_entity": SEMANTIC_TRAIT_SLOTS,
+            "embedding_dimension": SEMANTIC_TRAIT_EMBED_DIM,
+            "padding_id": 0,
+        },
         "encoder": {
-            "kind": "champion_embedding_plus_mlp",
+            "kind": "champion_and_trait_embedding_plus_mlp",
             "numeric_plus_embedding_input_dim": (
-                SEMANTIC_NUMERIC_DIM + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ID_EMBED_DIM
+                SEMANTIC_NUMERIC_DIM
+                + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ID_EMBED_DIM
+                + SEMANTIC_ENTITY_SLOTS * SEMANTIC_TRAIT_EMBED_DIM
             ),
             "hidden_dim": 256,
             "output_dim": "policy_hidden_size",
