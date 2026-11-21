@@ -38,6 +38,11 @@ struct EconomicPlannerEvidence {
  std::string projected_income_source{"unavailable"};
  std::uint32_t projected_income_horizon_rounds{0};
  double projected_income_uncertainty{1.0};
+ double incoming_damage{0.0}, elimination_risk{0.0};
+ std::string incoming_damage_source{"unavailable"}, elimination_risk_source{"unavailable"};
+ std::uint32_t combat_horizon_rounds{0};
+ std::uint64_t combat_evidence_sequence{0};
+ double combat_evidence_uncertainty{1.0};
 };
 struct BoardPlannerEvidence {
  EvidenceSourceMetadata metadata;
@@ -105,6 +110,15 @@ public:
   }
   o.incoming_damage_available=c.evidence.estimated_incoming_damage;
   o.elimination_risk_available=c.evidence.elimination_risk;
+  if (o.incoming_damage_available || o.elimination_risk_available) {
+   o.incoming_damage=c.estimated_incoming_damage;
+   o.elimination_risk=c.elimination_risk;
+   o.incoming_damage_source=c.incoming_damage_source;
+   o.elimination_risk_source=c.elimination_risk_source;
+   o.combat_horizon_rounds=c.combat_evidence_horizon_rounds;
+   o.combat_evidence_sequence=c.combat_evidence_sequence;
+   o.combat_evidence_uncertainty=c.combat_evidence_uncertainty;
+  }
   o.progression_available=c.evidence.progression_plan;
   o.win_streak_available=c.evidence.streaks;o.loss_streak_available=c.evidence.streaks;
   o.sufficient_evidence=d.sufficient_evidence;
