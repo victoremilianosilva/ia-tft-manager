@@ -430,7 +430,7 @@ class RolloutBuffer:
                 if (
                     not isinstance(provided_value, torch.Tensor)
                     or provided_value.dtype != expected_value.dtype
-                    or provided_value.device != self.device
+                    or provided_value.device != expected_value.device
                     or tuple(provided_value.shape) != tuple(expected_value.shape)
                     or not torch.equal(provided_value, expected_value)
                 ):
