@@ -60,6 +60,7 @@ class RewardAuditLedger:
         action_traces: Sequence[Mapping[str, Any]],
         players: Sequence[Mapping[str, Any]],
         decision_snapshot: Mapping[str, Any],
+        source_decision_snapshot: Mapping[str, Any],
     ) -> dict[str, Any]:
         if self._scope is None:
             raise RuntimeError("RewardAuditLedger precisa ser resetado antes do step.")
@@ -88,6 +89,31 @@ class RewardAuditLedger:
             or list(map(int, native_player_sequences)) != list(map(int, player_sequences))
         ):
             raise RuntimeError("Reward audit e sequências nativas por jogador estão desalinhados.")
+
+        source_engine_id = str(source_decision_snapshot.get("engine_instance_id", "")).strip()
+        source_episode_id = int(source_decision_snapshot.get("episode_id", -1))
+        source_sequence = int(source_decision_snapshot.get("decision_sequence", -1))
+        source_player_sequences = source_decision_snapshot.get("player_decision_sequences")
+        source_native = source_decision_snapshot.get("native_state_snapshot")
+        if (source_engine_id, source_episode_id) != (engine_id, episode_id):
+            raise RuntimeError("Snapshot pré-ação pertence a outra Engine/episódio.")
+        if (
+            source_sequence < 0 or source_sequence >= decision_sequence
+            or not isinstance(source_native, Mapping)
+            or int(source_native.get("snapshot_sequence", -1)) != source_sequence
+            or str(source_native.get("engine_instance_id", "")) != engine_id
+            or int(source_native.get("episode_id", -1)) != episode_id
+            or int(source_native.get("round", -1)) != int(source_decision_snapshot.get("round", -2))
+        ):
+            raise RuntimeError("Snapshot pré-ação sem identidade nativa correlacionada.")
+        source_native_sequences = source_native.get("player_decision_sequences")
+        if (
+            not isinstance(source_player_sequences, Sequence)
+            or len(source_player_sequences) != _PLAYERS_PER_LOBBY
+            or not isinstance(source_native_sequences, Sequence)
+            or list(map(int, source_native_sequences)) != list(map(int, source_player_sequences))
+        ):
+            raise RuntimeError("Sequências do snapshot pré-ação estão desalinhadas.")
         if not isinstance(action_traces, Sequence) or len(action_traces) != _PLAYERS_PER_LOBBY:
             raise RuntimeError("Action traces incompletos para reward audit.")
         if not isinstance(players, Sequence) or len(players) != _PLAYERS_PER_LOBBY:
@@ -117,9 +143,10 @@ class RewardAuditLedger:
                 raise RuntimeError(f"Action trace desalinhado para player_id={player_id}.")
             if not isinstance(player, Mapping) or int(player.get("player_id", -1)) != player_id:
                 raise RuntimeError(f"Player facts desalinhados para player_id={player_id}.")
-            player_sequence = int(player_sequences[player_id])
-            if player_sequence <= 0:
-                raise RuntimeError(f"Sequência de decisão inválida para player_id={player_id}.")
+            outcome_player_sequence = int(player_sequences[player_id])
+            player_sequence = int(source_player_sequences[player_id])
+            if player_sequence < 0 or outcome_player_sequence <= player_sequence:
+                raise RuntimeError(f"Sequência pré/pós-ação inválida para player_id={player_id}.")
 
             combat_value = float(combat[player_id])
             placement_value = float(placement[player_id])
@@ -165,8 +192,13 @@ class RewardAuditLedger:
             player_records.append({
                 "player_id": player_id,
                 "player_decision_sequence": player_sequence,
+                "outcome_player_decision_sequence": outcome_player_sequence,
                 "action_decision": {
                     "source": "native_action_execution_trace",
+                    "source_snapshot_sequence": source_sequence,
+                    "player_decision_sequence": player_sequence,
+                    "outcome_snapshot_sequence": decision_sequence,
+                    "outcome_player_decision_sequence": outcome_player_sequence,
                     "trace": dict(trace),
                     "reward": float(action[player_id]),
                 },
@@ -195,7 +227,9 @@ class RewardAuditLedger:
             "contract_version": REWARD_AUDIT_CONTRACT_VERSION,
             "engine_instance_id": engine_id,
             "episode_id": episode_id,
+            "source_decision_sequence": source_sequence,
             "decision_sequence": decision_sequence,
+            "source_round": int(source_decision_snapshot.get("round", 0)),
             "round": round_number,
             "temporal_credit_owner": "per_player_gae",
             "player_rewards": player_records,
