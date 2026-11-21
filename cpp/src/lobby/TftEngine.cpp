@@ -4052,6 +4052,41 @@ struct TFTEngine::Impl {
             player.damage_taken += applied;
         };
 
+        // This is the authoritative environment outcome, not a CombatEngine
+        // forecast. Replay infrastructure may persist it and attach immutable
+        // artifact/dataset identities later; without those identities it is
+        // deliberately ineligible for empirical calibration.
+        auto publish_combat_outcome = [&](std::size_t player_index,
+                                          std::size_t opponent_index,
+                                          std::int32_t attempted_damage,
+                                          double hp_before,
+                                          double hp_after,
+                                          const char* outcome_kind) {
+            if (episode_id == 0 || decision_sequence == 0 ||
+                strategic_context_sequences[player_index] == 0) return;
+            const nlohmann::json outcome{
+                {"contract_id", "tft.combat-outcome.v1"},
+                {"match_id", episode_id},
+                {"player_id", static_cast<std::int32_t>(player_index)},
+                {"opponent_id", static_cast<std::int32_t>(opponent_index)},
+                {"round", round + 1},
+                {"decision_sequence", decision_sequence},
+                {"strategic_context_sequence", strategic_context_sequences[player_index]},
+                {"hp_before", hp_before},
+                {"attempted_damage", attempted_damage},
+                {"incoming_damage", std::max(0.0, hp_before - hp_after)},
+                {"hp_after", hp_after},
+                {"outcome_kind", outcome_kind},
+                {"source", "native_lobby_resolved_combat.v1"},
+                {"observed", true},
+                {"replay_artifact_id", nullptr},
+                {"dataset_version", nullptr},
+                {"calibration_eligible", false},
+                {"calibration_ineligibility_reason", "awaiting_versioned_replay_artifact"}
+            };
+            events.emplace_back("COMBAT_OUTCOME_V1:" + outcome.dump());
+        };
+
         for (const auto& [a, b] : matchups) {
             if (!player_envs[a].info.alive || !player_envs[b].info.alive) continue;
             CombatInput input{};
@@ -4463,8 +4498,14 @@ struct TFTEngine::Impl {
                         std::max(0, combat.player_b_survivors);
                     const auto damage_to_b = stage_damage(stage) +
                         std::max(0, combat.player_a_survivors);
+                    const double hp_a_before = player_envs[a].info.hp;
+                    const double hp_b_before = player_envs[b].info.hp;
                     apply_damage(a, damage_to_a);
                     apply_damage(b, damage_to_b);
+                    publish_combat_outcome(a, b, damage_to_a, hp_a_before,
+                        player_envs[a].info.hp, "draw");
+                    publish_combat_outcome(b, a, damage_to_b, hp_b_before,
+                        player_envs[b].info.hp, "draw");
                     sync_player_economy(a);
                     sync_player_economy(b);
                     events.emplace_back("COMBAT_DRAW_DAMAGE: jogadores " +
@@ -4493,7 +4534,10 @@ struct TFTEngine::Impl {
             last_pvp_result_credit_events.push_back(std::move(pvp_credit_event));
             economy_engine.register_loss(player_envs[loser].economy);
             const auto damage = stage_damage(stage) + std::max(0, winner_survivors);
+            const double loser_hp_before = player_envs[loser].info.hp;
             apply_damage(loser, damage);
+            publish_combat_outcome(loser, winner, damage, loser_hp_before,
+                player_envs[loser].info.hp, "resolved");
             const double winner_reward = combat_reward(
                 true, damage, 0, loser_survivors, winner_survivors);
             const double loser_reward = combat_reward(
