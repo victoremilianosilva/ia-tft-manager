@@ -49,7 +49,9 @@ def test_native_semantic_entities_drive_board_cnn_and_action_candidates():
     entities[0, 37, 2] = 2.0 / 5.0
     entities[0, 37, 10] = 2.0 / 9.0
     captured = {}
-    handle = policy.board_cnn[0].register_forward_pre_hook(lambda _module, args: captured.setdefault("board", args[0].detach().clone()))
+    def capture_board(_module, args):
+        captured["board"] = args[0].detach().clone()
+    handle = policy.board_cnn[0].register_forward_pre_hook(capture_board)
     with torch.no_grad():
         policy.encode(obs, semantic_state=semantic)
         bench, shop = policy._candidate_features(obs, semantic_state=semantic)
