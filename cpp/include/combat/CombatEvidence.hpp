@@ -38,6 +38,21 @@ private:
     std::string protocol_id_;
     std::string report_sha256_;
     std::string dataset_version_;
+    std::string engine_version_;
+    std::string composition_signature_;
+    std::string mechanics_signature_;
+    std::string train_manifest_sha256_;
+    std::string validation_manifest_sha256_;
+    std::string test_manifest_sha256_;
+    std::uint32_t sample_count_{0};
+    std::uint32_t minimum_sample_count_{0};
+    double mean_{0.0};
+    double p50_{0.0};
+    double p90_{0.0};
+    double calibration_mae_{0.0};
+    double calibration_p90_coverage_{0.0};
+    double calibration_brier_score_{1.0};
+    std::vector<double> observed_damage_samples_;
     std::vector<std::string> replay_artifact_ids_;
 
     friend bool approve_calibration(
@@ -482,6 +497,21 @@ inline bool approve_calibration(
     distribution.approval.protocol_id_ = distribution.calibration_protocol_id;
     distribution.approval.report_sha256_ = distribution.calibration_report_sha256;
     distribution.approval.dataset_version_ = distribution.dataset_version;
+    distribution.approval.engine_version_ = distribution.engine_version;
+    distribution.approval.composition_signature_ = distribution.composition_signature;
+    distribution.approval.mechanics_signature_ = distribution.mechanics_signature;
+    distribution.approval.train_manifest_sha256_ = distribution.calibration_train_manifest_sha256;
+    distribution.approval.validation_manifest_sha256_ = distribution.calibration_validation_manifest_sha256;
+    distribution.approval.test_manifest_sha256_ = distribution.calibration_test_manifest_sha256;
+    distribution.approval.sample_count_ = distribution.sample_count;
+    distribution.approval.minimum_sample_count_ = distribution.minimum_sample_count;
+    distribution.approval.mean_ = distribution.mean;
+    distribution.approval.p50_ = distribution.p50;
+    distribution.approval.p90_ = distribution.p90;
+    distribution.approval.calibration_mae_ = distribution.calibration_mae;
+    distribution.approval.calibration_p90_coverage_ = distribution.calibration_p90_coverage;
+    distribution.approval.calibration_brier_score_ = distribution.calibration_brier_score;
+    distribution.approval.observed_damage_samples_ = distribution.observed_damage_samples;
     distribution.approval.replay_artifact_ids_ = distribution.replay_artifact_ids;
     return true;
 }
@@ -681,7 +711,29 @@ inline SurvivalRiskEvidence derive_survival_risk(
         distribution.approval.sequence_ != distribution.before_sequence ||
         distribution.approval.horizon_rounds_ != distribution.horizon_rounds ||
         distribution.approval.expected_damage_ != distribution.mean ||
+        distribution.approval.uncertainty_ != distribution.uncertainty ||
         distribution.approval.source_ != "approved_replay_calibration.v1" ||
+        distribution.approval.engine_version_ != distribution.engine_version ||
+        distribution.approval.composition_signature_ != distribution.composition_signature ||
+        distribution.approval.mechanics_signature_ != distribution.mechanics_signature ||
+        distribution.approval.train_manifest_sha256_ !=
+            distribution.calibration_train_manifest_sha256 ||
+        distribution.approval.validation_manifest_sha256_ !=
+            distribution.calibration_validation_manifest_sha256 ||
+        distribution.approval.test_manifest_sha256_ !=
+            distribution.calibration_test_manifest_sha256 ||
+        distribution.approval.sample_count_ != distribution.sample_count ||
+        distribution.approval.minimum_sample_count_ != distribution.minimum_sample_count ||
+        distribution.approval.mean_ != distribution.mean ||
+        distribution.approval.p50_ != distribution.p50 ||
+        distribution.approval.p90_ != distribution.p90 ||
+        distribution.approval.calibration_mae_ != distribution.calibration_mae ||
+        distribution.approval.calibration_p90_coverage_ !=
+            distribution.calibration_p90_coverage ||
+        distribution.approval.calibration_brier_score_ !=
+            distribution.calibration_brier_score ||
+        distribution.approval.observed_damage_samples_ !=
+            distribution.observed_damage_samples ||
         distribution.approval.protocol_id_ != distribution.calibration_protocol_id ||
         distribution.approval.report_sha256_ != distribution.calibration_report_sha256 ||
         distribution.approval.dataset_version_ != distribution.dataset_version ||
