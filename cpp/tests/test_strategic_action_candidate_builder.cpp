@@ -196,6 +196,11 @@ void builder_emits_snapshot_bound_physical_candidates() {
     assert(sale_score != opportunity_evaluation.candidates.end());
     assert(sale_score->unit_priority_value < 0.0);
 
+    struct BaselineAlternativeScore {
+        double net_score{0.0};
+        double uncertainty{1.0};
+        bool eligible{false};
+    };
     const auto net_score_against_hold = [&](const StrategicActionCandidate& alternative) {
         auto baseline_context = context;
         baseline_context.action_candidates = {alternative, *hold};
@@ -205,15 +210,32 @@ void builder_emits_snapshot_bound_physical_candidates() {
             baseline.candidates.begin(), baseline.candidates.end(),
             [&](const auto& score) { return score.candidate_id == alternative.candidate_id; });
         assert(baseline_score != baseline.candidates.end());
-        return baseline_score->eligible ? baseline_score->total_score : 0.0;
+        return BaselineAlternativeScore{
+            baseline_score->total_score, baseline_score->evidence_uncertainty,
+            baseline_score->eligible};
     };
-    const double best_competing_net_score = std::max({
-        net_score_against_hold(*competing_buy),
-        net_score_against_hold(*deploy),
-        net_score_against_hold(*sale_candidate)
-    });
-    assert(best_competing_net_score > 0.0);
-    assert(std::abs(buy_score->opportunity_cost - best_competing_net_score) < 1e-9);
+    double best_risk_adjusted_value = 0.0;
+    double expected_forgone_net_score = 0.0;
+    std::string expected_forgone_candidate_id;
+    for (const auto& alternative : {
+        *competing_buy, *deploy, *sale_candidate
+    }) {
+        const auto baseline = net_score_against_hold(alternative);
+        if (!baseline.eligible || baseline.net_score <= 0.0 ||
+            !std::isfinite(baseline.uncertainty) ||
+            baseline.uncertainty < 0.0 || baseline.uncertainty >= 1.0)
+            continue;
+        const double risk_adjusted =
+            baseline.net_score * (1.0 - baseline.uncertainty);
+        if (risk_adjusted <= best_risk_adjusted_value) continue;
+        best_risk_adjusted_value = risk_adjusted;
+        expected_forgone_net_score = baseline.net_score;
+        expected_forgone_candidate_id = alternative.candidate_id;
+    }
+    assert(best_risk_adjusted_value > 0.0);
+    assert(std::abs(buy_score->opportunity_cost - expected_forgone_net_score) < 1e-9);
+    assert(buy_score->opportunity_cost_forgone_candidate_id ==
+        expected_forgone_candidate_id);
 
     // Prove the complete native chain using the exact lineup and physical unit.
     auto integrated_context = context;
