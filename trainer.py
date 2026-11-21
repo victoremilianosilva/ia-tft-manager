@@ -2132,10 +2132,12 @@ class Trainer:
                         )[valid_indices]
                         for k, v in rollout.masks.items()
                     }
+                    sample_semantic_numeric = rollout.semantic_numeric[:rollout.ptr].reshape(
+                        -1, rollout.semantic_numeric_dim
+                    )[valid_indices]
                     sample_semantic_state = {
-                        "numeric": rollout.semantic_numeric[:rollout.ptr].reshape(
-                            -1, rollout.semantic_numeric_dim
-                        )[valid_indices],
+                        "numeric": sample_semantic_numeric,
+                        "items": semantic_item_state_tensors(sample_semantic_numeric),
                         "champion_ids": rollout.semantic_champion_ids[:rollout.ptr].reshape(
                             -1, rollout.semantic_entity_slots
                         )[valid_indices],
