@@ -245,8 +245,11 @@ public:
         const bool envelope_valid = evidence &&
             PlannerEvidenceAdapters::snapshot_identity_matches(*evidence, match_id,
                 context.player_id, out.composition_id, out.composition_version, context.round);
+        const bool combat_evidence_valid = envelope_valid &&
+            PlannerEvidenceAdapters::combat_evidence_valid(context, evidence->economy);
         const bool economy_valid = envelope_valid &&
-            PlannerEvidenceAdapters::source_matches(evidence->economy.metadata, context.round);
+            PlannerEvidenceAdapters::source_matches(evidence->economy.metadata, context.round) &&
+            combat_evidence_valid;
         const bool board_valid = envelope_valid &&
             PlannerEvidenceAdapters::source_matches(evidence->board.metadata, context.round);
         const bool items_valid = envelope_valid &&
@@ -292,7 +295,12 @@ public:
         if (evidence && !envelope_valid) {
             out.evidence_rejected.push_back("PlannerEvidenceSnapshot:identity_mismatch");
         } else if (evidence) {
-            if (!economy_valid) out.evidence_rejected.push_back("EconomicController:" + evidence->economy.metadata.reason);
+            if (!combat_evidence_valid && envelope_valid)
+                out.evidence_rejected.push_back(
+                    "EconomicController:combat_evidence_provenance_or_identity_mismatch");
+            else if (!economy_valid)
+                out.evidence_rejected.push_back(
+                    "EconomicController:" + evidence->economy.metadata.reason);
             if (!board_valid) out.evidence_rejected.push_back("BoardEvaluation:" + evidence->board.metadata.reason);
             if (!items_valid) out.evidence_rejected.push_back("ItemEngine:" + evidence->items.metadata.reason);
         }
