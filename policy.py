@@ -585,9 +585,9 @@ class TFTPolicy(nn.Module):
                     candidates[:, :, 0],   # occupied
                     candidates[:, :, 2],   # cost
                     candidates[:, :, 1],   # star
-                    candidates[:, :, 3],   # equipped item count
                     candidates[:, :, 4],   # trait count
                     candidates[:, :, 10],  # owned copy-equivalent progress
+                    candidates[:, :, 11],  # same-star upgrade progress
                 ),
                 dim=-1,
             )
