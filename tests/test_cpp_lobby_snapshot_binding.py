@@ -897,7 +897,7 @@ def test_wrapper_rejects_anvil_sequence_without_pending_choice():
         "decision_sequence": 0,
         "player_decision_sequences": [0] * 8,
     }
-    with pytest.raises(RuntimeError, match="Sequência de bigorna presente"):
+    with pytest.raises(RuntimeError, match="Identidade de bigorna presente sem escolha pendente"):
         cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
 
 
