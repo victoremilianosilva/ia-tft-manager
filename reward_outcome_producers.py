@@ -119,6 +119,14 @@ def build_action_outcome_events(
     """Build one factual event per player decision from native snapshot diffs."""
     if not isinstance(before_snapshot, Mapping) or not isinstance(after_snapshot, Mapping):
         raise TypeError("Snapshots nativos pré/pós-ação são obrigatórios.")
+    for snapshot in (before_snapshot, after_snapshot):
+        if (
+            snapshot.get("contract_id") != "tft.native-state-snapshot"
+            or _int(snapshot.get("contract_version"), "snapshot.contract_version") != 5
+            or snapshot.get("source_namespace") != "tft.engine.observation-snapshot"
+            or snapshot.get("producer") != "TFTEngine::get_audit_snapshot"
+        ):
+            raise RuntimeError("Snapshot pré/pós-ação não pertence ao contrato nativo v5.")
     for field in ("engine_instance_id", "episode_id"):
         if before_snapshot.get(field) != after_snapshot.get(field):
             raise RuntimeError(f"Snapshots pré/pós-ação divergem em {field}.")
@@ -138,10 +146,14 @@ def build_action_outcome_events(
     if not isinstance(action_traces, Sequence) or len(action_traces) != _PLAYERS:
         raise RuntimeError("Action traces incompletos para produtores factuais.")
 
+    economy_events = after_snapshot.get("economy_resolution_events")
+    if not isinstance(economy_events, Sequence):
+        raise RuntimeError("Snapshot pós-ação sem lista nativa de resolução econômica.")
+    if any(not isinstance(event, Mapping) for event in economy_events):
+        raise RuntimeError("Evento nativo de resolução econômica inválido.")
     economy_resolved = {
         _int(event.get("player_id"), "economy_resolution.player_id")
-        for event in (after_snapshot.get("economy_resolution_events") or [])
-        if isinstance(event, Mapping)
+        for event in economy_events
     }
     events = []
     for player_id in range(_PLAYERS):
@@ -166,7 +178,10 @@ def build_action_outcome_events(
         if action_type not in ACTION_FAMILIES:
             raise RuntimeError(f"Tipo de ação sem família factual: {action_type}.")
         family = ACTION_FAMILIES[action_type]
-        applied = bool(trace.get("handler_applied", False))
+        applied_value = trace.get("handler_applied")
+        if not isinstance(applied_value, bool):
+            raise RuntimeError(f"handler_applied não é booleano para player_id={player_id}.")
+        applied = applied_value
         before_units = _owned_units(before)
         after_units = _owned_units(after)
         before_copies = _copy_equivalents(before_units)
@@ -223,8 +238,8 @@ def build_action_outcome_events(
             _int(after.get("level"), "after.level") - _int(before.get("level"), "before.level")
         )
         round_income_events = [
-            dict(event) for event in (after_snapshot.get("economy_resolution_events") or [])
-            if isinstance(event, Mapping) and _int(event.get("player_id"), "economy_resolution.player_id") == player_id
+            dict(event) for event in economy_events
+            if _int(event.get("player_id"), "economy_resolution.player_id") == player_id
         ]
         moved = []
         for uuid, current in after_units.items():
