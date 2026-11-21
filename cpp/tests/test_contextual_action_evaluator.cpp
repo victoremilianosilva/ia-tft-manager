@@ -420,6 +420,19 @@ void economic_posture_is_explanatory_not_a_fixed_action_rule() {
     context.round = 8;
     context.sequence = 99;
     context.evidence.gold = true;
+    context.evidence.estimated_incoming_damage = true;
+    context.evidence.elimination_risk = true;
+    context.estimated_incoming_damage = 12.5;
+    context.elimination_risk = 0.25;
+    context.incoming_damage_source = "observed_hp+approved_replay_calibration.v1";
+    context.elimination_risk_source = context.incoming_damage_source;
+    context.combat_evidence_horizon_rounds = 1;
+    context.combat_evidence_sequence = 99;
+    context.combat_evidence_uncertainty = 0.15;
+    context.combat_calibration_protocol_id = "combat-calibration.v1";
+    context.combat_calibration_report_sha256 = std::string(64, 'a');
+    context.combat_dataset_version = "combat-dataset.v2";
+    context.combat_replay_artifact_ids = {"replay-a", "replay-b"};
     auto buy = candidate(StrategicActionKind::BuyExperience);
     buy.gold_cost = 3;
     buy.direct_gold_cost = 3.0;
@@ -522,6 +535,15 @@ void economic_posture_is_explanatory_not_a_fixed_action_rule() {
     assert(json["economic_context"]["combat_calibration_report_sha256"] == std::string(64, 'a'));
     assert(json["economic_context"]["combat_dataset_version"] == "combat-dataset.v2");
     assert(json["economic_context"]["combat_replay_artifact_ids"].size() == 2);
+    auto invalid_evidence = evidence;
+    invalid_evidence.economy.combat_calibration_report_sha256 = "invalid";
+    const auto rejected_combat = ContextualActionEvaluator{}.evaluate(
+        active(), priorities(), lineup(), context, &invalid_evidence, 77);
+    assert(!rejected_combat.economy_evidence_consumed);
+    assert(std::find(rejected_combat.evidence_rejected.begin(),
+        rejected_combat.evidence_rejected.end(),
+        "EconomicController:combat_evidence_provenance_or_identity_mismatch") !=
+        rejected_combat.evidence_rejected.end());
     assert(json["economic_context"]["progression_available"] == false);
 }
 
