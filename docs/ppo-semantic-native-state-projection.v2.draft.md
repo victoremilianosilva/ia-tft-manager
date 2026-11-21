@@ -145,9 +145,9 @@ Trainer collection no longer calls the legacy `get_strategies()` compatibility A
 - PPO permanece a política aprendida. GAE, RolloutBuffer, replay e action masks permanecem preservados; Engine masks continuam sendo a autoridade de legalidade.
 - Recomendações estratégicas não são labels de imitação nem substituem a política aprendida.
 
-**Validação ainda necessária antes de concluir #286/#293:**
-- Executar CI C++/Python/native no head final após a retirada do carrier posicional e a refatoração de owners.
-- Confirmar end-to-end sampling, evaluate_actions, value/bootstrap, minibatches, replay, paired evaluation e inferência com os produtores legados desligados.
-- Concluir auditoria de todos os chamadores nativos da Policy e garantir semantic_state v6 obrigatório.
+**Validação final antes de concluir #286/#293:**
+- A auditoria dos consumidores de produção foi concluída: Trainer, fine-tuning, paired evaluator, Viewer, auditoria nativa e replay usam Policy estrita com semantic_state v6; RolloutBuffer de produção também rejeita transições sem esse estado.
+- Sampling, `evaluate_actions`, value/bootstrap e replay multi-round foram exercitados com `TFT_DISABLE_LEGACY_STRATEGY_PROJECTION=1`; testes separados cobrem minibatches/replay, paired evaluation, checkpoint evaluation e inferência do Viewer.
+- Falta somente confirmar todos os workflows verdes no head final e o artefato de replay gerado por essa mesma revisão.
 
-**Status:** os cinco grupos possuem caminhos semânticos nativos obrigatórios; os blocos posicionais foram removidos do transporte nativo; todos os leitores de produção constroem a Policy com `require_semantic_state=True`; e existe replay multi-round que executa sampling, `evaluate_actions` e value/bootstrap com `TFT_DISABLE_LEGACY_STRATEGY_PROJECTION=1`, mantendo os owners nativos ativos. A evidência de custo de oportunidade continua explicitamente indisponível porque ainda não há produtor validado que possa ser alimentado ao PPO sem converter scores/recomendações Shadow em rótulos. A conclusão depende do CI verde no head final e da confirmação do replay integrado no workflow.
+**Status:** os cinco grupos possuem caminhos semânticos nativos obrigatórios; os blocos posicionais foram removidos do transporte nativo; o encoder global posicional foi aposentado no caminho estrito; e o replay prova que os owners nativos continuam funcionando sem a projeção econômica/StrategyInfo legada. A evidência de custo de oportunidade continua explicitamente indisponível porque não existe produtor validado independente de scores/recomendações Shadow; não inventamos esse valor nem o transformamos em rótulo PPO. A conclusão depende apenas do CI verde no head final.
