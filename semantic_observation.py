@@ -193,6 +193,9 @@ def validate_semantic_state_warm_start_migration(
         historical_encoder["fusion"] = (
             "semantic_global_mlp_plus_additive_to_shared_actor_critic_latent"
         )
+        historical_encoder["numeric_plus_embedding_input_dim"] = (
+            expected["contract"]["encoder"]["numeric_plus_embedding_input_dim"]
+        )
         historical_encoder.pop("board_cnn_source", None)
         historical_encoder.pop("action_candidate_source", None)
         historical_payload["encoder"] = historical_encoder
