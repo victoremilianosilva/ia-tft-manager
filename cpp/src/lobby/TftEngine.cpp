@@ -453,6 +453,8 @@ struct TFTEngine::Impl {
         strategic_planner_commitments{};
     std::array<std::uint64_t, kPlayersPerLobby>
         strategic_context_sequences{};
+    std::array<std::optional<combat_evidence::SurvivalRiskEvidence>, kPlayersPerLobby>
+        pending_combat_prediction_evidence{};
     std::array<std::string, kPlayersPerLobby>
         strategic_shadow_external_active_identity{};
     std::array<std::uint64_t, kPlayersPerLobby>
@@ -2651,6 +2653,24 @@ struct TFTEngine::Impl {
             strategic_context.evidence.estimated_incoming_damage = false;
             strategic_context.evidence.elimination_risk = false;
             strategic_context.evidence.progression_plan = false;
+
+            // A calibrated provider may publish exactly one risk envelope for
+            // this next decision sequence. Stale, partial or experimental
+            // predictions remain unavailable and never reach economic scoring.
+            if (pending_combat_prediction_evidence[i].has_value()) {
+                const bool applied = combat_evidence::apply_to_economic_context(
+                    *pending_combat_prediction_evidence[i], strategic_context);
+                round_events.emplace_back(
+                    std::string(applied ? "COMBAT_PREDICTION_EVIDENCE_APPLIED"
+                                        : "COMBAT_PREDICTION_EVIDENCE_REJECTED") +
+                    " player=" + std::to_string(i) +
+                    " sequence=" + std::to_string(
+                        pending_combat_prediction_evidence[i]->sequence) +
+                    " horizon=" + std::to_string(
+                        pending_combat_prediction_evidence[i]->horizon_rounds) +
+                    " source=" + pending_combat_prediction_evidence[i]->source);
+                pending_combat_prediction_evidence[i].reset();
+            }
 
             const auto append_owned_candidate = [&](const UnitInstance& unit,
                                                     bool on_board) {
@@ -5594,6 +5614,7 @@ ResetResult TFTEngine::reset(
     impl_->strategic_planner_commitments = {};
     for (auto& executor : impl_->strategic_action_executors) executor.reset();
     impl_->strategic_context_sequences.fill(0);
+    for (auto& evidence : impl_->pending_combat_prediction_evidence) evidence.reset();
     if (!impl_->strategic_shadow_audit_path.empty()) {
         std::error_code remove_error;
         std::filesystem::remove(impl_->strategic_shadow_audit_path, remove_error);
