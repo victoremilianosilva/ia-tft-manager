@@ -224,7 +224,7 @@ def test_v1_semantic_encoder_checkpoint_maps_old_feature_offsets():
     state = {
         key: value.detach().clone()
         for key, value in policy.state_dict().items()
-        if not key.startswith("semantic_encoder.")
+        if not key.startswith(("semantic_encoder.", "semantic_trait_embedding."))
     }
     state["semantic_encoder.0.weight"] = old_weight
     state["semantic_encoder.0.bias"] = torch.zeros(256)
@@ -285,7 +285,7 @@ def test_v2_semantic_encoder_checkpoint_maps_global_and_target_profile_extension
     state = {
         key: value.detach().clone()
         for key, value in policy.state_dict().items()
-        if not key.startswith("semantic_encoder.")
+        if not key.startswith(("semantic_encoder.", "semantic_trait_embedding."))
     }
     state["semantic_encoder.0.weight"] = old_weight
     state["semantic_encoder.0.bias"] = torch.zeros(256)
