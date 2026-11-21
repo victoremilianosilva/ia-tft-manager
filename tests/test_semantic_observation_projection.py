@@ -127,6 +127,16 @@ def test_native_semantic_projection_has_stable_shape_and_explicit_identity():
     assert projected["numeric"][61] == 1.0  # pivot reference
     assert projected["numeric"][62] == 4.0 / 9.0  # one 2-star plus one 1-star copy
     assert projected["numeric"][63] == 0.0  # native UnitCopyProgress reports no 2-star progress
+    # The appended 17-field item target profile comes from the native snapshot.
+    assert projected["numeric"][64] == 1.0  # occupied target
+    assert projected["numeric"][65] == 1.0  # board target
+    assert projected["numeric"][71] == 1.0  # classifier role one-hot (fighter)
+    assert projected["numeric"][73] == 1.0  # frontline row
+    assert projected["numeric"][75] == 0.5  # attack damage / 200
+    assert projected["numeric"][80] == 1.0 / 3.0  # equipped item count / 3
+    bench_target_start = 52 + 28 * 29 + 12
+    assert projected["numeric"][bench_target_start + 2] == 1.0
+    assert projected["numeric"][bench_target_start + 9] == 0.0
     assert projected["numeric"][21] == 5.0 / 9.0  # board capacity
     assert projected["numeric"][22] == 8.0 / 9.0  # bench capacity
     assert projected["numeric"][23] == 0.3  # actions taken this round
