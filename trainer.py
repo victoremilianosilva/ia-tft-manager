@@ -374,8 +374,17 @@ class Trainer:
                         "Checkpoint contém pesos sem semantic_state_contract; "
                         "a origem/layout do estado semântico não pode ser inferida."
                     )
-                # Historical checkpoint: semantic branch migrates from its
-                # neutral initialization; optimizer/scheduler are reset.
+                allow_semantic_warm_start = os.environ.get(
+                    "TFT_ALLOW_SEMANTIC_STATE_WARM_START", ""
+                ).strip().lower() in {"1", "true", "yes"}
+                if not allow_semantic_warm_start:
+                    raise RuntimeError(
+                        "Checkpoint histórico sem semantic_state v6. Para importar "
+                        "somente pesos não semânticos em uma nova linhagem, defina "
+                        "TFT_ALLOW_SEMANTIC_STATE_WARM_START=1; o encoder semântico "
+                        "será inicializado e optimizer/scheduler não serão restaurados."
+                    )
+                semantic_state_warm_start = True
             else:
                 if not checkpoint_has_semantic_weights:
                     raise RuntimeError(
@@ -417,9 +426,8 @@ class Trainer:
                 legacy_checkpoint_lineage = True
             else:
                 if any(value is None for value in (
-                    saved_contract, saved_critic_mask_contract, saved_semantic_contract,
-                    saved_reward_contract,
-                )):
+                    saved_contract, saved_critic_mask_contract, saved_reward_contract,
+                )) or (saved_semantic_contract is None and not semantic_state_warm_start):
                     raise RuntimeError(
                         "Checkpoint declara linhagem agregada, mas um contrato componente está ausente."
                     )
