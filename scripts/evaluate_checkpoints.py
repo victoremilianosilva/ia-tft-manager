@@ -19,6 +19,7 @@ def native_semantic_state_for_players(lobby, player_ids, catalog_map, device):
     from semantic_observation import (
         project_native_player_state,
         build_semantic_state_checkpoint_contract,
+        semantic_item_state_tensors,
     )
 
     snapshot = lobby.get_snapshot_metadata()
@@ -64,10 +65,12 @@ def native_semantic_state_for_players(lobby, player_ids, catalog_map, device):
         }
         rows.append(project_native_player_state(metadata, catalog_map))
     contract = build_semantic_state_checkpoint_contract(catalog_map)
+    numeric = torch.as_tensor(
+        [row["numeric"] for row in rows], dtype=torch.float32, device=device
+    )
     return {
-        "numeric": torch.as_tensor(
-            [row["numeric"] for row in rows], dtype=torch.float32, device=device
-        ),
+        "numeric": numeric,
+        "items": semantic_item_state_tensors(numeric),
         "champion_ids": torch.as_tensor(
             [row["champion_ids"] for row in rows], dtype=torch.long, device=device
         ),
