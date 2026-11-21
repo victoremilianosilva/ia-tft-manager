@@ -214,7 +214,7 @@ def build_semantic_state_checkpoint_contract(catalog_map: Mapping[str, int]) -> 
         "encoder": {
             "kind": "champion_and_trait_embedding_plus_mlp",
             "numeric_plus_embedding_input_dim": (
-                SEMANTIC_NUMERIC_DIM
+                SEMANTIC_ITEM_OFFSET
                 + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ID_EMBED_DIM
                 + SEMANTIC_ENTITY_SLOTS * SEMANTIC_TRAIT_EMBED_DIM
             ),
