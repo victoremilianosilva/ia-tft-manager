@@ -7,8 +7,10 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <limits>
 #include <string>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 namespace tft::combat_evidence {
@@ -205,7 +207,7 @@ public:
         std::uint32_t scenarios_per_matchup = 4,
         std::uint64_t first_seed = 1) const {
         CombatProjectionResult out;
-        if (candidates.empty() || scenarios_per_matchup == 0 ||
+        if (candidates.empty() || candidates.size() > 7 || scenarios_per_matchup == 0 ||
             scenarios_per_matchup > kMaximumScenarios || first_seed == 0 ||
             authoritative_round_damage < 0) {
             out.reason = "matchup_candidates_or_projection_parameters_unavailable";
@@ -248,6 +250,7 @@ public:
         double expected_damage = 0.0;
         double simulation_uncertainty = 0.0;
         double matchup_entropy = 0.0;
+        bool all_candidate_coverage_complete = true;
         std::vector<WeightedCombatScenario> scenarios;
         scenarios.reserve(out.scenarios_requested);
 
@@ -268,6 +271,8 @@ public:
                 return out;
             }
             const auto& coverage = candidate_result.coverage;
+            all_candidate_coverage_complete = all_candidate_coverage_complete &&
+                CombatCoverageValidator{}.validate(coverage).complete;
             out.coverage.units_seen += coverage.units_seen;
             out.coverage.units_supported += coverage.units_supported;
             out.coverage.unsupported_abilities += coverage.unsupported_abilities;
@@ -329,6 +334,7 @@ public:
         for (const auto& scenario : scenarios)
             out.incoming_damage_samples.push_back(scenario.incoming_damage);
         out.weighted_scenarios = std::move(scenarios);
+        out.coverage.all_effects_catalogued = all_candidate_coverage_complete;
         const auto coverage = CombatCoverageValidator{}.validate(out.coverage);
         out.simulation_completed = true;
         out.decision_eligible = false;
