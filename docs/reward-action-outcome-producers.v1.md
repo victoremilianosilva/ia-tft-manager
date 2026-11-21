@@ -68,3 +68,32 @@ No action-family signal is enabled as reward by this contract. Before a later Re
 - raw per-episode artifacts and reproducible report hashes.
 
 The current repository audit still identifies the integrated deterministic replay and rollout identity chain as incomplete. Therefore no empirical calibration result is claimed here, and no coefficient or reward shaping is introduced until that gate is satisfied.
+
+
+## Causal attribution candidate contract — PR #517 follow-up
+
+`reward_signal_calibration.build_attribution_candidates` now evaluates action/outcome pairs without moving or creating reward. Policies define an explicit maximum player-decision gap per action family; the gap is a candidate-discovery bound, not a claim that the action's effect ends at that point.
+
+Attribution is exclusive and fail-closed:
+- only applied native action traces can be candidates;
+- Engine instance, episode and player identity must match;
+- only native PvP resolution and validated terminal placement outcomes are accepted;
+- any intervening non-PASS action blocks attribution;
+- multiple candidates are ambiguous; no candidate remains unattributed;
+- every result has `reward=null`, `reward_moved=false`, and `causal_attribution` no stronger than `candidate_not_proven`.
+
+This deliberately prevents delayed combat/placement reward from being duplicated as action reward while GAE already propagates it through the trajectory. It also does not claim causal proof from temporal proximity.
+
+## Calibration evidence validator
+
+`validate_calibration_manifest` rejects missing dataset/code/Engine/catalog identities, absent split manifests, overlapping train/validation/test episode IDs, and missing baseline/candidate/ablation report hashes. Passing this structural validator means only that the required evidence is present; it does not approve coefficients or activate reward.
+
+## Remaining empirical acceptance
+
+The repository does not contain an approved immutable replay dataset and completed baseline/candidate/ablation reports for these new signals. Consequently:
+- action reward remains neutral under `tft.ppo.outcome-reward.v1`;
+- no coefficients are fitted or promoted by runtime code;
+- delayed benefits and reversals remain represented as factual evidence, not assigned scalar reward;
+- calibration, statistical uncertainty, empirical anti-hacking evaluation and measured signal ablation remain unverified until the required replay artifacts exist.
+
+The new unit tests cover exclusive candidates, intervening-action rejection, ambiguous multiple actions, failed handlers, missing calibration evidence and split leakage. These are contract tests, not empirical calibration results.
