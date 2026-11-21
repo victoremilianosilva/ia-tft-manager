@@ -144,6 +144,50 @@ def build_attribution_candidates(
     return results
 
 
+
+def extract_native_outcome_events(reward_audit: Mapping[str, Any]) -> list[dict[str, Any]]:
+    """Normalize native combat/placement audit records for attribution analysis."""
+    if not isinstance(reward_audit, Mapping):
+        raise TypeError("Reward audit deve ser um objeto.")
+    if reward_audit.get("contract_id") != "tft.ppo.reward-audit.v1":
+        raise ValueError("Reward audit contract não suportado.")
+    engine = str(reward_audit.get("engine_instance_id", "")).strip()
+    episode = reward_audit.get("episode_id")
+    rows = reward_audit.get("player_rewards")
+    if not engine or isinstance(episode, bool) or not isinstance(episode, int):
+        raise ValueError("Identidade do reward audit inválida.")
+    if not isinstance(rows, Sequence) or len(rows) != 8:
+        raise ValueError("Reward audit deve conter oito jogadores.")
+    result = []
+    for row in rows:
+        if not isinstance(row, Mapping):
+            raise ValueError("Player reward audit inválido.")
+        player_id = row.get("player_id")
+        sequence = row.get("outcome_player_decision_sequence")
+        if isinstance(player_id, bool) or not isinstance(player_id, int):
+            raise ValueError("player_id inválido no reward audit.")
+        if isinstance(sequence, bool) or not isinstance(sequence, int):
+            raise ValueError("Sequência de outcome inválida no reward audit.")
+        for key in ("combat_outcome", "terminal_placement"):
+            outcome = row.get(key)
+            if outcome is None:
+                continue
+            if not isinstance(outcome, Mapping):
+                raise ValueError("Outcome nativo inválido no reward audit.")
+            result.append({
+                "event_id": outcome.get("event_id"),
+                "engine_instance_id": engine,
+                "episode_id": episode,
+                "player_id": player_id,
+                "player_decision_sequence": sequence,
+                "source": outcome.get("source"),
+                "reward": outcome.get("reward"),
+                "combat_sequence": outcome.get("combat_sequence"),
+                "placement": outcome.get("placement"),
+            })
+    return result
+
+
 def validate_calibration_manifest(manifest: Mapping[str, Any]) -> dict[str, Any]:
     """Validate evidence prerequisites; never fit or approve coefficients."""
     if not isinstance(manifest, Mapping):
