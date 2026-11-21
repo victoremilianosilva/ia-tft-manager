@@ -369,6 +369,7 @@ public:
         for (const auto& candidate : out.candidates) {
             strategy::OpportunityAlternativeEvidence evidence;
             evidence.candidate_id = candidate.candidate_id;
+            evidence.value_basis = "native_board_contribution.v1";
             evidence.marginal_strategic_value =
                 std::max(0.0, candidate.expected_board_delta);
             evidence.horizon_rounds = candidate.evidence_horizon_rounds;
@@ -386,8 +387,10 @@ public:
         }
         const strategy::OpportunityCostProducer opportunity_producer;
         for (auto& candidate : out.candidates) {
+            if (candidate.kind != strategy::StrategicActionKind::BuyUnit) continue;
             const auto opportunity = opportunity_producer.evaluate(
-                candidate.candidate_id, alternatives);
+                candidate.candidate_id, alternatives, candidate.evidence_horizon_rounds,
+                "native_board_contribution.v1");
             if (!opportunity.available) continue;
             candidate.opportunity_cost = opportunity.cost;
             candidate.opportunity_cost_evidence_available = true;
