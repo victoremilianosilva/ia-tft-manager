@@ -388,20 +388,8 @@ class TFTPolicy(nn.Module):
             board_2d = board_features.reshape(
                 obs.shape[0], 4, 7, self.num_cell_features
             ).permute(0, 3, 1, 2).contiguous()
-            # The global MLP retains its established input width while the
-            # identity-bound semantic encoder supplies native global/entity facts
-            # through its dedicated side path below. Global positional consumers
-            # are migrated separately from this CNN/candidate change.
-            pre_part = obs[:, :self.pre_board_dim]
-            post_part = obs[:, self.pre_board_dim + self.board_flat_dim :]
-            candidate_tail = post_part[:, -self.candidate_observation_dim:]
-            middle_part = post_part[:, :-self.candidate_observation_dim]
-            if self.has_item_compatibility_observation:
-                middle_part = middle_part[:, :-self.item_compatibility_observation_dim]
-            economic_context = self._economic_context_features(obs)
-            global_part = torch.cat(
-                [pre_part, middle_part, economic_context, candidate_tail], dim=-1
-            )
+            # No global facts are read from flat offsets on the native path.
+            global_part = None
         else:
             board_part = obs[:, self.pre_board_dim : self.pre_board_dim + self.board_flat_dim]
             board_2d = board_part.view(-1, self.num_cell_features, 4, 7)
@@ -420,7 +408,6 @@ class TFTPolicy(nn.Module):
         
         # Processamento paralelo nas sub-redes dedicadas
         cnn_features = self.board_cnn(board_2d)
-        global_features = self.global_mlp(global_part)
         semantic_input = None
         if semantic_entities is not None:
             numeric = semantic_state["numeric"]
@@ -440,9 +427,11 @@ class TFTPolicy(nn.Module):
             embedded_ids = self.semantic_id_embedding(champion_ids).reshape(obs.shape[0], -1)
             semantic_input = torch.cat([numeric, embedded_ids], dim=-1)
             # The first semantic encoder stage is the global MLP input path.
-            # It consumes native facts and entity identity instead of the flat
+            # It consumes native facts and entity identity instead of flat
             # global/trait/capacity/action-memory offsets.
             global_features = self.semantic_encoder[0:2](semantic_input)
+        else:
+            global_features = self.global_mlp(global_part)
         
         # Fusão latente
         combined = torch.cat([cnn_features, global_features], dim=-1)
