@@ -27,7 +27,7 @@ LEGACY_ACTION_DIMS = [7, 5, 9, 28, 28, 28]
 
 class TFTPolicy(nn.Module):
   
-    def __init__(self, obs_dim, action_dims, hidden_size=512, semantic_vocab_size=2):
+    def __init__(self, obs_dim, action_dims, hidden_size=512, semantic_vocab_size=2, require_semantic_state=False):
         super().__init__()
 
         # 🛡️ Valida o contrato das seis dimensões antes de criar as camadas.
@@ -40,6 +40,7 @@ class TFTPolicy(nn.Module):
             )
 
         self.obs_dim = obs_dim
+        self.require_semantic_state = bool(require_semantic_state)
         self.action_dims = action_dims
         self.num_action_types = action_dims[0]
         
@@ -468,6 +469,8 @@ class TFTPolicy(nn.Module):
             # No global facts are read from flat offsets on the native path.
             global_part = None
         else:
+            if self.require_semantic_state:
+                raise ValueError("native PPO inference requires semantic_state v6; flat positional fallback is disabled")
             board_part = obs[:, self.pre_board_dim : self.pre_board_dim + self.board_flat_dim]
             board_2d = board_part.view(-1, self.num_cell_features, 4, 7)
             pre_part = obs[:, :self.pre_board_dim]
