@@ -571,7 +571,7 @@ class TFTPolicy(nn.Module):
             raise TypeError("semantic numeric input must be float32 on the observation device")
         if not torch.isfinite(numeric).all():
             raise ValueError("semantic numeric input contains NaN or infinity")
-        return numeric[:, SEMANTIC_GLOBAL_FEATURES:].reshape(
+        return numeric[:, SEMANTIC_GLOBAL_FEATURES:SEMANTIC_ITEM_OFFSET].reshape(
             obs.shape[0], SEMANTIC_ENTITY_SLOTS, SEMANTIC_ENTITY_FEATURES
         )
 
@@ -1392,7 +1392,7 @@ class TFTPolicy(nn.Module):
         (
             item_component_features, item_inventory_features, item_recipe_features,
             item_target_features, item_inventory_target_fit, item_recipe_target_fit,
-            item_anvil_options, item_anvil_pending,
+            item_anvil_options, item_anvil_pending, item_anvil_kind_features,
         ) = self._item_state_features(obs, semantic_state)
 
         # Type
