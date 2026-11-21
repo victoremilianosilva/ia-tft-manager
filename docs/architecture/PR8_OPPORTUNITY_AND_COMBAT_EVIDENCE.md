@@ -4,7 +4,7 @@
 The marginal envelope against HOLD already accounts for direct gold, liquidity and verified interest. Generic opportunity cost had no factual producer. The CombatEngine is a deterministic simulator with incomplete champion/trait/buff/debuff/passive coverage; its output is not an empirically calibrated opponent prediction.
 
 ## Technical rationale
-Opportunity cost must describe a concrete alternative forgone on the same decision snapshot. Direct gold and interest stay exclusively in the marginal economy envelope to prevent double counting. Combat evidence must distinguish snapshot identity, actual opponent identity, mechanics coverage, observed replay outcomes and calibrated distributions.
+Opportunity cost must describe a concrete alternative forgone on the same decision snapshot. Direct gold and interest stay exclusively in the marginal economy envelope to prevent double counting. Competing alternatives must share the same horizon and explicit value basis; the builder currently uses only the native board-contribution basis for BUY-vs-BUY. Combat evidence must distinguish snapshot identity, actual opponent identity, mechanics coverage, observed replay outcomes and calibrated distributions.
 
 ## New responsibilities
 - `strategy::OpportunityCostProducer`: select the strongest valid competing alternative and expose its identity, horizon and uncertainty. The candidate builder currently supplies only same-snapshot BUY alternatives with a shared native board-contribution signal; it does not invent progression, composition-fit or upgrade priors. Other action families remain unavailable until their producers supply comparable evidence.
@@ -17,7 +17,7 @@ Opportunity cost must describe a concrete alternative forgone on the same decisi
 ## Contracts and invariants
 - No fabricated opponent, probability, damage or missing mechanic.
 - Synthetic CombatEngine runs do not qualify as observed replay outcomes.
-- Calibration requires a minimum sample count, matching match/player identity, non-duplicate outcome sequences and a non-stale snapshot sequence.
+- Calibration requires a minimum sample count, matching match/player identity, non-duplicate outcome sequences strictly before the decision sequence, and a prior round. Fractional observed HP is preserved; invalid, overlapping or incomplete unit identities are rejected.
 - Unknown opportunity cost is unavailable, never a measured zero.
 - Direct gold and interest are not counted again in opportunity cost.
 - No PPO, reward, action-dimension or action-mask changes.
