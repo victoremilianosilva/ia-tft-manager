@@ -927,6 +927,20 @@ inline SurvivalRiskEvidence derive_multi_round_survival_risk(
     out.replay_artifact_ids.assign(artifact_ids.begin(), artifact_ids.end());
     std::sort(out.replay_artifact_ids.begin(), out.replay_artifact_ids.end());
     out.source = "observed_hp+approved_replay_trajectory.v1";
+    out.approval.valid_ = true;
+    out.approval.match_id_ = out.match_id;
+    out.approval.player_id_ = out.player_id;
+    out.approval.round_ = out.round;
+    out.approval.sequence_ = out.sequence;
+    out.approval.horizon_rounds_ = out.horizon_rounds;
+    out.approval.expected_damage_ = out.expected_damage;
+    out.approval.elimination_risk_ = out.elimination_risk;
+    out.approval.uncertainty_ = out.uncertainty;
+    out.approval.source_ = out.source;
+    out.approval.protocol_id_ = out.calibration_protocol_id;
+    out.approval.report_sha256_ = out.calibration_report_sha256;
+    out.approval.dataset_version_ = out.dataset_version;
+    out.approval.replay_artifact_ids_ = out.replay_artifact_ids;
     return out;
 }
 
@@ -941,6 +955,20 @@ inline bool apply_to_economic_context(
         risk.calibration_protocol_id.empty() ||
         !is_sha256(risk.calibration_report_sha256) ||
         risk.dataset_version.empty() || risk.replay_artifact_ids.empty() ||
+        !risk.approval.valid_ ||
+        risk.approval.match_id_ != risk.match_id ||
+        risk.approval.player_id_ != risk.player_id ||
+        risk.approval.round_ != risk.round ||
+        risk.approval.sequence_ != risk.sequence ||
+        risk.approval.horizon_rounds_ != risk.horizon_rounds ||
+        risk.approval.expected_damage_ != risk.expected_damage ||
+        risk.approval.elimination_risk_ != risk.elimination_risk ||
+        risk.approval.uncertainty_ != risk.uncertainty ||
+        risk.approval.source_ != risk.source ||
+        risk.approval.protocol_id_ != risk.calibration_protocol_id ||
+        risk.approval.report_sha256_ != risk.calibration_report_sha256 ||
+        risk.approval.dataset_version_ != risk.dataset_version ||
+        risk.approval.replay_artifact_ids_ != risk.replay_artifact_ids ||
         !std::isfinite(risk.uncertainty) || risk.uncertainty < 0.0 ||
         risk.uncertainty > 1.0 ||
         context.match_id != risk.match_id ||
