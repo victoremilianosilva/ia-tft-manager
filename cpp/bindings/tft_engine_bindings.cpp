@@ -442,6 +442,8 @@ py::dict audit_snapshot_to_dict(
         p["pending_anvil_sequence"] = player.pending_anvil_sequence;
         p["pending_anvil_kind"] = player.pending_anvil_kind;
         p["pending_anvil_options"] = player.pending_anvil_options;
+        p["actions_taken_this_round"] = player.actions_taken_this_round;
+        p["board_move_age"] = player.board_move_age;
         p["last_item_action_kind"] = player.last_item_action_kind;
         p["last_item_id"] = player.last_item_id;
         p["last_item_first_component"] = player.last_item_first_component;
