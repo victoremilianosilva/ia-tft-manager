@@ -22,7 +22,7 @@ namespace tft::composition_intelligence {
 
 // Independent contextual evaluator. It deliberately does not call or share
 // scoring code with strategy::ActionEvaluator (the frozen baseline).
-inline constexpr std::uint32_t kContextualActionEvaluatorSchemaVersion = 4;
+inline constexpr std::uint32_t kContextualActionEvaluatorSchemaVersion = 5;
 
 struct ContextualActionCandidateScore {
     std::size_t candidate_index{0};
@@ -104,6 +104,13 @@ struct ContextualActionEvaluation {
     std::string projected_income_source{"unavailable"};
     std::uint32_t projected_income_horizon_rounds{0};
     double projected_income_uncertainty{1.0};
+    double incoming_damage{0.0};
+    double elimination_risk{0.0};
+    std::string incoming_damage_source{"unavailable"};
+    std::string elimination_risk_source{"unavailable"};
+    std::uint32_t combat_horizon_rounds{0};
+    std::uint64_t combat_evidence_sequence{0};
+    double combat_evidence_uncertainty{1.0};
 
     nlohmann::json to_json() const {
         nlohmann::json items = nlohmann::json::array();
@@ -174,7 +181,14 @@ struct ContextualActionEvaluation {
                 {"projected_income_horizon_rounds", projected_income_horizon_rounds},
                 {"projected_income_uncertainty", projected_income_uncertainty},
                 {"incoming_damage_available", incoming_damage_available},
+                {"incoming_damage", incoming_damage},
+                {"incoming_damage_source", incoming_damage_source},
                 {"elimination_risk_available", elimination_risk_available},
+                {"elimination_risk", elimination_risk},
+                {"elimination_risk_source", elimination_risk_source},
+                {"combat_horizon_rounds", combat_horizon_rounds},
+                {"combat_evidence_sequence", combat_evidence_sequence},
+                {"combat_evidence_uncertainty", combat_evidence_uncertainty},
                 {"progression_available", progression_available}}},
             {"evidence_rejected", evidence_rejected},
             {"recommended_action", static_cast<int>(recommended_action)},
@@ -251,7 +265,14 @@ public:
             out.projected_income_horizon_rounds = evidence->economy.projected_income_horizon_rounds;
             out.projected_income_uncertainty = evidence->economy.projected_income_uncertainty;
             out.incoming_damage_available = evidence->economy.incoming_damage_available;
+            out.incoming_damage = evidence->economy.incoming_damage;
+            out.incoming_damage_source = evidence->economy.incoming_damage_source;
             out.elimination_risk_available = evidence->economy.elimination_risk_available;
+            out.elimination_risk = evidence->economy.elimination_risk;
+            out.elimination_risk_source = evidence->economy.elimination_risk_source;
+            out.combat_horizon_rounds = evidence->economy.combat_horizon_rounds;
+            out.combat_evidence_sequence = evidence->economy.combat_evidence_sequence;
+            out.combat_evidence_uncertainty = evidence->economy.combat_evidence_uncertainty;
             out.progression_available = evidence->economy.progression_available;
         }
         out.board_evidence_consumed = board_valid;
