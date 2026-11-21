@@ -222,6 +222,14 @@ struct CombatInputProvenance {
     std::string attack_range{"unavailable"};
     std::string armor{"unavailable"};
     std::string magic_resist{"unavailable"};
+    std::string mana{"unavailable"};
+    std::string max_mana{"unavailable"};
+    std::string ability_power{"unavailable"};
+    std::string critical_strike_chance{"unavailable"};
+    std::string critical_strike_damage{"unavailable"};
+    std::string damage_amplification{"unavailable"};
+    std::string damage_reduction{"unavailable"};
+    std::string omnivamp{"unavailable"};
     std::string role{"unavailable"};
     std::string ability{"unavailable"};
     std::string items{"unavailable"};
