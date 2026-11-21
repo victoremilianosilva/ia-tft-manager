@@ -71,7 +71,7 @@ The five PPO consumer groups now have native semantic v6 paths:
 - Anvil scoring uses pending identity/kind and structured option tensors.
 - Buy/sell/positioning candidate heads use semantic bench/shop entities and target profiles.
 
-The production Trainer constructs TFTPolicy(require_semantic_state=True) and RolloutBuffer(require_semantic_state=True). Missing semantic state therefore fails closed at decision evaluation and transition storage. Rollout minibatches reconstruct named item/anvil/trait tensors from the same persisted numeric row. Checkpoint evaluation and paired evaluation must validate the same v6 contract and carry the same semantic state.
+The production Trainer, economic fine-tuning path, paired evaluator, native audit and Viewer construct policies with require_semantic_state=True. Trainer and economic fine-tuning also require RolloutBuffer(require_semantic_state=True). Missing semantic state therefore fails closed at decision evaluation and transition storage. Rollout minibatches reconstruct named item/anvil/trait tensors from the same persisted numeric row. Every native checkpoint reader validates the complete v6 weight set, including the stable trait embedding.
 
 The remaining flat observation blocks are not the production PPO source when semantic v6 is supplied, but they still exist in engine transport and isolated legacy/test fallbacks. They must not be deleted until end-to-end producer-disabled replay, every native policy caller and external engine consumers have been audited. Physical removal must also remove obsolete offsets and checkpoint migration assumptions together, not merely shorten the C++ vector.
 
