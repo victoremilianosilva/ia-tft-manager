@@ -1,5 +1,6 @@
 #include "strategy/OpportunityCostProducer.hpp"
 #include "combat/CombatEvidence.hpp"
+#include "strategy/EconomicController.hpp"
 
 #include <cassert>
 #include <cmath>
@@ -138,6 +139,33 @@ int main() {
     assert(!combat_evidence::apply_to_economic_context(risk, stale_context));
     assert(context.evidence.estimated_incoming_damage);
     assert(context.evidence.elimination_risk);
+    context.alive = true;
+    context.hp = 34.5;
+    context.gold = 35;
+    context.level = 7;
+    context.xp_to_next = 10;
+    context.win_streak = 1;
+    context.evidence.hp = true;
+    context.evidence.gold = true;
+    context.evidence.level = true;
+    context.evidence.xp_to_next = true;
+    context.evidence.streaks = true;
+    const auto economic = strategy::EconomicController{}.evaluate(context);
+    assert(economic.evidence_invalid.empty());
+    assert(economic.sufficient_evidence);
+    assert(std::find(economic.evidence_used.begin(), economic.evidence_used.end(),
+        "estimated_incoming_damage") != economic.evidence_used.end());
+    assert(std::find(economic.evidence_used.begin(), economic.evidence_used.end(),
+        "elimination_risk") != economic.evidence_used.end());
+    assert(economic.survival_pressure > 0.0);
+    auto stale_combat_context = context;
+    stale_combat_context.combat_evidence_sequence = 49;
+    const auto stale_economic =
+        strategy::EconomicController{}.evaluate(stale_combat_context);
+    assert(std::find(stale_economic.evidence_invalid.begin(),
+        stale_economic.evidence_invalid.end(),
+        "combat_evidence_provenance_horizon_or_sequence") !=
+        stale_economic.evidence_invalid.end());
     assert(!combat_evidence::derive_survival_risk(34, {}).available);
     outcomes.push_back(outcomes.front());
     const auto duplicate = calibrator.calibrate(outcomes, 7, 0, 50, 50, 30);
