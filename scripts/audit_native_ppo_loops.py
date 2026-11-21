@@ -26,7 +26,7 @@ if str(ROOT) not in sys.path:
 
 from cpp_lobby_env import CppTFTLobbyWrapper
 from policy import TFTPolicy
-from semantic_observation import catalog_identity, validate_semantic_state_checkpoint_contract
+from semantic_observation import (\n    catalog_identity, validate_semantic_state_checkpoint_contract,\n    validate_semantic_policy_state_dict,\n)
 from scripts.evaluate_checkpoints import native_semantic_state_for_players
 
 ACTION_DIMS = [9, 5, 9, 28, 28, 28]
@@ -325,20 +325,12 @@ def load_policy(checkpoint_path, obs_dim, device, catalog_map):
     if semantic_contract is None:
         raise RuntimeError("Native semantic audit requires a checkpoint with semantic_state_contract v6.")
     validate_semantic_state_checkpoint_contract(semantic_contract, catalog_map)
-    expected_semantic_keys = {
-        "semantic_id_embedding.weight",
-        "semantic_trait_embedding.weight",
-        "semantic_encoder.0.weight",
-        "semantic_encoder.0.bias",
-        "semantic_encoder.2.weight",
-        "semantic_encoder.2.bias",
-    }
-    present_semantic_keys = {
-        key for key in state
-        if key.startswith(("semantic_id_embedding.", "semantic_trait_embedding.", "semantic_encoder."))
-    }
-    if present_semantic_keys != expected_semantic_keys:
-        raise RuntimeError("Native semantic audit requires the complete semantic v6 encoder weights.")
+    try:
+        validate_semantic_policy_state_dict(state)
+    except ValueError as exc:
+        raise RuntimeError(
+            "Native semantic audit requires the complete semantic v6 encoder weights."
+        ) from exc
     policy = TFTPolicy(
         obs_dim, ACTION_DIMS,
         semantic_vocab_size=catalog_identity(catalog_map)["vocab_size"],
