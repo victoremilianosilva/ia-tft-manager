@@ -185,7 +185,7 @@ def test_inventory_choice_uses_best_available_item_target_fit():
 
     logits = policy._item_inventory_logits(
         conditioned, inventory_features, target_fit,
-        torch.zeros(1, 9, 11), torch.tensor([False])
+        torch.zeros(1, 9, 11), torch.tensor([False]), torch.zeros(1, 2)
     )
     assert logits[0, 1] > logits[0, 0]
 
