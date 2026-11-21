@@ -11,6 +11,8 @@ namespace {
 CombatUnit make_unit(int id, UnitTeam team, int x, int source_slot) {
     CombatUnit unit;
     unit.id = id;
+    unit.source_unit_uuid = team == UnitTeam::PLAYER_A
+        ? "player-unit-uuid" : "opponent-unit-uuid";
     unit.api_name = "TFT_TestUnit";
     unit.name = "Test Unit";
     unit.team = team;
@@ -123,6 +125,9 @@ int main() {
     auto wrong_matchup = input;
     wrong_matchup.player_b.player_id = 2;
     assert(!builder.build(identity, wrong_matchup, 31).valid);
+    auto wrong_unit_uuid = input;
+    wrong_unit_uuid.player_b.units.front().source_unit_uuid = "wrong-unit-uuid";
+    assert(!builder.build(identity, wrong_unit_uuid, 31).valid);
 
     assert(!CombatProjectionEngine{}.project(snapshot, 6, 0, 300).simulation_completed);
     assert(!CombatProjectionEngine{}.project(snapshot, 6, 33, 300).simulation_completed);
