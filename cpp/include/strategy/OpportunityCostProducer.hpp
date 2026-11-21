@@ -60,6 +60,7 @@ public:
         }
         const OpportunityAlternativeEvidence* best = nullptr;
         double best_value = 0.0;
+        double best_risk_adjusted_value = 0.0;
         std::unordered_set<std::string> seen_candidate_ids;
         for (const auto& alternative : alternatives) {
             if (alternative.candidate_id.empty()) continue;
