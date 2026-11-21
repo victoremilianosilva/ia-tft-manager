@@ -35,11 +35,13 @@ void builder_emits_snapshot_bound_physical_candidates() {
     carry.target_star = 2;
     carry.priority = 90;
     carry.board_contribution = 0.8;
+    carry.confidence = 0.8;
     UnitPriority frontline;
     frontline.champion_id = 20;
     frontline.intent = UnitIntent::Seek;
     frontline.priority = 80;
     frontline.board_contribution = 0.7;
+    frontline.confidence = 0.8;
     UnitPriority sale;
     sale.champion_id = 30;
     sale.intent = UnitIntent::SellCandidate;
@@ -80,6 +82,7 @@ void builder_emits_snapshot_bound_physical_candidates() {
     native.gold = 20;
     native.alive = true;
     native.shop_champion_ids[0] = 10;
+    native.shop_champion_ids[1] = 20;
     native.bench_champion_ids[0] = 20;
     native.bench_champion_ids[1] = 30;
     native.bench_unit_uuids[0] = "unit-20";
@@ -91,6 +94,7 @@ void builder_emits_snapshot_bound_physical_candidates() {
     enables(native.masks, decision::ActionType::SELL);
     enables(native.masks, decision::ActionType::MOVE_BENCH);
     native.masks.shop_mask[0] = decision::MASK_ENABLED;
+    native.masks.shop_mask[1] = decision::MASK_ENABLED;
     native.masks.bench_source_mask[1] = decision::MASK_ENABLED;
     native.masks.bench_move_source_mask[0] = decision::MASK_ENABLED;
     native.masks.bench_to_board_target_masks[0] = decision::MASK_ENABLED;
@@ -124,7 +128,13 @@ void builder_emits_snapshot_bound_physical_candidates() {
     assert(buy->marginal_cost_horizon_rounds == 1);
     assert(buy->marginal_cost_uncertainty == 0.0);
     assert(buy->marginal_cost_source == "native_gold+EconomyEngine::get_interest");
-    assert(buy->opportunity_cost == 0.0);
+    const auto competing_buy = find(StrategicActionKind::BuyUnit, 20);
+    assert(competing_buy != result.candidates.end());
+    assert(buy->opportunity_cost_evidence_available);
+    assert(std::abs(buy->opportunity_cost - 0.7) < 1e-9);
+    assert(buy->opportunity_cost_forgone_candidate_id == competing_buy->candidate_id);
+    assert(competing_buy->opportunity_cost_evidence_available);
+    assert(std::abs(competing_buy->opportunity_cost - 0.8) < 1e-9);
 
     const auto xp = find(StrategicActionKind::BuyExperience);
     assert(xp != result.candidates.end() && xp->gold_cost == EconomyEngine::BUY_XP_COST);
