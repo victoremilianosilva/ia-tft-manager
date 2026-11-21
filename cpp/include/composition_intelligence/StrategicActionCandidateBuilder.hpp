@@ -365,10 +365,15 @@ public:
             context.level < EconomyEngine::MAX_LEVEL &&
             context.xp_to_next > 0 &&
             context.xp_to_next <= EconomyEngine::XP_PER_BUY) {
-            const auto board_count = static_cast<std::int32_t>(std::count_if(
-                native.board_unit_uuids.begin(), native.board_unit_uuids.end(),
-                [](const auto& uuid) { return !uuid.empty(); }));
-            if (board_count == static_cast<std::int32_t>(context.level)) {
+            std::unordered_set<std::string> board_instance_ids;
+            bool board_identity_valid = true;
+            for (const auto& uuid : native.board_unit_uuids) {
+                if (uuid.empty()) continue;
+                if (!board_instance_ids.insert(uuid).second) board_identity_valid = false;
+            }
+            const auto board_count = static_cast<std::int32_t>(board_instance_ids.size());
+            if (board_identity_valid &&
+                board_count == static_cast<std::int32_t>(context.level)) {
                 const strategy::StrategicUnitCandidate* best_unlocked_unit = nullptr;
                 const UnitPriority* best_priority = nullptr;
                 for (const auto& owned : context.owned_units) {
@@ -379,15 +384,19 @@ public:
                         lineup.selected_board.begin(), lineup.selected_board.end(),
                         [&](const auto& slot) { return slot.champion_id == owned.champion_id; });
                     if (!selected_after_level) continue;
-                    bool physical_bench_identity = false;
+                    std::string physical_bench_uuid;
+                    std::size_t matching_bench_instances = 0;
                     for (std::size_t slot = 0; slot < native.bench_champion_ids.size(); ++slot) {
-                        if (native.bench_champion_ids[slot] == owned.champion_id &&
-                            !native.bench_unit_uuids[slot].empty()) {
-                            physical_bench_identity = true;
-                            break;
-                        }
+                        if (native.bench_champion_ids[slot] != owned.champion_id) continue;
+                        ++matching_bench_instances;
+                        const auto& uuid = native.bench_unit_uuids[slot];
+                        if (uuid.empty() || board_instance_ids.count(uuid) != 0 ||
+                            std::count(native.bench_unit_uuids.begin(),
+                                native.bench_unit_uuids.end(), uuid) != 1)
+                            continue;
+                        physical_bench_uuid = uuid;
                     }
-                    if (!physical_bench_identity) continue;
+                    if (matching_bench_instances != 1 || physical_bench_uuid.empty()) continue;
                     const auto priority = std::find_if(
                         priorities.units.begin(), priorities.units.end(),
                         [&](const auto& item) {
