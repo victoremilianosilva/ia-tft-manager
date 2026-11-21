@@ -588,7 +588,7 @@ def test_paired_evaluator_requires_trait_embedding_for_semantic_v6_checkpoint():
     state = {
         "semantic_id_embedding.weight": torch.zeros(2, 16),
         "semantic_trait_embedding.weight": torch.zeros(65537, 16),
-        "semantic_encoder.0.weight": torch.zeros(256, 8),
+        "semantic_encoder.0.weight": torch.zeros(256, 3034),
         "semantic_encoder.0.bias": torch.zeros(256),
         "semantic_encoder.2.weight": torch.zeros(32, 256),
         "semantic_encoder.2.bias": torch.zeros(32),
