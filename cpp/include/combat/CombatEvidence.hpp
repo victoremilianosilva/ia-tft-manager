@@ -149,7 +149,7 @@ public:
             for (const auto& unit : team.units) {
                 ++coverage.units_seen;
                 bool unit_supported = !unit.api_name.empty();
-                if (unit.ability.api_name.empty()) {
+                if (unit.ability.api_name.empty() || !unit.ability.metadata_complete) {
                     ++coverage.missing_scripts;
                     ++coverage.missing_ability_metadata;
                     unit_supported = false;
@@ -160,9 +160,7 @@ public:
                     unit_supported = false;
                 }
                 for (const auto& item : unit.items) {
-                    if (item.effects.empty()) {
-                        // A name-only item cannot prove that its complete
-                        // passive behavior is represented by the generic engine.
+                    if (!item.effects_complete) {
                         ++coverage.missing_item_effect_metadata;
                         ++coverage.unsupported_items;
                         unit_supported = false;
@@ -177,7 +175,7 @@ public:
                 }
                 for (const auto& trait : unit.traits) {
                     if (!(trait.active || trait.active_count > 0)) continue;
-                    if (trait.effects.empty()) {
+                    if (!trait.effects_complete) {
                         ++coverage.missing_trait_effect_metadata;
                         ++coverage.unsupported_traits;
                         unit_supported = false;
