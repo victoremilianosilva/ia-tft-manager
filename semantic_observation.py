@@ -107,6 +107,21 @@ def build_semantic_state_checkpoint_contract(catalog_map: Mapping[str, int]) -> 
             "output_dim": "policy_hidden_size",
             "fusion": "additive_to_shared_actor_critic_latent",
             "final_layer_initialization": "zero",
+            "board_cnn_source": {
+                "entity_range": "board[0:28]",
+                "features": [
+                    "occupied", "cost/5", "star/3",
+                    "equipped_item_count/9", "trait_count/10",
+                ],
+                "spatial_order": "row_major_4x7",
+            },
+            "action_candidate_source": {
+                "entity_ranges": ["bench[0:9]", "shop[0:5]"],
+                "features": [
+                    "occupied", "cost/5", "star/3", "equipped_item_count/9",
+                    "trait_count/10", "owned_copy_equivalent/9",
+                ],
+            },
         },
         "critic_action_mask_input": "separate_independent_side_input",
         "missing_policy": "preserve validity; never synthesize a champion identity",
