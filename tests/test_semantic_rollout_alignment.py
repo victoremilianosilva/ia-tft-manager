@@ -151,3 +151,32 @@ def test_rollout_replay_keeps_semantic_identity_and_hash_with_the_same_row():
     assert batch["semantic_state"]["identities"] == [identity]
     assert batch["semantic_state"]["hashes"] == [digest]
     assert batch["snapshot_metadata"][0]["semantic_projection_hash"] == digest
+
+
+def test_production_rollout_rejects_missing_semantic_state():
+    buffer = RolloutBuffer(
+        num_steps=1,
+        num_envs=1,
+        obs_dim=4,
+        action_dim=6,
+        device="cpu",
+        mask_shapes=MASK_SHAPES,
+        require_semantic_state=True,
+    )
+    masks = {
+        name: torch.zeros((1, *shape), dtype=torch.bool)
+        for name, shape in MASK_SHAPES.items()
+    }
+    masks["type_mask"][:, 6] = True
+    actions = torch.zeros(1, 6, dtype=torch.long)
+    actions[:, 0] = 6
+
+    try:
+        buffer.add(
+            torch.zeros(1, 4), actions, torch.zeros(1), torch.zeros(1),
+            torch.zeros(1), torch.zeros(1), masks,
+        )
+    except ValueError as exc:
+        assert "requires semantic_state v6" in str(exc)
+    else:
+        raise AssertionError("production rollout must reject a missing semantic state")
