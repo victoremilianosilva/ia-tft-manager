@@ -116,7 +116,7 @@ def _equipped_items(player: Mapping[str, Any]) -> dict[tuple[str, str], dict[str
         catalog_id = str(row.get("catalog_id", "")).strip()
         location = row.get("location")
         slot = _int(row.get("slot"), "equipped_items.slot")
-        if not unit_uuid or not catalog_id or location not in ("board", "bench") or slot is None:
+        if not unit_uuid or not catalog_id or location not in ("board", "bench") or slot is None or not 0 <= slot < (28 if location == "board" else 9):
             raise ValueError("Identidade/localização inválida em equipped_items.")
         key = (unit_uuid, catalog_id)
         if key in result:
@@ -322,6 +322,14 @@ def build_action_outcome_events(
         if family == "item_action":
             before_equipped = _equipped_items(before)
             after_equipped = _equipped_items(after)
+            for row in before_equipped.values():
+                unit = before_units.get(row["unit_uuid"])
+                if unit is None or (unit["location"], unit["slot"]) != (row["location"], row["slot"]):
+                    raise RuntimeError("equipped_items pré-ação diverge da unidade física.")
+            for row in after_equipped.values():
+                unit = after_units.get(row["unit_uuid"])
+                if unit is None or (unit["location"], unit["slot"]) != (row["location"], row["slot"]):
+                    raise RuntimeError("equipped_items pós-ação diverge da unidade física.")
             for key in sorted(set(before_equipped) | set(after_equipped)):
                 previous = before_equipped.get(key)
                 current = after_equipped.get(key)
