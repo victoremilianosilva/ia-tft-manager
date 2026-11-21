@@ -189,3 +189,19 @@ def test_detects_merge_upgrade_from_physical_star_tier_counts():
     ]
     assert events[0]["causal_attribution"] == "not_established"
     assert events[0]["reward_eligible"] is False
+
+
+def test_does_not_attribute_automatic_round_shop_refresh_to_reroll():
+    before = _snapshot(5, 10)
+    after = _snapshot(6, 11)
+    before["players"][0]["shop_offer_revisions"] = [1, 1, 1, 1, 1]
+    after["players"][0]["shop_offer_revisions"] = [2, 2, 2, 2, 2]
+    after["economy_resolution_events"] = [{"player_id": 0, "producer": "EconomyEngine::resolve_round"}]
+
+    events = build_action_outcome_events(
+        before_snapshot=before, after_snapshot=after, action_traces=_traces(action_type=1)
+    )
+
+    assert events[0]["facts"]["shop_revision_changes"] is None
+    assert len(events[0]["facts"]["shop_revision_changes_unattributed"]) == 5
+    assert events[0]["facts"]["shop_refresh_overlapped_with_round_resolution"] is True
