@@ -411,8 +411,8 @@ public:
                             return candidate.kind == strategy::StrategicActionKind::BuyExperience;
                         });
                     if (xp != out.candidates.end()) {
-                        xp->expected_board_delta = std::clamp(
-                            best_priority->board_contribution, 0.0, 1.0);
+                        xp->expected_board_delta = std::max(
+                            0.0, best_priority->board_contribution);
                         xp->composition_fit = std::clamp(
                             best_unlocked_unit->composition_fit, 0.0, 1.0);
                         xp->evidence_source =
