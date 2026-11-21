@@ -408,6 +408,13 @@ def test_sampling_value_and_action_re_evaluation_share_the_same_semantic_row():
         replay_logprob, replay_entropy, replay_value = policy.evaluate_actions(
             obs, actions, masks=masks, semantic_state=semantic
         )
+        unrelated_flat = torch.randn_like(obs) * 100.0
+        perturbed_actions, perturbed_logprob, _, perturbed_value = policy.get_action(
+            unrelated_flat, masks=masks, deterministic=True, semantic_state=semantic
+        )
+        perturbed_replay_logprob, _, perturbed_replay_value = policy.evaluate_actions(
+            unrelated_flat, actions, masks=masks, semantic_state=semantic
+        )
         changed_numeric = torch.ones_like(semantic["numeric"])
         missing_context_value = policy.get_value(obs, masks=masks, semantic_state={
             "numeric": changed_numeric,
@@ -416,7 +423,12 @@ def test_sampling_value_and_action_re_evaluation_share_the_same_semantic_row():
         })
 
     assert actions[0, 0].item() == 6
+    assert torch.equal(actions, perturbed_actions)
     assert torch.allclose(sampled_logprob, replay_logprob, atol=1e-7, rtol=1e-7)
     assert torch.allclose(sampled_value, replay_value, atol=1e-7, rtol=1e-7)
+    assert torch.allclose(sampled_logprob, perturbed_logprob, atol=1e-7, rtol=1e-7)
+    assert torch.allclose(sampled_value, perturbed_value, atol=1e-7, rtol=1e-7)
+    assert torch.allclose(replay_logprob, perturbed_replay_logprob, atol=1e-7, rtol=1e-7)
+    assert torch.allclose(replay_value, perturbed_replay_value, atol=1e-7, rtol=1e-7)
     assert replay_entropy.shape == (1,)
     assert not torch.allclose(sampled_value, missing_context_value)
