@@ -17,7 +17,7 @@ Opportunity cost must describe a concrete alternative forgone on the same decisi
 ## Contracts and invariants
 - No fabricated opponent, probability, damage or missing mechanic.
 - Synthetic CombatEngine runs do not qualify as observed replay outcomes.
-- Calibration requires a minimum sample count, matching match/player identity, non-duplicate outcome sequences strictly before the decision sequence, and a prior round. Fractional observed HP is preserved; invalid, overlapping or incomplete unit identities are rejected.
+- Calibration requires a minimum sample count, matching match/player identity, non-duplicate outcome sequences strictly before the decision sequence, and a prior round. Fractional observed HP is preserved; invalid, overlapping or incomplete unit identities are rejected. Derived survival evidence retains match/player/round/sequence identity and cannot be applied to a different player, round or decision sequence. The emitted runtime snapshot explicitly marks mechanics coverage as unmeasured rather than implying roster completeness proves mechanics completeness.
 - Unknown opportunity cost is unavailable, never a measured zero.
 - Direct gold and interest are not counted again in opportunity cost.
 - No PPO, reward, action-dimension or action-mask changes.
