@@ -52,6 +52,20 @@ def _metadata():
         "shop": [_unit() for _ in range(5)],
         "actions_taken_this_round": 3,
         "board_move_age": [0] + [10] * 27,
+        "item_components": [],
+        "item_inventory": [],
+        "item_component_catalog": ["component_a"],
+        "equipped_items": [],
+        "pending_anvil": False,
+        "pending_anvil_sequence": 0,
+        "pending_anvil_kind": -1,
+        "pending_anvil_options": [],
+        "item_component_features": [0.0] * 10,
+        "item_inventory_features": [[0.0] * 17 for _ in range(9)],
+        "item_recipe_features": [[0.0] * 17 for _ in range(100)],
+        "item_inventory_target_fit": [[0.0] * 37 for _ in range(9)],
+        "item_recipe_target_fit": [[0.0] * 37 for _ in range(100)],
+        "pending_anvil_option_features": [[0.0] * 11 for _ in range(9)],
     }
     player["board"][0] = _unit(True, "TFT_TestChampion", 2, 3)
     player["board"][0]["items"] = ["ItemA"]
