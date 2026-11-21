@@ -129,7 +129,10 @@ def validate_evaluation_checkpoint_contracts(payload: dict, catalog_map: dict) -
             raise ValueError(
                 "Checkpoint contém pesos semânticos sem semantic_state_contract."
             )
-        status["semantic_state"] = "legacy_neutral_branch"
+        raise ValueError(
+            "Checkpoint sem semantic_state v6 não pode ser usado em avaliação/finetuning; "
+            "execute o warm-start explícito e gere uma nova linhagem."
+        )
     else:
         validate_semantic_state_checkpoint_contract(semantic_contract, catalog_map)
         if not semantic_keys:
