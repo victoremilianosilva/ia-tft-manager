@@ -193,6 +193,30 @@ def test_native_trait_identities_are_stably_hashed_and_exposed_to_policy():
     assert trait_ids[0, 1].count_nonzero().item() == 0
 
 
+def test_item_identity_and_anvil_sequence_are_bound_to_projection_hash():
+    base = _metadata()
+    base["item_inventory"] = ["completed_item_alpha"]
+    first = project_native_player_state(base, {"Test_A": 0})
+
+    changed_item = _metadata()
+    changed_item["item_inventory"] = ["completed_item_beta"]
+    second = project_native_player_state(changed_item, {"Test_A": 0})
+    assert first["sha256"] != second["sha256"]
+
+    pending = _metadata()
+    pending["pending_anvil"] = True
+    pending["pending_anvil_sequence"] = 7
+    pending["pending_anvil_kind"] = 0
+    pending["pending_anvil_options"] = ["component_alpha"]
+    pending["pending_anvil_option_features"][0][0] = 1.0
+    pending_first = project_native_player_state(pending, {"Test_A": 0})
+
+    next_sequence = dict(pending)
+    next_sequence["pending_anvil_sequence"] = 8
+    pending_second = project_native_player_state(next_sequence, {"Test_A": 0})
+    assert pending_first["sha256"] != pending_second["sha256"]
+
+
 def test_semantic_batch_is_deterministic_and_catalog_contract_is_bound():
     rows = [_metadata()]
     catalog = {"TFT_TestChampion": 17}
