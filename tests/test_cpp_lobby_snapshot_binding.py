@@ -42,7 +42,7 @@ class FakeNativeLobby:
     def _native_state_snapshot(self):
         return {
             "contract_id": "tft.native-state-snapshot",
-            "contract_version": 3,
+            "contract_version": 4,
             "board_geometry_id": "tft.board-grid.rectangular-4x7",
             "board_geometry_version": 1,
             "board_rows": 4,
@@ -112,6 +112,8 @@ class FakeNativeLobby:
                     "pending_anvil": False,
                     "pending_anvil_sequence": 0,
                     "pending_anvil_options": [],
+                    "actions_taken_this_round": 0,
+                    "board_move_age": [10] * 28,
                     "item_ownership_retired": False,
                     "retired_item_component_counts": [],
                     "retired_item_inventory_counts": [],
