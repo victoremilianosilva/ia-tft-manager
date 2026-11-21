@@ -548,7 +548,7 @@ class TFTPolicy(nn.Module):
         )
         return bench, shop
 
-    def _item_state_features(self, obs):
+    def _item_state_features(self, obs, semantic_state=None):
         """Decode the semantic item block appended immediately before the candidate tail."""
         start = obs.shape[-1] - self.candidate_observation_dim - self.item_state_observation_dim
         end = obs.shape[-1] - self.candidate_observation_dim
@@ -583,9 +583,15 @@ class TFTPolicy(nn.Module):
         )
         offset += recipe_size
         target_size = 37 * self.item_target_feature_dim
-        targets = block[:, offset:offset + target_size].reshape(
-            -1, 37, self.item_target_feature_dim
-        )
+        semantic_entities = self._semantic_entity_features(semantic_state, obs)
+        if semantic_entities is not None:
+            # Board and bench target profiles are native entity attributes;
+            # the flat item-target record is skipped, never consumed.
+            targets = semantic_entities[:, :37, 12:29]
+        else:
+            targets = block[:, offset:offset + target_size].reshape(
+                -1, 37, self.item_target_feature_dim
+            )
         offset += target_size
         inventory_fit_size = 9 * 37
         inventory_target_fit = block[:, offset:offset + inventory_fit_size].reshape(
@@ -887,7 +893,7 @@ class TFTPolicy(nn.Module):
             item_component_features, item_inventory_features, item_recipe_features,
             item_target_features, item_inventory_target_fit, item_recipe_target_fit,
             item_anvil_options, item_anvil_pending,
-        ) = self._item_state_features(obs)
+        ) = self._item_state_features(obs, semantic_state)
 
         def record_distribution(name, logits, chosen, row_indices, applied_mask=None):
             if not collect_diagnostics and not collect_entropy_diagnostics:
@@ -1270,7 +1276,7 @@ class TFTPolicy(nn.Module):
             item_component_features, item_inventory_features, item_recipe_features,
             item_target_features, item_inventory_target_fit, item_recipe_target_fit,
             item_anvil_options, item_anvil_pending,
-        ) = self._item_state_features(obs)
+        ) = self._item_state_features(obs, semantic_state)
 
         # Type
         type_logits = self.type_head(hidden)
