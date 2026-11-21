@@ -326,6 +326,7 @@ int main(int argc, char** argv) {
         combat_criteria.maximum_brier_score = 0.10;
         tft::combat_evidence::CalibrationValidationMetrics combat_metrics;
         combat_metrics.report_sha256 = std::string(64, 'a');
+        combat_metrics.training_sample_count = 30;
         combat_metrics.train_manifest_sha256 = std::string(64, 'b');
         combat_metrics.validation_manifest_sha256 = std::string(64, 'c');
         combat_metrics.test_manifest_sha256 = std::string(64, 'd');
