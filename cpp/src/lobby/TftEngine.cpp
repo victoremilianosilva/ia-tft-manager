@@ -96,7 +96,7 @@ constexpr std::size_t kSynergyObservationDim = 5;
 constexpr std::size_t kPositioningObservationDim = 3;
 constexpr std::size_t kCapacityObservationDim = 2;
 // Per-slot strategic features used by the policy's shared candidate scorers.
-constexpr std::size_t kCandidateFeatureDim = 8;
+constexpr std::size_t kCandidateFeatureDim = 6;
 constexpr std::size_t kStrategicCandidateObservationDim =
     (kBenchSlots + kShopSlots) * kCandidateFeatureDim;
 // Pending-anvil state plus nine option records: ten item/component features
@@ -108,7 +108,7 @@ constexpr std::size_t kAnvilObservationDim = 3 + kAnvilOptionCount * kAnvilOptio
 // recipe definitions, and per-unit target profiles. It is appended before the
 // fixed strategic-candidate tail so legacy checkpoints can migrate by insertion.
 constexpr std::size_t kItemSemanticFeatureDim = 17;
-constexpr std::size_t kItemTargetFeatureDim = 18;
+constexpr std::size_t kItemTargetFeatureDim = 17;
 constexpr std::size_t kItemCompatibilityObservationDim =
     (9 + 100) * (kBoardSlots + kBenchSlots);
 constexpr std::size_t kItemGlobalObservationDim =
@@ -1578,18 +1578,17 @@ struct TFTEngine::Impl {
                         features[4 + role] = 1.0f;
                         features[9] = on_board && row <= 1 ? 1.0f : 0.0f;
                         features[10] = on_board && row >= 2 ? 1.0f : 0.0f;
-                        features[11] = 0.0f; // retired StrategyInfo composition-fit feature
-                        features[12] = static_cast<float>(std::clamp(
+                        features[11] = static_cast<float>(std::clamp(
                             (combat.attack_damage > 0.0 ? combat.attack_damage : stats.attack_damage) / 200.0, 0.0, 1.0));
-                        features[13] = static_cast<float>(std::clamp(
+                        features[12] = static_cast<float>(std::clamp(
                             (combat.attack_speed > 0.0 ? combat.attack_speed : stats.attack_speed) / 2.0, 0.0, 1.0));
-                        features[14] = static_cast<float>(std::clamp(
+                        features[13] = static_cast<float>(std::clamp(
                             (combat.max_hp > 0.0 ? combat.max_hp : stats.max_hp) / 2000.0, 0.0, 1.0));
-                        features[15] = static_cast<float>(std::clamp(stats.armor / 150.0, 0.0, 1.0));
-                        features[16] = static_cast<float>(std::clamp(stats.magic_resist / 150.0, 0.0, 1.0));
+                        features[14] = static_cast<float>(std::clamp(stats.armor / 150.0, 0.0, 1.0));
+                        features[15] = static_cast<float>(std::clamp(stats.magic_resist / 150.0, 0.0, 1.0));
                         const auto equipped_count = item_state
                             ? item_state->equipped(unit->uuid).size() : unit->items.size();
-                        features[17] = static_cast<float>(std::clamp(equipped_count / 3.0, 0.0, 1.0));
+                        features[16] = static_cast<float>(std::clamp(equipped_count / 3.0, 0.0, 1.0));
                     }
                 }
                 for (const float feature : features) out[offset++] = feature;
@@ -1709,13 +1708,9 @@ struct TFTEngine::Impl {
                     return;
                 }
                 const int copies = count_same_champion(*unit);
-                // Composition fit/core flags are retired until the canonical
-                // strategic-owner projection is available to the PPO contract.
-                out[offset++] = 0.0f;
                 out[offset++] = static_cast<float>(def->cost) / 5.0f;
                 out[offset++] = static_cast<float>(unit->star) / 3.0f;
                 out[offset++] = role_state_value(observation_role(*unit, *def));
-                out[offset++] = 0.0f;
                 // Number of owned copies (including star-equivalent copies), normalized.
                 out[offset++] = static_cast<float>(std::min(copies, 9)) / 9.0f;
                 // Exact same-star upgrade risk/potential replaces trait overlap:
