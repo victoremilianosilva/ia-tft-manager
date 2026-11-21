@@ -196,8 +196,8 @@ def test_semantic_v3_warm_start_resets_only_reinterpreted_consumer_columns():
 
     policy.reset_migrated_semantic_consumer_columns()
 
-    assert torch.count_nonzero(policy.board_cnn[0].weight[:, :, :3]) > 0
-    assert torch.count_nonzero(policy.board_cnn[0].weight[:, :, 3:5]) == 0
+    assert torch.count_nonzero(policy.board_cnn[0].weight[:, :3, :, :]) > 0
+    assert torch.count_nonzero(policy.board_cnn[0].weight[:, 3:5, :, :]) == 0
     assert torch.count_nonzero(policy.shop_head[0].weight[:, :-6]) > 0
     assert torch.count_nonzero(policy.shop_head[0].weight[:, -6:]) == 0
     assert torch.count_nonzero(policy.sell_head[0].weight[:, -6:]) == 0
