@@ -320,7 +320,8 @@ public:
             score.eligible = candidate.available &&
                 (!requires_observed_gold || context.evidence.gold) &&
                 candidate.gold_cost <= context.gold;
-            if (context.sequence > 0 && candidate.source_sequence != context.sequence)
+            if (candidate.source_sequence > 0 && context.sequence > 0 &&
+                candidate.source_sequence != context.sequence)
                 reject(score, "candidate_strategic_sequence_mismatch");
             if (!candidate.available) score.rejection_reason = "candidate_unavailable";
             else if (requires_observed_gold && !context.evidence.gold)
