@@ -180,6 +180,68 @@ int main() {
     context.round = 50;
     context.sequence = 50;
     assert(combat_evidence::apply_to_economic_context(risk, context));
+    std::vector<combat_evidence::CombatHorizonTrajectory> trajectories;
+    for (std::uint64_t i = 0; i < 40; ++i) {
+        combat_evidence::CombatHorizonTrajectory trajectory;
+        trajectory.scenario_id = "scenario-" + std::to_string(i);
+        trajectory.match_id = 7;
+        trajectory.player_id = 0;
+        trajectory.scenario_weight = 1.0;
+        trajectory.uncertainty = 0.10;
+        trajectory.calibrated = true;
+        trajectory.calibration_protocol_id = "combat-horizon.v1";
+        trajectory.calibration_report_sha256 = std::string(64, 'e');
+        trajectory.replay_artifact_id = "trajectory-replay-" + std::to_string(i % 4);
+        trajectory.dataset_version = "combat-trajectories.v1";
+        trajectory.source = "approved_replay_trajectory.v1";
+        trajectory.steps.push_back({50, 50, 1, 5.0, 0.0});
+        trajectory.steps.push_back({51, 51, 2, i < 20 ? 16.0 : 5.0, 0.0});
+        trajectories.push_back(std::move(trajectory));
+    }
+    const auto multi_round_risk = combat_evidence::derive_multi_round_survival_risk(
+        20.0, 7, 0, 50, 50, 2, trajectories, 30);
+    assert(multi_round_risk.available);
+    assert(multi_round_risk.horizon_rounds == 2);
+    assert(std::abs(multi_round_risk.expected_damage - 15.5) < 1e-9);
+    assert(std::abs(multi_round_risk.elimination_risk - 0.5) < 1e-9);
+    assert(multi_round_risk.uncertainty > 0.0 &&
+        multi_round_risk.uncertainty <= 1.0);
+    auto incomplete_trajectories = trajectories;
+    incomplete_trajectories.front().steps.pop_back();
+    assert(!combat_evidence::derive_multi_round_survival_risk(
+        20.0, 7, 0, 50, 50, 2, incomplete_trajectories, 30).available);
+    auto duplicate_trajectories = trajectories;
+    duplicate_trajectories.back().scenario_id =
+        duplicate_trajectories.front().scenario_id;
+    assert(!combat_evidence::derive_multi_round_survival_risk(
+        20.0, 7, 0, 50, 50, 2, duplicate_trajectories, 30).available);
+    auto invalid_weight_trajectories = trajectories;
+    invalid_weight_trajectories.front().scenario_weight = 0.0;
+    assert(!combat_evidence::derive_multi_round_survival_risk(
+        20.0, 7, 0, 50, 50, 2, invalid_weight_trajectories, 30).available);
+
+    strategy::StrategicSharedContext multi_context;
+    multi_context.match_id = 7;
+    multi_context.player_id = 0;
+    multi_context.round = 50;
+    multi_context.sequence = 50;
+    assert(combat_evidence::apply_to_economic_context(multi_round_risk, multi_context));
+    assert(multi_context.combat_evidence_horizon_rounds == 2);
+    multi_context.alive = true;
+    multi_context.hp = 20.0;
+    multi_context.gold = 35;
+    multi_context.level = 7;
+    multi_context.xp_to_next = 10;
+    multi_context.win_streak = 1;
+    multi_context.evidence.hp = true;
+    multi_context.evidence.gold = true;
+    multi_context.evidence.level = true;
+    multi_context.evidence.xp_to_next = true;
+    multi_context.evidence.streaks = true;
+    const auto multi_economic = strategy::EconomicController{}.evaluate(multi_context);
+    assert(multi_economic.evidence_invalid.empty());
+    assert(multi_economic.sufficient_evidence);
+
     auto stale_context = context;
     stale_context.sequence = 49;
     assert(!combat_evidence::apply_to_economic_context(risk, stale_context));
