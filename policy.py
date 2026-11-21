@@ -248,20 +248,19 @@ class TFTPolicy(nn.Module):
         critic_mask_keys = {key for key in target if key.startswith("critic_mask_encoder.")}
         semantic_keys = {
             key for key in target
-            if key.startswith((
-                "semantic_id_embedding.",
-                "semantic_trait_embedding.",
-                "semantic_encoder.",
-            ))
+            if key.startswith(("semantic_id_embedding.", "semantic_encoder."))
+        }
+        optional_trait_keys = {
+            key for key in target if key.startswith("semantic_trait_embedding.")
         }
         present_semantic_keys = set(state_dict) & semantic_keys
         if present_semantic_keys and present_semantic_keys != semantic_keys:
             missing_semantic = sorted(semantic_keys - present_semantic_keys)
             raise RuntimeError(
-                "Checkpoint semântico v6 incompleto; pesos ausentes: "
+                "Checkpoint semântico incompleto; pesos ausentes: "
                 f"{missing_semantic}"
             )
-        optional_new_keys = item_head_keys | critic_mask_keys | semantic_keys
+        optional_new_keys = item_head_keys | critic_mask_keys | semantic_keys | optional_trait_keys
         missing = sorted((set(target) - set(state_dict)) - optional_new_keys)
         unexpected = sorted(set(state_dict) - set(target))
         if missing or unexpected:
