@@ -85,6 +85,7 @@ class RolloutBuffer:
         mask_shapes=None,
         semantic_numeric_dim=SEMANTIC_NUMERIC_DIM,
         semantic_entity_slots=SEMANTIC_ENTITY_SLOTS,
+        require_semantic_state=False,
     ):
         self.device = device
 
@@ -113,6 +114,7 @@ class RolloutBuffer:
         self.action_dim = int(action_dim)
         self.semantic_numeric_dim = int(semantic_numeric_dim)
         self.semantic_entity_slots = int(semantic_entity_slots)
+        self.require_semantic_state = bool(require_semantic_state)
         if self.semantic_numeric_dim <= 0 or self.semantic_entity_slots <= 0:
             raise ValueError("semantic projection dimensions must be positive")
 
@@ -392,6 +394,8 @@ class RolloutBuffer:
         )
 
         if semantic_state is None:
+            if self.require_semantic_state:
+                raise ValueError("Native PPO rollout requires semantic_state v6 for every transition.")
             semantic_numeric = torch.zeros(
                 (self.num_envs, self.semantic_numeric_dim),
                 dtype=torch.float32,
