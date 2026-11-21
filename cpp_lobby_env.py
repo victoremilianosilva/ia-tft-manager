@@ -19,6 +19,7 @@ import numpy as np
 
 from decision_identity import build_player_identity_envelopes
 from reward_audit import RewardAuditLedger
+from reward_outcome_producers import build_action_outcome_events
 
 _REPO_ROOT = Path(__file__).resolve().parent
 # CMake builds may live at the repository root (build/) or under cpp/.
@@ -645,8 +646,10 @@ class CppTFTLobbyWrapper:
             )
 
         native_actions = [self._normalize_action(action) for action in actions]
-        # A failed native step must not leave the previous decision snapshot
-        # available for another policy decision.
+        # Preserve the exact observation snapshot consumed by this action batch.
+        # Clear the public cache before stepping so a failed native step cannot
+        # accidentally authorize a second decision against stale state.
+        source_decision_snapshot = copy.deepcopy(self._last_snapshot_metadata)
         self._last_action_masks = None
         self._last_snapshot_metadata = None
         result = self._engine.step(
@@ -698,6 +701,17 @@ class CppTFTLobbyWrapper:
         combat_rewards = np.asarray(result["combat_rewards"], dtype=np.float32)
         placement_rewards = np.asarray(result["placement_rewards"], dtype=np.float32)
         action_traces = [dict(item) for item in result["action_traces"]]
+        if not isinstance(source_decision_snapshot, dict) or not isinstance(
+            source_decision_snapshot.get("native_state_snapshot"), dict
+        ):
+            raise RuntimeError(
+                "Não há snapshot nativo pré-ação para atribuir consequências factuais."
+            )
+        action_outcome_events = build_action_outcome_events(
+            before_snapshot=source_decision_snapshot["native_state_snapshot"],
+            after_snapshot=self._last_snapshot_metadata["native_state_snapshot"],
+            action_traces=action_traces,
+        )
         reward_audit = self._reward_audit_ledger.build_record(
             rewards=rewards,
             action_rewards=action_rewards,
@@ -720,6 +734,7 @@ class CppTFTLobbyWrapper:
             "combat_rewards": combat_rewards,
             "placement_rewards": placement_rewards,
             "reward_audit": reward_audit,
+            "action_outcome_events": action_outcome_events,
         }
         return observations, rewards, bool(result.get("lobby_done", False)), info
 
