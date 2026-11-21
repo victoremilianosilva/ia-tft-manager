@@ -242,7 +242,7 @@ def test_v2_semantic_encoder_checkpoint_maps_global_and_target_profile_extension
     assert torch.count_nonzero(migrated[:, 21:SEMANTIC_GLOBAL_FEATURES]) == 0
     for slot in range(SEMANTIC_ENTITY_SLOTS):
         old_start = 21 + slot * 12
-        new_start = SEMANTIC_GLOBAL_FEATURES + slot * 12
+        new_start = SEMANTIC_GLOBAL_FEATURES + slot * SEMANTIC_ENTITY_FEATURES
         assert torch.equal(migrated[:, new_start:new_start + 12], old_weight[:, old_start:old_start + 12])
         assert torch.count_nonzero(migrated[:, new_start + 12:new_start + SEMANTIC_ENTITY_FEATURES]) == 0
     assert torch.equal(migrated[:, SEMANTIC_NUMERIC_DIM:], old_weight[:, old_numeric_dim:])
