@@ -14,6 +14,44 @@
 
 namespace tft::combat_evidence {
 
+struct DamageDistribution;
+struct CalibrationValidationMetrics;
+struct CalibrationAcceptanceCriteria;
+struct SurvivalRiskEvidence;
+struct CombatHorizonTrajectory;
+
+class CalibrationApprovalToken {
+public:
+    bool valid() const noexcept { return valid_; }
+
+private:
+    bool valid_{false};
+    std::uint64_t match_id_{0};
+    std::int32_t player_id_{-1};
+    std::uint32_t round_{0};
+    std::uint64_t sequence_{0};
+    std::uint32_t horizon_rounds_{0};
+    double expected_damage_{0.0};
+    double elimination_risk_{0.0};
+    double uncertainty_{1.0};
+    std::string source_;
+    std::string protocol_id_;
+    std::string report_sha256_;
+    std::string dataset_version_;
+    std::vector<std::string> replay_artifact_ids_;
+
+    friend bool approve_calibration(
+        DamageDistribution&, const CalibrationValidationMetrics&,
+        const CalibrationAcceptanceCriteria&);
+    friend SurvivalRiskEvidence derive_survival_risk(
+        double, const DamageDistribution&);
+    friend SurvivalRiskEvidence derive_multi_round_survival_risk(
+        double, std::uint64_t, std::int32_t, std::uint32_t, std::uint64_t,
+        std::uint32_t, const std::vector<CombatHorizonTrajectory>&, std::uint32_t);
+    friend bool apply_to_economic_context(
+        const SurvivalRiskEvidence&, strategy::StrategicSharedContext&);
+};
+
 struct CombatSnapshot {
     std::uint64_t match_id{0};
     std::int32_t player_id{-1};
@@ -338,6 +376,7 @@ struct DamageDistribution {
     double calibration_p90_coverage{0.0};
     double calibration_brier_score{0.0};
     std::string source{"unavailable_no_replay_dataset"};
+    CalibrationApprovalToken approval;
 };
 
 // Empirical calibration is promoted only by an explicit evaluation report.
@@ -606,6 +645,7 @@ struct SurvivalRiskEvidence {
     std::string calibration_report_sha256;
     std::string dataset_version;
     std::vector<std::string> replay_artifact_ids;
+    CalibrationApprovalToken approval;
     std::string source{"unavailable_uncalibrated_damage"};
 };
 
