@@ -1,4 +1,3 @@
-import hashlib
 """Versioned semantic projection of the native AuditSnapshot player facts.
 
 This projection deliberately excludes StrategyInfo, Shadow recommendations,
