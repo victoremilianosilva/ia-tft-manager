@@ -320,6 +320,9 @@ public:
             score.eligible = candidate.available &&
                 (!requires_observed_gold || context.evidence.gold) &&
                 candidate.gold_cost <= context.gold;
+            if (context.engine_decision_sequence > 0 &&
+                candidate.source_sequence != context.engine_decision_sequence)
+                reject(score, "candidate_engine_sequence_mismatch");
             if (!candidate.available) score.rejection_reason = "candidate_unavailable";
             else if (requires_observed_gold && !context.evidence.gold)
                 score.rejection_reason = "gold_evidence_unavailable";
@@ -387,8 +390,13 @@ public:
                         std::clamp(static_cast<double>(streak) / 6.0, 0.0, 1.0);
                 }
                 if (priority) {
-                    score.unit_priority_value = std::clamp(
+                    const double unit_value = std::clamp(
                         static_cast<double>(priority->priority) / 100.0, 0.0, 1.0) * 0.24;
+                    // Selling sacrifices the unit's retained strategic value;
+                    // seeking/upgrading candidates receive that value positively.
+                    score.unit_priority_value =
+                        candidate.kind == strategy::StrategicActionKind::SellUnit
+                            ? -unit_value : unit_value;
                 } else if (!has_active_composition &&
                     candidate.kind == strategy::StrategicActionKind::BuyUnit) {
                     const auto anchor = std::find_if(context.anchor_candidates.begin(),
@@ -454,6 +462,7 @@ public:
                     candidate.opportunity_cost_uncertainty < 1.0;
                 score.opportunity_cost_available = opportunity_valid;
                 if (opportunity_valid) {
+                    score.opportunity_cost = candidate.opportunity_cost;
                     score.opportunity_cost_source = candidate.opportunity_cost_source;
                     score.opportunity_cost_forgone_candidate_id =
                         candidate.opportunity_cost_forgone_candidate_id;
@@ -531,7 +540,8 @@ public:
         std::vector<strategy::OpportunityAlternativeEvidence> opportunity_alternatives;
         opportunity_alternatives.reserve(out.candidates.size());
         const bool opportunity_identity_valid = context.match_id > 0 &&
-            context.player_id >= 0 && context.round > 0 && context.sequence > 0;
+            context.player_id >= 0 && context.round > 0 && context.sequence > 0 &&
+            context.engine_decision_sequence > 0;
         for (const auto& candidate_score : out.candidates) {
             strategy::OpportunityAlternativeEvidence alternative;
             alternative.candidate_id = candidate_score.candidate_id;
@@ -549,7 +559,7 @@ public:
                 candidate_score.evidence_uncertainty < 1.0;
             alternative.identity_valid = opportunity_identity_valid &&
                 !candidate_score.candidate_id.empty() &&
-                candidate_score.source_sequence == context.sequence;
+                candidate_score.source_sequence == context.engine_decision_sequence;
             opportunity_alternatives.push_back(std::move(alternative));
         }
 
@@ -560,7 +570,7 @@ public:
                 candidate_score.opportunity_cost_available ||
                 candidate_score.evidence_horizon_rounds == 0 ||
                 !opportunity_identity_valid ||
-                candidate_score.source_sequence != context.sequence)
+                candidate_score.source_sequence != context.engine_decision_sequence)
                 continue;
             const auto opportunity = opportunity_producer.evaluate(
                 candidate_score.candidate_id, opportunity_alternatives,
