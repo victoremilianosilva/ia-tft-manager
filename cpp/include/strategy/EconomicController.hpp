@@ -51,6 +51,16 @@ public:
         reject_if(c.evidence.elimination_risk &&
             (!std::isfinite(c.elimination_risk) || c.elimination_risk < 0.0 ||
                 c.elimination_risk > 1.0), "elimination_risk");
+        const bool combat_provenance_valid =
+            c.sequence > 0 && c.combat_evidence_sequence == c.sequence &&
+            c.combat_evidence_horizon_rounds == 1 &&
+            c.incoming_damage_source == "observed_hp+approved_replay_calibration.v1" &&
+            c.elimination_risk_source == "observed_hp+approved_replay_calibration.v1" &&
+            std::isfinite(c.combat_evidence_uncertainty) &&
+            c.combat_evidence_uncertainty >= 0.0 &&
+            c.combat_evidence_uncertainty <= 1.0;
+        reject_if((c.evidence.estimated_incoming_damage || c.evidence.elimination_risk) &&
+            !combat_provenance_valid, "combat_evidence_provenance_horizon_or_sequence");
         if (!out.evidence_invalid.empty()) {
             out.reason = StrategicReason::InsufficientEvidence;
             out.sufficient_evidence = false;
