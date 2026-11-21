@@ -57,16 +57,17 @@ def test_item_observation_exposes_components_inventory_recipes_and_all_targets()
 
     (
         components, inventory, recipes, targets,
-        inventory_target_fit, recipe_target_fit, anvil_options, pending_anvil,
+        inventory_target_fit, recipe_target_fit, anvil_options, pending_anvil, anvil_kind_features,
     ) = policy._item_state_features(obs)
 
     assert components.shape == (1, 10)
     assert inventory.shape == (1, 9, 17)
     assert recipes.shape == (1, 100, 17)
-    assert targets.shape == (1, 37, 18)
+    assert targets.shape == (1, 37, 17)
     assert inventory_target_fit.shape == (1, 9, 37)
     assert recipe_target_fit.shape == (1, 100, 37)
     assert anvil_options.shape == (1, 9, 11)
+    assert anvil_kind_features.shape == (1, 2)
     assert components[0, 0].item() == 0.5
     assert inventory[0, 0, 0].item() == 0.75
     assert torch.isclose(recipes[0, 4, 2], torch.tensor(0.6), atol=1e-6)
@@ -158,7 +159,7 @@ def test_inventory_candidate_scorer_uses_item_semantics():
 
     logits = policy._item_inventory_logits(
         conditioned, inventory_features, torch.zeros(1, 9, 37),
-        torch.zeros(1, 9, 11), torch.tensor([False])
+        torch.zeros(1, 9, 11), torch.tensor([False]), torch.zeros(1, 2)
     )
     assert logits[0, 1] > logits[0, 0]
 
@@ -213,7 +214,7 @@ def test_anvil_candidate_scorer_uses_anvil_option_features():
 
     logits = policy._item_inventory_logits(
         conditioned, inventory_features, torch.zeros(1, 9, 37),
-        anvil_features, torch.tensor([True])
+        anvil_features, torch.tensor([True]), torch.zeros(1, 2)
     )
     assert logits[0, 2] > logits[0, 1]
     assert logits[0, 2] > logits[0, 0]
