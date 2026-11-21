@@ -76,6 +76,12 @@ class FakeNativeLobby:
             "players": [
                 {
                     "player_id": player_id,
+                    "gold": 30,
+                    "level": 5,
+                    "xp": 0,
+                    "interest_if_resolved_now": 1,
+                    "positioning_score": 0.0,
+                    "board_quality_score": 0.0,
                     "strategic_state": {
                         "contract_id": "tft.strategic-owner-observation",
                         "contract_version": 2,
@@ -160,6 +166,9 @@ class FakeNativeLobby:
         return {
             "observations": np.full((8, 4), 2, dtype=np.float32),
             "rewards": np.zeros(8, dtype=np.float32),
+            "action_rewards": np.zeros(8, dtype=np.float32),
+            "combat_rewards": np.zeros(8, dtype=np.float32),
+            "placement_rewards": np.zeros(8, dtype=np.float32),
             "dones": np.zeros(8, dtype=np.bool_),
             "action_masks": make_masks(2),
             "engine_instance_id": f"fake-engine-{id(self)}",
@@ -171,7 +180,7 @@ class FakeNativeLobby:
             "stage": 2,
             "lobby_done": False,
             "players": [
-                {"player_id": i, "alive": True, "eliminated": False}
+                {"player_id": i, "alive": True, "eliminated": False, "placement": None}
                 for i in range(8)
             ],
             "action_traces": [
@@ -328,6 +337,24 @@ def test_step_masks_are_taken_from_same_native_snapshot(monkeypatch):
         assert all(mask["type_mask"][2] for mask in masks)
         assert all(not mask["type_mask"][8] for mask in masks)
         assert len(info["action_trace"]) == 8
+        assert len(info["action_outcome_events"]) == 8
+        assert info["action_outcome_events"][0]["contract_id"] == "tft.reward-action-outcome.v1"
+        assert info["action_outcome_events"][0]["action"]["family"] == "pass"
+        assert info["action_outcome_events"][0]["source_decision"]["snapshot_sequence"] == 1
+        assert info["action_outcome_events"][0]["outcome_snapshot"]["snapshot_sequence"] == 2
+        assert info["action_outcome_events"][0]["reward"] is None
+        assert info["reward_audit"]["contract_id"] == "tft.ppo.reward-audit.v1"
+        assert info["reward_audit"]["decision_sequence"] == 2
+        assert info["reward_audit"]["player_rewards"][0]["components"] == {
+            "action": 0.0, "combat": 0.0, "placement": 0.0, "total": 0.0,
+        }
+        assert info["reward_audit"]["player_rewards"][0]["action_decision"]["trace"] == {
+            "player_id": 0,
+            "requested_action": [6, 0, 0, 0, 0, 0],
+            "effective_action": [6, 0, 0, 0, 0, 0],
+            "handler_applied": True,
+            "status_reason": "applied",
+        }
         assert info["action_trace"][0] == {
             "player_id": 0,
             "requested_action": [6, 0, 0, 0, 0, 0],

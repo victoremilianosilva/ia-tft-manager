@@ -46,7 +46,7 @@ jobs:
           ctest --test-dir cpp/build --output-on-failure 2>&1 | tee artifacts/ctest.log
 
       - name: Validate Python adapter, PPO, scripts and viewer syntax
-        run: python -m compileall -q cpp_lobby_env.py engine_contracts.py vector_lobby_env.py trainer.py ppo.py policy.py rollout.py scripts/evaluate_checkpoints.py scripts/audit_native_ppo_loops.py scripts/audit_item_system_e2e.py scripts/generate_item_catalog.py viewer tests economy_finetuning
+        run: python -m compileall -q cpp_lobby_env.py engine_contracts.py vector_lobby_env.py trainer.py ppo.py policy.py rollout.py reward_audit.py reward_outcome_producers.py reward_signal_calibration.py scripts/evaluate_checkpoints.py scripts/audit_native_ppo_loops.py scripts/audit_item_system_e2e.py scripts/generate_item_catalog.py viewer tests economy_finetuning
 
       - name: Run native engine integration and PPO contract tests
         env:
@@ -58,6 +58,9 @@ jobs:
           --junitxml=artifacts/native-engine-tests.xml
           tests/test_tft_engine_api.py
           tests/test_cpp_lobby_snapshot_binding.py
+          tests/test_reward_audit.py
+          tests/test_reward_outcome_producers.py
+          tests/test_reward_signal_calibration.py
           tests/test_rollout_decision_snapshot_identity.py
           tests/test_native_ppo_loop_regression.py
           tests/test_native_ppo_loop_audit_helpers.py
