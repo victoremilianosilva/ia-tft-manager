@@ -30,6 +30,8 @@ from economy_finetuning.scenario_generator import (
     SCENARIOS, decode_observation, matching_scenarios, shaped_action_reward,
 )
 from economy_finetuning.chain_manager import check_scenario, record_training
+from scripts.evaluate_checkpoints import native_semantic_state_for_players
+from semantic_observation import catalog_identity
 
 ACTION_DIMS = [9, 5, 9, 28, 28, 28]
 MASK_SHAPES = {
@@ -68,10 +70,16 @@ def _display_path(path: Path) -> str:
         return path.name
 
 
-def _load_checkpoint(path: Path, obs_dim: int, device: torch.device):
+def _load_checkpoint(path: Path, obs_dim: int, device: torch.device, catalog_map: dict):
     checkpoint = torch.load(path, map_location=device, weights_only=False)
+    from economy_finetuning.paired_evaluator import validate_evaluation_checkpoint_contracts
+    validate_evaluation_checkpoint_contracts(checkpoint, catalog_map)
     state = checkpoint.get("policy", checkpoint)
-    policy = TFTPolicy(obs_dim, ACTION_DIMS).to(device)
+    policy = TFTPolicy(
+        obs_dim, ACTION_DIMS,
+        semantic_vocab_size=catalog_identity(catalog_map)["vocab_size"],
+        require_semantic_state=True,
+    ).to(device)
     migrated = policy.load_compatible_state_dict(state)
     return checkpoint, policy, migrated
 
@@ -128,9 +136,9 @@ def _individual_dones(info, lobby_done: bool):
     return dones
 
 
-def _type_probabilities(policy, observations, masks):
+def _type_probabilities(policy, observations, masks, semantic_state):
     with torch.no_grad():
-        features = policy.encode(observations)
+        features = policy.encode(observations, semantic_state=semantic_state)
         logits = policy.type_head(features)
         logits = policy._mask_logits(logits, masks["type_mask"])
         return torch.softmax(logits, dim=-1).cpu().numpy()
@@ -244,7 +252,10 @@ def run(args):
         if observations.ndim != 2 or observations.shape[0] != 8:
             raise ValueError(f"Shape de observação nativo inesperado: {observations.shape}")
         obs_dim = int(observations.shape[-1])
-        original_checkpoint, policy, migrated = _load_checkpoint(checkpoint_path, obs_dim, device)
+        catalog_map = env.get_champion_id_map()
+        original_checkpoint, policy, migrated = _load_checkpoint(
+            checkpoint_path, obs_dim, device, catalog_map
+        )
         original_policy = copy.deepcopy(policy).eval()
         trainable_names = _freeze_non_target_heads(policy, selected_scenario.trainable_heads)
         optimizer = optim.Adam(
@@ -334,7 +345,8 @@ def run(args):
 
         for update in range(1, args.updates + 1):
             rollout = RolloutBuffer(
-                args.rollout_steps, 8, obs_dim, 6, device, mask_shapes=MASK_SHAPES
+                args.rollout_steps, 8, obs_dim, 6, device,
+                mask_shapes=MASK_SHAPES, require_semantic_state=True,
             )
             matched_transitions = 0
             episode_reward = np.zeros(8, dtype=np.float64)
@@ -343,12 +355,17 @@ def run(args):
                 raw_masks = env.get_action_masks()
                 masks = _flatten_masks(raw_masks, device)
                 obs_tensor = torch.as_tensor(observations, dtype=torch.float32, device=device)
+                semantic_state = native_semantic_state_for_players(
+                    env, list(range(8)), catalog_map, device
+                )
                 with torch.no_grad():
                     actions, logprobs, _, values = policy.get_action_and_value(
-                        obs_tensor, masks=masks, deterministic=False
+                        obs_tensor, masks=masks, deterministic=False,
+                        semantic_state=semantic_state,
                     )
                     reference_actions, _, _, _ = original_policy.get_action_and_value(
-                        obs_tensor, masks=masks, deterministic=True
+                        obs_tensor, masks=masks, deterministic=True,
+                        semantic_state=semantic_state,
                     )
                     candidate_greedy_actions, _, _, _ = policy.get_action_and_value(
                         obs_tensor, masks=masks, deterministic=True
@@ -356,8 +373,8 @@ def run(args):
                 action_array = actions.cpu().numpy().astype(np.int64)
                 reference_array = reference_actions.cpu().numpy().astype(np.int64)
                 candidate_greedy_array = candidate_greedy_actions.cpu().numpy().astype(np.int64)
-                candidate_type_probs = _type_probabilities(policy, obs_tensor, masks)
-                reference_type_probs = _type_probabilities(original_policy, obs_tensor, masks)
+                candidate_type_probs = _type_probabilities(policy, obs_tensor, masks, semantic_state)
+                reference_type_probs = _type_probabilities(original_policy, obs_tensor, masks, semantic_state)
 
                 shaped_rewards = []
                 valid = []
@@ -397,6 +414,7 @@ def run(args):
                     logprobs, torch.as_tensor(rewards, dtype=torch.float32, device=device),
                     torch.as_tensor(dones, dtype=torch.float32, device=device), values,
                     masks, valid=torch.as_tensor(valid, dtype=torch.bool, device=device),
+                    semantic_state=semantic_state,
                 )
                 observations = next_observations
                 last_done = dones
@@ -414,10 +432,14 @@ def run(args):
                     episode_reward.fill(0.0)
 
             next_masks = _flatten_masks(env.get_action_masks(), device)
+            next_semantic_state = native_semantic_state_for_players(
+                env, list(range(8)), catalog_map, device
+            )
             with torch.no_grad():
                 next_value = policy.get_value(
                     torch.as_tensor(observations, dtype=torch.float32, device=device),
                     masks=next_masks,
+                    semantic_state=next_semantic_state,
                 )
             rollout.compute_returns_and_advantages(
                 next_value, torch.as_tensor(last_done, dtype=torch.float32, device=device),
