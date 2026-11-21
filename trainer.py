@@ -362,7 +362,7 @@ class Trainer:
             }
             present_semantic_state_keys = {
                 key for key in checkpoint.get("policy", {})
-                if key.startswith(("semantic_id_embedding.", "semantic_encoder."))
+                if key.startswith(("semantic_id_embedding.", "semantic_trait_embedding.", "semantic_encoder."))
             }
             checkpoint_has_semantic_weights = bool(present_semantic_state_keys)
             if (
