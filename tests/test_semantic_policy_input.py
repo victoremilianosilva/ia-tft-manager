@@ -2,7 +2,7 @@ import torch
 
 from action_contract import MASK_SHAPES
 from policy import ACTION_DIMS, TFTPolicy
-from semantic_observation import SEMANTIC_ENTITY_FEATURES, SEMANTIC_ENTITY_SLOTS, SEMANTIC_GLOBAL_FEATURES, SEMANTIC_ITEM_OFFSET, SEMANTIC_NUMERIC_DIM, semantic_item_state_tensors
+from semantic_observation import SEMANTIC_ENTITY_FEATURES, SEMANTIC_ENTITY_SLOTS, SEMANTIC_GLOBAL_FEATURES, SEMANTIC_ITEM_OFFSET, SEMANTIC_NUMERIC_DIM, SEMANTIC_TRAIT_VOCAB_SIZE, semantic_item_state_tensors
 
 
 def _batch(batch_size=2):
@@ -147,8 +147,8 @@ def test_semantic_global_encoder_embeds_trait_identity_and_receives_gradients():
         hidden_size=32, semantic_vocab_size=64,
     )
     trait_offset = SEMANTIC_GLOBAL_FEATURES + 29
-    semantic["numeric"][0, trait_offset] = 123.0 / 4096.0
-    semantic["numeric"][0, trait_offset + 1] = 456.0 / 4096.0
+    semantic["numeric"][0, trait_offset] = 123.0 / SEMANTIC_TRAIT_VOCAB_SIZE
+    semantic["numeric"][0, trait_offset + 1] = 456.0 / SEMANTIC_TRAIT_VOCAB_SIZE
     semantic["items"] = semantic_item_state_tensors(semantic["numeric"])
 
     latent = policy.encode(obs, semantic_state=semantic)
