@@ -64,7 +64,7 @@ def test_strict_semantic_policy_uses_only_neutral_observation_carrier():
         "global_mlp.2.weight": torch.zeros((256, 256)),
         "global_mlp.2.bias": torch.zeros(256),
     })
-    policy.load_compatible_state_dict(historical_weights)
+    assert policy.load_compatible_state_dict(historical_weights) is True
 
     first = policy.encode(carrier, semantic_state=semantic)
     second = policy.encode(carrier + 1.0, semantic_state=semantic)
