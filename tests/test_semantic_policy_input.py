@@ -93,6 +93,25 @@ def test_native_semantic_global_encoder_produces_finite_features():
 
 
 
+def test_historical_anvil_scorer_weights_migrate_with_zero_kind_columns():
+    obs, _, _ = _batch(batch_size=1)
+    policy = TFTPolicy(
+        obs_dim=obs.shape[-1], action_dims=list(ACTION_DIMS),
+        hidden_size=32, semantic_vocab_size=64,
+    )
+    state = {key: value.detach().clone() for key, value in policy.state_dict().items()}
+    current = state["item_anvil_candidate_head.0.weight"]
+    historical = torch.arange(
+        current.shape[0] * (current.shape[1] - 2), dtype=torch.float32
+    ).reshape(current.shape[0], current.shape[1] - 2)
+    state["item_anvil_candidate_head.0.weight"] = historical
+
+    assert policy.load_compatible_state_dict(state) is True
+    migrated = policy.item_anvil_candidate_head[0].weight.detach()
+    assert torch.equal(migrated[:, :-2], historical)
+    assert torch.count_nonzero(migrated[:, -2:]) == 0
+
+
 def test_anvil_candidate_scorer_distinguishes_component_and_completed_item_options():
     obs, _, _ = _batch(batch_size=1)
     policy = TFTPolicy(
