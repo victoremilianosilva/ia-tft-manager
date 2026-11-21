@@ -77,8 +77,11 @@ int main() {
 
     combat_evidence::CombatCoverage partial;
     partial.units_seen = 2; partial.units_supported = 1;
+    partial.abilities_seen = 2; partial.abilities_supported = 1;
     partial.unsupported_abilities = 1;
-    assert(!combat_evidence::CombatCoverageValidator{}.validate(partial).complete);
+    const auto partial_result = combat_evidence::CombatCoverageValidator{}.validate(partial);
+    assert(!partial_result.complete);
+    assert(partial_result.status == "partial_unsupported_mechanics");
 
     std::vector<combat_evidence::ObservedCombatOutcome> outcomes;
     for (std::uint64_t i = 1; i <= 40; ++i)
