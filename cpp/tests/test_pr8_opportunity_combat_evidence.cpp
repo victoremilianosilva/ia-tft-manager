@@ -146,9 +146,6 @@ int main() {
         "experimental_same_match_diagnostic_distribution.v1");
     assert(diagnostic_distribution.p50 == 20.0 &&
         diagnostic_distribution.p90 == 36.0);
-    assert(!combat_evidence::approve_calibration(
-        diagnostic_distribution, metrics, criteria));
-
     auto distribution = cohort_distribution;
 
     combat_evidence::CalibrationAcceptanceCriteria criteria;
@@ -172,6 +169,8 @@ int main() {
     metrics.mae = 1.2;
     metrics.p90_coverage = 0.90;
     metrics.brier_score = 0.05;
+    assert(!combat_evidence::approve_calibration(
+        diagnostic_distribution, metrics, criteria));
     assert(combat_evidence::approve_calibration(distribution, metrics, criteria));
     assert(distribution.calibrated);
     auto unapproved_distribution = cohort_distribution;
