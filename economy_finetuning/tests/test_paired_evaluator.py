@@ -5,7 +5,9 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from economy_finetuning.finetune import (\n    MASK_SHAPES, _flatten_masks, _load_checkpoint, _rollout_snapshot_metadata,\n)
+from economy_finetuning.finetune import (
+    MASK_SHAPES, _flatten_masks, _load_checkpoint, _rollout_snapshot_metadata,
+)
 from action_contract import (
     build_action_mask_checkpoint_contract,
     build_critic_mask_input_checkpoint_contract,
