@@ -9,13 +9,17 @@ from economy_finetuning.finetune import (
     MASK_SHAPES, _flatten_masks, _load_checkpoint, _rollout_snapshot_metadata,
 )
 from action_contract import (
+    MASK_SNAPSHOT_HASH_ALGORITHM,
     build_action_mask_checkpoint_contract,
     build_critic_mask_input_checkpoint_contract,
 )
 from reward_contract import build_reward_checkpoint_contract
 from policy import ACTION_DIMS, TFTPolicy
-from semantic_observation import catalog_identity
-from semantic_observation import build_semantic_state_checkpoint_contract
+from semantic_observation import (
+    SEMANTIC_ENTITY_SLOTS, SEMANTIC_NUMERIC_DIM, SEMANTIC_STATE_CONTRACT_ID,
+    catalog_identity, semantic_item_state_tensors, build_semantic_state_checkpoint_contract,
+)
+from rollout import RolloutBuffer
 from economy_finetuning.paired_evaluator import (
     aggregate_mirrored_runs,
     compare_final_metrics,
@@ -253,6 +257,49 @@ class PairedEvaluatorTests(unittest.TestCase):
         self.assertEqual(result[3]["action_trace"]["player_id"], 3)
         self.assertEqual(next_state[3]["decision_sequence"], 11)
         self.assertEqual(len(decision[3]["mask_snapshot_hash"]), 64)
+
+        for row in decision:
+            row["semantic_identity"] = {
+                key: row[key] for key in (
+                    "engine_instance_id", "episode_id", "decision_sequence",
+                    "player_decision_sequence", "player_id", "round", "lobby_index",
+                )
+            }
+            row["semantic_projection_hash"] = "a" * 64
+            row["semantic_projection_contract_id"] = SEMANTIC_STATE_CONTRACT_ID
+            row["semantic_projection_contract_hash"] = "b" * 64
+
+        numeric = torch.zeros((8, SEMANTIC_NUMERIC_DIM), dtype=torch.float32)
+        semantic_state = {
+            "numeric": numeric,
+            "items": semantic_item_state_tensors(numeric),
+            "champion_ids": torch.zeros((8, SEMANTIC_ENTITY_SLOTS), dtype=torch.long),
+            "identities": [row["semantic_identity"] for row in decision],
+            "hashes": ["a" * 64] * 8,
+            "contract_id": SEMANTIC_STATE_CONTRACT_ID,
+            "contract_hash": "b" * 64,
+        }
+        buffer = RolloutBuffer(
+            1, 8, 4, 6, torch.device("cpu"),
+            mask_shapes=MASK_SHAPES, require_semantic_state=True,
+        )
+        actions = torch.tensor([[6, 0, 0, 0, 0, 0]] * 8, dtype=torch.long)
+        buffer.add(
+            torch.zeros((8, 4)), actions, torch.zeros(8), torch.zeros(8),
+            torch.zeros(8), torch.zeros(8), masks,
+            semantic_state=semantic_state,
+            snapshot_metadata=decision,
+            result_snapshot_metadata=result,
+            next_snapshot_metadata=next_state,
+        )
+        self.assertEqual(buffer.ptr, 1)
+        self.assertEqual(
+            buffer.snapshot_metadata[0][3]["semantic_projection_hash"], "a" * 64
+        )
+        self.assertEqual(
+            buffer.snapshot_metadata[0][3]["mask_snapshot_hash_algorithm"],
+            MASK_SNAPSHOT_HASH_ALGORITHM,
+        )
 
 if __name__ == "__main__":
     unittest.main()
