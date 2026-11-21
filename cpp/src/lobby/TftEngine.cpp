@@ -4336,11 +4336,11 @@ struct TFTEngine::Impl {
                                     {"has_buff", ability.has_buff},
                                     {"has_debuff", ability.has_debuff},
                                     {"has_area_effect", ability.has_area_effect},
-                                    {"metadata_present", !ability.api_name.empty()}
+                                    {"metadata_present", !ability.name.empty() || !ability.description.empty() || !ability.variables.empty()}
                                 }},
                                 {"items", std::move(items)},
                                 {"traits", std::move(traits)},
-                                {"champion_script_metadata_present", !ability.api_name.empty()}
+                                {"champion_script_metadata_present", ability.metadata_complete}
                             });
                         }
                         return units;
@@ -4376,7 +4376,7 @@ struct TFTEngine::Impl {
                         {"snapshot_value_source", "authoritative_combat_engine_input_projection"},
                         {"mechanics_coverage_status", coverage_result.status},
                         {"mechanics_coverage_complete", coverage_result.complete},
-                        {"mechanics_coverage_fraction", coverage_result.supported_fraction},
+                        {"fully_supported_unit_fraction", coverage_result.supported_fraction},
                         {"mechanics_coverage", {
                             {"units_seen", coverage.units_seen},
                             {"units_supported", coverage.units_supported},
