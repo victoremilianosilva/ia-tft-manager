@@ -213,6 +213,13 @@ struct StrategicSharedContext {
     std::uint64_t sequence{0};
     // Match identity for cross-round evidence correlation; appended for aggregate compatibility.
     std::uint64_t match_id{0};
+    // Calibrated combat evidence carries explicit provenance and horizon.
+    // Defaults remain unavailable and are never interpreted as measured zero.
+    std::string incoming_damage_source{"unavailable"};
+    std::string elimination_risk_source{"unavailable"};
+    std::uint32_t combat_evidence_horizon_rounds{0};
+    std::uint64_t combat_evidence_sequence{0};
+    double combat_evidence_uncertainty{1.0};
 };
 
 struct StrategicCommitment {
