@@ -575,6 +575,8 @@ def test_evaluation_artifact_writer_rejects_missing_or_mismatched_manifest(tmp_p
 
 def test_paired_evaluator_requires_trait_embedding_for_semantic_v6_checkpoint():
     from action_contract import (
+        CRITIC_MASK_FEATURE_DIM,
+        CRITIC_MASK_EMBED_DIM,
         build_action_mask_checkpoint_contract,
         build_critic_mask_input_checkpoint_contract,
     )
@@ -590,6 +592,8 @@ def test_paired_evaluator_requires_trait_embedding_for_semantic_v6_checkpoint():
         "semantic_encoder.0.bias": torch.zeros(256),
         "semantic_encoder.2.weight": torch.zeros(32, 256),
         "semantic_encoder.2.bias": torch.zeros(32),
+        "critic_mask_encoder.weight": torch.zeros(CRITIC_MASK_EMBED_DIM, CRITIC_MASK_FEATURE_DIM),
+        "critic_mask_encoder.bias": torch.zeros(CRITIC_MASK_EMBED_DIM),
     }
     payload = {
         "policy": state,
