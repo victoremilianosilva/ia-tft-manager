@@ -328,6 +328,9 @@ def test_semantic_v2_checkpoint_has_only_explicit_v6_warm_start_path():
     payload["encoder"]["numeric_plus_embedding_input_dim"] = (
         payload["numeric_dimension"] + SEMANTIC_ENTITY_SLOTS * 16
     )
+    payload.pop("item_state")
+    payload.pop("trait_embedding")
+    payload["encoder"]["kind"] = "champion_embedding_plus_mlp"
     payload["encoder"]["fusion"] = "additive_to_shared_actor_critic_latent"
     payload["encoder"].pop("board_cnn_source")
     payload["encoder"].pop("action_candidate_source")
