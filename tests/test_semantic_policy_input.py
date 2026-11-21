@@ -177,8 +177,10 @@ def test_semantic_side_input_changes_actor_and_critic_and_receives_gradients():
         policy.type_head.bias.zero_()
         policy.value_head.weight[:, :32].fill_(0.01)
 
+    changed_numeric = torch.ones_like(semantic["numeric"])
     changed = {
-        "numeric": torch.ones_like(semantic["numeric"]),
+        "numeric": changed_numeric,
+        "items": semantic_item_state_tensors(changed_numeric),
         "champion_ids": torch.ones_like(semantic["champion_ids"]),
     }
     policy.eval()
@@ -212,7 +214,7 @@ def test_historical_policy_checkpoint_loads_with_native_semantic_encoder():
     legacy_state = {
         key: value.detach().clone()
         for key, value in source.state_dict().items()
-        if not key.startswith(("semantic_id_embedding.", "semantic_encoder."))
+        if not key.startswith(("semantic_id_embedding.", "semantic_trait_embedding.", "semantic_encoder."))
     }
 
     migrated = TFTPolicy(
