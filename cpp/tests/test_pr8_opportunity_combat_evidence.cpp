@@ -18,6 +18,7 @@ int main() {
     reroll.uncertainty = 0.4;
     reroll.available = true;
     reroll.identity_valid = true;
+    // Value components are already net of these costs; they are audit metadata.
     reroll.direct_economy_cost = 2.0;
     reroll.interest_cost = 1.0;
     auto opportunity = producer.evaluate("buy-xp", {reroll}, 2, "shared_utility.v1");
