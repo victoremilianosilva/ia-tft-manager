@@ -92,6 +92,32 @@ def test_native_semantic_global_encoder_produces_finite_features():
 
 
 
+
+def test_anvil_candidate_scorer_distinguishes_component_and_completed_item_options():
+    obs, _, _ = _batch(batch_size=1)
+    policy = TFTPolicy(
+        obs_dim=obs.shape[-1], action_dims=list(ACTION_DIMS),
+        hidden_size=32, semantic_vocab_size=64,
+    )
+    with torch.no_grad():
+        policy.item_anvil_candidate_head[-1].weight.fill_(1.0)
+        policy.item_anvil_candidate_head[-1].bias.zero_()
+    conditioned = torch.zeros(1, 32 + len(ACTION_DIMS))
+    option_features = torch.zeros(1, 9, 11)
+    pending = torch.ones(1, dtype=torch.bool)
+    component_kind = torch.tensor([[1.0, 0.0]])
+    completed_kind = torch.tensor([[0.0, 1.0]])
+
+    component_scores = policy._item_inventory_logits(
+        conditioned, torch.zeros(1, 9, 17), torch.zeros(1, 9, 37),
+        option_features, pending, component_kind,
+    )
+    completed_scores = policy._item_inventory_logits(
+        conditioned, torch.zeros(1, 9, 17), torch.zeros(1, 9, 37),
+        option_features, pending, completed_kind,
+    )
+    assert not torch.allclose(component_scores, completed_scores)
+
 def test_semantic_global_encoder_embeds_trait_identity_and_receives_gradients():
     obs, _, semantic = _batch(batch_size=1)
     policy = TFTPolicy(
@@ -239,6 +265,7 @@ def test_semantic_v4_warm_start_resets_only_reinterpreted_consumer_columns():
     assert torch.count_nonzero(policy.shop_head[0].weight[:, -6:]) == 0
     assert torch.count_nonzero(policy.sell_head[0].weight[:, -6:]) == 0
     assert torch.count_nonzero(policy.bench_to_board_head.weight[:, -6:]) == 0
+    assert torch.count_nonzero(policy.item_anvil_candidate_head[0].weight[:, -2:]) == 0
 
 def test_v2_semantic_encoder_checkpoint_maps_global_and_target_profile_extensions():
     torch.manual_seed(20261122)
