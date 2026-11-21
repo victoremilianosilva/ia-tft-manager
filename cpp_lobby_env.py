@@ -720,6 +720,7 @@ class CppTFTLobbyWrapper:
             action_traces=action_traces,
             players=player_info,
             decision_snapshot=self._last_snapshot_metadata,
+            source_decision_snapshot=source_decision_snapshot,
         )
         info = {
             "players": player_info,
