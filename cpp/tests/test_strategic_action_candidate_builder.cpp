@@ -2,7 +2,9 @@
 #include "composition_intelligence/ContextualActionEvaluator.hpp"
 #include "composition_intelligence/StrategicActionExecutor.hpp"
 
+#include <algorithm>
 #include <cassert>
+#include <cmath>
 #include <iostream>
 #include <unordered_set>
 
