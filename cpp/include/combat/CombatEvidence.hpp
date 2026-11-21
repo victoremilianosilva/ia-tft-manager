@@ -18,7 +18,8 @@ struct CombatSnapshot {
     std::int32_t player_id{-1};
     std::int32_t opponent_id{-1};
     std::uint32_t round{0};
-    std::uint64_t sequence{0};
+    std::uint64_t sequence{0}; // per-player strategic-context sequence
+    std::uint64_t engine_decision_sequence{0};
     double player_hp{-1.0};
     double opponent_hp{-1.0};
     std::vector<std::string> player_unit_ids;
@@ -36,7 +37,8 @@ class CombatSnapshotBuilder {
 public:
     CombatSnapshotValidation validate(const CombatSnapshot& s, std::uint64_t expected_sequence = 0) const {
         if (s.match_id == 0 || s.player_id < 0 || s.opponent_id < 0 ||
-            s.player_id == s.opponent_id || s.round == 0 || s.sequence == 0)
+            s.player_id == s.opponent_id || s.round == 0 || s.sequence == 0 ||
+            s.engine_decision_sequence == 0)
             return {false, "invalid_or_missing_identity"};
         if (expected_sequence != 0 && s.sequence != expected_sequence)
             return {false, "stale_snapshot_sequence"};
@@ -237,6 +239,7 @@ inline bool apply_to_economic_context(
     const SurvivalRiskEvidence& risk, strategy::StrategicSharedContext& context) {
     if (!risk.available || risk.match_id == 0 || risk.player_id < 0 ||
         risk.round == 0 || risk.sequence == 0 ||
+        context.match_id != risk.match_id ||
         context.player_id != risk.player_id || context.round != risk.round ||
         context.sequence != risk.sequence ||
         !std::isfinite(risk.expected_damage) ||
