@@ -418,6 +418,7 @@ void economic_posture_is_explanatory_not_a_fixed_action_rule() {
     context.gold = 20;
     context.player_id = 0;
     context.round = 8;
+    context.sequence = 99;
     context.evidence.gold = true;
     auto buy = candidate(StrategicActionKind::BuyExperience);
     buy.gold_cost = 3;
@@ -456,6 +457,15 @@ void economic_posture_is_explanatory_not_a_fixed_action_rule() {
     economy.board_pressure = 0.2;
     economy.economy_pressure_available = true;
     economy.economy_pressure = 0.9;
+    economy.incoming_damage_available = true;
+    economy.elimination_risk_available = true;
+    economy.incoming_damage = 12.5;
+    economy.elimination_risk = 0.25;
+    economy.incoming_damage_source = "observed_hp+approved_replay_calibration.v1";
+    economy.elimination_risk_source = "observed_hp+approved_replay_calibration.v1";
+    economy.combat_horizon_rounds = 1;
+    economy.combat_evidence_sequence = 99;
+    economy.combat_evidence_uncertainty = 0.15;
     economy.posture = EconomicPosture::AccumulateResources;
     const auto accumulate = ContextualActionEvaluator{}.evaluate(
         active(), priorities(), lineup(), context, &evidence, 77);
@@ -475,6 +485,15 @@ void economic_posture_is_explanatory_not_a_fixed_action_rule() {
     assert(accumulate.board_pressure == 0.2);
     assert(accumulate.economy_pressure_available);
     assert(accumulate.economy_pressure == 0.9);
+    assert(accumulate.incoming_damage_available);
+    assert(accumulate.incoming_damage == 12.5);
+    assert(accumulate.incoming_damage_source ==
+        "observed_hp+approved_replay_calibration.v1");
+    assert(accumulate.elimination_risk_available);
+    assert(accumulate.elimination_risk == 0.25);
+    assert(accumulate.combat_horizon_rounds == 1);
+    assert(accumulate.combat_evidence_sequence == 99);
+    assert(accumulate.combat_evidence_uncertainty == 0.15);
     assert(accumulate.economic_posture != emergency.economic_posture);
     assert(accumulate.candidates[0].total_score == emergency.candidates[0].total_score);
     assert(accumulate.recommended_action == emergency.recommended_action);
@@ -483,7 +502,15 @@ void economic_posture_is_explanatory_not_a_fixed_action_rule() {
     assert(json["economic_context"]["evidence_missing"][0] == "projected_next_round_income");
     assert(json["economic_context"]["projected_income_available"] == false);
     assert(json["economic_context"]["incoming_damage_available"] == false);
-    assert(json["economic_context"]["elimination_risk_available"] == false);
+    assert(json["economic_context"]["incoming_damage_available"] == true);
+    assert(json["economic_context"]["incoming_damage"] == 12.5);
+    assert(json["economic_context"]["incoming_damage_source"] ==
+        "observed_hp+approved_replay_calibration.v1");
+    assert(json["economic_context"]["elimination_risk_available"] == true);
+    assert(json["economic_context"]["elimination_risk"] == 0.25);
+    assert(json["economic_context"]["combat_horizon_rounds"] == 1);
+    assert(json["economic_context"]["combat_evidence_sequence"] == 99);
+    assert(json["economic_context"]["combat_evidence_uncertainty"] == 0.15);
     assert(json["economic_context"]["progression_available"] == false);
 }
 
