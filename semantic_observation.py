@@ -711,6 +711,10 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
             raise TypeError(f"native {field} must contain non-empty string IDs")
     if not isinstance(equipped_items, list) or any(not isinstance(row, Mapping) for row in equipped_items):
         raise TypeError("native equipped_items must be a list of structured ownership rows")
+    if len(item_component_catalog) != 10 or len(set(item_component_catalog)) != 10:
+        raise ValueError("native item component catalog must contain ten unique ordered IDs")
+    if len(item_inventory) > 9 or len(pending_options) > 9:
+        raise ValueError("native item inventory/anvil options exceed their canonical slot counts")
 
     numeric.extend(component_features)
     numeric.extend(inventory_features)
