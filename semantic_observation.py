@@ -16,11 +16,71 @@ SEMANTIC_STATE_CONTRACT_VERSION = 4
 SEMANTIC_ENTITY_SLOTS = 28 + 9 + 5
 SEMANTIC_ENTITY_FEATURES = 29
 SEMANTIC_GLOBAL_FEATURES = 52
-SEMANTIC_NUMERIC_DIM = (
-    SEMANTIC_GLOBAL_FEATURES
-    + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ENTITY_FEATURES
+SEMANTIC_ITEM_COMPONENT_FEATURES = 10
+SEMANTIC_ITEM_SEMANTIC_FEATURES = 17
+SEMANTIC_ITEM_TARGETS = 37
+SEMANTIC_ANVIL_OPTIONS = 9
+SEMANTIC_ANVIL_OPTION_FEATURES = 11
+SEMANTIC_ENTITY_OFFSET = SEMANTIC_GLOBAL_FEATURES
+SEMANTIC_ITEM_OFFSET = (
+    SEMANTIC_GLOBAL_FEATURES + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ENTITY_FEATURES
 )
+SEMANTIC_ITEM_STATE_DIM = (
+    SEMANTIC_ITEM_COMPONENT_FEATURES
+    + 9 * SEMANTIC_ITEM_SEMANTIC_FEATURES
+    + 100 * SEMANTIC_ITEM_SEMANTIC_FEATURES
+    + 9 * SEMANTIC_ITEM_TARGETS
+    + 100 * SEMANTIC_ITEM_TARGETS
+    + 3
+    + SEMANTIC_ANVIL_OPTIONS * SEMANTIC_ANVIL_OPTION_FEATURES
+)
+SEMANTIC_NUMERIC_DIM = SEMANTIC_ITEM_OFFSET + SEMANTIC_ITEM_STATE_DIM
 SEMANTIC_ID_EMBED_DIM = 16
+
+
+def semantic_item_state_tensors(numeric):
+    """Expose named item/anvil tensors from the identity-bound semantic row."""
+    if not isinstance(numeric, __import__("torch").Tensor):
+        raise TypeError("semantic numeric input must be a torch tensor")
+    if numeric.ndim != 2 or numeric.shape[-1] != SEMANTIC_NUMERIC_DIM:
+        raise ValueError("semantic numeric input has an incompatible v4 shape")
+    import torch
+    batch = numeric.shape[0]
+    offset = SEMANTIC_ITEM_OFFSET
+    components = numeric[:, offset:offset + SEMANTIC_ITEM_COMPONENT_FEATURES]
+    offset += SEMANTIC_ITEM_COMPONENT_FEATURES
+    inventory = numeric[:, offset:offset + 9 * SEMANTIC_ITEM_SEMANTIC_FEATURES].reshape(
+        batch, 9, SEMANTIC_ITEM_SEMANTIC_FEATURES
+    )
+    offset += 9 * SEMANTIC_ITEM_SEMANTIC_FEATURES
+    recipes = numeric[:, offset:offset + 100 * SEMANTIC_ITEM_SEMANTIC_FEATURES].reshape(
+        batch, 100, SEMANTIC_ITEM_SEMANTIC_FEATURES
+    )
+    offset += 100 * SEMANTIC_ITEM_SEMANTIC_FEATURES
+    inventory_fit = numeric[:, offset:offset + 9 * SEMANTIC_ITEM_TARGETS].reshape(
+        batch, 9, SEMANTIC_ITEM_TARGETS
+    )
+    offset += 9 * SEMANTIC_ITEM_TARGETS
+    recipe_fit = numeric[:, offset:offset + 100 * SEMANTIC_ITEM_TARGETS].reshape(
+        batch, 100, SEMANTIC_ITEM_TARGETS
+    )
+    offset += 100 * SEMANTIC_ITEM_TARGETS
+    anvil_state = numeric[:, offset:offset + 3]
+    offset += 3
+    anvil_options = numeric[:, offset:].reshape(
+        batch, SEMANTIC_ANVIL_OPTIONS, SEMANTIC_ANVIL_OPTION_FEATURES
+    )
+    return {
+        "components": components,
+        "inventory": inventory,
+        "recipes": recipes,
+        "inventory_target_fit": inventory_fit,
+        "recipe_target_fit": recipe_fit,
+        "anvil_pending": anvil_state[:, 0] > 0.5,
+        "anvil_component": anvil_state[:, 1] > 0.5,
+        "anvil_completed_item": anvil_state[:, 2] > 0.5,
+        "anvil_options": anvil_options,
+    }
 
 
 def _finite_number(value, field: str) -> float:
