@@ -4121,10 +4121,8 @@ struct TFTEngine::Impl {
                     snapshot.opponent_id = static_cast<std::int32_t>(b);
                     snapshot.round = round + 1;
                     snapshot.sequence = decision_sequence;
-                    snapshot.player_hp = static_cast<std::int32_t>(
-                        player_envs[a].info.hp);
-                    snapshot.opponent_hp = static_cast<std::int32_t>(
-                        player_envs[b].info.hp);
+                    snapshot.player_hp = static_cast<double>(player_envs[a].info.hp);
+                    snapshot.opponent_hp = static_cast<double>(player_envs[b].info.hp);
                     const auto append_roster_ids = [&](std::size_t player_id,
                                                        const CombatTeam& team,
                                                        std::vector<std::string>& ids,
