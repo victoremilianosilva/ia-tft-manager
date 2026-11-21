@@ -342,6 +342,26 @@ int main(int argc, char** argv) {
             tft::combat_evidence::derive_survival_risk(100.0, combat_distribution);
         require(calibrated_combat_risk.available,
                 "Não foi possível derivar risco do cohort aprovado.");
+        tft::combat_evidence::SurvivalRiskEvidence forged_combat_risk;
+        forged_combat_risk.available = true;
+        forged_combat_risk.match_id = calibrated_combat_risk.match_id;
+        forged_combat_risk.player_id = calibrated_combat_risk.player_id;
+        forged_combat_risk.round = calibrated_combat_risk.round;
+        forged_combat_risk.sequence = calibrated_combat_risk.sequence;
+        forged_combat_risk.expected_damage = calibrated_combat_risk.expected_damage;
+        forged_combat_risk.elimination_risk = calibrated_combat_risk.elimination_risk;
+        forged_combat_risk.horizon_rounds = calibrated_combat_risk.horizon_rounds;
+        forged_combat_risk.uncertainty = calibrated_combat_risk.uncertainty;
+        forged_combat_risk.calibration_protocol_id =
+            calibrated_combat_risk.calibration_protocol_id;
+        forged_combat_risk.calibration_report_sha256 =
+            calibrated_combat_risk.calibration_report_sha256;
+        forged_combat_risk.dataset_version = calibrated_combat_risk.dataset_version;
+        forged_combat_risk.replay_artifact_ids =
+            calibrated_combat_risk.replay_artifact_ids;
+        forged_combat_risk.source = calibrated_combat_risk.source;
+        require(!engine.publish_combat_prediction_evidence(forged_combat_risk),
+                "Risco manualmente montado sem token de aprovação deve ser rejeitado.");
         require(engine.publish_combat_prediction_evidence(calibrated_combat_risk),
                 "A Engine deveria aceitar risco calibrado para a próxima sequência.");
         auto experimental_combat_risk = calibrated_combat_risk;
