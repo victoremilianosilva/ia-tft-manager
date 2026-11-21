@@ -34,7 +34,7 @@ The current factual fields are:
 | Reroll | Per-slot offer revision and before/after offer identities | A changed shop is not automatically a successful or valuable reroll |
 | Sale | Removed physical unit UUIDs and copy-equivalent delta | Proceeds are not inferred from a mixed action-plus-income gold delta |
 | Economy | Before/after gold and interest-if-resolved-now, realized EconomyEngine resolution events, plus overlap marker | Native EconomyEngine::resolve_round events remain a separate income source |
-| Positioning | Same-unit board slot transitions and before/after native positioning/board-quality diagnostics | Scores are diagnostics only; no score delta becomes reward |
+| Positioning | Same-unit physical slot transitions plus total, positional, structural, exposed-carry, frontline, and unplayed-bench diagnostics | Scores are diagnostics only; no score delta becomes reward |
 
 An event's causal_attribution is always not_established, reward is always null, and reward_eligible is always false under this telemetry contract. The producer never changes the scalar reward consumed by PPO.
 
