@@ -971,13 +971,13 @@ def test_elimination_retires_item_ownership_in_native_snapshot():
         engine.close()
 
 
-def test_native_snapshot_v3_exposes_unit_traits_and_board_geometry():
+def test_native_snapshot_v5_exposes_unit_traits_and_board_geometry():
     engine = TFTLobby(seed=20261119)
     try:
         reset = engine.reset()
         snapshot = reset["native_state_snapshot"]
         assert snapshot["contract_id"] == "tft.native-state-snapshot"
-        assert snapshot["contract_version"] == 3
+        assert snapshot["contract_version"] == 5
         assert snapshot["board_geometry_id"] == "tft.board-grid.rectangular-4x7"
         assert snapshot["board_geometry_version"] == 1
         assert snapshot["board_rows"] == 4
