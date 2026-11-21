@@ -100,6 +100,9 @@ def test_anvil_candidate_scorer_distinguishes_component_and_completed_item_optio
         hidden_size=32, semantic_vocab_size=64,
     )
     with torch.no_grad():
+        policy.item_anvil_candidate_head[0].weight[:, -2].fill_(1.0)
+        policy.item_anvil_candidate_head[0].weight[:, -1].fill_(2.0)
+        policy.item_anvil_candidate_head[0].bias.zero_()
         policy.item_anvil_candidate_head[-1].weight.fill_(1.0)
         policy.item_anvil_candidate_head[-1].bias.zero_()
     conditioned = torch.zeros(1, 32 + len(ACTION_DIMS))
