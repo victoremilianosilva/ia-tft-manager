@@ -4178,6 +4178,8 @@ struct TFTEngine::Impl {
                         {"opponent_unit_uuids", snapshot.opponent_unit_ids},
                         {"player_roster_complete", snapshot.player_roster_complete},
                         {"opponent_roster_complete", snapshot.opponent_roster_complete},
+                        {"mechanics_coverage_status", "not_measured_catalog_support_unavailable"},
+                        {"mechanics_coverage_complete", false},
                         {"validated", snapshot_valid},
                         {"validation_reason", validation_reason}
                     };
