@@ -355,6 +355,7 @@ void validated_opportunity_cost_uses_the_same_board_value_basis() {
     const double expected_interest_cost =
         -(static_cast<double>(score.interest_delta) * 0.12);
     assert(score.opportunity_cost_available);
+    assert(score.opportunity_cost_value_basis == "native_board_contribution.v1");
     assert(score.opportunity_cost_forgone_candidate_id == "competing-buy");
     assert(std::abs(score.economy_cost -
         (score.liquidity_cost + expected_interest_cost + expected_opportunity_cost)) < 1e-9);
