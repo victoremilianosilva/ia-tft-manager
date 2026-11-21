@@ -285,7 +285,10 @@ class TFTPolicy(nn.Module):
                 f"unexpected={unexpected[:8]}"
             )
 
-        migrated = False
+        # Dropping historical global_mlp weights is a model migration even
+        # though the strict semantic path never consumes them. This must reset
+        # optimizer/scheduler state because their parameter groups changed.
+        migrated = bool(ignored_retired_flat_keys)
         loaded = {}
         for key, target_value in target.items():
             if key not in state_dict:
