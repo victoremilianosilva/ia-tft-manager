@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Provide PPO with a structured, versioned projection of native game-state facts without treating the legacy flat observation offsets as the definition of those facts. The projection is an independent side input to the shared Actor/Critic latent. Semantic v6 is mandatory for native training, rollout, checkpoint evaluation and paired evaluation. The flat observation remains transported for compatibility and external consumers, but production PPO must not use its positional board, global, item, anvil or candidate blocks as semantic sources.
+Provide PPO with a structured, versioned projection of native game-state facts without treating the legacy flat observation offsets as the definition of those facts. The projection is an independent side input to the shared Actor/Critic latent. Semantic v6 is mandatory for native training, rollout, checkpoint evaluation and paired evaluation. The native observation API now transports a single neutral scalar per player solely as a batch/device carrier. All positional board, global, item, anvil and candidate payload blocks have been removed from the PPO vector; production policy inference consumes only the identity-bound semantic v6 side input.
 
 ## Source contract
 
@@ -73,18 +73,18 @@ The five PPO consumer groups now have native semantic v6 paths:
 
 The production Trainer, economic fine-tuning path, paired evaluator, native audit and Viewer construct policies with require_semantic_state=True. Trainer and economic fine-tuning also require RolloutBuffer(require_semantic_state=True). Missing semantic state therefore fails closed at decision evaluation and transition storage. Rollout minibatches reconstruct named item/anvil/trait tensors from the same persisted numeric row. Every native checkpoint reader validates the complete v6 weight set, including the stable trait embedding.
 
-The remaining flat observation blocks are not the production PPO source when semantic v6 is supplied, but they still exist in engine transport and isolated legacy/test fallbacks. They must not be deleted until end-to-end producer-disabled replay, every native policy caller and external engine consumers have been audited. Physical removal must also remove obsolete offsets and checkpoint migration assumptions together, not merely shorten the C++ vector.
+The positional board/global/item/anvil/candidate blocks have been physically removed from native engine transport. The C++ API now returns an all-zero [players, 1] carrier; the strict semantic policy uses an identity encoder instead of the retired positional global MLP. Historical checkpoint lineage remains integrity-checked and is accepted only when the sole policy-signature difference is the retired `global_mlp.*` weights, which the strict semantic runtime never consumes. Isolated non-production fixtures may still exercise the old flat fallback, but the native engine no longer publishes that layout.
 
 Therefore:
-- The five consumer paths are implemented, but full integrated proof remains open.
-- Producer-disabled replay remains open; disabling the combined legacy/native strategy update wholesale is unsafe because it would also disable native owner production.
-- Opportunity-cost availability is represented explicitly, but no validated per-action opportunity-cost producer is published yet.
-- Physical removal of flat positional board/global/item/anvil/candidate blocks remains a release gate.
+- The five consumer paths are implemented and the positional vector blocks are retired.
+- Native candidate generation and legacy `StrategyInfo`/economic compatibility projection are separate refresh methods. `TFT_DISABLE_LEGACY_STRATEGY_PROJECTION=1` disables only the latter while native owners continue to update.
+- A multi-round regression replays semantic PPO sampling, `evaluate_actions`, value/bootstrap and native snapshot progression with that legacy projection disabled.
+- Opportunity-cost availability is represented explicitly, but no validated per-action opportunity-cost producer is published yet; this remains the last semantic evidence gap to close.
 - CI must be green on the final PR head, not merely on an earlier commit.
 
 ## Legacy producer replay gate
 
-Trainer collection no longer calls the legacy `get_strategies()` compatibility API. That removes a Python-side diagnostic dependency, but it does not satisfy the producer-disabled replay gate: native `update_strategy()` still co-locates the economic Strategy ID selector, legacy composition-direction/focus maintenance, native composition generation, and the isolated Shadow evaluation pipeline. Disabling that entire function would also disable native generation and would invalidate the evidence needed by the current strategic path. The next safe step is to separate those responsibilities and publish their own owner snapshots before a replay can disable only the legacy producers without disabling the native owners.
+Trainer collection no longer calls the legacy `get_strategies()` compatibility API. Native composition candidate generation now has its own `refresh_native_composition_candidates()` boundary, and the old economic/StrategyInfo compatibility projection is isolated in `update_legacy_strategy_compatibility_projection()`. Setting `TFT_DISABLE_LEGACY_STRATEGY_PROJECTION=1` skips that compatibility producer without skipping native candidate generation, ActiveCompositionManager, StrategicPlanner, item/economic owners or the isolated Shadow diagnostics. The multi-round PPO regression exercises the native path with this switch enabled.
 
 ## PR3 — retirada das features estratégicas legadas do caminho PPO
 
@@ -94,11 +94,11 @@ Trainer collection no longer calls the legacy `get_strategies()` compatibility A
 
 **Responsabilidade nova:** o caminho PPO plano preserva somente os slots físicos por compatibilidade estrutural; slots estratégicos legados são tombstones zero. O side input semântico nativo continua responsável pelos fatos verificáveis. O perfil de item compartilhado usa `semantic_item_unit_profiles`, construído a partir do classificador factual e da composição ativa nativa, sem carry/core traits de StrategyInfo.
 
-**Contrato e invariantes:** zero nesses slots significa feature descontinuada, não postura neutra; StrategyInfo não é lido por `build_observations()`; action masks e legalidade continuam independentes; recomendações, scores e confiança Shadow não são inputs nem targets PPO; ausência de composição não fabrica fit.
+**Contrato e invariantes:** a observação nativa contém somente um escalar neutro de transporte; nenhum slot estratégico/posicional é publicado. StrategyInfo não é lido por `build_observations()`; action masks e legalidade continuam independentes; recomendações, scores e confiança Shadow não são inputs nem targets PPO; ausência de composição não fabrica fit.
 
-**Impactos:** TftEngine, Policy encoder, candidatos de compra/venda, item-target profiles, testes C++ e testes de entrada semântica. A dimensão física do vetor é preservada nesta etapa para evitar desalinhamento acidental com os leitores existentes; a semântica passa a exigir nova linhagem de treino.
+**Impactos:** TftEngine, Policy encoder, candidatos de compra/venda, item-target profiles, testes C++ e testes de entrada semântica. A dimensão nativa foi reduzida para o carrier escalar; o encoder global posicional foi removido do modelo estrito e seus pesos históricos são ignorados somente após validação da integridade da linhagem.
 
-**Validação:** regressões verificam que o one-hot e todos os blocos estratégicos legados são zero, enquanto custo/estrela/papel/cópias e estado factual de itens permanecem disponíveis; testes Python verificam invariância às colunas antigas de estratégia. Esta entrega não declara completa a projeção dos owners estratégicos nativos no schema PPO.
+**Validação:** regressões verificam carrier [8,1] neutro, invariância da policy estrita ao valor do carrier, consumo dos tensores semânticos e compatibilidade de checkpoint limitada aos pesos `global_mlp.*` aposentados.
 
 ## PR5 — alinhamento semântico de sampling, value, replay e inferência
 
@@ -146,9 +146,8 @@ Trainer collection no longer calls the legacy `get_strategies()` compatibility A
 - Recomendações estratégicas não são labels de imitação nem substituem a política aprendida.
 
 **Validação ainda necessária antes de concluir #286/#293:**
-- Executar CI C++/Python/native no head final após as últimas correções de validação de checkpoint e rollout.
+- Executar CI C++/Python/native no head final após a retirada do carrier posicional e a refatoração de owners.
 - Confirmar end-to-end sampling, evaluate_actions, value/bootstrap, minibatches, replay, paired evaluation e inferência com os produtores legados desligados.
-- Auditar todos os chamadores nativos da Policy e garantir semantic_state v6 obrigatório.
-- Remover os blocos posicionais aposentados somente depois da prova end-to-end e da auditoria de consumidores externos.
+- Concluir auditoria de todos os chamadores nativos da Policy e garantir semantic_state v6 obrigatório.
 
 **Status:** os cinco grupos possuem caminhos semânticos nativos implementados. A validação integrada, o replay com produtores legados seletivamente desativados, a disponibilidade de evidência de custo de oportunidade e a remoção física dos blocos posicionais continuam gates obrigatórios. Manter Draft e não fechar #286/#293 até todos os gates passarem.
