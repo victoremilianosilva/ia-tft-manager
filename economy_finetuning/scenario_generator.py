@@ -151,15 +151,16 @@ def decode_observation(observation, player_id: int | None = None) -> dict[str, A
         stage = 1
     else:
         stage = min(7, 2 + int((round_number - 5) // 7))
-    strategy = max(range(7), key=lambda idx: float(obs[10 + idx]))
+    # The compact factual prefix no longer contains StrategyInfo. Never infer
+    # a legacy strategy from board/global offsets that now belong to other data.
     return {
         "hp": hp,
         "gold": gold,
         "level": level,
         "stage": stage,
         "round_number": round_number,
-        "strategy": strategy,
-        "strategy_name": STRATEGY_NAMES.get(strategy, "UNKNOWN"),
+        "strategy": None,
+        "strategy_name": None,
         "win_streak": max(0.0, float(obs[4]) * 10.0),
         "loss_streak": max(0.0, float(obs[5]) * 10.0),
         "player_id": int(player_id) if player_id is not None else -1,
