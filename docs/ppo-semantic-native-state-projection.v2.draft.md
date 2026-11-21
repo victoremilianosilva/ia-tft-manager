@@ -6,7 +6,7 @@ Provide PPO with a structured, versioned projection of native game-state facts w
 
 ## Source contract
 
-- Contract: `tft.native-state-snapshot`, version 3.
+- Contract: `tft.native-state-snapshot`, version 4.
 - Producer: `TFTEngine::get_audit_snapshot`.
 - Namespace: `tft.engine.observation-snapshot`.
 - Correlation: Engine instance, episode, snapshot sequence, player decision sequence and player ID are validated before projection.
@@ -116,11 +116,11 @@ Trainer collection no longer calls the legacy `get_strategies()` compatibility A
 - Board/CNN recebe os 28 slots de board da projeção semântica, reconstrói a grade 4x7 em ordem row-major e consome ocupação, custo, estrela, quantidade de itens equipados e quantidade de traits.
 - Cabeças de compra/venda/posicionamento recebem candidatos de bench/shop dos mesmos registros de entidade, incluindo cópias equivalentes nativas. Não leem mais a cauda posicional de candidatos no caminho semântico.
 - Encoder global do caminho nativo consome fatos globais, atributos de entidade e embeddings de identidade da projeção semântica, sem ler os offsets globais planos.
-- Snapshot nativo v4 publica capacidade do board/bench, ações realizadas no round e idade de movimento por slot; a projeção semântica v3 valida e inclui esses fatos.
-- A migração explícita de checkpoint v2→v3 permite apenas warm-start controlado, com nova linhagem e reset de pesos/otimizador semânticos conforme o contrato de checkpoint.
+- Snapshot nativo v4 publica capacidade do board/bench, ações realizadas no round e idade de movimento por slot; a projeção semântica v4 valida e inclui esses fatos.
+- A migração explícita de checkpoint v2→v4 permite apenas warm-start controlado, com nova linhagem e reset de pesos/otimizador semânticos conforme o contrato de checkpoint.
 
 **Contrato e invariantes:**
-- A projeção semântica v3 contém 52 fatos globais e 42 entidades estáveis (board[28], bench[9], shop[5]); cada linha continua ligada à identidade completa da decisão.
+- A projeção semântica v4 contém 52 fatos globais e 42 entidades estáveis (board[28], bench[9], shop[5]), cada uma com 12 fatos de entidade e 17 atributos de perfil-alvo; cada linha continua ligada à identidade completa da decisão.
 - O board CNN usa ordem row-major 4x7 e os candidatos usam os mesmos registros de entidade do encoder.
 - Capacidade e memória temporal são publicadas pela Engine; não são inferidas de recomendações ou de observações antigas.
 - PPO, GAE, RolloutBuffer, replay e action masks permanecem preservados; masks continuam sendo a autoridade de legalidade.
@@ -128,9 +128,9 @@ Trainer collection no longer calls the legacy `get_strategies()` compatibility A
 
 **Ainda pendente antes de fechar #286/#293:**
 - Vocabulário/identidade explícita de traits (a projeção atual ainda carrega contagem por entidade, não o conjunto semântico de traits).
-- Inventário, componentes, receitas, compatibilidade por alvo e itens equipados como blocos semânticos nativos.
+- Inventário, componentes, receitas, compatibilidade por alvo e opções de anvil como blocos semânticos nativos.
 - Anvil: identidade/sequence/options e seus atributos ligados às masks.
-- Cabeças de alvos de item e crafting sem leitura de offsets do tensor plano.
+- Cabeças de inventário/crafting sem leitura de offsets do tensor plano. O perfil dos 37 alvos board/bench já vem das entidades semânticas.
 - Testes integrados de replay/inferência com todos esses consumidores posicionais desligados e CI verde.
 
 **Validação:** testes de projeção, identidade, capacidade/memória, mapeamento de checkpoint e prova de que CNN/candidatos usam a mesma projeção semântica. A CI do head atual ainda precisa terminar; não declarar este PR pronto nem fechar as issues antes de concluir os itens pendentes.
