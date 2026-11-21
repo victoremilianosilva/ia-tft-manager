@@ -2335,12 +2335,49 @@ struct TFTEngine::Impl {
         };
     }
 
+    using LegacyEconomicStrategyDecision = decltype(
+        strategy::select_economic_strategy(
+            std::declval<strategy::EconomicStrategyContext>()));
+
     // Legacy StrategyInfo/economic fields are a compatibility projection only.
     // Keeping this producer separate prevents it from owning or feeding the native
-    // strategic candidate/active-composition refresh.
-    auto update_legacy_strategy_compatibility_projection(
-        std::size_t i, StrategyInfo& info, double power
+    // strategic candidate/active-composition refresh. Tests/replay can disable it
+    // without disabling native candidate generation or strategic owners.
+    std::pair<std::optional<LegacyEconomicStrategyDecision>, std::int32_t>
+    update_legacy_strategy_compatibility_projection(
+        std::size_t i, StrategyInfo& info, double power, bool enabled
     ) {
+        if (!enabled) {
+            info.strategy = -1;
+            info.strategy_name.clear();
+            info.confidence = 0.0f;
+            info.reason = "legacy_strategy_projection_disabled";
+            info.changed = false;
+            info.strategy_age = 0;
+            info.board_power = power;
+            info.bench_strength = 0.0;
+            info.composition_direction.clear();
+            info.composition_locked = false;
+            info.composition_focus.clear();
+            info.composition_focus_id = -1;
+            info.composition_focus_weights.clear();
+            info.core_units.clear();
+            info.core_unit_ids.clear();
+            info.core_traits.clear();
+            info.planned_units.clear();
+            info.planned_unit_ids.clear();
+            info.planned_traits.clear();
+            info.planned_main_carry_id = -1;
+            info.planned_composition_score = 0.0;
+            info.planned_acquisition_notes.clear();
+            info.active_traits.clear();
+            info.unit_counts.clear();
+            info.unit_counts_by_id.clear();
+            info.strategy_scores.clear();
+            info.best_scored_strategy = -1;
+            info.active_traits_count = 0;
+            return {std::nullopt, -1};
+        }
         const auto& player = player_envs[i].info;
         const auto& economy = player_envs[i].economy;
         double bench_strength = 0.0;
@@ -2523,7 +2560,7 @@ struct TFTEngine::Impl {
             }
         }
 
-        return std::make_pair(strategy_decision, chosen);
+        return {std::move(strategy_decision), chosen};
     }
 
     void update_strategy(std::size_t i) {
@@ -2553,10 +2590,15 @@ struct TFTEngine::Impl {
 
         // This legacy compatibility producer is intentionally downstream
         // of the native owner refresh and cannot feed native composition state.
+        const char* disable_legacy_projection_env =
+            std::getenv("TFT_DISABLE_LEGACY_STRATEGY_PROJECTION");
+        const bool disable_legacy_projection = disable_legacy_projection_env &&
+            (std::string(disable_legacy_projection_env) == "1" ||
+             std::string(disable_legacy_projection_env) == "true" ||
+             std::string(disable_legacy_projection_env) == "yes");
         const auto legacy_projection =
-            update_legacy_strategy_compatibility_projection(i, info, power);
-        const auto& strategy_decision = legacy_projection.first;
-        const auto chosen = legacy_projection.second;
+            update_legacy_strategy_compatibility_projection(
+                i, info, power, !disable_legacy_projection);
 
         // Raw shop snapshot shared by the independent shadow composition pipeline.
         const auto& strategic_shop = player_envs[i].shop;
@@ -3680,12 +3722,17 @@ struct TFTEngine::Impl {
         // O diagnóstico usa exatamente os scores que escolheram o modo ativo.
         // Não existe mais um segundo seletor divergente do modo executado.
         info.strategy_scores.clear();
-        for (std::int32_t strategy_id = 0; strategy_id < 7; ++strategy_id) {
-            info.strategy_scores.emplace_back(
-                strategy_id,
-                strategy_decision.scores[static_cast<std::size_t>(strategy_id)]);
+        if (legacy_projection.first) {
+            const auto& strategy_decision = *legacy_projection.first;
+            for (std::int32_t strategy_id = 0; strategy_id < 7; ++strategy_id) {
+                info.strategy_scores.emplace_back(
+                    strategy_id,
+                    strategy_decision.scores[static_cast<std::size_t>(strategy_id)]);
+            }
+            info.best_scored_strategy = legacy_projection.second;
+        } else {
+            info.best_scored_strategy = -1;
         }
-        info.best_scored_strategy = chosen;
         info.active_traits_count = static_cast<std::int32_t>(info.active_traits.size());
 
         strategy_snapshot = std::move(info);
