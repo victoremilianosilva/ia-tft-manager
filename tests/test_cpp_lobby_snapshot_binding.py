@@ -42,7 +42,7 @@ class FakeNativeLobby:
     def _native_state_snapshot(self):
         return {
             "contract_id": "tft.native-state-snapshot",
-            "contract_version": 4,
+            "contract_version": 5,
             "board_geometry_id": "tft.board-grid.rectangular-4x7",
             "board_geometry_version": 1,
             "board_rows": 4,
