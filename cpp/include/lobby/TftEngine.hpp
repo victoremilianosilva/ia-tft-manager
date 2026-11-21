@@ -13,6 +13,10 @@
 #include <utility>
 #include <vector>
 
+namespace tft::combat_evidence {
+struct SurvivalRiskEvidence;
+}
+
 namespace tft {
 
 inline constexpr std::size_t kPlayersPerLobby = 8;
@@ -829,6 +833,13 @@ public:
 
     // Configures the optional session sidecar for unified strategic Shadow events.
     void set_strategic_direction_pivot_audit_path(const std::string& path);
+
+    // Injects one approved, identity-bound combat risk for the next Shadow
+    // decision snapshot. Experimental projections are rejected by the contract.
+    // This never changes PPO observations, rewards, masks or action execution.
+    bool publish_combat_prediction_evidence(
+        const combat_evidence::SurvivalRiskEvidence& evidence
+    );
 
     // Hooks de fixture determinística para testes de paridade Python/C++.
     // Não alteram o pool compartilhado; usar apenas em cenários de teste.
