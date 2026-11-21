@@ -281,6 +281,7 @@ class Trainer:
             self.obs_dim,
             self.ACTION_DIMS,
             semantic_vocab_size=self.semantic_vocab_size,
+            require_semantic_state=True,
         ).to(self.device)
 
         # ============================================================
