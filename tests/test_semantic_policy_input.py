@@ -1,3 +1,4 @@
+import pytest
 import torch
 
 from action_contract import MASK_SHAPES
