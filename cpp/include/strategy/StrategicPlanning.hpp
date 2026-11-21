@@ -220,6 +220,10 @@ struct StrategicSharedContext {
     std::uint32_t combat_evidence_horizon_rounds{0};
     std::uint64_t combat_evidence_sequence{0};
     double combat_evidence_uncertainty{1.0};
+    std::string combat_calibration_protocol_id;
+    std::string combat_calibration_report_sha256;
+    std::string combat_dataset_version;
+    std::vector<std::string> combat_replay_artifact_ids;
 };
 
 struct StrategicCommitment {
