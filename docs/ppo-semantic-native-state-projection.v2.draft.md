@@ -106,34 +106,34 @@ Trainer collection no longer calls the legacy `get_strategies()` compatibility A
 **Limites:** esta entrega não declara concluído o replay com produtores legados desligados, a atribuição de custo de oportunidade nem a remoção física dos tombstones do tensor plano. Esses pontos permanecem abertos até que o consumidor posicional remanescente seja migrado e a prova integrada seja executada.
 
 
-## PR6 — migração completa dos consumidores para estado semântico nativo
+## PR6 — migração dos cinco grupos de consumidores para estado semântico nativo
 
 **Problema anterior:** CNN do board, encoder global, traits, candidatos, perfis de alvo, inventário, receitas, compatibilidade e anvil ainda dependiam de fatias posicionais do vetor PPO. Isso acoplava a política a offsets e deixava o snapshot nativo sem autoridade única para os dados consumidos.
 
-**Justificativa técnica:** cada consumidor precisa receber campos nomeados derivados do mesmo snapshot nativo da decisão, com identidade, sequência, proveniência e hash preservados em sampling, avaliação, value/bootstrap, rollout, replay e inferência. A migração não pode fabricar fatos nem deixar o consumidor reconstruir dados a partir de recomendações.
+**Justificativa técnica:** cada consumidor recebe campos nomeados derivados do mesmo snapshot nativo da decisão, com identidade, sequência, proveniência e hash preservados em sampling, avaliação, value/bootstrap, rollout, replay e inferência. A migração não fabrica fatos nem reconstrói dados a partir de recomendações.
 
 **Nova responsabilidade implementada:**
-- **Board/CNN:** 28 entidades semânticas em ordem row-major 4x7; a CNN recebe fatos de ocupação, custo, estrela, itens equipados e traits.
+- **Board/CNN:** 28 entidades semânticas em ordem row-major 4x7; a CNN recebe ocupação, custo, estrela, itens equipados e contagem de traits.
 - **Encoder global:** fatos globais, identidade de campeões e identidades de traits com buckets SHA-256 estáveis e embeddings próprios.
 - **Capacidade/memória:** snapshot nativo v4 publica capacidade de board/bench, ações no round e idade de movimento por slot.
 - **Candidatos e alvos:** compra/venda/posicionamento consomem entidades de bench/shop; alvos de item consomem perfis nativos board/bench com role classifier, posição, AD/AS/HP/armadura/resistência mágica e contagem de itens.
 - **Itens:** snapshot nativo publica componentes, inventário, features canônicas de itens/receitas e matrizes de compatibilidade por alvo, usando ItemEngine, catálogo e perfis nativos.
 - **Anvil:** pendência, sequência, tipo e nove opções estruturadas são projetados a partir da Engine; o scorer recebe features de opção e flags explícitas de componente/item completo.
-- **Rollout/replay:** os blocos semânticos nomeados são reconstruídos da mesma linha numérica versionada; RolloutBuffer.add rejeita divergência entre blocos nomeados e a projeção persistida.
+- **Rollout/replay:** blocos semânticos nomeados são reconstruídos da mesma linha numérica versionada; RolloutBuffer.add rejeita divergência entre blocos nomeados e a projeção persistida.
 - **Inferência/avaliação:** trainer, avaliação de checkpoints e paired evaluator fornecem a mesma projeção semântica à Policy.
-- **Checkpoint:** contrato semântico v6 e warm-start v2→v6 explícito. A migração preserva os campos antigos compatíveis, inicializa campos novos e reinicia pesos/otimizador semânticos e colunas de consumidores reinterpretadas.
+- **Checkpoint:** contrato semântico v6 e warm-start v2→v6 explícito. A migração preserva campos antigos compatíveis, inicializa campos novos e reinicia pesos/otimizador semânticos e colunas de consumidores reinterpretadas.
 
 **Contrato e invariantes:**
-- Projeção semântica v6: 52 fatos globais, 42 entidades com 39 features cada, identidades de traits e blocos item/anvil nomeados.
-- Hash de cada decisão cobre identidade completa, proveniência estratégica, traits, inventário, componentes, itens equipados, catálogo de componentes, sequência/tipo/opções de anvil e valores projetados.
+- Projeção semântica v6: 52 fatos globais, 42 entidades com 39 features cada (12 fatos de entidade, 17 atributos de alvo e 10 IDs de trait normalizados), além de blocos item/anvil nomeados.
+- Hash de cada decisão cobre identidade completa, proveniência estratégica, traits, inventário, componentes, itens equipados, fingerprint do catálogo de itens, sequência/tipo/opções de anvil e valores projetados.
 - Campos ausentes, inválidos, stale ou desalinhados falham fechados.
 - PPO permanece a política aprendida. GAE, RolloutBuffer, replay e action masks permanecem preservados; Engine masks continuam sendo a autoridade de legalidade.
 - Recomendações estratégicas não são labels de imitação nem substituem a política aprendida.
 
 **Validação ainda necessária antes de concluir #286/#293:**
-- Executar e corrigir toda a CI C++/Python/native após a ampliação do contrato.
-- Confirmar testes end-to-end de sampling, evaluate_actions, value/bootstrap, minibatches, replay, paired evaluation e inferência com os produtores legados desligados.
+- Executar e corrigir toda a CI C++/Python/native após a ampliação do snapshot e do contrato v6.
+- Confirmar end-to-end sampling, evaluate_actions, value/bootstrap, minibatches, replay, paired evaluation e inferência com os produtores legados desligados.
 - Auditar que nenhum caminho nativo de produção chama a Policy sem semantic_state v6.
-- Remover os blocos posicionais aposentados do vetor PPO depois da prova end-to-end, preservando apenas o transporte necessário para interfaces externas.
+- Remover os blocos posicionais aposentados do vetor PPO depois da prova end-to-end, preservando apenas o transporte factual necessário para interfaces externas.
 
-**Status:** migração funcional implementada no código do PR, mas ainda não validada como entrega concluída. Manter Draft e não fechar #286/#293 até CI verde e prova integrada.
+**Status:** os cinco grupos de consumidores foram migrados no código do PR; a validação integrada e a remoção física dos blocos posicionais ainda são gates obrigatórios. Manter Draft e não fechar #286/#293 até CI verde e prova integrada.
