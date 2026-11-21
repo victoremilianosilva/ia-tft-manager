@@ -822,6 +822,16 @@ inline SurvivalRiskEvidence derive_survival_risk(
     out.approval.uncertainty_ = out.uncertainty;
     out.approval.source_ = out.source;
     out.approval.protocol_id_ = out.calibration_protocol_id;
+    out.approval.engine_version_ = engine_version;
+    out.approval.composition_signature_ = composition_signature;
+    out.approval.mechanics_signature_ = mechanics_signature;
+    out.approval.train_manifest_sha256_ = calibration_train_manifest_sha256;
+    out.approval.validation_manifest_sha256_ = calibration_validation_manifest_sha256;
+    out.approval.test_manifest_sha256_ = calibration_test_manifest_sha256;
+    out.approval.sample_count_ = trajectories.size();
+    out.approval.calibration_mae_ = calibration_mae;
+    out.approval.calibration_p90_coverage_ = calibration_p90_coverage;
+    out.approval.calibration_brier_score_ = calibration_brier_score;
     out.approval.report_sha256_ = out.calibration_report_sha256;
     out.approval.dataset_version_ = out.dataset_version;
     out.approval.replay_artifact_ids_ = out.replay_artifact_ids;
@@ -837,6 +847,9 @@ struct CombatHorizonTrajectory {
     bool calibrated{false};
     std::string calibration_protocol_id;
     std::string calibration_report_sha256;
+    std::string engine_version;
+    std::string composition_signature;
+    std::string mechanics_signature;
     std::string calibration_train_manifest_sha256;
     std::string calibration_validation_manifest_sha256;
     std::string calibration_test_manifest_sha256;
@@ -992,10 +1005,43 @@ inline SurvivalRiskEvidence derive_multi_round_survival_risk(
     for (const auto& trajectory : trajectories) {
         if (!trajectory.calibrated ||
             trajectory.source != "approved_replay_trajectory.v1" ||
+            !trajectory.approval.valid_ ||
+            trajectory.approval.match_id_ != trajectory.match_id ||
+            trajectory.approval.player_id_ != trajectory.player_id ||
+            trajectory.approval.round_ != first_round ||
+            trajectory.approval.sequence_ != first_sequence ||
+            trajectory.approval.horizon_rounds_ != horizon_rounds ||
+            trajectory.approval.uncertainty_ != trajectory.uncertainty ||
+            trajectory.approval.scenario_weight_ != trajectory.scenario_weight ||
+            trajectory.approval.trajectory_steps_ != trajectory.steps ||
+            trajectory.approval.source_ != trajectory.source ||
+            trajectory.approval.protocol_id_ != trajectory.calibration_protocol_id ||
+            trajectory.approval.report_sha256_ != trajectory.calibration_report_sha256 ||
+            trajectory.approval.dataset_version_ != trajectory.dataset_version ||
+            trajectory.approval.engine_version_ != trajectory.engine_version ||
+            trajectory.approval.composition_signature_ != trajectory.composition_signature ||
+            trajectory.approval.mechanics_signature_ != trajectory.mechanics_signature ||
+            trajectory.approval.train_manifest_sha256_ !=
+                trajectory.calibration_train_manifest_sha256 ||
+            trajectory.approval.validation_manifest_sha256_ !=
+                trajectory.calibration_validation_manifest_sha256 ||
+            trajectory.approval.test_manifest_sha256_ !=
+                trajectory.calibration_test_manifest_sha256 ||
+            trajectory.approval.sample_count_ != trajectory.training_sample_count ||
+            trajectory.approval.calibration_mae_ != trajectory.calibration_mae ||
+            trajectory.approval.calibration_p90_coverage_ !=
+                trajectory.calibration_p90_coverage ||
+            trajectory.approval.calibration_brier_score_ !=
+                trajectory.calibration_brier_score ||
+            trajectory.approval.replay_artifact_ids_ !=
+                std::vector<std::string>{trajectory.replay_artifact_id} ||
             trajectory.match_id != match_id || trajectory.player_id != player_id ||
             trajectory.scenario_id.empty() || trajectory.replay_artifact_id.empty() ||
             trajectory.dataset_version.empty() || trajectory.calibration_protocol_id.empty() ||
             !is_sha256(trajectory.calibration_report_sha256) ||
+            trajectory.engine_version.empty() ||
+            trajectory.composition_signature.empty() ||
+            trajectory.mechanics_signature.empty() ||
             !is_sha256(trajectory.calibration_train_manifest_sha256) ||
             !is_sha256(trajectory.calibration_validation_manifest_sha256) ||
             !is_sha256(trajectory.calibration_test_manifest_sha256) ||
@@ -1025,6 +1071,9 @@ inline SurvivalRiskEvidence derive_multi_round_survival_risk(
             dataset_version = trajectory.dataset_version;
             calibration_protocol_id = trajectory.calibration_protocol_id;
             calibration_report_sha256 = trajectory.calibration_report_sha256;
+            engine_version = trajectory.engine_version;
+            composition_signature = trajectory.composition_signature;
+            mechanics_signature = trajectory.mechanics_signature;
             calibration_train_manifest_sha256 = trajectory.calibration_train_manifest_sha256;
             calibration_validation_manifest_sha256 = trajectory.calibration_validation_manifest_sha256;
             calibration_test_manifest_sha256 = trajectory.calibration_test_manifest_sha256;
@@ -1034,6 +1083,9 @@ inline SurvivalRiskEvidence derive_multi_round_survival_risk(
         } else if (dataset_version != trajectory.dataset_version ||
                    calibration_protocol_id != trajectory.calibration_protocol_id ||
                    calibration_report_sha256 != trajectory.calibration_report_sha256 ||
+                   engine_version != trajectory.engine_version ||
+                   composition_signature != trajectory.composition_signature ||
+                   mechanics_signature != trajectory.mechanics_signature ||
                    calibration_train_manifest_sha256 != trajectory.calibration_train_manifest_sha256 ||
                    calibration_validation_manifest_sha256 != trajectory.calibration_validation_manifest_sha256 ||
                    calibration_test_manifest_sha256 != trajectory.calibration_test_manifest_sha256 ||
