@@ -68,8 +68,20 @@ public:
     }
 };
 
+struct MatchupCandidateProbability {
+    std::int32_t opponent_id{-1};
+    double probability{0.0};
+};
+
+struct MatchupCandidateSet {
+    bool available{false};
+    std::vector<MatchupCandidateProbability> candidates;
+    double total_probability{0.0};
+    std::string reason{"matchup_candidates_unavailable"};
+};
+
 // A matchup can only be resolved from an actual opponent identity supplied by
-// the lobby. This resolver never invents an opponent or a probability.
+// the lobby, or from a complete externally supplied probability distribution.
 class MatchupResolver {
 public:
     bool resolve(const CombatSnapshot& snapshot, std::int32_t actual_opponent_id,
@@ -80,6 +92,34 @@ public:
             snapshot.opponent_id != actual_opponent_id) return false;
         resolved_opponent_id = actual_opponent_id;
         return true;
+    }
+
+    MatchupCandidateSet resolve_candidates(
+        std::int32_t player_id,
+        const std::vector<MatchupCandidateProbability>& candidates) const {
+        MatchupCandidateSet out;
+        if (player_id < 0 || candidates.empty()) return out;
+        std::unordered_set<std::int32_t> opponent_ids;
+        double total = 0.0;
+        for (const auto& candidate : candidates) {
+            if (candidate.opponent_id < 0 || candidate.opponent_id == player_id ||
+                !opponent_ids.insert(candidate.opponent_id).second ||
+                !std::isfinite(candidate.probability) ||
+                candidate.probability <= 0.0 || candidate.probability > 1.0) {
+                out.reason = "invalid_or_duplicate_matchup_candidate";
+                return out;
+            }
+            total += candidate.probability;
+        }
+        if (!std::isfinite(total) || std::abs(total - 1.0) > 1e-6) {
+            out.reason = "matchup_probabilities_do_not_sum_to_one";
+            return out;
+        }
+        out.available = true;
+        out.candidates = candidates;
+        out.total_probability = total;
+        out.reason = "explicit_matchup_probability_distribution";
+        return out;
     }
 };
 
