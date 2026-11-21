@@ -1738,6 +1738,14 @@ struct TFTEngine::Impl {
                     : nullptr;
                 append_candidate_features(unit, false);
             }
+
+            if (offset != dim) {
+                throw std::logic_error(
+                    "native observation layout mismatch: wrote " +
+                    std::to_string(offset) + " features, expected " +
+                    std::to_string(dim)
+                );
+            }
         }
         return observations;
     }
