@@ -403,6 +403,22 @@ if(BUILD_TESTING)
     enable_tft_test_assertions(test_pr8_opportunity_combat_evidence)
     add_test(NAME pr8_opportunity_combat_evidence COMMAND test_pr8_opportunity_combat_evidence)
 
+    add_executable(
+        test_combat_prediction_pipeline
+        tests/test_combat_prediction_pipeline.cpp
+        src/combat/CombatEngine.cpp
+    )
+    configure_tft_module(test_combat_prediction_pipeline)
+    target_include_directories(
+        test_combat_prediction_pipeline
+        PRIVATE "${TFT_COMBAT_INCLUDE_DIR}"
+    )
+    enable_tft_test_assertions(test_combat_prediction_pipeline)
+    add_test(
+        NAME combat_prediction_pipeline
+        COMMAND test_combat_prediction_pipeline
+    )
+
     add_executable(test_strategic_action_executor tests/test_strategic_action_executor.cpp)
     configure_tft_module(test_strategic_action_executor)
     target_link_libraries(test_strategic_action_executor PRIVATE nlohmann_json::nlohmann_json)
