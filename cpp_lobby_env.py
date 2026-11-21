@@ -140,7 +140,7 @@ class CppTFTLobbyWrapper:
             value.get("contract_id") != "tft.native-state-snapshot"
             or isinstance(version, bool)
             or not isinstance(version, int)
-            or version != 3
+            or version != 4
         ):
             raise RuntimeError("Versão/identidade do contrato de snapshot estruturado incompatível.")
         geometry_version = value.get("board_geometry_version")
@@ -380,6 +380,16 @@ class CppTFTLobbyWrapper:
                 raise RuntimeError("Bigorna pendente sem sequência ou opções válidas.")
             if not pending_flag and pending_sequence != 0:
                 raise RuntimeError("Sequência de bigorna presente sem escolha pendente.")
+            action_count = player.get("actions_taken_this_round")
+            move_ages = player.get("board_move_age")
+            if isinstance(action_count, bool) or not isinstance(action_count, int) or action_count < 0:
+                raise RuntimeError("Snapshot estruturado contém actions_taken_this_round inválido.")
+            if (
+                not isinstance(move_ages, (list, tuple))
+                or len(move_ages) != 28
+                or any(isinstance(age, bool) or not isinstance(age, int) or age < 0 for age in move_ages)
+            ):
+                raise RuntimeError("Snapshot estruturado contém board_move_age inválido.")
             for field in ("item_components", "item_inventory", "item_component_catalog", "pending_anvil_options"):
                 values = player.get(field)
                 if not isinstance(values, list) or any(not isinstance(item, str) for item in values):
