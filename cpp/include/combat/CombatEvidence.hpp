@@ -616,6 +616,13 @@ struct CombatHorizonTrajectory {
     bool calibrated{false};
     std::string calibration_protocol_id;
     std::string calibration_report_sha256;
+    std::string calibration_train_manifest_sha256;
+    std::string calibration_validation_manifest_sha256;
+    std::string calibration_test_manifest_sha256;
+    bool episode_splits_disjoint{false};
+    double calibration_mae{0.0};
+    double calibration_p90_coverage{0.0};
+    double calibration_brier_score{1.0};
     std::string replay_artifact_id;
     std::string dataset_version;
     std::string source{"unavailable"};
@@ -645,6 +652,13 @@ inline SurvivalRiskEvidence derive_multi_round_survival_risk(
     std::string dataset_version;
     std::string calibration_protocol_id;
     std::string calibration_report_sha256;
+    std::string calibration_train_manifest_sha256;
+    std::string calibration_validation_manifest_sha256;
+    std::string calibration_test_manifest_sha256;
+    bool episode_splits_disjoint = true;
+    double calibration_mae = 0.0;
+    double calibration_p90_coverage = 0.0;
+    double calibration_brier_score = 0.0;
     std::vector<std::uint64_t> expected_sequences;
     double total_weight = 0.0;
     double weighted_damage = 0.0;
@@ -658,6 +672,24 @@ inline SurvivalRiskEvidence derive_multi_round_survival_risk(
             trajectory.scenario_id.empty() || trajectory.replay_artifact_id.empty() ||
             trajectory.dataset_version.empty() || trajectory.calibration_protocol_id.empty() ||
             !is_sha256(trajectory.calibration_report_sha256) ||
+            !is_sha256(trajectory.calibration_train_manifest_sha256) ||
+            !is_sha256(trajectory.calibration_validation_manifest_sha256) ||
+            !is_sha256(trajectory.calibration_test_manifest_sha256) ||
+            trajectory.calibration_train_manifest_sha256 ==
+                trajectory.calibration_validation_manifest_sha256 ||
+            trajectory.calibration_train_manifest_sha256 ==
+                trajectory.calibration_test_manifest_sha256 ||
+            trajectory.calibration_validation_manifest_sha256 ==
+                trajectory.calibration_test_manifest_sha256 ||
+            !trajectory.episode_splits_disjoint ||
+            !std::isfinite(trajectory.calibration_mae) ||
+            trajectory.calibration_mae < 0.0 ||
+            !std::isfinite(trajectory.calibration_p90_coverage) ||
+            trajectory.calibration_p90_coverage < 0.0 ||
+            trajectory.calibration_p90_coverage > 1.0 ||
+            !std::isfinite(trajectory.calibration_brier_score) ||
+            trajectory.calibration_brier_score < 0.0 ||
+            trajectory.calibration_brier_score > 1.0 ||
             trajectory.steps.size() != horizon_rounds ||
             !std::isfinite(trajectory.scenario_weight) ||
             trajectory.scenario_weight <= 0.0 ||
@@ -669,9 +701,22 @@ inline SurvivalRiskEvidence derive_multi_round_survival_risk(
             dataset_version = trajectory.dataset_version;
             calibration_protocol_id = trajectory.calibration_protocol_id;
             calibration_report_sha256 = trajectory.calibration_report_sha256;
+            calibration_train_manifest_sha256 = trajectory.calibration_train_manifest_sha256;
+            calibration_validation_manifest_sha256 = trajectory.calibration_validation_manifest_sha256;
+            calibration_test_manifest_sha256 = trajectory.calibration_test_manifest_sha256;
+            calibration_mae = trajectory.calibration_mae;
+            calibration_p90_coverage = trajectory.calibration_p90_coverage;
+            calibration_brier_score = trajectory.calibration_brier_score;
         } else if (dataset_version != trajectory.dataset_version ||
                    calibration_protocol_id != trajectory.calibration_protocol_id ||
-                   calibration_report_sha256 != trajectory.calibration_report_sha256) {
+                   calibration_report_sha256 != trajectory.calibration_report_sha256 ||
+                   calibration_train_manifest_sha256 != trajectory.calibration_train_manifest_sha256 ||
+                   calibration_validation_manifest_sha256 != trajectory.calibration_validation_manifest_sha256 ||
+                   calibration_test_manifest_sha256 != trajectory.calibration_test_manifest_sha256 ||
+                   calibration_mae != trajectory.calibration_mae ||
+                   calibration_p90_coverage != trajectory.calibration_p90_coverage ||
+                   calibration_brier_score != trajectory.calibration_brier_score ||
+                   episode_splits_disjoint != trajectory.episode_splits_disjoint) {
             return out;
         }
 
