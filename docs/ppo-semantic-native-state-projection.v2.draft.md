@@ -106,25 +106,31 @@ Trainer collection no longer calls the legacy `get_strategies()` compatibility A
 **Limites:** esta entrega não declara concluído o replay com produtores legados desligados, a atribuição de custo de oportunidade nem a remoção física dos tombstones do tensor plano. Esses pontos permanecem abertos até que o consumidor posicional remanescente seja migrado e a prova integrada seja executada.
 
 
-## PR6 — remoção coordenada dos tombstones físicos do tensor
+## PR6 — migração progressiva dos consumidores para estado semântico nativo
 
-**Problema anterior:** o vetor PPO ainda reservava posições zero para estratégia nominal e padding do core, score posicional derivado de carry legado, direção/core-traits/fit da composição, foco/lock/strength e campos de composição em candidatos e alvos de item. Esses espaços não carregavam evidência e continuavam aumentando o layout e seus contratos dimensionais.
+**Problema anterior:** além dos tombstones físicos, CNN do board, encoder global, candidatos e cabeças de itens/anvil ainda liam fatias posicionais do vetor PPO. Isso acoplava decisões a offsets e impedia que a projeção semântica fosse a fonte única de fatos.
 
-**Justificativa técnica:** manter slots mortos não preserva semântica; apenas mantém dependências posicionais e permite que futuros consumidores interpretem acidentalmente zeros como dados. A remoção precisa alterar produtor C++, dimensões da Policy e leitores de candidatos/itens no mesmo commit, preservando os blocos factuais e as matrizes realmente consumidas.
+**Justificativa técnica:** a migração deve manter uma única origem nativa por decisão, com identidade, sequência e hash preservados em sampling, avaliação, value/bootstrap e replay. Não basta renomear fatias do tensor: cada consumidor precisa receber campos estruturados derivados do snapshot nativo.
 
-**Nova responsabilidade:** o produtor nativo emite somente os campos ativos; a Policy define o início do board no prefixo factual compacto e usa dimensões reduzidas para candidatos e perfis de alvo de item. O writer C++ valida em runtime que o número de features escritas corresponde exatamente à dimensão declarada.
+**Nova responsabilidade já implementada nesta etapa:**
+- Board/CNN recebe os 28 slots de board da projeção semântica, reconstrói a grade 4x7 em ordem row-major e consome ocupação, custo, estrela, quantidade de itens equipados e quantidade de traits.
+- Cabeças de compra/venda/posicionamento recebem candidatos de bench/shop dos mesmos registros de entidade, incluindo cópias equivalentes nativas. Não leem mais a cauda posicional de candidatos no caminho semântico.
+- Encoder global do caminho nativo consome fatos globais, atributos de entidade e embeddings de identidade da projeção semântica, sem ler os offsets globais planos.
+- Snapshot nativo v4 publica capacidade do board/bench, ações realizadas no round e idade de movimento por slot; a projeção semântica v3 valida e inclui esses fatos.
+- A migração explícita de checkpoint v2→v3 permite apenas warm-start controlado, com nova linhagem e reset de pesos/otimizador semânticos conforme o contrato de checkpoint.
 
 **Contrato e invariantes:**
-- Core factual: 10 features; o board começa imediatamente após esse prefixo.
-- Positioning: somente os três contadores factuais de frontline/backline/papéis.
-- Candidate records: seis campos factuais/acionáveis; composição-fit e core flag não existem mais.
-- Item-target records: 17 campos; composição-fit não existe mais.
-- Blocos de item, anvil, matrizes de compatibilidade e action masks mantêm sua semântica e ordem nesta etapa.
-- Checkpoints com shapes incompatíveis não são considerados semanticamente compatíveis; baselines históricos permanecem imutáveis.
-- PPO, GAE, RolloutBuffer e autoridade de legalidade do Engine/action masks permanecem preservados.
+- A projeção semântica v3 contém 52 fatos globais e 42 entidades estáveis (board[28], bench[9], shop[5]); cada linha continua ligada à identidade completa da decisão.
+- O board CNN usa ordem row-major 4x7 e os candidatos usam os mesmos registros de entidade do encoder.
+- Capacidade e memória temporal são publicadas pela Engine; não são inferidas de recomendações ou de observações antigas.
+- PPO, GAE, RolloutBuffer, replay e action masks permanecem preservados; masks continuam sendo a autoridade de legalidade.
+- Recomendações estratégicas não são labels de imitação nem substituem a política aprendida.
 
-**Impactos:** `cpp/src/lobby/TftEngine.cpp`, `policy.py`, testes de condicionamento de bench/itens e testes de entrada semântica. O layout plano encolhe; o encoder global e as cabeças condicionais recalculam suas dimensões a partir dos novos blocos.
+**Ainda pendente antes de fechar #286/#293:**
+- Vocabulário/identidade explícita de traits (a projeção atual ainda carrega contagem por entidade, não o conjunto semântico de traits).
+- Inventário, componentes, receitas, compatibilidade por alvo e itens equipados como blocos semânticos nativos.
+- Anvil: identidade/sequence/options e seus atributos ligados às masks.
+- Cabeças de alvos de item e crafting sem leitura de offsets do tensor plano.
+- Testes integrados de replay/inferência com todos esses consumidores posicionais desligados e CI verde.
 
-**Validação:** teste do prefixo factual compacto, atualização dos tamanhos de candidatos/alvos e guarda nativa `offset == observation_dim` para cada jogador. A CI ainda precisa confirmar compilação e regressões integradas.
-
-**Limite explícito:** este passo remove os tombstones, mas não conclui a eliminação de todos os consumidores posicionais. Board/CNN, fatos globais, traits, capacidade, memória temporal, itens, matrizes de compatibilidade, anvil e candidatos ainda são blocos planos ativos. A migração para entidades estruturadas e a prova de replay sem o tensor legado continuam necessárias antes de declarar #286/#293 concluídas.
+**Validação:** testes de projeção, identidade, capacidade/memória, mapeamento de checkpoint e prova de que CNN/candidatos usam a mesma projeção semântica. A CI do head atual ainda precisa terminar; não declarar este PR pronto nem fechar as issues antes de concluir os itens pendentes.
