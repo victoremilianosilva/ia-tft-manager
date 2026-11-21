@@ -262,7 +262,7 @@ def validate_semantic_state_checkpoint_integrity(manifest: Mapping) -> None:
 def validate_semantic_state_warm_start_migration(
     manifest: Mapping, catalog_map: Mapping[str, int]
 ) -> None:
-    """Allow only the reviewed semantic v2-to-v4 and owner v1-to-v2 warm-starts."""
+    """Allow only the reviewed semantic v2-to-v6 and owner v1-to-v2 warm-starts."""
     validate_semantic_state_checkpoint_integrity(manifest)
     expected = build_semantic_state_checkpoint_contract(catalog_map)
     historical_payload = manifest.get("contract")
@@ -290,6 +290,7 @@ def validate_semantic_state_warm_start_migration(
         historical_payload["global_features"] = expected["contract"]["global_features"]
         historical_payload["numeric_dimension"] = expected["contract"]["numeric_dimension"]
         historical_encoder = dict(historical_payload.get("encoder", {}))
+        historical_encoder["kind"] = "champion_and_trait_embedding_plus_mlp"
         historical_encoder["fusion"] = (
             "semantic_global_mlp_plus_additive_to_shared_actor_critic_latent"
         )
