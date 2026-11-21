@@ -21,7 +21,7 @@ namespace tft::composition_intelligence {
 
 // Independent v1 contextual evaluator. It deliberately does not call or share
 // scoring code with strategy::ActionEvaluator (the frozen baseline).
-inline constexpr std::uint32_t kContextualActionEvaluatorSchemaVersion = 3;
+inline constexpr std::uint32_t kContextualActionEvaluatorSchemaVersion = 4;
 
 struct ContextualActionCandidateScore {
     std::size_t candidate_index{0};
