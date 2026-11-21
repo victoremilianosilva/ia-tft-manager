@@ -207,7 +207,7 @@ def test_item_identity_and_anvil_sequence_are_bound_to_projection_hash():
     pending["pending_anvil"] = True
     pending["pending_anvil_sequence"] = 7
     pending["pending_anvil_kind"] = 0
-    pending["pending_anvil_options"] = ["component_alpha"]
+    pending["pending_anvil_options"] = ["component_0"]
     pending["pending_anvil_option_features"][0][0] = 1.0
     pending_first = project_native_player_state(pending, {"Test_A": 0})
 
