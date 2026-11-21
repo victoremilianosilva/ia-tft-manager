@@ -35,6 +35,7 @@ from semantic_observation import (
     catalog_identity,
     build_semantic_batch,
     semantic_item_state_tensors,
+    validate_semantic_batch_alignment,
     validate_semantic_state_checkpoint_contract,
 )
 from economy_finetuning.finetune import ACTION_DIMS, _actions_to_native, _flatten_masks
@@ -310,6 +311,19 @@ def run_match(policies_by_player, policy_variants, seed: int, max_steps: int, de
                     "native_player_state": native_player,
                 })
             semantic_batch = build_semantic_batch(metadata_rows, catalog_map)
+            semantic_contract = build_semantic_state_checkpoint_contract(catalog_map)
+            for metadata, semantic_hash, semantic_identity in zip(
+                metadata_rows, semantic_batch["hashes"], semantic_batch["identities"]
+            ):
+                metadata["semantic_identity"] = semantic_identity
+                metadata["semantic_projection_hash"] = semantic_hash
+                metadata["semantic_projection_contract_id"] = (
+                    semantic_contract["contract"]["contract_id"]
+                )
+                metadata["semantic_projection_contract_hash"] = semantic_contract["sha256"]
+            validate_semantic_batch_alignment(
+                semantic_batch, metadata_rows, semantic_contract, catalog_map
+            )
             semantic_numeric = torch.as_tensor(
                 semantic_batch["numeric"], dtype=torch.float32, device=device
             )
