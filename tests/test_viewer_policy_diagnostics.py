@@ -118,7 +118,7 @@ def test_viewer_validates_semantic_projection_contract_and_catalog_identity():
     state = {
         "semantic_id_embedding.weight": torch.zeros(9, 16),
         "semantic_trait_embedding.weight": torch.zeros(65537, 16),
-        "semantic_encoder.0.weight": torch.zeros(256, 941),
+        "semantic_encoder.0.weight": torch.zeros(256, 3034),
         "semantic_encoder.0.bias": torch.zeros(256),
         "semantic_encoder.2.weight": torch.zeros(512, 256),
         "semantic_encoder.2.bias": torch.zeros(512),
