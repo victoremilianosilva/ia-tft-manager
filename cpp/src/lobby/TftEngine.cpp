@@ -6154,6 +6154,34 @@ void TFTEngine::set_strategic_direction_pivot_audit_path(const std::string& path
     }
 }
 
+bool TFTEngine::publish_combat_prediction_evidence(
+    const combat_evidence::SurvivalRiskEvidence& evidence) {
+    if (!impl_) return false;
+    impl_->ensure_open();
+    if (!evidence.available || evidence.player_id < 0 ||
+        evidence.player_id >= static_cast<std::int32_t>(kPlayersPerLobby))
+        return false;
+    const auto player_id = static_cast<std::size_t>(evidence.player_id);
+    if (!impl_->player_envs[player_id].info.alive ||
+        evidence.match_id != impl_->episode_id ||
+        evidence.round != impl_->round + 1 ||
+        impl_->strategic_context_sequences[player_id] ==
+            std::numeric_limits<std::uint64_t>::max() ||
+        evidence.sequence != impl_->strategic_context_sequences[player_id] + 1)
+        return false;
+
+    strategy::StrategicSharedContext validation_context;
+    validation_context.match_id = impl_->episode_id;
+    validation_context.player_id = evidence.player_id;
+    validation_context.round = impl_->round + 1;
+    validation_context.sequence = evidence.sequence;
+    if (!combat_evidence::apply_to_economic_context(evidence, validation_context))
+        return false;
+
+    impl_->pending_combat_prediction_evidence[player_id] = evidence;
+    return true;
+}
+
 std::vector<std::string> TFTEngine::get_composition_diagnostics_jsonl() const {
     if (!impl_) throw std::runtime_error("TFTEngine nao possui estado interno.");
     impl_->ensure_open();
