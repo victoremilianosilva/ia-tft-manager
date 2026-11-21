@@ -2,7 +2,6 @@
 
 #include "composition_intelligence/StrategicPositionPlanner.hpp"
 #include "lobby/EconomyEngine.hpp"
-#include "strategy/OpportunityCostProducer.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -289,7 +288,7 @@ public:
                 candidate.available = true;
                 candidate.evidence_reason = "explicit_sell_candidate_unique_bench_instance";
                 candidate.evidence_source = "TransitionManager+UnitPriorityPlanner+ItemEngine+native_SELL_mask";
-                candidate.evidence_horizon_rounds = 0;
+                candidate.evidence_horizon_rounds = 1;
                 candidate.evidence_uncertainty = std::clamp(1.0 - priority.confidence, 0.0, 1.0);
                 append(std::move(candidate));
             }
@@ -350,55 +349,75 @@ public:
                 candidate.available = true;
                 candidate.evidence_reason = "role_aware_position_proposal_with_current_native_masks";
                 candidate.evidence_source = "LineupPlanner+StrategicPositionPlanner+native_move_masks";
-                candidate.evidence_horizon_rounds = 0;
-                candidate.evidence_uncertainty = 1.0; // proposal has no calibrated confidence field
+                candidate.evidence_horizon_rounds = 1;
+                candidate.evidence_uncertainty = 0.0; // deterministic same-snapshot board-position score
                 append(std::move(candidate));
                 out.positioning.push_back(std::move(proposal));
             }
         }
 
-        // Compare only alternatives whose strategic value is expressed by the
-        // same native UnitPriority/anchor board-contribution signal. Do not
-        // invent progression, composition-fit or upgrade priors here: those
-        // dimensions need their own factual producers before they can be added
-        // to a comparable opportunity value. HOLD, XP, reroll, sale and
-        // positioning therefore remain unavailable unless a producer supplies
-        // a validated value through the OpportunityCostProducer contract.
-        std::vector<strategy::OpportunityAlternativeEvidence> alternatives;
-        alternatives.reserve(out.candidates.size());
-        for (const auto& candidate : out.candidates) {
-            strategy::OpportunityAlternativeEvidence evidence;
-            evidence.candidate_id = candidate.candidate_id;
-            evidence.value_basis = "native_board_contribution.v1";
-            evidence.marginal_strategic_value =
-                std::max(0.0, candidate.expected_board_delta);
-            evidence.horizon_rounds = candidate.evidence_horizon_rounds;
-            evidence.uncertainty = candidate.evidence_uncertainty;
-            evidence.available = candidate.kind == strategy::StrategicActionKind::BuyUnit &&
-                candidate.available &&
-                candidate.evidence_source != "unknown" &&
-                candidate.evidence_horizon_rounds > 0 &&
-                candidate.evidence_uncertainty < 1.0;
-            evidence.identity_valid = candidate.source_sequence == native.sequence &&
-                !candidate.candidate_id.empty();
-            evidence.direct_economy_cost = candidate.direct_gold_cost;
-            evidence.interest_cost = candidate.lost_interest_cost;
-            alternatives.push_back(std::move(evidence));
-        }
-        const strategy::OpportunityCostProducer opportunity_producer;
-        for (auto& candidate : out.candidates) {
-            if (candidate.kind != strategy::StrategicActionKind::BuyUnit) continue;
-            const auto opportunity = opportunity_producer.evaluate(
-                candidate.candidate_id, alternatives, candidate.evidence_horizon_rounds,
-                "native_board_contribution.v1");
-            if (!opportunity.available) continue;
-            candidate.opportunity_cost = opportunity.cost;
-            candidate.opportunity_cost_evidence_available = true;
-            candidate.opportunity_cost_source = opportunity.source;
-            candidate.opportunity_cost_forgone_candidate_id =
-                opportunity.sacrificed_candidate_id;
-            candidate.opportunity_cost_horizon_rounds = opportunity.horizon_rounds;
-            candidate.opportunity_cost_uncertainty = opportunity.uncertainty;
+        // A level-up is a progression alternative only when the exact XP
+        // purchase reaches the next level and unlocks a verified owned bench
+        // unit already selected by the lineup. The board contribution is the
+        // same native score basis used for BUY and positioning candidates.
+        if (context.evidence.level && context.evidence.xp_to_next &&
+            context.level < EconomyEngine::MAX_LEVEL &&
+            context.xp_to_next > 0 &&
+            context.xp_to_next <= EconomyEngine::XP_PER_BUY) {
+            const auto board_count = static_cast<std::int32_t>(std::count_if(
+                native.board_unit_uuids.begin(), native.board_unit_uuids.end(),
+                [](const auto& uuid) { return !uuid.empty(); }));
+            if (board_count == static_cast<std::int32_t>(context.level)) {
+                const strategy::StrategicUnitCandidate* best_unlocked_unit = nullptr;
+                const UnitPriority* best_priority = nullptr;
+                for (const auto& owned : context.owned_units) {
+                    if (!owned.on_bench || owned.on_board || owned.champion_id < 0 ||
+                        !std::isfinite(owned.board_contribution) ||
+                        owned.board_contribution <= 0.0)
+                        continue;
+                    const bool selected_after_level = std::any_of(
+                        lineup.selected_board.begin(), lineup.selected_board.end(),
+                        [&](const auto& slot) { return slot.champion_id == owned.champion_id; });
+                    if (!selected_after_level) continue;
+                    const bool physical_bench_identity = std::any_of(
+                        native.bench_champion_ids.begin(), native.bench_champion_ids.end(),
+                        [&](const auto id) { return id == owned.champion_id; });
+                    if (!physical_bench_identity) continue;
+                    const auto priority = std::find_if(
+                        priorities.units.begin(), priorities.units.end(),
+                        [&](const auto& item) {
+                            return item.champion_id == owned.champion_id &&
+                                (item.intent == UnitIntent::Seek || item.intent == UnitIntent::Upgrade) &&
+                                std::isfinite(item.confidence) && item.confidence > 0.0 &&
+                                item.confidence < 1.0;
+                        });
+                    if (priority == priorities.units.end()) continue;
+                    if (!best_unlocked_unit ||
+                        owned.board_contribution > best_unlocked_unit->board_contribution) {
+                        best_unlocked_unit = &owned;
+                        best_priority = &*priority;
+                    }
+                }
+                if (best_unlocked_unit && best_priority) {
+                    const auto xp = std::find_if(out.candidates.begin(), out.candidates.end(),
+                        [](const auto& candidate) {
+                            return candidate.kind == strategy::StrategicActionKind::BuyExperience;
+                        });
+                    if (xp != out.candidates.end()) {
+                        xp->expected_board_delta = std::clamp(
+                            best_unlocked_unit->board_contribution, 0.0, 1.0);
+                        xp->composition_fit = std::clamp(
+                            best_unlocked_unit->composition_fit, 0.0, 1.0);
+                        xp->evidence_source =
+                            "EconomyEngine+UnitPriorityPlanner+LineupPlanner+native_bench_UUID";
+                        xp->evidence_horizon_rounds = 1;
+                        xp->evidence_uncertainty =
+                            std::clamp(1.0 - best_priority->confidence, 0.0, 1.0);
+                        xp->evidence_reason =
+                            "xp_purchase_reaches_next_level_and_unlocks_verified_lineup_bench_unit";
+                    }
+                }
+            }
         }
 
         out.status = out.candidates.empty() ? "no_candidates" : "candidates_generated";
