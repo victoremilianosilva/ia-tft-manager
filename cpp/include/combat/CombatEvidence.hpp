@@ -410,8 +410,7 @@ inline bool approve_calibration(
         (distribution.replay_artifact_id.empty() &&
             distribution.replay_artifact_ids.empty()) ||
         distribution.dataset_version.empty() ||
-        (distribution.source != "experimental_replay_distribution.v1" &&
-            distribution.source != "experimental_replay_cohort_distribution.v1") ||
+        distribution.source != "experimental_replay_cohort_distribution.v1" ||
         metrics.mae > criteria.maximum_mae ||
         metrics.p90_coverage < criteria.minimum_p90_coverage ||
         metrics.p90_coverage > criteria.maximum_p90_coverage ||
@@ -496,7 +495,7 @@ public:
         out.dataset_version = dataset_version;
         out.uncertainty = 1.0 / std::sqrt(static_cast<double>(values.size()));
         out.calibrated = false;
-        out.source = "experimental_replay_distribution.v1";
+        out.source = "experimental_same_match_diagnostic_distribution.v1";
         return out;
     }
 
