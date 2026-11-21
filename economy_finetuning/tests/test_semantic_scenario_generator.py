@@ -52,3 +52,15 @@ def test_semantic_scenario_decoder_rejects_nonfinite_or_misaligned_rows():
 
     with pytest.raises(ValueError, match="outside the v6 batch"):
         decode_semantic_observation(_semantic_batch(), player_id=8)
+
+
+def test_semantic_scenario_decoder_uses_native_player_identity_not_batch_position():
+    semantic = _semantic_batch()
+    semantic["numeric"][1, 5] = 0.45
+    semantic["snapshot_metadata"] = [
+        {"player_id": index} for index in [7, 6, 5, 4, 3, 2, 1, 0]
+    ]
+
+    state = decode_semantic_observation(semantic, player_id=0)
+    assert state["player_id"] == 0
+    assert state["gold"] == 90.0
