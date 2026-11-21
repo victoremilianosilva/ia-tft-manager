@@ -65,7 +65,7 @@ Therefore:
 - Semantic native state is now consumed by PPO and persisted in rollouts/checkpoints.
 - The full legacy-independent replay gate remains open.
 - The item-state/legacy-profile migration remains open.
-- The remaining semantic gaps are per-action opportunity-cost evidence and a complete producer-disabled replay. Physical tombstone slots remain reserved in the flat observation while its shared global encoder and legacy item/candidate boundaries still consume that layout; removal requires a coordinated layout/encoder migration, not an isolated C++ offset deletion.
+- The remaining semantic gaps are per-action opportunity-cost evidence and a complete producer-disabled replay. The retired zero-only slots have now been removed from the flat observation layout as a coordinated C++/Policy change. The remaining flat blocks are still live positional inputs: board geometry for the CNN, factual global/trait/capacity/action-memory features, item inventory/recipe/target records, item-target compatibility matrices, pending-anvil options and per-candidate action features. These are not tombstones and must not be deleted until each has a structured producer/consumer replacement.
 
 ## Legacy producer replay gate
 
@@ -104,3 +104,27 @@ Trainer collection no longer calls the legacy `get_strategies()` compatibility A
 **Validação:** testes de hash sensível à proveniência mesmo quando o tensor é idêntico; rejeição de identidade/hash cruzado; preservação da identidade/hash em minibatches; e inferência de checkpoint com o side input semântico obrigatório.
 
 **Limites:** esta entrega não declara concluído o replay com produtores legados desligados, a atribuição de custo de oportunidade nem a remoção física dos tombstones do tensor plano. Esses pontos permanecem abertos até que o consumidor posicional remanescente seja migrado e a prova integrada seja executada.
+
+
+## PR6 — remoção coordenada dos tombstones físicos do tensor
+
+**Problema anterior:** o vetor PPO ainda reservava posições zero para estratégia nominal e padding do core, score posicional derivado de carry legado, direção/core-traits/fit da composição, foco/lock/strength e campos de composição em candidatos e alvos de item. Esses espaços não carregavam evidência e continuavam aumentando o layout e seus contratos dimensionais.
+
+**Justificativa técnica:** manter slots mortos não preserva semântica; apenas mantém dependências posicionais e permite que futuros consumidores interpretem acidentalmente zeros como dados. A remoção precisa alterar produtor C++, dimensões da Policy e leitores de candidatos/itens no mesmo commit, preservando os blocos factuais e as matrizes realmente consumidas.
+
+**Nova responsabilidade:** o produtor nativo emite somente os campos ativos; a Policy define o início do board no prefixo factual compacto e usa dimensões reduzidas para candidatos e perfis de alvo de item. O writer C++ valida em runtime que o número de features escritas corresponde exatamente à dimensão declarada.
+
+**Contrato e invariantes:**
+- Core factual: 10 features; o board começa imediatamente após esse prefixo.
+- Positioning: somente os três contadores factuais de frontline/backline/papéis.
+- Candidate records: seis campos factuais/acionáveis; composição-fit e core flag não existem mais.
+- Item-target records: 17 campos; composição-fit não existe mais.
+- Blocos de item, anvil, matrizes de compatibilidade e action masks mantêm sua semântica e ordem nesta etapa.
+- Checkpoints com shapes incompatíveis não são considerados semanticamente compatíveis; baselines históricos permanecem imutáveis.
+- PPO, GAE, RolloutBuffer e autoridade de legalidade do Engine/action masks permanecem preservados.
+
+**Impactos:** `cpp/src/lobby/TftEngine.cpp`, `policy.py`, testes de condicionamento de bench/itens e testes de entrada semântica. O layout plano encolhe; o encoder global e as cabeças condicionais recalculam suas dimensões a partir dos novos blocos.
+
+**Validação:** teste do prefixo factual compacto, atualização dos tamanhos de candidatos/alvos e guarda nativa `offset == observation_dim` para cada jogador. A CI ainda precisa confirmar compilação e regressões integradas.
+
+**Limite explícito:** este passo remove os tombstones, mas não conclui a eliminação de todos os consumidores posicionais. Board/CNN, fatos globais, traits, capacidade, memória temporal, itens, matrizes de compatibilidade, anvil e candidatos ainda são blocos planos ativos. A migração para entidades estruturadas e a prova de replay sem o tensor legado continuam necessárias antes de declarar #286/#293 concluídas.
