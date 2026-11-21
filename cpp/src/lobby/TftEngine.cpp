@@ -3836,6 +3836,8 @@ struct TFTEngine::Impl {
             CombatUnit unit{};
             // Same deterministic sequential IDs as TFTLobby._build_cpp_combat_input().
             unit.id = next_unit_id++;
+            unit.source_unit_uuid = instance.uuid;
+            unit.provenance.identity = "observed:player_board_unit_uuid";
             unit.api_name = definition->api_name;
             unit.name = definition->name;
             // Preserve catalog ability identity/description/level variables,
@@ -3850,10 +3852,12 @@ struct TFTEngine::Impl {
                 unit.ability.variables.push_back(std::move(variable));
             }
             unit.star = std::clamp(instance.star, 1, 3);
+            unit.provenance.star = "observed:player_board_instance";
             unit.team = team;
 
             const auto role_value = std::clamp(profile.role, 0, 4);
             unit.role = static_cast<UnitRole>(role_value);
+            unit.provenance.role = "catalog:champion_combat_profile";
 
             unit.position.x = static_cast<int>(slot % 7);
             unit.position.y = static_cast<int>(slot / 7);
@@ -3863,11 +3867,16 @@ struct TFTEngine::Impl {
                 unit.position.x = 6 - unit.position.x;
             }
             unit.source_board_position = static_cast<int>(slot);
+            unit.provenance.position = "observed:player_board_slot";
 
             const double max_hp =
                 profile.max_hp > 0.0 ? profile.max_hp : stats.max_hp;
             unit.max_hp = static_cast<float>(std::max(1.0, max_hp > 0.0 ? max_hp : 100.0));
             unit.hp = unit.max_hp;
+            unit.provenance.max_hp = profile.max_hp > 0.0
+                ? "catalog:champion_combat_profile"
+                : (stats.max_hp > 0.0 ? "catalog:champion_base_stats" : "engine_fallback");
+            unit.provenance.hp = "derived:combat_start_full_health_from_max_hp";
 
             const double attack_damage =
                 profile.attack_damage > 0.0
@@ -3876,6 +3885,9 @@ struct TFTEngine::Impl {
             // Match TFTLobby._build_cpp_combat_input() fallbacks.
             unit.attack_damage = static_cast<float>(
                 std::max(1.0, attack_damage > 0.0 ? attack_damage : 30.0));
+            unit.provenance.attack_damage = profile.attack_damage > 0.0
+                ? "catalog:champion_combat_profile"
+                : (stats.attack_damage > 0.0 ? "catalog:champion_base_stats" : "engine_fallback");
 
             const double attack_speed =
                 profile.attack_speed > 0.0
@@ -3883,6 +3895,9 @@ struct TFTEngine::Impl {
                     : stats.attack_speed;
             unit.attack_speed = static_cast<float>(
                 std::max(0.1, attack_speed > 0.0 ? attack_speed : 1.0));
+            unit.provenance.attack_speed = profile.attack_speed > 0.0
+                ? "catalog:champion_combat_profile"
+                : (stats.attack_speed > 0.0 ? "catalog:champion_base_stats" : "engine_fallback");
 
             const double attack_range =
                 profile.attack_range > 0.0
@@ -3890,21 +3905,33 @@ struct TFTEngine::Impl {
                     : stats.attack_range;
             unit.attack_range = static_cast<float>(
                 std::max(1.0, attack_range > 0.0 ? attack_range : 1.0));
+            unit.provenance.attack_range = profile.attack_range > 0.0
+                ? "catalog:champion_combat_profile"
+                : (stats.attack_range > 0.0 ? "catalog:champion_base_stats" : "engine_fallback");
 
             unit.armor = static_cast<float>(
                 profile.armor > 0.0 ? profile.armor : stats.armor);
+            unit.provenance.armor = profile.armor > 0.0
+                ? "catalog:champion_combat_profile"
+                : (stats.armor != 0.0 ? "catalog:champion_base_stats" : "catalog_zero_or_missing");
             unit.magic_resist = static_cast<float>(
                 profile.magic_resist > 0.0
                     ? profile.magic_resist
                     : stats.magic_resist);
+            unit.provenance.magic_resist = profile.magic_resist > 0.0
+                ? "catalog:champion_combat_profile"
+                : (stats.magic_resist != 0.0 ? "catalog:champion_base_stats" : "catalog_zero_or_missing");
 
             unit.items = instance.items;
+            unit.provenance.items = "observed:player_board_instance_items";
+            unit.provenance.ability = "catalog:ability_name_description_variables_only_mapping_incomplete";
 
             std::unordered_set<std::string> unit_traits(
                 definition->traits.begin(), definition->traits.end());
             for (const auto& item : instance.items) {
                 if (!item.grants_trait.empty()) unit_traits.insert(item.grants_trait);
             }
+            unit.provenance.traits = "derived:champion_catalog_traits_and_observed_item_grants";
             for (const auto& trait_name : unit_traits) {
                 CombatTrait trait;
                 trait.api_name = trait_name;
