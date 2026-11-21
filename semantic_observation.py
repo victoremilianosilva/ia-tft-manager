@@ -77,7 +77,15 @@ def semantic_item_state_tensors(numeric):
     entity_numeric = numeric[:, SEMANTIC_ENTITY_OFFSET:SEMANTIC_ITEM_OFFSET].reshape(
         batch, SEMANTIC_ENTITY_SLOTS, SEMANTIC_ENTITY_FEATURES
     )
-    trait_ids = entity_numeric[:, :, 29:29 + SEMANTIC_TRAIT_SLOTS].long()
+    raw_trait_ids = entity_numeric[:, :, 29:29 + SEMANTIC_TRAIT_SLOTS]
+    if (
+        not torch.isfinite(raw_trait_ids).all()
+        or (raw_trait_ids < 0).any()
+        or (raw_trait_ids > SEMANTIC_TRAIT_VOCAB_SIZE).any()
+        or not torch.equal(raw_trait_ids, raw_trait_ids.round())
+    ):
+        raise ValueError("semantic trait hash IDs are outside the canonical integer vocabulary")
+    trait_ids = raw_trait_ids.long()
     return {
         "trait_ids": trait_ids,
         "components": components,
