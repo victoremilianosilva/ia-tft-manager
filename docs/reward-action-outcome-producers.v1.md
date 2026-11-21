@@ -29,14 +29,14 @@ The current factual fields are:
 | Family | Facts emitted | Important boundary |
 |---|---|---|
 | Purchase | Selected shop offer, newly owned physical unit UUIDs, owned copy-equivalent delta | No value is assigned to a purchase merely because it was accepted |
-| Upgrade | Observed UUID/star-tier transitions and copy-equivalent changes | Physical tier change is evidence, not a calibrated utility score |
+| Upgrade | Physical UUID changes, per-champion star-tier count deltas, and copy-equivalent changes | Physical tier change is evidence, not a calibrated utility score |
 | XP | XP and level deltas, gold/interest changes | XP/gold deltas are unavailable when round-income resolution overlaps the action |
 | Reroll | Per-slot offer revision and before/after offer identities | A changed shop is not automatically a successful or valuable reroll |
 | Sale | Removed physical unit UUIDs and copy-equivalent delta | Proceeds are not inferred from a mixed action-plus-income gold delta |
-| Economy | Before/after gold and interest, plus overlap marker | Native EconomyEngine::resolve_round events remain a separate income source |
+| Economy | Before/after gold and interest-if-resolved-now, realized EconomyEngine resolution events, plus overlap marker | Native EconomyEngine::resolve_round events remain a separate income source |
 | Positioning | Same-unit board slot transitions and before/after native positioning/board-quality diagnostics | Scores are diagnostics only; no score delta becomes reward |
 
-An event's reward is always null and reward_eligible is always false under this telemetry contract. The producer never changes the scalar reward consumed by PPO.
+An event's causal_attribution is always not_established, reward is always null, and reward_eligible is always false under this telemetry contract. The producer never changes the scalar reward consumed by PPO.
 
 ## Invariants
 
@@ -46,7 +46,7 @@ An event's reward is always null and reward_eligible is always false under this 
 4. Owned-unit identity is UUID-based and scoped to the player snapshot. Occupied units without UUID/champion identity fail closed.
 5. Shop revision arrays must contain exactly five native revisions.
 6. When EconomyEngine::resolve_round overlaps the action, action-attributable gold and XP deltas are null; they are not reconstructed from the combined balance.
-7. A positioning change is identified by the same unit UUID moving between board slots. Board-quality and positioning-score deltas remain descriptive diagnostics.
+7. A positioning/deploy change is identified by the same unit UUID changing physical location or slot. Board-quality and positioning-score deltas remain descriptive diagnostics.
 8. No event contains a reward coefficient, reward label, Shadow score, or evaluator score.
 
 ## Impact
