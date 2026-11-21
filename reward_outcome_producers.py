@@ -297,7 +297,16 @@ def build_action_outcome_events(
                 "star_tier_count_deltas": star_tier_deltas if family in ("purchase", "sale") else [],
                 "units_added": added if family == "purchase" else [],
                 "units_removed": removed if family == "sale" else [],
-                "shop_revision_changes": shop_revision_changes if family == "reroll" else [],
+                "shop_revision_changes": (
+                    None if family == "reroll" and resolved
+                    else (shop_revision_changes if family == "reroll" else [])
+                ),
+                "shop_revision_changes_unattributed": (
+                    shop_revision_changes if family == "reroll" and resolved else []
+                ),
+                "shop_refresh_overlapped_with_round_resolution": bool(
+                    family == "reroll" and resolved
+                ),
                 "xp_delta": xp_delta if family == "xp_purchase" else None,
                 "level_delta": level_delta if family == "xp_purchase" else None,
                 "gold_before": before_gold,
