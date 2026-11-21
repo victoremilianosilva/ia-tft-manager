@@ -8,12 +8,12 @@ from semantic_observation import SEMANTIC_ENTITY_SLOTS, SEMANTIC_NUMERIC_DIM
 def _batch(batch_size=2):
     # Native production layout: core + board + anvil/item blocks + candidate tail.
     item_semantic = 17
-    item_target = 18
+    item_target = 17
     item_global = 10 + 9 * item_semantic + 100 * item_semantic + 37 * item_target
     item_compatibility = (9 + 100) * 37
     item_state = item_global + item_compatibility
     anvil = 3 + 9 * 11
-    candidate = (9 + 5) * 8
+    candidate = (9 + 5) * 6
     obs_dim = 10 + 4 * 7 * 5 + anvil + item_state + candidate
     obs = torch.zeros(batch_size, obs_dim, dtype=torch.float32)
     masks = {
