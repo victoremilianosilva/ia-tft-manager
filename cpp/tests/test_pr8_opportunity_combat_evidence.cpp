@@ -113,6 +113,7 @@ int main() {
     assert(combat_evidence::approve_calibration(distribution, metrics, criteria));
     assert(distribution.calibrated);
     auto unapproved_distribution = calibrator.calibrate(outcomes, 7, 0, 50, 50, 30);
+    assert(!combat_evidence::derive_survival_risk(34.5, unapproved_distribution).available);
     auto unapproved_criteria = criteria;
     unapproved_criteria.approved = false;
     assert(!combat_evidence::approve_calibration(
