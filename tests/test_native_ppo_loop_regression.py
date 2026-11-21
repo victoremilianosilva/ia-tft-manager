@@ -154,8 +154,15 @@ def test_native_composition_score_requires_a_published_active_composition():
         lobby.close()
 
 
-def _run_native_ppo_identity_replay(seed: int, decisions: int = 40):
+def _run_native_ppo_identity_replay(
+    seed: int, decisions: int = 40, monkeypatch=None,
+    disable_legacy_strategy_projection: bool = False,
+):
     torch.manual_seed(seed)
+    if disable_legacy_strategy_projection:
+        if monkeypatch is None:
+            raise ValueError("monkeypatch is required to isolate legacy producer environment.")
+        monkeypatch.setenv("TFT_DISABLE_LEGACY_STRATEGY_PROJECTION", "1")
     lobby = CppTFTLobbyWrapper(seed=seed)
     try:
         observations = lobby.reset(seed=seed)
@@ -165,6 +172,7 @@ def _run_native_ppo_identity_replay(seed: int, decisions: int = 40):
             action_dims=list(ACTION_DIMS),
             hidden_size=32,
             semantic_vocab_size=catalog_identity(champion_id_map)["vocab_size"],
+            require_semantic_state=True,
         ).eval()
         trace = []
         seen_rounds = set()
@@ -220,6 +228,16 @@ def _run_native_ppo_identity_replay(seed: int, decisions: int = 40):
                     obs_tensor, masks=masks, deterministic=True,
                     semantic_state=semantic_state,
                 )
+                replay_logprobs, replay_entropy, replay_values = policy.evaluate_actions(
+                    obs_tensor, actions, masks, semantic_state=semantic_state,
+                )
+                bootstrap_values = policy.get_value(
+                    obs_tensor, masks=masks, semantic_state=semantic_state,
+                )
+            torch.testing.assert_close(replay_logprobs, logprobs)
+            torch.testing.assert_close(replay_entropy, entropy)
+            torch.testing.assert_close(replay_values, values)
+            torch.testing.assert_close(bootstrap_values, values)
             action_rows = actions.cpu().numpy().astype(np.int64).tolist()
             for player_id, action in enumerate(action_rows):
                 assert bool(masks["type_mask"][player_id, action[0]])
@@ -271,3 +289,15 @@ def test_native_multi_round_ppo_replay_is_deterministic_and_binds_observation_to
 
     assert first_rounds == second_rounds
     assert first_trace == second_trace
+
+
+def test_native_multi_round_ppo_replay_survives_without_legacy_strategy_projection(monkeypatch):
+    trace, rounds = _run_native_ppo_identity_replay(
+        seed=20261118,
+        decisions=40,
+        monkeypatch=monkeypatch,
+        disable_legacy_strategy_projection=True,
+    )
+
+    assert len(rounds) >= 3
+    assert trace
