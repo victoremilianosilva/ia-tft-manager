@@ -180,3 +180,14 @@ def test_lifecycle_rejects_duplicate_delivery_and_never_links_other_player():
     outcome=_outcome(3); outcome["player_id"]=1
     result=analyze_action_lifecycles(action_events=[_action_event(1)],outcome_events=[outcome])
     assert result["delayed_outcome_candidates"]==[]
+
+
+
+def test_reward_hacking_audit_flags_buy_sell_churn_by_physical_uuid():
+    unit={"uuid":"u1","champion_id":"A"}
+    findings=audit_reward_hacking_patterns([
+        _action_event(1,"purchase",units_added=[unit]),
+        _action_event(2,"sale",units_removed=[unit]),
+    ])
+    assert findings[-1]["pattern"]=="purchase_sale_churn_candidate"
+    assert findings[-1]["reward"] is None
