@@ -120,6 +120,9 @@ struct ObservedCombatOutcome {
     std::uint64_t sequence{0};
     double incoming_damage{0.0};
     bool observed{false};
+    std::string source{"unknown"};
+    std::string replay_artifact_id;
+    std::string dataset_version;
 };
 
 struct DamageDistribution {
@@ -135,6 +138,8 @@ struct DamageDistribution {
     double p90{0.0};
     double uncertainty{1.0};
     std::vector<double> observed_damage_samples;
+    std::string replay_artifact_id;
+    std::string dataset_version;
     std::string source{"unavailable_no_replay_dataset"};
 };
 
@@ -160,12 +165,24 @@ public:
         }
         std::vector<double> values;
         std::unordered_set<std::uint64_t> seen_sequences;
+        std::string replay_artifact_id;
+        std::string dataset_version;
         for (const auto& e : outcomes) {
-            if (!e.observed || e.match_id != match_id || e.player_id != player_id ||
+            if (!e.observed || e.source != "versioned_replay_outcome.v1" ||
+                e.replay_artifact_id.empty() || e.dataset_version.empty() ||
+                e.match_id != match_id || e.player_id != player_id ||
                 e.round >= before_round || e.sequence == 0 ||
                 e.sequence >= before_sequence ||
                 !std::isfinite(e.incoming_damage) || e.incoming_damage < 0.0)
                 continue;
+            if (replay_artifact_id.empty()) {
+                replay_artifact_id = e.replay_artifact_id;
+                dataset_version = e.dataset_version;
+            } else if (replay_artifact_id != e.replay_artifact_id ||
+                       dataset_version != e.dataset_version) {
+                out.source = "invalid_mixed_replay_artifacts_or_dataset_versions";
+                return out;
+            }
             if (!seen_sequences.insert(e.sequence).second) {
                 out.source = "invalid_duplicate_outcome_sequence";
                 return out;
@@ -186,6 +203,8 @@ public:
         out.p50 = quantile(0.50);
         out.p90 = quantile(0.90);
         out.observed_damage_samples = values;
+        out.replay_artifact_id = replay_artifact_id;
+        out.dataset_version = dataset_version;
         out.uncertainty = 1.0 / std::sqrt(static_cast<double>(values.size()));
         out.calibrated = true;
         out.source = "observed_replay_outcomes.v1";
@@ -210,6 +229,8 @@ inline SurvivalRiskEvidence derive_survival_risk(
     if (!std::isfinite(observed_hp) || observed_hp < 0.0 ||
         !distribution.calibrated ||
         distribution.source != "observed_replay_outcomes.v1" ||
+        distribution.replay_artifact_id.empty() ||
+        distribution.dataset_version.empty() ||
         distribution.minimum_sample_count == 0 ||
         distribution.sample_count < distribution.minimum_sample_count ||
         distribution.observed_damage_samples.size() != distribution.sample_count ||
