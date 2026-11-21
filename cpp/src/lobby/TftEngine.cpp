@@ -4486,7 +4486,7 @@ struct TFTEngine::Impl {
                         {"validation_reason", validation_reason}
                     };
                     events.emplace_back(
-                        "COMBAT_SNAPSHOT_V1:" + combat_snapshot_event.dump());
+                        "COMBAT_SNAPSHOT_V2:" + combat_snapshot_event.dump());
                 }
                 const auto combat = combat_engine.simulate(input);
                 if (!combat.success || !combat.completed)
