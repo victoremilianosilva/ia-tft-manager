@@ -525,6 +525,10 @@ struct SurvivalRiskEvidence {
     double elimination_risk{0.0};
     std::uint32_t horizon_rounds{1};
     double uncertainty{1.0};
+    std::string calibration_protocol_id;
+    std::string calibration_report_sha256;
+    std::string dataset_version;
+    std::vector<std::string> replay_artifact_ids;
     std::string source{"unavailable_uncalibrated_damage"};
 };
 
@@ -560,6 +564,12 @@ inline SurvivalRiskEvidence derive_survival_risk(
         static_cast<double>(distribution.sample_count);
     out.horizon_rounds = 1;
     out.uncertainty = distribution.uncertainty;
+    out.calibration_protocol_id = distribution.calibration_protocol_id;
+    out.calibration_report_sha256 = distribution.calibration_report_sha256;
+    out.dataset_version = distribution.dataset_version;
+    out.replay_artifact_ids = distribution.replay_artifact_ids;
+    if (out.replay_artifact_ids.empty() && !distribution.replay_artifact_id.empty())
+        out.replay_artifact_ids.push_back(distribution.replay_artifact_id);
     out.source = "observed_hp+approved_replay_calibration.v1";
     return out;
 }
@@ -671,7 +681,9 @@ inline SurvivalRiskEvidence derive_multi_round_survival_risk(
         weighted_uncertainty += trajectory.scenario_weight * trajectory.uncertainty;
         artifact_ids.insert(trajectory.replay_artifact_id);
     }
-    if (!std::isfinite(total_weight) || total_weight <= 0.0) return out;
+    if (!std::isfinite(total_weight) || total_weight <= 0.0 ||
+        artifact_ids.empty() || calibration_protocol_id.empty() ||
+        !is_sha256(calibration_report_sha256) || dataset_version.empty()) return out;
 
     out.available = true;
     out.match_id = match_id;
@@ -685,6 +697,11 @@ inline SurvivalRiskEvidence derive_multi_round_survival_risk(
         weighted_uncertainty / total_weight +
             1.0 / std::sqrt(static_cast<double>(trajectories.size())),
         0.0, 1.0);
+    out.calibration_protocol_id = calibration_protocol_id;
+    out.calibration_report_sha256 = calibration_report_sha256;
+    out.dataset_version = dataset_version;
+    out.replay_artifact_ids.assign(artifact_ids.begin(), artifact_ids.end());
+    std::sort(out.replay_artifact_ids.begin(), out.replay_artifact_ids.end());
     out.source = "observed_hp+approved_replay_trajectory.v1";
     return out;
 }
@@ -697,6 +714,9 @@ inline bool apply_to_economic_context(
     if (!risk.available || risk.match_id == 0 || risk.player_id < 0 ||
         risk.round == 0 || risk.sequence == 0 || risk.horizon_rounds == 0 ||
         risk.horizon_rounds > 10 || !approved_source ||
+        risk.calibration_protocol_id.empty() ||
+        !is_sha256(risk.calibration_report_sha256) ||
+        risk.dataset_version.empty() || risk.replay_artifact_ids.empty() ||
         !std::isfinite(risk.uncertainty) || risk.uncertainty < 0.0 ||
         risk.uncertainty > 1.0 ||
         context.match_id != risk.match_id ||
@@ -713,6 +733,10 @@ inline bool apply_to_economic_context(
     context.combat_evidence_horizon_rounds = risk.horizon_rounds;
     context.combat_evidence_sequence = risk.sequence;
     context.combat_evidence_uncertainty = risk.uncertainty;
+    context.combat_calibration_protocol_id = risk.calibration_protocol_id;
+    context.combat_calibration_report_sha256 = risk.calibration_report_sha256;
+    context.combat_dataset_version = risk.dataset_version;
+    context.combat_replay_artifact_ids = risk.replay_artifact_ids;
     context.evidence.estimated_incoming_damage = true;
     context.evidence.elimination_risk = true;
     return true;
