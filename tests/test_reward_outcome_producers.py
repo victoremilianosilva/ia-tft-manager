@@ -39,6 +39,8 @@ def _snapshot(sequence, player_sequence, round_number=4):
     return {
         "contract_id": "tft.native-state-snapshot",
         "contract_version": 5,
+        "source_namespace": "tft.engine.observation-snapshot",
+        "producer": "TFTEngine::get_audit_snapshot",
         "engine_instance_id": "engine-1",
         "episode_id": 7,
         "snapshot_sequence": sequence,
