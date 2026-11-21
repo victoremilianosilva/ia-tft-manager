@@ -61,6 +61,7 @@ from semantic_observation import (
     validate_semantic_state_checkpoint_contract,
     validate_semantic_state_warm_start_migration,
     validate_semantic_batch_alignment,
+    semantic_policy_state_keys,
 )
 
 from engine_contracts import ActionType
@@ -356,14 +357,8 @@ class Trainer:
                 validate_reward_checkpoint_contract(saved_reward_contract)
 
             saved_semantic_contract = checkpoint.get("semantic_state_contract")
-            semantic_state_keys = {
-                key for key in self.policy.state_dict()
-                if key.startswith(("semantic_id_embedding.", "semantic_trait_embedding.", "semantic_encoder."))
-            }
-            present_semantic_state_keys = {
-                key for key in checkpoint.get("policy", {})
-                if key.startswith(("semantic_id_embedding.", "semantic_trait_embedding.", "semantic_encoder."))
-            }
+            semantic_state_keys = semantic_policy_state_keys(self.policy.state_dict())
+            present_semantic_state_keys = semantic_policy_state_keys(checkpoint.get("policy", {}))
             checkpoint_has_semantic_weights = bool(present_semantic_state_keys)
             if (
                 present_semantic_state_keys
