@@ -448,6 +448,12 @@ py::dict audit_snapshot_to_dict(
         p["pending_anvil_sequence"] = player.pending_anvil_sequence;
         p["pending_anvil_kind"] = player.pending_anvil_kind;
         p["pending_anvil_options"] = player.pending_anvil_options;
+        p["item_component_features"] = player.item_component_features;
+        p["item_inventory_features"] = player.item_inventory_features;
+        p["item_recipe_features"] = player.item_recipe_features;
+        p["item_inventory_target_fit"] = player.item_inventory_target_fit;
+        p["item_recipe_target_fit"] = player.item_recipe_target_fit;
+        p["pending_anvil_option_features"] = player.pending_anvil_option_features;
         p["actions_taken_this_round"] = player.actions_taken_this_round;
         p["board_move_age"] = player.board_move_age;
         p["last_item_action_kind"] = player.last_item_action_kind;
