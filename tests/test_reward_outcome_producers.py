@@ -31,7 +31,8 @@ def _player(player_id):
         "board": [_empty() for _ in range(28)],
         "bench": [_empty() for _ in range(9)],
         "shop": [_empty() for _ in range(5)],
-        "shop_offer_revisions": [0] * 5,\n        "equipped_items": [], "item_inventory_counts": [], "item_component_counts": [],
+        "shop_offer_revisions": [0] * 5,
+        "equipped_items": [], "item_inventory_counts": [], "item_component_counts": [],
     }
 
 
