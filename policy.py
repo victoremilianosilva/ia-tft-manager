@@ -219,7 +219,7 @@ class TFTPolicy(nn.Module):
         two now represent equipped-item and trait counts instead of role/strength.
         Candidate feature columns changed from strategy-fit fields to native
         entity facts, so only those input columns are reset on an explicit
-        v2 -> v5 warm-start.
+        v2 -> v6 warm-start.
         """
         self.board_cnn[0].weight[:, 3:5, :, :].zero_()
         for head in (self.shop_head, self.sell_head):
@@ -364,7 +364,7 @@ class TFTPolicy(nn.Module):
                 and source_value.shape[1] == 525 + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ID_EMBED_DIM
                 and target_value.shape[1] == SEMANTIC_NUMERIC_DIM + SEMANTIC_ENTITY_SLOTS * (SEMANTIC_ID_EMBED_DIM + SEMANTIC_TRAIT_EMBED_DIM)
             ):
-                # v2 -> v5 adds 31 global capacity/temporal facts and 17
+                # v2 -> v6 adds 31 global capacity/temporal facts and 17
                 # target-profile facts per entity. Preserve the old 21 globals
                 # and 12 entity facts; initialize only newly sourced fields.
                 old_numeric_dim = 525
@@ -392,7 +392,7 @@ class TFTPolicy(nn.Module):
                 and target_value.ndim == 2
                 and source_value.shape[0] == target_value.shape[0]
                 and source_value.shape[1] == 269 + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ID_EMBED_DIM
-                and target_value.shape[1] == SEMANTIC_NUMERIC_DIM + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ID_EMBED_DIM
+                and target_value.shape[1] == SEMANTIC_NUMERIC_DIM + SEMANTIC_ENTITY_SLOTS * (SEMANTIC_ID_EMBED_DIM + SEMANTIC_TRAIT_EMBED_DIM)
             ):
                 # Map v1's named global/entity blocks; initialize only new fields.
                 old_numeric_dim = 269
