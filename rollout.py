@@ -415,6 +415,24 @@ class RolloutBuffer:
                 raise ValueError("semantic numeric batch contains NaN or infinity")
             if semantic_champion_ids.numel() and (semantic_champion_ids < 0).any():
                 raise ValueError("semantic champion IDs must be non-negative")
+            item_state = semantic_state.get("items")
+            if not isinstance(item_state, dict):
+                raise ValueError("semantic item/anvil tensors are required for native rollout rows")
+            expected_item_state = semantic_item_state_tensors(semantic_numeric)
+            if set(item_state) != set(expected_item_state):
+                raise ValueError("semantic item/anvil tensor fields do not match the v6 contract")
+            for field, expected_value in expected_item_state.items():
+                provided_value = item_state.get(field)
+                if (
+                    not isinstance(provided_value, torch.Tensor)
+                    or provided_value.dtype != expected_value.dtype
+                    or provided_value.device != self.device
+                    or tuple(provided_value.shape) != tuple(expected_value.shape)
+                    or not torch.equal(provided_value, expected_value)
+                ):
+                    raise ValueError(
+                        f"semantic item/anvil field {field} is not aligned with the numeric projection"
+                    )
 
         self.semantic_numeric[self.ptr].copy_(semantic_numeric)
         self.semantic_champion_ids[self.ptr].copy_(semantic_champion_ids)
