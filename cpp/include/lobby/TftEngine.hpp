@@ -880,6 +880,8 @@ public:
     bool toggle_shop_lock(std::int32_t player_id);
     bool is_shop_locked(std::int32_t player_id) const;
 
+    // Neutral [players, 1] transport only. Decision features are read from
+    // the identity-bound native semantic snapshot, never positional offsets.
     std::vector<float> get_observations() const;
 
     std::array<std::vector<StrategyInfo>, kPlayersPerLobby>
