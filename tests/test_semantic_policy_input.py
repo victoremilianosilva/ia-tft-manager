@@ -35,7 +35,7 @@ def _batch(batch_size=2):
 def test_native_semantic_entities_drive_board_cnn_and_action_candidates():
     obs, _, semantic = _batch(batch_size=1)
     policy = TFTPolicy(obs_dim=obs.shape[-1], action_dims=list(ACTION_DIMS), hidden_size=32, semantic_vocab_size=64).eval()
-    entities = semantic["numeric"][:, SEMANTIC_GLOBAL_FEATURES:].view(1, SEMANTIC_ENTITY_SLOTS, SEMANTIC_ENTITY_FEATURES)
+    entities = semantic["numeric"][:, SEMANTIC_GLOBAL_FEATURES:SEMANTIC_ITEM_OFFSET].view(1, SEMANTIC_ENTITY_SLOTS, SEMANTIC_ENTITY_FEATURES)
     entities[0, 0, 0] = 1.0
     entities[0, 0, 1] = 2.0 / 3.0
     entities[0, 0, 2] = 4.0 / 5.0
@@ -125,7 +125,7 @@ def test_anvil_candidate_scorer_distinguishes_component_and_completed_item_optio
         policy.item_anvil_candidate_head[0].bias.zero_()
         policy.item_anvil_candidate_head[-1].weight.fill_(1.0)
         policy.item_anvil_candidate_head[-1].bias.zero_()
-    conditioned = torch.zeros(1, 32 + len(ACTION_DIMS))
+    conditioned = torch.zeros(1, 32 + ACTION_DIMS[0])
     option_features = torch.zeros(1, 9, 11)
     pending = torch.ones(1, dtype=torch.bool)
     component_kind = torch.tensor([[1.0, 0.0]])
@@ -161,14 +161,14 @@ def test_semantic_global_encoder_embeds_trait_identity_and_receives_gradients():
     assert gradient[456].abs().sum().item() > 0.0
 
 def test_native_policy_fails_closed_when_semantic_state_is_missing():
-    obs, _, semantic = _batch(batch_size=1)
+    obs, masks, semantic = _batch(batch_size=1)
     policy = TFTPolicy(
         obs_dim=obs.shape[-1], action_dims=list(ACTION_DIMS),
         hidden_size=32, semantic_vocab_size=64, require_semantic_state=True,
     )
     with pytest.raises(ValueError, match="semantic_state v6"):
-        policy.get_value(obs)
-    assert torch.isfinite(policy.get_value(obs, semantic_state=semantic)).all()
+        policy.get_value(obs, masks=masks)
+    assert torch.isfinite(policy.get_value(obs, masks=masks, semantic_state=semantic)).all()
 
 
 def test_native_semantic_consumers_ignore_legacy_flat_board_item_and_candidate_blocks():
