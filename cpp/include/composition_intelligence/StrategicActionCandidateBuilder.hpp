@@ -2,6 +2,7 @@
 
 #include "composition_intelligence/StrategicPositionPlanner.hpp"
 #include "lobby/EconomyEngine.hpp"
+#include "strategy/OpportunityCostProducer.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -354,6 +355,46 @@ public:
                 append(std::move(candidate));
                 out.positioning.push_back(std::move(proposal));
             }
+        }
+
+        // Compare each concrete candidate against the strongest other
+        // same-snapshot alternative. Only producers with a non-default evidence
+        // source, finite strategic values and a bounded horizon participate.
+        std::vector<strategy::OpportunityAlternativeEvidence> alternatives;
+        alternatives.reserve(out.candidates.size());
+        for (const auto& candidate : out.candidates) {
+            strategy::OpportunityAlternativeEvidence evidence;
+            evidence.candidate_id = candidate.candidate_id;
+            evidence.marginal_strategic_value = std::max(0.0, candidate.expected_board_delta);
+            evidence.progression_value = candidate.kind == strategy::StrategicActionKind::BuyExperience
+                ? 0.10 : 0.0;
+            evidence.unit_value = std::max(0.0, candidate.composition_fit) * 0.10;
+            evidence.upgrade_value = std::max(0.0, candidate.upgrade_value) * 0.10;
+            evidence.liquidity_value = 0.0; // handled by the exact marginal HOLD envelope
+            evidence.horizon_rounds = candidate.evidence_horizon_rounds;
+            evidence.uncertainty = candidate.evidence_uncertainty;
+            evidence.available = candidate.available &&
+                candidate.evidence_source != "unknown" &&
+                candidate.evidence_horizon_rounds > 0 &&
+                candidate.evidence_uncertainty < 1.0;
+            evidence.identity_valid = candidate.source_sequence == native.sequence &&
+                !candidate.candidate_id.empty();
+            evidence.direct_economy_cost = candidate.direct_gold_cost;
+            evidence.interest_cost = candidate.lost_interest_cost;
+            alternatives.push_back(std::move(evidence));
+        }
+        const strategy::OpportunityCostProducer opportunity_producer;
+        for (auto& candidate : out.candidates) {
+            const auto opportunity = opportunity_producer.evaluate(
+                candidate.candidate_id, alternatives);
+            if (!opportunity.available) continue;
+            candidate.opportunity_cost = opportunity.cost;
+            candidate.opportunity_cost_evidence_available = true;
+            candidate.opportunity_cost_source = opportunity.source;
+            candidate.opportunity_cost_forgone_candidate_id =
+                opportunity.sacrificed_candidate_id;
+            candidate.opportunity_cost_horizon_rounds = opportunity.horizon_rounds;
+            candidate.opportunity_cost_uncertainty = opportunity.uncertainty;
         }
 
         out.status = out.candidates.empty() ? "no_candidates" : "candidates_generated";
