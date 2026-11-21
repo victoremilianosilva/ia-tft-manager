@@ -123,40 +123,14 @@ int main(int argc, char** argv) {
 
         const auto initial_state = engine.get_public_state();
         const auto initial_observations = engine.get_observations();
-        require(engine.observation_dim() > 248,
-                "Observacao PPO deve incluir o vetor de traits do catalogo.");
+        require(engine.observation_dim() == 1,
+                "Native PPO observation must be a neutral semantic-state carrier.");
         require(initial_observations.size() ==
                     tft::kPlayersPerLobby * engine.observation_dim(),
-                "Tamanho do lote de observacoes nao corresponde a dimensao declarada.");
-
-        // The flat tensor is now a compact factual transport during the
-        // staged semantic migration. Its remaining live blocks are dimensioned
-        // explicitly; retired strategy/tombstone slots must not reappear.
-        std::vector<std::string> trait_order;
-        for (const auto& champion : catalog.all()) {
-            for (const auto& trait : champion.traits) {
-                if (std::find(trait_order.begin(), trait_order.end(), trait) ==
-                    trait_order.end()) {
-                    trait_order.push_back(trait);
-                }
-            }
-        }
-        const std::size_t item_global_observation_dim =
-            10 + 9 * 17 + 100 * 17 + (tft::kBoardSlots + tft::kBenchSlots) * 17;
-        const std::size_t item_compatibility_observation_dim =
-            (9 + 100) * (tft::kBoardSlots + tft::kBenchSlots);
-        const std::size_t item_state_observation_dim =
-            item_global_observation_dim + item_compatibility_observation_dim;
-        const std::size_t candidate_feature_dim = 6;
-        const std::size_t candidate_observation_dim =
-            candidate_feature_dim * (tft::kBenchSlots + tft::kShopSlots);
-        const std::size_t expected_observation_dim =
-            10 + 5 * (tft::kBoardSlots + tft::kBenchSlots + tft::kShopSlots) +
-            5 + 5 + 3 + trait_order.size() + 2 +
-            (1 + tft::kBoardSlots) + (3 + 9 * 11) +
-            item_state_observation_dim + candidate_observation_dim;
-        require(engine.observation_dim() == expected_observation_dim,
-                "Dimensao PPO diverge do contrato factual compacto.");
+                "Tamanho do carrier de observacoes nao corresponde a dimensao declarada.");
+        require(std::all_of(initial_observations.begin(), initial_observations.end(),
+                            [](float value) { return value == 0.0f; }),
+                "Native observation carrier must not publish positional features.");
 
         const auto comp_champion = std::find_if(
             catalog.all().begin(), catalog.all().end(),
@@ -176,7 +150,7 @@ int main(int argc, char** argv) {
         const auto equipped_audit = engine.get_audit_snapshot();
         require(equipped_audit.players[0].board[0].item_ids.size() == 1 &&
                     equipped_audit.players[0].board[0].item_ids[0] == "fixture_blade",
-                "Snapshot de auditoria nao expõe o item equipado na unidade.");
+                "Snapshot nativo nao expõe o item equipado na unidade.");
         require(!engine.set_unit_items_for_testing(
                     0, true, 0, {fixture_item, fixture_item, fixture_item, fixture_item}),
                 "Uma unidade nao pode receber mais de tres itens.");
@@ -185,40 +159,11 @@ int main(int argc, char** argv) {
         require(!engine.set_unit_items_for_testing(0, true, 0, {invalid_item}),
                 "Bonus numerico invalido nao deve entrar no estado da unidade.");
 
-        const auto composition_observations = engine.get_observations();
-        const auto* player_observation = composition_observations.data();
-        const std::size_t board_offset = 10;
-        const std::size_t positioning_offset =
-            10 + 5 * (tft::kBoardSlots + tft::kBenchSlots + tft::kShopSlots) + 5 + 5;
-        require(player_observation[board_offset] == 1.0f,
-                "Board factual nao começa após o prefixo compacto de dez campos.");
-        for (std::size_t index = positioning_offset;
-             index < positioning_offset + 3; ++index)
-            require(player_observation[index] >= 0.0f &&
-                        player_observation[index] <= 1.0f,
-                    "Features posicionais devem ser fatos normalizados.");
-
-        const std::size_t candidate_features_offset =
-            expected_observation_dim - candidate_observation_dim;
-        require(candidate_features_offset + candidate_observation_dim ==
-                    expected_observation_dim,
-                "Features de candidatos deixaram de ocupar a cauda da observacao.");
-        const std::size_t item_target_features_offset =
-            candidate_features_offset - item_state_observation_dim +
-            10 + 9 * 17 + 100 * 17;
-        require(player_observation[item_target_features_offset] == 1.0f &&
-                player_observation[item_target_features_offset + 1] == 1.0f,
-                "Observacao de item nao expoe unidade ocupada no tabuleiro como alvo.");
-        require(player_observation[candidate_features_offset] >= 0.0f &&
-                    player_observation[candidate_features_offset] <= 1.0f &&
-                    player_observation[candidate_features_offset + 4] >= 0.0f &&
-                    player_observation[candidate_features_offset + 4] <= 1.0f,
-                "Registro de candidato deve conter features factuais normalizadas.");
-        const std::size_t shop_candidate_offset =
-            candidate_features_offset + candidate_feature_dim * tft::kBenchSlots;
-        require(player_observation[shop_candidate_offset] > 0.0f &&
-                    player_observation[shop_candidate_offset + 1] > 0.0f,
-                "Oferta deve expor custo e estrela como features factuais.");
+        const auto carrier_after_mutation = engine.get_observations();
+        require(carrier_after_mutation.size() == tft::kPlayersPerLobby &&
+                    std::all_of(carrier_after_mutation.begin(), carrier_after_mutation.end(),
+                                [](float value) { return value == 0.0f; }),
+                "Alteracoes do tabuleiro/itens nao podem voltar a ocupar offsets posicionais.");
 
         require(
             initial_state.players.size() == tft::kPlayersPerLobby,
