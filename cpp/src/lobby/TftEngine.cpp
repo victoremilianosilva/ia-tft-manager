@@ -6212,7 +6212,9 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
         });
     }
 
-    const auto describe_unit = [this](const UnitInstance* unit) {
+    const auto describe_unit = [this](
+        const UnitInstance* unit, bool on_board, std::size_t slot
+    ) {
         AuditUnitSnapshot result{};
         if (!unit) return result;
         result.occupied = true;
@@ -6223,9 +6225,24 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
             unit->champion_internal_id
         );
         result.cost = definition ? definition->cost : 0;
-        if (definition) result.trait_names = definition->traits;
+        if (definition) {
+            result.trait_names = definition->traits;
+            result.role = std::clamp(observation_role(*unit, *definition), 0, 4);
+            const auto& stats = definition->stats;
+            const auto& combat = definition->combat_profile;
+            result.attack_damage = combat.attack_damage > 0.0
+                ? combat.attack_damage : stats.attack_damage;
+            result.attack_speed = combat.attack_speed > 0.0
+                ? combat.attack_speed : stats.attack_speed;
+            result.max_health = combat.max_hp > 0.0
+                ? combat.max_hp : stats.max_hp;
+            result.armor = stats.armor;
+            result.magic_resist = stats.magic_resist;
+        }
         result.item_ids.reserve(unit->items.size());
         for (const auto& item : unit->items) result.item_ids.push_back(item.api_name);
+        (void)on_board;
+        (void)slot;
         return result;
     };
 
@@ -6350,14 +6367,14 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
 
         for (std::size_t slot = 0; slot < kBoardSlots; ++slot)
             target.board[slot] = describe_unit(
-                source.board[slot] ? &*source.board[slot] : nullptr
+                source.board[slot] ? &*source.board[slot] : nullptr, true, slot
             );
         for (std::size_t slot = 0; slot < kBenchSlots; ++slot)
             target.bench[slot] = describe_unit(
-                source.bench[slot] ? &*source.bench[slot] : nullptr
+                source.bench[slot] ? &*source.bench[slot] : nullptr, false, slot
             );
         for (std::size_t slot = 0; slot < kShopSlots; ++slot) {
-            target.shop[slot] = describe_unit(source.shop->get_unit(static_cast<std::int32_t>(slot)));
+            target.shop[slot] = describe_unit(source.shop->get_unit(static_cast<std::int32_t>(slot)), false, slot);
             target.shop_offer_revisions[slot] = source.shop->offer_revisions()[slot];
         }
         if (source.item_engine) {
