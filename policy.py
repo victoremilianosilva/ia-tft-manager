@@ -421,29 +421,17 @@ class TFTPolicy(nn.Module):
         # Processamento paralelo nas sub-redes dedicadas
         cnn_features = self.board_cnn(board_2d)
         global_features = self.global_mlp(global_part)
-        
-        # Fusão latente
-        combined = torch.cat([cnn_features, global_features], dim=-1)
-        latent = self.fusion(combined)
-        if semantic_state is not None:
-            if not isinstance(semantic_state, Mapping):
-                raise TypeError("semantic_state must be a mapping with numeric and champion_ids tensors")
-            numeric = semantic_state.get("numeric")
+        semantic_input = None
+        if semantic_entities is not None:
+            numeric = semantic_state["numeric"]
             champion_ids = semantic_state.get("champion_ids")
-            if not isinstance(numeric, torch.Tensor) or tuple(numeric.shape) != (obs.shape[0], SEMANTIC_NUMERIC_DIM):
-                raise ValueError(
-                    f"semantic numeric input must have shape {(obs.shape[0], SEMANTIC_NUMERIC_DIM)}"
-                )
-            if numeric.dtype != torch.float32 or numeric.device != obs.device:
-                raise TypeError("semantic numeric input must be float32 on the observation device")
-            if not torch.isfinite(numeric).all():
-                raise ValueError("semantic numeric input contains NaN or infinity")
-            if not isinstance(champion_ids, torch.Tensor) or tuple(champion_ids.shape) != (obs.shape[0], SEMANTIC_ENTITY_SLOTS):
-                raise ValueError(
-                    f"semantic champion IDs must have shape {(obs.shape[0], SEMANTIC_ENTITY_SLOTS)}"
-                )
-            if champion_ids.dtype != torch.long or champion_ids.device != obs.device:
-                raise TypeError("semantic champion IDs must be int64 on the observation device")
+            if (
+                not isinstance(champion_ids, torch.Tensor)
+                or tuple(champion_ids.shape) != (obs.shape[0], SEMANTIC_ENTITY_SLOTS)
+                or champion_ids.dtype != torch.long
+                or champion_ids.device != obs.device
+            ):
+                raise ValueError("semantic champion IDs are missing or misaligned")
             if champion_ids.numel() and (
                 (champion_ids < 0).any()
                 or (champion_ids >= self.semantic_id_embedding.num_embeddings).any()
@@ -451,6 +439,15 @@ class TFTPolicy(nn.Module):
                 raise ValueError("semantic champion ID is outside the checkpoint catalog vocabulary")
             embedded_ids = self.semantic_id_embedding(champion_ids).reshape(obs.shape[0], -1)
             semantic_input = torch.cat([numeric, embedded_ids], dim=-1)
+            # The first semantic encoder stage is the global MLP input path.
+            # It consumes native facts and entity identity instead of the flat
+            # global/trait/capacity/action-memory offsets.
+            global_features = self.semantic_encoder[0:2](semantic_input)
+        
+        # Fusão latente
+        combined = torch.cat([cnn_features, global_features], dim=-1)
+        latent = self.fusion(combined)
+        if semantic_input is not None:
             latent = latent + self.semantic_encoder(semantic_input)
         return latent
 
