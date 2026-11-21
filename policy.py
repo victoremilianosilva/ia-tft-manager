@@ -329,6 +329,21 @@ class TFTPolicy(nn.Module):
                 continue
 
             if (
+                key == "item_anvil_candidate_head.0.weight"
+                and source_value.ndim == 2
+                and target_value.ndim == 2
+                and source_value.shape[0] == target_value.shape[0]
+                and target_value.shape[1] == source_value.shape[1] + 2
+            ):
+                # Explicit component/completed-item kind flags are new inputs.
+                # Preserve prior option scoring and initialize only the new flags.
+                expanded = torch.zeros_like(target_value)
+                expanded[:, :source_value.shape[1]] = source_value
+                loaded[key] = expanded
+                migrated = True
+                continue
+
+            if (
                 key == "value_head.weight"
                 and source_value.ndim == 2
                 and target_value.ndim == 2
