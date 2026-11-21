@@ -226,6 +226,18 @@ struct ObservedCombatOutcome {
     std::string source{"unknown"};
     std::string replay_artifact_id;
     std::string dataset_version;
+    std::string engine_version;
+    std::string composition_signature;
+    std::string mechanics_signature;
+    std::uint32_t horizon_rounds{1};
+};
+
+struct CombatCalibrationCohort {
+    std::uint32_t round{0};
+    std::uint32_t horizon_rounds{1};
+    std::string engine_version;
+    std::string composition_signature;
+    std::string mechanics_signature;
 };
 
 struct DamageDistribution {
@@ -242,7 +254,12 @@ struct DamageDistribution {
     double uncertainty{1.0};
     std::vector<double> observed_damage_samples;
     std::string replay_artifact_id;
+    std::vector<std::string> replay_artifact_ids;
     std::string dataset_version;
+    std::string engine_version;
+    std::string composition_signature;
+    std::string mechanics_signature;
+    std::uint32_t horizon_rounds{1};
     std::string calibration_protocol_id;
     std::string calibration_report_sha256;
     std::string calibration_train_manifest_sha256;
@@ -316,9 +333,11 @@ inline bool approve_calibration(
         metrics.brier_score >= 0.0 && metrics.brier_score <= 1.0;
     if (!valid_criteria || !valid_metrics || distribution.calibrated ||
         distribution.sample_count < criteria.minimum_training_samples ||
-        distribution.replay_artifact_id.empty() ||
+        (distribution.replay_artifact_id.empty() &&
+            distribution.replay_artifact_ids.empty()) ||
         distribution.dataset_version.empty() ||
-        distribution.source != "experimental_replay_distribution.v1" ||
+        (distribution.source != "experimental_replay_distribution.v1" &&
+            distribution.source != "experimental_replay_cohort_distribution.v1") ||
         metrics.mae > criteria.maximum_mae ||
         metrics.p90_coverage < criteria.minimum_p90_coverage ||
         metrics.p90_coverage > criteria.maximum_p90_coverage ||
@@ -360,7 +379,7 @@ public:
         }
         std::vector<double> values;
         std::unordered_set<std::uint64_t> seen_sequences;
-        std::string replay_artifact_id;
+        std::unordered_set<std::string> replay_artifact_ids;
         std::string dataset_version;
         for (const auto& e : outcomes) {
             if (!e.observed || e.source != "versioned_replay_outcome.v1" ||
@@ -370,14 +389,12 @@ public:
                 e.sequence >= before_sequence ||
                 !std::isfinite(e.incoming_damage) || e.incoming_damage < 0.0)
                 continue;
-            if (replay_artifact_id.empty()) {
-                replay_artifact_id = e.replay_artifact_id;
-                dataset_version = e.dataset_version;
-            } else if (replay_artifact_id != e.replay_artifact_id ||
-                       dataset_version != e.dataset_version) {
-                out.source = "invalid_mixed_replay_artifacts_or_dataset_versions";
+            if (dataset_version.empty()) dataset_version = e.dataset_version;
+            else if (dataset_version != e.dataset_version) {
+                out.source = "invalid_mixed_dataset_versions";
                 return out;
             }
+            replay_artifact_ids.insert(e.replay_artifact_id);
             if (!seen_sequences.insert(e.sequence).second) {
                 out.source = "invalid_duplicate_outcome_sequence";
                 return out;
@@ -398,11 +415,102 @@ public:
         out.p50 = quantile(0.50);
         out.p90 = quantile(0.90);
         out.observed_damage_samples = values;
-        out.replay_artifact_id = replay_artifact_id;
+        out.replay_artifact_ids.assign(replay_artifact_ids.begin(), replay_artifact_ids.end());
+        std::sort(out.replay_artifact_ids.begin(), out.replay_artifact_ids.end());
+        if (out.replay_artifact_ids.size() == 1)
+            out.replay_artifact_id = out.replay_artifact_ids.front();
         out.dataset_version = dataset_version;
         out.uncertainty = 1.0 / std::sqrt(static_cast<double>(values.size()));
         out.calibrated = false;
         out.source = "experimental_replay_distribution.v1";
+        return out;
+    }
+
+    // Cohort calibration generalizes across independent matches while keeping
+    // engine, composition/mechanics signature, round and horizon identical.
+    // The target match is excluded to prevent same-match outcome leakage.
+    DamageDistribution calibrate_for_cohort(
+        const std::vector<ObservedCombatOutcome>& outcomes,
+        std::uint64_t target_match_id,
+        std::int32_t target_player_id,
+        std::uint32_t before_round,
+        std::uint64_t before_sequence,
+        const CombatCalibrationCohort& cohort,
+        std::uint32_t minimum_samples = 30) const {
+        DamageDistribution out;
+        out.match_id = target_match_id;
+        out.player_id = target_player_id;
+        out.before_round = before_round;
+        out.before_sequence = before_sequence;
+        out.minimum_sample_count = minimum_samples;
+        out.engine_version = cohort.engine_version;
+        out.composition_signature = cohort.composition_signature;
+        out.mechanics_signature = cohort.mechanics_signature;
+        out.horizon_rounds = cohort.horizon_rounds;
+        if (target_match_id == 0 || target_player_id < 0 || before_round == 0 ||
+            before_sequence == 0 || minimum_samples == 0 || cohort.round != before_round ||
+            cohort.horizon_rounds == 0 || cohort.engine_version.empty() ||
+            cohort.composition_signature.empty() || cohort.mechanics_signature.empty()) {
+            out.source = "invalid_calibration_cohort_identity";
+            return out;
+        }
+
+        std::vector<double> values;
+        std::unordered_set<std::uint64_t> seen_matches;
+        std::unordered_set<std::string> seen_samples;
+        std::unordered_set<std::string> artifact_ids;
+        std::string dataset_version;
+        for (const auto& outcome : outcomes) {
+            if (!outcome.observed || outcome.source != "versioned_replay_outcome.v1" ||
+                outcome.match_id == 0 || outcome.match_id == target_match_id ||
+                outcome.player_id < 0 || outcome.round != cohort.round ||
+                outcome.sequence == 0 || outcome.horizon_rounds != cohort.horizon_rounds ||
+                outcome.engine_version != cohort.engine_version ||
+                outcome.composition_signature != cohort.composition_signature ||
+                outcome.mechanics_signature != cohort.mechanics_signature ||
+                outcome.replay_artifact_id.empty() || outcome.dataset_version.empty() ||
+                !std::isfinite(outcome.incoming_damage) || outcome.incoming_damage < 0.0)
+                continue;
+            if (dataset_version.empty()) dataset_version = outcome.dataset_version;
+            else if (dataset_version != outcome.dataset_version) {
+                out.source = "invalid_mixed_dataset_versions";
+                return out;
+            }
+            const auto sample_key = std::to_string(outcome.match_id) + ":" +
+                std::to_string(outcome.sequence);
+            if (!seen_samples.insert(sample_key).second ||
+                !seen_matches.insert(outcome.match_id).second) {
+                out.source = "invalid_duplicate_match_cohort_sample";
+                return out;
+            }
+            artifact_ids.insert(outcome.replay_artifact_id);
+            values.push_back(outcome.incoming_damage);
+        }
+        out.sample_count = static_cast<std::uint32_t>(values.size());
+        if (values.size() < minimum_samples) {
+            out.source = "insufficient_independent_match_cohort_samples";
+            return out;
+        }
+        std::sort(values.begin(), values.end());
+        const auto quantile = [&](double q) {
+            const auto index = static_cast<std::size_t>(
+                std::ceil(q * static_cast<double>(values.size())) - 1.0);
+            return values[std::min(index, values.size() - 1)];
+        };
+        double sum = 0.0;
+        for (const double value : values) sum += value;
+        out.mean = sum / static_cast<double>(values.size());
+        out.p50 = quantile(0.50);
+        out.p90 = quantile(0.90);
+        out.observed_damage_samples = std::move(values);
+        out.replay_artifact_ids.assign(artifact_ids.begin(), artifact_ids.end());
+        std::sort(out.replay_artifact_ids.begin(), out.replay_artifact_ids.end());
+        if (out.replay_artifact_ids.size() == 1)
+            out.replay_artifact_id = out.replay_artifact_ids.front();
+        out.dataset_version = dataset_version;
+        out.uncertainty = 1.0 / std::sqrt(static_cast<double>(out.sample_count));
+        out.calibrated = false;
+        out.source = "experimental_replay_cohort_distribution.v1";
         return out;
     }
 };
@@ -426,7 +534,8 @@ inline SurvivalRiskEvidence derive_survival_risk(
     if (!std::isfinite(observed_hp) || observed_hp < 0.0 ||
         !distribution.calibrated ||
         distribution.source != "approved_replay_calibration.v1" ||
-        distribution.replay_artifact_id.empty() ||
+        (distribution.replay_artifact_id.empty() &&
+            distribution.replay_artifact_ids.empty()) ||
         distribution.dataset_version.empty() ||
         distribution.minimum_sample_count == 0 ||
         distribution.sample_count < distribution.minimum_sample_count ||
