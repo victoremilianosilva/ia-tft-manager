@@ -277,9 +277,10 @@ def analyze_action_lifecycles(*, action_events, outcome_events=(), pivot_lookahe
                 if not isinstance(unit, Mapping) or not str(unit.get("uuid", "")).strip():
                     raise ValueError("Aquisição sem UUID físico.")
                 uuid = str(unit["uuid"])
-                if uuid in acquisitions:
+                acquisition_key = (identity, uuid)
+                if acquisition_key in acquisitions:
                     raise ValueError("UUID físico adquirido mais de uma vez sem transição explícita.")
-                acquisitions[uuid] = {"identity": identity, "sequence": seq, "event_id": event["event_id"],
+                acquisitions[acquisition_key] = {"identity": identity, "sequence": seq, "event_id": event["event_id"],
                     "champion_id": str(unit.get("champion_id", ""))}
         if family == "sale" and event["action"].get("handler_applied") is True:
             removed, sold_champions = facts.get("units_removed", []) or [], set()
@@ -289,7 +290,7 @@ def analyze_action_lifecycles(*, action_events, outcome_events=(), pivot_lookahe
                 champion = str(unit.get("champion_id", ""))
                 if champion:
                     sold_champions.add(champion)
-                acquired = acquisitions.get(str(unit.get("uuid", "")))
+                acquired = acquisitions.get((identity, str(unit.get("uuid", ""))))
                 if acquired and acquired["identity"] == identity and seq > acquired["sequence"]:
                     reversals.append({"contract_id": "tft.reward-action-lifecycle.v1", "kind": "purchase_reversed_by_sale",
                         "source_action_event_id": acquired["event_id"], "reversal_action_event_id": event["event_id"],
