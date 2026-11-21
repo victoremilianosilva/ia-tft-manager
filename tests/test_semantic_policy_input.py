@@ -28,6 +28,38 @@ def _batch(batch_size=2):
     return obs, masks, semantic
 
 
+
+def test_native_semantic_entities_drive_board_cnn_and_action_candidates():
+    obs, _, semantic = _batch(batch_size=1)
+    policy = TFTPolicy(obs_dim=obs.shape[-1], action_dims=list(ACTION_DIMS), hidden_size=32, semantic_vocab_size=64).eval()
+    entities = semantic["numeric"][:, 21:].view(1, SEMANTIC_ENTITY_SLOTS, 12)
+    entities[0, 0, 0] = 1.0
+    entities[0, 0, 1] = 2.0 / 3.0
+    entities[0, 0, 2] = 4.0 / 5.0
+    entities[0, 0, 3] = 1.0 / 3.0
+    entities[0, 0, 4] = 0.2
+    entities[0, 28, 0] = 1.0
+    entities[0, 28, 1] = 1.0
+    entities[0, 28, 2] = 3.0 / 5.0
+    entities[0, 28, 3] = 2.0 / 3.0
+    entities[0, 28, 4] = 0.3
+    entities[0, 28, 10] = 4.0 / 9.0
+    entities[0, 37, 0] = 1.0
+    entities[0, 37, 1] = 1.0 / 3.0
+    entities[0, 37, 2] = 2.0 / 5.0
+    entities[0, 37, 10] = 2.0 / 9.0
+    captured = {}
+    handle = policy.board_cnn[0].register_forward_pre_hook(lambda _module, args: captured.setdefault("board", args[0].detach().clone()))
+    with torch.no_grad():
+        policy.encode(obs, semantic_state=semantic)
+        bench, shop = policy._candidate_features(obs, semantic_state=semantic)
+    handle.remove()
+    assert captured["board"].shape == (1, 5, 4, 7)
+    assert torch.allclose(captured["board"][0, :, 0, 0], torch.tensor([1.0, 0.8, 2.0 / 3.0, 1.0 / 3.0, 0.2]))
+    assert torch.allclose(bench[0, 0], torch.tensor([1.0, 0.6, 1.0 / 3.0, 2.0 / 3.0, 0.3, 4.0 / 9.0]))
+    assert torch.allclose(shop[0, 0], torch.tensor([1.0, 0.4, 1.0 / 3.0, 0.0, 0.0, 2.0 / 9.0]))
+
+
 def test_semantic_side_input_preserves_legacy_output_until_encoder_learns():
     torch.manual_seed(20261118)
     obs, masks, semantic = _batch()
