@@ -2,7 +2,7 @@ import torch
 
 from action_contract import MASK_SHAPES
 from policy import ACTION_DIMS, TFTPolicy
-from semantic_observation import SEMANTIC_ENTITY_FEATURES, SEMANTIC_ENTITY_SLOTS, SEMANTIC_GLOBAL_FEATURES, SEMANTIC_NUMERIC_DIM, semantic_item_state_tensors
+from semantic_observation import SEMANTIC_ENTITY_FEATURES, SEMANTIC_ENTITY_SLOTS, SEMANTIC_GLOBAL_FEATURES, SEMANTIC_ITEM_OFFSET, SEMANTIC_NUMERIC_DIM, semantic_item_state_tensors
 
 
 def _batch(batch_size=2):
@@ -260,9 +260,9 @@ def test_v1_semantic_encoder_checkpoint_maps_old_feature_offsets():
         new_start = SEMANTIC_GLOBAL_FEATURES + slot * SEMANTIC_ENTITY_FEATURES
         assert torch.equal(migrated[:, new_start:new_start + 6], old_weight[:, old_start:old_start + 6])
         assert torch.count_nonzero(migrated[:, new_start + 6:new_start + SEMANTIC_ENTITY_FEATURES]) == 0
-    champion_end = SEMANTIC_NUMERIC_DIM + SEMANTIC_ENTITY_SLOTS * 16
+    champion_end = SEMANTIC_ITEM_OFFSET + SEMANTIC_ENTITY_SLOTS * 16
     assert torch.equal(
-        migrated[:, SEMANTIC_NUMERIC_DIM:champion_end], old_weight[:, old_numeric_dim:]
+        migrated[:, SEMANTIC_ITEM_OFFSET:champion_end], old_weight[:, old_numeric_dim:]
     )
     assert torch.count_nonzero(migrated[:, champion_end:]) == 0
 
@@ -322,9 +322,9 @@ def test_v2_semantic_encoder_checkpoint_maps_global_target_item_and_trait_extens
         new_start = SEMANTIC_GLOBAL_FEATURES + slot * SEMANTIC_ENTITY_FEATURES
         assert torch.equal(migrated[:, new_start:new_start + 12], old_weight[:, old_start:old_start + 12])
         assert torch.count_nonzero(migrated[:, new_start + 12:new_start + SEMANTIC_ENTITY_FEATURES]) == 0
-    champion_end = SEMANTIC_NUMERIC_DIM + SEMANTIC_ENTITY_SLOTS * 16
+    champion_end = SEMANTIC_ITEM_OFFSET + SEMANTIC_ENTITY_SLOTS * 16
     assert torch.equal(
-        migrated[:, SEMANTIC_NUMERIC_DIM:champion_end], old_weight[:, old_numeric_dim:]
+        migrated[:, SEMANTIC_ITEM_OFFSET:champion_end], old_weight[:, old_numeric_dim:]
     )
     assert torch.count_nonzero(migrated[:, champion_end:]) == 0
 
