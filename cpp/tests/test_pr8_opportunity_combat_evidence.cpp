@@ -65,7 +65,13 @@ int main() {
     auto risk = combat_evidence::derive_survival_risk(34.5, distribution);
     assert(risk.available && std::abs(risk.elimination_risk - 0.175) < 1e-9);
     strategy::StrategicSharedContext context;
+    context.player_id = 0;
+    context.round = 50;
+    context.sequence = 50;
     assert(combat_evidence::apply_to_economic_context(risk, context));
+    auto stale_context = context;
+    stale_context.sequence = 49;
+    assert(!combat_evidence::apply_to_economic_context(risk, stale_context));
     assert(context.evidence.estimated_incoming_damage);
     assert(context.evidence.elimination_risk);
     assert(!combat_evidence::derive_survival_risk(34, {}).available);
