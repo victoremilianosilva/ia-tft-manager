@@ -55,11 +55,13 @@ from semantic_observation import (
     SEMANTIC_ENTITY_SLOTS,
     SEMANTIC_GLOBAL_FEATURES,
     build_semantic_batch,
+    semantic_item_state_tensors,
     build_semantic_state_checkpoint_contract,
     catalog_identity,
     validate_semantic_state_checkpoint_contract,
     validate_semantic_state_warm_start_migration,
     validate_semantic_batch_alignment,
+    semantic_policy_state_keys,
 )
 
 from engine_contracts import ActionType
@@ -280,6 +282,7 @@ class Trainer:
             self.obs_dim,
             self.ACTION_DIMS,
             semantic_vocab_size=self.semantic_vocab_size,
+            require_semantic_state=True,
         ).to(self.device)
 
         # ============================================================
@@ -354,14 +357,8 @@ class Trainer:
                 validate_reward_checkpoint_contract(saved_reward_contract)
 
             saved_semantic_contract = checkpoint.get("semantic_state_contract")
-            semantic_state_keys = {
-                key for key in self.policy.state_dict()
-                if key.startswith(("semantic_id_embedding.", "semantic_encoder."))
-            }
-            present_semantic_state_keys = {
-                key for key in checkpoint.get("policy", {})
-                if key.startswith(("semantic_id_embedding.", "semantic_encoder."))
-            }
+            semantic_state_keys = semantic_policy_state_keys(self.policy.state_dict())
+            present_semantic_state_keys = semantic_policy_state_keys(checkpoint.get("policy", {}))
             checkpoint_has_semantic_weights = bool(present_semantic_state_keys)
             if (
                 present_semantic_state_keys
@@ -377,8 +374,17 @@ class Trainer:
                         "Checkpoint contém pesos sem semantic_state_contract; "
                         "a origem/layout do estado semântico não pode ser inferida."
                     )
-                # Historical checkpoint: semantic branch migrates from its
-                # neutral initialization; optimizer/scheduler are reset.
+                allow_semantic_warm_start = os.environ.get(
+                    "TFT_ALLOW_SEMANTIC_STATE_WARM_START", ""
+                ).strip().lower() in {"1", "true", "yes"}
+                if not allow_semantic_warm_start:
+                    raise RuntimeError(
+                        "Checkpoint histórico sem semantic_state v6. Para importar "
+                        "somente pesos não semânticos em uma nova linhagem, defina "
+                        "TFT_ALLOW_SEMANTIC_STATE_WARM_START=1; o encoder semântico "
+                        "será inicializado e optimizer/scheduler não serão restaurados."
+                    )
+                semantic_state_warm_start = True
             else:
                 if not checkpoint_has_semantic_weights:
                     raise RuntimeError(
@@ -420,9 +426,8 @@ class Trainer:
                 legacy_checkpoint_lineage = True
             else:
                 if any(value is None for value in (
-                    saved_contract, saved_critic_mask_contract, saved_semantic_contract,
-                    saved_reward_contract,
-                )):
+                    saved_contract, saved_critic_mask_contract, saved_reward_contract,
+                )) or (saved_semantic_contract is None and not semantic_state_warm_start):
                     raise RuntimeError(
                         "Checkpoint declara linhagem agregada, mas um contrato componente está ausente."
                     )
@@ -475,14 +480,16 @@ class Trainer:
 
             policy_weights = checkpoint["policy"]
             if semantic_state_warm_start:
-                # The old semantic encoder was trained against a different owner
-                # contract. Keep only unrelated policy weights; the new semantic
-                # branch starts from its neutral initialization.
+                # The old semantic encoder/trait vocabulary was trained against a different
+                # projection contract. Keep only unrelated policy weights; the new
+                # semantic branch starts from its new initialization.
                 policy_weights = {
                     key: value for key, value in policy_weights.items()
-                    if not key.startswith(("semantic_id_embedding.", "semantic_encoder."))
+                    if not key.startswith(("semantic_id_embedding.", "semantic_trait_embedding.", "semantic_encoder."))
                 }
             migrated_checkpoint = self.policy.load_compatible_state_dict(policy_weights)
+            if semantic_state_warm_start:
+                self.policy.reset_migrated_semantic_consumer_columns()
             print("⚠️ Checkpoint migrado; optimizer/scheduler serão reiniciados." if migrated_checkpoint
                   else "✅ Pesos da policy carregados.")
 
@@ -1378,7 +1385,8 @@ class Trainer:
             self.obs_dim,
             self.ACTION_DIM,
             self.device,
-            self.MASK_SHAPES
+            self.MASK_SHAPES,
+            require_semantic_state=True,
         )
 
         # ============================================================
@@ -1534,10 +1542,12 @@ class Trainer:
                 semantic_batch = build_semantic_batch(
                     flat_snapshot_metadata, self.champion_id_map
                 )
+                semantic_numeric = torch.as_tensor(
+                    semantic_batch["numeric"], dtype=torch.float32, device=self.device
+                )
                 semantic_state = {
-                    "numeric": torch.as_tensor(
-                        semantic_batch["numeric"], dtype=torch.float32, device=self.device
-                    ),
+                    "numeric": semantic_numeric,
+                    "items": semantic_item_state_tensors(semantic_numeric),
                     "champion_ids": torch.as_tensor(
                         semantic_batch["champion_ids"], dtype=torch.long, device=self.device
                     ),
@@ -1762,10 +1772,12 @@ class Trainer:
                 next_semantic_batch = build_semantic_batch(
                     flat_next_snapshot_metadata, self.champion_id_map
                 )
+                next_semantic_numeric = torch.as_tensor(
+                    next_semantic_batch["numeric"], dtype=torch.float32, device=self.device
+                )
                 next_semantic_state = {
-                    "numeric": torch.as_tensor(
-                        next_semantic_batch["numeric"], dtype=torch.float32, device=self.device
-                    ),
+                    "numeric": next_semantic_numeric,
+                    "items": semantic_item_state_tensors(next_semantic_numeric),
                     "champion_ids": torch.as_tensor(
                         next_semantic_batch["champion_ids"], dtype=torch.long, device=self.device
                     ),
@@ -2125,10 +2137,12 @@ class Trainer:
                         )[valid_indices]
                         for k, v in rollout.masks.items()
                     }
+                    sample_semantic_numeric = rollout.semantic_numeric[:rollout.ptr].reshape(
+                        -1, rollout.semantic_numeric_dim
+                    )[valid_indices]
                     sample_semantic_state = {
-                        "numeric": rollout.semantic_numeric[:rollout.ptr].reshape(
-                            -1, rollout.semantic_numeric_dim
-                        )[valid_indices],
+                        "numeric": sample_semantic_numeric,
+                        "items": semantic_item_state_tensors(sample_semantic_numeric),
                         "champion_ids": rollout.semantic_champion_ids[:rollout.ptr].reshape(
                             -1, rollout.semantic_entity_slots
                         )[valid_indices],

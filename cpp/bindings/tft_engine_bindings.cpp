@@ -335,6 +335,12 @@ py::dict audit_snapshot_to_dict(
         d["cost"] = unit.cost;
         d["items"] = unit.item_ids;
         d["trait_names"] = unit.trait_names;
+        d["role"] = unit.role;
+        d["attack_damage"] = unit.attack_damage;
+        d["attack_speed"] = unit.attack_speed;
+        d["max_health"] = unit.max_health;
+        d["armor"] = unit.armor;
+        d["magic_resist"] = unit.magic_resist;
         return d;
     };
     for (const auto& player : snapshot.players) {
@@ -442,6 +448,14 @@ py::dict audit_snapshot_to_dict(
         p["pending_anvil_sequence"] = player.pending_anvil_sequence;
         p["pending_anvil_kind"] = player.pending_anvil_kind;
         p["pending_anvil_options"] = player.pending_anvil_options;
+        p["item_component_features"] = player.item_component_features;
+        p["item_inventory_features"] = player.item_inventory_features;
+        p["item_recipe_features"] = player.item_recipe_features;
+        p["item_inventory_target_fit"] = player.item_inventory_target_fit;
+        p["item_recipe_target_fit"] = player.item_recipe_target_fit;
+        p["pending_anvil_option_features"] = player.pending_anvil_option_features;
+        p["actions_taken_this_round"] = player.actions_taken_this_round;
+        p["board_move_age"] = player.board_move_age;
         p["last_item_action_kind"] = player.last_item_action_kind;
         p["last_item_id"] = player.last_item_id;
         p["last_item_first_component"] = player.last_item_first_component;

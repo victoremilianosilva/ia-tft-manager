@@ -9,17 +9,6 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from typing import Any
 
-STRATEGY_NAMES = {
-    0: "ECON",
-    1: "STABILIZE",
-    2: "FAST8",
-    3: "SLOWROLL",
-    4: "ALL_IN",
-    5: "WINSTREAK",
-    6: "LEGACY_UNUSED",
-}
-
-
 @dataclass(frozen=True)
 class ScenarioSpec:
     scenario_id: str
@@ -50,7 +39,6 @@ class ScenarioSpec:
     def matches(self, state: dict[str, Any]) -> bool:
         if self.requires_candidate_semantics:
             return False
-        strategy = int(state["strategy"])
         return (
             (not self.player_ids or int(state.get("player_id", -1)) in self.player_ids)
             and self.round_min <= float(state.get("round_number", 1.0)) <= self.round_max
@@ -58,13 +46,13 @@ class ScenarioSpec:
             and self.gold_min <= float(state["gold"]) <= self.gold_max
             and self.level_min <= float(state["level"]) <= self.level_max
             and self.hp_min <= float(state["hp"]) <= self.hp_max
-            and (not self.strategies or strategy in self.strategies)
             and float(state.get("win_streak", 0.0)) >= self.win_streak_min
         )
 
     def to_dict(self) -> dict[str, Any]:
         value = asdict(self)
-        value["strategies"] = [STRATEGY_NAMES.get(x, str(x)) for x in self.strategies]
+        # Historical selectors remain load-compatible but are not used by v6 matching.
+        value["strategies"] = []
         value["player_ids"] = list(self.player_ids)
         value["trainable_heads"] = list(self.trainable_heads)
         return value
@@ -79,59 +67,59 @@ SCENARIOS: tuple[ScenarioSpec, ...] = (
     # Historical runs: keep their IDs and checkpoints in the approval chain.
     ScenarioSpec(
         "critical_hp_high_gold",
-        "HP crítico / 50+ ouro",
+        "HP crítico / reserva alta",
         "Treino histórico preservado: escolher compra útil, XP, roll ou PASS sob pressão real de vida.",
-        3, 7, 50, 250, 1, 10, 0, 30, (0, 1, 2, 3, 4, 5), True,
+        3, 7, 50, 250, 1, 10, 0, 30, (), True,
         "historico_estabilizacao_com_reward_nativo", reward_mode="native",
     ),
     ScenarioSpec(
         "late_game_high_gold_underleveled",
-        "Late game / 60+ ouro / abaixo do nível-alvo",
+        "Fim de jogo / reserva alta / nível baixo",
         "Treino histórico preservado: converter reserva em força sem gastar indiscriminadamente.",
-        4, 5, 60, 250, 1, 7.99, 30.01, 100, (0, 1, 2, 4, 5), True,
+        4, 5, 60, 250, 1, 7.99, 30.01, 100, (), True,
         "historico_conversao_tardia_com_reward_nativo",
         round_min=23, round_max=30, reward_mode="native",
     ),
     ScenarioSpec(
         "econ_gold_reserve",
-        "ECON / acumular até 50 comprando peças úteis",
+        "Reserva de ouro abaixo de 50",
         "Proteger breakpoints de juros até 50, mas comprar pares, upgrades e peças de composição com valor real.",
-        1, 7, 0, 49.99, 1, 10, 1, 100, (0,), True,
+        1, 7, 0, 49.99, 1, 10, 1, 100, (), True,
         "preservar_juros_e_comprar_unidades_uteis", reward_mode="native",
     ),
     ScenarioSpec(
         "econ_surplus_strong_board",
-        "ECON / excedente acima de 50 / tabuleiro forte",
+        "Excedente de ouro com tabuleiro forte",
         "Com board forte, converter apenas o excedente acima de 50 em XP; manter compra útil como prioridade quando houver oportunidade.",
-        3, 7, 50.01, 250, 1, 10, 1, 100, (0,), True,
+        3, 7, 50.01, 250, 1, 10, 1, 100, (), True,
         "upar_com_excedente_sem_quebrar_reserva", reward_mode="native",
     ),
     ScenarioSpec(
         "stabilize_weak_board",
-        "STABILIZE / tabuleiro fraco sob pressão",
+        "Tabuleiro fraco sob pressão",
         "Com board fraco e sob pressão, gastar seletivamente em XP, roll melhorado e peças que fortaleçam o board.",
-        2, 7, 0, 250, 1, 10, 1, 65, (1,), True,
+        2, 7, 0, 250, 1, 10, 1, 65, (), True,
         "estabilizar_board_com_gasto_seletivo", reward_mode="native",
     ),
     ScenarioSpec(
         "fast8_strong_board",
-        "FAST8 / tabuleiro forte / caminho ao nível 8",
+        "Tabuleiro forte / nível abaixo de 8",
         "Combinar economia, board forte e XP; não ativar FAST8 com tabuleiro fraco.",
-        3, 7, 0, 250, 6, 7.99, 38.01, 100, (2,), True,
+        3, 7, 0, 250, 6, 7.99, 38.01, 100, (), True,
         "fast8_com_board_forte", reward_mode="native",
     ),
     ScenarioSpec(
         "all_in_emergency",
-        "ALL_IN / converter recursos para sobreviver",
+        "HP crítico / recursos disponíveis",
         "Em HP crítico, gastar o ouro restante em compras, roll melhorado, XP e implantação para tentar estabilizar imediatamente.",
-        3, 7, 0, 250, 1, 10, 0, 25, (4,), True,
+        3, 7, 0, 250, 1, 10, 0, 25, (), True,
         "all_in_para_sobreviver", reward_mode="native",
     ),
     ScenarioSpec(
         "slowroll_winstreak",
-        "SLOWROLL / alvo de 3 estrelas / winstreak",
+        "Progresso de upgrade / winstreak",
         "Padrão do exemplo Kha'Zix: buscar cópias úteis e gastar controladamente em nível, peças e implantação para prolongar a winstreak.",
-        3, 4, 30, 250, 5, 6.99, 38.01, 100, (3,), True,
+        3, 4, 30, 250, 5, 6.99, 38.01, 100, (), True,
         "slowroll_com_winstreak_e_gasto_controlado",
         win_streak_min=2, reward_mode="native",
     ),
@@ -141,8 +129,8 @@ SCENARIOS: tuple[ScenarioSpec, ...] = (
 def decode_observation(observation, player_id: int | None = None) -> dict[str, Any]:
     """Decode only stable, documented core observation fields."""
     obs = observation.tolist() if hasattr(observation, "tolist") else list(observation)
-    if len(obs) < 17:
-        raise ValueError(f"Observação curta para cenário econômico: {len(obs)} < 17")
+    if len(obs) < 10:
+        raise ValueError(f"Observação compacta curta para cenário econômico: {len(obs)} < 10")
     hp = max(0.0, min(100.0, float(obs[0]) * 100.0))
     gold = max(0.0, float(obs[1]) * 50.0)
     level = max(1.0, min(10.0, float(obs[2]) * 9.0))
@@ -152,17 +140,69 @@ def decode_observation(observation, player_id: int | None = None) -> dict[str, A
         stage = 1
     else:
         stage = min(7, 2 + int((round_number - 5) // 7))
-    strategy = max(range(7), key=lambda idx: float(obs[10 + idx]))
+    # The compact factual prefix no longer contains StrategyInfo. Never infer
+    # a legacy strategy from board/global offsets that now belong to other data.
     return {
         "hp": hp,
         "gold": gold,
         "level": level,
         "stage": stage,
         "round_number": round_number,
-        "strategy": strategy,
-        "strategy_name": STRATEGY_NAMES.get(strategy, "UNKNOWN"),
         "win_streak": max(0.0, float(obs[4]) * 10.0),
         "loss_streak": max(0.0, float(obs[5]) * 10.0),
+        "player_id": int(player_id) if player_id is not None else -1,
+    }
+
+
+def decode_semantic_observation(semantic_state, player_id: int | None = None) -> dict[str, Any]:
+    """Decode scenario facts from the authoritative semantic v6 global projection.
+
+    StrategyInfo is intentionally excluded: scenario selection must not infer
+    a strategic posture from retired flat-observation offsets.
+    """
+    numeric = semantic_state.get("numeric") if isinstance(semantic_state, dict) else None
+    if hasattr(numeric, "detach"):
+        numeric = numeric.detach().cpu().numpy()
+    if hasattr(numeric, "tolist"):
+        numeric = numeric.tolist()
+    if not isinstance(numeric, (list, tuple)) or not numeric:
+        raise ValueError("semantic scenario input must contain v6 rows")
+    row_index = 0 if player_id is None else player_id
+    metadata_rows = semantic_state.get("snapshot_metadata", [])
+    if metadata_rows:
+        if not isinstance(metadata_rows, list) or len(metadata_rows) != len(numeric):
+            raise ValueError("semantic scenario metadata rows are misaligned")
+        matching_rows = [
+            index for index, metadata in enumerate(metadata_rows)
+            if isinstance(metadata, dict) and metadata.get("player_id") == player_id
+        ]
+        if player_id is not None and len(matching_rows) != 1:
+            raise ValueError("semantic scenario player identity is missing or ambiguous")
+        if matching_rows:
+            row_index = matching_rows[0]
+    if isinstance(row_index, bool) or not isinstance(row_index, int) or not 0 <= row_index < len(numeric):
+        raise ValueError("semantic scenario player index is outside the v6 batch")
+    row = numeric[row_index]
+    if not isinstance(row, (list, tuple)) or len(row) < 52:
+        raise ValueError("semantic scenario row is shorter than the v6 global projection")
+    values = [float(value) for value in row[:52]]
+    import math
+    if any(not math.isfinite(value) for value in values):
+        raise ValueError("semantic scenario row contains NaN or infinity")
+
+    hp = max(0.0, min(100.0, values[0] * 100.0))
+    gold = max(0.0, values[5] * 200.0)
+    level = max(1.0, min(10.0, values[6] * 10.0))
+    stage = max(1, min(7, int(round(values[15] * 7.0))))
+    round_number = max(1.0, min(50.0, values[16] * 50.0))
+    return {
+        "hp": hp,
+        "gold": gold,
+        "level": level,
+        "stage": stage,
+        "round_number": round_number,
+        "win_streak": max(0.0, values[8] * 10.0),
+        "loss_streak": max(0.0, values[9] * 10.0),
         "player_id": int(player_id) if player_id is not None else -1,
     }
 

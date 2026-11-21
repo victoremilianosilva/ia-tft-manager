@@ -42,7 +42,7 @@ class FakeNativeLobby:
     def _native_state_snapshot(self):
         return {
             "contract_id": "tft.native-state-snapshot",
-            "contract_version": 3,
+            "contract_version": 5,
             "board_geometry_id": "tft.board-grid.rectangular-4x7",
             "board_geometry_version": 1,
             "board_rows": 4,
@@ -104,14 +104,23 @@ class FakeNativeLobby:
                         "unit_copy_progress": [],
                         "opportunity_cost_available": False,
                     },
-                    "board": [{"occupied": False, "champion_id": "", "uuid": "", "star": 0, "cost": 0, "items": [], "trait_names": []} for _ in range(28)],
-                    "bench": [{"occupied": False, "champion_id": "", "uuid": "", "star": 0, "cost": 0, "items": [], "trait_names": []} for _ in range(9)],
-                    "shop": [{"occupied": False, "champion_id": "", "uuid": "", "star": 0, "cost": 0, "items": [], "trait_names": []} for _ in range(5)],
+                    "board": [{"occupied": False, "champion_id": "", "uuid": "", "star": 0, "cost": 0, "items": [], "trait_names": [], "role": 3, "attack_damage": 0.0, "attack_speed": 0.0, "max_health": 0.0, "armor": 0.0, "magic_resist": 0.0} for _ in range(28)],
+                    "bench": [{"occupied": False, "champion_id": "", "uuid": "", "star": 0, "cost": 0, "items": [], "trait_names": [], "role": 3, "attack_damage": 0.0, "attack_speed": 0.0, "max_health": 0.0, "armor": 0.0, "magic_resist": 0.0} for _ in range(9)],
+                    "shop": [{"occupied": False, "champion_id": "", "uuid": "", "star": 0, "cost": 0, "items": [], "trait_names": [], "role": 3, "attack_damage": 0.0, "attack_speed": 0.0, "max_health": 0.0, "armor": 0.0, "magic_resist": 0.0} for _ in range(5)],
                     "shop_offer_revisions": [0] * 5,
                     "item_components": [], "item_inventory": [], "item_component_counts": [], "item_inventory_counts": [], "equipped_items": [], "item_component_catalog": [],
                     "pending_anvil": False,
                     "pending_anvil_sequence": 0,
+                    "pending_anvil_kind": -1,
                     "pending_anvil_options": [],
+                    "item_component_features": [0.0] * 10,
+                    "item_inventory_features": [[0.0] * 17 for _ in range(9)],
+                    "item_recipe_features": [[0.0] * 17 for _ in range(100)],
+                    "item_inventory_target_fit": [[0.0] * 37 for _ in range(9)],
+                    "item_recipe_target_fit": [[0.0] * 37 for _ in range(100)],
+                    "pending_anvil_option_features": [[0.0] * 11 for _ in range(9)],
+                    "actions_taken_this_round": 0,
+                    "board_move_age": [10] * 28,
                     "item_ownership_retired": False,
                     "retired_item_component_counts": [],
                     "retired_item_inventory_counts": [],
@@ -198,6 +207,12 @@ def test_wrapper_rejects_duplicate_unit_instance_uuid_across_active_owners():
         "cost": 1,
         "items": [],
         "trait_names": ["TestTrait"],
+        "role": 3,
+        "attack_damage": 0.0,
+        "attack_speed": 0.0,
+        "max_health": 0.0,
+        "armor": 0.0,
+        "magic_resist": 0.0,
     }
     snapshot["players"][0]["board"][0] = dict(unit)
     snapshot["players"][1]["bench"][0] = dict(unit)
@@ -794,7 +809,7 @@ def test_native_snapshot_rejects_invalid_shop_offer_revisions():
 def test_native_snapshot_rejects_occupied_shop_offer_without_revision():
     wrapper = cpp_lobby_env.CppTFTLobbyWrapper.__new__(cpp_lobby_env.CppTFTLobbyWrapper)
     snapshot = FakeNativeLobby()._native_state_snapshot()
-    snapshot["players"][0]["shop"][0] = {"occupied": True, "champion_id": "Test_A", "uuid": "unit-a", "star": 1, "cost": 1, "items": [], "trait_names": []}
+    snapshot["players"][0]["shop"][0] = {"occupied": True, "champion_id": "Test_A", "uuid": "unit-a", "star": 1, "cost": 1, "items": [], "trait_names": [], "role": 3, "attack_damage": 0.0, "attack_speed": 0.0, "max_health": 0.0, "armor": 0.0, "magic_resist": 0.0}
     identity = {"engine_instance_id": snapshot["engine_instance_id"], "episode_id": snapshot["episode_id"], "decision_sequence": snapshot["snapshot_sequence"], "player_decision_sequences": snapshot["player_decision_sequences"]}
     with pytest.raises(RuntimeError, match="sem revisão nativa"):
         wrapper._copy_native_state_snapshot(snapshot, identity)
@@ -882,7 +897,7 @@ def test_wrapper_rejects_anvil_sequence_without_pending_choice():
         "decision_sequence": 0,
         "player_decision_sequences": [0] * 8,
     }
-    with pytest.raises(RuntimeError, match="Sequência de bigorna presente"):
+    with pytest.raises(RuntimeError, match="Identidade de bigorna presente sem escolha pendente"):
         cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
 
 

@@ -24,8 +24,8 @@ def test_lobby_reset_contract():
 
         assert isinstance(observations, np.ndarray)
         assert observations.ndim == 2
-        assert observations.shape[0] == 8
-        assert observations.shape[1] > 0
+        assert observations.shape == (8, 1)
+        np.testing.assert_array_equal(observations, np.zeros((8, 1), dtype=np.float32))
 
         assert len(result["action_masks"]) == 8
     finally:
@@ -69,8 +69,11 @@ def test_lobby_step_contract():
         assert state["round_index"] == 1
         assert state["stage"] == 1
 
-        # O índice 6 do core contém a rodada normalizada pelo contrato Python.
-        assert np.allclose(result["observations"][:, 6], 2.0 / 12.0)
+        # Native observations are a neutral carrier; semantic v6 is authoritative.
+        assert result["observations"].shape == (8, 1)
+        np.testing.assert_array_equal(
+            result["observations"], np.zeros((8, 1), dtype=np.float32)
+        )
         
     finally:
         engine.close()
@@ -871,7 +874,7 @@ def test_engine_instance_identity_is_distinct_from_seed_and_episode():
         for reset in (first_reset, second_reset):
             structured = reset["native_state_snapshot"]
             assert structured["contract_id"] == "tft.native-state-snapshot"
-            assert structured["contract_version"] == 3
+            assert structured["contract_version"] == 5
             assert structured["source_namespace"] == "tft.engine.observation-snapshot"
             assert structured["engine_instance_id"] == reset["engine_instance_id"]
             assert structured["episode_id"] == reset["episode_id"]
@@ -971,13 +974,13 @@ def test_elimination_retires_item_ownership_in_native_snapshot():
         engine.close()
 
 
-def test_native_snapshot_v3_exposes_unit_traits_and_board_geometry():
+def test_native_snapshot_v5_exposes_unit_traits_and_board_geometry():
     engine = TFTLobby(seed=20261119)
     try:
         reset = engine.reset()
         snapshot = reset["native_state_snapshot"]
         assert snapshot["contract_id"] == "tft.native-state-snapshot"
-        assert snapshot["contract_version"] == 3
+        assert snapshot["contract_version"] == 5
         assert snapshot["board_geometry_id"] == "tft.board-grid.rectangular-4x7"
         assert snapshot["board_geometry_version"] == 1
         assert snapshot["board_rows"] == 4

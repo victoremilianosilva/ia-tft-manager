@@ -87,40 +87,13 @@ namespace tft {
 namespace {
 
 constexpr std::uint32_t kRoundsPerStage = 7;
-constexpr std::size_t kCoreObservationDim = 22;
-constexpr std::size_t kBoardObservationDim = kBoardSlots * 5;
-constexpr std::size_t kBenchObservationDim = kBenchSlots * 5;
-constexpr std::size_t kShopObservationDim = kShopSlots * 5;
-constexpr std::size_t kExtraObservationDim = 5;
-constexpr std::size_t kSynergyObservationDim = 5;
-constexpr std::size_t kPositioningObservationDim = 4;
-constexpr std::size_t kCapacityObservationDim = 2;
-// Composition-aware features: direction and core-trait flags, plus fit scores
-// for each board, bench, and shop slot.
-constexpr std::size_t kCompositionUnitSlots =
-    kBoardSlots + kBenchSlots + kShopSlots;
-// Per-slot strategic features used by the policy's shared candidate scorers.
-constexpr std::size_t kCandidateFeatureDim = 8;
-constexpr std::size_t kStrategicCandidateObservationDim =
-    (kBenchSlots + kShopSlots) * kCandidateFeatureDim;
-// Pending-anvil state plus nine option records: ten item/component features
-// and one strategic-fit score per option. Inserted before the candidate tail.
+// Semantic entity/action-head feature widths remain part of the native snapshot
+// contract; they are not offsets in the neutral PPO observation carrier.
+constexpr std::size_t kCandidateFeatureDim = 6;
 constexpr std::size_t kAnvilOptionCount = 9;
 constexpr std::size_t kAnvilOptionFeatureDim = 11;
-constexpr std::size_t kAnvilObservationDim = 3 + kAnvilOptionCount * kAnvilOptionFeatureDim;
-// Semantic item-state block: component counts, bag item definitions, craftable
-// recipe definitions, and per-unit target profiles. It is appended before the
-// fixed strategic-candidate tail so legacy checkpoints can migrate by insertion.
 constexpr std::size_t kItemSemanticFeatureDim = 17;
-constexpr std::size_t kItemTargetFeatureDim = 18;
-constexpr std::size_t kItemCompatibilityObservationDim =
-    (9 + 100) * (kBoardSlots + kBenchSlots);
-constexpr std::size_t kItemGlobalObservationDim =
-    10 + 9 * kItemSemanticFeatureDim + 100 * kItemSemanticFeatureDim +
-    (kBoardSlots + kBenchSlots) * kItemTargetFeatureDim;
-constexpr std::size_t kItemStateObservationDim =
-    kItemGlobalObservationDim + kItemCompatibilityObservationDim;
-constexpr std::size_t kActionMemoryObservationDim = 1 + kBoardSlots;
+constexpr std::size_t kItemTargetFeatureDim = 17;
 constexpr std::uint32_t kActionMemoryHorizon = 10;
 
 std::int32_t stage_damage(std::uint32_t stage) noexcept {
@@ -179,15 +152,30 @@ PlayerActionMasks make_default_masks() {
     return masks;
 }
 
-float role_state_value(std::int32_t role) {
-    switch (role) {
-        case 0: return 0.2f; // tank
-        case 1: return 0.4f; // carry
-        case 2: return 0.6f; // support
-        case 3: return 0.8f; // fighter
-        case 4: return 1.0f; // assassin
-        default: return 0.0f;
+// Shared native role classifier for the identity-bound semantic item-target projection.
+std::int32_t native_observation_role(
+    const UnitInstance& unit, const ChampionDefinition& def
+) {
+    tft::strategy::UnitCombatSignals signals;
+    signals.base_role = def.combat_profile.role;
+    signals.attack_range = def.stats.attack_range > 0.0
+        ? def.stats.attack_range : def.combat_profile.attack_range;
+    signals.max_health = def.stats.max_hp;
+    signals.armor = def.stats.armor;
+    signals.magic_resist = def.stats.magic_resist;
+    signals.attack_damage = def.stats.attack_damage;
+    signals.attack_speed = def.stats.attack_speed;
+    signals.ability_text = def.ability.description + " " + def.ability.name;
+    for (const auto& item : unit.items) {
+        signals.item_health += item.health;
+        signals.item_armor += item.armor;
+        signals.item_magic_resist += item.magic_resist;
+        signals.item_attack_damage += item.attack_damage;
+        signals.item_attack_speed += item.attack_speed;
+        signals.item_ability_power += item.ability_power;
+        signals.item_crit += item.critical_strike_chance;
     }
+    return tft::strategy::UnitCombatClassifier::classify(signals).positioning_role;
 }
 
 std::array<float, kItemSemanticFeatureDim> encode_item_semantic_features(
@@ -212,12 +200,6 @@ std::array<float, kItemSemanticFeatureDim> encode_item_semantic_features(
         static_cast<float>(std::clamp(item.utility_weight, 0.0, 1.0)),
         item.grants_trait.empty() ? 0.0f : 1.0f
     };
-}
-
-float unit_strength(const ChampionDefinition& def, const UnitInstance& unit) {
-    const float cost = static_cast<float>(def.cost);
-    const float star = static_cast<float>(unit.star);
-    return std::min(1.0f, cost / 5.0f * 0.5f + star / 3.0f * 0.5f);
 }
 
 double unit_composition_score(
@@ -1255,512 +1237,20 @@ struct TFTEngine::Impl {
     // OBSERVAÇÕES
     // ========================================================
 
+    // PPO's observation tensor is now only a batch/device carrier.
+    // All decision features come from the identity-bound semantic v6 snapshot.
+    static constexpr std::size_t kSemanticObservationCarrierDim = 1;
+
     std::size_t observation_dim() const noexcept {
-        return kCoreObservationDim + kBoardObservationDim +
-            kBenchObservationDim + kShopObservationDim +
-            kExtraObservationDim + kSynergyObservationDim +
-            kPositioningObservationDim + observation_trait_names.size() +
-            kCapacityObservationDim +
-            2 * observation_trait_names.size() + kCompositionUnitSlots +
-            kActionMemoryObservationDim +
-            observation_trait_names.size() + 2 +
-            kAnvilObservationDim + kItemStateObservationDim +
-            kStrategicCandidateObservationDim;
+        return kSemanticObservationCarrierDim;
     }
 
     std::vector<float> build_observations() const {
-        const auto dim = observation_dim();
-        std::vector<float> observations(kPlayersPerLobby * dim, 0.0f);
-
-        for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
-            float* out = observations.data() + i * dim;
-            const auto& player = player_envs[i].info;
-
-            // TFTLobby.get_observations() returns an all-zero vector for
-            // eliminated players. Preserve that public PPO contract exactly.
-            if (!player.alive) {
-                continue;
-            }
-
-            const auto& economy = player_envs[i].economy;
-            std::array<int, kBoardSlots> board_roles{};
-            std::array<bool, kBoardSlots> board_occupied{};
-            std::array<bool, kBenchSlots> bench_occupied{};
-            std::vector<std::pair<std::string, int>> trait_counts;
-            std::unordered_map<std::string, std::size_t> trait_count_index;
-            // Bound the common case to one allocation/rehash-free accumulation
-            // pass while retaining trait_counts insertion order for observations.
-            trait_counts.reserve(observation_trait_names.size());
-            trait_count_index.reserve(observation_trait_names.size());
-            int board_count = 0, bench_count = 0, frontline = 0, backline = 0;
-            std::array<bool, 5> seen_roles{};
-            std::size_t unique_role_count = 0;
-
-            const auto count_traits = [&](const UnitInstance& unit) {
-                const auto* def = catalog->find_by_id(unit.champion_internal_id);
-                if (!def) return;
-                for (const auto& trait : def->traits) {
-                    const auto [it, inserted] =
-                        trait_count_index.try_emplace(trait, trait_counts.size());
-                    if (inserted) trait_counts.emplace_back(trait, 0);
-                    ++trait_counts[it->second].second;
-                }
-            };
-            // Match the exact combat-role classifier used by BoardEvaluation.
-            // Otherwise PPO observes a catalog role while the reward evaluator
-            // scores the same unit as a carry/tank, creating contradictory labels.
-            const auto observation_role = [&](const UnitInstance& unit,
-                                               const ChampionDefinition& def) {
-                tft::strategy::UnitCombatSignals signals;
-                signals.base_role = def.combat_profile.role;
-                signals.attack_range = def.stats.attack_range > 0.0
-                    ? def.stats.attack_range : def.combat_profile.attack_range;
-                signals.max_health = def.stats.max_hp;
-                signals.armor = def.stats.armor;
-                signals.magic_resist = def.stats.magic_resist;
-                signals.attack_damage = def.stats.attack_damage;
-                signals.attack_speed = def.stats.attack_speed;
-                signals.ability_text = def.ability.description + " " + def.ability.name;
-
-                for (const auto& item : unit.items) {
-                    signals.item_health += item.health;
-                    signals.item_armor += item.armor;
-                    signals.item_magic_resist += item.magic_resist;
-                    signals.item_attack_damage += item.attack_damage;
-                    signals.item_attack_speed += item.attack_speed;
-                    signals.item_ability_power += item.ability_power;
-                    signals.item_crit += item.critical_strike_chance;
-                }
-                return tft::strategy::UnitCombatClassifier::classify(signals).positioning_role;
-            };
-
-            for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
-                if (!player_envs[i].board[slot]) continue;
-                ++board_count;
-                board_occupied[slot] = true;
-                const auto& unit = *player_envs[i].board[slot];
-                const auto* def = catalog->find_by_id(unit.champion_internal_id);
-                if (!def) continue;
-                const int role = std::clamp(observation_role(unit, *def), 0, 4);
-                board_roles[slot] = role;
-                const auto role_index = static_cast<std::size_t>(role);
-                if (!seen_roles[role_index]) {
-                    seen_roles[role_index] = true;
-                    ++unique_role_count;
-                }
-                const int row = static_cast<int>(slot / 7);
-                if (row <= 1) ++frontline;
-                if (row >= 2) ++backline;
-                count_traits(unit);
-            }
-            for (std::size_t slot = 0; slot < kBenchSlots; ++slot) {
-                if (!player_envs[i].bench[slot]) continue;
-                ++bench_count;
-                bench_occupied[slot] = true;
-                count_traits(*player_envs[i].bench[slot]);
-            }
-
-            // 1) CORE (same order/scales as MiniTFTEnv._get_state()).
-            std::size_t offset = 0;
-            out[offset++] = player.hp / 100.0f;
-            out[offset++] = static_cast<float>(economy.gold) / 50.0f;
-            out[offset++] = static_cast<float>(economy.level) / 9.0f;
-            out[offset++] = static_cast<float>(economy.xp) /
-                static_cast<float>(std::max(1, economy_engine.get_xp_to_next(economy)));
-            out[offset++] = static_cast<float>(economy.win_streak) / 10.0f;
-            out[offset++] = static_cast<float>(economy.loss_streak) / 10.0f;
-            const float current_round = static_cast<float>(round + 1);
-            out[offset++] = current_round / (current_round + 10.0f);
-            out[offset++] = static_cast<float>(board_count) /
-                static_cast<float>(std::max(1, economy.level));
-            out[offset++] = static_cast<float>(bench_count) / static_cast<float>(kBenchSlots);
-            out[offset++] = 1.0f; // shop vector always contains five slots in Python.
-            // Retired strategy one-hot. The semantic native-state side input
-            // carries factual economy/state; no absent strategy is interpreted as ECON.
-            offset += 7;
-            // Python's 22-wide core reserves five trailing zero features.
-            offset = kCoreObservationDim;
-
-            // 2) BOARD: occupied, cost, stars, role, strength per slot.
-            for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
-                if (!player_envs[i].board[slot]) { offset += 5; continue; }
-                const auto& unit = *player_envs[i].board[slot];
-                const auto* def = catalog->find_by_id(unit.champion_internal_id);
-                if (!def) { offset += 5; continue; }
-                out[offset++] = 1.0f;
-                out[offset++] = static_cast<float>(def->cost) / 5.0f;
-                out[offset++] = static_cast<float>(unit.star) / 3.0f;
-                out[offset++] = role_state_value(observation_role(unit, *def));
-                out[offset++] = unit_strength(*def, unit);
-            }
-
-            // 3) BENCH.
-            for (std::size_t slot = 0; slot < kBenchSlots; ++slot) {
-                if (!player_envs[i].bench[slot]) { offset += 5; continue; }
-                const auto& unit = *player_envs[i].bench[slot];
-                const auto* def = catalog->find_by_id(unit.champion_internal_id);
-                if (!def) { offset += 5; continue; }
-                out[offset++] = 1.0f;
-                out[offset++] = static_cast<float>(def->cost) / 5.0f;
-                out[offset++] = static_cast<float>(unit.star) / 3.0f;
-                out[offset++] = role_state_value(observation_role(unit, *def));
-                out[offset++] = unit_strength(*def, unit);
-            }
-
-            // 4) SHOP.
-            for (std::size_t slot = 0; slot < kShopSlots; ++slot) {
-                const auto* unit = player_envs[i].shop ? player_envs[i].shop->get_unit(static_cast<std::int32_t>(slot)) : nullptr;
-                if (!unit) { offset += 5; continue; }
-                const auto* def = catalog->find_by_id(unit->champion_internal_id);
-                if (!def) { offset += 5; continue; }
-                out[offset++] = 1.0f;
-                out[offset++] = static_cast<float>(def->cost) / 5.0f;
-                out[offset++] = 1.0f;
-                out[offset++] = role_state_value(observation_role(*unit, *def));
-                out[offset++] = 0.0f; // Python shop strength slot is intentionally zero.
-            }
-
-            // 5) EXTRA.
-            out[offset++] = static_cast<float>(board_count) / static_cast<float>(kBoardSlots);
-            out[offset++] = static_cast<float>(bench_count) / static_cast<float>(kBenchSlots);
-            out[offset++] = static_cast<float>(economy.gold) / 50.0f;
-            out[offset++] = static_cast<float>(economy.level) / 9.0f;
-            out[offset++] = player.hp / 100.0f;
-
-            // 6) SYNERGY: first five active trait counts in insertion order.
-            for (std::size_t n = 0; n < kSynergyObservationDim; ++n) {
-                const float value = n < trait_counts.size()
-                    ? static_cast<float>(trait_counts[n].second) / 5.0f : 0.0f;
-                out[offset++] = std::min(1.0f, value);
-            }
-
-            // 7) POSITIONING: the old aggregate score depended on legacy
-            // StrategyInfo main-carry/direction inputs. Retire it rather than
-            // leaking that hidden dependency; factual geometry/roles follow.
-            out[offset++] = 0.0f;
-            out[offset++] = board_count ? static_cast<float>(frontline) / board_count : 0.0f;
-            out[offset++] = board_count ? static_cast<float>(backline) / board_count : 0.0f;
-            out[offset++] = std::min(1.0f, static_cast<float>(unique_role_count) / 5.0f);
-
-            // 8) TRAITS: fixed catalog order shared across all players.
-            // trait_count_index already maps each observed trait to its
-            // insertion-ordered count; avoid building a second hash table.
-            for (const auto& trait : observation_trait_names) {
-                const auto it = trait_count_index.find(trait);
-                const float value = it == trait_count_index.end()
-                    ? 0.0f
-                    : static_cast<float>(trait_counts[it->second].second) / 5.0f;
-                out[offset++] = std::min(1.0f, value);
-            }
-
-            // 9) CAPACITY.
-            out[offset++] = static_cast<float>(std::max(0, economy.level - board_count)) / 9.0f;
-            out[offset++] = static_cast<float>(kBenchSlots - bench_count) / 9.0f;
-
-            // Retired legacy composition direction/core/fit features.
-            // Keep their physical slots stable for old vector consumers, but do
-            // not source PPO inputs from StrategyInfo or legacy planners.
-            offset += 2 * observation_trait_names.size() + kCompositionUnitSlots;
-
-            // 13) TEMPORAL ACTION MEMORY. These features are inserted before the
-            // candidate tail so policy.py can continue reading candidate features
-            // from the end of the observation without changing its offsets.
-            out[offset++] = static_cast<float>(kActionMemoryHorizon -
-                std::min(player_envs[i].actions_taken_this_round, kActionMemoryHorizon)) /
-                static_cast<float>(kActionMemoryHorizon);
-            for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
-                const auto age = player_envs[i].board[slot]
-                    ? std::min(player_envs[i].board_move_age[slot], kActionMemoryHorizon)
-                    : kActionMemoryHorizon;
-                out[offset++] = static_cast<float>(age) /
-                    static_cast<float>(kActionMemoryHorizon);
-            }
-
-            // Retired legacy focus/lock/strength fields. These positions remain
-            // reserved until the versioned semantic owner projection replaces
-            // the flat tensor; zero is an explicit tombstone, not neutral strategy.
-            offset += observation_trait_names.size() + 2;
-
-            // 15) ITEM ANVIL CHOICES. A pending anvil is a forced single-choice
-            // decision. Each option exposes either a component one-hot or the
-            // completed item's combat-relevant stats, plus strategic fit.
-            const auto* pending_anvil = player_envs[i].item_engine
-                ? player_envs[i].item_engine->pending_anvil() : nullptr;
-            out[offset++] = pending_anvil ? 1.0f : 0.0f;
-            out[offset++] = pending_anvil &&
-                pending_anvil->kind == items::ItemAnvilKind::COMPONENT ? 1.0f : 0.0f;
-            out[offset++] = pending_anvil &&
-                pending_anvil->kind == items::ItemAnvilKind::COMPLETED_ITEM ? 1.0f : 0.0f;
-            const auto item_profiles = player_envs[i].item_engine
-                ? semantic_item_unit_profiles(i) : std::vector<items::UnitProfile>{};
-            // One shared profile lookup feeds PPO item-target features and the
-            // item evaluator; no StrategyInfo-derived carry/core traits are read.
-            std::unordered_map<std::string, const items::UnitProfile*> semantic_profile_by_uuid;
-            semantic_profile_by_uuid.reserve(item_profiles.size());
-            for (const auto& profile : item_profiles)
-                semantic_profile_by_uuid.emplace(profile.uuid, &profile);
-            // Scoped to this observation so changed unit stats/traits never reuse stale fits.
-            items::ItemFitCache item_fit_cache(player_envs[i].item_engine.get());
-            for (std::size_t option_index = 0; option_index < kAnvilOptionCount; ++option_index) {
-                std::array<float, kAnvilOptionFeatureDim> features{};
-                if (pending_anvil && option_index < pending_anvil->options.size() && item_catalog) {
-                    const auto& option_id = pending_anvil->options[option_index];
-                    double best_fit = 0.0;
-                    if (pending_anvil->kind == items::ItemAnvilKind::COMPONENT) {
-                        const auto component = std::find_if(
-                            item_catalog->components.begin(), item_catalog->components.end(),
-                            [&](const auto& entry) { return entry.first == option_id; });
-                        if (component != item_catalog->components.end()) {
-                            const auto component_index = static_cast<std::size_t>(
-                                std::distance(item_catalog->components.begin(), component));
-                            if (component_index < 10) features[component_index] = 1.0f;
-                        }
-                        // A component is scored by the best catalog item it can
-                        // help complete for any currently owned unit.
-                        for (const auto& candidate_item : item_catalog->items) {
-                            if (candidate_item.recipe_components[0] != option_id &&
-                                candidate_item.recipe_components[1] != option_id) continue;
-                            for (const auto& profile : item_profiles)
-                                best_fit = std::max(best_fit,
-                                    item_fit_cache.get(candidate_item.id, profile));
-                        }
-                    } else {
-                        const auto* definition = player_envs[i].item_engine->find(option_id);
-                        if (definition) {
-                            const std::array<double, 10> stats{
-                                definition->attack_damage / 100.0,
-                                definition->attack_speed / 2.0,
-                                definition->ability_power / 100.0,
-                                definition->critical_strike_chance,
-                                definition->critical_strike_damage / 2.0,
-                                definition->max_health / 2000.0,
-                                definition->armor / 100.0,
-                                definition->magic_resist / 100.0,
-                                definition->omnivamp,
-                                definition->damage_amplification
-                            };
-                            for (std::size_t stat = 0; stat < stats.size(); ++stat)
-                                features[stat] = static_cast<float>(
-                                    std::clamp(stats[stat], 0.0, 1.0));
-                            for (const auto& profile : item_profiles)
-                                best_fit = std::max(best_fit,
-                                    item_fit_cache.get(option_id, profile));
-                        }
-                    }
-                    features[10] = static_cast<float>(
-                        std::clamp(best_fit / 20.0, 0.0, 1.0));
-                }
-                for (const float feature : features) out[offset++] = feature;
-            }
-
-            // 16) SEMANTIC ITEM STATE. Masks express legality only; this block
-            // gives PPO the actual component/item identities and stats, recipe
-            // outcomes, and the role/location/profile of every possible target.
-            const auto* item_state = player_envs[i].item_engine.get();
-            for (std::size_t component = 0; component < 10; ++component) {
-                double count = 0.0;
-                if (item_state && item_catalog && component < item_catalog->components.size()) {
-                    const auto& id = item_catalog->components[component].first;
-                    count = static_cast<double>(std::count(
-                        item_state->components().begin(), item_state->components().end(), id));
-                }
-                out[offset++] = static_cast<float>(std::clamp(count / 6.0, 0.0, 1.0));
-            }
-
-            for (std::size_t slot = 0; slot < 9; ++slot) {
-                std::array<float, kItemSemanticFeatureDim> features{};
-                if (item_state && slot < item_state->inventory().size()) {
-                    if (const auto* definition = item_state->find(item_state->inventory()[slot]))
-                        features = encode_item_semantic_features(*definition);
-                }
-                for (const float feature : features) out[offset++] = feature;
-            }
-
-            // Recipe features are indexed [first_component * 10 + second].
-            // The immutable catalog-derived matrix is shared by all players.
-            for (const auto& recipe : recipe_observation_features)
-                for (const float feature : recipe) out[offset++] = feature;
-
-            for (std::size_t target = 0; target < kBoardSlots + kBenchSlots; ++target) {
-                std::array<float, kItemTargetFeatureDim> features{};
-                const auto* unit = item_target_unit(i, target);
-                if (unit) {
-                    const auto* definition = catalog->find_by_id(unit->champion_internal_id);
-                    if (definition) {
-                        const bool on_board = target < kBoardSlots;
-                        const auto row = on_board ? target / 7 : 0;
-                        const int role = std::clamp(observation_role(*unit, *definition), 0, 4);
-                        const auto& stats = definition->stats;
-                        const auto& combat = definition->combat_profile;
-                        features[0] = 1.0f;
-                        features[1] = on_board ? 1.0f : 0.0f;
-                        features[2] = on_board ? 0.0f : 1.0f;
-                        features[3] = static_cast<float>(std::clamp(unit->star / 3.0, 0.0, 1.0));
-                        features[4 + role] = 1.0f;
-                        features[9] = on_board && row <= 1 ? 1.0f : 0.0f;
-                        features[10] = on_board && row >= 2 ? 1.0f : 0.0f;
-                        features[11] = 0.0f; // retired StrategyInfo composition-fit feature
-                        features[12] = static_cast<float>(std::clamp(
-                            (combat.attack_damage > 0.0 ? combat.attack_damage : stats.attack_damage) / 200.0, 0.0, 1.0));
-                        features[13] = static_cast<float>(std::clamp(
-                            (combat.attack_speed > 0.0 ? combat.attack_speed : stats.attack_speed) / 2.0, 0.0, 1.0));
-                        features[14] = static_cast<float>(std::clamp(
-                            (combat.max_hp > 0.0 ? combat.max_hp : stats.max_hp) / 2000.0, 0.0, 1.0));
-                        features[15] = static_cast<float>(std::clamp(stats.armor / 150.0, 0.0, 1.0));
-                        features[16] = static_cast<float>(std::clamp(stats.magic_resist / 150.0, 0.0, 1.0));
-                        const auto equipped_count = item_state
-                            ? item_state->equipped(unit->uuid).size() : unit->items.size();
-                        features[17] = static_cast<float>(std::clamp(equipped_count / 3.0, 0.0, 1.0));
-                    }
-                }
-                for (const float feature : features) out[offset++] = feature;
-            }
-
-            // Exact item-to-target compatibility for the currently held items
-            // and every possible craft result. These matrices are consumed only
-            // by the autoregressive target scorer, not the global encoder.
-            const auto& profile_by_uuid = semantic_profile_by_uuid;
-            // Resolve each board/bench target once. The inventory and 100 recipe
-            // rows reuse this compact slot table instead of repeating UUID lookups.
-            std::array<const items::UnitProfile*, kBoardSlots + kBenchSlots>
-                profile_by_target{};
-            for (std::size_t target = 0; target < profile_by_target.size(); ++target) {
-                const auto* unit = item_target_unit(i, target);
-                if (!unit) continue;
-                const auto profile = profile_by_uuid.find(unit->uuid);
-                if (profile != profile_by_uuid.end())
-                    profile_by_target[target] = profile->second;
-            }
-
-            for (std::size_t item_slot = 0; item_slot < 9; ++item_slot) {
-                const std::string* item_id =
-                    item_state && item_slot < item_state->inventory().size()
-                    ? &item_state->inventory()[item_slot] : nullptr;
-                for (std::size_t target = 0; target < kBoardSlots + kBenchSlots; ++target) {
-                    double fit = 0.0;
-                    const auto* profile = profile_by_target[target];
-                    if (item_id && profile)
-                        fit = item_fit_cache.get(*item_id, *profile);
-                    out[offset++] = static_cast<float>(std::clamp(fit / 50.0, 0.0, 1.0));
-                }
-            }
-
-            // Recipe availability is symmetric: check each unordered pair once.
-            std::array<bool, 100> recipe_available_cache{};
-            if (item_state && item_catalog) {
-                for (std::size_t first = 0; first < 10; ++first) {
-                    for (std::size_t second = first; second < 10; ++second) {
-                        bool available = false;
-                        if (first < item_catalog->components.size() &&
-                            second < item_catalog->components.size()) {
-                            available = item_state->can_craft(
-                                item_catalog->components[first].first,
-                                item_catalog->components[second].first);
-                        }
-                        recipe_available_cache[first * 10 + second] = available;
-                        recipe_available_cache[second * 10 + first] = available;
-                    }
-                }
-            }
-
-            for (std::size_t recipe = 0; recipe < recipe_observation_item_ids.size(); ++recipe) {
-                const auto& item_id = recipe_observation_item_ids[recipe];
-                const bool recipe_available = recipe_available_cache[recipe];
-                for (std::size_t target = 0; target < kBoardSlots + kBenchSlots; ++target) {
-                    double fit = 0.0;
-                    const auto* profile = profile_by_target[target];
-                    if (recipe_available && !item_id.empty() && profile)
-                        fit = item_fit_cache.get(item_id, *profile);
-                    out[offset++] = static_cast<float>(std::clamp(fit / 50.0, 0.0, 1.0));
-                }
-            }
-
-            // 17) PER-CANDIDATE DECISION FEATURES. These are explicit slot-local
-            // features so the policy can compare offers/sale candidates rather than
-            // infer which global features correspond to each output index.
-            // Precompute owned copies once per player. Candidate features below
-            // query this table for every bench/shop slot; repeated board+bench
-            // scans were doing the same work for each candidate.
-            std::unordered_map<std::int32_t, std::array<std::int32_t, 4>> owned_star_counts;
-            owned_star_counts.reserve(kBoardSlots + kBenchSlots);
-            const auto add_owned_copies = [&owned_star_counts](const UnitInstance& unit) {
-                if (unit.star >= 1 && unit.star <= 3)
-                    ++owned_star_counts[unit.champion_internal_id][static_cast<std::size_t>(unit.star)];
-            };
-            for (const auto& unit : player_envs[i].board)
-                if (unit) add_owned_copies(*unit);
-            for (const auto& unit : player_envs[i].bench)
-                if (unit) add_owned_copies(*unit);
-
-            const auto count_same_champion = [&owned_star_counts](const UnitInstance& candidate) {
-                const auto it = owned_star_counts.find(candidate.champion_internal_id);
-                return it == owned_star_counts.end()
-                    ? 0
-                    : strategy::owned_star_equivalent_copies(it->second);
-            };
-            // Distinguish a real same-star pair from a lone copy plus a
-            // different-star upgrade. Exclude the candidate itself for SELL;
-            // for shop offers, estimate the path created by buying the copy.
-            const auto candidate_upgrade_signal =
-                [&owned_star_counts](const UnitInstance& candidate, bool sale_candidate) {
-                    const auto it = owned_star_counts.find(candidate.champion_internal_id);
-                    if (it == owned_star_counts.end() || candidate.star < 1 || candidate.star > 3)
-                        return 0.0;
-                    const auto& counts = it->second;
-                    const int same_star = std::max(
-                        0, counts[static_cast<std::size_t>(candidate.star)] -
-                            (sale_candidate ? 1 : 0));
-                    const int one_star = std::max(
-                        0, counts[1] - (sale_candidate && candidate.star == 1 ? 1 : 0));
-                    if (sale_candidate)
-                        return reward_model::upgrade_path_strength(
-                            candidate.star, same_star, one_star);
-                    return reward_model::upgrade_path_strength(1, counts[0], counts[0]);
-                };
-            const auto append_candidate_features = [&](const UnitInstance* unit, bool sale_candidate) {
-                if (!unit) {
-                    for (std::size_t n = 0; n < kCandidateFeatureDim; ++n)
-                        out[offset++] = 0.0f;
-                    return;
-                }
-                const auto* def = catalog->find_by_id(unit->champion_internal_id);
-                if (!def) {
-                    for (std::size_t n = 0; n < kCandidateFeatureDim; ++n)
-                        out[offset++] = 0.0f;
-                    return;
-                }
-                const int copies = count_same_champion(*unit);
-                // Composition fit/core flags are retired until the canonical
-                // strategic-owner projection is available to the PPO contract.
-                out[offset++] = 0.0f;
-                out[offset++] = static_cast<float>(def->cost) / 5.0f;
-                out[offset++] = static_cast<float>(unit->star) / 3.0f;
-                out[offset++] = role_state_value(observation_role(*unit, *def));
-                out[offset++] = 0.0f;
-                // Number of owned copies (including star-equivalent copies), normalized.
-                out[offset++] = static_cast<float>(std::min(copies, 9)) / 9.0f;
-                // Exact same-star upgrade risk/potential replaces trait overlap:
-                // composition fit already includes trait compatibility, while this
-                // feature tells the SELL head when a copy is a real pair.
-                out[offset++] = static_cast<float>(std::clamp(
-                    candidate_upgrade_signal(*unit, sale_candidate), 0.0, 1.0));
-                if (sale_candidate) {
-                    out[offset++] = static_cast<float>(
-                        EconomyEngine::get_sell_value(def->cost, unit->star)) / 50.0f;
-                } else {
-                    out[offset++] = economy.gold >= def->cost ? 1.0f : 0.0f;
-                }
-            };
-            for (const auto& unit : player_envs[i].bench)
-                append_candidate_features(unit ? &*unit : nullptr, true);
-            for (std::size_t slot = 0; slot < kShopSlots; ++slot) {
-                const auto* unit = player_envs[i].shop
-                    ? player_envs[i].shop->get_unit(static_cast<std::int32_t>(slot))
-                    : nullptr;
-                append_candidate_features(unit, false);
-            }
-        }
-        return observations;
+        // Deliberately no positional board/global/item/anvil/candidate features.
+        // Keeping one neutral scalar preserves the vector-environment batch
+        // contract while policy inference is driven exclusively by semantic_state.
+        return std::vector<float>(
+            kPlayersPerLobby * kSemanticObservationCarrierDim, 0.0f);
     }
 
     // ========================================================
@@ -2632,16 +2122,19 @@ struct TFTEngine::Impl {
         }
     }
 
-    void update_strategy(std::size_t i) {
-        auto& strategy_snapshot = player_envs[i].strategy;
-        StrategyInfo info = strategy_snapshot.value_or(StrategyInfo{});
-        // Strategic direction and composition are projected from native owners below.
-        const auto& player = player_envs[i].info;
-        const auto& economy = player_envs[i].economy;
-        const double power = board_power(i);
-        const auto current_stage = stage_for_round(round + 1);
-        const auto current_round = static_cast<std::int32_t>(round + 1);
+    struct NativeCompositionRefresh {
+        strategy::NativeCompositionGenerationResult generation;
+        std::unordered_map<std::int32_t, strategy::NativeCompositionOwnedUnit> owned;
+        std::unordered_map<std::int32_t, std::array<std::int32_t, 4>> physical_star_counts_by_unit;
+    };
 
+    // Native candidate generation is an owner refresh boundary of its own.
+    // It consumes only live engine facts and publishes one versioned candidate
+    // set reused by direction discovery, active composition and lineup planning.
+    NativeCompositionRefresh refresh_native_composition_candidates(
+        std::size_t i, std::int32_t current_round
+    ) {
+        const auto& economy = player_envs[i].economy;
         // Native strategic evidence is generated directly from live engine facts
         // before any legacy direction, focus, lock or economic strategy is built.
         // The same candidate snapshot is reused by the strategic runtime and CI.
@@ -2794,14 +2287,58 @@ struct TFTEngine::Impl {
 
 
 
-        // Refresh native strategic owners before the remaining economic
-        // compatibility policy. This path consumes live native facts and its own state.
-        refresh_native_strategic_runtime(
-            i, current_round, economy, player_envs[i].info, power,
-            strategic_native_generation, strategic_native_owned,
-            composition_intelligence_native_candidates[i],
-            player_envs[i].shop, pool, trait_milestones);
+        return {
+            std::move(strategic_native_generation),
+            std::move(strategic_native_owned),
+            std::move(physical_star_counts_by_unit)
+        };
+    }
 
+    using LegacyEconomicStrategyDecision = decltype(
+        strategy::select_economic_strategy(
+            std::declval<strategy::EconomicStrategyContext>()));
+
+    // Legacy StrategyInfo/economic fields are a compatibility projection only.
+    // Keeping this producer separate prevents it from owning or feeding the native
+    // strategic candidate/active-composition refresh. Tests/replay can disable it
+    // without disabling native candidate generation or strategic owners.
+    std::pair<std::optional<LegacyEconomicStrategyDecision>, std::int32_t>
+    update_legacy_strategy_compatibility_projection(
+        std::size_t i, StrategyInfo& info, double power, bool enabled
+    ) {
+        if (!enabled) {
+            info.strategy = -1;
+            info.strategy_name.clear();
+            info.confidence = 0.0f;
+            info.reason = "legacy_strategy_projection_disabled";
+            info.changed = false;
+            info.strategy_age = 0;
+            info.board_power = power;
+            info.bench_strength = 0.0;
+            info.composition_direction.clear();
+            info.composition_locked = false;
+            info.composition_focus.clear();
+            info.composition_focus_id = -1;
+            info.composition_focus_weights.clear();
+            info.core_units.clear();
+            info.core_unit_ids.clear();
+            info.core_traits.clear();
+            info.planned_units.clear();
+            info.planned_unit_ids.clear();
+            info.planned_traits.clear();
+            info.planned_main_carry_id = -1;
+            info.planned_composition_score = 0.0;
+            info.planned_acquisition_notes.clear();
+            info.active_traits.clear();
+            info.unit_counts.clear();
+            info.unit_counts_by_id.clear();
+            info.strategy_scores.clear();
+            info.best_scored_strategy = -1;
+            info.active_traits_count = 0;
+            return {std::nullopt, -1};
+        }
+        const auto& player = player_envs[i].info;
+        const auto& economy = player_envs[i].economy;
         double bench_strength = 0.0;
         for (const auto& unit : player_envs[i].bench) {
             if (!unit) continue;
@@ -2981,6 +2518,46 @@ struct TFTEngine::Impl {
                 }
             }
         }
+
+        return {std::move(strategy_decision), chosen};
+    }
+
+    void update_strategy(std::size_t i) {
+        auto& strategy_snapshot = player_envs[i].strategy;
+        StrategyInfo info = strategy_snapshot.value_or(StrategyInfo{});
+        // Strategic direction and composition are projected from native owners below.
+        const auto& player = player_envs[i].info;
+        const auto& economy = player_envs[i].economy;
+        const double power = board_power(i);
+        const auto current_stage = stage_for_round(round + 1);
+        const auto current_round = static_cast<std::int32_t>(round + 1);
+
+        // Native owners receive a dedicated refresh from live engine facts.
+        // The compatibility strategy projection below cannot mutate this snapshot.
+        auto native_composition = refresh_native_composition_candidates(i, current_round);
+        auto& strategic_native_generation = native_composition.generation;
+        auto& strategic_native_owned = native_composition.owned;
+        auto& physical_star_counts_by_unit = native_composition.physical_star_counts_by_unit;
+
+        // Refresh native strategic owners before the remaining economic
+        // compatibility policy. This path consumes live native facts and its own state.
+        refresh_native_strategic_runtime(
+            i, current_round, economy, player_envs[i].info, power,
+            strategic_native_generation, strategic_native_owned,
+            composition_intelligence_native_candidates[i],
+            player_envs[i].shop, pool, trait_milestones);
+
+        // This legacy compatibility producer is intentionally downstream
+        // of the native owner refresh and cannot feed native composition state.
+        const char* disable_legacy_projection_env =
+            std::getenv("TFT_DISABLE_LEGACY_STRATEGY_PROJECTION");
+        const bool disable_legacy_projection = disable_legacy_projection_env &&
+            (std::string(disable_legacy_projection_env) == "1" ||
+             std::string(disable_legacy_projection_env) == "true" ||
+             std::string(disable_legacy_projection_env) == "yes");
+        const auto legacy_projection =
+            update_legacy_strategy_compatibility_projection(
+                i, info, power, !disable_legacy_projection);
 
         // Raw shop snapshot shared by the independent shadow composition pipeline.
         const auto& strategic_shop = player_envs[i].shop;
@@ -4104,12 +3681,17 @@ struct TFTEngine::Impl {
         // O diagnóstico usa exatamente os scores que escolheram o modo ativo.
         // Não existe mais um segundo seletor divergente do modo executado.
         info.strategy_scores.clear();
-        for (std::int32_t strategy_id = 0; strategy_id < 7; ++strategy_id) {
-            info.strategy_scores.emplace_back(
-                strategy_id,
-                strategy_decision.scores[static_cast<std::size_t>(strategy_id)]);
+        if (legacy_projection.first) {
+            const auto& strategy_decision = *legacy_projection.first;
+            for (std::int32_t strategy_id = 0; strategy_id < 7; ++strategy_id) {
+                info.strategy_scores.emplace_back(
+                    strategy_id,
+                    strategy_decision.scores[static_cast<std::size_t>(strategy_id)]);
+            }
+            info.best_scored_strategy = legacy_projection.second;
+        } else {
+            info.best_scored_strategy = -1;
         }
-        info.best_scored_strategy = chosen;
         info.active_traits_count = static_cast<std::int32_t>(info.active_traits.size());
 
         strategy_snapshot = std::move(info);
@@ -6230,7 +5812,9 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
         });
     }
 
-    const auto describe_unit = [this](const UnitInstance* unit) {
+    const auto describe_unit = [this](
+        const UnitInstance* unit, bool on_board, std::size_t slot
+    ) {
         AuditUnitSnapshot result{};
         if (!unit) return result;
         result.occupied = true;
@@ -6241,9 +5825,24 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
             unit->champion_internal_id
         );
         result.cost = definition ? definition->cost : 0;
-        if (definition) result.trait_names = definition->traits;
+        if (definition) {
+            result.trait_names = definition->traits;
+            result.role = std::clamp(native_observation_role(*unit, *definition), 0, 4);
+            const auto& stats = definition->stats;
+            const auto& combat = definition->combat_profile;
+            result.attack_damage = combat.attack_damage > 0.0
+                ? combat.attack_damage : stats.attack_damage;
+            result.attack_speed = combat.attack_speed > 0.0
+                ? combat.attack_speed : stats.attack_speed;
+            result.max_health = combat.max_hp > 0.0
+                ? combat.max_hp : stats.max_hp;
+            result.armor = stats.armor;
+            result.magic_resist = stats.magic_resist;
+        }
         result.item_ids.reserve(unit->items.size());
         for (const auto& item : unit->items) result.item_ids.push_back(item.api_name);
+        (void)on_board;
+        (void)slot;
         return result;
     };
 
@@ -6287,6 +5886,8 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
         target.round_interest = source.economy.round_interest;
         target.round_streak_gold = source.economy.round_streak_gold;
         target.round_win_gold = source.economy.last_round_win_gold;
+        target.actions_taken_this_round = source.actions_taken_this_round;
+        target.board_move_age = source.board_move_age;
         target.masks = source.action_masks;
 
         auto& strategic = target.strategic_state;
@@ -6366,14 +5967,14 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
 
         for (std::size_t slot = 0; slot < kBoardSlots; ++slot)
             target.board[slot] = describe_unit(
-                source.board[slot] ? &*source.board[slot] : nullptr
+                source.board[slot] ? &*source.board[slot] : nullptr, true, slot
             );
         for (std::size_t slot = 0; slot < kBenchSlots; ++slot)
             target.bench[slot] = describe_unit(
-                source.bench[slot] ? &*source.bench[slot] : nullptr
+                source.bench[slot] ? &*source.bench[slot] : nullptr, false, slot
             );
         for (std::size_t slot = 0; slot < kShopSlots; ++slot) {
-            target.shop[slot] = describe_unit(source.shop->get_unit(static_cast<std::int32_t>(slot)));
+            target.shop[slot] = describe_unit(source.shop->get_unit(static_cast<std::int32_t>(slot)), false, slot);
             target.shop_offer_revisions[slot] = source.shop->offer_revisions()[slot];
         }
         if (source.item_engine) {
@@ -6399,6 +6000,138 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
                 target.pending_anvil_sequence = pending->sequence;
                 target.pending_anvil_kind = static_cast<std::int32_t>(pending->kind);
                 target.pending_anvil_options = pending->options;
+            }
+
+            if (impl_->item_catalog) {
+                const auto& item_catalog = *impl_->item_catalog;
+                for (std::size_t component = 0; component < 10; ++component) {
+                    double count = 0.0;
+                    if (component < item_catalog.components.size()) {
+                        const auto& id = item_catalog.components[component].first;
+                        count = static_cast<double>(std::count(
+                            source.item_engine->components().begin(),
+                            source.item_engine->components().end(), id));
+                    }
+                    target.item_component_features[component] =
+                        static_cast<float>(std::clamp(count / 6.0, 0.0, 1.0));
+                }
+
+                for (std::size_t slot = 0; slot < 9; ++slot) {
+                    if (slot >= source.item_engine->inventory().size()) continue;
+                    if (const auto* definition =
+                            source.item_engine->find(source.item_engine->inventory()[slot])) {
+                        target.item_inventory_features[slot] =
+                            encode_item_semantic_features(*definition);
+                    }
+                }
+                target.item_recipe_features = impl_->recipe_observation_features;
+
+                const auto profiles = impl_->semantic_item_unit_profiles(i);
+                std::unordered_map<std::string, const items::UnitProfile*> profile_by_uuid;
+                profile_by_uuid.reserve(profiles.size());
+                for (const auto& profile : profiles)
+                    profile_by_uuid.emplace(profile.uuid, &profile);
+                std::array<const items::UnitProfile*, kBoardSlots + kBenchSlots>
+                    profile_by_target{};
+                for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
+                    if (!source.board[slot]) continue;
+                    const auto found = profile_by_uuid.find(source.board[slot]->uuid);
+                    if (found != profile_by_uuid.end()) profile_by_target[slot] = found->second;
+                }
+                for (std::size_t slot = 0; slot < kBenchSlots; ++slot) {
+                    if (!source.bench[slot]) continue;
+                    const auto found = profile_by_uuid.find(source.bench[slot]->uuid);
+                    if (found != profile_by_uuid.end())
+                        profile_by_target[kBoardSlots + slot] = found->second;
+                }
+                items::ItemFitCache fit_cache(source.item_engine.get());
+                for (std::size_t item_slot = 0; item_slot < 9; ++item_slot) {
+                    if (item_slot >= source.item_engine->inventory().size()) continue;
+                    const auto& item_id = source.item_engine->inventory()[item_slot];
+                    for (std::size_t target_slot = 0;
+                         target_slot < profile_by_target.size(); ++target_slot) {
+                        const auto* profile = profile_by_target[target_slot];
+                        if (!profile) continue;
+                        const double fit = fit_cache.get(item_id, *profile);
+                        target.item_inventory_target_fit[item_slot][target_slot] =
+                            static_cast<float>(std::clamp(fit / 50.0, 0.0, 1.0));
+                    }
+                }
+
+                std::array<bool, 100> recipe_available{};
+                for (std::size_t first = 0; first < 10; ++first) {
+                    for (std::size_t second = first; second < 10; ++second) {
+                        bool available = false;
+                        if (first < item_catalog.components.size() &&
+                            second < item_catalog.components.size()) {
+                            available = source.item_engine->can_craft(
+                                item_catalog.components[first].first,
+                                item_catalog.components[second].first);
+                        }
+                        recipe_available[first * 10 + second] = available;
+                        recipe_available[second * 10 + first] = available;
+                    }
+                }
+                for (std::size_t recipe = 0; recipe < 100; ++recipe) {
+                    const auto& item_id = impl_->recipe_observation_item_ids[recipe];
+                    if (!recipe_available[recipe] || item_id.empty()) continue;
+                    for (std::size_t target_slot = 0;
+                         target_slot < profile_by_target.size(); ++target_slot) {
+                        const auto* profile = profile_by_target[target_slot];
+                        if (!profile) continue;
+                        const double fit = fit_cache.get(item_id, *profile);
+                        target.item_recipe_target_fit[recipe][target_slot] =
+                            static_cast<float>(std::clamp(fit / 50.0, 0.0, 1.0));
+                    }
+                }
+
+                if (const auto* pending = source.item_engine->pending_anvil()) {
+                    for (std::size_t option_index = 0;
+                         option_index < pending->options.size() && option_index < 9;
+                         ++option_index) {
+                        const auto& option_id = pending->options[option_index];
+                        auto& features = target.pending_anvil_option_features[option_index];
+                        double best_fit = 0.0;
+                        if (pending->kind == items::ItemAnvilKind::COMPONENT) {
+                            const auto component = std::find_if(
+                                item_catalog.components.begin(), item_catalog.components.end(),
+                                [&](const auto& entry) { return entry.first == option_id; });
+                            if (component != item_catalog.components.end()) {
+                                const auto component_index = static_cast<std::size_t>(
+                                    std::distance(item_catalog.components.begin(), component));
+                                if (component_index < 10) features[component_index] = 1.0f;
+                            }
+                            for (const auto& candidate_item : item_catalog.items) {
+                                if (candidate_item.recipe_components[0] != option_id &&
+                                    candidate_item.recipe_components[1] != option_id) continue;
+                                for (const auto& profile : profiles)
+                                    best_fit = std::max(best_fit,
+                                        fit_cache.get(candidate_item.id, profile));
+                            }
+                        } else if (const auto* definition = source.item_engine->find(option_id)) {
+                            const std::array<double, 10> stats{
+                                definition->attack_damage / 100.0,
+                                definition->attack_speed / 2.0,
+                                definition->ability_power / 100.0,
+                                definition->critical_strike_chance,
+                                definition->critical_strike_damage / 2.0,
+                                definition->max_health / 2000.0,
+                                definition->armor / 100.0,
+                                definition->magic_resist / 100.0,
+                                definition->omnivamp,
+                                definition->damage_amplification
+                            };
+                            for (std::size_t stat = 0; stat < stats.size(); ++stat)
+                                features[stat] = static_cast<float>(
+                                    std::clamp(stats[stat], 0.0, 1.0));
+                            for (const auto& profile : profiles)
+                                best_fit = std::max(best_fit,
+                                    fit_cache.get(option_id, profile));
+                        }
+                        features[10] = static_cast<float>(
+                            std::clamp(best_fit / 20.0, 0.0, 1.0));
+                    }
+                }
             }
             const auto& retirement = source.item_engine->retirement_snapshot();
             target.item_ownership_retired = retirement.retired;

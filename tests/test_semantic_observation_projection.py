@@ -1,8 +1,16 @@
+import hashlib
+
 import pytest
+import torch
 
 from semantic_observation import (
     SEMANTIC_ENTITY_SLOTS,
     SEMANTIC_NUMERIC_DIM,
+    SEMANTIC_TRAIT_VOCAB_SIZE,
+    SEMANTIC_POLICY_STATE_KEYS,
+    semantic_policy_state_keys,
+    validate_semantic_policy_state_dict,
+    semantic_item_state_tensors,
     build_semantic_batch,
     build_semantic_state_checkpoint_contract,
     project_native_player_state,
@@ -21,6 +29,12 @@ def _unit(occupied=False, champion_id="", star=0, cost=0):
         "cost": cost,
         "items": [],
         "trait_names": [],
+        "role": 3,
+        "attack_damage": 100.0,
+        "attack_speed": 1.0,
+        "max_health": 1000.0,
+        "armor": 50.0,
+        "magic_resist": 50.0,
     }
 
 
@@ -44,6 +58,22 @@ def _metadata():
         "board": [_unit() for _ in range(28)],
         "bench": [_unit() for _ in range(9)],
         "shop": [_unit() for _ in range(5)],
+        "actions_taken_this_round": 3,
+        "board_move_age": [0] + [10] * 27,
+        "item_components": [],
+        "item_inventory": [],
+        "item_component_catalog": [f"component_{index}" for index in range(10)],
+        "equipped_items": [],
+        "pending_anvil": False,
+        "pending_anvil_sequence": 0,
+        "pending_anvil_kind": -1,
+        "pending_anvil_options": [],
+        "item_component_features": [0.0] * 10,
+        "item_inventory_features": [[0.0] * 17 for _ in range(9)],
+        "item_recipe_features": [[0.0] * 17 for _ in range(100)],
+        "item_inventory_target_fit": [[0.0] * 37 for _ in range(9)],
+        "item_recipe_target_fit": [[0.0] * 37 for _ in range(100)],
+        "pending_anvil_option_features": [[0.0] * 11 for _ in range(9)],
     }
     player["board"][0] = _unit(True, "TFT_TestChampion", 2, 3)
     player["board"][0]["items"] = ["ItemA"]
@@ -94,7 +124,7 @@ def _metadata():
         "stage": 3,
         "round": 12,
         "native_state_contract_id": "tft.native-state-snapshot",
-        "native_state_contract_version": 3,
+        "native_state_contract_version": 5,
         "native_state_producer": "TFTEngine::get_audit_snapshot",
         "native_state_source_namespace": "tft.engine.observation-snapshot",
         "native_player_state": player,
@@ -111,14 +141,29 @@ def test_native_semantic_projection_has_stable_shape_and_explicit_identity():
     assert len(projected["numeric"]) == SEMANTIC_NUMERIC_DIM
     assert len(projected["champion_ids"]) == SEMANTIC_ENTITY_SLOTS
     assert projected["champion_ids"][0] == 18
-    assert projected["numeric"][21] == 1.0  # occupied
-    assert projected["numeric"][26] == 1.0  # mapped champion identity valid
-    assert projected["numeric"][27] == 1.0  # active composition member
-    assert projected["numeric"][28] == 1.0  # active core member
-    assert projected["numeric"][29] == 1.0  # direction reference
-    assert projected["numeric"][30] == 1.0  # pivot reference
-    assert projected["numeric"][31] == 4.0 / 9.0  # one 2-star plus one 1-star copy
-    assert projected["numeric"][32] == 0.0  # native UnitCopyProgress reports no 2-star progress
+    assert projected["numeric"][52] == 1.0  # occupied
+    assert projected["numeric"][57] == 1.0  # mapped champion identity valid
+    assert projected["numeric"][58] == 1.0  # active composition member
+    assert projected["numeric"][59] == 1.0  # active core member
+    assert projected["numeric"][60] == 1.0  # direction reference
+    assert projected["numeric"][61] == 1.0  # pivot reference
+    assert projected["numeric"][62] == 4.0 / 9.0  # one 2-star plus one 1-star copy
+    assert projected["numeric"][63] == 0.0  # native UnitCopyProgress reports no 2-star progress
+    # The appended 17-field item target profile comes from the native snapshot.
+    assert projected["numeric"][64] == 1.0  # occupied target
+    assert projected["numeric"][65] == 1.0  # board target
+    assert projected["numeric"][71] == 1.0  # classifier role one-hot (fighter)
+    assert projected["numeric"][73] == 1.0  # frontline row
+    assert projected["numeric"][75] == 0.5  # attack damage / 200
+    assert projected["numeric"][80] == 1.0 / 3.0  # equipped item count / 3
+    bench_target_start = 52 + 28 * 39 + 12
+    assert projected["numeric"][bench_target_start + 2] == 1.0
+    assert projected["numeric"][bench_target_start + 9] == 0.0
+    assert projected["numeric"][21] == 5.0 / 9.0  # board capacity
+    assert projected["numeric"][22] == 8.0 / 9.0  # bench capacity
+    assert projected["numeric"][23] == 0.3  # actions taken this round
+    assert projected["numeric"][24] == 0.0  # current board slot move age
+    assert projected["numeric"][25] == 1.0  # empty slot move age is capped
     assert projected["identity"]["player_id"] == 2
     assert len(projected["sha256"]) == 64
 
@@ -129,7 +174,50 @@ def test_copy_progress_consumes_native_unit_copy_progress_without_recounting():
         "copies_toward_next_star"
     ] = 2
     projected = project_native_player_state(row, {"TFT_TestChampion": 17})
-    assert projected["numeric"][32] == 1.0
+    assert projected["numeric"][63] == 1.0
+
+
+def test_native_trait_identities_are_stably_hashed_and_exposed_to_policy():
+    metadata = _metadata()
+    metadata["native_player_state"]["board"][0]["trait_names"] = ["TraitAlpha", "TraitBeta"]
+    projected = project_native_player_state(metadata, {"Test_A": 0})
+    trait_ids = semantic_item_state_tensors(
+        torch.tensor([projected["numeric"]], dtype=torch.float32)
+    )["trait_ids"]
+
+    expected = [
+        int.from_bytes(hashlib.sha256(name.encode("utf-8")).digest()[:4], "big")
+        % SEMANTIC_TRAIT_VOCAB_SIZE + 1
+        for name in ("TraitAlpha", "TraitBeta")
+    ]
+    assert trait_ids.shape == (1, SEMANTIC_ENTITY_SLOTS, 10)
+    assert trait_ids[0, 0, :2].tolist() == expected
+    assert trait_ids[0, 0, 2:].count_nonzero().item() == 0
+    assert trait_ids[0, 1].count_nonzero().item() == 0
+
+
+def test_item_identity_and_anvil_sequence_are_bound_to_projection_hash():
+    base = _metadata()
+    base["native_player_state"]["item_inventory"] = ["completed_item_alpha"]
+    first = project_native_player_state(base, {"Test_A": 0})
+
+    changed_item = _metadata()
+    changed_item["native_player_state"]["item_inventory"] = ["completed_item_beta"]
+    second = project_native_player_state(changed_item, {"Test_A": 0})
+    assert first["sha256"] != second["sha256"]
+
+    pending = _metadata()
+    pending["native_player_state"]["pending_anvil"] = True
+    pending["native_player_state"]["pending_anvil_sequence"] = 7
+    pending["native_player_state"]["pending_anvil_kind"] = 0
+    pending["native_player_state"]["pending_anvil_options"] = ["component_0"]
+    pending["native_player_state"]["pending_anvil_option_features"][0][0] = 1.0
+    pending_first = project_native_player_state(pending, {"Test_A": 0})
+
+    next_sequence = dict(pending)
+    next_sequence["native_player_state"]["pending_anvil_sequence"] = 8
+    pending_second = project_native_player_state(next_sequence, {"Test_A": 0})
+    assert pending_first["sha256"] != pending_second["sha256"]
 
 
 def test_semantic_batch_is_deterministic_and_catalog_contract_is_bound():
@@ -155,7 +243,7 @@ def test_unknown_champion_is_not_fabricated_and_is_marked_invalid():
     row["native_player_state"]["board"][0]["champion_id"] = "TFT_UnknownChampion"
     projected = project_native_player_state(row, {"TFT_TestChampion": 17})
     assert projected["champion_ids"][0] == 0
-    assert projected["numeric"][26] == 0.0
+    assert projected["numeric"][57] == 0.0
 
 
 def test_projection_rejects_missing_native_provenance_or_player_mismatch():
@@ -248,6 +336,41 @@ def test_semantic_projection_hash_binds_owner_identity_even_when_tensor_is_equal
 
 
 
+
+def test_semantic_v2_checkpoint_has_only_explicit_v6_warm_start_path():
+    import copy
+    import hashlib
+    import json
+
+    catalog = {"TFT_TestChampion": 17}
+    current = build_semantic_state_checkpoint_contract(catalog)
+    historical = copy.deepcopy(current)
+    payload = historical["contract"]
+    payload["contract_id"] = "tft.ppo.semantic-native-state.v2"
+    payload["version"] = 2
+    payload["source"]["contract_version"] = 3
+    payload["global_features"] = payload["global_features"][:21]
+    payload["entity_slots"]["features"] = payload["entity_slots"]["features"][:12]
+    payload["numeric_dimension"] = 21 + SEMANTIC_ENTITY_SLOTS * 12
+    payload["encoder"]["numeric_plus_embedding_input_dim"] = (
+        payload["numeric_dimension"] + SEMANTIC_ENTITY_SLOTS * 16
+    )
+    payload.pop("item_state")
+    payload.pop("trait_embedding")
+    payload["encoder"]["kind"] = "champion_embedding_plus_mlp"
+    payload["encoder"]["fusion"] = "additive_to_shared_actor_critic_latent"
+    payload["encoder"].pop("board_cnn_source")
+    payload["encoder"].pop("action_candidate_source")
+    canonical = json.dumps(
+        payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    ).encode("utf-8")
+    historical["sha256"] = hashlib.sha256(canonical).hexdigest()
+
+    validate_semantic_state_checkpoint_integrity(historical)
+    validate_semantic_state_warm_start_migration(historical, catalog)
+    with pytest.raises(ValueError, match="incompatible"):
+        validate_semantic_state_checkpoint_contract(historical, catalog)
+
 def test_semantic_checkpoint_manifest_integrity_is_separate_from_runtime_compatibility():
     import copy
 
@@ -266,10 +389,22 @@ def test_semantic_checkpoint_manifest_integrity_is_separate_from_runtime_compati
     validate_semantic_state_warm_start_migration(changed, catalog)
     with pytest.raises(ValueError, match="incompatible"):
         validate_semantic_state_checkpoint_contract(changed, catalog)
-    with pytest.raises(ValueError, match="catalog, layout, normalization"):
+    with pytest.raises(ValueError, match="catalog, normalization"):
         validate_semantic_state_warm_start_migration(
             changed, {"TFT_TestChampion": 18}
         )
     changed["sha256"] = "0" * 64
     with pytest.raises(ValueError, match="hash is invalid"):
         validate_semantic_state_checkpoint_integrity(changed)
+
+
+def test_semantic_v6_checkpoint_weight_contract_requires_trait_embedding():
+    complete = {key: object() for key in SEMANTIC_POLICY_STATE_KEYS}
+    assert semantic_policy_state_keys(complete) == SEMANTIC_POLICY_STATE_KEYS
+    validate_semantic_policy_state_dict(complete)
+
+    incomplete = dict(complete)
+    incomplete.pop("semantic_trait_embedding.weight")
+    assert semantic_policy_state_keys(incomplete) != SEMANTIC_POLICY_STATE_KEYS
+    with pytest.raises(ValueError, match="Semantic v6 policy weights are incomplete"):
+        validate_semantic_policy_state_dict(incomplete)

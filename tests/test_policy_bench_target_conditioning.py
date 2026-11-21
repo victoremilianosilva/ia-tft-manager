@@ -25,7 +25,7 @@ def _complete_mask_bundle(masks, batch_size, device="cpu"):
 
 
 ACTION_DIMS = [9, 5, 9, 28, 28, 28]
-OBS_DIM = 22 + (4 * 7 * 5) + (1 + 4 * 7) + ((9 + 5) * 8)
+OBS_DIM = 10 + (4 * 7 * 5) + (1 + 4 * 7) + ((9 + 5) * 6)
 
 
 def _policy_and_observation(batch_size=1):
@@ -71,9 +71,9 @@ def test_bench_to_board_logits_include_selected_slot_and_candidate_features():
     actual = captured["input"]
     expected_slot = torch.nn.functional.one_hot(selected_slots, num_classes=9).float()
     expected_features = bench_features[:, 1, :]
-    assert actual.shape[-1] == conditioned.shape[-1] + 9 + 8
+    assert actual.shape[-1] == conditioned.shape[-1] + 9 + 6
     assert torch.equal(actual[:, conditioned.shape[-1]:conditioned.shape[-1] + 9], expected_slot)
-    assert torch.allclose(actual[:, -8:], expected_features)
+    assert torch.allclose(actual[:, -6:], expected_features)
 
 
 def test_bench_to_board_logits_change_when_selected_unit_features_change():

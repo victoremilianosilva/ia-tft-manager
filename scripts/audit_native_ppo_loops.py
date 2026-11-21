@@ -26,6 +26,11 @@ if str(ROOT) not in sys.path:
 
 from cpp_lobby_env import CppTFTLobbyWrapper
 from policy import TFTPolicy
+from semantic_observation import (
+    catalog_identity, validate_semantic_state_checkpoint_contract,
+    validate_semantic_policy_state_dict,
+)
+from scripts.evaluate_checkpoints import native_semantic_state_for_players
 
 ACTION_DIMS = [9, 5, 9, 28, 28, 28]
 PASS = [6, 0, 0, 0, 0, 0]
@@ -316,10 +321,24 @@ def _effect_for_action(action, before, after):
     return False
 
 
-def load_policy(checkpoint_path, obs_dim, device):
+def load_policy(checkpoint_path, obs_dim, device, catalog_map):
     checkpoint = torch.load(checkpoint_path, map_location=device)
     state = checkpoint.get("policy", checkpoint)
-    policy = TFTPolicy(obs_dim, ACTION_DIMS).to(device)
+    semantic_contract = checkpoint.get("semantic_state_contract")
+    if semantic_contract is None:
+        raise RuntimeError("Native semantic audit requires a checkpoint with semantic_state_contract v6.")
+    validate_semantic_state_checkpoint_contract(semantic_contract, catalog_map)
+    try:
+        validate_semantic_policy_state_dict(state)
+    except ValueError as exc:
+        raise RuntimeError(
+            "Native semantic audit requires the complete semantic v6 encoder weights."
+        ) from exc
+    policy = TFTPolicy(
+        obs_dim, ACTION_DIMS,
+        semantic_vocab_size=catalog_identity(catalog_map)["vocab_size"],
+        require_semantic_state=True,
+    ).to(device)
     try:
         policy.load_compatible_state_dict(state)
     except (RuntimeError, KeyError, ValueError) as exc:
@@ -331,7 +350,7 @@ def load_policy(checkpoint_path, obs_dim, device):
     return policy
 
 
-def audit_seed(policy, device, seed, max_steps, output, fail_on_loop):
+def audit_seed(policy, device, seed, max_steps, output, fail_on_loop, catalog_map):
     lobby = CppTFTLobbyWrapper(seed=seed)
     visited = [dict() for _ in range(8)]
     history = [[] for _ in range(8)]
@@ -364,9 +383,13 @@ def audit_seed(policy, device, seed, max_steps, output, fail_on_loop):
             diagnostics = [[] for _ in range(8)]
             if alive:
                 obs_batch = torch.as_tensor(observations[alive], dtype=torch.float32, device=device)
+                semantic_state = native_semantic_state_for_players(
+                    lobby, alive, catalog_map, device
+                )
                 with torch.no_grad():
                     chosen, _, _, _, diag = policy.get_action_and_value_with_diagnostics(
-                        obs_batch, masks=_mask_batch(masks, alive, device), deterministic=True
+                        obs_batch, masks=_mask_batch(masks, alive, device), deterministic=True,
+                        semantic_state=semantic_state,
                     )
                 for row, player_id in enumerate(alive):
                     actions[player_id] = chosen[row].detach().cpu().to(torch.int64).tolist()
@@ -542,15 +565,18 @@ def main():
     try:
         obs = np.asarray(probe.reset(seed=seeds[0]), dtype=np.float32)
         obs_dim = int(obs.shape[-1])
+        catalog_map = probe.get_champion_id_map()
+        if not isinstance(catalog_map, dict) or not catalog_map:
+            raise RuntimeError("Native champion catalog map is unavailable for semantic inference.")
     finally:
         probe.close()
-    policy = load_policy(args.checkpoint, obs_dim, device)
+    policy = load_policy(args.checkpoint, obs_dim, device, catalog_map)
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     total_steps = 0
     with args.output.open("w", encoding="utf-8") as output:
         for seed in seeds:
-            count = audit_seed(policy, device, seed, args.max_steps, output, args.fail_on_loop)
+            count = audit_seed(policy, device, seed, args.max_steps, output, args.fail_on_loop, catalog_map)
             total_steps += count
             print(f"seed={seed}: {count} passos auditados")
     print(f"Relatório: {args.output}")

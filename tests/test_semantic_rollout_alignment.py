@@ -7,7 +7,7 @@ from action_contract import (
     hash_mask_row,
 )
 from rollout import RolloutBuffer
-from semantic_observation import SEMANTIC_ENTITY_SLOTS, SEMANTIC_NUMERIC_DIM
+from semantic_observation import SEMANTIC_ENTITY_SLOTS, SEMANTIC_NUMERIC_DIM, semantic_item_state_tensors
 
 
 def test_rollout_keeps_semantic_projection_aligned_with_each_transition():
@@ -25,10 +25,10 @@ def test_rollout_keeps_semantic_projection_aligned_with_each_transition():
         for name, shape in MASK_SHAPES.items()
     }
     masks["type_mask"][:, 6] = True
+    semantic_numeric = torch.zeros((batch_size, SEMANTIC_NUMERIC_DIM), dtype=torch.float32)
     semantic = {
-        "numeric": torch.arange(
-            batch_size * SEMANTIC_NUMERIC_DIM, dtype=torch.float32
-        ).reshape(batch_size, SEMANTIC_NUMERIC_DIM),
+        "numeric": semantic_numeric,
+        "items": semantic_item_state_tensors(semantic_numeric),
         "champion_ids": torch.arange(
             batch_size * SEMANTIC_ENTITY_SLOTS, dtype=torch.long
         ).reshape(batch_size, SEMANTIC_ENTITY_SLOTS),
@@ -47,8 +47,13 @@ def test_rollout_keeps_semantic_projection_aligned_with_each_transition():
     )
 
     batch = next(buffer.get_batches(batch_size=batch_size))
+    # Minibatch order is intentionally shuffled; compare identity-bound rows
+    # after sorting by the first champion ID, not by their original batch slot.
+    actual = batch["semantic_state"]["champion_ids"]
+    actual = actual[torch.argsort(actual[:, 0])]
+    expected = semantic["champion_ids"][torch.argsort(semantic["champion_ids"][:, 0])]
+    assert torch.equal(actual, expected)
     assert torch.equal(batch["semantic_state"]["numeric"], semantic["numeric"])
-    assert torch.equal(batch["semantic_state"]["champion_ids"], semantic["champion_ids"])
 
 
 def test_rollout_rejects_semantic_projection_shape_and_non_finite_values():
@@ -108,7 +113,7 @@ def test_rollout_replay_keeps_semantic_identity_and_hash_with_the_same_row():
     decision.update({
         "semantic_identity": identity,
         "semantic_projection_hash": digest,
-        "semantic_projection_contract_id": "tft.ppo.semantic-native-state.v2",
+        "semantic_projection_contract_id": "tft.ppo.semantic-native-state.v6",
         "semantic_projection_contract_hash": "b" * 64,
         "mask_snapshot_hash": hash_mask_row({name: masks[name][0] for name in MASK_SHAPES}),
         "mask_snapshot_hash_algorithm": MASK_SNAPSHOT_HASH_ALGORITHM,
@@ -129,11 +134,13 @@ def test_rollout_replay_keeps_semantic_identity_and_hash_with_the_same_row():
     next_state = {
         **identity, "decision_sequence": 11, "player_decision_sequence": 3,
     }
+    semantic_numeric = torch.zeros((1, SEMANTIC_NUMERIC_DIM), dtype=torch.float32)
     semantic = {
-        "numeric": torch.zeros((1, SEMANTIC_NUMERIC_DIM), dtype=torch.float32),
+        "numeric": semantic_numeric,
+        "items": semantic_item_state_tensors(semantic_numeric),
         "champion_ids": torch.zeros((1, SEMANTIC_ENTITY_SLOTS), dtype=torch.long),
         "identities": [identity], "hashes": [digest],
-        "contract_id": "tft.ppo.semantic-native-state.v2",
+        "contract_id": "tft.ppo.semantic-native-state.v6",
         "contract_hash": "b" * 64,
     }
     actions = torch.tensor([action], dtype=torch.long)
@@ -149,3 +156,32 @@ def test_rollout_replay_keeps_semantic_identity_and_hash_with_the_same_row():
     assert batch["semantic_state"]["identities"] == [identity]
     assert batch["semantic_state"]["hashes"] == [digest]
     assert batch["snapshot_metadata"][0]["semantic_projection_hash"] == digest
+
+
+def test_production_rollout_rejects_missing_semantic_state():
+    buffer = RolloutBuffer(
+        num_steps=1,
+        num_envs=1,
+        obs_dim=4,
+        action_dim=6,
+        device="cpu",
+        mask_shapes=MASK_SHAPES,
+        require_semantic_state=True,
+    )
+    masks = {
+        name: torch.zeros((1, *shape), dtype=torch.bool)
+        for name, shape in MASK_SHAPES.items()
+    }
+    masks["type_mask"][:, 6] = True
+    actions = torch.zeros(1, 6, dtype=torch.long)
+    actions[:, 0] = 6
+
+    try:
+        buffer.add(
+            torch.zeros(1, 4), actions, torch.zeros(1), torch.zeros(1),
+            torch.zeros(1), torch.zeros(1), masks,
+        )
+    except ValueError as exc:
+        assert "requires semantic_state v6" in str(exc)
+    else:
+        raise AssertionError("production rollout must reject a missing semantic state")

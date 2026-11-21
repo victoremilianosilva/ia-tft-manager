@@ -52,8 +52,29 @@ def test_checkpoint_lineage_rejects_policy_shape_change_even_when_components_mat
     changed_policy = dict(inputs[0])
     changed_policy["actor.weight"] = torch.zeros((5, 3), dtype=torch.float32)
 
-    with pytest.raises(ValueError, match="linhagem incompatível"):
+    with pytest.raises(ValueError, match="lineage incompatível"):
         validate_checkpoint_lineage_contract(manifest, changed_policy, *inputs[1:])
+
+
+def test_checkpoint_lineage_accepts_only_retired_flat_global_mlp_weights():
+    inputs = _inputs()
+    historical_policy = dict(inputs[0])
+    historical_policy["global_mlp.0.weight"] = torch.zeros((256, 128), dtype=torch.float32)
+    historical_policy["global_mlp.0.bias"] = torch.zeros((256,), dtype=torch.float32)
+    historical_policy["global_mlp.2.weight"] = torch.zeros((256, 256), dtype=torch.float32)
+    historical_policy["global_mlp.2.bias"] = torch.zeros((256,), dtype=torch.float32)
+    historical_manifest = build_checkpoint_lineage_contract(
+        historical_policy, *inputs[1:]
+    )
+
+    # The historical manifest remains intact and hash-validated. Only its
+    # retired flat-observation MLP weights are ignored by semantic-v6 runtime.
+    validate_checkpoint_lineage_contract(historical_manifest, *inputs)
+
+    changed_policy = dict(inputs[0])
+    changed_policy["critic.weight"] = torch.zeros((2, 4), dtype=torch.float32)
+    with pytest.raises(ValueError, match="lineage incompatível"):
+        validate_checkpoint_lineage_contract(historical_manifest, changed_policy, *inputs[1:])
 
 
 def test_checkpoint_lineage_rejects_missing_or_malformed_manifest():
@@ -73,7 +94,7 @@ def test_trainer_persists_lineage_for_periodic_and_final_checkpoints():
     ) == 2
     assert "TFT_ALLOW_UNVERSIONED_CHECKPOINT_LINEAGE" in source
     assert "and not legacy_checkpoint_lineage" in source
-    assert "legacy_checkpoint_lineage or training_contract_warm_start" in source
+    assert "legacy_checkpoint_lineage or semantic_state_warm_start or training_contract_warm_start" in source
     assert "self.start_update = 1" in source
     assert "validate_checkpoint_lineage_contract(" in source
 
@@ -122,8 +143,10 @@ def test_semantic_contract_change_requires_explicit_weights_only_warm_start():
     assert "TFT_ALLOW_SEMANTIC_STATE_WARM_START" in source
     assert "TFT_WARM_START_OUTPUT_CHECKPOINT" in source
     assert "validate_semantic_state_warm_start_migration(" in source
-    assert 'if not key.startswith(("semantic_id_embedding.", "semantic_encoder."))' in source
+    assert "semantic_policy_state_keys(checkpoint.get(\"policy\", {}))" in source
     assert "not semantic_state_warm_start" in source
+    assert "Checkpoint histórico sem semantic_state v6" in source
+    assert "semantic_state_warm_start = True" in source
 
 
 

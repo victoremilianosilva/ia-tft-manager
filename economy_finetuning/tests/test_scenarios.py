@@ -29,9 +29,10 @@ class ScenarioGeneratorTests(unittest.TestCase):
         self.assertAlmostEqual(state["hp"], 75.0)
         self.assertAlmostEqual(state["gold"], 60.0)
         self.assertAlmostEqual(state["level"], 6.0)
-        self.assertEqual(state["strategy_name"], "FAST8")
+        self.assertNotIn("strategy", state)
+        self.assertNotIn("strategy_name", state)
 
-    def test_critical_hp_scenario_matches_only_its_declared_strategy_cohort(self):
+    def test_critical_hp_scenario_matches_factual_hp_gold_and_stage(self):
         state = {
             "hp": 20, "gold": 90, "level": 6, "stage": 4,
             "round_number": 21, "strategy": 2,
@@ -50,7 +51,7 @@ class ScenarioGeneratorTests(unittest.TestCase):
         ids = {item.scenario_id for item in matching_scenarios(state)}
         self.assertNotIn("slowroll_winstreak", ids)
 
-    def test_econ_gold_reserve_is_limited_to_econ_strategy_and_below_50(self):
+    def test_econ_gold_reserve_is_factual_and_independent_of_legacy_strategy(self):
         state = {
             "hp": 70, "gold": 40, "level": 7, "stage": 4,
             "round_number": 19, "strategy": 0,
@@ -59,7 +60,7 @@ class ScenarioGeneratorTests(unittest.TestCase):
         self.assertIn("econ_gold_reserve", ids)
         state["strategy"] = 2
         ids = {item.scenario_id for item in matching_scenarios(state)}
-        self.assertNotIn("econ_gold_reserve", ids)
+        self.assertIn("econ_gold_reserve", ids)
 
 
 if __name__ == "__main__":

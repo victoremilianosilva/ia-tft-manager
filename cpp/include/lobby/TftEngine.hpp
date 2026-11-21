@@ -211,6 +211,13 @@ struct AuditUnitSnapshot {
     // Exact static catalog membership from ChampionDefinition::traits.
     // This excludes item-granted traits and active trait counts.
     std::vector<std::string> trait_names;
+    // Native target profile consumed by item-target action heads.
+    std::int32_t role{3};
+    double attack_damage{0.0};
+    double attack_speed{0.0};
+    double max_health{0.0};
+    double armor{0.0};
+    double magic_resist{0.0};
 };
 
 struct AuditItemCount { std::string catalog_id; std::uint32_t count{0}; };
@@ -395,6 +402,17 @@ struct AuditPlayerSnapshot {
     std::uint64_t pending_anvil_sequence{0};
     std::int32_t pending_anvil_kind{-1};
     std::vector<std::string> pending_anvil_options;
+    // Structured native item observations. These are populated from the same
+    // ItemEngine/catalog/profile producers as the legacy observation writer.
+    std::array<float, 10> item_component_features{};
+    std::array<std::array<float, 17>, 9> item_inventory_features{};
+    std::array<std::array<float, 17>, 100> item_recipe_features{};
+    std::array<std::array<float, 37>, 9> item_inventory_target_fit{};
+    std::array<std::array<float, 37>, 100> item_recipe_target_fit{};
+    std::array<std::array<float, 11>, 9> pending_anvil_option_features{};
+    // Native temporal facts used by the PPO semantic global encoder.
+    std::uint32_t actions_taken_this_round{0};
+    std::array<std::uint32_t, kBoardSlots> board_move_age{};
     // Last item decision is carried by the post-action snapshot for exact
     // Viewer attribution (normal equip/craft versus forced anvil selection).
     std::string last_item_action_kind;
@@ -429,7 +447,7 @@ struct AuditSharedPoolSnapshot {
 struct AuditSnapshot {
     AuditSharedPoolSnapshot shared_pool;
     std::string contract_id{"tft.native-state-snapshot"};
-    std::uint32_t contract_version{3};
+    std::uint32_t contract_version{5};
     // Current native board-slot geometry: rectangular 4x7, not canonical hex.
     std::string board_geometry_id{"tft.board-grid.rectangular-4x7"};
     std::uint32_t board_geometry_version{1};
@@ -862,6 +880,8 @@ public:
     bool toggle_shop_lock(std::int32_t player_id);
     bool is_shop_locked(std::int32_t player_id) const;
 
+    // Neutral [players, 1] transport only. Decision features are read from
+    // the identity-bound native semantic snapshot, never positional offsets.
     std::vector<float> get_observations() const;
 
     std::array<std::vector<StrategyInfo>, kPlayersPerLobby>

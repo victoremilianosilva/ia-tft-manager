@@ -29,10 +29,10 @@ ACTION_DIMS = [9, 5, 9, 28, 28, 28]
 
 def _policy_with_native_item_block():
     hidden = 64
-    candidate_dim = (ACTION_DIMS[2] + ACTION_DIMS[1]) * 8
-    item_dim = 10 + 9 * 17 + 100 * 17 + 37 * 18 + (9 + 100) * 37
+    candidate_dim = (ACTION_DIMS[2] + ACTION_DIMS[1]) * 6
+    item_dim = 10 + 9 * 17 + 100 * 17 + 37 * 17 + (9 + 100) * 37
     anvil_dim = 3 + 9 * 11
-    obs_dim = 22 + 4 * 7 * 5 + anvil_dim + item_dim + candidate_dim
+    obs_dim = 10 + 4 * 7 * 5 + anvil_dim + item_dim + candidate_dim
     policy = TFTPolicy(obs_dim=obs_dim, action_dims=ACTION_DIMS, hidden_size=hidden)
     return policy, torch.zeros(1, obs_dim)
 
@@ -49,24 +49,25 @@ def test_item_observation_exposes_components_inventory_recipes_and_all_targets()
     recipe_start = start + 10 + 9 * 17
     obs[0, recipe_start + 4 * 17 + 2] = 0.6  # recipe [0,4], AP feature
     target_start = recipe_start + 100 * 17
-    obs[0, target_start + 28 * 18 + 4 + 1] = 1.0  # first bench target role
-    inventory_fit_start = target_start + 37 * 18
+    obs[0, target_start + 28 * 17 + 4 + 1] = 1.0  # first bench target role
+    inventory_fit_start = target_start + 37 * 17
     recipe_fit_start = inventory_fit_start + 9 * 37
     obs[0, inventory_fit_start + 2 * 37 + 4] = 0.7
     obs[0, recipe_fit_start + 5 * 37 + 6] = 0.8
 
     (
         components, inventory, recipes, targets,
-        inventory_target_fit, recipe_target_fit, anvil_options, pending_anvil,
+        inventory_target_fit, recipe_target_fit, anvil_options, pending_anvil, anvil_kind_features,
     ) = policy._item_state_features(obs)
 
     assert components.shape == (1, 10)
     assert inventory.shape == (1, 9, 17)
     assert recipes.shape == (1, 100, 17)
-    assert targets.shape == (1, 37, 18)
+    assert targets.shape == (1, 37, 17)
     assert inventory_target_fit.shape == (1, 9, 37)
     assert recipe_target_fit.shape == (1, 100, 37)
     assert anvil_options.shape == (1, 9, 11)
+    assert anvil_kind_features.shape == (1, 2)
     assert components[0, 0].item() == 0.5
     assert inventory[0, 0, 0].item() == 0.75
     assert torch.isclose(recipes[0, 4, 2], torch.tensor(0.6), atol=1e-6)
@@ -83,7 +84,7 @@ def test_item_target_scorer_uses_each_candidates_role_and_position_features():
     conditioned = torch.zeros(1, 64 + ACTION_DIMS[0] * 0 + 9)
     target_context = torch.zeros(1, 20)
     item_features = torch.zeros(1, 17)
-    target_features = torch.zeros(1, 37, 18)
+    target_features = torch.zeros(1, 37, 17)
 
     first = policy.item_target_candidate_head[0]
     last = policy.item_target_candidate_head[-1]
@@ -115,7 +116,7 @@ def test_target_scorer_uses_exact_item_to_unit_compatibility():
     conditioned = torch.zeros(1, 64 + ACTION_DIMS[0])
     target_context = torch.zeros(1, 20)
     item_features = torch.zeros(1, 17)
-    target_features = torch.zeros(1, 37, 18)
+    target_features = torch.zeros(1, 37, 17)
     compatibility = torch.zeros(1, 37)
     compatibility[0, 3] = 0.2
     compatibility[0, 4] = 0.9
@@ -158,7 +159,7 @@ def test_inventory_candidate_scorer_uses_item_semantics():
 
     logits = policy._item_inventory_logits(
         conditioned, inventory_features, torch.zeros(1, 9, 37),
-        torch.zeros(1, 9, 11), torch.tensor([False])
+        torch.zeros(1, 9, 11), torch.tensor([False]), torch.zeros(1, 2)
     )
     assert logits[0, 1] > logits[0, 0]
 
@@ -184,7 +185,7 @@ def test_inventory_choice_uses_best_available_item_target_fit():
 
     logits = policy._item_inventory_logits(
         conditioned, inventory_features, target_fit,
-        torch.zeros(1, 9, 11), torch.tensor([False])
+        torch.zeros(1, 9, 11), torch.tensor([False]), torch.zeros(1, 2)
     )
     assert logits[0, 1] > logits[0, 0]
 
@@ -206,14 +207,14 @@ def test_anvil_candidate_scorer_uses_anvil_option_features():
         policy.item_inventory_candidate_head[-1].bias.zero_()
         first.weight.zero_()
         first.bias.zero_()
-        first.weight[0, -11] = 1.0
+        first.weight[0, -13] = 1.0
         last.weight.zero_()
         last.bias.zero_()
         last.weight[0, 0] = 1.0
 
     logits = policy._item_inventory_logits(
         conditioned, inventory_features, torch.zeros(1, 9, 37),
-        anvil_features, torch.tensor([True])
+        anvil_features, torch.tensor([True]), torch.zeros(1, 2)
     )
     assert logits[0, 2] > logits[0, 1]
     assert logits[0, 2] > logits[0, 0]

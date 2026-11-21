@@ -123,40 +123,14 @@ int main(int argc, char** argv) {
 
         const auto initial_state = engine.get_public_state();
         const auto initial_observations = engine.get_observations();
-        require(engine.observation_dim() > 248,
-                "Observacao PPO deve incluir o vetor de traits do catalogo.");
+        require(engine.observation_dim() == 1,
+                "Native PPO observation must be a neutral semantic-state carrier.");
         require(initial_observations.size() ==
                     tft::kPlayersPerLobby * engine.observation_dim(),
-                "Tamanho do lote de observacoes nao corresponde a dimensao declarada.");
-
-        // Legacy strategy fields remain physically reserved but are no longer
-        // decision inputs. Native factual state and semantic owner projections
-        // have their own contracts and must not be backfilled from StrategyInfo.
-        std::vector<std::string> trait_order;
-        for (const auto& champion : catalog.all()) {
-            for (const auto& trait : champion.traits) {
-                if (std::find(trait_order.begin(), trait_order.end(), trait) ==
-                    trait_order.end()) {
-                    trait_order.push_back(trait);
-                }
-            }
-        }
-        const std::size_t legacy_observation_dim = 248 + trait_order.size();
-        const std::size_t item_global_observation_dim =
-            10 + 9 * 17 + 100 * 17 + (tft::kBoardSlots + tft::kBenchSlots) * 18;
-        const std::size_t item_compatibility_observation_dim =
-            (9 + 100) * (tft::kBoardSlots + tft::kBenchSlots);
-        const std::size_t item_state_observation_dim =
-            item_global_observation_dim + item_compatibility_observation_dim;
-        const std::size_t expected_observation_dim =
-            legacy_observation_dim + 2 * trait_order.size() +
-            tft::kBoardSlots + tft::kBenchSlots + tft::kShopSlots +
-            1 + tft::kBoardSlots + trait_order.size() + 2 +
-            3 + 9 * 11 + // pending-anvil state and nine option feature records
-            item_state_observation_dim +
-            8 * (tft::kBenchSlots + tft::kShopSlots);
-        require(engine.observation_dim() == expected_observation_dim,
-                "Dimensao PPO nao inclui os novos recursos de composicao.");
+                "Tamanho do carrier de observacoes nao corresponde a dimensao declarada.");
+        require(std::all_of(initial_observations.begin(), initial_observations.end(),
+                            [](float value) { return value == 0.0f; }),
+                "Native observation carrier must not publish positional features.");
 
         const auto comp_champion = std::find_if(
             catalog.all().begin(), catalog.all().end(),
@@ -176,7 +150,7 @@ int main(int argc, char** argv) {
         const auto equipped_audit = engine.get_audit_snapshot();
         require(equipped_audit.players[0].board[0].item_ids.size() == 1 &&
                     equipped_audit.players[0].board[0].item_ids[0] == "fixture_blade",
-                "Snapshot de auditoria nao expõe o item equipado na unidade.");
+                "Snapshot nativo nao expõe o item equipado na unidade.");
         require(!engine.set_unit_items_for_testing(
                     0, true, 0, {fixture_item, fixture_item, fixture_item, fixture_item}),
                 "Uma unidade nao pode receber mais de tres itens.");
@@ -185,54 +159,11 @@ int main(int argc, char** argv) {
         require(!engine.set_unit_items_for_testing(0, true, 0, {invalid_item}),
                 "Bonus numerico invalido nao deve entrar no estado da unidade.");
 
-        const auto composition_observations = engine.get_observations();
-        const auto* player_observation = composition_observations.data();
-        const std::size_t direction_offset = legacy_observation_dim;
-        const std::size_t core_traits_offset = direction_offset + trait_order.size();
-        const std::size_t unit_fit_offset = core_traits_offset + trait_order.size();
-        for (std::size_t index = 10; index < 17; ++index)
-            require(player_observation[index] == 0.0f,
-                    "StrategyInfo one-hot ainda está presente na observação PPO.");
-        require(player_observation[242] == 0.0f,
-                "Score agregado de posicionamento ainda depende do contexto estratégico legado.");
-        for (std::size_t index = direction_offset;
-             index < unit_fit_offset + tft::kBoardSlots + tft::kBenchSlots + tft::kShopSlots;
-             ++index)
-            require(player_observation[index] == 0.0f,
-                    "Feature estratégica legada ainda está presente na observação PPO.");
-
-        const std::size_t candidate_features_offset =
-            expected_observation_dim - 8 * (tft::kBenchSlots + tft::kShopSlots);
-        const std::size_t focus_weights_offset =
-            candidate_features_offset - item_state_observation_dim -
-            (3 + 9 * 11) - trait_order.size() - 2;
-        const std::size_t locked_offset = focus_weights_offset + trait_order.size();
-        const std::size_t strength_offset = locked_offset + 1;
-        for (std::size_t index = focus_weights_offset;
-             index <= strength_offset; ++index)
-            require(player_observation[index] == 0.0f,
-                    "Focus/lock/strength legado ainda influencia o PPO.");
-        require(candidate_features_offset + 8 * (tft::kBenchSlots + tft::kShopSlots) ==
-                    expected_observation_dim,
-                "Features de candidatos deixaram de ocupar a cauda da observacao.");
-        const std::size_t item_target_features_offset =
-            candidate_features_offset - item_state_observation_dim +
-            10 + 9 * 17 + 100 * 17;
-        require(player_observation[item_target_features_offset] == 1.0f &&
-                player_observation[item_target_features_offset + 1] == 1.0f,
-                "Observacao de item nao expoe unidade ocupada no tabuleiro como alvo.");
-        require(player_observation[candidate_features_offset] == 0.0f &&
-                player_observation[candidate_features_offset + 4] == 0.0f,
-                "Fit/core legado de candidato ainda é projetado.");
-        require(player_observation[candidate_features_offset + 1] > 0.0f,
-                "Custo factual do candidato deixou de ser projetado.");
-        const std::size_t shop_candidate_offset =
-            candidate_features_offset + 8 * tft::kBenchSlots;
-        require(player_observation[shop_candidate_offset] == 0.0f &&
-                player_observation[shop_candidate_offset + 4] == 0.0f,
-                "Fit/core legado da oferta ainda é projetado.");
-        require(player_observation[shop_candidate_offset + 1] > 0.0f,
-                "Custo factual da oferta deixou de ser projetado.");
+        const auto carrier_after_mutation = engine.get_observations();
+        require(carrier_after_mutation.size() == tft::kPlayersPerLobby &&
+                    std::all_of(carrier_after_mutation.begin(), carrier_after_mutation.end(),
+                                [](float value) { return value == 0.0f; }),
+                "Alteracoes do tabuleiro/itens nao podem voltar a ocupar offsets posicionais.");
 
         require(
             initial_state.players.size() == tft::kPlayersPerLobby,
@@ -879,33 +810,44 @@ int main(int argc, char** argv) {
                               initial_item_audit.players[0].item_component_catalog.end(), "sword") !=
                         initial_item_audit.players[0].item_component_catalog.end(),
                     "Snapshot nao expoe catalogo ordenado de componentes.");
-            const auto item_observations = item_action_engine.get_observations();
-            const auto* item_observation = item_observations.data();
-            const auto item_candidate_offset = item_action_engine.observation_dim() -
-                8 * (tft::kBenchSlots + tft::kShopSlots);
-            const auto item_block_offset = item_candidate_offset - item_state_observation_dim;
-            const auto bag_feature_offset = item_block_offset + 10;
-            const auto recipe_feature_offset = bag_feature_offset + 9 * 17;
-            const auto target_feature_offset = recipe_feature_offset + 100 * 17;
-            require(item_observation[item_block_offset] > 0.0f &&
-                    item_observation[item_block_offset + 1] > 0.0f,
-                    "Contagens de componentes nao chegaram a observacao PPO.");
-            require(item_observation[bag_feature_offset + 5] > 0.0f,
-                    "Atributos do item completo na bag nao chegaram a observacao PPO.");
-            require(std::any_of(item_observation + recipe_feature_offset,
-                                item_observation + target_feature_offset,
-                                [](float value) { return value > 0.0f; }),
-                    "Atributos dos resultados de receitas nao chegaram a observacao PPO.");
-            require(item_observation[target_feature_offset] == 1.0f,
-                    "Perfil da unidade-alvo nao chegou a observacao PPO.");
-            const auto inventory_fit_offset =
-                target_feature_offset + (tft::kBoardSlots + tft::kBenchSlots) * 18;
-            const auto recipe_fit_offset = inventory_fit_offset +
-                9 * (tft::kBoardSlots + tft::kBenchSlots);
-            require(item_observation[inventory_fit_offset] > 0.0f,
-                    "Compatibilidade do item da bag com o alvo nao chegou a observacao PPO.");
-            require(item_observation[recipe_fit_offset + 37] > 0.0f,
-                    "Compatibilidade do item craftavel com o alvo nao chegou a observacao PPO.");
+            const auto& item_player = initial_item_audit.players[0];
+            const auto sword_component = std::find(
+                item_player.item_component_catalog.begin(),
+                item_player.item_component_catalog.end(), "sword"
+            );
+            const auto bow_component = std::find(
+                item_player.item_component_catalog.begin(),
+                item_player.item_component_catalog.end(), "bow"
+            );
+            require(sword_component != item_player.item_component_catalog.end() &&
+                    bow_component != item_player.item_component_catalog.end(),
+                    "Snapshot nao expoe as identidades canonicas dos componentes.");
+            const auto sword_index = static_cast<std::size_t>(
+                std::distance(item_player.item_component_catalog.begin(), sword_component)
+            );
+            const auto bow_index = static_cast<std::size_t>(
+                std::distance(item_player.item_component_catalog.begin(), bow_component)
+            );
+            require(item_player.item_component_features[sword_index] > 0.0f &&
+                    item_player.item_component_features[bow_index] > 0.0f,
+                    "Contagens de componentes nao chegaram ao bloco semantico nativo.");
+            require(item_player.item_inventory_features[0][5] > 0.0f,
+                    "Atributos do item completo na bag nao chegaram ao bloco semantico nativo.");
+            require(std::any_of(
+                        item_player.item_recipe_features.begin(),
+                        item_player.item_recipe_features.end(),
+                        [](const auto& recipe) {
+                            return std::any_of(recipe.begin(), recipe.end(),
+                                [](float value) { return value > 0.0f; });
+                        }),
+                    "Atributos dos resultados de receitas nao chegaram ao bloco semantico nativo.");
+            require(item_player.board[0].occupied &&
+                    item_player.board[0].max_health > 0.0,
+                    "Perfil da unidade-alvo nao chegou ao snapshot semantico nativo.");
+            require(item_player.item_inventory_target_fit[0][0] > 0.0f,
+                    "Compatibilidade do item da bag com o alvo nao chegou ao snapshot semantico nativo.");
+            require(item_player.item_recipe_target_fit[1][0] > 0.0f,
+                    "Compatibilidade do item craftavel com o alvo nao chegou ao snapshot semantico nativo.");
             auto masks = item_action_engine.get_action_masks();
             require(masks[0].type_mask[8] == 1,
                     "CRAFT_AND_EQUIP deveria estar habilitada com receita e alvo validos.");

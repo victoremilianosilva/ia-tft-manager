@@ -12,7 +12,7 @@ from action_contract import (
     MASK_CONTRACT_ID, MASK_CONTRACT_VERSION, MASK_CONTRACT_HASH,
     hash_mask_row,
 )
-from semantic_observation import SEMANTIC_NUMERIC_DIM, SEMANTIC_ENTITY_SLOTS
+from semantic_observation import SEMANTIC_NUMERIC_DIM, SEMANTIC_ENTITY_SLOTS, semantic_item_state_tensors
 
 
 class RolloutBuffer:
@@ -85,6 +85,7 @@ class RolloutBuffer:
         mask_shapes=None,
         semantic_numeric_dim=SEMANTIC_NUMERIC_DIM,
         semantic_entity_slots=SEMANTIC_ENTITY_SLOTS,
+        require_semantic_state=False,
     ):
         self.device = device
 
@@ -113,6 +114,7 @@ class RolloutBuffer:
         self.action_dim = int(action_dim)
         self.semantic_numeric_dim = int(semantic_numeric_dim)
         self.semantic_entity_slots = int(semantic_entity_slots)
+        self.require_semantic_state = bool(require_semantic_state)
         if self.semantic_numeric_dim <= 0 or self.semantic_entity_slots <= 0:
             raise ValueError("semantic projection dimensions must be positive")
 
@@ -392,6 +394,8 @@ class RolloutBuffer:
         )
 
         if semantic_state is None:
+            if self.require_semantic_state:
+                raise ValueError("Native PPO rollout requires semantic_state v6 for every transition.")
             semantic_numeric = torch.zeros(
                 (self.num_envs, self.semantic_numeric_dim),
                 dtype=torch.float32,
@@ -415,6 +419,24 @@ class RolloutBuffer:
                 raise ValueError("semantic numeric batch contains NaN or infinity")
             if semantic_champion_ids.numel() and (semantic_champion_ids < 0).any():
                 raise ValueError("semantic champion IDs must be non-negative")
+            item_state = semantic_state.get("items")
+            if not isinstance(item_state, dict):
+                raise ValueError("semantic item/anvil tensors are required for native rollout rows")
+            expected_item_state = semantic_item_state_tensors(semantic_numeric)
+            if set(item_state) != set(expected_item_state):
+                raise ValueError("semantic item/anvil tensor fields do not match the v6 contract")
+            for field, expected_value in expected_item_state.items():
+                provided_value = item_state.get(field)
+                if (
+                    not isinstance(provided_value, torch.Tensor)
+                    or provided_value.dtype != expected_value.dtype
+                    or provided_value.device != expected_value.device
+                    or tuple(provided_value.shape) != tuple(expected_value.shape)
+                    or not torch.equal(provided_value, expected_value)
+                ):
+                    raise ValueError(
+                        f"semantic item/anvil field {field} is not aligned with the numeric projection"
+                    )
 
         self.semantic_numeric[self.ptr].copy_(semantic_numeric)
         self.semantic_champion_ids[self.ptr].copy_(semantic_champion_ids)
@@ -667,7 +689,7 @@ class RolloutBuffer:
                 semantic_hashes = semantic_state.get("hashes")
                 contract_hash = semantic_state.get("contract_hash")
                 if (
-                    semantic_state.get("contract_id") != "tft.ppo.semantic-native-state.v2"
+                    semantic_state.get("contract_id") != "tft.ppo.semantic-native-state.v6"
                     or not isinstance(contract_hash, str)
                     or len(contract_hash) != 64
                     or any(char not in "0123456789abcdef" for char in contract_hash)
@@ -1152,8 +1174,10 @@ class RolloutBuffer:
             batch_next_metadata = self._metadata_for_batch(
                 self.next_snapshot_metadata, batch_idx
             )
+            semantic_numeric_batch = flat_semantic_numeric[batch_idx]
             semantic_batch = {
-                "numeric": flat_semantic_numeric[batch_idx],
+                "numeric": semantic_numeric_batch,
+                "items": semantic_item_state_tensors(semantic_numeric_batch),
                 "champion_ids": flat_semantic_champion_ids[batch_idx],
             }
             if batch_snapshot_metadata is not None:

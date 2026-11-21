@@ -2,8 +2,10 @@
 
 The wrapper intentionally contains no game rules. The C++ lobby owns the
 match state, the eight player environments, action execution, combat,
-rewards, observations and masks. Python keeps only the interface expected by
-LobbyVectorEnv/Trainer.
+rewards, the neutral observation carrier and masks. The observation array is
+only a [players, 1] batch/device carrier; PPO decision features must be built
+from the correlated native semantic-v6 snapshot. Python keeps only the
+interface expected by LobbyVectorEnv/Trainer.
 """
 from __future__ import annotations
 
@@ -140,7 +142,7 @@ class CppTFTLobbyWrapper:
             value.get("contract_id") != "tft.native-state-snapshot"
             or isinstance(version, bool)
             or not isinstance(version, int)
-            or version != 3
+            or version != 5
         ):
             raise RuntimeError("Versão/identidade do contrato de snapshot estruturado incompatível.")
         geometry_version = value.get("board_geometry_version")
@@ -366,6 +368,20 @@ class CppTFTLobbyWrapper:
                             raise RuntimeError("Unidade ocupada com custo de catálogo inválido.")
                         if not isinstance(items, list) or any(not isinstance(item, str) for item in items):
                             raise RuntimeError("Lista de itens da unidade inválida.")
+                        role = unit.get("role")
+                        if isinstance(role, bool) or not isinstance(role, int) or not 0 <= role <= 4:
+                            raise RuntimeError("Unidade ocupada com role de alvo inválido.")
+                        for stat_field in (
+                            "attack_damage", "attack_speed", "max_health", "armor", "magic_resist"
+                        ):
+                            stat_value = unit.get(stat_field)
+                            if (
+                                isinstance(stat_value, bool)
+                                or not isinstance(stat_value, (int, float))
+                                or not np.isfinite(float(stat_value))
+                                or float(stat_value) < 0.0
+                            ):
+                                raise RuntimeError(f"Perfil de alvo nativo inválido: {stat_field}.")
             offer_revisions = player.get("shop_offer_revisions")
             if (not isinstance(offer_revisions, list) or len(offer_revisions) != expected_slots["shop"] or any(isinstance(x, bool) or not isinstance(x, int) or x < 0 for x in offer_revisions)):
                 raise RuntimeError(f"Snapshot do jogador {player_id} contém revisões de oferta inválidas.")
@@ -374,16 +390,52 @@ class CppTFTLobbyWrapper:
                     raise RuntimeError("Oferta ocupada sem revisão nativa de identidade.")
             pending_flag = player.get("pending_anvil")
             pending_sequence = player.get("pending_anvil_sequence")
-            if not isinstance(pending_flag, bool) or isinstance(pending_sequence, bool) or not isinstance(pending_sequence, int) or pending_sequence < 0:
+            pending_kind = player.get("pending_anvil_kind")
+            if (
+                not isinstance(pending_flag, bool)
+                or isinstance(pending_sequence, bool)
+                or not isinstance(pending_sequence, int)
+                or pending_sequence < 0
+                or isinstance(pending_kind, bool)
+                or not isinstance(pending_kind, int)
+            ):
                 raise RuntimeError(f"Snapshot do jogador {player_id} contém identidade de bigorna inválida.")
-            if pending_flag and (pending_sequence == 0 or not player.get("pending_anvil_options")):
-                raise RuntimeError("Bigorna pendente sem sequência ou opções válidas.")
-            if not pending_flag and pending_sequence != 0:
-                raise RuntimeError("Sequência de bigorna presente sem escolha pendente.")
+            if pending_flag and (
+                pending_sequence == 0 or pending_kind not in (0, 1)
+                or not player.get("pending_anvil_options")
+            ):
+                raise RuntimeError("Bigorna pendente sem sequência, tipo ou opções válidas.")
+            if not pending_flag and (pending_sequence != 0 or pending_kind != -1 or player.get("pending_anvil_options")):
+                raise RuntimeError("Identidade de bigorna presente sem escolha pendente.")
+            action_count = player.get("actions_taken_this_round")
+            move_ages = player.get("board_move_age")
+            if isinstance(action_count, bool) or not isinstance(action_count, int) or action_count < 0:
+                raise RuntimeError("Snapshot estruturado contém actions_taken_this_round inválido.")
+            if (
+                not isinstance(move_ages, (list, tuple))
+                or len(move_ages) != 28
+                or any(isinstance(age, bool) or not isinstance(age, int) or age < 0 for age in move_ages)
+            ):
+                raise RuntimeError("Snapshot estruturado contém board_move_age inválido.")
             for field in ("item_components", "item_inventory", "item_component_catalog", "pending_anvil_options"):
                 values = player.get(field)
                 if not isinstance(values, list) or any(not isinstance(item, str) for item in values):
                     raise RuntimeError(f"Campo estruturado {field} inválido para jogador {player_id}.")
+            semantic_item_shapes = {
+                "item_component_features": (10,),
+                "item_inventory_features": (9, 17),
+                "item_recipe_features": (100, 17),
+                "item_inventory_target_fit": (9, 37),
+                "item_recipe_target_fit": (100, 37),
+                "pending_anvil_option_features": (9, 11),
+            }
+            for field, expected_shape in semantic_item_shapes.items():
+                try:
+                    values = np.asarray(player.get(field), dtype=np.float32)
+                except (TypeError, ValueError) as exc:
+                    raise RuntimeError(f"Snapshot estruturado contém {field} inválido.") from exc
+                if values.shape != expected_shape or not np.isfinite(values).all():
+                    raise RuntimeError(f"Snapshot estruturado contém {field} com shape/valores inválidos.")
             for field in ("item_component_counts", "item_inventory_counts"):
                 rows = player.get(field)
                 if not isinstance(rows, list): raise RuntimeError(f"Snapshot estruturado sem {field}.")

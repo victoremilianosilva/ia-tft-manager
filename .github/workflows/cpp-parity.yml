@@ -85,6 +85,10 @@ jobs:
           tests/test_policy_item_conditioning.py
           tests/test_strategic_policy.py
           tests/test_evaluate_checkpoints.py
+          tests/test_semantic_observation_projection.py
+          tests/test_semantic_policy_input.py
+          tests/test_semantic_rollout_alignment.py
+          tests/test_checkpoint_contract.py
           tests/test_audit_item_system_e2e.py
           tests/test_generate_item_catalog.py
           tests/test_viewer_policy_diagnostics.py

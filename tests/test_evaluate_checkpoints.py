@@ -133,7 +133,19 @@ def _native_player(player_id, sequence=1):
         "wins": 0, "losses": 0, "placement": None,
         "opponent_id": (player_id + 1) % 8, "gold": 10, "level": 1, "xp": 0,
         "win_streak": 0, "loss_streak": 0, "gold_before_interest": 10,
-        "interest_if_resolved_now": 1,
+        "interest_if_resolved_now": 1, "actions_taken_this_round": 0,
+        "board_move_age": [0] * 28,
+        "item_component_features": [0.0] * 10,
+        "item_inventory_features": [[0.0] * 17 for _ in range(9)],
+        "item_recipe_features": [[0.0] * 17 for _ in range(100)],
+        "item_inventory_target_fit": [[0.0] * 37 for _ in range(9)],
+        "item_recipe_target_fit": [[0.0] * 37 for _ in range(100)],
+        "pending_anvil_option_features": [[0.0] * 11 for _ in range(9)],
+        "pending_anvil": False, "pending_anvil_sequence": 0,
+        "pending_anvil_kind": -1, "pending_anvil_options": [],
+        "item_components": [], "item_inventory": [],
+        "item_component_catalog": [f"component_{i}" for i in range(10)],
+        "equipped_items": [],
         "board": [_empty_unit() for _ in range(28)],
         "bench": [_empty_unit() for _ in range(9)],
         "shop": [_empty_unit() for _ in range(5)],
@@ -167,7 +179,7 @@ class _FakeLobby:
             "decision_sequence": self.sequence, "stage": 1, "round": 1,
             "player_decision_sequences": [self.sequence] * 8,
             "native_state_snapshot": {
-                "contract_id": "tft.native-state-snapshot", "contract_version": 3,
+                "contract_id": "tft.native-state-snapshot", "contract_version": 5,
                 "producer": "TFTEngine::get_audit_snapshot",
                 "source_namespace": "tft.engine.observation-snapshot",
                 "players": [_native_player(i, self.sequence) for i in range(8)],
@@ -559,3 +571,45 @@ def test_evaluation_artifact_writer_rejects_missing_or_mismatched_manifest(tmp_p
     }
     with pytest.raises(ValueError, match="split does not match"):
         write_paired_evaluation_artifacts(result, manifest, tmp_path / "mismatch")
+
+
+def test_paired_evaluator_requires_trait_embedding_for_semantic_v6_checkpoint():
+    from action_contract import (
+        CRITIC_MASK_FEATURE_DIM,
+        CRITIC_MASK_EMBED_DIM,
+        build_action_mask_checkpoint_contract,
+        build_critic_mask_input_checkpoint_contract,
+    )
+    from economy_finetuning.paired_evaluator import validate_evaluation_checkpoint_contracts
+    from reward_contract import build_reward_checkpoint_contract
+    from semantic_observation import build_semantic_state_checkpoint_contract
+
+    catalog_map = {"TFT_TestChampion": 0}
+    state = {
+        "semantic_id_embedding.weight": torch.zeros(2, 16),
+        "semantic_trait_embedding.weight": torch.zeros(65537, 16),
+        "semantic_encoder.0.weight": torch.zeros(256, 3034),
+        "semantic_encoder.0.bias": torch.zeros(256),
+        "semantic_encoder.2.weight": torch.zeros(32, 256),
+        "semantic_encoder.2.bias": torch.zeros(32),
+        "critic_mask_encoder.weight": torch.zeros(CRITIC_MASK_EMBED_DIM, CRITIC_MASK_FEATURE_DIM),
+        "critic_mask_encoder.bias": torch.zeros(CRITIC_MASK_EMBED_DIM),
+    }
+    payload = {
+        "policy": state,
+        "action_mask_contract": build_action_mask_checkpoint_contract(),
+        "critic_mask_input_contract": build_critic_mask_input_checkpoint_contract(),
+        "reward_contract": build_reward_checkpoint_contract(),
+        "semantic_state_contract": build_semantic_state_checkpoint_contract(catalog_map),
+    }
+
+    status = validate_evaluation_checkpoint_contracts(payload, catalog_map)
+    assert status["semantic_state"] == "validated"
+
+    incomplete = dict(payload)
+    incomplete["policy"] = {
+        key: value for key, value in state.items()
+        if key != "semantic_trait_embedding.weight"
+    }
+    with pytest.raises(ValueError, match="encoder semântico parcial"):
+        validate_evaluation_checkpoint_contracts(incomplete, catalog_map)
