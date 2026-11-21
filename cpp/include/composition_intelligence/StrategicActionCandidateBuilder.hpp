@@ -373,8 +373,6 @@ public:
                 const UnitPriority* best_priority = nullptr;
                 for (const auto& owned : context.owned_units) {
                     if (!owned.on_bench || owned.on_board || owned.champion_id < 0 ||
-                        !std::isfinite(owned.board_contribution) ||
-                        owned.board_contribution <= 0.0 ||
                         lineup.selected_board.size() <= static_cast<std::size_t>(board_count))
                         continue;
                     const bool selected_after_level = std::any_of(
@@ -396,11 +394,13 @@ public:
                             return item.champion_id == owned.champion_id &&
                                 (item.intent == UnitIntent::Seek || item.intent == UnitIntent::Upgrade) &&
                                 std::isfinite(item.confidence) && item.confidence > 0.0 &&
-                                item.confidence <= 1.0;
+                                item.confidence <= 1.0 &&
+                                std::isfinite(item.board_contribution) &&
+                                item.board_contribution > 0.0;
                         });
                     if (priority == priorities.units.end()) continue;
-                    if (!best_unlocked_unit ||
-                        owned.board_contribution > best_unlocked_unit->board_contribution) {
+                    if (!best_priority ||
+                        priority->board_contribution > best_priority->board_contribution) {
                         best_unlocked_unit = &owned;
                         best_priority = &*priority;
                     }
@@ -412,7 +412,7 @@ public:
                         });
                     if (xp != out.candidates.end()) {
                         xp->expected_board_delta = std::clamp(
-                            best_unlocked_unit->board_contribution, 0.0, 1.0);
+                            best_priority->board_contribution, 0.0, 1.0);
                         xp->composition_fit = std::clamp(
                             best_unlocked_unit->composition_fit, 0.0, 1.0);
                         xp->evidence_source =
