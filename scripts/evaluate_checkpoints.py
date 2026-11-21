@@ -20,6 +20,7 @@ def native_semantic_state_for_players(lobby, player_ids, catalog_map, device):
         project_native_player_state,
         build_semantic_state_checkpoint_contract,
         semantic_item_state_tensors,
+        validate_semantic_batch_alignment,
     )
 
     snapshot = lobby.get_snapshot_metadata()
@@ -65,6 +66,45 @@ def native_semantic_state_for_players(lobby, player_ids, catalog_map, device):
         }
         rows.append(project_native_player_state(metadata, catalog_map))
     contract = build_semantic_state_checkpoint_contract(catalog_map)
+    batch = build_semantic_batch(
+        [
+            {
+                "engine_instance_id": snapshot.get("engine_instance_id"),
+                "episode_id": snapshot.get("episode_id"),
+                "decision_sequence": snapshot.get("decision_sequence"),
+                "player_decision_sequence": (
+                    native_players[player_id].get("strategic_state", {}).get("player_decision_sequence")
+                ),
+                "player_id": player_id,
+                "lobby_index": 0,
+                "stage": snapshot.get("stage"),
+                "round": snapshot.get("round"),
+                "native_state_contract_id": native.get("contract_id"),
+                "native_state_contract_version": native.get("contract_version"),
+                "native_state_producer": native.get("producer"),
+                "native_state_source_namespace": native.get("source_namespace"),
+                "native_player_state": native_players[player_id],
+            }
+            for player_id in player_ids
+        ],
+        catalog_map,
+    )
+    batch_metadata = [
+        {
+            "engine_instance_id": snapshot.get("engine_instance_id"),
+            "episode_id": snapshot.get("episode_id"),
+            "decision_sequence": snapshot.get("decision_sequence"),
+            "player_decision_sequence": native_players[player_id].get("strategic_state", {}).get("player_decision_sequence"),
+            "player_id": player_id,
+            "lobby_index": 0,
+            "stage": snapshot.get("stage"),
+            "round": snapshot.get("round"),
+        }
+        for player_id in player_ids
+    ]
+    validate_semantic_batch_alignment(
+        batch, batch_metadata, contract, catalog_map
+    )
     numeric = torch.as_tensor(
         [row["numeric"] for row in rows], dtype=torch.float32, device=device
     )
