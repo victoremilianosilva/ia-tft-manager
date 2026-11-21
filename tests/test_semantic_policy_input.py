@@ -181,6 +181,28 @@ def test_v1_semantic_encoder_checkpoint_maps_old_feature_offsets():
 
 
 
+
+def test_semantic_v3_warm_start_resets_only_reinterpreted_consumer_columns():
+    obs, _, _ = _batch(batch_size=1)
+    policy = TFTPolicy(
+        obs_dim=obs.shape[-1], action_dims=list(ACTION_DIMS),
+        hidden_size=32, semantic_vocab_size=64,
+    )
+    with torch.no_grad():
+        policy.board_cnn[0].weight.fill_(1.0)
+        policy.shop_head[0].weight.fill_(1.0)
+        policy.sell_head[0].weight.fill_(1.0)
+        policy.bench_to_board_head.weight.fill_(1.0)
+
+    policy.reset_migrated_semantic_consumer_columns()
+
+    assert torch.count_nonzero(policy.board_cnn[0].weight[:, :, :3]) > 0
+    assert torch.count_nonzero(policy.board_cnn[0].weight[:, :, 3:5]) == 0
+    assert torch.count_nonzero(policy.shop_head[0].weight[:, :-6]) > 0
+    assert torch.count_nonzero(policy.shop_head[0].weight[:, -6:]) == 0
+    assert torch.count_nonzero(policy.sell_head[0].weight[:, -6:]) == 0
+    assert torch.count_nonzero(policy.bench_to_board_head.weight[:, -6:]) == 0
+
 def test_v2_semantic_encoder_checkpoint_maps_capacity_and_temporal_extension():
     torch.manual_seed(20261122)
     obs, _, _ = _batch()
