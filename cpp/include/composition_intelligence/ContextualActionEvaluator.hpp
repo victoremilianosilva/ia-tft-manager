@@ -571,6 +571,8 @@ public:
                 candidate_score.kind == strategy::StrategicActionKind::Hold ||
                 candidate_score.opportunity_cost_available ||
                 candidate_score.total_score <= 0.0 ||
+                !std::isfinite(candidate_score.evidence_uncertainty) ||
+                candidate_score.evidence_uncertainty < 0.0 ||
                 candidate_score.evidence_uncertainty >= 1.0 ||
                 candidate_score.evidence_horizon_rounds == 0 ||
                 !opportunity_identity_valid ||
