@@ -223,3 +223,144 @@ def validate_calibration_manifest(manifest: Mapping[str, Any]) -> dict[str, Any]
         "reward_activation_allowed": False,
         "missing": [],
     }
+
+
+def analyze_action_lifecycles(*, action_events, outcome_events=(), pivot_lookahead=3):
+    """Audit delayed outcomes, purchase reversals and pivot evidence without reward shaping."""
+    if isinstance(pivot_lookahead, bool) or not isinstance(pivot_lookahead, int) or pivot_lookahead < 1:
+        raise ValueError("pivot_lookahead inválido.")
+    if not isinstance(action_events, Sequence) or not isinstance(outcome_events, Sequence):
+        raise TypeError("Coleções de eventos são obrigatórias.")
+    actions, action_ids = [], set()
+    for event in action_events:
+        if not isinstance(event, Mapping) or event.get("contract_id") != "tft.reward-action-outcome.v1":
+            raise ValueError("Action event inválido para lifecycle audit.")
+        event_id = str(event.get("event_id", "")).strip()
+        if not event_id or event_id in action_ids:
+            raise ValueError("Action event_id ausente ou duplicado.")
+        action_ids.add(event_id)
+        identity = _identity(event)
+        family = event.get("action", {}).get("family")
+        if family not in FAMILY_POLICIES and family not in _NON_ACTION_FAMILIES:
+            raise ValueError(f"Família sem política causal: {family!r}.")
+        source_seq = _sequence(event.get("source_decision", {}), "player_decision_sequence")
+        outcome_seq = _sequence(event.get("outcome_snapshot", {}), "player_decision_sequence")
+        if outcome_seq <= source_seq:
+            raise ValueError("Outcome snapshot não sucede a decisão de origem.")
+        if event.get("causal_attribution") != "not_established" or event.get("reward_eligible") is not False:
+            raise ValueError("Lifecycle audit aceita somente eventos neutros.")
+        actions.append((identity, source_seq, event))
+    actions.sort(key=lambda row: (row[0], row[1]))
+    if len({(identity, seq) for identity, seq, _ in actions}) != len(actions):
+        raise ValueError("Mais de um action event para a mesma decisão/jogador.")
+    outcomes, outcome_ids = [], set()
+    for event in outcome_events:
+        if not isinstance(event, Mapping) or event.get("source") not in ("native_pvp_resolution", "validated_terminal_placement"):
+            raise ValueError("Outcome sem produtor nativo aceito.")
+        identity = _identity(event)
+        event_id = str(event.get("event_id", "")).strip()
+        if not event_id or event_id in outcome_ids:
+            raise ValueError("Outcome event_id ausente ou duplicado.")
+        outcome_ids.add(event_id)
+        seq = _sequence(event, "player_decision_sequence")
+        reward = event.get("reward")
+        if isinstance(reward, bool) or not isinstance(reward, (int, float)) or not math.isfinite(float(reward)):
+            raise ValueError("Outcome reward inválido.")
+        outcomes.append((identity, seq, event))
+    acquisitions, reversals, pivots, delayed = {}, [], [], []
+    for identity, seq, event in actions:
+        family, facts = event["action"]["family"], event.get("facts", {})
+        if not isinstance(facts, Mapping):
+            raise ValueError("Facts inválidos no action event.")
+        if family == "purchase" and event["action"].get("handler_applied") is True:
+            for unit in facts.get("units_added", []) or []:
+                if not isinstance(unit, Mapping) or not str(unit.get("uuid", "")).strip():
+                    raise ValueError("Aquisição sem UUID físico.")
+                uuid = str(unit["uuid"])
+                if uuid in acquisitions:
+                    raise ValueError("UUID físico adquirido mais de uma vez sem transição explícita.")
+                acquisitions[uuid] = {"identity": identity, "sequence": seq, "event_id": event["event_id"],
+                    "champion_id": str(unit.get("champion_id", ""))}
+        if family == "sale" and event["action"].get("handler_applied") is True:
+            removed, sold_champions = facts.get("units_removed", []) or [], set()
+            for unit in removed:
+                if not isinstance(unit, Mapping):
+                    raise ValueError("Unidade removida inválida.")
+                champion = str(unit.get("champion_id", ""))
+                if champion:
+                    sold_champions.add(champion)
+                acquired = acquisitions.get(str(unit.get("uuid", "")))
+                if acquired and acquired["identity"] == identity and seq > acquired["sequence"]:
+                    reversals.append({"contract_id": "tft.reward-action-lifecycle.v1", "kind": "purchase_reversed_by_sale",
+                        "source_action_event_id": acquired["event_id"], "reversal_action_event_id": event["event_id"],
+                        "unit_uuid": str(unit["uuid"]), "champion_id": acquired["champion_id"],
+                        "decision_gap": seq-acquired["sequence"], "causal_attribution": "not_established", "reward": None})
+            if sold_champions:
+                for candidate_identity, candidate_seq, candidate in actions:
+                    if candidate_identity != identity or not seq < candidate_seq <= seq + pivot_lookahead:
+                        continue
+                    if candidate["action"]["family"] != "purchase" or candidate["action"].get("handler_applied") is not True:
+                        continue
+                    added_champions = sorted({str(unit.get("champion_id", "")) for unit in
+                        (candidate.get("facts", {}).get("units_added", []) or [])
+                        if isinstance(unit, Mapping) and str(unit.get("champion_id", ""))})
+                    changed = [champion for champion in added_champions if champion and champion not in sold_champions]
+                    if changed:
+                        pivots.append({"contract_id": "tft.reward-action-lifecycle.v1", "kind": "pivot_candidate",
+                            "sale_event_id": event["event_id"], "later_purchase_event_id": candidate["event_id"],
+                            "sold_champions": sorted(sold_champions), "new_champions": changed,
+                            "decision_gap": candidate_seq-seq, "causal_attribution": "not_established", "reward": None})
+                        break
+    for identity, seq, event in actions:
+        family = event["action"]["family"]
+        if family not in FAMILY_POLICIES:
+            continue
+        for outcome_identity, outcome_seq, outcome in outcomes:
+            gap = outcome_seq-seq
+            if outcome_identity == identity and 0 < gap <= FAMILY_POLICIES[family]["max_decision_gap"]:
+                delayed.append({"contract_id": "tft.reward-action-lifecycle.v1", "action_event_id": event["event_id"],
+                    "outcome_event_id": outcome["event_id"], "action_family": family, "decision_gap": gap,
+                    "horizon": FAMILY_POLICIES[family]["max_decision_gap"], "status": "temporal_candidate_only",
+                    "causal_attribution": "not_established", "reward": None, "reward_moved": False})
+    return {"contract_id": "tft.reward-action-lifecycle.v1", "status": "audit_only",
+        "delayed_outcome_candidates": delayed, "reversals": reversals, "pivot_candidates": pivots,
+        "reward_moved": False, "reward": None}
+
+
+def audit_reward_hacking_patterns(action_events):
+    """Flag adversarial action loops for tests/review; never creates a score or penalty."""
+    if not isinstance(action_events, Sequence):
+        raise TypeError("Action events devem ser uma sequência.")
+    rows, seen = [], set()
+    for event in action_events:
+        if not isinstance(event, Mapping) or event.get("contract_id") != "tft.reward-action-outcome.v1":
+            raise ValueError("Action event inválido para reward-hacking audit.")
+        event_id = str(event.get("event_id", "")).strip()
+        if not event_id or event_id in seen:
+            raise ValueError("Action event_id ausente ou duplicado.")
+        seen.add(event_id)
+        if event.get("action", {}).get("handler_applied") is not True:
+            continue
+        identity = _identity(event)
+        seq = _sequence(event.get("source_decision", {}), "player_decision_sequence")
+        family = event.get("action", {}).get("family")
+        if family not in FAMILY_POLICIES and family not in _NON_ACTION_FAMILIES:
+            raise ValueError(f"Família sem política causal: {family!r}.")
+        rows.append((identity, seq, family, event))
+    rows.sort(key=lambda row: (row[0], row[1]))
+    findings = []
+    for identity, seq, family, event in rows:
+        window = [row for row in rows if row[0] == identity and seq-3 <= row[1] <= seq]
+        pattern = None
+        if family == "reroll" and sum(row[2] == "reroll" for row in window) >= 3:
+            pattern = "repeated_reroll_farming_candidate"
+        elif family == "positioning" and sum(row[2] == "positioning" for row in window) >= 3:
+            pattern = "repeated_positioning_farming_candidate"
+        elif family == "pass" and sum(row[2] == "pass" for row in window) >= 4:
+            pattern = "pass_streak_candidate"
+        if pattern:
+            findings.append({"contract_id": "tft.reward-hacking-audit.v1", "pattern": pattern,
+                "engine_instance_id": identity[0], "episode_id": identity[1], "player_id": identity[2],
+                "through_decision_sequence": seq, "trigger_event_id": event["event_id"],
+                "status": "synthetic_pattern_detected_not_reward", "reward": None, "reward_moved": False})
+    return findings
