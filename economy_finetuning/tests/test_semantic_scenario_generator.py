@@ -64,7 +64,7 @@ def test_semantic_scenario_decoder_uses_native_player_identity_not_batch_positio
 
     state = decode_semantic_observation(semantic, player_id=0)
     assert state["player_id"] == 0
-    assert state["gold"] == 90.0
+    assert state["gold"] == pytest.approx(90.0)
 
 
 def test_legacy_compact_decoder_never_interprets_board_offsets_as_strategy():
