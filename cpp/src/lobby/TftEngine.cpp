@@ -31,6 +31,7 @@
 #include "lobby/EconomyEngine.hpp"
 #include "combat/CombatEngine.hpp"
 #include "combat/CombatEvidence.hpp"
+#include "combat/CombatProjectionEngine.hpp"
 #include "lobby/ShopEngine.hpp"
 #include "strategy/SynergyCounter.hpp"
 #include "strategy/PositioningEngine.hpp"
@@ -4192,12 +4193,18 @@ struct TFTEngine::Impl {
                     const bool matchup_valid =
                         combat_evidence::MatchupResolver{}.resolve(
                             snapshot, static_cast<std::int32_t>(b), resolved_opponent);
+                    const auto projection_snapshot =
+                        combat_evidence::CombatProjectionSnapshotBuilder{}.build(
+                            snapshot, input, strategic_context_sequences[a]);
                     const bool snapshot_valid = validation.valid && matchup_valid &&
-                        resolved_opponent == static_cast<std::int32_t>(b);
+                        resolved_opponent == static_cast<std::int32_t>(b) &&
+                        projection_snapshot.valid;
                     const std::string validation_reason = !validation.valid
                         ? validation.reason
                         : (!matchup_valid || resolved_opponent != static_cast<std::int32_t>(b)
-                            ? "actual_opponent_identity_mismatch" : "valid");
+                            ? "actual_opponent_identity_mismatch"
+                            : (!projection_snapshot.valid
+                                ? projection_snapshot.validation_reason : "valid"));
                     // Preserve the exact immutable CombatInput projection used by
                     // the authoritative simulator. Catalog fallbacks remain explicit
                     // in the serialized values and coverage metadata; they are not
@@ -4308,7 +4315,7 @@ struct TFTEngine::Impl {
                         }
                         return units;
                     };
-                    const auto coverage = combat_evidence::CombatCoverageValidator{}.inspect(input);
+                    const auto& coverage = projection_snapshot.coverage;
                     const auto coverage_result =
                         combat_evidence::CombatCoverageValidator{}.validate(coverage);
                     const nlohmann::json combat_snapshot_event{
@@ -4352,6 +4359,8 @@ struct TFTEngine::Impl {
                             {"missing_trait_effect_metadata", coverage.missing_trait_effect_metadata},
                             {"all_effects_catalogued", coverage.all_effects_catalogued}
                         }},
+                        {"projection_snapshot_valid", projection_snapshot.valid},
+                        {"projection_snapshot_validation_reason", projection_snapshot.validation_reason},
                         {"projection_status", "not_published_actual_matchup_resolved_after_decision_cycle"},
                         {"decision_eligible", false},
                         {"validated", snapshot_valid},
