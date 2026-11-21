@@ -14,7 +14,7 @@ from collections.abc import Mapping, Sequence
 SEMANTIC_STATE_CONTRACT_ID = "tft.ppo.semantic-native-state.v3"
 SEMANTIC_STATE_CONTRACT_VERSION = 3
 SEMANTIC_ENTITY_SLOTS = 28 + 9 + 5
-SEMANTIC_ENTITY_FEATURES = 12
+SEMANTIC_ENTITY_FEATURES = 29
 SEMANTIC_GLOBAL_FEATURES = 52
 SEMANTIC_NUMERIC_DIM = (
     SEMANTIC_GLOBAL_FEATURES
@@ -490,6 +490,35 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
                 min(copy_equivalent, 9) / 9.0,
                 upgrade_progress,
             ])
+            # Target profile is native catalog data, not reconstructed from the
+            # flat item-target observation. Shop slots are not legal item targets.
+            target_features = [0.0] * 17
+            if group_name in ("board", "bench"):
+                role = _non_negative_int(entity.get("role"), f"{group_name}[{slot}].role")
+                if role > 4:
+                    raise ValueError(f"{group_name}[{slot}] has invalid target role")
+                attack_damage = _finite_number(entity.get("attack_damage"), f"{group_name}[{slot}].attack_damage")
+                attack_speed = _finite_number(entity.get("attack_speed"), f"{group_name}[{slot}].attack_speed")
+                max_health = _finite_number(entity.get("max_health"), f"{group_name}[{slot}].max_health")
+                armor = _finite_number(entity.get("armor"), f"{group_name}[{slot}].armor")
+                magic_resist = _finite_number(entity.get("magic_resist"), f"{group_name}[{slot}].magic_resist")
+                if min(attack_damage, attack_speed, max_health, armor, magic_resist) < 0.0:
+                    raise ValueError(f"{group_name}[{slot}] has negative target profile stats")
+                on_board = group_name == "board"
+                target_features[0] = 1.0
+                target_features[1] = float(on_board)
+                target_features[2] = float(not on_board)
+                target_features[3] = star / 3.0
+                target_features[4 + role] = 1.0
+                target_features[9] = float(on_board and slot // 7 <= 1)
+                target_features[10] = float(on_board and slot // 7 >= 2)
+                target_features[11] = min(attack_damage / 200.0, 1.0)
+                target_features[12] = min(attack_speed / 2.0, 1.0)
+                target_features[13] = min(max_health / 2000.0, 1.0)
+                target_features[14] = min(armor / 150.0, 1.0)
+                target_features[15] = min(magic_resist / 150.0, 1.0)
+                target_features[16] = min(len(items) / 3.0, 1.0)
+            numeric.extend(target_features)
             champion_ids.append(0 if internal_id is None else int(internal_id) + 1)
 
     if len(numeric) != SEMANTIC_NUMERIC_DIM or len(champion_ids) != SEMANTIC_ENTITY_SLOTS:
