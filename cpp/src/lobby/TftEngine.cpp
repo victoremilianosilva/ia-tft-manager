@@ -87,36 +87,13 @@ namespace tft {
 namespace {
 
 constexpr std::uint32_t kRoundsPerStage = 7;
-constexpr std::size_t kCoreObservationDim = 10;
-constexpr std::size_t kBoardObservationDim = kBoardSlots * 5;
-constexpr std::size_t kBenchObservationDim = kBenchSlots * 5;
-constexpr std::size_t kShopObservationDim = kShopSlots * 5;
-constexpr std::size_t kExtraObservationDim = 5;
-constexpr std::size_t kSynergyObservationDim = 5;
-constexpr std::size_t kPositioningObservationDim = 3;
-constexpr std::size_t kCapacityObservationDim = 2;
-// Per-slot strategic features used by the policy's shared candidate scorers.
+// Semantic entity/action-head feature widths remain part of the native snapshot
+// contract; they are not offsets in the neutral PPO observation carrier.
 constexpr std::size_t kCandidateFeatureDim = 6;
-constexpr std::size_t kStrategicCandidateObservationDim =
-    (kBenchSlots + kShopSlots) * kCandidateFeatureDim;
-// Pending-anvil state plus nine option records: ten item/component features
-// and one strategic-fit score per option. Inserted before the candidate tail.
 constexpr std::size_t kAnvilOptionCount = 9;
 constexpr std::size_t kAnvilOptionFeatureDim = 11;
-constexpr std::size_t kAnvilObservationDim = 3 + kAnvilOptionCount * kAnvilOptionFeatureDim;
-// Semantic item-state block: component counts, bag item definitions, craftable
-// recipe definitions, and per-unit target profiles. It is appended before the
-// fixed strategic-candidate tail so legacy checkpoints can migrate by insertion.
 constexpr std::size_t kItemSemanticFeatureDim = 17;
 constexpr std::size_t kItemTargetFeatureDim = 17;
-constexpr std::size_t kItemCompatibilityObservationDim =
-    (9 + 100) * (kBoardSlots + kBenchSlots);
-constexpr std::size_t kItemGlobalObservationDim =
-    10 + 9 * kItemSemanticFeatureDim + 100 * kItemSemanticFeatureDim +
-    (kBoardSlots + kBenchSlots) * kItemTargetFeatureDim;
-constexpr std::size_t kItemStateObservationDim =
-    kItemGlobalObservationDim + kItemCompatibilityObservationDim;
-constexpr std::size_t kActionMemoryObservationDim = 1 + kBoardSlots;
 constexpr std::uint32_t kActionMemoryHorizon = 10;
 
 std::int32_t stage_damage(std::uint32_t stage) noexcept {
@@ -175,19 +152,7 @@ PlayerActionMasks make_default_masks() {
     return masks;
 }
 
-float role_state_value(std::int32_t role) {
-    switch (role) {
-        case 0: return 0.2f; // tank
-        case 1: return 0.4f; // carry
-        case 2: return 0.6f; // support
-        case 3: return 0.8f; // fighter
-        case 4: return 1.0f; // assassin
-        default: return 0.0f;
-    }
-}
-
-// Shared native role classifier for both the flat observation producer and
-// the identity-bound audit snapshot consumed by semantic item-target heads.
+// Shared native role classifier for the identity-bound semantic item-target projection.
 std::int32_t native_observation_role(
     const UnitInstance& unit, const ChampionDefinition& def
 ) {
@@ -235,12 +200,6 @@ std::array<float, kItemSemanticFeatureDim> encode_item_semantic_features(
         static_cast<float>(std::clamp(item.utility_weight, 0.0, 1.0)),
         item.grants_trait.empty() ? 0.0f : 1.0f
     };
-}
-
-float unit_strength(const ChampionDefinition& def, const UnitInstance& unit) {
-    const float cost = static_cast<float>(def.cost);
-    const float star = static_cast<float>(unit.star);
-    return std::min(1.0f, cost / 5.0f * 0.5f + star / 3.0f * 0.5f);
 }
 
 double unit_composition_score(
