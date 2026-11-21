@@ -1,5 +1,6 @@
 
 #include "lobby/TftEngine.hpp"
+#include "combat/CombatEvidence.hpp"
 #include "lobby/ChampionCatalog.hpp"
 #include "CombatEngine.hpp"
 
@@ -283,9 +284,40 @@ int main(int argc, char** argv) {
         // Valida renda, máscara e compra a partir da loja inicial.
         std::array<tft::PlayerAction, tft::kPlayersPerLobby> actions{};
         for (auto& action : actions) action.values = {6, 0, 0, 0, 0, 0};
+        // Only a calibrated, identity/sequence-bound prediction may enter
+        // the Shadow economic context; experimental or stale predictions fail closed.
+        tft::combat_evidence::SurvivalRiskEvidence calibrated_combat_risk;
+        calibrated_combat_risk.available = true;
+        calibrated_combat_risk.match_id = identity_after_reset.episode_id;
+        calibrated_combat_risk.player_id = 0;
+        calibrated_combat_risk.round = 1;
+        calibrated_combat_risk.sequence = 1;
+        calibrated_combat_risk.expected_damage = 5.0;
+        calibrated_combat_risk.elimination_risk = 0.10;
+        calibrated_combat_risk.horizon_rounds = 1;
+        calibrated_combat_risk.uncertainty = 0.20;
+        calibrated_combat_risk.calibration_protocol_id = "combat-calibration.v1";
+        calibrated_combat_risk.calibration_report_sha256 = std::string(64, 'a');
+        calibrated_combat_risk.dataset_version = "combat-dataset.v1";
+        calibrated_combat_risk.replay_artifact_ids = {"replay-artifact-1"};
+        calibrated_combat_risk.source = "observed_hp+approved_replay_calibration.v1";
+        require(engine.publish_combat_prediction_evidence(calibrated_combat_risk),
+                "A Engine deveria aceitar risco calibrado para a próxima sequência.");
+        auto experimental_combat_risk = calibrated_combat_risk;
+        experimental_combat_risk.source = "experimental_replay_cohort_distribution.v1";
+        require(!engine.publish_combat_prediction_evidence(experimental_combat_risk),
+                "A Engine não pode aceitar projeção experimental como evidência econômica.");
+
         // O treinamento só resolve a preparação depois de 15 ações de cada
         // jogador; PASS conta como ação, mas não encerra a rodada sozinho.
-        for (int action = 0; action < 30; ++action) {
+        const auto first_prediction_step = step_with_pending_anvils(engine, actions);
+        require(std::any_of(first_prediction_step.events.begin(),
+            first_prediction_step.events.end(), [](const auto& event) {
+                return event.find("COMBAT_PREDICTION_EVIDENCE_APPLIED") != std::string::npos;
+            }), "Risco calibrado não chegou ao contexto econômico Shadow.");
+        require(!engine.publish_combat_prediction_evidence(calibrated_combat_risk),
+                "A Engine não pode reutilizar evidência de uma sequência anterior.");
+        for (int action = 1; action < 30; ++action) {
             (void)step_with_pending_anvils(engine, actions);
         } // duas rodadas completas de 15 ações
 
