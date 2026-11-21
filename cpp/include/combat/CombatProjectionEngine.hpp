@@ -88,6 +88,18 @@ public:
     }
 };
 
+struct WeightedCombatScenario {
+    std::int32_t opponent_id{-1};
+    std::uint32_t scenario_index{0};
+    double incoming_damage{0.0};
+    double probability{0.0};
+};
+
+struct CombatMatchupProjectionCandidate {
+    double probability{0.0};
+    CombatProjectionSnapshot snapshot;
+};
+
 struct CombatProjectionResult {
     bool simulation_completed{false};
     bool decision_eligible{false}; // always false until replay calibration approves it
@@ -109,6 +121,7 @@ struct CombatProjectionResult {
     double uncertainty{1.0};
     CombatCoverage coverage;
     std::vector<double> incoming_damage_samples;
+    std::vector<WeightedCombatScenario> weighted_scenarios;
 };
 
 class CombatProjectionEngine {
@@ -179,6 +192,146 @@ public:
         out.simulation_completed = true;
         out.decision_eligible = false;
         const auto coverage = CombatCoverageValidator{}.validate(snapshot.coverage);
+        out.status = coverage.complete ? "experimental_uncalibrated" :
+            "partial_unsupported_mechanics";
+        out.reason = coverage.complete ? "awaiting_replay_calibration" :
+            "material_mechanics_not_fully_supported";
+        return out;
+    }
+
+    CombatProjectionResult project_matchups(
+        const std::vector<CombatMatchupProjectionCandidate>& candidates,
+        std::int32_t authoritative_round_damage,
+        std::uint32_t scenarios_per_matchup = 4,
+        std::uint64_t first_seed = 1) const {
+        CombatProjectionResult out;
+        if (candidates.empty() || scenarios_per_matchup == 0 ||
+            scenarios_per_matchup > kMaximumScenarios || first_seed == 0 ||
+            authoritative_round_damage < 0) {
+            out.reason = "matchup_candidates_or_projection_parameters_unavailable";
+            return out;
+        }
+
+        std::vector<MatchupCandidateProbability> probabilities;
+        probabilities.reserve(candidates.size());
+        const auto& first = candidates.front().snapshot.identity;
+        for (const auto& candidate : candidates) {
+            probabilities.push_back({
+                candidate.snapshot.identity.opponent_id, candidate.probability});
+            const auto& identity = candidate.snapshot.identity;
+            if (!candidate.snapshot.valid || identity.match_id != first.match_id ||
+                identity.player_id != first.player_id || identity.round != first.round ||
+                identity.sequence != first.sequence ||
+                identity.engine_decision_sequence != first.engine_decision_sequence ||
+                identity.player_hp != first.player_hp ||
+                identity.player_unit_ids != first.player_unit_ids) {
+                out.reason = "candidate_snapshot_identity_or_player_board_mismatch";
+                return out;
+            }
+        }
+        const auto matchup_set =
+            MatchupResolver{}.resolve_candidates(first.player_id, probabilities);
+        if (!matchup_set.available) {
+            out.reason = matchup_set.reason;
+            return out;
+        }
+
+        out.match_id = first.match_id;
+        out.player_id = first.player_id;
+        out.opponent_id = -1;
+        out.round = first.round;
+        out.strategic_sequence = first.sequence;
+        out.engine_decision_sequence = first.engine_decision_sequence;
+        out.horizon_rounds = 1;
+        out.scenarios_requested = static_cast<std::uint32_t>(
+            candidates.size() * scenarios_per_matchup);
+        double expected_damage = 0.0;
+        double simulation_uncertainty = 0.0;
+        double matchup_entropy = 0.0;
+        std::vector<WeightedCombatScenario> scenarios;
+        scenarios.reserve(out.scenarios_requested);
+
+        for (std::size_t candidate_index = 0;
+             candidate_index < candidates.size(); ++candidate_index) {
+            const auto seed_offset = static_cast<std::uint64_t>(
+                candidate_index * scenarios_per_matchup);
+            if (first_seed > std::numeric_limits<std::uint64_t>::max() - seed_offset) {
+                out.reason = "scenario_seed_overflow";
+                return out;
+            }
+            const auto& candidate = candidates[candidate_index];
+            auto candidate_result = project(
+                candidate.snapshot, authoritative_round_damage,
+                scenarios_per_matchup, first_seed + seed_offset);
+            if (!candidate_result.simulation_completed) {
+                out.reason = candidate_result.reason;
+                return out;
+            }
+            const auto& coverage = candidate_result.coverage;
+            out.coverage.units_seen += coverage.units_seen;
+            out.coverage.units_supported += coverage.units_supported;
+            out.coverage.unsupported_abilities += coverage.unsupported_abilities;
+            out.coverage.unsupported_traits += coverage.unsupported_traits;
+            out.coverage.unsupported_items += coverage.unsupported_items;
+            out.coverage.missing_scripts += coverage.missing_scripts;
+            out.coverage.unsupported_effects += coverage.unsupported_effects;
+            out.coverage.missing_ability_metadata += coverage.missing_ability_metadata;
+            out.coverage.missing_item_effect_metadata += coverage.missing_item_effect_metadata;
+            out.coverage.missing_trait_effect_metadata += coverage.missing_trait_effect_metadata;
+            out.coverage.abilities_seen += coverage.abilities_seen;
+            out.coverage.abilities_supported += coverage.abilities_supported;
+            out.coverage.items_seen += coverage.items_seen;
+            out.coverage.items_supported += coverage.items_supported;
+            out.coverage.traits_seen += coverage.traits_seen;
+            out.coverage.traits_supported += coverage.traits_supported;
+            out.coverage.effects_seen += coverage.effects_seen;
+            out.coverage.effects_supported += coverage.effects_supported;
+            simulation_uncertainty += candidate.probability * candidate_result.uncertainty;
+            for (std::size_t scenario_index = 0;
+                 scenario_index < candidate_result.incoming_damage_samples.size();
+                 ++scenario_index) {
+                const double probability = candidate.probability /
+                    static_cast<double>(scenarios_per_matchup);
+                const double damage =
+                    candidate_result.incoming_damage_samples[scenario_index];
+                scenarios.push_back({
+                    candidate.snapshot.identity.opponent_id,
+                    static_cast<std::uint32_t>(scenario_index),
+                    damage, probability});
+                expected_damage += probability * damage;
+            }
+            out.scenarios_completed += candidate_result.scenarios_completed;
+        }
+        if (candidates.size() > 1) {
+            for (const auto& candidate : candidates)
+                matchup_entropy -= candidate.probability *
+                    std::log(candidate.probability);
+            matchup_entropy /= std::log(static_cast<double>(candidates.size()));
+        }
+        std::sort(scenarios.begin(), scenarios.end(),
+            [](const auto& lhs, const auto& rhs) {
+                return lhs.incoming_damage < rhs.incoming_damage;
+            });
+        const auto weighted_quantile = [&](double q) {
+            double cumulative = 0.0;
+            for (const auto& scenario : scenarios) {
+                cumulative += scenario.probability;
+                if (cumulative + 1e-12 >= q) return scenario.incoming_damage;
+            }
+            return scenarios.back().incoming_damage;
+        };
+        out.expected_incoming_damage = expected_damage;
+        out.p50_incoming_damage = weighted_quantile(0.50);
+        out.p90_incoming_damage = weighted_quantile(0.90);
+        out.uncertainty = std::clamp(
+            simulation_uncertainty + matchup_entropy, 0.0, 1.0);
+        out.incoming_damage_samples.reserve(scenarios.size());
+        for (const auto& scenario : scenarios)
+            out.incoming_damage_samples.push_back(scenario.incoming_damage);
+        out.weighted_scenarios = std::move(scenarios);
+        const auto coverage = CombatCoverageValidator{}.validate(out.coverage);
+        out.simulation_completed = true;
+        out.decision_eligible = false;
         out.status = coverage.complete ? "experimental_uncalibrated" :
             "partial_unsupported_mechanics";
         out.reason = coverage.complete ? "awaiting_replay_calibration" :
