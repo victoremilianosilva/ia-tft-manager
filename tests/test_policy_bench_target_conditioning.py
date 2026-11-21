@@ -25,7 +25,7 @@ def _complete_mask_bundle(masks, batch_size, device="cpu"):
 
 
 ACTION_DIMS = [9, 5, 9, 28, 28, 28]
-OBS_DIM = 22 + (4 * 7 * 5) + (1 + 4 * 7) + ((9 + 5) * 8)
+OBS_DIM = 10 + (4 * 7 * 5) + (1 + 4 * 7) + ((9 + 5) * 6)
 
 
 def _policy_and_observation(batch_size=1):
