@@ -57,9 +57,13 @@ int main() {
     std::vector<combat_evidence::ObservedCombatOutcome> outcomes;
     for (std::uint64_t i = 1; i <= 40; ++i)
         outcomes.push_back({7, 0, static_cast<std::uint32_t>(i), i,
-            static_cast<double>(i), true});
+            static_cast<double>(i), true, "versioned_replay_outcome.v1",
+            "replay-artifact-7", "tft-replay-dataset.v1"});
     const auto calibrator = combat_evidence::CombatPredictionCalibrator{};
-    outcomes.push_back({7, 0, 1, 50, 999.0, true}); // sequence at/after decision is stale
+    outcomes.push_back({7, 0, 2, 41, 999.0, true, "combat_engine_simulation",
+        "synthetic-run", "tft-replay-dataset.v1"}); // simulation is not an observed replay
+    outcomes.push_back({7, 0, 1, 50, 999.0, true, "versioned_replay_outcome.v1",
+        "replay-artifact-7", "tft-replay-dataset.v1"}); // sequence at/after decision is stale
     auto distribution = calibrator.calibrate(outcomes, 7, 0, 50, 50, 30);
     assert(distribution.calibrated && distribution.sample_count == 40);
     assert(distribution.p50 == 20.0 && distribution.p90 == 36.0);
