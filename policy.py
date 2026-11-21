@@ -989,7 +989,7 @@ class TFTPolicy(nn.Module):
         (
             item_component_features, item_inventory_features, item_recipe_features,
             item_target_features, item_inventory_target_fit, item_recipe_target_fit,
-            item_anvil_options, item_anvil_pending,
+            item_anvil_options, item_anvil_pending, item_anvil_kind_features,
         ) = self._item_state_features(obs, semantic_state)
 
         def record_distribution(name, logits, chosen, row_indices, applied_mask=None):
