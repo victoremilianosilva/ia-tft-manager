@@ -37,6 +37,8 @@ from semantic_observation import (
     semantic_item_state_tensors,
     validate_semantic_batch_alignment,
     validate_semantic_state_checkpoint_contract,
+    SEMANTIC_POLICY_STATE_KEYS,
+    semantic_policy_state_keys,
 )
 from economy_finetuning.finetune import ACTION_DIMS, _actions_to_native, _flatten_masks
 
@@ -117,18 +119,8 @@ def validate_evaluation_checkpoint_contracts(payload: dict, catalog_map: dict) -
         validate_reward_checkpoint_contract(reward_contract)
         status["reward"] = "validated"
 
-    semantic_keys = {
-        key for key in state
-        if key.startswith(("semantic_id_embedding.", "semantic_trait_embedding.", "semantic_encoder."))
-    }
-    expected_keys = {
-        "semantic_id_embedding.weight",
-        "semantic_trait_embedding.weight",
-        "semantic_encoder.0.weight",
-        "semantic_encoder.0.bias",
-        "semantic_encoder.2.weight",
-        "semantic_encoder.2.bias",
-    }
+    semantic_keys = semantic_policy_state_keys(state)
+    expected_keys = SEMANTIC_POLICY_STATE_KEYS
     if semantic_keys and semantic_keys != expected_keys:
         raise ValueError("Checkpoint contém um encoder semântico parcial.")
     semantic_contract = payload.get("semantic_state_contract")
