@@ -84,6 +84,51 @@ int main() {
             static_cast<double>(i), true, "versioned_replay_outcome.v1",
             "replay-artifact-7", "tft-replay-dataset.v1"});
     const auto calibrator = combat_evidence::CombatPredictionCalibrator{};
+    combat_evidence::CombatCalibrationCohort cohort;
+    cohort.round = 50;
+    cohort.horizon_rounds = 1;
+    cohort.engine_version = "combat-engine-generic.v1";
+    cohort.composition_signature = "composition-sha256";
+    cohort.mechanics_signature = "mechanics-sha256";
+    std::vector<combat_evidence::ObservedCombatOutcome> cohort_outcomes;
+    for (std::uint64_t i = 0; i < 30; ++i) {
+        combat_evidence::ObservedCombatOutcome sample;
+        sample.match_id = 100 + i;
+        sample.player_id = static_cast<std::int32_t>(i % 8);
+        sample.round = 50;
+        sample.sequence = 5;
+        sample.incoming_damage = static_cast<double>(i + 1);
+        sample.observed = true;
+        sample.source = "versioned_replay_outcome.v1";
+        sample.replay_artifact_id = "combat-replay-" + std::to_string(i % 3);
+        sample.dataset_version = "combat-dataset.v2";
+        sample.engine_version = cohort.engine_version;
+        sample.composition_signature = cohort.composition_signature;
+        sample.mechanics_signature = cohort.mechanics_signature;
+        sample.horizon_rounds = 1;
+        cohort_outcomes.push_back(sample);
+    }
+    auto target_match_leak = cohort_outcomes.front();
+    target_match_leak.match_id = 7;
+    target_match_leak.incoming_damage = 999.0;
+    cohort_outcomes.push_back(target_match_leak);
+    const auto cohort_distribution = calibrator.calibrate_for_cohort(
+        cohort_outcomes, 7, 0, 50, 50, cohort, 30);
+    assert(cohort_distribution.sample_count == 30);
+    assert(cohort_distribution.source == "experimental_replay_cohort_distribution.v1");
+    assert(cohort_distribution.replay_artifact_ids.size() == 3);
+    assert(!cohort_distribution.calibrated);
+    auto duplicate_cohort = cohort_outcomes;
+    duplicate_cohort.push_back(duplicate_cohort.front());
+    const auto invalid_cohort = calibrator.calibrate_for_cohort(
+        duplicate_cohort, 7, 0, 50, 50, cohort, 30);
+    assert(invalid_cohort.source == "invalid_duplicate_match_cohort_sample");
+    auto mixed_dataset = cohort_outcomes;
+    mixed_dataset[1].dataset_version = "combat-dataset.v3";
+    const auto invalid_dataset = calibrator.calibrate_for_cohort(
+        mixed_dataset, 7, 0, 50, 50, cohort, 30);
+    assert(invalid_dataset.source == "invalid_mixed_dataset_versions");
+
     outcomes.push_back({7, 0, 2, 41, 999.0, true, "combat_engine_simulation",
         "synthetic-run", "tft-replay-dataset.v1"}); // simulation is not an observed replay
     outcomes.push_back({7, 0, 1, 50, 999.0, true, "versioned_replay_outcome.v1",
