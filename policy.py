@@ -213,7 +213,7 @@ class TFTPolicy(nn.Module):
 
     @torch.no_grad()
     def reset_migrated_semantic_consumer_columns(self):
-        """Neutralize columns whose meaning changed in semantic observation v3.
+        """Neutralize columns whose meaning changed in semantic observation v6.
 
         The first three board channels retain their factual meaning. The final
         two now represent equipped-item and trait counts instead of role/strength.
