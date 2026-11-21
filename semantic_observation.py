@@ -40,6 +40,35 @@ SEMANTIC_TRAIT_SLOTS = 10
 SEMANTIC_TRAIT_VOCAB_SIZE = 65536
 SEMANTIC_TRAIT_EMBED_DIM = 16
 
+SEMANTIC_POLICY_STATE_KEYS = frozenset({
+    "semantic_id_embedding.weight",
+    "semantic_trait_embedding.weight",
+    "semantic_encoder.0.weight",
+    "semantic_encoder.0.bias",
+    "semantic_encoder.2.weight",
+    "semantic_encoder.2.bias",
+})
+
+
+def semantic_policy_state_keys(state_dict: Mapping) -> set[str]:
+    """Return every semantic-policy parameter present in a checkpoint state dict."""
+    if not isinstance(state_dict, Mapping):
+        raise TypeError("policy state_dict must be a mapping")
+    prefixes = ("semantic_id_embedding.", "semantic_trait_embedding.", "semantic_encoder.")
+    return {key for key in state_dict if isinstance(key, str) and key.startswith(prefixes)}
+
+
+def validate_semantic_policy_state_dict(state_dict: Mapping) -> None:
+    """Require the complete v6 semantic encoder parameter set."""
+    present = semantic_policy_state_keys(state_dict)
+    if present != SEMANTIC_POLICY_STATE_KEYS:
+        missing = sorted(SEMANTIC_POLICY_STATE_KEYS - present)
+        unexpected = sorted(present - SEMANTIC_POLICY_STATE_KEYS)
+        raise ValueError(
+            "Semantic v6 policy weights are incomplete: "
+            f"missing={missing}, unexpected={unexpected}"
+        )
+
 
 def semantic_item_state_tensors(numeric):
     """Expose named item/anvil tensors from the identity-bound semantic row."""
