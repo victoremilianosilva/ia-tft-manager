@@ -373,7 +373,7 @@ class TFTPolicy(nn.Module):
         semantic_entities = self._semantic_entity_features(semantic_state, obs)
         if semantic_entities is not None:
             board_entities = semantic_entities[:, :28, :]
-            board_part = torch.stack(
+            board_features = torch.stack(
                 (
                     board_entities[:, :, 0],  # occupied
                     board_entities[:, :, 2],  # cost
@@ -382,7 +382,12 @@ class TFTPolicy(nn.Module):
                     board_entities[:, :, 4],  # trait count
                 ),
                 dim=-1,
-            ).reshape(obs.shape[0], self.board_flat_dim)
+            )
+            # Native slots are row-major [slot, feature], so transpose the
+            # feature axis only after restoring the 4x7 spatial grid.
+            board_2d = board_features.reshape(
+                obs.shape[0], 4, 7, self.num_cell_features
+            ).permute(0, 3, 1, 2).contiguous()
             # The global MLP retains its established input width while the
             # identity-bound semantic encoder supplies native global/entity facts
             # through its dedicated side path below. Global positional consumers
@@ -399,6 +404,7 @@ class TFTPolicy(nn.Module):
             )
         else:
             board_part = obs[:, self.pre_board_dim : self.pre_board_dim + self.board_flat_dim]
+            board_2d = board_part.view(-1, self.num_cell_features, 4, 7)
             pre_part = obs[:, :self.pre_board_dim]
             post_part = obs[:, self.pre_board_dim + self.board_flat_dim :]
             candidate_tail = post_part[:, -self.candidate_observation_dim:]
@@ -411,7 +417,6 @@ class TFTPolicy(nn.Module):
             )
 
         # (B, 5, 4, 7): semantic board facts replace positional CNN input.
-        board_2d = board_part.view(-1, self.num_cell_features, 4, 7)
         
         # Processamento paralelo nas sub-redes dedicadas
         cnn_features = self.board_cnn(board_2d)
