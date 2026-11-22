@@ -26,6 +26,10 @@ passed them.
 
 - `CombatPredictionCalibrator` constructs an experimental replay-backed
   distribution and never marks it calibrated by itself.
+- `evaluate_calibration_predictions` pairs complete experimental projections
+  with replay outcomes, validates identity/HP/provenance, enforces
+  match-disjoint train/validation/test splits, and computes held-out MAE, P90
+  interval coverage, and Brier score.
 - `approve_calibration` validates the evaluation report, protocol approval,
   sample minima, finite metric ranges, metric thresholds, SHA-256 manifest
   identities, and disjoint train/validation/test manifests.
@@ -65,14 +69,13 @@ predictor or a replay dataset currently exists.
 
 ## Remaining work in issue #514
 
-This gate closes only the unsafe sample-count-to-calibrated transition. The
-full issue still requires authoritative board snapshots, factual matchup
-resolution, mechanics-level coverage measurement, scenario execution through
-the existing CombatEngine, replay-backed quantitative evaluation, and
-identity-safe integration into EconomicController and ContextualActionEvaluator.
-Replay collection/calibration results depend on #518 and remain non-blocking
-for merge under the project's agreed rule; no empirical quality is claimed by
-this implementation.
+The structural producer-to-consumer pipeline and paired-evaluation calculator
+are implemented in #520. Actual empirical evaluation still requires
+authoritative replay artifacts, a reproducible dataset with verified episode
+manifests, and measured results under the approved protocol. Those results
+are not fabricated or claimed by this PR. Replay collection and the empirical
+run depend on #289/#518 and remain non-blocking for merging the contracts,
+implementation, and tests under the project's agreed rule.
 
 
 ## Cohort isolation
