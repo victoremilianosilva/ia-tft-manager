@@ -92,9 +92,9 @@ def test_trainer_persists_lineage_for_periodic_and_final_checkpoints():
     assert source.count(
         '"checkpoint_contract": build_checkpoint_lineage_contract('
     ) == 2
-    assert "TFT_ALLOW_UNVERSIONED_CHECKPOINT_LINEAGE" in source
-    assert "and not legacy_checkpoint_lineage" in source
-    assert "legacy_checkpoint_lineage or semantic_state_warm_start or training_contract_warm_start" in source
+    assert source.count('"training_run_manifest": self.training_run_manifest') == 2
+    assert "TFT_ALLOW_UNVERSIONED_CHECKPOINT_LINEAGE" not in source
+    assert 'self.policy.load_state_dict(checkpoint["policy"], strict=True)' in source
     assert "self.start_update = 1" in source
     assert "validate_checkpoint_lineage_contract(" in source
 
@@ -126,27 +126,26 @@ def test_trainer_persists_and_requires_training_resume_contract():
     from pathlib import Path
     source = (Path(__file__).resolve().parents[1] / "trainer.py").read_text(encoding="utf-8")
     assert source.count('"training_resume_contract": build_training_resume_contract(self.config.to_dict())') == 2
-    assert "TFT_ALLOW_TRAINING_CONFIG_WARM_START" in source
-    assert "and not training_contract_warm_start" in source
-    assert "TFT_WARM_START_OUTPUT_CHECKPOINT" in source
-    assert source.count('"warm_start_source": warm_start_source_metadata') == 2
+    assert "TFT_ALLOW_TRAINING_CONFIG_WARM_START" not in source
+    assert "TFT_WARM_START_OUTPUT_CHECKPOINT" not in source
+    assert '"warm_start_source":' not in source
+    assert "validate_training_resume_contract(" in source
     assert source.count('"training_resume_contract": build_training_resume_contract(self.config.to_dict())') == 2
 
 
 
-def test_semantic_contract_change_requires_explicit_weights_only_warm_start():
+def test_semantic_contract_change_rejects_legacy_checkpoint_without_warm_start():
     from pathlib import Path
 
     source = (
         Path(__file__).resolve().parents[1] / "trainer.py"
     ).read_text(encoding="utf-8")
-    assert "TFT_ALLOW_SEMANTIC_STATE_WARM_START" in source
-    assert "TFT_WARM_START_OUTPUT_CHECKPOINT" in source
-    assert "validate_semantic_state_warm_start_migration(" in source
-    assert "semantic_policy_state_keys(checkpoint.get(\"policy\", {}))" in source
-    assert "not semantic_state_warm_start" in source
-    assert "Checkpoint histórico sem semantic_state v6" in source
-    assert "semantic_state_warm_start = True" in source
+    assert "TFT_ALLOW_SEMANTIC_STATE_WARM_START" not in source
+    assert "TFT_WARM_START_OUTPUT_CHECKPOINT" not in source
+    assert "validate_semantic_state_checkpoint_contract(" in source
+    assert '"semantic_state_contract"' in source
+    assert 'self.policy.load_state_dict(checkpoint["policy"], strict=True)' in source
+    assert "Checkpoint não pertence à linhagem PPO nativa" in source
 
 
 
