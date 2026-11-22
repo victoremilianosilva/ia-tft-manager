@@ -456,6 +456,8 @@ struct TFTEngine::Impl {
         strategic_shadow_external_active_identity{};
     std::array<std::uint64_t, kPlayersPerLobby>
         strategic_shadow_external_active_version{};
+    std::array<std::string, kPlayersPerLobby> strategic_refresh_failure_reasons{};
+
     std::string strategic_shadow_audit_path;
 
 
@@ -2113,8 +2115,12 @@ struct TFTEngine::Impl {
                         committed->version;
                 }
                 (void)native_result;
+            } catch (const std::exception& error) {
+                strategic_refresh_failure_reasons[i] =
+                    std::string("native_strategic_refresh_exception: ") + error.what();
             } catch (...) {
-                // Native strategic diagnostics are isolated from PPO/game flow.
+                strategic_refresh_failure_reasons[i] =
+                    "native_strategic_refresh_exception: unknown";
             }
         }
     }
@@ -2584,8 +2590,9 @@ struct TFTEngine::Impl {
             auto action_decision = action_evaluator.evaluate(
                 evidence_context.planner_context, economic_decision);
 
-            // New Composition Intelligence pipeline: opt-in Viewer-only shadow state.
-            if (composition_intelligence_enabled) {
+            // Native Composition Intelligence planners run on every decision snapshot.
+            // Their priorities/lineup become semantic PPO context; evaluator recommendations
+            // remain diagnostic and never replace PPO action selection.
             try {
             {
                 namespace ci = composition_intelligence;
