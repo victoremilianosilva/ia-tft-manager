@@ -80,6 +80,36 @@ int main() {
     assert(snapshot.coverage.items_seen == 0);
     assert(snapshot.coverage.traits_seen == 0);
 
+    auto supported_effect_input = input;
+    CombatItem supported_item;
+    supported_item.api_name = "TFT_TestItem";
+    supported_item.effects_complete = true;
+    CombatEffectDefinition supported_effect;
+    supported_effect.trigger = "combat_start";
+    supported_effect.operation = "add_stat";
+    supported_effect.stat = "attack_damage";
+    supported_effect.target = "self";
+    supported_effect.value = 10.0f;
+    supported_item.effects.push_back(supported_effect);
+    supported_effect_input.player_a.units.front().items.push_back(supported_item);
+    const auto supported_effect_snapshot =
+        builder.build(identity, supported_effect_input, 31);
+    const auto supported_effect_coverage =
+        CombatCoverageValidator{}.validate(supported_effect_snapshot.coverage);
+    assert(supported_effect_snapshot.valid && supported_effect_coverage.complete);
+    assert(supported_effect_snapshot.coverage.effects_seen == 1);
+    assert(supported_effect_snapshot.coverage.effects_supported == 1);
+
+    auto unsupported_effect_input = supported_effect_input;
+    unsupported_effect_input.player_a.units.front().items.front().effects.front().trigger.clear();
+    const auto unsupported_effect_snapshot =
+        builder.build(identity, unsupported_effect_input, 31);
+    const auto unsupported_effect_coverage =
+        CombatCoverageValidator{}.validate(unsupported_effect_snapshot.coverage);
+    assert(unsupported_effect_snapshot.valid && !unsupported_effect_coverage.complete);
+    assert(unsupported_effect_snapshot.coverage.unsupported_effects == 1);
+    assert(unsupported_effect_snapshot.coverage.unsupported_items == 1);
+
     const auto projection = CombatProjectionEngine{}.project(snapshot, 6, 4, 100);
     assert(projection.simulation_completed);
     assert(!projection.decision_eligible);
