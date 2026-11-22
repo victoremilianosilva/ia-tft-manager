@@ -1365,7 +1365,14 @@ int main(int argc, char** argv) {
         require(native_pivot_state.pivot_candidate_valid &&
                     !native_pivot_state.pivot_candidate_identity.empty() &&
                     !native_pivot_state.pivot_target_composition_identity.empty(),
-                "Engine nao projetou candidato/destino de pivot a partir das evidencias nativas.");
+                "Engine nao projetou candidato/destino de pivot a partir das evidencias nativas. "
+                "refresh_failed=" + std::to_string(native_pivot_state.strategic_refresh_failed) +
+                " refresh_reason=" + native_pivot_state.strategic_refresh_failure_reason +
+                " direction=" + native_pivot_state.direction_identity +
+                " active_composition=" + native_pivot_state.active_composition_identity +
+                " active_version=" + std::to_string(native_pivot_state.active_composition_version) +
+                " pivot_identity=" + native_pivot_state.pivot_candidate_identity +
+                " pivot_target=" + native_pivot_state.pivot_target_composition_identity);
         require(native_pivot_state.pivot_source_composition_version ==
                     native_pivot_state.active_composition_version &&
                     native_pivot_state.active_composition_version == 1,
