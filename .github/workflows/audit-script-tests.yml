@@ -30,8 +30,10 @@ on:
       - 'viewer/session.py'
       - 'tests/test_viewer_session_shadow_projection.py'
       - 'tests/test_viewer_player_logs.py'
-      - 'tests/test_viewer_session_shadow_projection.py'
-      - 'tests/test_viewer_player_logs.py'
+
+
+
+
       - 'tests/test_purchase_sequence_audit.py'
       - 'tests/test_board_quality_audit.py'
       - 'tests/test_audit_metric_reconciliation.py'
@@ -60,6 +62,8 @@ on:
       - 'tests/test_strategic_direction_pivot_audit.py'
       - 'viewer/player_logs.py'
       - 'viewer/session.py'
+      - 'tests/test_viewer_session_shadow_projection.py'
+      - 'tests/test_viewer_player_logs.py'
       - 'tests/test_audit_metric_reconciliation.py'
       - 'tests/test_purchase_sequence_audit.py'
       - 'tests/test_board_quality_audit.py'
@@ -78,8 +82,10 @@ jobs:
           python-version: '3.12'
       - name: Compile Python
         run: python -m py_compile viewer/composition_diagnostics.py viewer/strategic_direction_pivot_audit.py viewer/strategic_keep_audit.py viewer/integrated_audit.py scripts/audit_viewer_match.py scripts/strategic_economic_comparison.py scripts/audit_reroll_opportunity.py scripts/audit_buy_xp_coverage.py scripts/audit_hold_baseline.py scripts/test_audit_viewer_match.py viewer/audit_window.py viewer/main.py viewer/player_logs.py viewer/session.py
-      - name: Install pytest for audit unit tests
-        run: python -m pip install pytest
+      - name: Install pytest and Viewer runtime dependencies
+        run: |
+          python -m pip install pytest
+          python -m pip install numpy torch --index-url https://download.pytorch.org/whl/cpu
       - name: Run audit regression tests
         run: |
           python -m unittest -v scripts/test_audit_viewer_match.py
