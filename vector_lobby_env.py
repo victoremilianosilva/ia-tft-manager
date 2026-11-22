@@ -28,8 +28,13 @@ class LobbyVectorEnv:
                 if seed is None:
                     observations.append(env.reset())
                 else:
-                    if isinstance(seed, bool) or not isinstance(seed, (int, np.integer)) or int(seed) < 0:
-                        raise ValueError("seed deve ser um inteiro >= 0.")
+                    if (
+                        isinstance(seed, bool)
+                        or not isinstance(seed, (int, np.integer))
+                        or not 0 <= int(seed) <= 0xFFFFFFFF
+                        or int(seed) + self.num_envs - 1 > 0xFFFFFFFF
+                    ):
+                        raise ValueError("seed e offsets por lobby devem caber em uint32.")
                     observations.append(env.reset(seed=int(seed) + lobby_index))
         except Exception:
             # A partial reset cannot restore a known vector boundary.
