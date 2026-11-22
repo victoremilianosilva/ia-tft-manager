@@ -1786,9 +1786,29 @@ struct TFTEngine::Impl {
                             return generated.identity ==
                                 source_active->candidate.composition_id;
                         });
-                    if (active_generated != native_generation.candidates.end())
+                    if (active_generated != native_generation.candidates.end()) {
                         planner_context.current_composition_direction =
                             active_generated->direction;
+                    } else if (source_active->candidate.source ==
+                               composition_intelligence::CompositionSource::Native) {
+                        // The active owner may intentionally retain a candidate
+                        // from an earlier generator sequence. Its immutable ID
+                        // still carries the semantic direction segment:
+                        // <candidate-set>:native:<direction>:<unit-ids>.
+                        // Recover only that explicit native segment; never treat
+                        // the complete snapshot identity as a direction.
+                        const auto marker = source_active->candidate.composition_id.rfind(
+                            "native:");
+                        if (marker != std::string::npos) {
+                            const auto begin = marker + std::string("native:").size();
+                            const auto end = source_active->candidate.composition_id.find(
+                                ':', begin);
+                            if (end != std::string::npos && end > begin)
+                                planner_context.current_composition_direction =
+                                    source_active->candidate.composition_id.substr(
+                                        begin, end - begin);
+                        }
+                    }
                 }
 
                 for (const auto& [champion_id, owned] : strategic_native_owned) {
