@@ -42,7 +42,7 @@ O buffer mantém observação, ação, log-probability, reward, done, value, má
 
 ## Checkpoint e linhagem
 
-Cada execução grava native_ppo_checkpoint.pt e run_manifest.json. O manifesto registra revisão do código, hash do módulo C++ carregado, runtime Python/PyTorch/NumPy, seed, configuração, arquitetura, catálogo semântico e contratos de observação, ação/mask, reward e retomada. A retomada exige identidade de execução idêntica; checkpoints históricos não são importados pelo runner nativo.
+Cada execução grava native_ppo_checkpoint.pt, run_manifest.json e artifact_manifest.json. O manifesto de artefato vincula SHA-256 do checkpoint à linhagem. O manifesto registra revisão do código, hash do módulo C++ carregado, runtime Python/PyTorch/NumPy, seed, configuração, arquitetura, catálogo semântico e contratos de observação, ação/mask, reward e retomada. A retomada exige identidade de execução idêntica; checkpoints históricos não são importados pelo runner nativo.
 
 ## Limite de avaliação
 
