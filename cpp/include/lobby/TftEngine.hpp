@@ -325,6 +325,15 @@ struct AuditUnitStrategicPrioritySnapshot {
     double confidence{0.0};
 };
 
+struct AuditUnitOpportunityCostSnapshot {
+    std::int32_t champion_internal_id{-1};
+    double value{0.0};
+    double uncertainty{1.0};
+    std::uint32_t horizon_rounds{0};
+    std::string source;
+    std::string forgone_candidate_id;
+};
+
 struct AuditStrategicOwnerSnapshot {
     std::string contract_id{"tft.strategic-owner-observation"};
     std::uint32_t contract_version{3};
@@ -361,6 +370,7 @@ struct AuditStrategicOwnerSnapshot {
     bool planner_outputs_valid{false};
     std::uint64_t planner_output_sequence{0};
     std::vector<AuditUnitStrategicPrioritySnapshot> unit_priorities;
+    std::vector<AuditUnitOpportunityCostSnapshot> opportunity_costs;
     std::vector<std::int32_t> lineup_selected_unit_ids;
     std::vector<std::int32_t> lineup_entry_unit_ids;
     std::vector<std::int32_t> lineup_exit_unit_ids;
