@@ -543,7 +543,7 @@ void economic_posture_is_explanatory_not_a_fixed_action_rule() {
     auto invalid_evidence = evidence;
     invalid_evidence.economy.combat_calibration_report_sha256 = "invalid";
     const auto rejected_combat = ContextualActionEvaluator{}.evaluate(
-        active(), priorities(), lineup(), context, &invalid_evidence, 77);
+        active(), priorities(), current_lineup, context, &invalid_evidence, 77);
     assert(!rejected_combat.economy_evidence_consumed);
     assert(std::find(rejected_combat.evidence_rejected.begin(),
         rejected_combat.evidence_rejected.end(),
