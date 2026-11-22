@@ -2121,6 +2121,14 @@ struct TFTEngine::Impl {
                 };
                 const auto native_result =
                     native_runtime.refresh(native_audit_context, native_input);
+                if (native_result.diagnostics.transition_reason ==
+                    "shadow_cycle_exception_contained") {
+                    // UnifiedStrategicShadowRuntime contains its own exceptions
+                    // to protect the game loop. Preserve that failure signal in
+                    // the owner snapshot instead of presenting it as a healthy refresh.
+                    strategic_refresh_failure_reasons[i] =
+                        "native_strategic_refresh_exception_contained";
+                }
                 if ((native_result.active_composition || active_manager.current()) &&
                     strategic_planner_commitments[i].composition_direction.empty() &&
                     !planner_commitment.composition_direction.empty()) {
