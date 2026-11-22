@@ -153,6 +153,9 @@ struct CombatProjectionResult {
     double expected_incoming_damage{0.0};
     double p50_incoming_damage{0.0};
     double p90_incoming_damage{0.0};
+    double observed_player_hp{0.0};
+    double experimental_elimination_probability{0.0};
+    bool elimination_probability_available{false};
     double uncertainty{1.0};
     CombatCoverage coverage;
     std::vector<double> incoming_damage_samples;
@@ -173,6 +176,7 @@ public:
         out.round = snapshot.identity.round;
         out.strategic_sequence = snapshot.identity.sequence;
         out.engine_decision_sequence = snapshot.identity.engine_decision_sequence;
+        out.observed_player_hp = snapshot.identity.player_hp;
         out.coverage = snapshot.coverage;
         out.scenarios_requested = scenario_count;
         if (!snapshot.valid) {
@@ -221,6 +225,13 @@ public:
         out.expected_incoming_damage = sum / static_cast<double>(damage_samples.size());
         out.p50_incoming_damage = quantile(0.50);
         out.p90_incoming_damage = quantile(0.90);
+        const auto eliminated_scenarios = std::count_if(
+            damage_samples.begin(), damage_samples.end(),
+            [&](double damage) { return damage >= out.observed_player_hp; });
+        out.experimental_elimination_probability =
+            static_cast<double>(eliminated_scenarios) /
+            static_cast<double>(damage_samples.size());
+        out.elimination_probability_available = out.observed_player_hp > 0.0;
         out.uncertainty = 1.0 / std::sqrt(static_cast<double>(damage_samples.size()));
         out.incoming_damage_samples = std::move(damage_samples);
         out.scenarios_completed = scenario_count;
@@ -277,6 +288,8 @@ public:
         out.round = first.round;
         out.strategic_sequence = first.sequence;
         out.engine_decision_sequence = first.engine_decision_sequence;
+        out.observed_player_hp = first.player_hp;
+        out.elimination_probability_available = first.player_hp > 0.0;
         out.horizon_rounds = 1;
         out.scenarios_requested = static_cast<std::uint32_t>(
             candidates.size() * scenarios_per_matchup);
@@ -361,6 +374,14 @@ public:
         out.expected_incoming_damage = expected_damage;
         out.p50_incoming_damage = weighted_quantile(0.50);
         out.p90_incoming_damage = weighted_quantile(0.90);
+        if (out.elimination_probability_available) {
+            for (const auto& scenario : scenarios) {
+                if (scenario.incoming_damage >= out.observed_player_hp)
+                    out.experimental_elimination_probability += scenario.probability;
+            }
+            out.experimental_elimination_probability = std::clamp(
+                out.experimental_elimination_probability, 0.0, 1.0);
+        }
         out.uncertainty = std::clamp(
             simulation_uncertainty + matchup_entropy, 0.0, 1.0);
         out.incoming_damage_samples.reserve(scenarios.size());
