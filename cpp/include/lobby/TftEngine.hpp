@@ -352,6 +352,8 @@ struct AuditStrategicOwnerSnapshot {
     std::vector<std::int32_t> active_core_unit_ids;
     bool direction_valid{false};
     std::string direction_identity;
+    // Internal audit diagnostic; not part of the serialized PPO contract.
+    std::string direction_value_for_diagnostics;
     std::uint32_t direction_selected_round{0};
     std::vector<std::int32_t> direction_reference_unit_ids;
     bool pivot_candidate_valid{false};
