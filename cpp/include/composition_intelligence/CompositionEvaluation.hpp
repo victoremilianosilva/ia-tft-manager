@@ -52,13 +52,14 @@ struct CandidateEvidence {
     // do not share a calibration.
     double board_fit{0.5};
     double item_fit{0.5};
-    bool board_fit_available{false};
-    bool item_fit_available{false};
     double availability{0.5};
     double economy_feasibility{0.5};
     double estimated_gold_cost{-1.0};
     double evidence_confidence{0.5};
     CompositionEvidenceSource source{CompositionEvidenceSource::Heuristic};
+    // Appended to preserve aggregate initialization compatibility.
+    bool board_fit_available{false};
+    bool item_fit_available{false};
 };
 
 struct CompositionEvaluationContext {
