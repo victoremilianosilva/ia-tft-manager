@@ -32,7 +32,7 @@ def test_vector_reset_without_seed_preserves_environment_default():
     assert [env.seeds for env in envs] == [[None], [None]]
 
 
-@pytest.mark.parametrize("seed", [-1, True, 1.5])
+@pytest.mark.parametrize("seed", [-1, True, 1.5, 0xFFFFFFFF])
 def test_vector_reset_rejects_invalid_seed(seed):
     envs = [SeedRecordingEnv()]
     vector = LobbyVectorEnv([lambda: envs[0]])
