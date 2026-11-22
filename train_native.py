@@ -4,7 +4,6 @@ from __future__ import annotations
 import argparse
 import os
 from pathlib import Path
-import sys
 
 
 _CONFIG_ENV_KEYS = (
@@ -50,8 +49,8 @@ def _parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
-    if args.seed < 0:
-        raise SystemExit("--seed deve ser >= 0.")
+    if not 0 <= args.seed <= 0xFFFFFFFF:
+        raise SystemExit("--seed deve estar entre 0 e 2^32-1.")
     if min(args.updates, args.lobbies, args.rollout_steps, args.batch_size, args.ppo_epochs) <= 0:
         raise SystemExit("updates, lobbies, rollout-steps, batch-size e ppo-epochs devem ser > 0.")
     if args.learning_rate <= 0 or not 0 <= args.min_learning_rate <= args.learning_rate:
