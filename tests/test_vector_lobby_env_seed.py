@@ -32,10 +32,18 @@ def test_vector_reset_without_seed_preserves_environment_default():
     assert [env.seeds for env in envs] == [[None], [None]]
 
 
-@pytest.mark.parametrize("seed", [-1, True, 1.5, 0xFFFFFFFF])
+@pytest.mark.parametrize("seed", [-1, True, 1.5])
 def test_vector_reset_rejects_invalid_seed(seed):
     envs = [SeedRecordingEnv()]
     vector = LobbyVectorEnv([lambda: envs[0]])
 
     with pytest.raises(ValueError, match="seed"):
         vector.reset(seed=seed)
+
+
+def test_vector_reset_rejects_seed_that_overflows_lobby_offsets():
+    envs = [SeedRecordingEnv(), SeedRecordingEnv()]
+    vector = LobbyVectorEnv([lambda env=env: env for env in envs])
+
+    with pytest.raises(ValueError, match="uint32"):
+        vector.reset(seed=0xFFFFFFFF)
