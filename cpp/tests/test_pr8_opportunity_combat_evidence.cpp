@@ -172,6 +172,10 @@ int main() {
     metrics.brier_score = 0.05;
     assert(!combat_evidence::approve_calibration(
         diagnostic_distribution, metrics, criteria));
+    auto malformed_distribution = cohort_distribution;
+    malformed_distribution.observed_damage_samples.pop_back();
+    assert(!combat_evidence::approve_calibration(
+        malformed_distribution, metrics, criteria));
     assert(combat_evidence::approve_calibration(distribution, metrics, criteria));
     assert(distribution.calibrated);
     auto tampered_distribution = distribution;
