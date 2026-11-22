@@ -310,11 +310,11 @@ def _effect_for_action(action, before, after):
     if kind == 0:
         return (before.get("gold") != after.get("gold")
                 or before.get("bench") != after.get("bench"))
-    if kind == 1:
-        return before.get("gold") != after.get("gold") or before.get("shop") != after.get("shop")
-    if kind == 2:
+    if kind == 1:  # BUY_XP
         return before.get("gold") != after.get("gold") or before.get("xp") != after.get("xp")
-    if kind == 5:
+    if kind == 2:  # REROLL
+        return before.get("gold") != after.get("gold") or before.get("shop") != after.get("shop")
+    if kind == 5:  # SELL
         return before_sig != after_sig or before.get("gold") != after.get("gold")
     if kind in (7, 8):
         return before_sig != after_sig

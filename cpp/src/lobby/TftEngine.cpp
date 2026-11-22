@@ -3248,49 +3248,6 @@ struct TFTEngine::Impl {
 
 
     }
-    double state_reward(std::size_t i, double action_reward) {
-        const double power = board_power(i);
-        const double synergy = synergy_score(i);
-        const auto board_eval = board_evaluation(i);
-        const double positioning = board_eval.total_score;
-        auto& player_info = player_envs[i].info;
-        player_info.board_quality_delta =
-            positioning - player_envs[i].previous_positioning_score;
-        player_info.board_quality_score = positioning;
-        player_info.board_positional_score = board_eval.positional_score;
-        player_info.board_structural_score = board_eval.structural_score;
-        player_info.board_exposed_carries = board_eval.exposed_carry_count;
-        player_info.board_frontline_count = board_eval.frontline_count;
-        player_info.board_isolated_frontline_count =
-            board_eval.isolated_frontline_count;
-        player_info.board_important_bench_units_unplayed =
-            board_eval.important_bench_units_unplayed;
-        double reward = action_reward;
-
-        reward += reward_model::power(power, player_envs[i].previous_board_power);
-        player_envs[i].previous_board_power = power;
-
-        reward += reward_model::synergy(synergy, player_envs[i].previous_synergy_score);
-        player_envs[i].previous_synergy_score = synergy;
-
-        reward += reward_model::positioning(positioning, player_envs[i].previous_positioning_score);
-        player_envs[i].previous_positioning_score = positioning;
-
-        const auto current_level = player_envs[i].economy.level;
-        if (current_level > player_envs[i].previous_reward_level) {
-            reward += reward_model::level(current_level, player_envs[i].previous_reward_level);
-            player_envs[i].previous_reward_level = current_level;
-        }
-
-        reward += reward_model::economy(player_envs[i].economy.gold, player_envs[i].info.hp);
-        reward += reward_model::streak(
-            player_envs[i].economy.win_streak, player_envs[i].economy.loss_streak);
-
-        int occupied = 0;
-        for (const auto& unit : player_envs[i].board) if (unit) ++occupied;
-        reward += reward_model::board(occupied, static_cast<int>(kBoardSlots));
-        return reward;
-    }
 
     void sync_player_economy(std::size_t player_index) {
         if (player_index >= kPlayersPerLobby) {

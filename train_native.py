@@ -74,7 +74,6 @@ def main(argv: list[str] | None = None) -> int:
         str(Path(__file__).resolve().parent / "data" / "opgg_tft_meta.json"),
     )
     os.environ["TFT_OPGG_DISABLE_REFRESH"] = "1"
-    os.environ["TFT_DISABLE_LEGACY_STRATEGY_PROJECTION"] = "1"
     os.environ.pop("TFT_COMPOSITION_INTELLIGENCE_SHADOW", None)
     os.environ["TFT_TOTAL_UPDATES"] = str(args.updates)
     os.environ["TFT_NUM_LOBBIES"] = str(args.lobbies)
