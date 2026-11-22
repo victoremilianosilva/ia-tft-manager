@@ -2,6 +2,9 @@
 from __future__ import annotations
 
 import argparse
+from datetime import datetime, timezone
+import hashlib
+import json
 import os
 from pathlib import Path
 
@@ -91,8 +94,44 @@ def main(argv: list[str] | None = None) -> int:
 
     if not checkpoint_path.is_file() or not manifest_path.is_file():
         raise RuntimeError("Treino terminou sem checkpoint e manifesto de execução.")
+
+    import torch
+    checkpoint = torch.load(checkpoint_path, map_location="cpu")
+    run_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    if checkpoint.get("update") != args.updates:
+        raise RuntimeError("Checkpoint final não corresponde à quantidade de updates solicitada.")
+    saved_manifest = checkpoint.get("training_run_manifest")
+    if not isinstance(saved_manifest, dict) or saved_manifest.get("manifest_sha256") != run_manifest.get("manifest_sha256"):
+        raise RuntimeError("Checkpoint e manifesto externo possuem linhagens divergentes.")
+
+    checkpoint_sha256 = hashlib.sha256(checkpoint_path.read_bytes()).hexdigest()
+    artifact_identity = {
+        "artifact_id": "tft.ppo.native-model",
+        "artifact_version": 1,
+        "checkpoint_file": checkpoint_path.name,
+        "checkpoint_sha256": checkpoint_sha256,
+        "run_manifest_file": manifest_path.name,
+        "run_manifest_sha256": run_manifest["manifest_sha256"],
+        "run_identity_sha256": run_manifest["identity_sha256"],
+        "completed_updates": args.updates,
+    }
+    artifact_manifest = {
+        **artifact_identity,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    artifact_manifest["artifact_manifest_sha256"] = hashlib.sha256(
+        json.dumps(artifact_identity, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    artifact_manifest_path = output_dir / "artifact_manifest.json"
+    artifact_manifest_path.write_text(
+        json.dumps(artifact_manifest, indent=2, ensure_ascii=False, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
     print(f"Checkpoint: {checkpoint_path}")
     print(f"Manifesto:  {manifest_path}")
+    print(f"Artefato:   {artifact_manifest_path}")
+    print(f"SHA-256:    {checkpoint_sha256}")
     print(f"TensorBoard: {log_dir}")
     return 0
 
