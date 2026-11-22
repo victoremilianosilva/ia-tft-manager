@@ -218,6 +218,7 @@ int main() {
 
     auto second_opponent_input = input;
     second_opponent_input.player_b.player_id = 2;
+    second_opponent_input.player_b.player_hp = 60.0f;
     second_opponent_input.player_b.units.front().source_unit_uuid = "opponent-two-unit-uuid";
     auto second_opponent_identity = identity;
     second_opponent_identity.opponent_id = 2;
