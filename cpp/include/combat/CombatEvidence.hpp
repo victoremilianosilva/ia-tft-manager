@@ -202,6 +202,7 @@ struct CombatCoverage {
     std::uint32_t missing_ability_metadata{0};
     std::uint32_t missing_item_effect_metadata{0};
     std::uint32_t missing_trait_effect_metadata{0};
+    std::uint32_t missing_unit_provenance{0};
     std::uint32_t abilities_seen{0}, abilities_supported{0};
     std::uint32_t items_seen{0}, items_supported{0};
     std::uint32_t traits_seen{0}, traits_supported{0};
@@ -311,6 +312,35 @@ public:
             for (const auto& unit : team.units) {
                 ++coverage.units_seen;
                 bool unit_supported = !unit.api_name.empty();
+                const auto& provenance = unit.provenance;
+                const auto factual_source = [](const std::string& source) {
+                    const bool known_origin = source.rfind("observed:", 0) == 0 ||
+                        source.rfind("catalog:", 0) == 0 ||
+                        source.rfind("derived:", 0) == 0;
+                    return known_origin &&
+                        source.find("fallback") == std::string::npos &&
+                        source.find("not_catalogued") == std::string::npos &&
+                        source.find("zero_or_missing") == std::string::npos &&
+                        source.find("incomplete") == std::string::npos;
+                };
+                const std::array<const std::string*, 22> provenance_fields{
+                    &provenance.identity, &provenance.star, &provenance.position,
+                    &provenance.hp, &provenance.max_hp, &provenance.attack_damage,
+                    &provenance.attack_speed, &provenance.attack_range,
+                    &provenance.armor, &provenance.magic_resist, &provenance.mana,
+                    &provenance.max_mana, &provenance.ability_power,
+                    &provenance.critical_strike_chance,
+                    &provenance.critical_strike_damage,
+                    &provenance.damage_amplification, &provenance.damage_reduction,
+                    &provenance.omnivamp, &provenance.role, &provenance.ability,
+                    &provenance.items, &provenance.traits
+                };
+                for (const auto* field : provenance_fields) {
+                    if (!factual_source(*field)) {
+                        ++coverage.missing_unit_provenance;
+                        unit_supported = false;
+                    }
+                }
                 ++coverage.abilities_seen;
                 bool ability_supported = !unit.ability.api_name.empty() &&
                     unit.ability.metadata_complete;
@@ -373,7 +403,8 @@ public:
             coverage.effects_supported == coverage.effects_seen &&
             coverage.unsupported_effects == 0 && coverage.missing_scripts == 0 &&
             coverage.unsupported_abilities == 0 && coverage.unsupported_items == 0 &&
-            coverage.unsupported_traits == 0;
+            coverage.unsupported_traits == 0 &&
+            coverage.missing_unit_provenance == 0;
         return coverage;
     }
 
@@ -392,6 +423,7 @@ public:
             c.unsupported_effects == 0 && c.missing_ability_metadata == 0 &&
             c.missing_item_effect_metadata == 0 &&
             c.missing_trait_effect_metadata == 0 &&
+            c.missing_unit_provenance == 0 &&
             c.abilities_supported == c.abilities_seen &&
             c.items_supported == c.items_seen &&
             c.traits_supported == c.traits_seen &&
