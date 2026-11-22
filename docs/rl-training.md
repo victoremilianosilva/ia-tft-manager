@@ -5,7 +5,7 @@ O runtime operacional é iniciado por train_native.py ou scripts/run_training_ba
 ## Arquivos centrais
 
 - trainer.py: orquestra Engine, policy, rollout, otimizador, scheduler, métricas e checkpoints.
-- policy.py: encoder semântico, encoder espacial, cabeças condicionais de ação e value head.
+- policy.py: encoder semântico, encoder espacial, cabeças condicionais de ação e value head. A construção padrão exige estado semântico; o modo de observação plana só pode ser habilitado explicitamente e não é usado pelo Trainer.
 - semantic_observation.py: projeção versionada dos fatos e owners nativos.
 - rollout.py: transições sincronizadas, identidade, máscaras, validade, retornos e vantagens.
 - ppo.py: loss e atualização PPO.
