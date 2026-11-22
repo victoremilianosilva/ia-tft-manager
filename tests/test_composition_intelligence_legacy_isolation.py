@@ -70,6 +70,34 @@ def test_native_planning_does_not_read_legacy_strategy_contracts():
             assert token not in candidate, f"legacy dependency remains: {token}"
 
 
+
+
+def test_native_strategic_owner_is_initialized_without_optional_audit_sidecar():
+    source = ENGINE_SOURCE.read_text(encoding="utf-8")
+    reset_start = source.index("ResetResult TFTEngine::reset(")
+    reset_end = source.index("impl_->round = 0;", reset_start)
+    reset = source[reset_start:reset_end]
+
+    sidecar_gate = reset.index(
+        "if (!impl_->strategic_shadow_audit_path.empty())"
+    )
+    sidecar_cleanup_end = reset.index(
+        "// The unified state machine is a native strategic owner used by PPO;",
+        sidecar_gate,
+    )
+    runtime_initialization = reset.index(
+        "for (std::size_t i = 0; i < kPlayersPerLobby; ++i)",
+        sidecar_cleanup_end,
+    )
+
+    # The optional JSONL path may control diagnostics only. The native owner
+    # must be created for every player even when no audit path was configured.
+    assert reset.index("}", sidecar_gate) < runtime_initialization
+    assert "std::make_unique<strategy::UnifiedStrategicShadowRuntime>" in reset[
+        runtime_initialization:
+    ]
+    assert "impl_->strategic_shadow_audit_path);" in reset[runtime_initialization:]
+
 def test_action_comparison_requires_nonempty_exact_candidate_identity():
     source = ENGINE_SOURCE.read_text(encoding="utf-8")
     assert "!strategic_context.action_candidates.empty()" in source
