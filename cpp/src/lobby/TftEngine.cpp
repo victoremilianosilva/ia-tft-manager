@@ -2297,6 +2297,7 @@ struct TFTEngine::Impl {
     }
 
     void refresh_native_strategic_state(std::size_t i) {
+        strategic_opportunity_costs[i].clear();
         // Strategic direction and composition are projected from native owners below.
         const auto& player = player_envs[i].info;
         const auto& economy = player_envs[i].economy;
@@ -3275,6 +3276,7 @@ struct TFTEngine::Impl {
                     {"catalog_diagnostics", composition_intelligence_catalog_diagnostics}
                 };
                 auto& failed_runtime = composition_intelligence_players[i];
+                failed_runtime.planner_outputs_valid = false;
                 failed_runtime.mark_stage("runtime", "failed", error.what());
                 failed["sequence"] = composition_intelligence_sequence + 1;
                 if (failed_runtime.append_snapshot(std::move(failed)))
