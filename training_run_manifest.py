@@ -47,27 +47,16 @@ def _source_identity() -> dict[str, Any]:
             )
         revision = result.stdout.strip()
 
-    status = subprocess.run(
-        ["git", "status", "--porcelain"],
-        cwd=root,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
     diff = subprocess.run(
         ["git", "diff", "--binary", "HEAD"],
         cwd=root,
         capture_output=True,
         check=False,
     )
-    dirty_status = status.stdout if status.returncode == 0 else "status-unavailable"
     diff_bytes = diff.stdout if diff.returncode == 0 else b""
     return {
         "revision": revision,
-        "working_tree_dirty": bool(dirty_status.strip()),
-        "working_tree_status_sha256": hashlib.sha256(
-            dirty_status.encode("utf-8")
-        ).hexdigest(),
+        "working_tree_dirty": bool(diff_bytes),
         "tracked_diff_sha256": hashlib.sha256(diff_bytes).hexdigest(),
     }
 
