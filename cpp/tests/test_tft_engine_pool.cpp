@@ -3,6 +3,7 @@
 #include "combat/CombatEvidence.hpp"
 #include "lobby/ChampionCatalog.hpp"
 #include "CombatEngine.hpp"
+#include <nlohmann/json.hpp>
 
 #include <algorithm>
 #include <cstdlib>
@@ -671,6 +672,26 @@ int main(int argc, char** argv) {
         }
         require(saw_auto_win,
                 "Faltou evento de diagnóstico para vitória automática.");
+        bool saw_winner_zero_damage = false;
+        bool saw_loser_positive_damage = false;
+        for (const auto& event : combat_round.events) {
+            constexpr const char* prefix = "COMBAT_OUTCOME_V1:";
+            if (event.rfind(prefix, 0) != 0) continue;
+            const auto outcome = nlohmann::json::parse(
+                event.substr(std::char_traits<char>::length(prefix)));
+            const auto player_id = outcome.value("player_id", -1);
+            const auto event_opponent_id = outcome.value("opponent_id", -1);
+            const auto incoming_damage = outcome.value("incoming_damage", -1.0);
+            saw_winner_zero_damage = saw_winner_zero_damage ||
+                (player_id == 0 &&
+                 event_opponent_id == static_cast<std::int32_t>(opponent_id) &&
+                 incoming_damage == 0.0);
+            saw_loser_positive_damage = saw_loser_positive_damage ||
+                (player_id == static_cast<std::int32_t>(opponent_id) &&
+                 event_opponent_id == 0 && incoming_damage > 0.0);
+        }
+        require(saw_winner_zero_damage && saw_loser_positive_damage,
+                "Outcomes de combate devem registrar ambos os jogadores, inclusive dano zero do vencedor.");
 
         // A partir daqui, as ações econômicas são testadas na preparação posterior
         // ao primeiro PvP, já com sua renda e bônus de vitória aplicados.
