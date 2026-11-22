@@ -509,9 +509,9 @@ struct TFTEngine::Impl {
             resolved_path
         );
 
-        const char* shadow_enabled = std::getenv("TFT_COMPOSITION_INTELLIGENCE_SHADOW");
-        composition_intelligence_enabled = shadow_enabled &&
-            (std::string(shadow_enabled) == "1" ||
+        const char* feature_enabled = std::getenv("TFT_COMPOSITION_INTELLIGENCE_ENABLED");
+        composition_intelligence_enabled = feature_enabled &&
+            (std::string(feature_enabled) == "1" ||
              std::string(shadow_enabled) == "true" ||
              std::string(shadow_enabled) == "yes");
 
