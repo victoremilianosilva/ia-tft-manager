@@ -36,7 +36,7 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("updates, lobbies, rollout-steps, batch-size e ppo-epochs devem ser > 0.")
 
     output_root = Path(args.output_root).expanduser().resolve()
-    if output_root.exists() and any(output_root.iterdir()):
+    if output_root.exists() and (not output_root.is_dir() or any(output_root.iterdir())):
         parser.error(f"O diretório {output_root} não está vazio; não sobrescrever execuções anteriores.")
     output_root.mkdir(parents=True, exist_ok=True)
 
