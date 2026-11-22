@@ -50,6 +50,10 @@ single-round mean is invalid.
   rejects same-match leakage, duplicate match samples, mixed dataset versions,
   and insufficient independent matches. Multiple replay artifacts may belong
   to one immutable dataset version.
+- `evaluate_calibration_predictions` joins experimental projection values
+  with replay outcomes by match/player/round/sequence, rejects incomplete
+  coverage and HP/provenance mismatches, verifies episode-disjoint splits,
+  and calculates held-out MAE, P90 coverage, and Brier score.
 - `approve_calibration` requires an approved protocol, quantitative metrics,
   disjoint train/validation/test manifests, report and manifest hashes, and
   minimum sample counts. Sample count alone never promotes a distribution.
