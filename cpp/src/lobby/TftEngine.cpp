@@ -363,8 +363,6 @@ struct TFTEngine::Impl {
             bool was_deployed{false};
             double fit_score{0.0};
             double reward{0.0};
-            std::string comp_direction;
-            std::string comp_focus;
         };
         std::uint64_t action_serial{0};
         std::vector<RecentPurchase> recent_purchases;
@@ -4620,21 +4618,8 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                             return !sold_uuid.empty() && purchase.uuid == sold_uuid;
                         });
                     if (recent != this->recent_purchases.rend()) {
-                        const std::string current_composition_identity = active_composition
-                            ? active_composition->candidate.composition_id : std::string{};
-                        const std::string current_main_carry_identity = active_composition
-                            ? std::to_string(active_composition->candidate.main_carry_id) : std::string{};
-                        const bool still_core_or_planned = active_composition && std::any_of(
-                            active_composition->candidate.units.begin(),
-                            active_composition->candidate.units.end(),
-                            [&](const auto& target) { return target.champion_id == unit.champion_internal_id; });
-                        const bool composition_changed =
-                            (recent->comp_direction != current_composition_identity ||
-                             recent->comp_focus != current_main_carry_identity) &&
-                            (!recent->comp_direction.empty() || !recent->comp_focus.empty()) &&
-                            !still_core_or_planned;
-                        sale_has_legitimate_context = sale_has_legitimate_context ||
-                            composition_changed || recent->was_deployed;
+                        sale_has_legitimate_context =
+                            sale_has_legitimate_context || recent->was_deployed;
 
                         // An experiment is justified when a later, better-fit
                         // purchase is still owned. This preserves flexibility:
