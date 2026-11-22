@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cmath>
 #include <iostream>
+#include <limits>
 
 using namespace tft;
 using namespace tft::combat_evidence;
@@ -196,7 +197,7 @@ int main() {
     const auto invalid_stat_snapshot = builder.build(identity, invalid_stat, 31);
     assert(!invalid_stat_snapshot.valid);
     assert(invalid_stat_snapshot.validation_reason ==
-        "combat_input_unit_identity_or_board_position_invalid");
+        "combat_input_unit_identity_position_or_stat_invalid");
 
     auto invalid_config = input;
     invalid_config.config.seed += 1;
