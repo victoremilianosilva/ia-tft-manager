@@ -527,12 +527,50 @@ inline bool approve_calibration(
         metrics.p90_coverage >= 0.0 && metrics.p90_coverage <= 1.0 &&
         std::isfinite(metrics.brier_score) &&
         metrics.brier_score >= 0.0 && metrics.brier_score <= 1.0;
-    if (!valid_criteria || !valid_metrics || distribution.calibrated ||
-        distribution.sample_count < criteria.minimum_training_samples ||
-        distribution.replay_artifact_ids.empty() ||
-        std::any_of(distribution.replay_artifact_ids.begin(),
+
+    const auto& samples = distribution.observed_damage_samples;
+    const bool samples_valid = samples.size() == distribution.sample_count &&
+        !samples.empty() &&
+        std::is_sorted(samples.begin(), samples.end()) &&
+        std::all_of(samples.begin(), samples.end(), [](double value) {
+            return std::isfinite(value) && value >= 0.0;
+        });
+    double sample_mean = 0.0;
+    if (samples_valid) {
+        for (const double sample : samples) sample_mean += sample;
+        sample_mean /= static_cast<double>(samples.size());
+    }
+    const auto sample_quantile = [&](double q) {
+        const auto index = static_cast<std::size_t>(
+            std::ceil(q * static_cast<double>(samples.size())) - 1.0);
+        return samples[std::min(index, samples.size() - 1)];
+    };
+    const bool distribution_statistics_valid = samples_valid &&
+        std::isfinite(distribution.mean) &&
+        std::abs(sample_mean - distribution.mean) <= 1e-9 &&
+        std::isfinite(distribution.p50) &&
+        std::abs(sample_quantile(0.50) - distribution.p50) <= 1e-9 &&
+        std::isfinite(distribution.p90) &&
+        std::abs(sample_quantile(0.90) - distribution.p90) <= 1e-9 &&
+        std::isfinite(distribution.uncertainty) &&
+        distribution.uncertainty >= 0.0 && distribution.uncertainty <= 1.0;
+    std::unordered_set<std::string> unique_artifacts;
+    const bool artifacts_valid = !distribution.replay_artifact_ids.empty() &&
+        std::all_of(distribution.replay_artifact_ids.begin(),
             distribution.replay_artifact_ids.end(),
-            [](const std::string& artifact) { return artifact.empty(); }) ||
+            [&](const std::string& artifact) {
+                return !artifact.empty() && unique_artifacts.insert(artifact).second;
+            }) &&
+        (distribution.replay_artifact_id.empty() ||
+            unique_artifacts.count(distribution.replay_artifact_id) == 1);
+
+    if (!valid_criteria || !valid_metrics || !distribution_statistics_valid ||
+        !artifacts_valid || distribution.calibrated ||
+        distribution.match_id == 0 || distribution.player_id < 0 ||
+        distribution.before_round == 0 || distribution.before_sequence == 0 ||
+        distribution.minimum_sample_count == 0 ||
+        distribution.sample_count < distribution.minimum_sample_count ||
+        distribution.sample_count < criteria.minimum_training_samples ||
         distribution.dataset_version.empty() || distribution.engine_version.empty() ||
         distribution.composition_signature.empty() ||
         distribution.mechanics_signature.empty() || distribution.horizon_rounds != 1 ||
