@@ -484,13 +484,18 @@ void economic_posture_is_explanatory_not_a_fixed_action_rule() {
     economy.combat_dataset_version = "combat-dataset.v2";
     economy.combat_replay_artifact_ids = {"replay-a", "replay-b"};
     economy.posture = EconomicPosture::AccumulateResources;
+    auto current_lineup = lineup();
+    current_lineup.match_id = 77;
+    current_lineup.player_id = 0;
+    current_lineup.round = 8;
+    current_lineup.sequence = 99;
     const auto accumulate = ContextualActionEvaluator{}.evaluate(
-        active(), priorities(), lineup(), context, &evidence, 77);
+        active(), priorities(), current_lineup, context, &evidence, 77);
 
     economy.posture = EconomicPosture::EmergencyInvestment;
     economy.reason = StrategicReason::SurvivalPressure;
     const auto emergency = ContextualActionEvaluator{}.evaluate(
-        active(), priorities(), lineup(), context, &evidence, 77);
+        active(), priorities(), current_lineup, context, &evidence, 77);
 
     assert(accumulate.economic_posture_available);
     assert(emergency.economic_posture_available);
