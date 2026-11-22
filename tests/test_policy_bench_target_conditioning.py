@@ -162,7 +162,7 @@ def test_legacy_global_encoder_migrates_five_derived_economic_features():
         dim=1,
     )
 
-    restored = TFTPolicy(obs_dim=OBS_DIM, action_dims=ACTION_DIMS, hidden_size=64)
+    restored = TFTPolicy(obs_dim=OBS_DIM, action_dims=ACTION_DIMS, hidden_size=64, require_semantic_state=False)
     assert restored.load_compatible_state_dict(state)
     migrated = restored.state_dict()["global_mlp.0.weight"]
     assert torch.equal(migrated[:, :insertion], current[:, :insertion])
