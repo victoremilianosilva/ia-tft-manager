@@ -141,6 +141,33 @@ jobs:
           print("Native PPO smoke produced a checkpoint with verified run lineage and artifact hash.")
           PY
 
+      - name: Run native PPO multi-seed battery smoke
+        env:
+          PYTHONPATH: ${{ github.workspace }}/cpp/build/bin:${{ github.workspace }}
+          REQUIRE_CPP_ENGINE: "1"
+        run: |
+          output_root="${RUNNER_TEMP}/native-ppo-battery-smoke"
+          python scripts/run_training_battery.py --output-root "$output_root" --seeds 11,12 --updates 1 --lobbies 1 --rollout-steps 8 --batch-size 64 --ppo-epochs 1
+          python - "$output_root" <<'PY'
+          import hashlib
+          import json
+          import pathlib
+          import sys
+
+          root = pathlib.Path(sys.argv[1])
+          battery = json.loads((root / "battery_manifest.json").read_text(encoding="utf-8"))
+          assert [run["seed"] for run in battery["runs"]] == [11, 12]
+          for run in battery["runs"]:
+              run_dir = root / run["run_dir"]
+              checkpoint = run_dir / "native_ppo_checkpoint.pt"
+              artifact = json.loads((run_dir / "artifact_manifest.json").read_text(encoding="utf-8"))
+              assert checkpoint.is_file()
+              assert hashlib.sha256(checkpoint.read_bytes()).hexdigest() == run["checkpoint_sha256"]
+              assert artifact["weights_changed"] is True
+              assert artifact["strict_reload_verified"] is True
+          print("Native PPO multi-seed battery produced two independently identified checkpoints.")
+          PY
+
       - name: Collect deterministic strategic replay artifact
         if: always()
         run: |
