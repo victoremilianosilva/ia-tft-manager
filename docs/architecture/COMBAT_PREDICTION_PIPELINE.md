@@ -118,10 +118,13 @@ TftEngine::resolve_combats
 
 ## Current runtime limitations
 
-The current `append_combat_team` path does not populate champion ability
-metadata or active trait effect definitions for every unit. The validator
-therefore marks current snapshots partial/unsupported instead of claiming
-complete coverage. This is intentional fail-closed behavior.
+The current `append_combat_team` path does not populate complete champion
+ability metadata, active trait/item effect definitions, or every simulator
+stat from an authoritative source. Several fields remain explicit engine
+defaults or catalog fallbacks. The validator therefore marks current snapshots
+partial/unsupported instead of claiming complete coverage. This is intentional
+fail-closed behavior; the provenance strings preserve why each field is not
+eligible.
 
 The lobby resolves its actual opponent after the player decision cycle. It
 does not currently expose a validated distribution over future opponents
