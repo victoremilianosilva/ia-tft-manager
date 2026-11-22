@@ -68,6 +68,7 @@ def test_policy_rejects_invalid_action_dimensions():
                 obs_dim=162,
                 action_dims=dimensions,
                 hidden_size=32,
+                require_semantic_state=False,
             )
 
 
