@@ -104,7 +104,7 @@ def _policy_identity(policy: Any) -> dict[str, Any]:
         "implementation": type(policy).__qualname__,
         "observation_carrier_dim": int(policy.obs_dim),
         "action_dimensions": [int(value) for value in policy.action_dims],
-        "hidden_size": int(policy.value_head.in_features - 64),
+        "hidden_size": int(policy.fusion[0].out_features),
         "state_dict_schema": state_schema,
         "state_dict_schema_sha256": _canonical_hash(state_schema),
     }
