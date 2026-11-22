@@ -102,6 +102,7 @@ int main() {
     const auto pivot_runtime_path = root / "pivot-runtime" / "events.jsonl";
     ci::ActiveCompositionManager pivot_composition;
     StrategicCommitment pivot_commitment;
+    pivot_commitment.composition_direction = "Bruiser";
     UnifiedStrategicShadowRuntime pivot_runtime(pivot_composition, pivot_commitment, pivot_runtime_path,
         PivotConfirmationPolicy{3, 60.0, 5});
     const auto make_composition = [](const std::string& id, int carry,
