@@ -148,6 +148,35 @@ def test_viewer_shadow_projection_rejects_unmatched_episode_and_boolean_identity
     }
 
 
+
+@pytest.mark.parametrize("sequence", [0, -1])
+def test_viewer_shadow_projection_rejects_non_positive_diagnostic_sequence(sequence):
+    class NativeLobby:
+        def get_audit_snapshot(self):
+            return {"players": [{"player_id": 0, "gold": 12}]}
+
+        def get_snapshot_metadata(self):
+            return {"episode_id": 12}
+
+        def get_composition_diagnostics_jsonl(self):
+            return [json.dumps({
+                "engine_match_id": 12,
+                "player_id": 0,
+                "round": 2,
+                "sequence": sequence,
+                "composition_id": "invalid-sequence",
+            })]
+
+    session = ViewerSession()
+    session.lobby = NativeLobby()
+    player = session._refresh_audit_snapshot()["players"][0]
+
+    assert player["shadow_composition"] == {
+        "status": "unavailable",
+        "reason": "no_shadow_snapshot_for_player_in_current_episode",
+    }
+
+
 def test_viewer_shadow_projection_requires_native_episode_identity():
     class NativeLobby:
         def get_audit_snapshot(self):
@@ -338,3 +367,73 @@ def test_viewer_requires_trait_embedding_in_semantic_v6_checkpoint():
         _validate_semantic_checkpoint_payload(
             {"semantic_state_contract": contract}, incomplete, catalog_map
         )
+
+
+@pytest.mark.parametrize(
+    ("identity_overrides", "expected"),
+    [
+        ({}, True),
+        ({"engine_match_id": 0}, False),
+        ({"engine_match_id": -1}, False),
+        ({"engine_match_id": True}, False),
+        ({"player_id": True}, False),
+        ({"player_id": -1}, False),
+        ({"round": True}, False),
+        ({"round": 0}, False),
+        ({"sequence": True}, False),
+        ({"sequence": 0}, False),
+    ],
+)
+def test_persisted_diagnostic_identity_requires_complete_non_boolean_positive_ids(
+    tmp_path, identity_overrides, expected
+):
+    class NativeLobby:
+        def get_snapshot_metadata(self):
+            return {"episode_id": 77}
+
+        def get_composition_diagnostics_jsonl(self):
+            record = {
+                "engine_match_id": 77,
+                "player_id": 0,
+                "round": 2,
+                "sequence": 1,
+                "composition_id": "comp-a",
+                "composition_version": 1,
+            }
+            record.update(identity_overrides)
+            return [json.dumps(record)]
+
+    session = ViewerSession()
+    session.lobby = NativeLobby()
+    session._session_dir = tmp_path
+    session.match_id = "viewer-session"
+    session._persist_composition_diagnostics()
+
+    record = json.loads((tmp_path / "composition_diagnostics.jsonl").read_text().strip())
+    assert record["correlation"]["identity_complete"] is expected
+    assert record["correlation"]["timestamp_available"] is False
+
+
+def test_persisted_diagnostic_identity_is_incomplete_without_viewer_session_identity(tmp_path):
+    class NativeLobby:
+        def get_snapshot_metadata(self):
+            return {"episode_id": 77}
+
+        def get_composition_diagnostics_jsonl(self):
+            return [json.dumps({
+                "engine_match_id": 77,
+                "player_id": 0,
+                "round": 2,
+                "sequence": 1,
+                "composition_id": "comp-a",
+                "composition_version": 1,
+            })]
+
+    session = ViewerSession()
+    session.lobby = NativeLobby()
+    session._session_dir = tmp_path
+    session.match_id = ""
+    session._persist_composition_diagnostics()
+
+    record = json.loads((tmp_path / "composition_diagnostics.jsonl").read_text().strip())
+    assert record["correlation"]["identity_complete"] is False
