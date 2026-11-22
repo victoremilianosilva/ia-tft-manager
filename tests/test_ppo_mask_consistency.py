@@ -1,3 +1,4 @@
+# These tests isolate action-mask/log-probability contracts with explicit flat-policy fixtures.
 
 import pytest
 import torch
@@ -77,6 +78,7 @@ def test_collection_and_evaluation_logprobs_match():
         obs_dim=obs.shape[-1],
         action_dims=Trainer.ACTION_DIMS,
         hidden_size=32,
+        require_semantic_state=False,
     )
 
     policy.eval()
@@ -183,7 +185,7 @@ def test_item_actions_use_the_same_policy_and_ppo_logprob_path():
     masks["item_component_pair_masks"][1, 1, 2] = True
     masks["item_target_mask"][1, 4] = True
 
-    policy = TFTPolicy(obs_dim=162, action_dims=Trainer.ACTION_DIMS, hidden_size=32)
+    policy = TFTPolicy(obs_dim=162, action_dims=Trainer.ACTION_DIMS, hidden_size=32, require_semantic_state=False)
     policy.eval()
     with torch.no_grad():
         actions, collected, _, values = policy.get_action_and_value(
