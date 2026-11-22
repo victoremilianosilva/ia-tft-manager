@@ -340,7 +340,7 @@ def load_policy(checkpoint_path, obs_dim, device, catalog_map):
         require_semantic_state=True,
     ).to(device)
     try:
-        policy.load_compatible_state_dict(state)
+        policy.load_state_dict(state, strict=True)
     except (RuntimeError, KeyError, ValueError) as exc:
         raise RuntimeError(
             "Checkpoint incompatível com a arquitetura/observação atual. "
