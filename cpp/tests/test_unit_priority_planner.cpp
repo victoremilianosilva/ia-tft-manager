@@ -468,6 +468,35 @@ void two_owned_one_star_copies_do_not_form_an_upgrade() {
     assert(carry->target_star == 0);
 }
 
+void unavailable_contribution_is_not_promoted_to_measured_evidence() {
+    ActiveCompositionManager manager;
+    manager.publish(comp());
+    const auto active = *manager.current();
+    auto ctx = context(active);
+    ctx.owned_units = {{1, 1, 1, true, {}}};
+
+    UnitPriorityEvidence evidence;
+    evidence.champion_id = 1;
+    evidence.board_contribution = 1.0;
+    evidence.synergy_contribution = 1.0;
+    evidence.confidence = 0.9;
+    evidence.board_contribution_available = false;
+    evidence.synergy_contribution_available = false;
+    ctx.evidence = {evidence};
+
+    const auto result = UnitPriorityPlanner{}.resolve(active, ctx);
+    const auto carry = std::find_if(result.units.begin(), result.units.end(),
+        [](const auto& unit) { return unit.champion_id == 1; });
+    assert(carry != result.units.end());
+    assert(carry->board_contribution == 0.0);
+    assert(carry->synergy_contribution == 0.0);
+    assert(std::none_of(carry->reasons.begin(), carry->reasons.end(),
+        [](const auto& reason) {
+            return reason.code == UnitReasonCode::BoardContribution ||
+                reason.code == UnitReasonCode::SynergyContribution;
+        }));
+}
+
 void missing_active_is_safe() {
     auto result = UnitPriorityPlanner{}.resolve(std::nullopt, {});
     assert(result.stale && result.units.empty());
@@ -528,6 +557,9 @@ int main() {
     std::cerr << "RUN two_owned_one_star_copies_do_not_form_an_upgrade\n";
     two_owned_one_star_copies_do_not_form_an_upgrade();
     std::cerr << "PASS two_owned_one_star_copies_do_not_form_an_upgrade\n";
+    std::cerr << "RUN unavailable_contribution_is_not_promoted_to_measured_evidence\n";
+    unavailable_contribution_is_not_promoted_to_measured_evidence();
+    std::cerr << "PASS unavailable_contribution_is_not_promoted_to_measured_evidence\n";
     std::cerr << "RUN missing_active_is_safe\n";
     missing_active_is_safe();
     std::cerr << "PASS missing_active_is_safe\n";
