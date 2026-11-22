@@ -4,6 +4,7 @@
 #include "combat/CombatInput.hpp"
 
 #include <algorithm>
+#include <array>
 #include <cstddef>
 #include <cmath>
 #include <cstdint>
