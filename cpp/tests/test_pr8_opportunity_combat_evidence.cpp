@@ -201,8 +201,8 @@ int main() {
     assert(combat_evidence::apply_to_economic_context(risk, context));
     assert(context.combat_calibration_protocol_id == "combat-calibration.v1");
     assert(context.combat_calibration_report_sha256 == std::string(64, 'a'));
-    assert(context.combat_dataset_version == "tft-replay-dataset.v1");
-    assert(context.combat_replay_artifact_ids.size() == 1);
+    assert(context.combat_dataset_version == "combat-dataset.v2");
+    assert(context.combat_replay_artifact_ids.size() == 3);
     auto horizon_criteria = criteria;
     horizon_criteria.protocol_id = "combat-horizon.v1";
     auto horizon_metrics = metrics;
