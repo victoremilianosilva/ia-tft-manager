@@ -4202,8 +4202,17 @@ struct TFTEngine::Impl {
                     std::to_string(a) + " e " + std::to_string(b) +
                     "; dano de rodada aplicado aos dois");
                 const auto draw_damage = stage_damage(stage);
+                combat_coverage_status = "not_applicable_empty_board";
+                const double hp_a_before = player_envs[a].info.hp;
+                const double hp_b_before = player_envs[b].info.hp;
                 apply_damage(a, draw_damage);
                 apply_damage(b, draw_damage);
+                publish_combat_outcome(a, b, draw_damage, hp_a_before,
+                    player_envs[a].info.hp, "empty_board_draw",
+                    "not_applicable_empty_board", combat_coverage_status);
+                publish_combat_outcome(b, a, draw_damage, hp_b_before,
+                    player_envs[b].info.hp, "empty_board_draw",
+                    "not_applicable_empty_board", combat_coverage_status);
                 sync_player_economy(a);
                 sync_player_economy(b);
                 continue;
@@ -4213,6 +4222,7 @@ struct TFTEngine::Impl {
             std::int32_t winner_survivors = 0;
             std::int32_t loser_survivors = 0;
             if (empty_a || empty_b) {
+                combat_coverage_status = "not_applicable_empty_board";
                 winner = empty_a ? b : a;
                 loser = empty_a ? a : b;
                 winner_survivors = static_cast<std::int32_t>(
@@ -4668,7 +4678,17 @@ struct TFTEngine::Impl {
             const double loser_hp_before = player_envs[loser].info.hp;
             apply_damage(loser, damage);
             publish_combat_outcome(loser, winner, damage, loser_hp_before,
-                player_envs[loser].info.hp, "resolved", "combat-engine-generic.v1",
+                player_envs[loser].info.hp, "resolved", 
+                combat_coverage_status == "not_applicable_empty_board"
+                    ? "not_applicable_empty_board" : "combat-engine-generic.v1",
+                combat_coverage_status);
+            const double winner_hp_before = player_envs[winner].info.hp;
+            publish_combat_outcome(winner, loser, 0, winner_hp_before,
+                player_envs[winner].info.hp,
+                combat_coverage_status == "not_applicable_empty_board"
+                    ? "empty_board_auto_win" : "resolved_win",
+                combat_coverage_status == "not_applicable_empty_board"
+                    ? "not_applicable_empty_board" : "combat-engine-generic.v1",
                 combat_coverage_status);
             const double winner_reward = combat_reward(
                 true, damage, 0, loser_survivors, winner_survivors);
