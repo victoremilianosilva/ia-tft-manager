@@ -31,9 +31,11 @@ single-round mean is invalid.
   `CombatInput`, team/player pairing, roster sizes, unit IDs, and board
   positions before projection.
 - `CombatCoverageValidator::inspect` examines the actual simulator input:
-  ability metadata and unsupported ability features, active trait effect
-  metadata, item effect metadata, supported effect operations/triggers/targets,
-  and missing scripts. Unknown or absent metadata is unsupported.
+  per-field unit provenance, ability metadata and unsupported ability features,
+  active trait effect metadata, item effect metadata, and supported
+  operation/trigger/target combinations. Engine fallbacks, incomplete
+  provenance, malformed conditions, and unsupported effect combinations are
+  unsupported rather than silently accepted.
 - `CombatProjectionEngine` runs deterministic scenarios through the existing
   `CombatEngine`. It produces expected damage, P50/P90, sample values and
   uncertainty, but marks every result experimental and never decision-eligible
@@ -93,9 +95,11 @@ TftEngine::resolve_combats
   source values; catalog fallbacks are not relabeled as direct observations.
 - Matchup resolution accepts only an actual opponent supplied by the lobby.
   No uniform or arbitrary future-opponent distribution is synthesized.
-- Coverage is measured from mechanics actually present in CombatInput. Missing
-  champion ability metadata and active trait effect metadata make coverage
-  partial/unsupported. Simulation completion does not override this status.
+- Coverage is measured from mechanics and field provenance actually present
+  in CombatInput. Missing champion ability metadata, active trait effect
+  metadata, unknown/fallback simulator fields, or unsupported effect
+  combinations make coverage partial/unsupported. Simulation completion does
+  not override this status.
 - The existing CombatEngine is the only simulator. The projection layer does
   not duplicate combat rules or mutate live game state.
 - Projection output remains experimental and `decision_eligible=false`.
