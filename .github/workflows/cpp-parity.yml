@@ -2,10 +2,7 @@ name: C++ native engine
 # The same job also compiles and tests the isolated economy_finetuning package.
 
 on:
-  push:
   pull_request:
-  workflow_dispatch:
-
 concurrency:
   group: native-ci-${{ github.workflow }}-${{ github.event.pull_request.head.ref || github.ref_name }}
   cancel-in-progress: true
