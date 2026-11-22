@@ -398,6 +398,18 @@ py::dict audit_snapshot_to_dict(
             unit_priorities.append(std::move(row));
         }
         strategic_state["unit_priorities"] = std::move(unit_priorities);
+        py::list opportunity_costs;
+        for (const auto& opportunity : strategic.opportunity_costs) {
+            py::dict row;
+            row["champion_internal_id"] = opportunity.champion_internal_id;
+            row["value"] = opportunity.value;
+            row["uncertainty"] = opportunity.uncertainty;
+            row["horizon_rounds"] = opportunity.horizon_rounds;
+            row["source"] = opportunity.source;
+            row["forgone_candidate_id"] = opportunity.forgone_candidate_id;
+            opportunity_costs.append(std::move(row));
+        }
+        strategic_state["opportunity_costs"] = std::move(opportunity_costs);
         strategic_state["lineup_selected_unit_ids"] = strategic.lineup_selected_unit_ids;
         strategic_state["lineup_entry_unit_ids"] = strategic.lineup_entry_unit_ids;
         strategic_state["lineup_exit_unit_ids"] = strategic.lineup_exit_unit_ids;
