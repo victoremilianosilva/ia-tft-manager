@@ -119,7 +119,7 @@ def test_candidate_policy_ranks_shop_slots_by_local_compatibility():
 
 def test_candidate_policy_avoids_selling_core_upgrade_copies():
     hidden_size = 16
-    policy = TFTPolicy(obs_dim=400, action_dims=Trainer.ACTION_DIMS, hidden_size=hidden_size)
+    policy = TFTPolicy(obs_dim=400, action_dims=Trainer.ACTION_DIMS, hidden_size=hidden_size, require_semantic_state=False)
     _configure_candidate_ranker(policy.sell_head, hidden_size, [4, 5], [-1.0, -1.0])
     context = torch.zeros(1, hidden_size + Trainer.ACTION_DIMS[0])
     candidates = torch.zeros(1, 9, 6)
@@ -168,6 +168,7 @@ def test_checkpoint_migration_inserts_composition_features_before_candidate_tail
         obs_dim=new_obs_dim,
         action_dims=Trainer.ACTION_DIMS,
         hidden_size=hidden_size,
+        require_semantic_state=False,
     )
 
     old_weight = old_policy.global_mlp[0].weight.detach().clone()
@@ -221,6 +222,7 @@ def test_composition_focus_and_lock_features_reach_policy_encoder():
         obs_dim=obs_dim,
         action_dims=Trainer.ACTION_DIMS,
         hidden_size=hidden_size,
+        require_semantic_state=False,
     )
     # In this fixture the composition-control block has 18 trait weights plus
     # lock and strength. It sits immediately before the 112-value candidate tail.
