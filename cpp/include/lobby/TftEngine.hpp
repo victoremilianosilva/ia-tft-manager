@@ -332,6 +332,7 @@ struct AuditUnitOpportunityCostSnapshot {
     std::uint32_t horizon_rounds{0};
     std::string source;
     std::string forgone_candidate_id;
+    std::string value_basis;
 };
 
 struct AuditStrategicOwnerSnapshot {
