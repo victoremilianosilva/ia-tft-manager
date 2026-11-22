@@ -654,6 +654,7 @@ class Trainer:
             engine=self.vec_env.envs[0]._engine,
         )
         manifest_path = Path(self.config.run_manifest_path)
+        saved_run_manifest = None
         if checkpoint is not None:
             saved_run_manifest = checkpoint.get("training_run_manifest")
             if (
@@ -665,13 +666,20 @@ class Trainer:
                     "Checkpoint sem manifesto de execução nativo compatível. "
                     "Checkpoints históricos não podem ser retomados nesta linhagem."
                 )
+            self.training_run_manifest = saved_run_manifest
         if manifest_path.exists():
             import json as _json
             with manifest_path.open("r", encoding="utf-8") as source:
                 existing_manifest = _json.load(source)
-            if existing_manifest.get("identity_sha256") != self.training_run_manifest.get("identity_sha256"):
+            if (
+                existing_manifest.get("identity_sha256") != self.training_run_manifest.get("identity_sha256")
+                or (
+                    saved_run_manifest is not None
+                    and existing_manifest.get("manifest_sha256") != saved_run_manifest.get("manifest_sha256")
+                )
+            ):
                 raise RuntimeError(
-                    "O diretório de execução já contém um manifesto de outra linhagem. "
+                    "O diretório de execução já contém um manifesto divergente. "
                     "Use um diretório de saída novo; não sobrescreva artefatos de treino."
                 )
             self.training_run_manifest = existing_manifest
