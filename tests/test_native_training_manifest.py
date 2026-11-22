@@ -59,8 +59,8 @@ def test_run_manifest_records_native_lineage_and_is_stable(tmp_path, monkeypatch
     assert first["source"]["revision"] == "test-revision"
     assert first["engine"]["module"] == FakeNativeEngine.__module__
     assert first["contracts"]["semantic_state"] == semantic_contract
-    assert first["contracts"]["checkpoint_lineage"]["contract_id"]
-    assert first["contracts"]["training_resume"]["contract_id"]
+    assert first["contracts"]["checkpoint_lineage"]["contract"]["contract_id"]
+    assert first["contracts"]["training_resume"]["contract"]["contract_id"]
     assert first["policy"]["architecture_id"] == "tft.policy.native-semantic-ppo"
     assert first["runtime_features"]["legacy_strategy_projection_disabled"] is True
     assert first["runtime_features"]["external_catalog_refresh_disabled"] is True
