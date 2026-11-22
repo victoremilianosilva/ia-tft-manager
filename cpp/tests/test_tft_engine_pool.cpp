@@ -449,35 +449,27 @@ int main(int argc, char** argv) {
         require(bought.action_rewards[0] > -0.25f && bought.action_rewards[0] < 0.50f,
                 "Recompensa de compra com shaping economico deve permanecer limitada.");
 
-        // The legacy StrategyInfo row is a compatibility projection. A focus
-        // is valid only when the native ActiveCompositionManager has published
-        // a versioned composition; a shop purchase alone must not invent one.
-        const auto strategy_snapshot = engine.get_strategies()[0];
-        require(!strategy_snapshot.empty(),
-                "StrategyManager não publicou estado para o jogador.");
+        // Physical copy accounting is a native producer contract. Validate it
+        // directly from the same atomic audit snapshot consumed by PPO/training.
         const auto native_strategy_snapshot = engine.get_audit_snapshot();
-        const auto& native_strategy =
-            native_strategy_snapshot.players[0].strategic_state;
-        if (native_strategy.active_composition_valid) {
-            require(native_strategy.active_composition_version > 0 &&
-                        !native_strategy.active_composition_id.empty() &&
-                        !strategy_snapshot.back().composition_focus.empty() &&
-                        std::find(native_strategy.active_unit_ids.begin(),
-                                  native_strategy.active_unit_ids.end(),
-                                  strategy_snapshot.back().composition_focus_id) !=
-                            native_strategy.active_unit_ids.end(),
-                    "Focus de compatibilidade não corresponde à composição nativa ativa.");
-        } else {
-            require(strategy_snapshot.back().composition_focus.empty() &&
-                        strategy_snapshot.back().composition_focus_id == -1 &&
-                        strategy_snapshot.back().planned_unit_ids.empty(),
-                    "Projeção legada inventou foco/alvos sem composição nativa ativa.");
-        }
-        require(!strategy_snapshot.back().unit_counts.empty(),
-                "StrategyManager não contabilizou cópias físicas do jogador.");
-        require(strategy_snapshot.back().strategy >= 0 &&
-                    strategy_snapshot.back().strategy <= 6,
-                "StrategyManager publicou estratégia fora do enum válido.");
+        const auto& native_player = native_strategy_snapshot.players[0];
+        const auto& native_strategy = native_player.strategic_state;
+        std::size_t physical_owned_units = 0;
+        for (const auto& unit : native_player.board)
+            if (unit.occupied) ++physical_owned_units;
+        for (const auto& unit : native_player.bench)
+            if (unit.occupied) ++physical_owned_units;
+        require(physical_owned_units > 0,
+                "Fixture nativo não possui unidades físicas para contabilizar.");
+        require(!native_strategy.unit_copy_progress.empty(),
+                "Produtor nativo não publicou progresso de cópias das unidades.");
+        require(std::all_of(native_strategy.unit_copy_progress.begin(),
+                            native_strategy.unit_copy_progress.end(),
+                            [](const auto& progress) {
+                                return progress.champion_internal_id >= 0 &&
+                                    progress.owned_copy_equivalent > 0;
+                            }),
+                "Progresso nativo contém cópias sem identidade ou quantidade válida.");
 
         // Mesmo com MOVE_BENCH habilitado por existir uma unidade no banco,
         // uma origem vazia deve rejeitar o lote sem efeitos colaterais.
@@ -790,12 +782,6 @@ int main(int argc, char** argv) {
         (void)step_with_pending_anvils(comp_engine, pass_actions);
         const auto native_composition_state =
             comp_engine.get_audit_snapshot().players[0].strategic_state;
-        const auto compatibility_strategy = comp_engine.get_strategies()[0].back();
-        require(!compatibility_strategy.composition_locked,
-                "Projecao de compatibilidade inventou lock sem owner nativo.");
-        require(compatibility_strategy.composition_focus.empty() &&
-                    compatibility_strategy.composition_focus_id == -1,
-                "Projecao de compatibilidade inventou foco sem composicao ativa.");
         if (native_composition_state.active_composition_valid) {
             require(native_composition_state.active_composition_version > 0 &&
                         !native_composition_state.active_composition_id.empty(),
