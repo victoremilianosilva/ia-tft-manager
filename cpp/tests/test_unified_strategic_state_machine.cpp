@@ -314,6 +314,7 @@ void pivot_evaluation_does_not_mutate_then_confirms_synchronized_state() {
 void invalidated_candidate_is_removed_and_old_direction_is_preserved() {
     ActiveCompositionManager active_composition;
     StrategicCommitment commitment;
+    commitment.composition_direction = "Shepherd";
     UnifiedStrategicStateMachine machine(active_composition, commitment, {3, 60.0, 5});
     StrategicCycleInput input;
     input.active_composition = ActiveComposition{composition(
@@ -341,6 +342,7 @@ void invalidated_candidate_is_removed_and_old_direction_is_preserved() {
 void missing_candidate_invalidates_pending_pivot_without_mutation() {
     ActiveCompositionManager active_composition;
     StrategicCommitment commitment;
+    commitment.composition_direction = "Shepherd";
     UnifiedStrategicStateMachine machine(active_composition, commitment, {3, 60.0, 5});
     StrategicCycleInput input;
     input.active_composition = ActiveComposition{composition(
@@ -369,6 +371,7 @@ void missing_candidate_invalidates_pending_pivot_without_mutation() {
 void reset_rebinds_to_the_canonical_composition_without_clearing_it() {
     ActiveCompositionManager active_composition;
     StrategicCommitment commitment;
+    commitment.composition_direction = "Bruiser";
     UnifiedStrategicStateMachine machine(active_composition, commitment);
 
     const auto first = composition(
@@ -403,6 +406,7 @@ void reset_rebinds_to_the_canonical_composition_without_clearing_it() {
 void insufficient_evidence_clears_pivot_and_keeps_active_composition() {
     ActiveCompositionManager active_composition;
     StrategicCommitment commitment;
+    commitment.composition_direction = "Shepherd";
     UnifiedStrategicStateMachine machine(active_composition, commitment, {3, 60.0, 5});
     StrategicCycleInput input;
     input.active_composition = ActiveComposition{composition(
