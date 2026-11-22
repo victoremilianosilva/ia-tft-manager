@@ -1,4 +1,5 @@
 #include "composition_intelligence/CompositionSourceAdapters.hpp"
+#include "composition_intelligence/contracts/CompositionContracts.hpp"
 #include "strategy/NativeStrategicCompositionGenerator.hpp"
 #include <cassert>
 #include <iostream>
