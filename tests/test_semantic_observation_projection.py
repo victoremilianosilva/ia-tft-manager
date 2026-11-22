@@ -190,6 +190,63 @@ def test_native_planner_priority_lineup_and_opportunity_cost_reach_semantic_ppo_
     assert projected["numeric"][entity_start + 44] == 1.0
 
 
+def test_semantic_projection_rejects_inconsistent_native_planner_contracts():
+    stale = _metadata()
+    strategic = stale["native_player_state"]["strategic_state"]
+    strategic["planner_outputs_valid"] = True
+    strategic["planner_output_sequence"] = strategic["strategic_context_sequence"] - 1
+    with pytest.raises(ValueError, match="planner outputs are not bound"):
+        project_native_player_state(stale, {"TFT_TestChampion": 17})
+
+    unavailable_rows = _metadata()
+    strategic = unavailable_rows["native_player_state"]["strategic_state"]
+    strategic["unit_priorities"] = [{
+        "champion_internal_id": 17, "intent": 1, "relation": 0,
+        "priority": 80, "target_star": 2, "sale_restricted": False,
+        "confidence": 0.8,
+    }]
+    with pytest.raises(ValueError, match="unavailable planner outputs"):
+        project_native_player_state(unavailable_rows, {"TFT_TestChampion": 17})
+
+    mismatched_failure = _metadata()
+    strategic = mismatched_failure["native_player_state"]["strategic_state"]
+    strategic["strategic_refresh_failed"] = True
+    with pytest.raises(ValueError, match="failure flag/reason mismatch"):
+        project_native_player_state(mismatched_failure, {"TFT_TestChampion": 17})
+
+    duplicate_lineup = _metadata()
+    strategic = duplicate_lineup["native_player_state"]["strategic_state"]
+    strategic["planner_outputs_valid"] = True
+    strategic["planner_output_sequence"] = strategic["strategic_context_sequence"]
+    strategic["lineup_selected_unit_ids"] = [17, 17]
+    with pytest.raises(ValueError, match="contains duplicate IDs"):
+        project_native_player_state(duplicate_lineup, {"TFT_TestChampion": 17})
+
+
+def test_semantic_projection_rejects_duplicate_or_unavailable_opportunity_cost():
+    row = _metadata()
+    strategic = row["native_player_state"]["strategic_state"]
+    opportunity = {
+        "champion_internal_id": 17,
+        "value": 25.0,
+        "uncertainty": 0.2,
+        "horizon_rounds": 1,
+        "source": "same_snapshot_competing_alternative.v1",
+        "forgone_candidate_id": "action:alternative:1",
+        "value_basis": "contextual_action_score.v1",
+    }
+    strategic["opportunity_cost_available"] = True
+    strategic["opportunity_costs"] = [opportunity, dict(opportunity)]
+    with pytest.raises(ValueError, match="invalid or duplicate evidence"):
+        project_native_player_state(row, {"TFT_TestChampion": 17})
+
+    row = _metadata()
+    strategic = row["native_player_state"]["strategic_state"]
+    strategic["opportunity_cost_available"] = True
+    with pytest.raises(ValueError, match="diverges from native opportunity rows"):
+        project_native_player_state(row, {"TFT_TestChampion": 17})
+
+
 def test_native_semantic_projection_has_stable_shape_and_explicit_identity():
     catalog = {"TFT_TestChampion": 17}
     projected = project_native_player_state(_metadata(), catalog)
