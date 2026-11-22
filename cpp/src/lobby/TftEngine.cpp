@@ -3030,7 +3030,8 @@ struct TFTEngine::Impl {
                                 candidate.opportunity_cost_source,
                                 candidate.opportunity_cost_forgone_candidate_id
                             });
-                        } else if (candidate.opportunity_cost >
+                        } else if (candidate.opportunity_cost *
+                                       (1.0 - candidate.opportunity_cost_uncertainty) >
                                    existing->value * (1.0 - existing->uncertainty)) {
                             *existing = {
                                 candidate.champion_id, candidate.opportunity_cost,
