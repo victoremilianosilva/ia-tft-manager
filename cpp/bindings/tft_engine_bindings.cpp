@@ -407,6 +407,7 @@ py::dict audit_snapshot_to_dict(
             row["horizon_rounds"] = opportunity.horizon_rounds;
             row["source"] = opportunity.source;
             row["forgone_candidate_id"] = opportunity.forgone_candidate_id;
+            row["value_basis"] = opportunity.value_basis;
             opportunity_costs.append(std::move(row));
         }
         strategic_state["opportunity_costs"] = std::move(opportunity_costs);
