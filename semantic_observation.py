@@ -509,7 +509,7 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
         if (champion_id in opportunity_by_id or value < 0.0 or
             not 0.0 <= uncertainty < 1.0 or horizon == 0 or
             source != "same_snapshot_competing_alternative.v1" or
-            value_basis != "contextual_action_score.v1" or
+            value_basis not in ("contextual_action_score.v1", "native_board_contribution.v1") or
             not isinstance(forgone, str) or not forgone):
             raise ValueError("opportunity cost row has invalid or duplicate evidence")
         opportunity_by_id[champion_id] = (value, uncertainty)
