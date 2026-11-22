@@ -20,7 +20,7 @@ trainer = (ROOT / "trainer.py").read_text(encoding="utf-8")
 
 # The native planner consumes facts and owned native state, never a legacy strategy projection.
 start = source.index("strategy::StrategicSharedContext strategic_context;")
-end = source.index("const auto shadow_decision = strategic_planner.evaluate(", start)
+end = source.index("const auto strategic_decision = strategic_planner.evaluate(", start)
 planner_input = source[start:end]
 for forbidden in (
     "StrategyInfo",
