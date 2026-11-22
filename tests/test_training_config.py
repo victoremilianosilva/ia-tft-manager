@@ -78,3 +78,33 @@ def test_cosine_lr_schedule_reaches_floor_and_never_rebounds():
 def test_cosine_lr_schedule_rejects_invalid_horizon():
     with pytest.raises(ValueError):
         cosine_lr_factor(0, 3e-4, 5e-5, 0)
+
+
+
+def test_slice_batch_structure_recursively_slices_semantic_tensor_leaves():
+    import torch
+
+    from trainer import slice_batch_structure
+
+    batch = {
+        "numeric": torch.arange(20).reshape(5, 4),
+        "champion_ids": torch.arange(15).reshape(5, 3),
+        "items": {
+            "inventory": torch.arange(30).reshape(5, 2, 3),
+            "anvil_pending": torch.tensor([True, False, True, False, True]),
+        },
+    }
+
+    sliced = slice_batch_structure(batch, slice(0, 2))
+
+    assert sliced["numeric"].shape == (2, 4)
+    assert sliced["champion_ids"].shape == (2, 3)
+    assert sliced["items"]["inventory"].shape == (2, 2, 3)
+    assert sliced["items"]["anvil_pending"].tolist() == [True, False]
+
+
+def test_slice_batch_structure_rejects_non_tensor_leaf():
+    from trainer import slice_batch_structure
+
+    with pytest.raises(TypeError, match="dictionaries and tensors"):
+        slice_batch_structure({"invalid": [1, 2, 3]}, slice(0, 2))
