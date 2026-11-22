@@ -59,13 +59,13 @@ def semantic_policy_state_keys(state_dict: Mapping) -> set[str]:
 
 
 def validate_semantic_policy_state_dict(state_dict: Mapping) -> None:
-    """Require the complete v6 semantic encoder parameter set."""
+    """Require the complete v7 semantic encoder parameter set."""
     present = semantic_policy_state_keys(state_dict)
     if present != SEMANTIC_POLICY_STATE_KEYS:
         missing = sorted(SEMANTIC_POLICY_STATE_KEYS - present)
         unexpected = sorted(present - SEMANTIC_POLICY_STATE_KEYS)
         raise ValueError(
-            "Semantic v6 policy weights are incomplete: "
+            "Semantic v7 policy weights are incomplete: "
             f"missing={missing}, unexpected={unexpected}"
         )
 
@@ -75,7 +75,7 @@ def semantic_item_state_tensors(numeric):
     if not isinstance(numeric, __import__("torch").Tensor):
         raise TypeError("semantic numeric input must be a torch tensor")
     if numeric.ndim != 2 or numeric.shape[-1] != SEMANTIC_NUMERIC_DIM:
-        raise ValueError("semantic numeric input has an incompatible v6 shape")
+        raise ValueError("semantic numeric input has an incompatible v7 shape")
     import torch
     batch = numeric.shape[0]
     offset = SEMANTIC_ITEM_OFFSET
@@ -302,7 +302,7 @@ def validate_semantic_state_checkpoint_integrity(manifest: Mapping) -> None:
 def validate_semantic_state_warm_start_migration(
     manifest: Mapping, catalog_map: Mapping[str, int]
 ) -> None:
-    """Allow only the reviewed semantic v2-to-v6 and owner v1-to-v2 warm-starts."""
+    """Allow only the reviewed semantic v2/v6-to-v7 and owner v1/v2-to-v3 warm-starts."""
     validate_semantic_state_checkpoint_integrity(manifest)
     expected = build_semantic_state_checkpoint_contract(catalog_map)
     historical_payload = manifest.get("contract")
@@ -319,7 +319,7 @@ def validate_semantic_state_warm_start_migration(
         and historical_payload.get("source", {}).get("contract_version") == 3
         and historical_owner_source.get("contract_version") == 2
     ):
-        # Reviewed v2 -> v6 migration: native snapshot v3 -> v5 adds capacity,
+        # Reviewed v2 -> v7 migration: native snapshot v3 -> v5 adds capacity,
         # temporal facts, board/bench item-target profiles and structured item/anvil blocks. The semantic
         # entity stride expands while historical identity remains bound.
         historical_payload["contract_id"] = expected["contract"]["contract_id"]
@@ -349,8 +349,38 @@ def validate_semantic_state_warm_start_migration(
             expected["contract"]["encoder"]["action_candidate_source"]
         )
         historical_payload["encoder"] = historical_encoder
+        historical_owner_source["contract_version"] = (
+            expected["contract"]["strategic_owner_source"]["contract_version"]
+        )
+        historical_payload["strategic_owner_source"] = historical_owner_source
+    elif (
+        historical_payload.get("contract_id") == "tft.ppo.semantic-native-state.v6"
+        and historical_payload.get("version") == 6
+        and historical_payload.get("source", {}).get("contract_version") == 5
+        and historical_owner_source.get("contract_version") == 2
+    ):
+        # Reviewed v6 -> v7 migration: preserve the v6 encoder/checkpoint lineage
+        # while appending the new strategic global/entity context and owner v3.
+        historical_payload["contract_id"] = expected["contract"]["contract_id"]
+        historical_payload["version"] = expected["contract"]["version"]
+        historical_owner_source["contract_version"] = (
+            expected["contract"]["strategic_owner_source"]["contract_version"]
+        )
+        historical_payload["strategic_owner_source"] = historical_owner_source
+        historical_payload["global_features"] = expected["contract"]["global_features"]
+        historical_payload["numeric_dimension"] = expected["contract"]["numeric_dimension"]
+        historical_entity_slots = dict(historical_payload.get("entity_slots", {}))
+        historical_entity_slots["features"] = expected["contract"]["entity_slots"]["features"]
+        historical_payload["entity_slots"] = historical_entity_slots
+        historical_encoder = dict(historical_payload.get("encoder", {}))
+        historical_encoder["numeric_plus_embedding_input_dim"] = (
+            expected["contract"]["encoder"]["numeric_plus_embedding_input_dim"]
+        )
+        historical_payload["encoder"] = historical_encoder
     elif historical_owner_source.get("contract_version") == 1:
-        historical_owner_source["contract_version"] = 2
+        historical_owner_source["contract_version"] = (
+            expected["contract"]["strategic_owner_source"]["contract_version"]
+        )
         historical_payload["strategic_owner_source"] = historical_owner_source
     else:
         raise ValueError("semantic warm-start source contract is not an approved migration")
