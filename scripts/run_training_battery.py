@@ -14,8 +14,8 @@ def parse_seeds(value: str) -> list[int]:
         seeds = [int(part.strip()) for part in value.split(",") if part.strip()]
     except ValueError as exc:
         raise argparse.ArgumentTypeError("seeds deve ser uma lista separada por vírgulas.") from exc
-    if not seeds or any(seed < 0 for seed in seeds) or len(set(seeds)) != len(seeds):
-        raise argparse.ArgumentTypeError("Informe seeds únicas e não negativas.")
+    if not seeds or any(not 0 <= seed <= 0xFFFFFFFF for seed in seeds) or len(set(seeds)) != len(seeds):
+        raise argparse.ArgumentTypeError("Informe seeds únicas entre 0 e 2^32-1.")
     return seeds
 
 
@@ -60,9 +60,9 @@ def main(argv: list[str] | None = None) -> int:
         run_manifest = json.loads(run_manifest_path.read_text(encoding="utf-8"))
         runs.append({
             "seed": seed,
-            "run_dir": str(run_dir),
-            "checkpoint": str(run_dir / "native_ppo_checkpoint.pt"),
-            "manifest": str(run_manifest_path),
+            "run_dir": run_dir.name,
+            "checkpoint": f"{run_dir.name}/native_ppo_checkpoint.pt",
+            "manifest": f"{run_dir.name}/run_manifest.json",
             "manifest_sha256": run_manifest["manifest_sha256"],
             "identity_sha256": run_manifest["identity_sha256"],
         })
