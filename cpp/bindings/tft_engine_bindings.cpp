@@ -383,6 +383,28 @@ py::dict audit_snapshot_to_dict(
         }
         strategic_state["unit_copy_progress"] = std::move(unit_copy_progress);
         strategic_state["opportunity_cost_available"] = strategic.opportunity_cost_available;
+        strategic_state["planner_outputs_valid"] = strategic.planner_outputs_valid;
+        strategic_state["planner_output_sequence"] = strategic.planner_output_sequence;
+        py::list unit_priorities;
+        for (const auto& priority : strategic.unit_priorities) {
+            py::dict row;
+            row["champion_internal_id"] = priority.champion_internal_id;
+            row["intent"] = priority.intent;
+            row["relation"] = priority.relation;
+            row["priority"] = priority.priority;
+            row["target_star"] = priority.target_star;
+            row["sale_restricted"] = priority.sale_restricted;
+            row["confidence"] = priority.confidence;
+            unit_priorities.append(std::move(row));
+        }
+        strategic_state["unit_priorities"] = std::move(unit_priorities);
+        strategic_state["lineup_selected_unit_ids"] = strategic.lineup_selected_unit_ids;
+        strategic_state["lineup_entry_unit_ids"] = strategic.lineup_entry_unit_ids;
+        strategic_state["lineup_exit_unit_ids"] = strategic.lineup_exit_unit_ids;
+        strategic_state["lineup_deferred_unit_ids"] = strategic.lineup_deferred_unit_ids;
+        strategic_state["strategic_refresh_failed"] = strategic.strategic_refresh_failed;
+        strategic_state["strategic_refresh_failure_reason"] =
+            strategic.strategic_refresh_failure_reason;
         p["strategic_state"] = std::move(strategic_state);
         p["hp"] = player.hp;
         p["damage_taken"] = player.damage_taken;
