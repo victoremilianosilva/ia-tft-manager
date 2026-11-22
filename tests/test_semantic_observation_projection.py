@@ -81,7 +81,7 @@ def _metadata():
     player["bench"][0] = _unit(True, "TFT_TestChampion", 1, 3)
     player["strategic_state"] = {
         "contract_id": "tft.strategic-owner-observation",
-        "contract_version": 2,
+        "contract_version": 3,
         "source_namespace": "tft.engine.strategic-owners",
         "producer": "TFTEngine::get_audit_snapshot",
         "episode_id": 5,
@@ -113,6 +113,15 @@ def _metadata():
             }
         ],
         "opportunity_cost_available": False,
+        "planner_outputs_valid": False,
+        "planner_output_sequence": 0,
+        "unit_priorities": [],
+        "lineup_selected_unit_ids": [],
+        "lineup_entry_unit_ids": [],
+        "lineup_exit_unit_ids": [],
+        "lineup_deferred_unit_ids": [],
+        "strategic_refresh_failed": False,
+        "strategic_refresh_failure_reason": "",
     }
     return {
         "engine_instance_id": "engine-1",
