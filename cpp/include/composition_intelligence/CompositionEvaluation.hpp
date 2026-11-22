@@ -52,6 +52,8 @@ struct CandidateEvidence {
     // do not share a calibration.
     double board_fit{0.5};
     double item_fit{0.5};
+    bool board_fit_available{false};
+    bool item_fit_available{false};
     double availability{0.5};
     double economy_feasibility{0.5};
     double estimated_gold_cost{-1.0};
@@ -129,8 +131,10 @@ public:
         CompositionScoreBreakdown out;
         const auto* evidence = evidence_for(candidate.composition_id, context);
         if (evidence) {
-            out.board_fit = clamp01(evidence->board_fit);
-            out.item_fit = clamp01(evidence->item_fit);
+            out.board_fit = evidence->board_fit_available
+                ? clamp01(evidence->board_fit) : 0.5;
+            out.item_fit = evidence->item_fit_available
+                ? clamp01(evidence->item_fit) : 0.5;
             out.availability = clamp01(evidence->availability);
             out.economy_feasibility = clamp01(evidence->economy_feasibility);
             out.confidence = clamp01(evidence->evidence_confidence);
