@@ -274,7 +274,8 @@ def test_checkpoint_without_derived_economic_context_migrates_both_insertions():
     new_policy, _ = _policy_with_native_item_block()
     old_obs_dim = new_policy.obs_dim - new_policy.item_state_observation_dim
     old_policy = TFTPolicy(
-        obs_dim=old_obs_dim, action_dims=ACTION_DIMS, hidden_size=64
+        obs_dim=old_obs_dim, action_dims=ACTION_DIMS, hidden_size=64,
+        require_semantic_state=False,
     )
     legacy_state = {
         key: value.detach().clone()
