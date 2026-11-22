@@ -11,6 +11,8 @@ def test_defaults_are_valid_and_exposed():
     assert config.ppo_epochs == 4
     assert config.total_updates == 280
     assert config.num_lobbies == 4
+    assert config.seed == 42
+    assert config.checkpoint_path == "checkpoints/native_ppo/seed_42.pt"
 
 
 def test_environment_overrides_major_parameters(monkeypatch):
@@ -26,6 +28,7 @@ def test_environment_overrides_major_parameters(monkeypatch):
         "TFT_PPO_GAE_LAMBDA": "0.9",
         "TFT_NUM_LOBBIES": "2",
         "TFT_TOTAL_UPDATES": "500",
+        "TFT_TRAIN_SEED": "1234",
     }
     for key, value in values.items():
         monkeypatch.setenv(key, value)
@@ -41,6 +44,7 @@ def test_environment_overrides_major_parameters(monkeypatch):
     assert config.gae_lambda == 0.9
     assert config.num_lobbies == 2
     assert config.total_updates == 500
+    assert config.seed == 1234
 
 
 def test_target_kl_can_be_disabled(monkeypatch):
@@ -52,7 +56,7 @@ def test_target_kl_can_be_disabled(monkeypatch):
     {"learning_rate": 0}, {"min_learning_rate": 1e-3},
     {"batch_size": 0}, {"ppo_epochs": 0}, {"target_kl": 0},
     {"gamma": 1.1}, {"clip_coef": 1.0},
-    {"batch_size": 1.5}, {"total_updates": 2.5},
+    {"batch_size": 1.5}, {"total_updates": 2.5}, {"seed": -1}, {"seed": True},
 ])
 def test_invalid_configuration_is_rejected(overrides):
     with pytest.raises(ValueError):
