@@ -59,14 +59,15 @@ struct UnitPriorityEvidence {
     double board_contribution{0.5}; // normalized [0,1], supplied by caller
     double synergy_contribution{0.5}; // normalized [0,1], supplied by caller
     double confidence{0.5}; // evidence confidence, not a calibrated probability
-    bool board_contribution_available{true};
-    bool synergy_contribution_available{true};
     std::int32_t copies_toward_next_star{0};
     std::int32_t copies_in_shop{0};
     std::int32_t unit_cost{-1}; // -1 means unknown; never infer affordability.
     bool trait_completion{false};
     // Pool availability is separate from owned/shop copies. -1 means unknown.
     std::int32_t pool_remaining{-1};
+    // Appended availability flags preserve legacy aggregate initialization.
+    bool board_contribution_available{true};
+    bool synergy_contribution_available{true};
 };
 
 struct UnitPriorityOwnedUnit {
