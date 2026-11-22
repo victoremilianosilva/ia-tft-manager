@@ -2383,6 +2383,7 @@ struct TFTEngine::Impl {
             double lobby_power_sum = 0.0;
             std::int32_t lobby_alive_count = 0;
             for (std::size_t other = 0; other < kPlayersPerLobby; ++other) {
+                if (!player_envs[other].info.alive) continue;
                 lobby_power_sum += board_power(other);
                 ++lobby_alive_count;
             }
@@ -2523,6 +2524,8 @@ struct TFTEngine::Impl {
                 // copies, not from a legacy strategic plan.
                 for (std::size_t opponent = 0;
                      opponent < kPlayersPerLobby; ++opponent) {
+                    if (opponent == i || !player_envs[opponent].info.alive)
+                        continue;
                     const auto count_contested = [&](const UnitInstance& unit) {
                         if (unit.champion_internal_id == definition->internal_id)
                             anchor.contestation += star_copies(unit.star);
@@ -3035,12 +3038,14 @@ struct TFTEngine::Impl {
                 // PPO, reward, action selection, or game execution.
                 std::optional<ci::CompositionOutcomeObservation> later_outcome;
                 auto& outcome_baseline = composition_outcome_baselines[i];
+                const double observed_hp = player_envs[i].info.hp;
                 const double observed_board_score = board_evaluation(i).total_score;
                 const bool same_episode_baseline =
                     outcome_baseline.valid && outcome_baseline.episode_id == episode_id;
                 if (same_episode_baseline && round_id > outcome_baseline.round) {
                     ci::CompositionOutcomeObservation observation;
                     observation.observed_round = round_id;
+                    observation.placement = player_envs[i].info.placement;
                     observation.health_delta = observed_hp - outcome_baseline.hp;
                     observation.board_score_delta =
                         observed_board_score - outcome_baseline.board_score;
@@ -3234,77 +3239,6 @@ struct TFTEngine::Impl {
             }
 
 
-            static const std::array<const char*, 7> economic_posture_names{
-                "ACCUMULATE_RESOURCES", "PRESERVE_WIN_STREAK",
-                "PRESERVE_LOSS_STREAK", "INVEST_EXPERIENCE",
-                "ROLL_FOR_UPGRADES", "STABILIZE_BOARD", "EMERGENCY_INVESTMENT"
-            };
-            static const std::array<const char*, 7> action_names{
-                "NONE", "BUY_UNIT", "BUY_XP", "REROLL", "SELL_UNIT",
-                "DEPLOY_OR_MOVE", "HOLD"
-            };
-            const auto posture_index = static_cast<std::size_t>(
-                economic_decision.posture);
-            const auto action_index = static_cast<std::size_t>(
-                action_decision.recommended_action);
-            const auto economic_reason_index = static_cast<std::size_t>(
-                economic_decision.reason);
-            const auto action_reason_index = static_cast<std::size_t>(
-                action_decision.reason);
-            static const std::array<const char*, 12> reason_names{
-                "none", "board_advantage", "board_deficit",
-                "survival_pressure", "progression_timing",
-                "upgrade_opportunity", "anchor_opportunity", "contestation",
-                "item_alignment", "transition_cost", "economy_constraint",
-                "insufficient_evidence"
-            };
-            static const std::array<const char*, 7> candidate_action_names{
-                "NONE", "BUY_UNIT", "BUY_XP", "REROLL", "SELL_UNIT",
-                "DEPLOY_OR_MOVE", "HOLD"
-            };
-            for (const auto& score : action_decision.candidate_scores) {
-                const auto kind = static_cast<std::size_t>(score.kind);
-                ActionCandidateScoreInfo item;
-                item.action = kind < candidate_action_names.size()
-                    ? candidate_action_names[kind] : "UNKNOWN";
-                item.champion_id = score.champion_id;
-                item.direct_gold_cost = score.direct_gold_cost;
-                item.lost_interest_cost = score.lost_interest_cost;
-                item.opportunity_cost = score.opportunity_cost;
-                item.board_component = score.board_component;
-                item.survival_component = score.survival_component;
-                item.streak_component = score.streak_component;
-                item.composition_component = score.composition_component;
-                item.upgrade_component = score.upgrade_component;
-                item.posture_component = score.posture_component;
-                item.direct_cost_component = score.direct_cost_component;
-                item.lost_interest_component = score.lost_interest_component;
-                item.opportunity_cost_component = score.opportunity_cost_component;
-                item.total_score = score.total_score;
-                item.available = score.available;
-                item.selected = score.selected;
-            }
-            static const std::array<const char*, 6> composition_decision_names{
-                "KEEP", "ADAPT", "PIVOT", "ABANDON", "INITIAL_SELECTION",
-                "INSUFFICIENT_EVIDENCE"
-            };
-            static const std::array<const char*, 12> strategic_reason_names{
-                "none", "board_advantage", "board_deficit",
-                "survival_pressure", "progression_timing",
-                "upgrade_opportunity", "anchor_opportunity", "contestation",
-                "item_alignment", "transition_cost", "economy_constraint",
-                "insufficient_evidence"
-            };
-            const auto decision_index = static_cast<std::size_t>(
-                shadow_decision.composition_decision);
-            const auto reason_index = static_cast<std::size_t>(
-                shadow_decision.reason);
-            for (const auto& candidate : shadow_decision.candidate_diagnostics) {
-            }
-            // Diagnostic-only compatibility mirror for existing telemetry.
-            // The planner never reads these fields back; its authority is the
-            // per-player strategic_planner_commitments array above.
-        }
         }, [&]() noexcept {
             // Keep the primary game/PPO transition alive when a Shadow planner,
             // adapter or diagnostic dependency fails. These flags are diagnostics
@@ -3312,18 +3246,6 @@ struct TFTEngine::Impl {
         });
         (void)shadow_evaluation_completed;
         // END SHADOW-ONLY EVALUATION BOUNDARY.
-
-        // Paridade com StrategyManager.compute_strategy_confidence().
-        double state_confidence = 0.5;
-        if (player.hp <= 20.0f) state_confidence += 0.25;
-        else if (player.hp >= 80.0f) state_confidence += 0.10;
-        if (economy.gold >= 40) state_confidence += 0.15;
-        else if (economy.gold < 10) state_confidence -= 0.10;
-        if (power >= 70.0) state_confidence += 0.15;
-        else if (power <= 20.0) state_confidence -= 0.15;
-        if (economy.win_streak >= 4) state_confidence += 0.10;
-        if (economy.loss_streak >= 4) state_confidence += 0.10;
-        if (economy.level >= 8) state_confidence += 0.10;
 
 
     }
@@ -3396,290 +3318,7 @@ struct TFTEngine::Impl {
     }
 
     void mark_round_completion(std::size_t player_index) {
-        if (!player_envs[player_index].info.alive) {
-            return;
-        }
-
-        ++round_actions[player_index];
-        if (round_actions[player_index] >= kMaxActionsPerRound) {
-            round_finished[player_index] = true;
-        }
-    }
-
-    void reset_round_completion() {
-        for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
-            if (player_envs[i].info.alive) {
-                round_actions[i] = 0;
-                player_envs[i].actions_taken_this_round = 0;
-                round_finished[i] = false;
-            } else {
-                round_finished[i] = true;
-            }
-        }
-    }
-
-    // Converte a formação atual da lobby para a entrada da engine de combate.
-    // A engine de combate permanece independente: recebe equipes e devolve o resultado.
-    void append_combat_team(
-        std::size_t player_index,
-        UnitTeam team,
-        CombatTeam& output,
-        int& next_unit_id
-    ) const {
-        output.team = team;
-        output.player_id = static_cast<std::int32_t>(player_index);
-        output.player_hp = player_envs[player_index].info.hp;
-
-        // Build team-wide trait counts once, including emblems. Counts are
-        // unique per champion instance, matching lobby breakpoint semantics.
-        std::unordered_map<std::string, int> combat_trait_counts;
-        for (const auto& candidate : player_envs[player_index].board) {
-            if (!candidate) continue;
-            const auto* candidate_def = catalog->find_by_id(candidate->champion_internal_id);
-            if (!candidate_def) continue;
-            std::unordered_set<std::string> candidate_traits(
-                candidate_def->traits.begin(), candidate_def->traits.end());
-            for (const auto& item : candidate->items) {
-                if (!item.grants_trait.empty()) candidate_traits.insert(item.grants_trait);
-            }
-            for (const auto& trait : candidate_traits) ++combat_trait_counts[trait];
-        }
-
-        for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
-            if (!player_envs[player_index].board[slot]) {
-                continue;
-            }
-
-            const auto& instance = *player_envs[player_index].board[slot];
-            const auto* definition =
-                catalog->find_by_id(instance.champion_internal_id);
-            if (!definition) {
-                continue;
-            }
-
-            const auto& stats = definition->stats;
-            const auto& profile = definition->combat_profile;
-
-            CombatUnit unit{};
-            // Same deterministic sequential IDs as TFTLobby._build_cpp_combat_input().
-            unit.id = next_unit_id++;
-            unit.source_unit_uuid = instance.uuid;
-            unit.provenance.identity = "observed:player_board_unit_uuid";
-            unit.api_name = definition->api_name;
-            unit.name = definition->name;
-            // Preserve catalog ability identity/description/level variables,
-            // but leave simulator completeness false until an authoritative
-            // generic mapping or champion script is actually available.
-            unit.ability.name = definition->ability.name;
-            unit.ability.description = definition->ability.description;
-            for (const auto& source_variable : definition->ability.variables) {
-                CombatAbilityVariable variable;
-                variable.name = source_variable.name;
-                variable.values = source_variable.values;
-                unit.ability.variables.push_back(std::move(variable));
-            }
-            unit.star = std::clamp(instance.star, 1, 3);
-            unit.provenance.star = "observed:player_board_instance";
-            unit.team = team;
-
-            const auto role_value = std::clamp(profile.role, 0, 4);
-            unit.role = static_cast<UnitRole>(role_value);
-            unit.provenance.role = "catalog:champion_combat_profile";
-
-            unit.position.x = static_cast<int>(slot % 7);
-            unit.position.y = static_cast<int>(slot / 7);
-            // Os tabuleiros ficam frente a frente durante o combate.
-            if (team == UnitTeam::PLAYER_B) {
-                // Python mirrors columns (x), not rows (y), for team B.
-                unit.position.x = 6 - unit.position.x;
-            }
-            unit.source_board_position = static_cast<int>(slot);
-            unit.provenance.position = "observed:player_board_slot";
-
-            const double max_hp =
-                profile.max_hp > 0.0 ? profile.max_hp : stats.max_hp;
-            unit.max_hp = static_cast<float>(std::max(1.0, max_hp > 0.0 ? max_hp : 100.0));
-            unit.hp = unit.max_hp;
-            unit.provenance.max_hp = profile.max_hp > 0.0
-                ? "catalog:champion_combat_profile"
-                : (stats.max_hp > 0.0 ? "catalog:champion_base_stats" : "engine_fallback");
-            unit.provenance.hp = "derived:combat_start_full_health_from_max_hp";
-
-            const double attack_damage =
-                profile.attack_damage > 0.0
-                    ? profile.attack_damage
-                    : stats.attack_damage;
-            // Match TFTLobby._build_cpp_combat_input() fallbacks.
-            unit.attack_damage = static_cast<float>(
-                std::max(1.0, attack_damage > 0.0 ? attack_damage : 30.0));
-            unit.provenance.attack_damage = profile.attack_damage > 0.0
-                ? "catalog:champion_combat_profile"
-                : (stats.attack_damage > 0.0 ? "catalog:champion_base_stats" : "engine_fallback");
-
-            const double attack_speed =
-                profile.attack_speed > 0.0
-                    ? profile.attack_speed
-                    : stats.attack_speed;
-            unit.attack_speed = static_cast<float>(
-                std::max(0.1, attack_speed > 0.0 ? attack_speed : 1.0));
-            unit.provenance.attack_speed = profile.attack_speed > 0.0
-                ? "catalog:champion_combat_profile"
-                : (stats.attack_speed > 0.0 ? "catalog:champion_base_stats" : "engine_fallback");
-
-            const double attack_range =
-                profile.attack_range > 0.0
-                    ? profile.attack_range
-                    : stats.attack_range;
-            unit.attack_range = static_cast<float>(
-                std::max(1.0, attack_range > 0.0 ? attack_range : 1.0));
-            unit.provenance.attack_range = profile.attack_range > 0.0
-                ? "catalog:champion_combat_profile"
-                : (stats.attack_range > 0.0 ? "catalog:champion_base_stats" : "engine_fallback");
-
-            unit.armor = static_cast<float>(
-                profile.armor > 0.0 ? profile.armor : stats.armor);
-            unit.provenance.armor = profile.armor > 0.0
-                ? "catalog:champion_combat_profile"
-                : (stats.armor != 0.0 ? "catalog:champion_base_stats" : "catalog_zero_or_missing");
-            unit.magic_resist = static_cast<float>(
-                profile.magic_resist > 0.0
-                    ? profile.magic_resist
-                    : stats.magic_resist);
-            unit.provenance.magic_resist = profile.magic_resist > 0.0
-                ? "catalog:champion_combat_profile"
-                : (stats.magic_resist != 0.0 ? "catalog:champion_base_stats" : "catalog_zero_or_missing");
-
-            unit.items = instance.items;
-            unit.provenance.items = "observed:player_board_instance_items";
-            unit.provenance.ability = "catalog:ability_name_description_variables_only_mapping_incomplete";
-            unit.provenance.mana = "engine_default_not_observed";
-            unit.provenance.max_mana = "engine_default_not_catalogued";
-            unit.provenance.ability_power = "engine_default_not_catalogued";
-            unit.provenance.critical_strike_chance = "engine_default_not_catalogued";
-            unit.provenance.critical_strike_damage = "engine_default_not_catalogued";
-            unit.provenance.damage_amplification = "engine_default_not_catalogued";
-            unit.provenance.damage_reduction = "engine_default_not_catalogued";
-            unit.provenance.omnivamp = "engine_default_not_catalogued";
-
-            std::unordered_set<std::string> unit_traits(
-                definition->traits.begin(), definition->traits.end());
-            for (const auto& item : instance.items) {
-                if (!item.grants_trait.empty()) unit_traits.insert(item.grants_trait);
-            }
-            unit.provenance.traits = "derived:champion_catalog_traits_and_observed_item_grants";
-            for (const auto& trait_name : unit_traits) {
-                CombatTrait trait;
-                trait.api_name = trait_name;
-                trait.name = trait_name;
-                const auto count = combat_trait_counts.find(trait_name);
-                trait.active_count = count == combat_trait_counts.end() ? 0 : count->second;
-                trait.active = trait.active_count > 0;
-                unit.traits.push_back(std::move(trait));
-            }
-
-            unit.alive = true;
-            unit.can_move = true;
-            unit.can_attack = true;
-            unit.can_cast = true;
-
-            output.units.push_back(std::move(unit));
-        }
-    }
-
-    void return_eliminated_player_units(
-        std::size_t player_index, std::vector<std::string>& events
-    ) {
-        auto& player = player_envs[player_index];
-        if (player.shop) player.shop->return_current_shop();
-        if (player.item_engine && player.item_engine->retire_all_owned_state()) {
-            const auto& retired = player.item_engine->retirement_snapshot();
-            events.emplace_back(
-                "ITEM_OWNERSHIP_RETIRED: player=" + std::to_string(player_index) +
-                ", components=" + std::to_string(retired.components.size()) +
-                ", inventory=" + std::to_string(retired.inventory.size()) +
-                ", equipped=" + std::to_string(retired.equipped.size()) +
-                ", pending_anvils=" + std::to_string(retired.pending_anvils.size()));
-        }
-
-        auto return_unit_copies = [this](const std::optional<UnitInstance>& unit) {
-            if (!unit) return;
-            for (std::int32_t copy = 0; copy < star_copies(unit->star); ++copy)
-                (void)pool->give_back(unit->champion_internal_id);
-        };
-        for (auto& unit : player_envs[player_index].board) {
-            return_unit_copies(unit);
-            unit.reset();
-        }
-        for (auto& unit : player_envs[player_index].bench) {
-            return_unit_copies(unit);
-            unit.reset();
-        }
-        register_position_state(player_index);
-    }
-
-    void eliminate_players(std::vector<std::string>& events) {
-        // Python define as colocações após todos os combates, em ordem de ID.
-        for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
-            auto& player = player_envs[i].info;
-            if (!player.alive || player.hp > 0.0f) continue;
-            player.hp = 0.0f;
-            player.alive = false;
-            player.eliminated = true;
-            player.placement = alive_players;
-            ranking.push_back(static_cast<std::int32_t>(i));
-            --alive_players;
-            round_finished[i] = true;
-            return_eliminated_player_units(i, events);
-            events.emplace_back("ELIMINATED: jogador " + std::to_string(i));
-        }
-    }
-
-    void finish_if_one_player_left() {
-        if (alive_players > 1) return;
-        done = true;
-        winner_id.reset();
-        for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
-            if (player_envs[i].info.alive) {
-                winner_id = static_cast<std::int32_t>(i);
-                player_envs[i].info.placement = 1;
-                if (std::find(ranking.begin(), ranking.end(),
-                              static_cast<std::int32_t>(i)) == ranking.end())
-                    ranking.insert(ranking.begin(), static_cast<std::int32_t>(i));
-                break;
-            }
-        }
-        if (!winner_id && ranking.size() < kPlayersPerLobby) {
-            for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
-                if (std::find(ranking.begin(), ranking.end(),
-                              static_cast<std::int32_t>(i)) == ranking.end()) {
-                    player_envs[i].info.placement = static_cast<std::int32_t>(
-                        kPlayersPerLobby - ranking.size());
-                    ranking.push_back(static_cast<std::int32_t>(i));
-                }
-            }
-        }
-
-        // Public ranking is ordered best-to-worst, matching Python's
-        // TFTLobby._finalize_ranking(). Eliminations are appended in the
-        // order they happen (worst placement first), so insertion order is
-        // not a valid final ranking once the winner is prepended.
-        const auto placement_for = [this](std::int32_t player_id) {
-            const auto& placement =
-                player_envs[static_cast<std::size_t>(player_id)].info.placement;
-            return placement.value_or(
-                static_cast<std::int32_t>(kPlayersPerLobby + 1));
-        };
-        std::stable_sort(
-            ranking.begin(),
-            ranking.end(),
-            [&](std::int32_t lhs, std::int32_t rhs) {
-                const auto lhs_placement = placement_for(lhs);
-                const auto rhs_placement = placement_for(rhs);
-                if (lhs_placement != rhs_placement) {
-                    return lhs_placement < rhs_placement;
-                }
-                return lhs < rhs;
-            });
+        if (!player_env        }, []() noexcept {});
     }
 
     void resolve_combats(
@@ -5168,21 +4807,6 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             success = true;
         }
 
-        // Keep the native strategy refresh for Shadow and diagnostics; it is
-        // deliberately independent from the neutral PPO action reward.
-        lobby.refresh_native_strategic_state(player_id);
-        // Capture post-refresh composition labels for purchase-lineage diagnostics
-        // only. These labels are not consumed by Reward Contract v1.
-        if (type == 0 && success && this->strategy) {
-            for (auto it = this->recent_purchases.rbegin();
-                 it != this->recent_purchases.rend(); ++it) {
-                if (it->action_serial == this->action_serial) {
-                    it->comp_direction = this->strategy->composition_direction;
-                    it->comp_focus = this->strategy->composition_focus;
-                    break;
-                }
-            }
-        }
         // Capture actual action economics before round income is resolved.
         // Net gold after TFTEngine::step may include income and cannot be used
         // to infer the action's true cost. This trace is audit-only and never
