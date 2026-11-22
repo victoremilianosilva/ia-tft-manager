@@ -970,6 +970,9 @@ struct CombatHorizonTrajectory {
     std::string calibration_validation_manifest_sha256;
     std::string calibration_test_manifest_sha256;
     bool episode_splits_disjoint{false};
+    std::uint32_t training_sample_count{0};
+    std::uint32_t validation_sample_count{0};
+    std::uint32_t test_sample_count{0};
     double calibration_mae{0.0};
     double calibration_p90_coverage{0.0};
     double calibration_brier_score{1.0};
