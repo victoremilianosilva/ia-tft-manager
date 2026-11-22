@@ -58,6 +58,8 @@ def main(argv: list[str] | None = None) -> int:
         subprocess.run(command, check=True)
         run_manifest_path = run_dir / "run_manifest.json"
         run_manifest = json.loads(run_manifest_path.read_text(encoding="utf-8"))
+        artifact_manifest_path = run_dir / "artifact_manifest.json"
+        artifact_manifest = json.loads(artifact_manifest_path.read_text(encoding="utf-8"))
         runs.append({
             "seed": seed,
             "run_dir": run_dir.name,
@@ -65,6 +67,9 @@ def main(argv: list[str] | None = None) -> int:
             "manifest": f"{run_dir.name}/run_manifest.json",
             "manifest_sha256": run_manifest["manifest_sha256"],
             "identity_sha256": run_manifest["identity_sha256"],
+            "artifact_manifest": f"{run_dir.name}/artifact_manifest.json",
+            "artifact_manifest_sha256": artifact_manifest["artifact_manifest_sha256"],
+            "checkpoint_sha256": artifact_manifest["checkpoint_sha256"],
         })
         battery_manifest = {
             "manifest_id": "tft.ppo.native-training-battery",
