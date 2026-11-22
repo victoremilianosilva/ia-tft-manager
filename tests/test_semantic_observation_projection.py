@@ -462,6 +462,7 @@ def test_semantic_v2_checkpoint_has_only_explicit_v7_warm_start_path():
     payload["contract_id"] = "tft.ppo.semantic-native-state.v2"
     payload["version"] = 2
     payload["source"]["contract_version"] = 3
+    payload["strategic_owner_source"]["contract_version"] = 2
     payload["global_features"] = payload["global_features"][:21]
     payload["entity_slots"]["features"] = payload["entity_slots"]["features"][:12]
     payload["numeric_dimension"] = 21 + SEMANTIC_ENTITY_SLOTS * 12
