@@ -38,7 +38,7 @@ Para executar uma bateria multi-seed, com checkpoint e manifesto separados por e
 python scripts/run_training_battery.py --output-root training_runs/native-battery --seeds 11,12,13 --updates 160 --lobbies 4 --rollout-steps 128
 ~~~
 
-O runner exige um diretório de saída vazio, fixa as seeds por lobby, desabilita refresh externo de catálogo e não habilita migração de checkpoints antigos. Cada execução gera `native_ppo_checkpoint.pt`, `run_manifest.json` e logs TensorBoard. A bateria gera `battery_manifest.json`. Isso prepara e executa treinamento; não declara qualidade do modelo sem avaliação independente.
+O runner exige um diretório de saída vazio, fixa as seeds por lobby, desabilita refresh externo de catálogo e não habilita migração de checkpoints antigos. Cada execução gera `native_ppo_checkpoint.pt`, `run_manifest.json`, `artifact_manifest.json` com o SHA-256 do modelo e logs TensorBoard. A bateria gera `battery_manifest.json` com os hashes dos checkpoints. Isso prepara e executa treinamento; não declara qualidade do modelo sem avaliação independente.
 
 ## Avaliação de checkpoints
 
