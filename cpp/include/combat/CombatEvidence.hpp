@@ -263,12 +263,15 @@ public:
                     stat == "damage_amplification" ||
                     stat == "damage_reduction" || stat == "max_hp";
             };
+            const bool percent_stat_supported = !effect.percent_of_stat ||
+                effect.stat == "attack_damage" || effect.stat == "attack_speed" ||
+                effect.stat == "ability_power" || effect.stat == "max_hp" ||
+                effect.stat == "armor" || effect.stat == "magic_resist";
             const bool stat_supported =
                 (effect.operation != "add_stat" || supported_stat(effect.stat)) &&
                 (effect.operation != "bonus_damage" || !effect.percent_of_stat ||
-                    effect.stat == "attack_damage" || effect.stat == "attack_speed" ||
-                    effect.stat == "ability_power" || effect.stat == "max_hp" ||
-                    effect.stat == "armor" || effect.stat == "magic_resist");
+                    percent_stat_supported) &&
+                (effect.operation != "add_stat" || percent_stat_supported);
 
             const bool flags_supported =
                 (effect.operation != "add_stat" || !effect.percent_of_max_health) &&
