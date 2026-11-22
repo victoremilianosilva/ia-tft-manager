@@ -27,6 +27,14 @@ int main() {
     assert((anchor->reference_unit_ids == std::vector<std::int32_t>{10, 20, 30}));
     assert(anchor->reason == "derived_from_active_composition_identity_and_version");
 
+    // When the native candidate producer knows the semantic direction, the
+    // bound anchor must preserve it instead of confusing it with composition ID.
+    const auto explicitly_bound =
+        CompositionBoundDirectionAnchor::from_active_composition(active, "TraitBruiser");
+    assert(explicitly_bound.has_value());
+    assert(explicitly_bound->direction == "TraitBruiser");
+    assert(explicitly_bound->composition_identity == active.candidate.composition_id);
+
     auto invalid = active;
     invalid.version = 0;
     assert(!CompositionBoundDirectionAnchor::from_active_composition(invalid));
