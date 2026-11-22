@@ -56,11 +56,15 @@ def main(argv: list[str] | None = None) -> int:
         ]
         print("Executando:", " ".join(command), flush=True)
         subprocess.run(command, check=True)
+        run_manifest_path = run_dir / "run_manifest.json"
+        run_manifest = json.loads(run_manifest_path.read_text(encoding="utf-8"))
         runs.append({
             "seed": seed,
             "run_dir": str(run_dir),
             "checkpoint": str(run_dir / "native_ppo_checkpoint.pt"),
-            "manifest": str(run_dir / "run_manifest.json"),
+            "manifest": str(run_manifest_path),
+            "manifest_sha256": run_manifest["manifest_sha256"],
+            "identity_sha256": run_manifest["identity_sha256"],
         })
         battery_manifest = {
             "manifest_id": "tft.ppo.native-training-battery",
