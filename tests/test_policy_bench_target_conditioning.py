@@ -30,7 +30,7 @@ OBS_DIM = 10 + (4 * 7 * 5) + (1 + 4 * 7) + ((9 + 5) * 6)
 
 def _policy_and_observation(batch_size=1):
     torch.manual_seed(7)
-    policy = TFTPolicy(obs_dim=OBS_DIM, action_dims=ACTION_DIMS, hidden_size=64)
+    policy = TFTPolicy(obs_dim=OBS_DIM, action_dims=ACTION_DIMS, hidden_size=64, require_semantic_state=False)
     obs = torch.randn(batch_size, OBS_DIM)
     return policy, obs
 
@@ -111,7 +111,7 @@ def test_legacy_checkpoint_migrates_new_observation_and_bench_target_inputs():
     old_state["global_mlp.0.weight"] = old_global
     old_state["bench_to_board_head.weight"] = old_bench_target
 
-    restored = TFTPolicy(obs_dim=OBS_DIM, action_dims=ACTION_DIMS, hidden_size=64)
+    restored = TFTPolicy(obs_dim=OBS_DIM, action_dims=ACTION_DIMS, hidden_size=64, require_semantic_state=False)
     assert restored.load_compatible_state_dict(old_state)
 
     migrated_global = restored.state_dict()["global_mlp.0.weight"]
