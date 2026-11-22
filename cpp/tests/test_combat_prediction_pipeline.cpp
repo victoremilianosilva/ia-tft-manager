@@ -261,6 +261,14 @@ int main() {
         std::abs(projection.expected_incoming_damage - 5.0)) <= 1e-9);
     assert(evaluation.metrics.p90_coverage == 1.0);
 
+    auto incomplete_projection_samples = evaluation_samples;
+    incomplete_projection_samples.front().projection_coverage_complete = false;
+    const auto incomplete_projection_evaluation = evaluate_calibration_predictions(
+        incomplete_projection_samples, evaluation_cohort, evaluation_manifest);
+    assert(!incomplete_projection_evaluation.valid);
+    assert(incomplete_projection_evaluation.reason ==
+        "invalid_paired_prediction_outcome_sample");
+
     DamageDistribution evaluated_distribution;
     evaluated_distribution.match_id = identity.match_id;
     evaluated_distribution.player_id = identity.player_id;
