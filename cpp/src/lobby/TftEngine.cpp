@@ -2013,14 +2013,12 @@ struct TFTEngine::Impl {
                                     ++shop_copies[offer->champion_internal_id];
                             }
                         }
-                        bool all_destination_units_owned = true;
                         feasibility.required_units.reserve(destination_it->units.size());
                         feasibility.observed_units.reserve(destination_it->units.size());
                         for (const auto& destination_unit : destination_it->units) {
                             const auto* definition = catalog->find_by_id(
                                 destination_unit.champion_id);
                             if (!definition) {
-                                all_destination_units_owned = false;
                                 continue;
                             }
                             const bool is_carry =
@@ -2044,7 +2042,6 @@ struct TFTEngine::Impl {
                                 observed.copies_by_star = owned->second.copies_by_star;
                                 observed.physical_tier_counts_available = true;
                             } else {
-                                all_destination_units_owned = false;
                             }
                             observed.shop_copies =
                                 shop_copies[destination_unit.champion_id];
@@ -3220,6 +3217,8 @@ struct TFTEngine::Impl {
                     ++composition_intelligence_sequence;
             }
             } catch (const std::exception& error) {
+                strategic_refresh_failure_reasons[i] =
+                    std::string("composition_intelligence_refresh_exception: ") + error.what();
                 nlohmann::json failed = {
                     {"schema_version", 1},
                     {"sequence", ++composition_intelligence_sequence},
@@ -3242,7 +3241,11 @@ struct TFTEngine::Impl {
 
 
         }
-        }, []() noexcept {});
+        }, [this, i]() noexcept {
+            strategic_refresh_failure_reasons[i] =
+                "composition_intelligence_refresh_exception: unknown";
+            composition_intelligence_players[i].planner_outputs_valid = false;
+        });
         (void)native_evaluation_completed;
         // END READ-ONLY STRATEGIC EVALUATION BOUNDARY.
 
