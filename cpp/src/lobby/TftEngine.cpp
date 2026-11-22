@@ -2000,6 +2000,22 @@ struct TFTEngine::Impl {
                 // native owner; this producer never publishes a composition.
                 const auto& active_direction_anchor =
                     native_runtime.machine().anchors().direction_anchor;
+                std::string pivot_generation_diagnostic = "source_active_missing";
+                if (source_active) {
+                    if (!active_direction_anchor.is_valid()) {
+                        pivot_generation_diagnostic = "direction_anchor_invalid";
+                    } else if (!active_direction_anchor.composition_bound) {
+                        pivot_generation_diagnostic = "direction_anchor_not_composition_bound";
+                    } else if (active_direction_anchor.composition_identity !=
+                               source_active->candidate.composition_id) {
+                        pivot_generation_diagnostic = "direction_anchor_identity_mismatch";
+                    } else if (active_direction_anchor.composition_version !=
+                               source_active->version) {
+                        pivot_generation_diagnostic = "direction_anchor_version_mismatch";
+                    } else {
+                        pivot_generation_diagnostic = "no_alternative_generated_direction";
+                    }
+                }
                 if (source_active && active_direction_anchor.is_valid() &&
                     active_direction_anchor.composition_bound &&
                     active_direction_anchor.composition_identity ==
@@ -2013,6 +2029,8 @@ struct TFTEngine::Impl {
                             generated.unit_ids.empty()) {
                             continue;
                         }
+                        pivot_generation_diagnostic =
+                            "alternative_direction:" + generated.direction;
                         const auto destination_it = std::find_if(
                             native_composition_candidates.begin(),
                             native_composition_candidates.end(),
@@ -2021,9 +2039,15 @@ struct TFTEngine::Impl {
                                     candidate.source ==
                                         composition_intelligence::CompositionSource::Native;
                             });
-                        if (destination_it == native_composition_candidates.end() ||
-                            destination_it->units.empty() ||
+                        if (destination_it == native_composition_candidates.end()) {
+                            pivot_generation_diagnostic =
+                                "destination_candidate_missing:" + generated.identity;
+                            continue;
+                        }
+                        if (destination_it->units.empty() ||
                             destination_it->main_carry_id != generated.main_carry_id) {
+                            pivot_generation_diagnostic =
+                                "destination_candidate_contract_mismatch:" + generated.identity;
                             continue;
                         }
 
@@ -2116,6 +2140,8 @@ struct TFTEngine::Impl {
 
                         if (feasibility.required_units.size() !=
                             destination_it->units.size()) {
+                            pivot_generation_diagnostic =
+                                "required_unit_evidence_incomplete:" + generated.identity;
                             continue;
                         }
 
@@ -2141,6 +2167,8 @@ struct TFTEngine::Impl {
                         native_input.pivot_candidate = std::move(pivot);
                         native_input.pivot_destination = *destination_it;
                         native_input.pivot_feasibility = std::move(feasibility);
+                        pivot_generation_diagnostic =
+                            "pivot_input_built:" + generated.direction;
                         break;
                     }
                 }
@@ -2151,6 +2179,14 @@ struct TFTEngine::Impl {
                 };
                 const auto native_result =
                     native_runtime.refresh(native_audit_context, native_input);
+                if (native_result.anchors.pivot_candidate.is_valid()) {
+                    pivot_generation_diagnostic += ";pivot_published";
+                } else if (native_input.pivot_candidate) {
+                    pivot_generation_diagnostic += ";runtime_rejected:" +
+                        native_result.diagnostics.transition_reason;
+                }
+                strategic_pivot_generation_diagnostics[i] =
+                    std::move(pivot_generation_diagnostic);
                 if (native_result.diagnostics.transition_reason ==
                     "shadow_cycle_exception_contained") {
                     // UnifiedStrategicShadowRuntime contains its own exceptions
@@ -5954,6 +5990,8 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
             !impl_->strategic_refresh_failure_reasons[i].empty();
         strategic.strategic_refresh_failure_reason =
             impl_->strategic_refresh_failure_reasons[i];
+        strategic.pivot_generation_diagnostic_for_diagnostics =
+            impl_->strategic_pivot_generation_diagnostics[i];
         const auto& planner_runtime = impl_->composition_intelligence_players[i];
         strategic.planner_outputs_valid = planner_runtime.planner_outputs_valid;
         strategic.planner_output_sequence = planner_runtime.lineup.sequence;
