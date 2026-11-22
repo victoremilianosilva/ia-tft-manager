@@ -28,7 +28,7 @@ passed them.
   distribution and never marks it calibrated by itself.
 - `evaluate_calibration_predictions` pairs complete experimental projections
   with replay outcomes, validates identity/HP/provenance, enforces
-  match-disjoint train/validation/test splits, and computes held-out MAE, P90
+  match- and replay-artifact-disjoint train/validation/test splits, and computes held-out MAE, P90
   interval coverage, and Brier score.
 - `approve_calibration` validates the evaluation report, protocol approval,
   sample minima, finite metric ranges, metric thresholds, SHA-256 manifest
