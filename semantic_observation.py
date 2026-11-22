@@ -179,7 +179,7 @@ def build_semantic_state_checkpoint_contract(catalog_map: Mapping[str, int]) -> 
         },
         "strategic_owner_source": {
             "contract_id": "tft.strategic-owner-observation",
-            "contract_version": 2,
+            "contract_version": 3,
             "producer": "TFTEngine::get_audit_snapshot",
             "source_namespace": "tft.engine.strategic-owners",
             "identity": ["episode_id", "player_id", "round", "player_decision_sequence"],
@@ -397,7 +397,7 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
         strategic.get("contract_id") != "tft.strategic-owner-observation"
         or isinstance(strategic_version, bool)
         or not isinstance(strategic_version, int)
-        or strategic_version != 2
+        or strategic_version != 3
         or strategic.get("producer") != "TFTEngine::get_audit_snapshot"
         or strategic.get("source_namespace") != "tft.engine.strategic-owners"
     ):
