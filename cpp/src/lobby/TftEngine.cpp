@@ -3235,10 +3235,10 @@ struct TFTEngine::Impl {
                     ++composition_intelligence_sequence;
             }
             }
-
+        }
 
         }, []() noexcept {});
-        (void)shadow_evaluation_completed;
+        (void)native_evaluation_completed;
         // END READ-ONLY STRATEGIC EVALUATION BOUNDARY.
 
 
