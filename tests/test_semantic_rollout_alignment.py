@@ -113,7 +113,7 @@ def test_rollout_replay_keeps_semantic_identity_and_hash_with_the_same_row():
     decision.update({
         "semantic_identity": identity,
         "semantic_projection_hash": digest,
-        "semantic_projection_contract_id": "tft.ppo.semantic-native-state.v6",
+        "semantic_projection_contract_id": "tft.ppo.semantic-native-state.v7",
         "semantic_projection_contract_hash": "b" * 64,
         "mask_snapshot_hash": hash_mask_row({name: masks[name][0] for name in MASK_SHAPES}),
         "mask_snapshot_hash_algorithm": MASK_SNAPSHOT_HASH_ALGORITHM,
@@ -140,7 +140,7 @@ def test_rollout_replay_keeps_semantic_identity_and_hash_with_the_same_row():
         "items": semantic_item_state_tensors(semantic_numeric),
         "champion_ids": torch.zeros((1, SEMANTIC_ENTITY_SLOTS), dtype=torch.long),
         "identities": [identity], "hashes": [digest],
-        "contract_id": "tft.ppo.semantic-native-state.v6",
+        "contract_id": "tft.ppo.semantic-native-state.v7",
         "contract_hash": "b" * 64,
     }
     actions = torch.tensor([action], dtype=torch.long)
