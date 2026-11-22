@@ -5,6 +5,8 @@ import os
 import json
 import copy
 import hashlib
+import random
+from pathlib import Path
 
 from rich.console import Console
 from rich.progress import (
@@ -65,6 +67,7 @@ from semantic_observation import (
 )
 
 from engine_contracts import ActionType
+from training_run_manifest import build_training_run_manifest, write_training_run_manifest
 
 def refresh_opgg_meta_catalog() -> None:
     """Refresh at the training entrypoint, never when Trainer is imported or constructed in tests."""
@@ -135,6 +138,11 @@ class Trainer:
     ):
         self.config = TrainingConfig.from_env(config)
         self.config.validate()
+        random.seed(self.config.seed)
+        np.random.seed(self.config.seed)
+        torch.manual_seed(self.config.seed)
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed_all(self.config.seed)
         print("⚙️ Configuração efetiva do treinamento:")
         print(json.dumps(self.config.to_dict(), indent=2, ensure_ascii=False))
 
@@ -221,9 +229,14 @@ class Trainer:
         # 📊 TENSORBOARD
         # ============================================================
 
-        self.writer = SummaryWriter(
-            "tft_logs/AkameIA_V4"
+        Path(self.config.log_dir).mkdir(parents=True, exist_ok=True)
+        Path(self.config.checkpoint_path).expanduser().resolve().parent.mkdir(
+            parents=True, exist_ok=True
         )
+        Path(self.config.run_manifest_path).expanduser().resolve().parent.mkdir(
+            parents=True, exist_ok=True
+        )
+        self.writer = SummaryWriter(self.config.log_dir)
 
         # ============================================================
         # 🏭 ENV FACTORY / ENGINE BACKEND
@@ -231,25 +244,23 @@ class Trainer:
 
         print("🧩 Engine selecionada: C++ (única engine)")
 
-        # PPO consumes the native strategic owners as part of its semantic
-        # observation. The optional JSONL audit sidecar remains disabled unless
-        # separately configured; it must not gate the state machine itself.
-        os.environ["TFT_COMPOSITION_INTELLIGENCE_SHADOW"] = "1"
+        # PPO consumes the native strategic-owner projection directly.
+        # Diagnostic JSONL sidecars are not enabled as a side effect of training.
         resolved_item_catalog = item_catalog_path or os.environ.get("TFT_ITEM_CATALOG_PATH")
-        def make_env():
-            return CppTFTLobbyWrapper(item_catalog_path=resolved_item_catalog)
+        env_fns = [
+            (
+                lambda lobby_seed=self.config.seed + lobby_index:
+                CppTFTLobbyWrapper(
+                    seed=lobby_seed,
+                    item_catalog_path=resolved_item_catalog,
+                )
+            )
+            for lobby_index in range(self.num_envs)
+        ]
 
-# ============================================================
-        # 🚀 VECTOR ENV
-        # ============================================================
-
-        # LobbyVectorEnv é serial: uma instância por lobby.
-        # Inicializamos independentemente de use_subprocess.
-        self.vec_env = LobbyVectorEnv(
-            [make_env for _ in range(self.num_envs)]
-        )
-
-        dummy_obs = self.vec_env.reset()
+        # LobbyVectorEnv is serial: one native Engine instance per lobby.
+        self.vec_env = LobbyVectorEnv(env_fns)
+        dummy_obs = self.vec_env.reset(seed=self.config.seed)
         catalog_maps = self.vec_env.env_method("get_champion_id_map")
         if not catalog_maps or any(not isinstance(item, dict) for item in catalog_maps):
             raise RuntimeError("Native champion catalog map is required for semantic PPO projection.")
@@ -636,6 +647,41 @@ class Trainer:
             target_kl=self.config.target_kl,
         )
         self.ppo.update_step = self.start_update
+        self.training_run_manifest = build_training_run_manifest(
+            config=self.config,
+            policy=self.policy,
+            semantic_state_contract=self.semantic_state_contract,
+            engine=self.vec_env.envs[0]._engine,
+        )
+        manifest_path = Path(self.config.run_manifest_path)
+        if manifest_path.exists():
+            import json as _json
+            with manifest_path.open("r", encoding="utf-8") as source:
+                existing_manifest = _json.load(source)
+            if existing_manifest.get("identity_sha256") != self.training_run_manifest.get("identity_sha256"):
+                raise RuntimeError(
+                    "O diretório de execução já contém um manifesto de outra linhagem. "
+                    "Use um diretório de saída novo; não sobrescreva artefatos de treino."
+                )
+            self.training_run_manifest = existing_manifest
+        else:
+            write_training_run_manifest(manifest_path, self.training_run_manifest)
+        if checkpoint is not None:
+            saved_run_manifest = checkpoint.get("training_run_manifest")
+            if (
+                not isinstance(saved_run_manifest, dict)
+                or saved_run_manifest.get("identity_sha256")
+                != self.training_run_manifest.get("identity_sha256")
+            ):
+                raise RuntimeError(
+                    "Checkpoint sem manifesto de execução nativo compatível. "
+                    "Checkpoints históricos não podem ser retomados nesta linhagem."
+                )
+        self.writer.add_text(
+            "training/manifest",
+            json.dumps(self.training_run_manifest, indent=2, ensure_ascii=False),
+            self.start_update,
+        )
         self.writer.add_text(
             "training/config",
             json.dumps(self.config.to_dict(), indent=2, ensure_ascii=False),
@@ -2503,6 +2549,8 @@ class Trainer:
                         "reward_contract": build_reward_checkpoint_contract(),
                         "training_resume_contract": build_training_resume_contract(self.config.to_dict()),
                         "warm_start_source": warm_start_source_metadata,
+                "training_run_manifest": self.training_run_manifest,
+                        "training_run_manifest": self.training_run_manifest,
                         "checkpoint_contract": build_checkpoint_lineage_contract(
                             self.policy.state_dict(),
                             build_action_mask_checkpoint_contract(),
