@@ -19,6 +19,7 @@ No PowerShell, .\train_cycle.ps1 chama o runner multi-seed e registra a saída c
 Cada execução produz:
 - native_ppo_checkpoint.pt: pesos, optimizer, scheduler e contratos.
 - run_manifest.json: revisão do código, hash do binário C++, seed, configuração, arquitetura e contratos.
+- artifact_manifest.json: hash SHA-256 do checkpoint final e vínculo com o manifesto de execução.
 - tensorboard/: métricas e diagnósticos PPO.
 
 A bateria produz battery_manifest.json, relacionando as seeds e os artefatos gerados. Os diretórios precisam estar vazios; o runner não sobrescreve modelos anteriores.
