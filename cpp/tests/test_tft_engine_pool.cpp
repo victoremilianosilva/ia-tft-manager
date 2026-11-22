@@ -313,7 +313,7 @@ int main(int argc, char** argv) {
         }
         auto combat_distribution =
             tft::combat_evidence::CombatPredictionCalibrator{}.calibrate_for_cohort(
-                combat_outcomes, identity_after_reset.episode_id, 0, 1, 1,
+                combat_outcomes, identity_after_reset.episode_id, 0, 1, 15,
                 combat_cohort, 30);
         tft::combat_evidence::CalibrationAcceptanceCriteria combat_criteria;
         combat_criteria.approved = true;
@@ -344,6 +344,11 @@ int main(int argc, char** argv) {
             tft::combat_evidence::derive_survival_risk(100.0, combat_distribution);
         require(calibrated_combat_risk.available,
                 "Não foi possível derivar risco do cohort aprovado.");
+
+        // O treinamento só resolve a preparação depois de 15 ações de cada
+        // jogador; PASS conta como ação, mas não encerra a rodada sozinho.
+        for (int action = 0; action < 14; ++action)
+            (void)step_with_pending_anvils(engine, actions);
         tft::combat_evidence::SurvivalRiskEvidence forged_combat_risk;
         forged_combat_risk.available = true;
         forged_combat_risk.match_id = calibrated_combat_risk.match_id;
@@ -370,11 +375,6 @@ int main(int argc, char** argv) {
         experimental_combat_risk.source = "experimental_replay_cohort_distribution.v1";
         require(!engine.publish_combat_prediction_evidence(experimental_combat_risk),
                 "A Engine não pode aceitar projeção experimental como evidência econômica.");
-
-        // O treinamento só resolve a preparação depois de 15 ações de cada
-        // jogador; PASS conta como ação, mas não encerra a rodada sozinho.
-        for (int action = 0; action < 14; ++action)
-            (void)step_with_pending_anvils(engine, actions);
         const auto first_prediction_step = step_with_pending_anvils(engine, actions);
         require(std::any_of(first_prediction_step.events.begin(),
             first_prediction_step.events.end(), [](const auto& event) {
