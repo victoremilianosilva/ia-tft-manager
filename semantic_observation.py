@@ -642,7 +642,10 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
             result.add(champion_id)
         return result
     selected_set = validate_ids("lineup_selected_unit_ids", selected_ids)
-    target_set = set(priority_by_id)
+    entry_set = validate_ids("lineup_entry_unit_ids", entry_ids)
+    validate_ids("lineup_exit_unit_ids", exit_ids)
+    deferred_set = validate_ids("lineup_deferred_unit_ids", deferred_ids)
+    target_set = selected_set | entry_set | deferred_set
 
     catalog = dict(catalog_map)
     observed_owned_ids = set()
