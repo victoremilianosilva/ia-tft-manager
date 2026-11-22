@@ -38,12 +38,26 @@ public:
             out.validation_reason = identity_validation.reason;
             return out;
         }
+        const auto hp_matches = [](double input_hp, double snapshot_hp) {
+            return std::isfinite(input_hp) && input_hp >= 0.0 &&
+                std::abs(input_hp - snapshot_hp) <= 1e-6;
+        };
         if (input.context != CombatContext::PVP ||
             input.player_a.team != UnitTeam::PLAYER_A ||
             input.player_b.team != UnitTeam::PLAYER_B ||
             input.player_a.player_id != identity.player_id ||
-            input.player_b.player_id != identity.opponent_id) {
-            out.validation_reason = "combat_input_matchup_identity_mismatch";
+            input.player_b.player_id != identity.opponent_id ||
+            !hp_matches(input.player_a.player_hp, identity.player_hp) ||
+            !hp_matches(input.player_b.player_hp, identity.opponent_hp)) {
+            out.validation_reason = "combat_input_matchup_or_hp_identity_mismatch";
+            return out;
+        }
+        if (input.seed != input.config.seed || !input.config.deterministic ||
+            input.config.board_rows <= 0 || input.config.board_cols <= 0 ||
+            input.config.board_rows * input.config.board_cols != 28 ||
+            !std::isfinite(input.config.max_duration) ||
+            input.config.max_duration <= 0.0f || input.config.max_events == 0) {
+            out.validation_reason = "combat_input_simulator_configuration_invalid";
             return out;
         }
         if (input.player_a.units.size() != identity.player_unit_ids.size() ||
@@ -59,11 +73,30 @@ public:
             std::unordered_set<std::string> source_uuids;
             for (std::size_t index = 0; index < team.units.size(); ++index) {
                 const auto& unit = team.units[index];
+                const std::array<float, 15> numeric_stats{
+                    unit.hp, unit.max_hp, unit.mana, unit.max_mana,
+                    unit.attack_damage, unit.ability_power, unit.attack_speed,
+                    unit.attack_range, unit.critical_strike_chance,
+                    unit.critical_strike_damage, unit.armor, unit.magic_resist,
+                    unit.damage_amplification, unit.damage_reduction, unit.omnivamp
+                };
+                const bool finite_stats = std::all_of(
+                    numeric_stats.begin(), numeric_stats.end(),
+                    [](float value) { return std::isfinite(value); });
                 if (unit.id < 0 || unit.api_name.empty() ||
                     unit.source_unit_uuid.empty() ||
                     unit.source_unit_uuid != expected_uuids[index] ||
                     !source_uuids.insert(unit.source_unit_uuid).second ||
                     unit.source_board_position < 0 || unit.source_board_position >= 28 ||
+                    unit.position.x < 0 || unit.position.x >= 7 ||
+                    unit.position.y < 0 || unit.position.y >= 4 ||
+                    unit.star < 1 || unit.star > 3 ||
+                    !finite_stats || unit.hp < 0.0f || unit.max_hp <= 0.0f ||
+                    unit.hp > unit.max_hp + 1e-4f || unit.mana < 0.0f ||
+                    unit.max_mana < 0.0f || unit.attack_damage < 0.0f ||
+                    unit.attack_speed <= 0.0f || unit.attack_range <= 0.0f ||
+                    unit.damage_reduction < 0.0f || unit.damage_reduction > 1.0f ||
+                    unit.omnivamp < 0.0f || unit.omnivamp > 1.0f ||
                     !unit_ids.insert(unit.id).second ||
                     !board_positions.insert(unit.source_board_position).second)
                     return false;
