@@ -3030,7 +3030,8 @@ struct TFTEngine::Impl {
                                 candidate.opportunity_cost_uncertainty,
                                 candidate.opportunity_cost_horizon_rounds,
                                 candidate.opportunity_cost_source,
-                                candidate.opportunity_cost_forgone_candidate_id
+                                candidate.opportunity_cost_forgone_candidate_id,
+                                candidate.opportunity_cost_value_basis
                             });
                         } else if (candidate.opportunity_cost *
                                        (1.0 - candidate.opportunity_cost_uncertainty) >
@@ -3040,7 +3041,8 @@ struct TFTEngine::Impl {
                                 candidate.opportunity_cost_uncertainty,
                                 candidate.opportunity_cost_horizon_rounds,
                                 candidate.opportunity_cost_source,
-                                candidate.opportunity_cost_forgone_candidate_id
+                                candidate.opportunity_cost_forgone_candidate_id,
+                                candidate.opportunity_cost_value_basis
                             };
                         }
                     }
