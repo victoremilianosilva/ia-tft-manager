@@ -46,7 +46,7 @@ Para gerar um relatório consolidado de auditoria estratégica, ações/recompen
 máscaras, ciclos de estado e loops nativos em um único Markdown:
 
 ~~~powershell
-python scripts/evaluate_all.py --checkpoint checkpoints/latest.pt --seeds 11,12,13
+python scripts/evaluate_all.py --checkpoint training_runs/native-battery/seed-11/native_ppo_checkpoint.pt --seeds 11,12,13
 ~~~
 
 O relatório final é gravado em `reports/evaluation_report.md`; os dados brutos
@@ -57,7 +57,7 @@ Essas avaliações opcionais podem executar partidas adicionais e demorar mais.
 
 ## Catálogo de composições OP.GG
 
-O treino atualiza o snapshot local de meta antes de iniciar; o Viewer reutiliza o mesmo catálogo e só consulta novamente quando ele está vencido. O C++ compara composições conhecidas com o plano nativo, usando snapshots de early/mid game como informação de transição, sem tornar unidades obrigatórias. Veja [docs/opgg-meta-catalog.md](docs/opgg-meta-catalog.md).
+O treinamento nativo fixa os catálogos locais durante cada execução e registra a identidade semântica no manifesto. Atualizações externas de catálogo devem ser feitas antes de iniciar uma nova bateria, nunca durante um experimento em andamento. Veja [docs/opgg-meta-catalog.md](docs/opgg-meta-catalog.md).
 
 ## Componentes principais
 
