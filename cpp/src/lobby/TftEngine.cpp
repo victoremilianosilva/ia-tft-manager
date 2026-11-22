@@ -2678,18 +2678,12 @@ struct TFTEngine::Impl {
                         // substituting purchase cost and star tier for marginal board value.
                         evidence.board_contribution = 0.0;
                         evidence.board_contribution_available = false;
-                        evidence.synergy_contribution_available = true;
-                        std::size_t matching_traits = 0;
+                        evidence.synergy_contribution_available = false;
                         for (const auto& trait : definition->traits) {
-                            if (std::find(strategic_context.current_core_traits.begin(),
-                                          strategic_context.current_core_traits.end(), trait) !=
-                                strategic_context.current_core_traits.end()) ++matching_traits;
                             const auto count = board_trait_counts[trait];
                             observed.completes_active_trait = observed.completes_active_trait ||
                                 trait_threshold_crossed(trait, count, on_board);
                         }
-                        evidence.synergy_contribution = std::clamp(
-                            static_cast<double>(matching_traits) / 2.0, 0.0, 1.0);
                         evidence.trait_completion = evidence.trait_completion ||
                             observed.completes_active_trait;
                         // No calibrated per-unit board contribution is available; confidence stays absent.
