@@ -30,6 +30,16 @@ def test_native_direction_and_composition_runtime_uses_owned_cycle_inputs():
     assert "void refresh_native_strategic_state(std::size_t i)" in source
 
 
+def test_retired_strategy_policies_are_physically_removed():
+    assert not (ROOT / "cpp/include/strategy/StrategyPolicy.hpp").exists()
+    assert not (ROOT / "cpp/include/strategy/CompositionDirectionPolicy.hpp").exists()
+    assert not (ROOT / "cpp/tests/test_strategy_policy.cpp").exists()
+    assert not (ROOT / "cpp/tests/test_composition_direction_policy.cpp").exists()
+    cmake = (ROOT / "cpp/CMakeLists.txt").read_text(encoding="utf-8")
+    assert "test_strategy_policy" not in cmake
+    assert "test_composition_direction_policy" not in cmake
+
+
 def test_retired_composition_planner_is_physically_removed():
     assert not (ROOT / "cpp/include/strategy/CompositionPlanner.hpp").exists()
     assert not (ROOT / "cpp/tests/test_composition_planner.cpp").exists()
