@@ -369,7 +369,7 @@ class ViewerSession:
             )):
                 continue
             if (
-                player_id < 0 or sequence < 0 or round_number < 1
+                player_id < 0 or sequence <= 0 or round_number < 1
                 or native_episode_id != engine_episode_id
             ):
                 continue
