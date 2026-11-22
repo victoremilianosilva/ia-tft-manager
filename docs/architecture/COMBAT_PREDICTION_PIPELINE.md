@@ -52,7 +52,7 @@ single-round mean is invalid.
   to one immutable dataset version.
 - `evaluate_calibration_predictions` joins experimental projection values
   with replay outcomes by match/player/round/sequence, rejects incomplete
-  coverage and HP/provenance mismatches, verifies episode-disjoint splits,
+  coverage and HP/provenance mismatches, verifies match- and replay-artifact-disjoint splits,
   and calculates held-out MAE, P90 coverage, and Brier score.
 - `approve_calibration` requires an approved protocol, quantitative metrics,
   disjoint train/validation/test manifests, report and manifest hashes, and
