@@ -654,6 +654,17 @@ class Trainer:
             engine=self.vec_env.envs[0]._engine,
         )
         manifest_path = Path(self.config.run_manifest_path)
+        if checkpoint is not None:
+            saved_run_manifest = checkpoint.get("training_run_manifest")
+            if (
+                not isinstance(saved_run_manifest, dict)
+                or saved_run_manifest.get("identity_sha256")
+                != self.training_run_manifest.get("identity_sha256")
+            ):
+                raise RuntimeError(
+                    "Checkpoint sem manifesto de execução nativo compatível. "
+                    "Checkpoints históricos não podem ser retomados nesta linhagem."
+                )
         if manifest_path.exists():
             import json as _json
             with manifest_path.open("r", encoding="utf-8") as source:
@@ -666,17 +677,6 @@ class Trainer:
             self.training_run_manifest = existing_manifest
         else:
             write_training_run_manifest(manifest_path, self.training_run_manifest)
-        if checkpoint is not None:
-            saved_run_manifest = checkpoint.get("training_run_manifest")
-            if (
-                not isinstance(saved_run_manifest, dict)
-                or saved_run_manifest.get("identity_sha256")
-                != self.training_run_manifest.get("identity_sha256")
-            ):
-                raise RuntimeError(
-                    "Checkpoint sem manifesto de execução nativo compatível. "
-                    "Checkpoints históricos não podem ser retomados nesta linhagem."
-                )
         self.writer.add_text(
             "training/manifest",
             json.dumps(self.training_run_manifest, indent=2, ensure_ascii=False),
