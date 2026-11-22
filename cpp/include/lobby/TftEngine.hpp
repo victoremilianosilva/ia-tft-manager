@@ -359,6 +359,8 @@ struct AuditStrategicOwnerSnapshot {
     bool pivot_candidate_valid{false};
     std::string pivot_candidate_identity;
     std::string pivot_target_composition_identity;
+    // Internal diagnostic for native pivot proposal production; not serialized.
+    std::string pivot_generation_diagnostic_for_diagnostics;
     std::uint64_t pivot_source_composition_version{0};
     std::vector<std::int32_t> pivot_reference_unit_ids;
     // Values are produced by strategy::UnitCopyProgress from this snapshot's
