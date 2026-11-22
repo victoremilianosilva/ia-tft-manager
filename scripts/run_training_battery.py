@@ -40,7 +40,7 @@ def main(argv: list[str] | None = None) -> int:
         parser.error(f"O diretório {output_root} não está vazio; não sobrescrever execuções anteriores.")
     output_root.mkdir(parents=True, exist_ok=True)
 
-    script = Path(__file__).resolve().with_name("train_native.py")
+    script = Path(__file__).resolve().parents[1] / "train_native.py"
     runs = []
     for seed in args.seeds:
         run_dir = output_root / f"seed-{seed}"
