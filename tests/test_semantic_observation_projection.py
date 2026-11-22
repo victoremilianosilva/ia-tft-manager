@@ -145,28 +145,63 @@ def _metadata():
     }
 
 
+def test_native_planner_priority_lineup_and_opportunity_cost_reach_semantic_ppo_features():
+    metadata = _metadata()
+    strategic = metadata["native_player_state"]["strategic_state"]
+    strategic["planner_outputs_valid"] = True
+    strategic["planner_output_sequence"] = 5
+    strategic["unit_priorities"] = [{
+        "champion_internal_id": 17,
+        "intent": 1,
+        "relation": 0,
+        "priority": 80,
+        "target_star": 2,
+        "sale_restricted": False,
+        "confidence": 0.8,
+    }]
+    strategic["lineup_selected_unit_ids"] = [17]
+    strategic["lineup_entry_unit_ids"] = []
+    strategic["lineup_exit_unit_ids"] = []
+    strategic["lineup_deferred_unit_ids"] = []
+    strategic["opportunity_cost_available"] = True
+    strategic["opportunity_costs"] = [{
+        "champion_internal_id": 17,
+        "value": 25.0,
+        "uncertainty": 0.2,
+        "horizon_rounds": 1,
+        "source": "same_snapshot_competing_alternative.v1",
+        "forgone_candidate_id": "action:alternative:1",
+    }]
+    projected = project_native_player_state(metadata, {"TFT_TestChampion": 17})
+    entity_start = SEMANTIC_GLOBAL_FEATURES
+    assert projected["numeric"][entity_start + 43] == 0.8
+    assert projected["numeric"][entity_start + 44] == 1.0
+    assert projected["numeric"][entity_start + 45] == 0.25
+    assert projected["numeric"][entity_start + 46] == 1.0
+
+
 def test_native_semantic_projection_has_stable_shape_and_explicit_identity():
     catalog = {"TFT_TestChampion": 17}
     projected = project_native_player_state(_metadata(), catalog)
     assert len(projected["numeric"]) == SEMANTIC_NUMERIC_DIM
     assert len(projected["champion_ids"]) == SEMANTIC_ENTITY_SLOTS
     assert projected["champion_ids"][0] == 18
-    assert projected["numeric"][52] == 1.0  # occupied
-    assert projected["numeric"][57] == 1.0  # mapped champion identity valid
-    assert projected["numeric"][58] == 1.0  # active composition member
+    assert projected["numeric"][54] == 1.0  # occupied
+    assert projected["numeric"][63] == 1.0  # mapped champion identity valid
+    assert projected["numeric"][62] == 1.0  # active composition member
     assert projected["numeric"][59] == 1.0  # active core member
     assert projected["numeric"][60] == 1.0  # direction reference
     assert projected["numeric"][61] == 1.0  # pivot reference
-    assert projected["numeric"][62] == 4.0 / 9.0  # one 2-star plus one 1-star copy
-    assert projected["numeric"][63] == 0.0  # native UnitCopyProgress reports no 2-star progress
+    assert projected["numeric"][64] == 4.0 / 9.0  # one 2-star plus one 1-star copy
+    assert projected["numeric"][65] == 0.0  # native UnitCopyProgress reports no 2-star progress
     # The appended 17-field item target profile comes from the native snapshot.
-    assert projected["numeric"][64] == 1.0  # occupied target
-    assert projected["numeric"][65] == 1.0  # board target
-    assert projected["numeric"][71] == 1.0  # classifier role one-hot (fighter)
+    assert projected["numeric"][66] == 1.0  # occupied target
+    assert projected["numeric"][67] == 1.0  # board target
+    assert projected["numeric"][75] == 1.0  # classifier role one-hot (fighter)
     assert projected["numeric"][73] == 1.0  # frontline row
-    assert projected["numeric"][75] == 0.5  # attack damage / 200
-    assert projected["numeric"][80] == 1.0 / 3.0  # equipped item count / 3
-    bench_target_start = 52 + 28 * 39 + 12
+    assert projected["numeric"][77] == 0.5  # attack damage / 200
+    assert projected["numeric"][82] == 1.0 / 3.0  # equipped item count / 3
+    bench_target_start = 54 + 28 * 45 + 12
     assert projected["numeric"][bench_target_start + 2] == 1.0
     assert projected["numeric"][bench_target_start + 9] == 0.0
     assert projected["numeric"][21] == 5.0 / 9.0  # board capacity
