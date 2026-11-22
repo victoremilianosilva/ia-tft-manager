@@ -442,8 +442,10 @@ private:
             owned.copies_by_star, out.highest_star, 0);
         out.has_pair = out.highest_star < 3 && owned_upgrade_progress >= 1;
         out.copies_needed_for_pair = out.highest_star < 3 && !out.has_pair ? 1 : 0;
-        out.board_contribution = ev ? clamp01(ev->board_contribution) : 0.0;
-        out.synergy_contribution = ev ? clamp01(ev->synergy_contribution) : 0.0;
+        out.board_contribution = ev && ev->board_contribution_available
+            ? clamp01(ev->board_contribution) : 0.0;
+        out.synergy_contribution = ev && ev->synergy_contribution_available
+            ? clamp01(ev->synergy_contribution) : 0.0;
         out.confidence = ev ? clamp01(ev->confidence) : 0.2;
         out.priority = 0;
         const auto* transition = context.transition ? &*context.transition : nullptr;
