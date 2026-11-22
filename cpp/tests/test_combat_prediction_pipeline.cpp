@@ -263,7 +263,6 @@ int main() {
 
     auto overlapping_split_samples = evaluation_samples;
     auto overlap = overlapping_split_samples.front();
-    overlap.player_id = 1;
     overlap.sequence += 1;
     overlap.split = CalibrationDatasetSplit::VALIDATION;
     overlapping_split_samples.push_back(overlap);
