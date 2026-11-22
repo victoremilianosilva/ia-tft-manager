@@ -2641,6 +2641,8 @@ struct TFTEngine::Impl {
                     if (observed_inserted) {
                         observed.board_contribution = 0.0;
                         observed.synergy_contribution = 0.0;
+                        observed.board_contribution_available = false;
+                        observed.synergy_contribution_available = false;
                     }
                     observed.champion_id = id;
                     const auto physical_tiers = physical_star_counts_by_unit.find(id);
@@ -2705,6 +2707,8 @@ struct TFTEngine::Impl {
                         priority->second.copies_by_star[3] == 0;
                     observed.explicit_sell_candidate = single_unupgraded_bench_unit &&
                         observed.equipped_item_ids.empty() &&
+                        observed.board_contribution_available &&
+                        observed.synergy_contribution_available &&
                         observed.board_contribution < 0.25 &&
                         observed.synergy_contribution < 0.25 &&
                         !observed.completes_active_trait;
@@ -2726,6 +2730,8 @@ struct TFTEngine::Impl {
                             evidence.synergy_contribution = 0.0;
                         }
                         evidence.champion_id = target.champion_id;
+                        evidence.board_contribution_available = false;
+                        evidence.synergy_contribution_available = false;
                         // A unit already on board is evaluated as a removal risk
                         // above. Only bench/missing targets are evaluated as an
                         // additional board contribution here.
