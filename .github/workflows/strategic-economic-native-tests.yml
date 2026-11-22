@@ -27,7 +27,7 @@ on:
       - '.github/workflows/strategic-economic-native-tests.yml'
 
 jobs:
-  native-shadow-tests:
+  native-strategic-tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -42,7 +42,7 @@ jobs:
         run: cmake --build build --target tft_engine test_tft_engine_pool test_strategic_planner test_shadow_failure_boundary test_strategic_direction_pivot_audit_recorder test_native_strategic_composition_generator test_strategic_evidence_context test_strategic_action_executor test_strategic_position_planner test_active_composition_manager test_composition_evaluation test_pivot_feasibility_evaluator test_strategic_pivot_transition_coordinator test_unit_priority_planner test_economic_controller test_strategic_action_candidate_builder test_contextual_action_evaluator test_composition_action_evaluator --config Release --parallel 2
       - name: Run strategic planner regression tests
         run: ctest --test-dir build -R 'tft_engine_pool|strategic_planner_shadow|shadow_failure_boundary|strategic_direction_pivot_audit_recorder|native_strategic_composition_generator|strategic_evidence_context|strategic_action_executor|strategic_position_planner|active_composition_manager|composition_evaluation|pivot_feasibility_evaluator|strategic_pivot_transition_coordinator|unit_priority_planner|economic_controller|strategic_action_candidate_builder|contextual_action_evaluator|composition_action_evaluator' --output-on-failure
-      - name: Verify PPO Shadow architecture boundary
+      - name: Verify native strategic PPO contract
         run: python tests/test_shadow_ppo_isolation_architecture.py
       - name: Verify strategic evidence context isolation
         run: python tests/test_strategic_evidence_context_architecture.py
