@@ -19,7 +19,10 @@ from action_contract import (
     build_critic_mask_input_checkpoint_contract,
 )
 from reward_contract import build_reward_checkpoint_contract
-from checkpoint_contract import build_training_resume_contract
+from checkpoint_contract import (
+    build_checkpoint_lineage_contract,
+    build_training_resume_contract,
+)
 
 
 def _canonical_hash(value: Any) -> str:
@@ -157,6 +160,13 @@ def build_training_run_manifest(
             "action_mask": build_action_mask_checkpoint_contract(),
             "critic_mask_input": build_critic_mask_input_checkpoint_contract(),
             "reward": build_reward_checkpoint_contract(),
+            "checkpoint_lineage": build_checkpoint_lineage_contract(
+                policy.state_dict(),
+                build_action_mask_checkpoint_contract(),
+                build_critic_mask_input_checkpoint_contract(),
+                semantic_state_contract,
+                build_reward_checkpoint_contract(),
+            ),
             "training_resume": build_training_resume_contract(config.to_dict()),
         },
     }
