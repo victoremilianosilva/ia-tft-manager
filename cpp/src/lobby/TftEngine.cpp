@@ -363,6 +363,8 @@ struct TFTEngine::Impl {
             bool was_deployed{false};
             double fit_score{0.0};
             double reward{0.0};
+            std::string composition_identity;
+            std::string main_carry_identity;
         };
         std::uint64_t action_serial{0};
         std::vector<RecentPurchase> recent_purchases;
@@ -3237,79 +3239,9 @@ struct TFTEngine::Impl {
             }
 
 
-            static const std::array<const char*, 7> economic_posture_names{
-                "ACCUMULATE_RESOURCES", "PRESERVE_WIN_STREAK",
-                "PRESERVE_LOSS_STREAK", "INVEST_EXPERIENCE",
-                "ROLL_FOR_UPGRADES", "STABILIZE_BOARD", "EMERGENCY_INVESTMENT"
-            };
-            static const std::array<const char*, 7> action_names{
-                "NONE", "BUY_UNIT", "BUY_XP", "REROLL", "SELL_UNIT",
-                "DEPLOY_OR_MOVE", "HOLD"
-            };
-            const auto posture_index = static_cast<std::size_t>(
-                economic_decision.posture);
-            const auto action_index = static_cast<std::size_t>(
-                action_decision.recommended_action);
-            const auto economic_reason_index = static_cast<std::size_t>(
-                economic_decision.reason);
-            const auto action_reason_index = static_cast<std::size_t>(
-                action_decision.reason);
-            static const std::array<const char*, 12> reason_names{
-                "none", "board_advantage", "board_deficit",
-                "survival_pressure", "progression_timing",
-                "upgrade_opportunity", "anchor_opportunity", "contestation",
-                "item_alignment", "transition_cost", "economy_constraint",
-                "insufficient_evidence"
-            };
-            static const std::array<const char*, 7> candidate_action_names{
-                "NONE", "BUY_UNIT", "BUY_XP", "REROLL", "SELL_UNIT",
-                "DEPLOY_OR_MOVE", "HOLD"
-            };
-            for (const auto& score : action_decision.candidate_scores) {
-                const auto kind = static_cast<std::size_t>(score.kind);
-                ActionCandidateScoreInfo item;
-                item.action = kind < candidate_action_names.size()
-                    ? candidate_action_names[kind] : "UNKNOWN";
-                item.champion_id = score.champion_id;
-                item.direct_gold_cost = score.direct_gold_cost;
-                item.lost_interest_cost = score.lost_interest_cost;
-                item.opportunity_cost = score.opportunity_cost;
-                item.board_component = score.board_component;
-                item.survival_component = score.survival_component;
-                item.streak_component = score.streak_component;
-                item.composition_component = score.composition_component;
-                item.upgrade_component = score.upgrade_component;
-                item.posture_component = score.posture_component;
-                item.direct_cost_component = score.direct_cost_component;
-                item.lost_interest_component = score.lost_interest_component;
-                item.opportunity_cost_component = score.opportunity_cost_component;
-                item.total_score = score.total_score;
-                item.available = score.available;
-                item.selected = score.selected;
-            }
-            static const std::array<const char*, 6> composition_decision_names{
-                "KEEP", "ADAPT", "PIVOT", "ABANDON", "INITIAL_SELECTION",
-                "INSUFFICIENT_EVIDENCE"
-            };
-            static const std::array<const char*, 12> strategic_reason_names{
-                "none", "board_advantage", "board_deficit",
-                "survival_pressure", "progression_timing",
-                "upgrade_opportunity", "anchor_opportunity", "contestation",
-                "item_alignment", "transition_cost", "economy_constraint",
-                "insufficient_evidence"
-            };
-            const auto decision_index = static_cast<std::size_t>(
-                shadow_decision.composition_decision);
-            const auto reason_index = static_cast<std::size_t>(
-                shadow_decision.reason);
-            for (const auto& candidate : shadow_decision.candidate_diagnostics) {
-            }
-            // Diagnostic-only compatibility mirror for existing telemetry.
-            // The planner never reads these fields back; its authority is the
-            // per-player strategic_planner_commitments array above.
         }
         }, []() noexcept {});
-        (void)shadow_evaluation_completed;
+        (void)native_evaluation_completed;
         // END READ-ONLY STRATEGIC EVALUATION BOUNDARY.
 
 
@@ -4970,8 +4902,21 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                             return !sold_uuid.empty() && purchase.uuid == sold_uuid;
                         });
                     if (recent != this->recent_purchases.rend()) {
-                        sale_has_legitimate_context =
-                            sale_has_legitimate_context || recent->was_deployed;
+                        const std::string current_composition_identity = active_composition
+                            ? active_composition->candidate.composition_id : std::string{};
+                        const std::string current_main_carry_identity = active_composition
+                            ? std::to_string(active_composition->candidate.main_carry_id) : std::string{};
+                        const bool still_core_or_planned = active_composition && std::any_of(
+                            active_composition->candidate.units.begin(),
+                            active_composition->candidate.units.end(),
+                            [&](const auto& target) { return target.champion_id == unit.champion_internal_id; });
+                        const bool composition_changed =
+                            (recent->composition_identity != current_composition_identity ||
+                             recent->main_carry_identity != current_main_carry_identity) &&
+                            (!recent->composition_identity.empty() || !recent->main_carry_identity.empty()) &&
+                            !still_core_or_planned;
+                        sale_has_legitimate_context = sale_has_legitimate_context ||
+                            composition_changed || recent->was_deployed;
 
                         // An experiment is justified when a later, better-fit
                         // purchase is still owned. This preserves flexibility:
