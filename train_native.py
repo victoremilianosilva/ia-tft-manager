@@ -65,6 +65,10 @@ def main(argv: list[str] | None = None) -> int:
     # optimizer state or enables historical checkpoint migration switches.
     for key in _CONFIG_ENV_KEYS:
         os.environ.pop(key, None)
+    os.environ.setdefault(
+        "TFT_OPGG_META_CATALOG",
+        str(Path(__file__).resolve().parent / "data" / "opgg_tft_meta.json"),
+    )
     os.environ["TFT_OPGG_DISABLE_REFRESH"] = "1"
     os.environ["TFT_TOTAL_UPDATES"] = str(args.updates)
     os.environ["TFT_NUM_LOBBIES"] = str(args.lobbies)
