@@ -30,6 +30,15 @@ def test_native_direction_and_composition_runtime_uses_owned_cycle_inputs():
     assert "void refresh_native_strategic_state(std::size_t i)" in source
 
 
+def test_retired_composition_planner_is_physically_removed():
+    assert not (ROOT / "cpp/include/strategy/CompositionPlanner.hpp").exists()
+    assert not (ROOT / "cpp/tests/test_composition_planner.cpp").exists()
+    assert not (ROOT / "cpp/tests/test_composition_planner_opgg.cpp").exists()
+    cmake = (ROOT / "cpp/CMakeLists.txt").read_text(encoding="utf-8")
+    assert "test_composition_planner" not in cmake
+    assert "composition_planner_opgg" not in cmake
+
+
 def test_native_planning_does_not_read_legacy_strategy_contracts():
     source = ENGINE_SOURCE.read_text(encoding="utf-8")
     header = (ROOT / "cpp/include/lobby/TftEngine.hpp").read_text(encoding="utf-8")
