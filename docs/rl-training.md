@@ -1,6 +1,6 @@
 # Treinamento PPO
 
-> **Guia do trainer/runtime atual, não especificação normativa da nova linhagem.** Os arquivos, shapes, buffer e checkpoint descritos abaixo são o comportamento do pipeline implementado no snapshot auditado. A nova linhagem deve obedecer ao Observation Schema, Action/Mask, Reward e PPO Checkpoint Contracts v1. Compatibilidade de shape, carregamento pelo trainer atual ou presença de um checkpoint não demonstram compatibilidade semântica.
+> **Runtime de treinamento PPO da arquitetura nativa.** O caminho operacional é `train_native.py` / `scripts/run_training_battery.py`. O PPO aprende a partir da projeção semântica produzida pelos snapshots nativos; a Engine e as action masks permanecem autoridade de legalidade. Checkpoints históricos não são aceitos como resume nesta entrada de treinamento.
 
 ## Arquivos centrais
 
@@ -10,9 +10,9 @@
 - `ppo.py`: cálculo da loss e atualização PPO.
 - `vector_lobby_env.py`: agrupa lobbies e empilha resultados para coleta.
 - `tft_logs/`: eventos TensorBoard por execução.
-- `tft_checkpoint.pt`: checkpoint de treino principal esperado pelo trainer.
+- `checkpoints/native_ppo/` ou o diretório informado em `--output-dir`: artefatos isolados da linhagem nativa.
 
-## Escala de coleta
+## Início de treino e bateria multi-seed\n\nTreino curto (smoke):\n\n```powershell\npython train_native.py --output-dir training_runs/smoke-seed-42 --seed 42 --updates 2 --lobbies 1 --rollout-steps 8\n```\n\nBateria de treino: `python scripts/run_training_battery.py --output-root training_runs/native-battery --seeds 11,12,13 --updates 160 --lobbies 4 --rollout-steps 128`. Cada seed usa um diretório, checkpoint e TensorBoard próprios. O manifesto registra revisão do código, hash do binário nativo, runtime, configuração, seed, arquitetura e contratos. O diretório precisa estar vazio; nenhuma execução sobrescreve artefatos anteriores.\n\nA bateria é treino, não benchmark final: placement/top-4/top-1 e promoção do modelo exigem avaliação independente e split de episódios sem vazamento.\n\n## Escala de coleta
 
 `Trainer.num_envs` representa o número de lobbies, não o número de jogadores. Cada lobby contém oito agentes e todos compartilham a mesma policy. As observações têm formato de lote `(lobbies, 8, obs_dim)` antes do flatten. As máscaras seguem o mesmo ordenamento de agentes.
 
