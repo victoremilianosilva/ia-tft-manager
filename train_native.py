@@ -19,15 +19,6 @@ _CONFIG_ENV_KEYS = (
     "TFT_RUN_MANIFEST_PATH",
 )
 
-_LEGACY_CHECKPOINT_OPT_INS = (
-    "TFT_ALLOW_UNVERSIONED_ACTION_MASK_CHECKPOINT",
-    "TFT_ALLOW_UNVERSIONED_REWARD_CHECKPOINT",
-    "TFT_ALLOW_SEMANTIC_STATE_WARM_START",
-    "TFT_ALLOW_UNVERSIONED_CHECKPOINT_LINEAGE",
-    "TFT_ALLOW_TRAINING_CONFIG_WARM_START",
-    "TFT_WARM_START_OUTPUT_CHECKPOINT",
-)
-
 
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
@@ -73,8 +64,6 @@ def main(argv: list[str] | None = None) -> int:
     # This entrypoint always starts a new native lineage. It never imports old
     # optimizer state or enables historical checkpoint migration switches.
     for key in _CONFIG_ENV_KEYS:
-        os.environ.pop(key, None)
-    for key in _LEGACY_CHECKPOINT_OPT_INS:
         os.environ.pop(key, None)
     os.environ["TFT_OPGG_DISABLE_REFRESH"] = "1"
     os.environ["TFT_TOTAL_UPDATES"] = str(args.updates)
