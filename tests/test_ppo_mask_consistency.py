@@ -128,6 +128,7 @@ def test_sampled_actions_respect_masks():
         obs_dim=obs.shape[-1],
         action_dims=Trainer.ACTION_DIMS,
         hidden_size=32,
+        require_semantic_state=False,
     )
 
     policy.eval()
@@ -237,6 +238,7 @@ def test_reroll_and_buy_xp_logprobs_match():
         obs_dim=162,
         action_dims=Trainer.ACTION_DIMS,
         hidden_size=32,
+        require_semantic_state=False,
     )
     policy.eval()
 
@@ -283,6 +285,7 @@ def test_nontrivial_masked_logprobs_match_collection_and_evaluation():
         obs_dim=obs.shape[-1],
         action_dims=Trainer.ACTION_DIMS,
         hidden_size=32,
+        require_semantic_state=False,
     )
     policy.eval()
 
@@ -382,6 +385,7 @@ def test_ppo_compute_loss_with_conditional_masks():
         obs_dim=obs.shape[-1],
         action_dims=Trainer.ACTION_DIMS,
         hidden_size=32,
+        require_semantic_state=False,
     )
 
     optimizer = torch.optim.Adam(
@@ -460,6 +464,7 @@ def test_sampled_actions_are_valid_and_numerically_stable():
         obs_dim=obs.shape[-1],
         action_dims=Trainer.ACTION_DIMS,
         hidden_size=32,
+        require_semantic_state=False,
     )
     policy.eval()
 
@@ -524,6 +529,7 @@ def test_full_ppo_update_with_conditional_masks():
         obs_dim=obs.shape[-1],
         action_dims=Trainer.ACTION_DIMS,
         hidden_size=32,
+        require_semantic_state=False,
     )
 
     optimizer = torch.optim.Adam(
@@ -627,6 +633,7 @@ def test_evaluate_actions_rejects_masked_action():
         obs_dim=obs.shape[-1],
         action_dims=Trainer.ACTION_DIMS,
         hidden_size=32,
+        require_semantic_state=False,
     )
 
     with torch.no_grad():
@@ -700,7 +707,7 @@ def test_item_masks_survive_rollout_and_ppo_minibatch_evaluation():
     masks["item_component_pair_masks"][1, 9, 3] = True
     masks["item_target_mask"][1, 35] = True
 
-    policy = TFTPolicy(obs_dim=162, action_dims=Trainer.ACTION_DIMS, hidden_size=32)
+    policy = TFTPolicy(obs_dim=162, action_dims=Trainer.ACTION_DIMS, hidden_size=32, require_semantic_state=False)
     policy.eval()
     actions, logprobs, _, values = policy.get_action_and_value(
         obs, masks=masks, deterministic=True
@@ -753,6 +760,7 @@ def test_evaluation_rejects_legacy_bench_mask_fallbacks():
         obs_dim=obs.shape[-1],
         action_dims=Trainer.ACTION_DIMS,
         hidden_size=32,
+        require_semantic_state=False,
     )
     with torch.no_grad():
         actions, _, _, _ = policy.get_action_and_value(
@@ -772,7 +780,7 @@ def test_evaluation_rejects_legacy_bench_mask_fallbacks():
 
 def test_policy_rejects_missing_native_mask_snapshot_for_collection_and_replay():
     obs, masks, _ = create_test_batch()
-    policy = TFTPolicy(obs_dim=obs.shape[-1], action_dims=Trainer.ACTION_DIMS, hidden_size=32)
+    policy = TFTPolicy(obs_dim=obs.shape[-1], action_dims=Trainer.ACTION_DIMS, hidden_size=32, require_semantic_state=False)
 
     with torch.no_grad():
         try:
@@ -793,7 +801,7 @@ def test_policy_rejects_missing_native_mask_snapshot_for_collection_and_replay()
 
 def test_policy_rejects_incomplete_wrong_shape_and_non_boolean_mask_bundles():
     obs, masks, _ = create_test_batch()
-    policy = TFTPolicy(obs_dim=obs.shape[-1], action_dims=Trainer.ACTION_DIMS, hidden_size=32)
+    policy = TFTPolicy(obs_dim=obs.shape[-1], action_dims=Trainer.ACTION_DIMS, hidden_size=32, require_semantic_state=False)
 
     incomplete = dict(masks)
     del incomplete["item_target_mask"]
@@ -830,6 +838,7 @@ def test_critic_receives_exact_mask_side_input_and_legacy_checkpoint_migrates_ne
         obs_dim=obs.shape[-1],
         action_dims=Trainer.ACTION_DIMS,
         hidden_size=32,
+        require_semantic_state=False,
     ).eval()
 
     # Make the independent mask path observable without changing actor logits.
@@ -860,6 +869,7 @@ def test_critic_receives_exact_mask_side_input_and_legacy_checkpoint_migrates_ne
         obs_dim=obs.shape[-1],
         action_dims=Trainer.ACTION_DIMS,
         hidden_size=32,
+        require_semantic_state=False,
     ).eval()
     migrated = migrated_policy.load_compatible_state_dict(legacy_state)
     assert migrated is True
@@ -922,7 +932,7 @@ def test_masked_action_parameter_is_rejected_during_ppo_evaluation():
     }
     masks["type_mask"][0, 0] = True
     masks["shop_mask"][0, 1] = True
-    policy = TFTPolicy(obs_dim=162, action_dims=Trainer.ACTION_DIMS, hidden_size=32)
+    policy = TFTPolicy(obs_dim=162, action_dims=Trainer.ACTION_DIMS, hidden_size=32, require_semantic_state=False)
     invalid_action = torch.tensor([[0, 2, 0, 0, 0, 0]], dtype=torch.long)
     with pytest.raises(ValueError, match="bloqueada pela máscara"):
         policy.evaluate_actions(obs, invalid_action, masks)
