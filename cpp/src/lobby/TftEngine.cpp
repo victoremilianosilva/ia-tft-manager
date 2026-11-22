@@ -207,7 +207,7 @@ double unit_composition_score(
     const composition_intelligence::UnitPrioritySnapshot& priorities,
     std::int32_t champion_id, std::int32_t star
 ) {
-    // Compatibility reward adapter over the canonical UnitPriorityPlanner output.
+    // Native reward adapter over the canonical UnitPriorityPlanner output.
     if (priorities.stale || priorities.units.empty()) return 0.0;
     const auto found = std::find_if(priorities.units.begin(), priorities.units.end(),
         [&](const auto& unit) { return unit.champion_id == champion_id; });
@@ -219,7 +219,7 @@ double unit_composition_score(
     return std::clamp(score, -1.2, 18.0);
 }
 
-// Legacy reward shaping now consumes the same unit-priority owner as Shadow.
+// Reward shaping consumes the same native unit-priority owner as strategic evaluation.
 // Board combat quality remains a small observed champion-stat contribution.
 double unit_board_impact_score(
     const composition_intelligence::UnitPrioritySnapshot& priorities,
@@ -779,7 +779,7 @@ struct TFTEngine::Impl {
     // ========================================================
 
     // Shared semantic item profile. It is built from observed champion/item
-    // planned carry/core traits retained for historical PPO compatibility.
+    // preferred carry/core traits are derived from the canonical active composition.
     std::vector<items::UnitProfile> semantic_item_unit_profiles(std::size_t player_index) const {
         std::vector<items::UnitProfile> profiles;
         profiles.reserve(kBoardSlots + kBenchSlots);
@@ -2133,7 +2133,7 @@ struct TFTEngine::Impl {
     ) {
         const auto& economy = player_envs[i].economy;
         // Native strategic evidence is generated directly from live engine facts
-        // before any legacy direction, focus, lock or economic strategy is built.
+        // before native direction, composition and economic context are evaluated.
         // The same candidate snapshot is reused by the strategic runtime and CI.
         composition_intelligence_native_candidates[i].clear();
         composition_intelligence_native_diagnostics[i].clear();
@@ -2300,21 +2300,21 @@ struct TFTEngine::Impl {
         const auto current_round = static_cast<std::int32_t>(round + 1);
 
         // Native owners receive a dedicated refresh from live engine facts.
-        // The compatibility strategy projection below cannot mutate this snapshot.
+        // Native strategic state is refreshed from canonical owners and live engine facts.
         auto native_composition = refresh_native_composition_candidates(i, current_round);
         auto& strategic_native_generation = native_composition.generation;
         auto& strategic_native_owned = native_composition.owned;
         auto& physical_star_counts_by_unit = native_composition.physical_star_counts_by_unit;
 
         // Refresh native strategic owners before the remaining economic
-        // compatibility policy. This path consumes live native facts and its own state.
+        // native runtime. This path consumes live native facts and its own state.
         refresh_native_strategic_runtime(
             i, current_round, economy, player_envs[i].info, power,
             strategic_native_generation, strategic_native_owned,
             composition_intelligence_native_candidates[i],
             player_envs[i].shop, pool, trait_milestones);
 
-        // Raw shop snapshot shared by the independent shadow composition pipeline.
+        // Raw shop snapshot shared by the native composition evaluation pipeline.
         const auto& strategic_shop = player_envs[i].shop;
 
         // BEGIN ISOLATED NATIVE PLANNER BOUNDARY.
@@ -2474,7 +2474,7 @@ struct TFTEngine::Impl {
                 if (unit) append_owned_candidate(*unit, false);
 
             // Reuse the independently generated lineups above; do not regenerate
-            // from or adapt any legacy CompositionPlanner output.
+            // from or adapt a competing composition source.
             auto& generation = strategic_context.candidate_generation;
             generation.anchors_considered =
                 strategic_native_generation.directions_considered;
@@ -2572,7 +2572,7 @@ struct TFTEngine::Impl {
             }
             static const strategy::StrategicPlanner strategic_planner{};
             auto diagnostic_commitment = strategic_planner_commitments[i];
-            const auto shadow_decision = strategic_planner.evaluate(
+            const auto strategic_decision = strategic_planner.evaluate(
                 evidence_context, diagnostic_commitment);
 
             // Economic posture and marginal action are independent shadow
@@ -2888,7 +2888,7 @@ struct TFTEngine::Impl {
                 const auto lineup = ci::LineupPlanner{}.plan(active, priorities, lineup_context);
                 // Keep the planner products attached to this player's runtime so
                 // engine consumers read the exact same composition version and
-                // evidence snapshot instead of reconstructing legacy planned_units.
+                // evidence snapshot instead of reconstructing duplicated planned-unit arrays.
                 runtime.planner_evidence = evidence;
                 runtime.unit_priorities = priorities;
                 runtime.lineup = lineup;
@@ -3191,7 +3191,7 @@ struct TFTEngine::Impl {
                 // without feeding recommendations back into either planner.
                 ci::ContextBridgeInput bridge_input;
                 bridge_input.strategic = &strategic_context;
-                bridge_input.strategic_decision = &shadow_decision;
+                bridge_input.strategic_decision = &strategic_decision;
                 bridge_input.economic_decision = &economic_decision;
                 bridge_input.active_composition = &active;
                 bridge_input.expected_player_id = static_cast<std::int32_t>(i);
@@ -5055,7 +5055,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         for (const auto& unit : this->board) if (unit) ++new_board_count;
         for (const auto& unit : this->bench) if (unit) ++new_bench_count;
 
-        // Reward Contract v1 deliberately does not turn Shadow scores,
+        // Reward Contract v1 deliberately does not turn read-only recommendation scores,
         // legacy composition fit, heuristic board scores, or action costs into
         // PPO targets. Until an outcome has a versioned causal definition and
         // calibration evidence, action-level shaping is neutral. Combat and
