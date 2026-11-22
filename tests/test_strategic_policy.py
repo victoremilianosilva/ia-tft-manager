@@ -95,7 +95,7 @@ def test_sale_head_can_prefer_the_least_compatible_unit():
 
 def test_sale_head_can_preserve_core_and_upgrade_copies():
     hidden_size = 16
-    policy = TFTPolicy(obs_dim=400, action_dims=ACTION_DIMS, hidden_size=hidden_size)
+    policy = TFTPolicy(obs_dim=400, action_dims=ACTION_DIMS, hidden_size=hidden_size, require_semantic_state=False)
     first, second = policy.sell_head[0], policy.sell_head[2]
     with torch.no_grad():
         first.weight.zero_()
