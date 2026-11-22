@@ -72,7 +72,7 @@ def test_purchase_head_can_rank_the_best_offer_by_slot_local_fit():
 
 def test_sale_head_can_prefer_the_least_compatible_unit():
     hidden_size = 16
-    policy = TFTPolicy(obs_dim=400, action_dims=ACTION_DIMS, hidden_size=hidden_size)
+    policy = TFTPolicy(obs_dim=400, action_dims=ACTION_DIMS, hidden_size=hidden_size, require_semantic_state=False)
     # A low compatibility score should produce a larger sale logit in this
     # controlled scorer; learned weights are evaluated separately by the audit script.
     _make_candidate_scorer_prefer_feature(policy.sell_head, hidden_size, feature_index=0, sign=-1.0)
