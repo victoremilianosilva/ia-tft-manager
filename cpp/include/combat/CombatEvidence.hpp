@@ -600,6 +600,7 @@ inline CalibrationEvaluationResult evaluate_calibration_predictions(
     }
 
     std::array<std::unordered_set<std::uint64_t>, 3> split_matches;
+    std::array<std::unordered_set<std::string>, 3> split_artifacts;
     std::unordered_set<std::string> seen_samples;
     std::string dataset_version;
     std::uint32_t split_counts[3]{0, 0, 0};
@@ -657,8 +658,9 @@ inline CalibrationEvaluationResult evaluate_calibration_predictions(
             out.reason = "duplicate_prediction_outcome_pair";
             return out;
         }
-        if (!split_matches[split_index].insert(sample.match_id).second) {
-            out.reason = "duplicate_match_in_evaluation_split";
+        if (!split_matches[split_index].insert(sample.match_id).second ||
+            !split_artifacts[split_index].insert(sample.replay_artifact_id).second) {
+            out.reason = "duplicate_match_or_artifact_in_evaluation_split";
             return out;
         }
         ++split_counts[split_index];
@@ -674,13 +676,17 @@ inline CalibrationEvaluationResult evaluate_calibration_predictions(
         }
     }
 
+    const auto disjoint_sets = [](const auto& first, const auto& second) {
+        return std::none_of(first.begin(), first.end(),
+            [&](const auto& value) { return second.count(value) != 0; });
+    };
     const bool disjoint =
-        std::none_of(split_matches[0].begin(), split_matches[0].end(),
-            [&](std::uint64_t id) {
-                return split_matches[1].count(id) != 0 || split_matches[2].count(id) != 0;
-            }) &&
-        std::none_of(split_matches[1].begin(), split_matches[1].end(),
-            [&](std::uint64_t id) { return split_matches[2].count(id) != 0; });
+        disjoint_sets(split_matches[0], split_matches[1]) &&
+        disjoint_sets(split_matches[0], split_matches[2]) &&
+        disjoint_sets(split_matches[1], split_matches[2]) &&
+        disjoint_sets(split_artifacts[0], split_artifacts[1]) &&
+        disjoint_sets(split_artifacts[0], split_artifacts[2]) &&
+        disjoint_sets(split_artifacts[1], split_artifacts[2]);
     if (!disjoint || split_counts[0] == 0 || split_counts[1] == 0 ||
         split_counts[2] == 0) {
         out.reason = "evaluation_splits_empty_or_episode_overlap";
