@@ -43,7 +43,6 @@ from rollout import RolloutBuffer
 from checkpoint_contract import (
     build_checkpoint_lineage_contract,
     validate_checkpoint_lineage_contract,
-    validate_checkpoint_lineage_integrity,
     build_training_resume_contract,
     validate_training_resume_contract,
 )
@@ -61,9 +60,7 @@ from semantic_observation import (
     build_semantic_state_checkpoint_contract,
     catalog_identity,
     validate_semantic_state_checkpoint_contract,
-    validate_semantic_state_warm_start_migration,
     validate_semantic_batch_alignment,
-    semantic_policy_state_keys,
 )
 
 from engine_contracts import ActionType
@@ -303,208 +300,63 @@ class Trainer:
         self.start_update = 1
         checkpoint_path = self.config.checkpoint_path
         checkpoint = None
-        migrated_checkpoint = False
-
-        legacy_action_mask_checkpoint = False
-        legacy_reward_checkpoint = False
-        legacy_checkpoint_lineage = False
-        semantic_state_warm_start = False
-        training_contract_warm_start = False
-        warm_start_source_metadata = None
         if os.path.exists(checkpoint_path):
-            print(f"📂 Carregando checkpoint: {checkpoint_path}")
+            print(f"📂 Carregando checkpoint nativo: {checkpoint_path}")
             checkpoint = torch.load(checkpoint_path, map_location=self.device)
-            saved_contract = checkpoint.get("action_mask_contract")
-            if saved_contract is None:
-                allow_legacy = os.environ.get(
-                    "TFT_ALLOW_UNVERSIONED_ACTION_MASK_CHECKPOINT", ""
-                ).strip().lower() in {"1", "true", "yes"}
-                if not allow_legacy:
-                    raise RuntimeError(
-                        "Checkpoint sem identidade independente de Action Contract e Mask Contract. "
-                        "Para carregar somente pesos legados de forma explícita, defina "
-                        "TFT_ALLOW_UNVERSIONED_ACTION_MASK_CHECKPOINT=1; optimizer/scheduler "
-                        "não serão restaurados."
-                    )
-                legacy_action_mask_checkpoint = True
-            else:
-                validate_action_mask_checkpoint_contract(saved_contract)
+            if not isinstance(checkpoint, dict):
+                raise RuntimeError("Checkpoint inválido: esperado um manifesto de execução nativo.")
 
-            saved_critic_mask_contract = checkpoint.get("critic_mask_input_contract")
-            checkpoint_has_critic_mask_encoder = any(
-                key.startswith("critic_mask_encoder.")
-                for key in checkpoint.get("policy", {})
+            required_fields = (
+                "policy",
+                "optimizer",
+                "scheduler",
+                "scheduler_type",
+                "update",
+                "action_mask_contract",
+                "critic_mask_input_contract",
+                "semantic_state_contract",
+                "reward_contract",
+                "training_resume_contract",
+                "checkpoint_contract",
+                "training_run_manifest",
             )
-            if saved_critic_mask_contract is None:
-                if checkpoint_has_critic_mask_encoder:
-                    raise RuntimeError(
-                        "Checkpoint contém pesos do Critic mask encoder sem "
-                        "critic_mask_input_contract; a semântica da entrada não pode ser inferida."
-                    )
-                # Historical checkpoint: load only through the explicit neutral
-                # weight migration in TFTPolicy; optimizer/scheduler are reset.
-            else:
-                validate_critic_mask_input_checkpoint_contract(saved_critic_mask_contract)
-                if not checkpoint_has_critic_mask_encoder:
-                    raise RuntimeError(
-                        "Checkpoint declara critic_mask_input_contract, mas não contém "
-                        "os pesos do Critic mask encoder."
-                    )
+            missing_fields = [name for name in required_fields if name not in checkpoint]
+            if missing_fields:
+                raise RuntimeError(
+                    "Checkpoint não pertence à linhagem PPO nativa; campos ausentes: "
+                    + ", ".join(missing_fields)
+                )
 
-            saved_reward_contract = checkpoint.get("reward_contract")
-            if saved_reward_contract is None:
-                allow_legacy_reward = os.environ.get(
-                    "TFT_ALLOW_UNVERSIONED_REWARD_CHECKPOINT", ""
-                ).strip().lower() in {"1", "true", "yes"}
-                if not allow_legacy_reward:
-                    raise RuntimeError(
-                        "Checkpoint sem identidade do Reward Contract. Para carregar "
-                        "somente os pesos como baseline explícito, defina "
-                        "TFT_ALLOW_UNVERSIONED_REWARD_CHECKPOINT=1; optimizer/scheduler "
-                        "não serão restaurados."
-                    )
-                legacy_reward_checkpoint = True
-            else:
-                validate_reward_checkpoint_contract(saved_reward_contract)
-
-            saved_semantic_contract = checkpoint.get("semantic_state_contract")
-            semantic_state_keys = semantic_policy_state_keys(self.policy.state_dict())
-            present_semantic_state_keys = semantic_policy_state_keys(checkpoint.get("policy", {}))
-            checkpoint_has_semantic_weights = bool(present_semantic_state_keys)
-            if (
-                present_semantic_state_keys
-                and present_semantic_state_keys != semantic_state_keys
+            validate_action_mask_checkpoint_contract(checkpoint["action_mask_contract"])
+            validate_critic_mask_input_checkpoint_contract(checkpoint["critic_mask_input_contract"])
+            validate_reward_checkpoint_contract(checkpoint["reward_contract"])
+            validate_semantic_state_checkpoint_contract(
+                checkpoint["semantic_state_contract"], self.champion_id_map
+            )
+            validate_checkpoint_lineage_contract(
+                checkpoint["checkpoint_contract"],
+                self.policy.state_dict(),
+                checkpoint["action_mask_contract"],
+                checkpoint["critic_mask_input_contract"],
+                checkpoint["semantic_state_contract"],
+                checkpoint["reward_contract"],
+            )
+            if not validate_training_resume_contract(
+                checkpoint["training_resume_contract"], self.config.to_dict()
             ):
                 raise RuntimeError(
-                    "Checkpoint contém um encoder semântico parcial; "
-                    "todos os pesos do contrato devem estar presentes."
+                    "Checkpoint pertence a outra configuração de treinamento. "
+                    "Inicie uma nova execução em outro diretório."
                 )
-            if saved_semantic_contract is None:
-                if checkpoint_has_semantic_weights:
-                    raise RuntimeError(
-                        "Checkpoint contém pesos sem semantic_state_contract; "
-                        "a origem/layout do estado semântico não pode ser inferida."
-                    )
-                allow_semantic_warm_start = os.environ.get(
-                    "TFT_ALLOW_SEMANTIC_STATE_WARM_START", ""
-                ).strip().lower() in {"1", "true", "yes"}
-                if not allow_semantic_warm_start:
-                    raise RuntimeError(
-                        "Checkpoint histórico sem semantic_state v6. Para importar "
-                        "somente pesos não semânticos em uma nova linhagem, defina "
-                        "TFT_ALLOW_SEMANTIC_STATE_WARM_START=1; o encoder semântico "
-                        "será inicializado e optimizer/scheduler não serão restaurados."
-                    )
-                semantic_state_warm_start = True
-            else:
-                if not checkpoint_has_semantic_weights:
-                    raise RuntimeError(
-                        "Checkpoint declara semantic_state_contract, mas não contém "
-                        "os pesos do encoder semântico."
-                    )
-                try:
-                    validate_semantic_state_checkpoint_contract(
-                        saved_semantic_contract, self.champion_id_map
-                    )
-                except (TypeError, ValueError) as exc:
-                    allow_semantic_warm_start = os.environ.get(
-                        "TFT_ALLOW_SEMANTIC_STATE_WARM_START", ""
-                    ).strip().lower() in {"1", "true", "yes"}
-                    if not allow_semantic_warm_start:
-                        raise RuntimeError(
-                            "Checkpoint usa uma projeção semântica incompatível. "
-                            "Para importar apenas pesos não semânticos em uma nova linhagem, "
-                            "defina TFT_ALLOW_SEMANTIC_STATE_WARM_START=1; o encoder semântico "
-                            "será reinicializado e optimizer/scheduler não serão restaurados."
-                        ) from exc
-                    validate_semantic_state_warm_start_migration(
-                        saved_semantic_contract, self.champion_id_map
-                    )
-                    semantic_state_warm_start = True
+            if checkpoint["scheduler_type"] != "cosine_clamped":
+                raise RuntimeError("Checkpoint usa um scheduler incompatível com a linhagem nativa.")
+            if isinstance(checkpoint["update"], bool) or not isinstance(checkpoint["update"], int) or checkpoint["update"] < 0:
+                raise RuntimeError("Checkpoint contém índice de update inválido.")
 
-            saved_lineage_contract = checkpoint.get("checkpoint_contract")
-            if saved_lineage_contract is None:
-                allow_unversioned_lineage = os.environ.get(
-                    "TFT_ALLOW_UNVERSIONED_CHECKPOINT_LINEAGE", ""
-                ).strip().lower() in {"1", "true", "yes"}
-                if not allow_unversioned_lineage:
-                    raise RuntimeError(
-                        "Checkpoint sem identidade agregada de linhagem. Para carregar "
-                        "somente os pesos como baseline explícito, defina "
-                        "TFT_ALLOW_UNVERSIONED_CHECKPOINT_LINEAGE=1; optimizer/scheduler "
-                        "não serão restaurados."
-                    )
-                legacy_checkpoint_lineage = True
-            else:
-                if any(value is None for value in (
-                    saved_contract, saved_critic_mask_contract, saved_reward_contract,
-                )) or (saved_semantic_contract is None and not semantic_state_warm_start):
-                    raise RuntimeError(
-                        "Checkpoint declara linhagem agregada, mas um contrato componente está ausente."
-                    )
-                if semantic_state_warm_start:
-                    validate_checkpoint_lineage_integrity(saved_lineage_contract)
-                    historical_components = (
-                        saved_lineage_contract.get("contract", {}).get("components", {})
-                    )
-                    if not isinstance(historical_components, dict) or any(
-                        historical_components.get(key) != expected
-                        for key, expected in (
-                            ("action_mask_contract", saved_contract),
-                            ("critic_mask_input_contract", saved_critic_mask_contract),
-                            ("semantic_state_contract", saved_semantic_contract),
-                            ("reward_contract", saved_reward_contract),
-                        )
-                    ):
-                        raise RuntimeError(
-                            "Checkpoint top-level contracts divergem dos componentes da linhagem histórica."
-                        )
-                else:
-                    validate_checkpoint_lineage_contract(
-                        saved_lineage_contract,
-                        self.policy.state_dict(),
-                        saved_contract,
-                        saved_critic_mask_contract,
-                        saved_semantic_contract,
-                        saved_reward_contract,
-                    )
-
-            saved_training_contract = checkpoint.get("training_resume_contract")
-            training_contract_matches = (
-                saved_training_contract is not None
-                and validate_training_resume_contract(
-                    saved_training_contract, self.config.to_dict()
-                )
-            )
-            if not training_contract_matches:
-                allow_training_warm_start = os.environ.get(
-                    "TFT_ALLOW_TRAINING_CONFIG_WARM_START", ""
-                ).strip().lower() in {"1", "true", "yes"}
-                if not allow_training_warm_start:
-                    raise RuntimeError(
-                        "Checkpoint sem contrato de retraining compatível. "
-                        "Para importar somente os pesos em uma nova linhagem, "
-                        "defina TFT_ALLOW_TRAINING_CONFIG_WARM_START=1; "
-                        "optimizer/scheduler serão reiniciados."
-                    )
-                training_contract_warm_start = True
-
-            policy_weights = checkpoint["policy"]
-            if semantic_state_warm_start:
-                # The old semantic encoder/trait vocabulary was trained against a different
-                # projection contract. Keep only unrelated policy weights; the new
-                # semantic branch starts from its new initialization.
-                policy_weights = {
-                    key: value for key, value in policy_weights.items()
-                    if not key.startswith(("semantic_id_embedding.", "semantic_trait_embedding.", "semantic_encoder."))
-                }
-            migrated_checkpoint = self.policy.load_compatible_state_dict(policy_weights)
-            if semantic_state_warm_start:
-                self.policy.reset_migrated_semantic_consumer_columns()
-            print("⚠️ Checkpoint migrado; optimizer/scheduler serão reiniciados." if migrated_checkpoint
-                  else "✅ Pesos da policy carregados.")
-
-
+            self.policy.load_state_dict(checkpoint["policy"], strict=True)
+            print("✅ Pesos nativos carregados com contratos semânticos exatos.")
+        else:
+            print("⚠️ Nenhum checkpoint nativo encontrado; iniciando do zero.")
 
         self.optimizer = optim.Adam(
             self.policy.parameters(),
@@ -513,87 +365,9 @@ class Trainer:
             betas=(self.config.adam_beta1, self.config.adam_beta2),
             weight_decay=self.config.weight_decay,
         )
-
-        saved_config = checkpoint.get("training_config", {}) if checkpoint else {}
-        saved_schedule = (
-            saved_config.get("lr_schedule_updates"),
-            saved_config.get("min_learning_rate"),
-            saved_config.get("learning_rate"),
-        )
-        current_schedule = (
-            self.config.lr_schedule_updates,
-            self.config.min_learning_rate,
-            self.config.learning_rate,
-        )
-        resume_state_complete = bool(
-            checkpoint
-            and "optimizer" in checkpoint
-            and "scheduler" in checkpoint
-            and checkpoint.get("scheduler_type") == "cosine_clamped"
-            and saved_schedule == current_schedule
-        )
-        if checkpoint and training_contract_matches and not resume_state_complete:
-            allow_training_warm_start = os.environ.get(
-                "TFT_ALLOW_TRAINING_CONFIG_WARM_START", ""
-            ).strip().lower() in {"1", "true", "yes"}
-            if not allow_training_warm_start:
-                raise RuntimeError(
-                    "Checkpoint tem contrato de retraining compatível, mas falta "
-                    "estado completo de optimizer/scheduler. Use o opt-in de warm-start "
-                    "para importar somente os pesos."
-                )
-            training_contract_warm_start = True
-
-        weights_only_warm_start = bool(
-            checkpoint and (
-                legacy_checkpoint_lineage or semantic_state_warm_start or training_contract_warm_start
-                or legacy_action_mask_checkpoint or legacy_reward_checkpoint
-                or migrated_checkpoint
-            )
-        )
-        if weights_only_warm_start:
-            output_checkpoint_path = os.environ.get(
-                "TFT_WARM_START_OUTPUT_CHECKPOINT", ""
-            ).strip()
-            if (
-                not output_checkpoint_path
-                or os.path.realpath(output_checkpoint_path) == os.path.realpath(checkpoint_path)
-            ):
-                raise RuntimeError(
-                    "Warm-start exige TFT_WARM_START_OUTPUT_CHECKPOINT apontando "
-                    "para um artefato diferente do checkpoint de origem; o baseline "
-                    "histórico nunca será sobrescrito."
-                )
-            with open(checkpoint_path, "rb") as source_file:
-                source_checkpoint_sha256 = hashlib.sha256(source_file.read()).hexdigest()
-            source_lineage = checkpoint.get("checkpoint_contract")
-            warm_start_source_metadata = {
-                "source_sha256": source_checkpoint_sha256,
-                "source_update": checkpoint.get("update"),
-                "source_lineage_sha256": (
-                    source_lineage.get("sha256")
-                    if isinstance(source_lineage, dict) else None
-                ),
-                "mode": "weights_only_warm_start",
-            }
-            self.config.checkpoint_path = output_checkpoint_path
-
-        can_restore_optimizer = bool(
-            resume_state_complete
-            and not migrated_checkpoint and not legacy_action_mask_checkpoint
-            and not legacy_reward_checkpoint and not legacy_checkpoint_lineage
-            and not semantic_state_warm_start and not training_contract_warm_start
-        )
-        if can_restore_optimizer:
+        if checkpoint is not None:
             self.optimizer.load_state_dict(checkpoint["optimizer"])
-            # Restaura os momentos do Adam, mas o LR solicitado nesta execução
-            # sempre prevalece sobre o valor salvo no checkpoint.
-            for group in self.optimizer.param_groups:
-                group["lr"] = self.config.learning_rate
-                group["eps"] = self.config.adam_eps
-                group["betas"] = (self.config.adam_beta1, self.config.adam_beta2)
-                group["weight_decay"] = self.config.weight_decay
-            print("✅ Momentos do Adam restaurados; hiperparâmetros atuais aplicados.")
+            print("✅ Estado completo do Adam restaurado.")
 
         self.scheduler = optim.lr_scheduler.LambdaLR(
             self.optimizer,
@@ -604,37 +378,10 @@ class Trainer:
                 self.config.lr_schedule_updates,
             ),
         )
-        restore_scheduler = bool(
-            can_restore_optimizer and "scheduler" in checkpoint
-            and checkpoint.get("scheduler_type") == "cosine_clamped"
-            and saved_schedule == current_schedule
-        )
-        if restore_scheduler:
+        if checkpoint is not None:
             self.scheduler.load_state_dict(checkpoint["scheduler"])
-            # load_state_dict restaura o estado interno, mas não atualiza
-            # automaticamente o LR do optimizer para o último valor agendado.
-            for group, scheduled_lr in zip(self.optimizer.param_groups, self.scheduler.get_last_lr()):
-                group["lr"] = scheduled_lr
-            print(
-                f"✅ Scheduler restaurado | step={self.scheduler.last_epoch} | "
-                f"LR={self.optimizer.param_groups[0]['lr']:.3e}"
-            )
-        elif checkpoint:
-            print("ℹ️ Scheduler reiniciado: LR/schedule mudou ou checkpoint incompatível.")
-
-        if checkpoint:
-            if (
-                legacy_checkpoint_lineage or semantic_state_warm_start or training_contract_warm_start
-                or legacy_action_mask_checkpoint or legacy_reward_checkpoint
-                or migrated_checkpoint
-            ):
-                self.start_update = 1
-                print("ℹ️ Checkpoint carregado como warm-start de pesos; optimizer/scheduler reiniciados e nova linhagem começa no update 1.")
-            else:
-                self.start_update = int(checkpoint.get("update", 0)) + 1
-                print(f"▶️ Retomando do update {self.start_update}")
-        else:
-            print("⚠️ Nenhum checkpoint encontrado; iniciando do zero.")
+            self.start_update = int(checkpoint["update"]) + 1
+            print(f"▶️ Retomando execução nativa no update {self.start_update}")
 
         self.ppo = PPOTrainer(
             self.policy,
@@ -2556,7 +2303,6 @@ class Trainer:
                         "semantic_state_contract": self.semantic_state_contract,
                         "reward_contract": build_reward_checkpoint_contract(),
                         "training_resume_contract": build_training_resume_contract(self.config.to_dict()),
-                        "warm_start_source": warm_start_source_metadata,
                         "training_run_manifest": self.training_run_manifest,
                         "checkpoint_contract": build_checkpoint_lineage_contract(
                             self.policy.state_dict(),
@@ -2604,7 +2350,6 @@ class Trainer:
                 "semantic_state_contract": self.semantic_state_contract,
                 "reward_contract": build_reward_checkpoint_contract(),
                 "training_resume_contract": build_training_resume_contract(self.config.to_dict()),
-                "warm_start_source": warm_start_source_metadata,
                 "training_run_manifest": self.training_run_manifest,
                 "checkpoint_contract": build_checkpoint_lineage_contract(
                     self.policy.state_dict(),
