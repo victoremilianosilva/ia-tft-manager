@@ -1367,6 +1367,7 @@ int main(int argc, char** argv) {
                 "refresh_failed=" + std::to_string(native_pivot_state.strategic_refresh_failed) +
                 " refresh_reason=" + native_pivot_state.strategic_refresh_failure_reason +
                 " direction=" + native_pivot_state.direction_identity +
+                " direction_value=" + native_pivot_state.direction_value_for_diagnostics +
                 " active_composition=" + native_pivot_state.active_composition_id +
                 " active_version=" + std::to_string(native_pivot_state.active_composition_version) +
                 " pivot_identity=" + native_pivot_state.pivot_candidate_identity +
