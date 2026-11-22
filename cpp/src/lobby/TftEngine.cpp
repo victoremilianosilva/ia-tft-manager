@@ -1729,6 +1729,7 @@ struct TFTEngine::Impl {
         // Composition Intelligence diagnostics/Viewer pipeline. It consumes
         // the canonical per-player ActiveCompositionManager and live native
         // evidence without waiting for optional Viewer/diagnostic processing.
+        strategic_refresh_failure_reasons[i].clear();
         if (strategic_shadow_runtimes[i]) {
             try {
                 auto& native_runtime = *strategic_shadow_runtimes[i];
@@ -5839,6 +5840,33 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
         strategic.episode_id = impl_->episode_id;
         strategic.player_decision_sequence = impl_->player_decision_sequences[i];
         strategic.strategic_context_sequence = impl_->strategic_context_sequences[i];
+        strategic.strategic_refresh_failed =
+            !impl_->strategic_refresh_failure_reasons[i].empty();
+        strategic.strategic_refresh_failure_reason =
+            impl_->strategic_refresh_failure_reasons[i];
+        const auto& planner_runtime = impl_->composition_intelligence_players[i];
+        strategic.planner_outputs_valid = planner_runtime.planner_outputs_valid;
+        strategic.planner_output_sequence = planner_runtime.lineup.sequence;
+        if (planner_runtime.planner_outputs_valid) {
+            for (const auto& priority : planner_runtime.unit_priorities.units) {
+                strategic.unit_priorities.push_back({
+                    priority.champion_id,
+                    static_cast<std::int32_t>(priority.intent),
+                    static_cast<std::int32_t>(priority.relation),
+                    priority.priority,
+                    priority.target_star,
+                    priority.sale_restricted,
+                    std::isfinite(priority.confidence)
+                        ? std::clamp(priority.confidence, 0.0, 1.0) : 0.0
+                });
+            }
+            for (const auto& slot : planner_runtime.lineup.selected_board)
+                strategic.lineup_selected_unit_ids.push_back(slot.champion_id);
+            strategic.lineup_entry_unit_ids = planner_runtime.lineup.entries;
+            strategic.lineup_exit_unit_ids = planner_runtime.lineup.exits;
+            strategic.lineup_deferred_unit_ids =
+                planner_runtime.lineup.deferred_target_ids;
+        }
         strategic.player_id = static_cast<std::int32_t>(i);
         strategic.round = snapshot.round;
 
