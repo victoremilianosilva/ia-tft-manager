@@ -208,6 +208,7 @@ double unit_composition_score(
     std::int32_t champion_id, std::int32_t star
 ) {
     // Compatibility reward adapter over the canonical UnitPriorityPlanner output.
+    // It does not rebuild composition fit from StrategyInfo, traits or planned_units.
     if (priorities.stale || priorities.units.empty()) return 0.0;
     const auto found = std::find_if(priorities.units.begin(), priorities.units.end(),
         [&](const auto& unit) { return unit.champion_id == champion_id; });
@@ -336,6 +337,7 @@ struct TFTEngine::Impl {
         decision::AntiLoopEngine anti_loop;
         PlayerInfo info{};
         PlayerActionMasks action_masks{};
+        std::optional<StrategyInfo> strategy;
         AntiLoopMetrics anti_loop_metrics{};
         PlayerEconomy economy{};
 
@@ -363,6 +365,8 @@ struct TFTEngine::Impl {
             bool was_deployed{false};
             double fit_score{0.0};
             double reward{0.0};
+            std::string comp_direction;
+            std::string comp_focus;
         };
         std::uint64_t action_serial{0};
         std::vector<RecentPurchase> recent_purchases;
@@ -443,6 +447,7 @@ struct TFTEngine::Impl {
     std::array<composition_intelligence::StrategicActionExecutor, kPlayersPerLobby>
         strategic_action_executors{};
     // Independent per-player planner commitment; never mirrored back as input
+    // from StrategyInfo. Reset with the match lifecycle.
     std::array<strategy::StrategicCommitment, kPlayersPerLobby>
         strategic_planner_commitments{};
     std::array<std::uint64_t, kPlayersPerLobby>
@@ -777,6 +782,7 @@ struct TFTEngine::Impl {
     // ========================================================
 
     // Shared semantic item profile. It is built from observed champion/item
+    // facts and the canonical active composition, never from StrategyInfo or
     // planned carry/core traits retained for historical PPO compatibility.
     std::vector<items::UnitProfile> semantic_item_unit_profiles(std::size_t player_index) const {
         std::vector<items::UnitProfile> profiles;
@@ -1222,6 +1228,7 @@ struct TFTEngine::Impl {
 
             player_envs[i].action_masks = make_default_masks();
 
+            player_envs[i].strategy = StrategyInfo{};
 
             player_envs[i].anti_loop_metrics = AntiLoopMetrics{};
 
@@ -1480,6 +1487,7 @@ struct TFTEngine::Impl {
     // ========================================================
 
     double board_power(std::size_t player_index) const {
+        // Mesma estimativa de MiniTFTEnv._update_strategy():
         // sum(cost * star * 2.0) para as unidades no tabuleiro.
         double power = 0.0;
         for (const auto& unit : player_envs[player_index].board) {
@@ -1597,6 +1605,7 @@ struct TFTEngine::Impl {
         if (cached.matches(signature))
             return cached.value();
         // Board evaluation consumes the same native composition version as
+        // transition, lineup and action evidence. It must not fall back to StrategyInfo.
         const auto active_composition =
             composition_intelligence_players[player_index].active.current();
         const auto classify_unit = [&](const UnitInstance& unit, const ChampionDefinition& def) {
@@ -2289,7 +2298,9 @@ struct TFTEngine::Impl {
         };
     }
 
-    void refresh_native_strategic_state(std::size_t i) {
+    void update_strategy(std::size_t i) {
+        auto& strategy_snapshot = player_envs[i].strategy;
+        StrategyInfo info = strategy_snapshot.value_or(StrategyInfo{});
         // Strategic direction and composition are projected from native owners below.
         const auto& player = player_envs[i].info;
         const auto& economy = player_envs[i].economy;
@@ -2318,7 +2329,8 @@ struct TFTEngine::Impl {
         // BEGIN ISOLATED NATIVE PLANNER BOUNDARY.
         // This block derives version-bound priorities/lineup and records diagnostics.
         // It never publishes a composition or executes actions; exceptions must not
-        const bool native_evaluation_completed =
+        // escape update_strategy() into the PPO-facing engine path.
+        const bool shadow_evaluation_completed =
             composition_intelligence::run_shadow_isolated([&]() {
         {
             // Native strategic planners consume the canonical active composition
@@ -2572,6 +2584,44 @@ struct TFTEngine::Impl {
             auto diagnostic_commitment = strategic_planner_commitments[i];
             const auto shadow_decision = strategic_planner.evaluate(
                 evidence_context, diagnostic_commitment);
+            info.strategic_decision_path_reason =
+                shadow_decision.decision_path_reason;
+            info.strategic_current_direction_score =
+                shadow_decision.current_direction_score;
+            info.strategic_best_anchor_score = shadow_decision.best_anchor_score;
+            info.strategic_alternative_advantage =
+                shadow_decision.alternative_advantage;
+            info.strategic_minimum_adapt_advantage =
+                shadow_decision.minimum_adapt_advantage;
+            info.strategic_required_pivot_advantage =
+                shadow_decision.required_pivot_advantage;
+            info.strategic_anchor_confidence = shadow_decision.anchor_confidence;
+            info.strategic_current_direction_confidence =
+                shadow_decision.current_direction_confidence;
+            info.strategic_current_direction_viable =
+                shadow_decision.current_direction_viable;
+            info.strategic_has_anchor_candidate =
+                shadow_decision.has_anchor_candidate;
+            info.strategic_candidate_generation_reason =
+                shadow_decision.candidate_generation.no_candidate_reason;
+            info.strategic_anchors_considered =
+                shadow_decision.candidate_generation.anchors_considered;
+            info.strategic_rejected_cost_below_four =
+                shadow_decision.candidate_generation.rejected_cost_below_four;
+            info.strategic_rejected_missing_champion_definition =
+                shadow_decision.candidate_generation.rejected_missing_champion_definition;
+            info.strategic_rejected_empty_trait =
+                shadow_decision.candidate_generation.rejected_empty_trait;
+            info.strategic_rejected_duplicate_direction =
+                shadow_decision.candidate_generation.rejected_duplicate_direction;
+            info.strategic_rejected_direction_limit =
+                shadow_decision.candidate_generation.rejected_direction_limit;
+            info.strategic_rejected_empty_plan =
+                shadow_decision.candidate_generation.rejected_empty_plan;
+            info.strategic_rejected_anchor_not_in_plan =
+                shadow_decision.candidate_generation.rejected_anchor_not_in_plan;
+            info.strategic_candidates_generated =
+                shadow_decision.candidate_generation.candidates_generated;
 
             // Economic posture and marginal action are independent shadow
             // evaluations. Neither is allowed to alter the policy action path.
@@ -3235,14 +3285,187 @@ struct TFTEngine::Impl {
                     ++composition_intelligence_sequence;
             }
             }
+
+
+            static const std::array<const char*, 7> economic_posture_names{
+                "ACCUMULATE_RESOURCES", "PRESERVE_WIN_STREAK",
+                "PRESERVE_LOSS_STREAK", "INVEST_EXPERIENCE",
+                "ROLL_FOR_UPGRADES", "STABILIZE_BOARD", "EMERGENCY_INVESTMENT"
+            };
+            static const std::array<const char*, 7> action_names{
+                "NONE", "BUY_UNIT", "BUY_XP", "REROLL", "SELL_UNIT",
+                "DEPLOY_OR_MOVE", "HOLD"
+            };
+            const auto posture_index = static_cast<std::size_t>(
+                economic_decision.posture);
+            const auto action_index = static_cast<std::size_t>(
+                action_decision.recommended_action);
+            const auto economic_reason_index = static_cast<std::size_t>(
+                economic_decision.reason);
+            const auto action_reason_index = static_cast<std::size_t>(
+                action_decision.reason);
+            static const std::array<const char*, 12> reason_names{
+                "none", "board_advantage", "board_deficit",
+                "survival_pressure", "progression_timing",
+                "upgrade_opportunity", "anchor_opportunity", "contestation",
+                "item_alignment", "transition_cost", "economy_constraint",
+                "insufficient_evidence"
+            };
+            info.economic_posture = static_cast<std::int32_t>(posture_index);
+            info.economic_posture_name = posture_index < economic_posture_names.size()
+                ? economic_posture_names[posture_index] : "ACCUMULATE_RESOURCES";
+            info.economic_posture_reason =
+                economic_reason_index < reason_names.size()
+                    ? reason_names[economic_reason_index] : "unknown";
+            info.economic_posture_confidence = economic_decision.confidence;
+            info.economic_survival_pressure = economic_decision.survival_pressure;
+            info.economic_board_pressure = economic_decision.board_pressure;
+            info.economic_resource_pressure = economic_decision.economy_pressure;
+            info.strategic_action_recommendation =
+                static_cast<std::int32_t>(action_index);
+            info.strategic_action_recommendation_name =
+                action_index < action_names.size() ? action_names[action_index] : "HOLD";
+            info.strategic_action_reason =
+                action_reason_index < reason_names.size()
+                    ? reason_names[action_reason_index] : "unknown";
+            info.strategic_action_expected_board_delta =
+                action_decision.expected_board_delta;
+            info.strategic_action_expected_hp_preservation =
+                action_decision.expected_hp_preservation;
+            info.strategic_action_expected_economy_cost =
+                action_decision.expected_economy_cost;
+            info.strategic_action_expected_direct_gold_cost =
+                action_decision.expected_direct_gold_cost;
+            info.strategic_action_expected_lost_interest_cost =
+                action_decision.expected_lost_interest_cost;
+            info.strategic_action_expected_opportunity_cost =
+                action_decision.expected_opportunity_cost;
+            info.strategic_action_expected_streak_value =
+                action_decision.expected_streak_value;
+            info.strategic_action_recommended_champion_id =
+                action_decision.recommended_champion_id;
+            info.strategic_action_candidate_scores.clear();
+            static const std::array<const char*, 7> candidate_action_names{
+                "NONE", "BUY_UNIT", "BUY_XP", "REROLL", "SELL_UNIT",
+                "DEPLOY_OR_MOVE", "HOLD"
+            };
+            for (const auto& score : action_decision.candidate_scores) {
+                const auto kind = static_cast<std::size_t>(score.kind);
+                ActionCandidateScoreInfo item;
+                item.action = kind < candidate_action_names.size()
+                    ? candidate_action_names[kind] : "UNKNOWN";
+                item.champion_id = score.champion_id;
+                item.direct_gold_cost = score.direct_gold_cost;
+                item.lost_interest_cost = score.lost_interest_cost;
+                item.opportunity_cost = score.opportunity_cost;
+                item.board_component = score.board_component;
+                item.survival_component = score.survival_component;
+                item.streak_component = score.streak_component;
+                item.composition_component = score.composition_component;
+                item.upgrade_component = score.upgrade_component;
+                item.posture_component = score.posture_component;
+                item.direct_cost_component = score.direct_cost_component;
+                item.lost_interest_component = score.lost_interest_component;
+                item.opportunity_cost_component = score.opportunity_cost_component;
+                item.total_score = score.total_score;
+                item.available = score.available;
+                item.selected = score.selected;
+                info.strategic_action_candidate_scores.push_back(std::move(item));
+            }
+            info.strategic_action_confidence = action_decision.confidence;
+            info.economic_shadow_only =
+                economic_decision.shadow_only && action_decision.shadow_only;
+            static const std::array<const char*, 6> composition_decision_names{
+                "KEEP", "ADAPT", "PIVOT", "ABANDON", "INITIAL_SELECTION",
+                "INSUFFICIENT_EVIDENCE"
+            };
+            static const std::array<const char*, 12> strategic_reason_names{
+                "none", "board_advantage", "board_deficit",
+                "survival_pressure", "progression_timing",
+                "upgrade_opportunity", "anchor_opportunity", "contestation",
+                "item_alignment", "transition_cost", "economy_constraint",
+                "insufficient_evidence"
+            };
+            const auto decision_index = static_cast<std::size_t>(
+                shadow_decision.composition_decision);
+            const auto reason_index = static_cast<std::size_t>(
+                shadow_decision.reason);
+            info.strategic_composition_decision =
+                static_cast<std::int32_t>(decision_index);
+            info.strategic_composition_decision_name =
+                decision_index < composition_decision_names.size()
+                    ? composition_decision_names[decision_index] : "KEEP";
+            info.strategic_target_direction =
+                shadow_decision.target_composition_direction;
+            info.strategic_reason =
+                reason_index < strategic_reason_names.size()
+                    ? strategic_reason_names[reason_index] : "unknown";
+            info.strategic_anchor_champion_id =
+                shadow_decision.anchor_champion_id;
+            info.strategic_confidence = shadow_decision.confidence;
+            info.strategic_transition_cost =
+                shadow_decision.estimated_transition_cost;
+            info.strategic_preserve_unit_ids =
+                shadow_decision.preserve_unit_ids;
+            info.strategic_replaceable_unit_ids =
+                shadow_decision.replaceable_unit_ids;
+            info.strategic_candidate_diagnostics.clear();
+            for (const auto& candidate : shadow_decision.candidate_diagnostics) {
+                info.strategic_candidate_diagnostics.push_back({
+                    candidate.champion_id, candidate.target_composition_direction,
+                    candidate.score, candidate.accepted, candidate.evaluation_reason,
+                    candidate.composition_identity, candidate.candidate_unit_ids,
+                    candidate.main_carry_id, candidate.candidate_traits,
+                    candidate.evidence
+                });
+            }
+            // Diagnostic-only compatibility mirror for existing telemetry.
+            // The planner never reads these fields back; its authority is the
+            // per-player strategic_planner_commitments array above.
+            info.strategic_candidate_direction =
+                strategic_planner_commitments[i].candidate_composition_direction;
+            info.strategic_candidate_anchor_id =
+                strategic_planner_commitments[i].candidate_anchor_id;
+            info.strategic_candidate_score =
+                strategic_planner_commitments[i].candidate_score;
+            info.strategic_candidate_streak =
+                strategic_planner_commitments[i].consecutive_reviews;
+            info.strategic_candidate_last_review_round =
+                strategic_planner_commitments[i].last_review_round;
+            info.strategic_committed_direction =
+                strategic_planner_commitments[i].composition_direction;
+            info.strategic_selected_round =
+                strategic_planner_commitments[i].selected_round;
+            info.strategic_shadow_only = shadow_decision.shadow_only;
         }
+        }, [&]() noexcept {
+            // Keep the primary game/PPO transition alive when a Shadow planner,
+            // adapter or diagnostic dependency fails. These flags are diagnostics
+            // only and are not consumed by observations, masks, rewards or actions.
+            info.strategic_shadow_only = false;
+            info.economic_shadow_only = false;
+        });
+        (void)shadow_evaluation_completed;
+        // END SHADOW-ONLY EVALUATION BOUNDARY.
 
-        }, []() noexcept {});
-        (void)native_evaluation_completed;
-        // END READ-ONLY STRATEGIC EVALUATION BOUNDARY.
+        // Paridade com StrategyManager.compute_strategy_confidence().
+        double state_confidence = 0.5;
+        if (player.hp <= 20.0f) state_confidence += 0.25;
+        else if (player.hp >= 80.0f) state_confidence += 0.10;
+        if (economy.gold >= 40) state_confidence += 0.15;
+        else if (economy.gold < 10) state_confidence -= 0.10;
+        if (power >= 70.0) state_confidence += 0.15;
+        else if (power <= 20.0) state_confidence -= 0.15;
+        if (economy.win_streak >= 4) state_confidence += 0.10;
+        if (economy.loss_streak >= 4) state_confidence += 0.10;
+        if (economy.level >= 8) state_confidence += 0.10;
+        info.state_confidence = static_cast<float>(std::clamp(state_confidence, 0.0, 1.0));
 
+        info.active_traits_count = static_cast<std::int32_t>(info.active_traits.size());
 
+        strategy_snapshot = std::move(info);
     }
+
     double state_reward(std::size_t i, double action_reward) {
         const double power = board_power(i);
         const double synergy = synergy_score(i);
@@ -3312,7 +3535,290 @@ struct TFTEngine::Impl {
     }
 
     void mark_round_completion(std::size_t player_index) {
-        if (!player_env        }, []() noexcept {});
+        if (!player_envs[player_index].info.alive) {
+            return;
+        }
+
+        ++round_actions[player_index];
+        if (round_actions[player_index] >= kMaxActionsPerRound) {
+            round_finished[player_index] = true;
+        }
+    }
+
+    void reset_round_completion() {
+        for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+            if (player_envs[i].info.alive) {
+                round_actions[i] = 0;
+                player_envs[i].actions_taken_this_round = 0;
+                round_finished[i] = false;
+            } else {
+                round_finished[i] = true;
+            }
+        }
+    }
+
+    // Converte a formação atual da lobby para a entrada da engine de combate.
+    // A engine de combate permanece independente: recebe equipes e devolve o resultado.
+    void append_combat_team(
+        std::size_t player_index,
+        UnitTeam team,
+        CombatTeam& output,
+        int& next_unit_id
+    ) const {
+        output.team = team;
+        output.player_id = static_cast<std::int32_t>(player_index);
+        output.player_hp = player_envs[player_index].info.hp;
+
+        // Build team-wide trait counts once, including emblems. Counts are
+        // unique per champion instance, matching lobby breakpoint semantics.
+        std::unordered_map<std::string, int> combat_trait_counts;
+        for (const auto& candidate : player_envs[player_index].board) {
+            if (!candidate) continue;
+            const auto* candidate_def = catalog->find_by_id(candidate->champion_internal_id);
+            if (!candidate_def) continue;
+            std::unordered_set<std::string> candidate_traits(
+                candidate_def->traits.begin(), candidate_def->traits.end());
+            for (const auto& item : candidate->items) {
+                if (!item.grants_trait.empty()) candidate_traits.insert(item.grants_trait);
+            }
+            for (const auto& trait : candidate_traits) ++combat_trait_counts[trait];
+        }
+
+        for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
+            if (!player_envs[player_index].board[slot]) {
+                continue;
+            }
+
+            const auto& instance = *player_envs[player_index].board[slot];
+            const auto* definition =
+                catalog->find_by_id(instance.champion_internal_id);
+            if (!definition) {
+                continue;
+            }
+
+            const auto& stats = definition->stats;
+            const auto& profile = definition->combat_profile;
+
+            CombatUnit unit{};
+            // Same deterministic sequential IDs as TFTLobby._build_cpp_combat_input().
+            unit.id = next_unit_id++;
+            unit.source_unit_uuid = instance.uuid;
+            unit.provenance.identity = "observed:player_board_unit_uuid";
+            unit.api_name = definition->api_name;
+            unit.name = definition->name;
+            // Preserve catalog ability identity/description/level variables,
+            // but leave simulator completeness false until an authoritative
+            // generic mapping or champion script is actually available.
+            unit.ability.name = definition->ability.name;
+            unit.ability.description = definition->ability.description;
+            for (const auto& source_variable : definition->ability.variables) {
+                CombatAbilityVariable variable;
+                variable.name = source_variable.name;
+                variable.values = source_variable.values;
+                unit.ability.variables.push_back(std::move(variable));
+            }
+            unit.star = std::clamp(instance.star, 1, 3);
+            unit.provenance.star = "observed:player_board_instance";
+            unit.team = team;
+
+            const auto role_value = std::clamp(profile.role, 0, 4);
+            unit.role = static_cast<UnitRole>(role_value);
+            unit.provenance.role = "catalog:champion_combat_profile";
+
+            unit.position.x = static_cast<int>(slot % 7);
+            unit.position.y = static_cast<int>(slot / 7);
+            // Os tabuleiros ficam frente a frente durante o combate.
+            if (team == UnitTeam::PLAYER_B) {
+                // Python mirrors columns (x), not rows (y), for team B.
+                unit.position.x = 6 - unit.position.x;
+            }
+            unit.source_board_position = static_cast<int>(slot);
+            unit.provenance.position = "observed:player_board_slot";
+
+            const double max_hp =
+                profile.max_hp > 0.0 ? profile.max_hp : stats.max_hp;
+            unit.max_hp = static_cast<float>(std::max(1.0, max_hp > 0.0 ? max_hp : 100.0));
+            unit.hp = unit.max_hp;
+            unit.provenance.max_hp = profile.max_hp > 0.0
+                ? "catalog:champion_combat_profile"
+                : (stats.max_hp > 0.0 ? "catalog:champion_base_stats" : "engine_fallback");
+            unit.provenance.hp = "derived:combat_start_full_health_from_max_hp";
+
+            const double attack_damage =
+                profile.attack_damage > 0.0
+                    ? profile.attack_damage
+                    : stats.attack_damage;
+            // Match TFTLobby._build_cpp_combat_input() fallbacks.
+            unit.attack_damage = static_cast<float>(
+                std::max(1.0, attack_damage > 0.0 ? attack_damage : 30.0));
+            unit.provenance.attack_damage = profile.attack_damage > 0.0
+                ? "catalog:champion_combat_profile"
+                : (stats.attack_damage > 0.0 ? "catalog:champion_base_stats" : "engine_fallback");
+
+            const double attack_speed =
+                profile.attack_speed > 0.0
+                    ? profile.attack_speed
+                    : stats.attack_speed;
+            unit.attack_speed = static_cast<float>(
+                std::max(0.1, attack_speed > 0.0 ? attack_speed : 1.0));
+            unit.provenance.attack_speed = profile.attack_speed > 0.0
+                ? "catalog:champion_combat_profile"
+                : (stats.attack_speed > 0.0 ? "catalog:champion_base_stats" : "engine_fallback");
+
+            const double attack_range =
+                profile.attack_range > 0.0
+                    ? profile.attack_range
+                    : stats.attack_range;
+            unit.attack_range = static_cast<float>(
+                std::max(1.0, attack_range > 0.0 ? attack_range : 1.0));
+            unit.provenance.attack_range = profile.attack_range > 0.0
+                ? "catalog:champion_combat_profile"
+                : (stats.attack_range > 0.0 ? "catalog:champion_base_stats" : "engine_fallback");
+
+            unit.armor = static_cast<float>(
+                profile.armor > 0.0 ? profile.armor : stats.armor);
+            unit.provenance.armor = profile.armor > 0.0
+                ? "catalog:champion_combat_profile"
+                : (stats.armor != 0.0 ? "catalog:champion_base_stats" : "catalog_zero_or_missing");
+            unit.magic_resist = static_cast<float>(
+                profile.magic_resist > 0.0
+                    ? profile.magic_resist
+                    : stats.magic_resist);
+            unit.provenance.magic_resist = profile.magic_resist > 0.0
+                ? "catalog:champion_combat_profile"
+                : (stats.magic_resist != 0.0 ? "catalog:champion_base_stats" : "catalog_zero_or_missing");
+
+            unit.items = instance.items;
+            unit.provenance.items = "observed:player_board_instance_items";
+            unit.provenance.ability = "catalog:ability_name_description_variables_only_mapping_incomplete";
+            unit.provenance.mana = "engine_default_not_observed";
+            unit.provenance.max_mana = "engine_default_not_catalogued";
+            unit.provenance.ability_power = "engine_default_not_catalogued";
+            unit.provenance.critical_strike_chance = "engine_default_not_catalogued";
+            unit.provenance.critical_strike_damage = "engine_default_not_catalogued";
+            unit.provenance.damage_amplification = "engine_default_not_catalogued";
+            unit.provenance.damage_reduction = "engine_default_not_catalogued";
+            unit.provenance.omnivamp = "engine_default_not_catalogued";
+
+            std::unordered_set<std::string> unit_traits(
+                definition->traits.begin(), definition->traits.end());
+            for (const auto& item : instance.items) {
+                if (!item.grants_trait.empty()) unit_traits.insert(item.grants_trait);
+            }
+            unit.provenance.traits = "derived:champion_catalog_traits_and_observed_item_grants";
+            for (const auto& trait_name : unit_traits) {
+                CombatTrait trait;
+                trait.api_name = trait_name;
+                trait.name = trait_name;
+                const auto count = combat_trait_counts.find(trait_name);
+                trait.active_count = count == combat_trait_counts.end() ? 0 : count->second;
+                trait.active = trait.active_count > 0;
+                unit.traits.push_back(std::move(trait));
+            }
+
+            unit.alive = true;
+            unit.can_move = true;
+            unit.can_attack = true;
+            unit.can_cast = true;
+
+            output.units.push_back(std::move(unit));
+        }
+    }
+
+    void return_eliminated_player_units(
+        std::size_t player_index, std::vector<std::string>& events
+    ) {
+        auto& player = player_envs[player_index];
+        if (player.shop) player.shop->return_current_shop();
+        if (player.item_engine && player.item_engine->retire_all_owned_state()) {
+            const auto& retired = player.item_engine->retirement_snapshot();
+            events.emplace_back(
+                "ITEM_OWNERSHIP_RETIRED: player=" + std::to_string(player_index) +
+                ", components=" + std::to_string(retired.components.size()) +
+                ", inventory=" + std::to_string(retired.inventory.size()) +
+                ", equipped=" + std::to_string(retired.equipped.size()) +
+                ", pending_anvils=" + std::to_string(retired.pending_anvils.size()));
+        }
+
+        auto return_unit_copies = [this](const std::optional<UnitInstance>& unit) {
+            if (!unit) return;
+            for (std::int32_t copy = 0; copy < star_copies(unit->star); ++copy)
+                (void)pool->give_back(unit->champion_internal_id);
+        };
+        for (auto& unit : player_envs[player_index].board) {
+            return_unit_copies(unit);
+            unit.reset();
+        }
+        for (auto& unit : player_envs[player_index].bench) {
+            return_unit_copies(unit);
+            unit.reset();
+        }
+        register_position_state(player_index);
+    }
+
+    void eliminate_players(std::vector<std::string>& events) {
+        // Python define as colocações após todos os combates, em ordem de ID.
+        for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+            auto& player = player_envs[i].info;
+            if (!player.alive || player.hp > 0.0f) continue;
+            player.hp = 0.0f;
+            player.alive = false;
+            player.eliminated = true;
+            player.placement = alive_players;
+            ranking.push_back(static_cast<std::int32_t>(i));
+            --alive_players;
+            round_finished[i] = true;
+            return_eliminated_player_units(i, events);
+            events.emplace_back("ELIMINATED: jogador " + std::to_string(i));
+        }
+    }
+
+    void finish_if_one_player_left() {
+        if (alive_players > 1) return;
+        done = true;
+        winner_id.reset();
+        for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+            if (player_envs[i].info.alive) {
+                winner_id = static_cast<std::int32_t>(i);
+                player_envs[i].info.placement = 1;
+                if (std::find(ranking.begin(), ranking.end(),
+                              static_cast<std::int32_t>(i)) == ranking.end())
+                    ranking.insert(ranking.begin(), static_cast<std::int32_t>(i));
+                break;
+            }
+        }
+        if (!winner_id && ranking.size() < kPlayersPerLobby) {
+            for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+                if (std::find(ranking.begin(), ranking.end(),
+                              static_cast<std::int32_t>(i)) == ranking.end()) {
+                    player_envs[i].info.placement = static_cast<std::int32_t>(
+                        kPlayersPerLobby - ranking.size());
+                    ranking.push_back(static_cast<std::int32_t>(i));
+                }
+            }
+        }
+
+        // Public ranking is ordered best-to-worst, matching Python's
+        // TFTLobby._finalize_ranking(). Eliminations are appended in the
+        // order they happen (worst placement first), so insertion order is
+        // not a valid final ranking once the winner is prepended.
+        const auto placement_for = [this](std::int32_t player_id) {
+            const auto& placement =
+                player_envs[static_cast<std::size_t>(player_id)].info.placement;
+            return placement.value_or(
+                static_cast<std::int32_t>(kPlayersPerLobby + 1));
+        };
+        std::stable_sort(
+            ranking.begin(),
+            ranking.end(),
+            [&](std::int32_t lhs, std::int32_t rhs) {
+                const auto lhs_placement = placement_for(lhs);
+                const auto rhs_placement = placement_for(rhs);
+                if (lhs_placement != rhs_placement) {
+                    return lhs_placement < rhs_placement;
+                }
+                return lhs < rhs;
+            });
     }
 
     void resolve_combats(
@@ -4614,8 +5120,21 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                             return !sold_uuid.empty() && purchase.uuid == sold_uuid;
                         });
                     if (recent != this->recent_purchases.rend()) {
-                        sale_has_legitimate_context =
-                            sale_has_legitimate_context || recent->was_deployed;
+                        const std::string current_composition_identity = active_composition
+                            ? active_composition->candidate.composition_id : std::string{};
+                        const std::string current_main_carry_identity = active_composition
+                            ? std::to_string(active_composition->candidate.main_carry_id) : std::string{};
+                        const bool still_core_or_planned = active_composition && std::any_of(
+                            active_composition->candidate.units.begin(),
+                            active_composition->candidate.units.end(),
+                            [&](const auto& target) { return target.champion_id == unit.champion_internal_id; });
+                        const bool composition_changed =
+                            (recent->comp_direction != current_composition_identity ||
+                             recent->comp_focus != current_main_carry_identity) &&
+                            (!recent->comp_direction.empty() || !recent->comp_focus.empty()) &&
+                            !still_core_or_planned;
+                        sale_has_legitimate_context = sale_has_legitimate_context ||
+                            composition_changed || recent->was_deployed;
 
                         // An experiment is justified when a later, better-fit
                         // purchase is still owned. This preserves flexibility:
@@ -4788,6 +5307,21 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             success = true;
         }
 
+        // Keep the native strategy refresh for Shadow and diagnostics; it is
+        // deliberately independent from the neutral PPO action reward.
+        lobby.update_strategy(player_id);
+        // Capture post-refresh composition labels for purchase-lineage diagnostics
+        // only. These labels are not consumed by Reward Contract v1.
+        if (type == 0 && success && this->strategy) {
+            for (auto it = this->recent_purchases.rbegin();
+                 it != this->recent_purchases.rend(); ++it) {
+                if (it->action_serial == this->action_serial) {
+                    it->comp_direction = this->strategy->composition_direction;
+                    it->comp_focus = this->strategy->composition_focus;
+                    break;
+                }
+            }
+        }
         // Capture actual action economics before round income is resolved.
         // Net gold after TFTEngine::step may include income and cannot be used
         // to infer the action's true cost. This trace is audit-only and never
@@ -5195,7 +5729,7 @@ StepResult TFTEngine::step(
             impl_->player_envs[i].round_reward_total = round_rewards[i];
             impl_->player_envs[i].total_reward += round_rewards[i] - rewards_before_combat[i];
             if (impl_->player_envs[i].info.alive) {
-                impl_->refresh_native_strategic_state(i);
+                impl_->update_strategy(i);
             }
         }
 
@@ -5894,7 +6428,7 @@ bool TFTEngine::set_unit_for_testing(
     impl_->register_position_state(player_index);
     // Keep derived strategy/composition data coherent with test-only fixture
     // mutations. SELL reward reads the current core-unit set before transition.
-    impl_->refresh_native_strategic_state(player_index);
+    impl_->update_strategy(player_index);
     impl_->refresh_masks(player_index);
     return true;
 }
@@ -6205,7 +6739,105 @@ std::vector<float> TFTEngine::get_observations() const {
 // ESTRATÉGIAS
 // ============================================================
 
+std::array<std::vector<StrategyInfo>, kPlayersPerLobby>
+TFTEngine::get_strategies() const {
+    if (!impl_) {
+        throw std::runtime_error("TFTEngine nao possui estado interno.");
+    }
+    impl_->ensure_open();
 
+    std::array<std::vector<StrategyInfo>, kPlayersPerLobby> result{};
+    for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+        if (impl_->player_envs[i].strategy)
+            result[i].push_back(*impl_->player_envs[i].strategy);
+    }
+    return result;
+}
+
+std::array<std::vector<StrategyInfo>, kPlayersPerLobby>
+TFTEngine::get_viewer_strategy_snapshots() const {
+    auto result = get_strategies();
+    for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+        if (result[i].empty()) continue;
+        auto& projection = result[i].back();
+        const auto& commitment = impl_->strategic_planner_commitments[i];
+        const auto& active = impl_->composition_intelligence_players[i].active.current();
+
+        // This is a Viewer/telemetry compatibility projection only. PPO's
+        // observation and reward paths continue to use their explicitly
+        // version-gated legacy inputs until their contracts are approved.
+        projection.composition_projection_source = "tft_strategic_engine";
+        projection.composition_version = active ? active->version : 0;
+        projection.composition_direction = commitment.composition_direction;
+        projection.composition_candidate_direction =
+            commitment.candidate_composition_direction;
+        projection.composition_candidate_strength = 0.0; // no legacy strength-equivalent producer
+        projection.composition_candidate_streak = commitment.consecutive_reviews;
+        projection.composition_direction_change_round =
+            static_cast<std::int32_t>(commitment.selected_round);
+        projection.composition_direction_change_reason = "native_strategic_commitment";
+        projection.composition_locked = false; // no authoritative lock producer in the new owner
+        projection.composition_strength = 0.0; // no equivalent calibrated strength contract
+        projection.composition_focus_weights.clear();
+        projection.composition_focus.clear();
+        projection.composition_focus_id = -1;
+        projection.previous_composition_direction.clear();
+        projection.previous_composition_strength = 0.0;
+        projection.composition_direction_change_was_locked = false;
+        projection.composition_direction_change_focus_weight = 0.0;
+        projection.composition_direction_change_count = 0;
+        projection.comp_direction_update_steps = 0;
+        projection.comp_stabilize_start_round = -1;
+
+        projection.core_units.clear();
+        projection.core_unit_ids.clear();
+        projection.core_traits.clear();
+        projection.planned_units.clear();
+        projection.planned_unit_ids.clear();
+        projection.planned_traits.clear();
+        projection.planned_main_carry_id = -1;
+        projection.planned_composition_score = 0.0;
+        projection.planned_acquisition_notes.clear();
+
+        if (active) {
+            const auto& candidate = active->candidate;
+            projection.planned_main_carry_id = candidate.main_carry_id;
+            projection.planned_composition_score = candidate.source_score;
+            for (const auto& unit : candidate.units) {
+                projection.planned_unit_ids.push_back(unit.champion_id);
+                const auto* definition = impl_->catalog->find_by_id(unit.champion_id);
+                if (!definition) continue;
+                projection.planned_units.push_back(definition->api_name);
+                for (const auto& trait : definition->traits)
+                    if (std::find(projection.planned_traits.begin(),
+                                  projection.planned_traits.end(), trait) ==
+                        projection.planned_traits.end())
+                        projection.planned_traits.push_back(trait);
+                if (unit.core) {
+                    projection.core_unit_ids.push_back(unit.champion_id);
+                    projection.core_units.push_back(definition->api_name);
+                    for (const auto& trait : definition->traits)
+                        if (std::find(projection.core_traits.begin(),
+                                      projection.core_traits.end(), trait) ==
+                            projection.core_traits.end())
+                            projection.core_traits.push_back(trait);
+                }
+                if (unit.champion_id == candidate.main_carry_id) {
+                    projection.composition_focus = definition->api_name;
+                    projection.composition_focus_id = definition->internal_id;
+                }
+            }
+            projection.composition_projection_status = "canonical_active_composition";
+        } else {
+            projection.composition_projection_status =
+                commitment.composition_direction.empty()
+                    ? "native_composition_unavailable"
+                    : "native_direction_without_active_composition";
+        }
+    }
+
+    return result;
+}
 
 RewardState TFTEngine::get_reward_state(std::int32_t player_id) const {
     if (!impl_ || player_id < 0 ||
