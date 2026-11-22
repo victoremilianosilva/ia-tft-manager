@@ -1,12 +1,12 @@
 # Legacy strategic consumer and shutdown matrix
 
-**Status:** approved documentary inventory and migration plan; no runtime shutdown authorized  
+**Status:** historical migration inventory; superseded for current runtime status by the native architecture addendum below  
 **Target branch:** `new-arquiteture`  
-**Static source-audit baseline:** `3575d21cc0f7dbb5544d75526bd96939b37f5c96`  
+**Static source-audit baseline:** `3575d21cc0f7dbb5544d75526bd96939b37f5c96` (historical; not a description of the consolidated branch)  
 **Consolidated from:** Audit F issue #301 and follow-up findings in #285–#292  
 **Coordinates with:** Observation #286/#293, Reward #287, Checkpoint #288, Shadow replay #289, inventory #290, unit/item evidence #285/#291, Viewer #292, PPO evaluation #295
 
-> This document is the single navigable reference for the static legacy-consumer inventory. It does not claim that the legacy producer or consumers have been migrated, dynamically tested, or removed. It does not authorize implementation before Gate 8 and explicit user approval.
+ > Historical inventory only. The statements below describe the source baseline above and must not be read as proof that those legacy APIs remain active in `new-arquiteture`. Current status is recorded in the addendum.
 
 ## 1. Purpose and reconstruction rule
 
@@ -207,3 +207,28 @@ Static inventory completion is not dynamic acceptance. A green CI run on the pre
 Audit F is complete as a static inventory and migration plan. It does **not** mean legacy code is removed, new consumers are migrated, historical compatibility is dynamically tested, or the legacy shutdown is approved.
 
 Gate 8 remains blocked until Gates 1–7 are reviewed together and the user explicitly authorizes implementation. No code, PPO, Engine, observations, masks, rewards, training, Viewer, checkpoints or historical artifacts are changed by this document.
+
+
+## 8. Consolidated native architecture status (2026-11-22)
+
+This section supersedes historical statements above when describing the consolidated `new-arquiteture` branch.
+
+| Candidate | Current disposition | Maintenance rule |
+|---|---|---|
+| `scripts/audit_strategic_policy.py` | Migrated to native action dimensions and factual audit snapshots; no longer calls `get_strategy_snapshots()` or reads `StrategyInfo`. | Keep audit output factual; do not reintroduce legacy strategy snapshots. |
+| `scripts/analyze_strategic_policy.py` | Action labels aligned to the native nine-action contract. | Unknown future IDs remain explicitly unknown, never mapped to legacy labels. |
+| This migration matrix | Historical baseline is explicitly labeled; current status is recorded here. | Update this addendum as runtime consumers migrate. |
+| `TFT_DISABLE_LEGACY_STRATEGY_PROJECTION` | Removed from `train_native.py`; it was an unused environment assignment in the native training entrypoint. | Do not add flags for projections without runtime consumers. |
+| `policy.py` positional-observation opt-out | Retained for isolated legacy/synthetic policy fixtures; native training and checkpoint loading require semantic state. | Never use `require_semantic_state=False` in training, evaluation, inference, or checkpoint production. Remove only after all fixtures use semantic-state inputs. |
+| `TftEngine::state_reward()` | Removed because no callsite existed in the consolidated source. | Do not restore board-power, synergy, positioning, economy, streak, or unit-count reward shaping through this helper. |
+| FAST8/SLOWROLL/50-gold assertions in `test_economy_engine.cpp` | Removed because they asserted strategy-specific reward policy, not economy mechanics. | Economy tests cover mechanics; reward behavior belongs in Reward Contract tests and must not encode named strategy modes or fixed gold floors. |
+
+Reward-model helpers not covered by a complete callgraph are intentionally not deleted in this change. Their removal requires proving that no reward contract, evaluator, replay, or historical tooling consumes them. The positional policy opt-out also remains a test-only compatibility surface until its fixtures are migrated; it is not part of the production Trainer contract.
+
+### Validation criteria for this cleanup
+
+- Native strategic audit runs without legacy strategy getters and uses `[9, 5, 9, 28, 28, 28]`.
+- Action labels and effect detection match the native enum: BUY, BUY_XP, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_ITEM, CRAFT_ITEM.
+- Economy tests do not assert FAST8, SLOWROLL, or a fixed 50-gold strategy rule.
+- No active callsite references `state_reward()` after its removal.
+- Production training remains semantic-state-only; the legacy opt-out is confined to isolated fixtures.
