@@ -789,29 +789,6 @@ class CppTFTLobbyWrapper:
             raise RuntimeError("Estado de jogadores incompleto; execute reset().")
         return [bool(player.alive) for player in self._players]
 
-    def get_strategy_snapshots(self):
-        """Return complete native strategy/composition diagnostics for the viewer."""
-        snapshots = self._engine.get_viewer_strategy_snapshots()
-        return [dict(snapshot) if isinstance(snapshot, dict) else {"strategy": int(snapshot)}
-                for snapshot in snapshots]
-
-    def get_strategies(self):
-        """Return native strategy snapshots as the enum expected by Trainer logs."""
-        from engine_contracts import Strategy
-
-        snapshots = self._engine.get_strategies()
-        result = []
-        for snapshot in snapshots:
-            if isinstance(snapshot, dict):
-                strategy_id = int(snapshot.get("strategy", 0))
-            else:
-                strategy_id = int(snapshot)
-            try:
-                result.append(Strategy(strategy_id))
-            except ValueError:
-                result.append(Strategy.ECON)
-        return result
-
     def get_anti_loop_metrics(self):
         return dict(self._engine.get_anti_loop_metrics())
 
