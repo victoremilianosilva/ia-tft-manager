@@ -27,7 +27,7 @@ LEGACY_ACTION_DIMS = [7, 5, 9, 28, 28, 28]
 
 class TFTPolicy(nn.Module):
   
-    def __init__(self, obs_dim, action_dims, hidden_size=512, semantic_vocab_size=2, require_semantic_state=False):
+    def __init__(self, obs_dim, action_dims, hidden_size=512, semantic_vocab_size=2, require_semantic_state=True):
         super().__init__()
 
         # 🛡️ Valida o contrato das seis dimensões antes de criar as camadas.
