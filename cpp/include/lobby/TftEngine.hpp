@@ -315,6 +315,16 @@ struct AuditUnitCopyProgressSnapshot {
     std::int32_t highest_star{0};
 };
 
+struct AuditUnitStrategicPrioritySnapshot {
+    std::int32_t champion_internal_id{-1};
+    std::int32_t intent{0};
+    std::int32_t relation{0};
+    std::int32_t priority{0};
+    std::int32_t target_star{0};
+    bool sale_restricted{false};
+    double confidence{0.0};
+};
+
 struct AuditStrategicOwnerSnapshot {
     std::string contract_id{"tft.strategic-owner-observation"};
     std::uint32_t contract_version{2};
@@ -347,6 +357,16 @@ struct AuditStrategicOwnerSnapshot {
     // Sequence consumed by strategic evidence/candidate/action owners; a distinct scope.
     // Appended to preserve existing aggregate initialization.
     std::uint64_t strategic_context_sequence{0};
+    // Same-cycle native planner outputs projected as PPO context, never as forced actions.
+    bool planner_outputs_valid{false};
+    std::uint64_t planner_output_sequence{0};
+    std::vector<AuditUnitStrategicPrioritySnapshot> unit_priorities;
+    std::vector<std::int32_t> lineup_selected_unit_ids;
+    std::vector<std::int32_t> lineup_entry_unit_ids;
+    std::vector<std::int32_t> lineup_exit_unit_ids;
+    std::vector<std::int32_t> lineup_deferred_unit_ids;
+    bool strategic_refresh_failed{false};
+    std::string strategic_refresh_failure_reason;
 };
 
 struct AuditPlayerSnapshot {
