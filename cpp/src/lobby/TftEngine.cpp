@@ -2179,6 +2179,18 @@ struct TFTEngine::Impl {
                 };
                 const auto native_result =
                     native_runtime.refresh(native_audit_context, native_input);
+                if (native_result.diagnostics.pivot_feasibility) {
+                    const auto& evaluated = *native_result.diagnostics.pivot_feasibility;
+                    pivot_generation_diagnostic +=
+                        ";feasibility_status=" +
+                        std::to_string(static_cast<int>(evaluated.status)) +
+                        ";feasibility_reason=" + evaluated.reason +
+                        ";feasibility_score=" + std::to_string(evaluated.score);
+                    for (const auto& blocker : evaluated.blockers)
+                        pivot_generation_diagnostic += ";blocker=" + blocker;
+                    for (const auto& missing : evaluated.missing_data)
+                        pivot_generation_diagnostic += ";missing=" + missing;
+                }
                 if (native_result.anchors.pivot_candidate.is_valid()) {
                     pivot_generation_diagnostic += ";pivot_published";
                 } else if (native_input.pivot_candidate) {
