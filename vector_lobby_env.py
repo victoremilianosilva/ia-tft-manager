@@ -20,11 +20,17 @@ class LobbyVectorEnv:
         if self.num_envs == 0:
             raise ValueError("É necessário criar pelo menos uma lobby.")
 
-    def reset(self):
+    def reset(self, seed=None):
+        """Reset every lobby; a supplied seed is deterministically offset per lobby."""
         observations = []
         try:
-            for env in self.envs:
-                observations.append(env.reset())
+            for lobby_index, env in enumerate(self.envs):
+                if seed is None:
+                    observations.append(env.reset())
+                else:
+                    if isinstance(seed, bool) or not isinstance(seed, (int, np.integer)) or int(seed) < 0:
+                        raise ValueError("seed deve ser um inteiro >= 0.")
+                    observations.append(env.reset(seed=int(seed) + lobby_index))
         except Exception:
             # A partial reset cannot restore a known vector boundary.
             self._requires_full_reset = True
