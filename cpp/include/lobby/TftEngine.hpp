@@ -327,7 +327,7 @@ struct AuditUnitStrategicPrioritySnapshot {
 
 struct AuditStrategicOwnerSnapshot {
     std::string contract_id{"tft.strategic-owner-observation"};
-    std::uint32_t contract_version{2};
+    std::uint32_t contract_version{3};
     std::string source_namespace{"tft.engine.strategic-owners"};
     std::string producer{"TFTEngine::get_audit_snapshot"};
     std::uint64_t episode_id{0};
