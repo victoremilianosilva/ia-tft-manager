@@ -249,11 +249,10 @@ public:
 
             const bool condition_supported =
                 effect.condition.empty() ||
-                ((effect.condition == "has_trait" ||
-                  effect.condition == "trait_count_at_least") &&
+                (effect.condition == "has_trait" &&
                     !effect.condition_trait.empty()) ||
                 (effect.condition == "trait_count_at_least" &&
-                    effect.min_trait_count > 0) ||
+                    !effect.condition_trait.empty() && effect.min_trait_count > 0) ||
                 effect.condition == "role_tank" || effect.condition == "role_fighter" ||
                 effect.condition == "role_assassin" || effect.condition == "role_other";
 
