@@ -103,6 +103,31 @@ def test_sampling_and_evaluate_actions_use_identical_bench_target_distribution()
     assert torch.allclose(sampled_logprob, evaluated_logprob, atol=1e-6, rtol=1e-6)
 
 
+def test_legacy_checkpoint_migrates_new_observation_and_bench_target_inputs():
+    policy, _ = _policy_and_observation()
+    old_state = policy.state_dict()
+    old_global = old_state["global_mlp.0.weight"][:, :-29].clone()
+    old_bench_target = old_state["bench_to_board_head.weight"][:, :-17].clone()
+    old_state["global_mlp.0.weight"] = old_global
+    old_state["bench_to_board_head.weight"] = old_bench_target
+
+    restored = TFTPolicy(obs_dim=OBS_DIM, action_dims=ACTION_DIMS, hidden_size=64)
+    assert restored.load_compatible_state_dict(old_state)
+
+    migrated_global = restored.state_dict()["global_mlp.0.weight"]
+    insertion = old_global.shape[1] - restored.candidate_observation_dim
+    assert torch.allclose(migrated_global[:, :insertion], old_global[:, :insertion])
+    assert torch.count_nonzero(migrated_global[:, insertion:insertion + 29]) == 0
+    assert torch.allclose(
+        migrated_global[:, insertion + 29:],
+        old_global[:, insertion:],
+    )
+
+    migrated_target = restored.state_dict()["bench_to_board_head.weight"]
+    assert torch.allclose(migrated_target[:, :-17], old_bench_target)
+    assert torch.count_nonzero(migrated_target[:, -17:]) == 0
+
+
 def test_retired_economic_context_does_not_encode_named_strategy_rules():
     policy, obs = _policy_and_observation()
     obs.zero_()
@@ -122,6 +147,30 @@ def test_retired_economic_context_does_not_encode_named_strategy_rules():
     assert fast8_features.shape == (1, 5)
     assert torch.count_nonzero(fast8_features) == 0
     assert torch.equal(fast8_features, slowroll_features)
+
+
+def test_legacy_global_encoder_migrates_five_derived_economic_features():
+    policy, _ = _policy_and_observation()
+    state = {key: value.detach().clone() for key, value in policy.state_dict().items()}
+    current = state["global_mlp.0.weight"]
+    insertion = current.shape[1] - 5 - policy.candidate_observation_dim
+    # Legacy checkpoints predate these five features, but retain the complete
+    # candidate tail. Remove the inserted feature block, not the final five
+    # columns (which belong to the candidate tail).
+    state["global_mlp.0.weight"] = torch.cat(
+        [current[:, :insertion], current[:, insertion + 5:]],
+        dim=1,
+    )
+
+    restored = TFTPolicy(obs_dim=OBS_DIM, action_dims=ACTION_DIMS, hidden_size=64)
+    assert restored.load_compatible_state_dict(state)
+    migrated = restored.state_dict()["global_mlp.0.weight"]
+    assert torch.equal(migrated[:, :insertion], current[:, :insertion])
+    assert torch.count_nonzero(migrated[:, insertion:insertion + 5]) == 0
+    assert torch.equal(
+        migrated[:, insertion + 5:],
+        current[:, insertion + 5:],
+    )
 
 
 def test_entropy_only_diagnostics_are_compact_and_finite():
