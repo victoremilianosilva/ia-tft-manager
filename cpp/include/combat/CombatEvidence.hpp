@@ -532,6 +532,163 @@ struct CalibrationValidationMetrics {
     double brier_score{0.0};
 };
 
+enum class CalibrationDatasetSplit : std::uint8_t {
+    TRAIN = 0,
+    VALIDATION = 1,
+    TEST = 2
+};
+
+struct CalibrationPredictionEvaluationSample {
+    std::uint64_t match_id{0};
+    std::int32_t player_id{-1};
+    std::uint32_t round{0};
+    std::uint64_t sequence{0};
+    std::uint32_t horizon_rounds{1};
+    double predicted_player_hp{0.0};
+    double predicted_expected_damage{0.0};
+    double predicted_p90_damage{0.0};
+    double predicted_elimination_probability{0.0};
+    double observed_hp_before{0.0};
+    double observed_hp_after{0.0};
+    double observed_damage{0.0};
+    CalibrationDatasetSplit split{CalibrationDatasetSplit::TEST};
+    std::string source{"paired_projection_replay_evaluation.v1"};
+    std::string replay_artifact_id;
+    std::string dataset_version;
+    std::string engine_version;
+    std::string composition_signature;
+    std::string mechanics_signature;
+};
+
+struct CalibrationEvaluationManifest {
+    std::string report_sha256;
+    std::string train_manifest_sha256;
+    std::string validation_manifest_sha256;
+    std::string test_manifest_sha256;
+};
+
+struct CalibrationEvaluationResult {
+    bool valid{false};
+    std::string reason{"missing_evaluation_samples"};
+    CalibrationValidationMetrics metrics;
+};
+
+inline CalibrationEvaluationResult evaluate_calibration_predictions(
+    const std::vector<CalibrationPredictionEvaluationSample>& samples,
+    const CombatCalibrationCohort& cohort,
+    const CalibrationEvaluationManifest& manifest) {
+    CalibrationEvaluationResult out;
+    if (samples.empty() || cohort.round == 0 || cohort.horizon_rounds == 0 ||
+        cohort.engine_version.empty() || cohort.composition_signature.empty() ||
+        cohort.mechanics_signature.empty() ||
+        !is_sha256(manifest.report_sha256) ||
+        !is_sha256(manifest.train_manifest_sha256) ||
+        !is_sha256(manifest.validation_manifest_sha256) ||
+        !is_sha256(manifest.test_manifest_sha256) ||
+        manifest.train_manifest_sha256 == manifest.validation_manifest_sha256 ||
+        manifest.train_manifest_sha256 == manifest.test_manifest_sha256 ||
+        manifest.validation_manifest_sha256 == manifest.test_manifest_sha256) {
+        out.reason = "invalid_evaluation_cohort_or_manifest";
+        return out;
+    }
+
+    std::array<std::unordered_set<std::uint64_t>, 3> split_matches;
+    std::unordered_set<std::string> seen_samples;
+    std::string dataset_version;
+    std::uint32_t split_counts[3]{0, 0, 0};
+    double absolute_error_sum = 0.0;
+    double p90_covered_count = 0.0;
+    double brier_sum = 0.0;
+
+    for (const auto& sample : samples) {
+        const auto split_index = static_cast<std::size_t>(sample.split);
+        const bool split_valid = split_index < 3;
+        const bool identity_valid = sample.match_id != 0 && sample.player_id >= 0 &&
+            sample.round == cohort.round && sample.sequence != 0 &&
+            sample.horizon_rounds == cohort.horizon_rounds;
+        const bool provenance_valid =
+            sample.source == "paired_projection_replay_evaluation.v1" &&
+            !sample.replay_artifact_id.empty() && !sample.dataset_version.empty() &&
+            sample.engine_version == cohort.engine_version &&
+            sample.composition_signature == cohort.composition_signature &&
+            sample.mechanics_signature == cohort.mechanics_signature;
+        const bool prediction_valid =
+            std::isfinite(sample.predicted_player_hp) && sample.predicted_player_hp > 0.0 &&
+            std::isfinite(sample.predicted_expected_damage) &&
+            sample.predicted_expected_damage >= 0.0 &&
+            std::isfinite(sample.predicted_p90_damage) &&
+            sample.predicted_p90_damage >= 0.0 &&
+            std::isfinite(sample.predicted_elimination_probability) &&
+            sample.predicted_elimination_probability >= 0.0 &&
+            sample.predicted_elimination_probability <= 1.0;
+        const bool outcome_valid =
+            std::isfinite(sample.observed_hp_before) && sample.observed_hp_before > 0.0 &&
+            std::isfinite(sample.observed_hp_after) && sample.observed_hp_after >= 0.0 &&
+            std::isfinite(sample.observed_damage) && sample.observed_damage >= 0.0 &&
+            std::abs(sample.observed_hp_before - sample.predicted_player_hp) <= 1e-6 &&
+            std::abs(sample.observed_damage -
+                std::max(0.0, sample.observed_hp_before - sample.observed_hp_after)) <= 1e-6;
+        if (!split_valid || !identity_valid || !provenance_valid ||
+            !prediction_valid || !outcome_valid) {
+            out.reason = "invalid_paired_prediction_outcome_sample";
+            return out;
+        }
+
+        if (dataset_version.empty()) dataset_version = sample.dataset_version;
+        else if (dataset_version != sample.dataset_version) {
+            out.reason = "mixed_evaluation_dataset_versions";
+            return out;
+        }
+        const auto key = std::to_string(sample.match_id) + ":" +
+            std::to_string(sample.player_id) + ":" + std::to_string(sample.round) +
+            ":" + std::to_string(sample.sequence);
+        if (!seen_samples.insert(key).second) {
+            out.reason = "duplicate_prediction_outcome_pair";
+            return out;
+        }
+        split_matches[split_index].insert(sample.match_id);
+        ++split_counts[split_index];
+
+        if (sample.split == CalibrationDatasetSplit::TEST) {
+            absolute_error_sum += std::abs(
+                sample.predicted_expected_damage - sample.observed_damage);
+            if (sample.observed_damage <= sample.predicted_p90_damage)
+                p90_covered_count += 1.0;
+            const double eliminated = sample.observed_hp_after <= 0.0 ? 1.0 : 0.0;
+            const double error = sample.predicted_elimination_probability - eliminated;
+            brier_sum += error * error;
+        }
+    }
+
+    const bool disjoint =
+        std::none_of(split_matches[0].begin(), split_matches[0].end(),
+            [&](std::uint64_t id) {
+                return split_matches[1].count(id) != 0 || split_matches[2].count(id) != 0;
+            }) &&
+        std::none_of(split_matches[1].begin(), split_matches[1].end(),
+            [&](std::uint64_t id) { return split_matches[2].count(id) != 0; });
+    if (!disjoint || split_counts[0] == 0 || split_counts[1] == 0 ||
+        split_counts[2] == 0) {
+        out.reason = "evaluation_splits_empty_or_episode_overlap";
+        return out;
+    }
+
+    out.metrics.report_sha256 = manifest.report_sha256;
+    out.metrics.train_manifest_sha256 = manifest.train_manifest_sha256;
+    out.metrics.validation_manifest_sha256 = manifest.validation_manifest_sha256;
+    out.metrics.test_manifest_sha256 = manifest.test_manifest_sha256;
+    out.metrics.training_sample_count = split_counts[0];
+    out.metrics.validation_sample_count = split_counts[1];
+    out.metrics.test_sample_count = split_counts[2];
+    out.metrics.episode_splits_disjoint = true;
+    out.metrics.mae = absolute_error_sum / static_cast<double>(split_counts[2]);
+    out.metrics.p90_coverage = p90_covered_count / static_cast<double>(split_counts[2]);
+    out.metrics.brier_score = brier_sum / static_cast<double>(split_counts[2]);
+    out.valid = true;
+    out.reason = "valid";
+    return out;
+}
+
 inline bool is_sha256(const std::string& value) {
     return value.size() == 64 &&
         std::all_of(value.begin(), value.end(), [](unsigned char c) {
