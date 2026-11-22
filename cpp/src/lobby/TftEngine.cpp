@@ -4482,6 +4482,7 @@ struct TFTEngine::Impl {
                             {"missing_ability_metadata", coverage.missing_ability_metadata},
                             {"missing_item_effect_metadata", coverage.missing_item_effect_metadata},
                             {"missing_trait_effect_metadata", coverage.missing_trait_effect_metadata},
+                            {"missing_unit_provenance", coverage.missing_unit_provenance},
                             {"abilities_seen", coverage.abilities_seen},
                             {"abilities_supported", coverage.abilities_supported},
                             {"items_seen", coverage.items_seen},
