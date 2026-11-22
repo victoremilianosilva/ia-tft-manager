@@ -1137,9 +1137,12 @@ class Trainer:
 
         total_updates = self.config.total_updates if total_updates is None else int(total_updates)
         rollout_steps = self.config.rollout_steps if rollout_steps is None else int(rollout_steps)
+        if total_updates != self.config.total_updates:
+            raise ValueError("total_updates deve corresponder à configuração registrada no manifesto.")
+        if rollout_steps != self.config.rollout_steps:
+            raise ValueError("rollout_steps deve corresponder à configuração registrada no manifesto.")
         if rollout_steps <= 0:
             raise ValueError("rollout_steps deve ser > 0.")
-        self.config.rollout_steps = rollout_steps
         self.writer.add_text(
             "training/config",
             json.dumps(self.config.to_dict(), indent=2, ensure_ascii=False),
