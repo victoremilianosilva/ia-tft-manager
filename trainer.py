@@ -67,6 +67,22 @@ from semantic_observation import (
 from engine_contracts import ActionType
 from training_run_manifest import build_training_run_manifest, write_training_run_manifest
 
+def slice_batch_structure(value, selection):
+    """Slice every tensor leaf in a nested semantic batch structure."""
+    if isinstance(value, dict):
+        return {
+            key: slice_batch_structure(child, selection)
+            for key, child in value.items()
+        }
+    if isinstance(value, torch.Tensor):
+        return value[selection]
+    raise TypeError(
+        "Semantic batch structures may contain only dictionaries and tensors; "
+        f"received {type(value).__name__}."
+    )
+
+
+
 def refresh_opgg_meta_catalog() -> None:
     """Refresh at the training entrypoint, never when Trainer is imported or constructed in tests."""
     from pathlib import Path
@@ -1970,10 +1986,10 @@ class Trainer:
                         k: v[:sample_size]
                         for k, v in sample_masks.items()
                     }
-                    sample_semantic_state = {
-                        k: v[:sample_size]
-                        for k, v in sample_semantic_state.items()
-                    }
+                    sample_semantic_state = slice_batch_structure(
+                        sample_semantic_state,
+                        slice(0, sample_size),
+                    )
 
                     (
                         _,
