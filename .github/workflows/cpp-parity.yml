@@ -46,7 +46,7 @@ jobs:
           ctest --test-dir cpp/build --output-on-failure 2>&1 | tee artifacts/ctest.log
 
       - name: Validate Python adapter, PPO, scripts and viewer syntax
-        run: python -m compileall -q cpp_lobby_env.py engine_contracts.py vector_lobby_env.py trainer.py ppo.py policy.py rollout.py reward_audit.py reward_outcome_producers.py reward_signal_calibration.py scripts/evaluate_checkpoints.py scripts/audit_native_ppo_loops.py scripts/audit_item_system_e2e.py scripts/generate_item_catalog.py viewer tests economy_finetuning
+        run: python -m compileall -q cpp_lobby_env.py engine_contracts.py vector_lobby_env.py trainer.py train_native.py training_run_manifest.py ppo.py policy.py rollout.py scripts/run_training_battery.py reward_audit.py reward_outcome_producers.py reward_signal_calibration.py scripts/evaluate_checkpoints.py scripts/audit_native_ppo_loops.py scripts/audit_item_system_e2e.py scripts/generate_item_catalog.py viewer tests economy_finetuning
 
       - name: Run native engine integration and PPO contract tests
         env:
@@ -99,6 +99,38 @@ jobs:
           tests/test_viewer_player_logs.py
           tests/test_viewer_item_and_result_logging.py
           economy_finetuning/tests
+          tests/test_training_config.py
+          tests/test_vector_lobby_env_seed.py
+          tests/test_native_training_manifest.py
+          tests/test_training_battery.py
+
+      - name: Run native PPO training smoke and verify checkpoint lineage
+        env:
+          PYTHONPATH: ${{ github.workspace }}/cpp/build/bin:${{ github.workspace }}
+          REQUIRE_CPP_ENGINE: "1"
+        run: |
+          output_dir="${RUNNER_TEMP}/native-ppo-smoke"
+          python train_native.py --output-dir "$output_dir" --seed 20261122 --updates 1 --lobbies 1 --rollout-steps 8 --batch-size 64 --ppo-epochs 1
+          python - "$output_dir" <<'PY'
+          import json
+          import pathlib
+          import sys
+          import torch
+
+          run_dir = pathlib.Path(sys.argv[1])
+          checkpoint = torch.load(
+              run_dir / "native_ppo_checkpoint.pt",
+              map_location="cpu",
+              weights_only=False,
+          )
+          manifest = json.loads((run_dir / "run_manifest.json").read_text(encoding="utf-8"))
+          assert checkpoint["update"] == 1
+          assert checkpoint["training_run_manifest"]["identity_sha256"] == manifest["identity_sha256"]
+          assert manifest["algorithm"] == "PPO"
+          assert manifest["engine"]["artifact_sha256"]
+          assert checkpoint["optimizer"]
+          print("Native PPO smoke produced a checkpoint with verified run lineage.")
+          PY
 
       - name: Collect deterministic strategic replay artifact
         if: always()
