@@ -78,6 +78,29 @@ def _engine_identity(engine: Any) -> dict[str, str]:
     return {"module": module_name, "artifact_sha256": digest}
 
 
+def _catalog_identity() -> list[dict[str, str]]:
+    root = Path(__file__).resolve().parent
+    configured_items = os.environ.get("TFT_ITEM_CATALOG_PATH", "").strip()
+    paths = [
+        ("item_catalog", Path(configured_items).expanduser() if configured_items else root / "data" / "itens.json"),
+        ("trait_catalog", root / "data" / "traits.json"),
+    ]
+    configured_meta = os.environ.get("TFT_OPGG_META_CATALOG", "").strip()
+    if configured_meta:
+        paths.append(("composition_meta_catalog", Path(configured_meta).expanduser()))
+
+    catalogs = []
+    for catalog_id, raw_path in paths:
+        path = raw_path.resolve()
+        if not path.is_file():
+            raise RuntimeError(f"Catálogo obrigatório não encontrado ({catalog_id}): {path}.")
+        catalogs.append({
+            "catalog_id": catalog_id,
+            "file_name": path.name,
+            "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+        })
+    return catalogs
+
 def _policy_identity(policy: Any) -> dict[str, Any]:
     state_schema = [
         {
@@ -113,6 +136,7 @@ def build_training_run_manifest(
         "seed": int(config.seed),
         "source": _source_identity(),
         "engine": _engine_identity(engine),
+        "catalogs": _catalog_identity(),
         "runtime": {
             "python": sys.version.split()[0],
             "torch": str(torch.__version__),
