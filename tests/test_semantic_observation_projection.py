@@ -145,6 +145,15 @@ def _metadata():
     }
 
 
+def test_strategic_refresh_failure_is_explicit_in_semantic_ppo_state():
+    metadata = _metadata()
+    strategic = metadata["native_player_state"]["strategic_state"]
+    strategic["strategic_refresh_failed"] = True
+    strategic["strategic_refresh_failure_reason"] = "native_strategic_refresh_exception: test"
+    projected = project_native_player_state(metadata, {"TFT_TestChampion": 17})
+    assert projected["numeric"][53] == 1.0
+
+
 def test_native_planner_priority_lineup_and_opportunity_cost_reach_semantic_ppo_features():
     metadata = _metadata()
     strategic = metadata["native_player_state"]["strategic_state"]
