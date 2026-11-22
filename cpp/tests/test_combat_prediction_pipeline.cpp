@@ -142,6 +142,15 @@ int main() {
     assert(unsupported_effect_snapshot.coverage.unsupported_effects == 1);
     assert(unsupported_effect_snapshot.coverage.unsupported_items == 1);
 
+    auto unimplemented_trigger_input = supported_effect_input;
+    unimplemented_trigger_input.player_a.units.front().items.front().effects.front().trigger =
+        "on_ally_shield";
+    const auto unimplemented_trigger_snapshot =
+        builder.build(identity, unimplemented_trigger_input, 31);
+    assert(!CombatCoverageValidator{}.validate(
+        unimplemented_trigger_snapshot.coverage).complete);
+    assert(unimplemented_trigger_snapshot.coverage.unsupported_effects == 1);
+
     const auto projection = CombatProjectionEngine{}.project(snapshot, 6, 4, 100);
     assert(projection.simulation_completed);
     assert(!projection.decision_eligible);
