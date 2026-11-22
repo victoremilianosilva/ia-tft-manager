@@ -398,9 +398,6 @@ struct DamageDistribution {
     std::uint32_t horizon_rounds{1};
     std::string calibration_protocol_id;
     std::string calibration_report_sha256;
-    std::string engine_version;
-    std::string composition_signature;
-    std::string mechanics_signature;
     std::uint32_t training_sample_count{0};
     std::uint32_t validation_sample_count{0};
     std::uint32_t test_sample_count{0};
