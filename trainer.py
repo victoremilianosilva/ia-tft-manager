@@ -55,6 +55,7 @@ from semantic_observation import (
     SEMANTIC_ENTITY_FEATURES,
     SEMANTIC_ENTITY_SLOTS,
     SEMANTIC_GLOBAL_FEATURES,
+    SEMANTIC_ITEM_OFFSET,
     build_semantic_batch,
     semantic_item_state_tensors,
     build_semantic_state_checkpoint_contract,
@@ -1377,7 +1378,7 @@ class Trainer:
                 )
                 semantic_entities = np.asarray(
                     semantic_batch["numeric"], dtype=np.float32
-                )[:, SEMANTIC_GLOBAL_FEATURES:].reshape(
+                )[:, SEMANTIC_GLOBAL_FEATURES:SEMANTIC_ITEM_OFFSET].reshape(
                     -1, SEMANTIC_ENTITY_SLOTS, SEMANTIC_ENTITY_FEATURES
                 )
                 unknown_semantic_champions = int(
