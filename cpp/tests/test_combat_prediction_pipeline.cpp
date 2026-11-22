@@ -142,6 +142,39 @@ int main() {
     assert(unsupported_effect_snapshot.coverage.unsupported_effects == 1);
     assert(unsupported_effect_snapshot.coverage.unsupported_items == 1);
 
+    auto orphaned_charge_consumer_input = supported_effect_input;
+    CombatEffectDefinition orphaned_heal;
+    orphaned_heal.trigger = "on_attack";
+    orphaned_heal.operation = "heal_max_hp_pct";
+    orphaned_heal.target = "self";
+    orphaned_heal.stack_key = "attack-heal";
+    orphaned_heal.value = 0.10f;
+    orphaned_charge_consumer_input.player_a.units.front().items.front()
+        .effects.push_back(orphaned_heal);
+    const auto orphaned_charge_consumer_snapshot =
+        builder.build(identity, orphaned_charge_consumer_input, 31);
+    assert(!CombatCoverageValidator{}.validate(
+        orphaned_charge_consumer_snapshot.coverage).complete);
+    assert(orphaned_charge_consumer_snapshot.coverage.unsupported_effects == 1);
+
+    auto valid_charge_pair_input = supported_effect_input;
+    CombatEffectDefinition charge_source;
+    charge_source.trigger = "on_kill";
+    charge_source.operation = "grant_charges";
+    charge_source.stack_key = "attack-heal";
+    charge_source.value = 1.0f;
+    charge_source.max_stacks = 1;
+    CombatEffectDefinition charge_consumer = orphaned_heal;
+    valid_charge_pair_input.player_a.units.front().items.front().effects.push_back(
+        charge_source);
+    valid_charge_pair_input.player_a.units.front().items.front().effects.push_back(
+        charge_consumer);
+    const auto valid_charge_pair_snapshot =
+        builder.build(identity, valid_charge_pair_input, 31);
+    assert(CombatCoverageValidator{}.validate(valid_charge_pair_snapshot.coverage).complete);
+    assert(valid_charge_pair_snapshot.coverage.effects_seen == 3);
+    assert(valid_charge_pair_snapshot.coverage.effects_supported == 3);
+
     auto unimplemented_trigger_input = supported_effect_input;
     unimplemented_trigger_input.player_a.units.front().items.front().effects.front().trigger =
         "on_ally_shield";
