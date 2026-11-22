@@ -1774,11 +1774,19 @@ struct TFTEngine::Impl {
                 planner_context.evidence.board_power = true;
                 planner_context.current_composition_direction =
                     strategic_planner_commitments[i].composition_direction;
-                if (planner_context.current_composition_direction.empty() && source_active) {
-                    // Native candidate IDs are snapshot-scoped and include the
-                    // candidate-set envelope. Resolve the semantic direction
-                    // from the exact generator row that owns this composition;
-                    // never use the opaque composition identity as a direction.
+                const bool opaque_active_direction = source_active &&
+                    (planner_context.current_composition_direction ==
+                         source_active->candidate.composition_id ||
+                     planner_context.current_composition_direction.rfind(
+                         "native-candidate-set:", 0) == 0 ||
+                     planner_context.current_composition_direction.rfind(
+                         "native:", 0) == 0);
+                if (source_active &&
+                    (planner_context.current_composition_direction.empty() ||
+                     opaque_active_direction)) {
+                    // Native candidate IDs are snapshot-scoped and may be
+                    // retained after the generator advances. Resolve the
+                    // semantic direction from the exact row when possible.
                     const auto active_generated = std::find_if(
                         native_generation.candidates.begin(),
                         native_generation.candidates.end(),
@@ -1789,14 +1797,10 @@ struct TFTEngine::Impl {
                     if (active_generated != native_generation.candidates.end()) {
                         planner_context.current_composition_direction =
                             active_generated->direction;
-                    } else if (source_active->candidate.source ==
-                               composition_intelligence::CompositionSource::Native) {
-                        // The active owner may intentionally retain a candidate
-                        // from an earlier generator sequence. Its immutable ID
-                        // still carries the semantic direction segment:
-                        // <candidate-set>:native:<direction>:<unit-ids>.
-                        // Recover only that explicit native segment; never treat
-                        // the complete snapshot identity as a direction.
+                    } else {
+                        // The immutable candidate identity carries the explicit
+                        // semantic segment <candidate-set>:native:<direction>:<ids>.
+                        // Recover only that segment, never the full identity.
                         const auto marker = source_active->candidate.composition_id.rfind(
                             "native:");
                         if (marker != std::string::npos) {
@@ -1809,6 +1813,9 @@ struct TFTEngine::Impl {
                                         begin, end - begin);
                         }
                     }
+                    if (!planner_context.current_composition_direction.empty())
+                        strategic_planner_commitments[i].composition_direction =
+                            planner_context.current_composition_direction;
                 }
 
                 for (const auto& [champion_id, owned] : strategic_native_owned) {
