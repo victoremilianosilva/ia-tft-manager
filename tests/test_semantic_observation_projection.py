@@ -198,7 +198,7 @@ def test_native_semantic_projection_has_stable_shape_and_explicit_identity():
     assert projected["numeric"][66] == 1.0  # occupied target
     assert projected["numeric"][67] == 1.0  # board target
     assert projected["numeric"][71] == 1.0  # classifier role one-hot (fighter)
-    assert projected["numeric"][73] == 1.0  # frontline row
+    assert projected["numeric"][75] == 1.0  # frontline row
     assert projected["numeric"][77] == 0.5  # attack damage / 200
     assert projected["numeric"][82] == 1.0 / 3.0  # equipped item count / 3
     bench_target_start = 54 + 28 * 45 + 12
