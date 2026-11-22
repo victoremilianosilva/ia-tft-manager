@@ -131,6 +131,7 @@ struct CombatItem
     std::string grants_trait;
     int granted_trait_active_count = 1;
     std::vector<CombatEffectDefinition> effects;
+    bool effects_complete{false};
 };
 
 
@@ -151,12 +152,18 @@ struct CombatTrait
     bool active = false;
 
     std::vector<CombatEffectDefinition> effects;
+    bool effects_complete{false};
 };
 
 
 // ============================================================
 // Ability
 // ============================================================
+
+struct CombatAbilityVariable {
+    std::string name;
+    std::vector<double> values;
+};
 
 struct CombatAbility
 {
@@ -165,6 +172,10 @@ struct CombatAbility
     std::string api_name;
     std::string name;
     std::string description;
+    std::vector<CombatAbilityVariable> variables;
+    // True only when every simulator-relevant field is populated from an
+    // authoritative adapter; a name/description alone is not complete.
+    bool metadata_complete{false};
 
     float mana_cost = 0.0f;
     float initial_mana = 0.0f;
@@ -199,6 +210,31 @@ struct CombatAbility
 // ============================================================
 // Unit
 // ============================================================
+
+struct CombatInputProvenance {
+    std::string identity{"unavailable"};
+    std::string star{"unavailable"};
+    std::string position{"unavailable"};
+    std::string hp{"unavailable"};
+    std::string max_hp{"unavailable"};
+    std::string attack_damage{"unavailable"};
+    std::string attack_speed{"unavailable"};
+    std::string attack_range{"unavailable"};
+    std::string armor{"unavailable"};
+    std::string magic_resist{"unavailable"};
+    std::string mana{"unavailable"};
+    std::string max_mana{"unavailable"};
+    std::string ability_power{"unavailable"};
+    std::string critical_strike_chance{"unavailable"};
+    std::string critical_strike_damage{"unavailable"};
+    std::string damage_amplification{"unavailable"};
+    std::string damage_reduction{"unavailable"};
+    std::string omnivamp{"unavailable"};
+    std::string role{"unavailable"};
+    std::string ability{"unavailable"};
+    std::string items{"unavailable"};
+    std::string traits{"unavailable"};
+};
 
 struct CombatUnit
 {
@@ -294,6 +330,8 @@ struct CombatUnit
     // --------------------------------------------------------
 
     int source_board_position = -1;
+    std::string source_unit_uuid;
+    CombatInputProvenance provenance;
 };
 
 

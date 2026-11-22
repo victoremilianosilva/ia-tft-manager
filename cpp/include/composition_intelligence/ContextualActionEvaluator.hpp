@@ -22,7 +22,7 @@ namespace tft::composition_intelligence {
 
 // Independent contextual evaluator. It deliberately does not call or share
 // scoring code with strategy::ActionEvaluator (the frozen baseline).
-inline constexpr std::uint32_t kContextualActionEvaluatorSchemaVersion = 4;
+inline constexpr std::uint32_t kContextualActionEvaluatorSchemaVersion = 5;
 
 struct ContextualActionCandidateScore {
     std::size_t candidate_index{0};
@@ -104,6 +104,17 @@ struct ContextualActionEvaluation {
     std::string projected_income_source{"unavailable"};
     std::uint32_t projected_income_horizon_rounds{0};
     double projected_income_uncertainty{1.0};
+    double incoming_damage{0.0};
+    double elimination_risk{0.0};
+    std::string incoming_damage_source{"unavailable"};
+    std::string elimination_risk_source{"unavailable"};
+    std::uint32_t combat_horizon_rounds{0};
+    std::uint64_t combat_evidence_sequence{0};
+    double combat_evidence_uncertainty{1.0};
+    std::string combat_calibration_protocol_id;
+    std::string combat_calibration_report_sha256;
+    std::string combat_dataset_version;
+    std::vector<std::string> combat_replay_artifact_ids;
 
     nlohmann::json to_json() const {
         nlohmann::json items = nlohmann::json::array();
@@ -174,7 +185,18 @@ struct ContextualActionEvaluation {
                 {"projected_income_horizon_rounds", projected_income_horizon_rounds},
                 {"projected_income_uncertainty", projected_income_uncertainty},
                 {"incoming_damage_available", incoming_damage_available},
+                {"incoming_damage", incoming_damage},
+                {"incoming_damage_source", incoming_damage_source},
                 {"elimination_risk_available", elimination_risk_available},
+                {"elimination_risk", elimination_risk},
+                {"elimination_risk_source", elimination_risk_source},
+                {"combat_horizon_rounds", combat_horizon_rounds},
+                {"combat_evidence_sequence", combat_evidence_sequence},
+                {"combat_evidence_uncertainty", combat_evidence_uncertainty},
+                {"combat_calibration_protocol_id", combat_calibration_protocol_id},
+                {"combat_calibration_report_sha256", combat_calibration_report_sha256},
+                {"combat_dataset_version", combat_dataset_version},
+                {"combat_replay_artifact_ids", combat_replay_artifact_ids},
                 {"progression_available", progression_available}}},
             {"evidence_rejected", evidence_rejected},
             {"recommended_action", static_cast<int>(recommended_action)},
@@ -223,8 +245,11 @@ public:
         const bool envelope_valid = evidence &&
             PlannerEvidenceAdapters::snapshot_identity_matches(*evidence, match_id,
                 context.player_id, out.composition_id, out.composition_version, context.round);
+        const bool combat_evidence_valid = envelope_valid &&
+            PlannerEvidenceAdapters::combat_evidence_valid(context, evidence->economy);
         const bool economy_valid = envelope_valid &&
-            PlannerEvidenceAdapters::source_matches(evidence->economy.metadata, context.round);
+            PlannerEvidenceAdapters::source_matches(evidence->economy.metadata, context.round) &&
+            combat_evidence_valid;
         const bool board_valid = envelope_valid &&
             PlannerEvidenceAdapters::source_matches(evidence->board.metadata, context.round);
         const bool items_valid = envelope_valid &&
@@ -251,7 +276,18 @@ public:
             out.projected_income_horizon_rounds = evidence->economy.projected_income_horizon_rounds;
             out.projected_income_uncertainty = evidence->economy.projected_income_uncertainty;
             out.incoming_damage_available = evidence->economy.incoming_damage_available;
+            out.incoming_damage = evidence->economy.incoming_damage;
+            out.incoming_damage_source = evidence->economy.incoming_damage_source;
             out.elimination_risk_available = evidence->economy.elimination_risk_available;
+            out.elimination_risk = evidence->economy.elimination_risk;
+            out.elimination_risk_source = evidence->economy.elimination_risk_source;
+            out.combat_horizon_rounds = evidence->economy.combat_horizon_rounds;
+            out.combat_evidence_sequence = evidence->economy.combat_evidence_sequence;
+            out.combat_evidence_uncertainty = evidence->economy.combat_evidence_uncertainty;
+            out.combat_calibration_protocol_id = evidence->economy.combat_calibration_protocol_id;
+            out.combat_calibration_report_sha256 = evidence->economy.combat_calibration_report_sha256;
+            out.combat_dataset_version = evidence->economy.combat_dataset_version;
+            out.combat_replay_artifact_ids = evidence->economy.combat_replay_artifact_ids;
             out.progression_available = evidence->economy.progression_available;
         }
         out.board_evidence_consumed = board_valid;
@@ -259,7 +295,12 @@ public:
         if (evidence && !envelope_valid) {
             out.evidence_rejected.push_back("PlannerEvidenceSnapshot:identity_mismatch");
         } else if (evidence) {
-            if (!economy_valid) out.evidence_rejected.push_back("EconomicController:" + evidence->economy.metadata.reason);
+            if (!combat_evidence_valid && envelope_valid)
+                out.evidence_rejected.push_back(
+                    "EconomicController:combat_evidence_provenance_or_identity_mismatch");
+            else if (!economy_valid)
+                out.evidence_rejected.push_back(
+                    "EconomicController:" + evidence->economy.metadata.reason);
             if (!board_valid) out.evidence_rejected.push_back("BoardEvaluation:" + evidence->board.metadata.reason);
             if (!items_valid) out.evidence_rejected.push_back("ItemEngine:" + evidence->items.metadata.reason);
         }

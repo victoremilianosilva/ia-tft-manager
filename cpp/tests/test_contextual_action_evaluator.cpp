@@ -418,7 +418,21 @@ void economic_posture_is_explanatory_not_a_fixed_action_rule() {
     context.gold = 20;
     context.player_id = 0;
     context.round = 8;
+    context.sequence = 99;
     context.evidence.gold = true;
+    context.evidence.estimated_incoming_damage = true;
+    context.evidence.elimination_risk = true;
+    context.estimated_incoming_damage = 12.5;
+    context.elimination_risk = 0.25;
+    context.incoming_damage_source = "observed_hp+approved_replay_calibration.v1";
+    context.elimination_risk_source = context.incoming_damage_source;
+    context.combat_evidence_horizon_rounds = 1;
+    context.combat_evidence_sequence = 99;
+    context.combat_evidence_uncertainty = 0.15;
+    context.combat_calibration_protocol_id = "combat-calibration.v1";
+    context.combat_calibration_report_sha256 = std::string(64, 'a');
+    context.combat_dataset_version = "combat-dataset.v2";
+    context.combat_replay_artifact_ids = {"replay-a", "replay-b"};
     auto buy = candidate(StrategicActionKind::BuyExperience);
     buy.gold_cost = 3;
     buy.direct_gold_cost = 3.0;
@@ -456,14 +470,32 @@ void economic_posture_is_explanatory_not_a_fixed_action_rule() {
     economy.board_pressure = 0.2;
     economy.economy_pressure_available = true;
     economy.economy_pressure = 0.9;
+    economy.incoming_damage_available = true;
+    economy.elimination_risk_available = true;
+    economy.incoming_damage = 12.5;
+    economy.elimination_risk = 0.25;
+    economy.incoming_damage_source = "observed_hp+approved_replay_calibration.v1";
+    economy.elimination_risk_source = "observed_hp+approved_replay_calibration.v1";
+    economy.combat_horizon_rounds = 1;
+    economy.combat_evidence_sequence = 99;
+    economy.combat_evidence_uncertainty = 0.15;
+    economy.combat_calibration_protocol_id = "combat-calibration.v1";
+    economy.combat_calibration_report_sha256 = std::string(64, 'a');
+    economy.combat_dataset_version = "combat-dataset.v2";
+    economy.combat_replay_artifact_ids = {"replay-a", "replay-b"};
     economy.posture = EconomicPosture::AccumulateResources;
+    auto current_lineup = lineup();
+    current_lineup.match_id = 77;
+    current_lineup.player_id = 0;
+    current_lineup.round = 8;
+    current_lineup.sequence = 99;
     const auto accumulate = ContextualActionEvaluator{}.evaluate(
-        active(), priorities(), lineup(), context, &evidence, 77);
+        active(), priorities(), current_lineup, context, &evidence, 77);
 
     economy.posture = EconomicPosture::EmergencyInvestment;
     economy.reason = StrategicReason::SurvivalPressure;
     const auto emergency = ContextualActionEvaluator{}.evaluate(
-        active(), priorities(), lineup(), context, &evidence, 77);
+        active(), priorities(), current_lineup, context, &evidence, 77);
 
     assert(accumulate.economic_posture_available);
     assert(emergency.economic_posture_available);
@@ -475,6 +507,19 @@ void economic_posture_is_explanatory_not_a_fixed_action_rule() {
     assert(accumulate.board_pressure == 0.2);
     assert(accumulate.economy_pressure_available);
     assert(accumulate.economy_pressure == 0.9);
+    assert(accumulate.incoming_damage_available);
+    assert(accumulate.incoming_damage == 12.5);
+    assert(accumulate.incoming_damage_source ==
+        "observed_hp+approved_replay_calibration.v1");
+    assert(accumulate.elimination_risk_available);
+    assert(accumulate.elimination_risk == 0.25);
+    assert(accumulate.combat_horizon_rounds == 1);
+    assert(accumulate.combat_evidence_sequence == 99);
+    assert(accumulate.combat_evidence_uncertainty == 0.15);
+    assert(accumulate.combat_calibration_protocol_id == "combat-calibration.v1");
+    assert(accumulate.combat_calibration_report_sha256 == std::string(64, 'a'));
+    assert(accumulate.combat_dataset_version == "combat-dataset.v2");
+    assert(accumulate.combat_replay_artifact_ids.size() == 2);
     assert(accumulate.economic_posture != emergency.economic_posture);
     assert(accumulate.candidates[0].total_score == emergency.candidates[0].total_score);
     assert(accumulate.recommended_action == emergency.recommended_action);
@@ -482,8 +527,28 @@ void economic_posture_is_explanatory_not_a_fixed_action_rule() {
     assert(json["economic_context"]["posture_available"] == true);
     assert(json["economic_context"]["evidence_missing"][0] == "projected_next_round_income");
     assert(json["economic_context"]["projected_income_available"] == false);
-    assert(json["economic_context"]["incoming_damage_available"] == false);
-    assert(json["economic_context"]["elimination_risk_available"] == false);
+    assert(json["economic_context"]["incoming_damage_available"] == true);
+    assert(json["economic_context"]["incoming_damage"] == 12.5);
+    assert(json["economic_context"]["incoming_damage_source"] ==
+        "observed_hp+approved_replay_calibration.v1");
+    assert(json["economic_context"]["elimination_risk_available"] == true);
+    assert(json["economic_context"]["elimination_risk"] == 0.25);
+    assert(json["economic_context"]["combat_horizon_rounds"] == 1);
+    assert(json["economic_context"]["combat_evidence_sequence"] == 99);
+    assert(json["economic_context"]["combat_evidence_uncertainty"] == 0.15);
+    assert(json["economic_context"]["combat_calibration_protocol_id"] == "combat-calibration.v1");
+    assert(json["economic_context"]["combat_calibration_report_sha256"] == std::string(64, 'a'));
+    assert(json["economic_context"]["combat_dataset_version"] == "combat-dataset.v2");
+    assert(json["economic_context"]["combat_replay_artifact_ids"].size() == 2);
+    auto invalid_evidence = evidence;
+    invalid_evidence.economy.combat_calibration_report_sha256 = "invalid";
+    const auto rejected_combat = ContextualActionEvaluator{}.evaluate(
+        active(), priorities(), current_lineup, context, &invalid_evidence, 77);
+    assert(!rejected_combat.economy_evidence_consumed);
+    assert(std::find(rejected_combat.evidence_rejected.begin(),
+        rejected_combat.evidence_rejected.end(),
+        "EconomicController:combat_evidence_provenance_or_identity_mismatch") !=
+        rejected_combat.evidence_rejected.end());
     assert(json["economic_context"]["progression_available"] == false);
 }
 

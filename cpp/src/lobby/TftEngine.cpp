@@ -31,6 +31,7 @@
 #include "lobby/EconomyEngine.hpp"
 #include "combat/CombatEngine.hpp"
 #include "combat/CombatEvidence.hpp"
+#include "combat/CombatProjectionEngine.hpp"
 #include "lobby/ShopEngine.hpp"
 #include "strategy/SynergyCounter.hpp"
 #include "strategy/PositioningEngine.hpp"
@@ -452,6 +453,9 @@ struct TFTEngine::Impl {
         strategic_planner_commitments{};
     std::array<std::uint64_t, kPlayersPerLobby>
         strategic_context_sequences{};
+    std::array<std::optional<combat_evidence::SurvivalRiskEvidence>, kPlayersPerLobby>
+        pending_combat_prediction_evidence{};
+    std::vector<std::string> pending_combat_prediction_events;
     std::array<std::string, kPlayersPerLobby>
         strategic_shadow_external_active_identity{};
     std::array<std::uint64_t, kPlayersPerLobby>
@@ -2651,6 +2655,24 @@ struct TFTEngine::Impl {
             strategic_context.evidence.elimination_risk = false;
             strategic_context.evidence.progression_plan = false;
 
+            // A calibrated provider may publish exactly one risk envelope for
+            // this next decision sequence. Stale, partial or experimental
+            // predictions remain unavailable and never reach economic scoring.
+            if (pending_combat_prediction_evidence[i].has_value()) {
+                const bool applied = combat_evidence::apply_to_economic_context(
+                    *pending_combat_prediction_evidence[i], strategic_context);
+                pending_combat_prediction_events.emplace_back(
+                    std::string(applied ? "COMBAT_PREDICTION_EVIDENCE_APPLIED"
+                                        : "COMBAT_PREDICTION_EVIDENCE_REJECTED") +
+                    " player=" + std::to_string(i) +
+                    " sequence=" + std::to_string(
+                        pending_combat_prediction_evidence[i]->sequence) +
+                    " horizon=" + std::to_string(
+                        pending_combat_prediction_evidence[i]->horizon_rounds) +
+                    " source=" + pending_combat_prediction_evidence[i]->source);
+                pending_combat_prediction_evidence[i].reset();
+            }
+
             const auto append_owned_candidate = [&](const UnitInstance& unit,
                                                     bool on_board) {
                 const auto* definition = catalog->find_by_id(
@@ -3835,13 +3857,28 @@ struct TFTEngine::Impl {
             CombatUnit unit{};
             // Same deterministic sequential IDs as TFTLobby._build_cpp_combat_input().
             unit.id = next_unit_id++;
+            unit.source_unit_uuid = instance.uuid;
+            unit.provenance.identity = "observed:player_board_unit_uuid";
             unit.api_name = definition->api_name;
             unit.name = definition->name;
+            // Preserve catalog ability identity/description/level variables,
+            // but leave simulator completeness false until an authoritative
+            // generic mapping or champion script is actually available.
+            unit.ability.name = definition->ability.name;
+            unit.ability.description = definition->ability.description;
+            for (const auto& source_variable : definition->ability.variables) {
+                CombatAbilityVariable variable;
+                variable.name = source_variable.name;
+                variable.values = source_variable.values;
+                unit.ability.variables.push_back(std::move(variable));
+            }
             unit.star = std::clamp(instance.star, 1, 3);
+            unit.provenance.star = "observed:player_board_instance";
             unit.team = team;
 
             const auto role_value = std::clamp(profile.role, 0, 4);
             unit.role = static_cast<UnitRole>(role_value);
+            unit.provenance.role = "catalog:champion_combat_profile";
 
             unit.position.x = static_cast<int>(slot % 7);
             unit.position.y = static_cast<int>(slot / 7);
@@ -3851,11 +3888,16 @@ struct TFTEngine::Impl {
                 unit.position.x = 6 - unit.position.x;
             }
             unit.source_board_position = static_cast<int>(slot);
+            unit.provenance.position = "observed:player_board_slot";
 
             const double max_hp =
                 profile.max_hp > 0.0 ? profile.max_hp : stats.max_hp;
             unit.max_hp = static_cast<float>(std::max(1.0, max_hp > 0.0 ? max_hp : 100.0));
             unit.hp = unit.max_hp;
+            unit.provenance.max_hp = profile.max_hp > 0.0
+                ? "catalog:champion_combat_profile"
+                : (stats.max_hp > 0.0 ? "catalog:champion_base_stats" : "engine_fallback");
+            unit.provenance.hp = "derived:combat_start_full_health_from_max_hp";
 
             const double attack_damage =
                 profile.attack_damage > 0.0
@@ -3864,6 +3906,9 @@ struct TFTEngine::Impl {
             // Match TFTLobby._build_cpp_combat_input() fallbacks.
             unit.attack_damage = static_cast<float>(
                 std::max(1.0, attack_damage > 0.0 ? attack_damage : 30.0));
+            unit.provenance.attack_damage = profile.attack_damage > 0.0
+                ? "catalog:champion_combat_profile"
+                : (stats.attack_damage > 0.0 ? "catalog:champion_base_stats" : "engine_fallback");
 
             const double attack_speed =
                 profile.attack_speed > 0.0
@@ -3871,6 +3916,9 @@ struct TFTEngine::Impl {
                     : stats.attack_speed;
             unit.attack_speed = static_cast<float>(
                 std::max(0.1, attack_speed > 0.0 ? attack_speed : 1.0));
+            unit.provenance.attack_speed = profile.attack_speed > 0.0
+                ? "catalog:champion_combat_profile"
+                : (stats.attack_speed > 0.0 ? "catalog:champion_base_stats" : "engine_fallback");
 
             const double attack_range =
                 profile.attack_range > 0.0
@@ -3878,21 +3926,41 @@ struct TFTEngine::Impl {
                     : stats.attack_range;
             unit.attack_range = static_cast<float>(
                 std::max(1.0, attack_range > 0.0 ? attack_range : 1.0));
+            unit.provenance.attack_range = profile.attack_range > 0.0
+                ? "catalog:champion_combat_profile"
+                : (stats.attack_range > 0.0 ? "catalog:champion_base_stats" : "engine_fallback");
 
             unit.armor = static_cast<float>(
                 profile.armor > 0.0 ? profile.armor : stats.armor);
+            unit.provenance.armor = profile.armor > 0.0
+                ? "catalog:champion_combat_profile"
+                : (stats.armor != 0.0 ? "catalog:champion_base_stats" : "catalog_zero_or_missing");
             unit.magic_resist = static_cast<float>(
                 profile.magic_resist > 0.0
                     ? profile.magic_resist
                     : stats.magic_resist);
+            unit.provenance.magic_resist = profile.magic_resist > 0.0
+                ? "catalog:champion_combat_profile"
+                : (stats.magic_resist != 0.0 ? "catalog:champion_base_stats" : "catalog_zero_or_missing");
 
             unit.items = instance.items;
+            unit.provenance.items = "observed:player_board_instance_items";
+            unit.provenance.ability = "catalog:ability_name_description_variables_only_mapping_incomplete";
+            unit.provenance.mana = "engine_default_not_observed";
+            unit.provenance.max_mana = "engine_default_not_catalogued";
+            unit.provenance.ability_power = "engine_default_not_catalogued";
+            unit.provenance.critical_strike_chance = "engine_default_not_catalogued";
+            unit.provenance.critical_strike_damage = "engine_default_not_catalogued";
+            unit.provenance.damage_amplification = "engine_default_not_catalogued";
+            unit.provenance.damage_reduction = "engine_default_not_catalogued";
+            unit.provenance.omnivamp = "engine_default_not_catalogued";
 
             std::unordered_set<std::string> unit_traits(
                 definition->traits.begin(), definition->traits.end());
             for (const auto& item : instance.items) {
                 if (!item.grants_trait.empty()) unit_traits.insert(item.grants_trait);
             }
+            unit.provenance.traits = "derived:champion_catalog_traits_and_observed_item_grants";
             for (const auto& trait_name : unit_traits) {
                 CombatTrait trait;
                 trait.api_name = trait_name;
@@ -4052,9 +4120,49 @@ struct TFTEngine::Impl {
             player.damage_taken += applied;
         };
 
+        // This is the authoritative environment outcome, not a CombatEngine
+        // forecast. Replay infrastructure may persist it and attach immutable
+        // artifact/dataset identities later; without those identities it is
+        // deliberately ineligible for empirical calibration.
+        auto publish_combat_outcome = [&](std::size_t player_index,
+                                          std::size_t opponent_index,
+                                          std::int32_t attempted_damage,
+                                          double hp_before,
+                                          double hp_after,
+                                          const char* outcome_kind,
+                                          const std::string& simulator_version,
+                                          const std::string& coverage_status) {
+            if (episode_id == 0 || decision_sequence == 0 ||
+                strategic_context_sequences[player_index] == 0) return;
+            const nlohmann::json outcome{
+                {"contract_id", "tft.combat-outcome.v1"},
+                {"match_id", episode_id},
+                {"player_id", static_cast<std::int32_t>(player_index)},
+                {"opponent_id", static_cast<std::int32_t>(opponent_index)},
+                {"round", round + 1},
+                {"decision_sequence", decision_sequence},
+                {"strategic_context_sequence", strategic_context_sequences[player_index]},
+                {"hp_before", hp_before},
+                {"attempted_damage", attempted_damage},
+                {"incoming_damage", std::max(0.0, hp_before - hp_after)},
+                {"hp_after", hp_after},
+                {"outcome_kind", outcome_kind},
+                {"simulator_version", simulator_version},
+                {"mechanics_coverage_status", coverage_status},
+                {"source", "native_lobby_resolved_combat.v1"},
+                {"observed", true},
+                {"replay_artifact_id", nullptr},
+                {"dataset_version", nullptr},
+                {"calibration_eligible", false},
+                {"calibration_ineligibility_reason", "awaiting_versioned_replay_artifact"}
+            };
+            events.emplace_back("COMBAT_OUTCOME_V1:" + outcome.dump());
+        };
+
         for (const auto& [a, b] : matchups) {
             if (!player_envs[a].info.alive || !player_envs[b].info.alive) continue;
             CombatInput input{};
+            std::string combat_coverage_status{"unavailable_not_measured"};
             input.context = CombatContext::PVP;
             // Python TFTLobby sends the lobby seed unchanged for each
             // deterministic combat; unit IDs are sequential across both teams.
@@ -4094,8 +4202,17 @@ struct TFTEngine::Impl {
                     std::to_string(a) + " e " + std::to_string(b) +
                     "; dano de rodada aplicado aos dois");
                 const auto draw_damage = stage_damage(stage);
+                combat_coverage_status = "not_applicable_empty_board";
+                const double hp_a_before = player_envs[a].info.hp;
+                const double hp_b_before = player_envs[b].info.hp;
                 apply_damage(a, draw_damage);
                 apply_damage(b, draw_damage);
+                publish_combat_outcome(a, b, draw_damage, hp_a_before,
+                    player_envs[a].info.hp, "empty_board_draw",
+                    "not_applicable_empty_board", combat_coverage_status);
+                publish_combat_outcome(b, a, draw_damage, hp_b_before,
+                    player_envs[b].info.hp, "empty_board_draw",
+                    "not_applicable_empty_board", combat_coverage_status);
                 sync_player_economy(a);
                 sync_player_economy(b);
                 continue;
@@ -4105,6 +4222,7 @@ struct TFTEngine::Impl {
             std::int32_t winner_survivors = 0;
             std::int32_t loser_survivors = 0;
             if (empty_a || empty_b) {
+                combat_coverage_status = "not_applicable_empty_board";
                 winner = empty_a ? b : a;
                 loser = empty_a ? a : b;
                 winner_survivors = static_cast<std::int32_t>(
@@ -4157,37 +4275,249 @@ struct TFTEngine::Impl {
                     const bool matchup_valid =
                         combat_evidence::MatchupResolver{}.resolve(
                             snapshot, static_cast<std::int32_t>(b), resolved_opponent);
+                    const auto projection_snapshot =
+                        combat_evidence::CombatProjectionSnapshotBuilder{}.build(
+                            snapshot, input, strategic_context_sequences[a]);
+                    const bool opponent_sequence_valid =
+                        strategic_context_sequences[b] > 0 &&
+                        player_decision_sequences[b] > 0;
                     const bool snapshot_valid = validation.valid && matchup_valid &&
-                        resolved_opponent == static_cast<std::int32_t>(b);
+                        resolved_opponent == static_cast<std::int32_t>(b) &&
+                        projection_snapshot.valid && opponent_sequence_valid;
                     const std::string validation_reason = !validation.valid
                         ? validation.reason
                         : (!matchup_valid || resolved_opponent != static_cast<std::int32_t>(b)
-                            ? "actual_opponent_identity_mismatch" : "valid");
-                    // Publish the complete factual pair as a versioned structured
-                    // event in StepResult.events so replay/audit consumers can
-                    // persist it. Do not discard the roster or emit only a text
-                    // summary; invalid snapshots are retained with their reason.
+                            ? "actual_opponent_identity_mismatch"
+                            : (!projection_snapshot.valid
+                                ? projection_snapshot.validation_reason
+                                : (!opponent_sequence_valid
+                                    ? "opponent_decision_sequence_unavailable" : "valid")));
+                    // Preserve the exact immutable CombatInput projection used by
+                    // the authoritative simulator. Catalog fallbacks remain explicit
+                    // in the serialized values and coverage metadata; they are not
+                    // relabeled as raw observed champion stats.
+                    const auto serialize_effects = [](const auto& effects) {
+                        nlohmann::json serialized = nlohmann::json::array();
+                        for (const auto& effect : effects) {
+                            serialized.push_back({
+                                {"trigger", effect.trigger}, {"operation", effect.operation},
+                                {"stat", effect.stat}, {"target", effect.target},
+                                {"condition", effect.condition},
+                                {"condition_trait", effect.condition_trait},
+                                {"stack_key", effect.stack_key},
+                                {"damage_type", static_cast<int>(effect.damage_type)},
+                                {"value", effect.value}, {"duration", effect.duration},
+                                {"interval", effect.interval}, {"delay", effect.delay},
+                                {"health_threshold", effect.health_threshold},
+                                {"max_stacks", effect.max_stacks},
+                                {"min_trait_count", effect.min_trait_count},
+                                {"percent_of_max_health", effect.percent_of_max_health},
+                                {"percent_of_stat", effect.percent_of_stat}
+                            });
+                        }
+                        return serialized;
+                    };
+                    const auto serialize_team = [&](const CombatTeam& team) {
+                        nlohmann::json units = nlohmann::json::array();
+                        for (const auto& unit : team.units) {
+                            nlohmann::json items = nlohmann::json::array();
+                            for (const auto& item : unit.items) {
+                                items.push_back({
+                                    {"api_name", item.api_name}, {"name", item.name},
+                                    {"effects_complete", item.effects_complete},
+                                    {"attack_damage", item.attack_damage},
+                                    {"ability_power", item.ability_power},
+                                    {"attack_speed", item.attack_speed},
+                                    {"critical_strike_chance", item.critical_strike_chance},
+                                    {"critical_strike_damage", item.critical_strike_damage},
+                                    {"health", item.health}, {"armor", item.armor},
+                                    {"magic_resist", item.magic_resist}, {"mana", item.mana},
+                                    {"omnivamp", item.omnivamp},
+                                    {"damage_amplification", item.damage_amplification},
+                                    {"damage_reduction", item.damage_reduction},
+                                    {"is_temporary", item.is_temporary},
+                                    {"grants_trait", item.grants_trait},
+                                    {"effects", serialize_effects(item.effects)},
+                                    {"effect_metadata_present", item.effects_complete}
+                                });
+                            }
+                            nlohmann::json traits = nlohmann::json::array();
+                            for (const auto& trait : unit.traits) {
+                                traits.push_back({
+                                    {"api_name", trait.api_name},
+                                    {"active", trait.active},
+                                    {"active_count", trait.active_count},
+                                    {"tier", trait.tier},
+                                    {"effects", serialize_effects(trait.effects)},
+                                    {"effects_complete", trait.effects_complete},
+                                    {"effect_metadata_present", trait.effects_complete}
+                                });
+                            }
+                            const auto& ability = unit.ability;
+                            units.push_back({
+                                {"engine_unit_id", unit.id},
+                                {"unit_uuid", unit.source_unit_uuid},
+                                {"api_name", unit.api_name},
+                                {"name", unit.name},
+                                {"star", unit.star},
+                                {"role", static_cast<int>(unit.role)},
+                                {"source_board_position", unit.source_board_position},
+                                {"position", {{"x", unit.position.x}, {"y", unit.position.y}}},
+                                {"stats", {
+                                    {"hp", unit.hp}, {"max_hp", unit.max_hp},
+                                    {"mana", unit.mana}, {"max_mana", unit.max_mana},
+                                    {"attack_damage", unit.attack_damage},
+                                    {"ability_power", unit.ability_power},
+                                    {"attack_speed", unit.attack_speed},
+                                    {"attack_range", unit.attack_range},
+                                    {"critical_strike_chance", unit.critical_strike_chance},
+                                    {"critical_strike_damage", unit.critical_strike_damage},
+                                    {"armor", unit.armor}, {"magic_resist", unit.magic_resist},
+                                    {"damage_amplification", unit.damage_amplification},
+                                    {"damage_reduction", unit.damage_reduction},
+                                    {"omnivamp", unit.omnivamp}
+                                }},
+                                {"ability", {
+                                    {"api_name", ability.api_name},
+                                    {"name", ability.name},
+                                    {"description", ability.description},
+                                    {"variables", [&]() {
+                                        nlohmann::json variables = nlohmann::json::array();
+                                        for (const auto& variable : ability.variables)
+                                            variables.push_back({
+                                                {"name", variable.name},
+                                                {"values", variable.values}
+                                            });
+                                        return variables;
+                                    }()},
+                                    {"metadata_complete", ability.metadata_complete},
+                                    {"mana_cost", ability.mana_cost},
+                                    {"initial_mana", ability.initial_mana},
+                                    {"target_type", static_cast<int>(ability.target_type)},
+                                    {"damage_type", static_cast<int>(ability.damage_type)},
+                                    {"base_damage", ability.base_damage},
+                                    {"base_healing", ability.base_healing},
+                                    {"shield_amount", ability.shield_amount},
+                                    {"ability_power_ratio", ability.ability_power_ratio},
+                                    {"attack_damage_ratio", ability.attack_damage_ratio},
+                                    {"area_radius", ability.area_radius},
+                                    {"duration", ability.duration},
+                                    {"has_damage", ability.has_damage},
+                                    {"has_healing", ability.has_healing},
+                                    {"has_shield", ability.has_shield},
+                                    {"has_buff", ability.has_buff},
+                                    {"has_debuff", ability.has_debuff},
+                                    {"has_area_effect", ability.has_area_effect},
+                                    {"metadata_present", !ability.name.empty() || !ability.description.empty() || !ability.variables.empty()}
+                                }},
+                                {"items", std::move(items)},
+                                {"traits", std::move(traits)},
+                                {"value_provenance", {
+                                    {"identity", unit.provenance.identity},
+                                    {"star", unit.provenance.star},
+                                    {"position", unit.provenance.position},
+                                    {"hp", unit.provenance.hp},
+                                    {"max_hp", unit.provenance.max_hp},
+                                    {"attack_damage", unit.provenance.attack_damage},
+                                    {"attack_speed", unit.provenance.attack_speed},
+                                    {"attack_range", unit.provenance.attack_range},
+                                    {"armor", unit.provenance.armor},
+                                    {"magic_resist", unit.provenance.magic_resist},
+                                    {"mana", unit.provenance.mana},
+                                    {"max_mana", unit.provenance.max_mana},
+                                    {"ability_power", unit.provenance.ability_power},
+                                    {"critical_strike_chance", unit.provenance.critical_strike_chance},
+                                    {"critical_strike_damage", unit.provenance.critical_strike_damage},
+                                    {"damage_amplification", unit.provenance.damage_amplification},
+                                    {"damage_reduction", unit.provenance.damage_reduction},
+                                    {"omnivamp", unit.provenance.omnivamp},
+                                    {"role", unit.provenance.role},
+                                    {"ability", unit.provenance.ability},
+                                    {"items", unit.provenance.items},
+                                    {"traits", unit.provenance.traits}
+                                }},
+                                {"champion_script_metadata_present", ability.metadata_complete}
+                            });
+                        }
+                        return units;
+                    };
+                    const auto& coverage = projection_snapshot.coverage;
+                    const auto coverage_result =
+                        combat_evidence::CombatCoverageValidator{}.validate(coverage);
+                    combat_coverage_status = coverage_result.status;
                     const nlohmann::json combat_snapshot_event{
-                        {"contract_id", "tft.combat-snapshot.v1"},
+                        {"contract_id", "tft.combat-snapshot.v2"},
                         {"match_id", snapshot.match_id},
                         {"player_id", snapshot.player_id},
                         {"opponent_id", snapshot.opponent_id},
                         {"round", snapshot.round},
                         {"decision_sequence", snapshot.engine_decision_sequence},
+                        {"player_decision_sequence", player_decision_sequences[a]},
                         {"strategic_context_sequence", snapshot.sequence},
+                        {"opponent_decision_sequence", player_decision_sequences[b]},
+                        {"opponent_strategic_context_sequence", strategic_context_sequences[b]},
                         {"player_hp_before", snapshot.player_hp},
                         {"opponent_hp_before", snapshot.opponent_hp},
                         {"player_unit_uuids", snapshot.player_unit_ids},
                         {"opponent_unit_uuids", snapshot.opponent_unit_ids},
                         {"player_roster_complete", snapshot.player_roster_complete},
                         {"opponent_roster_complete", snapshot.opponent_roster_complete},
-                        {"mechanics_coverage_status", "not_measured_catalog_support_unavailable"},
-                        {"mechanics_coverage_complete", false},
+                        {"player_units", serialize_team(input.player_a)},
+                        {"opponent_units", serialize_team(input.player_b)},
+                        {"simulator", {
+                            {"name", "CombatEngine"},
+                            {"version", "combat-engine-generic.v1"},
+                            {"context", static_cast<int>(input.context)},
+                            {"board_rows", input.config.board_rows},
+                            {"board_cols", input.config.board_cols},
+                            {"seed", input.seed},
+                            {"config_seed", input.config.seed},
+                            {"deterministic", input.config.deterministic},
+                            {"debug", input.config.debug},
+                            {"max_duration", input.config.max_duration},
+                            {"max_events", input.config.max_events},
+                            {"record_events", input.config.record_events},
+                            {"record_damage", input.config.record_damage},
+                            {"record_targets", input.config.record_targets},
+                            {"record_positions", input.config.record_positions},
+                            {"record_mana", input.config.record_mana},
+                            {"record_abilities", input.config.record_abilities}
+                        }},
+                        {"snapshot_value_source", "authoritative_combat_engine_input_projection"},
+                        {"mechanics_coverage_status", coverage_result.status},
+                        {"mechanics_coverage_complete", coverage_result.complete},
+                        {"fully_supported_unit_fraction", coverage_result.supported_fraction},
+                        {"mechanics_coverage", {
+                            {"units_seen", coverage.units_seen},
+                            {"units_supported", coverage.units_supported},
+                            {"unsupported_abilities", coverage.unsupported_abilities},
+                            {"unsupported_traits", coverage.unsupported_traits},
+                            {"unsupported_items", coverage.unsupported_items},
+                            {"missing_scripts", coverage.missing_scripts},
+                            {"unsupported_effects", coverage.unsupported_effects},
+                            {"missing_ability_metadata", coverage.missing_ability_metadata},
+                            {"missing_item_effect_metadata", coverage.missing_item_effect_metadata},
+                            {"missing_trait_effect_metadata", coverage.missing_trait_effect_metadata},
+                            {"missing_unit_provenance", coverage.missing_unit_provenance},
+                            {"abilities_seen", coverage.abilities_seen},
+                            {"abilities_supported", coverage.abilities_supported},
+                            {"items_seen", coverage.items_seen},
+                            {"items_supported", coverage.items_supported},
+                            {"traits_seen", coverage.traits_seen},
+                            {"traits_supported", coverage.traits_supported},
+                            {"effects_seen", coverage.effects_seen},
+                            {"effects_supported", coverage.effects_supported},
+                            {"all_effects_catalogued", coverage.all_effects_catalogued}
+                        }},
+                        {"projection_snapshot_valid", projection_snapshot.valid},
+                        {"projection_snapshot_validation_reason", projection_snapshot.validation_reason},
+                        {"projection_status", "not_published_actual_matchup_resolved_after_decision_cycle"},
+                        {"decision_eligible", false},
                         {"validated", snapshot_valid},
                         {"validation_reason", validation_reason}
                     };
                     events.emplace_back(
-                        "COMBAT_SNAPSHOT_V1:" + combat_snapshot_event.dump());
+                        "COMBAT_SNAPSHOT_V2:" + combat_snapshot_event.dump());
                 }
                 const auto combat = combat_engine.simulate(input);
                 if (!combat.success || !combat.completed)
@@ -4327,8 +4657,16 @@ struct TFTEngine::Impl {
                         std::max(0, combat.player_b_survivors);
                     const auto damage_to_b = stage_damage(stage) +
                         std::max(0, combat.player_a_survivors);
+                    const double hp_a_before = player_envs[a].info.hp;
+                    const double hp_b_before = player_envs[b].info.hp;
                     apply_damage(a, damage_to_a);
                     apply_damage(b, damage_to_b);
+                    publish_combat_outcome(a, b, damage_to_a, hp_a_before,
+                        player_envs[a].info.hp, "draw", "combat-engine-generic.v1",
+                        combat_coverage_status);
+                    publish_combat_outcome(b, a, damage_to_b, hp_b_before,
+                        player_envs[b].info.hp, "draw", "combat-engine-generic.v1",
+                        combat_coverage_status);
                     sync_player_economy(a);
                     sync_player_economy(b);
                     events.emplace_back("COMBAT_DRAW_DAMAGE: jogadores " +
@@ -4357,7 +4695,21 @@ struct TFTEngine::Impl {
             last_pvp_result_credit_events.push_back(std::move(pvp_credit_event));
             economy_engine.register_loss(player_envs[loser].economy);
             const auto damage = stage_damage(stage) + std::max(0, winner_survivors);
+            const double loser_hp_before = player_envs[loser].info.hp;
             apply_damage(loser, damage);
+            publish_combat_outcome(loser, winner, damage, loser_hp_before,
+                player_envs[loser].info.hp, "resolved", 
+                combat_coverage_status == "not_applicable_empty_board"
+                    ? "not_applicable_empty_board" : "combat-engine-generic.v1",
+                combat_coverage_status);
+            const double winner_hp_before = player_envs[winner].info.hp;
+            publish_combat_outcome(winner, loser, 0, winner_hp_before,
+                player_envs[winner].info.hp,
+                combat_coverage_status == "not_applicable_empty_board"
+                    ? "empty_board_auto_win" : "resolved_win",
+                combat_coverage_status == "not_applicable_empty_board"
+                    ? "not_applicable_empty_board" : "combat-engine-generic.v1",
+                combat_coverage_status);
             const double winner_reward = combat_reward(
                 true, damage, 0, loser_survivors, winner_survivors);
             const double loser_reward = combat_reward(
@@ -5303,6 +5655,8 @@ ResetResult TFTEngine::reset(
     impl_->strategic_planner_commitments = {};
     for (auto& executor : impl_->strategic_action_executors) executor.reset();
     impl_->strategic_context_sequences.fill(0);
+    for (auto& evidence : impl_->pending_combat_prediction_evidence) evidence.reset();
+    impl_->pending_combat_prediction_events.clear();
     if (!impl_->strategic_shadow_audit_path.empty()) {
         std::error_code remove_error;
         std::filesystem::remove(impl_->strategic_shadow_audit_path, remove_error);
@@ -5746,6 +6100,12 @@ StepResult TFTEngine::step(
         round_events.begin(),
         round_events.end()
     );
+    result.events.insert(
+        result.events.end(),
+        impl_->pending_combat_prediction_events.begin(),
+        impl_->pending_combat_prediction_events.end()
+    );
+    impl_->pending_combat_prediction_events.clear();
 
     return result;
 }
@@ -5840,6 +6200,34 @@ void TFTEngine::set_strategic_direction_pivot_audit_path(const std::string& path
                 impl_->composition_intelligence_players[i].active,
                 impl_->strategic_planner_commitments[i], path);
     }
+}
+
+bool TFTEngine::publish_combat_prediction_evidence(
+    const combat_evidence::SurvivalRiskEvidence& evidence) {
+    if (!impl_) return false;
+    impl_->ensure_open();
+    if (!evidence.available || evidence.player_id < 0 ||
+        evidence.player_id >= static_cast<std::int32_t>(kPlayersPerLobby))
+        return false;
+    const auto player_id = static_cast<std::size_t>(evidence.player_id);
+    if (!impl_->player_envs[player_id].info.alive ||
+        evidence.match_id != impl_->episode_id ||
+        evidence.round != impl_->round + 1 ||
+        impl_->strategic_context_sequences[player_id] ==
+            std::numeric_limits<std::uint64_t>::max() ||
+        evidence.sequence != impl_->strategic_context_sequences[player_id] + 1)
+        return false;
+
+    strategy::StrategicSharedContext validation_context;
+    validation_context.match_id = impl_->episode_id;
+    validation_context.player_id = evidence.player_id;
+    validation_context.round = impl_->round + 1;
+    validation_context.sequence = evidence.sequence;
+    if (!combat_evidence::apply_to_economic_context(evidence, validation_context))
+        return false;
+
+    impl_->pending_combat_prediction_evidence[player_id] = evidence;
+    return true;
 }
 
 std::vector<std::string> TFTEngine::get_composition_diagnostics_jsonl() const {

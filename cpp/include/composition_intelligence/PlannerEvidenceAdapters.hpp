@@ -38,6 +38,15 @@ struct EconomicPlannerEvidence {
  std::string projected_income_source{"unavailable"};
  std::uint32_t projected_income_horizon_rounds{0};
  double projected_income_uncertainty{1.0};
+ double incoming_damage{0.0}, elimination_risk{0.0};
+ std::string incoming_damage_source{"unavailable"}, elimination_risk_source{"unavailable"};
+ std::uint32_t combat_horizon_rounds{0};
+ std::uint64_t combat_evidence_sequence{0};
+ double combat_evidence_uncertainty{1.0};
+ std::string combat_calibration_protocol_id;
+ std::string combat_calibration_report_sha256;
+ std::string combat_dataset_version;
+ std::vector<std::string> combat_replay_artifact_ids;
 };
 struct BoardPlannerEvidence {
  EvidenceSourceMetadata metadata;
@@ -77,6 +86,50 @@ struct PlannerEvidenceSnapshot {
 };
 class PlannerEvidenceAdapters {
 public:
+ static bool combat_context_valid(const strategy::StrategicSharedContext& c) {
+  const bool has_combat = c.evidence.estimated_incoming_damage ||
+   c.evidence.elimination_risk;
+  if(!has_combat)return true;
+  const auto approved_source=[](const std::string& source) {
+   return source=="observed_hp+approved_replay_calibration.v1" ||
+    source=="observed_hp+approved_replay_trajectory.v1";
+  };
+  return c.sequence>0&&c.combat_evidence_sequence==c.sequence&&
+   c.combat_evidence_horizon_rounds>0&&c.combat_evidence_horizon_rounds<=10&&
+   approved_source(c.incoming_damage_source)&&
+   approved_source(c.elimination_risk_source)&&
+   c.combat_calibration_protocol_id.size()>0&&
+   is_sha256(c.combat_calibration_report_sha256)&&
+   !c.combat_dataset_version.empty()&&!c.combat_replay_artifact_ids.empty()&&
+   std::isfinite(c.combat_evidence_uncertainty)&&
+   c.combat_evidence_uncertainty>=0.0&&c.combat_evidence_uncertainty<=1.0&&
+   (!c.evidence.estimated_incoming_damage||
+    (std::isfinite(c.estimated_incoming_damage)&&c.estimated_incoming_damage>=0.0))&&
+   (!c.evidence.elimination_risk||
+    (std::isfinite(c.elimination_risk)&&c.elimination_risk>=0.0&&c.elimination_risk<=1.0));
+ }
+
+ static bool combat_evidence_valid(
+  const strategy::StrategicSharedContext& c,const EconomicPlannerEvidence& e) {
+  if(c.evidence.estimated_incoming_damage!=e.incoming_damage_available||
+     c.evidence.elimination_risk!=e.elimination_risk_available||
+     !combat_context_valid(c))return false;
+  if(!e.incoming_damage_available&&!e.elimination_risk_available)return true;
+  return e.incoming_damage_source==c.incoming_damage_source&&
+   e.elimination_risk_source==c.elimination_risk_source&&
+   e.combat_horizon_rounds==c.combat_evidence_horizon_rounds&&
+   e.combat_evidence_sequence==c.combat_evidence_sequence&&
+   e.combat_calibration_protocol_id==c.combat_calibration_protocol_id&&
+   e.combat_calibration_report_sha256==c.combat_calibration_report_sha256&&
+   e.combat_dataset_version==c.combat_dataset_version&&
+   e.combat_replay_artifact_ids==c.combat_replay_artifact_ids&&
+   std::abs(e.combat_evidence_uncertainty-c.combat_evidence_uncertainty)<=1e-9&&
+   (!e.incoming_damage_available||
+    std::abs(e.incoming_damage-c.estimated_incoming_damage)<=1e-9)&&
+   (!e.elimination_risk_available||
+    std::abs(e.elimination_risk-c.elimination_risk)<=1e-9);
+ }
+
  static EconomicPlannerEvidence economic(const strategy::StrategicSharedContext& c,
   const strategy::EconomicControlDecision& d,std::uint32_t expected_round,
   std::int32_t expected_player_id) {
@@ -89,6 +142,13 @@ public:
       (!c.evidence.gold || c.interest_if_resolved_now != EconomyEngine{}.get_interest(c.gold))){
    o.metadata.available=false;o.metadata.quality=EvidenceQuality::Invalid;
    o.metadata.reason="interest_gold_inconsistency";o.evidence_invalid.push_back("interest_if_resolved_now");return o;
+  }
+  if(!combat_context_valid(c) &&
+   (c.evidence.estimated_incoming_damage || c.evidence.elimination_risk)) {
+   o.metadata.available=false;o.metadata.quality=EvidenceQuality::Invalid;
+   o.metadata.reason="combat_evidence_provenance_horizon_or_sequence_invalid";
+   o.evidence_invalid.push_back("combat_evidence_provenance");
+   return o;
   }
   if(!o.metadata.available)return o;
   o.gold=c.gold;o.level=c.level;o.xp=c.xp;o.xp_to_next=c.xp_to_next;
@@ -105,6 +165,19 @@ public:
   }
   o.incoming_damage_available=c.evidence.estimated_incoming_damage;
   o.elimination_risk_available=c.evidence.elimination_risk;
+  if (o.incoming_damage_available || o.elimination_risk_available) {
+   o.incoming_damage=c.estimated_incoming_damage;
+   o.elimination_risk=c.elimination_risk;
+   o.incoming_damage_source=c.incoming_damage_source;
+   o.elimination_risk_source=c.elimination_risk_source;
+   o.combat_horizon_rounds=c.combat_evidence_horizon_rounds;
+   o.combat_evidence_sequence=c.combat_evidence_sequence;
+   o.combat_evidence_uncertainty=c.combat_evidence_uncertainty;
+   o.combat_calibration_protocol_id=c.combat_calibration_protocol_id;
+   o.combat_calibration_report_sha256=c.combat_calibration_report_sha256;
+   o.combat_dataset_version=c.combat_dataset_version;
+   o.combat_replay_artifact_ids=c.combat_replay_artifact_ids;
+  }
   o.progression_available=c.evidence.progression_plan;
   o.win_streak_available=c.evidence.streaks;o.loss_streak_available=c.evidence.streaks;
   o.sufficient_evidence=d.sufficient_evidence;
@@ -182,5 +255,10 @@ private:
  }
  static double unit(double v){return std::isfinite(v)?std::clamp(v,0.0,1.0):0.0;}
  static double signed_unit(double v){return std::isfinite(v)?std::clamp(v,-1.0,1.0):0.0;}
+ static bool is_sha256(const std::string& value) {
+  return value.size()==64&&std::all_of(value.begin(),value.end(),[](unsigned char c) {
+   return (c>='0'&&c<='9')||(c>='a'&&c<='f');
+  });
+ }
 };
 } // namespace tft::composition_intelligence
