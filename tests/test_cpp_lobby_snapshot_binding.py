@@ -84,7 +84,7 @@ class FakeNativeLobby:
                     "board_quality_score": 0.0,
                     "strategic_state": {
                         "contract_id": "tft.strategic-owner-observation",
-                        "contract_version": 2,
+                        "contract_version": 3,
                         "source_namespace": "tft.engine.strategic-owners",
                         "producer": "TFTEngine::get_audit_snapshot",
                         "episode_id": self.episode_id,
@@ -109,6 +109,15 @@ class FakeNativeLobby:
                         "pivot_reference_unit_ids": [],
                         "unit_copy_progress": [],
                         "opportunity_cost_available": False,
+                        "planner_outputs_valid": False,
+                        "planner_output_sequence": 0,
+                        "unit_priorities": [],
+                        "lineup_selected_unit_ids": [],
+                        "lineup_entry_unit_ids": [],
+                        "lineup_exit_unit_ids": [],
+                        "lineup_deferred_unit_ids": [],
+                        "strategic_refresh_failed": False,
+                        "strategic_refresh_failure_reason": "",
                     },
                     "board": [{"occupied": False, "champion_id": "", "uuid": "", "star": 0, "cost": 0, "items": [], "trait_names": [], "role": 3, "attack_damage": 0.0, "attack_speed": 0.0, "max_health": 0.0, "armor": 0.0, "magic_resist": 0.0} for _ in range(28)],
                     "bench": [{"occupied": False, "champion_id": "", "uuid": "", "star": 0, "cost": 0, "items": [], "trait_names": [], "role": 3, "attack_damage": 0.0, "attack_speed": 0.0, "max_health": 0.0, "armor": 0.0, "magic_resist": 0.0} for _ in range(9)],
@@ -290,7 +299,7 @@ def test_reset_masks_are_taken_from_same_native_snapshot(monkeypatch):
         assert metadata["player_decision_sequences"] == [1] * 8
         strategic = metadata["native_state_snapshot"]["players"][0]["strategic_state"]
         assert strategic["contract_id"] == "tft.strategic-owner-observation"
-        assert strategic["contract_version"] == 2
+        assert strategic["contract_version"] == 3
         assert strategic["player_decision_sequence"] == 1
         assert strategic["strategic_context_sequence"] == 0
         assert strategic["active_composition_valid"] is False
