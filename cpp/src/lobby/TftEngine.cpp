@@ -2673,6 +2673,8 @@ struct TFTEngine::Impl {
                         // Keep per-unit contribution unavailable rather than
                         // substituting purchase cost and star tier for marginal board value.
                         evidence.board_contribution = 0.0;
+                        evidence.board_contribution_available = false;
+                        evidence.synergy_contribution_available = true;
                         std::size_t matching_traits = 0;
                         for (const auto& trait : definition->traits) {
                             if (std::find(strategic_context.current_core_traits.begin(),
