@@ -43,6 +43,9 @@ struct OwnedUnitEvidence {
     bool explicit_sell_candidate{false};
     // Physical owned instances by star tier; does not include shop or pool copies.
     std::array<std::int32_t, 4> copies_by_star{};
+    // Appended availability flags: unavailable evidence is not a measured zero.
+    bool board_contribution_available{false};
+    bool synergy_contribution_available{false};
 };
 
 struct CandidateEvidence {
