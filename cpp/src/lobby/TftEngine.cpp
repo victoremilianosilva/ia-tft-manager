@@ -2069,20 +2069,24 @@ struct TFTEngine::Impl {
                             continue;
                         }
 
-                        // A zero transition cost is evidence-backed only when
-                        // every destination unit is already physically owned.
-                        // Until a native marginal-cost producer is available,
-                        // do not turn missing acquisition/opportunity costs into
-                        // an invented zero or approve an unaffordable pivot.
-                        if (!all_destination_units_owned) {
-                            // Until the native marginal-cost owner can price an
-                            // acquisition, retain only zero-acquisition pivots.
-                            // Missing purchase/opportunity cost is never zero.
-                            continue;
+                        // Price the first required copy of every unowned target
+                        // unit from the live catalog. Shop/pool evidence above decides
+                        // reachability; it never turns an unknown unit into free gold.
+                        double direct_acquisition_cost = 0.0;
+                        for (const auto& required : feasibility.required_units) {
+                            const auto owned = strategic_native_owned.find(required.champion_id);
+                            if (owned == strategic_native_owned.end() || owned->second.copies <= 0)
+                                direct_acquisition_cost += required.cost;
                         }
+                        const auto spend_after_acquisition = std::max(
+                            0, economy.gold - static_cast<std::int32_t>(
+                                std::ceil(direct_acquisition_cost)));
+                        const double lost_interest = std::max(0,
+                            economy_engine.get_interest(economy.gold) -
+                            economy_engine.get_interest(spend_after_acquisition));
                         feasibility.protected_gold_floor = 0;
                         feasibility.transition_economic_cost =
-                            all_destination_units_owned ? 0.0 : -1.0;
+                            direct_acquisition_cost + lost_interest;
 
                         native_input.pivot_candidate = std::move(pivot);
                         native_input.pivot_destination = *destination_it;
@@ -2195,14 +2199,10 @@ struct TFTEngine::Impl {
                 observed.copies_by_star = physical_tiers;
                 observed.on_board = observed.on_board || on_board;
                 observed.on_bench = observed.on_bench || !on_board;
-                observed.board_contribution = std::max(
-                    observed.board_contribution, on_board
-                        ? std::clamp(definition->cost / 5.0 * 0.5 +
-                            std::clamp(unit.star, 1, 3) / 3.0 * 0.5, 0.0, 1.0)
-                        : 0.0);
-                observed.item_fit = std::max(observed.item_fit,
-                    std::clamp(static_cast<double>(unit.items.size()) / 3.0,
-                               0.0, 1.0));
+                // Per-unit board contribution and item fit are unavailable here:
+                // cost/star and equipped-item count are not valid substitutes.
+                observed.board_contribution = 0.0;
+                observed.item_fit = 0.0;
             };
             for (const auto& unit : player_envs[i].board)
                 if (unit) append_native_owned(*unit, true);
@@ -2453,19 +2453,16 @@ struct TFTEngine::Impl {
                               active_native_direction->unit_ids.end(),
                               definition->internal_id) !=
                         active_native_direction->unit_ids.end();
-                candidate.board_contribution = on_board
-                    ? std::clamp(
-                        definition->cost / 5.0 * 0.5 +
-                        std::clamp(unit.star, 1, 3) / 3.0 * 0.5,
-                        0.0, 1.0)
-                    : 0.0;
+                // No per-unit marginal board evaluator is available at this boundary.
+                candidate.board_contribution = 0.0;
                 candidate.composition_fit =
                     !strategic_context.current_composition_direction.empty() &&
                     std::find(definition->traits.begin(), definition->traits.end(),
                               strategic_context.current_composition_direction) !=
                         definition->traits.end() ? 1.0 : 0.0;
-                candidate.item_fit = std::clamp(
-                    static_cast<double>(unit.items.size()) / 3.0, 0.0, 1.0);
+                // Item fit is produced by ItemFitCache for actual item/profile pairs;
+                // item count alone is not an item-fit measurement.
+                candidate.item_fit = 0.0;
                 candidate.traits = definition->traits;
                 for (const auto& item : unit.items) {
                     if (!item.grants_trait.empty() &&
@@ -2674,12 +2671,9 @@ struct TFTEngine::Impl {
                             evidence.synergy_contribution = 0.0;
                         }
                         evidence.champion_id = id;
-                        const double board_value = on_board
-                            ? std::clamp(definition->cost / 5.0 * 0.5 +
-                                std::clamp(unit.star, 1, 3) / 3.0 * 0.5, 0.0, 1.0)
-                            : 0.0;
-                        evidence.board_contribution = std::max(
-                            evidence.board_contribution, board_value);
+                        // Keep per-unit contribution unavailable rather than
+                        // substituting purchase cost and star tier for marginal board value.
+                        evidence.board_contribution = 0.0;
                         std::size_t matching_traits = 0;
                         for (const auto& trait : definition->traits) {
                             if (std::find(strategic_context.current_core_traits.begin(),
@@ -2772,9 +2766,9 @@ struct TFTEngine::Impl {
                     const double size = static_cast<double>(std::max<std::size_t>(1, candidate.units.size()));
                     evidence.board_fit = static_cast<double>(board_hits) / size;
                     evidence.availability = static_cast<double>(available_hits) / size;
-                    evidence.item_fit = owned_hits > 0
-                        ? static_cast<double>(item_bearing_hits) / static_cast<double>(owned_hits)
-                        : 0.5;
+                    // Item-bearing-unit ratio is not item fit. Real item/profile
+                    // compatibility is computed by ItemFitCache in item evidence.
+                    evidence.item_fit = 0.0;
                     evidence.economy_feasibility = estimated_cost <= 0.0 ? 1.0 :
                         std::clamp(static_cast<double>(std::max(0, economy.gold)) / std::max(1.0, estimated_cost), 0.0, 1.0);
                     evidence.estimated_gold_cost = estimated_cost;
