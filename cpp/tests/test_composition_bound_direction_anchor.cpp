@@ -16,24 +16,21 @@ int main() {
         {30, UnitRole::Support, false, 60}
     };
 
-    const auto anchor = CompositionBoundDirectionAnchor::from_active_composition(active);
+    // A composition ID is not a semantic direction. Without an explicit
+    // direction owner, the adapter must refuse to manufacture one.
+    assert(!CompositionBoundDirectionAnchor::from_active_composition(active));
+
+    const auto anchor =
+        CompositionBoundDirectionAnchor::from_active_composition(active, "TraitBruiser");
     assert(anchor.has_value());
     assert(anchor->is_valid());
     assert(anchor->composition_bound);
     assert(anchor->composition_identity == active.candidate.composition_id);
     assert(anchor->composition_version == active.version);
-    assert(anchor->direction == active.candidate.composition_id);
+    assert(anchor->direction == "TraitBruiser");
     assert(anchor->lifecycle == StrategicAnchorLifecycle::Active);
     assert((anchor->reference_unit_ids == std::vector<std::int32_t>{10, 20, 30}));
     assert(anchor->reason == "derived_from_active_composition_identity_and_version");
-
-    // When the native candidate producer knows the semantic direction, the
-    // bound anchor must preserve it instead of confusing it with composition ID.
-    const auto explicitly_bound =
-        CompositionBoundDirectionAnchor::from_active_composition(active, "TraitBruiser");
-    assert(explicitly_bound.has_value());
-    assert(explicitly_bound->direction == "TraitBruiser");
-    assert(explicitly_bound->composition_identity == active.candidate.composition_id);
 
     auto invalid = active;
     invalid.version = 0;
