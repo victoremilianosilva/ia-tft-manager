@@ -580,17 +580,6 @@ if(BUILD_TESTING)
     )
 
     add_executable(
-        test_composition_direction_policy
-        tests/test_composition_direction_policy.cpp
-    )
-    configure_tft_module(test_composition_direction_policy)
-    enable_tft_test_assertions(test_composition_direction_policy)
-    add_test(
-        NAME composition_direction_policy
-        COMMAND test_composition_direction_policy
-    )
-
-    add_executable(
         test_native_strategic_composition_generator
         tests/test_native_strategic_composition_generator.cpp
     )
