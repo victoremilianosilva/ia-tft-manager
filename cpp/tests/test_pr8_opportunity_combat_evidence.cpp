@@ -203,6 +203,10 @@ int main() {
     assert(context.combat_calibration_report_sha256 == std::string(64, 'a'));
     assert(context.combat_dataset_version == "tft-replay-dataset.v1");
     assert(context.combat_replay_artifact_ids.size() == 1);
+    auto horizon_criteria = criteria;
+    horizon_criteria.protocol_id = "combat-horizon.v1";
+    auto horizon_metrics = metrics;
+    horizon_metrics.report_sha256 = std::string(64, 'e');
     std::vector<combat_evidence::CombatHorizonTrajectory> trajectories;
     for (std::uint64_t i = 0; i < 40; ++i) {
         combat_evidence::CombatHorizonTrajectory trajectory;
@@ -211,21 +215,16 @@ int main() {
         trajectory.player_id = 0;
         trajectory.scenario_weight = 1.0 / 40.0;
         trajectory.uncertainty = 0.10;
-        trajectory.calibrated = true;
-        trajectory.calibration_protocol_id = "combat-horizon.v1";
-        trajectory.calibration_report_sha256 = std::string(64, 'e');
-        trajectory.calibration_train_manifest_sha256 = std::string(64, 'b');
-        trajectory.calibration_validation_manifest_sha256 = std::string(64, 'c');
-        trajectory.calibration_test_manifest_sha256 = std::string(64, 'd');
-        trajectory.episode_splits_disjoint = true;
-        trajectory.calibration_mae = 1.0;
-        trajectory.calibration_p90_coverage = 0.90;
-        trajectory.calibration_brier_score = 0.05;
+        trajectory.engine_version = "combat-engine.v1";
+        trajectory.composition_signature = "composition-sha256";
+        trajectory.mechanics_signature = "mechanics-sha256";
         trajectory.replay_artifact_id = "trajectory-replay-" + std::to_string(i % 4);
         trajectory.dataset_version = "combat-trajectories.v1";
-        trajectory.source = "approved_replay_trajectory.v1";
+        trajectory.source = "experimental_replay_trajectory.v1";
         trajectory.steps.push_back({50, 50, 1, 5.0, 0.0});
         trajectory.steps.push_back({51, 51, 2, i < 20 ? 16.0 : 5.0, 0.0});
+        assert(combat_evidence::approve_trajectory_calibration(
+            trajectory, horizon_metrics, horizon_criteria));
         trajectories.push_back(std::move(trajectory));
     }
     const auto multi_round_risk = combat_evidence::derive_multi_round_survival_risk(
