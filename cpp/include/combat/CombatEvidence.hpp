@@ -573,6 +573,8 @@ struct CalibrationEvaluationResult {
     CalibrationValidationMetrics metrics;
 };
 
+inline bool is_sha256(const std::string& value);
+
 inline CalibrationEvaluationResult evaluate_calibration_predictions(
     const std::vector<CalibrationPredictionEvaluationSample>& samples,
     const CombatCalibrationCohort& cohort,
@@ -646,7 +648,10 @@ inline CalibrationEvaluationResult evaluate_calibration_predictions(
             out.reason = "duplicate_prediction_outcome_pair";
             return out;
         }
-        split_matches[split_index].insert(sample.match_id);
+        if (!split_matches[split_index].insert(sample.match_id).second) {
+            out.reason = "duplicate_match_in_evaluation_split";
+            return out;
+        }
         ++split_counts[split_index];
 
         if (sample.split == CalibrationDatasetSplit::TEST) {
