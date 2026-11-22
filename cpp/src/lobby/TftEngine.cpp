@@ -6025,6 +6025,8 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
             if (anchors.direction_anchor.is_valid()) {
                 strategic.direction_valid = true;
                 strategic.direction_identity = anchors.direction_anchor.identity;
+                strategic.direction_value_for_diagnostics =
+                    anchors.direction_anchor.direction;
                 strategic.direction_reference_unit_ids =
                     anchors.direction_anchor.reference_unit_ids;
             }
