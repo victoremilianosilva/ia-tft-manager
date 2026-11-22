@@ -183,6 +183,28 @@ int main() {
     stale.sequence = 30;
     assert(!builder.build(stale, input, 31).valid);
 
+    auto wrong_hp = input;
+    wrong_hp.player_a.player_hp += 1.0f;
+    const auto wrong_hp_snapshot = builder.build(identity, wrong_hp, 31);
+    assert(!wrong_hp_snapshot.valid);
+    assert(wrong_hp_snapshot.validation_reason ==
+        "combat_input_matchup_or_hp_identity_mismatch");
+
+    auto invalid_stat = input;
+    invalid_stat.player_a.units.front().attack_damage =
+        std::numeric_limits<float>::quiet_NaN();
+    const auto invalid_stat_snapshot = builder.build(identity, invalid_stat, 31);
+    assert(!invalid_stat_snapshot.valid);
+    assert(invalid_stat_snapshot.validation_reason ==
+        "combat_input_unit_identity_or_board_position_invalid");
+
+    auto invalid_config = input;
+    invalid_config.config.seed += 1;
+    const auto invalid_config_snapshot = builder.build(identity, invalid_config, 31);
+    assert(!invalid_config_snapshot.valid);
+    assert(invalid_config_snapshot.validation_reason ==
+        "combat_input_simulator_configuration_invalid");
+
     auto wrong_matchup = input;
     wrong_matchup.player_b.player_id = 2;
     assert(!builder.build(identity, wrong_matchup, 31).valid);
