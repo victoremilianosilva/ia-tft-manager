@@ -25,6 +25,29 @@ CombatUnit make_unit(int id, UnitTeam team, int x, int source_slot) {
     unit.attack_range = 1.0f;
     unit.ability.api_name = "generic_basic_attack_only";
     unit.ability.metadata_complete = true;
+    auto& provenance = unit.provenance;
+    provenance.identity = "observed:test_fixture";
+    provenance.star = "observed:test_fixture";
+    provenance.position = "observed:test_fixture";
+    provenance.hp = "derived:test_fixture";
+    provenance.max_hp = "catalog:test_fixture";
+    provenance.attack_damage = "catalog:test_fixture";
+    provenance.attack_speed = "catalog:test_fixture";
+    provenance.attack_range = "catalog:test_fixture";
+    provenance.armor = "catalog:test_fixture";
+    provenance.magic_resist = "catalog:test_fixture";
+    provenance.mana = "observed:test_fixture";
+    provenance.max_mana = "catalog:test_fixture";
+    provenance.ability_power = "catalog:test_fixture";
+    provenance.critical_strike_chance = "catalog:test_fixture";
+    provenance.critical_strike_damage = "catalog:test_fixture";
+    provenance.damage_amplification = "catalog:test_fixture";
+    provenance.damage_reduction = "catalog:test_fixture";
+    provenance.omnivamp = "catalog:test_fixture";
+    provenance.role = "catalog:test_fixture";
+    provenance.ability = "catalog:test_fixture_complete";
+    provenance.items = "observed:test_fixture";
+    provenance.traits = "derived:test_fixture";
     return unit;
 }
 
@@ -99,6 +122,14 @@ int main() {
     assert(supported_effect_snapshot.valid && supported_effect_coverage.complete);
     assert(supported_effect_snapshot.coverage.effects_seen == 1);
     assert(supported_effect_snapshot.coverage.effects_supported == 1);
+
+    auto fallback_stat_input = input;
+    fallback_stat_input.player_a.units.front().provenance.attack_damage =
+        "engine_fallback";
+    const auto fallback_stat_snapshot =
+        builder.build(identity, fallback_stat_input, 31);
+    assert(!CombatCoverageValidator{}.validate(fallback_stat_snapshot.coverage).complete);
+    assert(fallback_stat_snapshot.coverage.missing_unit_provenance == 1);
 
     auto unsupported_effect_input = supported_effect_input;
     unsupported_effect_input.player_a.units.front().items.front().effects.front().trigger.clear();
