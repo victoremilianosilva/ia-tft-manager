@@ -30,7 +30,7 @@ int main() {
     assert(anchor->direction == "TraitBruiser");
     assert(anchor->lifecycle == StrategicAnchorLifecycle::Active);
     assert((anchor->reference_unit_ids == std::vector<std::int32_t>{10, 20, 30}));
-    assert(anchor->reason == "derived_from_active_composition_identity_and_version");
+    assert(anchor->reason == "bound_to_active_composition_and_committed_direction");
 
     auto invalid = active;
     invalid.version = 0;
