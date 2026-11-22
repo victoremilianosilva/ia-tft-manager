@@ -116,6 +116,7 @@ def _metadata():
         "planner_outputs_valid": False,
         "planner_output_sequence": 0,
         "unit_priorities": [],
+        "opportunity_costs": [],
         "lineup_selected_unit_ids": [],
         "lineup_entry_unit_ids": [],
         "lineup_exit_unit_ids": [],
