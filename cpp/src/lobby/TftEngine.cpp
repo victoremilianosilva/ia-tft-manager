@@ -1774,10 +1774,21 @@ struct TFTEngine::Impl {
                 planner_context.evidence.board_power = true;
                 planner_context.current_composition_direction =
                     strategic_planner_commitments[i].composition_direction;
-                if (planner_context.current_composition_direction.empty() && native_active &&
-                    native_active->candidate.composition_id.compare(0, 7, "native:") == 0) {
-                    planner_context.current_composition_direction =
-                        native_active->candidate.composition_id.substr(7);
+                if (planner_context.current_composition_direction.empty() && source_active) {
+                    // Native candidate IDs are snapshot-scoped and include the
+                    // candidate-set envelope. Resolve the semantic direction
+                    // from the exact generator row that owns this composition;
+                    // never use the opaque composition identity as a direction.
+                    const auto active_generated = std::find_if(
+                        native_generation.candidates.begin(),
+                        native_generation.candidates.end(),
+                        [&](const auto& generated) {
+                            return generated.identity ==
+                                source_active->candidate.composition_id;
+                        });
+                    if (active_generated != native_generation.candidates.end())
+                        planner_context.current_composition_direction =
+                            active_generated->direction;
                 }
 
                 for (const auto& [champion_id, owned] : strategic_native_owned) {
@@ -1931,6 +1942,17 @@ struct TFTEngine::Impl {
                 }
 
                 auto planner_commitment = strategic_planner_commitments[i];
+                if (planner_commitment.composition_direction.empty() && source_active &&
+                    !planner_context.current_composition_direction.empty()) {
+                    // Composition Intelligence may publish the native candidate
+                    // before the strategic runtime's first refresh. Bind the
+                    // planner's committed direction from that exact native
+                    // candidate before constructing its composition-bound anchor.
+                    planner_commitment.composition_direction =
+                        planner_context.current_composition_direction;
+                    strategic_planner_commitments[i].composition_direction =
+                        planner_context.current_composition_direction;
+                }
                 strategy::StrategicPlanDecision planner_decision;
                 if (planner_context.current_composition_direction.empty()) {
                     planner_decision =
