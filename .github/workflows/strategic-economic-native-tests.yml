@@ -1,38 +1,6 @@
 name: Strategic and economic native tests
 
 on:
-  push:
-    paths:
-      - 'cpp/CMakeLists.txt'
-      - 'cpp/include/strategy/**'
-      - 'cpp/include/composition_intelligence/**'
-      - 'cpp/include/lobby/TftEngine.hpp'
-      - 'cpp/src/lobby/TftEngine.cpp'
-      - 'cpp/bindings/tft_engine_bindings.cpp'
-      - 'cpp/tests/test_strategic_planner.cpp'
-      - 'cpp/tests/test_economic_controller.cpp'
-      - 'cpp/tests/test_strategic_action_candidate_builder.cpp'
-      - 'cpp/tests/test_contextual_action_evaluator.cpp'
-      - 'cpp/tests/test_composition_action_evaluator.cpp'
-      - 'tests/test_strategic_evidence_context_architecture.py'
-      - 'cpp/tests/test_native_strategic_composition_generator.cpp'
-      - 'cpp/tests/test_strategic_evidence_context.cpp'
-      - 'cpp/tests/test_strategic_action_executor.cpp'
-      - 'cpp/tests/test_strategic_position_planner.cpp'
-      - 'cpp/tests/test_active_composition_manager.cpp'
-      - 'cpp/tests/test_composition_evaluation.cpp'
-      - 'cpp/tests/test_pivot_feasibility_evaluator.cpp'
-      - 'cpp/tests/test_strategic_pivot_transition_coordinator.cpp'
-      - 'cpp/tests/test_unit_priority_planner.cpp'
-      - 'cpp/tests/test_strategic_direction_pivot_audit_recorder.cpp'
-      - 'cpp/tests/test_tft_engine_pool.cpp'
-      - 'cpp/include/composition_intelligence/ShadowFailureBoundary.hpp'
-      - 'cpp/tests/test_shadow_failure_boundary.cpp'
-      - 'tests/test_shadow_ppo_isolation_architecture.py'
-      - 'tests/test_strategic_evidence_context_architecture.py'
-      - 'tests/test_strategic_evidence_context_architecture.py'
-      - 'docs/shadow-ppo-isolation-contract.md'
-      - '.github/workflows/strategic-economic-native-tests.yml'
   pull_request:
     paths:
       - 'cpp/CMakeLists.txt'

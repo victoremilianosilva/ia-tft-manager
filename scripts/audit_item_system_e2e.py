@@ -232,14 +232,14 @@ def run_audit(
         report["checks"]["observations"] = {"shape": list(observations.shape), "finite": True}
 
         from policy import TFTPolicy
-        policy = TFTPolicy(obs_dim, ACTION_DIMS).to(device)
-        migrated = bool(policy.load_compatible_state_dict(source_state))
+        policy = TFTPolicy(obs_dim, ACTION_DIMS, require_semantic_state=False).to(device)
+        policy.load_state_dict(source_state, strict=True)
         policy.eval()
         report["checks"]["checkpoint"] = {
             "loaded": True,
             "obs_dim": obs_dim,
             "action_dims": ACTION_DIMS,
-            "compatible_migration_applied": migrated,
+            "strict_checkpoint_load": True,
             "item_heads_present_in_checkpoint": all(
                 key in source_state for key in (
                     "item_inventory_head.weight", "item_component_first_head.weight",

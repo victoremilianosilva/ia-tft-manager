@@ -1,9 +1,6 @@
 name: Observation Schema Contract
 
 on:
-  push:
-    branches:
-      - "spec/observation-schema-v1-draft"
   pull_request:
     paths:
       - "spec/observation-schema.v1.draft.json"

@@ -27,7 +27,7 @@ def _complete_mask_bundle(masks, batch_size, device="cpu"):
 
 def _fixture():
     torch.manual_seed(781)
-    policy = TFTPolicy(obs_dim=162, action_dims=[9, 5, 9, 28, 28, 28], hidden_size=64)
+    policy = TFTPolicy(obs_dim=162, action_dims=[9, 5, 9, 28, 28, 28], hidden_size=64, require_semantic_state=False)
     obs = torch.randn(2, 162)
     masks = {
         "type_mask": torch.zeros(2, 9, dtype=torch.bool),

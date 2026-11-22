@@ -24,29 +24,34 @@ python -m viewer.main
 
 Consulte [build e testes](docs/build-and-tests.md) para os pré-requisitos e [viewer](docs/viewer.md) para checkpoints e limitações.
 
-## Avaliação unificada da policy
+## Treinamento PPO nativo
 
-Para gerar um relatório consolidado de auditoria estratégica, ações/recompensas,
-máscaras, ciclos de estado e loops nativos em um único Markdown:
+Para iniciar um treino novo e isolado, sem importar checkpoints históricos:
 
 ~~~powershell
-python scripts/evaluate_all.py --checkpoint checkpoints/latest.pt --seeds 11,12,13
+python train_native.py --output-dir training_runs/smoke-seed-42 --seed 42 --updates 2 --lobbies 1 --rollout-steps 8
 ~~~
 
-O relatório final é gravado em `reports/evaluation_report.md`; os dados brutos
-JSONL/JSON ficam em `reports/evaluation_data/`. Para comparar dois checkpoints,
-adicione `--baseline checkpoints/base.pt --candidate checkpoints/candidato.pt --matches 20`.
-Para incluir a ablação dos controles de composição, acrescente `--ablation`.
-Essas avaliações opcionais podem executar partidas adicionais e demorar mais.
+Para executar uma bateria multi-seed, com checkpoint e manifesto separados por execução:
+
+~~~powershell
+python scripts/run_training_battery.py --output-root training_runs/native-battery --seeds 11,12,13 --updates 160 --lobbies 4 --rollout-steps 128
+~~~
+
+O runner exige um diretório de saída vazio, fixa as seeds por lobby, desabilita refresh externo de catálogo e não habilita migração de checkpoints antigos. Cada execução gera `native_ppo_checkpoint.pt`, `run_manifest.json`, `artifact_manifest.json` com o SHA-256 do modelo e logs TensorBoard. A bateria gera `battery_manifest.json` com os hashes dos checkpoints. Isso prepara e executa treinamento; não declara qualidade do modelo sem avaliação independente.
+
+## Avaliação de checkpoints
+
+O módulo scripts/evaluate_checkpoints.py contém helpers de avaliação pareada e publicação de artefatos, mas ainda não oferece um entrypoint CLI completo. O protocolo de avaliação independente, splits sem vazamento e promoção de modelo permanece parte da trilha #523; não trate o smoke de treinamento como benchmark.
 
 ## Catálogo de composições OP.GG
 
-O treino atualiza o snapshot local de meta antes de iniciar; o Viewer reutiliza o mesmo catálogo e só consulta novamente quando ele está vencido. O C++ compara composições conhecidas com o plano nativo, usando snapshots de early/mid game como informação de transição, sem tornar unidades obrigatórias. Veja [docs/opgg-meta-catalog.md](docs/opgg-meta-catalog.md).
+O treinamento nativo fixa os catálogos locais durante cada execução e registra a identidade semântica no manifesto. Atualizações externas de catálogo devem ser feitas antes de iniciar uma nova bateria, nunca durante um experimento em andamento. Veja [docs/opgg-meta-catalog.md](docs/opgg-meta-catalog.md).
 
 ## Componentes principais
 
 - cpp/: engine C++, bindings e testes nativos.
-- trainer.py, policy.py, ppo.py, rollout.py: treinamento PPO.
+- train_native.py, scripts/run_training_battery.py, trainer.py, policy.py, ppo.py, rollout.py: treinamento PPO nativo.
 - cpp_lobby_env.py, vector_lobby_env.py: adaptadores Python.
 - viewer/: interface de avaliação, sessão, logs e replay.
 - scripts/, tests/: ferramentas e regressões.

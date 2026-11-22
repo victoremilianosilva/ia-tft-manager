@@ -33,7 +33,7 @@ def _policy_with_native_item_block():
     item_dim = 10 + 9 * 17 + 100 * 17 + 37 * 17 + (9 + 100) * 37
     anvil_dim = 3 + 9 * 11
     obs_dim = 10 + 4 * 7 * 5 + anvil_dim + item_dim + candidate_dim
-    policy = TFTPolicy(obs_dim=obs_dim, action_dims=ACTION_DIMS, hidden_size=hidden)
+    policy = TFTPolicy(obs_dim=obs_dim, action_dims=ACTION_DIMS, hidden_size=hidden, require_semantic_state=False)
     return policy, torch.zeros(1, obs_dim)
 
 
@@ -224,7 +224,8 @@ def test_old_checkpoint_migrates_item_observation_and_neutral_candidate_heads():
     new_policy, _ = _policy_with_native_item_block()
     old_obs_dim = new_policy.obs_dim - new_policy.item_state_observation_dim
     old_policy = TFTPolicy(
-        obs_dim=old_obs_dim, action_dims=ACTION_DIMS, hidden_size=64
+        obs_dim=old_obs_dim, action_dims=ACTION_DIMS, hidden_size=64,
+        require_semantic_state=False,
     )
     legacy_state = {
         key: value.detach().clone()
@@ -273,7 +274,8 @@ def test_checkpoint_without_derived_economic_context_migrates_both_insertions():
     new_policy, _ = _policy_with_native_item_block()
     old_obs_dim = new_policy.obs_dim - new_policy.item_state_observation_dim
     old_policy = TFTPolicy(
-        obs_dim=old_obs_dim, action_dims=ACTION_DIMS, hidden_size=64
+        obs_dim=old_obs_dim, action_dims=ACTION_DIMS, hidden_size=64,
+        require_semantic_state=False,
     )
     legacy_state = {
         key: value.detach().clone()

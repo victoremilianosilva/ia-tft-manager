@@ -11,6 +11,8 @@ def test_defaults_are_valid_and_exposed():
     assert config.ppo_epochs == 4
     assert config.total_updates == 280
     assert config.num_lobbies == 4
+    assert config.seed == 42
+    assert config.checkpoint_path == "checkpoints/native_ppo/seed_42.pt"
 
 
 def test_environment_overrides_major_parameters(monkeypatch):
@@ -26,6 +28,7 @@ def test_environment_overrides_major_parameters(monkeypatch):
         "TFT_PPO_GAE_LAMBDA": "0.9",
         "TFT_NUM_LOBBIES": "2",
         "TFT_TOTAL_UPDATES": "500",
+        "TFT_TRAIN_SEED": "1234",
     }
     for key, value in values.items():
         monkeypatch.setenv(key, value)
@@ -41,6 +44,7 @@ def test_environment_overrides_major_parameters(monkeypatch):
     assert config.gae_lambda == 0.9
     assert config.num_lobbies == 2
     assert config.total_updates == 500
+    assert config.seed == 1234
 
 
 def test_target_kl_can_be_disabled(monkeypatch):
@@ -52,7 +56,7 @@ def test_target_kl_can_be_disabled(monkeypatch):
     {"learning_rate": 0}, {"min_learning_rate": 1e-3},
     {"batch_size": 0}, {"ppo_epochs": 0}, {"target_kl": 0},
     {"gamma": 1.1}, {"clip_coef": 1.0},
-    {"batch_size": 1.5}, {"total_updates": 2.5},
+    {"batch_size": 1.5}, {"total_updates": 2.5}, {"seed": -1}, {"seed": True}, {"seed": 2**32},
 ])
 def test_invalid_configuration_is_rejected(overrides):
     with pytest.raises(ValueError):
@@ -74,3 +78,33 @@ def test_cosine_lr_schedule_reaches_floor_and_never_rebounds():
 def test_cosine_lr_schedule_rejects_invalid_horizon():
     with pytest.raises(ValueError):
         cosine_lr_factor(0, 3e-4, 5e-5, 0)
+
+
+
+def test_slice_batch_structure_recursively_slices_semantic_tensor_leaves():
+    import torch
+
+    from trainer import slice_batch_structure
+
+    batch = {
+        "numeric": torch.arange(20).reshape(5, 4),
+        "champion_ids": torch.arange(15).reshape(5, 3),
+        "items": {
+            "inventory": torch.arange(30).reshape(5, 2, 3),
+            "anvil_pending": torch.tensor([True, False, True, False, True]),
+        },
+    }
+
+    sliced = slice_batch_structure(batch, slice(0, 2))
+
+    assert sliced["numeric"].shape == (2, 4)
+    assert sliced["champion_ids"].shape == (2, 3)
+    assert sliced["items"]["inventory"].shape == (2, 2, 3)
+    assert sliced["items"]["anvil_pending"].tolist() == [True, False]
+
+
+def test_slice_batch_structure_rejects_non_tensor_leaf():
+    from trainer import slice_batch_structure
+
+    with pytest.raises(TypeError, match="dictionaries and tensors"):
+        slice_batch_structure({"invalid": [1, 2, 3]}, slice(0, 2))

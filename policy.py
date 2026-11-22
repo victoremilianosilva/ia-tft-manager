@@ -27,7 +27,7 @@ LEGACY_ACTION_DIMS = [7, 5, 9, 28, 28, 28]
 
 class TFTPolicy(nn.Module):
   
-    def __init__(self, obs_dim, action_dims, hidden_size=512, semantic_vocab_size=2, require_semantic_state=False):
+    def __init__(self, obs_dim, action_dims, hidden_size=512, semantic_vocab_size=2, require_semantic_state=True):
         super().__init__()
 
         # 🛡️ Valida o contrato das seis dimensões antes de criar as camadas.
@@ -242,12 +242,10 @@ class TFTPolicy(nn.Module):
         self.item_anvil_candidate_head[0].weight[:, -2:].zero_()
 
     def load_compatible_state_dict(self, state_dict):
-        """Load current weights or migrate supported input-shape changes.
+        """Viewer-only adapter for historical checkpoint shapes.
 
-        Native item features are inserted before the derived economic context and
-        fixed candidate tail. Existing economic/candidate columns are shifted to
-        retain their semantic alignment; new columns and candidate scorers start
-        neutral so inference initially preserves the old logits.
+        PPO training must use strict load_state_dict plus the native run manifest;
+        this compatibility path is retained only until the Viewer migration.
         """
         target = self.state_dict()
         item_head_keys = {key for key in target if key.startswith((

@@ -41,7 +41,7 @@ def _make_candidate_scorer_prefer_feature(head, hidden_size, feature_index, sign
 
 
 def test_candidate_features_are_aligned_with_bench_and_shop_slots():
-    policy = TFTPolicy(obs_dim=400, action_dims=ACTION_DIMS, hidden_size=16)
+    policy = TFTPolicy(obs_dim=400, action_dims=ACTION_DIMS, hidden_size=16, require_semantic_state=False)
     obs = torch.zeros(2, 400)
     tail = obs[:, -policy.candidate_observation_dim:]
     tail[:, : 9 * 6] = 1.0
@@ -57,7 +57,7 @@ def test_candidate_features_are_aligned_with_bench_and_shop_slots():
 
 def test_purchase_head_can_rank_the_best_offer_by_slot_local_fit():
     hidden_size = 16
-    policy = TFTPolicy(obs_dim=400, action_dims=ACTION_DIMS, hidden_size=hidden_size)
+    policy = TFTPolicy(obs_dim=400, action_dims=ACTION_DIMS, hidden_size=hidden_size, require_semantic_state=False)
     _make_candidate_scorer_prefer_feature(policy.shop_head, hidden_size, feature_index=0)
 
     context = torch.zeros(1, hidden_size + ACTION_DIMS[0])
@@ -72,7 +72,7 @@ def test_purchase_head_can_rank_the_best_offer_by_slot_local_fit():
 
 def test_sale_head_can_prefer_the_least_compatible_unit():
     hidden_size = 16
-    policy = TFTPolicy(obs_dim=400, action_dims=ACTION_DIMS, hidden_size=hidden_size)
+    policy = TFTPolicy(obs_dim=400, action_dims=ACTION_DIMS, hidden_size=hidden_size, require_semantic_state=False)
     # A low compatibility score should produce a larger sale logit in this
     # controlled scorer; learned weights are evaluated separately by the audit script.
     _make_candidate_scorer_prefer_feature(policy.sell_head, hidden_size, feature_index=0, sign=-1.0)
@@ -95,7 +95,7 @@ def test_sale_head_can_prefer_the_least_compatible_unit():
 
 def test_sale_head_can_preserve_core_and_upgrade_copies():
     hidden_size = 16
-    policy = TFTPolicy(obs_dim=400, action_dims=ACTION_DIMS, hidden_size=hidden_size)
+    policy = TFTPolicy(obs_dim=400, action_dims=ACTION_DIMS, hidden_size=hidden_size, require_semantic_state=False)
     first, second = policy.sell_head[0], policy.sell_head[2]
     with torch.no_grad():
         first.weight.zero_()
@@ -127,7 +127,7 @@ def test_sale_head_can_preserve_core_and_upgrade_copies():
 
 def test_policy_forward_accepts_new_candidate_observation_contract():
     obs_dim = 400
-    policy = TFTPolicy(obs_dim=obs_dim, action_dims=ACTION_DIMS, hidden_size=32)
+    policy = TFTPolicy(obs_dim=obs_dim, action_dims=ACTION_DIMS, hidden_size=32, require_semantic_state=False)
     observations = torch.zeros(2, obs_dim)
     masks = {
         "type_mask": torch.tensor([[True, False, False, False, False, False, False, False, False]] * 2),

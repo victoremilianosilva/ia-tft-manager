@@ -1,102 +1,51 @@
-# Configuração do treinamento PPO
+# Configuração do treinamento PPO nativo
 
-> **Referência operacional do trainer atual.** As regras de retomada e scheduler descritas aqui documentam a implementação legada auditada. Não definem a política de resume/transfer da nova linhagem; prevalecem o [PPO Architecture and Checkpoint Contract v1](ppo-checkpoint-contract.v1.draft.md) e o [PPO Evaluation Protocol v1](ppo-evaluation-protocol.v1.draft.md). Não use este guia para inferir compatibilidade semântica de checkpoints.
+O runtime operacional de treinamento é iniciado por train_native.py. Ele sempre cria uma nova execução em um diretório exclusivo, usa a projeção semântica dos snapshots nativos, fixa as seeds e não importa checkpoints históricos.
 
-A configuração efetiva é centralizada em `TrainingConfig` (`training_config.py`).
-Ela pode ser fornecida diretamente ao construtor:
-
-```python
-from trainer import Trainer
-from training_config import TrainingConfig
-
-config = TrainingConfig(
-    learning_rate=2e-4,
-    min_learning_rate=2e-5,
-    lr_schedule_updates=800,
-    entropy_coef_initial=0.02,
-    entropy_coef_final=0.004,
-    entropy_schedule_updates=800,
-    batch_size=128,
-    ppo_epochs=4,
-    target_kl=0.025,
-    rollout_steps=128,
-)
-trainer = Trainer(num_envs=4, config=config)
-trainer.train(total_updates=800)
-```
-
-Também é possível sobrescrever parâmetros por variáveis de ambiente:
-
-| Variável | Campo |
-|---|---|
-| `TFT_PPO_LR` | `learning_rate` |
-| `TFT_PPO_MIN_LR` | `min_learning_rate` |
-| `TFT_PPO_LR_SCHEDULE_UPDATES` | `lr_schedule_updates` |
-| `TFT_PPO_ADAM_EPS` | `adam_eps` |
-| `TFT_PPO_ADAM_BETA1` | `adam_beta1` |
-| `TFT_PPO_ADAM_BETA2` | `adam_beta2` |
-| `TFT_PPO_WEIGHT_DECAY` | `weight_decay` |
-| `TFT_PPO_CLIP_COEF` | `clip_coef` |
-| `TFT_PPO_ENT_COEF` | `entropy_coef_initial` |
-| `TFT_PPO_ENT_COEF_FINAL` | `entropy_coef_final` |
-| `TFT_PPO_ENT_DECAY_RATE` | `entropy_decay_rate` |
-| `TFT_PPO_ENT_SCHEDULE_UPDATES` | `entropy_schedule_updates` |
-| `TFT_PPO_VF_COEF` | `vf_coef` |
-| `TFT_PPO_MAX_GRAD_NORM` | `max_grad_norm` |
-| `TFT_PPO_TARGET_KL` | `target_kl` (`off` desabilita early stop) |
-| `TFT_PPO_BATCH_SIZE` | `batch_size` |
-| `TFT_PPO_EPOCHS` | `ppo_epochs` |
-| `TFT_ROLLOUT_STEPS` | `rollout_steps` |
-| `TFT_NUM_LOBBIES` | `num_lobbies` |
-| `TFT_TOTAL_UPDATES` | `total_updates` |
-| `TFT_PPO_GAMMA` | `gamma` |
-| `TFT_PPO_GAE_LAMBDA` | `gae_lambda` |
-| `TFT_CHECKPOINT_PATH` | `checkpoint_path` |
-
-Exemplo PowerShell:
+## Treino isolado
 
 ```powershell
-$env:TFT_PPO_LR = "0.0002"
-$env:TFT_PPO_MIN_LR = "0.00002"
-$env:TFT_PPO_BATCH_SIZE = "128"
-$env:TFT_PPO_EPOCHS = "4"
-$env:TFT_PPO_TARGET_KL = "0.025"
-$env:TFT_PPO_ENT_COEF = "0.02"
-$env:TFT_PPO_ENT_COEF_FINAL = "0.004"
-$env:TFT_PPO_LR_SCHEDULE_UPDATES = "800"
-$env:TFT_PPO_ENT_SCHEDULE_UPDATES = "800"
-python trainer.py
+python train_native.py --output-dir training_runs/native-seed-42 --seed 42 --updates 160 --lobbies 4 --rollout-steps 128 --batch-size 64 --ppo-epochs 4
 ```
 
-## Retomada de checkpoint
+Para uma bateria com execuções independentes:
 
-Os pesos e os momentos do Adam são restaurados. O LR solicitado pela configuração atual
-sempre prevalece sobre o LR armazenado no optimizer. O scheduler só é restaurado quando
-LR, LR mínimo e horizonte coincidem com a configuração gravada no checkpoint; caso
-contrário, começa uma nova curva com os parâmetros atuais. O progresso global do
-scheduler e da entropia é mantido nos checkpoints compatíveis.
+```powershell
+python scripts/run_training_battery.py --output-root training_runs/native-battery --seeds 11,12,13 --updates 160 --lobbies 4 --rollout-steps 128
+```
 
-O checkpoint passa a armazenar também `training_config`. Um checkpoint antigo, sem
-essa informação, mantém os pesos e pode restaurar os momentos do Adam, mas reinicia o
-scheduler para evitar herdar silenciosamente uma curva desconhecida.
+No PowerShell, .\train_cycle.ps1 chama o runner multi-seed e registra a saída com Start-Transcript.
 
-A configuração efetiva é registrada em `training/config` no TensorBoard e impressa no
-início. Os diagnósticos PPO incluem minibatches tentados/processados, passos reais do
-optimizer, early stop/KL e norma do gradiente antes do clipping.
+Cada execução produz:
+- native_ppo_checkpoint.pt: pesos, optimizer, scheduler e contratos.
+- run_manifest.json: revisão do código, hash do binário C++, seed, configuração, arquitetura e contratos.
+- artifact_manifest.json: hash SHA-256 do checkpoint final e vínculo com o manifesto de execução.
+- tensorboard/: métricas e diagnósticos PPO.
 
+A bateria produz battery_manifest.json, relacionando as seeds e os artefatos gerados. Os diretórios precisam estar vazios; o runner não sobrescreve modelos anteriores.
 
-O scheduler usa decaimento cosseno com piso: depois de atingir `min_learning_rate`,
-o LR permanece nesse valor e não volta a subir caso o treinamento ultrapasse
-`lr_schedule_updates`.
+## Parâmetros
 
-## Progresso no terminal
+| Argumento | Finalidade |
+|---|---|
+| --output-dir | Diretório exclusivo de uma execução |
+| --seed | Seed global, com offset determinístico por lobby |
+| --updates | Quantidade de updates PPO |
+| --lobbies | Quantidade de lobbies C++ simultâneas |
+| --rollout-steps | Decisões coletadas por update |
+| --batch-size | Tamanho do minibatch PPO |
+| --ppo-epochs | Épocas de otimização por update |
+| --learning-rate | Learning rate inicial |
+| --min-learning-rate | Piso do scheduler |
+| --lr-schedule-updates | Horizonte do scheduler |
+| --target-kl | Limite de KL para early stop |
 
-O treinamento usa Rich para exibir uma barra por update, com percentual, tempo decorrido
-e ETA (estimativa de tempo restante). A descrição da barra também acompanha reward médio,
-learning rate, entropia e maior approx KL do update. As métricas são atualizadas ao fim
-de cada update; o ETA é recalculado pelo tempo real observado.
+A configuração também é persistida no manifesto de cada execução. A execução é CPU por enquanto; a disponibilidade de GPU é registrada, mas não selecionada automaticamente pelo trainer.
 
-Instale as dependências com `pip install -r requirements.txt`. Para preservar a barra
-dinâmica no PowerShell, execute `.\train_cycle.ps1` diretamente: o script usa
-`Start-Transcript` para registrar a saída sem inserir `Tee-Object` no pipeline do
-processo Python.
+## Retomada e checkpoints históricos
+
+O runner de treinamento novo não oferece importação implícita nem warm-start de checkpoints históricos. A retomada exige a mesma identidade de execução, incluindo seed, revisão do código, binário nativo, configuração e contratos. Checkpoints antigos devem permanecer como baselines imutáveis e ser avaliados em um fluxo separado.
+
+## Interpretação dos resultados
+
+Uma bateria multi-seed comprova que o treino foi executado em condições identificadas. Ela não comprova, por si só, que a policy melhorou. Placement, top-4/top-1, retorno, sobrevivência, estabilidade, métricas econômicas, variância entre seeds e avaliação em episódios independentes ainda precisam ser medidos antes de promover um modelo.
