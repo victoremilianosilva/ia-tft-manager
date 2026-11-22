@@ -25,6 +25,22 @@ from checkpoint_contract import (
 )
 
 
+def state_dict_sha256(state_dict: Any) -> str:
+    """Hash policy tensors with stable key, dtype, shape and byte ordering."""
+    if not isinstance(state_dict, dict) or not state_dict:
+        raise ValueError("policy state_dict must be a non-empty mapping")
+    digest = hashlib.sha256()
+    for name, tensor in sorted(state_dict.items()):
+        if not isinstance(name, str) or not isinstance(tensor, torch.Tensor):
+            raise TypeError("policy state_dict must map string keys to tensors")
+        value = tensor.detach().cpu().contiguous()
+        digest.update(name.encode("utf-8"))
+        digest.update(str(value.dtype).encode("ascii"))
+        digest.update(json.dumps(list(value.shape), separators=(",", ":")).encode("ascii"))
+        digest.update(value.numpy().tobytes())
+    return digest.hexdigest()
+
+
 def _canonical_hash(value: Any) -> str:
     encoded = json.dumps(
         value, sort_keys=True, separators=(",", ":"), ensure_ascii=False
@@ -175,6 +191,7 @@ def build_training_run_manifest(
         "created_at": datetime.now(timezone.utc).isoformat(),
         "identity_sha256": _canonical_hash(identity),
     }
+    manifest["initial_policy_state_sha256"] = state_dict_sha256(policy.state_dict())
     manifest["manifest_sha256"] = _canonical_hash(manifest)
     return manifest
 
