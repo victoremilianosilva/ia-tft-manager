@@ -100,3 +100,10 @@ def test_lineup_and_upgrade_diagnostics_preserve_physical_evidence():
     assert "availability" in lineup and "deferred_reason" in lineup
     assert '"target_states"' in diagnostics
     assert '"copies_by_star"' in diagnostics
+
+
+if __name__ == "__main__":
+    for name, test in sorted(globals().items()):
+        if name.startswith("test_") and callable(test):
+            test()
+    print("native composition ownership and legacy removal checks passed")
