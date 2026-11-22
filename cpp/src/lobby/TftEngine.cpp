@@ -2587,9 +2587,11 @@ struct TFTEngine::Impl {
             auto action_decision = action_evaluator.evaluate(
                 evidence_context.planner_context, economic_decision);
 
-            // Native Composition Intelligence planners run on every decision snapshot.
-            // Their priorities/lineup become semantic PPO context; evaluator recommendations
-            // remain diagnostic and never replace PPO action selection.
+            // Composition Intelligence remains opt-in for engine consumers; native
+            // PPO training explicitly enables it in train_native.py.
+            if (composition_intelligence_enabled) {
+            // Planner priorities/lineup become semantic PPO context. Evaluator
+            // recommendations remain diagnostic and never replace PPO action selection.
             try {
             {
                 namespace ci = composition_intelligence;
