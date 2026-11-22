@@ -20,15 +20,16 @@ public:
         const std::string& committed_direction = {}) {
         const auto& candidate = active.candidate;
         if (candidate.composition_id.empty() || active.version == 0 ||
-            candidate.units.empty()) {
+            candidate.units.empty() || committed_direction.empty()) {
             return std::nullopt;
         }
 
         StrategicDirectionAnchor anchor;
         anchor.identity = "direction:composition:" + candidate.composition_id +
             ":" + std::to_string(active.version);
-        anchor.direction = committed_direction.empty()
-            ? candidate.composition_id : committed_direction;
+        // Composition identity and semantic direction are independent contracts.
+        // Never manufacture a direction from an opaque snapshot-scoped ID.
+        anchor.direction = committed_direction;
         anchor.composition_identity = candidate.composition_id;
         anchor.composition_version = active.version;
         anchor.composition_bound = true;
