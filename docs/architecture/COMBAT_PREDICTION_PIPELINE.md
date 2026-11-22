@@ -85,8 +85,10 @@ TftEngine::resolve_combats
 ## Contracts and invariants
 
 - Snapshot identity includes match, player, actual opponent, round,
-  strategic-context sequence, Engine decision sequence, observed HP and roster
-  UUIDs. The full CombatInput is retained as a simulator-input projection.
+  the decision and strategic-context sequences of both participants, the
+  Engine decision sequence, observed HP and roster UUIDs. The canonical pair
+  event can be oriented for either participant without guessing the opponent's
+  sequence. The full CombatInput is retained as a simulator-input projection.
 - The event distinguishes the authoritative Engine input projection from raw
   source values; catalog fallbacks are not relabeled as direct observations.
 - Matchup resolution accepts only an actual opponent supplied by the lobby.
