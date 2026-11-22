@@ -197,6 +197,82 @@ int main() {
     assert(std::isfinite(projection.p90_incoming_damage));
     for (const auto damage : projection.incoming_damage_samples)
         assert(damage >= 6.0);
+    assert(projection.elimination_probability_available);
+    assert(projection.observed_player_hp == identity.player_hp);
+    assert(projection.experimental_elimination_probability >= 0.0 &&
+        projection.experimental_elimination_probability <= 1.0);
+
+    CombatCalibrationCohort evaluation_cohort;
+    evaluation_cohort.round = identity.round;
+    evaluation_cohort.horizon_rounds = 1;
+    evaluation_cohort.engine_version = projection.simulator_version;
+    evaluation_cohort.composition_signature = "fixture-composition";
+    evaluation_cohort.mechanics_signature = "fixture-mechanics";
+    std::vector<CalibrationPredictionEvaluationSample> evaluation_samples;
+    const auto append_evaluation_split = [&](CalibrationDatasetSplit split,
+                                             std::uint64_t first_match,
+                                             std::uint32_t count) {
+        for (std::uint32_t index = 0; index < count; ++index) {
+            CalibrationPredictionEvaluationSample sample;
+            sample.match_id = first_match + index;
+            sample.player_id = 0;
+            sample.round = identity.round;
+            sample.sequence = identity.sequence;
+            sample.horizon_rounds = 1;
+            sample.predicted_player_hp = projection.observed_player_hp;
+            sample.predicted_expected_damage = projection.expected_incoming_damage;
+            sample.predicted_p90_damage = std::max(5.0, projection.p90_incoming_damage);
+            sample.predicted_elimination_probability =
+                projection.experimental_elimination_probability;
+            sample.observed_hp_before = identity.player_hp;
+            sample.observed_hp_after = identity.player_hp - 5.0;
+            sample.observed_damage = 5.0;
+            sample.split = split;
+            sample.replay_artifact_id = "fixture-replay-" + std::to_string(sample.match_id);
+            sample.dataset_version = "fixture-evaluation-dataset.v1";
+            sample.engine_version = evaluation_cohort.engine_version;
+            sample.composition_signature = evaluation_cohort.composition_signature;
+            sample.mechanics_signature = evaluation_cohort.mechanics_signature;
+            evaluation_samples.push_back(std::move(sample));
+        }
+    };
+    append_evaluation_split(CalibrationDatasetSplit::TRAIN, 1000, 5);
+    append_evaluation_split(CalibrationDatasetSplit::VALIDATION, 2000, 3);
+    append_evaluation_split(CalibrationDatasetSplit::TEST, 3000, 5);
+    CalibrationEvaluationManifest evaluation_manifest;
+    evaluation_manifest.report_sha256 = std::string(64, 'a');
+    evaluation_manifest.train_manifest_sha256 = std::string(64, 'b');
+    evaluation_manifest.validation_manifest_sha256 = std::string(64, 'c');
+    evaluation_manifest.test_manifest_sha256 = std::string(64, 'd');
+    const auto evaluation = evaluate_calibration_predictions(
+        evaluation_samples, evaluation_cohort, evaluation_manifest);
+    assert(evaluation.valid);
+    assert(evaluation.metrics.episode_splits_disjoint);
+    assert(evaluation.metrics.training_sample_count == 5);
+    assert(evaluation.metrics.validation_sample_count == 3);
+    assert(evaluation.metrics.test_sample_count == 5);
+    assert(std::abs(evaluation.metrics.mae -
+        std::abs(projection.expected_incoming_damage - 5.0)) <= 1e-9);
+    assert(evaluation.metrics.p90_coverage == 1.0);
+
+    auto overlapping_split_samples = evaluation_samples;
+    auto overlap = overlapping_split_samples.front();
+    overlap.player_id = 1;
+    overlap.sequence += 1;
+    overlap.split = CalibrationDatasetSplit::VALIDATION;
+    overlapping_split_samples.push_back(overlap);
+    const auto overlapping_evaluation = evaluate_calibration_predictions(
+        overlapping_split_samples, evaluation_cohort, evaluation_manifest);
+    assert(!overlapping_evaluation.valid);
+    assert(overlapping_evaluation.reason == "evaluation_splits_empty_or_episode_overlap");
+
+    auto mismatched_hp_samples = evaluation_samples;
+    mismatched_hp_samples.front().observed_hp_before -= 1.0;
+    const auto mismatched_hp_evaluation = evaluate_calibration_predictions(
+        mismatched_hp_samples, evaluation_cohort, evaluation_manifest);
+    assert(!mismatched_hp_evaluation.valid);
+    assert(mismatched_hp_evaluation.reason ==
+        "invalid_paired_prediction_outcome_sample");
 
     auto missing_ability = input;
     missing_ability.player_a.units.front().ability.api_name.clear();
