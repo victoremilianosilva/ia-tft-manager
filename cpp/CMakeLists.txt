@@ -580,17 +580,6 @@ if(BUILD_TESTING)
     )
 
     add_executable(
-        test_composition_direction_policy
-        tests/test_composition_direction_policy.cpp
-    )
-    configure_tft_module(test_composition_direction_policy)
-    enable_tft_test_assertions(test_composition_direction_policy)
-    add_test(
-        NAME composition_direction_policy
-        COMMAND test_composition_direction_policy
-    )
-
-    add_executable(
         test_native_strategic_composition_generator
         tests/test_native_strategic_composition_generator.cpp
     )
@@ -612,21 +601,6 @@ if(BUILD_TESTING)
         COMMAND test_strategic_evidence_context
     )
 
-    add_executable(test_composition_planner tests/test_composition_planner.cpp)
-    configure_tft_module(test_composition_planner)
-    target_link_libraries(test_composition_planner PRIVATE nlohmann_json::nlohmann_json)
-    enable_tft_test_assertions(test_composition_planner)
-    add_test(NAME composition_planner COMMAND test_composition_planner)
-
-    add_executable(test_composition_planner_opgg tests/test_composition_planner_opgg.cpp)
-    configure_tft_module(test_composition_planner_opgg)
-    target_link_libraries(test_composition_planner_opgg PRIVATE nlohmann_json::nlohmann_json)
-    enable_tft_test_assertions(test_composition_planner_opgg)
-    add_test(NAME composition_planner_opgg_selection
-        COMMAND test_composition_planner_opgg selection)
-    add_test(NAME composition_planner_opgg_incompatible_fallback
-        COMMAND test_composition_planner_opgg incompatible)
-
     add_executable(test_unit_combat_classifier tests/test_unit_combat_classifier.cpp)
     configure_tft_module(test_unit_combat_classifier)
     enable_tft_test_assertions(test_unit_combat_classifier)
@@ -636,11 +610,6 @@ if(BUILD_TESTING)
     configure_tft_module(test_board_evaluation)
     enable_tft_test_assertions(test_board_evaluation)
     add_test(NAME test_board_evaluation COMMAND test_board_evaluation)
-
-    add_executable(test_strategy_policy tests/test_strategy_policy.cpp)
-    configure_tft_module(test_strategy_policy)
-    enable_tft_test_assertions(test_strategy_policy)
-    add_test(NAME test_strategy_policy COMMAND test_strategy_policy)
 
     add_executable(
         test_action_evaluator

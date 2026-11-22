@@ -27,7 +27,7 @@ def _records(engine):
 
 
 def test_shadow_pipeline_replays_multiple_rounds_with_correlated_sequences(monkeypatch):
-    monkeypatch.setenv("TFT_COMPOSITION_INTELLIGENCE_SHADOW", "1")
+    monkeypatch.setenv("TFT_COMPOSITION_INTELLIGENCE_ENABLED", "1")
     engine = CppTFTLobbyWrapper(seed=20261119)
     try:
         engine.reset(seed=20261119)
@@ -131,7 +131,7 @@ def test_shadow_pipeline_replays_multiple_rounds_with_correlated_sequences(monke
 
 
 def test_shadow_pipeline_feature_flag_off_emits_no_composition_snapshots(monkeypatch):
-    monkeypatch.setenv("TFT_COMPOSITION_INTELLIGENCE_SHADOW", "0")
+    monkeypatch.setenv("TFT_COMPOSITION_INTELLIGENCE_ENABLED", "0")
     engine = CppTFTLobbyWrapper(seed=20261120)
     try:
         engine.reset(seed=20261120)

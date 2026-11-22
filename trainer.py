@@ -1474,9 +1474,6 @@ class Trainer:
 
                 mask_samples += 1
 
-                # Strategy labels are diagnostics only; PPO collection does
-                # not query the legacy get_strategies() compatibility API.
-
                 # 📸 Fotografa quem pode gerar experiência neste passo.
                 # A cópia precisa acontecer ANTES da ação.
                 transition_valid = active_agents.copy()

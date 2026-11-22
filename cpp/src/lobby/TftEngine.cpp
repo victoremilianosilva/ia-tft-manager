@@ -39,7 +39,6 @@
 #include "strategy/UnitCombatClassifier.hpp"
 #include "strategy/UnitCopyProgress.hpp"
 #include "reward/RewardModel.hpp"
-#include "strategy/StrategyPolicy.hpp"
 #include "strategy/NativeStrategicCompositionGenerator.hpp"
 #include "strategy/StrategicEvidenceContext.hpp"
 #include "strategy/StrategicPlanner.hpp"
@@ -208,8 +207,7 @@ double unit_composition_score(
     const composition_intelligence::UnitPrioritySnapshot& priorities,
     std::int32_t champion_id, std::int32_t star
 ) {
-    // Compatibility reward adapter over the canonical UnitPriorityPlanner output.
-    // It does not rebuild composition fit from StrategyInfo, traits or planned_units.
+    // Native reward adapter over the canonical UnitPriorityPlanner output.
     if (priorities.stale || priorities.units.empty()) return 0.0;
     const auto found = std::find_if(priorities.units.begin(), priorities.units.end(),
         [&](const auto& unit) { return unit.champion_id == champion_id; });
@@ -221,7 +219,7 @@ double unit_composition_score(
     return std::clamp(score, -1.2, 18.0);
 }
 
-// Legacy reward shaping now consumes the same unit-priority owner as Shadow.
+// Reward shaping consumes the same native unit-priority owner as strategic evaluation.
 // Board combat quality remains a small observed champion-stat contribution.
 double unit_board_impact_score(
     const composition_intelligence::UnitPrioritySnapshot& priorities,
@@ -338,7 +336,6 @@ struct TFTEngine::Impl {
         decision::AntiLoopEngine anti_loop;
         PlayerInfo info{};
         PlayerActionMasks action_masks{};
-        std::optional<StrategyInfo> strategy;
         AntiLoopMetrics anti_loop_metrics{};
         PlayerEconomy economy{};
 
@@ -366,8 +363,8 @@ struct TFTEngine::Impl {
             bool was_deployed{false};
             double fit_score{0.0};
             double reward{0.0};
-            std::string comp_direction;
-            std::string comp_focus;
+            std::string composition_identity;
+            std::string main_carry_identity;
         };
         std::uint64_t action_serial{0};
         std::vector<RecentPurchase> recent_purchases;
@@ -448,7 +445,6 @@ struct TFTEngine::Impl {
     std::array<composition_intelligence::StrategicActionExecutor, kPlayersPerLobby>
         strategic_action_executors{};
     // Independent per-player planner commitment; never mirrored back as input
-    // from StrategyInfo. Reset with the match lifecycle.
     std::array<strategy::StrategicCommitment, kPlayersPerLobby>
         strategic_planner_commitments{};
     std::array<std::uint64_t, kPlayersPerLobby>
@@ -513,11 +509,11 @@ struct TFTEngine::Impl {
             resolved_path
         );
 
-        const char* shadow_enabled = std::getenv("TFT_COMPOSITION_INTELLIGENCE_SHADOW");
-        composition_intelligence_enabled = shadow_enabled &&
-            (std::string(shadow_enabled) == "1" ||
-             std::string(shadow_enabled) == "true" ||
-             std::string(shadow_enabled) == "yes");
+        const char* feature_enabled = std::getenv("TFT_COMPOSITION_INTELLIGENCE_ENABLED");
+        composition_intelligence_enabled = feature_enabled &&
+            (std::string(feature_enabled) == "1" ||
+             std::string(feature_enabled) == "true" ||
+             std::string(feature_enabled) == "yes");
 
         if (composition_intelligence_enabled) {
         try {
@@ -783,8 +779,7 @@ struct TFTEngine::Impl {
     // ========================================================
 
     // Shared semantic item profile. It is built from observed champion/item
-    // facts and the canonical active composition, never from StrategyInfo or
-    // planned carry/core traits retained for historical PPO compatibility.
+    // preferred carry/core traits are derived from the canonical active composition.
     std::vector<items::UnitProfile> semantic_item_unit_profiles(std::size_t player_index) const {
         std::vector<items::UnitProfile> profiles;
         profiles.reserve(kBoardSlots + kBenchSlots);
@@ -1229,7 +1224,6 @@ struct TFTEngine::Impl {
 
             player_envs[i].action_masks = make_default_masks();
 
-            player_envs[i].strategy = StrategyInfo{};
 
             player_envs[i].anti_loop_metrics = AntiLoopMetrics{};
 
@@ -1488,7 +1482,6 @@ struct TFTEngine::Impl {
     // ========================================================
 
     double board_power(std::size_t player_index) const {
-        // Mesma estimativa de MiniTFTEnv._update_strategy():
         // sum(cost * star * 2.0) para as unidades no tabuleiro.
         double power = 0.0;
         for (const auto& unit : player_envs[player_index].board) {
@@ -1606,7 +1599,6 @@ struct TFTEngine::Impl {
         if (cached.matches(signature))
             return cached.value();
         // Board evaluation consumes the same native composition version as
-        // transition, lineup and action evidence. It must not fall back to StrategyInfo.
         const auto active_composition =
             composition_intelligence_players[player_index].active.current();
         const auto classify_unit = [&](const UnitInstance& unit, const ChampionDefinition& def) {
@@ -2141,7 +2133,7 @@ struct TFTEngine::Impl {
     ) {
         const auto& economy = player_envs[i].economy;
         // Native strategic evidence is generated directly from live engine facts
-        // before any legacy direction, focus, lock or economic strategy is built.
+        // before native direction, composition and economic context are evaluated.
         // The same candidate snapshot is reused by the strategic runtime and CI.
         composition_intelligence_native_candidates[i].clear();
         composition_intelligence_native_diagnostics[i].clear();
@@ -2299,237 +2291,7 @@ struct TFTEngine::Impl {
         };
     }
 
-    using LegacyEconomicStrategyDecision = decltype(
-        strategy::select_economic_strategy(
-            std::declval<strategy::EconomicStrategyContext>()));
-
-    // Legacy StrategyInfo/economic fields are a compatibility projection only.
-    // Keeping this producer separate prevents it from owning or feeding the native
-    // strategic candidate/active-composition refresh. Tests/replay can disable it
-    // without disabling native candidate generation or strategic owners.
-    std::pair<std::optional<LegacyEconomicStrategyDecision>, std::int32_t>
-    update_legacy_strategy_compatibility_projection(
-        std::size_t i, StrategyInfo& info, double power, bool enabled
-    ) {
-        if (!enabled) {
-            info.strategy = -1;
-            info.strategy_name.clear();
-            info.confidence = 0.0f;
-            info.reason = "legacy_strategy_projection_disabled";
-            info.changed = false;
-            info.strategy_age = 0;
-            info.board_power = power;
-            info.bench_strength = 0.0;
-            info.composition_direction.clear();
-            info.composition_locked = false;
-            info.composition_focus.clear();
-            info.composition_focus_id = -1;
-            info.composition_focus_weights.clear();
-            info.core_units.clear();
-            info.core_unit_ids.clear();
-            info.core_traits.clear();
-            info.planned_units.clear();
-            info.planned_unit_ids.clear();
-            info.planned_traits.clear();
-            info.planned_main_carry_id = -1;
-            info.planned_composition_score = 0.0;
-            info.planned_acquisition_notes.clear();
-            info.active_traits.clear();
-            info.unit_counts.clear();
-            info.unit_counts_by_id.clear();
-            info.strategy_scores.clear();
-            info.best_scored_strategy = -1;
-            info.active_traits_count = 0;
-            return {std::nullopt, -1};
-        }
-        const auto& player = player_envs[i].info;
-        const auto& economy = player_envs[i].economy;
-        double bench_strength = 0.0;
-        for (const auto& unit : player_envs[i].bench) {
-            if (!unit) continue;
-            const auto* def = catalog->find_by_id(unit->champion_internal_id);
-            if (def) bench_strength += static_cast<double>(def->cost) * unit->star;
-        }
-        // A estratégia econômica é selecionada por uma única política.
-        // FAST8 e SLOWROLL só ficam elegíveis quando a composição os solicita.
-        const auto& active_composition = composition_intelligence_players[i].active.current();
-        const auto composition_has_unit = [&](std::int32_t id) {
-            return active_composition && std::any_of(
-                active_composition->candidate.units.begin(), active_composition->candidate.units.end(),
-                [&](const auto& unit) { return unit.champion_id == id; });
-        };
-        std::unordered_map<std::int32_t, int> owned_copies;
-        const auto count_owned_copy = [&](const UnitInstance& unit) {
-            owned_copies[unit.champion_internal_id] += star_copies(unit.star);
-        };
-        for (const auto& unit : player_envs[i].board) if (unit) count_owned_copy(*unit);
-        for (const auto& unit : player_envs[i].bench) if (unit) count_owned_copy(*unit);
-
-        // SLOWROLL is enabled only while a concrete native composition target
-        // remains realistically obtainable. Count copies held
-        // by opponents and check remaining pool supply so a completed, exhausted,
-        // or heavily contested target cannot keep the strategy active forever.
-        bool composition_requests_three_star = false;
-        int best_three_star_copies = 0;
-        const int slowroll_stage_window = static_cast<int>(stage_for_round(round + 1));
-        if (slowroll_stage_window >= 3 && slowroll_stage_window <= 4 &&
-            economy.level >= 5 && economy.level <= 6) {
-            for (const auto& [unit_id, copies] : owned_copies) {
-                if (copies < 2 || copies >= 9 || !composition_has_unit(unit_id)) continue;
-                const auto* definition = catalog->find_by_id(unit_id);
-                if (!definition || definition->cost > 3) continue;
-
-                int contested_copies = 0;
-                for (std::size_t opponent = 0; opponent < kPlayersPerLobby; ++opponent) {
-                    if (opponent == i || !player_envs[opponent].info.alive) continue;
-                    const auto count_opponent_copy = [&](const UnitInstance& unit) {
-                        if (unit.champion_internal_id == unit_id)
-                            contested_copies += star_copies(unit.star);
-                    };
-                    for (const auto& unit : player_envs[opponent].board)
-                        if (unit) count_opponent_copy(*unit);
-                    for (const auto& unit : player_envs[opponent].bench)
-                        if (unit) count_opponent_copy(*unit);
-                }
-
-                // Unknown pool state cannot be treated as exhausted supply.
-                if (!pool) continue;
-                const int pool_available = pool->available(unit_id);
-                const int copies_still_needed = 9 - copies;
-                const int minimum_supply_check = std::min(copies_still_needed, 3);
-                if (pool_available < minimum_supply_check || contested_copies >= 6)
-                    continue;
-
-                if (copies > best_three_star_copies) {
-                    best_three_star_copies = copies;
-                    composition_requests_three_star = true;
-                }
-            }
-        }
-        const bool composition_requests_fast8 =
-            active_composition && !strategic_planner_commitments[i].composition_direction.empty() &&
-            active_composition->candidate.units.size() >= 8 && economy.level < 8;
-        const strategy::EconomicStrategyContext strategy_context{
-            economy.gold,
-            static_cast<double>(player.hp),
-            economy.level,
-            economy.win_streak,
-            economy.loss_streak,
-            power,
-            composition_requests_fast8,
-            composition_requests_three_star,
-            static_cast<int>(stage_for_round(round + 1))
-        };
-        const auto strategy_decision =
-            strategy::select_economic_strategy(strategy_context);
-        const std::int32_t chosen = static_cast<std::int32_t>(strategy_decision.selected);
-        const float confidence = static_cast<float>(strategy_decision.confidence);
-        const std::string reason = strategy_decision.reason;
-
-        const bool changed = chosen != info.strategy;
-        if (changed) {
-            info.previous_strategy = info.strategy;
-            info.strategy_age = 0;
-            if (chosen == 1)
-                info.comp_stabilize_start_round = static_cast<std::int32_t>(round + 1);
-        } else {
-            ++info.strategy_age;
-        }
-        static const std::array<const char*, 7> names{
-            "ECON", "STABILIZE", "FAST8", "SLOWROLL",
-            "ALL_IN", "WINSTREAK", "LOSS_STREAK"
-        };
-        info.strategy = chosen;
-        info.strategy_name = names[static_cast<std::size_t>(chosen)];
-        info.confidence = confidence;
-        info.reason = reason;
-        info.changed = changed;
-        info.board_power = power;
-        info.bench_strength = bench_strength;
-
-        // Compatibility projection only: canonical composition and lineup data
-        // come from the native ActiveCompositionManager and its planner owners.
-        info.composition_direction = strategic_planner_commitments[i].composition_direction;
-        info.composition_locked = false; // no authoritative lock producer exists yet
-        info.composition_focus.clear();
-        info.composition_focus_id = -1;
-        info.composition_focus_weights.clear();
-        info.core_units.clear();
-        info.core_unit_ids.clear();
-        info.core_traits.clear();
-        info.planned_units.clear();
-        info.planned_unit_ids.clear();
-        info.planned_traits.clear();
-        info.planned_main_carry_id = -1;
-        info.planned_composition_score = 0.0;
-        info.planned_acquisition_notes.clear();
-        info.active_traits.clear();
-        info.unit_counts.clear();
-        info.unit_counts_by_id.clear();
-
-        // Preserve factual board traits and owned copy counts for legacy
-        // telemetry. They are not used to generate a composition or priorities.
-        std::unordered_map<std::string, std::int32_t> observed_board_traits;
-        for (const auto& unit : player_envs[i].board) {
-            if (!unit) continue;
-            const auto* definition = catalog->find_by_id(unit->champion_internal_id);
-            if (!definition) continue;
-            std::unordered_set<std::string> traits(definition->traits.begin(), definition->traits.end());
-            for (const auto& item : unit->items)
-                if (!item.grants_trait.empty()) traits.insert(item.grants_trait);
-            for (const auto& trait : traits) ++observed_board_traits[trait];
-        }
-        for (const auto& [trait, count] : observed_board_traits)
-            info.active_traits.emplace_back(trait, count);
-
-        std::unordered_map<std::int32_t, std::int32_t> observed_owned_copies;
-        std::unordered_map<std::int32_t, std::string> observed_unit_names;
-        const auto collect_owned_count = [&](const UnitInstance& unit) {
-            const auto* definition = catalog->find_by_id(unit.champion_internal_id);
-            if (!definition) return;
-            observed_unit_names[definition->internal_id] = definition->api_name;
-            observed_owned_copies[definition->internal_id] += star_copies(unit.star);
-        };
-        for (const auto& unit : player_envs[i].board) if (unit) collect_owned_count(*unit);
-        for (const auto& unit : player_envs[i].bench) if (unit) collect_owned_count(*unit);
-        for (const auto& [unit_id, copies] : observed_owned_copies) {
-            info.unit_counts_by_id.emplace_back(unit_id, copies);
-            const auto name = observed_unit_names.find(unit_id);
-            if (name != observed_unit_names.end()) info.unit_counts.emplace_back(name->second, copies);
-        }
-
-        if (active_composition) {
-            const auto& candidate = active_composition->candidate;
-            info.planned_main_carry_id = candidate.main_carry_id;
-            info.planned_composition_score = candidate.source_score;
-            for (const auto& target : candidate.units) {
-                info.planned_unit_ids.push_back(target.champion_id);
-                const auto* definition = catalog->find_by_id(target.champion_id);
-                if (!definition) continue;
-                info.planned_units.push_back(definition->api_name);
-                for (const auto& trait : definition->traits)
-                    if (std::find(info.planned_traits.begin(), info.planned_traits.end(), trait) ==
-                        info.planned_traits.end()) info.planned_traits.push_back(trait);
-                if (target.core) {
-                    info.core_unit_ids.push_back(target.champion_id);
-                    info.core_units.push_back(definition->api_name);
-                    for (const auto& trait : definition->traits)
-                        if (std::find(info.core_traits.begin(), info.core_traits.end(), trait) ==
-                            info.core_traits.end()) info.core_traits.push_back(trait);
-                }
-                if (target.champion_id == candidate.main_carry_id) {
-                    info.composition_focus = definition->api_name;
-                    info.composition_focus_id = definition->internal_id;
-                }
-            }
-        }
-
-        return {std::move(strategy_decision), chosen};
-    }
-
-    void update_strategy(std::size_t i) {
-        auto& strategy_snapshot = player_envs[i].strategy;
-        StrategyInfo info = strategy_snapshot.value_or(StrategyInfo{});
+    void refresh_native_strategic_state(std::size_t i) {
         // Strategic direction and composition are projected from native owners below.
         const auto& player = player_envs[i].info;
         const auto& economy = player_envs[i].economy;
@@ -2538,40 +2300,27 @@ struct TFTEngine::Impl {
         const auto current_round = static_cast<std::int32_t>(round + 1);
 
         // Native owners receive a dedicated refresh from live engine facts.
-        // The compatibility strategy projection below cannot mutate this snapshot.
+        // Native strategic state is refreshed from canonical owners and live engine facts.
         auto native_composition = refresh_native_composition_candidates(i, current_round);
         auto& strategic_native_generation = native_composition.generation;
         auto& strategic_native_owned = native_composition.owned;
         auto& physical_star_counts_by_unit = native_composition.physical_star_counts_by_unit;
 
         // Refresh native strategic owners before the remaining economic
-        // compatibility policy. This path consumes live native facts and its own state.
+        // native runtime. This path consumes live native facts and its own state.
         refresh_native_strategic_runtime(
             i, current_round, economy, player_envs[i].info, power,
             strategic_native_generation, strategic_native_owned,
             composition_intelligence_native_candidates[i],
             player_envs[i].shop, pool, trait_milestones);
 
-        // This legacy compatibility producer is intentionally downstream
-        // of the native owner refresh and cannot feed native composition state.
-        const char* disable_legacy_projection_env =
-            std::getenv("TFT_DISABLE_LEGACY_STRATEGY_PROJECTION");
-        const bool disable_legacy_projection = disable_legacy_projection_env &&
-            (std::string(disable_legacy_projection_env) == "1" ||
-             std::string(disable_legacy_projection_env) == "true" ||
-             std::string(disable_legacy_projection_env) == "yes");
-        const auto legacy_projection =
-            update_legacy_strategy_compatibility_projection(
-                i, info, power, !disable_legacy_projection);
-
-        // Raw shop snapshot shared by the independent shadow composition pipeline.
+        // Raw shop snapshot shared by the native composition evaluation pipeline.
         const auto& strategic_shop = player_envs[i].shop;
 
         // BEGIN ISOLATED NATIVE PLANNER BOUNDARY.
         // This block derives version-bound priorities/lineup and records diagnostics.
         // It never publishes a composition or executes actions; exceptions must not
-        // escape update_strategy() into the PPO-facing engine path.
-        const bool shadow_evaluation_completed =
+        const bool native_evaluation_completed =
             composition_intelligence::run_shadow_isolated([&]() {
         {
             // Native strategic planners consume the canonical active composition
@@ -2725,7 +2474,7 @@ struct TFTEngine::Impl {
                 if (unit) append_owned_candidate(*unit, false);
 
             // Reuse the independently generated lineups above; do not regenerate
-            // from or adapt any legacy CompositionPlanner output.
+            // from or adapt a competing composition source.
             auto& generation = strategic_context.candidate_generation;
             generation.anchors_considered =
                 strategic_native_generation.directions_considered;
@@ -2823,46 +2572,8 @@ struct TFTEngine::Impl {
             }
             static const strategy::StrategicPlanner strategic_planner{};
             auto diagnostic_commitment = strategic_planner_commitments[i];
-            const auto shadow_decision = strategic_planner.evaluate(
+            const auto strategic_decision = strategic_planner.evaluate(
                 evidence_context, diagnostic_commitment);
-            info.strategic_decision_path_reason =
-                shadow_decision.decision_path_reason;
-            info.strategic_current_direction_score =
-                shadow_decision.current_direction_score;
-            info.strategic_best_anchor_score = shadow_decision.best_anchor_score;
-            info.strategic_alternative_advantage =
-                shadow_decision.alternative_advantage;
-            info.strategic_minimum_adapt_advantage =
-                shadow_decision.minimum_adapt_advantage;
-            info.strategic_required_pivot_advantage =
-                shadow_decision.required_pivot_advantage;
-            info.strategic_anchor_confidence = shadow_decision.anchor_confidence;
-            info.strategic_current_direction_confidence =
-                shadow_decision.current_direction_confidence;
-            info.strategic_current_direction_viable =
-                shadow_decision.current_direction_viable;
-            info.strategic_has_anchor_candidate =
-                shadow_decision.has_anchor_candidate;
-            info.strategic_candidate_generation_reason =
-                shadow_decision.candidate_generation.no_candidate_reason;
-            info.strategic_anchors_considered =
-                shadow_decision.candidate_generation.anchors_considered;
-            info.strategic_rejected_cost_below_four =
-                shadow_decision.candidate_generation.rejected_cost_below_four;
-            info.strategic_rejected_missing_champion_definition =
-                shadow_decision.candidate_generation.rejected_missing_champion_definition;
-            info.strategic_rejected_empty_trait =
-                shadow_decision.candidate_generation.rejected_empty_trait;
-            info.strategic_rejected_duplicate_direction =
-                shadow_decision.candidate_generation.rejected_duplicate_direction;
-            info.strategic_rejected_direction_limit =
-                shadow_decision.candidate_generation.rejected_direction_limit;
-            info.strategic_rejected_empty_plan =
-                shadow_decision.candidate_generation.rejected_empty_plan;
-            info.strategic_rejected_anchor_not_in_plan =
-                shadow_decision.candidate_generation.rejected_anchor_not_in_plan;
-            info.strategic_candidates_generated =
-                shadow_decision.candidate_generation.candidates_generated;
 
             // Economic posture and marginal action are independent shadow
             // evaluations. Neither is allowed to alter the policy action path.
@@ -3177,7 +2888,7 @@ struct TFTEngine::Impl {
                 const auto lineup = ci::LineupPlanner{}.plan(active, priorities, lineup_context);
                 // Keep the planner products attached to this player's runtime so
                 // engine consumers read the exact same composition version and
-                // evidence snapshot instead of reconstructing legacy planned_units.
+                // evidence snapshot instead of reconstructing duplicated planned-unit arrays.
                 runtime.planner_evidence = evidence;
                 runtime.unit_priorities = priorities;
                 runtime.lineup = lineup;
@@ -3480,7 +3191,7 @@ struct TFTEngine::Impl {
                 // without feeding recommendations back into either planner.
                 ci::ContextBridgeInput bridge_input;
                 bridge_input.strategic = &strategic_context;
-                bridge_input.strategic_decision = &shadow_decision;
+                bridge_input.strategic_decision = &strategic_decision;
                 bridge_input.economic_decision = &economic_decision;
                 bridge_input.active_composition = &active;
                 bridge_input.expected_player_id = static_cast<std::int32_t>(i);
@@ -3528,199 +3239,15 @@ struct TFTEngine::Impl {
             }
 
 
-            static const std::array<const char*, 7> economic_posture_names{
-                "ACCUMULATE_RESOURCES", "PRESERVE_WIN_STREAK",
-                "PRESERVE_LOSS_STREAK", "INVEST_EXPERIENCE",
-                "ROLL_FOR_UPGRADES", "STABILIZE_BOARD", "EMERGENCY_INVESTMENT"
-            };
-            static const std::array<const char*, 7> action_names{
-                "NONE", "BUY_UNIT", "BUY_XP", "REROLL", "SELL_UNIT",
-                "DEPLOY_OR_MOVE", "HOLD"
-            };
-            const auto posture_index = static_cast<std::size_t>(
-                economic_decision.posture);
-            const auto action_index = static_cast<std::size_t>(
-                action_decision.recommended_action);
-            const auto economic_reason_index = static_cast<std::size_t>(
-                economic_decision.reason);
-            const auto action_reason_index = static_cast<std::size_t>(
-                action_decision.reason);
-            static const std::array<const char*, 12> reason_names{
-                "none", "board_advantage", "board_deficit",
-                "survival_pressure", "progression_timing",
-                "upgrade_opportunity", "anchor_opportunity", "contestation",
-                "item_alignment", "transition_cost", "economy_constraint",
-                "insufficient_evidence"
-            };
-            info.economic_posture = static_cast<std::int32_t>(posture_index);
-            info.economic_posture_name = posture_index < economic_posture_names.size()
-                ? economic_posture_names[posture_index] : "ACCUMULATE_RESOURCES";
-            info.economic_posture_reason =
-                economic_reason_index < reason_names.size()
-                    ? reason_names[economic_reason_index] : "unknown";
-            info.economic_posture_confidence = economic_decision.confidence;
-            info.economic_survival_pressure = economic_decision.survival_pressure;
-            info.economic_board_pressure = economic_decision.board_pressure;
-            info.economic_resource_pressure = economic_decision.economy_pressure;
-            info.strategic_action_recommendation =
-                static_cast<std::int32_t>(action_index);
-            info.strategic_action_recommendation_name =
-                action_index < action_names.size() ? action_names[action_index] : "HOLD";
-            info.strategic_action_reason =
-                action_reason_index < reason_names.size()
-                    ? reason_names[action_reason_index] : "unknown";
-            info.strategic_action_expected_board_delta =
-                action_decision.expected_board_delta;
-            info.strategic_action_expected_hp_preservation =
-                action_decision.expected_hp_preservation;
-            info.strategic_action_expected_economy_cost =
-                action_decision.expected_economy_cost;
-            info.strategic_action_expected_direct_gold_cost =
-                action_decision.expected_direct_gold_cost;
-            info.strategic_action_expected_lost_interest_cost =
-                action_decision.expected_lost_interest_cost;
-            info.strategic_action_expected_opportunity_cost =
-                action_decision.expected_opportunity_cost;
-            info.strategic_action_expected_streak_value =
-                action_decision.expected_streak_value;
-            info.strategic_action_recommended_champion_id =
-                action_decision.recommended_champion_id;
-            info.strategic_action_candidate_scores.clear();
-            static const std::array<const char*, 7> candidate_action_names{
-                "NONE", "BUY_UNIT", "BUY_XP", "REROLL", "SELL_UNIT",
-                "DEPLOY_OR_MOVE", "HOLD"
-            };
-            for (const auto& score : action_decision.candidate_scores) {
-                const auto kind = static_cast<std::size_t>(score.kind);
-                ActionCandidateScoreInfo item;
-                item.action = kind < candidate_action_names.size()
-                    ? candidate_action_names[kind] : "UNKNOWN";
-                item.champion_id = score.champion_id;
-                item.direct_gold_cost = score.direct_gold_cost;
-                item.lost_interest_cost = score.lost_interest_cost;
-                item.opportunity_cost = score.opportunity_cost;
-                item.board_component = score.board_component;
-                item.survival_component = score.survival_component;
-                item.streak_component = score.streak_component;
-                item.composition_component = score.composition_component;
-                item.upgrade_component = score.upgrade_component;
-                item.posture_component = score.posture_component;
-                item.direct_cost_component = score.direct_cost_component;
-                item.lost_interest_component = score.lost_interest_component;
-                item.opportunity_cost_component = score.opportunity_cost_component;
-                item.total_score = score.total_score;
-                item.available = score.available;
-                item.selected = score.selected;
-                info.strategic_action_candidate_scores.push_back(std::move(item));
-            }
-            info.strategic_action_confidence = action_decision.confidence;
-            info.economic_shadow_only =
-                economic_decision.shadow_only && action_decision.shadow_only;
-            static const std::array<const char*, 6> composition_decision_names{
-                "KEEP", "ADAPT", "PIVOT", "ABANDON", "INITIAL_SELECTION",
-                "INSUFFICIENT_EVIDENCE"
-            };
-            static const std::array<const char*, 12> strategic_reason_names{
-                "none", "board_advantage", "board_deficit",
-                "survival_pressure", "progression_timing",
-                "upgrade_opportunity", "anchor_opportunity", "contestation",
-                "item_alignment", "transition_cost", "economy_constraint",
-                "insufficient_evidence"
-            };
-            const auto decision_index = static_cast<std::size_t>(
-                shadow_decision.composition_decision);
-            const auto reason_index = static_cast<std::size_t>(
-                shadow_decision.reason);
-            info.strategic_composition_decision =
-                static_cast<std::int32_t>(decision_index);
-            info.strategic_composition_decision_name =
-                decision_index < composition_decision_names.size()
-                    ? composition_decision_names[decision_index] : "KEEP";
-            info.strategic_target_direction =
-                shadow_decision.target_composition_direction;
-            info.strategic_reason =
-                reason_index < strategic_reason_names.size()
-                    ? strategic_reason_names[reason_index] : "unknown";
-            info.strategic_anchor_champion_id =
-                shadow_decision.anchor_champion_id;
-            info.strategic_confidence = shadow_decision.confidence;
-            info.strategic_transition_cost =
-                shadow_decision.estimated_transition_cost;
-            info.strategic_preserve_unit_ids =
-                shadow_decision.preserve_unit_ids;
-            info.strategic_replaceable_unit_ids =
-                shadow_decision.replaceable_unit_ids;
-            info.strategic_candidate_diagnostics.clear();
-            for (const auto& candidate : shadow_decision.candidate_diagnostics) {
-                info.strategic_candidate_diagnostics.push_back({
-                    candidate.champion_id, candidate.target_composition_direction,
-                    candidate.score, candidate.accepted, candidate.evaluation_reason,
-                    candidate.composition_identity, candidate.candidate_unit_ids,
-                    candidate.main_carry_id, candidate.candidate_traits,
-                    candidate.evidence
-                });
-            }
-            // Diagnostic-only compatibility mirror for existing telemetry.
-            // The planner never reads these fields back; its authority is the
-            // per-player strategic_planner_commitments array above.
-            info.strategic_candidate_direction =
-                strategic_planner_commitments[i].candidate_composition_direction;
-            info.strategic_candidate_anchor_id =
-                strategic_planner_commitments[i].candidate_anchor_id;
-            info.strategic_candidate_score =
-                strategic_planner_commitments[i].candidate_score;
-            info.strategic_candidate_streak =
-                strategic_planner_commitments[i].consecutive_reviews;
-            info.strategic_candidate_last_review_round =
-                strategic_planner_commitments[i].last_review_round;
-            info.strategic_committed_direction =
-                strategic_planner_commitments[i].composition_direction;
-            info.strategic_selected_round =
-                strategic_planner_commitments[i].selected_round;
-            info.strategic_shadow_only = shadow_decision.shadow_only;
         }
-        }, [&]() noexcept {
-            // Keep the primary game/PPO transition alive when a Shadow planner,
-            // adapter or diagnostic dependency fails. These flags are diagnostics
-            // only and are not consumed by observations, masks, rewards or actions.
-            info.strategic_shadow_only = false;
-            info.economic_shadow_only = false;
-        });
-        (void)shadow_evaluation_completed;
-        // END SHADOW-ONLY EVALUATION BOUNDARY.
+        }, []() noexcept {});
+        (void)native_evaluation_completed;
+        // END READ-ONLY STRATEGIC EVALUATION BOUNDARY.
 
-        // Paridade com StrategyManager.compute_strategy_confidence().
-        double state_confidence = 0.5;
-        if (player.hp <= 20.0f) state_confidence += 0.25;
-        else if (player.hp >= 80.0f) state_confidence += 0.10;
-        if (economy.gold >= 40) state_confidence += 0.15;
-        else if (economy.gold < 10) state_confidence -= 0.10;
-        if (power >= 70.0) state_confidence += 0.15;
-        else if (power <= 20.0) state_confidence -= 0.15;
-        if (economy.win_streak >= 4) state_confidence += 0.10;
-        if (economy.loss_streak >= 4) state_confidence += 0.10;
-        if (economy.level >= 8) state_confidence += 0.10;
-        info.state_confidence = static_cast<float>(std::clamp(state_confidence, 0.0, 1.0));
 
-        // O diagnóstico usa exatamente os scores que escolheram o modo ativo.
-        // Não existe mais um segundo seletor divergente do modo executado.
-        info.strategy_scores.clear();
-        if (legacy_projection.first) {
-            const auto& strategy_decision = *legacy_projection.first;
-            for (std::int32_t strategy_id = 0; strategy_id < 7; ++strategy_id) {
-                info.strategy_scores.emplace_back(
-                    strategy_id,
-                    strategy_decision.scores[static_cast<std::size_t>(strategy_id)]);
-            }
-            info.best_scored_strategy = legacy_projection.second;
-        } else {
-            info.best_scored_strategy = -1;
-        }
-        info.active_traits_count = static_cast<std::int32_t>(info.active_traits.size());
 
-        strategy_snapshot = std::move(info);
+
     }
-
     double state_reward(std::size_t i, double action_reward) {
         const double power = board_power(i);
         const double synergy = synergy_score(i);
@@ -5384,9 +4911,9 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                             active_composition->candidate.units.end(),
                             [&](const auto& target) { return target.champion_id == unit.champion_internal_id; });
                         const bool composition_changed =
-                            (recent->comp_direction != current_composition_identity ||
-                             recent->comp_focus != current_main_carry_identity) &&
-                            (!recent->comp_direction.empty() || !recent->comp_focus.empty()) &&
+                            (recent->composition_identity != current_composition_identity ||
+                             recent->main_carry_identity != current_main_carry_identity) &&
+                            (!recent->composition_identity.empty() || !recent->main_carry_identity.empty()) &&
                             !still_core_or_planned;
                         sale_has_legitimate_context = sale_has_legitimate_context ||
                             composition_changed || recent->was_deployed;
@@ -5528,7 +5055,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         for (const auto& unit : this->board) if (unit) ++new_board_count;
         for (const auto& unit : this->bench) if (unit) ++new_bench_count;
 
-        // Reward Contract v1 deliberately does not turn Shadow scores,
+        // Reward Contract v1 deliberately does not turn read-only recommendation scores,
         // legacy composition fit, heuristic board scores, or action costs into
         // PPO targets. Until an outcome has a versioned causal definition and
         // calibration evidence, action-level shaping is neutral. Combat and
@@ -5562,21 +5089,8 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             success = true;
         }
 
-        // Keep the native strategy refresh for Shadow and diagnostics; it is
-        // deliberately independent from the neutral PPO action reward.
-        lobby.update_strategy(player_id);
-        // Capture post-refresh composition labels for purchase-lineage diagnostics
-        // only. These labels are not consumed by Reward Contract v1.
-        if (type == 0 && success && this->strategy) {
-            for (auto it = this->recent_purchases.rbegin();
-                 it != this->recent_purchases.rend(); ++it) {
-                if (it->action_serial == this->action_serial) {
-                    it->comp_direction = this->strategy->composition_direction;
-                    it->comp_focus = this->strategy->composition_focus;
-                    break;
-                }
-            }
-        }
+        // Refresh the native strategic owners independently from PPO action rewards.
+        lobby.refresh_native_strategic_state(player_id);
         // Capture actual action economics before round income is resolved.
         // Net gold after TFTEngine::step may include income and cannot be used
         // to infer the action's true cost. This trace is audit-only and never
@@ -5984,7 +5498,7 @@ StepResult TFTEngine::step(
             impl_->player_envs[i].round_reward_total = round_rewards[i];
             impl_->player_envs[i].total_reward += round_rewards[i] - rewards_before_combat[i];
             if (impl_->player_envs[i].info.alive) {
-                impl_->update_strategy(i);
+                impl_->refresh_native_strategic_state(i);
             }
         }
 
@@ -6683,7 +6197,7 @@ bool TFTEngine::set_unit_for_testing(
     impl_->register_position_state(player_index);
     // Keep derived strategy/composition data coherent with test-only fixture
     // mutations. SELL reward reads the current core-unit set before transition.
-    impl_->update_strategy(player_index);
+    impl_->refresh_native_strategic_state(player_index);
     impl_->refresh_masks(player_index);
     return true;
 }
@@ -6994,105 +6508,7 @@ std::vector<float> TFTEngine::get_observations() const {
 // ESTRATÉGIAS
 // ============================================================
 
-std::array<std::vector<StrategyInfo>, kPlayersPerLobby>
-TFTEngine::get_strategies() const {
-    if (!impl_) {
-        throw std::runtime_error("TFTEngine nao possui estado interno.");
-    }
-    impl_->ensure_open();
 
-    std::array<std::vector<StrategyInfo>, kPlayersPerLobby> result{};
-    for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
-        if (impl_->player_envs[i].strategy)
-            result[i].push_back(*impl_->player_envs[i].strategy);
-    }
-    return result;
-}
-
-std::array<std::vector<StrategyInfo>, kPlayersPerLobby>
-TFTEngine::get_viewer_strategy_snapshots() const {
-    auto result = get_strategies();
-    for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
-        if (result[i].empty()) continue;
-        auto& projection = result[i].back();
-        const auto& commitment = impl_->strategic_planner_commitments[i];
-        const auto& active = impl_->composition_intelligence_players[i].active.current();
-
-        // This is a Viewer/telemetry compatibility projection only. PPO's
-        // observation and reward paths continue to use their explicitly
-        // version-gated legacy inputs until their contracts are approved.
-        projection.composition_projection_source = "tft_strategic_engine";
-        projection.composition_version = active ? active->version : 0;
-        projection.composition_direction = commitment.composition_direction;
-        projection.composition_candidate_direction =
-            commitment.candidate_composition_direction;
-        projection.composition_candidate_strength = 0.0; // no legacy strength-equivalent producer
-        projection.composition_candidate_streak = commitment.consecutive_reviews;
-        projection.composition_direction_change_round =
-            static_cast<std::int32_t>(commitment.selected_round);
-        projection.composition_direction_change_reason = "native_strategic_commitment";
-        projection.composition_locked = false; // no authoritative lock producer in the new owner
-        projection.composition_strength = 0.0; // no equivalent calibrated strength contract
-        projection.composition_focus_weights.clear();
-        projection.composition_focus.clear();
-        projection.composition_focus_id = -1;
-        projection.previous_composition_direction.clear();
-        projection.previous_composition_strength = 0.0;
-        projection.composition_direction_change_was_locked = false;
-        projection.composition_direction_change_focus_weight = 0.0;
-        projection.composition_direction_change_count = 0;
-        projection.comp_direction_update_steps = 0;
-        projection.comp_stabilize_start_round = -1;
-
-        projection.core_units.clear();
-        projection.core_unit_ids.clear();
-        projection.core_traits.clear();
-        projection.planned_units.clear();
-        projection.planned_unit_ids.clear();
-        projection.planned_traits.clear();
-        projection.planned_main_carry_id = -1;
-        projection.planned_composition_score = 0.0;
-        projection.planned_acquisition_notes.clear();
-
-        if (active) {
-            const auto& candidate = active->candidate;
-            projection.planned_main_carry_id = candidate.main_carry_id;
-            projection.planned_composition_score = candidate.source_score;
-            for (const auto& unit : candidate.units) {
-                projection.planned_unit_ids.push_back(unit.champion_id);
-                const auto* definition = impl_->catalog->find_by_id(unit.champion_id);
-                if (!definition) continue;
-                projection.planned_units.push_back(definition->api_name);
-                for (const auto& trait : definition->traits)
-                    if (std::find(projection.planned_traits.begin(),
-                                  projection.planned_traits.end(), trait) ==
-                        projection.planned_traits.end())
-                        projection.planned_traits.push_back(trait);
-                if (unit.core) {
-                    projection.core_unit_ids.push_back(unit.champion_id);
-                    projection.core_units.push_back(definition->api_name);
-                    for (const auto& trait : definition->traits)
-                        if (std::find(projection.core_traits.begin(),
-                                      projection.core_traits.end(), trait) ==
-                            projection.core_traits.end())
-                            projection.core_traits.push_back(trait);
-                }
-                if (unit.champion_id == candidate.main_carry_id) {
-                    projection.composition_focus = definition->api_name;
-                    projection.composition_focus_id = definition->internal_id;
-                }
-            }
-            projection.composition_projection_status = "canonical_active_composition";
-        } else {
-            projection.composition_projection_status =
-                commitment.composition_direction.empty()
-                    ? "native_composition_unavailable"
-                    : "native_direction_without_active_composition";
-        }
-    }
-
-    return result;
-}
 
 RewardState TFTEngine::get_reward_state(std::int32_t player_id) const {
     if (!impl_ || player_id < 0 ||

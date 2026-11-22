@@ -16,13 +16,3 @@ class ActionType(IntEnum):
     PASS = 6
     EQUIP_FROM_INVENTORY = 7
     CRAFT_AND_EQUIP = 8
-
-
-class Strategy(IntEnum):
-    ECON = 0
-    STABILIZE = 1
-    FAST8 = 2
-    SLOWROLL = 3
-    ALL_IN = 4
-    WINSTREAK = 5
-    LOSS_STREAK = 6

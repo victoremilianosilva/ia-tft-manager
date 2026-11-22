@@ -1,5 +1,6 @@
 #include "composition_intelligence/CompositionSourceAdapters.hpp"
-#include "strategy/CompositionPlanner.hpp"
+#include "composition_intelligence/contracts/CompositionContracts.hpp"
+#include "strategy/NativeStrategicCompositionGenerator.hpp"
 #include <cassert>
 #include <iostream>
 using namespace tft;
@@ -59,34 +60,67 @@ void opgg_failure_does_not_block_native(){
  auto native=NativeCompositionAdapter::adapt(input,pool());assert(opgg.candidates.empty());assert(native.candidates.size()==1);
 }
 
-void native_planner_exports_pre_opgg_candidate(){
+void native_generator_exports_pre_opgg_candidate(){
  auto champions=pool();
  champions[0].traits={"Shepherd","Guardian"};
  champions[1].traits={"Shepherd","Invoker"};
  champions[2].traits={"Guardian","Invoker"};
  champions[3].traits={"Invoker"};
  for(auto& champion:champions) champion.cost=2;
- strategy::CompositionPlanner::TraitMilestones milestones{
-  {"Shepherd",{2}},{"Guardian",{2}},{"Invoker",{2}}
+
+ strategy::NativeCompositionGenerationInput input;
+ input.level=4;input.gold=10;input.target_slots=5;
+ input.match_id=42;input.player_id=0;input.round=4;input.sequence=12;
+ input.shop_ids={13};
+ input.currently_owned_unit_ids={10,11,12};
+ input.trait_thresholds={{"Shepherd",2},{"Guardian",2},{"Invoker",2}};
+ for(const auto& champion:champions){
+  strategy::NativeCompositionUnitDefinition definition;
+  definition.champion_id=champion.internal_id;
+  definition.key=champion.api_name;
+  definition.cost=champion.cost;
+  definition.traits=champion.traits;
+  definition.carry=champion.combat_profile.is_carry;
+  definition.frontline=champion.combat_profile.frontline;
+  definition.support=champion.combat_profile.is_support;
+  input.catalog.push_back(std::move(definition));
+  input.pool_remaining[champion.internal_id]=10;
+ }
+ input.owned={
+  {10,1,1,true,false,0.8,0.1,{1,0,0,0}},
+  {11,2,1,true,false,1.0,0.9,{2,0,0,0}},
+  {12,1,1,false,true,0.2,0.2,{1,0,0,0}}
  };
- strategy::CompositionPlanner::OwnedCopies owned;
- strategy::CompositionPlanner::AvailableCopies available;
- for(const auto& champion:champions) available[champion.internal_id]=10;
- const auto legacy_plan=strategy::CompositionPlanner::build(
-  champions,milestones,"Shepherd",{},owned,4,5,available,{});
- assert(legacy_plan.native_snapshot.composition_id.empty());
- const auto plan=strategy::CompositionPlanner::build(
-  champions,milestones,"Shepherd",{},owned,4,5,available,{},nullptr,-1,true);
- assert(plan.unit_ids==legacy_plan.unit_ids);
- assert(plan.score==legacy_plan.score);
- assert(!plan.native_snapshot.composition_id.empty());
- assert(plan.native_snapshot.set_id=="18");
- assert(plan.native_snapshot.source_reference=="composition-planner/native-before-opgg");
- assert(!plan.native_snapshot.units.empty());
- const auto adapted=NativeCompositionAdapter::adapt(plan.native_snapshot,champions);
+
+ const auto generated=strategy::NativeStrategicCompositionGenerator{}.generate(input);
+ assert(!generated.candidates.empty());
+ const auto& candidate=generated.candidates.front();
+ assert(!candidate.identity.empty());
+ assert(!candidate.candidate_set_id.empty());
+ assert(candidate.match_id==42);
+ assert(candidate.player_id==0);
+ assert(candidate.round==4);
+ assert(candidate.source_sequence==12);
+ assert(!candidate.unit_ids.empty());
+ assert(candidate.main_carry_id==11);
+
+ NativeCompositionSnapshot snapshot;
+ snapshot.composition_id=candidate.identity;
+ snapshot.set_id="18";
+ snapshot.patch="18.1";
+ snapshot.main_carry_id=candidate.main_carry_id;
+ snapshot.target_board_size=candidate.unit_ids.size();
+ snapshot.source_score=candidate.score;
+ snapshot.source_reference=candidate.producer_id;
+ for(const auto id:candidate.unit_ids)
+  snapshot.units.push_back({id,id==candidate.main_carry_id || id==candidate.anchor_champion_id,0});
+
+ const auto adapted=NativeCompositionAdapter::adapt(snapshot,champions);
  assert(adapted.candidates.size()==1);
  assert(adapted.candidates.front().source==CompositionSource::Native);
- assert(adapted.candidates.front().composition_id==plan.native_snapshot.composition_id);
+ assert(adapted.candidates.front().composition_id==candidate.identity);
+ assert(adapted.candidates.front().main_carry_id==candidate.main_carry_id);
+ assert(adapted.candidates.front().units.size()==candidate.unit_ids.size());
 }
 }
-int main(){opgg_maps_to_common_contract();opgg_rejects_wrong_set_and_low_coverage();opgg_rejects_duplicate_composition_ids();native_adapter_uses_neutral_snapshot();native_adapter_rejects_unknown_or_wrong_set_units();opgg_failure_does_not_block_native();native_planner_exports_pre_opgg_candidate();std::cout<<"Composition source adapter tests passed\n";return 0;}
+int main(){opgg_maps_to_common_contract();opgg_rejects_wrong_set_and_low_coverage();opgg_rejects_duplicate_composition_ids();native_adapter_uses_neutral_snapshot();native_adapter_rejects_unknown_or_wrong_set_units();opgg_failure_does_not_block_native();native_generator_exports_pre_opgg_candidate();std::cout<<"Composition source adapter tests passed\n";return 0;}
