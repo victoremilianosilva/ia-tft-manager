@@ -27,6 +27,8 @@ class FakePolicy:
 
 def test_run_manifest_records_native_lineage_and_is_stable(tmp_path, monkeypatch):
     monkeypatch.setenv("TFT_SOURCE_REVISION", "test-revision")
+    monkeypatch.setenv("TFT_DISABLE_LEGACY_STRATEGY_PROJECTION", "1")
+    monkeypatch.setenv("TFT_OPGG_DISABLE_REFRESH", "1")
     config = TrainingConfig(
         seed=77,
         checkpoint_path=str(tmp_path / "model.pt"),
@@ -58,6 +60,8 @@ def test_run_manifest_records_native_lineage_and_is_stable(tmp_path, monkeypatch
     assert first["engine"]["module"] == FakeNativeEngine.__module__
     assert first["contracts"]["semantic_state"] == semantic_contract
     assert first["policy"]["architecture_id"] == "tft.policy.native-semantic-ppo"
+    assert first["runtime_features"]["legacy_strategy_projection_disabled"] is True
+    assert first["runtime_features"]["external_catalog_refresh_disabled"] is True
     assert first["identity_sha256"] == second["identity_sha256"]
     assert first["manifest_sha256"] != ""
 
