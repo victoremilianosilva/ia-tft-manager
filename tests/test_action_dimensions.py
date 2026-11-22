@@ -41,6 +41,7 @@ def test_policy_heads_match_action_dimensions():
         obs_dim=162,
         action_dims=Trainer.ACTION_DIMS,
         hidden_size=32,
+        require_semantic_state=False,
     )
 
     assert policy.type_head.out_features == 9
@@ -71,7 +72,7 @@ def test_policy_rejects_invalid_action_dimensions():
 
 
 def test_legacy_seven_type_checkpoint_migrates_to_nine_types():
-    policy = TFTPolicy(obs_dim=162, action_dims=Trainer.ACTION_DIMS, hidden_size=32)
+    policy = TFTPolicy(obs_dim=162, action_dims=Trainer.ACTION_DIMS, hidden_size=32, require_semantic_state=False)
     legacy = {key: value.detach().clone() for key, value in policy.state_dict().items()}
     legacy["type_head.weight"] = legacy["type_head.weight"][:7].clone()
     legacy["type_head.bias"] = legacy["type_head.bias"][:7].clone()
@@ -105,7 +106,7 @@ def _configure_candidate_ranker(head, hidden_size, feature_indices, signs):
 
 def test_candidate_policy_ranks_shop_slots_by_local_compatibility():
     hidden_size = 16
-    policy = TFTPolicy(obs_dim=400, action_dims=Trainer.ACTION_DIMS, hidden_size=hidden_size)
+    policy = TFTPolicy(obs_dim=400, action_dims=Trainer.ACTION_DIMS, hidden_size=hidden_size, require_semantic_state=False)
     _configure_candidate_ranker(policy.shop_head, hidden_size, [0], [1.0])
     context = torch.zeros(1, hidden_size + Trainer.ACTION_DIMS[0])
     candidates = torch.zeros(1, 5, 6)
@@ -136,7 +137,7 @@ def test_candidate_policy_avoids_selling_core_upgrade_copies():
 
 
 def test_candidate_observation_tail_aligns_bench_and_shop_slots():
-    policy = TFTPolicy(obs_dim=400, action_dims=Trainer.ACTION_DIMS, hidden_size=16)
+    policy = TFTPolicy(obs_dim=400, action_dims=Trainer.ACTION_DIMS, hidden_size=16, require_semantic_state=False)
     observations = torch.zeros(2, 400)
     tail = observations[:, -policy.candidate_observation_dim:]
     tail[:, :9 * 6] = 1.0
