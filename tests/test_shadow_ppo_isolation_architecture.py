@@ -92,7 +92,8 @@ class NativeStrategicPpoContractTests(unittest.TestCase):
         self.assertIn("semantic_state=next_semantic_state", self.trainer)
         self.assertIn("semantic_state=sample_semantic_state", self.trainer)
         self.assertIn("Native PPO rollout requires semantic_state v6", self.rollout)
-        self.assertIn("semantic_state=semantic_state", self.rollout)
+        self.assertIn("if semantic_state is None:", self.rollout)
+        self.assertIn("self.semantic_numeric[self.ptr].copy_", self.rollout)
 
     def test_policy_uses_native_semantic_encoder(self):
         self.assertIn("self.semantic_encoder", self.policy)
@@ -102,7 +103,7 @@ class NativeStrategicPpoContractTests(unittest.TestCase):
     def test_ppo_action_resolution_remains_read_only(self):
         self.assertIn("StrategicActionExecutor", self.engine)
         self.assertIn("resolution_request.source_context", self.engine)
-        self.assertIn("StrategicActionResolution", self.engine)
+        self.assertIn("StrategicActionResolutionRequest", self.engine)
 
 
 if __name__ == "__main__":
