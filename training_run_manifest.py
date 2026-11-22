@@ -137,6 +137,14 @@ def build_training_run_manifest(
         "source": _source_identity(),
         "engine": _engine_identity(engine),
         "catalogs": _catalog_identity(),
+        "runtime_features": {
+            "legacy_strategy_projection_disabled": os.environ.get(
+                "TFT_DISABLE_LEGACY_STRATEGY_PROJECTION", ""
+            ).strip().lower() in {"1", "true", "yes"},
+            "external_catalog_refresh_disabled": os.environ.get(
+                "TFT_OPGG_DISABLE_REFRESH", ""
+            ).strip().lower() in {"1", "true", "yes"},
+        },
         "runtime": {
             "python": sys.version.split()[0],
             "torch": str(torch.__version__),
