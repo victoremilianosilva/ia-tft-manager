@@ -1,33 +1,49 @@
-# Treinamento PPO
+# Treinamento PPO nativo
 
-> **Runtime de treinamento PPO da arquitetura nativa.** O caminho operacional é `train_native.py` / `scripts/run_training_battery.py`. O PPO aprende a partir da projeção semântica produzida pelos snapshots nativos; a Engine e as action masks permanecem autoridade de legalidade. Checkpoints históricos não são aceitos como resume nesta entrada de treinamento.
+O runtime operacional é iniciado por train_native.py ou scripts/run_training_battery.py. O PPO aprende a partir da projeção semântica dos snapshots produzidos pela Engine nativa. A Engine e as action masks continuam sendo a autoridade final de legalidade.
 
 ## Arquivos centrais
 
-- `trainer.py`: orquestra ambientes, policy, buffer, otimizador, scheduler, métricas e checkpoints.
-- `policy.py`: `TFTPolicy`, encoder de observações, cabeças de ação condicionais, valor e avaliação de ações.
-- `rollout.py`: `RolloutBuffer` para transições sincronizadas, máscaras, retornos e vantagens.
-- `ppo.py`: cálculo da loss e atualização PPO.
-- `vector_lobby_env.py`: agrupa lobbies e empilha resultados para coleta.
-- `tft_logs/`: eventos TensorBoard por execução.
-- `checkpoints/native_ppo/` ou o diretório informado em `--output-dir`: artefatos isolados da linhagem nativa.
+- trainer.py: orquestra Engine, policy, rollout, otimizador, scheduler, métricas e checkpoints.
+- policy.py: encoder semântico, encoder espacial, cabeças condicionais de ação e value head.
+- semantic_observation.py: projeção versionada dos fatos e owners nativos.
+- rollout.py: transições sincronizadas, identidade, máscaras, validade, retornos e vantagens.
+- ppo.py: loss e atualização PPO.
+- vector_lobby_env.py: lobbies nativas independentes e seed determinística por lobby.
+- training_run_manifest.py: identidade da execução, revisão do código, binário nativo, configuração e contratos.
 
-## Início de treino e bateria multi-seed\n\nTreino curto (smoke):\n\n```powershell\npython train_native.py --output-dir training_runs/smoke-seed-42 --seed 42 --updates 2 --lobbies 1 --rollout-steps 8\n```\n\nBateria de treino: `python scripts/run_training_battery.py --output-root training_runs/native-battery --seeds 11,12,13 --updates 160 --lobbies 4 --rollout-steps 128`. Cada seed usa um diretório, checkpoint e TensorBoard próprios. O manifesto registra revisão do código, hash do binário nativo, runtime, configuração, seed, arquitetura e contratos. O diretório precisa estar vazio; nenhuma execução sobrescreve artefatos anteriores.\n\nA bateria é treino, não benchmark final: placement/top-4/top-1 e promoção do modelo exigem avaliação independente e split de episódios sem vazamento.\n\n## Escala de coleta
+## Início de treino
 
-`Trainer.num_envs` representa o número de lobbies, não o número de jogadores. Cada lobby contém oito agentes e todos compartilham a mesma policy. As observações têm formato de lote `(lobbies, 8, obs_dim)` antes do flatten. As máscaras seguem o mesmo ordenamento de agentes.
+Smoke test:
 
-## Policy e ações condicionais
+```powershell
+python train_native.py --output-dir training_runs/smoke-seed-42 --seed 42 --updates 2 --lobbies 1 --rollout-steps 8
+```
 
-A policy escolhe o tipo da ação e depois apenas as cabeças relevantes para aquele tipo. Máscaras condicionais limitam opções de loja, banco e tabuleiro. `get_action_and_value_with_diagnostics` expõe distribuições pós-máscara para o viewer; os testes de diagnóstico garantem que a instrumentação não altere ações, valores ou consumo de RNG em relação à inferência normal.
+Bateria multi-seed:
 
-## PPO e buffer
+```powershell
+python scripts/run_training_battery.py --output-root training_runs/native-battery --seeds 11,12,13 --updates 160 --lobbies 4 --rollout-steps 128
+```
 
-O buffer valida shapes e sincronização de transições. Armazena observações, ações, log-probabilities, recompensas, dones, valores e as máscaras originais. Retornos e vantagens são calculados sobre transições válidas; a normalização e o batching ocorrem antes da atualização. `PPOTrainer` calcula a loss clipped e atualiza a policy com limite de gradiente e parada opcional por KL alvo.
+Cada seed recebe um diretório próprio. O runner exige diretório vazio, desabilita refresh externo de catálogo, não habilita migração histórica e registra um manifesto por execução. O checkpoint final inclui policy, optimizer, scheduler, contratos e manifesto.
 
-## Checkpoint e retomada
+## Escala de coleta
 
-O trainer persiste os pesos da policy e, quando aplicável, estados de otimizador/scheduler e número de update. O viewer é somente leitura e não restaura o otimizador. No runtime atual, o loader exige compatibilidade estrutural com `TFTPolicy`, as dimensões de ação e a observação. Para a nova linhagem, isso é apenas uma condição estrutural necessária: a aceitação também exige identidade/hash dos contratos e compatibilidade semântica conforme [PPO Checkpoint Contract v1](ppo-checkpoint-contract.v1.draft.md).
+Trainer.num_envs representa o número de lobbies, não o número de jogadores. Cada lobby contém oito agentes e todos compartilham a mesma policy. As observações têm formato de lote (lobbies, 8, obs_dim) antes do flatten. As máscaras seguem o mesmo ordenamento de agentes.
 
-## Métricas
+## Policy, ações e masks
 
-O trainer usa TensorBoard em `tft_logs/AkameIA_V2` e inclui métricas de desempenho/treino e diagnósticos da engine. Use [avaliação](evaluation-tooling.md) para comparar checkpoints sem continuar o treino.
+A policy amostra o tipo da ação e apenas os argumentos condicionais relevantes. As masks exatas da decisão são consumidas pelo actor e pelo critic como side input independente. A Engine valida novamente a ação; recomendações estratégicas não substituem nem contornam esse contrato.
+
+## PPO e rollout
+
+O buffer mantém observação, ação, log-probability, reward, done, value, máscaras e identidade de cada transição. A projeção semântica e os hashes de identidade acompanham as transições até a atualização PPO. O GAE é calculado por jogador, respeitando fronteiras de episódio e validade.
+
+## Checkpoint e linhagem
+
+Cada execução grava native_ppo_checkpoint.pt e run_manifest.json. O manifesto registra revisão do código, hash do módulo C++ carregado, runtime Python/PyTorch/NumPy, seed, configuração, arquitetura, catálogo semântico e contratos de observação, ação/mask, reward e retomada. A retomada exige identidade de execução idêntica; checkpoints históricos não são importados pelo runner nativo.
+
+## Limite de avaliação
+
+Uma bateria multi-seed comprova execução reproduzível, não qualidade ou superioridade. O benchmark final ainda exige avaliação independente por episódios/seeds, métricas de placement/top-4/top-1, retorno, sobrevivência, estabilidade, comportamento de ações/masks, análise de incerteza e comparação com baseline imutável. O Viewer fica fora desta etapa.
