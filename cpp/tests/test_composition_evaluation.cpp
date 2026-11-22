@@ -233,6 +233,20 @@ void rejects_cross_set_candidates_and_invalid_evidence_is_bounded() {
     assert(score.availability == 1.0);
     assert(score.economy_feasibility == 1.0);
 }
+void unavailable_board_and_item_evidence_stays_neutral() {
+    auto candidate = comp("unknown-evidence", {1, 2, 3});
+    auto ctx = context();
+    auto unknown = evidence("unknown-evidence", 1.0, 1.0);
+    unknown.board_fit_available = false;
+    unknown.item_fit_available = false;
+    ctx.candidate_evidence = {unknown};
+
+    CompositionEvaluator evaluator;
+    const auto score = evaluator.score(candidate, ctx);
+    assert(score.board_fit == 0.5);
+    assert(score.item_fit == 0.5);
+}
+
 void abandons_only_when_both_sides_lack_evidence() {
     auto current = comp("current", {1, 2});
     auto alternative = comp("alternative", {3, 4});
@@ -257,6 +271,7 @@ int main() {
     removed_units_need_explicit_low_value_evidence_before_sell_candidate();
     rejects_stale_or_unapproved_publication();
     rejects_cross_set_candidates_and_invalid_evidence_is_bounded();
+    unavailable_board_and_item_evidence_stays_neutral();
     abandons_only_when_both_sides_lack_evidence();
     std::cout << "Composition Evaluator and Transition Manager tests passed\n";
     return 0;
