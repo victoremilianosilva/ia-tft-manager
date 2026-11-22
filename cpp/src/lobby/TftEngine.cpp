@@ -457,6 +457,8 @@ struct TFTEngine::Impl {
     std::array<std::uint64_t, kPlayersPerLobby>
         strategic_shadow_external_active_version{};
     std::array<std::string, kPlayersPerLobby> strategic_refresh_failure_reasons{};
+    std::array<std::string, kPlayersPerLobby>
+        strategic_pivot_generation_diagnostics{};
     std::array<std::vector<AuditUnitOpportunityCostSnapshot>, kPlayersPerLobby> strategic_opportunity_costs{};
 
     std::string strategic_shadow_audit_path;
@@ -1731,6 +1733,7 @@ struct TFTEngine::Impl {
         // the canonical per-player ActiveCompositionManager and live native
         // evidence without waiting for optional Viewer/diagnostic processing.
         strategic_refresh_failure_reasons[i].clear();
+        strategic_pivot_generation_diagnostics[i] = "not_evaluated";
         if (strategic_shadow_runtimes[i]) {
             try {
                 auto& native_runtime = *strategic_shadow_runtimes[i];
