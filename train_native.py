@@ -50,7 +50,7 @@ def main(argv: list[str] | None = None) -> int:
         raise SystemExit("lr-schedule-updates e target-kl devem ser > 0.")
 
     output_dir = Path(args.output_dir).expanduser().resolve()
-    if output_dir.exists() and any(output_dir.iterdir()):
+    if output_dir.exists() and (not output_dir.is_dir() or any(output_dir.iterdir())):
         raise SystemExit(
             f"O diretório {output_dir} já contém arquivos. "
             "Cada execução precisa de um diretório exclusivo; nenhum checkpoint será sobrescrito."
