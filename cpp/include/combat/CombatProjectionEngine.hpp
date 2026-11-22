@@ -54,8 +54,7 @@ public:
             return out;
         }
         if (input.seed != input.config.seed || !input.config.deterministic ||
-            input.config.board_rows <= 0 || input.config.board_cols <= 0 ||
-            input.config.board_rows * input.config.board_cols != 28 ||
+            input.config.board_rows != 4 || input.config.board_cols != 7 ||
             !std::isfinite(input.config.max_duration) ||
             input.config.max_duration <= 0.0f || input.config.max_events == 0) {
             out.validation_reason = "combat_input_simulator_configuration_invalid";
