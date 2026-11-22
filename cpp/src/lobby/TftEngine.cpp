@@ -2686,7 +2686,8 @@ struct TFTEngine::Impl {
                             static_cast<double>(matching_traits) / 2.0, 0.0, 1.0);
                         evidence.trait_completion = evidence.trait_completion ||
                             observed.completes_active_trait;
-                        evidence.confidence = 0.75;
+                        // No calibrated per-unit board contribution is available; confidence stays absent.
+                        evidence.confidence = 0.0;
                         evidence.copies_toward_next_star =
                             ci::copy_progress_toward_next_star(
                                 priority.copies_by_star, priority.highest_star);
@@ -2748,13 +2749,12 @@ struct TFTEngine::Impl {
                     ci::CandidateEvidence evidence;
                     evidence.composition_id = candidate.composition_id;
                     evidence.source = ci::CompositionEvidenceSource::ObservedBoard;
-                    std::size_t board_hits = 0, owned_hits = 0, available_hits = 0, item_bearing_hits = 0;
+                    std::size_t board_hits = 0, owned_hits = 0, available_hits = 0;
                     double estimated_cost = 0.0;
                     for (const auto& target : candidate.units) {
                         if (on_board_ids.count(target.champion_id)) ++board_hits;
                         if (const auto found = owned_evidence.find(target.champion_id); found != owned_evidence.end()) {
                             ++owned_hits;
-                            if (!found->second.equipped_item_ids.empty()) ++item_bearing_hits;
                         }
                         const auto* definition = catalog->find_by_id(target.champion_id);
                         if (definition) {
@@ -2764,6 +2764,7 @@ struct TFTEngine::Impl {
                     }
                     const double size = static_cast<double>(std::max<std::size_t>(1, candidate.units.size()));
                     evidence.board_fit = static_cast<double>(board_hits) / size;
+                    evidence.board_fit_available = true;
                     evidence.availability = static_cast<double>(available_hits) / size;
                     // Item-bearing-unit ratio is not item fit. Real item/profile
                     // compatibility is computed by ItemFitCache in item evidence.
