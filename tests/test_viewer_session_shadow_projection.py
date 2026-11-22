@@ -148,6 +148,35 @@ def test_viewer_shadow_projection_rejects_unmatched_episode_and_boolean_identity
     }
 
 
+
+@pytest.mark.parametrize("sequence", [0, -1])
+def test_viewer_shadow_projection_rejects_non_positive_diagnostic_sequence(sequence):
+    class NativeLobby:
+        def get_audit_snapshot(self):
+            return {"players": [{"player_id": 0, "gold": 12}]}
+
+        def get_snapshot_metadata(self):
+            return {"episode_id": 12}
+
+        def get_composition_diagnostics_jsonl(self):
+            return [json.dumps({
+                "engine_match_id": 12,
+                "player_id": 0,
+                "round": 2,
+                "sequence": sequence,
+                "composition_id": "invalid-sequence",
+            })]
+
+    session = ViewerSession()
+    session.lobby = NativeLobby()
+    player = session._refresh_audit_snapshot()["players"][0]
+
+    assert player["shadow_composition"] == {
+        "status": "unavailable",
+        "reason": "no_shadow_snapshot_for_player_in_current_episode",
+    }
+
+
 def test_viewer_shadow_projection_requires_native_episode_identity():
     class NativeLobby:
         def get_audit_snapshot(self):
