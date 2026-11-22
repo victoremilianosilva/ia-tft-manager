@@ -1,7 +1,7 @@
 """Versioned semantic projection of the native AuditSnapshot player facts.
 
-This projection deliberately excludes StrategyInfo, Shadow recommendations,
-confidence, evaluator scores and legacy observation offsets. Unknown catalog
+This projection deliberately excludes StrategyInfo, recommendation and evaluator metadata,
+confidence, and legacy observation offsets. Unknown catalog
 bindings remain explicit through the per-slot champion-valid feature.
 """
 from __future__ import annotations
