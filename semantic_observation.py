@@ -14,7 +14,7 @@ from collections.abc import Mapping, Sequence
 SEMANTIC_STATE_CONTRACT_ID = "tft.ppo.semantic-native-state.v7"
 SEMANTIC_STATE_CONTRACT_VERSION = 7
 SEMANTIC_ENTITY_SLOTS = 28 + 9 + 5
-SEMANTIC_ENTITY_FEATURES = 43
+SEMANTIC_ENTITY_FEATURES = 45
 SEMANTIC_GLOBAL_FEATURES = 54
 SEMANTIC_ITEM_COMPONENT_FEATURES = 10
 SEMANTIC_ITEM_SEMANTIC_FEATURES = 17
@@ -209,7 +209,7 @@ def build_semantic_state_checkpoint_contract(catalog_map: Mapping[str, int]) -> 
                 "item_target.attack_damage/200", "item_target.attack_speed/2",
                 "item_target.max_health/2000", "item_target.armor/150",
                 "item_target.magic_resist/150", "item_target.equipped_item_count/3",
-                "trait_id_hash_bucket[0:10]/65536", "strategic_priority/100", "strategic_intent/6", "lineup_selected", "lineup_target",
+                "trait_id_hash_bucket[0:10]/65536", "strategic_priority/100", "strategic_intent/6", "lineup_selected", "lineup_target", "opportunity_cost/100", "opportunity_cost_available",
             ],
             "champion_id": "catalog_internal_id_plus_one; zero=unknown_or_empty",
         },
@@ -492,9 +492,27 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
         or _non_negative_int(strategic.get("pivot_source_composition_version"), "pivot_source_composition_version") == 0
     ):
         raise ValueError("pivot candidate identity/version is incomplete")
-    # No validated per-action opportunity-cost producer is published here yet.
-    if opportunity_available:
-        raise ValueError("opportunity-cost evidence is not yet published by a native action producer")
+    opportunity_rows = strategic.get("opportunity_costs")
+    if not isinstance(opportunity_rows, list):
+        raise TypeError("strategic_state.opportunity_costs must be a list")
+    opportunity_by_id = {}
+    for row in opportunity_rows:
+        if not isinstance(row, Mapping):
+            raise TypeError("opportunity cost rows must be objects")
+        champion_id = _non_negative_int(row.get("champion_internal_id"), "opportunity_cost.champion_internal_id")
+        value = _finite_number(row.get("value"), "opportunity_cost.value")
+        uncertainty = _finite_number(row.get("uncertainty"), "opportunity_cost.uncertainty")
+        horizon = _non_negative_int(row.get("horizon_rounds"), "opportunity_cost.horizon_rounds")
+        source = row.get("source")
+        forgone = row.get("forgone_candidate_id")
+        if (champion_id in opportunity_by_id or value < 0.0 or
+            not 0.0 <= uncertainty < 1.0 or horizon == 0 or
+            source != "same_snapshot_competing_alternative.v1" or
+            not isinstance(forgone, str) or not forgone):
+            raise ValueError("opportunity cost row has invalid or duplicate evidence")
+        opportunity_by_id[champion_id] = (value, uncertainty)
+    if opportunity_available != bool(opportunity_by_id):
+        raise ValueError("opportunity_cost_available diverges from native opportunity rows")
 
     placement = state.get("placement")
     if placement is not None:
@@ -734,11 +752,14 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
             numeric.extend(float(trait_id / SEMANTIC_TRAIT_VOCAB_SIZE) for trait_id in trait_ids)
             numeric.extend([0.0] * (SEMANTIC_TRAIT_SLOTS - len(trait_ids)))
             priority = priority_by_id.get(native_id, (0, 0, 0.0, 0, False)) if native_id is not None else (0, 0, 0.0, 0, False)
+            opportunity = opportunity_by_id.get(native_id) if native_id is not None else None
             numeric.extend([
                 min(priority[0], 100) / 100.0,
                 priority[1] / 6.0,
                 float(native_id in selected_set) if native_id is not None else 0.0,
                 float(native_id in target_set) if native_id is not None else 0.0,
+                min(opportunity[0], 100.0) / 100.0 if opportunity is not None else 0.0,
+                float(opportunity is not None),
             ])
             champion_ids.append(0 if internal_id is None else int(internal_id) + 1)
 
