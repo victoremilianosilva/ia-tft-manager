@@ -29,10 +29,10 @@ from cpp_lobby_env import CppTFTLobbyWrapper
 from policy import TFTPolicy
 from semantic_observation import catalog_identity, validate_semantic_state_checkpoint_contract
 from scripts.evaluate_checkpoints import native_semantic_state_for_players
-from scripts.audit_native_ppo_loops import _strategic_summary, _effect_for_action, MOVEMENT_TYPES
-from scripts.strategic_audit_state import state_signature, diff_units, composition_delta, detect_cycle
+from scripts.audit_native_ppo_loops import _effect_for_action, MOVEMENT_TYPES
+from scripts.strategic_audit_state import state_signature, diff_units, detect_cycle
 
-ACTION_DIMS = [7, 5, 9, 28, 28, 28]
+ACTION_DIMS = [9, 5, 9, 28, 28, 28]
 PASS_ACTION = {"type": 6}
 
 
@@ -142,11 +142,6 @@ def audit_seed(policy, device, seed, output_handles, max_steps, catalog_map):
 
             before_snapshot = lobby.get_audit_snapshot()
             before_players = before_snapshot["players"]
-            strategies_before = lobby.get_strategy_snapshots()
-            strategic_before = [
-                _strategic_summary(lobby, player_id, before_players[player_id], strategies_before[player_id])
-                for player_id in range(8)
-            ]
             masks = lobby.get_action_masks()
             gold_before = {
                 int(player.get("player_id", index)): int(player["gold"])
@@ -186,7 +181,6 @@ def audit_seed(policy, device, seed, output_handles, max_steps, catalog_map):
             observations = np.asarray(observations, dtype=np.float32)
             after_snapshot = lobby.get_audit_snapshot()
             after_players = after_snapshot["players"]
-            strategies_after = lobby.get_strategy_snapshots()
             gold_after = {
                 int(player.get("player_id", index)): int(player["gold"])
                 for index, player in enumerate(after_players)
@@ -211,12 +205,6 @@ def audit_seed(policy, device, seed, output_handles, max_steps, catalog_map):
                 if int(action[0]) in MOVEMENT_TYPES and effect_observed:
                     cycle = detect_cycle(after_sig, visited[player_id], step_index)
                     visited[player_id][after_sig] = {"step": step_index, "action": action}
-                strategy_after = _strategic_summary(
-                    lobby, player_id, after, strategies_after[player_id]
-                )
-                comp_delta = composition_delta(
-                    strategic_before[player_id], strategy_after, before, after
-                )
                 record = {
                     "schema_version": 2,
                     "seed": int(seed),
@@ -246,9 +234,6 @@ def audit_seed(policy, device, seed, output_handles, max_steps, catalog_map):
                     "board_bench_state_changed": bool(state_changed),
                     "unit_changes": unit_diff,
                     "moved_units": unit_diff["moved_units"],
-                    "strategy_before": strategic_before[player_id],
-                    "strategy_after": strategy_after,
-                    "composition_delta": comp_delta,
                     "loop_detected": cycle,
                     "engine_events": info.get("events", []),
                 }
