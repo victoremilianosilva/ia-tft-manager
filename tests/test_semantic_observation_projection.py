@@ -174,10 +174,10 @@ def test_native_planner_priority_lineup_and_opportunity_cost_reach_semantic_ppo_
     }]
     projected = project_native_player_state(metadata, {"TFT_TestChampion": 17})
     entity_start = SEMANTIC_GLOBAL_FEATURES
-    assert projected["numeric"][entity_start + 43] == 0.8
+    assert projected["numeric"][entity_start + 39] == 0.8
+    assert projected["numeric"][entity_start + 41] == 1.0
+    assert projected["numeric"][entity_start + 43] == 0.25
     assert projected["numeric"][entity_start + 44] == 1.0
-    assert projected["numeric"][entity_start + 45] == 0.25
-    assert projected["numeric"][entity_start + 46] == 1.0
 
 
 def test_native_semantic_projection_has_stable_shape_and_explicit_identity():
@@ -187,17 +187,17 @@ def test_native_semantic_projection_has_stable_shape_and_explicit_identity():
     assert len(projected["champion_ids"]) == SEMANTIC_ENTITY_SLOTS
     assert projected["champion_ids"][0] == 18
     assert projected["numeric"][54] == 1.0  # occupied
-    assert projected["numeric"][63] == 1.0  # mapped champion identity valid
-    assert projected["numeric"][62] == 1.0  # active composition member
-    assert projected["numeric"][59] == 1.0  # active core member
-    assert projected["numeric"][60] == 1.0  # direction reference
-    assert projected["numeric"][61] == 1.0  # pivot reference
+    assert projected["numeric"][59] == 1.0  # mapped champion identity valid
+    assert projected["numeric"][60] == 1.0  # active composition member
+    assert projected["numeric"][61] == 1.0  # active core member
+    assert projected["numeric"][62] == 1.0  # direction reference
+    assert projected["numeric"][63] == 1.0  # pivot reference
     assert projected["numeric"][64] == 4.0 / 9.0  # one 2-star plus one 1-star copy
     assert projected["numeric"][65] == 0.0  # native UnitCopyProgress reports no 2-star progress
     # The appended 17-field item target profile comes from the native snapshot.
     assert projected["numeric"][66] == 1.0  # occupied target
     assert projected["numeric"][67] == 1.0  # board target
-    assert projected["numeric"][75] == 1.0  # classifier role one-hot (fighter)
+    assert projected["numeric"][71] == 1.0  # classifier role one-hot (fighter)
     assert projected["numeric"][73] == 1.0  # frontline row
     assert projected["numeric"][77] == 0.5  # attack damage / 200
     assert projected["numeric"][82] == 1.0 / 3.0  # equipped item count / 3
