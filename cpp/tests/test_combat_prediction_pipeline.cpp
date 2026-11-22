@@ -261,6 +261,43 @@ int main() {
         std::abs(projection.expected_incoming_damage - 5.0)) <= 1e-9);
     assert(evaluation.metrics.p90_coverage == 1.0);
 
+    DamageDistribution evaluated_distribution;
+    evaluated_distribution.match_id = identity.match_id;
+    evaluated_distribution.player_id = identity.player_id;
+    evaluated_distribution.before_round = identity.round;
+    evaluated_distribution.before_sequence = identity.sequence;
+    evaluated_distribution.sample_count = 5;
+    evaluated_distribution.minimum_sample_count = 5;
+    evaluated_distribution.mean = 5.0;
+    evaluated_distribution.p50 = 5.0;
+    evaluated_distribution.p90 = 5.0;
+    evaluated_distribution.uncertainty = 1.0 / std::sqrt(5.0);
+    evaluated_distribution.observed_damage_samples = {5.0, 5.0, 5.0, 5.0, 5.0};
+    evaluated_distribution.dataset_version = "fixture-evaluation-dataset.v1";
+    evaluated_distribution.engine_version = evaluation_cohort.engine_version;
+    evaluated_distribution.composition_signature = evaluation_cohort.composition_signature;
+    evaluated_distribution.mechanics_signature = evaluation_cohort.mechanics_signature;
+    evaluated_distribution.horizon_rounds = 1;
+    evaluated_distribution.source = "experimental_replay_cohort_distribution.v1";
+    for (std::uint64_t match = 1000; match < 1005; ++match)
+        evaluated_distribution.replay_artifact_ids.push_back(
+            "fixture-replay-" + std::to_string(match));
+    CalibrationAcceptanceCriteria evaluation_criteria;
+    evaluation_criteria.approved = true;
+    evaluation_criteria.protocol_id = "fixture-evaluation-protocol.v1";
+    evaluation_criteria.minimum_training_samples = 5;
+    evaluation_criteria.minimum_validation_samples = 3;
+    evaluation_criteria.minimum_test_samples = 5;
+    evaluation_criteria.maximum_mae = 100.0;
+    evaluation_criteria.minimum_p90_coverage = 0.0;
+    evaluation_criteria.maximum_p90_coverage = 1.0;
+    evaluation_criteria.maximum_brier_score = 1.0;
+    assert(approve_calibration(
+        evaluated_distribution, evaluation.metrics, evaluation_criteria));
+    const auto evaluated_risk = derive_survival_risk(
+        identity.player_hp, evaluated_distribution);
+    assert(evaluated_risk.available);
+
     auto overlapping_split_samples = evaluation_samples;
     auto overlap = overlapping_split_samples.front();
     overlap.sequence += 1;
