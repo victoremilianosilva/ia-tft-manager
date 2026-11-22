@@ -2549,7 +2549,6 @@ class Trainer:
                         "reward_contract": build_reward_checkpoint_contract(),
                         "training_resume_contract": build_training_resume_contract(self.config.to_dict()),
                         "warm_start_source": warm_start_source_metadata,
-                "training_run_manifest": self.training_run_manifest,
                         "training_run_manifest": self.training_run_manifest,
                         "checkpoint_contract": build_checkpoint_lineage_contract(
                             self.policy.state_dict(),
@@ -2598,6 +2597,7 @@ class Trainer:
                 "reward_contract": build_reward_checkpoint_contract(),
                 "training_resume_contract": build_training_resume_contract(self.config.to_dict()),
                 "warm_start_source": warm_start_source_metadata,
+                "training_run_manifest": self.training_run_manifest,
                 "checkpoint_contract": build_checkpoint_lineage_contract(
                     self.policy.state_dict(),
                     build_action_mask_checkpoint_contract(),
@@ -2624,24 +2624,8 @@ class Trainer:
 # ====================================================================
 
 if __name__ == "__main__":
-
-    refresh_opgg_meta_catalog()
-
-    # ================================================================
-    # 🏟️ IMPORTANTE
-    # ================================================================
-    #
-    # Agora:
-    #
-    #     num_envs = número de LOBBIES
-    #
-    # Exemplo:
-    #
-    #     4 lobbies
-    #     × 8 jogadores
-    #     = 32 agentes
-    #
-    # ================================================================
-
-    trainer = Trainer(use_subprocess=True)
-    trainer.train()
+    raise SystemExit(
+        "O módulo trainer.py é uma biblioteca. Use "
+        "'python train_native.py --output-dir <diretorio> --seed <seed>' "
+        "para iniciar uma execução nativa reproduzível."
+    )
