@@ -83,7 +83,7 @@ def test_legacy_seven_type_checkpoint_migrates_to_nine_types():
         )):
             del legacy[key]
 
-    restored = TFTPolicy(obs_dim=162, action_dims=Trainer.ACTION_DIMS, hidden_size=32)
+    restored = TFTPolicy(obs_dim=162, action_dims=Trainer.ACTION_DIMS, hidden_size=32, require_semantic_state=False)
     assert restored.load_compatible_state_dict(legacy) is True
     migrated = restored.state_dict()
     assert torch.equal(migrated["type_head.weight"][:7], legacy["type_head.weight"])
@@ -162,6 +162,7 @@ def test_checkpoint_migration_inserts_composition_features_before_candidate_tail
         obs_dim=old_obs_dim,
         action_dims=Trainer.ACTION_DIMS,
         hidden_size=hidden_size,
+        require_semantic_state=False,
     )
     new_policy = TFTPolicy(
         obs_dim=new_obs_dim,
@@ -195,6 +196,7 @@ def test_policy_accepts_observation_with_composition_control_features():
         obs_dim=obs_dim,
         action_dims=Trainer.ACTION_DIMS,
         hidden_size=32,
+        require_semantic_state=False,
     )
     observations = torch.zeros(2, obs_dim)
     masks = _complete_mask_bundle({}, observations.shape[0])
