@@ -106,7 +106,7 @@ public:
         };
         if (!valid_team(input.player_a, identity.player_unit_ids) ||
             !valid_team(input.player_b, identity.opponent_unit_ids)) {
-            out.validation_reason = "combat_input_unit_identity_or_board_position_invalid";
+            out.validation_reason = "combat_input_unit_identity_position_or_stat_invalid";
             return out;
         }
         std::unordered_set<int> all_unit_ids;
