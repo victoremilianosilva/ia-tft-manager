@@ -232,7 +232,7 @@ def run_audit(
         report["checks"]["observations"] = {"shape": list(observations.shape), "finite": True}
 
         from policy import TFTPolicy
-        policy = TFTPolicy(obs_dim, ACTION_DIMS).to(device)
+        policy = TFTPolicy(obs_dim, ACTION_DIMS, require_semantic_state=False).to(device)
         migrated = bool(policy.load_compatible_state_dict(source_state))
         policy.eval()
         report["checks"]["checkpoint"] = {
