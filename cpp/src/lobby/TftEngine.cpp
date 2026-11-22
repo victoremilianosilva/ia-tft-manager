@@ -4278,15 +4278,20 @@ struct TFTEngine::Impl {
                     const auto projection_snapshot =
                         combat_evidence::CombatProjectionSnapshotBuilder{}.build(
                             snapshot, input, strategic_context_sequences[a]);
+                    const bool opponent_sequence_valid =
+                        strategic_context_sequences[b] > 0 &&
+                        player_decision_sequences[b] > 0;
                     const bool snapshot_valid = validation.valid && matchup_valid &&
                         resolved_opponent == static_cast<std::int32_t>(b) &&
-                        projection_snapshot.valid;
+                        projection_snapshot.valid && opponent_sequence_valid;
                     const std::string validation_reason = !validation.valid
                         ? validation.reason
                         : (!matchup_valid || resolved_opponent != static_cast<std::int32_t>(b)
                             ? "actual_opponent_identity_mismatch"
                             : (!projection_snapshot.valid
-                                ? projection_snapshot.validation_reason : "valid"));
+                                ? projection_snapshot.validation_reason
+                                : (!opponent_sequence_valid
+                                    ? "opponent_decision_sequence_unavailable" : "valid")));
                     // Preserve the exact immutable CombatInput projection used by
                     // the authoritative simulator. Catalog fallbacks remain explicit
                     // in the serialized values and coverage metadata; they are not
