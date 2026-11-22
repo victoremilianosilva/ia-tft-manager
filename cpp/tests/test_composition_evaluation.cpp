@@ -24,6 +24,10 @@ CandidateEvidence evidence(std::string id, double board, double items = 0.7,
     e.composition_id = std::move(id);
     e.board_fit = board;
     e.item_fit = items;
+    // This fixture supplies explicit measured values; mark them available so
+    // the evaluator does not correctly downgrade them to unknown-neutral.
+    e.board_fit_available = true;
+    e.item_fit_available = true;
     e.availability = availability;
     e.economy_feasibility = economy;
     e.estimated_gold_cost = cost;
