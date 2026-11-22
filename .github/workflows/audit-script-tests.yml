@@ -1,40 +1,6 @@
 name: TFT unified audit tests
 
 on:
-  push:
-    paths:
-      - 'scripts/audit_viewer_match.py'
-      - 'scripts/strategic_economic_comparison.py'
-      - 'scripts/audit_reroll_opportunity.py'
-      - 'tests/test_reroll_opportunity_audit.py'
-      - 'scripts/audit_reroll_opportunity.py'
-      - 'tests/test_reroll_opportunity_audit.py'
-      - 'scripts/audit_buy_xp_coverage.py'
-      - 'tests/test_buy_xp_coverage_audit.py'
-      - 'scripts/audit_hold_baseline.py'
-      - 'tests/test_hold_baseline_audit.py'
-      - 'tests/test_strategic_economic_comparison.py'
-      - 'viewer/strategic_keep_audit.py'
-      - 'tests/test_strategic_keep_audit.py'
-      - 'tests/test_strategic_planner_diagnostics.py'
-      - 'docs/strategic-keep-confidence-audit.md'
-      - 'tests/test_viewer_shadow_planning_logs.py'
-      - 'tests/test_composition_diagnostics.py'
-      - 'tests/test_composition_audit_integration.py'
-      - 'viewer/composition_diagnostics.py'
-      - 'viewer/strategic_direction_pivot_audit.py'
-      - 'tests/test_strategic_direction_pivot_audit.py'
-      - 'viewer/integrated_audit.py'
-      - 'tests/test_integrated_audit.py'
-      - 'viewer/player_logs.py'
-      - 'viewer/session.py'
-      - 'tests/test_purchase_sequence_audit.py'
-      - 'tests/test_board_quality_audit.py'
-      - 'tests/test_audit_metric_reconciliation.py'
-      - 'scripts/test_audit_viewer_match.py'
-      - 'viewer/audit_window.py'
-      - 'viewer/main.py'
-      - '.github/workflows/audit-script-tests.yml'
   pull_request:
     paths:
       - 'scripts/audit_viewer_match.py'
