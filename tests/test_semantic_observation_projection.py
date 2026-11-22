@@ -450,7 +450,7 @@ def test_semantic_projection_hash_binds_owner_identity_even_when_tensor_is_equal
 
 
 
-def test_semantic_v2_checkpoint_has_only_explicit_v6_warm_start_path():
+def test_semantic_v2_checkpoint_has_only_explicit_v7_warm_start_path():
     import copy
     import hashlib
     import json
@@ -484,6 +484,44 @@ def test_semantic_v2_checkpoint_has_only_explicit_v6_warm_start_path():
     with pytest.raises(ValueError, match="incompatible"):
         validate_semantic_state_checkpoint_contract(historical, catalog)
 
+def test_semantic_v6_checkpoint_has_explicit_v7_warm_start_path():
+    import copy
+    import hashlib
+    import json
+
+    catalog = {"TFT_TestChampion": 17}
+    current = build_semantic_state_checkpoint_contract(catalog)
+    historical = copy.deepcopy(current)
+    payload = historical["contract"]
+    payload["contract_id"] = "tft.ppo.semantic-native-state.v6"
+    payload["version"] = 6
+    payload["strategic_owner_source"]["contract_version"] = 2
+    payload["global_features"] = payload["global_features"][:52]
+    payload["entity_slots"]["features"] = payload["entity_slots"]["features"][:39]
+    payload["numeric_dimension"] -= 2 + SEMANTIC_ENTITY_SLOTS * 6
+    payload["encoder"]["numeric_plus_embedding_input_dim"] -= (
+        2 + SEMANTIC_ENTITY_SLOTS * 6
+    )
+    canonical = json.dumps(
+        payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    ).encode("utf-8")
+    historical["sha256"] = hashlib.sha256(canonical).hexdigest()
+
+    validate_semantic_state_checkpoint_integrity(historical)
+    validate_semantic_state_warm_start_migration(historical, catalog)
+    with pytest.raises(ValueError, match="incompatible"):
+        validate_semantic_state_checkpoint_contract(historical, catalog)
+
+    unrelated_change = copy.deepcopy(historical)
+    unrelated_change["contract"]["critic_action_mask_input"] = "legacy_fused_input"
+    canonical = json.dumps(
+        unrelated_change["contract"], sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    ).encode("utf-8")
+    unrelated_change["sha256"] = hashlib.sha256(canonical).hexdigest()
+    with pytest.raises(ValueError, match="all other contract fields must match"):
+        validate_semantic_state_warm_start_migration(unrelated_change, catalog)
+
+
 def test_semantic_checkpoint_manifest_integrity_is_separate_from_runtime_compatibility():
     import copy
 
@@ -511,7 +549,7 @@ def test_semantic_checkpoint_manifest_integrity_is_separate_from_runtime_compati
         validate_semantic_state_checkpoint_integrity(changed)
 
 
-def test_semantic_v6_checkpoint_weight_contract_requires_trait_embedding():
+def test_semantic_v7_checkpoint_weight_contract_requires_trait_embedding():
     complete = {key: object() for key in SEMANTIC_POLICY_STATE_KEYS}
     assert semantic_policy_state_keys(complete) == SEMANTIC_POLICY_STATE_KEYS
     validate_semantic_policy_state_dict(complete)
@@ -519,5 +557,5 @@ def test_semantic_v6_checkpoint_weight_contract_requires_trait_embedding():
     incomplete = dict(complete)
     incomplete.pop("semantic_trait_embedding.weight")
     assert semantic_policy_state_keys(incomplete) != SEMANTIC_POLICY_STATE_KEYS
-    with pytest.raises(ValueError, match="Semantic v6 policy weights are incomplete"):
+    with pytest.raises(ValueError, match="Semantic v7 policy weights are incomplete"):
         validate_semantic_policy_state_dict(incomplete)
