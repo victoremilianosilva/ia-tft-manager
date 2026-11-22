@@ -2022,6 +2022,13 @@ struct TFTEngine::Impl {
                         source_active->candidate.composition_id &&
                     active_direction_anchor.composition_version ==
                         source_active->version) {
+                    double best_feasible_pivot_score = -1.0;
+                    std::optional<strategy::StrategicPivotAnchorCandidate>
+                        best_pivot_candidate;
+                    std::optional<composition_intelligence::CompositionCandidate>
+                        best_pivot_destination;
+                    std::optional<strategy::PivotFeasibilityInput>
+                        best_pivot_feasibility;
                     for (const auto& generated : native_generation.candidates) {
                         if (generated.direction.empty() ||
                             generated.direction == active_direction_anchor.direction ||
@@ -2164,12 +2171,47 @@ struct TFTEngine::Impl {
                         feasibility.transition_economic_cost =
                             direct_acquisition_cost + lost_interest;
 
-                        native_input.pivot_candidate = std::move(pivot);
-                        native_input.pivot_destination = *destination_it;
-                        native_input.pivot_feasibility = std::move(feasibility);
+                        // Evaluate every alternative from this exact native
+                        // snapshot before selecting one. The first generated
+                        // direction is not necessarily reachable; prefer the
+                        // highest-scoring candidate that passes all feasibility
+                        // gates instead of allowing one infeasible candidate to
+                        // hide a viable alternative behind it.
+                        const auto preliminary =
+                            strategy::PivotFeasibilityEvaluator{}.evaluate(feasibility);
+                        if (preliminary.status !=
+                            strategy::PivotFeasibilityStatus::Viable) {
+                            pivot_generation_diagnostic =
+                                "candidate_infeasible:" + generated.direction +
+                                ";reason=" + preliminary.reason +
+                                ";score=" + std::to_string(preliminary.score);
+                            for (const auto& blocker : preliminary.blockers)
+                                pivot_generation_diagnostic += ";blocker=" + blocker;
+                            for (const auto& missing : preliminary.missing_data)
+                                pivot_generation_diagnostic += ";missing=" + missing;
+                            continue;
+                        }
+                        if (preliminary.score <= best_feasible_pivot_score)
+                            continue;
+                        best_feasible_pivot_score = preliminary.score;
+                        best_pivot_candidate = std::move(pivot);
+                        best_pivot_destination = *destination_it;
+                        best_pivot_feasibility = std::move(feasibility);
                         pivot_generation_diagnostic =
-                            "pivot_input_built:" + generated.direction;
-                        break;
+                            "best_feasible_candidate:" + generated.direction +
+                            ";score=" + std::to_string(preliminary.score);
+                    }
+                    if (best_pivot_candidate && best_pivot_destination &&
+                        best_pivot_feasibility) {
+                        const auto selected_direction =
+                            best_pivot_candidate->target_direction;
+                        native_input.pivot_candidate = std::move(best_pivot_candidate);
+                        native_input.pivot_destination = std::move(best_pivot_destination);
+                        native_input.pivot_feasibility = std::move(best_pivot_feasibility);
+                        pivot_generation_diagnostic =
+                            "pivot_input_built:" + selected_direction +
+                            ";preliminary_score=" +
+                            std::to_string(best_feasible_pivot_score);
                     }
                 }
 
