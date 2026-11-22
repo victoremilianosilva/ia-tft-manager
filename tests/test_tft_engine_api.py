@@ -716,9 +716,9 @@ def test_opgg_adapter_resolves_units_through_native_catalog():
         engine.close()
 
 
-def test_composition_intelligence_emits_per_player_shadow_diagnostics(monkeypatch):
+def test_native_composition_intelligence_emits_per_player_diagnostics(monkeypatch):
     import json
-    monkeypatch.setenv("TFT_COMPOSITION_INTELLIGENCE_SHADOW", "1")
+    monkeypatch.setenv("TFT_COMPOSITION_INTELLIGENCE_ENABLED", "1")
 
     engine = TFTLobby(seed=20261111)
     try:
@@ -729,7 +729,7 @@ def test_composition_intelligence_emits_per_player_shadow_diagnostics(monkeypatc
 
         lines = engine.get_composition_diagnostics_jsonl()
         assert isinstance(lines, list)
-        assert lines, "native shadow runtime must emit diagnostic snapshots"
+        assert lines, "native strategic runtime must emit diagnostic snapshots"
         records = [json.loads(line) for line in lines]
         assert all(record.get("schema_version") == 2 for record in records)
         sequences = [record["sequence"] for record in records]
