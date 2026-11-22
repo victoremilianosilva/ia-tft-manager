@@ -180,6 +180,7 @@ def test_native_planner_priority_lineup_and_opportunity_cost_reach_semantic_ppo_
         "horizon_rounds": 1,
         "source": "same_snapshot_competing_alternative.v1",
         "forgone_candidate_id": "action:alternative:1",
+        "value_basis": "contextual_action_score.v1",
     }]
     projected = project_native_player_state(metadata, {"TFT_TestChampion": 17})
     entity_start = SEMANTIC_GLOBAL_FEATURES
