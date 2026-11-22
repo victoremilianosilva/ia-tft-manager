@@ -5,6 +5,7 @@ import torch
 
 from semantic_observation import (
     SEMANTIC_ENTITY_SLOTS,
+    SEMANTIC_GLOBAL_FEATURES,
     SEMANTIC_NUMERIC_DIM,
     SEMANTIC_TRAIT_VOCAB_SIZE,
     SEMANTIC_POLICY_STATE_KEYS,
