@@ -1,23 +1,37 @@
+"""Static contract checks for the native strategic evidence architecture."""
+
 from pathlib import Path
 
-source = Path("cpp/src/lobby/TftEngine.cpp").read_text(encoding="utf-8")
-planner_header = Path("cpp/include/strategy/StrategicPlanner.hpp").read_text(encoding="utf-8")
-context_header = Path("cpp/include/strategy/StrategicEvidenceContext.hpp").read_text(encoding="utf-8")
 
+ROOT = Path(__file__).resolve().parents[1]
+source = (ROOT / "cpp/src/lobby/TftEngine.cpp").read_text(encoding="utf-8")
+engine_header = (ROOT / "cpp/include/lobby/TftEngine.hpp").read_text(encoding="utf-8")
+context_header = (ROOT / "cpp/include/strategy/StrategicEvidenceContext.hpp").read_text(encoding="utf-8")
+planner_header = (ROOT / "cpp/include/strategy/StrategicPlanner.hpp").read_text(encoding="utf-8")
+planning_header = (ROOT / "cpp/include/strategy/StrategicPlanning.hpp").read_text(encoding="utf-8")
+evidence_header = (ROOT / "cpp/include/composition_intelligence/PlannerEvidenceAdapters.hpp").read_text(encoding="utf-8")
+diagnostics_header = (ROOT / "cpp/include/composition_intelligence/CompositionDiagnostics.hpp").read_text(encoding="utf-8")
+runtime_header = (ROOT / "cpp/include/composition_intelligence/CompositionIntelligenceRuntime.hpp").read_text(encoding="utf-8")
+bridge_header = (ROOT / "cpp/include/composition_intelligence/StrategicContextBridge.hpp").read_text(encoding="utf-8")
+wrapper = (ROOT / "cpp_lobby_env.py").read_text(encoding="utf-8")
+semantic = (ROOT / "semantic_observation.py").read_text(encoding="utf-8")
+trainer = (ROOT / "trainer.py").read_text(encoding="utf-8")
+
+
+# The native planner consumes facts and owned native state, never a legacy strategy projection.
 start = source.index("strategy::StrategicSharedContext strategic_context;")
 end = source.index("const auto shadow_decision = strategic_planner.evaluate(", start)
 planner_input = source[start:end]
-
 for forbidden in (
+    "StrategyInfo",
+    "CompositionDirectionPolicy",
+    "StrategyPolicy",
     "info.composition_direction",
     "info.composition_focus",
     "info.core_traits",
     "info.composition_locked",
     "info.core_unit_ids",
     "info.planned_unit_ids",
-    "info.strategic_committed_direction",
-    "info.strategic_candidate_direction",
-    "info.strategic_candidate_streak",
     "info.strategy",
 ):
     assert forbidden not in planner_input, f"legacy strategic input leaked: {forbidden}"
@@ -26,18 +40,19 @@ assert "StrategicEvidenceContext" in planner_header
 assert "StrategicEvidenceContextBuilder" in source
 assert "strategic_planner_commitments[i]" in source
 assert "strategic_planner_commitments = {};" in source
+assert "refresh_native_strategic_state" in source
+assert "refresh_native_composition_candidates" in source
 
-# Composition Intelligence must derive synergy/item affinity from the native
-# StrategicSharedContext, never from legacy StrategyInfo core traits.
+# Composition evaluation derives traits and item affinity from native owners and semantic profiles.
 ci_start = source.index("// New Composition Intelligence pipeline")
 ci_end = source.index("// Correlate strategic/economic context", ci_start)
 composition_intelligence_input = source[ci_start:ci_end]
 assert "info.core_traits" not in composition_intelligence_input
 assert "strategic_context.current_core_traits" in composition_intelligence_input
-# Item affinity is projected by the shared semantic profile helper from the
-# canonical active composition's core-unit catalog traits. It is intentionally
-# not copied from StrategicSharedContext or legacy StrategyInfo fields.
-assert "semantic_item_unit_profiles" in source
+assert "semantic_item_unit_profiles(i)" in composition_intelligence_input
+assert "legacy_item_unit_profiles" not in source
+assert "profile.preferred_traits = strategic_context.current_core_traits;" not in source
+
 semantic_profile_start = source.index("std::vector<items::UnitProfile> semantic_item_unit_profiles")
 semantic_profile_end = source.index("\n    const UnitInstance* item_target_unit", semantic_profile_start)
 semantic_profile_source = source[semantic_profile_start:semantic_profile_end]
@@ -46,43 +61,24 @@ assert "target.core" in semantic_profile_source
 assert "definition->traits" in semantic_profile_source
 assert "preferred_traits" in semantic_profile_source
 assert "items::UnitProfile{" in semantic_profile_source
-assert "profile.preferred_traits = strategic_context.current_core_traits;" not in composition_intelligence_input
+
+# No legacy strategy DTO, policy, compatibility getter or projection remains in the native engine API.
+for forbidden in (
+    "StrategyInfo",
+    "StrategyPolicy",
+    "CompositionDirectionPolicy",
+    "get_strategies",
+    "get_viewer_strategy_snapshots",
+    "update_legacy_strategy_compatibility_projection",
+):
+    for candidate in (source, engine_header, wrapper):
+        assert forbidden not in candidate, f"legacy API remains: {forbidden}"
+
+# Native owner contracts preserve match/player/sequence provenance without duplicating envelope identity.
 assert "match_id" in context_header and "player_id" in context_header
 assert "sequence" in context_header and "provenance" in context_header
 assert "derived_core_unit_ids" not in context_header
 assert "std::vector<std::int32_t> core_unit_ids" not in context_header
-
-# Composition Intelligence consumes the shared semantic item-profile
-# projection. The obsolete StrategyInfo-backed item-profile helper must not
-# remain as a second source of item affinity.
-assert "semantic_item_unit_profiles(i)" in composition_intelligence_input
-assert "legacy_item_unit_profiles" not in source
-assert "profile.preferred_traits = strategic_context.current_core_traits;" not in source
-
-# Viewer-facing legacy shape is now a one-way projection from canonical owners.
-viewer_projection_start = source.index("TFTEngine::get_viewer_strategy_snapshots() const")
-viewer_projection_end = source.index("RewardState TFTEngine::get_reward_state", viewer_projection_start)
-viewer_projection_source = source[viewer_projection_start:viewer_projection_end]
-assert "strategic_planner_commitments[i]" in viewer_projection_source
-legacy_strategy_api_start = source.index("TFTEngine::get_strategies() const")
-legacy_strategy_api_end = source.index("TFTEngine::get_viewer_strategy_snapshots() const", legacy_strategy_api_start)
-legacy_strategy_api_source = source[legacy_strategy_api_start:legacy_strategy_api_end]
-assert "strategic_planner_commitments" not in legacy_strategy_api_source
-wrapper = Path("cpp_lobby_env.py").read_text(encoding="utf-8")
-viewer_wrapper = wrapper.split("def get_strategy_snapshots", 1)[1].split("def get_strategies", 1)[0]
-assert "get_viewer_strategy_snapshots()" in viewer_wrapper
-assert "composition_intelligence_players[i].active.current()" in viewer_projection_source
-assert "composition_projection_source = \"tft_strategic_engine\"" in viewer_projection_source
-assert "canonical_active_composition" in viewer_projection_source
-assert "native_composition_unavailable" in viewer_projection_source
-assert "unit_composition_score" not in composition_intelligence_input
-
-evidence_header = Path("cpp/include/composition_intelligence/PlannerEvidenceAdapters.hpp").read_text(encoding="utf-8")
-diagnostics_header = Path("cpp/include/composition_intelligence/CompositionDiagnostics.hpp").read_text(encoding="utf-8")
-runtime_header = Path("cpp/include/composition_intelligence/CompositionIntelligenceRuntime.hpp").read_text(encoding="utf-8")
-bridge_header = Path("cpp/include/composition_intelligence/StrategicContextBridge.hpp").read_text(encoding="utf-8")
-
-# Snapshot identity/version is owned once; source metadata carries source-local freshness only.
 metadata_decl = evidence_header.split("struct EvidenceSourceMetadata", 1)[1].split("};", 1)[0]
 for inherited in ("match_id", "player_id", "composition_id", "source_version"):
     assert inherited not in metadata_decl, f"duplicate evidence identity field: {inherited}"
@@ -101,26 +97,26 @@ assert "std::uint32_t schema_version{2}" in diagnostics_header
 assert "std::uint64_t match_id{0}" in diagnostics_header
 assert "std::int32_t player_id{-1}" in diagnostics_header
 assert 'canonical.erase("timestamp_unix_ms")' in runtime_header
-
-# Runtime envelope owns match/player/round; stage rows retain only stage-local identity.
 assert '{"match_id", match_id_}' not in runtime_header
 assert '{"player_id", player_id_}' not in runtime_header
 assert '{"round", round_}' not in runtime_header
 assert '{"stage_sequence", ++next_stage_sequence_}' in runtime_header
-
-# The new contract must not even name the old strategic source types.
-for forbidden in ("StrategyInfo", "CompositionDirectionPolicy", "CompositionPlanner"):
-    assert forbidden not in context_header, f"legacy type dependency: {forbidden}"
-
-print("strategic evidence context architecture checks passed")
-
-planning_header = Path("cpp/include/strategy/StrategicPlanning.hpp").read_text(encoding="utf-8")
 assert "std::vector<std::int32_t> core_unit_ids;" not in planning_header
 
-# PlayerEnv owns one current optional StrategyInfo, not a one-element history.
-assert "std::optional<StrategyInfo> strategy;" in source
-assert "std::vector<StrategyInfo> strategy;" not in source
-assert "player_envs[i].strategy = StrategyInfo{};" in source
-assert "strategy_snapshot = std::move(info);" in source
-assert "result[i].push_back(*impl_->player_envs[i].strategy);" in source
-assert "strategy.back()" not in source and "strategy.empty()" not in source
+# The factual native strategic owner state is projected into semantic observations and PPO batches.
+assert "AuditStrategicOwnerSnapshot strategic_state" in engine_header
+assert 'strategic = player.get("strategic_state")' in wrapper
+assert 'strategic = state.get("strategic_state")' in semantic
+for field in (
+    "active_composition_valid",
+    "direction_valid",
+    "pivot_candidate_valid",
+    "unit_copy_progress",
+    "opportunity_cost_available",
+):
+    assert field in semantic
+assert "build_semantic_batch(" in trainer
+assert "semantic_state=semantic_state" in trainer
+assert "semantic_state=next_semantic_state" in trainer
+
+print("native strategic evidence architecture checks passed")
