@@ -304,7 +304,20 @@ public:
         const auto inspect_effects = [&](const std::vector<CombatEffectDefinition>& effects) {
             for (const auto& effect : effects) {
                 ++coverage.effects_seen;
-                if (supported_effect(effect)) ++coverage.effects_supported;
+                bool supported = supported_effect(effect);
+                if (supported && effect.trigger == "on_attack" &&
+                    effect.operation == "heal_max_hp_pct") {
+                    const bool has_charge_source = std::any_of(
+                        effects.begin(), effects.end(),
+                        [&](const CombatEffectDefinition& candidate) {
+                            return candidate.trigger == "on_kill" &&
+                                candidate.operation == "grant_charges" &&
+                                candidate.stack_key == effect.stack_key &&
+                                supported_effect(candidate);
+                        });
+                    supported = has_charge_source;
+                }
+                if (supported) ++coverage.effects_supported;
                 else ++coverage.unsupported_effects;
             }
         };
