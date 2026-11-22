@@ -541,9 +541,14 @@ enum class CalibrationDatasetSplit : std::uint8_t {
 struct CalibrationPredictionEvaluationSample {
     std::uint64_t match_id{0};
     std::int32_t player_id{-1};
+    std::int32_t opponent_id{-1};
     std::uint32_t round{0};
     std::uint64_t sequence{0};
+    std::uint64_t engine_decision_sequence{0};
     std::uint32_t horizon_rounds{1};
+    bool projection_simulation_completed{false};
+    bool projection_coverage_complete{false};
+    bool projection_decision_eligible{true};
     double predicted_player_hp{0.0};
     double predicted_expected_damage{0.0};
     double predicted_p90_damage{0.0};
@@ -606,8 +611,12 @@ inline CalibrationEvaluationResult evaluate_calibration_predictions(
         const auto split_index = static_cast<std::size_t>(sample.split);
         const bool split_valid = split_index < 3;
         const bool identity_valid = sample.match_id != 0 && sample.player_id >= 0 &&
+            sample.opponent_id >= 0 && sample.opponent_id != sample.player_id &&
             sample.round == cohort.round && sample.sequence != 0 &&
-            sample.horizon_rounds == cohort.horizon_rounds;
+            sample.engine_decision_sequence != 0 &&
+            sample.horizon_rounds == cohort.horizon_rounds &&
+            sample.projection_simulation_completed &&
+            sample.projection_coverage_complete && !sample.projection_decision_eligible;
         const bool provenance_valid =
             sample.source == "paired_projection_replay_evaluation.v1" &&
             !sample.replay_artifact_id.empty() && !sample.dataset_version.empty() &&
@@ -689,6 +698,12 @@ inline CalibrationEvaluationResult evaluate_calibration_predictions(
     out.metrics.mae = absolute_error_sum / static_cast<double>(split_counts[2]);
     out.metrics.p90_coverage = p90_covered_count / static_cast<double>(split_counts[2]);
     out.metrics.brier_score = brier_sum / static_cast<double>(split_counts[2]);
+    if (!std::isfinite(out.metrics.mae) ||
+        !std::isfinite(out.metrics.p90_coverage) ||
+        !std::isfinite(out.metrics.brier_score)) {
+        out.reason = "non_finite_evaluation_metrics";
+        return out;
+    }
     out.valid = true;
     out.reason = "valid";
     return out;
