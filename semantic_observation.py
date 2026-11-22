@@ -11,11 +11,11 @@ import json
 import math
 from collections.abc import Mapping, Sequence
 
-SEMANTIC_STATE_CONTRACT_ID = "tft.ppo.semantic-native-state.v6"
-SEMANTIC_STATE_CONTRACT_VERSION = 6
+SEMANTIC_STATE_CONTRACT_ID = "tft.ppo.semantic-native-state.v7"
+SEMANTIC_STATE_CONTRACT_VERSION = 7
 SEMANTIC_ENTITY_SLOTS = 28 + 9 + 5
-SEMANTIC_ENTITY_FEATURES = 39
-SEMANTIC_GLOBAL_FEATURES = 52
+SEMANTIC_ENTITY_FEATURES = 43
+SEMANTIC_GLOBAL_FEATURES = 54
 SEMANTIC_ITEM_COMPONENT_FEATURES = 10
 SEMANTIC_ITEM_SEMANTIC_FEATURES = 17
 SEMANTIC_ITEM_TARGETS = 37
@@ -193,7 +193,7 @@ def build_semantic_state_checkpoint_contract(catalog_map: Mapping[str, int]) -> 
             "stage/7", "round/50", "active_composition_valid",
             "direction_valid", "pivot_candidate_valid", "opportunity_cost_available",
             "board_capacity/9", "bench_capacity/9", "actions_taken_this_round/10",
-            "board_move_age[0:28]/10",
+            "board_move_age[0:28]/10", "planner_outputs_valid", "strategic_refresh_failed",
         ],
         "entity_slots": {
             "order": ["board[0:28]", "bench[0:9]", "shop[0:5]"],
@@ -209,7 +209,7 @@ def build_semantic_state_checkpoint_contract(catalog_map: Mapping[str, int]) -> 
                 "item_target.attack_damage/200", "item_target.attack_speed/2",
                 "item_target.max_health/2000", "item_target.armor/150",
                 "item_target.magic_resist/150", "item_target.equipped_item_count/3",
-                "trait_id_hash_bucket[0:10]/65536",
+                "trait_id_hash_bucket[0:10]/65536", "strategic_priority/100", "strategic_intent/6", "lineup_selected", "lineup_target",
             ],
             "champion_id": "catalog_internal_id_plus_one; zero=unknown_or_empty",
         },
@@ -575,7 +575,56 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
         (9 - bench_count) / 9.0,
         min(action_count, 10) / 10.0,
         *move_age_values,
+        float(strategic.get("planner_outputs_valid") is True),
+        float(strategic.get("strategic_refresh_failed") is True),
     ]
+
+    planner_valid = strategic.get("planner_outputs_valid")
+    strategic_failed = strategic.get("strategic_refresh_failed")
+    if not isinstance(planner_valid, bool) or not isinstance(strategic_failed, bool):
+        raise TypeError("strategic planner/failure availability fields must be boolean")
+    failure_reason = strategic.get("strategic_refresh_failure_reason")
+    if not isinstance(failure_reason, str) or strategic_failed != bool(failure_reason):
+        raise ValueError("strategic refresh failure flag/reason mismatch")
+    planner_sequence = _non_negative_int(strategic.get("planner_output_sequence"), "planner_output_sequence")
+    priority_rows = strategic.get("unit_priorities")
+    selected_ids = strategic.get("lineup_selected_unit_ids")
+    entry_ids = strategic.get("lineup_entry_unit_ids")
+    exit_ids = strategic.get("lineup_exit_unit_ids")
+    deferred_ids = strategic.get("lineup_deferred_unit_ids")
+    for field, values in (("unit_priorities", priority_rows), ("lineup_selected_unit_ids", selected_ids),
+                          ("lineup_entry_unit_ids", entry_ids), ("lineup_exit_unit_ids", exit_ids),
+                          ("lineup_deferred_unit_ids", deferred_ids)):
+        if not isinstance(values, list):
+            raise TypeError(f"strategic_state.{field} must be a list")
+    priority_by_id = {}
+    if planner_valid:
+        if planner_sequence != strategic_context_sequence:
+            raise ValueError("planner outputs are not bound to the strategic context sequence")
+        for row in priority_rows:
+            if not isinstance(row, Mapping):
+                raise TypeError("unit priority rows must be objects")
+            champion_id = _non_negative_int(row.get("champion_internal_id"), "unit_priority.champion_internal_id")
+            priority = _non_negative_int(row.get("priority"), "unit_priority.priority")
+            intent = _non_negative_int(row.get("intent"), "unit_priority.intent")
+            confidence = _finite_number(row.get("confidence"), "unit_priority.confidence")
+            target_star = _non_negative_int(row.get("target_star"), "unit_priority.target_star")
+            sale_restricted = row.get("sale_restricted")
+            if champion_id in priority_by_id or intent > 6 or target_star > 3 or not 0.0 <= confidence <= 1.0 or not isinstance(sale_restricted, bool):
+                raise ValueError("unit priority row has duplicate identity or invalid values")
+            priority_by_id[champion_id] = (priority, intent, confidence, target_star, sale_restricted)
+    elif priority_rows or selected_ids or entry_ids or exit_ids or deferred_ids:
+        raise ValueError("unavailable planner outputs cannot publish priority or lineup rows")
+    def validate_ids(field, values):
+        result = set()
+        for value in values:
+            champion_id = _non_negative_int(value, f"strategic_state.{field}")
+            if champion_id in result:
+                raise ValueError(f"strategic_state.{field} contains duplicate IDs")
+            result.add(champion_id)
+        return result
+    selected_set = validate_ids("lineup_selected_unit_ids", selected_ids)
+    target_set = set(priority_by_id)
 
     catalog = dict(catalog_map)
     observed_owned_ids = set()
@@ -684,6 +733,13 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
             ]
             numeric.extend(float(trait_id / SEMANTIC_TRAIT_VOCAB_SIZE) for trait_id in trait_ids)
             numeric.extend([0.0] * (SEMANTIC_TRAIT_SLOTS - len(trait_ids)))
+            priority = priority_by_id.get(native_id, (0, 0, 0.0, 0, False)) if native_id is not None else (0, 0, 0.0, 0, False)
+            numeric.extend([
+                min(priority[0], 100) / 100.0,
+                priority[1] / 6.0,
+                float(native_id in selected_set) if native_id is not None else 0.0,
+                float(native_id in target_set) if native_id is not None else 0.0,
+            ])
             champion_ids.append(0 if internal_id is None else int(internal_id) + 1)
 
     def read_feature_block(field, shape):
