@@ -20,7 +20,7 @@
 #include <unordered_set>
 #include <vector>
 
-void require(bool condition, const char* message) {
+void require(bool condition, const std::string& message) {
     if (!condition) {
         throw std::runtime_error(message);
     }
@@ -497,8 +497,7 @@ int main(int argc, char** argv) {
         require(engine.pool_total_available() == pool_before_invalid_move,
                 "Movimento inválido alterou o estoque.");
         require(engine.get_anti_loop_metrics()[0].execution_attempts ==
-                    metrics_before_invalid_move.execution_attempts,
-                "Movimento inválido alterou as métricas anti-loop.");
+                    metrics_before_invalid_move.execution_attempts,                "Movimento inválido alterou as métricas anti-loop.");
 
         actions[0].values = {6, 0, 0, 0, 0, 0};
 
@@ -998,7 +997,6 @@ int main(int argc, char** argv) {
             require(equipped_team.units[0].items[0].attack_damage == 10.0f &&
                     equipped_team.units[0].items[1].health == 150.0f,
                     "Adaptador de catalogo perdeu atributos ao criar CombatItem.");
-
             auto baseline_team = equipped_team;
             baseline_team.units[0].items.clear();
             tft::CombatTeam dummy_team{};
