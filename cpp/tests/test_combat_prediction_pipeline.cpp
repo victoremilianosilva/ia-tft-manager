@@ -215,10 +215,16 @@ int main() {
         for (std::uint32_t index = 0; index < count; ++index) {
             CalibrationPredictionEvaluationSample sample;
             sample.match_id = first_match + index;
-            sample.player_id = 0;
+            sample.player_id = projection.player_id;
+            sample.opponent_id = projection.opponent_id;
             sample.round = identity.round;
             sample.sequence = identity.sequence;
+            sample.engine_decision_sequence = projection.engine_decision_sequence;
             sample.horizon_rounds = 1;
+            sample.projection_simulation_completed = projection.simulation_completed;
+            sample.projection_coverage_complete =
+                CombatCoverageValidator{}.validate(projection.coverage).complete;
+            sample.projection_decision_eligible = projection.decision_eligible;
             sample.predicted_player_hp = projection.observed_player_hp;
             sample.predicted_expected_damage = projection.expected_incoming_damage;
             sample.predicted_p90_damage = std::max(5.0, projection.p90_incoming_damage);
