@@ -749,7 +749,7 @@ int main(int argc, char** argv) {
         );
 
         // Native composition migration intentionally has no legacy lock producer.
-        // A six-unit trait fixture must not fabricate StrategyInfo lock state;
+        // A six-unit trait fixture must not fabricate an active-composition lock;
         // direction/composition authority is exposed by the native owner snapshot.
         tft::TFTEngine comp_engine(56789, json_path);
         std::map<std::string, std::vector<std::string>> champions_by_trait;
