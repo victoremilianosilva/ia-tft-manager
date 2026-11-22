@@ -36,7 +36,7 @@ public:
         anchor.lifecycle = StrategicAnchorLifecycle::Active;
         // Confidence describes the deterministic binding, not composition quality.
         anchor.confidence = 1.0;
-        anchor.reason = "derived_from_active_composition_identity_and_version";
+        anchor.reason = "bound_to_active_composition_and_committed_direction";
 
         for (const auto& unit : candidate.units) {
             if (unit.champion_id < 0) return std::nullopt;
