@@ -457,6 +457,7 @@ struct TFTEngine::Impl {
     std::array<std::uint64_t, kPlayersPerLobby>
         strategic_shadow_external_active_version{};
     std::array<std::string, kPlayersPerLobby> strategic_refresh_failure_reasons{};
+    std::array<std::vector<AuditUnitOpportunityCostSnapshot>, kPlayersPerLobby> strategic_opportunity_costs{};
 
     std::string strategic_shadow_audit_path;
 
@@ -2995,6 +2996,48 @@ struct TFTEngine::Impl {
                     contextual_actions.stale ? "unavailable" : "completed",
                     contextual_actions.stale ? contextual_actions.stale_reason :
                         "independent contextual evaluator completed in Shadow mode", active);
+                strategic_opportunity_costs[i].clear();
+                if (!contextual_actions.stale) {
+                    for (const auto& candidate : contextual_actions.candidates) {
+                        if (!candidate.opportunity_cost_available ||
+                            candidate.champion_id < 0 ||
+                            !std::isfinite(candidate.opportunity_cost) ||
+                            candidate.opportunity_cost < 0.0 ||
+                            !std::isfinite(candidate.opportunity_cost_uncertainty) ||
+                            candidate.opportunity_cost_uncertainty < 0.0 ||
+                            candidate.opportunity_cost_uncertainty >= 1.0 ||
+                            candidate.opportunity_cost_horizon_rounds == 0 ||
+                            candidate.opportunity_cost_source !=
+                                "same_snapshot_competing_alternative.v1" ||
+                            candidate.opportunity_cost_forgone_candidate_id.empty()) {
+                            continue;
+                        }
+                        const auto existing = std::find_if(
+                            strategic_opportunity_costs[i].begin(),
+                            strategic_opportunity_costs[i].end(),
+                            [&](const auto& row) {
+                                return row.champion_internal_id == candidate.champion_id;
+                            });
+                        if (existing == strategic_opportunity_costs[i].end()) {
+                            strategic_opportunity_costs[i].push_back({
+                                candidate.champion_id, candidate.opportunity_cost,
+                                candidate.opportunity_cost_uncertainty,
+                                candidate.opportunity_cost_horizon_rounds,
+                                candidate.opportunity_cost_source,
+                                candidate.opportunity_cost_forgone_candidate_id
+                            });
+                        } else if (candidate.opportunity_cost >
+                                   existing->value * (1.0 - existing->uncertainty)) {
+                            *existing = {
+                                candidate.champion_id, candidate.opportunity_cost,
+                                candidate.opportunity_cost_uncertainty,
+                                candidate.opportunity_cost_horizon_rounds,
+                                candidate.opportunity_cost_source,
+                                candidate.opportunity_cost_forgone_candidate_id
+                            };
+                        }
+                    }
+                }
 
                 // Resolve the independent recommendation against the exact current
                 // native slots and masks. The result is audit-only: it is never fed
@@ -5844,6 +5887,8 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
         const auto& planner_runtime = impl_->composition_intelligence_players[i];
         strategic.planner_outputs_valid = planner_runtime.planner_outputs_valid;
         strategic.planner_output_sequence = planner_runtime.lineup.sequence;
+        strategic.opportunity_costs = impl_->strategic_opportunity_costs[i];
+        strategic.opportunity_cost_available = !strategic.opportunity_costs.empty();
         if (planner_runtime.planner_outputs_valid) {
             for (const auto& priority : planner_runtime.unit_priorities.units) {
                 strategic.unit_priorities.push_back({
