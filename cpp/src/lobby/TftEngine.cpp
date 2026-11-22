@@ -2318,7 +2318,7 @@ struct TFTEngine::Impl {
         // BEGIN ISOLATED NATIVE PLANNER BOUNDARY.
         // This block derives version-bound priorities/lineup and records diagnostics.
         // It never publishes a composition or executes actions; exceptions must not
-        const bool shadow_evaluation_completed =
+        const bool native_evaluation_completed =
             composition_intelligence::run_shadow_isolated([&]() {
         {
             // Native strategic planners consume the canonical active composition
@@ -3237,13 +3237,9 @@ struct TFTEngine::Impl {
             }
 
 
-        }, [&]() noexcept {
-            // Keep the primary game/PPO transition alive when a Shadow planner,
-            // adapter or diagnostic dependency fails. These flags are diagnostics
-            // only and are not consumed by observations, masks, rewards or actions.
-        });
+        }, []() noexcept {});
         (void)shadow_evaluation_completed;
-        // END SHADOW-ONLY EVALUATION BOUNDARY.
+        // END READ-ONLY STRATEGIC EVALUATION BOUNDARY.
 
 
     }
