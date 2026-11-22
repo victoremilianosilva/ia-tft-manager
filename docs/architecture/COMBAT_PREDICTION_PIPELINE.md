@@ -91,6 +91,9 @@ TftEngine::resolve_combats
   Engine decision sequence, observed HP and roster UUIDs. The canonical pair
   event can be oriented for either participant without guessing the opponent's
   sequence. The full CombatInput is retained as a simulator-input projection.
+  The builder also rejects HP mismatches, non-deterministic or malformed
+  simulator configuration, non-4x7 board geometry, invalid unit positions,
+  and non-finite or out-of-range core unit statistics.
 - The event distinguishes the authoritative Engine input projection from raw
   source values; catalog fallbacks are not relabeled as direct observations.
 - Matchup resolution accepts only an actual opponent supplied by the lobby.
