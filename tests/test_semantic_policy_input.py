@@ -325,6 +325,7 @@ def test_historical_policy_checkpoint_loads_with_native_semantic_encoder():
         action_dims=list(ACTION_DIMS),
         hidden_size=32,
         semantic_vocab_size=64,
+        require_semantic_state=False,
     ).eval()
     legacy_state = {
         key: value.detach().clone()
