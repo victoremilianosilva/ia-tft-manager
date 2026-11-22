@@ -512,8 +512,8 @@ struct TFTEngine::Impl {
         const char* feature_enabled = std::getenv("TFT_COMPOSITION_INTELLIGENCE_ENABLED");
         composition_intelligence_enabled = feature_enabled &&
             (std::string(feature_enabled) == "1" ||
-             std::string(shadow_enabled) == "true" ||
-             std::string(shadow_enabled) == "yes");
+             std::string(feature_enabled) == "true" ||
+             std::string(feature_enabled) == "yes");
 
         if (composition_intelligence_enabled) {
         try {
