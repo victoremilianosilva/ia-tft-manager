@@ -47,4 +47,4 @@ jobs:
       - name: Verify strategic evidence context isolation
         run: python tests/test_strategic_evidence_context_architecture.py
       - name: Verify native composition ownership and legacy removal
-        run: python -m pytest -q tests/test_composition_intelligence_legacy_isolation.py
+        run: python tests/test_composition_intelligence_legacy_isolation.py
