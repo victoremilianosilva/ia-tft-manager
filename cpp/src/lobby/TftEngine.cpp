@@ -4467,10 +4467,21 @@ struct TFTEngine::Impl {
                         {"simulator", {
                             {"name", "CombatEngine"},
                             {"version", "combat-engine-generic.v1"},
+                            {"context", static_cast<int>(input.context)},
+                            {"board_rows", input.config.board_rows},
+                            {"board_cols", input.config.board_cols},
                             {"seed", input.seed},
+                            {"config_seed", input.config.seed},
                             {"deterministic", input.config.deterministic},
+                            {"debug", input.config.debug},
                             {"max_duration", input.config.max_duration},
-                            {"max_events", input.config.max_events}
+                            {"max_events", input.config.max_events},
+                            {"record_events", input.config.record_events},
+                            {"record_damage", input.config.record_damage},
+                            {"record_targets", input.config.record_targets},
+                            {"record_positions", input.config.record_positions},
+                            {"record_mana", input.config.record_mana},
+                            {"record_abilities", input.config.record_abilities}
                         }},
                         {"snapshot_value_source", "authoritative_combat_engine_input_projection"},
                         {"mechanics_coverage_status", coverage_result.status},
