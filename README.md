@@ -40,20 +40,9 @@ python scripts/run_training_battery.py --output-root training_runs/native-batter
 
 O runner exige um diretório de saída vazio, fixa as seeds por lobby, desabilita refresh externo de catálogo e não habilita migração de checkpoints antigos. Cada execução gera `native_ppo_checkpoint.pt`, `run_manifest.json` e logs TensorBoard. A bateria gera `battery_manifest.json`. Isso prepara e executa treinamento; não declara qualidade do modelo sem avaliação independente.
 
-## Avaliação unificada da policy
+## Avaliação de checkpoints
 
-Para gerar um relatório consolidado de auditoria estratégica, ações/recompensas,
-máscaras, ciclos de estado e loops nativos em um único Markdown:
-
-~~~powershell
-python scripts/evaluate_all.py --checkpoint training_runs/native-battery/seed-11/native_ppo_checkpoint.pt --seeds 11,12,13
-~~~
-
-O relatório final é gravado em `reports/evaluation_report.md`; os dados brutos
-JSONL/JSON ficam em `reports/evaluation_data/`. Para comparar dois checkpoints,
-adicione `--baseline checkpoints/base.pt --candidate checkpoints/candidato.pt --matches 20`.
-Para incluir a ablação dos controles de composição, acrescente `--ablation`.
-Essas avaliações opcionais podem executar partidas adicionais e demorar mais.
+O módulo scripts/evaluate_checkpoints.py contém helpers de avaliação pareada e publicação de artefatos, mas ainda não oferece um entrypoint CLI completo. O protocolo de avaliação independente, splits sem vazamento e promoção de modelo permanece parte da trilha #523; não trate o smoke de treinamento como benchmark.
 
 ## Catálogo de composições OP.GG
 
