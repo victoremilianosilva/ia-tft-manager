@@ -72,8 +72,8 @@ class TrainingConfig:
             value = getattr(self, name)
             if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
                 raise ValueError(f"{name} deve ser um inteiro > 0.")
-        if isinstance(self.seed, bool) or not isinstance(self.seed, int) or self.seed < 0:
-            raise ValueError("seed deve ser um inteiro >= 0.")
+        if isinstance(self.seed, bool) or not isinstance(self.seed, int) or not 0 <= self.seed <= 0xFFFFFFFF:
+            raise ValueError("seed deve ser um inteiro entre 0 e 2^32-1.")
         for name in ("learning_rate", "adam_eps"):
             if getattr(self, name) <= 0:
                 raise ValueError(f"{name} deve ser > 0.")
