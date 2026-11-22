@@ -221,36 +221,82 @@ public:
     CombatCoverage inspect(const CombatInput& input) const {
         CombatCoverage coverage;
         const auto supported_effect = [](const CombatEffectDefinition& effect) {
-            const bool trigger_supported =
-                effect.trigger.empty() || effect.trigger == "combat_start" ||
-                effect.trigger == "on_attack" || effect.trigger == "on_kill" ||
-                effect.trigger == "after_delay" || effect.trigger == "while_hp_below" ||
-                effect.trigger == "on_ally_shield";
-            const bool operation_supported =
-                effect.operation == "add_stat" || effect.operation == "bonus_damage" ||
-                effect.operation == "heal_max_hp_pct" ||
-                effect.operation == "grant_charges" || effect.operation == "mana_regen";
+            const bool supported_pair =
+                (effect.trigger.empty() && effect.operation == "mana_regen") ||
+                (effect.trigger == "combat_start" &&
+                    (effect.operation == "add_stat" || effect.operation == "mana_regen")) ||
+                (effect.trigger == "on_attack" &&
+                    (effect.operation == "bonus_damage" ||
+                     effect.operation == "heal_max_hp_pct")) ||
+                (effect.trigger == "on_kill" &&
+                    (effect.operation == "grant_charges" ||
+                     effect.operation == "heal_max_hp_pct")) ||
+                ((effect.trigger == "after_delay" ||
+                  effect.trigger == "while_hp_below" ||
+                  effect.trigger == "on_ally_shield") &&
+                    effect.operation == "add_stat");
+
             const bool target_supported =
-                effect.target.empty() || effect.target == "self" ||
-                effect.target == "allies" ||
-                effect.target == "allies_same_row_within_1";
+                (effect.operation == "add_stat" &&
+                    effect.trigger == "combat_start"
+                    ? (effect.target.empty() || effect.target == "self" ||
+                       effect.target == "allies" ||
+                       effect.target == "allies_same_row_within_1")
+                    : (effect.operation == "bonus_damage"
+                        ? (effect.target.empty() || effect.target == "self" ||
+                           effect.target == "allies")
+                        : (effect.target.empty() || effect.target == "self")));
+
             const bool condition_supported =
-                effect.condition.empty() || effect.condition == "has_trait" ||
-                effect.condition == "trait_count_at_least" ||
+                effect.condition.empty() ||
+                ((effect.condition == "has_trait" ||
+                  effect.condition == "trait_count_at_least") &&
+                    !effect.condition_trait.empty()) ||
+                (effect.condition == "trait_count_at_least" &&
+                    effect.min_trait_count > 0) ||
                 effect.condition == "role_tank" || effect.condition == "role_fighter" ||
                 effect.condition == "role_assassin" || effect.condition == "role_other";
+
+            const auto supported_stat = [](const std::string& stat) {
+                return stat == "attack_damage" || stat == "attack_speed" ||
+                    stat == "ability_power" || stat == "armor" ||
+                    stat == "magic_resist" || stat == "omnivamp" ||
+                    stat == "damage_amplification" ||
+                    stat == "damage_reduction" || stat == "max_hp";
+            };
             const bool stat_supported =
-                effect.operation != "add_stat" ||
-                effect.stat == "attack_damage" || effect.stat == "attack_speed" ||
-                effect.stat == "ability_power" || effect.stat == "armor" ||
-                effect.stat == "magic_resist" || effect.stat == "omnivamp" ||
-                effect.stat == "damage_amplification" ||
-                effect.stat == "damage_reduction" || effect.stat == "max_hp";
-            return trigger_supported && operation_supported && target_supported &&
-                condition_supported && stat_supported &&
+                (effect.operation != "add_stat" || supported_stat(effect.stat)) &&
+                (effect.operation != "bonus_damage" || !effect.percent_of_stat ||
+                    effect.stat == "attack_damage" || effect.stat == "attack_speed" ||
+                    effect.stat == "ability_power" || effect.stat == "max_hp" ||
+                    effect.stat == "armor" || effect.stat == "magic_resist");
+
+            const bool flags_supported =
+                (effect.operation != "add_stat" || !effect.percent_of_max_health) &&
+                (effect.operation != "bonus_damage" ||
+                    !(effect.percent_of_max_health && effect.percent_of_stat)) &&
+                ((effect.operation == "add_stat" || effect.operation == "bonus_damage") ||
+                    (!effect.percent_of_max_health && !effect.percent_of_stat)) &&
+                (effect.operation != "grant_charges" ||
+                    (!effect.stack_key.empty() && effect.max_stacks >= 0 &&
+                     effect.value > 0.0f)) &&
+                (effect.operation != "heal_max_hp_pct" ||
+                    (effect.trigger != "on_attack" || !effect.stack_key.empty())) &&
+                (effect.trigger != "after_delay" || effect.delay > 0.0f) &&
+                (effect.trigger != "while_hp_below" || effect.health_threshold > 0.0f) &&
+                (effect.condition != "trait_count_at_least" ||
+                    (!effect.condition_trait.empty() && effect.min_trait_count > 0)) &&
+                (effect.damage_type == DamageType::PHYSICAL ||
+                 effect.damage_type == DamageType::MAGIC ||
+                 effect.damage_type == DamageType::TRUE_DAMAGE);
+
+            return supported_pair && target_supported && condition_supported &&
+                stat_supported && flags_supported &&
                 std::isfinite(effect.value) && std::isfinite(effect.duration) &&
                 std::isfinite(effect.interval) && std::isfinite(effect.delay) &&
-                std::isfinite(effect.health_threshold);
+                std::isfinite(effect.health_threshold) && effect.duration >= 0.0f &&
+                effect.interval >= 0.0f && effect.delay >= 0.0f &&
+                effect.health_threshold >= 0.0f;
         };
         const auto inspect_effects = [&](const std::vector<CombatEffectDefinition>& effects) {
             for (const auto& effect : effects) {
