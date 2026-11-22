@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Any
 
 # Verify these labels against the current C++ action enum before treating counts as official.
-ACTION_NAMES = {0: "buy", 1: "sell", 2: "reroll", 3: "move_bench", 4: "move_board", 5: "other_5", 6: "pass"}
+ACTION_NAMES = {0: "buy", 1: "buy_xp", 2: "reroll", 3: "move_bench", 4: "move_board", 5: "sell", 6: "pass", 7: "equip_item", 8: "craft_item"}
 MOVE_TYPES = {3, 4}
 
 def read_jsonl(path: Path):
