@@ -71,6 +71,16 @@ def test_strict_semantic_policy_uses_only_neutral_observation_carrier():
     torch.testing.assert_close(first, second)
 
 
+def test_policy_defaults_to_native_semantic_state():
+    policy = TFTPolicy(
+        obs_dim=64,
+        action_dims=list(ACTION_DIMS),
+        hidden_size=32,
+        semantic_vocab_size=64,
+    )
+    assert policy.require_semantic_state is True
+
+
 def test_native_policy_checkpoint_roundtrip_is_strict():
     obs, _, _ = _batch(batch_size=1)
     policy = TFTPolicy(
