@@ -68,8 +68,17 @@ int main(int argc, char** argv) {
                 !slayer.tiers.front().effects.empty(),
                 "Partially modeled traits must remain explicitly incomplete.");
 
+        const auto& executioner = find("DA_18_Executioner");
+        require(!executioner.effects_complete && executioner.tiers.size() == 3,
+                "Executioner must remain partial while its bleed effect is unsupported.");
+        for (const auto& tier : executioner.tiers)
+            require(tier.effects.size() == 1 &&
+                    tier.effects.front().stat == "critical_strike_chance" &&
+                    std::abs(tier.effects.front().value - 0.15f) < 0.0001f,
+                    "Executioner critical-strike chance must be normalized at every tier.");
+
         std::cout << "Loaded " << catalog.traits.size()
-                  << " Set 18 traits; complete combat mappings: 5; non-combat traits: 3; partial mappings: 1.\n";
+                  << " Set 18 traits; complete combat mappings: 5; non-combat traits: 3; partial mappings: 2.\n";
         return 0;
     } catch (const std::exception& error) {
         std::cerr << "Trait combat catalog validation failed: "
