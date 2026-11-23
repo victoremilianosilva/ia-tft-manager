@@ -2371,8 +2371,8 @@ struct TFTEngine::Impl {
                 observed.copies_by_star = physical_tiers;
                 observed.on_board = observed.on_board || on_board;
                 observed.on_bench = observed.on_bench || !on_board;
-                // Per-unit board contribution remains unavailable until a
-                // calibrated per-unit combat producer is connected.
+                // Start unavailable; a recent, same-episode UUID-attributed
+                // board-unit damage-share observation is joined after roster collection.
                 observed.board_contribution = 0.0;
                 observed.board_contribution_available = false;
                 observed.item_fit = 0.0;
@@ -2679,8 +2679,9 @@ struct TFTEngine::Impl {
                               active_native_direction->unit_ids.end(),
                               definition->internal_id) !=
                         active_native_direction->unit_ids.end();
-                // Combat contribution remains explicitly unavailable until
-                // unit-attributed combat outcomes are calibrated.
+                // Only completed, UUID-attributed board-unit damage share is
+                // consumed here; it is a narrow simulator observation, not a
+                // calibrated measure of total strategic contribution.
                 candidate.board_contribution = copies == strategic_native_owned.end()
                     ? 0.0 : copies->second.board_contribution;
                 candidate.board_contribution_available = copies != strategic_native_owned.end() &&
