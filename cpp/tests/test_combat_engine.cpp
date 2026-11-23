@@ -254,6 +254,60 @@ void test_generic_damage_amplification_item_effect() {
             "Generic damage amplification should increase raw attack damage by 15 percent.");
 }
 
+void test_generic_while_hp_above_effect_reverses_at_threshold() {
+    tft::CombatEngine engine;
+    auto input = make_input();
+    input.config.max_duration = 3.1f;
+    input.config.record_damage = true;
+
+    auto& attacker = input.player_a.units.front();
+    attacker.attack_damage = 300.0f;
+    attacker.attack_speed = 1.0f;
+    attacker.attack_range = 7.0f;
+    attacker.can_move = false;
+    attacker.can_cast = false;
+
+    auto& holder = input.player_b.units.front();
+    holder.hp = holder.max_hp = 1000.0f;
+    holder.armor = 0.0f;
+    holder.can_attack = false;
+    holder.can_move = false;
+    holder.can_cast = false;
+
+    tft::CombatItem item;
+    item.api_name = "catalog_generic_conditional_durability";
+    item.name = "Generic Conditional Durability";
+    item.effects_complete = false;
+
+    tft::CombatEffectDefinition base;
+    base.trigger = "combat_start";
+    base.operation = "add_stat";
+    base.stat = "damage_reduction";
+    base.target = "self";
+    base.value = 0.05f;
+
+    tft::CombatEffectDefinition empowered;
+    empowered.trigger = "while_hp_above";
+    empowered.operation = "add_stat";
+    empowered.stat = "damage_reduction";
+    empowered.target = "self";
+    empowered.value = 0.15f;
+    empowered.health_threshold = 0.5f;
+    item.effects = {base, empowered};
+    holder.items.push_back(item);
+
+    const auto result = engine.simulate(input);
+    require(result.success, "Conditional generic item effect combat should succeed.");
+    require(result.damage_events.size() >= 4,
+            "Expected four attacks to cross the conditional health threshold.");
+    require(std::abs(result.damage_events[0].final_damage - 240.0f) < 0.01f &&
+            std::abs(result.damage_events[1].final_damage - 240.0f) < 0.01f &&
+            std::abs(result.damage_events[2].final_damage - 240.0f) < 0.01f,
+            "The empowered damage reduction should apply while HP remains above 50 percent.");
+    require(std::abs(result.damage_events[3].final_damage - 285.0f) < 0.01f,
+            "The conditional bonus should be removed after HP falls below 50 percent.");
+}
+
 void test_event_limit_is_reported_as_timeout() {
     tft::CombatEngine engine;
     auto input = make_input();
@@ -965,6 +1019,7 @@ void test_generic_source_ad_effect_changes_combat() {
 int main() {
     try {
         test_deterministic_winner_and_damage();
+        test_generic_while_hp_above_effect_reverses_at_threshold();
         test_generic_damage_amplification_item_effect();
         test_generic_percent_max_health_item_effect();
         test_trait_team_effect_scaling_applies_once();
