@@ -865,9 +865,15 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
             loaded.base_attack_speed = loaded.unit.attack_speed;
             loaded.titans_base_ad = loaded.unit.attack_damage;
             loaded.runaans_base_ad = loaded.unit.attack_damage;
-            if (has_item(loaded.unit, "TFT_Item_AdaptiveHelm"))
-                loaded.mana_gain_multiplier = 1.15f;
             for (const auto& item : loaded.unit.items) {
+                for (const auto& effect : item.effects) {
+                    if (effect.trigger == "combat_start" &&
+                        effect.operation == "mana_gain_multiplier" &&
+                        effect_condition_matches(loaded.unit, effect) &&
+                        std::isfinite(effect.value) && effect.value > 0.0f) {
+                        loaded.mana_gain_multiplier *= effect.value;
+                    }
+                }
                 const bool has_generic_mana_regen = std::any_of(
                     item.effects.begin(), item.effects.end(),
                     [](const CombatEffectDefinition& effect) {
