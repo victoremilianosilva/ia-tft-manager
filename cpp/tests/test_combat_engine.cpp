@@ -357,9 +357,11 @@ void test_generic_mana_gain_multiplier_effect() {
 
     auto& holder = input.player_a.units.front();
     holder.hp = holder.max_hp = 1000.0f;
-    holder.mana = 98.9f;
+    holder.mana = 77.0f;
     holder.max_mana = 105.0f;
-    holder.can_attack = false;
+    holder.attack_damage = 1.0f;
+    holder.attack_range = 7.0f;
+    holder.can_attack = true;
     holder.can_move = false;
     holder.can_cast = true;
     holder.ability.mana_cost = 105.0f;
