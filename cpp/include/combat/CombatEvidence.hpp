@@ -234,7 +234,8 @@ public:
                     (effect.operation == "grant_charges" ||
                      effect.operation == "heal_max_hp_pct")) ||
                 ((effect.trigger == "after_delay" ||
-                  effect.trigger == "while_hp_below") &&
+                  effect.trigger == "while_hp_below" ||
+                  effect.trigger == "while_hp_above") &&
                     effect.operation == "add_stat");
 
             const bool target_supported =
