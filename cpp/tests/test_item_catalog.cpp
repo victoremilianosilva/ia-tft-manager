@@ -132,7 +132,7 @@ int main(int argc, char** argv) {
             catalog.items.begin(), catalog.items.end(),
             [](const auto& item) { return item.id == "TFT_Item_BlueBuff"; });
         if (blue_buff == catalog.items.end() || blue_buff->combat_effects_complete) {
-            std::cerr << "Blue Buff generic AD/AP effects are missing or falsely complete\\n";
+            std::cerr << "Blue Buff generic AD/AP effects are missing or falsely complete\n";
             return 20;
         }
         for (const auto* stat : {"attack_damage", "ability_power"}) {
