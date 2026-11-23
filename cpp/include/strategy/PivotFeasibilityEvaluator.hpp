@@ -99,7 +99,8 @@ struct PivotFeasibilityResult {
     std::string candidate_composition_identity;
     std::string source_direction_anchor_identity;
     std::uint64_t source_composition_version{0};
-    bool shadow_only{true};
+    // This evaluator emits advisory evidence only; it never executes a game action.
+    bool advisory_only{true};
 };
 
 class PivotFeasibilityEvaluator {
