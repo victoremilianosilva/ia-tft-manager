@@ -1453,7 +1453,14 @@
         "ManaOnCrit": 4
       },
       "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
-      "combat_effects": [],
+      "combat_effects": [
+        {
+          "trigger": "on_attack",
+          "operation": "mana_on_attack",
+          "value": 2,
+          "critical_value": 4
+        }
+      ],
       "effect_coverage": {
         "source_keys": [
           "AP",
@@ -1469,13 +1476,14 @@
           "CritChance",
           "Health"
         ],
-        "generic_combat_keys": [],
-        "not_generic_normalized_keys": [
+        "generic_combat_keys": [
           "BaseManaOnHit",
           "ManaOnCrit"
-        ]
+        ],
+        "not_generic_normalized_keys": []
       },
-      "unit_equipable": true
+      "unit_equipable": true,
+      "combat_effects_complete": true
     },
     {
       "id": "TFT_Item_MadredsBloodrazor",
@@ -2248,6 +2256,11 @@
           "trigger": "combat_start",
           "operation": "mana_regen",
           "value": 1
+        },
+        {
+          "trigger": "on_attack",
+          "operation": "mana_on_attack",
+          "value": 5
         }
       ],
       "effect_coverage": {
@@ -2262,13 +2275,13 @@
         ],
         "generic_combat_keys": [
           "AD",
-          "ManaRegen"
-        ],
-        "not_generic_normalized_keys": [
+          "ManaRegen",
           "FlatManaRestore"
-        ]
+        ],
+        "not_generic_normalized_keys": []
       },
-      "unit_equipable": true
+      "unit_equipable": true,
+      "combat_effects_complete": true
     },
     {
       "id": "TFT_Item_SpectralGauntlet",
