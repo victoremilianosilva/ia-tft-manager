@@ -40,6 +40,9 @@ struct NativeCompositionOwnedUnit {
     double item_fit{0.0};
     // Appended physical counts; aggregate copies remain only a legacy-equivalent signal.
     std::array<std::int32_t, 4> copies_by_star{};
+    // Evidence flags prevent unavailable metrics from being interpreted as measured zero.
+    bool board_contribution_available{false};
+    bool item_fit_available{false};
 };
 
 struct NativeCompositionTraitThreshold {
@@ -140,8 +143,13 @@ public:
         }
         for (const auto& unit : input.owned) {
             if (unit.champion_id < 0 || unit.copies < 0 || unit.star < 1 ||
-                unit.star > 3 || !std::isfinite(unit.board_contribution) ||
-                !std::isfinite(unit.item_fit)) continue;
+                unit.star > 3 ||
+                (unit.board_contribution_available &&
+                    (!std::isfinite(unit.board_contribution) ||
+                     unit.board_contribution < 0.0 || unit.board_contribution > 1.0)) ||
+                (unit.item_fit_available &&
+                    (!std::isfinite(unit.item_fit) ||
+                     unit.item_fit < 0.0 || unit.item_fit > 1.0))) continue;
             owned[unit.champion_id] = unit;
             const auto found = definitions.find(unit.champion_id);
             if (found != definitions.end()) {
@@ -221,8 +229,10 @@ public:
                     (definition->frontline ? 0.45 : 0.0) +
                     (definition->support ? 0.25 : 0.0) + pool_score +
                     cost_score + affordability +
-                    (has_owned ? std::max(0.0, observed.board_contribution) * 0.35 : 0.0) +
-                    (has_owned ? std::max(0.0, observed.item_fit) * 0.25 : 0.0);
+                    (has_owned && observed.board_contribution_available
+                        ? observed.board_contribution * 0.35 : 0.0) +
+                    (has_owned && observed.item_fit_available
+                        ? observed.item_fit * 0.25 : 0.0);
                 scored.push_back({definition, score, has_owned, in_shop});
             }
             std::stable_sort(scored.begin(), scored.end(),
@@ -257,8 +267,10 @@ public:
                     if (observed.star >= 2)
                         candidate.evidence.push_back("star_progress:" +
                             std::to_string(observed.star) + ":" + std::to_string(id));
-                    if (observed.item_fit > 0.0)
-                        candidate.evidence.push_back("item_fit:" + std::to_string(id));
+                    if (observed.item_fit_available)
+                        candidate.evidence.push_back("item_fit_measured:" + std::to_string(id));
+                    if (observed.board_contribution_available)
+                        candidate.evidence.push_back("board_contribution_measured:" + std::to_string(id));
                 }
                 if (unit.shop)
                     candidate.evidence.push_back("shop_offer:" +
