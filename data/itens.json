@@ -265,6 +265,15 @@
           "trigger": "combat_start",
           "operation": "mana_regen",
           "value": 1
+        },
+        {
+          "trigger": "periodic",
+          "operation": "add_stat",
+          "stat": "ability_power",
+          "target": "self",
+          "value": 0.2,
+          "percent_of_stat": true,
+          "interval": 5
         }
       ],
       "effect_coverage": {
@@ -278,12 +287,11 @@
           "AP"
         ],
         "generic_combat_keys": [
+          "APPerInterval",
+          "IntervalSeconds",
           "ManaRegen"
         ],
-        "not_generic_normalized_keys": [
-          "APPerInterval",
-          "IntervalSeconds"
-        ]
+        "not_generic_normalized_keys": []
       },
       "unit_equipable": true
     },
@@ -1052,7 +1060,17 @@
         "AttackSpeedPerStack": 7
       },
       "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
-      "combat_effects": [],
+      "combat_effects": [
+        {
+          "trigger": "periodic",
+          "operation": "add_stat",
+          "stat": "attack_speed",
+          "target": "self",
+          "value": 0.07,
+          "scale_by_base_stat": true,
+          "interval": 1
+        }
+      ],
       "effect_coverage": {
         "source_keys": [
           "AP",
@@ -1063,10 +1081,10 @@
           "AP",
           "AS"
         ],
-        "generic_combat_keys": [],
-        "not_generic_normalized_keys": [
+        "generic_combat_keys": [
           "AttackSpeedPerStack"
-        ]
+        ],
+        "not_generic_normalized_keys": []
       },
       "unit_equipable": true
     },
@@ -1791,7 +1809,16 @@
         "SpellShieldDuration": 18
       },
       "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
-      "combat_effects": [],
+      "combat_effects": [
+        {
+          "trigger": "periodic",
+          "operation": "add_stat",
+          "stat": "attack_speed",
+          "target": "self",
+          "value": 0.03,
+          "interval": 1
+        }
+      ],
       "effect_coverage": {
         "source_keys": [
           "AS",
@@ -1805,9 +1832,10 @@
           "CritChance",
           "MagicResist"
         ],
-        "generic_combat_keys": [],
+        "generic_combat_keys": [
+          "ProcAttackSpeed"
+        ],
         "not_generic_normalized_keys": [
-          "ProcAttackSpeed",
           "SpellShieldDuration"
         ]
       },
