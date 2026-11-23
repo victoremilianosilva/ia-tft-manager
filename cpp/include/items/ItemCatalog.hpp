@@ -132,7 +132,8 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
                 (effect.operation == "add_stat" &&
                     (effect.trigger == "combat_start" || effect.trigger == "after_delay" ||
                      effect.trigger == "while_hp_below" ||
-                     effect.trigger == "while_hp_above" || effect.trigger == "on_ally_shield")) ||
+                     effect.trigger == "while_hp_above" || effect.trigger == "on_ally_shield" ||
+                     effect.trigger == "periodic")) ||
                 (effect.operation == "bonus_damage" && effect.trigger == "on_attack") ||
                 (effect.operation == "heal_max_hp_pct" &&
                     (effect.trigger == "on_kill" || effect.trigger == "on_attack" ||
@@ -278,6 +279,7 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
             };
             read_bool("percent_of_max_health", effect.percent_of_max_health);
             read_bool("percent_of_stat", effect.percent_of_stat);
+            read_bool("scale_by_base_stat", effect.scale_by_base_stat);
             if (effect.operation == "add_stat" && effect.percent_of_max_health) {
                 throw std::invalid_argument(
                     "add_stat does not support percent_of_max_health; use percent_of_stat");
