@@ -105,6 +105,7 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
                 effect.operation == "add_stat" ||
                 effect.operation == "bonus_damage" ||
                 effect.operation == "heal_max_hp_pct" ||
+                effect.operation == "heal_missing_hp_pct" ||
                 effect.operation == "grant_charges" ||
                 effect.operation == "mana_regen" ||
                 effect.operation == "mana_gain_multiplier" ||
@@ -139,6 +140,8 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
                 (effect.operation == "heal_max_hp_pct" &&
                     (effect.trigger == "on_kill" || effect.trigger == "on_attack" ||
                      effect.trigger == "periodic")) ||
+                (effect.operation == "heal_missing_hp_pct" &&
+                    effect.trigger == "periodic") ||
                 (effect.operation == "grant_charges" && effect.trigger == "on_kill") ||
                 (effect.operation == "mana_regen" &&
                     (effect.trigger.empty() || effect.trigger == "combat_start")) ||
@@ -256,6 +259,7 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
             read_number("delay", effect.delay);
             read_number("health_threshold", effect.health_threshold);
             read_number("critical_value", effect.critical_value);
+            read_number("max_amount", effect.max_amount);
             if (effect.trigger == "periodic" &&
                 (!std::isfinite(effect.interval) || effect.interval <= 0.0f)) {
                 throw std::invalid_argument("Periodic combat effects require a positive interval");
