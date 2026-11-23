@@ -3972,8 +3972,8 @@ struct TFTEngine::Impl {
                                           const char* outcome_kind,
                                           const std::string& simulator_version,
                                           const std::string& coverage_status) {
-            if (episode_id == 0 || decision_sequence == 0 ||
-                strategic_context_sequences[player_index] == 0) return;
+            if (player_index >= kPlayersPerLobby ||
+                opponent_index >= kPlayersPerLobby) return;
             const nlohmann::json outcome{
                 {"contract_id", "tft.combat-outcome.v1"},
                 {"match_id", episode_id},
