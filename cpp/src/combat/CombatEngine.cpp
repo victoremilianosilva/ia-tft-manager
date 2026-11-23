@@ -550,7 +550,8 @@ void prepare_generic_effect_descriptors(RuntimeUnit& runtime) {
                 std::to_string(effect.health_threshold) + ":" + std::to_string(effect.value);
         }
         if (effect.trigger == "periodic" &&
-            effect.operation == "heal_max_hp_pct" && effect.interval > 0.0f) {
+            effect.operation == "heal_max_hp_pct" &&
+            std::isfinite(effect.interval) && effect.interval > 0.0f) {
             descriptor.periodic_key = descriptor.prefix + "periodic:" +
                 effect.operation + ":" + std::to_string(effect.interval) + ":" +
                 std::to_string(effect.value);
