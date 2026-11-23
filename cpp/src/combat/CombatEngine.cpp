@@ -573,7 +573,8 @@ void prepare_generic_effect_descriptors(RuntimeUnit& runtime) {
             std::isfinite(effect.interval) && effect.interval > 0.0f) {
             descriptor.periodic_key = descriptor.prefix + "periodic:" +
                 effect.operation + ":" + effect.stat + ":" + effect.condition + ":" +
-                std::to_string(effect.interval) + ":" + std::to_string(effect.value);
+                std::to_string(effect.interval) + ":" + std::to_string(effect.value) +
+                ":" + std::to_string(effect.max_amount);
         }
         const std::size_t index = runtime.generic_effect_descriptors.size();
         runtime.generic_effect_descriptors.push_back(std::move(descriptor));
