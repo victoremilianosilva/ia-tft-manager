@@ -300,3 +300,9 @@ The same tranche also moves Deathblade and Rabadon's Deathcap damage
 amplification into generic `combat_start/add_stat/damage_amplification`
 effects and removes their item-name branches. Their other metadata remains
 incomplete where applicable; this migration does not assert full item coverage.
+
+Night Harvester's base damage reduction and above-50%-HP bonus are now
+represented as generic `combat_start` and `while_hp_above` effects. The
+generic conditional resolver activates and reverses the bonus as health crosses
+the threshold; the item-name branch and its dedicated runtime flag were
+removed. Coverage tests exercise the transition in both directions.
