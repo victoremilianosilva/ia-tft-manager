@@ -281,6 +281,7 @@ void invalidated_or_stale_candidate_cannot_be_confirmed() {
 void interrupted_evidence_resets_confirmation_streak() {
     ActiveCompositionManager active_composition;
     StrategicCommitment commitment;
+    commitment.composition_direction = "composition-current";
     UnifiedStrategicStateMachine machine(active_composition, commitment, {3, 60.0, 5});
     auto input = make_active_input();
     machine.refresh(input);
