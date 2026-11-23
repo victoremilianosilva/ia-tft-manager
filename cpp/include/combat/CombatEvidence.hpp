@@ -231,7 +231,8 @@ public:
                     (effect.operation == "bonus_damage" ||
                      effect.operation == "heal_max_hp_pct")) ||
                 (effect.trigger == "periodic" &&
-                    effect.operation == "heal_max_hp_pct" && effect.interval > 0.0f) ||
+                    effect.operation == "heal_max_hp_pct" &&
+                    std::isfinite(effect.interval) && effect.interval > 0.0f) ||
                 (effect.trigger == "on_kill" &&
                     (effect.operation == "grant_charges" ||
                      effect.operation == "heal_max_hp_pct")) ||
