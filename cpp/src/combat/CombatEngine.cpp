@@ -391,7 +391,10 @@ void apply_start_combat_team_effects(std::vector<RuntimeUnit>& units) {
                 const bool team_attack_effect = effect.target == "allies" &&
                     effect.trigger == "on_attack" &&
                     effect.operation == "bonus_damage";
-                if (!team_stat && !team_attack_effect) continue;
+                const bool team_mana_regen = effect.target == "allies" &&
+                    effect.trigger == "combat_start" &&
+                    effect.operation == "mana_regen";
+                if (!team_stat && !team_attack_effect && !team_mana_regen) continue;
 
                 CombatEffectDefinition source_effect = effect;
                 if (source_effect.scale_by_active_trait_count) {
@@ -489,6 +492,7 @@ float effect_mana_regeneration(const CombatUnit& unit) {
         for (const auto& effect : effects) {
             if (effect.operation == "mana_regen" &&
                 (effect.trigger.empty() || effect.trigger == "combat_start") &&
+                (effect.target.empty() || effect.target == "self") &&
                 effect_condition_matches(unit, effect))
                 amount += effect.value;
         }
