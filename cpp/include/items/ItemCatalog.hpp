@@ -264,6 +264,11 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
                 (!std::isfinite(effect.interval) || effect.interval <= 0.0f)) {
                 throw std::invalid_argument("Periodic combat effects require a positive interval");
             }
+            if (effect.operation == "heal_missing_hp_pct" &&
+                (!std::isfinite(effect.max_amount) || effect.max_amount <= 0.0f)) {
+                throw std::invalid_argument(
+                    "Missing-health periodic healing requires a positive max_amount");
+            }
             if (raw.contains("max_stacks")) {
                 if (!raw["max_stacks"].is_number_integer() ||
                     raw["max_stacks"].get<int>() < 0) {
