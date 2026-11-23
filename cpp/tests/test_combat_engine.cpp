@@ -401,6 +401,61 @@ void test_generic_mana_gain_multiplier_effect() {
             "Generic mana gain multiplier should allow the unit to reach its cast threshold.");
 }
 
+void test_generic_mana_on_attack_item_effects() {
+    const auto casts_with_effect = [](float base_mana, float critical_mana,
+                                      float crit_chance) {
+        tft::CombatEngine engine;
+        auto input = make_input();
+        input.config.max_duration = 1.1f;
+
+        auto& attacker = input.player_a.units.front();
+        attacker.mana = 86.0f;
+        attacker.max_mana = 100.0f;
+        attacker.attack_damage = 1.0f;
+        attacker.attack_speed = 1.0f;
+        attacker.attack_range = 7.0f;
+        attacker.critical_strike_chance = crit_chance;
+        attacker.critical_strike_damage = 1.0f;
+        attacker.can_attack = true;
+        attacker.can_move = false;
+        attacker.can_cast = true;
+        attacker.ability.mana_cost = 100.0f;
+        attacker.ability.has_damage = true;
+        attacker.ability.base_damage = 1.0f;
+        attacker.ability.target_type = tft::AbilityTargetType::ENEMY;
+
+        tft::CombatItem item;
+        item.api_name = "generic_mana_on_attack_test";
+        tft::CombatEffectDefinition effect;
+        effect.trigger = "on_attack";
+        effect.operation = "mana_on_attack";
+        effect.value = base_mana;
+        effect.critical_value = critical_mana;
+        item.effects.push_back(effect);
+        attacker.items.push_back(item);
+
+        auto& target = input.player_b.units.front();
+        target.hp = target.max_hp = 10000.0f;
+        target.can_attack = false;
+        target.can_move = false;
+        target.can_cast = false;
+
+        const auto result = engine.simulate(input);
+        require(result.success, "Generic mana-on-attack combat should succeed.");
+        const auto found = std::find_if(result.units.begin(), result.units.end(),
+            [](const auto& unit) { return unit.unit_id == 0; });
+        require(found != result.units.end(), "Mana-on-attack result unit is missing.");
+        return found->ability_casts;
+    };
+
+    require(casts_with_effect(2.0f, 4.0f, 1.0f) > 0,
+            "Critical Leviathan-style hit should use the critical mana value.");
+    require(casts_with_effect(2.0f, 4.0f, 0.0f) == 0,
+            "Non-critical Leviathan-style hit should use only the base mana value.");
+    require(casts_with_effect(5.0f, 0.0f, 0.0f) > 0,
+            "Shojin-style mana-on-attack should be applied generically.");
+}
+
 void test_generic_periodic_heal_effect() {
     tft::CombatEngine engine;
     auto input = make_input();
@@ -1309,6 +1364,7 @@ int main() {
         test_generic_periodic_stat_effect();
         test_generic_periodic_heal_effect();
         test_generic_mana_gain_multiplier_effect();
+        test_generic_mana_on_attack_item_effects();
         test_generic_role_condition_item_effect();
         test_generic_while_hp_above_effect_reverses_at_threshold();
         test_generic_damage_amplification_item_effect();
