@@ -205,7 +205,12 @@ public:
             published.active.version != active->version + 1) {
             reset_streak();
             anchors_.pivot_candidate = {};
-            return rejected("destination_publish_failed_or_version_conflict");
+            return rejected(
+                "destination_publish_failed_or_version_conflict:status=" +
+                std::to_string(static_cast<int>(published.status)) +
+                ";reason=" + published.reason +
+                ";expected_version=" + std::to_string(active->version + 1) +
+                ";actual_version=" + std::to_string(published.active.version));
         }
 
         StrategicDirectionAnchor next_direction;
