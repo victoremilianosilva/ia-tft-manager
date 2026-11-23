@@ -334,3 +334,10 @@ Staff's interval AP growth, Quicksilver's per-second attack-speed gain, and
 Guinsoo's base-attack-speed-scaled growth are catalogued as periodic effects;
 their dedicated item clocks and item-name branches were removed. Base-stat
 scaling is explicitly constrained to periodic attack-speed effects.
+
+The Set 18 Defender trait is now normalized for its 2/4/6 tiers. The shared
+team aura contributes 12 armor and MR once across the team; Defender units
+receive the tier-specific total (25/60/115) through an additional self effect.
+The shared contribution is divided across active Defender sources, preventing
+the team aura from being multiplied by the number of Defenders. Other traits
+remain incomplete until their mechanics are mapped and tested.
