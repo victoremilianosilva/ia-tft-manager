@@ -288,6 +288,21 @@ int main(int argc, char** argv) {
             return 19;
         }
 
+        const auto redemption = std::find_if(catalog.items.begin(), catalog.items.end(),
+            [](const auto& item) { return item.id == "TFT_Item_Redemption"; });
+        if (redemption == catalog.items.end() || redemption->combat_effects_complete ||
+            std::none_of(redemption->combat_effects.begin(), redemption->combat_effects.end(),
+                [](const auto& effect) {
+                    return effect.trigger == "periodic" &&
+                        effect.operation == "heal_missing_hp_pct" &&
+                        std::abs(effect.value - 0.02f) < 0.0001f &&
+                        std::abs(effect.interval - 1.0f) < 0.0001f &&
+                        std::abs(effect.max_amount - 250.0f) < 0.0001f;
+                })) {
+            std::cerr << "Redemption missing-health periodic heal was not normalized\\n";
+            return 20;
+        }
+
         std::set<std::string> component_ids;
         for (const auto& component : catalog.components) {
             if (component.first.empty() ||
