@@ -645,8 +645,10 @@ void apply_periodic_effects(RuntimeUnit& runtime, float now) {
                 periodic_effect.percent_of_stat = false;
                 periodic_effect.scale_by_base_stat = false;
             }
-            for (int tick = 0; tick < ticks; ++tick)
-                apply_effect_stat(runtime.unit, periodic_effect);
+            // The legacy clocks applied missed intervals as one aggregate
+            // increment against the current/base stat. Preserve that behavior.
+            periodic_effect.value *= static_cast<float>(ticks);
+            apply_effect_stat(runtime.unit, periodic_effect);
         }
         next_tick->second += effect.interval * static_cast<float>(ticks);
     }
