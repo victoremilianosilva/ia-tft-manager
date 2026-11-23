@@ -316,3 +316,9 @@ mechanic and is not claimed as migrated.
 Blue Buff's modified AD/AP bonuses are also generic percentage-stat effects;
 the corresponding combat-start item-name branch was removed. Its mana-regeneration
 metadata remains separately catalogued.
+
+Adaptive Helm's remaining mana-gain multiplier is now a generic
+`mana_gain_multiplier` effect, applied by the runtime alongside its catalogued
+mana regeneration. The last Adaptive Helm ID-specific mana fallback was removed;
+the item-specific combat behavior for this item is now represented by catalog
+effects.
