@@ -1,4 +1,4 @@
-#include "strategy/UnifiedStrategicShadowRuntime.hpp"
+#include "strategy/UnifiedStrategicRuntime.hpp"
 
 #include <cassert>
 #include <filesystem>
@@ -26,7 +26,6 @@ int main() {
     StrategicCycleResult result;
     result.phase = StrategicCyclePhase::Exploration;
     result.diagnostics.transition_reason = "no_direction_hypothesis_yet";
-    result.shadow_only = true;
 
     const StrategicCycleAuditContext player_one{77, 1, 4};
     const StrategicCycleAuditContext player_two{77, 2, 4};
@@ -50,7 +49,7 @@ int main() {
     third = nlohmann::json::parse(line);
     assert(!std::getline(stream, line));
 
-    assert(first.at("schema_version") == 1);
+    assert(first.at("schema_version") == 2);
     assert(first.at("match_id") == 77);
     assert(first.at("player_id") == 1);
     assert(first.at("round") == 4);
@@ -63,21 +62,24 @@ int main() {
     assert(first.at("active_composition").is_null());
     assert(first.at("pivot_candidate").is_null());
     assert(first.at("feasibility").at("status") == "UNAVAILABLE");
-    assert(first.at("shadow_only") == true);
+    assert(first.at("state_ownership") == "native_canonical");
+    assert(first.at("action_execution_enabled") == false);
 
     // The runtime-facing bridge executes the real state machine and emits its
     // resulting phase without requiring a game/PPO action or mutating input.
     const auto runtime_output = root / "runtime" / "strategic_direction_pivot.jsonl";
     ci::ActiveCompositionManager runtime_composition;
     StrategicCommitment runtime_commitment;
-    UnifiedStrategicShadowRuntime runtime(runtime_composition, runtime_commitment, runtime_output);
+    UnifiedStrategicRuntime runtime(runtime_composition, runtime_commitment, runtime_output);
     StrategicCycleInput runtime_input;
     runtime_input.exploration.round = 6;
     const StrategicCycleAuditContext runtime_context{88, 3, 6};
     const auto runtime_result = runtime.refresh(runtime_context, runtime_input);
     const auto duplicate_runtime_result = runtime.refresh(runtime_context, runtime_input);
-    assert(runtime_result.shadow_only);
-    assert(duplicate_runtime_result.shadow_only);
+    assert(runtime_result.canonical_state_owner);
+    assert(!runtime_result.action_execution_enabled);
+    assert(duplicate_runtime_result.canonical_state_owner);
+    assert(!duplicate_runtime_result.action_execution_enabled);
     std::ifstream runtime_stream(runtime_output);
     assert(runtime_stream.good());
     assert(static_cast<bool>(std::getline(runtime_stream, line)));
@@ -103,7 +105,7 @@ int main() {
     ci::ActiveCompositionManager pivot_composition;
     StrategicCommitment pivot_commitment;
     pivot_commitment.composition_direction = "Bruiser";
-    UnifiedStrategicShadowRuntime pivot_runtime(pivot_composition, pivot_commitment, pivot_runtime_path,
+    UnifiedStrategicRuntime pivot_runtime(pivot_composition, pivot_commitment, pivot_runtime_path,
         PivotConfirmationPolicy{3, 60.0, 5});
     const auto make_composition = [](const std::string& id, int carry,
                                      std::vector<ci::CompositionUnit> units) {
