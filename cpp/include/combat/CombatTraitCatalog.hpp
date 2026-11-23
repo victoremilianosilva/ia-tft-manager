@@ -103,19 +103,26 @@ inline TraitCombatCatalog load_trait_combat_catalog(std::istream& input) {
                 };
                 read_number("value", effect.value);
                 read_number("duration", effect.duration);
+                read_number("interval", effect.interval);
+                read_number("delay", effect.delay);
                 read_number("health_threshold", effect.health_threshold);
+                if (raw_effect.contains("max_stacks")) {
+                    if (!raw_effect["max_stacks"].is_number_integer() ||
+                        raw_effect["max_stacks"].get<int>() <= 0)
+                        throw std::invalid_argument("Trait effect max_stacks must be a positive integer");
+                    effect.max_stacks = raw_effect["max_stacks"].get<int>();
+                }
 
-                if (raw_effect.contains("percent_of_stat")) {
-                    if (!raw_effect["percent_of_stat"].is_boolean())
-                        throw std::invalid_argument("Trait effect percent_of_stat must be boolean");
-                    effect.percent_of_stat = raw_effect["percent_of_stat"].get<bool>();
-                }
-                if (raw_effect.contains("scale_by_active_trait_count")) {
-                    if (!raw_effect["scale_by_active_trait_count"].is_boolean())
-                        throw std::invalid_argument("Trait effect scale_by_active_trait_count must be boolean");
-                    effect.scale_by_active_trait_count =
-                        raw_effect["scale_by_active_trait_count"].get<bool>();
-                }
+                const auto read_bool = [&](const char* key, bool& value) {
+                    if (!raw_effect.contains(key)) return;
+                    if (!raw_effect[key].is_boolean())
+                        throw std::invalid_argument(std::string("Trait effect field must be boolean: ") + key);
+                    value = raw_effect[key].get<bool>();
+                };
+                read_bool("percent_of_stat", effect.percent_of_stat);
+                read_bool("percent_of_max_health", effect.percent_of_max_health);
+                read_bool("scale_by_active_trait_count", effect.scale_by_active_trait_count);
+                read_bool("scale_by_base_stat", effect.scale_by_base_stat);
 
                 const bool valid_stat = effect.stat == "attack_damage" ||
                     effect.stat == "attack_speed" || effect.stat == "ability_power" ||
@@ -124,15 +131,40 @@ inline TraitCombatCatalog load_trait_combat_catalog(std::istream& input) {
                     effect.stat == "damage_reduction" || effect.stat == "max_hp";
                 const bool valid_condition = effect.condition == "has_trait" ||
                     effect.condition == "trait_count_at_least";
-                if (effect.trigger != "combat_start" || effect.operation != "add_stat" ||
-                    !valid_stat || (effect.target != "self" && effect.target != "allies") ||
-                    !valid_condition || effect.condition_trait.empty() ||
-                    effect.condition_trait != definition.api_name) {
+                const bool valid_trigger = effect.trigger == "combat_start" ||
+                    effect.trigger == "on_attack" || effect.trigger == "on_kill" ||
+                    effect.trigger == "after_delay" || effect.trigger == "while_hp_below" ||
+                    effect.trigger == "while_hp_above" || effect.trigger == "on_ally_shield" ||
+                    effect.trigger == "periodic" || effect.trigger.empty();
+                const bool valid_add_stat = effect.operation == "add_stat" && valid_stat &&
+                    (effect.trigger == "combat_start" || effect.trigger == "after_delay" ||
+                     effect.trigger == "while_hp_below" || effect.trigger == "while_hp_above" ||
+                     effect.trigger == "on_ally_shield" || effect.trigger == "periodic");
+                const bool valid_mana_regen = effect.operation == "mana_regen" &&
+                    (effect.trigger.empty() || effect.trigger == "combat_start") &&
+                    (effect.target.empty() || effect.target == "self" || effect.target == "allies");
+                const bool valid_bonus_damage = effect.operation == "bonus_damage" &&
+                    effect.trigger == "on_attack";
+                const bool valid_heal = effect.operation == "heal_max_hp_pct" &&
+                    (effect.trigger == "on_kill" || effect.trigger == "on_attack" ||
+                     effect.trigger == "periodic");
+                const bool valid_charges = effect.operation == "grant_charges" &&
+                    effect.trigger == "on_kill";
+                if (!valid_trigger || !(valid_add_stat || valid_mana_regen ||
+                    valid_bonus_damage || valid_heal || valid_charges) ||
+                    (effect.target != "" && effect.target != "self" &&
+                     effect.target != "allies" && effect.target != "allies_same_row_within_1") ||
+                    (!effect.condition.empty() && !valid_condition) ||
+                    ((effect.condition == "has_trait" ||
+                      effect.condition == "trait_count_at_least") &&
+                     effect.condition_trait != definition.api_name)) {
                     throw std::invalid_argument("Unsupported or incomplete trait combat effect contract");
                 }
-                if (effect.condition == "trait_count_at_least") {
+                if (effect.condition == "trait_count_at_least")
                     effect.min_trait_count = tier.min_units;
-                }
+                if (effect.trigger == "periodic" &&
+                    (!std::isfinite(effect.interval) || effect.interval <= 0.0f))
+                    throw std::invalid_argument("Periodic trait effect requires a positive interval");
                 tier.effects.push_back(std::move(effect));
             }
             definition.tiers.push_back(std::move(tier));
