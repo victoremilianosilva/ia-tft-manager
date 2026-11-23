@@ -139,6 +139,8 @@ struct ContextualActionEvaluation {
                     {"economy_cost", c.economy_cost},
                     {"liquidity_cost", c.liquidity_cost},
                     {"opportunity_cost_available", c.opportunity_cost_available},
+                    {"opportunity_cost", c.opportunity_cost},
+                    {"opportunity_cost_value_basis", c.opportunity_cost_value_basis},
                     {"opportunity_cost_source", c.opportunity_cost_source},
                     {"opportunity_cost_forgone_candidate_id", c.opportunity_cost_forgone_candidate_id},
                     {"opportunity_cost_horizon_rounds", c.opportunity_cost_horizon_rounds},
@@ -592,8 +594,18 @@ public:
             alternative.identity = opportunity_identity;
             alternative.candidate_id = candidate_score.candidate_id;
             alternative.value_basis = "contextual_action_score.v1";
-            alternative.marginal_strategic_value =
-                std::max(0.0, candidate_score.total_score);
+            alternative.marginal_strategic_value = std::max(0.0,
+                candidate_score.board_value + candidate_score.survival_value +
+                candidate_score.streak_value + candidate_score.lineup_value +
+                std::min(0.0, candidate_score.unit_priority_value));
+            alternative.unit_value = std::max(0.0, candidate_score.unit_priority_value);
+            alternative.upgrade_value = std::max(0.0, candidate_score.upgrade_value);
+            alternative.direct_economy_cost = candidate_score.liquidity_cost;
+            alternative.interest_cost = candidate_score.economy_cost -
+                candidate_score.liquidity_cost;
+            if (candidate_score.opportunity_cost_available)
+                alternative.prior_opportunity_cost = candidate_score.opportunity_cost *
+                    (1.0 - candidate_score.opportunity_cost_uncertainty) * 0.55;
             alternative.horizon_rounds = candidate_score.evidence_horizon_rounds;
             alternative.uncertainty = candidate_score.evidence_uncertainty;
             alternative.available = candidate_score.eligible &&
