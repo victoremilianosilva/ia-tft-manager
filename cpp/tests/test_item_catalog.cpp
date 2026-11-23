@@ -155,6 +155,15 @@ int main(int argc, char** argv) {
             std::cerr << "Adaptive Helm generic role effects are missing or falsely complete\n";
             return 18;
         }
+        if (std::none_of(adaptive_helm->combat_effects.begin(),
+            adaptive_helm->combat_effects.end(), [](const auto& effect) {
+                return effect.trigger == "combat_start" &&
+                    effect.operation == "mana_gain_multiplier" &&
+                    std::abs(effect.value - 1.15f) < 0.0001f;
+            })) {
+            std::cerr << "Adaptive Helm generic mana gain multiplier is missing\\n";
+            return 22;
+        }
         const auto has_role_effect = [&](const char* stat, const char* role,
                                          float value, bool percent) {
             return std::any_of(adaptive_helm->combat_effects.begin(),
