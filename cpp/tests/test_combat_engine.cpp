@@ -268,7 +268,7 @@ void test_generic_while_hp_above_effect_reverses_at_threshold() {
     attacker.can_cast = false;
 
     auto& holder = input.player_b.units.front();
-    holder.hp = holder.max_hp = 1000.0f;
+    holder.hp = holder.max_hp = 1200.0f;
     holder.armor = 0.0f;
     holder.can_attack = false;
     holder.can_move = false;
