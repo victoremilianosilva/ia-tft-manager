@@ -229,7 +229,9 @@ not through the single-round damage distribution.
 The item adapter now carries an explicit `combat_effects_complete` assertion
 from `ItemDefinition` into `CombatItem::effects_complete`. The default is
 false: an empty vector is ambiguous and must not be interpreted as an
-authoritative “no passive” declaration. A set catalog loader may set the flag
+authoritative “no passive” declaration. The normalized JSON loader accepts this field only as a boolean and
+rejects malformed values; omission preserves the conservative false default.
+A set catalog loader may set the flag
 true only after it has resolved the complete combat-relevant item metadata for
 the active set, including an explicit empty effect list when the item truly has
 no passive. This keeps coverage fail-closed and prevents an incomplete catalog
