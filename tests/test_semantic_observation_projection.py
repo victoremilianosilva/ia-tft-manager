@@ -64,11 +64,19 @@ def _metadata():
         "board_quality_score": 0.25,
         "board_positional_score": 0.5,
         "board_structural_score": -0.25,
-        "board_quality_delta": 0.5,
         "board_exposed_carries": 1,
         "board_frontline_count": 2,
         "board_isolated_frontline_count": 1,
         "board_important_bench_units_unplayed": 1,
+        "board_frontline_lane_count": 2,
+        "board_exposed_main_carries": 1,
+        "board_fragile_frontline_count": 1,
+        "board_missing_frontline_count": 0,
+        "board_missing_backline_count": 0,
+        "board_active_trait_count": 2,
+        "board_strategic_fit_score": 0.22,
+        "board_unit_quality_score": 0.18,
+        "board_trait_coherence_score": 0.07,
         "item_components": [],
         "item_inventory": [],
         "item_component_catalog": [f"component_{index}" for index in range(10)],
@@ -143,7 +151,7 @@ def _metadata():
         "stage": 3,
         "round": 12,
         "native_state_contract_id": "tft.native-state-snapshot",
-        "native_state_contract_version": 5,
+        "native_state_contract_version": 6,
         "native_state_producer": "TFTEngine::get_audit_snapshot",
         "native_state_source_namespace": "tft.engine.observation-snapshot",
         "native_player_state": player,
@@ -265,11 +273,19 @@ def test_native_semantic_projection_has_stable_shape_and_explicit_identity():
     assert projected["numeric"][54] == 0.25  # native board quality
     assert projected["numeric"][55] == 0.5  # native positional score
     assert projected["numeric"][56] == -0.25  # native structural score
-    assert projected["numeric"][57] == 0.25  # quality delta / 2
-    assert projected["numeric"][58] == 1.0 / 9.0  # exposed carries
-    assert projected["numeric"][59] == 2.0 / 9.0  # frontline count
-    assert projected["numeric"][60] == 1.0 / 9.0  # isolated frontline count
-    assert projected["numeric"][61] == 1.0 / 9.0  # important unplayed bench units
+    assert projected["numeric"][57] == 2.0 / 9.0  # frontline lanes
+    assert projected["numeric"][58] == 1.0 / 9.0  # exposed main carries
+    assert projected["numeric"][59] == 1.0 / 9.0  # fragile frontline
+    assert projected["numeric"][60] == 0.0  # missing frontline
+    assert projected["numeric"][61] == 0.0  # missing backline
+    assert projected["numeric"][62] == 0.2  # active traits / 10
+    assert projected["numeric"][63] == 0.22  # strategic fit
+    assert projected["numeric"][64] == 0.18  # unit quality
+    assert projected["numeric"][65] == 0.07  # trait coherence
+    assert projected["numeric"][66] == 1.0 / 9.0  # exposed carries
+    assert projected["numeric"][67] == 2.0 / 9.0  # frontline count
+    assert projected["numeric"][68] == 1.0 / 9.0  # isolated frontline count
+    assert projected["numeric"][69] == 1.0 / 9.0  # important unplayed bench units
     entity_start = SEMANTIC_GLOBAL_FEATURES
     assert projected["numeric"][entity_start] == 1.0  # occupied
     assert projected["numeric"][entity_start + 5] == 1.0  # mapped champion identity valid
@@ -554,8 +570,8 @@ def test_semantic_v7_checkpoint_has_explicit_v8_warm_start_path():
     payload["contract_id"] = "tft.ppo.semantic-native-state.v7"
     payload["version"] = 7
     payload["global_features"] = payload["global_features"][:-8]
-    payload["numeric_dimension"] -= 8
-    payload["encoder"]["numeric_plus_embedding_input_dim"] -= 8
+    payload["numeric_dimension"] -= 16
+    payload["encoder"]["numeric_plus_embedding_input_dim"] -= 16
     canonical = json.dumps(
         payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False
     ).encode("utf-8")

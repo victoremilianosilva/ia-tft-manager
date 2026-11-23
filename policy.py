@@ -306,7 +306,7 @@ class TFTPolicy(nn.Module):
                 and target_value.ndim == 2
                 and source_value.shape[0] == target_value.shape[0]
                 and source_value.shape[1] == (
-                    (SEMANTIC_GLOBAL_FEATURES - 8)
+                    (SEMANTIC_GLOBAL_FEATURES - 16)
                     + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ENTITY_FEATURES
                     + (SEMANTIC_NUMERIC_DIM - SEMANTIC_ITEM_OFFSET)
                     + SEMANTIC_ENTITY_SLOTS * (
@@ -323,7 +323,7 @@ class TFTPolicy(nn.Module):
                 # v7 -> v8 appends eight BoardEvaluation globals. Preserve the
                 # old globals, relocate entity/item blocks to their new offsets,
                 # and retain champion/trait embeddings. New evidence starts neutral.
-                old_global_dim = SEMANTIC_GLOBAL_FEATURES - 8
+                old_global_dim = SEMANTIC_GLOBAL_FEATURES - 16
                 old_entity_offset = old_global_dim
                 old_item_offset = old_entity_offset + (
                     SEMANTIC_ENTITY_SLOTS * SEMANTIC_ENTITY_FEATURES

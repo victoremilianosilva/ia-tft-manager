@@ -159,7 +159,7 @@ def test_v7_semantic_encoder_weights_migrate_with_board_evaluation_columns_neutr
     )
     state = {key: value.detach().clone() for key, value in source_policy.state_dict().items()}
     current = state["semantic_encoder.0.weight"]
-    old_global = SEMANTIC_GLOBAL_FEATURES - 8
+    old_global = SEMANTIC_GLOBAL_FEATURES - 16
     old_entity_offset = old_global
     old_item_offset = old_entity_offset + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ENTITY_FEATURES
     old_numeric_dim = old_item_offset + (SEMANTIC_NUMERIC_DIM - SEMANTIC_ITEM_OFFSET)
