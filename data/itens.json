@@ -1564,7 +1564,23 @@
         "ThresholdForEmpower": 0.5
       },
       "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
-      "combat_effects": [],
+      "combat_effects": [
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "damage_reduction",
+          "target": "self",
+          "value": 0.05
+        },
+        {
+          "trigger": "while_hp_above",
+          "operation": "add_stat",
+          "stat": "damage_reduction",
+          "target": "self",
+          "value": 0.15,
+          "health_threshold": 0.5
+        }
+      ],
       "effect_coverage": {
         "source_keys": [
           "Armor",
