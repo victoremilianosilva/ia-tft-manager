@@ -109,6 +109,25 @@ int main(int argc, char** argv) {
             }
         }
 
+        for (const auto& expected : {
+                 std::pair<const char*, float>{"TFT_Item_Deathblade", 0.10f},
+                 std::pair<const char*, float>{"TFT_Item_RabadonsDeathcap", 0.15f}}) {
+            const auto found = std::find_if(catalog.items.begin(), catalog.items.end(),
+                [&](const auto& item) { return item.id == expected.first; });
+            if (found == catalog.items.end() || found->combat_effects_complete ||
+                std::none_of(found->combat_effects.begin(), found->combat_effects.end(),
+                    [&](const auto& effect) {
+                        return effect.trigger == "combat_start" &&
+                            effect.operation == "add_stat" &&
+                            effect.stat == "damage_amplification" &&
+                            std::abs(effect.value - expected.second) < 0.0001f;
+                    })) {
+                std::cerr << "generic damage amplification effect missing or falsely complete for "
+                          << expected.first << '\\n';
+                return 16;
+            }
+        }
+
         std::set<std::string> component_ids;
         for (const auto& component : catalog.components) {
             if (component.first.empty() ||
