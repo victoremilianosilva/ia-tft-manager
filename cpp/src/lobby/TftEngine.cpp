@@ -4438,7 +4438,7 @@ struct TFTEngine::Impl {
                         nlohmann::json effects = nlohmann::json::array();
                         for (const auto& effect : item.effects) effects.push_back(serialize_effect(effect));
                         item_rows.push_back({
-                            {"api_name", item.api_name}, {"name", item.name},
+                            {"id", item.id}, {"api_name", item.api_name}, {"name", item.name},
                             {"attack_damage", item.attack_damage}, {"ability_power", item.ability_power},
                             {"attack_speed", item.attack_speed},
                             {"critical_strike_chance", item.critical_strike_chance},
@@ -4450,6 +4450,7 @@ struct TFTEngine::Impl {
                             {"damage_reduction", item.damage_reduction},
                             {"grants_trait", item.grants_trait},
                             {"granted_trait_active_count", item.granted_trait_active_count},
+                            {"is_temporary", item.is_temporary},
                             {"effects_complete", item.effects_complete}, {"effects", effects}
                         });
                     }
@@ -4458,7 +4459,7 @@ struct TFTEngine::Impl {
                         nlohmann::json effects = nlohmann::json::array();
                         for (const auto& effect : trait.effects) effects.push_back(serialize_effect(effect));
                         trait_rows.push_back({
-                            {"api_name", trait.api_name}, {"name", trait.name},
+                            {"id", trait.id}, {"api_name", trait.api_name}, {"name", trait.name},
                             {"active_count", trait.active_count}, {"tier", trait.tier},
                             {"active", trait.active}, {"effects_complete", trait.effects_complete},
                             {"effects", effects}
@@ -4480,7 +4481,9 @@ struct TFTEngine::Impl {
                         {"damage_amplification", unit.damage_amplification},
                         {"damage_reduction", unit.damage_reduction}, {"omnivamp", unit.omnivamp},
                         {"ability", {
-                            {"api_name", ability.api_name}, {"name", ability.name},
+                            {"id", ability.id}, {"api_name", ability.api_name},
+                            {"name", ability.name}, {"description", ability.description},
+                            {"metadata_complete", ability.metadata_complete},
                             {"mana_cost", ability.mana_cost}, {"initial_mana", ability.initial_mana},
                             {"target_type", static_cast<int>(ability.target_type)},
                             {"damage_type", static_cast<int>(ability.damage_type)},
@@ -4493,9 +4496,22 @@ struct TFTEngine::Impl {
                             {"has_damage", ability.has_damage}, {"has_healing", ability.has_healing},
                             {"has_shield", ability.has_shield}, {"has_buff", ability.has_buff},
                             {"has_debuff", ability.has_debuff},
-                            {"has_area_effect", ability.has_area_effect}
+                            {"has_area_effect", ability.has_area_effect},
+                            {"variables", [&] {
+                                nlohmann::json variables = nlohmann::json::array();
+                                for (const auto& variable : ability.variables) {
+                                    variables.push_back({
+                                        {"name", variable.name}, {"values", variable.values}
+                                    });
+                                }
+                                return variables;
+                            }()}
                         }},
-                        {"items", item_rows}, {"traits", trait_rows}
+                        {"items", item_rows}, {"traits", trait_rows},
+                        {"alive", unit.alive}, {"can_move", unit.can_move},
+                        {"can_attack", unit.can_attack}, {"can_cast", unit.can_cast},
+                        {"source_board_position", unit.source_board_position},
+                        {"source_unit_uuid", unit.source_unit_uuid}
                     };
                 };
                 nlohmann::json player_a_units = nlohmann::json::array();
@@ -4527,14 +4543,44 @@ struct TFTEngine::Impl {
                     {"combat_sequence", combat_sequence},
                     {"player_a_id", a}, {"player_b_id", b},
                     {"seed", input.seed},
+                    {"player_a_team", static_cast<int>(input.player_a.team)},
+                    {"player_a_id", input.player_a.player_id},
+                    {"player_a_hp", input.player_a.player_hp},
+                    {"player_b_team", static_cast<int>(input.player_b.team)},
+                    {"player_b_id", input.player_b.player_id},
+                    {"player_b_hp", input.player_b.player_hp},
                     {"config", {
                         {"board_rows", input.config.board_rows},
                         {"board_cols", input.config.board_cols},
                         {"max_duration", input.config.max_duration},
                         {"max_events", input.config.max_events},
                         {"seed", input.config.seed},
-                        {"deterministic", input.config.deterministic}
+                        {"deterministic", input.config.deterministic},
+                        {"debug", input.config.debug},
+                        {"record_events", input.config.record_events},
+                        {"record_damage", input.config.record_damage},
+                        {"record_targets", input.config.record_targets},
+                        {"record_positions", input.config.record_positions},
+                        {"record_mana", input.config.record_mana},
+                        {"record_abilities", input.config.record_abilities}
                     }},
+                    {"global_modifiers", [&] {
+                        nlohmann::json modifiers = nlohmann::json::array();
+                        for (const auto& modifier : input.global_modifiers) {
+                            modifiers.push_back({
+                                {"id", modifier.id}, {"source", modifier.source},
+                                {"attack_damage", modifier.attack_damage},
+                                {"ability_power", modifier.ability_power},
+                                {"attack_speed", modifier.attack_speed},
+                                {"health", modifier.health}, {"armor", modifier.armor},
+                                {"magic_resist", modifier.magic_resist},
+                                {"damage_amplification", modifier.damage_amplification},
+                                {"damage_reduction", modifier.damage_reduction},
+                                {"duration", modifier.duration}, {"temporary", modifier.temporary}
+                            });
+                        }
+                        return modifiers;
+                    }()},
                     {"player_a_units", player_a_units}, {"player_b_units", player_b_units},
                     {"result", {
                         {"success", combat.success}, {"completed", combat.completed},
