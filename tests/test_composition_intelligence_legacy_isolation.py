@@ -22,7 +22,7 @@ def test_native_composition_refresh_uses_live_engine_facts():
 def test_native_direction_and_composition_runtime_uses_owned_cycle_inputs():
     source = ENGINE_SOURCE.read_text(encoding="utf-8")
     assert "void refresh_native_strategic_runtime(" in source
-    assert "strategic_shadow_runtimes[i]" in source
+    assert "strategic_runtimes[i]" in source
     assert "strategic_context_sequences[i] + 1" in source
     assert "strategic_native_owned" in source
     assert "native_runtime.refresh(native_audit_context, native_input)" in source
@@ -79,7 +79,7 @@ def test_native_strategic_owner_is_initialized_without_optional_audit_sidecar():
     reset = source[reset_start:reset_end]
 
     sidecar_gate = reset.index(
-        "if (!impl_->strategic_shadow_audit_path.empty())"
+        "if (!impl_->strategic_audit_path.empty())"
     )
     sidecar_cleanup_end = reset.index(
         "// The unified state machine is a native strategic owner used by PPO;",
@@ -93,10 +93,10 @@ def test_native_strategic_owner_is_initialized_without_optional_audit_sidecar():
     # The optional JSONL path may control diagnostics only. The native owner
     # must be created for every player even when no audit path was configured.
     assert reset.index("}", sidecar_gate) < runtime_initialization
-    assert "std::make_unique<strategy::UnifiedStrategicShadowRuntime>" in reset[
+    assert "std::make_unique<strategy::UnifiedStrategicRuntime>" in reset[
         runtime_initialization:
     ]
-    assert "impl_->strategic_shadow_audit_path);" in reset[runtime_initialization:]
+    assert "impl_->strategic_audit_path);" in reset[runtime_initialization:]
 
 def test_action_comparison_requires_nonempty_exact_candidate_identity():
     source = ENGINE_SOURCE.read_text(encoding="utf-8")
@@ -108,7 +108,7 @@ def test_action_comparison_requires_nonempty_exact_candidate_identity():
 def test_native_runtime_is_the_only_composition_publisher():
     source = ENGINE_SOURCE.read_text(encoding="utf-8")
     assert "native_strategic_runtime_owns_composition_publication" in source
-    assert "UnifiedStrategicShadowRuntime" in source
+    assert "UnifiedStrategicRuntime" in source
     assert "composition_intelligence_players[i].active.current()" in source
 
 
