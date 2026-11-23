@@ -44,7 +44,7 @@
 #include "strategy/StrategicPlanner.hpp"
 #include "strategy/EconomicController.hpp"
 #include "strategy/ActionEvaluator.hpp"
-#include "strategy/UnifiedStrategicShadowRuntime.hpp"
+#include "strategy/UnifiedStrategicRuntime.hpp"
 
 #include "decision/ActionMaskEngine.hpp"
 #include "decision/DecisionState.hpp"
@@ -439,7 +439,7 @@ struct TFTEngine::Impl {
     std::vector<std::string> composition_intelligence_catalog_diagnostics;
     std::uint64_t composition_intelligence_sequence{0};
     bool composition_intelligence_enabled{false};
-    std::array<std::unique_ptr<strategy::UnifiedStrategicShadowRuntime>, kPlayersPerLobby>
+    std::array<std::unique_ptr<strategy::UnifiedStrategicRuntime>, kPlayersPerLobby>
         strategic_shadow_runtimes{};
     // Per-player idempotency ledgers for the read-only strategic action resolver.
     std::array<composition_intelligence::StrategicActionExecutor, kPlayersPerLobby>
@@ -2242,8 +2242,8 @@ struct TFTEngine::Impl {
                 strategic_pivot_generation_diagnostics[i] =
                     std::move(pivot_generation_diagnostic);
                 if (native_result.diagnostics.transition_reason ==
-                    "shadow_cycle_exception_contained") {
-                    // UnifiedStrategicShadowRuntime contains its own exceptions
+                    "native_strategic_cycle_exception_contained") {
+                    // UnifiedStrategicRuntime contains its own exceptions
                     // to protect the game loop. Preserve that failure signal in
                     // the owner snapshot instead of presenting it as a healthy refresh.
                     strategic_refresh_failure_reasons[i] =
@@ -2938,7 +2938,7 @@ struct TFTEngine::Impl {
                     proposal.target ? "completed" : "partial",
                     proposal.reason, active_before);
                 // Composition publication belongs exclusively to the native
-                // UnifiedStrategicShadowRuntime. This pipeline may propose and
+                // UnifiedStrategicRuntime. This pipeline may propose and
                 // record alternatives, but must not compete for the canonical owner.
                 const std::optional<ci::CompositionTransition> published_transition;
                 const auto active = runtime.active.current();
@@ -5344,7 +5344,7 @@ ResetResult TFTEngine::reset(
     // the JSONL sidecar is optional diagnostics, not a runtime activation gate.
     for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
         impl_->strategic_shadow_runtimes[i] =
-            std::make_unique<strategy::UnifiedStrategicShadowRuntime>(
+            std::make_unique<strategy::UnifiedStrategicRuntime>(
                 impl_->composition_intelligence_players[i].active,
                 impl_->strategic_planner_commitments[i],
                 impl_->strategic_shadow_audit_path);
@@ -5875,7 +5875,7 @@ void TFTEngine::set_strategic_direction_pivot_audit_path(const std::string& path
     }
     for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
         impl_->strategic_shadow_runtimes[i] =
-            std::make_unique<strategy::UnifiedStrategicShadowRuntime>(
+            std::make_unique<strategy::UnifiedStrategicRuntime>(
                 impl_->composition_intelligence_players[i].active,
                 impl_->strategic_planner_commitments[i], path);
     }
