@@ -128,6 +128,33 @@ int main(int argc, char** argv) {
             }
         }
 
+        const auto has_periodic_item_effect = [&](const char* item_id, const char* stat,
+                                                  float value, float interval,
+                                                  bool percent, bool base_scaled) {
+            const auto item = std::find_if(catalog.items.begin(), catalog.items.end(),
+                [&](const auto& entry) { return entry.id == item_id; });
+            if (item == catalog.items.end() || item->combat_effects_complete) return false;
+            return std::any_of(item->combat_effects.begin(), item->combat_effects.end(),
+                [&](const auto& effect) {
+                    return effect.trigger == "periodic" &&
+                        effect.operation == "add_stat" && effect.stat == stat &&
+                        effect.target == "self" &&
+                        effect.percent_of_stat == percent &&
+                        effect.scale_by_base_stat == base_scaled &&
+                        std::abs(effect.value - value) < 0.0001f &&
+                        std::abs(effect.interval - interval) < 0.0001f;
+                });
+        };
+        if (!has_periodic_item_effect("TFT_Item_ArchangelsStaff",
+                "ability_power", 0.20f, 5.0f, true, false) ||
+            !has_periodic_item_effect("TFT_Item_Quicksilver",
+                "attack_speed", 0.03f, 1.0f, false, false) ||
+            !has_periodic_item_effect("TFT_Item_GuinsoosRageblade",
+                "attack_speed", 0.07f, 1.0f, false, true)) {
+            std::cerr << "Generic periodic AP/AS item effects are missing or falsely complete\\n";
+            return 24;
+        }
+
         const auto dragons_claw = std::find_if(
             catalog.items.begin(), catalog.items.end(),
             [](const auto& item) { return item.id == "TFT_Item_DragonsClaw"; });
