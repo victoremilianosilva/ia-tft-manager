@@ -66,6 +66,8 @@ struct PivotTraitEvidence {
     std::int32_t required{0};
     std::int32_t owned{0};
     std::int32_t reachable_with_shop{0};
+    std::int32_t reachable_with_pool{0};
+    std::int32_t reachable_with_acquisition{0};
     bool satisfied{false};
 };
 
@@ -143,6 +145,7 @@ public:
         std::unordered_set<std::int32_t> required_ids;
         std::unordered_map<std::string, std::int32_t> owned_traits;
         std::unordered_map<std::string, std::int32_t> reachable_traits;
+        std::unordered_map<std::string, std::int32_t> pool_reachable_traits;
         std::unordered_map<std::string, std::int32_t> unknown_traits;
         std::int32_t core_total = 0;
         std::int32_t core_reachable = 0;
@@ -201,6 +204,10 @@ public:
             if (shop > 0) shop_support += 1.0;
             if (owned == 0 && shop > 0) {
                 for (const auto& trait : required.traits) ++reachable_traits[trait];
+            } else if (owned == 0 && shop == 0 && pool > 0) {
+                // Pool-positive means the copy is acquirable in a future shop,
+                // not currently purchasable. Keep it separate from shop evidence.
+                for (const auto& trait : required.traits) ++pool_reachable_traits[trait];
             }
             if (unknown) {
                 for (const auto& trait : required.traits) ++unknown_traits[trait];
@@ -235,12 +242,16 @@ public:
                 continue;
             }
             const auto owned = owned_traits[requirement.trait];
-            const auto reachable = owned + reachable_traits[requirement.trait];
+            const auto shop_reachable = owned + reachable_traits[requirement.trait];
+            const auto pool_reachable = pool_reachable_traits[requirement.trait];
+            const auto reachable = shop_reachable + pool_reachable;
             const bool satisfied = reachable >= requirement.minimum_units;
             out.traits.push_back({requirement.trait, requirement.minimum_units,
-                owned, reachable, satisfied});
+                owned, shop_reachable, pool_reachable, reachable, satisfied});
             if (satisfied) {
                 out.favorable_evidence.push_back("trait_reachable_" + requirement.trait);
+                if (pool_reachable > 0 && shop_reachable < requirement.minimum_units)
+                    out.favorable_evidence.push_back("trait_reachable_through_future_pool_acquisition_" + requirement.trait);
             } else if (reachable + unknown_traits[requirement.trait] >=
                        requirement.minimum_units) {
                 // Unknown pool evidence is not proof that a trait is impossible.
