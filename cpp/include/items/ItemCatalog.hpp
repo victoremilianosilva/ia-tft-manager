@@ -136,7 +136,9 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
                     (effect.trigger == "on_kill" || effect.trigger == "on_attack")) ||
                 (effect.operation == "grant_charges" && effect.trigger == "on_kill") ||
                 (effect.operation == "mana_regen" &&
-                    (effect.trigger.empty() || effect.trigger == "combat_start"));
+                    (effect.trigger.empty() || effect.trigger == "combat_start")) ||
+                (effect.operation == "mana_gain_multiplier" &&
+                    effect.trigger == "combat_start");
             if (!supported_pair) {
                 throw std::invalid_argument(
                     "Unsupported combat effect operation/trigger pair: " +
