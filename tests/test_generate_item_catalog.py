@@ -238,6 +238,45 @@ def test_semantic_validation_accepts_normalized_stats_or_explicit_effects():
     validate_catalog_semantics(catalog)
 
 
+def test_semantic_validation_accepts_periodic_percent_of_stat_effect():
+    catalog = {
+        "items": [{
+            "id": "TFT_Item_ArchangelsStaff",
+            "stats": {},
+            "combat_effects": [{
+                "trigger": "periodic",
+                "operation": "add_stat",
+                "stat": "ability_power",
+                "target": "self",
+                "value": 0.2,
+                "percent_of_stat": True,
+                "interval": 5,
+            }],
+        }]
+    }
+    validate_catalog_semantics(catalog)
+
+
+def test_semantic_validation_rejects_periodic_add_stat_without_positive_interval():
+    catalog = {
+        "items": [{
+            "id": "invalid_periodic_item",
+            "stats": {},
+            "combat_effects": [{
+                "trigger": "periodic",
+                "operation": "add_stat",
+                "stat": "ability_power",
+                "target": "self",
+                "value": 0.2,
+                "percent_of_stat": True,
+                "interval": 0,
+            }],
+        }]
+    }
+    with pytest.raises(ValueError, match="Efeito sem handler/contrato suportado"):
+        validate_catalog_semantics(catalog)
+
+
 def test_semantic_validation_accepts_generic_mana_gain_multiplier():
     catalog = {
         "items": [
