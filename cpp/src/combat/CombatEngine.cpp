@@ -408,6 +408,19 @@ void apply_start_combat_team_effects(std::vector<RuntimeUnit>& units) {
                     effect.operation == "bonus_damage";
                 if (!team_stat && !team_attack_effect) continue;
 
+                CombatEffectDefinition source_effect = effect;
+                if (source_effect.scale_by_active_trait_count) {
+                    const auto trait_count = std::find_if(
+                        source.unit.traits.begin(), source.unit.traits.end(),
+                        [&](const CombatTrait& trait) {
+                            return trait.api_name == source_effect.condition_trait &&
+                                (trait.active || trait.active_count > 0);
+                        });
+                    if (trait_count == source.unit.traits.end() ||
+                        trait_count->active_count <= 0) continue;
+                    source_effect.value /= static_cast<float>(trait_count->active_count);
+                }
+
                 for (std::size_t i = 0; i < units.size(); ++i) {
                     const auto& recipient = units[i];
                     if (recipient.unit.team != source.unit.team) continue;
@@ -423,8 +436,8 @@ void apply_start_combat_team_effects(std::vector<RuntimeUnit>& units) {
                         (recipient.unit.position.y != source.unit.position.y ||
                          std::abs(recipient.unit.position.x - source.unit.position.x) > 1))
                         continue;
-                    if (team_stat) pending.push_back({i, effect, false});
-                    else pending.push_back({i, effect, true});
+                    if (team_stat) pending.push_back({i, source_effect, false});
+                    else pending.push_back({i, source_effect, true});
                 }
             }
         };
