@@ -24,6 +24,8 @@ Each event includes:
 - the effective native action, handler application status, and machine-readable status reason;
 - action family and facts available from the paired snapshots.
 
+The producer now consumes paired `tft.native-state-snapshot` v6 snapshots. The v6 extension publishes the full BoardEvaluation evidence set without changing reward semantics.
+
 The current factual fields are:
 
 | Family | Facts emitted | Important boundary |
@@ -34,13 +36,14 @@ The current factual fields are:
 | Reroll | Per-slot offer revision and before/after offer identities | If round resolution also refreshes the shop, the revision delta is retained only as unattributed evidence; it is not assigned to the reroll |
 | Sale | Removed physical unit UUIDs and copy-equivalent delta | Proceeds are not inferred from a mixed action-plus-income gold delta |
 | Economy | Before/after gold and interest-if-resolved-now, realized EconomyEngine income and PvP gold-credit events, plus overlap markers | Native EconomyEngine::resolve_round events remain a separate income source |
-| Positioning | Same-unit physical slot transitions plus total, positional, structural, exposed-carry, frontline, and unplayed-bench diagnostics | Scores are diagnostics only; no score delta becomes reward |\n| Item action | Per-unit stable item identity additions/removals across paired snapshots | Only units present in both snapshots are compared; unidentified/duplicate item identities fail closed; no item value or reward is inferred |
+| Positioning | Same-unit physical slot transitions plus total/positional/structural quality, exposed carries, frontline count/lanes/isolation, fragile frontline, missing frontline/backline coverage, exposed main carries, unplayed important bench units, active traits, strategic fit, unit quality and trait coherence | BoardEvaluation values are factual diagnostics only; `board_quality_delta` remains excluded because the snapshot currently publishes a constant zero; no score delta becomes reward |
+| Item action | Per-unit stable item identity additions/removals across paired snapshots | Only units present in both snapshots are compared; unidentified/duplicate item identities fail closed; no item value or reward is inferred |
 
 An event's causal_attribution is always not_established, reward is always null, and reward_eligible is always false under this telemetry contract. The producer never changes the scalar reward consumed by PPO.
 
 ## Invariants
 
-1. Before/after snapshots must belong to the same Engine instance and episode.
+1. Before/after snapshots must belong to the same Engine instance and episode, and both must satisfy native snapshot contract v6.
 2. The outcome snapshot and every player decision sequence must advance beyond the source decision.
 3. Exactly eight player records and eight action traces are required; player IDs must match their array positions.
 4. Owned-unit identity is UUID-based and scoped to the player snapshot. Occupied units without UUID/champion identity fail closed.
