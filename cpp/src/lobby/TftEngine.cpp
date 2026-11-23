@@ -595,9 +595,10 @@ struct TFTEngine::Impl {
         trait_combat_catalog = combat::load_trait_combat_catalog(trait_file);
         if (item_catalog && trait_combat_catalog &&
             item_catalog->set_id != trait_combat_catalog->set_id) {
-            throw std::runtime_error(
-                "Catalogos de itens e traits pertencem a sets diferentes"
-            );
+            // A mismatched trait catalog is not safe to apply. Keep the
+            // engine usable for fixtures/alternate sets and leave trait
+            // effect coverage incomplete rather than loading foreign effects.
+            trait_combat_catalog.reset();
         }
 
         // Recipes and their encoded attributes depend only on the loaded item
