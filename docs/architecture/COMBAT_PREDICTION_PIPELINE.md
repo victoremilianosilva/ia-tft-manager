@@ -252,3 +252,34 @@ complete or replay-calibrated.
 - Coverage validation continues to reject active traits whose effect metadata
   has not been explicitly populated.
 
+
+
+## Native trait effect production
+
+`TraitCombatCatalog` loads a versioned, set-scoped normalized catalog and
+selects the highest tier whose minimum unit count is satisfied by the actual
+active trait count. `TftEngine::append_combat_team` attaches those effects to
+the factual trait instances before the combat input is built. Unknown traits,
+missing tiers, inactive traits, and mismatched set catalogs remain incomplete.
+
+The initial Set 18 mapping covers the Brawler health effects only. Its team
+health contribution is divided across active Brawler sources so the team aura
+is applied exactly once in aggregate; the trait's own health multiplier is
+applied to Brawler units. This is not a claim that every Set 18 trait is
+modeled. Other traits continue to fail closed until their full combat
+semantics are normalized and tested.
+
+## Native simulation trace versus authoritative replay
+
+The lobby now emits `COMBAT_SIMULATION_REPLAY_V1` with the deterministic
+native simulator input, set/trait/item effect metadata, simulator result
+summary, stable artifact identity, and a versioned diagnostic dataset label.
+The corresponding `COMBAT_OUTCOME_V1` references this simulation artifact
+separately from the authoritative replay fields.
+
+A native simulator trace is reproducible evidence about this simulator; it is
+not an observed game replay. Therefore `replay_artifact_id` and the
+authoritative `dataset_version` remain null, and
+`calibration_eligible` remains false. Empirical calibration still requires
+an authoritative replay collector/ingestor, immutable dataset manifests, and
+held-out evaluation under the approved protocol.
