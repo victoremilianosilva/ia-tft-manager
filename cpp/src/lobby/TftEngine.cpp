@@ -2728,11 +2728,11 @@ struct TFTEngine::Impl {
                         observed->second.board_contribution;
                     anchor.unit.board_contribution_available =
                         observed->second.board_contribution_available;
-                    anchor.unit.item_fit = observed->second.item_fit;
-                    anchor.unit.item_fit_available =
-                        observed->second.item_fit_available;
-                    anchor.unit.item_fit_source = observed->second.item_fit_source;
-                    anchor.unit.item_fit_uncertainty = observed->second.item_fit_uncertainty;
+                    // The generated composition score already consumed
+                    // this item-fit evidence. Keep its provenance in anchor.evidence
+                    // without adding the same signal a second time in StrategicPlanner.
+                    anchor.unit.item_fit = 0.0;
+                    anchor.unit.item_fit_available = false;
                 } else {
                     anchor.unit.star = 1;
                 }
