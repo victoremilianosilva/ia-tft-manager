@@ -2717,7 +2717,11 @@ struct TFTEngine::Impl {
                     anchor.unit.on_bench = observed->second.on_bench;
                     anchor.unit.board_contribution =
                         observed->second.board_contribution;
+                    anchor.unit.board_contribution_available =
+                        observed->second.board_contribution_available;
                     anchor.unit.item_fit = observed->second.item_fit;
+                    anchor.unit.item_fit_available =
+                        observed->second.item_fit_available;
                 } else {
                     anchor.unit.star = 1;
                 }
