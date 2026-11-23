@@ -165,7 +165,7 @@ int main(int argc, char** argv) {
                         effect.operation == "mana_regen" &&
                         std::abs(effect.value - 1.0f) < 0.0001f;
                 })) {
-            std::cerr << "Archangel's Staff generic mana regeneration is missing\\n";
+            std::cerr << "Archangel's Staff generic mana regeneration is missing\n";
             return 25;
         }
 
