@@ -36,7 +36,7 @@ public:
             (void)recorder_.append(context, input, result);
             return result;
         } catch (...) {
-            // The strategic shadow cycle is isolated from the caller as well.
+            // The native strategic cycle is isolated from the caller as well.
             StrategicCycleResult result;
             result.phase = StrategicCyclePhase::NoEvidence;
             result.diagnostics.transition_reason = "native_strategic_cycle_exception_contained";
