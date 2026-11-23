@@ -175,6 +175,9 @@ int main(int argc, char** argv) {
                             event.substr(std::string("COMBAT_OUTCOME_V1:").size()));
                         require(outcome.value("calibration_eligible", true) == false,
                                 "Combat outcome became calibration eligible without an authoritative replay.");
+                        require(outcome.value("authoritative_game_replay", true) == false &&
+                                outcome.value("observation_scope", "") == "native_lobby_simulation",
+                                "Native outcome was mislabeled as an authoritative game replay.");
                         require(outcome["replay_artifact_id"].is_null() &&
                                 outcome["dataset_version"].is_null(),
                                 "Native simulation artifact leaked into authoritative replay fields.");
