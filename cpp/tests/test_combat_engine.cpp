@@ -482,6 +482,99 @@ void test_generic_periodic_stat_effect() {
             "Periodic percentage stat effect should apply and compound once per interval.");
 }
 
+void test_defender_team_aura_and_tier_bonus_apply_once() {
+    tft::CombatEngine engine;
+    auto input = make_input();
+    input.config.max_duration = 0.05f;
+    input.config.record_damage = true;
+
+    auto make_defender_trait = [] {
+        tft::CombatTrait trait;
+        trait.api_name = "DA_18_Defender";
+        trait.name = "Defender";
+        trait.active = true;
+        trait.active_count = 2;
+        trait.effects_complete = true;
+
+        const auto make_effect = [](const char* stat, const char* target,
+                                    float value, bool team_aura) {
+            tft::CombatEffectDefinition effect;
+            effect.trigger = "combat_start";
+            effect.operation = "add_stat";
+            effect.stat = stat;
+            effect.target = target;
+            effect.value = value;
+            effect.condition = "trait_count_at_least";
+            effect.condition_trait = "DA_18_Defender";
+            effect.min_trait_count = 2;
+            effect.scale_by_active_trait_count = team_aura;
+            return effect;
+        };
+        trait.effects = {
+            make_effect("armor", "allies", 12.0f, true),
+            make_effect("magic_resist", "allies", 12.0f, true),
+            make_effect("armor", "self", 13.0f, false),
+            make_effect("magic_resist", "self", 13.0f, false)
+        };
+        return trait;
+    };
+
+    auto& first_defender = input.player_a.units.front();
+    first_defender.position = {0, 0};
+    first_defender.role = tft::UnitRole::TANK;
+    first_defender.hp = first_defender.max_hp = 1000.0f;
+    first_defender.can_attack = false;
+    first_defender.can_move = false;
+    first_defender.can_cast = false;
+    first_defender.traits.push_back(make_defender_trait());
+
+    auto second_defender = first_defender;
+    second_defender.id = 2;
+    second_defender.api_name = "second_defender";
+    second_defender.position = {0, 2};
+    input.player_a.units.push_back(second_defender);
+
+    auto non_defender = first_defender;
+    non_defender.id = 4;
+    non_defender.api_name = "non_defender_ally";
+    non_defender.role = tft::UnitRole::CARRY;
+    non_defender.position = {4, 1};
+    non_defender.traits.clear();
+    input.player_a.units.push_back(non_defender);
+
+    auto& first_attacker = input.player_b.units.front();
+    first_attacker.position = {5, 1};
+    first_attacker.attack_damage = 100.0f;
+    first_attacker.attack_speed = 1.0f;
+    first_attacker.attack_range = 7.0f;
+    first_attacker.can_attack = true;
+    first_attacker.can_move = false;
+    first_attacker.can_cast = false;
+
+    auto second_attacker = first_attacker;
+    second_attacker.id = 3;
+    second_attacker.api_name = "second_attacker";
+    second_attacker.position = {1, 0};
+    input.player_b.units.push_back(second_attacker);
+
+    const auto result = engine.simulate(input);
+    require(result.success && result.damage_events.size() >= 2,
+            "Defender team aura combat should resolve both attacks.");
+
+    const auto damage_to = [&](int target_id) {
+        const auto found = std::find_if(result.damage_events.begin(),
+            result.damage_events.end(), [&](const auto& event) {
+                return event.target_unit_id == target_id;
+            });
+        require(found != result.damage_events.end(), "Expected Defender test target was not attacked.");
+        return found->final_damage;
+    };
+    require(std::abs(damage_to(4) - (100.0f * 100.0f / 112.0f)) < 0.05f,
+            "Non-Defender allies should receive the shared 12 armor aura exactly once.");
+    require(std::abs(damage_to(0) - 80.0f) < 0.05f,
+            "Defenders should receive their tier bonus in addition to the shared aura.");
+}
+
 void test_event_limit_is_reported_as_timeout() {
     tft::CombatEngine engine;
     auto input = make_input();
@@ -1193,6 +1286,7 @@ void test_generic_source_ad_effect_changes_combat() {
 int main() {
     try {
         test_deterministic_winner_and_damage();
+        test_defender_team_aura_and_tier_bonus_apply_once();
         test_generic_periodic_stat_effect();
         test_generic_periodic_heal_effect();
         test_generic_mana_gain_multiplier_effect();
