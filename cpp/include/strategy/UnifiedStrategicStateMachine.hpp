@@ -1,8 +1,8 @@
 #pragma once
 
-// Shadow-only orchestration for exploration, active composition, pivot
-// evaluation and atomic confirmation. Legacy mechanisms are observed through
-// immutable inputs and never become writers of the unified strategic state.
+// Native orchestration for exploration, active composition, pivot evaluation
+// and atomic confirmation. The runtime owns canonical strategic publication;
+// it never executes game actions. Legacy mechanisms remain read-only inputs.
 
 #include "composition_intelligence/contracts/CompositionContracts.hpp"
 #include "strategy/CompositionBoundDirectionAnchor.hpp"
@@ -57,7 +57,8 @@ struct StrategicCycleDiagnostics {
     std::string transition_reason{"not_evaluated"};
     std::string previous_phase;
     std::string current_phase;
-    bool shadow_only{true};
+    bool canonical_state_owner{true};
+    bool action_execution_enabled{false};
 };
 
 struct StrategicCycleResult {
@@ -380,8 +381,10 @@ private:
         out.anchors = pivot_coordinator_.anchors();
         out.active_composition = pivot_coordinator_.active_composition();
         out.diagnostics.current_phase = phase_name(phase_);
-        out.diagnostics.shadow_only = true;
-        out.shadow_only = true;
+        out.diagnostics.canonical_state_owner = true;
+        out.diagnostics.action_execution_enabled = false;
+        out.canonical_state_owner = true;
+        out.action_execution_enabled = false;
         return out;
     }
 
