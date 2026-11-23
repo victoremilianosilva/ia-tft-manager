@@ -175,6 +175,44 @@ void test_trait_team_effect_scaling_applies_once() {
             "Non-Brawler allies should receive the team health aura exactly once.");
 }
 
+void test_generic_percent_max_health_item_effect() {
+    tft::CombatEngine engine;
+    auto input = make_input();
+    input.config.max_duration = 0.05f;
+    auto& holder = input.player_a.units.front();
+    holder.hp = holder.max_hp = 100.0f;
+    holder.can_attack = false;
+    holder.can_move = false;
+    holder.can_cast = false;
+
+    tft::CombatItem item;
+    item.api_name = "catalog_generic_health_item";
+    item.name = "Generic Health Item";
+    item.effects_complete = true;
+    tft::CombatEffectDefinition effect;
+    effect.trigger = "combat_start";
+    effect.operation = "add_stat";
+    effect.stat = "max_hp";
+    effect.target = "self";
+    effect.value = 0.18f;
+    effect.percent_of_stat = true;
+    item.effects.push_back(effect);
+    holder.items.push_back(item);
+
+    auto& enemy = input.player_b.units.front();
+    enemy.can_attack = false;
+    enemy.can_move = false;
+    enemy.can_cast = false;
+
+    const auto result = engine.simulate(input);
+    require(result.success, "Generic max-health item effect combat should succeed.");
+    const auto found = std::find_if(result.units.begin(), result.units.end(),
+        [](const auto& unit) { return unit.unit_id == 0; });
+    require(found != result.units.end(), "Generic max-health result unit is missing.");
+    require(std::abs(found->final_hp - 118.0f) < 0.01f,
+            "Generic percent max-health effect must be applied exactly once.");
+}
+
 void test_event_limit_is_reported_as_timeout() {
     tft::CombatEngine engine;
     auto input = make_input();
@@ -886,6 +924,7 @@ void test_generic_source_ad_effect_changes_combat() {
 int main() {
     try {
         test_deterministic_winner_and_damage();
+        test_generic_percent_max_health_item_effect();
         test_trait_team_effect_scaling_applies_once();
         test_event_limit_is_reported_as_timeout();
         test_invalid_configuration_returns_error();
