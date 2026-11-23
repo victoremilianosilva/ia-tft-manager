@@ -152,9 +152,9 @@
       "api_name": "DA_18_Blossom",
       "source_name": "Florescer",
       "source_description": "Após o combate, seus Fogos-Fátuos são fortalecidos. <br><br>Campeões Florescer recebem Dano de Ataque, Poder de Habilidade e @BonusHealth*100@% de Vida máxima.<br><row>(@MinUnits@) Fogos-Fátuos são aprimorados, @ADAP*100@% %i:scaleAD%%i:scaleAP%</row><br><row>(@MinUnits@) Fogos-Fátuos aparecem em toda Loja, @ADAP*100@% %i:scaleAD%%i:scaleAP%</row><br><row>(@MinUnits@) Recebe @GoldPerCharmPurchased@ de ouro após comprar um Fogo-Fátuo, @ADAP*100@% %i:scaleAD%%i:scaleAP%</row><br><row>(@MinUnits@) Você pode comprar 2 Fogos-Fátuos por rodada, @ADAP*100@% %i:scaleAD%%i:scaleAP%</row><br><row>(@MinUnits@) Fogos-fátuos transbordam poder, @ADAP*100@% %i:scaleAD%%i:scaleAP%</row>",
-      "effects_complete": false,
-      "coverage_status": "not_implemented",
-      "coverage_note": "Source trait is registered with its real source tiers; combat effects remain incomplete until their mechanics are normalized and verified.",
+      "effects_complete": true,
+      "coverage_status": "complete",
+      "coverage_note": "Combat effects from the source trait are represented: trait holders gain tier-scaled AD, AP and maximum health. Wisp progression/rewards are outside combat simulation.",
       "source_tiers": [
         {
           "min_units": 3,
@@ -206,23 +206,178 @@
       "tiers": [
         {
           "min_units": 3,
-          "effects": []
+          "effects": [
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "attack_damage",
+              "target": "self",
+              "value": 0.11999999731779099,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Blossom",
+              "percent_of_stat": true
+            },
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "ability_power",
+              "target": "self",
+              "value": 0.11999999731779099,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Blossom",
+              "percent_of_stat": true
+            },
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "max_hp",
+              "target": "self",
+              "value": 0.10000002384185791,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Blossom",
+              "percent_of_stat": true
+            }
+          ]
         },
         {
           "min_units": 5,
-          "effects": []
+          "effects": [
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "attack_damage",
+              "target": "self",
+              "value": 0.30000001192092896,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Blossom",
+              "percent_of_stat": true
+            },
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "ability_power",
+              "target": "self",
+              "value": 0.30000001192092896,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Blossom",
+              "percent_of_stat": true
+            },
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "max_hp",
+              "target": "self",
+              "value": 0.10000002384185791,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Blossom",
+              "percent_of_stat": true
+            }
+          ]
         },
         {
           "min_units": 7,
-          "effects": []
+          "effects": [
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "attack_damage",
+              "target": "self",
+              "value": 0.5,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Blossom",
+              "percent_of_stat": true
+            },
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "ability_power",
+              "target": "self",
+              "value": 0.5,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Blossom",
+              "percent_of_stat": true
+            },
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "max_hp",
+              "target": "self",
+              "value": 0.10000002384185791,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Blossom",
+              "percent_of_stat": true
+            }
+          ]
         },
         {
           "min_units": 9,
-          "effects": []
+          "effects": [
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "attack_damage",
+              "target": "self",
+              "value": 0.550000011920929,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Blossom",
+              "percent_of_stat": true
+            },
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "ability_power",
+              "target": "self",
+              "value": 0.550000011920929,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Blossom",
+              "percent_of_stat": true
+            },
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "max_hp",
+              "target": "self",
+              "value": 0.10000002384185791,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Blossom",
+              "percent_of_stat": true
+            }
+          ]
         },
         {
           "min_units": 11,
-          "effects": []
+          "effects": [
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "attack_damage",
+              "target": "self",
+              "value": 1,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Blossom",
+              "percent_of_stat": true
+            },
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "ability_power",
+              "target": "self",
+              "value": 1,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Blossom",
+              "percent_of_stat": true
+            },
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "max_hp",
+              "target": "self",
+              "value": 0.10000002384185791,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Blossom",
+              "percent_of_stat": true
+            }
+          ]
         }
       ]
     },
@@ -958,9 +1113,9 @@
       "api_name": "DA_18_Invoker",
       "source_name": "Emanador",
       "source_description": "Sua equipe recebe Regeneração de Mana, aumentada para Emanadores.<br><row>(@MinUnits@) @TeamManaRegen@ %i:scaleManaRegen% | @InvokerManaBonus@ %i:scaleManaRegen%</row><br><row>(@MinUnits@) @TeamManaRegen@ %i:scaleManaRegen% | @InvokerManaBonus@ %i:scaleManaRegen%</row><br><row>(@MinUnits@) @TeamManaRegen@ %i:scaleManaRegen% | @InvokerManaBonus@ %i:scaleManaRegen%</row><br><row>(@MinUnits@) @TeamManaRegen@ %i:scaleManaRegen% | @InvokerManaBonus@ %i:scaleManaRegen%</row>",
-      "effects_complete": false,
-      "coverage_status": "not_implemented",
-      "coverage_note": "Source trait is registered with its real source tiers; combat effects remain incomplete until their mechanics are normalized and verified.",
+      "effects_complete": true,
+      "coverage_status": "complete",
+      "coverage_note": "Team mana regeneration and the additional regeneration granted to Invokers are applied through generic combat-start effects.",
       "source_tiers": [
         {
           "min_units": 2,
@@ -1002,19 +1157,91 @@
       "tiers": [
         {
           "min_units": 2,
-          "effects": []
+          "effects": [
+            {
+              "trigger": "combat_start",
+              "operation": "mana_regen",
+              "target": "allies",
+              "value": 1,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Invoker",
+              "scale_by_active_trait_count": true
+            },
+            {
+              "trigger": "combat_start",
+              "operation": "mana_regen",
+              "target": "self",
+              "value": 3,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Invoker"
+            }
+          ]
         },
         {
           "min_units": 3,
-          "effects": []
+          "effects": [
+            {
+              "trigger": "combat_start",
+              "operation": "mana_regen",
+              "target": "allies",
+              "value": 1,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Invoker",
+              "scale_by_active_trait_count": true
+            },
+            {
+              "trigger": "combat_start",
+              "operation": "mana_regen",
+              "target": "self",
+              "value": 4,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Invoker"
+            }
+          ]
         },
         {
           "min_units": 4,
-          "effects": []
+          "effects": [
+            {
+              "trigger": "combat_start",
+              "operation": "mana_regen",
+              "target": "allies",
+              "value": 2,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Invoker",
+              "scale_by_active_trait_count": true
+            },
+            {
+              "trigger": "combat_start",
+              "operation": "mana_regen",
+              "target": "self",
+              "value": 6,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Invoker"
+            }
+          ]
         },
         {
           "min_units": 5,
-          "effects": []
+          "effects": [
+            {
+              "trigger": "combat_start",
+              "operation": "mana_regen",
+              "target": "allies",
+              "value": 2,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Invoker",
+              "scale_by_active_trait_count": true
+            },
+            {
+              "trigger": "combat_start",
+              "operation": "mana_regen",
+              "target": "self",
+              "value": 8,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Invoker"
+            }
+          ]
         }
       ]
     },
@@ -1252,8 +1479,8 @@
       "source_name": "Devastador",
       "source_description": "Devastadores recebem @Omnivamp*100@% de Vampirismo Universal. Além disso, Devastadores causam dano adicional, dobrado contra unidades com menos de @EnemyHealthThreshold*100@% de Vida.<br><row>(@MinUnits@) @BonusDamagePercentBase*100@% de dano adicional</row><br><row>(@MinUnits@) @BonusDamagePercentBase*100@% de dano adicional</row><br><row>(@MinUnits@) @BonusDamagePercentBase*100@% de dano adicional</row>",
       "effects_complete": false,
-      "coverage_status": "not_implemented",
-      "coverage_note": "Source trait is registered with its real source tiers; combat effects remain incomplete until their mechanics are normalized and verified.",
+      "coverage_status": "partial",
+      "coverage_note": "Omnivamp and base bonus damage are mapped. The additional doubling against low-health enemies still needs a target-health-aware combat condition.",
       "source_tiers": [
         {
           "min_units": 2,
@@ -1289,15 +1516,78 @@
       "tiers": [
         {
           "min_units": 2,
-          "effects": []
+          "effects": [
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "omnivamp",
+              "target": "self",
+              "value": 0.10000000149011612,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Slayer",
+              "percent_of_stat": false
+            },
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "damage_amplification",
+              "target": "self",
+              "value": 0.10000000149011612,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Slayer",
+              "percent_of_stat": false
+            }
+          ]
         },
         {
           "min_units": 4,
-          "effects": []
+          "effects": [
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "omnivamp",
+              "target": "self",
+              "value": 0.10000000149011612,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Slayer",
+              "percent_of_stat": false
+            },
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "damage_amplification",
+              "target": "self",
+              "value": 0.10000000149011612,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Slayer",
+              "percent_of_stat": false
+            }
+          ]
         },
         {
           "min_units": 6,
-          "effects": []
+          "effects": [
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "omnivamp",
+              "target": "self",
+              "value": 0.10000000149011612,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Slayer",
+              "percent_of_stat": false
+            },
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "damage_amplification",
+              "target": "self",
+              "value": 0.10000000149011612,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Slayer",
+              "percent_of_stat": false
+            }
+          ]
         }
       ]
     },
@@ -1673,9 +1963,9 @@
       "api_name": "DA_Juggernaut18",
       "source_name": "Colosso",
       "source_description": "Sua equipe recebe Durabilidade. Colossos recebem mais.<br><row>(@MinUnits@) @TeamDurability*100@% %i:scaleDR% ou @JuggernautDurability*100@% %i:scaleDR%</row><br><row>(@MinUnits@) @TeamDurability*100@% %i:scaleDR% ou @JuggernautDurability*100@% %i:scaleDR%</row><br><row>(@MinUnits@) @TeamDurability*100@% %i:scaleDR% ou @JuggernautDurability*100@% %i:scaleDR%</row>",
-      "effects_complete": false,
-      "coverage_status": "not_implemented",
-      "coverage_note": "Source trait is registered with its real source tiers; combat effects remain incomplete until their mechanics are normalized and verified.",
+      "effects_complete": true,
+      "coverage_status": "complete",
+      "coverage_note": "Team durability and the additional durability for Colossi are represented as generic damage-reduction stats at every source tier.",
       "source_tiers": [
         {
           "min_units": 2,
@@ -1708,15 +1998,78 @@
       "tiers": [
         {
           "min_units": 2,
-          "effects": []
+          "effects": [
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "damage_reduction",
+              "target": "allies",
+              "value": 0.19999998807907104,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_Juggernaut18",
+              "scale_by_active_trait_count": true
+            },
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "damage_reduction",
+              "target": "self",
+              "value": 0.04000002145767212,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_Juggernaut18",
+              "percent_of_stat": false
+            }
+          ]
         },
         {
           "min_units": 4,
-          "effects": []
+          "effects": [
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "damage_reduction",
+              "target": "allies",
+              "value": 0.30000001192092896,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_Juggernaut18",
+              "scale_by_active_trait_count": true
+            },
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "damage_reduction",
+              "target": "self",
+              "value": 0.06000000238418579,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_Juggernaut18",
+              "percent_of_stat": false
+            }
+          ]
         },
         {
           "min_units": 6,
-          "effects": []
+          "effects": [
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "damage_reduction",
+              "target": "allies",
+              "value": 0.42000001668930054,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_Juggernaut18",
+              "scale_by_active_trait_count": true
+            },
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "damage_reduction",
+              "target": "self",
+              "value": 0.07999998331069946,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_Juggernaut18",
+              "percent_of_stat": false
+            }
+          ]
         }
       ]
     },
