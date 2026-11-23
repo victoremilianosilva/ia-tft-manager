@@ -51,6 +51,9 @@ struct ItemDefinition {
     // Player-scope items must not be attached to a champion until their
     // player-level effect is modeled by the lobby.
     bool unit_equipable{true};
+    // Explicitly asserted by the active-set catalog loader. An empty effect
+    // list is not evidence that the item has no combat passive.
+    bool combat_effects_complete{false};
 };
 
 struct UnitProfile {

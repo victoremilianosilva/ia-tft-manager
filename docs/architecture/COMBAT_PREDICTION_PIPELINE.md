@@ -222,3 +222,31 @@ target match; requires one independent sample per match; and permits multiple
 replay artifacts only when they belong to the same immutable dataset version.
 Multi-round risk is handled separately through complete weighted trajectories,
 not through the single-round damage distribution.
+
+
+## Item catalog completeness contract
+
+The item adapter now carries an explicit `combat_effects_complete` assertion
+from `ItemDefinition` into `CombatItem::effects_complete`. The default is
+false: an empty vector is ambiguous and must not be interpreted as an
+authoritative “no passive” declaration. A set catalog loader may set the flag
+true only after it has resolved the complete combat-relevant item metadata for
+the active set, including an explicit empty effect list when the item truly has
+no passive. This keeps coverage fail-closed and prevents an incomplete catalog
+from silently qualifying an item for calibration.
+
+Champion ability scripts are intentionally outside this change. Active trait
+effect production and migration of all legacy item-name mechanics remain
+separate implementation work; this PR does not claim those mechanics are
+complete or replay-calibrated.
+
+## Item completeness validation
+
+- Adapter tests verify that missing metadata remains incomplete.
+- Adapter tests verify that a catalog-declared complete effect list is copied
+  without loss.
+- Adapter tests verify that an explicitly complete empty list is distinct
+  from missing metadata.
+- Coverage validation continues to reject active traits whose effect metadata
+  has not been explicitly populated.
+

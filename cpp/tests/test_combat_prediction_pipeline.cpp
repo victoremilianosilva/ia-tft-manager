@@ -1,4 +1,5 @@
 #include "combat/CombatProjectionEngine.hpp"
+#include "items/CombatItemAdapter.hpp"
 
 #include <cassert>
 #include <cmath>
@@ -425,6 +426,38 @@ int main() {
     assert(!invalid_matchup_projection.simulation_completed);
     assert(invalid_matchup_projection.reason ==
         "matchup_probabilities_do_not_sum_to_one");
+
+    // Item catalog completeness must be explicit. A missing effect list is
+    // not equivalent to an authoritative declaration that an item has no
+    // combat passive.
+    items::ItemDefinition incomplete_item_definition;
+    incomplete_item_definition.id = "TFT_TestItemWithoutMetadata";
+    incomplete_item_definition.name = "Test Item";
+    const auto incomplete_combat_item =
+        items::to_combat_item(incomplete_item_definition);
+    assert(!incomplete_combat_item.effects_complete);
+
+    auto complete_item_definition = incomplete_item_definition;
+    complete_item_definition.combat_effects_complete = true;
+    CombatEffectDefinition catalog_effect;
+    catalog_effect.trigger = "combat_start";
+    catalog_effect.operation = "add_stat";
+    catalog_effect.stat = "attack_damage";
+    catalog_effect.target = "self";
+    catalog_effect.value = 5.0f;
+    complete_item_definition.combat_effects.push_back(catalog_effect);
+    const auto complete_combat_item =
+        items::to_combat_item(complete_item_definition);
+    assert(complete_combat_item.effects_complete);
+    assert(complete_combat_item.effects.size() == 1);
+    assert(complete_combat_item.effects.front().value == 5.0f);
+
+    auto authoritative_no_passive = incomplete_item_definition;
+    authoritative_no_passive.combat_effects_complete = true;
+    const auto no_passive_combat_item =
+        items::to_combat_item(authoritative_no_passive);
+    assert(no_passive_combat_item.effects_complete);
+    assert(no_passive_combat_item.effects.empty());
 
     std::cout << "combat prediction pipeline tests passed\n";
 }
