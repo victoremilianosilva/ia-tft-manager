@@ -169,6 +169,11 @@ inline TraitCombatCatalog load_trait_combat_catalog(std::istream& input) {
                      effect.condition_trait != definition.api_name)) {
                     throw std::invalid_argument("Unsupported or incomplete trait combat effect contract");
                 }
+                if ((effect.operation == "heal_max_hp_pct" ||
+                     effect.operation == "heal_missing_hp_pct") &&
+                    !effect.target.empty() && effect.target != "self")
+                    throw std::invalid_argument(
+                        "Periodic/self healing effects only support the self target");
                 if (effect.operation == "heal_damage_pct_lowest_ally" &&
                     effect.target != "lowest_health_ally")
                     throw std::invalid_argument(
