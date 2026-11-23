@@ -143,10 +143,6 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
                     (effect.trigger.empty() || effect.trigger == "combat_start")) ||
                 (effect.operation == "mana_gain_multiplier" &&
                     effect.trigger == "combat_start");
-            if (effect.trigger == "periodic" &&
-                (!std::isfinite(effect.interval) || effect.interval <= 0.0f)) {
-                throw std::invalid_argument("Periodic combat effects require a positive interval");
-            }
             if (!supported_pair) {
                 throw std::invalid_argument(
                     "Unsupported combat effect operation/trigger pair: " +
@@ -256,6 +252,10 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
             read_number("interval", effect.interval);
             read_number("delay", effect.delay);
             read_number("health_threshold", effect.health_threshold);
+            if (effect.trigger == "periodic" &&
+                (!std::isfinite(effect.interval) || effect.interval <= 0.0f)) {
+                throw std::invalid_argument("Periodic combat effects require a positive interval");
+            }
             if (raw.contains("max_stacks")) {
                 if (!raw["max_stacks"].is_number_integer() ||
                     raw["max_stacks"].get<int>() < 0) {
