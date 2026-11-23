@@ -415,6 +415,15 @@ struct AuditPlayerSnapshot {
     std::int32_t board_frontline_count{0};
     std::int32_t board_isolated_frontline_count{0};
     std::int32_t board_important_bench_units_unplayed{0};
+    std::int32_t board_frontline_lane_count{0};
+    std::int32_t board_exposed_main_carries{0};
+    std::int32_t board_fragile_frontline_count{0};
+    std::int32_t board_missing_frontline_count{0};
+    std::int32_t board_missing_backline_count{0};
+    std::int32_t board_active_trait_count{0};
+    double board_strategic_fit_score{0.0};
+    double board_unit_quality_score{0.0};
+    double board_trait_coherence_score{0.0};
     std::int32_t round_gold{0};
     std::int32_t round_base_gold{0};
     std::int32_t round_interest{0};
@@ -486,7 +495,7 @@ struct AuditSharedPoolSnapshot {
 struct AuditSnapshot {
     AuditSharedPoolSnapshot shared_pool;
     std::string contract_id{"tft.native-state-snapshot"};
-    std::uint32_t contract_version{5};
+    std::uint32_t contract_version{6};
     // Current native board-slot geometry: rectangular 4x7, not canonical hex.
     std::string board_geometry_id{"tft.board-grid.rectangular-4x7"};
     std::uint32_t board_geometry_version{1};

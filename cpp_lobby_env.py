@@ -145,7 +145,7 @@ class CppTFTLobbyWrapper:
             value.get("contract_id") != "tft.native-state-snapshot"
             or isinstance(version, bool)
             or not isinstance(version, int)
-            or version != 5
+            or version != 6
         ):
             raise RuntimeError("Versão/identidade do contrato de snapshot estruturado incompatível.")
         geometry_version = value.get("board_geometry_version")
