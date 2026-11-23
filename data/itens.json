@@ -140,6 +140,60 @@
           "trigger": "combat_start",
           "operation": "mana_regen",
           "value": 3
+        },
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "armor",
+          "target": "self",
+          "value": 30,
+          "condition": "role_tank",
+          "percent_of_stat": false
+        },
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "magic_resist",
+          "target": "self",
+          "value": 30,
+          "condition": "role_tank",
+          "percent_of_stat": false
+        },
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "armor",
+          "target": "self",
+          "value": 30,
+          "condition": "role_fighter",
+          "percent_of_stat": false
+        },
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "magic_resist",
+          "target": "self",
+          "value": 30,
+          "condition": "role_fighter",
+          "percent_of_stat": false
+        },
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "attack_damage",
+          "target": "self",
+          "value": 0.1,
+          "condition": "role_other",
+          "percent_of_stat": true
+        },
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "ability_power",
+          "target": "self",
+          "value": 0.1,
+          "condition": "role_other",
+          "percent_of_stat": true
         }
       ],
       "effect_coverage": {
