@@ -39,6 +39,7 @@ struct OpportunityAlternativeEvidence {
     double unit_value{0.0};
     double upgrade_value{0.0};
     double liquidity_value{0.0};
+    double prior_opportunity_cost{0.0};
     std::uint32_t horizon_rounds{0};
     double uncertainty{1.0};
     bool available{false};
@@ -58,9 +59,9 @@ struct OpportunityCostResult {
 };
 
 // Computes the best *forgone* alternative, not a fixed cost by action family.
-// All values must originate from the same native snapshot. The caller supplies
-// a value already net of the alternative's direct gold, liquidity and interest;
-// the cost fields are audit metadata and are never re-applied here.
+// All values must originate from the same native snapshot. Components are in
+// the declared value_basis units. The producer computes net forgone value once;
+// direct economy, interest and any already-validated opportunity cost are explicit.
 class OpportunityCostProducer {
 public:
     OpportunityCostResult evaluate(
@@ -104,16 +105,19 @@ public:
                 !std::isfinite(alternative.uncertainty) ||
                 alternative.uncertainty < 0.0 || alternative.uncertainty >= 1.0 ||
                 !std::isfinite(alternative.direct_economy_cost) ||
-                !std::isfinite(alternative.interest_cost)) {
+                !std::isfinite(alternative.interest_cost) ||
+                !std::isfinite(alternative.prior_opportunity_cost) ||
+                alternative.prior_opportunity_cost < 0.0) {
                 continue;
             }
-            // The caller supplies net value after direct gold, liquidity and
-            // interest. Cost fields are audit metadata and are never re-applied.
-            const double value = alternative.marginal_strategic_value +
+            const double gross_value = alternative.marginal_strategic_value +
                 alternative.progression_value + alternative.unit_value +
                 alternative.upgrade_value + alternative.liquidity_value;
+            const double value = gross_value - alternative.direct_economy_cost -
+                alternative.interest_cost - alternative.prior_opportunity_cost;
             const double risk_adjusted_value = value * (1.0 - alternative.uncertainty);
-            if (!std::isfinite(value) || !std::isfinite(risk_adjusted_value)) continue;
+            if (!std::isfinite(gross_value) || !std::isfinite(value) ||
+                !std::isfinite(risk_adjusted_value) || value <= 0.0) continue;
             if (best == nullptr || risk_adjusted_value > best_risk_adjusted_value) {
                 best = &alternative;
                 best_value = value;
