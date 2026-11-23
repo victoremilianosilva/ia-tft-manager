@@ -128,6 +128,23 @@ int main(int argc, char** argv) {
             }
         }
 
+        const auto night_harvester = std::find_if(
+            catalog.items.begin(), catalog.items.end(),
+            [](const auto& item) { return item.id == "TFT_Item_NightHarvester"; });
+        if (night_harvester == catalog.items.end() ||
+            night_harvester->combat_effects_complete ||
+            std::none_of(night_harvester->combat_effects.begin(),
+                night_harvester->combat_effects.end(), [](const auto& effect) {
+                    return effect.trigger == "while_hp_above" &&
+                        effect.operation == "add_stat" &&
+                        effect.stat == "damage_reduction" &&
+                        std::abs(effect.health_threshold - 0.5f) < 0.0001f &&
+                        std::abs(effect.value - 0.15f) < 0.0001f;
+                })) {
+            std::cerr << "Night Harvester conditional effect was not normalized\\n";
+            return 17;
+        }
+
         std::set<std::string> component_ids;
         for (const auto& component : catalog.components) {
             if (component.first.empty() ||
