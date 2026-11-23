@@ -135,7 +135,8 @@ inline TraitCombatCatalog load_trait_combat_catalog(std::istream& input) {
                 const bool valid_condition = effect.condition == "has_trait" ||
                     effect.condition == "trait_count_at_least";
                 const bool valid_trigger = effect.trigger == "combat_start" ||
-                    effect.trigger == "on_attack" || effect.trigger == "on_kill" ||
+                    effect.trigger == "on_attack" || effect.trigger == "on_damage_dealt" ||
+                    effect.trigger == "on_kill" ||
                     effect.trigger == "after_delay" || effect.trigger == "while_hp_below" ||
                     effect.trigger == "while_hp_above" || effect.trigger == "on_ally_shield" ||
                     effect.trigger == "periodic" || effect.trigger.empty();
@@ -153,7 +154,9 @@ inline TraitCombatCatalog load_trait_combat_catalog(std::istream& input) {
                       (effect.trigger == "on_kill" || effect.trigger == "on_attack" ||
                        effect.trigger == "periodic")) ||
                      (effect.operation == "heal_missing_hp_pct" &&
-                      effect.trigger == "periodic"));
+                      effect.trigger == "periodic") ||
+                     (effect.operation == "heal_damage_pct_lowest_ally" &&
+                      effect.trigger == "on_damage_dealt"));
                 const bool valid_charges = effect.operation == "grant_charges" &&
                     effect.trigger == "on_kill";
                 if (!valid_trigger || !(valid_add_stat || valid_mana_regen ||
