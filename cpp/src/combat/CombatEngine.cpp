@@ -130,6 +130,10 @@ void add_titans_stack(RuntimeUnit& unit) {
         unit.unit.damage_amplification += 0.10f;
 }
 
+bool effect_condition_matches(
+    const CombatUnit& unit, const CombatEffectDefinition& effect
+);
+
 float apply_heal(RuntimeUnit& target, float amount, float now) {
     if (target.grievous_until > now) amount *= 0.67f;
     const float actual = std::min(std::max(0.0f, amount),
