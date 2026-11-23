@@ -170,6 +170,10 @@ inline TraitCombatCatalog load_trait_combat_catalog(std::istream& input) {
                 if (effect.trigger == "periodic" &&
                     (!std::isfinite(effect.interval) || effect.interval <= 0.0f))
                     throw std::invalid_argument("Periodic trait effect requires a positive interval");
+                if (effect.operation == "heal_missing_hp_pct" &&
+                    (!std::isfinite(effect.max_amount) || effect.max_amount <= 0.0f))
+                    throw std::invalid_argument(
+                        "Missing-health trait healing requires a positive max_amount");
                 tier.effects.push_back(std::move(effect));
             }
             definition.tiers.push_back(std::move(tier));
