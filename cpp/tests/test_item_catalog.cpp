@@ -132,7 +132,7 @@ int main(int argc, char** argv) {
             catalog.items.begin(), catalog.items.end(),
             [](const auto& item) { return item.id == "TFT_Item_AdaptiveHelm"; });
         if (adaptive_helm == catalog.items.end() || adaptive_helm->combat_effects_complete) {
-            std::cerr << "Adaptive Helm generic role effects are missing or falsely complete\\n";
+            std::cerr << "Adaptive Helm generic role effects are missing or falsely complete\n";
             return 18;
         }
         const auto has_role_effect = [&](const char* stat, const char* role,
@@ -152,7 +152,7 @@ int main(int argc, char** argv) {
             !has_role_effect("magic_resist", "role_fighter", 30.0f, false) ||
             !has_role_effect("attack_damage", "role_other", 0.10f, true) ||
             !has_role_effect("ability_power", "role_other", 0.10f, true)) {
-            std::cerr << "Adaptive Helm role effects are incomplete\\n";
+            std::cerr << "Adaptive Helm role effects are incomplete\n";
             return 19;
         }
 
