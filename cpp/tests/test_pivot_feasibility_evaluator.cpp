@@ -83,6 +83,28 @@ int main() {
 
     {
         auto input = viable_input();
+        // A trait member absent from both owned units and the current shop can
+        // still be reachable through a positive shared pool. This is future
+        // acquisition evidence, not a current purchase guarantee.
+        input.observed_units[2].owned_copies = 0;
+        input.observed_units[2].shop_copies = 0;
+        input.observed_units[2].pool_remaining = 4;
+        input.required_traits = {{"Arcanist", 2}};
+        const auto result = evaluator.evaluate(input);
+        assert(result.status == PivotFeasibilityStatus::Viable);
+        const auto trait = std::find_if(result.traits.begin(), result.traits.end(),
+            [](const auto& value) { return value.trait == "Arcanist"; });
+        assert(trait != result.traits.end());
+        assert(trait->reachable_with_pool == 1);
+        assert(trait->reachable_with_acquisition == 2);
+        assert(trait->reachable_with_shop == 1);
+        assert(std::find(result.favorable_evidence.begin(), result.favorable_evidence.end(),
+            "trait_reachable_through_future_pool_acquisition_Arcanist") !=
+            result.favorable_evidence.end());
+    }
+
+    {
+        auto input = viable_input();
         input.required_traits[0].minimum_units = 3;
         const auto result = evaluator.evaluate(input);
         assert(result.status == PivotFeasibilityStatus::Rejected);
