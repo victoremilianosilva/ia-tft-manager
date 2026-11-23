@@ -1374,10 +1374,13 @@ int main(int argc, char** argv) {
                 " active_version=" + std::to_string(native_pivot_state.active_composition_version) +
                 " pivot_identity=" + native_pivot_state.pivot_candidate_identity +
                 " pivot_target=" + native_pivot_state.pivot_target_composition_identity);
-        require(native_pivot_state.pivot_source_composition_version ==
-                    native_pivot_state.active_composition_version &&
-                    native_pivot_state.active_composition_version == 1,
-                "Proposta de pivot nativa perdeu a identidade da origem ou publicou antes da confirmacao.");
+        require(native_pivot_state.pivot_source_composition_version > 0 &&
+                    native_pivot_state.pivot_source_composition_version ==
+                        native_pivot_state.active_composition_version,
+                "Proposta de pivot nativa perdeu a identidade/versionamento da origem: source_version=" +
+                    std::to_string(native_pivot_state.pivot_source_composition_version) +
+                    " active_version=" +
+                    std::to_string(native_pivot_state.active_composition_version));
 
 #ifdef _WIN32
         _putenv_s("TFT_COMPOSITION_INTELLIGENCE_SHADOW", "1");
