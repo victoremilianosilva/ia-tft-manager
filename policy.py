@@ -320,7 +320,7 @@ class TFTPolicy(nn.Module):
                     )
                 )
             ):
-                # v7 -> v8 appends eight BoardEvaluation globals. Preserve the
+                # v7 -> v8 appends sixteen BoardEvaluation globals. Preserve the
                 # old globals, relocate entity/item blocks to their new offsets,
                 # and retain champion/trait embeddings. New evidence starts neutral.
                 old_global_dim = SEMANTIC_GLOBAL_FEATURES - 16

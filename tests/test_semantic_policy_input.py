@@ -201,6 +201,25 @@ def test_v7_semantic_encoder_weights_migrate_with_board_evaluation_columns_neutr
     )
 
 
+def test_board_evaluation_metrics_are_direct_inputs_to_semantic_encoder():
+    obs, _, semantic = _batch(batch_size=1)
+    metrics = torch.arange(16, dtype=torch.float32).unsqueeze(0) / 16.0
+    semantic["numeric"][:, 54:70] = metrics
+    policy = TFTPolicy(
+        obs_dim=obs.shape[-1], action_dims=list(ACTION_DIMS),
+        hidden_size=32, semantic_vocab_size=64,
+    ).eval()
+    captured = []
+    handle = policy.semantic_encoder[0].register_forward_pre_hook(
+        lambda _module, args: captured.append(args[0].detach().clone())
+    )
+    with torch.no_grad():
+        policy.encode(obs, semantic_state=semantic)
+    handle.remove()
+    assert captured
+    torch.testing.assert_close(captured[0][:, 54:70], metrics)
+
+
 def test_native_semantic_global_encoder_produces_finite_features():
     torch.manual_seed(20261118)
     obs, masks, semantic = _batch()

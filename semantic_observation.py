@@ -199,7 +199,7 @@ def build_semantic_state_checkpoint_contract(catalog_map: Mapping[str, int]) -> 
             "board_isolated_frontline_count/9", "board_important_bench_units_unplayed/9",
             "board_frontline_lane_count/7", "board_exposed_main_carries/9",
             "board_fragile_frontline_count/9", "board_missing_frontline_count/9",
-            "board_missing_backline_count/9", "board_active_trait_count/10",
+            "board_missing_backline_count/9", "board_active_trait_count/28",
             "board_strategic_fit_score", "board_unit_quality_score",
             "board_trait_coherence_score",
         ],
@@ -327,7 +327,7 @@ def validate_semantic_state_warm_start_migration(
         and historical_payload.get("source", {}).get("contract_version") == 3
         and historical_owner_source.get("contract_version") == 2
     ):
-        # Reviewed v2 -> v8 migration: native snapshot v3 -> v5 adds capacity,
+        # Reviewed v2 -> v8 migration: native snapshot v3 -> v6 adds capacity,
         # temporal facts, board/bench item-target profiles and structured item/anvil blocks. The semantic
         # entity stride expands while historical identity remains bound.
         historical_payload["contract_id"] = expected["contract"]["contract_id"]
@@ -368,7 +368,7 @@ def validate_semantic_state_warm_start_migration(
         and historical_owner_source.get("contract_version") == 3
     ):
         # Reviewed v7 -> v8 migration: append native BoardEvaluation outputs
-        # after the existing 54 global features; entity/item offsets move by 8.
+        # after the existing 54 global features; entity/item offsets move by 16.
         historical_payload["contract_id"] = expected["contract"]["contract_id"]
         historical_payload["version"] = expected["contract"]["version"]
         historical_source = dict(historical_payload.get("source", {}))
@@ -657,7 +657,7 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
         or board_important_bench_units_unplayed > 9
         or board_frontline_lane_count > 7 or board_exposed_main_carries > 28
         or board_fragile_frontline_count > 28 or board_missing_frontline_count > 28
-        or board_missing_backline_count > 28 or board_active_trait_count > 10
+        or board_missing_backline_count > 28 or board_active_trait_count > 28
     ):
         raise ValueError("native board evaluation counts exceed their canonical slot limits")
 
@@ -701,7 +701,7 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
         board_fragile_frontline_count / 9.0,
         board_missing_frontline_count / 9.0,
         board_missing_backline_count / 9.0,
-        board_active_trait_count / 10.0,
+        board_active_trait_count / 28.0,
         board_strategic_fit_score,
         board_unit_quality_score,
         board_trait_coherence_score,

@@ -273,19 +273,19 @@ def test_native_semantic_projection_has_stable_shape_and_explicit_identity():
     assert projected["numeric"][54] == 0.25  # native board quality
     assert projected["numeric"][55] == 0.5  # native positional score
     assert projected["numeric"][56] == -0.25  # native structural score
-    assert projected["numeric"][57] == 2.0 / 9.0  # frontline lanes
-    assert projected["numeric"][58] == 1.0 / 9.0  # exposed main carries
-    assert projected["numeric"][59] == 1.0 / 9.0  # fragile frontline
-    assert projected["numeric"][60] == 0.0  # missing frontline
-    assert projected["numeric"][61] == 0.0  # missing backline
-    assert projected["numeric"][62] == 0.2  # active traits / 10
-    assert projected["numeric"][63] == 0.22  # strategic fit
-    assert projected["numeric"][64] == 0.18  # unit quality
-    assert projected["numeric"][65] == 0.07  # trait coherence
-    assert projected["numeric"][66] == 1.0 / 9.0  # exposed carries
-    assert projected["numeric"][67] == 2.0 / 9.0  # frontline count
-    assert projected["numeric"][68] == 1.0 / 9.0  # isolated frontline count
-    assert projected["numeric"][69] == 1.0 / 9.0  # important unplayed bench units
+    assert projected["numeric"][57] == 1.0 / 9.0  # exposed carries
+    assert projected["numeric"][58] == 2.0 / 9.0  # frontline count
+    assert projected["numeric"][59] == 1.0 / 9.0  # isolated frontline count
+    assert projected["numeric"][60] == 1.0 / 9.0  # important unplayed bench units
+    assert projected["numeric"][61] == 2.0 / 7.0  # frontline lanes
+    assert projected["numeric"][62] == 1.0 / 9.0  # exposed main carries
+    assert projected["numeric"][63] == 1.0 / 9.0  # fragile frontline
+    assert projected["numeric"][64] == 0.0  # missing frontline
+    assert projected["numeric"][65] == 0.0  # missing backline
+    assert projected["numeric"][66] == 2.0 / 28.0  # active traits
+    assert projected["numeric"][67] == 0.22  # strategic fit
+    assert projected["numeric"][68] == 0.18  # unit quality
+    assert projected["numeric"][69] == 0.07  # trait coherence
     entity_start = SEMANTIC_GLOBAL_FEATURES
     assert projected["numeric"][entity_start] == 1.0  # occupied
     assert projected["numeric"][entity_start + 5] == 1.0  # mapped champion identity valid
@@ -529,6 +529,7 @@ def test_semantic_v6_checkpoint_has_explicit_v8_warm_start_path():
     payload = historical["contract"]
     payload["contract_id"] = "tft.ppo.semantic-native-state.v6"
     payload["version"] = 6
+    payload["source"]["contract_version"] = 5
     payload["strategic_owner_source"]["contract_version"] = 2
     payload["global_features"] = payload["global_features"][:52]
     payload["entity_slots"]["features"] = payload["entity_slots"]["features"][:39]
@@ -569,7 +570,8 @@ def test_semantic_v7_checkpoint_has_explicit_v8_warm_start_path():
     payload = historical["contract"]
     payload["contract_id"] = "tft.ppo.semantic-native-state.v7"
     payload["version"] = 7
-    payload["global_features"] = payload["global_features"][:-8]
+    payload["source"]["contract_version"] = 5
+    payload["global_features"] = payload["global_features"][:-16]
     payload["numeric_dimension"] -= 16
     payload["encoder"]["numeric_plus_embedding_input_dim"] -= 16
     canonical = json.dumps(
