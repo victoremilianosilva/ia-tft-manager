@@ -4543,6 +4543,8 @@ struct TFTEngine::Impl {
                     {"combat_sequence", combat_sequence},
                     {"player_a_id", a}, {"player_b_id", b},
                     {"seed", input.seed},
+                    {"context", static_cast<int>(input.context)},
+                    {"simulator_version", "combat-engine-generic.v1"},
                     {"player_a_team", static_cast<int>(input.player_a.team)},
                     {"player_a_id", input.player_a.player_id},
                     {"player_a_hp", input.player_a.player_hp},
