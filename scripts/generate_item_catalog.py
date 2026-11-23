@@ -458,7 +458,7 @@ def _combat_effect_is_supported(effect: Any) -> bool:
     trigger = effect.get("trigger")
     operation = effect.get("operation")
     pairs = {
-        "add_stat": {"combat_start", "after_delay", "while_hp_below", "on_ally_shield"},
+        "add_stat": {"combat_start", "after_delay", "while_hp_below", "on_ally_shield", "periodic"},
         "bonus_damage": {"on_attack"},
         "heal_max_hp_pct": {"on_attack", "on_kill"},
         "grant_charges": {"on_kill"},
@@ -489,6 +489,9 @@ def _combat_effect_is_supported(effect: Any) -> bool:
         if not isinstance(effect.get("min_trait_count"), int) or effect["min_trait_count"] <= 0:
             return False
 
+    if operation == "add_stat" and trigger == "periodic":
+        if not _finite_number(effect.get("interval")) or float(effect["interval"]) <= 0.0:
+            return False
     if operation == "add_stat" and effect.get("percent_of_max_health"):
         return False
     if operation == "bonus_damage" and effect.get("percent_of_max_health") and effect.get("percent_of_stat"):
