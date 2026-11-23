@@ -43,6 +43,8 @@ struct NativeCompositionOwnedUnit {
     // Evidence flags prevent unavailable metrics from being interpreted as measured zero.
     bool board_contribution_available{false};
     bool item_fit_available{false};
+    std::string item_fit_source;
+    double item_fit_uncertainty{0.0};
 };
 
 struct NativeCompositionTraitThreshold {
@@ -149,7 +151,11 @@ public:
                      unit.board_contribution < 0.0 || unit.board_contribution > 1.0)) ||
                 (unit.item_fit_available &&
                     (!std::isfinite(unit.item_fit) ||
-                     unit.item_fit < 0.0 || unit.item_fit > 1.0))) continue;
+                     unit.item_fit < 0.0 || unit.item_fit > 1.0 ||
+                     unit.item_fit_source.empty() ||
+                     !std::isfinite(unit.item_fit_uncertainty) ||
+                     unit.item_fit_uncertainty < 0.0 ||
+                     unit.item_fit_uncertainty >= 1.0))) continue;
             owned[unit.champion_id] = unit;
             const auto found = definitions.find(unit.champion_id);
             if (found != definitions.end()) {
@@ -232,7 +238,7 @@ public:
                     (has_owned && observed.board_contribution_available
                         ? observed.board_contribution * 0.35 : 0.0) +
                     (has_owned && observed.item_fit_available
-                        ? observed.item_fit * 0.25 : 0.0);
+                        ? observed.item_fit * (1.0 - observed.item_fit_uncertainty) * 0.25 : 0.0);
                 scored.push_back({definition, score, has_owned, in_shop});
             }
             std::stable_sort(scored.begin(), scored.end(),
@@ -267,8 +273,12 @@ public:
                     if (observed.star >= 2)
                         candidate.evidence.push_back("star_progress:" +
                             std::to_string(observed.star) + ":" + std::to_string(id));
-                    if (observed.item_fit_available)
+                    if (observed.item_fit_available) {
                         candidate.evidence.push_back("item_fit_measured:" + std::to_string(id));
+                        candidate.evidence.push_back("item_fit_source:" + observed.item_fit_source);
+                        candidate.evidence.push_back("item_fit_uncertainty:" +
+                            std::to_string(observed.item_fit_uncertainty));
+                    }
                     if (observed.board_contribution_available)
                         candidate.evidence.push_back("board_contribution_measured:" + std::to_string(id));
                 }
