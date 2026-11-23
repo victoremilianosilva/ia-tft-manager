@@ -544,9 +544,11 @@ void prepare_generic_effect_descriptors(RuntimeUnit& runtime) {
             descriptor.delayed_key = descriptor.prefix + "delayed:" + effect.stat + ":" +
                 std::to_string(effect.delay) + ":" + std::to_string(effect.value);
         }
-        if (effect.trigger == "while_hp_below" && effect.operation == "add_stat" &&
-            effect.health_threshold > 0.0f) {
-            descriptor.conditional_key = descriptor.prefix + "conditional:" + effect.stat + ":" +
+        if ((effect.trigger == "while_hp_below" ||
+             effect.trigger == "while_hp_above") &&
+            effect.operation == "add_stat" && effect.health_threshold > 0.0f) {
+            descriptor.conditional_key = descriptor.prefix + "conditional:" +
+                effect.trigger + ":" + effect.stat + ":" +
                 std::to_string(effect.health_threshold) + ":" + std::to_string(effect.value);
         }
         const std::size_t index = runtime.generic_effect_descriptors.size();
@@ -619,10 +621,13 @@ void update_conditional_effects(RuntimeUnit& runtime, float now) {
         const auto& effect = *descriptor.effect;
         if (!effect_condition_matches(runtime.unit, effect)) continue;
         const auto& key = descriptor.conditional_key;
-        const bool below = runtime.unit.hp / runtime.unit.max_hp <= effect.health_threshold;
+        const float health_ratio = runtime.unit.hp / runtime.unit.max_hp;
+        const bool condition_met = effect.trigger == "while_hp_above"
+            ? health_ratio >= effect.health_threshold
+            : health_ratio <= effect.health_threshold;
         const bool active = runtime.generic_effects_active.contains(key);
         const bool triggered = runtime.generic_effects_triggered.contains(key);
-        if (below && !active && !triggered) {
+        if (condition_met && !active && !triggered) {
             apply_effect_stat(runtime.unit, effect);
             runtime.generic_effects_active.insert(key);
             runtime.generic_effects_triggered.insert(key);
@@ -632,7 +637,7 @@ void update_conditional_effects(RuntimeUnit& runtime, float now) {
             const auto expiry = runtime.generic_effect_expiry.find(key);
             const bool expired = expiry != runtime.generic_effect_expiry.end() &&
                                  now >= expiry->second;
-            const bool condition_ended = effect.duration <= 0.0f && !below;
+            const bool condition_ended = effect.duration <= 0.0f && !condition_met;
             if (expired || condition_ended) {
                 CombatEffectDefinition inverse = effect;
                 inverse.value = -inverse.value;
