@@ -5,8 +5,263 @@
   "source_contract": "normalized combat-relevant trait mechanics only; unsupported traits remain incomplete",
   "traits": [
     {
+      "api_name": "DA_18_Adaptor",
+      "source_name": "Adaptador",
+      "source_description": "Inato: as habilidades de Adaptadores mudam conforme o atributo maior entre Dano de Ataque e Poder de Habilidade.<br><br>Adaptadores recebem Poder de Habilidade ou Dano de Ataque, dependendo do que for maior.<br><row>(@MinUnits@) @ADAPGain*100@% OU</row><br><row>(@MinUnits@) @ADAPGain*100@% OU</row><br><row>(@MinUnits@) @ADAPGain*100@%  OU</row>",
+      "effects_complete": false,
+      "coverage_status": "not_implemented",
+      "coverage_note": "Source trait is registered with its real source tiers; combat effects remain incomplete until their mechanics are normalized and verified.",
+      "source_tiers": [
+        {
+          "min_units": 2,
+          "max_units": 2,
+          "style": 1,
+          "variables": {
+            "{0412779a}": 0.25
+          }
+        },
+        {
+          "min_units": 3,
+          "max_units": 3,
+          "style": 3,
+          "variables": {
+            "{0412779a}": 0.3499999940395355
+          }
+        },
+        {
+          "min_units": 4,
+          "max_units": 25000,
+          "style": 5,
+          "variables": {
+            "{0412779a}": 0.5
+          }
+        }
+      ],
+      "tiers": [
+        {
+          "min_units": 2,
+          "effects": []
+        },
+        {
+          "min_units": 3,
+          "effects": []
+        },
+        {
+          "min_units": 4,
+          "effects": []
+        }
+      ]
+    },
+    {
+      "api_name": "DA_18_ApexPredator",
+      "source_name": "Predador Perfeito",
+      "source_description": "Dragão Ancião ocupa 2 espaços na equipe e concede +2 à característica Fera do Rift.",
+      "effects_complete": false,
+      "coverage_status": "not_implemented",
+      "coverage_note": "Source trait is registered with its real source tiers; combat effects remain incomplete until their mechanics are normalized and verified.",
+      "source_tiers": [
+        {
+          "min_units": 1,
+          "max_units": 25000,
+          "style": 4,
+          "variables": {}
+        }
+      ],
+      "tiers": [
+        {
+          "min_units": 1,
+          "effects": []
+        }
+      ]
+    },
+    {
+      "api_name": "DA_18_Battlemage",
+      "source_name": "Monólito",
+      "source_description": "Monolitos recebem @Resists@ Armadura e Resistência Mágica para cada inimigo que os tiverem como alvos.",
+      "effects_complete": false,
+      "coverage_status": "not_implemented",
+      "coverage_note": "Source trait is registered with its real source tiers; combat effects remain incomplete until their mechanics are normalized and verified.",
+      "source_tiers": [
+        {
+          "min_units": 1,
+          "max_units": 25000,
+          "style": 4,
+          "variables": {
+            "Resists": 10
+          }
+        }
+      ],
+      "tiers": [
+        {
+          "min_units": 1,
+          "effects": []
+        }
+      ]
+    },
+    {
+      "api_name": "DA_18_Blackthorn",
+      "source_name": "Espinhos Negros",
+      "source_description": "O aliado na casa de Espinhos Negros é sacrificado antes do combate, concedendo Vida ao seus Campeões.<br><br>Campeões Espinhos Negros recebem atributos adicionais com base na Função, no nível de Estrela e no custo da unidade sacrificada.<br><row>(@MinUnits@) @Health@ %i:scaleHealth%</row><br><row>(@MinUnits@) @Health@ %i:scaleHealth%; o efeito é @StatMultiplier*100@% mais forte</row><br><row>(@MinUnits@) @Health@ %i:scaleHealth%; o efeito é @StatMultiplier*100@% mais forte</row>",
+      "effects_complete": false,
+      "coverage_status": "not_implemented",
+      "coverage_note": "Source trait is registered with its real source tiers; combat effects remain incomplete until their mechanics are normalized and verified.",
+      "source_tiers": [
+        {
+          "min_units": 2,
+          "max_units": 3,
+          "style": 1,
+          "variables": {
+            "Health": 175
+          }
+        },
+        {
+          "min_units": 4,
+          "max_units": 5,
+          "style": 3,
+          "variables": {
+            "Health": 350,
+            "StatMultiplier": 0.2999999523162842
+          }
+        },
+        {
+          "min_units": 6,
+          "max_units": 25000,
+          "style": 5,
+          "variables": {
+            "Health": 600,
+            "StatMultiplier": 0.5
+          }
+        }
+      ],
+      "tiers": [
+        {
+          "min_units": 2,
+          "effects": []
+        },
+        {
+          "min_units": 4,
+          "effects": []
+        },
+        {
+          "min_units": 6,
+          "effects": []
+        }
+      ]
+    },
+    {
+      "api_name": "DA_18_Blossom",
+      "source_name": "Florescer",
+      "source_description": "Após o combate, seus Fogos-Fátuos são fortalecidos. <br><br>Campeões Florescer recebem Dano de Ataque, Poder de Habilidade e @BonusHealth*100@% de Vida máxima.<br><row>(@MinUnits@) Fogos-Fátuos são aprimorados, @ADAP*100@% %i:scaleAD%%i:scaleAP%</row><br><row>(@MinUnits@) Fogos-Fátuos aparecem em toda Loja, @ADAP*100@% %i:scaleAD%%i:scaleAP%</row><br><row>(@MinUnits@) Recebe @GoldPerCharmPurchased@ de ouro após comprar um Fogo-Fátuo, @ADAP*100@% %i:scaleAD%%i:scaleAP%</row><br><row>(@MinUnits@) Você pode comprar 2 Fogos-Fátuos por rodada, @ADAP*100@% %i:scaleAD%%i:scaleAP%</row><br><row>(@MinUnits@) Fogos-fátuos transbordam poder, @ADAP*100@% %i:scaleAD%%i:scaleAP%</row>",
+      "effects_complete": false,
+      "coverage_status": "not_implemented",
+      "coverage_note": "Source trait is registered with its real source tiers; combat effects remain incomplete until their mechanics are normalized and verified.",
+      "source_tiers": [
+        {
+          "min_units": 3,
+          "max_units": 4,
+          "style": 1,
+          "variables": {
+            "ADAP": 0.11999999731779099,
+            "BonusHealth": 0.10000002384185791
+          }
+        },
+        {
+          "min_units": 5,
+          "max_units": 6,
+          "style": 3,
+          "variables": {
+            "ADAP": 0.30000001192092896,
+            "BonusHealth": 0.10000002384185791
+          }
+        },
+        {
+          "min_units": 7,
+          "max_units": 8,
+          "style": 5,
+          "variables": {
+            "ADAP": 0.5,
+            "BonusHealth": 0.10000002384185791,
+            "{91925b8e}": 4
+          }
+        },
+        {
+          "min_units": 9,
+          "max_units": 10,
+          "style": 5,
+          "variables": {
+            "ADAP": 0.550000011920929,
+            "BonusHealth": 0.10000002384185791
+          }
+        },
+        {
+          "min_units": 11,
+          "max_units": 25000,
+          "style": 6,
+          "variables": {
+            "ADAP": 1,
+            "BonusHealth": 0.10000002384185791
+          }
+        }
+      ],
+      "tiers": [
+        {
+          "min_units": 3,
+          "effects": []
+        },
+        {
+          "min_units": 5,
+          "effects": []
+        },
+        {
+          "min_units": 7,
+          "effects": []
+        },
+        {
+          "min_units": 9,
+          "effects": []
+        },
+        {
+          "min_units": 11,
+          "effects": []
+        }
+      ]
+    },
+    {
       "api_name": "DA_18_Brawler",
+      "source_name": "Lutador",
+      "source_description": "Sua equipe recebe @BrawlerTeamHealth@ de Vida máxima. Lutadores recebem mais.<br><row>(@MinUnits@) @BrawlerHealthPercent*100@% %i:scaleHealth%</row><br><row>(@MinUnits@) @BrawlerHealthPercent*100@% %i:scaleHealth%</row><br><row>(@MinUnits@) @BrawlerHealthPercent*100@% %i:scaleHealth%</row>",
       "effects_complete": true,
+      "coverage_status": "complete",
+      "coverage_note": "All combat-relevant effects represented in this catalog are implemented and tested.",
+      "source_tiers": [
+        {
+          "min_units": 2,
+          "max_units": 3,
+          "style": 1,
+          "variables": {
+            "{da2472a7}": 120,
+            "{f1ed73eb}": 0.25
+          }
+        },
+        {
+          "min_units": 4,
+          "max_units": 5,
+          "style": 3,
+          "variables": {
+            "{da2472a7}": 120,
+            "{f1ed73eb}": 0.4000000059604645
+          }
+        },
+        {
+          "min_units": 6,
+          "max_units": 25000,
+          "style": 5,
+          "variables": {
+            "{da2472a7}": 120,
+            "{f1ed73eb}": 0.6499999761581421
+          }
+        }
+      ],
       "tiers": [
         {
           "min_units": 2,
@@ -86,9 +341,134 @@
       ]
     },
     {
+      "api_name": "DA_18_Caustic",
+      "source_name": "Cáustico",
+      "source_description": "O dano de unidades Cáusticas causa @ShredPercent@% de Fragmentação e Fatiamento a inimigos por @ShredDuration@s.<br><br><rules>Fragmentação: reduz a Resistência Mágica.</rules><br><rules>Fatiamento: reduz a Armadura.</rules>",
+      "effects_complete": false,
+      "coverage_status": "not_implemented",
+      "coverage_note": "Source trait is registered with its real source tiers; combat effects remain incomplete until their mechanics are normalized and verified.",
+      "source_tiers": [
+        {
+          "min_units": 1,
+          "max_units": 25000,
+          "style": 4,
+          "variables": {
+            "ShredDuration": 4,
+            "ShredPercent": 30
+          }
+        }
+      ],
+      "tiers": [
+        {
+          "min_units": 1,
+          "effects": []
+        }
+      ]
+    },
+    {
+      "api_name": "DA_18_Coven",
+      "source_name": "Congregação das Bruxas",
+      "source_description": "Acumule Essências ao abater Campeões, e mais ainda ao perder combates entre jogadores. <br><br>A partir de @EssenceForRitualTooltip@ Essências, escolha entre converter Essências em recompensas ou continuar acumulando. Cada recompensa exige quantidades maiores de Essências.<br><row>(@MinUnits@) @EssencePerDeath@ Essência por abate, @EssencePerLoss@ Essências por derrota</row><br><row>(@MinUnits@) @EssencePerDeath@ Essências por abate, @EssencePerLoss@ Essências por derrota</row><br><row>(@MinUnits@) @EssencePerDeath@ Essências por abate, @EssencePerLoss@ Essências por derrota</row><br><row>(@MinUnits@) @EssencePerDeath@ Essências por abate, @EssencePerLoss@ Essências por derrota</row>",
+      "effects_complete": false,
+      "coverage_status": "not_implemented",
+      "coverage_note": "Source trait is registered with its real source tiers; combat effects remain incomplete until their mechanics are normalized and verified.",
+      "source_tiers": [
+        {
+          "min_units": 3,
+          "max_units": 3,
+          "style": 1,
+          "variables": {
+            "{7a9d7f0e}": 2,
+            "{d62ae6ae}": 40,
+            "{de46577b}": 22
+          }
+        },
+        {
+          "min_units": 4,
+          "max_units": 4,
+          "style": 3,
+          "variables": {
+            "{7a9d7f0e}": 2,
+            "{d62ae6ae}": 40,
+            "{de46577b}": 28
+          }
+        },
+        {
+          "min_units": 5,
+          "max_units": 6,
+          "style": 3,
+          "variables": {
+            "{7a9d7f0e}": 3,
+            "{d62ae6ae}": 40,
+            "{de46577b}": 35
+          }
+        },
+        {
+          "min_units": 7,
+          "max_units": 25000,
+          "style": 5,
+          "variables": {
+            "{7a9d7f0e}": 10,
+            "{d62ae6ae}": 40,
+            "{de46577b}": 60
+          }
+        }
+      ],
+      "tiers": [
+        {
+          "min_units": 3,
+          "effects": []
+        },
+        {
+          "min_units": 4,
+          "effects": []
+        },
+        {
+          "min_units": 5,
+          "effects": []
+        },
+        {
+          "min_units": 7,
+          "effects": []
+        }
+      ]
+    },
+    {
       "api_name": "DA_18_Defender",
-      "name": "Defender",
+      "source_name": "Defendente",
+      "source_description": "Sua equipe recebe @NonDefenderDefenseGain@ de Armadura e Resistência Mágica. Defendentes recebem mais.<br><row>(@MinUnits@) @DefenderDefenseGain@</row><br><row>(@MinUnits@) @DefenderDefenseGain@</row><br><row>(@MinUnits@) @DefenderDefenseGain@</row>",
       "effects_complete": true,
+      "coverage_status": "complete",
+      "coverage_note": "All combat-relevant effects represented in this catalog are implemented and tested.",
+      "source_tiers": [
+        {
+          "min_units": 2,
+          "max_units": 3,
+          "style": 1,
+          "variables": {
+            "{0eb6405e}": 12,
+            "{8c16b281}": 25
+          }
+        },
+        {
+          "min_units": 4,
+          "max_units": 5,
+          "style": 3,
+          "variables": {
+            "{0eb6405e}": 12,
+            "{8c16b281}": 60
+          }
+        },
+        {
+          "min_units": 6,
+          "max_units": 25000,
+          "style": 5,
+          "variables": {
+            "{0eb6405e}": 12,
+            "{8c16b281}": 115
+          }
+        }
+      ],
       "tiers": [
         {
           "min_units": 2,
@@ -220,6 +600,1222 @@
           ]
         }
       ]
+    },
+    {
+      "api_name": "DA_18_Eclipse",
+      "source_name": "Eclipse",
+      "source_description": "Após @DelaySeconds@s em combate, o Eclipse abate o inimigo com a Vida mais baixa, efeito que se repete a cada @EclipseBeamPeriod@s.",
+      "effects_complete": false,
+      "coverage_status": "not_implemented",
+      "coverage_note": "Source trait is registered with its real source tiers; combat effects remain incomplete until their mechanics are normalized and verified.",
+      "source_tiers": [
+        {
+          "min_units": null,
+          "max_units": 25000,
+          "style": 1,
+          "variables": {
+            "DelaySeconds": 8,
+            "{53db05e8}": 3.5
+          }
+        }
+      ],
+      "tiers": [
+        {
+          "min_units": 1,
+          "effects": []
+        }
+      ]
+    },
+    {
+      "api_name": "DA_18_Elderwood",
+      "source_name": "Sabugueiro",
+      "source_description": "Recebe plantas de Sabugueiro posicionáveis.<br><row>(@MinUnits@) Uma Árvore de Casca Petrificada e uma Flor-da-Vida</row><br><row>(@MinUnits@) Uma segunda Árvore de Casca Petrificada, e Árvores de Casca Petrificada recebem @StonebarkTreeBonusHealth@ de Vida</row><br><row>(@MinUnits@) O Protetor da Mata Profunda</row><br><row>(@MinUnits@) As plantas são aprimoradas para 2 Estrelas</row><br><row>(@MinUnits@) As plantas são aprimoradas para 3 Estrelas e a floresta ganha vida</row>",
+      "effects_complete": false,
+      "coverage_status": "not_implemented",
+      "coverage_note": "Source trait is registered with its real source tiers; combat effects remain incomplete until their mechanics are normalized and verified.",
+      "source_tiers": [
+        {
+          "min_units": 3,
+          "max_units": 4,
+          "style": 1,
+          "variables": {
+            "{0f90e7a4}": 0.25,
+            "{4013f48e}": 0.10000000149011612
+          }
+        },
+        {
+          "min_units": 5,
+          "max_units": 6,
+          "style": 3,
+          "variables": {
+            "{0f90e7a4}": 0.25,
+            "{4013f48e}": 0.10000000149011612,
+            "{b027c2f9}": 200
+          }
+        },
+        {
+          "min_units": 7,
+          "max_units": 8,
+          "style": 5,
+          "variables": {
+            "{0f90e7a4}": 0.25,
+            "{4013f48e}": 0.10000000149011612
+          }
+        },
+        {
+          "min_units": 9,
+          "max_units": 10,
+          "style": 5,
+          "variables": {
+            "{0f90e7a4}": 0.25,
+            "{4013f48e}": 0.10000000149011612
+          }
+        },
+        {
+          "min_units": 11,
+          "max_units": 25000,
+          "style": 6,
+          "variables": {
+            "{0f90e7a4}": 0.25,
+            "{4013f48e}": 0.10000000149011612
+          }
+        }
+      ],
+      "tiers": [
+        {
+          "min_units": 3,
+          "effects": []
+        },
+        {
+          "min_units": 5,
+          "effects": []
+        },
+        {
+          "min_units": 7,
+          "effects": []
+        },
+        {
+          "min_units": 9,
+          "effects": []
+        },
+        {
+          "min_units": 11,
+          "effects": []
+        }
+      ]
+    },
+    {
+      "api_name": "DA_18_Executioner",
+      "source_name": "Carrasco",
+      "source_description": "<row>(@MinUnits@) Carrascos recebem <TFTKeyword>Precisão</TFTKeyword> e @CritChance*100@% de Chance de Acerto Crítico.</row><br><row>(@MinUnits@) Além disso, inimigos sofrem Sangramento, que causa @BonusBleedPercent*100@% de Dano Verdadeiro adicional ao longo de @BleedDuration@s.</row><br><row>(@MinUnits@) Aumenta o dano de Sangramento para @BonusBleedPercent*100@%.</row>",
+      "effects_complete": false,
+      "coverage_status": "not_implemented",
+      "coverage_note": "Source trait is registered with its real source tiers; combat effects remain incomplete until their mechanics are normalized and verified.",
+      "source_tiers": [
+        {
+          "min_units": 2,
+          "max_units": 2,
+          "style": 1,
+          "variables": {
+            "CritChance": 0.15000000596046448
+          }
+        },
+        {
+          "min_units": 3,
+          "max_units": 3,
+          "style": 3,
+          "variables": {
+            "BleedDuration": 3,
+            "{2c61751d}": 0.25
+          }
+        },
+        {
+          "min_units": 4,
+          "max_units": 25000,
+          "style": 5,
+          "variables": {
+            "{2c61751d}": 0.3499999940395355
+          }
+        }
+      ],
+      "tiers": [
+        {
+          "min_units": 2,
+          "effects": []
+        },
+        {
+          "min_units": 3,
+          "effects": []
+        },
+        {
+          "min_units": 4,
+          "effects": []
+        }
+      ]
+    },
+    {
+      "api_name": "DA_18_Fae",
+      "source_name": "Feérico",
+      "source_description": "O dano, as curas e os Escudos da sua equipe atraem Pixies.<br><br>Cada Pixie concede Dano de Ataque e Poder de Habilidade a Campeões Feéricos. Quando a Vida deles fica abaixo de @HealThreshold*100@%, eles recebem cura para cada Pixie.<br><row>(@MinUnits@) @ADAP@% e @Heal@% de cura</row><br><row>(@MinUnits@) @ADAP@% e @Heal@% de cura. Depois de atrair 7 Pixies, você começa a atrair Pixies Douradas, que concedem ouro.</row>",
+      "effects_complete": false,
+      "coverage_status": "not_implemented",
+      "coverage_note": "Source trait is registered with its real source tiers; combat effects remain incomplete until their mechanics are normalized and verified.",
+      "source_tiers": [
+        {
+          "min_units": 2,
+          "max_units": 3,
+          "style": 1,
+          "variables": {
+            "ADAP": 4.5,
+            "Heal": 3,
+            "HealThreshold": 0.5
+          }
+        },
+        {
+          "min_units": 4,
+          "max_units": 25000,
+          "style": 5,
+          "variables": {
+            "ADAP": 7,
+            "Heal": 5,
+            "HealThreshold": 0.5
+          }
+        }
+      ],
+      "tiers": [
+        {
+          "min_units": 2,
+          "effects": []
+        },
+        {
+          "min_units": 4,
+          "effects": []
+        }
+      ]
+    },
+    {
+      "api_name": "DA_18_Greenfather",
+      "source_name": "Pai do Verde",
+      "source_description": "Recebe @SeedsPerCast@ semente quando seu Ivern mais forte conjura, e mais @CombatStartSeeds@ a cada combate. Ivern usa @SeedsToGrowHex@ sementes para cultivar uma casa no seu tabuleiro que concede um efeito a quem ocupá-la. <br><br>Sementes: 0/@SeedsToGrowHex@<br><br>Bioma atual:",
+      "effects_complete": false,
+      "coverage_status": "not_implemented",
+      "coverage_note": "Source trait is registered with its real source tiers; combat effects remain incomplete until their mechanics are normalized and verified.",
+      "source_tiers": [
+        {
+          "min_units": 1,
+          "max_units": 25000,
+          "style": 4,
+          "variables": {
+            "{5f537bd3}": 1,
+            "{5fea9917}": 3,
+            "{b133da98}": 5
+          }
+        }
+      ],
+      "tiers": [
+        {
+          "min_units": 1,
+          "effects": []
+        }
+      ]
+    },
+    {
+      "api_name": "DA_18_Hunter",
+      "source_name": "Caçador",
+      "source_description": "Caçadores recebem Dano de Ataque. Se um Caçador não tiver trocado de alvo por @HunterDuration@s, ele receberá @DamageAmp*100@% de Amplificação de Dano.<br><row>(@MinUnits@) @HunterAD*100@% %i:scaleAD%</row><br><row>(@MinUnits@) @HunterAD*100@% %i:scaleAD%</row><br><row>(@MinUnits@) @HunterAD*100@% %i:scaleAD%</row><br><row>(@MinUnits@) @HunterAD*100@% %i:scaleAD%</row>",
+      "effects_complete": false,
+      "coverage_status": "not_implemented",
+      "coverage_note": "Source trait is registered with its real source tiers; combat effects remain incomplete until their mechanics are normalized and verified.",
+      "source_tiers": [
+        {
+          "min_units": 2,
+          "max_units": 2,
+          "style": 1,
+          "variables": {
+            "DamageAmp": 0.10000000149011612,
+            "{641254b6}": 0.20000000298023224,
+            "{83011ee7}": 3
+          }
+        },
+        {
+          "min_units": 3,
+          "max_units": 3,
+          "style": 3,
+          "variables": {
+            "DamageAmp": 0.10000000149011612,
+            "{641254b6}": 0.30000001192092896,
+            "{83011ee7}": 3
+          }
+        },
+        {
+          "min_units": 4,
+          "max_units": 4,
+          "style": 3,
+          "variables": {
+            "DamageAmp": 0.10000000149011612,
+            "{641254b6}": 0.44999998807907104,
+            "{83011ee7}": 3
+          }
+        },
+        {
+          "min_units": 5,
+          "max_units": 25000,
+          "style": 5,
+          "variables": {
+            "DamageAmp": 0.10000000149011612,
+            "{641254b6}": 0.6000000238418579,
+            "{83011ee7}": 3
+          }
+        }
+      ],
+      "tiers": [
+        {
+          "min_units": 2,
+          "effects": []
+        },
+        {
+          "min_units": 3,
+          "effects": []
+        },
+        {
+          "min_units": 4,
+          "effects": []
+        },
+        {
+          "min_units": 5,
+          "effects": []
+        }
+      ]
+    },
+    {
+      "api_name": "DA_18_Inferno",
+      "source_name": "Inferno",
+      "source_description": "O dano de Inferno causa <TFTKeyword>Queimadura</TFTKeyword> e <TFTKeyword>Ferimento</TFTKeyword> aos inimigos por @Duration@s. Queimaduras de Inferno acumulam com outras Queimaduras.<br><row>(@MinUnits@) @HPBurnPerSecond@% de Queimadura, @WoundPercent@% de Ferimento</row><br><row>(@MinUnits@) Após o combate, incendeia @LuckySlotCount@ dos espaços da sua Loja sem um Campeão Inferno, sorteando um Campeão um tier superior</row><br><row>(@MinUnits@) Incendeia @LuckySlotCount@ espaços da Loja, @HPBurnPerSecond@% de Queimadura</row><br><row>(@MinUnits@) Incendeia @LuckySlotCount@ espaços da Loja, @HPBurnPerSecond@% de Queimadura</row>",
+      "effects_complete": false,
+      "coverage_status": "not_implemented",
+      "coverage_note": "Source trait is registered with its real source tiers; combat effects remain incomplete until their mechanics are normalized and verified.",
+      "source_tiers": [
+        {
+          "min_units": 2,
+          "max_units": 2,
+          "style": 1,
+          "variables": {
+            "Duration": 3,
+            "WoundPercent": 33,
+            "{2c202877}": 1
+          }
+        },
+        {
+          "min_units": 3,
+          "max_units": 4,
+          "style": 3,
+          "variables": {
+            "Duration": 3,
+            "{c4c70a4e}": 1
+          }
+        },
+        {
+          "min_units": 5,
+          "max_units": 6,
+          "style": 5,
+          "variables": {
+            "Duration": 3,
+            "{2c202877}": 3,
+            "{c4c70a4e}": 2
+          }
+        },
+        {
+          "min_units": 7,
+          "max_units": 25000,
+          "style": 5,
+          "variables": {
+            "Duration": 3,
+            "{2c202877}": 4,
+            "{c4c70a4e}": 4
+          }
+        }
+      ],
+      "tiers": [
+        {
+          "min_units": 2,
+          "effects": []
+        },
+        {
+          "min_units": 3,
+          "effects": []
+        },
+        {
+          "min_units": 5,
+          "effects": []
+        },
+        {
+          "min_units": 7,
+          "effects": []
+        }
+      ]
+    },
+    {
+      "api_name": "DA_18_Invoker",
+      "source_name": "Emanador",
+      "source_description": "Sua equipe recebe Regeneração de Mana, aumentada para Emanadores.<br><row>(@MinUnits@) @TeamManaRegen@ %i:scaleManaRegen% | @InvokerManaBonus@ %i:scaleManaRegen%</row><br><row>(@MinUnits@) @TeamManaRegen@ %i:scaleManaRegen% | @InvokerManaBonus@ %i:scaleManaRegen%</row><br><row>(@MinUnits@) @TeamManaRegen@ %i:scaleManaRegen% | @InvokerManaBonus@ %i:scaleManaRegen%</row><br><row>(@MinUnits@) @TeamManaRegen@ %i:scaleManaRegen% | @InvokerManaBonus@ %i:scaleManaRegen%</row>",
+      "effects_complete": false,
+      "coverage_status": "not_implemented",
+      "coverage_note": "Source trait is registered with its real source tiers; combat effects remain incomplete until their mechanics are normalized and verified.",
+      "source_tiers": [
+        {
+          "min_units": 2,
+          "max_units": 2,
+          "style": 1,
+          "variables": {
+            "TeamManaRegen": 1,
+            "{de27cb95}": 3
+          }
+        },
+        {
+          "min_units": 3,
+          "max_units": 3,
+          "style": 3,
+          "variables": {
+            "TeamManaRegen": 1,
+            "{de27cb95}": 4
+          }
+        },
+        {
+          "min_units": 4,
+          "max_units": 4,
+          "style": 3,
+          "variables": {
+            "TeamManaRegen": 2,
+            "{de27cb95}": 6
+          }
+        },
+        {
+          "min_units": 5,
+          "max_units": 25000,
+          "style": 5,
+          "variables": {
+            "TeamManaRegen": 2,
+            "{de27cb95}": 8
+          }
+        }
+      ],
+      "tiers": [
+        {
+          "min_units": 2,
+          "effects": []
+        },
+        {
+          "min_units": 3,
+          "effects": []
+        },
+        {
+          "min_units": 4,
+          "effects": []
+        },
+        {
+          "min_units": 5,
+          "effects": []
+        }
+      ]
+    },
+    {
+      "api_name": "DA_18_Lunar",
+      "source_name": "Lunar",
+      "source_description": "Campeões Lunares e aliados adjacentes recebem Velocidade de Ataque e Poder de Habilidade. Campeões Lunares recebem @LunarMultiplier*100@% a mais.<br><row>(@MinUnits@) @AttackSpeed*100@% %i:scaleAS%, @AbilityPower*100@% %i:scaleAP%</row><br><row>(@MinUnits@) @AttackSpeed*100@% %i:scaleAS%, @AbilityPower*100@% %i:scaleAP%</row><br><row>(@MinUnits@) @AttackSpeed*100@% %i:scaleAS%, @AbilityPower*100@% %i:scaleAP%</row><br><row>(@MinUnits@) @AttackSpeed*100@% %i:scaleAS%, @AbilityPower*100@% %i:scaleAP%</row>",
+      "effects_complete": false,
+      "coverage_status": "not_implemented",
+      "coverage_note": "Source trait is registered with its real source tiers; combat effects remain incomplete until their mechanics are normalized and verified.",
+      "source_tiers": [
+        {
+          "min_units": 2,
+          "max_units": 2,
+          "style": 1,
+          "variables": {
+            "AbilityPower": 0.07000000029802322,
+            "AttackSpeed": 0.0700000524520874,
+            "{6d27fbd4}": 1
+          }
+        },
+        {
+          "min_units": 3,
+          "max_units": 3,
+          "style": 3,
+          "variables": {
+            "AbilityPower": 0.11999999731779099,
+            "AttackSpeed": 0.10000002384185791,
+            "{6d27fbd4}": 1
+          }
+        },
+        {
+          "min_units": 4,
+          "max_units": 4,
+          "style": 3,
+          "variables": {
+            "AbilityPower": 0.1599999964237213,
+            "AttackSpeed": 0.13999998569488525,
+            "{6d27fbd4}": 1
+          }
+        },
+        {
+          "min_units": 5,
+          "max_units": 25000,
+          "style": 5,
+          "variables": {
+            "AbilityPower": 0.20000000298023224,
+            "AttackSpeed": 0.1799999475479126,
+            "{6d27fbd4}": 1
+          }
+        }
+      ],
+      "tiers": [
+        {
+          "min_units": 2,
+          "effects": []
+        },
+        {
+          "min_units": 3,
+          "effects": []
+        },
+        {
+          "min_units": 4,
+          "effects": []
+        },
+        {
+          "min_units": 5,
+          "effects": []
+        }
+      ]
+    },
+    {
+      "api_name": "DA_18_LuxUniqueTrait",
+      "source_name": "Avatar",
+      "source_description": "Ter um Avatar na sua reserva ou no seu tabuleiro converte todos os outros Avatares da sua Loja para a Característica do seu Avatar.<br><br>A Característica escolhida de um Avatar conta duas vezes para os efeitos de Características.",
+      "effects_complete": false,
+      "coverage_status": "not_implemented",
+      "coverage_note": "Source trait is registered with its real source tiers; combat effects remain incomplete until their mechanics are normalized and verified.",
+      "source_tiers": [
+        {
+          "min_units": 1,
+          "max_units": 25000,
+          "style": 4,
+          "variables": {}
+        }
+      ],
+      "tiers": [
+        {
+          "min_units": 1,
+          "effects": []
+        }
+      ]
+    },
+    {
+      "api_name": "DA_18_Maokai_UniqueTrait",
+      "source_name": "Crescimento Antigo",
+      "source_description": "Sempre que um inimigo em um raio de @UniqueTraitHexRange@ casas morre, seu Campeão Crescimento Antigo mais forte recebe @UniqueTraitHealthPerStack@ de Vida máxima permanente.<br><br>Atual: 0",
+      "effects_complete": false,
+      "coverage_status": "not_implemented",
+      "coverage_note": "Source trait is registered with its real source tiers; combat effects remain incomplete until their mechanics are normalized and verified.",
+      "source_tiers": [
+        {
+          "min_units": 1,
+          "max_units": 25000,
+          "style": 4,
+          "variables": {
+            "{36e69059}": 30,
+            "{56607148}": 3
+          }
+        }
+      ],
+      "tiers": [
+        {
+          "min_units": 1,
+          "effects": []
+        }
+      ]
+    },
+    {
+      "api_name": "DA_18_Rapidfire",
+      "source_name": "Fumegante",
+      "source_description": "Sua equipe recebe @TeamAS*100@% de Velocidade de Ataque. Campeões Fumegantes recebem mais a cada ataque, até @MaxStacks@ acúmulos.<br><row>(@MinUnits@) +@ASPerAttack*100@% %i:scaleAS% por ataque</row><br><row>(@MinUnits@) +@ASPerAttack*100@% %i:scaleAS% por ataque</row><br><row>(@MinUnits@) +@ASPerAttack*100@% %i:scaleAS% por ataque</row><br><row>(@MinUnits@) +@ASPerAttack*100@% %i:scaleAS% por ataque</row>",
+      "effects_complete": false,
+      "coverage_status": "not_implemented",
+      "coverage_note": "Source trait is registered with its real source tiers; combat effects remain incomplete until their mechanics are normalized and verified.",
+      "source_tiers": [
+        {
+          "min_units": 2,
+          "max_units": 2,
+          "style": 1,
+          "variables": {
+            "ASperAttack": 0.029999971389770508,
+            "MaxStacks": 10,
+            "{1d98dcec}": 0.10000002384185791
+          }
+        },
+        {
+          "min_units": 3,
+          "max_units": 3,
+          "style": 3,
+          "variables": {
+            "ASperAttack": 0.04999995231628418,
+            "MaxStacks": 10,
+            "{1d98dcec}": 0.10000002384185791
+          }
+        },
+        {
+          "min_units": 4,
+          "max_units": 4,
+          "style": 3,
+          "variables": {
+            "ASperAttack": 0.0700000524520874,
+            "MaxStacks": 10,
+            "{1d98dcec}": 0.10000002384185791
+          }
+        },
+        {
+          "min_units": 5,
+          "max_units": 25000,
+          "style": 5,
+          "variables": {
+            "ASperAttack": 0.10000002384185791,
+            "MaxStacks": 10,
+            "{1d98dcec}": 0.10000002384185791
+          }
+        }
+      ],
+      "tiers": [
+        {
+          "min_units": 2,
+          "effects": []
+        },
+        {
+          "min_units": 3,
+          "effects": []
+        },
+        {
+          "min_units": 4,
+          "effects": []
+        },
+        {
+          "min_units": 5,
+          "effects": []
+        }
+      ]
+    },
+    {
+      "api_name": "DA_18_Rival",
+      "source_name": "Rival",
+      "source_description": "<row>(@MinUnits@) Só é ativada ao colocar em campo 1 Rival.<br><br>Rivais colecionam eliminações, recebendo 3 se participarem da eliminação de outro Rival.</row><br><row>(@MinUnits@) Rivais colecionam eliminações, recebendo 3 se participarem da eliminação de outro Rival.<br><br>Eliminações fazem Kha'Zix evoluir, concedendo a ele permanentemente sua escolha entre Carrasco, Fumegante, Devastador ou Enfeitiçador.<br><br>Rengar concede @RengarGold@/@RengarGold_2@/@RengarGold_3@ de ouro a cada @RengarStackReq@ eliminações. Após @RengarADStackReq@ eliminações, sua equipe recebe @RengarThresholdAD*100@% de Dano de Ataque, mais @RengarADPerStack*100@% %i:scaleAD% para cada eliminação adicional.<br><br>Eliminações do Kha'Zix: 0/0<br>Eliminações do Rengar: 0<br>Ouro obtido: 0</row><br><row>(@MinUnits@) Rivais podem ser colocados em campo juntos, e suas habilidades concedem bônus um ao outro.</row>",
+      "effects_complete": false,
+      "coverage_status": "not_implemented",
+      "coverage_note": "Source trait is registered with its real source tiers; combat effects remain incomplete until their mechanics are normalized and verified.",
+      "source_tiers": [
+        {
+          "min_units": 1,
+          "max_units": 25000,
+          "style": 5,
+          "variables": {}
+        },
+        {
+          "min_units": 1,
+          "max_units": 1,
+          "style": 1,
+          "variables": {
+            "{1b5b0a96}": 2,
+            "{3bcd79f5}": 30,
+            "{740d1888}": 5,
+            "{750d1a1b}": 3,
+            "{a1ab72d6}": 0.05000000074505806,
+            "{a6d81c50}": 8,
+            "{f1f3dbfc}": 0.0020000000949949026
+          }
+        },
+        {
+          "min_units": 2,
+          "max_units": 25000,
+          "style": 5,
+          "variables": {}
+        }
+      ],
+      "tiers": [
+        {
+          "min_units": 1,
+          "effects": []
+        },
+        {
+          "min_units": 2,
+          "effects": []
+        }
+      ]
+    },
+    {
+      "api_name": "DA_18_Slayer",
+      "source_name": "Devastador",
+      "source_description": "Devastadores recebem @Omnivamp*100@% de Vampirismo Universal. Além disso, Devastadores causam dano adicional, dobrado contra unidades com menos de @EnemyHealthThreshold*100@% de Vida.<br><row>(@MinUnits@) @BonusDamagePercentBase*100@% de dano adicional</row><br><row>(@MinUnits@) @BonusDamagePercentBase*100@% de dano adicional</row><br><row>(@MinUnits@) @BonusDamagePercentBase*100@% de dano adicional</row>",
+      "effects_complete": false,
+      "coverage_status": "not_implemented",
+      "coverage_note": "Source trait is registered with its real source tiers; combat effects remain incomplete until their mechanics are normalized and verified.",
+      "source_tiers": [
+        {
+          "min_units": 2,
+          "max_units": 3,
+          "style": 1,
+          "variables": {
+            "Omnivamp": 0.10000000149011612,
+            "{a9a813e7}": 0.11999999731779099,
+            "{bef0ca90}": 0.5
+          }
+        },
+        {
+          "min_units": 4,
+          "max_units": 5,
+          "style": 3,
+          "variables": {
+            "Omnivamp": 0.10000000149011612,
+            "{a9a813e7}": 0.25,
+            "{bef0ca90}": 0.5
+          }
+        },
+        {
+          "min_units": 6,
+          "max_units": 25000,
+          "style": 5,
+          "variables": {
+            "Omnivamp": 0.10000000149011612,
+            "{a9a813e7}": 0.4000000059604645,
+            "{bef0ca90}": 0.5
+          }
+        }
+      ],
+      "tiers": [
+        {
+          "min_units": 2,
+          "effects": []
+        },
+        {
+          "min_units": 4,
+          "effects": []
+        },
+        {
+          "min_units": 6,
+          "effects": []
+        }
+      ]
+    },
+    {
+      "api_name": "DA_18_Solar",
+      "source_name": "Solar",
+      "source_description": "<row>(@MinUnits@) Seus Campeões recebem um Escudo de @ShieldRatio*100@% da Vida máxima e causam @BonusMagicDamage*100@% de Dano Mágico adicional. Recebe bônus adicionais para cada Campeão de 3 Estrelas único:<br><br>1: aumenta o Escudo e o Dano Mágico em @PercentIncreasePer3Star*100@% para cada unidade de 3 Estrelas. <br>@NumThreeStarThreshold1@: @Threshold1AttackSpeed*100@% %i:scaleAS% e @Threshold1ArmorMagicResist@ %i:scaleArmor%%i:scaleMR%<br>@NumThreeStarThreshold2@: converte @Threshold2TrueDamageConversion*100@% do Dano Mágico adicional em Dano Verdadeiro.<br>@NumThreeStarThreshold3@: a cada @Threshold3StarUpPeriod@s de combate, um Campeão de 3 Estrelas ascende para 4 Estrelas.</row>",
+      "effects_complete": false,
+      "coverage_status": "not_implemented",
+      "coverage_note": "Source trait is registered with its real source tiers; combat effects remain incomplete until their mechanics are normalized and verified.",
+      "source_tiers": [
+        {
+          "min_units": 3,
+          "max_units": 25000,
+          "style": 5,
+          "variables": {
+            "BonusMagicDamage": 0.07999999821186066,
+            "ShieldRatio": 0.05000000074505806,
+            "{092e2b2b}": 3,
+            "{0a2e2cbe}": 5,
+            "{0b2e2e51}": 8,
+            "{5cfe766f}": 0.4000000059604645,
+            "{617a160e}": 0.1499999761581421,
+            "{7e77da03}": 12,
+            "{a51b2ace}": 0.009999999776482582,
+            "{d91f7c21}": 4
+          }
+        }
+      ],
+      "tiers": [
+        {
+          "min_units": 3,
+          "effects": []
+        }
+      ]
+    },
+    {
+      "api_name": "DA_18_Spellweaver",
+      "source_name": "Enfeitiçador",
+      "source_description": "Sua equipe recebe @TeamwideAP*100@% de Poder de Habilidade. Enfeitiçadores recebem mais, além de Poder de Habilidade adicional sempre que um Enfeitiçador conjura uma habilidade.<br><row>(@MinUnits@) @SpellweaverAP*100@% %i:scaleAP%, +@APPerCast*100@% %i:scaleAP% por conjuração</row><br><row>(@MinUnits@) @SpellweaverAP*100@% %i:scaleAP%, +@APPerCast*100@% %i:scaleAP% por conjuração</row><br><row>(@MinUnits@) @SpellweaverAP*100@% %i:scaleAP%, +@APPerCast*100@% %i:scaleAP% por conjuração</row>",
+      "effects_complete": false,
+      "coverage_status": "not_implemented",
+      "coverage_note": "Source trait is registered with its real source tiers; combat effects remain incomplete until their mechanics are normalized and verified.",
+      "source_tiers": [
+        {
+          "min_units": 2,
+          "max_units": 3,
+          "style": 1,
+          "variables": {
+            "APPerCast": 0.009999999776482582,
+            "TeamwideAP": 0.10000000149011612,
+            "{b012bed0}": 0.10000000149011612
+          }
+        },
+        {
+          "min_units": 4,
+          "max_units": 5,
+          "style": 3,
+          "variables": {
+            "APPerCast": 0.009999999776482582,
+            "TeamwideAP": 0.10000000149011612,
+            "{b012bed0}": 0.30000001192092896
+          }
+        },
+        {
+          "min_units": 6,
+          "max_units": 25000,
+          "style": 5,
+          "variables": {
+            "APPerCast": 0.019999999552965164,
+            "TeamwideAP": 0.10000000149011612,
+            "{b012bed0}": 0.550000011920929
+          }
+        }
+      ],
+      "tiers": [
+        {
+          "min_units": 2,
+          "effects": []
+        },
+        {
+          "min_units": 4,
+          "effects": []
+        },
+        {
+          "min_units": 6,
+          "effects": []
+        }
+      ]
+    },
+    {
+      "api_name": "DA_18_Sprykin",
+      "source_name": "Vivaz",
+      "source_description": "Recebe o Amigão Peludão. Coloque um Vivaz sobre o Amigão para defini-lo como seu Cavaleiro.<br><row>(@MinUnits@) O Cavaleiro recebe<br>@HealthIncrease*100@% %i:scaleHealth% e @AttackSpeedIncrease*100@% %i:scaleAS%</row><br><row>(@MinUnits@) @HealthIncrease*100@% %i:scaleHealth% e @AttackSpeedIncrease*100@% %i:scaleAS%, e @TeamwideRatio*100@% da habilidade do Amigão se aplicam aos seus Campeões Vivazes.</row><br><row>(@MinUnits@) @HealthIncrease*100@% %i:scaleHealth% e @AttackSpeedIncrease*100@% %i:scaleAS%, e @TeamwideRatio*100@% da habilidade do Amigão se aplicam aos seus Campeões Vivazes.</row>",
+      "effects_complete": false,
+      "coverage_status": "not_implemented",
+      "coverage_note": "Source trait is registered with its real source tiers; combat effects remain incomplete until their mechanics are normalized and verified.",
+      "source_tiers": [
+        {
+          "min_units": 3,
+          "max_units": 4,
+          "style": 1,
+          "variables": {
+            "AttackSpeedIncrease": 0.1499999761581421,
+            "HealthIncrease": 0.1499999761581421
+          }
+        },
+        {
+          "min_units": 5,
+          "max_units": 6,
+          "style": 3,
+          "variables": {
+            "AttackSpeedIncrease": 0.3500000238418579,
+            "HealthIncrease": 0.3999999761581421,
+            "{aa3fad66}": 0.5
+          }
+        },
+        {
+          "min_units": 7,
+          "max_units": 25000,
+          "style": 5,
+          "variables": {
+            "AttackSpeedIncrease": 0.5499999523162842,
+            "HealthIncrease": 0.5499999523162842,
+            "{aa3fad66}": 1
+          }
+        }
+      ],
+      "tiers": [
+        {
+          "min_units": 3,
+          "effects": []
+        },
+        {
+          "min_units": 5,
+          "effects": []
+        },
+        {
+          "min_units": 7,
+          "effects": []
+        }
+      ]
+    },
+    {
+      "api_name": "DA_18_Summoner",
+      "source_name": "Invocador",
+      "source_description": "Invocadores fortalecem suas próprias invocações de diferentes maneiras.<br><br>Yorick: +@HealthMult*100@% de Vida<br>Azir: +@AzirDamageMult*100@% de dano<br>Mamãe Bicuda: +@DamageMult*100@% de dano<br>Zyra: +@NumExtraAttacks@ ataques de planta<br><row>(@MinUnits@) Fortalece as invocações</row><br><row>(@MinUnits@) Melhora cada efeito em 50%</row>",
+      "effects_complete": false,
+      "coverage_status": "not_implemented",
+      "coverage_note": "Source trait is registered with its real source tiers; combat effects remain incomplete until their mechanics are normalized and verified.",
+      "source_tiers": [
+        {
+          "min_units": 2,
+          "max_units": 2,
+          "style": 1,
+          "variables": {
+            "DamageMult": 0.4500000476837158,
+            "{1cb64e3c}": 4,
+            "{5311f791}": 0.2999999523162842,
+            "{6bba9a92}": 0.20000004768371582
+          }
+        },
+        {
+          "min_units": 3,
+          "max_units": 25000,
+          "style": 5,
+          "variables": {
+            "DamageMult": 0.4500000476837158,
+            "{1cb64e3c}": 4,
+            "{5311f791}": 0.2999999523162842,
+            "{6bba9a92}": 0.20000004768371582
+          }
+        }
+      ],
+      "tiers": [
+        {
+          "min_units": 2,
+          "effects": []
+        },
+        {
+          "min_units": 3,
+          "effects": []
+        }
+      ]
+    },
+    {
+      "api_name": "DA_18_Vanguard",
+      "source_name": "Vanguarda",
+      "source_description": "No início do combate e ao ficar com menos de @HealthThreshold*100@% de Vida, Campeões Vanguarda recebem um Escudo equivalente a uma porcentagem da Vida máxima por @ShieldDuration@s.<br><row>(@MinUnits@) @MaxHealthShield*100@% da Vida máxima</row><br><row>(@MinUnits@) @MaxHealthShield*100@% da Vida máxima</row><br><row>(@MinUnits@) @MaxHealthShield*100@% de Vida máxima; recebem @DurabilityIncrease*100@% de Durabilidade enquanto estiverem com Escudo</row>",
+      "effects_complete": false,
+      "coverage_status": "not_implemented",
+      "coverage_note": "Source trait is registered with its real source tiers; combat effects remain incomplete until their mechanics are normalized and verified.",
+      "source_tiers": [
+        {
+          "min_units": 2,
+          "max_units": 3,
+          "style": 1,
+          "variables": {
+            "HealthThreshold": 0.5,
+            "MaxHealthShield": 0.18000000715255737,
+            "ShieldDuration": 10
+          }
+        },
+        {
+          "min_units": 4,
+          "max_units": 5,
+          "style": 3,
+          "variables": {
+            "HealthThreshold": 0.5,
+            "MaxHealthShield": 0.30000001192092896,
+            "ShieldDuration": 10
+          }
+        },
+        {
+          "min_units": 6,
+          "max_units": 25000,
+          "style": 5,
+          "variables": {
+            "HealthThreshold": 0.5,
+            "MaxHealthShield": 0.4000000059604645,
+            "ShieldDuration": 10,
+            "{b58e0b6e}": 0.050000011920928955
+          }
+        }
+      ],
+      "tiers": [
+        {
+          "min_units": 2,
+          "effects": []
+        },
+        {
+          "min_units": 4,
+          "effects": []
+        },
+        {
+          "min_units": 6,
+          "effects": []
+        }
+      ]
+    },
+    {
+      "api_name": "DA_18_ZyraUniqueTrait",
+      "source_name": "Dama de Espinhos",
+      "source_description": "Sua equipe recebe @BaseDurability*100@% de Durabilidade, valor que aumentará para @IncreasedDurability*100@% se @PlantNumThreshold@ ou mais plantas da Zyra estiverem vivas.",
+      "effects_complete": false,
+      "coverage_status": "not_implemented",
+      "coverage_note": "Source trait is registered with its real source tiers; combat effects remain incomplete until their mechanics are normalized and verified.",
+      "source_tiers": [
+        {
+          "min_units": 1,
+          "max_units": 25000,
+          "style": 4,
+          "variables": {
+            "BaseDurability": 0.050000011920928955,
+            "{7c65d9f5}": 6,
+            "{8e1b920c}": 0.10000002384185791
+          }
+        }
+      ],
+      "tiers": [
+        {
+          "min_units": 1,
+          "effects": []
+        }
+      ]
+    },
+    {
+      "api_name": "DA_AluneUniqueTrait18",
+      "source_name": "Comunhão",
+      "source_description": "A sua Alune mais forte alterna para uma nova fase da Lua a cada conjuração. Enquanto estiver em Meia-Lua ou abaixo, sua equipe recebe @Durability*100@% de Durabilidade. Enquanto estiver acima, sua equipe recebe @DamageAmp*100@% de Amplificação de Dano.",
+      "effects_complete": false,
+      "coverage_status": "not_implemented",
+      "coverage_note": "Source trait is registered with its real source tiers; combat effects remain incomplete until their mechanics are normalized and verified.",
+      "source_tiers": [
+        {
+          "min_units": 1,
+          "max_units": 25000,
+          "style": 4,
+          "variables": {
+            "DamageAmp": 0.07000000029802322,
+            "Durability": 0.050000011920928955
+          }
+        }
+      ],
+      "tiers": [
+        {
+          "min_units": 1,
+          "effects": []
+        }
+      ]
+    },
+    {
+      "api_name": "DA_DravenUniqueTrait18",
+      "source_name": "Caça-recompensas",
+      "source_description": "Escolha uma missão. O seu Draven mais forte pode progredir na missão para receber a recompensa. Ao cumprir uma missão, escolha outra.",
+      "effects_complete": false,
+      "coverage_status": "not_implemented",
+      "coverage_note": "Source trait is registered with its real source tiers; combat effects remain incomplete until their mechanics are normalized and verified.",
+      "source_tiers": [
+        {
+          "min_units": 1,
+          "max_units": 25000,
+          "style": 4,
+          "variables": {}
+        }
+      ],
+      "tiers": [
+        {
+          "min_units": 1,
+          "effects": []
+        }
+      ]
+    },
+    {
+      "api_name": "DA_Emerald18",
+      "source_name": "Aspecto Esmeralda",
+      "source_description": "Arraste um aliado até o seu Taric mais forte para pareá-los, concedendo ao aliado efeitos poderosos através da habilidade do Taric.",
+      "effects_complete": false,
+      "coverage_status": "not_implemented",
+      "coverage_note": "Source trait is registered with its real source tiers; combat effects remain incomplete until their mechanics are normalized and verified.",
+      "source_tiers": [
+        {
+          "min_units": 1,
+          "max_units": 25000,
+          "style": 4,
+          "variables": {}
+        }
+      ],
+      "tiers": [
+        {
+          "min_units": 1,
+          "effects": []
+        }
+      ]
+    },
+    {
+      "api_name": "DA_FloraFatalis18",
+      "source_name": "Flora Fatalis",
+      "source_description": "Campeões Flora Fatalis ceifam inimigos em eliminações, recebendo:<br><row>(@MinUnits@) @Mana@ de Mana</row><br><row>(@MinUnits@) e curando o aliado com a Vida mais baixa em @PercentHeal*100@% da Vida máxima.</row>",
+      "effects_complete": false,
+      "coverage_status": "not_implemented",
+      "coverage_note": "Source trait is registered with its real source tiers; combat effects remain incomplete until their mechanics are normalized and verified.",
+      "source_tiers": [
+        {
+          "min_units": 1,
+          "max_units": 1,
+          "style": 1,
+          "variables": {
+            "Mana": 10
+          }
+        },
+        {
+          "min_units": 2,
+          "max_units": 25000,
+          "style": 5,
+          "variables": {
+            "PercentHeal": 0.07000000029802322
+          }
+        }
+      ],
+      "tiers": [
+        {
+          "min_units": 1,
+          "effects": []
+        },
+        {
+          "min_units": 2,
+          "effects": []
+        }
+      ]
+    },
+    {
+      "api_name": "DA_Juggernaut18",
+      "source_name": "Colosso",
+      "source_description": "Sua equipe recebe Durabilidade. Colossos recebem mais.<br><row>(@MinUnits@) @TeamDurability*100@% %i:scaleDR% ou @JuggernautDurability*100@% %i:scaleDR%</row><br><row>(@MinUnits@) @TeamDurability*100@% %i:scaleDR% ou @JuggernautDurability*100@% %i:scaleDR%</row><br><row>(@MinUnits@) @TeamDurability*100@% %i:scaleDR% ou @JuggernautDurability*100@% %i:scaleDR%</row>",
+      "effects_complete": false,
+      "coverage_status": "not_implemented",
+      "coverage_note": "Source trait is registered with its real source tiers; combat effects remain incomplete until their mechanics are normalized and verified.",
+      "source_tiers": [
+        {
+          "min_units": 2,
+          "max_units": 3,
+          "style": 1,
+          "variables": {
+            "{6eab9c5e}": 0.19999998807907104,
+            "{f8c73243}": 0.04000002145767212
+          }
+        },
+        {
+          "min_units": 4,
+          "max_units": 5,
+          "style": 3,
+          "variables": {
+            "{6eab9c5e}": 0.30000001192092896,
+            "{f8c73243}": 0.06000000238418579
+          }
+        },
+        {
+          "min_units": 6,
+          "max_units": 25000,
+          "style": 5,
+          "variables": {
+            "{6eab9c5e}": 0.42000001668930054,
+            "{f8c73243}": 0.07999998331069946
+          }
+        }
+      ],
+      "tiers": [
+        {
+          "min_units": 2,
+          "effects": []
+        },
+        {
+          "min_units": 4,
+          "effects": []
+        },
+        {
+          "min_units": 6,
+          "effects": []
+        }
+      ]
+    },
+    {
+      "api_name": "DA_Primal18",
+      "source_name": "Primordial",
+      "source_description": "Escolha uma das quatro Bênçãos Primitivas.<br><row>(@MinUnits@)</row><br><row>(@MinUnits@)</row>",
+      "effects_complete": false,
+      "coverage_status": "not_implemented",
+      "coverage_note": "Source trait is registered with its real source tiers; combat effects remain incomplete until their mechanics are normalized and verified.",
+      "source_tiers": [
+        {
+          "min_units": 2,
+          "max_units": 3,
+          "style": 1,
+          "variables": {}
+        },
+        {
+          "min_units": 4,
+          "max_units": 25000,
+          "style": 5,
+          "variables": {}
+        }
+      ],
+      "tiers": [
+        {
+          "min_units": 2,
+          "effects": []
+        },
+        {
+          "min_units": 4,
+          "effects": []
+        }
+      ]
+    },
+    {
+      "api_name": "DA_Riftbeast18",
+      "source_name": "Fera do Rift",
+      "source_description": "<row>(@MinUnits@) Use a Marca de Alfa para conceder um fortalecimento único a uma Fera do Rift</row><br><row>(@MinUnits@) A cada @OverrunCombats@ combates, sua próxima Loja é invadida por Feras do Rift</row><br><row>(@MinUnits@) No início do combate e a cada 5s, as Feras do Rift crescem, recebendo: <br>@CapstoneAD*100@% %i:scaleAD% @CapstoneAP*100@% %i:scaleAP% @CapstoneAspd*100@% %i:scaleAS%<br>+@CapstoneArmor@ %i:scaleArmor% +@CapstoneMR@ %i:scaleMR% +@CapstoneHealth@ %i:scaleHealth% +@CapstoneManaRegen@ %i:scaleManaRegen%</row><br><row>(@MinUnits@) +@TeamSize@ de tamanho máximo da equipe</row>",
+      "effects_complete": false,
+      "coverage_status": "not_implemented",
+      "coverage_note": "Source trait is registered with its real source tiers; combat effects remain incomplete until their mechanics are normalized and verified.",
+      "source_tiers": [
+        {
+          "min_units": 3,
+          "max_units": 4,
+          "style": 1,
+          "variables": {}
+        },
+        {
+          "min_units": 5,
+          "max_units": 6,
+          "style": 3,
+          "variables": {
+            "{e8d16db1}": 3
+          }
+        },
+        {
+          "min_units": 7,
+          "max_units": 9,
+          "style": 5,
+          "variables": {
+            "{0776b071}": 0.05999999865889549,
+            "{08cfb22e}": 50,
+            "{0d6c2c87}": 5,
+            "{1b76cfed}": 0.05999999865889549,
+            "{3230276c}": 1,
+            "{4e1998f4}": 0.059999942779541016,
+            "{a8c6eeaf}": 5
+          }
+        },
+        {
+          "min_units": 10,
+          "max_units": 25000,
+          "style": 5,
+          "variables": {
+            "TeamSize": 2
+          }
+        }
+      ],
+      "tiers": [
+        {
+          "min_units": 3,
+          "effects": []
+        },
+        {
+          "min_units": 5,
+          "effects": []
+        },
+        {
+          "min_units": 7,
+          "effects": []
+        },
+        {
+          "min_units": 10,
+          "effects": []
+        }
+      ]
     }
-  ]
+  ],
+  "source_trait_count": 36
 }
