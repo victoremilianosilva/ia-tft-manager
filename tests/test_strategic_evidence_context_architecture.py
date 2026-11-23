@@ -44,7 +44,7 @@ assert "refresh_native_strategic_state" in source
 assert "refresh_native_composition_candidates" in source
 
 # Composition evaluation derives traits and item affinity from native owners and semantic profiles.
-ci_start = source.index("// New Composition Intelligence pipeline")
+ci_start = source.index("// BEGIN ISOLATED NATIVE PLANNER BOUNDARY.")
 ci_end = source.index("// Correlate strategic/economic context", ci_start)
 composition_intelligence_input = source[ci_start:ci_end]
 assert "info.core_traits" not in composition_intelligence_input

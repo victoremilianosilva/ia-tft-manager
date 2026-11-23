@@ -5,6 +5,7 @@ import torch
 
 from semantic_observation import (
     SEMANTIC_ENTITY_SLOTS,
+    SEMANTIC_GLOBAL_FEATURES,
     SEMANTIC_NUMERIC_DIM,
     SEMANTIC_TRAIT_VOCAB_SIZE,
     SEMANTIC_POLICY_STATE_KEYS,
@@ -29,7 +30,7 @@ def _unit(occupied=False, champion_id="", star=0, cost=0):
         "cost": cost,
         "items": [],
         "trait_names": [],
-        "role": 3,
+        "role": 1,
         "attack_damage": 100.0,
         "attack_speed": 1.0,
         "max_health": 1000.0,
@@ -81,7 +82,7 @@ def _metadata():
     player["bench"][0] = _unit(True, "TFT_TestChampion", 1, 3)
     player["strategic_state"] = {
         "contract_id": "tft.strategic-owner-observation",
-        "contract_version": 2,
+        "contract_version": 3,
         "source_namespace": "tft.engine.strategic-owners",
         "producer": "TFTEngine::get_audit_snapshot",
         "episode_id": 5,
@@ -113,6 +114,16 @@ def _metadata():
             }
         ],
         "opportunity_cost_available": False,
+        "planner_outputs_valid": False,
+        "planner_output_sequence": 0,
+        "unit_priorities": [],
+        "opportunity_costs": [],
+        "lineup_selected_unit_ids": [],
+        "lineup_entry_unit_ids": [],
+        "lineup_exit_unit_ids": [],
+        "lineup_deferred_unit_ids": [],
+        "strategic_refresh_failed": False,
+        "strategic_refresh_failure_reason": "",
     }
     return {
         "engine_instance_id": "engine-1",
@@ -135,28 +146,130 @@ def _metadata():
     }
 
 
+def test_strategic_refresh_failure_is_explicit_in_semantic_ppo_state():
+    metadata = _metadata()
+    strategic = metadata["native_player_state"]["strategic_state"]
+    strategic["strategic_refresh_failed"] = True
+    strategic["strategic_refresh_failure_reason"] = "native_strategic_refresh_exception: test"
+    projected = project_native_player_state(metadata, {"TFT_TestChampion": 17})
+    assert projected["numeric"][53] == 1.0
+
+
+def test_native_planner_priority_lineup_and_opportunity_cost_reach_semantic_ppo_features():
+    metadata = _metadata()
+    strategic = metadata["native_player_state"]["strategic_state"]
+    strategic["planner_outputs_valid"] = True
+    strategic["planner_output_sequence"] = 5
+    strategic["unit_priorities"] = [{
+        "champion_internal_id": 17,
+        "intent": 1,
+        "relation": 0,
+        "priority": 80,
+        "target_star": 2,
+        "sale_restricted": False,
+        "confidence": 0.8,
+    }]
+    strategic["lineup_selected_unit_ids"] = [17]
+    strategic["lineup_entry_unit_ids"] = []
+    strategic["lineup_exit_unit_ids"] = []
+    strategic["lineup_deferred_unit_ids"] = []
+    strategic["opportunity_cost_available"] = True
+    strategic["opportunity_costs"] = [{
+        "champion_internal_id": 17,
+        "value": 25.0,
+        "uncertainty": 0.2,
+        "horizon_rounds": 1,
+        "source": "same_snapshot_competing_alternative.v1",
+        "forgone_candidate_id": "action:alternative:1",
+        "value_basis": "contextual_action_score.v1",
+    }]
+    projected = project_native_player_state(metadata, {"TFT_TestChampion": 17})
+    entity_start = SEMANTIC_GLOBAL_FEATURES
+    assert projected["numeric"][entity_start + 39] == 0.8
+    assert projected["numeric"][entity_start + 41] == 1.0
+    assert projected["numeric"][entity_start + 43] == 0.25
+    assert projected["numeric"][entity_start + 44] == 1.0
+
+
+def test_semantic_projection_rejects_inconsistent_native_planner_contracts():
+    stale = _metadata()
+    strategic = stale["native_player_state"]["strategic_state"]
+    strategic["planner_outputs_valid"] = True
+    strategic["planner_output_sequence"] = strategic["strategic_context_sequence"] - 1
+    with pytest.raises(ValueError, match="planner outputs are not bound"):
+        project_native_player_state(stale, {"TFT_TestChampion": 17})
+
+    unavailable_rows = _metadata()
+    strategic = unavailable_rows["native_player_state"]["strategic_state"]
+    strategic["unit_priorities"] = [{
+        "champion_internal_id": 17, "intent": 1, "relation": 0,
+        "priority": 80, "target_star": 2, "sale_restricted": False,
+        "confidence": 0.8,
+    }]
+    with pytest.raises(ValueError, match="unavailable planner outputs"):
+        project_native_player_state(unavailable_rows, {"TFT_TestChampion": 17})
+
+    mismatched_failure = _metadata()
+    strategic = mismatched_failure["native_player_state"]["strategic_state"]
+    strategic["strategic_refresh_failed"] = True
+    with pytest.raises(ValueError, match="failure flag/reason mismatch"):
+        project_native_player_state(mismatched_failure, {"TFT_TestChampion": 17})
+
+    duplicate_lineup = _metadata()
+    strategic = duplicate_lineup["native_player_state"]["strategic_state"]
+    strategic["planner_outputs_valid"] = True
+    strategic["planner_output_sequence"] = strategic["strategic_context_sequence"]
+    strategic["lineup_selected_unit_ids"] = [17, 17]
+    with pytest.raises(ValueError, match="contains duplicate IDs"):
+        project_native_player_state(duplicate_lineup, {"TFT_TestChampion": 17})
+
+
+def test_semantic_projection_rejects_duplicate_or_unavailable_opportunity_cost():
+    row = _metadata()
+    strategic = row["native_player_state"]["strategic_state"]
+    opportunity = {
+        "champion_internal_id": 17,
+        "value": 25.0,
+        "uncertainty": 0.2,
+        "horizon_rounds": 1,
+        "source": "same_snapshot_competing_alternative.v1",
+        "forgone_candidate_id": "action:alternative:1",
+        "value_basis": "contextual_action_score.v1",
+    }
+    strategic["opportunity_cost_available"] = True
+    strategic["opportunity_costs"] = [opportunity, dict(opportunity)]
+    with pytest.raises(ValueError, match="invalid or duplicate evidence"):
+        project_native_player_state(row, {"TFT_TestChampion": 17})
+
+    row = _metadata()
+    strategic = row["native_player_state"]["strategic_state"]
+    strategic["opportunity_cost_available"] = True
+    with pytest.raises(ValueError, match="diverges from native opportunity rows"):
+        project_native_player_state(row, {"TFT_TestChampion": 17})
+
+
 def test_native_semantic_projection_has_stable_shape_and_explicit_identity():
     catalog = {"TFT_TestChampion": 17}
     projected = project_native_player_state(_metadata(), catalog)
     assert len(projected["numeric"]) == SEMANTIC_NUMERIC_DIM
     assert len(projected["champion_ids"]) == SEMANTIC_ENTITY_SLOTS
     assert projected["champion_ids"][0] == 18
-    assert projected["numeric"][52] == 1.0  # occupied
-    assert projected["numeric"][57] == 1.0  # mapped champion identity valid
-    assert projected["numeric"][58] == 1.0  # active composition member
-    assert projected["numeric"][59] == 1.0  # active core member
-    assert projected["numeric"][60] == 1.0  # direction reference
-    assert projected["numeric"][61] == 1.0  # pivot reference
-    assert projected["numeric"][62] == 4.0 / 9.0  # one 2-star plus one 1-star copy
-    assert projected["numeric"][63] == 0.0  # native UnitCopyProgress reports no 2-star progress
+    assert projected["numeric"][54] == 1.0  # occupied
+    assert projected["numeric"][59] == 1.0  # mapped champion identity valid
+    assert projected["numeric"][60] == 1.0  # active composition member
+    assert projected["numeric"][61] == 1.0  # active core member
+    assert projected["numeric"][62] == 1.0  # direction reference
+    assert projected["numeric"][63] == 1.0  # pivot reference
+    assert projected["numeric"][64] == 4.0 / 9.0  # one 2-star plus one 1-star copy
+    assert projected["numeric"][65] == 0.0  # native UnitCopyProgress reports no 2-star progress
     # The appended 17-field item target profile comes from the native snapshot.
-    assert projected["numeric"][64] == 1.0  # occupied target
-    assert projected["numeric"][65] == 1.0  # board target
+    assert projected["numeric"][66] == 1.0  # occupied target
+    assert projected["numeric"][67] == 1.0  # board target
     assert projected["numeric"][71] == 1.0  # classifier role one-hot (fighter)
-    assert projected["numeric"][73] == 1.0  # frontline row
-    assert projected["numeric"][75] == 0.5  # attack damage / 200
-    assert projected["numeric"][80] == 1.0 / 3.0  # equipped item count / 3
-    bench_target_start = 52 + 28 * 39 + 12
+    assert projected["numeric"][75] == 1.0  # frontline row
+    assert projected["numeric"][77] == 0.5  # attack damage / 200
+    assert projected["numeric"][82] == 1.0 / 3.0  # equipped item count / 3
+    bench_target_start = 54 + 28 * 45 + 12
     assert projected["numeric"][bench_target_start + 2] == 1.0
     assert projected["numeric"][bench_target_start + 9] == 0.0
     assert projected["numeric"][21] == 5.0 / 9.0  # board capacity
@@ -174,7 +287,7 @@ def test_copy_progress_consumes_native_unit_copy_progress_without_recounting():
         "copies_toward_next_star"
     ] = 2
     projected = project_native_player_state(row, {"TFT_TestChampion": 17})
-    assert projected["numeric"][63] == 1.0
+    assert projected["numeric"][65] == 1.0
 
 
 def test_native_trait_identities_are_stably_hashed_and_exposed_to_policy():
@@ -243,7 +356,7 @@ def test_unknown_champion_is_not_fabricated_and_is_marked_invalid():
     row["native_player_state"]["board"][0]["champion_id"] = "TFT_UnknownChampion"
     projected = project_native_player_state(row, {"TFT_TestChampion": 17})
     assert projected["champion_ids"][0] == 0
-    assert projected["numeric"][57] == 0.0
+    assert projected["numeric"][59] == 0.0
 
 
 def test_projection_rejects_missing_native_provenance_or_player_mismatch():
@@ -337,7 +450,7 @@ def test_semantic_projection_hash_binds_owner_identity_even_when_tensor_is_equal
 
 
 
-def test_semantic_v2_checkpoint_has_only_explicit_v6_warm_start_path():
+def test_semantic_v2_checkpoint_has_only_explicit_v7_warm_start_path():
     import copy
     import hashlib
     import json
@@ -349,6 +462,7 @@ def test_semantic_v2_checkpoint_has_only_explicit_v6_warm_start_path():
     payload["contract_id"] = "tft.ppo.semantic-native-state.v2"
     payload["version"] = 2
     payload["source"]["contract_version"] = 3
+    payload["strategic_owner_source"]["contract_version"] = 2
     payload["global_features"] = payload["global_features"][:21]
     payload["entity_slots"]["features"] = payload["entity_slots"]["features"][:12]
     payload["numeric_dimension"] = 21 + SEMANTIC_ENTITY_SLOTS * 12
@@ -370,6 +484,44 @@ def test_semantic_v2_checkpoint_has_only_explicit_v6_warm_start_path():
     validate_semantic_state_warm_start_migration(historical, catalog)
     with pytest.raises(ValueError, match="incompatible"):
         validate_semantic_state_checkpoint_contract(historical, catalog)
+
+def test_semantic_v6_checkpoint_has_explicit_v7_warm_start_path():
+    import copy
+    import hashlib
+    import json
+
+    catalog = {"TFT_TestChampion": 17}
+    current = build_semantic_state_checkpoint_contract(catalog)
+    historical = copy.deepcopy(current)
+    payload = historical["contract"]
+    payload["contract_id"] = "tft.ppo.semantic-native-state.v6"
+    payload["version"] = 6
+    payload["strategic_owner_source"]["contract_version"] = 2
+    payload["global_features"] = payload["global_features"][:52]
+    payload["entity_slots"]["features"] = payload["entity_slots"]["features"][:39]
+    payload["numeric_dimension"] -= 2 + SEMANTIC_ENTITY_SLOTS * 6
+    payload["encoder"]["numeric_plus_embedding_input_dim"] -= (
+        2 + SEMANTIC_ENTITY_SLOTS * 6
+    )
+    canonical = json.dumps(
+        payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    ).encode("utf-8")
+    historical["sha256"] = hashlib.sha256(canonical).hexdigest()
+
+    validate_semantic_state_checkpoint_integrity(historical)
+    validate_semantic_state_warm_start_migration(historical, catalog)
+    with pytest.raises(ValueError, match="incompatible"):
+        validate_semantic_state_checkpoint_contract(historical, catalog)
+
+    unrelated_change = copy.deepcopy(historical)
+    unrelated_change["contract"]["critic_action_mask_input"] = "legacy_fused_input"
+    canonical = json.dumps(
+        unrelated_change["contract"], sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    ).encode("utf-8")
+    unrelated_change["sha256"] = hashlib.sha256(canonical).hexdigest()
+    with pytest.raises(ValueError, match="all other contract fields must match"):
+        validate_semantic_state_warm_start_migration(unrelated_change, catalog)
+
 
 def test_semantic_checkpoint_manifest_integrity_is_separate_from_runtime_compatibility():
     import copy
@@ -398,7 +550,7 @@ def test_semantic_checkpoint_manifest_integrity_is_separate_from_runtime_compati
         validate_semantic_state_checkpoint_integrity(changed)
 
 
-def test_semantic_v6_checkpoint_weight_contract_requires_trait_embedding():
+def test_semantic_v7_checkpoint_weight_contract_requires_trait_embedding():
     complete = {key: object() for key in SEMANTIC_POLICY_STATE_KEYS}
     assert semantic_policy_state_keys(complete) == SEMANTIC_POLICY_STATE_KEYS
     validate_semantic_policy_state_dict(complete)
@@ -406,5 +558,5 @@ def test_semantic_v6_checkpoint_weight_contract_requires_trait_embedding():
     incomplete = dict(complete)
     incomplete.pop("semantic_trait_embedding.weight")
     assert semantic_policy_state_keys(incomplete) != SEMANTIC_POLICY_STATE_KEYS
-    with pytest.raises(ValueError, match="Semantic v6 policy weights are incomplete"):
+    with pytest.raises(ValueError, match="Semantic v7 policy weights are incomplete"):
         validate_semantic_policy_state_dict(incomplete)

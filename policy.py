@@ -487,7 +487,7 @@ class TFTPolicy(nn.Module):
             global_part = None
         else:
             if self.require_semantic_state:
-                raise ValueError("native PPO inference requires semantic_state v6; flat positional fallback is disabled")
+                raise ValueError("native PPO inference requires semantic_state v7; flat positional fallback is disabled")
             board_part = obs[:, self.pre_board_dim : self.pre_board_dim + self.board_flat_dim]
             board_2d = board_part.view(-1, self.num_cell_features, 4, 7)
             pre_part = obs[:, :self.pre_board_dim]

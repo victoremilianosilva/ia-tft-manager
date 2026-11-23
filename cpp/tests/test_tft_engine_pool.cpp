@@ -20,7 +20,7 @@
 #include <unordered_set>
 #include <vector>
 
-void require(bool condition, const char* message) {
+void require(bool condition, const std::string& message) {
     if (!condition) {
         throw std::runtime_error(message);
     }
@@ -497,8 +497,7 @@ int main(int argc, char** argv) {
         require(engine.pool_total_available() == pool_before_invalid_move,
                 "Movimento inválido alterou o estoque.");
         require(engine.get_anti_loop_metrics()[0].execution_attempts ==
-                    metrics_before_invalid_move.execution_attempts,
-                "Movimento inválido alterou as métricas anti-loop.");
+                    metrics_before_invalid_move.execution_attempts,                "Movimento inválido alterou as métricas anti-loop.");
 
         actions[0].values = {6, 0, 0, 0, 0, 0};
 
@@ -998,7 +997,6 @@ int main(int argc, char** argv) {
             require(equipped_team.units[0].items[0].attack_damage == 10.0f &&
                     equipped_team.units[0].items[1].health == 150.0f,
                     "Adaptador de catalogo perdeu atributos ao criar CombatItem.");
-
             auto baseline_team = equipped_team;
             baseline_team.units[0].items.clear();
             tft::CombatTeam dummy_team{};
@@ -1365,7 +1363,16 @@ int main(int argc, char** argv) {
         require(native_pivot_state.pivot_candidate_valid &&
                     !native_pivot_state.pivot_candidate_identity.empty() &&
                     !native_pivot_state.pivot_target_composition_identity.empty(),
-                "Engine nao projetou candidato/destino de pivot a partir das evidencias nativas.");
+                "Engine nao projetou candidato/destino de pivot a partir das evidencias nativas. "
+                "refresh_failed=" + std::to_string(native_pivot_state.strategic_refresh_failed) +
+                " refresh_reason=" + native_pivot_state.strategic_refresh_failure_reason +
+                " direction=" + native_pivot_state.direction_identity +
+                " direction_value=" + native_pivot_state.direction_value_for_diagnostics +
+                " pivot_generation=" + native_pivot_state.pivot_generation_diagnostic_for_diagnostics +
+                " active_composition=" + native_pivot_state.active_composition_id +
+                " active_version=" + std::to_string(native_pivot_state.active_composition_version) +
+                " pivot_identity=" + native_pivot_state.pivot_candidate_identity +
+                " pivot_target=" + native_pivot_state.pivot_target_composition_identity);
         require(native_pivot_state.pivot_source_composition_version ==
                     native_pivot_state.active_composition_version &&
                     native_pivot_state.active_composition_version == 1,

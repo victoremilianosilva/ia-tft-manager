@@ -65,6 +65,9 @@ struct UnitPriorityEvidence {
     bool trait_completion{false};
     // Pool availability is separate from owned/shop copies. -1 means unknown.
     std::int32_t pool_remaining{-1};
+    // Appended availability flags preserve legacy aggregate initialization.
+    bool board_contribution_available{true};
+    bool synergy_contribution_available{true};
 };
 
 struct UnitPriorityOwnedUnit {
@@ -352,17 +355,21 @@ private:
         out.copies_in_shop = ev ? std::max(0, ev->copies_in_shop) : 0;
         out.pool_known = ev && ev->pool_remaining >= 0;
         out.pool_remaining = out.pool_known ? ev->pool_remaining : -1;
-        out.board_contribution = ev ? clamp01(ev->board_contribution) : 0.5;
-        out.synergy_contribution = ev ? clamp01(ev->synergy_contribution) : 0.5;
+        out.board_contribution = ev && ev->board_contribution_available
+            ? clamp01(ev->board_contribution) : 0.0;
+        out.synergy_contribution = ev && ev->synergy_contribution_available
+            ? clamp01(ev->synergy_contribution) : 0.0;
         out.confidence = ev ? clamp01(ev->confidence) : 0.25;
         out.priority = tier_base(out.tier) + std::clamp(target.priority, 0, 49);
         out.reasons.push_back({UnitReasonCode::RequiredByActiveComposition,
             target.core ? "Unidade core da composição ativa." : "Unidade prevista na composição ativa."});
         if (target.core)
             out.reasons.push_back({UnitReasonCode::CorePriority, "A composição marca esta unidade como core."});
-        if (ev && out.board_contribution >= config_.keep_contribution_threshold)
+        if (ev && ev->board_contribution_available &&
+            out.board_contribution >= config_.keep_contribution_threshold)
             out.reasons.push_back({UnitReasonCode::BoardContribution, "Contribuição observada no board acima do limite configurado."});
-        if (ev && out.synergy_contribution >= config_.keep_contribution_threshold)
+        if (ev && ev->synergy_contribution_available &&
+            out.synergy_contribution >= config_.keep_contribution_threshold)
             out.reasons.push_back({UnitReasonCode::SynergyContribution, "Contribuição observada para sinergias acima do limite configurado."});
 
         const auto affordable_shop = affordable_shop_copies(ev, context);
@@ -393,7 +400,8 @@ private:
             out.reasons.push_back({UnitReasonCode::InsufficientEvidence, "Evidência insuficiente para promover upgrade ou substituição; manter em observação."});
         } else if (out.highest_star < 3 &&
                    copies_to_upgrade >= std::max(1, config_.copies_to_next_star_threshold) &&
-                   (out.board_contribution >= config_.upgrade_contribution_threshold || target.core ||
+                   ((ev && ev->board_contribution_available &&
+                     out.board_contribution >= config_.upgrade_contribution_threshold) || target.core ||
                     target.role == UnitRole::MainCarry || target.role == UnitRole::SecondaryCarry ||
                     (ev && ev->trait_completion))) {
             out.intent = UnitIntent::Upgrade;
@@ -434,8 +442,10 @@ private:
             owned.copies_by_star, out.highest_star, 0);
         out.has_pair = out.highest_star < 3 && owned_upgrade_progress >= 1;
         out.copies_needed_for_pair = out.highest_star < 3 && !out.has_pair ? 1 : 0;
-        out.board_contribution = ev ? clamp01(ev->board_contribution) : 0.0;
-        out.synergy_contribution = ev ? clamp01(ev->synergy_contribution) : 0.0;
+        out.board_contribution = ev && ev->board_contribution_available
+            ? clamp01(ev->board_contribution) : 0.0;
+        out.synergy_contribution = ev && ev->synergy_contribution_available
+            ? clamp01(ev->synergy_contribution) : 0.0;
         out.confidence = ev ? clamp01(ev->confidence) : 0.2;
         out.priority = 0;
         const auto* transition = context.transition ? &*context.transition : nullptr;

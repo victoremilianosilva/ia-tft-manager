@@ -315,9 +315,29 @@ struct AuditUnitCopyProgressSnapshot {
     std::int32_t highest_star{0};
 };
 
+struct AuditUnitStrategicPrioritySnapshot {
+    std::int32_t champion_internal_id{-1};
+    std::int32_t intent{0};
+    std::int32_t relation{0};
+    std::int32_t priority{0};
+    std::int32_t target_star{0};
+    bool sale_restricted{false};
+    double confidence{0.0};
+};
+
+struct AuditUnitOpportunityCostSnapshot {
+    std::int32_t champion_internal_id{-1};
+    double value{0.0};
+    double uncertainty{1.0};
+    std::uint32_t horizon_rounds{0};
+    std::string source;
+    std::string forgone_candidate_id;
+    std::string value_basis;
+};
+
 struct AuditStrategicOwnerSnapshot {
     std::string contract_id{"tft.strategic-owner-observation"};
-    std::uint32_t contract_version{2};
+    std::uint32_t contract_version{3};
     std::string source_namespace{"tft.engine.strategic-owners"};
     std::string producer{"TFTEngine::get_audit_snapshot"};
     std::uint64_t episode_id{0};
@@ -332,11 +352,15 @@ struct AuditStrategicOwnerSnapshot {
     std::vector<std::int32_t> active_core_unit_ids;
     bool direction_valid{false};
     std::string direction_identity;
+    // Internal audit diagnostic; not part of the serialized PPO contract.
+    std::string direction_value_for_diagnostics;
     std::uint32_t direction_selected_round{0};
     std::vector<std::int32_t> direction_reference_unit_ids;
     bool pivot_candidate_valid{false};
     std::string pivot_candidate_identity;
     std::string pivot_target_composition_identity;
+    // Internal diagnostic for native pivot proposal production; not serialized.
+    std::string pivot_generation_diagnostic_for_diagnostics;
     std::uint64_t pivot_source_composition_version{0};
     std::vector<std::int32_t> pivot_reference_unit_ids;
     // Values are produced by strategy::UnitCopyProgress from this snapshot's
@@ -347,6 +371,17 @@ struct AuditStrategicOwnerSnapshot {
     // Sequence consumed by strategic evidence/candidate/action owners; a distinct scope.
     // Appended to preserve existing aggregate initialization.
     std::uint64_t strategic_context_sequence{0};
+    // Same-cycle native planner outputs projected as PPO context, never as forced actions.
+    bool planner_outputs_valid{false};
+    std::uint64_t planner_output_sequence{0};
+    std::vector<AuditUnitStrategicPrioritySnapshot> unit_priorities;
+    std::vector<AuditUnitOpportunityCostSnapshot> opportunity_costs;
+    std::vector<std::int32_t> lineup_selected_unit_ids;
+    std::vector<std::int32_t> lineup_entry_unit_ids;
+    std::vector<std::int32_t> lineup_exit_unit_ids;
+    std::vector<std::int32_t> lineup_deferred_unit_ids;
+    bool strategic_refresh_failed{false};
+    std::string strategic_refresh_failure_reason;
 };
 
 struct AuditPlayerSnapshot {

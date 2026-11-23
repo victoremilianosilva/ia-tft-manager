@@ -4,7 +4,7 @@ The wrapper intentionally contains no game rules. The C++ lobby owns the
 match state, the eight player environments, action execution, combat,
 rewards, the neutral observation carrier and masks. The observation array is
 only a [players, 1] batch/device carrier; PPO decision features must be built
-from the correlated native semantic-v6 snapshot. Python keeps only the
+from the correlated native semantic-v7 snapshot. Python keeps only the
 interface expected by LobbyVectorEnv/Trainer.
 """
 from __future__ import annotations
@@ -488,7 +488,7 @@ class CppTFTLobbyWrapper:
                 strategic.get("contract_id") != "tft.strategic-owner-observation"
                 or isinstance(strategic_version, bool)
                 or not isinstance(strategic_version, int)
-                or strategic_version != 2
+                or strategic_version != 3
                 or strategic.get("producer") != "TFTEngine::get_audit_snapshot"
                 or strategic.get("source_namespace") != "tft.engine.strategic-owners"
             ):
@@ -580,8 +580,92 @@ class CppTFTLobbyWrapper:
                 or strategic["pivot_source_composition_version"] <= 0
             ):
                 raise RuntimeError("Identidade/versão do pivot nativo inválida.")
-            if strategic["opportunity_cost_available"]:
-                raise RuntimeError("Custo de oportunidade sem produtor nativo validado.")
+            opportunity_rows = strategic.get("opportunity_costs")
+            if not isinstance(opportunity_rows, list):
+                raise RuntimeError("Strategic owner snapshot sem opportunity_costs nativo.")
+            opportunity_ids = set()
+            for row in opportunity_rows:
+                if not isinstance(row, dict):
+                    raise RuntimeError("opportunity_costs contém registro inválido.")
+                champion_id = row.get("champion_internal_id")
+                amount = row.get("value")
+                uncertainty = row.get("uncertainty")
+                horizon = row.get("horizon_rounds")
+                source = row.get("source")
+                value_basis = row.get("value_basis")
+                forgone = row.get("forgone_candidate_id")
+                if (
+                    isinstance(champion_id, bool) or not isinstance(champion_id, int) or champion_id < 0
+                    or champion_id in opportunity_ids
+                    or isinstance(amount, bool) or not isinstance(amount, (int, float)) or not np.isfinite(amount) or amount < 0
+                    or isinstance(uncertainty, bool) or not isinstance(uncertainty, (int, float)) or not np.isfinite(uncertainty) or not 0 <= uncertainty < 1
+                    or isinstance(horizon, bool) or not isinstance(horizon, int) or horizon <= 0
+                    or source != "same_snapshot_competing_alternative.v1"
+                    or value_basis not in ("contextual_action_score.v1", "native_board_contribution.v1")
+                    or not isinstance(forgone, str) or not forgone
+                ):
+                    raise RuntimeError("opportunity_costs contém evidência nativa inválida.")
+                opportunity_ids.add(champion_id)
+            if strategic["opportunity_cost_available"] != bool(opportunity_ids):
+                raise RuntimeError("Disponibilidade de opportunity cost diverge das evidências nativas.")
+
+            planner_valid = strategic.get("planner_outputs_valid")
+            strategic_failed = strategic.get("strategic_refresh_failed")
+            failure_reason = strategic.get("strategic_refresh_failure_reason")
+            planner_sequence = strategic.get("planner_output_sequence")
+            if (
+                not isinstance(planner_valid, bool)
+                or not isinstance(strategic_failed, bool)
+                or not isinstance(failure_reason, str)
+                or strategic_failed != bool(failure_reason)
+                or isinstance(planner_sequence, bool)
+                or not isinstance(planner_sequence, int)
+                or planner_sequence < 0
+            ):
+                raise RuntimeError("Estado de planner/refresh estratégico inválido.")
+            priority_rows = strategic.get("unit_priorities")
+            lineup_fields = (
+                "lineup_selected_unit_ids", "lineup_entry_unit_ids",
+                "lineup_exit_unit_ids", "lineup_deferred_unit_ids",
+            )
+            if not isinstance(priority_rows, list):
+                raise RuntimeError("Strategic owner snapshot sem unit_priorities nativo.")
+            lineup_ids = {}
+            for field in lineup_fields:
+                values = strategic.get(field)
+                if (
+                    not isinstance(values, list)
+                    or any(isinstance(item, bool) or not isinstance(item, int) or item < 0 for item in values)
+                    or len(values) != len(set(values))
+                ):
+                    raise RuntimeError(f"Strategic owner contém IDs inválidos em {field}.")
+                lineup_ids[field] = set(values)
+            if planner_valid:
+                if planner_sequence != strategic_context_sequence:
+                    raise RuntimeError("Saídas do planner não pertencem à sequência estratégica atual.")
+                priority_ids = set()
+                for row in priority_rows:
+                    if not isinstance(row, dict):
+                        raise RuntimeError("unit_priorities contém registro inválido.")
+                    champion_id = row.get("champion_internal_id")
+                    priority = row.get("priority")
+                    intent = row.get("intent")
+                    confidence = row.get("confidence")
+                    target_star = row.get("target_star")
+                    sale_restricted = row.get("sale_restricted")
+                    if (
+                        isinstance(champion_id, bool) or not isinstance(champion_id, int) or champion_id < 0
+                        or champion_id in priority_ids
+                        or isinstance(priority, bool) or not isinstance(priority, int) or priority < 0
+                        or isinstance(intent, bool) or not isinstance(intent, int) or not 0 <= intent <= 6
+                        or isinstance(confidence, bool) or not isinstance(confidence, (int, float)) or not np.isfinite(confidence) or not 0 <= confidence <= 1
+                        or isinstance(target_star, bool) or not isinstance(target_star, int) or not 0 <= target_star <= 3
+                        or not isinstance(sale_restricted, bool)
+                    ):
+                        raise RuntimeError("unit_priorities contém evidência inválida ou duplicada.")
+                    priority_ids.add(champion_id)
+            elif priority_rows or any(lineup_ids.values()):
+                raise RuntimeError("Saídas indisponíveis do planner não podem publicar prioridades ou lineup.")
 
             retired_has_evidence = any(player[field] for field in retired_count_fields) or bool(retired_equipped) or bool(retired_anvils)
             active_has_ownership = bool(player["item_components"] or player["item_inventory"] or player["item_component_counts"] or player["item_inventory_counts"] or equipped or pending_flag or pending_sequence or player["pending_anvil_options"])

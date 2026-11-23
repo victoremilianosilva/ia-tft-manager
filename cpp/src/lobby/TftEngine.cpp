@@ -456,6 +456,11 @@ struct TFTEngine::Impl {
         strategic_shadow_external_active_identity{};
     std::array<std::uint64_t, kPlayersPerLobby>
         strategic_shadow_external_active_version{};
+    std::array<std::string, kPlayersPerLobby> strategic_refresh_failure_reasons{};
+    std::array<std::string, kPlayersPerLobby>
+        strategic_pivot_generation_diagnostics{};
+    std::array<std::vector<AuditUnitOpportunityCostSnapshot>, kPlayersPerLobby> strategic_opportunity_costs{};
+
     std::string strategic_shadow_audit_path;
 
 
@@ -1727,6 +1732,8 @@ struct TFTEngine::Impl {
         // Composition Intelligence diagnostics/Viewer pipeline. It consumes
         // the canonical per-player ActiveCompositionManager and live native
         // evidence without waiting for optional Viewer/diagnostic processing.
+        strategic_refresh_failure_reasons[i].clear();
+        strategic_pivot_generation_diagnostics[i] = "not_evaluated";
         if (strategic_shadow_runtimes[i]) {
             try {
                 auto& native_runtime = *strategic_shadow_runtimes[i];
@@ -1770,10 +1777,48 @@ struct TFTEngine::Impl {
                 planner_context.evidence.board_power = true;
                 planner_context.current_composition_direction =
                     strategic_planner_commitments[i].composition_direction;
-                if (planner_context.current_composition_direction.empty() && native_active &&
-                    native_active->candidate.composition_id.compare(0, 7, "native:") == 0) {
-                    planner_context.current_composition_direction =
-                        native_active->candidate.composition_id.substr(7);
+                const bool opaque_active_direction = source_active &&
+                    (planner_context.current_composition_direction ==
+                         source_active->candidate.composition_id ||
+                     planner_context.current_composition_direction.rfind(
+                         "native-candidate-set:", 0) == 0 ||
+                     planner_context.current_composition_direction.rfind(
+                         "native:", 0) == 0);
+                if (source_active &&
+                    (planner_context.current_composition_direction.empty() ||
+                     opaque_active_direction)) {
+                    // Native candidate IDs are snapshot-scoped and may be
+                    // retained after the generator advances. Resolve the
+                    // semantic direction from the exact row when possible.
+                    const auto active_generated = std::find_if(
+                        native_generation.candidates.begin(),
+                        native_generation.candidates.end(),
+                        [&](const auto& generated) {
+                            return generated.identity ==
+                                source_active->candidate.composition_id;
+                        });
+                    if (active_generated != native_generation.candidates.end()) {
+                        planner_context.current_composition_direction =
+                            active_generated->direction;
+                    } else {
+                        // The immutable candidate identity carries the explicit
+                        // semantic segment <candidate-set>:native:<direction>:<ids>.
+                        // Recover only that segment, never the full identity.
+                        const auto marker = source_active->candidate.composition_id.rfind(
+                            "native:");
+                        if (marker != std::string::npos) {
+                            const auto begin = marker + std::string("native:").size();
+                            const auto end = source_active->candidate.composition_id.find(
+                                ':', begin);
+                            if (end != std::string::npos && end > begin)
+                                planner_context.current_composition_direction =
+                                    source_active->candidate.composition_id.substr(
+                                        begin, end - begin);
+                        }
+                    }
+                    if (!planner_context.current_composition_direction.empty())
+                        strategic_planner_commitments[i].composition_direction =
+                            planner_context.current_composition_direction;
                 }
 
                 for (const auto& [champion_id, owned] : strategic_native_owned) {
@@ -1927,6 +1972,17 @@ struct TFTEngine::Impl {
                 }
 
                 auto planner_commitment = strategic_planner_commitments[i];
+                if (planner_commitment.composition_direction.empty() && source_active &&
+                    !planner_context.current_composition_direction.empty()) {
+                    // Composition Intelligence may publish the native candidate
+                    // before the strategic runtime's first refresh. Bind the
+                    // planner's committed direction from that exact native
+                    // candidate before constructing its composition-bound anchor.
+                    planner_commitment.composition_direction =
+                        planner_context.current_composition_direction;
+                    strategic_planner_commitments[i].composition_direction =
+                        planner_context.current_composition_direction;
+                }
                 strategy::StrategicPlanDecision planner_decision;
                 if (planner_context.current_composition_direction.empty()) {
                     planner_decision =
@@ -1944,12 +2000,35 @@ struct TFTEngine::Impl {
                 // native owner; this producer never publishes a composition.
                 const auto& active_direction_anchor =
                     native_runtime.machine().anchors().direction_anchor;
+                std::string pivot_generation_diagnostic = "source_active_missing";
+                if (source_active) {
+                    if (!active_direction_anchor.is_valid()) {
+                        pivot_generation_diagnostic = "direction_anchor_invalid";
+                    } else if (!active_direction_anchor.composition_bound) {
+                        pivot_generation_diagnostic = "direction_anchor_not_composition_bound";
+                    } else if (active_direction_anchor.composition_identity !=
+                               source_active->candidate.composition_id) {
+                        pivot_generation_diagnostic = "direction_anchor_identity_mismatch";
+                    } else if (active_direction_anchor.composition_version !=
+                               source_active->version) {
+                        pivot_generation_diagnostic = "direction_anchor_version_mismatch";
+                    } else {
+                        pivot_generation_diagnostic = "no_alternative_generated_direction";
+                    }
+                }
                 if (source_active && active_direction_anchor.is_valid() &&
                     active_direction_anchor.composition_bound &&
                     active_direction_anchor.composition_identity ==
                         source_active->candidate.composition_id &&
                     active_direction_anchor.composition_version ==
                         source_active->version) {
+                    double best_feasible_pivot_score = -1.0;
+                    std::optional<strategy::StrategicPivotAnchorCandidate>
+                        best_pivot_candidate;
+                    std::optional<composition_intelligence::CompositionCandidate>
+                        best_pivot_destination;
+                    std::optional<strategy::PivotFeasibilityInput>
+                        best_pivot_feasibility;
                     for (const auto& generated : native_generation.candidates) {
                         if (generated.direction.empty() ||
                             generated.direction == active_direction_anchor.direction ||
@@ -1957,6 +2036,8 @@ struct TFTEngine::Impl {
                             generated.unit_ids.empty()) {
                             continue;
                         }
+                        pivot_generation_diagnostic =
+                            "alternative_direction:" + generated.direction;
                         const auto destination_it = std::find_if(
                             native_composition_candidates.begin(),
                             native_composition_candidates.end(),
@@ -1965,9 +2046,15 @@ struct TFTEngine::Impl {
                                     candidate.source ==
                                         composition_intelligence::CompositionSource::Native;
                             });
-                        if (destination_it == native_composition_candidates.end() ||
-                            destination_it->units.empty() ||
+                        if (destination_it == native_composition_candidates.end()) {
+                            pivot_generation_diagnostic =
+                                "destination_candidate_missing:" + generated.identity;
+                            continue;
+                        }
+                        if (destination_it->units.empty() ||
                             destination_it->main_carry_id != generated.main_carry_id) {
+                            pivot_generation_diagnostic =
+                                "destination_candidate_contract_mismatch:" + generated.identity;
                             continue;
                         }
 
@@ -2010,14 +2097,12 @@ struct TFTEngine::Impl {
                                     ++shop_copies[offer->champion_internal_id];
                             }
                         }
-                        bool all_destination_units_owned = true;
                         feasibility.required_units.reserve(destination_it->units.size());
                         feasibility.observed_units.reserve(destination_it->units.size());
                         for (const auto& destination_unit : destination_it->units) {
                             const auto* definition = catalog->find_by_id(
                                 destination_unit.champion_id);
                             if (!definition) {
-                                all_destination_units_owned = false;
                                 continue;
                             }
                             const bool is_carry =
@@ -2041,7 +2126,6 @@ struct TFTEngine::Impl {
                                 observed.copies_by_star = owned->second.copies_by_star;
                                 observed.physical_tier_counts_available = true;
                             } else {
-                                all_destination_units_owned = false;
                             }
                             observed.shop_copies =
                                 shop_copies[destination_unit.champion_id];
@@ -2063,28 +2147,71 @@ struct TFTEngine::Impl {
 
                         if (feasibility.required_units.size() !=
                             destination_it->units.size()) {
+                            pivot_generation_diagnostic =
+                                "required_unit_evidence_incomplete:" + generated.identity;
                             continue;
                         }
 
-                        // A zero transition cost is evidence-backed only when
-                        // every destination unit is already physically owned.
-                        // Until a native marginal-cost producer is available,
-                        // do not turn missing acquisition/opportunity costs into
-                        // an invented zero or approve an unaffordable pivot.
-                        if (!all_destination_units_owned) {
-                            // Until the native marginal-cost owner can price an
-                            // acquisition, retain only zero-acquisition pivots.
-                            // Missing purchase/opportunity cost is never zero.
-                            continue;
+                        // Price the first required copy of every unowned target
+                        // unit from the live catalog. Shop/pool evidence above decides
+                        // reachability; it never turns an unknown unit into free gold.
+                        double direct_acquisition_cost = 0.0;
+                        for (const auto& required : feasibility.required_units) {
+                            const auto owned = strategic_native_owned.find(required.champion_id);
+                            if (owned == strategic_native_owned.end() || owned->second.copies <= 0)
+                                direct_acquisition_cost += required.cost;
                         }
+                        const auto spend_after_acquisition = std::max(
+                            0, economy.gold - static_cast<std::int32_t>(
+                                std::ceil(direct_acquisition_cost)));
+                        const double lost_interest = std::max(0,
+                            economy_engine.get_interest(economy.gold) -
+                            economy_engine.get_interest(spend_after_acquisition));
                         feasibility.protected_gold_floor = 0;
                         feasibility.transition_economic_cost =
-                            all_destination_units_owned ? 0.0 : -1.0;
+                            direct_acquisition_cost + lost_interest;
 
-                        native_input.pivot_candidate = std::move(pivot);
-                        native_input.pivot_destination = *destination_it;
-                        native_input.pivot_feasibility = std::move(feasibility);
-                        break;
+                        // Evaluate every alternative from this exact native
+                        // snapshot before selecting one. The first generated
+                        // direction is not necessarily reachable; prefer the
+                        // highest-scoring candidate that passes all feasibility
+                        // gates instead of allowing one infeasible candidate to
+                        // hide a viable alternative behind it.
+                        const auto preliminary =
+                            strategy::PivotFeasibilityEvaluator{}.evaluate(feasibility);
+                        if (preliminary.status !=
+                            strategy::PivotFeasibilityStatus::Viable) {
+                            pivot_generation_diagnostic =
+                                "candidate_infeasible:" + generated.direction +
+                                ";reason=" + preliminary.reason +
+                                ";score=" + std::to_string(preliminary.score);
+                            for (const auto& blocker : preliminary.blockers)
+                                pivot_generation_diagnostic += ";blocker=" + blocker;
+                            for (const auto& missing : preliminary.missing_data)
+                                pivot_generation_diagnostic += ";missing=" + missing;
+                            continue;
+                        }
+                        if (preliminary.score <= best_feasible_pivot_score)
+                            continue;
+                        best_feasible_pivot_score = preliminary.score;
+                        best_pivot_candidate = std::move(pivot);
+                        best_pivot_destination = *destination_it;
+                        best_pivot_feasibility = std::move(feasibility);
+                        pivot_generation_diagnostic =
+                            "best_feasible_candidate:" + generated.direction +
+                            ";score=" + std::to_string(preliminary.score);
+                    }
+                    if (best_pivot_candidate && best_pivot_destination &&
+                        best_pivot_feasibility) {
+                        const auto selected_direction =
+                            best_pivot_candidate->target_direction;
+                        native_input.pivot_candidate = std::move(best_pivot_candidate);
+                        native_input.pivot_destination = std::move(best_pivot_destination);
+                        native_input.pivot_feasibility = std::move(best_pivot_feasibility);
+                        pivot_generation_diagnostic =
+                            "pivot_input_built:" + selected_direction +
+                            ";preliminary_score=" +
+                            std::to_string(best_feasible_pivot_score);
                     }
                 }
 
@@ -2094,6 +2221,34 @@ struct TFTEngine::Impl {
                 };
                 const auto native_result =
                     native_runtime.refresh(native_audit_context, native_input);
+                if (native_result.diagnostics.pivot_feasibility) {
+                    const auto& evaluated = *native_result.diagnostics.pivot_feasibility;
+                    pivot_generation_diagnostic +=
+                        ";feasibility_status=" +
+                        std::to_string(static_cast<int>(evaluated.status)) +
+                        ";feasibility_reason=" + evaluated.reason +
+                        ";feasibility_score=" + std::to_string(evaluated.score);
+                    for (const auto& blocker : evaluated.blockers)
+                        pivot_generation_diagnostic += ";blocker=" + blocker;
+                    for (const auto& missing : evaluated.missing_data)
+                        pivot_generation_diagnostic += ";missing=" + missing;
+                }
+                if (native_result.anchors.pivot_candidate.is_valid()) {
+                    pivot_generation_diagnostic += ";pivot_published";
+                } else if (native_input.pivot_candidate) {
+                    pivot_generation_diagnostic += ";runtime_rejected:" +
+                        native_result.diagnostics.transition_reason;
+                }
+                strategic_pivot_generation_diagnostics[i] =
+                    std::move(pivot_generation_diagnostic);
+                if (native_result.diagnostics.transition_reason ==
+                    "shadow_cycle_exception_contained") {
+                    // UnifiedStrategicShadowRuntime contains its own exceptions
+                    // to protect the game loop. Preserve that failure signal in
+                    // the owner snapshot instead of presenting it as a healthy refresh.
+                    strategic_refresh_failure_reasons[i] =
+                        "native_strategic_refresh_exception_contained";
+                }
                 if ((native_result.active_composition || active_manager.current()) &&
                     strategic_planner_commitments[i].composition_direction.empty() &&
                     !planner_commitment.composition_direction.empty()) {
@@ -2113,8 +2268,12 @@ struct TFTEngine::Impl {
                         committed->version;
                 }
                 (void)native_result;
+            } catch (const std::exception& error) {
+                strategic_refresh_failure_reasons[i] =
+                    std::string("native_strategic_refresh_exception: ") + error.what();
             } catch (...) {
-                // Native strategic diagnostics are isolated from PPO/game flow.
+                strategic_refresh_failure_reasons[i] =
+                    "native_strategic_refresh_exception: unknown";
             }
         }
     }
@@ -2188,14 +2347,10 @@ struct TFTEngine::Impl {
                 observed.copies_by_star = physical_tiers;
                 observed.on_board = observed.on_board || on_board;
                 observed.on_bench = observed.on_bench || !on_board;
-                observed.board_contribution = std::max(
-                    observed.board_contribution, on_board
-                        ? std::clamp(definition->cost / 5.0 * 0.5 +
-                            std::clamp(unit.star, 1, 3) / 3.0 * 0.5, 0.0, 1.0)
-                        : 0.0);
-                observed.item_fit = std::max(observed.item_fit,
-                    std::clamp(static_cast<double>(unit.items.size()) / 3.0,
-                               0.0, 1.0));
+                // Per-unit board contribution and item fit are unavailable here:
+                // cost/star and equipped-item count are not valid substitutes.
+                observed.board_contribution = 0.0;
+                observed.item_fit = 0.0;
             };
             for (const auto& unit : player_envs[i].board)
                 if (unit) append_native_owned(*unit, true);
@@ -2292,6 +2447,7 @@ struct TFTEngine::Impl {
     }
 
     void refresh_native_strategic_state(std::size_t i) {
+        strategic_opportunity_costs[i].clear();
         // Strategic direction and composition are projected from native owners below.
         const auto& player = player_envs[i].info;
         const auto& economy = player_envs[i].economy;
@@ -2446,19 +2602,16 @@ struct TFTEngine::Impl {
                               active_native_direction->unit_ids.end(),
                               definition->internal_id) !=
                         active_native_direction->unit_ids.end();
-                candidate.board_contribution = on_board
-                    ? std::clamp(
-                        definition->cost / 5.0 * 0.5 +
-                        std::clamp(unit.star, 1, 3) / 3.0 * 0.5,
-                        0.0, 1.0)
-                    : 0.0;
+                // No per-unit marginal board evaluator is available at this boundary.
+                candidate.board_contribution = 0.0;
                 candidate.composition_fit =
                     !strategic_context.current_composition_direction.empty() &&
                     std::find(definition->traits.begin(), definition->traits.end(),
                               strategic_context.current_composition_direction) !=
                         definition->traits.end() ? 1.0 : 0.0;
-                candidate.item_fit = std::clamp(
-                    static_cast<double>(unit.items.size()) / 3.0, 0.0, 1.0);
+                // Item fit is produced by ItemFitCache for actual item/profile pairs;
+                // item count alone is not an item-fit measurement.
+                candidate.item_fit = 0.0;
                 candidate.traits = definition->traits;
                 for (const auto& item : unit.items) {
                     if (!item.grants_trait.empty() &&
@@ -2584,8 +2737,11 @@ struct TFTEngine::Impl {
             auto action_decision = action_evaluator.evaluate(
                 evidence_context.planner_context, economic_decision);
 
-            // New Composition Intelligence pipeline: opt-in Viewer-only shadow state.
+            // Composition Intelligence remains opt-in for engine consumers; native
+            // PPO training explicitly enables it in train_native.py.
             if (composition_intelligence_enabled) {
+            // Planner priorities/lineup become semantic PPO context. Evaluator
+            // recommendations remain diagnostic and never replace PPO action selection.
             try {
             {
                 namespace ci = composition_intelligence;
@@ -2637,6 +2793,8 @@ struct TFTEngine::Impl {
                     if (observed_inserted) {
                         observed.board_contribution = 0.0;
                         observed.synergy_contribution = 0.0;
+                        observed.board_contribution_available = false;
+                        observed.synergy_contribution_available = false;
                     }
                     observed.champion_id = id;
                     const auto physical_tiers = physical_star_counts_by_unit.find(id);
@@ -2666,26 +2824,20 @@ struct TFTEngine::Impl {
                             evidence.synergy_contribution = 0.0;
                         }
                         evidence.champion_id = id;
-                        const double board_value = on_board
-                            ? std::clamp(definition->cost / 5.0 * 0.5 +
-                                std::clamp(unit.star, 1, 3) / 3.0 * 0.5, 0.0, 1.0)
-                            : 0.0;
-                        evidence.board_contribution = std::max(
-                            evidence.board_contribution, board_value);
-                        std::size_t matching_traits = 0;
+                        // Keep per-unit contribution unavailable rather than
+                        // substituting purchase cost and star tier for marginal board value.
+                        evidence.board_contribution = 0.0;
+                        evidence.board_contribution_available = false;
+                        evidence.synergy_contribution_available = false;
                         for (const auto& trait : definition->traits) {
-                            if (std::find(strategic_context.current_core_traits.begin(),
-                                          strategic_context.current_core_traits.end(), trait) !=
-                                strategic_context.current_core_traits.end()) ++matching_traits;
                             const auto count = board_trait_counts[trait];
                             observed.completes_active_trait = observed.completes_active_trait ||
                                 trait_threshold_crossed(trait, count, on_board);
                         }
-                        evidence.synergy_contribution = std::clamp(
-                            static_cast<double>(matching_traits) / 2.0, 0.0, 1.0);
                         evidence.trait_completion = evidence.trait_completion ||
                             observed.completes_active_trait;
-                        evidence.confidence = 0.75;
+                        // No calibrated per-unit board contribution is available; confidence stays absent.
+                        evidence.confidence = 0.0;
                         evidence.copies_toward_next_star =
                             ci::copy_progress_toward_next_star(
                                 priority.copies_by_star, priority.highest_star);
@@ -2701,6 +2853,8 @@ struct TFTEngine::Impl {
                         priority->second.copies_by_star[3] == 0;
                     observed.explicit_sell_candidate = single_unupgraded_bench_unit &&
                         observed.equipped_item_ids.empty() &&
+                        observed.board_contribution_available &&
+                        observed.synergy_contribution_available &&
                         observed.board_contribution < 0.25 &&
                         observed.synergy_contribution < 0.25 &&
                         !observed.completes_active_trait;
@@ -2722,6 +2876,8 @@ struct TFTEngine::Impl {
                             evidence.synergy_contribution = 0.0;
                         }
                         evidence.champion_id = target.champion_id;
+                        evidence.board_contribution_available = false;
+                        evidence.synergy_contribution_available = false;
                         // A unit already on board is evaluated as a removal risk
                         // above. Only bench/missing targets are evaluated as an
                         // additional board contribution here.
@@ -2747,13 +2903,12 @@ struct TFTEngine::Impl {
                     ci::CandidateEvidence evidence;
                     evidence.composition_id = candidate.composition_id;
                     evidence.source = ci::CompositionEvidenceSource::ObservedBoard;
-                    std::size_t board_hits = 0, owned_hits = 0, available_hits = 0, item_bearing_hits = 0;
+                    std::size_t board_hits = 0, owned_hits = 0, available_hits = 0;
                     double estimated_cost = 0.0;
                     for (const auto& target : candidate.units) {
                         if (on_board_ids.count(target.champion_id)) ++board_hits;
                         if (const auto found = owned_evidence.find(target.champion_id); found != owned_evidence.end()) {
                             ++owned_hits;
-                            if (!found->second.equipped_item_ids.empty()) ++item_bearing_hits;
                         }
                         const auto* definition = catalog->find_by_id(target.champion_id);
                         if (definition) {
@@ -2763,10 +2918,11 @@ struct TFTEngine::Impl {
                     }
                     const double size = static_cast<double>(std::max<std::size_t>(1, candidate.units.size()));
                     evidence.board_fit = static_cast<double>(board_hits) / size;
+                    evidence.board_fit_available = true;
                     evidence.availability = static_cast<double>(available_hits) / size;
-                    evidence.item_fit = owned_hits > 0
-                        ? static_cast<double>(item_bearing_hits) / static_cast<double>(owned_hits)
-                        : 0.5;
+                    // Item-bearing-unit ratio is not item fit. Real item/profile
+                    // compatibility is computed by ItemFitCache in item evidence.
+                    evidence.item_fit = 0.0;
                     evidence.economy_feasibility = estimated_cost <= 0.0 ? 1.0 :
                         std::clamp(static_cast<double>(std::max(0, economy.gold)) / std::max(1.0, estimated_cost), 0.0, 1.0);
                     evidence.estimated_gold_cost = estimated_cost;
@@ -2996,6 +3152,51 @@ struct TFTEngine::Impl {
                     contextual_actions.stale ? "unavailable" : "completed",
                     contextual_actions.stale ? contextual_actions.stale_reason :
                         "independent contextual evaluator completed in Shadow mode", active);
+                strategic_opportunity_costs[i].clear();
+                if (!contextual_actions.stale) {
+                    for (const auto& candidate : contextual_actions.candidates) {
+                        if (!candidate.opportunity_cost_available ||
+                            candidate.champion_id < 0 ||
+                            !std::isfinite(candidate.opportunity_cost) ||
+                            candidate.opportunity_cost < 0.0 ||
+                            !std::isfinite(candidate.opportunity_cost_uncertainty) ||
+                            candidate.opportunity_cost_uncertainty < 0.0 ||
+                            candidate.opportunity_cost_uncertainty >= 1.0 ||
+                            candidate.opportunity_cost_horizon_rounds == 0 ||
+                            candidate.opportunity_cost_source !=
+                                "same_snapshot_competing_alternative.v1" ||
+                            candidate.opportunity_cost_forgone_candidate_id.empty()) {
+                            continue;
+                        }
+                        const auto existing = std::find_if(
+                            strategic_opportunity_costs[i].begin(),
+                            strategic_opportunity_costs[i].end(),
+                            [&](const auto& row) {
+                                return row.champion_internal_id == candidate.champion_id;
+                            });
+                        if (existing == strategic_opportunity_costs[i].end()) {
+                            strategic_opportunity_costs[i].push_back({
+                                candidate.champion_id, candidate.opportunity_cost,
+                                candidate.opportunity_cost_uncertainty,
+                                candidate.opportunity_cost_horizon_rounds,
+                                candidate.opportunity_cost_source,
+                                candidate.opportunity_cost_forgone_candidate_id,
+                                candidate.opportunity_cost_value_basis
+                            });
+                        } else if (candidate.opportunity_cost *
+                                       (1.0 - candidate.opportunity_cost_uncertainty) >
+                                   existing->value * (1.0 - existing->uncertainty)) {
+                            *existing = {
+                                candidate.champion_id, candidate.opportunity_cost,
+                                candidate.opportunity_cost_uncertainty,
+                                candidate.opportunity_cost_horizon_rounds,
+                                candidate.opportunity_cost_source,
+                                candidate.opportunity_cost_forgone_candidate_id,
+                                candidate.opportunity_cost_value_basis
+                            };
+                        }
+                    }
+                }
 
                 // Resolve the independent recommendation against the exact current
                 // native slots and masks. The result is audit-only: it is never fed
@@ -3218,6 +3419,8 @@ struct TFTEngine::Impl {
                     ++composition_intelligence_sequence;
             }
             } catch (const std::exception& error) {
+                strategic_refresh_failure_reasons[i] =
+                    std::string("composition_intelligence_refresh_exception: ") + error.what();
                 nlohmann::json failed = {
                     {"schema_version", 1},
                     {"sequence", ++composition_intelligence_sequence},
@@ -3231,6 +3434,7 @@ struct TFTEngine::Impl {
                     {"catalog_diagnostics", composition_intelligence_catalog_diagnostics}
                 };
                 auto& failed_runtime = composition_intelligence_players[i];
+                failed_runtime.planner_outputs_valid = false;
                 failed_runtime.mark_stage("runtime", "failed", error.what());
                 failed["sequence"] = composition_intelligence_sequence + 1;
                 if (failed_runtime.append_snapshot(std::move(failed)))
@@ -3240,7 +3444,11 @@ struct TFTEngine::Impl {
 
 
         }
-        }, []() noexcept {});
+        }, [this, i]() noexcept {
+            strategic_refresh_failure_reasons[i] =
+                "composition_intelligence_refresh_exception: unknown";
+            composition_intelligence_players[i].planner_outputs_valid = false;
+        });
         (void)native_evaluation_completed;
         // END READ-ONLY STRATEGIC EVALUATION BOUNDARY.
 
@@ -5832,6 +6040,37 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
         strategic.episode_id = impl_->episode_id;
         strategic.player_decision_sequence = impl_->player_decision_sequences[i];
         strategic.strategic_context_sequence = impl_->strategic_context_sequences[i];
+        strategic.strategic_refresh_failed =
+            !impl_->strategic_refresh_failure_reasons[i].empty();
+        strategic.strategic_refresh_failure_reason =
+            impl_->strategic_refresh_failure_reasons[i];
+        strategic.pivot_generation_diagnostic_for_diagnostics =
+            impl_->strategic_pivot_generation_diagnostics[i];
+        const auto& planner_runtime = impl_->composition_intelligence_players[i];
+        strategic.planner_outputs_valid = planner_runtime.planner_outputs_valid;
+        strategic.planner_output_sequence = planner_runtime.lineup.sequence;
+        strategic.opportunity_costs = impl_->strategic_opportunity_costs[i];
+        strategic.opportunity_cost_available = !strategic.opportunity_costs.empty();
+        if (planner_runtime.planner_outputs_valid) {
+            for (const auto& priority : planner_runtime.unit_priorities.units) {
+                strategic.unit_priorities.push_back({
+                    priority.champion_id,
+                    static_cast<std::int32_t>(priority.intent),
+                    static_cast<std::int32_t>(priority.relation),
+                    priority.priority,
+                    priority.target_star,
+                    priority.sale_restricted,
+                    std::isfinite(priority.confidence)
+                        ? std::clamp(priority.confidence, 0.0, 1.0) : 0.0
+                });
+            }
+            for (const auto& slot : planner_runtime.lineup.selected_board)
+                strategic.lineup_selected_unit_ids.push_back(slot.champion_id);
+            strategic.lineup_entry_unit_ids = planner_runtime.lineup.entries;
+            strategic.lineup_exit_unit_ids = planner_runtime.lineup.exits;
+            strategic.lineup_deferred_unit_ids =
+                planner_runtime.lineup.deferred_target_ids;
+        }
         strategic.player_id = static_cast<std::int32_t>(i);
         strategic.round = snapshot.round;
 
@@ -5888,6 +6127,8 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
             if (anchors.direction_anchor.is_valid()) {
                 strategic.direction_valid = true;
                 strategic.direction_identity = anchors.direction_anchor.identity;
+                strategic.direction_value_for_diagnostics =
+                    anchors.direction_anchor.direction;
                 strategic.direction_reference_unit_ids =
                     anchors.direction_anchor.reference_unit_ids;
             }

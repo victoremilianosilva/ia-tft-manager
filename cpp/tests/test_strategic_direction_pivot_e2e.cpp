@@ -192,6 +192,7 @@ void carry_two_star_is_an_alternative_to_four_or_five_cost() {
 void evaluation_preserves_the_current_direction() {
     ActiveCompositionManager active_composition;
     StrategicCommitment commitment;
+    commitment.composition_direction = "composition-current";
     UnifiedStrategicStateMachine machine(active_composition, commitment, {3, 60.0, 5});
     auto input = make_active_input();
     auto result = machine.refresh(input);
@@ -215,6 +216,7 @@ void evaluation_preserves_the_current_direction() {
 void confirmed_pivot_commits_composition_and_direction_together() {
     ActiveCompositionManager active_composition;
     StrategicCommitment commitment;
+    commitment.composition_direction = "composition-current";
     UnifiedStrategicStateMachine machine(active_composition, commitment, {3, 60.0, 5});
     auto input = make_active_input();
     machine.refresh(input);
@@ -258,6 +260,7 @@ void unknown_pool_data_never_approves_a_pivot() {
 void invalidated_or_stale_candidate_cannot_be_confirmed() {
     ActiveCompositionManager active_composition;
     StrategicCommitment commitment;
+    commitment.composition_direction = "composition-current";
     UnifiedStrategicStateMachine machine(active_composition, commitment, {3, 60.0, 5});
     auto input = make_active_input();
     machine.refresh(input);
@@ -278,6 +281,7 @@ void invalidated_or_stale_candidate_cannot_be_confirmed() {
 void interrupted_evidence_resets_confirmation_streak() {
     ActiveCompositionManager active_composition;
     StrategicCommitment commitment;
+    commitment.composition_direction = "composition-current";
     UnifiedStrategicStateMachine machine(active_composition, commitment, {3, 60.0, 5});
     auto input = make_active_input();
     machine.refresh(input);

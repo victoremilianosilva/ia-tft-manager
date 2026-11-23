@@ -85,6 +85,7 @@ StrategicCycleInput pivot_input() {
 void runtime_advances_confirmation_only_for_new_evidence_sequences() {
     ActiveCompositionManager active;
     StrategicCommitment commitment;
+    commitment.composition_direction = "Bruiser";
     UnifiedStrategicShadowRuntime runtime(active, commitment, {}, {3, 60.0, 5});
     const StrategicCycleAuditContext context{20261120, 0, 12};
 

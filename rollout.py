@@ -395,7 +395,7 @@ class RolloutBuffer:
 
         if semantic_state is None:
             if self.require_semantic_state:
-                raise ValueError("Native PPO rollout requires semantic_state v6 for every transition.")
+                raise ValueError("Native PPO rollout requires semantic_state v7 for every transition.")
             semantic_numeric = torch.zeros(
                 (self.num_envs, self.semantic_numeric_dim),
                 dtype=torch.float32,
@@ -689,7 +689,7 @@ class RolloutBuffer:
                 semantic_hashes = semantic_state.get("hashes")
                 contract_hash = semantic_state.get("contract_hash")
                 if (
-                    semantic_state.get("contract_id") != "tft.ppo.semantic-native-state.v6"
+                    semantic_state.get("contract_id") != "tft.ppo.semantic-native-state.v7"
                     or not isinstance(contract_hash, str)
                     or len(contract_hash) != 64
                     or any(char not in "0123456789abcdef" for char in contract_hash)

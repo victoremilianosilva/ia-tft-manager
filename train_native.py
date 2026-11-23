@@ -20,7 +20,7 @@ _CONFIG_ENV_KEYS = (
     "TFT_PPO_EPOCHS", "TFT_ROLLOUT_STEPS", "TFT_NUM_LOBBIES",
     "TFT_TOTAL_UPDATES", "TFT_PPO_GAMMA", "TFT_PPO_GAE_LAMBDA",
     "TFT_TRAIN_SEED", "TFT_CHECKPOINT_PATH", "TFT_TRAIN_LOG_DIR",
-    "TFT_RUN_MANIFEST_PATH",
+    "TFT_RUN_MANIFEST_PATH", "TFT_COMPOSITION_INTELLIGENCE_ENABLED",
 )
 
 
@@ -74,6 +74,8 @@ def main(argv: list[str] | None = None) -> int:
         str(Path(__file__).resolve().parent / "data" / "opgg_tft_meta.json"),
     )
     os.environ["TFT_OPGG_DISABLE_REFRESH"] = "1"
+    # Native PPO consumes validated planner context; evaluators never replace PPO actions.
+    os.environ["TFT_COMPOSITION_INTELLIGENCE_ENABLED"] = "1"
     os.environ.pop("TFT_COMPOSITION_INTELLIGENCE_SHADOW", None)
     os.environ["TFT_TOTAL_UPDATES"] = str(args.updates)
     os.environ["TFT_NUM_LOBBIES"] = str(args.lobbies)

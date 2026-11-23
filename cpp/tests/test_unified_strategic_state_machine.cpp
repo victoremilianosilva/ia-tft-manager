@@ -244,6 +244,23 @@ void shadow_runtime_refreshes_without_an_audit_sidecar() {
     assert(!active_composition.current().has_value());
 }
 
+void runtime_exposes_contained_refresh_exceptions_to_its_owner() {
+    ActiveCompositionManager active_composition;
+    StrategicCommitment commitment;
+    UnifiedStrategicShadowRuntime runtime(
+        active_composition, commitment, std::filesystem::path{});
+    StrategicCycleInput input;
+    input.exploration = discovery_input();
+    // Invalid UTF-8 makes the canonical JSON fingerprint fail before state
+    // mutation; the runtime must contain the exception and expose the failure.
+    input.exploration.previous_direction = std::string(1, static_cast<char>(0xFF));
+
+    const auto result = runtime.refresh({42, 0, 3}, input);
+    assert(result.phase == StrategicCyclePhase::NoEvidence);
+    assert(result.diagnostics.transition_reason == "shadow_cycle_exception_contained");
+    assert(!active_composition.current().has_value());
+}
+
 void pivot_evaluation_does_not_mutate_then_confirms_synchronized_state() {
     ActiveCompositionManager active_composition;
     StrategicCommitment commitment;
@@ -297,6 +314,7 @@ void pivot_evaluation_does_not_mutate_then_confirms_synchronized_state() {
 void invalidated_candidate_is_removed_and_old_direction_is_preserved() {
     ActiveCompositionManager active_composition;
     StrategicCommitment commitment;
+    commitment.composition_direction = "Shepherd";
     UnifiedStrategicStateMachine machine(active_composition, commitment, {3, 60.0, 5});
     StrategicCycleInput input;
     input.active_composition = ActiveComposition{composition(
@@ -324,6 +342,7 @@ void invalidated_candidate_is_removed_and_old_direction_is_preserved() {
 void missing_candidate_invalidates_pending_pivot_without_mutation() {
     ActiveCompositionManager active_composition;
     StrategicCommitment commitment;
+    commitment.composition_direction = "Shepherd";
     UnifiedStrategicStateMachine machine(active_composition, commitment, {3, 60.0, 5});
     StrategicCycleInput input;
     input.active_composition = ActiveComposition{composition(
@@ -352,6 +371,7 @@ void missing_candidate_invalidates_pending_pivot_without_mutation() {
 void reset_rebinds_to_the_canonical_composition_without_clearing_it() {
     ActiveCompositionManager active_composition;
     StrategicCommitment commitment;
+    commitment.composition_direction = "Bruiser";
     UnifiedStrategicStateMachine machine(active_composition, commitment);
 
     const auto first = composition(
@@ -386,6 +406,7 @@ void reset_rebinds_to_the_canonical_composition_without_clearing_it() {
 void insufficient_evidence_clears_pivot_and_keeps_active_composition() {
     ActiveCompositionManager active_composition;
     StrategicCommitment commitment;
+    commitment.composition_direction = "Shepherd";
     UnifiedStrategicStateMachine machine(active_composition, commitment, {3, 60.0, 5});
     StrategicCycleInput input;
     input.active_composition = ActiveComposition{composition(
@@ -414,6 +435,7 @@ int main() {
     machine_owns_exploratory_direction_history_without_legacy_inputs();
     shadow_runtime_isolates_players_and_resets_its_own_direction_history();
     shadow_runtime_refreshes_without_an_audit_sidecar();
+    runtime_exposes_contained_refresh_exceptions_to_its_owner();
     pivot_evaluation_does_not_mutate_then_confirms_synchronized_state();
     invalidated_candidate_is_removed_and_old_direction_is_preserved();
     missing_candidate_invalidates_pending_pivot_without_mutation();

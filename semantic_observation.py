@@ -11,11 +11,11 @@ import json
 import math
 from collections.abc import Mapping, Sequence
 
-SEMANTIC_STATE_CONTRACT_ID = "tft.ppo.semantic-native-state.v6"
-SEMANTIC_STATE_CONTRACT_VERSION = 6
+SEMANTIC_STATE_CONTRACT_ID = "tft.ppo.semantic-native-state.v7"
+SEMANTIC_STATE_CONTRACT_VERSION = 7
 SEMANTIC_ENTITY_SLOTS = 28 + 9 + 5
-SEMANTIC_ENTITY_FEATURES = 39
-SEMANTIC_GLOBAL_FEATURES = 52
+SEMANTIC_ENTITY_FEATURES = 45
+SEMANTIC_GLOBAL_FEATURES = 54
 SEMANTIC_ITEM_COMPONENT_FEATURES = 10
 SEMANTIC_ITEM_SEMANTIC_FEATURES = 17
 SEMANTIC_ITEM_TARGETS = 37
@@ -59,13 +59,13 @@ def semantic_policy_state_keys(state_dict: Mapping) -> set[str]:
 
 
 def validate_semantic_policy_state_dict(state_dict: Mapping) -> None:
-    """Require the complete v6 semantic encoder parameter set."""
+    """Require the complete v7 semantic encoder parameter set."""
     present = semantic_policy_state_keys(state_dict)
     if present != SEMANTIC_POLICY_STATE_KEYS:
         missing = sorted(SEMANTIC_POLICY_STATE_KEYS - present)
         unexpected = sorted(present - SEMANTIC_POLICY_STATE_KEYS)
         raise ValueError(
-            "Semantic v6 policy weights are incomplete: "
+            "Semantic v7 policy weights are incomplete: "
             f"missing={missing}, unexpected={unexpected}"
         )
 
@@ -75,7 +75,7 @@ def semantic_item_state_tensors(numeric):
     if not isinstance(numeric, __import__("torch").Tensor):
         raise TypeError("semantic numeric input must be a torch tensor")
     if numeric.ndim != 2 or numeric.shape[-1] != SEMANTIC_NUMERIC_DIM:
-        raise ValueError("semantic numeric input has an incompatible v6 shape")
+        raise ValueError("semantic numeric input has an incompatible v7 shape")
     import torch
     batch = numeric.shape[0]
     offset = SEMANTIC_ITEM_OFFSET
@@ -179,7 +179,7 @@ def build_semantic_state_checkpoint_contract(catalog_map: Mapping[str, int]) -> 
         },
         "strategic_owner_source": {
             "contract_id": "tft.strategic-owner-observation",
-            "contract_version": 2,
+            "contract_version": 3,
             "producer": "TFTEngine::get_audit_snapshot",
             "source_namespace": "tft.engine.strategic-owners",
             "identity": ["episode_id", "player_id", "round", "player_decision_sequence"],
@@ -193,7 +193,7 @@ def build_semantic_state_checkpoint_contract(catalog_map: Mapping[str, int]) -> 
             "stage/7", "round/50", "active_composition_valid",
             "direction_valid", "pivot_candidate_valid", "opportunity_cost_available",
             "board_capacity/9", "bench_capacity/9", "actions_taken_this_round/10",
-            "board_move_age[0:28]/10",
+            "board_move_age[0:28]/10", "planner_outputs_valid", "strategic_refresh_failed",
         ],
         "entity_slots": {
             "order": ["board[0:28]", "bench[0:9]", "shop[0:5]"],
@@ -209,7 +209,7 @@ def build_semantic_state_checkpoint_contract(catalog_map: Mapping[str, int]) -> 
                 "item_target.attack_damage/200", "item_target.attack_speed/2",
                 "item_target.max_health/2000", "item_target.armor/150",
                 "item_target.magic_resist/150", "item_target.equipped_item_count/3",
-                "trait_id_hash_bucket[0:10]/65536",
+                "trait_id_hash_bucket[0:10]/65536", "strategic_priority/100", "strategic_intent/6", "lineup_selected", "lineup_target", "opportunity_cost/100", "opportunity_cost_available",
             ],
             "champion_id": "catalog_internal_id_plus_one; zero=unknown_or_empty",
         },
@@ -302,7 +302,7 @@ def validate_semantic_state_checkpoint_integrity(manifest: Mapping) -> None:
 def validate_semantic_state_warm_start_migration(
     manifest: Mapping, catalog_map: Mapping[str, int]
 ) -> None:
-    """Allow only the reviewed semantic v2-to-v6 and owner v1-to-v2 warm-starts."""
+    """Allow only the reviewed semantic v2/v6-to-v7 and owner v1/v2-to-v3 warm-starts."""
     validate_semantic_state_checkpoint_integrity(manifest)
     expected = build_semantic_state_checkpoint_contract(catalog_map)
     historical_payload = manifest.get("contract")
@@ -319,7 +319,7 @@ def validate_semantic_state_warm_start_migration(
         and historical_payload.get("source", {}).get("contract_version") == 3
         and historical_owner_source.get("contract_version") == 2
     ):
-        # Reviewed v2 -> v6 migration: native snapshot v3 -> v5 adds capacity,
+        # Reviewed v2 -> v7 migration: native snapshot v3 -> v5 adds capacity,
         # temporal facts, board/bench item-target profiles and structured item/anvil blocks. The semantic
         # entity stride expands while historical identity remains bound.
         historical_payload["contract_id"] = expected["contract"]["contract_id"]
@@ -349,8 +349,38 @@ def validate_semantic_state_warm_start_migration(
             expected["contract"]["encoder"]["action_candidate_source"]
         )
         historical_payload["encoder"] = historical_encoder
+        historical_owner_source["contract_version"] = (
+            expected["contract"]["strategic_owner_source"]["contract_version"]
+        )
+        historical_payload["strategic_owner_source"] = historical_owner_source
+    elif (
+        historical_payload.get("contract_id") == "tft.ppo.semantic-native-state.v6"
+        and historical_payload.get("version") == 6
+        and historical_payload.get("source", {}).get("contract_version") == 5
+        and historical_owner_source.get("contract_version") == 2
+    ):
+        # Reviewed v6 -> v7 migration: preserve the v6 encoder/checkpoint lineage
+        # while appending the new strategic global/entity context and owner v3.
+        historical_payload["contract_id"] = expected["contract"]["contract_id"]
+        historical_payload["version"] = expected["contract"]["version"]
+        historical_owner_source["contract_version"] = (
+            expected["contract"]["strategic_owner_source"]["contract_version"]
+        )
+        historical_payload["strategic_owner_source"] = historical_owner_source
+        historical_payload["global_features"] = expected["contract"]["global_features"]
+        historical_payload["numeric_dimension"] = expected["contract"]["numeric_dimension"]
+        historical_entity_slots = dict(historical_payload.get("entity_slots", {}))
+        historical_entity_slots["features"] = expected["contract"]["entity_slots"]["features"]
+        historical_payload["entity_slots"] = historical_entity_slots
+        historical_encoder = dict(historical_payload.get("encoder", {}))
+        historical_encoder["numeric_plus_embedding_input_dim"] = (
+            expected["contract"]["encoder"]["numeric_plus_embedding_input_dim"]
+        )
+        historical_payload["encoder"] = historical_encoder
     elif historical_owner_source.get("contract_version") == 1:
-        historical_owner_source["contract_version"] = 2
+        historical_owner_source["contract_version"] = (
+            expected["contract"]["strategic_owner_source"]["contract_version"]
+        )
         historical_payload["strategic_owner_source"] = historical_owner_source
     else:
         raise ValueError("semantic warm-start source contract is not an approved migration")
@@ -397,7 +427,7 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
         strategic.get("contract_id") != "tft.strategic-owner-observation"
         or isinstance(strategic_version, bool)
         or not isinstance(strategic_version, int)
-        or strategic_version != 2
+        or strategic_version != 3
         or strategic.get("producer") != "TFTEngine::get_audit_snapshot"
         or strategic.get("source_namespace") != "tft.engine.strategic-owners"
     ):
@@ -492,9 +522,29 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
         or _non_negative_int(strategic.get("pivot_source_composition_version"), "pivot_source_composition_version") == 0
     ):
         raise ValueError("pivot candidate identity/version is incomplete")
-    # No validated per-action opportunity-cost producer is published here yet.
-    if opportunity_available:
-        raise ValueError("opportunity-cost evidence is not yet published by a native action producer")
+    opportunity_rows = strategic.get("opportunity_costs")
+    if not isinstance(opportunity_rows, list):
+        raise TypeError("strategic_state.opportunity_costs must be a list")
+    opportunity_by_id = {}
+    for row in opportunity_rows:
+        if not isinstance(row, Mapping):
+            raise TypeError("opportunity cost rows must be objects")
+        champion_id = _non_negative_int(row.get("champion_internal_id"), "opportunity_cost.champion_internal_id")
+        value = _finite_number(row.get("value"), "opportunity_cost.value")
+        uncertainty = _finite_number(row.get("uncertainty"), "opportunity_cost.uncertainty")
+        horizon = _non_negative_int(row.get("horizon_rounds"), "opportunity_cost.horizon_rounds")
+        source = row.get("source")
+        value_basis = row.get("value_basis")
+        forgone = row.get("forgone_candidate_id")
+        if (champion_id in opportunity_by_id or value < 0.0 or
+            not 0.0 <= uncertainty < 1.0 or horizon == 0 or
+            source != "same_snapshot_competing_alternative.v1" or
+            value_basis not in ("contextual_action_score.v1", "native_board_contribution.v1") or
+            not isinstance(forgone, str) or not forgone):
+            raise ValueError("opportunity cost row has invalid or duplicate evidence")
+        opportunity_by_id[champion_id] = (value, uncertainty)
+    if opportunity_available != bool(opportunity_by_id):
+        raise ValueError("opportunity_cost_available diverges from native opportunity rows")
 
     placement = state.get("placement")
     if placement is not None:
@@ -575,7 +625,59 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
         (9 - bench_count) / 9.0,
         min(action_count, 10) / 10.0,
         *move_age_values,
+        float(strategic.get("planner_outputs_valid") is True),
+        float(strategic.get("strategic_refresh_failed") is True),
     ]
+
+    planner_valid = strategic.get("planner_outputs_valid")
+    strategic_failed = strategic.get("strategic_refresh_failed")
+    if not isinstance(planner_valid, bool) or not isinstance(strategic_failed, bool):
+        raise TypeError("strategic planner/failure availability fields must be boolean")
+    failure_reason = strategic.get("strategic_refresh_failure_reason")
+    if not isinstance(failure_reason, str) or strategic_failed != bool(failure_reason):
+        raise ValueError("strategic refresh failure flag/reason mismatch")
+    planner_sequence = _non_negative_int(strategic.get("planner_output_sequence"), "planner_output_sequence")
+    priority_rows = strategic.get("unit_priorities")
+    selected_ids = strategic.get("lineup_selected_unit_ids")
+    entry_ids = strategic.get("lineup_entry_unit_ids")
+    exit_ids = strategic.get("lineup_exit_unit_ids")
+    deferred_ids = strategic.get("lineup_deferred_unit_ids")
+    for field, values in (("unit_priorities", priority_rows), ("lineup_selected_unit_ids", selected_ids),
+                          ("lineup_entry_unit_ids", entry_ids), ("lineup_exit_unit_ids", exit_ids),
+                          ("lineup_deferred_unit_ids", deferred_ids)):
+        if not isinstance(values, list):
+            raise TypeError(f"strategic_state.{field} must be a list")
+    priority_by_id = {}
+    if planner_valid:
+        if planner_sequence != strategic_context_sequence:
+            raise ValueError("planner outputs are not bound to the strategic context sequence")
+        for row in priority_rows:
+            if not isinstance(row, Mapping):
+                raise TypeError("unit priority rows must be objects")
+            champion_id = _non_negative_int(row.get("champion_internal_id"), "unit_priority.champion_internal_id")
+            priority = _non_negative_int(row.get("priority"), "unit_priority.priority")
+            intent = _non_negative_int(row.get("intent"), "unit_priority.intent")
+            confidence = _finite_number(row.get("confidence"), "unit_priority.confidence")
+            target_star = _non_negative_int(row.get("target_star"), "unit_priority.target_star")
+            sale_restricted = row.get("sale_restricted")
+            if champion_id in priority_by_id or intent > 6 or target_star > 3 or not 0.0 <= confidence <= 1.0 or not isinstance(sale_restricted, bool):
+                raise ValueError("unit priority row has duplicate identity or invalid values")
+            priority_by_id[champion_id] = (priority, intent, confidence, target_star, sale_restricted)
+    elif priority_rows or selected_ids or entry_ids or exit_ids or deferred_ids:
+        raise ValueError("unavailable planner outputs cannot publish priority or lineup rows")
+    def validate_ids(field, values):
+        result = set()
+        for value in values:
+            champion_id = _non_negative_int(value, f"strategic_state.{field}")
+            if champion_id in result:
+                raise ValueError(f"strategic_state.{field} contains duplicate IDs")
+            result.add(champion_id)
+        return result
+    selected_set = validate_ids("lineup_selected_unit_ids", selected_ids)
+    entry_set = validate_ids("lineup_entry_unit_ids", entry_ids)
+    validate_ids("lineup_exit_unit_ids", exit_ids)
+    deferred_set = validate_ids("lineup_deferred_unit_ids", deferred_ids)
+    target_set = selected_set | entry_set | deferred_set
 
     catalog = dict(catalog_map)
     observed_owned_ids = set()
@@ -684,6 +786,16 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
             ]
             numeric.extend(float(trait_id / SEMANTIC_TRAIT_VOCAB_SIZE) for trait_id in trait_ids)
             numeric.extend([0.0] * (SEMANTIC_TRAIT_SLOTS - len(trait_ids)))
+            priority = priority_by_id.get(native_id, (0, 0, 0.0, 0, False)) if native_id is not None else (0, 0, 0.0, 0, False)
+            opportunity = opportunity_by_id.get(native_id) if native_id is not None else None
+            numeric.extend([
+                min(priority[0], 100) / 100.0,
+                priority[1] / 6.0,
+                float(native_id in selected_set) if native_id is not None else 0.0,
+                float(native_id in target_set) if native_id is not None else 0.0,
+                min(opportunity[0], 100.0) / 100.0 if opportunity is not None else 0.0,
+                float(opportunity is not None),
+            ])
             champion_ids.append(0 if internal_id is None else int(internal_id) + 1)
 
     def read_feature_block(field, shape):
@@ -821,6 +933,16 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
                     "direction_valid": direction_valid,
                     "pivot_candidate_valid": pivot_valid,
                     "opportunity_cost_available": opportunity_available,
+                    "planner_outputs_valid": planner_valid,
+                    "planner_output_sequence": planner_sequence,
+                    "unit_priorities": priority_rows,
+                    "lineup_selected_unit_ids": selected_ids,
+                    "lineup_entry_unit_ids": entry_ids,
+                    "lineup_exit_unit_ids": exit_ids,
+                    "lineup_deferred_unit_ids": deferred_ids,
+                    "opportunity_costs": opportunity_rows,
+                    "strategic_refresh_failed": strategic_failed,
+                    "strategic_refresh_failure_reason": failure_reason,
                 },
             },
             sort_keys=True, separators=(",", ":"), ensure_ascii=False,

@@ -102,7 +102,7 @@ def test_policy_actions_returns_one_six_component_action_per_requested_index():
         "champion_ids": torch.zeros((2, SEMANTIC_ENTITY_SLOTS), dtype=torch.long),
         "identities": [{"player_id": 1}, {"player_id": 3}],
         "hashes": ["a" * 64, "b" * 64],
-        "contract_id": "tft.ppo.semantic-native-state.v2",
+        "contract_id": "tft.ppo.semantic-native-state.v7",
         "contract_hash": "c" * 64,
     }
     result = policy_actions(
@@ -150,7 +150,7 @@ def _native_player(player_id, sequence=1):
         "bench": [_empty_unit() for _ in range(9)],
         "shop": [_empty_unit() for _ in range(5)],
         "strategic_state": {
-            "contract_id": "tft.strategic-owner-observation", "contract_version": 2,
+            "contract_id": "tft.strategic-owner-observation", "contract_version": 3,
             "source_namespace": "tft.engine.strategic-owners",
             "producer": "TFTEngine::get_audit_snapshot",
             "episode_id": 1, "player_decision_sequence": sequence,
@@ -159,7 +159,12 @@ def _native_player(player_id, sequence=1):
             "active_core_unit_ids": [], "direction_valid": False,
             "direction_reference_unit_ids": [], "pivot_candidate_valid": False,
             "pivot_reference_unit_ids": [], "opportunity_cost_available": False,
-            "unit_copy_progress": [],
+            "unit_copy_progress": [], "opportunity_costs": [],
+            "planner_outputs_valid": False, "planner_output_sequence": 0,
+            "unit_priorities": [], "lineup_selected_unit_ids": [],
+            "lineup_entry_unit_ids": [], "lineup_exit_unit_ids": [],
+            "lineup_deferred_unit_ids": [],
+            "strategic_refresh_failed": False, "strategic_refresh_failure_reason": "",
         },
     }
 
