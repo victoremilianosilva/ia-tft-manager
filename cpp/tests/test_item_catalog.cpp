@@ -4,6 +4,7 @@
 #include <fstream>
 #include <iostream>
 #include <set>
+#include <sstream>
 #include <string>
 
 int main(int argc, char** argv) {
@@ -20,6 +21,61 @@ int main(int argc, char** argv) {
 
     try {
         const auto catalog = tft::items::load_item_catalog(input);
+
+        // Completeness is explicit: an empty effect list is not proof that
+        // every combat passive was modeled. Exercise both asserted and
+        // malformed metadata through the same production loader.
+        std::stringstream complete_metadata(R"json({
+            "schema_version": 1,
+            "set_id": "fixture",
+            "components": [
+                {"id": "A", "name": "Component A"},
+                {"id": "B", "name": "Component B"}
+            ],
+            "items": [{
+                "id": "fixture_item",
+                "name": "Fixture Item",
+                "recipe_components": ["A", "B"],
+                "stats": {"attack_damage": 10},
+                "combat_effects": [],
+                "combat_effects_complete": true
+            }]
+        })json");
+        const auto complete_catalog =
+            tft::items::load_item_catalog(complete_metadata);
+        if (complete_catalog.items.size() != 1 ||
+            !complete_catalog.items.front().combat_effects_complete ||
+            !complete_catalog.items.front().combat_effects.empty()) {
+            std::cerr << "explicit complete empty effect metadata was not preserved\\n";
+            return 13;
+        }
+
+        std::stringstream malformed_metadata(R"json({
+            "schema_version": 1,
+            "set_id": "fixture",
+            "components": [
+                {"id": "A", "name": "Component A"},
+                {"id": "B", "name": "Component B"}
+            ],
+            "items": [{
+                "id": "fixture_item",
+                "name": "Fixture Item",
+                "recipe_components": ["A", "B"],
+                "stats": {"attack_damage": 10},
+                "combat_effects": [],
+                "combat_effects_complete": "true"
+            }]
+        })json");
+        bool rejected_malformed_completeness = false;
+        try {
+            (void)tft::items::load_item_catalog(malformed_metadata);
+        } catch (const std::invalid_argument&) {
+            rejected_malformed_completeness = true;
+        }
+        if (!rejected_malformed_completeness) {
+            std::cerr << "non-boolean combat_effects_complete metadata was accepted\\n";
+            return 14;
+        }
         if (catalog.components.empty()) {
             std::cerr << "active item catalog contains no components\n";
             return 4;
