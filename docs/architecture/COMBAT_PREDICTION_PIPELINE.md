@@ -283,3 +283,15 @@ authoritative `dataset_version` remain null, and
 `calibration_eligible` remains false. Empirical calibration still requires
 an authoritative replay collector/ingestor, immutable dataset manifests, and
 held-out evaluation under the approved protocol.
+
+
+## Generic item effect migration tranche
+
+The active item catalog now expresses the static maximum-health bonuses for
+Warmog's Armor, Dragon's Claw, Bramble Vest and Red Buff as generic
+`combat_start/add_stat/max_hp` effects. Their item-name branches were removed
+from `apply_item_stats`; the normal generic effect resolver applies them.
+The catalog loader tests that these effects are present and explicitly keeps
+their overall item metadata incomplete because other passives on these items
+are not yet modeled. Runtime tests verify the generic percentage effect is
+applied once without relying on an item API name.
