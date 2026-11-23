@@ -239,9 +239,13 @@ private:
                 std::isfinite(candidate.anchor_value) &&
                 std::isfinite(candidate.transition_cost) &&
                 std::isfinite(candidate.contestation) &&
-                std::isfinite(unit.board_contribution) &&
+                (!unit.board_contribution_available ||
+                    (std::isfinite(unit.board_contribution) &&
+                     unit.board_contribution >= 0.0 && unit.board_contribution <= 1.0)) &&
                 std::isfinite(unit.composition_fit) &&
-                std::isfinite(unit.item_fit);
+                (!unit.item_fit_available ||
+                    (std::isfinite(unit.item_fit) &&
+                     unit.item_fit >= 0.0 && unit.item_fit <= 1.0));
             if (!finite) {
                 diagnostic.evaluation_reason = "invalid_candidate_data";
                 diagnostics.push_back(std::move(diagnostic));
@@ -252,9 +256,9 @@ private:
                 std::clamp(candidate.reusable_owned_units, 0, 5));
             const double score =
                 candidate.anchor_value +
-                0.30 * unit.board_contribution +
+                0.30 * (unit.board_contribution_available ? unit.board_contribution : 0.0) +
                 0.25 * unit.composition_fit +
-                0.20 * unit.item_fit +
+                0.20 * (unit.item_fit_available ? unit.item_fit : 0.0) +
                 0.35 * reusable -
                 1.50 * std::max(0.0, candidate.transition_cost) -
                 0.30 * std::max(0.0, candidate.contestation) +
@@ -313,8 +317,10 @@ private:
                 out.composition_decision == CompositionDecision::Pivot ||
                 out.composition_decision == CompositionDecision::Abandon;
             const bool preserve =
-                unit.board_contribution >= config_.preserve_board_contribution ||
-                unit.item_fit >= config_.preserve_item_fit ||
+                (unit.board_contribution_available &&
+                    unit.board_contribution >= config_.preserve_board_contribution) ||
+                (unit.item_fit_available &&
+                    unit.item_fit >= config_.preserve_item_fit) ||
                 target_trait_fit ||
                 (unit.is_core && !transitioning);
             (preserve ? out.preserve_unit_ids : out.replaceable_unit_ids)
