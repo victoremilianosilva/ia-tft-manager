@@ -322,3 +322,9 @@ Adaptive Helm's remaining mana-gain multiplier is now a generic
 mana regeneration. The last Adaptive Helm ID-specific mana fallback was removed;
 the item-specific combat behavior for this item is now represented by catalog
 effects.
+
+Dragon's Claw's periodic 2.5%-of-max-HP self-heal is now a generic
+`periodic/heal_max_hp_pct` effect with a two-second interval. The periodic
+effect scheduler advances missed ticks deterministically and applies healing
+through the shared combat heal resolver; the dedicated item-name tick state
+and branch were removed.
