@@ -54,6 +54,10 @@ int main() {
         [](const auto& item) { return item == "owned_pair:1"; }));
     assert(std::any_of(bruiser->evidence.begin(), bruiser->evidence.end(),
         [](const auto& item) { return item == "item_fit_measured:2"; }));
+    assert(std::any_of(bruiser->evidence.begin(), bruiser->evidence.end(),
+        [](const auto& item) { return item == "item_fit_source:test.item_profile.v1"; }));
+    assert(std::any_of(bruiser->evidence.begin(), bruiser->evidence.end(),
+        [](const auto& item) { return item == "item_fit_uncertainty:0.200000"; }));
     auto mixed_tiers = input;
     mixed_tiers.owned[0].copies = 5; // One 2-star plus two 1-star instances.
     mixed_tiers.owned[0].star = 2;
