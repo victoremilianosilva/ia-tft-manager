@@ -2334,6 +2334,16 @@ struct TFTEngine::Impl {
                     definition.combat_profile.is_support
                 });
             }
+            // Item compatibility is measured from the equipped item IDs and
+            // the same champion combat/profile snapshot used by item planning.
+            // No-item units and unsupported catalog entries remain unavailable.
+            std::unordered_map<std::string, items::UnitProfile> native_item_profiles;
+            for (auto& profile : semantic_item_unit_profiles(i))
+                native_item_profiles.emplace(profile.uuid, std::move(profile));
+            items::ItemFitCache native_item_fit_cache(player_envs[i].item_engine.get());
+            std::unordered_map<std::int32_t, double> native_item_fit_totals;
+            std::unordered_map<std::int32_t, std::int32_t> native_item_fit_unit_counts;
+            std::unordered_set<std::int32_t> native_item_fit_invalid;
             const auto append_native_owned = [&](const UnitInstance& unit,
                                                   bool on_board) {
                 const auto* definition = catalog->find_by_id(
@@ -2347,10 +2357,37 @@ struct TFTEngine::Impl {
                 observed.copies_by_star = physical_tiers;
                 observed.on_board = observed.on_board || on_board;
                 observed.on_bench = observed.on_bench || !on_board;
-                // Per-unit board contribution and item fit are unavailable here:
-                // cost/star and equipped-item count are not valid substitutes.
+                // Per-unit board contribution remains unavailable until a
+                // calibrated per-unit combat producer is connected.
                 observed.board_contribution = 0.0;
+                observed.board_contribution_available = false;
                 observed.item_fit = 0.0;
+                observed.item_fit_available = false;
+                if (unit.items.empty()) return;
+                const auto profile = native_item_profiles.find(unit.uuid);
+                if (profile == native_item_profiles.end() || unit.uuid.empty()) {
+                    native_item_fit_invalid.insert(definition->internal_id);
+                    return;
+                }
+                double item_fit_total = 0.0;
+                std::size_t item_count = 0;
+                for (const auto& item : unit.items) {
+                    if (item.api_name.empty()) {
+                        native_item_fit_invalid.insert(definition->internal_id);
+                        return;
+                    }
+                    const double fit = native_item_fit_cache.get(item.api_name, profile->second);
+                    if (!std::isfinite(fit) || fit < 0.0) {
+                        native_item_fit_invalid.insert(definition->internal_id);
+                        return;
+                    }
+                    item_fit_total += std::clamp(fit / 50.0, 0.0, 1.0);
+                    ++item_count;
+                }
+                if (item_count == 0) return;
+                native_item_fit_totals[definition->internal_id] +=
+                    item_fit_total / static_cast<double>(item_count);
+                ++native_item_fit_unit_counts[definition->internal_id];
             };
             for (const auto& unit : player_envs[i].board)
                 if (unit) append_native_owned(*unit, true);
@@ -2358,6 +2395,13 @@ struct TFTEngine::Impl {
                 if (unit) append_native_owned(*unit, false);
             for (auto& [id, observed] : strategic_native_owned) {
                 observed.copies = strategy::owned_star_equivalent_copies(observed.copies_by_star);
+                const auto fit_count = native_item_fit_unit_counts.find(id);
+                if (fit_count != native_item_fit_unit_counts.end() &&
+                    fit_count->second > 0 && !native_item_fit_invalid.count(id)) {
+                    observed.item_fit = std::clamp(
+                        native_item_fit_totals[id] / fit_count->second, 0.0, 1.0);
+                    observed.item_fit_available = true;
+                }
                 native_input.owned.push_back(observed);
                 native_input.currently_owned_unit_ids.push_back(id);
             }
@@ -2602,16 +2646,21 @@ struct TFTEngine::Impl {
                               active_native_direction->unit_ids.end(),
                               definition->internal_id) !=
                         active_native_direction->unit_ids.end();
-                // No per-unit marginal board evaluator is available at this boundary.
-                candidate.board_contribution = 0.0;
+                // Combat contribution remains explicitly unavailable until
+                // unit-attributed combat outcomes are calibrated.
+                candidate.board_contribution = copies == strategic_native_owned.end()
+                    ? 0.0 : copies->second.board_contribution;
+                candidate.board_contribution_available = copies != strategic_native_owned.end() &&
+                    copies->second.board_contribution_available;
                 candidate.composition_fit =
                     !strategic_context.current_composition_direction.empty() &&
                     std::find(definition->traits.begin(), definition->traits.end(),
                               strategic_context.current_composition_direction) !=
                         definition->traits.end() ? 1.0 : 0.0;
-                // Item fit is produced by ItemFitCache for actual item/profile pairs;
-                // item count alone is not an item-fit measurement.
-                candidate.item_fit = 0.0;
+                candidate.item_fit = copies == strategic_native_owned.end()
+                    ? 0.0 : copies->second.item_fit;
+                candidate.item_fit_available = copies != strategic_native_owned.end() &&
+                    copies->second.item_fit_available;
                 candidate.traits = definition->traits;
                 for (const auto& item : unit.items) {
                     if (!item.grants_trait.empty() &&
