@@ -104,7 +104,7 @@ int main(int argc, char** argv) {
                             std::abs(effect.value - expected.second) < 0.0001f;
                     })) {
                 std::cerr << "generic max-health effect missing or falsely complete for "
-                          << expected.first << '\\n';
+                          << expected.first << '\n';
                 return 15;
             }
         }
@@ -123,7 +123,7 @@ int main(int argc, char** argv) {
                             std::abs(effect.value - expected.second) < 0.0001f;
                     })) {
                 std::cerr << "generic damage amplification effect missing or falsely complete for "
-                          << expected.first << '\\n';
+                          << expected.first << '\n';
                 return 16;
             }
         }
