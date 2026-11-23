@@ -70,6 +70,7 @@ struct ContextualActionEvaluation {
     std::uint64_t match_id{0};
     std::int32_t player_id{-1};
     std::uint32_t round{0};
+    std::uint64_t sequence{0};
     std::string composition_id;
     std::uint64_t composition_version{0};
     bool stale{false};
@@ -162,7 +163,7 @@ struct ContextualActionEvaluation {
         return {
             {"schema_version", schema_version},
             {"identity", {{"match_id", match_id}, {"player_id", player_id},
-                {"round", round}, {"composition_id", composition_id},
+                {"round", round}, {"sequence", sequence}, {"composition_id", composition_id},
                 {"composition_version", composition_version}}},
             {"stale", stale}, {"stale_reason", stale_reason},
             {"evidence_consumed", {{"economy", economy_evidence_consumed},
@@ -221,6 +222,7 @@ public:
         out.match_id = match_id;
         out.player_id = context.player_id;
         out.round = context.round;
+        out.sequence = context.sequence;
         const bool has_active_composition = active.has_value();
         if (has_active_composition) {
             out.composition_id = active->candidate.composition_id;
@@ -582,10 +584,12 @@ public:
         // fabricated. Uncertain or horizon-mismatched alternatives are omitted.
         std::vector<strategy::OpportunityAlternativeEvidence> opportunity_alternatives;
         opportunity_alternatives.reserve(out.candidates.size());
-        const bool opportunity_identity_valid = context.match_id > 0 &&
-            context.player_id >= 0 && context.round > 0 && context.sequence > 0;
+        const strategy::OpportunitySnapshotIdentity opportunity_identity{
+            match_id, context.player_id, context.round, context.sequence};
+        const bool opportunity_identity_valid = opportunity_identity.valid();
         for (const auto& candidate_score : out.candidates) {
             strategy::OpportunityAlternativeEvidence alternative;
+            alternative.identity = opportunity_identity;
             alternative.candidate_id = candidate_score.candidate_id;
             alternative.value_basis = "contextual_action_score.v1";
             alternative.marginal_strategic_value =
@@ -621,7 +625,7 @@ public:
             const auto opportunity = opportunity_producer.evaluate(
                 candidate_score.candidate_id, opportunity_alternatives,
                 candidate_score.evidence_horizon_rounds,
-                "contextual_action_score.v1");
+                "contextual_action_score.v1", opportunity_identity);
             if (!opportunity.available) continue;
             const double effective_cost =
                 opportunity.cost * (1.0 - opportunity.uncertainty);
