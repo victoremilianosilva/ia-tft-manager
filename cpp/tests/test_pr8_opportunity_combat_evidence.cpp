@@ -18,7 +18,9 @@ int main() {
     reroll.identity = identity;
     reroll.candidate_id = "reroll";
     reroll.value_basis = "shared_utility.v1";
-    reroll.marginal_strategic_value = 1.2;
+    // Gross value must cover direct and interest costs; the producer then
+    // computes the net forgone value exactly once (5.0 - 3.0 = 2.0).
+    reroll.marginal_strategic_value = 4.2;
     reroll.upgrade_value = 0.8;
     reroll.horizon_rounds = 2;
     reroll.uncertainty = 0.4;
