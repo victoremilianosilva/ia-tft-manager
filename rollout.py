@@ -395,7 +395,7 @@ class RolloutBuffer:
 
         if semantic_state is None:
             if self.require_semantic_state:
-                raise ValueError("Native PPO rollout requires semantic_state v6 for every transition.")
+                raise ValueError("Native PPO rollout requires semantic_state v7 for every transition.")
             semantic_numeric = torch.zeros(
                 (self.num_envs, self.semantic_numeric_dim),
                 dtype=torch.float32,
