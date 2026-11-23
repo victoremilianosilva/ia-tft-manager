@@ -312,3 +312,7 @@ role-conditioned effects: frontline roles receive armor/MR, while other roles
 receive AD/AP. The corresponding role branch was removed from the combat
 runtime. Its separate mana-gain multiplier remains a legacy item-specific
 mechanic and is not claimed as migrated.
+
+Blue Buff's modified AD/AP bonuses are also generic percentage-stat effects;
+the corresponding combat-start item-name branch was removed. Its mana-regeneration
+metadata remains separately catalogued.
