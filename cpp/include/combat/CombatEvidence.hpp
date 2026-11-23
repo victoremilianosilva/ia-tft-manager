@@ -233,6 +233,8 @@ public:
                 (effect.trigger == "on_kill" &&
                     (effect.operation == "grant_charges" ||
                      effect.operation == "heal_max_hp_pct")) ||
+                (effect.trigger == "combat_start" &&
+                    effect.operation == "mana_gain_multiplier") ||
                 ((effect.trigger == "after_delay" ||
                   effect.trigger == "while_hp_below" ||
                   effect.trigger == "while_hp_above") &&
