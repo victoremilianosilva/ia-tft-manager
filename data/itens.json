@@ -421,7 +421,16 @@
         "{6688a0d5}": 100
       },
       "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
-      "combat_effects": [],
+      "combat_effects": [
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "max_hp",
+          "target": "self",
+          "value": 0.06,
+          "percent_of_stat": true
+        }
+      ],
       "effect_coverage": {
         "source_keys": [
           "1StarAoEDamage",
@@ -615,7 +624,16 @@
         "PercentMaxHP": 0.05999999865889549
       },
       "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
-      "combat_effects": [],
+      "combat_effects": [
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "max_hp",
+          "target": "self",
+          "value": 0.06,
+          "percent_of_stat": true
+        }
+      ],
       "effect_coverage": {
         "source_keys": [
           "HealthRegenInterval",
@@ -1854,7 +1872,16 @@
         "MonsterCap": 100
       },
       "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
-      "combat_effects": [],
+      "combat_effects": [
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "max_hp",
+          "target": "self",
+          "value": 0.08,
+          "percent_of_stat": true
+        }
+      ],
       "effect_coverage": {
         "source_keys": [
           "Armor",
@@ -2623,7 +2650,16 @@
         "Health": 500
       },
       "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
-      "combat_effects": [],
+      "combat_effects": [
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "max_hp",
+          "target": "self",
+          "value": 0.18,
+          "percent_of_stat": true
+        }
+      ],
       "effect_coverage": {
         "source_keys": [
           "BonusPercentHP",
