@@ -3991,6 +3991,8 @@ struct TFTEngine::Impl {
                 {"mechanics_coverage_status", coverage_status},
                 {"source", "native_lobby_resolved_combat.v1"},
                 {"observed", true},
+                {"observation_scope", "native_lobby_simulation"},
+                {"authoritative_game_replay", false},
                 {"simulation_artifact_id", current_simulation_artifact_id.empty()
                     ? nlohmann::json(nullptr) : nlohmann::json(current_simulation_artifact_id)},
                 {"simulation_dataset_version", current_simulation_artifact_id.empty()
