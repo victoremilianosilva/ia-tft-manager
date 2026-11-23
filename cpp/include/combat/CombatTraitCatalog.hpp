@@ -127,6 +127,7 @@ inline TraitCombatCatalog load_trait_combat_catalog(std::istream& input) {
                 read_bool("scale_by_base_stat", effect.scale_by_base_stat);
 
                 const bool valid_stat = effect.stat == "attack_damage" ||
+                    effect.stat == "critical_strike_chance" ||
                     effect.stat == "attack_speed" || effect.stat == "ability_power" ||
                     effect.stat == "armor" || effect.stat == "magic_resist" ||
                     effect.stat == "omnivamp" || effect.stat == "damage_amplification" ||
