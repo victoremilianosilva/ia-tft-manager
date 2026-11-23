@@ -20,6 +20,7 @@ struct GenericEffectDescriptor {
     std::string prefix;
     std::string delayed_key;
     std::string conditional_key;
+    std::string periodic_key;
 };
 
 struct RuntimeUnit {
