@@ -341,3 +341,7 @@ receive the tier-specific total (25/60/115) through an additional self effect.
 The shared contribution is divided across active Defender sources, preventing
 the team aura from being multiplied by the number of Defenders. Other traits
 remain incomplete until their mechanics are mapped and tested.
+
+Archangel's Staff's catalogued mana regeneration is now consumed through the
+same generic `mana_regen` effect path, and its final item-name mana fallback
+was removed along with its periodic AP clock.
