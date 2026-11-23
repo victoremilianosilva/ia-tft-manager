@@ -864,8 +864,8 @@
       "source_name": "Carrasco",
       "source_description": "<row>(@MinUnits@) Carrascos recebem <TFTKeyword>Precisão</TFTKeyword> e @CritChance*100@% de Chance de Acerto Crítico.</row><br><row>(@MinUnits@) Além disso, inimigos sofrem Sangramento, que causa @BonusBleedPercent*100@% de Dano Verdadeiro adicional ao longo de @BleedDuration@s.</row><br><row>(@MinUnits@) Aumenta o dano de Sangramento para @BonusBleedPercent*100@%.</row>",
       "effects_complete": false,
-      "coverage_status": "not_implemented",
-      "coverage_note": "Source trait is registered with its real source tiers; combat effects remain incomplete until their mechanics are normalized and verified.",
+      "coverage_status": "partial",
+      "coverage_note": "The source-defined 15% critical-strike chance is implemented. Precision-specific behavior and the tier-scaled true-damage bleed remain unimplemented.",
       "source_tiers": [
         {
           "min_units": 2,
@@ -896,15 +896,45 @@
       "tiers": [
         {
           "min_units": 2,
-          "effects": []
+          "effects": [
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "critical_strike_chance",
+              "target": "self",
+              "value": 0.15,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Executioner"
+            }
+          ]
         },
         {
           "min_units": 3,
-          "effects": []
+          "effects": [
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "critical_strike_chance",
+              "target": "self",
+              "value": 0.15,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Executioner"
+            }
+          ]
         },
         {
           "min_units": 4,
-          "effects": []
+          "effects": [
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "critical_strike_chance",
+              "target": "self",
+              "value": 0.15,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Executioner"
+            }
+          ]
         }
       ]
     },
