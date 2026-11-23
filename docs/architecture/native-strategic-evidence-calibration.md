@@ -12,8 +12,22 @@ No synthetic fixture, unit-test ordering, or generated candidate score is accept
 - Owned copies, current shop offers and shared-pool availability are distinct acquisition states. A positive pool count means potentially acquirable in a future shop, not immediately purchasable.
 - Unknown pool state is not exhausted pool state.
 - Item fit is measured only from actual equipped item IDs, supported item-catalog definitions and the observed unit combat/profile snapshot. Missing or unsupported item data stays unavailable.
-- Per-unit board contribution stays unavailable until combat outcomes can be attributed to a stable unit identity over a declared horizon. Purchase cost, star tier, role and trait overlap are not combat contribution.
+- The native runtime now exposes a narrowly defined factual board-unit damage-share signal from completed combat results. It is joined through persistent board-unit UUIDs and aggregated by champion for the next decision. It is not a complete measure of strategic contribution and remains uncalibrated; cost, star tier, role and trait overlap are never substituted for combat outcomes.
 - Opportunity cost currently compares alternatives on the same decision snapshot using `contextual_action_score.v1`. This is a contextual score basis, not a calibrated gold value or causal estimate of future value. It must remain labeled as heuristic.
+
+## Current native board-contribution producer
+
+The producer joins `CombatUnitResult` to the persistent board-unit UUID through
+the combat input's source board position, then aggregates damage dealt by champion
+for each player. It publishes each champion's share of damage dealt by the player's
+mapped board units only after a completed, non-timeout combat with valid attribution
+and positive team damage. The evidence is bound to match, round and combat sequence,
+expires after the next decision window, and is cleared on episode reset.
+
+This is factual simulator telemetry, not calibrated ground truth. It measures damage
+share only; it does not yet capture all forms of frontline mitigation, crowd control,
+trait utility, or counterfactual contribution. Missing or incomplete attribution
+remains unavailable rather than becoming a zero measurement.
 
 ## Dataset requirements
 
