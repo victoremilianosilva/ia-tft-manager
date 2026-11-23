@@ -141,7 +141,7 @@ int main(int argc, char** argv) {
                         std::abs(effect.health_threshold - 0.5f) < 0.0001f &&
                         std::abs(effect.value - 0.15f) < 0.0001f;
                 })) {
-            std::cerr << "Night Harvester conditional effect was not normalized\\n";
+            std::cerr << "Night Harvester conditional effect was not normalized\n";
             return 17;
         }
 
