@@ -1,5 +1,5 @@
 #include "strategy/UnifiedStrategicStateMachine.hpp"
-#include "strategy/UnifiedStrategicShadowRuntime.hpp"
+#include "strategy/UnifiedStrategicRuntime.hpp"
 
 #include <cassert>
 #include <filesystem>
@@ -181,7 +181,7 @@ void machine_owns_exploratory_direction_history_without_legacy_inputs() {
     assert(result.diagnostics.discovery.hypotheses.front().anchor.direction == "Bruiser");
 }
 
-void shadow_runtime_isolates_players_and_resets_its_own_direction_history() {
+void native_runtime_isolates_players_and_resets_its_own_direction_history() {
     const auto base = std::filesystem::temp_directory_path();
     const auto player_zero_path = base / "tft-direction-discovery-player-zero.jsonl";
     const auto player_one_path = base / "tft-direction-discovery-player-one.jsonl";
@@ -193,9 +193,9 @@ void shadow_runtime_isolates_players_and_resets_its_own_direction_history() {
     ActiveCompositionManager player_one_composition;
     StrategicCommitment player_zero_commitment;
     StrategicCommitment player_one_commitment;
-    UnifiedStrategicShadowRuntime player_zero(
+    UnifiedStrategicRuntime player_zero(
         player_zero_composition, player_zero_commitment, player_zero_path);
-    UnifiedStrategicShadowRuntime player_one(
+    UnifiedStrategicRuntime player_one(
         player_one_composition, player_one_commitment, player_one_path);
     const StrategicCycleAuditContext context_zero{42, 0, 3};
     const StrategicCycleAuditContext context_one{42, 1, 3};
@@ -228,17 +228,18 @@ void shadow_runtime_isolates_players_and_resets_its_own_direction_history() {
     std::filesystem::remove(player_one_path, ignored);
 }
 
-void shadow_runtime_refreshes_without_an_audit_sidecar() {
+void native_runtime_refreshes_without_an_audit_sidecar() {
     ActiveCompositionManager active_composition;
     StrategicCommitment commitment;
     // Audit output is optional; it must not be an activation prerequisite.
-    UnifiedStrategicShadowRuntime runtime(
+    UnifiedStrategicRuntime runtime(
         active_composition, commitment, std::filesystem::path{});
     StrategicCycleInput input;
     input.exploration = discovery_input();
 
     const auto result = runtime.refresh({42, 0, 3}, input);
-    assert(result.shadow_only);
+    assert(result.canonical_state_owner);
+    assert(!result.action_execution_enabled);
     assert(result.phase == StrategicCyclePhase::Exploration);
     assert(result.diagnostics.discovery.status == DirectionDiscoveryStatus::HypothesesFound);
     assert(!active_composition.current().has_value());
@@ -247,7 +248,7 @@ void shadow_runtime_refreshes_without_an_audit_sidecar() {
 void runtime_exposes_contained_refresh_exceptions_to_its_owner() {
     ActiveCompositionManager active_composition;
     StrategicCommitment commitment;
-    UnifiedStrategicShadowRuntime runtime(
+    UnifiedStrategicRuntime runtime(
         active_composition, commitment, std::filesystem::path{});
     StrategicCycleInput input;
     input.exploration = discovery_input();
@@ -257,7 +258,7 @@ void runtime_exposes_contained_refresh_exceptions_to_its_owner() {
 
     const auto result = runtime.refresh({42, 0, 3}, input);
     assert(result.phase == StrategicCyclePhase::NoEvidence);
-    assert(result.diagnostics.transition_reason == "shadow_cycle_exception_contained");
+    assert(result.diagnostics.transition_reason == "native_strategic_cycle_exception_contained");
     assert(!active_composition.current().has_value());
 }
 
@@ -433,8 +434,8 @@ int main() {
     exploration_waits_for_composition_and_then_binds_direction();
     strategic_planner_selected_direction_overrides_discovery_ranking();
     machine_owns_exploratory_direction_history_without_legacy_inputs();
-    shadow_runtime_isolates_players_and_resets_its_own_direction_history();
-    shadow_runtime_refreshes_without_an_audit_sidecar();
+    native_runtime_isolates_players_and_resets_its_own_direction_history();
+    native_runtime_refreshes_without_an_audit_sidecar();
     runtime_exposes_contained_refresh_exceptions_to_its_owner();
     pivot_evaluation_does_not_mutate_then_confirms_synchronized_state();
     invalidated_candidate_is_removed_and_old_direction_is_preserved();

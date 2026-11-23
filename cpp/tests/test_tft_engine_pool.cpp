@@ -1150,9 +1150,10 @@ int main(int argc, char** argv) {
         std::string strategic_audit_line;
         require(static_cast<bool>(std::getline(strategic_audit_stream, strategic_audit_line)) &&
                     strategic_audit_line.find("\"phase\"") != std::string::npos &&
-                    strategic_audit_line.find("\"shadow_only\":true") != std::string::npos &&
+                    strategic_audit_line.find("\"state_ownership\":\"native_canonical\"") != std::string::npos &&
+                    strategic_audit_line.find("\"action_execution_enabled\":false") != std::string::npos &&
                     strategic_audit_line.find("\"player_id\":0") != std::string::npos,
-                "Sidecar nao contem evento real identificado como Shadow por jogador.");
+                "Sidecar nao identifica o ownership nativo canonico e a ausencia de execucao de acoes.");
         require(static_cast<bool>(std::getline(strategic_audit_stream, strategic_audit_line)) &&
                     strategic_audit_line.find("\"sequence\":2") != std::string::npos,
                 "Atualizacao sucessiva do produtor real nao gerou o segundo evento da sequencia.");

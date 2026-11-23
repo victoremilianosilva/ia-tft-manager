@@ -8,12 +8,11 @@
 
 namespace tft::strategy {
 
-// Session-scoped entry point for callers that own the unified shadow planner.
-// The recorder observes the returned value only; recording failure never
-// changes the strategic result or propagates to the game/runtime caller.
-class UnifiedStrategicShadowRuntime {
+// Session-scoped native strategic runtime. It owns canonical strategic publication;
+// Audit recording is observational only; failure never changes canonical state.
+class UnifiedStrategicRuntime {
 public:
-    explicit UnifiedStrategicShadowRuntime(
+    explicit UnifiedStrategicRuntime(
         composition_intelligence::ActiveCompositionManager& active_composition,
         StrategicCommitment& commitment,
         std::filesystem::path audit_path,
@@ -37,11 +36,10 @@ public:
             (void)recorder_.append(context, input, result);
             return result;
         } catch (...) {
-            // The strategic shadow cycle is isolated from the caller as well.
+            // The native strategic cycle is isolated from the caller as well.
             StrategicCycleResult result;
             result.phase = StrategicCyclePhase::NoEvidence;
-            result.diagnostics.transition_reason = "shadow_cycle_exception_contained";
-            result.shadow_only = true;
+            result.diagnostics.transition_reason = "native_strategic_cycle_exception_contained";
             return result;
         }
     }

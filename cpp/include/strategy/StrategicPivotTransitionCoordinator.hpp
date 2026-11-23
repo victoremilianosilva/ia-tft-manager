@@ -49,11 +49,12 @@ struct PivotConfirmationResult {
     std::uint32_t consecutive_viable_evaluations{0};
     std::uint64_t active_composition_version{0};
     bool state_changed{false};
-    bool shadow_only{true};
+    // Coordinator may publish canonical strategy state, but never executes game actions.
+    bool action_execution_enabled{false};
 };
 
-// Owns the composition and direction-anchor transition as one shadow-state
-// transaction. Evaluation alone never changes the active composition/direction.
+// Owns the canonical composition and direction-anchor transition as one
+// atomic native transaction. Evaluation alone never publishes a transition.
 class StrategicPivotTransitionCoordinator {
 public:
     explicit StrategicPivotTransitionCoordinator(
@@ -167,7 +168,7 @@ public:
                     0, active->version, false};
         }
         if (feasibility.status != PivotFeasibilityStatus::Viable ||
-            !feasibility.shadow_only || !std::isfinite(feasibility.score) ||
+            !feasibility.advisory_only || !std::isfinite(feasibility.score) ||
             feasibility.score < policy_.minimum_viable_score) {
             reset_streak();
             anchors_.pivot_candidate = {};

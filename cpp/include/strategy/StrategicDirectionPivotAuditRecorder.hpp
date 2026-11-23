@@ -1,6 +1,6 @@
 #pragma once
 
-// Best-effort, read-only JSONL recorder for the unified strategic shadow cycle.
+// Best-effort, read-only JSONL recorder for the native canonical strategic cycle.
 // It observes value snapshots only; it never calls back into or mutates the planner.
 
 #include "strategy/UnifiedStrategicStateMachine.hpp"
@@ -29,7 +29,7 @@ public:
         : output_(std::move(output)) {}
 
     // Returns false on invalid context or any I/O/serialization failure.
-    // All failures are contained so callers can safely invoke this from Shadow.
+    // All failures are contained so callers can safely invoke this from the native runtime.
     bool append(const StrategicCycleAuditContext& context,
                 const StrategicCycleInput& input,
                 const StrategicCycleResult& result) noexcept {
@@ -296,7 +296,7 @@ private:
         }
 
         return {
-            {"schema_version", 1},
+            {"schema_version", 2},
             {"match_id", context.match_id},
             {"sequence", sequence},
             {"player_id", context.player_id},
@@ -316,7 +316,8 @@ private:
             {"feasibility", feasibility},
             {"transition", transition},
             {"reason", result.diagnostics.transition_reason},
-            {"shadow_only", true}
+            {"state_ownership", "native_canonical"},
+            {"action_execution_enabled", false}
         };
     }
 

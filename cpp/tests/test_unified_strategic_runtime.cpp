@@ -1,4 +1,4 @@
-#include "strategy/UnifiedStrategicShadowRuntime.hpp"
+#include "strategy/UnifiedStrategicRuntime.hpp"
 
 #include <cassert>
 #include <cstdint>
@@ -86,7 +86,7 @@ void runtime_advances_confirmation_only_for_new_evidence_sequences() {
     ActiveCompositionManager active;
     StrategicCommitment commitment;
     commitment.composition_direction = "Bruiser";
-    UnifiedStrategicShadowRuntime runtime(active, commitment, {}, {3, 60.0, 5});
+    UnifiedStrategicRuntime runtime(active, commitment, {}, {3, 60.0, 5});
     const StrategicCycleAuditContext context{20261120, 0, 12};
 
     auto result = runtime.refresh(context, initial_input());
@@ -143,6 +143,6 @@ void runtime_advances_confirmation_only_for_new_evidence_sequences() {
 
 int main() {
     runtime_advances_confirmation_only_for_new_evidence_sequences();
-    std::cout << "Unified strategic shadow runtime pivot lifecycle passed\\n";
+    std::cout << "Native strategic runtime pivot lifecycle passed\\n";
     return 0;
 }

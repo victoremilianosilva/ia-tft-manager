@@ -72,7 +72,7 @@ PivotFeasibilityResult viable_result(const PivotFeasibilityInput& input) {
     value.candidate_composition_identity = input.candidate_composition_identity;
     value.source_direction_anchor_identity = input.source_direction_anchor_identity;
     value.source_composition_version = input.source_composition_version;
-    value.shadow_only = true;
+    value.advisory_only = true;
     return value;
 }
 

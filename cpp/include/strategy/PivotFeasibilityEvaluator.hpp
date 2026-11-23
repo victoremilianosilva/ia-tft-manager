@@ -1,8 +1,8 @@
 #pragma once
 
-// Shadow-only pivot feasibility evaluation. This contract consumes an
-// already-normalized strategic snapshot and never mutates the active direction,
-// composition, PPO state, observations, masks, rewards, or action execution.
+// Advisory pivot-feasibility evaluation over an already-normalized native
+// strategic snapshot. It never publishes composition/direction or executes game
+// actions; canonical publication belongs exclusively to the transition coordinator.
 
 #include "strategy/UnitCopyProgress.hpp"
 
@@ -99,7 +99,8 @@ struct PivotFeasibilityResult {
     std::string candidate_composition_identity;
     std::string source_direction_anchor_identity;
     std::uint64_t source_composition_version{0};
-    bool shadow_only{true};
+    // This evaluator emits advisory evidence only; it never executes a game action.
+    bool advisory_only{true};
 };
 
 class PivotFeasibilityEvaluator {

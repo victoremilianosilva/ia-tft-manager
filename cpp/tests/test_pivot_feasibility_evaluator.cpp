@@ -35,7 +35,7 @@ int main() {
 
     {
         const auto result = evaluator.evaluate(viable_input());
-        assert(result.shadow_only);
+        assert(result.advisory_only);
         assert(result.status == PivotFeasibilityStatus::Viable);
         assert(result.carry_eligible); // 4-cost carry is eligible, not automatic approval.
         assert(result.score > 49.0);
