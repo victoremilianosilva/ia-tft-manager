@@ -253,8 +253,6 @@ bool apply_item_stats(CombatUnit& unit, std::string& error) {
             });
         if (!has_generic_ad_effect && item.api_name == "TFT_Item_Bloodthirster")
             unit.attack_damage += base_attack_damage * 0.15f;
-        else if (!has_generic_ad_effect && item.api_name == "TFT_Item_BlueBuff")
-            unit.attack_damage += base_attack_damage * 0.15f;
         else if (!has_generic_ad_effect && item.api_name == "TFT_Item_LastWhisper")
             unit.attack_damage += base_attack_damage * 0.15f;
         else if (!has_generic_ad_effect && item.api_name == "TFT_Item_RunaansHurricane")
@@ -887,7 +885,6 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                          item.api_name == "TFT_Item_Morellonomicon" ||
                          item.api_name == "TFT_Item_SpearOfShojin" ||
                          item.api_name == "TFT_Item_StatikkShiv") loaded.mana_regen_per_second += 1.0f;
-                else if (item.api_name == "TFT_Item_BlueBuff") loaded.mana_regen_per_second += 5.0f;
                 else if (item.api_name == "TFT_Item_Redemption") loaded.mana_regen_per_second += 2.0f;
             }
             loaded.mana_regen_per_second += effect_mana_regeneration(loaded.unit);
