@@ -328,3 +328,9 @@ Dragon's Claw's periodic 2.5%-of-max-HP self-heal is now a generic
 effect scheduler advances missed ticks deterministically and applies healing
 through the shared combat heal resolver; the dedicated item-name tick state
 and branch were removed.
+
+The generic periodic scheduler now also supports stat effects. Archangel's
+Staff's interval AP growth, Quicksilver's per-second attack-speed gain, and
+Guinsoo's base-attack-speed-scaled growth are catalogued as periodic effects;
+their dedicated item clocks and item-name branches were removed. Base-stat
+scaling is explicitly constrained to periodic attack-speed effects.
