@@ -128,6 +128,34 @@ int main(int argc, char** argv) {
             }
         }
 
+        const auto adaptive_helm = std::find_if(
+            catalog.items.begin(), catalog.items.end(),
+            [](const auto& item) { return item.id == "TFT_Item_AdaptiveHelm"; });
+        if (adaptive_helm == catalog.items.end() || adaptive_helm->combat_effects_complete) {
+            std::cerr << "Adaptive Helm generic role effects are missing or falsely complete\\n";
+            return 18;
+        }
+        const auto has_role_effect = [&](const char* stat, const char* role,
+                                         float value, bool percent) {
+            return std::any_of(adaptive_helm->combat_effects.begin(),
+                adaptive_helm->combat_effects.end(), [&](const auto& effect) {
+                    return effect.trigger == "combat_start" &&
+                        effect.operation == "add_stat" && effect.stat == stat &&
+                        effect.condition == role && effect.target == "self" &&
+                        effect.percent_of_stat == percent &&
+                        std::abs(effect.value - value) < 0.0001f;
+                });
+        };
+        if (!has_role_effect("armor", "role_tank", 30.0f, false) ||
+            !has_role_effect("magic_resist", "role_tank", 30.0f, false) ||
+            !has_role_effect("armor", "role_fighter", 30.0f, false) ||
+            !has_role_effect("magic_resist", "role_fighter", 30.0f, false) ||
+            !has_role_effect("attack_damage", "role_other", 0.10f, true) ||
+            !has_role_effect("ability_power", "role_other", 0.10f, true)) {
+            std::cerr << "Adaptive Helm role effects are incomplete\\n";
+            return 19;
+        }
+
         const auto night_harvester = std::find_if(
             catalog.items.begin(), catalog.items.end(),
             [](const auto& item) { return item.id == "TFT_Item_NightHarvester"; });
