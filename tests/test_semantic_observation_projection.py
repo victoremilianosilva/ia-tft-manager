@@ -30,7 +30,7 @@ def _unit(occupied=False, champion_id="", star=0, cost=0):
         "cost": cost,
         "items": [],
         "trait_names": [],
-        "role": 3,
+        "role": 1,
         "attack_damage": 100.0,
         "attack_speed": 1.0,
         "max_health": 1000.0,
@@ -287,7 +287,7 @@ def test_copy_progress_consumes_native_unit_copy_progress_without_recounting():
         "copies_toward_next_star"
     ] = 2
     projected = project_native_player_state(row, {"TFT_TestChampion": 17})
-    assert projected["numeric"][63] == 1.0
+    assert projected["numeric"][65] == 1.0
 
 
 def test_native_trait_identities_are_stably_hashed_and_exposed_to_policy():
@@ -356,7 +356,7 @@ def test_unknown_champion_is_not_fabricated_and_is_marked_invalid():
     row["native_player_state"]["board"][0]["champion_id"] = "TFT_UnknownChampion"
     projected = project_native_player_state(row, {"TFT_TestChampion": 17})
     assert projected["champion_ids"][0] == 0
-    assert projected["numeric"][57] == 0.0
+    assert projected["numeric"][59] == 0.0
 
 
 def test_projection_rejects_missing_native_provenance_or_player_mismatch():
