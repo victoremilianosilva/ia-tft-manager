@@ -2401,6 +2401,11 @@ struct TFTEngine::Impl {
                     observed.item_fit = std::clamp(
                         native_item_fit_totals[id] / fit_count->second, 0.0, 1.0);
                     observed.item_fit_available = true;
+                    observed.item_fit_source =
+                        "native_item_engine.equipped_items_vs_unit_profile.v1";
+                    // ItemEngine is a catalog/profile heuristic, not a calibrated
+                    // combat outcome. Preserve that uncertainty in downstream scores.
+                    observed.item_fit_uncertainty = 0.35;
                 }
                 native_input.owned.push_back(observed);
                 native_input.currently_owned_unit_ids.push_back(id);
@@ -2661,6 +2666,10 @@ struct TFTEngine::Impl {
                     ? 0.0 : copies->second.item_fit;
                 candidate.item_fit_available = copies != strategic_native_owned.end() &&
                     copies->second.item_fit_available;
+                if (copies != strategic_native_owned.end()) {
+                    candidate.item_fit_source = copies->second.item_fit_source;
+                    candidate.item_fit_uncertainty = copies->second.item_fit_uncertainty;
+                }
                 candidate.traits = definition->traits;
                 for (const auto& item : unit.items) {
                     if (!item.grants_trait.empty() &&
@@ -2722,6 +2731,8 @@ struct TFTEngine::Impl {
                     anchor.unit.item_fit = observed->second.item_fit;
                     anchor.unit.item_fit_available =
                         observed->second.item_fit_available;
+                    anchor.unit.item_fit_source = observed->second.item_fit_source;
+                    anchor.unit.item_fit_uncertainty = observed->second.item_fit_uncertainty;
                 } else {
                     anchor.unit.star = 1;
                 }
