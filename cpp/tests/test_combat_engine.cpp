@@ -982,6 +982,11 @@ void test_shojin_changes_cast_timing_and_dragons_claw_heals() {
     const auto no_shojin = engine.simulate(mana_input);
     tft::CombatItem shojin;
     shojin.api_name = "TFT_Item_SpearOfShojin";
+    tft::CombatEffectDefinition shojin_mana;
+    shojin_mana.trigger = "on_attack";
+    shojin_mana.operation = "mana_on_attack";
+    shojin_mana.value = 5.0f;
+    shojin.effects.push_back(shojin_mana);
     mana_input.player_a.units[0].items.push_back(shojin);
     const auto with_shojin = engine.simulate(mana_input);
     require(no_shojin.success && with_shojin.success, "Shojin comparison should simulate.");
