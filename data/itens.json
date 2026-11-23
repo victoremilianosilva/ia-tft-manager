@@ -567,6 +567,13 @@
           "target": "self",
           "value": 0.550000011920929,
           "percent_of_stat": true
+        },
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "damage_amplification",
+          "target": "self",
+          "value": 0.1
         }
       ],
       "effect_coverage": {
@@ -1743,7 +1750,15 @@
         "{1543aa48}": 0.15000000596046448
       },
       "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
-      "combat_effects": [],
+      "combat_effects": [
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "damage_amplification",
+          "target": "self",
+          "value": 0.15
+        }
+      ],
       "effect_coverage": {
         "source_keys": [
           "AP",
