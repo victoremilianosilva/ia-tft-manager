@@ -501,6 +501,63 @@ void test_trait_team_mana_regeneration_is_applied_once() {
             "Non-Invoker allies should receive the team aura once, not the Invoker bonus.");
 }
 
+void test_riftbeast_periodic_stat_growth_effect() {
+    tft::CombatEngine engine;
+    auto input = make_input();
+    input.config.max_duration = 5.1f;
+    input.config.record_damage = true;
+
+    auto& attacker = input.player_a.units.front();
+    attacker.attack_damage = 100.0f;
+    attacker.attack_speed = 1.0f;
+    attacker.attack_range = 7.0f;
+    attacker.can_attack = true;
+    attacker.can_move = false;
+    attacker.can_cast = false;
+
+    tft::CombatTrait riftbeast;
+    riftbeast.api_name = "DA_Riftbeast18";
+    riftbeast.active = true;
+    riftbeast.active_count = 7;
+
+    tft::CombatEffectDefinition combat_start;
+    combat_start.trigger = "combat_start";
+    combat_start.operation = "add_stat";
+    combat_start.stat = "attack_damage";
+    combat_start.target = "self";
+    combat_start.value = 0.06f;
+    combat_start.percent_of_stat = true;
+    combat_start.condition = "trait_count_at_least";
+    combat_start.condition_trait = riftbeast.api_name;
+    combat_start.min_trait_count = 7;
+
+    tft::CombatEffectDefinition periodic = combat_start;
+    periodic.trigger = "periodic";
+    periodic.interval = 5.0f;
+    riftbeast.effects = {combat_start, periodic};
+    attacker.traits.push_back(riftbeast);
+
+    auto& target = input.player_b.units.front();
+    target.hp = target.max_hp = 10000.0f;
+    target.armor = 0.0f;
+    target.can_attack = false;
+    target.can_move = false;
+    target.can_cast = false;
+
+    const auto result = engine.simulate(input);
+    require(result.success && result.damage_events.size() >= 6,
+            "Riftbeast periodic growth combat should complete with attack samples.");
+    require(std::abs(result.damage_events.front().raw_damage - 106.0f) < 0.01f,
+            "Riftbeast combat-start growth should apply before the first attack.");
+    const auto fifth_second_hit = std::find_if(result.damage_events.begin(),
+        result.damage_events.end(), [](const auto& event) {
+            return std::abs(event.timestamp - 5.0f) < 0.01f;
+        });
+    require(fifth_second_hit != result.damage_events.end() &&
+            std::abs(fifth_second_hit->raw_damage - 112.36f) < 0.02f,
+            "Riftbeast periodic growth should apply again after five seconds.");
+}
+
 void test_generic_trait_critical_chance_effect() {
     tft::CombatEngine engine;
     auto input = make_input();
@@ -1557,6 +1614,7 @@ int main() {
         test_generic_periodic_heal_effect();
         test_generic_periodic_missing_health_heal_effect();
         test_generic_mana_gain_multiplier_effect();
+        test_riftbeast_periodic_stat_growth_effect();
         test_generic_trait_critical_chance_effect();
         test_generic_mana_on_attack_item_effects();
         test_trait_team_mana_regeneration_is_applied_once();
