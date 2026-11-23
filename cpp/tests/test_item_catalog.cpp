@@ -128,6 +128,22 @@ int main(int argc, char** argv) {
             }
         }
 
+        const auto dragons_claw = std::find_if(
+            catalog.items.begin(), catalog.items.end(),
+            [](const auto& item) { return item.id == "TFT_Item_DragonsClaw"; });
+        if (dragons_claw == catalog.items.end() || dragons_claw->combat_effects_complete ||
+            std::none_of(dragons_claw->combat_effects.begin(),
+                dragons_claw->combat_effects.end(), [](const auto& effect) {
+                    return effect.trigger == "periodic" &&
+                        effect.operation == "heal_max_hp_pct" &&
+                        effect.target == "self" &&
+                        std::abs(effect.interval - 2.0f) < 0.0001f &&
+                        std::abs(effect.value - 0.025f) < 0.0001f;
+                })) {
+            std::cerr << "Dragon's Claw periodic heal effect is missing or falsely complete\\n";
+            return 23;
+        }
+
         const auto blue_buff = std::find_if(
             catalog.items.begin(), catalog.items.end(),
             [](const auto& item) { return item.id == "TFT_Item_BlueBuff"; });
