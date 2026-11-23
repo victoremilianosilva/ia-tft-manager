@@ -40,7 +40,6 @@ struct RuntimeUnit {
     int ability_casts = 0;
     int kills = 0;
     int titans_stacks = 0;
-    float last_redemption_tick = 0.0f;
     float last_redbuff_tick = 0.0f;
     float last_bramble_proc = -1000.0f;
     float last_ionic_proc = -1000.0f;
@@ -569,7 +568,8 @@ void prepare_generic_effect_descriptors(RuntimeUnit& runtime) {
                 std::to_string(effect.health_threshold) + ":" + std::to_string(effect.value);
         }
         if (effect.trigger == "periodic" &&
-            (effect.operation == "heal_max_hp_pct" || effect.operation == "add_stat") &&
+            (effect.operation == "heal_max_hp_pct" ||
+             effect.operation == "heal_missing_hp_pct" || effect.operation == "add_stat") &&
             std::isfinite(effect.interval) && effect.interval > 0.0f) {
             descriptor.periodic_key = descriptor.prefix + "periodic:" +
                 effect.operation + ":" + effect.stat + ":" + effect.condition + ":" +
@@ -656,6 +656,16 @@ void apply_periodic_effects(RuntimeUnit& runtime, float now) {
             const float requested = runtime.unit.max_hp * effect.value *
                 static_cast<float>(ticks);
             runtime.healing_done += apply_heal(runtime, requested, now);
+        } else if (effect.operation == "heal_missing_hp_pct" &&
+                   effect.target == "self") {
+            for (int tick = 0; tick < ticks; ++tick) {
+                const float missing = std::max(0.0f,
+                    runtime.unit.max_hp - runtime.unit.hp);
+                float requested = missing * effect.value;
+                if (effect.max_amount > 0.0f)
+                    requested = std::min(requested, effect.max_amount);
+                runtime.healing_done += apply_heal(runtime, requested, now);
+            }
         } else if (effect.operation == "add_stat" && effect.target == "self") {
             CombatEffectDefinition periodic_effect = effect;
             if (periodic_effect.scale_by_base_stat) {
@@ -1135,15 +1145,6 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
             actor.unit.mana = std::min(actor.unit.max_mana,
                 actor.unit.mana + actor.mana_regen_per_second *
                     elapsed * actor.mana_gain_multiplier);
-            if (has_item(actor.unit, "TFT_Item_Redemption") &&
-                now - actor.last_redemption_tick >= 1.0f) {
-                const int ticks = static_cast<int>(now - actor.last_redemption_tick);
-                const float missing = actor.unit.max_hp - actor.unit.hp;
-                const float heal = apply_heal(actor,
-                    std::min(missing * 0.02f * ticks, 250.0f * ticks), now);
-                actor.healing_done += heal;
-                actor.last_redemption_tick += static_cast<float>(ticks);
-            }
             if (actor.crown_shield_triggered && actor.crown_shield_expires_at > 0.0f &&
                 now >= actor.crown_shield_expires_at) {
                 actor.unit.ability_power += 25.0f;
