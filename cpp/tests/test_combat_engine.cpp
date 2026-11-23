@@ -350,6 +350,54 @@ void test_generic_role_condition_item_effect() {
             "Generic role_other effect should apply to carry units.");
 }
 
+void test_generic_mana_gain_multiplier_effect() {
+    tft::CombatEngine engine;
+    auto input = make_input();
+    input.config.max_duration = 2.1f;
+
+    auto& holder = input.player_a.units.front();
+    holder.hp = holder.max_hp = 1000.0f;
+    holder.mana = 98.9f;
+    holder.max_mana = 105.0f;
+    holder.can_attack = false;
+    holder.can_move = false;
+    holder.can_cast = true;
+    holder.ability.mana_cost = 105.0f;
+    holder.ability.has_damage = true;
+    holder.ability.base_damage = 1.0f;
+
+    tft::CombatItem item;
+    item.api_name = "catalog_generic_mana_multiplier";
+    item.name = "Generic Mana Multiplier";
+
+    tft::CombatEffectDefinition regen;
+    regen.trigger = "combat_start";
+    regen.operation = "mana_regen";
+    regen.value = 3.0f;
+
+    tft::CombatEffectDefinition multiplier;
+    multiplier.trigger = "combat_start";
+    multiplier.operation = "mana_gain_multiplier";
+    multiplier.target = "self";
+    multiplier.value = 1.15f;
+    item.effects = {regen, multiplier};
+    holder.items.push_back(item);
+
+    auto& target = input.player_b.units.front();
+    target.hp = target.max_hp = 1000.0f;
+    target.can_attack = false;
+    target.can_move = false;
+    target.can_cast = false;
+
+    const auto result = engine.simulate(input);
+    require(result.success, "Generic mana multiplier combat should succeed.");
+    const auto found = std::find_if(result.units.begin(), result.units.end(),
+        [](const auto& unit) { return unit.unit_id == 0; });
+    require(found != result.units.end(), "Mana multiplier result unit is missing.");
+    require(found->ability_casts > 0,
+            "Generic mana gain multiplier should allow the unit to reach its cast threshold.");
+}
+
 void test_event_limit_is_reported_as_timeout() {
     tft::CombatEngine engine;
     auto input = make_input();
@@ -1061,6 +1109,7 @@ void test_generic_source_ad_effect_changes_combat() {
 int main() {
     try {
         test_deterministic_winner_and_damage();
+        test_generic_mana_gain_multiplier_effect();
         test_generic_role_condition_item_effect();
         test_generic_while_hp_above_effect_reverses_at_threshold();
         test_generic_damage_amplification_item_effect();
