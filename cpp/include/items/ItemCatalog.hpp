@@ -106,7 +106,8 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
                 effect.operation == "bonus_damage" ||
                 effect.operation == "heal_max_hp_pct" ||
                 effect.operation == "grant_charges" ||
-                effect.operation == "mana_regen";
+                effect.operation == "mana_regen" ||
+                effect.operation == "mana_gain_multiplier";
             if (!supported_operation) {
                 throw std::invalid_argument(
                     "Unsupported combat effect operation (not implemented by CombatEngine): " +
