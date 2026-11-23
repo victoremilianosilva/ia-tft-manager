@@ -107,6 +107,7 @@ inline TraitCombatCatalog load_trait_combat_catalog(std::istream& input) {
                 read_number("delay", effect.delay);
                 read_number("health_threshold", effect.health_threshold);
                 read_number("critical_value", effect.critical_value);
+                read_number("max_amount", effect.max_amount);
                 if (raw_effect.contains("max_stacks")) {
                     if (!raw_effect["max_stacks"].is_number_integer() ||
                         raw_effect["max_stacks"].get<int>() <= 0)
@@ -146,9 +147,12 @@ inline TraitCombatCatalog load_trait_combat_catalog(std::istream& input) {
                     (effect.target.empty() || effect.target == "self" || effect.target == "allies");
                 const bool valid_bonus_damage = effect.operation == "bonus_damage" &&
                     effect.trigger == "on_attack";
-                const bool valid_heal = effect.operation == "heal_max_hp_pct" &&
-                    (effect.trigger == "on_kill" || effect.trigger == "on_attack" ||
-                     effect.trigger == "periodic");
+                const bool valid_heal =
+                    ((effect.operation == "heal_max_hp_pct" &&
+                      (effect.trigger == "on_kill" || effect.trigger == "on_attack" ||
+                       effect.trigger == "periodic")) ||
+                     (effect.operation == "heal_missing_hp_pct" &&
+                      effect.trigger == "periodic"));
                 const bool valid_charges = effect.operation == "grant_charges" &&
                     effect.trigger == "on_kill";
                 if (!valid_trigger || !(valid_add_stat || valid_mana_regen ||
