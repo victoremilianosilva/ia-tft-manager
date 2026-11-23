@@ -295,3 +295,8 @@ The catalog loader tests that these effects are present and explicitly keeps
 their overall item metadata incomplete because other passives on these items
 are not yet modeled. Runtime tests verify the generic percentage effect is
 applied once without relying on an item API name.
+
+The same tranche also moves Deathblade and Rabadon's Deathcap damage
+amplification into generic `combat_start/add_stat/damage_amplification`
+effects and removes their item-name branches. Their other metadata remains
+incomplete where applicable; this migration does not assert full item coverage.
