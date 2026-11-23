@@ -279,6 +279,14 @@ def test_semantic_validation_accepts_all_native_healing_and_attack_mana_effects(
                     "max_amount": 100,
                 },
                 {
+                    "trigger": "while_hp_above",
+                    "operation": "add_stat",
+                    "stat": "damage_reduction",
+                    "target": "self",
+                    "value": 0.15,
+                    "health_threshold": 0.5,
+                },
+                {
                     "trigger": "on_attack",
                     "operation": "mana_on_attack",
                     "target": "self",
