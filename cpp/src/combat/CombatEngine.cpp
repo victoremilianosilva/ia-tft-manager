@@ -330,6 +330,9 @@ void apply_effect_stat(CombatUnit& unit, const CombatEffectDefinition& effect) {
         else if (effect.stat == "magic_resist") amount *= unit.magic_resist;
     }
     if (effect.stat == "attack_damage") unit.attack_damage += amount;
+    else if (effect.stat == "critical_strike_chance")
+        unit.critical_strike_chance = std::clamp(
+            unit.critical_strike_chance + amount, 0.0f, 1.0f);
     else if (effect.stat == "attack_speed") unit.attack_speed += amount;
     else if (effect.stat == "ability_power") unit.ability_power += amount;
     else if (effect.stat == "armor") unit.armor += amount;
