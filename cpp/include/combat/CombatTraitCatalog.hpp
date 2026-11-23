@@ -106,6 +106,7 @@ inline TraitCombatCatalog load_trait_combat_catalog(std::istream& input) {
                 read_number("interval", effect.interval);
                 read_number("delay", effect.delay);
                 read_number("health_threshold", effect.health_threshold);
+                read_number("critical_value", effect.critical_value);
                 if (raw_effect.contains("max_stacks")) {
                     if (!raw_effect["max_stacks"].is_number_integer() ||
                         raw_effect["max_stacks"].get<int>() <= 0)
