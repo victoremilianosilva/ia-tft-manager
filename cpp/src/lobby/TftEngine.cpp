@@ -6181,6 +6181,15 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
         target.board_isolated_frontline_count = board_eval.isolated_frontline_count;
         target.board_important_bench_units_unplayed =
             board_eval.important_bench_units_unplayed;
+        target.board_frontline_lane_count = board_eval.frontline_lane_count;
+        target.board_exposed_main_carries = board_eval.exposed_main_carry_count;
+        target.board_fragile_frontline_count = board_eval.fragile_frontline_count;
+        target.board_missing_frontline_count = board_eval.missing_frontline_count;
+        target.board_missing_backline_count = board_eval.missing_backline_count;
+        target.board_active_trait_count = board_eval.active_trait_count;
+        target.board_strategic_fit_score = board_eval.strategic_fit_score;
+        target.board_unit_quality_score = board_eval.unit_quality_score;
+        target.board_trait_coherence_score = board_eval.trait_coherence_score;
         target.round_gold = source.economy.round_gold;
         target.round_base_gold = source.economy.round_base_gold;
         target.round_interest = source.economy.round_interest;

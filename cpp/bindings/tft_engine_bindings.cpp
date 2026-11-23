@@ -446,6 +446,15 @@ py::dict audit_snapshot_to_dict(
         p["board_frontline_count"] = player.board_frontline_count;
         p["board_isolated_frontline_count"] = player.board_isolated_frontline_count;
         p["board_important_bench_units_unplayed"] = player.board_important_bench_units_unplayed;
+        p["board_frontline_lane_count"] = player.board_frontline_lane_count;
+        p["board_exposed_main_carries"] = player.board_exposed_main_carries;
+        p["board_fragile_frontline_count"] = player.board_fragile_frontline_count;
+        p["board_missing_frontline_count"] = player.board_missing_frontline_count;
+        p["board_missing_backline_count"] = player.board_missing_backline_count;
+        p["board_active_trait_count"] = player.board_active_trait_count;
+        p["board_strategic_fit_score"] = player.board_strategic_fit_score;
+        p["board_unit_quality_score"] = player.board_unit_quality_score;
+        p["board_trait_coherence_score"] = player.board_trait_coherence_score;
         p["round_gold"] = player.round_gold;
         p["round_base_gold"] = player.round_base_gold;
         p["round_interest"] = player.round_interest;
