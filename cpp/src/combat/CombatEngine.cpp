@@ -213,7 +213,6 @@ bool apply_item_stats(CombatUnit& unit, std::string& error) {
     }
 
     const float base_attack_damage = unit.attack_damage;
-    const float base_max_hp = unit.max_hp;
     for (const auto& item : unit.items) {
         const float values[] = {
             item.attack_damage, item.ability_power, item.attack_speed,
@@ -269,14 +268,6 @@ bool apply_item_stats(CombatUnit& unit, std::string& error) {
             unit.attack_damage += base_attack_damage * 0.15f;
         else if (!has_generic_ad_effect && item.api_name == "TFT_Item_InfinityEdge")
             unit.attack_damage += base_attack_damage * 0.35f;
-        else if (item.api_name == "TFT_Item_WarmogsArmor")
-            unit.max_hp += base_max_hp * 0.18f, unit.hp += base_max_hp * 0.18f;
-        else if (item.api_name == "TFT_Item_DragonsClaw")
-            unit.max_hp += base_max_hp * 0.06f, unit.hp += base_max_hp * 0.06f;
-        else if (item.api_name == "TFT_Item_BrambleVest")
-            unit.max_hp += base_max_hp * 0.06f, unit.hp += base_max_hp * 0.06f;
-        else if (item.api_name == "TFT_Item_RedBuff")
-            unit.max_hp += base_max_hp * 0.08f, unit.hp += base_max_hp * 0.08f;
         else if (item.api_name == "TFT_Item_UnstableConcoction") {
             if (!has_generic_ad_effect)
                 unit.attack_damage += base_attack_damage * 0.15f;
