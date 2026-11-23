@@ -501,6 +501,52 @@ void test_trait_team_mana_regeneration_is_applied_once() {
             "Non-Invoker allies should receive the team aura once, not the Invoker bonus.");
 }
 
+void test_generic_trait_critical_chance_effect() {
+    tft::CombatEngine engine;
+    auto input = make_input();
+    input.config.max_duration = 0.1f;
+    input.config.record_damage = true;
+
+    auto& attacker = input.player_a.units.front();
+    attacker.attack_damage = 10.0f;
+    attacker.attack_speed = 1.0f;
+    attacker.attack_range = 7.0f;
+    attacker.critical_strike_chance = 0.85f;
+    attacker.critical_strike_damage = 2.0f;
+    attacker.can_attack = true;
+    attacker.can_move = false;
+    attacker.can_cast = false;
+
+    tft::CombatTrait executioner;
+    executioner.api_name = "DA_18_Executioner";
+    executioner.active = true;
+    executioner.active_count = 2;
+    tft::CombatEffectDefinition crit_chance;
+    crit_chance.trigger = "combat_start";
+    crit_chance.operation = "add_stat";
+    crit_chance.stat = "critical_strike_chance";
+    crit_chance.target = "self";
+    crit_chance.value = 0.15f;
+    crit_chance.condition = "trait_count_at_least";
+    crit_chance.condition_trait = executioner.api_name;
+    crit_chance.min_trait_count = 2;
+    executioner.effects.push_back(crit_chance);
+    attacker.traits.push_back(executioner);
+
+    auto& target = input.player_b.units.front();
+    target.hp = target.max_hp = 1000.0f;
+    target.armor = 0.0f;
+    target.can_attack = false;
+    target.can_move = false;
+    target.can_cast = false;
+
+    const auto result = engine.simulate(input);
+    require(result.success && !result.damage_events.empty(),
+            "Generic trait critical-chance effect should reach the attack resolver.");
+    require(std::abs(result.damage_events.front().raw_damage - 20.0f) < 0.01f,
+            "Trait critical chance should be applied before the first attack roll.");
+}
+
 void test_generic_mana_on_attack_item_effects() {
     const auto casts_with_effect = [](float base_mana, float critical_mana,
                                       float crit_chance) {
@@ -1511,6 +1557,7 @@ int main() {
         test_generic_periodic_heal_effect();
         test_generic_periodic_missing_health_heal_effect();
         test_generic_mana_gain_multiplier_effect();
+        test_generic_trait_critical_chance_effect();
         test_generic_mana_on_attack_item_effects();
         test_trait_team_mana_regeneration_is_applied_once();
         test_generic_role_condition_item_effect();
