@@ -245,7 +245,11 @@ private:
                 std::isfinite(unit.composition_fit) &&
                 (!unit.item_fit_available ||
                     (std::isfinite(unit.item_fit) &&
-                     unit.item_fit >= 0.0 && unit.item_fit <= 1.0));
+                     unit.item_fit >= 0.0 && unit.item_fit <= 1.0 &&
+                     !unit.item_fit_source.empty() &&
+                     std::isfinite(unit.item_fit_uncertainty) &&
+                     unit.item_fit_uncertainty >= 0.0 &&
+                     unit.item_fit_uncertainty < 1.0));
             if (!finite) {
                 diagnostic.evaluation_reason = "invalid_candidate_data";
                 diagnostics.push_back(std::move(diagnostic));
@@ -258,7 +262,8 @@ private:
                 candidate.anchor_value +
                 0.30 * (unit.board_contribution_available ? unit.board_contribution : 0.0) +
                 0.25 * unit.composition_fit +
-                0.20 * (unit.item_fit_available ? unit.item_fit : 0.0) +
+                0.20 * (unit.item_fit_available
+                    ? unit.item_fit * (1.0 - unit.item_fit_uncertainty) : 0.0) +
                 0.35 * reusable -
                 1.50 * std::max(0.0, candidate.transition_cost) -
                 0.30 * std::max(0.0, candidate.contestation) +
