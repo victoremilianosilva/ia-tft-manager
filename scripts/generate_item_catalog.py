@@ -460,7 +460,10 @@ def _combat_effect_is_supported(effect: Any) -> bool:
     pairs = {
         "add_stat": {"combat_start", "after_delay", "while_hp_below", "on_ally_shield", "periodic"},
         "bonus_damage": {"on_attack"},
-        "heal_max_hp_pct": {"on_attack", "on_kill"},
+        "heal_max_hp_pct": {"on_attack", "on_kill", "periodic"},
+        "heal_missing_hp_pct": {"periodic"},
+        "heal_damage_pct_lowest_ally": {"on_damage_dealt"},
+        "mana_on_attack": {"on_attack"},
         "grant_charges": {"on_kill"},
         "mana_regen": {"", "combat_start"},
         "mana_gain_multiplier": {"combat_start"},
@@ -471,9 +474,16 @@ def _combat_effect_is_supported(effect: Any) -> bool:
         return False
 
     target = effect.get("target", "")
-    if not isinstance(target, str) or target not in {"", "self", "allies", "allies_same_row_within_1"}:
+    if not isinstance(target, str) or target not in {
+        "", "self", "allies", "allies_same_row_within_1", "lowest_health_ally",
+    }:
         return False
-    if operation in {"mana_regen", "mana_gain_multiplier", "grant_charges", "heal_max_hp_pct"} and target not in {"", "self"}:
+    if operation in {
+        "mana_regen", "mana_gain_multiplier", "grant_charges",
+        "heal_max_hp_pct", "heal_missing_hp_pct", "mana_on_attack",
+    } and target not in {"", "self"}:
+        return False
+    if operation == "heal_damage_pct_lowest_ally" and target != "lowest_health_ally":
         return False
     if operation == "bonus_damage" and target == "allies_same_row_within_1":
         return False
@@ -489,7 +499,7 @@ def _combat_effect_is_supported(effect: Any) -> bool:
         if not isinstance(effect.get("min_trait_count"), int) or effect["min_trait_count"] <= 0:
             return False
 
-    if operation == "add_stat" and trigger == "periodic":
+    if operation in {"add_stat", "heal_max_hp_pct", "heal_missing_hp_pct"} and trigger == "periodic":
         if not _finite_number(effect.get("interval")) or float(effect["interval"]) <= 0.0:
             return False
     if operation == "add_stat" and effect.get("percent_of_max_health"):
