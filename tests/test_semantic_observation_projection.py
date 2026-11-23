@@ -61,6 +61,14 @@ def _metadata():
         "shop": [_unit() for _ in range(5)],
         "actions_taken_this_round": 3,
         "board_move_age": [0] + [10] * 27,
+        "board_quality_score": 0.25,
+        "board_positional_score": 0.5,
+        "board_structural_score": -0.25,
+        "board_quality_delta": 0.5,
+        "board_exposed_carries": 1,
+        "board_frontline_count": 2,
+        "board_isolated_frontline_count": 1,
+        "board_important_bench_units_unplayed": 1,
         "item_components": [],
         "item_inventory": [],
         "item_component_catalog": [f"component_{index}" for index in range(10)],
@@ -254,22 +262,31 @@ def test_native_semantic_projection_has_stable_shape_and_explicit_identity():
     assert len(projected["numeric"]) == SEMANTIC_NUMERIC_DIM
     assert len(projected["champion_ids"]) == SEMANTIC_ENTITY_SLOTS
     assert projected["champion_ids"][0] == 18
-    assert projected["numeric"][54] == 1.0  # occupied
-    assert projected["numeric"][59] == 1.0  # mapped champion identity valid
-    assert projected["numeric"][60] == 1.0  # active composition member
-    assert projected["numeric"][61] == 1.0  # active core member
-    assert projected["numeric"][62] == 1.0  # direction reference
-    assert projected["numeric"][63] == 1.0  # pivot reference
-    assert projected["numeric"][64] == 4.0 / 9.0  # one 2-star plus one 1-star copy
-    assert projected["numeric"][65] == 0.0  # native UnitCopyProgress reports no 2-star progress
+    assert projected["numeric"][54] == 0.25  # native board quality
+    assert projected["numeric"][55] == 0.5  # native positional score
+    assert projected["numeric"][56] == -0.25  # native structural score
+    assert projected["numeric"][57] == 0.25  # quality delta / 2
+    assert projected["numeric"][58] == 1.0 / 9.0  # exposed carries
+    assert projected["numeric"][59] == 2.0 / 9.0  # frontline count
+    assert projected["numeric"][60] == 1.0 / 9.0  # isolated frontline count
+    assert projected["numeric"][61] == 1.0 / 9.0  # important unplayed bench units
+    entity_start = SEMANTIC_GLOBAL_FEATURES
+    assert projected["numeric"][entity_start] == 1.0  # occupied
+    assert projected["numeric"][entity_start + 5] == 1.0  # mapped champion identity valid
+    assert projected["numeric"][entity_start + 6] == 1.0  # active composition member
+    assert projected["numeric"][entity_start + 7] == 1.0  # active core member
+    assert projected["numeric"][entity_start + 8] == 1.0  # direction reference
+    assert projected["numeric"][entity_start + 9] == 1.0  # pivot reference
+    assert projected["numeric"][entity_start + 10] == 4.0 / 9.0  # owned copies
+    assert projected["numeric"][entity_start + 11] == 0.0  # no upgrade progress
     # The appended 17-field item target profile comes from the native snapshot.
-    assert projected["numeric"][66] == 1.0  # occupied target
-    assert projected["numeric"][67] == 1.0  # board target
-    assert projected["numeric"][71] == 1.0  # classifier role one-hot (fighter)
-    assert projected["numeric"][75] == 1.0  # frontline row
-    assert projected["numeric"][77] == 0.5  # attack damage / 200
-    assert projected["numeric"][82] == 1.0 / 3.0  # equipped item count / 3
-    bench_target_start = 54 + 28 * 45 + 12
+    assert projected["numeric"][entity_start + 12] == 1.0  # occupied target
+    assert projected["numeric"][entity_start + 13] == 1.0  # board target
+    assert projected["numeric"][entity_start + 17] == 1.0  # classifier role one-hot (fighter)
+    assert projected["numeric"][entity_start + 21] == 1.0  # frontline row
+    assert projected["numeric"][entity_start + 23] == 0.5  # attack damage / 200
+    assert projected["numeric"][entity_start + 28] == 1.0 / 3.0  # equipped item count / 3
+    bench_target_start = SEMANTIC_GLOBAL_FEATURES + 28 * 45 + 12
     assert projected["numeric"][bench_target_start + 2] == 1.0
     assert projected["numeric"][bench_target_start + 9] == 0.0
     assert projected["numeric"][21] == 5.0 / 9.0  # board capacity
@@ -485,7 +502,7 @@ def test_semantic_v2_checkpoint_has_only_explicit_v7_warm_start_path():
     with pytest.raises(ValueError, match="incompatible"):
         validate_semantic_state_checkpoint_contract(historical, catalog)
 
-def test_semantic_v6_checkpoint_has_explicit_v7_warm_start_path():
+def test_semantic_v6_checkpoint_has_explicit_v8_warm_start_path():
     import copy
     import hashlib
     import json
@@ -499,9 +516,11 @@ def test_semantic_v6_checkpoint_has_explicit_v7_warm_start_path():
     payload["strategic_owner_source"]["contract_version"] = 2
     payload["global_features"] = payload["global_features"][:52]
     payload["entity_slots"]["features"] = payload["entity_slots"]["features"][:39]
-    payload["numeric_dimension"] -= 2 + SEMANTIC_ENTITY_SLOTS * 6
+    payload["numeric_dimension"] -= (
+        SEMANTIC_GLOBAL_FEATURES - 52 + 2 + SEMANTIC_ENTITY_SLOTS * 6
+    )
     payload["encoder"]["numeric_plus_embedding_input_dim"] -= (
-        2 + SEMANTIC_ENTITY_SLOTS * 6
+        SEMANTIC_GLOBAL_FEATURES - 52 + 2 + SEMANTIC_ENTITY_SLOTS * 6
     )
     canonical = json.dumps(
         payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False
@@ -521,6 +540,31 @@ def test_semantic_v6_checkpoint_has_explicit_v7_warm_start_path():
     unrelated_change["sha256"] = hashlib.sha256(canonical).hexdigest()
     with pytest.raises(ValueError, match="all other contract fields must match"):
         validate_semantic_state_warm_start_migration(unrelated_change, catalog)
+
+
+def test_semantic_v7_checkpoint_has_explicit_v8_warm_start_path():
+    import copy
+    import hashlib
+    import json
+
+    catalog = {"TFT_TestChampion": 17}
+    current = build_semantic_state_checkpoint_contract(catalog)
+    historical = copy.deepcopy(current)
+    payload = historical["contract"]
+    payload["contract_id"] = "tft.ppo.semantic-native-state.v7"
+    payload["version"] = 7
+    payload["global_features"] = payload["global_features"][:-8]
+    payload["numeric_dimension"] -= 8
+    payload["encoder"]["numeric_plus_embedding_input_dim"] -= 8
+    canonical = json.dumps(
+        payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    ).encode("utf-8")
+    historical["sha256"] = hashlib.sha256(canonical).hexdigest()
+
+    validate_semantic_state_checkpoint_integrity(historical)
+    validate_semantic_state_warm_start_migration(historical, catalog)
+    with pytest.raises(ValueError, match="incompatible"):
+        validate_semantic_state_checkpoint_contract(historical, catalog)
 
 
 def test_semantic_checkpoint_manifest_integrity_is_separate_from_runtime_compatibility():

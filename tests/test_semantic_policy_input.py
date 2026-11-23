@@ -151,6 +151,56 @@ def test_native_semantic_entities_drive_board_cnn_and_action_candidates():
     assert targets[0, 0, 11].item() == 0.5
 
 
+def test_v7_semantic_encoder_weights_migrate_with_board_evaluation_columns_neutral():
+    obs, _, _ = _batch(batch_size=1)
+    source_policy = TFTPolicy(
+        obs_dim=obs.shape[-1], action_dims=list(ACTION_DIMS),
+        hidden_size=32, semantic_vocab_size=64,
+    )
+    state = {key: value.detach().clone() for key, value in source_policy.state_dict().items()}
+    current = state["semantic_encoder.0.weight"]
+    old_global = SEMANTIC_GLOBAL_FEATURES - 8
+    old_entity_offset = old_global
+    old_item_offset = old_entity_offset + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ENTITY_FEATURES
+    old_numeric_dim = old_item_offset + (SEMANTIC_NUMERIC_DIM - SEMANTIC_ITEM_OFFSET)
+    historical = torch.zeros(
+        current.shape[0],
+        old_numeric_dim + SEMANTIC_ENTITY_SLOTS * 32,
+        dtype=current.dtype,
+    )
+    historical[:, :old_global] = current[:, :old_global]
+    historical[:, old_entity_offset:old_item_offset] = current[
+        :, SEMANTIC_GLOBAL_FEATURES:SEMANTIC_ITEM_OFFSET
+    ]
+    historical[:, old_item_offset:old_numeric_dim] = current[
+        :, SEMANTIC_ITEM_OFFSET:SEMANTIC_NUMERIC_DIM
+    ]
+    historical[:, old_numeric_dim:] = current[:, SEMANTIC_NUMERIC_DIM:]
+    state["semantic_encoder.0.weight"] = historical
+
+    restored = TFTPolicy(
+        obs_dim=obs.shape[-1], action_dims=list(ACTION_DIMS),
+        hidden_size=32, semantic_vocab_size=64,
+    )
+    assert restored.load_compatible_state_dict(state) is True
+    migrated = restored.semantic_encoder[0].weight.detach()
+    assert torch.count_nonzero(migrated[:, old_global:SEMANTIC_GLOBAL_FEATURES]) == 0
+    torch.testing.assert_close(
+        migrated[:, :old_global], historical[:, :old_global]
+    )
+    torch.testing.assert_close(
+        migrated[:, SEMANTIC_GLOBAL_FEATURES:SEMANTIC_ITEM_OFFSET],
+        historical[:, old_entity_offset:old_item_offset],
+    )
+    torch.testing.assert_close(
+        migrated[:, SEMANTIC_ITEM_OFFSET:SEMANTIC_NUMERIC_DIM],
+        historical[:, old_item_offset:old_numeric_dim],
+    )
+    torch.testing.assert_close(
+        migrated[:, SEMANTIC_NUMERIC_DIM:], historical[:, old_numeric_dim:]
+    )
+
+
 def test_native_semantic_global_encoder_produces_finite_features():
     torch.manual_seed(20261118)
     obs, masks, semantic = _batch()

@@ -301,6 +301,53 @@ class TFTPolicy(nn.Module):
                 continue
 
             if (
+                key == "semantic_encoder.0.weight"
+                and source_value.ndim == 2
+                and target_value.ndim == 2
+                and source_value.shape[0] == target_value.shape[0]
+                and source_value.shape[1] == (
+                    (SEMANTIC_GLOBAL_FEATURES - 8)
+                    + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ENTITY_FEATURES
+                    + (SEMANTIC_NUMERIC_DIM - SEMANTIC_ITEM_OFFSET)
+                    + SEMANTIC_ENTITY_SLOTS * (
+                        SEMANTIC_ID_EMBED_DIM + SEMANTIC_TRAIT_EMBED_DIM
+                    )
+                )
+                and target_value.shape[1] == (
+                    SEMANTIC_NUMERIC_DIM
+                    + SEMANTIC_ENTITY_SLOTS * (
+                        SEMANTIC_ID_EMBED_DIM + SEMANTIC_TRAIT_EMBED_DIM
+                    )
+                )
+            ):
+                # v7 -> v8 appends eight BoardEvaluation globals. Preserve the
+                # old globals, relocate entity/item blocks to their new offsets,
+                # and retain champion/trait embeddings. New evidence starts neutral.
+                old_global_dim = SEMANTIC_GLOBAL_FEATURES - 8
+                old_entity_offset = old_global_dim
+                old_item_offset = old_entity_offset + (
+                    SEMANTIC_ENTITY_SLOTS * SEMANTIC_ENTITY_FEATURES
+                )
+                old_numeric_dim = old_item_offset + (
+                    SEMANTIC_NUMERIC_DIM - SEMANTIC_ITEM_OFFSET
+                )
+                new_entity_offset = SEMANTIC_GLOBAL_FEATURES
+                new_item_offset = SEMANTIC_ITEM_OFFSET
+                new_numeric_dim = SEMANTIC_NUMERIC_DIM
+                expanded = torch.zeros_like(target_value)
+                expanded[:, :old_global_dim] = source_value[:, :old_global_dim]
+                expanded[
+                    :, new_entity_offset:new_item_offset
+                ] = source_value[:, old_entity_offset:old_item_offset]
+                expanded[
+                    :, new_item_offset:new_numeric_dim
+                ] = source_value[:, old_item_offset:old_numeric_dim]
+                expanded[:, new_numeric_dim:] = source_value[:, old_numeric_dim:]
+                loaded[key] = expanded
+                migrated = True
+                continue
+
+            if (
                 key in {"type_head.weight", "type_head.bias"}
                 and source_value.ndim == target_value.ndim
                 and source_value.shape[0] == 7
@@ -487,7 +534,7 @@ class TFTPolicy(nn.Module):
             global_part = None
         else:
             if self.require_semantic_state:
-                raise ValueError("native PPO inference requires semantic_state v7; flat positional fallback is disabled")
+                raise ValueError("native PPO inference requires semantic_state v8; flat positional fallback is disabled")
             board_part = obs[:, self.pre_board_dim : self.pre_board_dim + self.board_flat_dim]
             board_2d = board_part.view(-1, self.num_cell_features, 4, 7)
             pre_part = obs[:, :self.pre_board_dim]
