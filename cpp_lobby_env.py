@@ -488,7 +488,7 @@ class CppTFTLobbyWrapper:
                 strategic.get("contract_id") != "tft.strategic-owner-observation"
                 or isinstance(strategic_version, bool)
                 or not isinstance(strategic_version, int)
-                or strategic_version != 2
+                or strategic_version != 3
                 or strategic.get("producer") != "TFTEngine::get_audit_snapshot"
                 or strategic.get("source_namespace") != "tft.engine.strategic-owners"
             ):
