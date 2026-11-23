@@ -316,7 +316,10 @@ void opportunity_cost_requires_exact_snapshot_identity() {
     alternative.identity = identity;
     alternative.candidate_id = "forgone-alternative";
     alternative.value_basis = "contextual_action_score.v1";
-    alternative.marginal_strategic_value = 2.5;
+    alternative.marginal_strategic_value = 3.0;
+    alternative.direct_economy_cost = 0.3;
+    alternative.interest_cost = 0.2;
+    alternative.prior_opportunity_cost = 0.5;
     alternative.horizon_rounds = 1;
     alternative.uncertainty = 0.2;
     alternative.available = true;
@@ -326,6 +329,7 @@ void opportunity_cost_requires_exact_snapshot_identity() {
     const auto valid = producer.evaluate("selected", {alternative}, 1,
         "contextual_action_score.v1", identity);
     assert(valid.available);
+    assert(std::abs(valid.cost - 2.0) < 1e-9);
     assert(valid.identity.matches(identity));
     assert(valid.sacrificed_candidate_id == "forgone-alternative");
 
