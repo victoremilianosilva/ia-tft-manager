@@ -16,7 +16,7 @@
               "operation": "add_stat",
               "stat": "max_hp",
               "target": "allies",
-              "value": 120.0,
+              "value": 120,
               "condition": "trait_count_at_least",
               "condition_trait": "DA_18_Brawler",
               "scale_by_active_trait_count": true
@@ -41,7 +41,7 @@
               "operation": "add_stat",
               "stat": "max_hp",
               "target": "allies",
-              "value": 120.0,
+              "value": 120,
               "condition": "trait_count_at_least",
               "condition_trait": "DA_18_Brawler",
               "scale_by_active_trait_count": true
@@ -51,7 +51,7 @@
               "operation": "add_stat",
               "stat": "max_hp",
               "target": "self",
-              "value": 0.40,
+              "value": 0.4,
               "percent_of_stat": true,
               "condition": "trait_count_at_least",
               "condition_trait": "DA_18_Brawler"
@@ -66,7 +66,7 @@
               "operation": "add_stat",
               "stat": "max_hp",
               "target": "allies",
-              "value": 120.0,
+              "value": 120,
               "condition": "trait_count_at_least",
               "condition_trait": "DA_18_Brawler",
               "scale_by_active_trait_count": true
@@ -80,6 +80,142 @@
               "percent_of_stat": true,
               "condition": "trait_count_at_least",
               "condition_trait": "DA_18_Brawler"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "api_name": "DA_18_Defender",
+      "name": "Defender",
+      "effects_complete": true,
+      "tiers": [
+        {
+          "min_units": 2,
+          "effects": [
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "armor",
+              "target": "allies",
+              "value": 12,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Defender",
+              "scale_by_active_trait_count": true
+            },
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "magic_resist",
+              "target": "allies",
+              "value": 12,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Defender",
+              "scale_by_active_trait_count": true
+            },
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "armor",
+              "target": "self",
+              "value": 13,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Defender"
+            },
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "magic_resist",
+              "target": "self",
+              "value": 13,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Defender"
+            }
+          ]
+        },
+        {
+          "min_units": 4,
+          "effects": [
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "armor",
+              "target": "allies",
+              "value": 12,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Defender",
+              "scale_by_active_trait_count": true
+            },
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "magic_resist",
+              "target": "allies",
+              "value": 12,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Defender",
+              "scale_by_active_trait_count": true
+            },
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "armor",
+              "target": "self",
+              "value": 48,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Defender"
+            },
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "magic_resist",
+              "target": "self",
+              "value": 48,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Defender"
+            }
+          ]
+        },
+        {
+          "min_units": 6,
+          "effects": [
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "armor",
+              "target": "allies",
+              "value": 12,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Defender",
+              "scale_by_active_trait_count": true
+            },
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "magic_resist",
+              "target": "allies",
+              "value": 12,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Defender",
+              "scale_by_active_trait_count": true
+            },
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "armor",
+              "target": "self",
+              "value": 103,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Defender"
+            },
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "magic_resist",
+              "target": "self",
+              "value": 103,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Defender"
             }
           ]
         }
