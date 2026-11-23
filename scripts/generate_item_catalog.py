@@ -458,7 +458,7 @@ def _combat_effect_is_supported(effect: Any) -> bool:
     trigger = effect.get("trigger")
     operation = effect.get("operation")
     pairs = {
-        "add_stat": {"combat_start", "after_delay", "while_hp_below", "on_ally_shield", "periodic"},
+        "add_stat": {"combat_start", "after_delay", "while_hp_below", "while_hp_above", "on_ally_shield", "periodic"},
         "bonus_damage": {"on_attack"},
         "heal_max_hp_pct": {"on_attack", "on_kill", "periodic"},
         "heal_missing_hp_pct": {"periodic"},
