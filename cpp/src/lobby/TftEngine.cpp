@@ -2065,8 +2065,8 @@ struct TFTEngine::Impl {
                                 "destination_candidate_missing:" + generated.identity;
                             continue;
                         }
-                        if (destination_candidate.units.empty() ||
-                            destination_candidate.main_carry_id != generated.main_carry_id) {
+                        if (destination_it->units.empty() ||
+                            destination_it->main_carry_id != generated.main_carry_id) {
                             pivot_generation_diagnostic =
                                 "destination_candidate_contract_mismatch:" + generated.identity;
                             continue;
