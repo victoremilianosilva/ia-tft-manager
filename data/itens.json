@@ -411,6 +411,22 @@
           "trigger": "combat_start",
           "operation": "mana_regen",
           "value": 5
+        },
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "attack_damage",
+          "target": "self",
+          "value": 0.1,
+          "percent_of_stat": true
+        },
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "ability_power",
+          "target": "self",
+          "value": 0.1,
+          "percent_of_stat": true
         }
       ],
       "effect_coverage": {
