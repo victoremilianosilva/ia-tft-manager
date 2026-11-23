@@ -13,7 +13,7 @@ void require(bool condition, const char* message) {
 
 int main(int argc, char** argv) {
     if (argc != 2) {
-        std::cerr << "usage: test_trait_combat_catalog <catalog.json>\\n";
+        std::cerr << "usage: test_trait_combat_catalog <catalog.json>\n";
         return 2;
     }
 
@@ -58,11 +58,11 @@ int main(int argc, char** argv) {
                 "Partially modeled traits must remain explicitly incomplete.");
 
         std::cout << "Loaded " << catalog.traits.size()
-                  << " Set 18 traits; complete combat mappings: 5; partial mappings: 1.\\n";
+                  << " Set 18 traits; complete combat mappings: 5; partial mappings: 1.\n";
         return 0;
     } catch (const std::exception& error) {
         std::cerr << "Trait combat catalog validation failed: "
-                  << error.what() << '\\n';
+                  << error.what() << '\n';
         return 1;
     }
 }
