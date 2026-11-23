@@ -534,7 +534,7 @@ void test_defender_team_aura_and_tier_bonus_apply_once() {
     second_defender.position = {0, 2};
     input.player_a.units.push_back(second_defender);
 
-    auto non_defender = first_defender;
+    auto non_defender = input.player_a.units.front();
     non_defender.id = 4;
     non_defender.api_name = "non_defender_ally";
     non_defender.role = tft::UnitRole::CARRY;
