@@ -360,6 +360,7 @@ void test_generic_mana_gain_multiplier_effect() {
     holder.mana = 77.0f;
     holder.max_mana = 105.0f;
     holder.attack_damage = 1.0f;
+    holder.attack_speed = 1.0f;
     holder.attack_range = 7.0f;
     holder.can_attack = true;
     holder.can_move = false;
