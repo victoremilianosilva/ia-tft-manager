@@ -214,12 +214,13 @@
           "MagicResist"
         ],
         "generic_combat_keys": [
-          "BacklineADAP",
-          "FrontlineResists",
-          "ManaPercIncrease",
           "ManaRegen"
         ],
-        "not_generic_normalized_keys": []
+        "not_generic_normalized_keys": [
+          "BacklineADAP",
+          "FrontlineResists",
+          "ManaPercIncrease"
+        ]
       },
       "unit_equipable": true,
       "combat_effects_complete": true
@@ -288,11 +289,12 @@
           "AP"
         ],
         "generic_combat_keys": [
-          "APPerInterval",
-          "IntervalSeconds",
           "ManaRegen"
         ],
-        "not_generic_normalized_keys": []
+        "not_generic_normalized_keys": [
+          "APPerInterval",
+          "IntervalSeconds"
+        ]
       },
       "unit_equipable": true,
       "combat_effects_complete": true
@@ -456,10 +458,11 @@
         ],
         "generic_combat_keys": [
           "AD",
-          "ManaRegen",
-          "ModifiedADAP"
+          "ManaRegen"
         ],
-        "not_generic_normalized_keys": []
+        "not_generic_normalized_keys": [
+          "ModifiedADAP"
+        ]
       },
       "unit_equipable": true,
       "combat_effects_complete": true
@@ -531,9 +534,7 @@
         "generic_stat_keys": [
           "Armor"
         ],
-        "generic_combat_keys": [
-          "PercentMaxHP"
-        ],
+        "generic_combat_keys": [],
         "not_generic_normalized_keys": [
           "1StarAoEDamage",
           "2StarAoEDamage",
@@ -541,6 +542,7 @@
           "4StarAoEDamage",
           "AutoDamageReduction",
           "ICD",
+          "PercentMaxHP",
           "{6688a0d5}"
         ]
       },
@@ -670,10 +672,10 @@
         ],
         "generic_stat_keys": [],
         "generic_combat_keys": [
-          "AD",
-          "BonusDamage"
+          "AD"
         ],
         "not_generic_normalized_keys": [
+          "BonusDamage",
           "{1543aa48}"
         ]
       },
@@ -745,13 +747,12 @@
         "generic_stat_keys": [
           "MagicResist"
         ],
-        "generic_combat_keys": [
+        "generic_combat_keys": [],
+        "not_generic_normalized_keys": [
           "HealthRegenInterval",
+          "ICD",
           "PercentHealthDamage",
           "PercentMaxHP"
-        ],
-        "not_generic_normalized_keys": [
-          "ICD"
         ]
       },
       "unit_equipable": true
@@ -1084,10 +1085,10 @@
           "AP",
           "AS"
         ],
-        "generic_combat_keys": [
+        "generic_combat_keys": [],
+        "not_generic_normalized_keys": [
           "AttackSpeedPerStack"
-        ],
-        "not_generic_normalized_keys": []
+        ]
       },
       "unit_equipable": true,
       "combat_effects_complete": true
@@ -1168,10 +1169,11 @@
         ],
         "generic_combat_keys": [
           "AD",
-          "ManaRegen",
-          "AllyHealing"
+          "ManaRegen"
         ],
-        "not_generic_normalized_keys": []
+        "not_generic_normalized_keys": [
+          "AllyHealing"
+        ]
       },
       "unit_equipable": true,
       "combat_effects_complete": true
@@ -1486,11 +1488,11 @@
           "CritChance",
           "Health"
         ],
-        "generic_combat_keys": [
+        "generic_combat_keys": [],
+        "not_generic_normalized_keys": [
           "BaseManaOnHit",
           "ManaOnCrit"
-        ],
-        "not_generic_normalized_keys": []
+        ]
       },
       "unit_equipable": true,
       "combat_effects_complete": true
@@ -1714,12 +1716,12 @@
           "CritChance",
           "Health"
         ],
-        "generic_combat_keys": [
+        "generic_combat_keys": [],
+        "not_generic_normalized_keys": [
           "BaseDurability",
           "EmpoweredDurability",
           "ThresholdForEmpower"
-        ],
-        "not_generic_normalized_keys": []
+        ]
       },
       "unit_equipable": true,
       "combat_effects_complete": true
@@ -1851,10 +1853,9 @@
           "CritChance",
           "MagicResist"
         ],
-        "generic_combat_keys": [
-          "ProcAttackSpeed"
-        ],
+        "generic_combat_keys": [],
         "not_generic_normalized_keys": [
+          "ProcAttackSpeed",
           "SpellShieldDuration"
         ]
       },
@@ -1914,10 +1915,9 @@
         "generic_stat_keys": [
           "AP"
         ],
-        "generic_combat_keys": [
-          "BonusDamage"
-        ],
+        "generic_combat_keys": [],
         "not_generic_normalized_keys": [
+          "BonusDamage",
           "{1543aa48}"
         ]
       },
@@ -2060,10 +2060,9 @@
           "Armor",
           "Health"
         ],
-        "generic_combat_keys": [
-          "BonusPercentHP"
-        ],
+        "generic_combat_keys": [],
         "not_generic_normalized_keys": [
+          "BonusPercentHP",
           "BurnDuration",
           "BurnPercent",
           "GrievousWoundsPercent",
@@ -2141,12 +2140,12 @@
           "Health"
         ],
         "generic_combat_keys": [
-          "ManaRegen",
-          "MissingHealthHeal",
-          "HealTickRate",
-          "MaxHeal"
+          "ManaRegen"
         ],
         "not_generic_normalized_keys": [
+          "HealTickRate",
+          "MaxHeal",
+          "MissingHealthHeal",
           "{cd951938}"
         ]
       },
@@ -2294,10 +2293,11 @@
         ],
         "generic_combat_keys": [
           "AD",
-          "ManaRegen",
-          "FlatManaRestore"
+          "ManaRegen"
         ],
-        "not_generic_normalized_keys": []
+        "not_generic_normalized_keys": [
+          "FlatManaRestore"
+        ]
       },
       "unit_equipable": true,
       "combat_effects_complete": true
@@ -2844,10 +2844,10 @@
         "generic_stat_keys": [
           "Health"
         ],
-        "generic_combat_keys": [
+        "generic_combat_keys": [],
+        "not_generic_normalized_keys": [
           "BonusPercentHP"
-        ],
-        "not_generic_normalized_keys": []
+        ]
       },
       "unit_equipable": true,
       "combat_effects_complete": true
