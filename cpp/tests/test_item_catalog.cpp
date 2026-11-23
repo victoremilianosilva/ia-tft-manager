@@ -95,7 +95,10 @@ int main(int argc, char** argv) {
                  std::pair<const char*, float>{"TFT_Item_RedBuff", 0.08f}}) {
             const auto found = std::find_if(catalog.items.begin(), catalog.items.end(),
                 [&](const auto& item) { return item.id == expected.first; });
-            if (found == catalog.items.end() || found->combat_effects_complete ||
+            const bool expected_complete =
+                std::string(expected.first) == "TFT_Item_WarmogsArmor";
+            if (found == catalog.items.end() ||
+                found->combat_effects_complete != expected_complete ||
                 std::none_of(found->combat_effects.begin(), found->combat_effects.end(),
                     [&](const auto& effect) {
                         return effect.trigger == "combat_start" &&
@@ -133,7 +136,7 @@ int main(int argc, char** argv) {
                                                   bool percent, bool base_scaled) {
             const auto item = std::find_if(catalog.items.begin(), catalog.items.end(),
                 [&](const auto& entry) { return entry.id == item_id; });
-            if (item == catalog.items.end() || item->combat_effects_complete) return false;
+            if (item == catalog.items.end()) return false;
             return std::any_of(item->combat_effects.begin(), item->combat_effects.end(),
                 [&](const auto& effect) {
                     return effect.trigger == "periodic" &&
@@ -188,7 +191,7 @@ int main(int argc, char** argv) {
         const auto blue_buff = std::find_if(
             catalog.items.begin(), catalog.items.end(),
             [](const auto& item) { return item.id == "TFT_Item_BlueBuff"; });
-        if (blue_buff == catalog.items.end() || blue_buff->combat_effects_complete) {
+        if (blue_buff == catalog.items.end() || !blue_buff->combat_effects_complete) {
             std::cerr << "Blue Buff generic AD/AP effects are missing or falsely complete\n";
             return 20;
         }
@@ -208,7 +211,7 @@ int main(int argc, char** argv) {
         const auto adaptive_helm = std::find_if(
             catalog.items.begin(), catalog.items.end(),
             [](const auto& item) { return item.id == "TFT_Item_AdaptiveHelm"; });
-        if (adaptive_helm == catalog.items.end() || adaptive_helm->combat_effects_complete) {
+        if (adaptive_helm == catalog.items.end() || !adaptive_helm->combat_effects_complete) {
             std::cerr << "Adaptive Helm generic role effects are missing or falsely complete\n";
             return 18;
         }
@@ -246,7 +249,7 @@ int main(int argc, char** argv) {
             catalog.items.begin(), catalog.items.end(),
             [](const auto& item) { return item.id == "TFT_Item_NightHarvester"; });
         if (night_harvester == catalog.items.end() ||
-            night_harvester->combat_effects_complete ||
+            !night_harvester->combat_effects_complete ||
             std::none_of(night_harvester->combat_effects.begin(),
                 night_harvester->combat_effects.end(), [](const auto& effect) {
                     return effect.trigger == "while_hp_above" &&
@@ -301,6 +304,22 @@ int main(int argc, char** argv) {
                 })) {
             std::cerr << "Redemption missing-health periodic heal was not normalized\\n";
             return 20;
+        }
+
+        for (const auto* id : {
+                 "TFT_Item_AdaptiveHelm", "TFT_Item_ArchangelsStaff",
+                 "TFT_Item_BlueBuff", "TFT_Item_GuinsoosRageblade",
+                 "TFT_Item_NightHarvester", "TFT_Item_WarmogsArmor",
+                 "TFT_Item_Leviathan", "TFT_Item_SpearOfShojin",
+                 "DA_18_EmblemBlossom", "DA_18_EmblemBrawler",
+                 "DA_18_EmblemInvoker"}) {
+            const auto found = std::find_if(catalog.items.begin(), catalog.items.end(),
+                [&](const auto& item) { return item.id == id; });
+            if (found == catalog.items.end() || !found->combat_effects_complete) {
+                std::cerr << "Fully normalized combat item/emblem must be complete: "
+                          << id << '\\n';
+                return 21;
+            }
         }
 
         std::set<std::string> component_ids;
