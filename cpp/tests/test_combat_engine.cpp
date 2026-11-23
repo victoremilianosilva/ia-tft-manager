@@ -847,6 +847,22 @@ void test_shojin_changes_cast_timing_and_dragons_claw_heals() {
     const auto no_claw = engine.simulate(healing_input);
     tft::CombatItem claw;
     claw.api_name = "TFT_Item_DragonsClaw";
+    // Direct CombatEngine tests must provide the normalized catalog contract;
+    // the simulator no longer infers item mechanics from API-name branches.
+    tft::CombatEffectDefinition claw_health;
+    claw_health.trigger = "combat_start";
+    claw_health.operation = "add_stat";
+    claw_health.stat = "max_hp";
+    claw_health.target = "self";
+    claw_health.value = 0.06f;
+    claw_health.percent_of_stat = true;
+    tft::CombatEffectDefinition claw_heal;
+    claw_heal.trigger = "periodic";
+    claw_heal.operation = "heal_max_hp_pct";
+    claw_heal.target = "self";
+    claw_heal.value = 0.025f;
+    claw_heal.interval = 2.0f;
+    claw.effects = {claw_health, claw_heal};
     healing_input.player_a.units[0].items.push_back(claw);
     const auto with_claw = engine.simulate(healing_input);
     require(no_claw.success && with_claw.success, "Dragon's Claw comparison should simulate.");
