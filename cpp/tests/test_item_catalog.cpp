@@ -161,7 +161,7 @@ int main(int argc, char** argv) {
                     effect.operation == "mana_gain_multiplier" &&
                     std::abs(effect.value - 1.15f) < 0.0001f;
             })) {
-            std::cerr << "Adaptive Helm generic mana gain multiplier is missing\\n";
+            std::cerr << "Adaptive Helm generic mana gain multiplier is missing\n";
             return 22;
         }
         const auto has_role_effect = [&](const char* stat, const char* role,
