@@ -257,6 +257,65 @@ def test_semantic_validation_accepts_periodic_percent_of_stat_effect():
     validate_catalog_semantics(catalog)
 
 
+def test_semantic_validation_accepts_all_native_healing_and_attack_mana_effects():
+    catalog = {
+        "items": [{
+            "id": "Item_NativeEffects",
+            "stats": {},
+            "combat_effects": [
+                {
+                    "trigger": "periodic",
+                    "operation": "heal_max_hp_pct",
+                    "target": "self",
+                    "value": 0.025,
+                    "interval": 2,
+                },
+                {
+                    "trigger": "periodic",
+                    "operation": "heal_missing_hp_pct",
+                    "target": "self",
+                    "value": 0.18,
+                    "interval": 1,
+                    "max_amount": 100,
+                },
+                {
+                    "trigger": "on_attack",
+                    "operation": "mana_on_attack",
+                    "target": "self",
+                    "value": 5,
+                    "critical_value": 10,
+                },
+                {
+                    "trigger": "on_damage_dealt",
+                    "operation": "heal_damage_pct_lowest_ally",
+                    "target": "lowest_health_ally",
+                    "value": 0.12,
+                },
+            ],
+        }]
+    }
+    validate_catalog_semantics(catalog)
+
+
+@pytest.mark.parametrize("operation", ["heal_max_hp_pct", "heal_missing_hp_pct"])
+def test_semantic_validation_rejects_periodic_healing_without_positive_interval(operation):
+    catalog = {
+        "items": [{
+            "id": "invalid_periodic_healing",
+            "stats": {},
+            "combat_effects": [{
+                "trigger": "periodic",
+                "operation": operation,
+                "target": "self",
+                "value": 0.1,
+                "interval": 0,
+            }],
+        }]
+    }
+    with pytest.raises(ValueError, match="Efeito sem handler/contrato suportado"):
+        validate_catalog_semantics(catalog)
+
+
 def test_semantic_validation_rejects_periodic_add_stat_without_positive_interval():
     catalog = {
         "items": [{
