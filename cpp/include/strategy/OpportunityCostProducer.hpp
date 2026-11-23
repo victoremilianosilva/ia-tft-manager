@@ -13,7 +13,23 @@ namespace tft::strategy {
 
 // Evidence supplied by a producer that can quantify the value preserved or
 // sacrificed by an alternative on the exact same decision snapshot.
+struct OpportunitySnapshotIdentity {
+    std::uint64_t match_id{0};
+    std::int32_t player_id{-1};
+    std::uint32_t round{0};
+    std::uint64_t sequence{0};
+
+    [[nodiscard]] bool valid() const noexcept {
+        return match_id > 0 && player_id >= 0 && round > 0 && sequence > 0;
+    }
+    [[nodiscard]] bool matches(const OpportunitySnapshotIdentity& other) const noexcept {
+        return valid() && other.valid() && match_id == other.match_id &&
+            player_id == other.player_id && round == other.round && sequence == other.sequence;
+    }
+};
+
 struct OpportunityAlternativeEvidence {
+    OpportunitySnapshotIdentity identity;
     std::string candidate_id;
     std::string value_basis;
     double marginal_strategic_value{0.0};
@@ -38,6 +54,7 @@ struct OpportunityCostResult {
     std::uint32_t horizon_rounds{0};
     double uncertainty{1.0};
     std::string reason{"no_competing_alternative"};
+    OpportunitySnapshotIdentity identity;
 };
 
 // Computes the best *forgone* alternative, not a fixed cost by action family.
@@ -50,11 +67,12 @@ public:
         const std::string& selected_candidate_id,
         const std::vector<OpportunityAlternativeEvidence>& alternatives,
         std::uint32_t selected_horizon_rounds,
-        const std::string& selected_value_basis
+        const std::string& selected_value_basis,
+        const OpportunitySnapshotIdentity& selected_identity
     ) const {
         OpportunityCostResult out;
         if (selected_candidate_id.empty() || selected_horizon_rounds == 0 ||
-            selected_value_basis.empty()) {
+            selected_value_basis.empty() || !selected_identity.valid()) {
             out.reason = "selected_candidate_contract_missing";
             return out;
         }
@@ -70,6 +88,7 @@ public:
             }
             if (alternative.candidate_id == selected_candidate_id ||
                 !alternative.available || !alternative.identity_valid ||
+                !alternative.identity.matches(selected_identity) ||
                 alternative.horizon_rounds != selected_horizon_rounds ||
                 alternative.value_basis != selected_value_basis ||
                 !std::isfinite(alternative.marginal_strategic_value) ||
@@ -113,6 +132,7 @@ public:
         out.horizon_rounds = selected_horizon_rounds;
         out.uncertainty = best->uncertainty;
         out.reason = "best_valid_forgone_alternative";
+        out.identity = selected_identity;
         return out;
     }
 };
