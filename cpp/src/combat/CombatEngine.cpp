@@ -67,7 +67,6 @@ struct RuntimeUnit {
     bool frozen_heart_triggered = false;
     bool guardian_angel_triggered = false;
     bool crown_shield_triggered = false;
-    bool night_harvester_bonus_active = false;
     bool hand_of_justice_ad_ap_active = false;
     float hand_of_justice_ad_bonus = 0.0f;
     float hand_of_justice_ap_bonus = 15.0f;
@@ -948,13 +947,6 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
         if (has_item(runtime.unit, "TFT_Item_BlueBuff")) {
             runtime.unit.attack_damage *= 1.10f;
             runtime.unit.ability_power *= 1.10f;
-        }
-        if (has_item(runtime.unit, "TFT_Item_NightHarvester")) {
-            runtime.unit.damage_reduction += 0.05f;
-            if (runtime.unit.hp / runtime.unit.max_hp > 0.50f)
-                runtime.unit.damage_reduction += 0.15f;
-            runtime.night_harvester_bonus_active =
-                runtime.unit.hp / runtime.unit.max_hp > 0.50f;
         }
         if (has_item(runtime.unit, "TFT17_Item_FlexTraitEmblemItem")) {
             for (auto& ally : units) {
