@@ -439,6 +439,49 @@ void test_generic_periodic_heal_effect() {
             "Generic periodic heal should restore 2.5 percent max HP every two seconds.");
 }
 
+void test_generic_periodic_stat_effect() {
+    tft::CombatEngine engine;
+    auto input = make_input();
+    input.config.max_duration = 2.1f;
+    input.config.record_damage = true;
+
+    auto& attacker = input.player_a.units.front();
+    attacker.attack_damage = 100.0f;
+    attacker.attack_speed = 1.0f;
+    attacker.attack_range = 7.0f;
+    attacker.can_move = false;
+    attacker.can_cast = false;
+
+    tft::CombatItem item;
+    item.api_name = "catalog_generic_periodic_stat";
+    item.name = "Generic Periodic Stat";
+    tft::CombatEffectDefinition effect;
+    effect.trigger = "periodic";
+    effect.operation = "add_stat";
+    effect.stat = "attack_damage";
+    effect.target = "self";
+    effect.value = 0.10f;
+    effect.percent_of_stat = true;
+    effect.interval = 1.0f;
+    item.effects.push_back(effect);
+    attacker.items.push_back(item);
+
+    auto& target = input.player_b.units.front();
+    target.hp = target.max_hp = 10000.0f;
+    target.armor = 0.0f;
+    target.can_attack = false;
+    target.can_move = false;
+    target.can_cast = false;
+
+    const auto result = engine.simulate(input);
+    require(result.success && result.damage_events.size() >= 3,
+            "Generic periodic stat effect should produce three attack samples.");
+    require(std::abs(result.damage_events[0].raw_damage - 100.0f) < 0.01f &&
+            std::abs(result.damage_events[1].raw_damage - 110.0f) < 0.01f &&
+            std::abs(result.damage_events[2].raw_damage - 121.0f) < 0.01f,
+            "Periodic percentage stat effect should apply and compound once per interval.");
+}
+
 void test_event_limit_is_reported_as_timeout() {
     tft::CombatEngine engine;
     auto input = make_input();
@@ -1150,6 +1193,7 @@ void test_generic_source_ad_effect_changes_combat() {
 int main() {
     try {
         test_deterministic_winner_and_damage();
+        test_generic_periodic_stat_effect();
         test_generic_periodic_heal_effect();
         test_generic_mana_gain_multiplier_effect();
         test_generic_role_condition_item_effect();
