@@ -52,13 +52,24 @@ int main(int argc, char** argv) {
                 invoker.tiers.front().effects.front().scale_by_active_trait_count,
                 "Invoker team mana regeneration must be represented as a scaled team aura.");
 
+        for (const auto* api_name : {
+                 "DA_18_Coven", "DA_18_LuxUniqueTrait",
+                 "DA_DravenUniqueTrait18"}) {
+            const auto& trait = find(api_name);
+            require(trait.effects_complete && !trait.tiers.empty(),
+                    "A non-combat trait must be explicitly complete for combat scope.");
+            for (const auto& tier : trait.tiers)
+                require(tier.effects.empty(),
+                        "Non-combat traits must not invent combat effects.");
+        }
+
         const auto& slayer = find("DA_18_Slayer");
         require(!slayer.effects_complete && !slayer.tiers.empty() &&
                 !slayer.tiers.front().effects.empty(),
                 "Partially modeled traits must remain explicitly incomplete.");
 
         std::cout << "Loaded " << catalog.traits.size()
-                  << " Set 18 traits; complete combat mappings: 5; partial mappings: 1.\n";
+                  << " Set 18 traits; complete combat mappings: 5; non-combat traits: 3; partial mappings: 1.\n";
         return 0;
     } catch (const std::exception& error) {
         std::cerr << "Trait combat catalog validation failed: "
