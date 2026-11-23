@@ -398,6 +398,47 @@ void test_generic_mana_gain_multiplier_effect() {
             "Generic mana gain multiplier should allow the unit to reach its cast threshold.");
 }
 
+void test_generic_periodic_heal_effect() {
+    tft::CombatEngine engine;
+    auto input = make_input();
+    input.config.max_duration = 2.1f;
+
+    auto& holder = input.player_a.units.front();
+    holder.hp = 500.0f;
+    holder.max_hp = 1000.0f;
+    holder.can_attack = false;
+    holder.can_move = false;
+    holder.can_cast = false;
+
+    tft::CombatItem item;
+    item.api_name = "catalog_generic_periodic_heal";
+    item.name = "Generic Periodic Heal";
+    tft::CombatEffectDefinition heal;
+    heal.trigger = "periodic";
+    heal.operation = "heal_max_hp_pct";
+    heal.target = "self";
+    heal.value = 0.025f;
+    heal.interval = 2.0f;
+    item.effects.push_back(heal);
+    holder.items.push_back(item);
+
+    auto& attacker = input.player_b.units.front();
+    attacker.attack_damage = 1.0f;
+    attacker.attack_speed = 1.0f;
+    attacker.attack_range = 7.0f;
+    attacker.can_attack = true;
+    attacker.can_move = false;
+    attacker.can_cast = false;
+
+    const auto result = engine.simulate(input);
+    require(result.success, "Generic periodic heal combat should succeed.");
+    const auto found = std::find_if(result.units.begin(), result.units.end(),
+        [](const auto& unit) { return unit.unit_id == 0; });
+    require(found != result.units.end(), "Periodic heal result unit is missing.");
+    require(found->healing_done >= 24.9f,
+            "Generic periodic heal should restore 2.5 percent max HP every two seconds.");
+}
+
 void test_event_limit_is_reported_as_timeout() {
     tft::CombatEngine engine;
     auto input = make_input();
@@ -1109,6 +1150,7 @@ void test_generic_source_ad_effect_changes_combat() {
 int main() {
     try {
         test_deterministic_winner_and_damage();
+        test_generic_periodic_heal_effect();
         test_generic_mana_gain_multiplier_effect();
         test_generic_role_condition_item_effect();
         test_generic_while_hp_above_effect_reverses_at_threshold();
