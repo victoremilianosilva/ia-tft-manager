@@ -199,7 +199,8 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
             }
             if ((effect.operation == "mana_regen" ||
                  effect.operation == "grant_charges" ||
-                 effect.operation == "heal_max_hp_pct") &&
+                 effect.operation == "heal_max_hp_pct" ||
+                 effect.operation == "heal_missing_hp_pct") &&
                 !effect.target.empty() && effect.target != "self") {
                 throw std::invalid_argument(
                     "This combat effect operation only supports the self target: " +
