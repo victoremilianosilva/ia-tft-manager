@@ -401,6 +401,106 @@ void test_generic_mana_gain_multiplier_effect() {
             "Generic mana gain multiplier should allow the unit to reach its cast threshold.");
 }
 
+void test_trait_team_mana_regeneration_is_applied_once() {
+    tft::CombatEngine engine;
+    auto input = make_input();
+    input.config.max_duration = 1.1f;
+
+    auto make_invoker = [](tft::CombatUnit unit) {
+        tft::CombatTrait trait;
+        trait.api_name = "DA_18_Invoker";
+        trait.name = "Invoker";
+        trait.active = true;
+        trait.active_count = 2;
+
+        tft::CombatEffectDefinition team_regen;
+        team_regen.trigger = "combat_start";
+        team_regen.operation = "mana_regen";
+        team_regen.target = "allies";
+        team_regen.value = 1.0f;
+        team_regen.condition = "trait_count_at_least";
+        team_regen.condition_trait = "DA_18_Invoker";
+        team_regen.min_trait_count = 2;
+        team_regen.scale_by_active_trait_count = true;
+
+        tft::CombatEffectDefinition invoker_bonus;
+        invoker_bonus.trigger = "combat_start";
+        invoker_bonus.operation = "mana_regen";
+        invoker_bonus.target = "self";
+        invoker_bonus.value = 3.0f;
+        invoker_bonus.condition = "trait_count_at_least";
+        invoker_bonus.condition_trait = "DA_18_Invoker";
+        invoker_bonus.min_trait_count = 2;
+
+        trait.effects = {team_regen, invoker_bonus};
+        unit.traits.push_back(trait);
+        return unit;
+    };
+
+    auto& first = input.player_a.units.front();
+    first = make_invoker(first);
+    first.mana = 86.0f;
+    first.max_mana = 100.0f;
+    first.attack_damage = 1.0f;
+    first.attack_speed = 1.0f;
+    first.attack_range = 7.0f;
+    first.can_attack = true;
+    first.can_move = false;
+    first.can_cast = true;
+    first.ability.mana_cost = 100.0f;
+    first.ability.has_damage = true;
+    first.ability.base_damage = 1.0f;
+    first.ability.target_type = tft::AbilityTargetType::ENEMY;
+
+    auto second = first;
+    second.id = 2;
+    second.api_name = "second_invoker";
+    second.name = "Second Invoker";
+    second.position = {2, 1};
+    input.player_a.units.push_back(second);
+
+    tft::CombatUnit ally;
+    ally.id = 3;
+    ally.api_name = "non_invoker_ally";
+    ally.name = "Non-Invoker Ally";
+    ally.team = tft::UnitTeam::PLAYER_A;
+    ally.role = tft::UnitRole::SUPPORT;
+    ally.position = {4, 1};
+    ally.hp = ally.max_hp = 1000.0f;
+    ally.mana = 86.0f;
+    ally.max_mana = 100.0f;
+    ally.attack_damage = 1.0f;
+    ally.attack_speed = 1.0f;
+    ally.attack_range = 7.0f;
+    ally.can_attack = true;
+    ally.can_move = false;
+    ally.can_cast = true;
+    ally.ability.mana_cost = 100.0f;
+    ally.ability.has_damage = true;
+    ally.ability.base_damage = 1.0f;
+    ally.ability.target_type = tft::AbilityTargetType::ENEMY;
+    input.player_a.units.push_back(ally);
+
+    auto& enemy = input.player_b.units.front();
+    enemy.hp = enemy.max_hp = 10000.0f;
+    enemy.can_attack = false;
+    enemy.can_move = false;
+    enemy.can_cast = false;
+
+    const auto result = engine.simulate(input);
+    require(result.success, "Invoker team mana regeneration combat should succeed.");
+    const auto casts = [&](int unit_id) {
+        const auto found = std::find_if(result.units.begin(), result.units.end(),
+            [&](const auto& unit) { return unit.unit_id == unit_id; });
+        require(found != result.units.end(), "Invoker result unit is missing.");
+        return found->ability_casts;
+    };
+    require(casts(0) > 0 && casts(2) > 0,
+            "Invoker holders should receive team and self mana regeneration.");
+    require(casts(3) == 0,
+            "Non-Invoker allies should receive the team aura once, not the Invoker bonus.");
+}
+
 void test_generic_mana_on_attack_item_effects() {
     const auto casts_with_effect = [](float base_mana, float critical_mana,
                                       float crit_chance) {
@@ -1365,6 +1465,7 @@ int main() {
         test_generic_periodic_heal_effect();
         test_generic_mana_gain_multiplier_effect();
         test_generic_mana_on_attack_item_effects();
+        test_trait_team_mana_regeneration_is_applied_once();
         test_generic_role_condition_item_effect();
         test_generic_while_hp_above_effect_reverses_at_threshold();
         test_generic_damage_amplification_item_effect();
