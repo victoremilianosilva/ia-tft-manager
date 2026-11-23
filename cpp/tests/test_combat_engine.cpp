@@ -1290,6 +1290,12 @@ void test_set17_healing_and_defensive_items_change_survival() {
     healing_input.player_a.units.push_back(ally);
     tft::CombatItem gunblade;
     gunblade.api_name = "TFT_Item_HextechGunblade";
+    tft::CombatEffectDefinition ally_healing;
+    ally_healing.trigger = "on_damage_dealt";
+    ally_healing.operation = "heal_damage_pct_lowest_ally";
+    ally_healing.target = "lowest_health_ally";
+    ally_healing.value = 0.20f;
+    gunblade.effects.push_back(ally_healing);
     healing_input.player_a.units[0].items.push_back(gunblade);
     const auto healed = engine.simulate(healing_input);
     require(healed.success, "Gunblade ally-healing battle should complete.");
