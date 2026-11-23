@@ -689,7 +689,7 @@ class RolloutBuffer:
                 semantic_hashes = semantic_state.get("hashes")
                 contract_hash = semantic_state.get("contract_hash")
                 if (
-                    semantic_state.get("contract_id") != "tft.ppo.semantic-native-state.v6"
+                    semantic_state.get("contract_id") != "tft.ppo.semantic-native-state.v7"
                     or not isinstance(contract_hash, str)
                     or len(contract_hash) != 64
                     or any(char not in "0123456789abcdef" for char in contract_hash)
