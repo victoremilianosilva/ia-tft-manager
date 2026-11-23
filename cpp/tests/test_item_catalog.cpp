@@ -291,6 +291,20 @@ int main(int argc, char** argv) {
             return 19;
         }
 
+        const auto gunblade = std::find_if(catalog.items.begin(), catalog.items.end(),
+            [](const auto& item) { return item.id == "TFT_Item_HextechGunblade"; });
+        if (gunblade == catalog.items.end() || !gunblade->combat_effects_complete ||
+            std::none_of(gunblade->combat_effects.begin(), gunblade->combat_effects.end(),
+                [](const auto& effect) {
+                    return effect.trigger == "on_damage_dealt" &&
+                        effect.operation == "heal_damage_pct_lowest_ally" &&
+                        effect.target == "lowest_health_ally" &&
+                        std::abs(effect.value - 0.20f) < 0.0001f;
+                })) {
+            std::cerr << "Hextech Gunblade damage-based ally healing was not normalized\\n";
+            return 22;
+        }
+
         const auto redemption = std::find_if(catalog.items.begin(), catalog.items.end(),
             [](const auto& item) { return item.id == "TFT_Item_Redemption"; });
         if (redemption == catalog.items.end() || redemption->combat_effects_complete ||
@@ -311,6 +325,7 @@ int main(int argc, char** argv) {
                  "TFT_Item_BlueBuff", "TFT_Item_GuinsoosRageblade",
                  "TFT_Item_NightHarvester", "TFT_Item_WarmogsArmor",
                  "TFT_Item_Leviathan", "TFT_Item_SpearOfShojin",
+                 "TFT_Item_HextechGunblade",
                  "DA_18_EmblemBlossom", "DA_18_EmblemBrawler",
                  "DA_18_EmblemInvoker"}) {
             const auto found = std::find_if(catalog.items.begin(), catalog.items.end(),
