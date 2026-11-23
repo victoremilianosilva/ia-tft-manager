@@ -581,11 +581,24 @@ struct TFTEngine::Impl {
         }
 
         const char* configured_trait_catalog = std::getenv("TFT_TRAIT_COMBAT_CATALOG");
-        const std::string resolved_trait_catalog_path =
+        std::string resolved_trait_catalog_path =
             configured_trait_catalog && *configured_trait_catalog
                 ? configured_trait_catalog
                 : TFT_DEFAULT_TRAIT_COMBAT_CATALOG_PATH;
         std::ifstream trait_file(resolved_trait_catalog_path);
+        if (!trait_file && !(configured_trait_catalog && *configured_trait_catalog)) {
+            // CTest and native tools may execute from cpp/ or cpp/build/.
+            for (const auto* candidate : {
+                    "../data/trait_combat_effects.json",
+                    "../../data/trait_combat_effects.json"}) {
+                trait_file.clear();
+                trait_file.open(candidate);
+                if (trait_file) {
+                    resolved_trait_catalog_path = candidate;
+                    break;
+                }
+            }
+        }
         if (!trait_file) {
             throw std::runtime_error(
                 "Nao foi possivel abrir catalogo de efeitos de traits: " +
