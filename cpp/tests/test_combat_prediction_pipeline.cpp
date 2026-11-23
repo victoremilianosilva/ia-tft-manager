@@ -1,9 +1,11 @@
 #include "combat/CombatProjectionEngine.hpp"
 #include "items/CombatItemAdapter.hpp"
+#include "combat/CombatTraitCatalog.hpp"
 
 #include <cassert>
 #include <cmath>
 #include <iostream>
+#include <sstream>
 #include <limits>
 
 using namespace tft;
@@ -458,6 +460,53 @@ int main() {
         items::to_combat_item(authoritative_no_passive);
     assert(no_passive_combat_item.effects_complete);
     assert(no_passive_combat_item.effects.empty());
+
+    std::stringstream trait_catalog_json(R"json({
+        "schema_version": 1,
+        "set_id": "Set18",
+        "traits": [{
+            "api_name": "DA_18_Brawler",
+            "effects_complete": true,
+            "tiers": [
+                {"min_units": 2, "effects": [{
+                    "trigger": "combat_start",
+                    "operation": "add_stat",
+                    "stat": "max_hp",
+                    "target": "allies",
+                    "value": 120,
+                    "condition": "trait_count_at_least",
+                    "condition_trait": "DA_18_Brawler",
+                    "scale_by_active_trait_count": true
+                }]},
+                {"min_units": 4, "effects": [{
+                    "trigger": "combat_start",
+                    "operation": "add_stat",
+                    "stat": "max_hp",
+                    "target": "self",
+                    "value": 0.4,
+                    "percent_of_stat": true,
+                    "condition": "trait_count_at_least",
+                    "condition_trait": "DA_18_Brawler"
+                }]}
+            ]
+        }]
+    })json");
+    const auto trait_catalog = combat::load_trait_combat_catalog(trait_catalog_json);
+    CombatTrait active_brawler;
+    active_brawler.api_name = "DA_18_Brawler";
+    active_brawler.active = true;
+    active_brawler.active_count = 4;
+    combat::apply_trait_combat_metadata(active_brawler, trait_catalog);
+    assert(active_brawler.effects_complete);
+    assert(active_brawler.effects.size() == 1);
+    assert(active_brawler.effects.front().percent_of_stat);
+    assert(active_brawler.effects.front().value == 0.4f);
+
+    CombatTrait inactive_brawler;
+    inactive_brawler.api_name = "DA_18_Brawler";
+    combat::apply_trait_combat_metadata(inactive_brawler, trait_catalog);
+    assert(!inactive_brawler.effects_complete);
+    assert(inactive_brawler.effects.empty());
 
     std::cout << "combat prediction pipeline tests passed\n";
 }
