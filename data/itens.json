@@ -1144,6 +1144,12 @@
           "trigger": "combat_start",
           "operation": "mana_regen",
           "value": 1
+        },
+        {
+          "trigger": "on_damage_dealt",
+          "operation": "heal_damage_pct_lowest_ally",
+          "target": "lowest_health_ally",
+          "value": 0.20000000298023224
         }
       ],
       "effect_coverage": {
@@ -1162,13 +1168,13 @@
         ],
         "generic_combat_keys": [
           "AD",
-          "ManaRegen"
-        ],
-        "not_generic_normalized_keys": [
+          "ManaRegen",
           "AllyHealing"
-        ]
+        ],
+        "not_generic_normalized_keys": []
       },
-      "unit_equipable": true
+      "unit_equipable": true,
+      "combat_effects_complete": true
     },
     {
       "id": "TFT_Item_InfinityEdge",
