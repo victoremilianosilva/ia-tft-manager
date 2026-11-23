@@ -310,6 +310,49 @@ void sale_credit_preserves_verified_interest_gain() {
     assert(result.recommended_action == StrategicActionKind::SellUnit);
 }
 
+void opportunity_cost_requires_exact_snapshot_identity() {
+    OpportunitySnapshotIdentity identity{77, 2, 8, 12};
+    OpportunityAlternativeEvidence alternative;
+    alternative.identity = identity;
+    alternative.candidate_id = "forgone-alternative";
+    alternative.value_basis = "contextual_action_score.v1";
+    alternative.marginal_strategic_value = 3.0;
+    alternative.direct_economy_cost = 0.3;
+    alternative.interest_cost = 0.2;
+    alternative.prior_opportunity_cost = 0.5;
+    alternative.horizon_rounds = 1;
+    alternative.uncertainty = 0.2;
+    alternative.available = true;
+    alternative.identity_valid = true;
+
+    const OpportunityCostProducer producer;
+    const auto valid = producer.evaluate("selected", {alternative}, 1,
+        "contextual_action_score.v1", identity);
+    assert(valid.available);
+    assert(std::abs(valid.cost - 2.0) < 1e-9);
+    assert(valid.identity.matches(identity));
+    assert(valid.sacrificed_candidate_id == "forgone-alternative");
+
+    auto stale = alternative;
+    stale.identity.sequence = 11;
+    const auto stale_result = producer.evaluate("selected", {stale}, 1,
+        "contextual_action_score.v1", identity);
+    assert(!stale_result.available);
+    assert(stale_result.reason == "no_valid_competing_alternative");
+
+    auto cross_player = alternative;
+    cross_player.identity.player_id = 1;
+    const auto cross_player_result = producer.evaluate("selected", {cross_player}, 1,
+        "contextual_action_score.v1", identity);
+    assert(!cross_player_result.available);
+
+    const OpportunitySnapshotIdentity incomplete{77, 2, 8, 0};
+    const auto missing_sequence = producer.evaluate("selected", {alternative}, 1,
+        "contextual_action_score.v1", incomplete);
+    assert(!missing_sequence.available);
+    assert(missing_sequence.reason == "selected_candidate_contract_missing");
+}
+
 void unproduced_opportunity_cost_is_not_consumed() {
     StrategicSharedContext context;
     context.alive = true; context.gold = 10; context.player_id = 0; context.round = 8;
@@ -706,6 +749,7 @@ int main() {
     explicit_hold_is_selected_when_all_actions_score_below_zero();
     explicit_sale_credit_is_not_discarded_as_a_positive_cost();
     sale_credit_preserves_verified_interest_gain();
+    opportunity_cost_requires_exact_snapshot_identity();
     unproduced_opportunity_cost_is_not_consumed();
     validated_opportunity_cost_uses_the_same_board_value_basis();
     marginal_liquidity_and_interest_are_compared_to_hold_once();

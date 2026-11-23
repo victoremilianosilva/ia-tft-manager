@@ -13,10 +13,14 @@ using namespace tft;
 
 int main() {
     strategy::OpportunityCostProducer producer;
+    const strategy::OpportunitySnapshotIdentity identity{7, 0, 2, 1};
     strategy::OpportunityAlternativeEvidence reroll;
+    reroll.identity = identity;
     reroll.candidate_id = "reroll";
     reroll.value_basis = "shared_utility.v1";
-    reroll.marginal_strategic_value = 1.2;
+    // Gross value must cover direct and interest costs; the producer then
+    // computes the net forgone value exactly once (5.0 - 3.0 = 2.0).
+    reroll.marginal_strategic_value = 4.2;
     reroll.upgrade_value = 0.8;
     reroll.horizon_rounds = 2;
     reroll.uncertainty = 0.4;
@@ -25,14 +29,14 @@ int main() {
     // Value components are already net of these costs; they are audit metadata.
     reroll.direct_economy_cost = 2.0;
     reroll.interest_cost = 1.0;
-    auto opportunity = producer.evaluate("buy-xp", {reroll}, 2, "shared_utility.v1");
+    auto opportunity = producer.evaluate("buy-xp", {reroll}, 2, "shared_utility.v1", identity);
     assert(opportunity.available);
     assert(std::abs(opportunity.cost - 2.0) < 1e-9);
     assert(opportunity.sacrificed_candidate_id == "reroll");
     assert(opportunity.horizon_rounds == 2);
-    assert(!producer.evaluate("buy-xp", {}, 2, "shared_utility.v1").available);
-    assert(!producer.evaluate("buy-xp", {reroll}, 3, "shared_utility.v1").available);
-    assert(!producer.evaluate("buy-xp", {reroll}, 2, "different_utility.v1").available);
+    assert(!producer.evaluate("buy-xp", {}, 2, "shared_utility.v1", identity).available);
+    assert(!producer.evaluate("buy-xp", {reroll}, 3, "shared_utility.v1", identity).available);
+    assert(!producer.evaluate("buy-xp", {reroll}, 2, "different_utility.v1", identity).available);
     auto high_uncertainty = reroll;
     high_uncertainty.candidate_id = "high-uncertainty";
     high_uncertainty.marginal_strategic_value = 5.0;
@@ -40,22 +44,25 @@ int main() {
     high_uncertainty.uncertainty = 0.95;
     auto lower_uncertainty = reroll;
     lower_uncertainty.candidate_id = "lower-uncertainty";
-    lower_uncertainty.marginal_strategic_value = 0.6;
+    // Both alternatives inherit the same 3.0 economy/interest costs.
+    // The lower-uncertainty candidate has net value 1.0 and risk-adjusted
+    // value 1.0, beating the high-uncertainty candidate's 0.1.
+    lower_uncertainty.marginal_strategic_value = 4.0;
     lower_uncertainty.upgrade_value = 0.0;
     lower_uncertainty.uncertainty = 0.0;
     const auto risk_adjusted = producer.evaluate(
-        "buy-xp", {high_uncertainty, lower_uncertainty}, 2, "shared_utility.v1");
+        "buy-xp", {high_uncertainty, lower_uncertainty}, 2, "shared_utility.v1", identity);
     assert(risk_adjusted.available);
     assert(risk_adjusted.sacrificed_candidate_id == "lower-uncertainty");
-    assert(std::abs(risk_adjusted.cost - 0.6) < 1e-9);
+    assert(std::abs(risk_adjusted.cost - 1.0) < 1e-9);
 
     auto no_confidence = reroll;
     no_confidence.candidate_id = "no-confidence";
     no_confidence.uncertainty = 1.0;
-    assert(!producer.evaluate("buy-xp", {no_confidence}, 2, "shared_utility.v1").available);
+    assert(!producer.evaluate("buy-xp", {no_confidence}, 2, "shared_utility.v1", identity).available);
 
     reroll.identity_valid = false;
-    assert(!producer.evaluate("buy-xp", {reroll}, 2, "shared_utility.v1").available);
+    assert(!producer.evaluate("buy-xp", {reroll}, 2, "shared_utility.v1", identity).available);
 
     combat_evidence::CombatSnapshot snapshot;
     snapshot.match_id = 7; snapshot.player_id = 0; snapshot.opponent_id = 1;

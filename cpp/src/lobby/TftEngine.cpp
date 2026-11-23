@@ -461,6 +461,20 @@ struct TFTEngine::Impl {
         strategic_pivot_generation_diagnostics{};
     std::array<std::vector<AuditUnitOpportunityCostSnapshot>, kPlayersPerLobby> strategic_opportunity_costs{};
 
+    struct UnitBoardContributionEvidence {
+        std::uint64_t match_id{0};
+        std::uint32_t round{0};
+        std::uint64_t combat_sequence{0};
+        double unit_damage{0.0};
+        double team_damage{0.0};
+        double damage_share{0.0};
+        bool available{false};
+    };
+    // Latest completed PvP damage share, attributed back to the persistent
+    // board-unit UUID and then aggregated by champion for the next decision.
+    std::array<std::unordered_map<std::int32_t, UnitBoardContributionEvidence>,
+        kPlayersPerLobby> strategic_board_contribution_evidence{};
+
     std::string strategic_audit_path;
 
 
@@ -2058,9 +2072,18 @@ struct TFTEngine::Impl {
                             continue;
                         }
 
+                        // Materialize a mutable value snapshot before normalizing the
+                        // destination contract. The candidate collection is read-only
+                        // at this point in the engine refresh.
+                        auto destination_candidate = *destination_it;
+                        destination_candidate.target_board_size =
+                            destination_candidate.units.size();
+                        if (destination_candidate.set_id.empty() && source_active)
+                            destination_candidate.set_id = source_active->candidate.set_id;
+
                         strategy::StrategicPivotAnchorCandidate pivot;
                         pivot.target_direction = generated.direction;
-                        pivot.target_composition_identity = destination_it->composition_id;
+                        pivot.target_composition_identity = destination_candidate.composition_id;
                         pivot.source_direction_anchor_identity =
                             active_direction_anchor.identity;
                         pivot.source_composition_version =
@@ -2083,7 +2106,7 @@ struct TFTEngine::Impl {
 
                         strategy::PivotFeasibilityInput feasibility;
                         feasibility.candidate_composition_identity =
-                            destination_it->composition_id;
+                            destination_candidate.composition_id;
                         feasibility.source_direction_anchor_identity =
                             active_direction_anchor.identity;
                         feasibility.source_composition_version =
@@ -2097,16 +2120,16 @@ struct TFTEngine::Impl {
                                     ++shop_copies[offer->champion_internal_id];
                             }
                         }
-                        feasibility.required_units.reserve(destination_it->units.size());
-                        feasibility.observed_units.reserve(destination_it->units.size());
-                        for (const auto& destination_unit : destination_it->units) {
+                        feasibility.required_units.reserve(destination_candidate.units.size());
+                        feasibility.observed_units.reserve(destination_candidate.units.size());
+                        for (const auto& destination_unit : destination_candidate.units) {
                             const auto* definition = catalog->find_by_id(
                                 destination_unit.champion_id);
                             if (!definition) {
                                 continue;
                             }
                             const bool is_carry =
-                                destination_unit.champion_id == destination_it->main_carry_id;
+                                destination_unit.champion_id == destination_candidate.main_carry_id;
                             strategy::PivotRequiredUnit required;
                             required.champion_id = destination_unit.champion_id;
                             required.cost = definition->cost;
@@ -2146,7 +2169,7 @@ struct TFTEngine::Impl {
                         }
 
                         if (feasibility.required_units.size() !=
-                            destination_it->units.size()) {
+                            destination_candidate.units.size()) {
                             pivot_generation_diagnostic =
                                 "required_unit_evidence_incomplete:" + generated.identity;
                             continue;
@@ -2195,7 +2218,7 @@ struct TFTEngine::Impl {
                             continue;
                         best_feasible_pivot_score = preliminary.score;
                         best_pivot_candidate = std::move(pivot);
-                        best_pivot_destination = *destination_it;
+                        best_pivot_destination = destination_candidate;
                         best_pivot_feasibility = std::move(feasibility);
                         pivot_generation_diagnostic =
                             "best_feasible_candidate:" + generated.direction +
@@ -2334,6 +2357,16 @@ struct TFTEngine::Impl {
                     definition.combat_profile.is_support
                 });
             }
+            // Item compatibility is measured from the equipped item IDs and
+            // the same champion combat/profile snapshot used by item planning.
+            // No-item units and unsupported catalog entries remain unavailable.
+            std::unordered_map<std::string, items::UnitProfile> native_item_profiles;
+            for (auto& profile : semantic_item_unit_profiles(i))
+                native_item_profiles.emplace(profile.uuid, std::move(profile));
+            items::ItemFitCache native_item_fit_cache(player_envs[i].item_engine.get());
+            std::unordered_map<std::int32_t, double> native_item_fit_totals;
+            std::unordered_map<std::int32_t, std::int32_t> native_item_fit_unit_counts;
+            std::unordered_set<std::int32_t> native_item_fit_invalid;
             const auto append_native_owned = [&](const UnitInstance& unit,
                                                   bool on_board) {
                 const auto* definition = catalog->find_by_id(
@@ -2347,17 +2380,70 @@ struct TFTEngine::Impl {
                 observed.copies_by_star = physical_tiers;
                 observed.on_board = observed.on_board || on_board;
                 observed.on_bench = observed.on_bench || !on_board;
-                // Per-unit board contribution and item fit are unavailable here:
-                // cost/star and equipped-item count are not valid substitutes.
+                // Start unavailable; a recent, same-episode UUID-attributed
+                // board-unit damage-share observation is joined after roster collection.
                 observed.board_contribution = 0.0;
+                observed.board_contribution_available = false;
                 observed.item_fit = 0.0;
+                observed.item_fit_available = false;
+                if (unit.items.empty()) return;
+                const auto profile = native_item_profiles.find(unit.uuid);
+                if (profile == native_item_profiles.end() || unit.uuid.empty()) {
+                    native_item_fit_invalid.insert(definition->internal_id);
+                    return;
+                }
+                double item_fit_total = 0.0;
+                std::size_t item_count = 0;
+                for (const auto& item : unit.items) {
+                    if (item.api_name.empty()) {
+                        native_item_fit_invalid.insert(definition->internal_id);
+                        return;
+                    }
+                    const double fit = native_item_fit_cache.get(item.api_name, profile->second);
+                    if (!std::isfinite(fit) || fit < 0.0) {
+                        native_item_fit_invalid.insert(definition->internal_id);
+                        return;
+                    }
+                    item_fit_total += std::clamp(fit / 50.0, 0.0, 1.0);
+                    ++item_count;
+                }
+                if (item_count == 0) return;
+                native_item_fit_totals[definition->internal_id] +=
+                    item_fit_total / static_cast<double>(item_count);
+                ++native_item_fit_unit_counts[definition->internal_id];
             };
             for (const auto& unit : player_envs[i].board)
                 if (unit) append_native_owned(*unit, true);
             for (const auto& unit : player_envs[i].bench)
                 if (unit) append_native_owned(*unit, false);
             for (auto& [id, observed] : strategic_native_owned) {
+                if (!observed.on_board) continue;
+                const auto measured = strategic_board_contribution_evidence[i].find(id);
+                if (measured == strategic_board_contribution_evidence[i].end()) continue;
+                const auto& evidence = measured->second;
+                const bool same_match = evidence.available && evidence.match_id == episode_id;
+                const bool recent = current_round >= static_cast<std::int32_t>(evidence.round) &&
+                    current_round - static_cast<std::int32_t>(evidence.round) <= 1;
+                if (same_match && recent && std::isfinite(evidence.damage_share) &&
+                    evidence.damage_share >= 0.0 && evidence.damage_share <= 1.0) {
+                    observed.board_contribution = evidence.damage_share;
+                    observed.board_contribution_available = true;
+                }
+            }
+            for (auto& [id, observed] : strategic_native_owned) {
                 observed.copies = strategy::owned_star_equivalent_copies(observed.copies_by_star);
+                const auto fit_count = native_item_fit_unit_counts.find(id);
+                if (fit_count != native_item_fit_unit_counts.end() &&
+                    fit_count->second > 0 && !native_item_fit_invalid.count(id)) {
+                    observed.item_fit = std::clamp(
+                        native_item_fit_totals[id] / fit_count->second, 0.0, 1.0);
+                    observed.item_fit_available = true;
+                    observed.item_fit_source =
+                        "native_item_engine.equipped_items_vs_unit_profile.v1";
+                    // ItemEngine is a catalog/profile heuristic, not a calibrated
+                    // combat outcome. Preserve that uncertainty in downstream scores.
+                    observed.item_fit_uncertainty = 0.35;
+                }
                 native_input.owned.push_back(observed);
                 native_input.currently_owned_unit_ids.push_back(id);
             }
@@ -2602,16 +2688,26 @@ struct TFTEngine::Impl {
                               active_native_direction->unit_ids.end(),
                               definition->internal_id) !=
                         active_native_direction->unit_ids.end();
-                // No per-unit marginal board evaluator is available at this boundary.
-                candidate.board_contribution = 0.0;
+                // Only completed, UUID-attributed board-unit damage share is
+                // consumed here; it is a narrow simulator observation, not a
+                // calibrated measure of total strategic contribution.
+                candidate.board_contribution = copies == strategic_native_owned.end()
+                    ? 0.0 : copies->second.board_contribution;
+                candidate.board_contribution_available = copies != strategic_native_owned.end() &&
+                    copies->second.board_contribution_available;
                 candidate.composition_fit =
                     !strategic_context.current_composition_direction.empty() &&
                     std::find(definition->traits.begin(), definition->traits.end(),
                               strategic_context.current_composition_direction) !=
                         definition->traits.end() ? 1.0 : 0.0;
-                // Item fit is produced by ItemFitCache for actual item/profile pairs;
-                // item count alone is not an item-fit measurement.
-                candidate.item_fit = 0.0;
+                candidate.item_fit = copies == strategic_native_owned.end()
+                    ? 0.0 : copies->second.item_fit;
+                candidate.item_fit_available = copies != strategic_native_owned.end() &&
+                    copies->second.item_fit_available;
+                if (copies != strategic_native_owned.end()) {
+                    candidate.item_fit_source = copies->second.item_fit_source;
+                    candidate.item_fit_uncertainty = copies->second.item_fit_uncertainty;
+                }
                 candidate.traits = definition->traits;
                 for (const auto& item : unit.items) {
                     if (!item.grants_trait.empty() &&
@@ -2668,7 +2764,13 @@ struct TFTEngine::Impl {
                     anchor.unit.on_bench = observed->second.on_bench;
                     anchor.unit.board_contribution =
                         observed->second.board_contribution;
-                    anchor.unit.item_fit = observed->second.item_fit;
+                    anchor.unit.board_contribution_available =
+                        observed->second.board_contribution_available;
+                    // The generated composition score already consumed
+                    // this item-fit evidence. Keep its provenance in anchor.evidence
+                    // without adding the same signal a second time in StrategicPlanner.
+                    anchor.unit.item_fit = 0.0;
+                    anchor.unit.item_fit_available = false;
                 } else {
                     anchor.unit.star = 1;
                 }
@@ -4220,8 +4322,11 @@ struct TFTEngine::Impl {
                 struct CombatUnitOwner {
                     std::int32_t player_id{-1};
                     std::string unit_uuid;
+                    std::int32_t champion_id{-1};
                 };
                 std::unordered_map<std::int32_t, CombatUnitOwner> combat_unit_owners;
+                std::array<bool, kPlayersPerLobby> board_unit_attribution_complete{};
+                board_unit_attribution_complete.fill(true);
                 const auto index_team_units = [&](const CombatTeam& team) {
                     if (team.player_id < 0 ||
                         team.player_id >= static_cast<std::int32_t>(kPlayersPerLobby)) {
@@ -4233,15 +4338,63 @@ struct TFTEngine::Impl {
                         if (slot < 0 || slot >= static_cast<std::int32_t>(kBoardSlots)) continue;
                         const auto& instance =
                             player_envs[player_id].board[static_cast<std::size_t>(slot)];
-                        if (!instance || instance->uuid.empty()) continue;
-                        combat_unit_owners.emplace(
-                            unit.id, CombatUnitOwner{team.player_id, instance->uuid});
+                        if (!instance || instance->uuid.empty()) {
+                            board_unit_attribution_complete[player_id] = false;
+                            continue;
+                        }
+                        combat_unit_owners.emplace(unit.id, CombatUnitOwner{
+                            team.player_id, instance->uuid, instance->champion_internal_id});
                     }
                 };
                 index_team_units(input.player_a);
                 index_team_units(input.player_b);
 
                 ++combat_sequence;
+                // Convert completed combat results into a factual per-unit
+                // damage-share signal. Identity is joined through the persistent
+                // board UUID; incomplete attribution never becomes evidence.
+                if (combat.completed && !combat.timeout) {
+                    std::array<double, kPlayersPerLobby> team_damage{};
+                    std::array<std::unordered_map<std::int32_t, double>,
+                        kPlayersPerLobby> champion_damage;
+                    for (const auto& unit_result : combat.units) {
+                        const auto owner = combat_unit_owners.find(unit_result.unit_id);
+                        if (owner == combat_unit_owners.end() ||
+                            owner->second.player_id < 0 ||
+                            owner->second.player_id >= static_cast<std::int32_t>(kPlayersPerLobby) ||
+                            owner->second.champion_id < 0) continue;
+                        const auto player_index = static_cast<std::size_t>(owner->second.player_id);
+                        const double dealt = std::max(0.0,
+                            static_cast<double>(unit_result.damage_dealt));
+                        if (!std::isfinite(dealt)) {
+                            board_unit_attribution_complete[player_index] = false;
+                            continue;
+                        }
+                        team_damage[player_index] += dealt;
+                        champion_damage[player_index][owner->second.champion_id] += dealt;
+                    }
+                    for (const auto player_id : {a, b}) {
+                        const auto player_index = static_cast<std::size_t>(player_id);
+                        auto& published = strategic_board_contribution_evidence[player_index];
+                        published.clear();
+                        if (!board_unit_attribution_complete[player_index] ||
+                            !std::isfinite(team_damage[player_index]) ||
+                            team_damage[player_index] <= 0.0) continue;
+                        for (const auto& [champion_id, damage] : champion_damage[player_index]) {
+                            if (!std::isfinite(damage) || damage < 0.0) continue;
+                            UnitBoardContributionEvidence evidence;
+                            evidence.match_id = episode_id;
+                            evidence.round = round;
+                            evidence.combat_sequence = combat_sequence;
+                            evidence.unit_damage = damage;
+                            evidence.team_damage = team_damage[player_index];
+                            evidence.damage_share = std::clamp(
+                                damage / team_damage[player_index], 0.0, 1.0);
+                            evidence.available = true;
+                            published.emplace(champion_id, evidence);
+                        }
+                    }
+                }
                 constexpr std::size_t kCombatDamageAuditLimit = 4096;
                 for (const auto& damage_event : combat.damage_events) {
                     if (last_combat_damage_events.size() >= kCombatDamageAuditLimit) {
@@ -5334,6 +5487,7 @@ ResetResult TFTEngine::reset(
     impl_->strategic_planner_commitments = {};
     for (auto& executor : impl_->strategic_action_executors) executor.reset();
     impl_->strategic_context_sequences.fill(0);
+    for (auto& evidence : impl_->strategic_board_contribution_evidence) evidence.clear();
     for (auto& evidence : impl_->pending_combat_prediction_evidence) evidence.reset();
     impl_->pending_combat_prediction_events.clear();
     if (!impl_->strategic_audit_path.empty()) {

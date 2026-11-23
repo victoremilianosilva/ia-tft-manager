@@ -13,7 +13,23 @@ namespace tft::strategy {
 
 // Evidence supplied by a producer that can quantify the value preserved or
 // sacrificed by an alternative on the exact same decision snapshot.
+struct OpportunitySnapshotIdentity {
+    std::uint64_t match_id{0};
+    std::int32_t player_id{-1};
+    std::uint32_t round{0};
+    std::uint64_t sequence{0};
+
+    [[nodiscard]] bool valid() const noexcept {
+        return match_id > 0 && player_id >= 0 && round > 0 && sequence > 0;
+    }
+    [[nodiscard]] bool matches(const OpportunitySnapshotIdentity& other) const noexcept {
+        return valid() && other.valid() && match_id == other.match_id &&
+            player_id == other.player_id && round == other.round && sequence == other.sequence;
+    }
+};
+
 struct OpportunityAlternativeEvidence {
+    OpportunitySnapshotIdentity identity;
     std::string candidate_id;
     std::string value_basis;
     double marginal_strategic_value{0.0};
@@ -23,6 +39,7 @@ struct OpportunityAlternativeEvidence {
     double unit_value{0.0};
     double upgrade_value{0.0};
     double liquidity_value{0.0};
+    double prior_opportunity_cost{0.0};
     std::uint32_t horizon_rounds{0};
     double uncertainty{1.0};
     bool available{false};
@@ -38,23 +55,25 @@ struct OpportunityCostResult {
     std::uint32_t horizon_rounds{0};
     double uncertainty{1.0};
     std::string reason{"no_competing_alternative"};
+    OpportunitySnapshotIdentity identity;
 };
 
 // Computes the best *forgone* alternative, not a fixed cost by action family.
-// All values must originate from the same native snapshot. The caller supplies
-// a value already net of the alternative's direct gold, liquidity and interest;
-// the cost fields are audit metadata and are never re-applied here.
+// All values must originate from the same native snapshot. Components are in
+// the declared value_basis units. The producer computes net forgone value once;
+// direct economy, interest and any already-validated opportunity cost are explicit.
 class OpportunityCostProducer {
 public:
     OpportunityCostResult evaluate(
         const std::string& selected_candidate_id,
         const std::vector<OpportunityAlternativeEvidence>& alternatives,
         std::uint32_t selected_horizon_rounds,
-        const std::string& selected_value_basis
+        const std::string& selected_value_basis,
+        const OpportunitySnapshotIdentity& selected_identity
     ) const {
         OpportunityCostResult out;
         if (selected_candidate_id.empty() || selected_horizon_rounds == 0 ||
-            selected_value_basis.empty()) {
+            selected_value_basis.empty() || !selected_identity.valid()) {
             out.reason = "selected_candidate_contract_missing";
             return out;
         }
@@ -70,6 +89,7 @@ public:
             }
             if (alternative.candidate_id == selected_candidate_id ||
                 !alternative.available || !alternative.identity_valid ||
+                !alternative.identity.matches(selected_identity) ||
                 alternative.horizon_rounds != selected_horizon_rounds ||
                 alternative.value_basis != selected_value_basis ||
                 !std::isfinite(alternative.marginal_strategic_value) ||
@@ -85,16 +105,19 @@ public:
                 !std::isfinite(alternative.uncertainty) ||
                 alternative.uncertainty < 0.0 || alternative.uncertainty >= 1.0 ||
                 !std::isfinite(alternative.direct_economy_cost) ||
-                !std::isfinite(alternative.interest_cost)) {
+                !std::isfinite(alternative.interest_cost) ||
+                !std::isfinite(alternative.prior_opportunity_cost) ||
+                alternative.prior_opportunity_cost < 0.0) {
                 continue;
             }
-            // The caller supplies net value after direct gold, liquidity and
-            // interest. Cost fields are audit metadata and are never re-applied.
-            const double value = alternative.marginal_strategic_value +
+            const double gross_value = alternative.marginal_strategic_value +
                 alternative.progression_value + alternative.unit_value +
                 alternative.upgrade_value + alternative.liquidity_value;
+            const double value = gross_value - alternative.direct_economy_cost -
+                alternative.interest_cost - alternative.prior_opportunity_cost;
             const double risk_adjusted_value = value * (1.0 - alternative.uncertainty);
-            if (!std::isfinite(value) || !std::isfinite(risk_adjusted_value)) continue;
+            if (!std::isfinite(gross_value) || !std::isfinite(value) ||
+                !std::isfinite(risk_adjusted_value) || value <= 0.0) continue;
             if (best == nullptr || risk_adjusted_value > best_risk_adjusted_value) {
                 best = &alternative;
                 best_value = value;
@@ -113,6 +136,7 @@ public:
         out.horizon_rounds = selected_horizon_rounds;
         out.uncertainty = best->uncertainty;
         out.reason = "best_valid_forgone_alternative";
+        out.identity = selected_identity;
         return out;
     }
 };

@@ -41,8 +41,12 @@ StrategicAnchorCandidate anchor(
     a.unit.cost = 5;
     a.unit.star = 1;
     a.unit.board_contribution = 0.4;
+    a.unit.board_contribution_available = true;
     a.unit.composition_fit = 0.9;
     a.unit.item_fit = 0.8;
+    a.unit.item_fit_available = true;
+    a.unit.item_fit_source = "test.item_profile.v1";
+    a.unit.item_fit_uncertainty = 0.2;
     a.target_composition_direction = direction;
     a.anchor_value = value;
     a.transition_cost = transition;
@@ -186,6 +190,9 @@ int main() {
     context.anchor_candidates.clear();
     auto invalid = anchor(95, "Assassin", 5.0, 0.1, 1);
     invalid.unit.item_fit = std::nan("");
+    invalid.unit.item_fit_available = true;
+    invalid.unit.item_fit_source = "test.item_profile.v1";
+    invalid.unit.item_fit_uncertainty = 0.2;
     context.anchor_candidates.push_back(invalid);
     context.current_composition_direction.clear();
     decision = planner.evaluate(context, commitment);
