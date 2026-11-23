@@ -75,7 +75,7 @@ def semantic_item_state_tensors(numeric):
     if not isinstance(numeric, __import__("torch").Tensor):
         raise TypeError("semantic numeric input must be a torch tensor")
     if numeric.ndim != 2 or numeric.shape[-1] != SEMANTIC_NUMERIC_DIM:
-        raise ValueError("semantic numeric input has an incompatible v7 shape")
+        raise ValueError("semantic numeric input has an incompatible v8 shape")
     import torch
     batch = numeric.shape[0]
     offset = SEMANTIC_ITEM_OFFSET
@@ -323,7 +323,7 @@ def validate_semantic_state_warm_start_migration(
         and historical_payload.get("source", {}).get("contract_version") == 3
         and historical_owner_source.get("contract_version") == 2
     ):
-        # Reviewed v2 -> v7 migration: native snapshot v3 -> v5 adds capacity,
+        # Reviewed v2 -> v8 migration: native snapshot v3 -> v5 adds capacity,
         # temporal facts, board/bench item-target profiles and structured item/anvil blocks. The semantic
         # entity stride expands while historical identity remains bound.
         historical_payload["contract_id"] = expected["contract"]["contract_id"]

@@ -467,7 +467,7 @@ def test_semantic_projection_hash_binds_owner_identity_even_when_tensor_is_equal
 
 
 
-def test_semantic_v2_checkpoint_has_only_explicit_v7_warm_start_path():
+def test_semantic_v2_checkpoint_has_only_explicit_v8_warm_start_path():
     import copy
     import hashlib
     import json
@@ -517,10 +517,10 @@ def test_semantic_v6_checkpoint_has_explicit_v8_warm_start_path():
     payload["global_features"] = payload["global_features"][:52]
     payload["entity_slots"]["features"] = payload["entity_slots"]["features"][:39]
     payload["numeric_dimension"] -= (
-        SEMANTIC_GLOBAL_FEATURES - 52 + 2 + SEMANTIC_ENTITY_SLOTS * 6
+        SEMANTIC_GLOBAL_FEATURES - 52 + SEMANTIC_ENTITY_SLOTS * 6
     )
     payload["encoder"]["numeric_plus_embedding_input_dim"] -= (
-        SEMANTIC_GLOBAL_FEATURES - 52 + 2 + SEMANTIC_ENTITY_SLOTS * 6
+        SEMANTIC_GLOBAL_FEATURES - 52 + SEMANTIC_ENTITY_SLOTS * 6
     )
     canonical = json.dumps(
         payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False
@@ -594,7 +594,7 @@ def test_semantic_checkpoint_manifest_integrity_is_separate_from_runtime_compati
         validate_semantic_state_checkpoint_integrity(changed)
 
 
-def test_semantic_v7_checkpoint_weight_contract_requires_trait_embedding():
+def test_semantic_v8_checkpoint_weight_contract_requires_trait_embedding():
     complete = {key: object() for key in SEMANTIC_POLICY_STATE_KEYS}
     assert semantic_policy_state_keys(complete) == SEMANTIC_POLICY_STATE_KEYS
     validate_semantic_policy_state_dict(complete)
@@ -602,5 +602,5 @@ def test_semantic_v7_checkpoint_weight_contract_requires_trait_embedding():
     incomplete = dict(complete)
     incomplete.pop("semantic_trait_embedding.weight")
     assert semantic_policy_state_keys(incomplete) != SEMANTIC_POLICY_STATE_KEYS
-    with pytest.raises(ValueError, match="Semantic v7 policy weights are incomplete"):
+    with pytest.raises(ValueError, match="Semantic v8 policy weights are incomplete"):
         validate_semantic_policy_state_dict(incomplete)

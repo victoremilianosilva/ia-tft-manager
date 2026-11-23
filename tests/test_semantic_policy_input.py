@@ -291,7 +291,7 @@ def test_native_policy_fails_closed_when_semantic_state_is_missing():
         obs_dim=obs.shape[-1], action_dims=list(ACTION_DIMS),
         hidden_size=32, semantic_vocab_size=64, require_semantic_state=True,
     )
-    with pytest.raises(ValueError, match="semantic_state v7"):
+    with pytest.raises(ValueError, match="semantic_state v8"):
         policy.get_value(obs, masks=masks)
     assert torch.isfinite(policy.get_value(obs, masks=masks, semantic_state=semantic)).all()
 
