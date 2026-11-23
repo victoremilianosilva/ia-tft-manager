@@ -138,6 +138,39 @@ float apply_heal(RuntimeUnit& target, float amount, float now) {
     return actual;
 }
 
+void apply_damage_healing_effects(
+    RuntimeUnit& source, std::vector<RuntimeUnit>& units, float damage, float now
+) {
+    if (!std::isfinite(damage) || damage <= 0.0f) return;
+    const auto apply = [&](const std::vector<CombatEffectDefinition>& effects) {
+        for (const auto& effect : effects) {
+            if (effect.trigger != "on_damage_dealt" ||
+                effect.operation != "heal_damage_pct_lowest_ally" ||
+                effect.target != "lowest_health_ally" ||
+                !effect_condition_matches(source.unit, effect)) continue;
+
+            std::size_t ally_index = units.size();
+            float lowest_health_ratio = std::numeric_limits<float>::infinity();
+            for (std::size_t i = 0; i < units.size(); ++i) {
+                if (!is_alive(units[i]) ||
+                    units[i].unit.team != source.unit.team) continue;
+                const float ratio = units[i].unit.hp / units[i].unit.max_hp;
+                if (ratio < lowest_health_ratio) {
+                    lowest_health_ratio = ratio;
+                    ally_index = i;
+                }
+            }
+            if (ally_index >= units.size()) continue;
+            const float healing = apply_heal(
+                units[ally_index], damage * effect.value, now);
+            units[ally_index].healing_done += healing;
+        }
+    };
+    for (const auto& item : source.unit.items) apply(item.effects);
+    for (const auto& trait : source.unit.traits)
+        if (trait.active || trait.active_count > 0) apply(trait.effects);
+}
+
 void trigger_defensive_items(RuntimeUnit& unit, float now) {
     if (has_item(unit.unit, "TFT_Item_Bloodthirster") &&
         !unit.bloodthirster_triggered && unit.unit.hp <= unit.unit.max_hp * 0.40f) {
@@ -1370,19 +1403,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                             ability_target.grievous_until = std::max(ability_target.grievous_until,
                                 now + (has_item(actor.unit, "TFT_Item_Morellonomicon") ? 10.0f : 5.0f));
                         }
-                        if (has_item(actor.unit, "TFT_Item_HextechGunblade")) {
-                            std::size_t ally = units.size();
-                            float lowest = std::numeric_limits<float>::infinity();
-                            for (std::size_t i = 0; i < units.size(); ++i) {
-                                if (!is_alive(units[i]) || units[i].unit.team != actor.unit.team) continue;
-                                const float ratio = units[i].unit.hp / units[i].unit.max_hp;
-                                if (ratio < lowest) { lowest = ratio; ally = i; }
-                            }
-                            if (ally < units.size()) {
-                                const float heal = apply_heal(units[ally], damage * 0.20f, now);
-                                units[ally].healing_done += heal;
-                            }
-                        }
+                        apply_damage_healing_effects(actor, units, damage, now);
                         if (actor.unit.omnivamp > 0.0f && damage > 0.0f) {
                             const float heal = apply_heal(actor,
                                 damage * actor.unit.omnivamp, now);
@@ -1627,19 +1648,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                 target.grievous_until = std::max(target.grievous_until,
                     now + (has_item(actor.unit, "TFT_Item_Morellonomicon") ? 10.0f : 5.0f));
             }
-            if (has_item(actor.unit, "TFT_Item_HextechGunblade") && damage > 0.0f) {
-                std::size_t ally = units.size();
-                float lowest = std::numeric_limits<float>::infinity();
-                for (std::size_t i = 0; i < units.size(); ++i) {
-                    if (!is_alive(units[i]) || units[i].unit.team != actor.unit.team) continue;
-                    const float ratio = units[i].unit.hp / units[i].unit.max_hp;
-                    if (ratio < lowest) { lowest = ratio; ally = i; }
-                }
-                if (ally < units.size()) {
-                    const float heal = apply_heal(units[ally], damage * 0.20f, now);
-                    units[ally].healing_done += heal;
-                }
-            }
+            apply_damage_healing_effects(actor, units, damage, now);
 
             // Colete Espinhoso: dano mágico em área com recarga de 2 segundos.
             for (const auto& item : target.unit.items) {
