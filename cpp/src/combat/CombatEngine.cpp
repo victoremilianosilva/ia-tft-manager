@@ -504,6 +504,24 @@ float effect_mana_regeneration(const CombatUnit& unit) {
     return amount;
 }
 
+float effect_mana_on_attack(const CombatUnit& unit, bool critical) {
+    float amount = 0.0f;
+    auto accumulate = [&](const std::vector<CombatEffectDefinition>& effects) {
+        for (const auto& effect : effects) {
+            if (effect.trigger != "on_attack" ||
+                effect.operation != "mana_on_attack" ||
+                !effect_condition_matches(unit, effect)) continue;
+            amount += critical && effect.critical_value > 0.0f
+                ? effect.critical_value : effect.value;
+        }
+    };
+    for (const auto& item : unit.items) accumulate(item.effects);
+    for (const auto& trait : unit.traits) {
+        if (trait.active || trait.active_count > 0) accumulate(trait.effects);
+    }
+    return amount;
+}
+
 template <typename Callback>
 void visit_generic_effects(CombatUnit& unit, Callback callback) {
     for (std::size_t item_index = 0; item_index < unit.items.size(); ++item_index) {
@@ -1556,17 +1574,13 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
             actor.unit.mana = std::min(actor.unit.max_mana,
                 actor.unit.mana + 10.0f * actor.mana_gain_multiplier);
 
-            // Shojin e Leviathan: mana adicional por ataque acertado.
+            // Item and trait mana-on-hit passives are data-driven.
+            const float generic_mana_on_attack =
+                effect_mana_on_attack(actor.unit, critical);
+            actor.unit.mana = std::min(actor.unit.max_mana,
+                actor.unit.mana + generic_mana_on_attack * actor.mana_gain_multiplier);
             for (const auto& item : actor.unit.items) {
-                if (item.api_name == "TFT_Item_SpearOfShojin")
-                    actor.unit.mana = std::min(actor.unit.max_mana,
-                        actor.unit.mana + 5.0f * actor.mana_gain_multiplier);
-                else if (item.api_name == "TFT_Item_Leviathan") {
-                    const float mana_on_hit = critical ? 4.0f : 2.0f;
-                    actor.unit.mana = std::min(actor.unit.max_mana,
-                        actor.unit.mana + mana_on_hit * actor.mana_gain_multiplier);
-                }
-                else if (item.api_name == "TFT_Item_TitansResolve")
+                if (item.api_name == "TFT_Item_TitansResolve")
                     add_titans_stack(actor);
                 else if (item.api_name == "TFT_Item_RunaansHurricane") {
                     if (actor.runaan_stacks < 15) {
