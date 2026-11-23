@@ -1,6 +1,7 @@
 #include "items/ItemCatalog.hpp"
 
 #include <algorithm>
+#include <cmath>
 #include <fstream>
 #include <iostream>
 #include <set>
@@ -83,6 +84,29 @@ int main(int argc, char** argv) {
         if (catalog.items.empty()) {
             std::cerr << "active item catalog contains no craftable items\n";
             return 5;
+        }
+
+        // Static max-health passives are represented by generic catalog
+        // effects, not by item-name branches in CombatEngine.
+        for (const auto& expected : {
+                 std::pair<const char*, float>{"TFT_Item_WarmogsArmor", 0.18f},
+                 std::pair<const char*, float>{"TFT_Item_DragonsClaw", 0.06f},
+                 std::pair<const char*, float>{"TFT_Item_BrambleVest", 0.06f},
+                 std::pair<const char*, float>{"TFT_Item_RedBuff", 0.08f}}) {
+            const auto found = std::find_if(catalog.items.begin(), catalog.items.end(),
+                [&](const auto& item) { return item.id == expected.first; });
+            if (found == catalog.items.end() || found->combat_effects_complete ||
+                std::none_of(found->combat_effects.begin(), found->combat_effects.end(),
+                    [&](const auto& effect) {
+                        return effect.trigger == "combat_start" &&
+                            effect.operation == "add_stat" &&
+                            effect.stat == "max_hp" && effect.percent_of_stat &&
+                            std::abs(effect.value - expected.second) < 0.0001f;
+                    })) {
+                std::cerr << "generic max-health effect missing or falsely complete for "
+                          << expected.first << '\\n';
+                return 15;
+            }
         }
 
         std::set<std::string> component_ids;
