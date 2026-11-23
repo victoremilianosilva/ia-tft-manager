@@ -30,6 +30,7 @@ struct RuntimeUnit {
     std::vector<GenericEffectDescriptor> generic_effect_descriptors;
     std::vector<std::size_t> delayed_effect_indices;
     std::vector<std::size_t> conditional_effect_indices;
+    std::vector<std::size_t> periodic_effect_indices;
     float damage_dealt = 0.0f;
     float damage_taken = 0.0f;
     float healing_done = 0.0f;
@@ -39,7 +40,6 @@ struct RuntimeUnit {
     int kills = 0;
     int titans_stacks = 0;
     float last_guinsoo_tick = 0.0f;
-    float last_dragons_claw_tick = 0.0f;
     float last_redemption_tick = 0.0f;
     float last_archangel_tick = 0.0f;
     float last_quicksilver_tick = 0.0f;
@@ -84,6 +84,7 @@ struct RuntimeUnit {
     std::unordered_set<std::string> generic_effects_active;
     std::unordered_set<std::string> generic_effects_triggered;
     std::unordered_map<std::string, float> generic_effect_expiry;
+    std::unordered_map<std::string, float> generic_effect_next_tick;
 };
 
 struct ScheduledEvent {
@@ -530,6 +531,7 @@ void prepare_generic_effect_descriptors(RuntimeUnit& runtime) {
     runtime.generic_effect_descriptors.reserve(total);
     runtime.delayed_effect_indices.reserve(total);
     runtime.conditional_effect_indices.reserve(total);
+    runtime.periodic_effect_indices.reserve(total);
 
     const auto append = [&](const CombatEffectDefinition& effect, std::string prefix) {
         GenericEffectDescriptor descriptor;
@@ -546,11 +548,18 @@ void prepare_generic_effect_descriptors(RuntimeUnit& runtime) {
                 effect.trigger + ":" + effect.stat + ":" +
                 std::to_string(effect.health_threshold) + ":" + std::to_string(effect.value);
         }
+        if (effect.trigger == "periodic" &&
+            effect.operation == "heal_max_hp_pct" && effect.interval > 0.0f) {
+            descriptor.periodic_key = descriptor.prefix + "periodic:" +
+                effect.operation + ":" + std::to_string(effect.interval) + ":" +
+                std::to_string(effect.value);
+        }
         const std::size_t index = runtime.generic_effect_descriptors.size();
         runtime.generic_effect_descriptors.push_back(std::move(descriptor));
         const auto& stored = runtime.generic_effect_descriptors.back();
         if (!stored.delayed_key.empty()) runtime.delayed_effect_indices.push_back(index);
         if (!stored.conditional_key.empty()) runtime.conditional_effect_indices.push_back(index);
+        if (!stored.periodic_key.empty()) runtime.periodic_effect_indices.push_back(index);
     };
 
     for (std::size_t item_index = 0; item_index < unit.items.size(); ++item_index) {
@@ -607,6 +616,27 @@ void apply_delayed_effects(RuntimeUnit& runtime, float now) {
         if (now < effect.delay || !effect_condition_matches(runtime.unit, effect)) continue;
         if (runtime.generic_effects_applied.insert(descriptor.delayed_key).second)
             apply_effect_stat(runtime.unit, effect);
+    }
+}
+
+void apply_periodic_effects(RuntimeUnit& runtime, float now) {
+    for (const std::size_t index : runtime.periodic_effect_indices) {
+        const auto& descriptor = runtime.generic_effect_descriptors[index];
+        const auto& effect = *descriptor.effect;
+        if (!effect_condition_matches(runtime.unit, effect)) continue;
+        auto [next_tick, inserted] = runtime.generic_effect_next_tick.emplace(
+            descriptor.periodic_key, effect.interval);
+        (void)inserted;
+        if (now + 1e-5f < next_tick->second) continue;
+        const int ticks = static_cast<int>(
+            std::floor((now - next_tick->second) / effect.interval)) + 1;
+        if (ticks <= 0) continue;
+        if (effect.operation == "heal_max_hp_pct" && effect.target == "self") {
+            const float requested = runtime.unit.max_hp * effect.value *
+                static_cast<float>(ticks);
+            runtime.healing_done += apply_heal(runtime, requested, now);
+        }
+        next_tick->second += effect.interval * static_cast<float>(ticks);
     }
 }
 
@@ -1012,6 +1042,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
         now = event.time;
         ++result.events_processed;
         for (auto& runtime : units) {
+            apply_periodic_effects(runtime, now);
             apply_delayed_effects(runtime, now);
             update_conditional_effects(runtime, now);
         }
@@ -1089,14 +1120,6 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                     std::min(missing * 0.02f * ticks, 250.0f * ticks), now);
                 actor.healing_done += heal;
                 actor.last_redemption_tick += static_cast<float>(ticks);
-            }
-            if (has_item(actor.unit, "TFT_Item_DragonsClaw") &&
-                now - actor.last_dragons_claw_tick >= 2.0f) {
-                const int ticks = static_cast<int>((now - actor.last_dragons_claw_tick) / 2.0f);
-                const float heal = apply_heal(actor,
-                    actor.unit.max_hp * 0.025f * ticks, now);
-                actor.healing_done += heal;
-                actor.last_dragons_claw_tick += 2.0f * ticks;
             }
             if (actor.crown_shield_triggered && actor.crown_shield_expires_at > 0.0f &&
                 now >= actor.crown_shield_expires_at) {
