@@ -1659,8 +1659,8 @@
       "source_name": "Enfeitiçador",
       "source_description": "Sua equipe recebe @TeamwideAP*100@% de Poder de Habilidade. Enfeitiçadores recebem mais, além de Poder de Habilidade adicional sempre que um Enfeitiçador conjura uma habilidade.<br><row>(@MinUnits@) @SpellweaverAP*100@% %i:scaleAP%, +@APPerCast*100@% %i:scaleAP% por conjuração</row><br><row>(@MinUnits@) @SpellweaverAP*100@% %i:scaleAP%, +@APPerCast*100@% %i:scaleAP% por conjuração</row><br><row>(@MinUnits@) @SpellweaverAP*100@% %i:scaleAP%, +@APPerCast*100@% %i:scaleAP% por conjuração</row>",
       "effects_complete": false,
-      "coverage_status": "not_implemented",
-      "coverage_note": "Source trait is registered with its real source tiers; combat effects remain incomplete until their mechanics are normalized and verified.",
+      "coverage_status": "partial",
+      "coverage_note": "Team-wide AP and the tier bonus for Spellweavers are mapped. AP gained per cast still requires a native on-ability-cast stacking trigger.",
       "source_tiers": [
         {
           "min_units": 2,
@@ -1696,15 +1696,81 @@
       "tiers": [
         {
           "min_units": 2,
-          "effects": []
+          "effects": [
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "ability_power",
+              "target": "allies",
+              "value": 0.1,
+              "percent_of_stat": true,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Spellweaver",
+              "scale_by_active_trait_count": true
+            },
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "ability_power",
+              "target": "self",
+              "value": 0.10000000149011612,
+              "percent_of_stat": true,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Spellweaver"
+            }
+          ]
         },
         {
           "min_units": 4,
-          "effects": []
+          "effects": [
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "ability_power",
+              "target": "allies",
+              "value": 0.1,
+              "percent_of_stat": true,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Spellweaver",
+              "scale_by_active_trait_count": true
+            },
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "ability_power",
+              "target": "self",
+              "value": 0.30000001192092896,
+              "percent_of_stat": true,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Spellweaver"
+            }
+          ]
         },
         {
           "min_units": 6,
-          "effects": []
+          "effects": [
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "ability_power",
+              "target": "allies",
+              "value": 0.1,
+              "percent_of_stat": true,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Spellweaver",
+              "scale_by_active_trait_count": true
+            },
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "ability_power",
+              "target": "self",
+              "value": 0.550000011920929,
+              "percent_of_stat": true,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Spellweaver"
+            }
+          ]
         }
       ]
     },
@@ -1863,8 +1929,8 @@
       "source_name": "Dama de Espinhos",
       "source_description": "Sua equipe recebe @BaseDurability*100@% de Durabilidade, valor que aumentará para @IncreasedDurability*100@% se @PlantNumThreshold@ ou mais plantas da Zyra estiverem vivas.",
       "effects_complete": false,
-      "coverage_status": "not_implemented",
-      "coverage_note": "Source trait is registered with its real source tiers; combat effects remain incomplete until their mechanics are normalized and verified.",
+      "coverage_status": "partial",
+      "coverage_note": "The base 5% team durability aura is mapped. The increase conditional on the number of living Zyra plants still needs board-state input.",
       "source_tiers": [
         {
           "min_units": 1,
@@ -1880,7 +1946,18 @@
       "tiers": [
         {
           "min_units": 1,
-          "effects": []
+          "effects": [
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "damage_reduction",
+              "target": "allies",
+              "value": 0.05,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_ZyraUniqueTrait",
+              "scale_by_active_trait_count": true
+            }
+          ]
         }
       ]
     },
@@ -2140,8 +2217,8 @@
       "source_name": "Fera do Rift",
       "source_description": "<row>(@MinUnits@) Use a Marca de Alfa para conceder um fortalecimento único a uma Fera do Rift</row><br><row>(@MinUnits@) A cada @OverrunCombats@ combates, sua próxima Loja é invadida por Feras do Rift</row><br><row>(@MinUnits@) No início do combate e a cada 5s, as Feras do Rift crescem, recebendo: <br>@CapstoneAD*100@% %i:scaleAD% @CapstoneAP*100@% %i:scaleAP% @CapstoneAspd*100@% %i:scaleAS%<br>+@CapstoneArmor@ %i:scaleArmor% +@CapstoneMR@ %i:scaleMR% +@CapstoneHealth@ %i:scaleHealth% +@CapstoneManaRegen@ %i:scaleManaRegen%</row><br><row>(@MinUnits@) +@TeamSize@ de tamanho máximo da equipe</row>",
       "effects_complete": false,
-      "coverage_status": "not_implemented",
-      "coverage_note": "Source trait is registered with its real source tiers; combat effects remain incomplete until their mechanics are normalized and verified.",
+      "coverage_status": "partial",
+      "coverage_note": "The tier-7+ combat-start and five-second growth of Riftbeasts is mapped for AD, AP and attack speed. Alpha-mark choices and the tier-10 team-size bonus remain outside the combat-effect contract.",
       "source_tiers": [
         {
           "min_units": 3,
@@ -2191,11 +2268,139 @@
         },
         {
           "min_units": 7,
-          "effects": []
+          "effects": [
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "attack_damage",
+              "target": "self",
+              "value": 0.06,
+              "percent_of_stat": true,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_Riftbeast18"
+            },
+            {
+              "trigger": "periodic",
+              "operation": "add_stat",
+              "stat": "attack_damage",
+              "target": "self",
+              "value": 0.06,
+              "percent_of_stat": true,
+              "interval": 5,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_Riftbeast18"
+            },
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "ability_power",
+              "target": "self",
+              "value": 0.06,
+              "percent_of_stat": true,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_Riftbeast18"
+            },
+            {
+              "trigger": "periodic",
+              "operation": "add_stat",
+              "stat": "ability_power",
+              "target": "self",
+              "value": 0.06,
+              "percent_of_stat": true,
+              "interval": 5,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_Riftbeast18"
+            },
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "attack_speed",
+              "target": "self",
+              "value": 0.06,
+              "percent_of_stat": true,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_Riftbeast18"
+            },
+            {
+              "trigger": "periodic",
+              "operation": "add_stat",
+              "stat": "attack_speed",
+              "target": "self",
+              "value": 0.06,
+              "percent_of_stat": true,
+              "interval": 5,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_Riftbeast18"
+            }
+          ]
         },
         {
           "min_units": 10,
-          "effects": []
+          "effects": [
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "attack_damage",
+              "target": "self",
+              "value": 0.06,
+              "percent_of_stat": true,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_Riftbeast18"
+            },
+            {
+              "trigger": "periodic",
+              "operation": "add_stat",
+              "stat": "attack_damage",
+              "target": "self",
+              "value": 0.06,
+              "percent_of_stat": true,
+              "interval": 5,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_Riftbeast18"
+            },
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "ability_power",
+              "target": "self",
+              "value": 0.06,
+              "percent_of_stat": true,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_Riftbeast18"
+            },
+            {
+              "trigger": "periodic",
+              "operation": "add_stat",
+              "stat": "ability_power",
+              "target": "self",
+              "value": 0.06,
+              "percent_of_stat": true,
+              "interval": 5,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_Riftbeast18"
+            },
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "attack_speed",
+              "target": "self",
+              "value": 0.06,
+              "percent_of_stat": true,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_Riftbeast18"
+            },
+            {
+              "trigger": "periodic",
+              "operation": "add_stat",
+              "stat": "attack_speed",
+              "target": "self",
+              "value": 0.06,
+              "percent_of_stat": true,
+              "interval": 5,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_Riftbeast18"
+            }
+          ]
         }
       ]
     }
