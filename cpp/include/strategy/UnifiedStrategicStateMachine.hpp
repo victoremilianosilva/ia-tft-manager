@@ -67,7 +67,8 @@ struct StrategicCycleResult {
     std::optional<composition_intelligence::ActiveComposition> active_composition;
     StrategicCycleDiagnostics diagnostics;
     bool state_changed{false};
-    bool shadow_only{true};
+    bool canonical_state_owner{true};
+    bool action_execution_enabled{false};
 };
 
 // One authority per phase:
