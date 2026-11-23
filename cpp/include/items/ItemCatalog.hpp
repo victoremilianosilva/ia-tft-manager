@@ -106,6 +106,7 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
                 effect.operation == "bonus_damage" ||
                 effect.operation == "heal_max_hp_pct" ||
                 effect.operation == "heal_missing_hp_pct" ||
+                effect.operation == "heal_damage_pct_lowest_ally" ||
                 effect.operation == "grant_charges" ||
                 effect.operation == "mana_regen" ||
                 effect.operation == "mana_gain_multiplier" ||
@@ -119,6 +120,7 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
                 effect.trigger.empty() ||
                 effect.trigger == "combat_start" ||
                 effect.trigger == "on_attack" ||
+                effect.trigger == "on_damage_dealt" ||
                 effect.trigger == "on_kill" ||
                 effect.trigger == "after_delay" ||
                 effect.trigger == "while_hp_below" ||
@@ -142,6 +144,8 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
                      effect.trigger == "periodic")) ||
                 (effect.operation == "heal_missing_hp_pct" &&
                     effect.trigger == "periodic") ||
+                (effect.operation == "heal_damage_pct_lowest_ally" &&
+                    effect.trigger == "on_damage_dealt") ||
                 (effect.operation == "grant_charges" && effect.trigger == "on_kill") ||
                 (effect.operation == "mana_regen" &&
                     (effect.trigger.empty() || effect.trigger == "combat_start")) ||
@@ -187,7 +191,8 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
             const bool supported_target =
                 effect.target.empty() || effect.target == "self" ||
                 effect.target == "allies" ||
-                effect.target == "allies_same_row_within_1";
+                effect.target == "allies_same_row_within_1" ||
+                effect.target == "lowest_health_ally";
             if (!supported_target) {
                 throw std::invalid_argument(
                     "Unsupported combat effect target: " + effect.target);
@@ -199,6 +204,11 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
                 throw std::invalid_argument(
                     "This combat effect operation only supports the self target: " +
                     effect.operation);
+            }
+            if (effect.operation == "heal_damage_pct_lowest_ally" &&
+                effect.target != "lowest_health_ally") {
+                throw std::invalid_argument(
+                    "heal_damage_pct_lowest_ally requires lowest_health_ally target");
             }
             if (effect.operation == "bonus_damage" &&
                 effect.target == "allies_same_row_within_1") {
