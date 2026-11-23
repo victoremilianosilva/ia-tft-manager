@@ -933,10 +933,6 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
         if (has_item(runtime.unit, "TFT_Item_FrozenHeart"))
             runtime.unit.mana = std::min(runtime.unit.max_mana,
                 runtime.unit.mana + 20.0f * runtime.mana_gain_multiplier);
-        if (has_item(runtime.unit, "TFT_Item_BlueBuff")) {
-            runtime.unit.attack_damage *= 1.10f;
-            runtime.unit.ability_power *= 1.10f;
-        }
         if (has_item(runtime.unit, "TFT17_Item_FlexTraitEmblemItem")) {
             for (auto& ally : units) {
                 if (ally.unit.team != runtime.unit.team ||
