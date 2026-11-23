@@ -140,7 +140,7 @@ int main(int argc, char** argv) {
                         std::abs(effect.interval - 2.0f) < 0.0001f &&
                         std::abs(effect.value - 0.025f) < 0.0001f;
                 })) {
-            std::cerr << "Dragon's Claw periodic heal effect is missing or falsely complete\\n";
+            std::cerr << "Dragon's Claw periodic heal effect is missing or falsely complete\n";
             return 23;
         }
 
