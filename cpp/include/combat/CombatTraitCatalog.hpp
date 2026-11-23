@@ -162,7 +162,8 @@ inline TraitCombatCatalog load_trait_combat_catalog(std::istream& input) {
                 if (!valid_trigger || !(valid_add_stat || valid_mana_regen ||
                     valid_bonus_damage || valid_heal || valid_charges) ||
                     (effect.target != "" && effect.target != "self" &&
-                     effect.target != "allies" && effect.target != "allies_same_row_within_1") ||
+                     effect.target != "allies" && effect.target != "allies_same_row_within_1" &&
+                     effect.target != "lowest_health_ally") ||
                     (!effect.condition.empty() && !valid_condition) ||
                     ((effect.condition == "has_trait" ||
                       effect.condition == "trait_count_at_least") &&
