@@ -461,6 +461,20 @@ struct TFTEngine::Impl {
         strategic_pivot_generation_diagnostics{};
     std::array<std::vector<AuditUnitOpportunityCostSnapshot>, kPlayersPerLobby> strategic_opportunity_costs{};
 
+    struct UnitBoardContributionEvidence {
+        std::uint64_t match_id{0};
+        std::uint32_t round{0};
+        std::uint64_t combat_sequence{0};
+        double unit_damage{0.0};
+        double team_damage{0.0};
+        double damage_share{0.0};
+        bool available{false};
+    };
+    // Latest completed PvP damage share, attributed back to the persistent
+    // board-unit UUID and then aggregated by champion for the next decision.
+    std::array<std::unordered_map<std::int32_t, UnitBoardContributionEvidence>,
+        kPlayersPerLobby> strategic_board_contribution_evidence{};
+
     std::string strategic_audit_path;
 
 
@@ -2394,6 +2408,20 @@ struct TFTEngine::Impl {
             for (const auto& unit : player_envs[i].bench)
                 if (unit) append_native_owned(*unit, false);
             for (auto& [id, observed] : strategic_native_owned) {
+                if (!observed.on_board) continue;
+                const auto measured = strategic_board_contribution_evidence[i].find(id);
+                if (measured == strategic_board_contribution_evidence[i].end()) continue;
+                const auto& evidence = measured->second;
+                const bool same_match = evidence.available && evidence.match_id == episode_id;
+                const bool recent = current_round >= static_cast<std::int32_t>(evidence.round) &&
+                    current_round - static_cast<std::int32_t>(evidence.round) <= 1;
+                if (same_match && recent && std::isfinite(evidence.damage_share) &&
+                    evidence.damage_share >= 0.0 && evidence.damage_share <= 1.0) {
+                    observed.board_contribution = evidence.damage_share;
+                    observed.board_contribution_available = true;
+                }
+            }
+            for (auto& [id, observed] : strategic_native_owned) {
                 observed.copies = strategy::owned_star_equivalent_copies(observed.copies_by_star);
                 const auto fit_count = native_item_fit_unit_counts.find(id);
                 if (fit_count != native_item_fit_unit_counts.end() &&
@@ -4284,8 +4312,11 @@ struct TFTEngine::Impl {
                 struct CombatUnitOwner {
                     std::int32_t player_id{-1};
                     std::string unit_uuid;
+                    std::int32_t champion_id{-1};
                 };
                 std::unordered_map<std::int32_t, CombatUnitOwner> combat_unit_owners;
+                std::array<bool, kPlayersPerLobby> board_unit_attribution_complete{};
+                board_unit_attribution_complete.fill(true);
                 const auto index_team_units = [&](const CombatTeam& team) {
                     if (team.player_id < 0 ||
                         team.player_id >= static_cast<std::int32_t>(kPlayersPerLobby)) {
@@ -4297,15 +4328,63 @@ struct TFTEngine::Impl {
                         if (slot < 0 || slot >= static_cast<std::int32_t>(kBoardSlots)) continue;
                         const auto& instance =
                             player_envs[player_id].board[static_cast<std::size_t>(slot)];
-                        if (!instance || instance->uuid.empty()) continue;
-                        combat_unit_owners.emplace(
-                            unit.id, CombatUnitOwner{team.player_id, instance->uuid});
+                        if (!instance || instance->uuid.empty()) {
+                            board_unit_attribution_complete[player_id] = false;
+                            continue;
+                        }
+                        combat_unit_owners.emplace(unit.id, CombatUnitOwner{
+                            team.player_id, instance->uuid, instance->champion_internal_id});
                     }
                 };
                 index_team_units(input.player_a);
                 index_team_units(input.player_b);
 
                 ++combat_sequence;
+                // Convert completed combat results into a factual per-unit
+                // damage-share signal. Identity is joined through the persistent
+                // board UUID; incomplete attribution never becomes evidence.
+                if (combat.completed && !combat.timeout) {
+                    std::array<double, kPlayersPerLobby> team_damage{};
+                    std::array<std::unordered_map<std::int32_t, double>,
+                        kPlayersPerLobby> champion_damage;
+                    for (const auto& unit_result : combat.units) {
+                        const auto owner = combat_unit_owners.find(unit_result.unit_id);
+                        if (owner == combat_unit_owners.end() ||
+                            owner->second.player_id < 0 ||
+                            owner->second.player_id >= static_cast<std::int32_t>(kPlayersPerLobby) ||
+                            owner->second.champion_id < 0) continue;
+                        const auto player_index = static_cast<std::size_t>(owner->second.player_id);
+                        const double dealt = std::max(0.0,
+                            static_cast<double>(unit_result.damage_dealt));
+                        if (!std::isfinite(dealt)) {
+                            board_unit_attribution_complete[player_index] = false;
+                            continue;
+                        }
+                        team_damage[player_index] += dealt;
+                        champion_damage[player_index][owner->second.champion_id] += dealt;
+                    }
+                    for (const auto player_id : {a, b}) {
+                        const auto player_index = static_cast<std::size_t>(player_id);
+                        auto& published = strategic_board_contribution_evidence[player_index];
+                        published.clear();
+                        if (!board_unit_attribution_complete[player_index] ||
+                            !std::isfinite(team_damage[player_index]) ||
+                            team_damage[player_index] <= 0.0) continue;
+                        for (const auto& [champion_id, damage] : champion_damage[player_index]) {
+                            if (!std::isfinite(damage) || damage < 0.0) continue;
+                            UnitBoardContributionEvidence evidence;
+                            evidence.match_id = episode_id;
+                            evidence.round = round;
+                            evidence.combat_sequence = combat_sequence;
+                            evidence.unit_damage = damage;
+                            evidence.team_damage = team_damage[player_index];
+                            evidence.damage_share = std::clamp(
+                                damage / team_damage[player_index], 0.0, 1.0);
+                            evidence.available = true;
+                            published.emplace(champion_id, evidence);
+                        }
+                    }
+                }
                 constexpr std::size_t kCombatDamageAuditLimit = 4096;
                 for (const auto& damage_event : combat.damage_events) {
                     if (last_combat_damage_events.size() >= kCombatDamageAuditLimit) {
