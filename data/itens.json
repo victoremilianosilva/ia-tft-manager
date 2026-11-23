@@ -194,6 +194,12 @@
           "value": 0.1,
           "condition": "role_other",
           "percent_of_stat": true
+        },
+        {
+          "trigger": "combat_start",
+          "operation": "mana_gain_multiplier",
+          "target": "self",
+          "value": 1.15
         }
       ],
       "effect_coverage": {
@@ -210,11 +216,10 @@
         "generic_combat_keys": [
           "BacklineADAP",
           "FrontlineResists",
+          "ManaPercIncrease",
           "ManaRegen"
         ],
-        "not_generic_normalized_keys": [
-          "ManaPercIncrease"
-        ]
+        "not_generic_normalized_keys": []
       },
       "unit_equipable": true
     },
