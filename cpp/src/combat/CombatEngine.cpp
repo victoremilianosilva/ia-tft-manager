@@ -40,10 +40,7 @@ struct RuntimeUnit {
     int ability_casts = 0;
     int kills = 0;
     int titans_stacks = 0;
-    float last_guinsoo_tick = 0.0f;
     float last_redemption_tick = 0.0f;
-    float last_archangel_tick = 0.0f;
-    float last_quicksilver_tick = 0.0f;
     float last_redbuff_tick = 0.0f;
     float last_bramble_proc = -1000.0f;
     float last_ionic_proc = -1000.0f;
@@ -550,7 +547,7 @@ void prepare_generic_effect_descriptors(RuntimeUnit& runtime) {
                 std::to_string(effect.health_threshold) + ":" + std::to_string(effect.value);
         }
         if (effect.trigger == "periodic" &&
-            effect.operation == "heal_max_hp_pct" &&
+            (effect.operation == "heal_max_hp_pct" || effect.operation == "add_stat") &&
             std::isfinite(effect.interval) && effect.interval > 0.0f) {
             descriptor.periodic_key = descriptor.prefix + "periodic:" +
                 effect.operation + ":" + std::to_string(effect.interval) + ":" +
@@ -637,6 +634,19 @@ void apply_periodic_effects(RuntimeUnit& runtime, float now) {
             const float requested = runtime.unit.max_hp * effect.value *
                 static_cast<float>(ticks);
             runtime.healing_done += apply_heal(runtime, requested, now);
+        } else if (effect.operation == "add_stat" && effect.target == "self") {
+            CombatEffectDefinition periodic_effect = effect;
+            if (periodic_effect.scale_by_base_stat) {
+                float base_stat = 0.0f;
+                if (periodic_effect.stat == "attack_speed")
+                    base_stat = runtime.base_attack_speed;
+                if (!std::isfinite(base_stat) || base_stat <= 0.0f) continue;
+                periodic_effect.value = base_stat * periodic_effect.value;
+                periodic_effect.percent_of_stat = false;
+                periodic_effect.scale_by_base_stat = false;
+            }
+            for (int tick = 0; tick < ticks; ++tick)
+                apply_effect_stat(runtime.unit, periodic_effect);
         }
         next_tick->second += effect.interval * static_cast<float>(ticks);
     }
@@ -1102,18 +1112,6 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
             actor.unit.mana = std::min(actor.unit.max_mana,
                 actor.unit.mana + actor.mana_regen_per_second *
                     elapsed * actor.mana_gain_multiplier);
-            if (has_item(actor.unit, "TFT_Item_ArchangelsStaff") &&
-                now - actor.last_archangel_tick >= 5.0f) {
-                const int ticks = static_cast<int>((now - actor.last_archangel_tick) / 5.0f);
-                actor.unit.ability_power += actor.unit.ability_power * 0.20f * ticks;
-                actor.last_archangel_tick += 5.0f * ticks;
-            }
-            if (has_item(actor.unit, "TFT_Item_Quicksilver") &&
-                now - actor.last_quicksilver_tick >= 1.0f) {
-                const int ticks = static_cast<int>(now - actor.last_quicksilver_tick);
-                actor.unit.attack_speed += 0.03f * ticks;
-                actor.last_quicksilver_tick += static_cast<float>(ticks);
-            }
             if (has_item(actor.unit, "TFT_Item_Redemption") &&
                 now - actor.last_redemption_tick >= 1.0f) {
                 const int ticks = static_cast<int>(now - actor.last_redemption_tick);
@@ -1151,18 +1149,6 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
             actor.guardian_angel_until = 0.0f;
         }
 
-
-        // Guinsoo's and item cooldown clocks use elapsed combat time.
-        for (const auto& item : actor.unit.items) {
-            if (item.api_name == "TFT_Item_GuinsoosRageblade") {
-                const int ticks = static_cast<int>(std::floor(now)) -
-                                  static_cast<int>(std::floor(actor.last_guinsoo_tick));
-                if (ticks > 0) {
-                    actor.unit.attack_speed += actor.base_attack_speed * 0.07f * static_cast<float>(ticks);
-                    actor.last_guinsoo_tick = now;
-                }
-            }
-        }
 
         // Escolhe o inimigo vivo mais próximo; desempate por ID.
         std::size_t target_index = units.size();
