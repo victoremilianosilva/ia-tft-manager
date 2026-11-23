@@ -151,7 +151,7 @@ int main(int argc, char** argv) {
                 "attack_speed", 0.03f, 1.0f, false, false) ||
             !has_periodic_item_effect("TFT_Item_GuinsoosRageblade",
                 "attack_speed", 0.07f, 1.0f, false, true)) {
-            std::cerr << "Generic periodic AP/AS item effects are missing or falsely complete\\n";
+            std::cerr << "Generic periodic AP/AS item effects are missing or falsely complete\n";
             return 24;
         }
 
