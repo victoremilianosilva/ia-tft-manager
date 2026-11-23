@@ -28,7 +28,9 @@ int main() {
         {2, 1, 1, false, true, 0.0, 0.6}
     };
     input.owned[0].copies_by_star[1] = 2;
+    input.owned[0].board_contribution_available = true;
     input.owned[1].copies_by_star[1] = 1;
+    input.owned[1].item_fit_available = true;
     input.shop_ids = {4, 6};
     input.pool_remaining = {{1, 10}, {2, 8}, {3, 12}, {4, 5}, {5, 7}, {6, 9}, {7, 0}};
     input.trait_thresholds = {{"Bruiser", 2}, {"Invoker", 2}};
@@ -49,7 +51,7 @@ int main() {
     assert(std::any_of(bruiser->evidence.begin(), bruiser->evidence.end(),
         [](const auto& item) { return item == "owned_pair:1"; }));
     assert(std::any_of(bruiser->evidence.begin(), bruiser->evidence.end(),
-        [](const auto& item) { return item == "item_fit:2"; }));
+        [](const auto& item) { return item == "item_fit_measured:2"; }));
     auto mixed_tiers = input;
     mixed_tiers.owned[0].copies = 5; // One 2-star plus two 1-star instances.
     mixed_tiers.owned[0].star = 2;
@@ -135,6 +137,24 @@ int main() {
         [](const auto& candidate) { return candidate.direction == "Bruiser"; });
     assert(baseline_bruiser != baseline_result.candidates.end());
     assert(upgraded_bruiser->score > baseline_bruiser->score);
+
+    auto unavailable_metrics = input;
+    unavailable_metrics.owned[0].board_contribution = 0.99;
+    unavailable_metrics.owned[0].board_contribution_available = false;
+    unavailable_metrics.owned[1].item_fit = 0.99;
+    unavailable_metrics.owned[1].item_fit_available = false;
+    const auto unavailable_metrics_result =
+        NativeStrategicCompositionGenerator{}.generate(unavailable_metrics);
+    const auto unavailable_metrics_bruiser = std::find_if(
+        unavailable_metrics_result.candidates.begin(), unavailable_metrics_result.candidates.end(),
+        [](const auto& candidate) { return candidate.direction == "Bruiser"; });
+    assert(unavailable_metrics_bruiser != unavailable_metrics_result.candidates.end());
+    assert(std::find(unavailable_metrics_bruiser->evidence.begin(),
+        unavailable_metrics_bruiser->evidence.end(), "item_fit_measured:2") ==
+        unavailable_metrics_bruiser->evidence.end());
+    assert(std::find(unavailable_metrics_bruiser->evidence.begin(),
+        unavailable_metrics_bruiser->evidence.end(), "board_contribution_measured:1") ==
+        unavailable_metrics_bruiser->evidence.end());
 
     auto without_items = input;
     without_items.owned[1].item_fit = 0.0;
