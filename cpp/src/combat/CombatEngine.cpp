@@ -924,8 +924,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                 if (has_generic_mana_regen) continue;
                 // Backward compatibility for old fixtures; generated catalogs
                 // carry ManaRegen as a generic effect and skip this ID fallback.
-                if (item.api_name == "TFT_Item_ArchangelsStaff" ||
-                    item.api_name == "TFT_Item_HextechGunblade" ||
+                if (item.api_name == "TFT_Item_HextechGunblade" ||
                          item.api_name == "TFT_Item_Morellonomicon" ||
                          item.api_name == "TFT_Item_SpearOfShojin" ||
                          item.api_name == "TFT_Item_StatikkShiv") loaded.mana_regen_per_second += 1.0f;
