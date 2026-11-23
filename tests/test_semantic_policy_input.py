@@ -162,20 +162,16 @@ def test_v7_semantic_encoder_weights_migrate_with_board_evaluation_columns_neutr
     old_global = SEMANTIC_GLOBAL_FEATURES - 16
     old_entity_offset = old_global
     old_item_offset = old_entity_offset + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ENTITY_FEATURES
-    old_numeric_dim = old_item_offset + (SEMANTIC_NUMERIC_DIM - SEMANTIC_ITEM_OFFSET)
     historical = torch.zeros(
         current.shape[0],
-        old_numeric_dim + SEMANTIC_ENTITY_SLOTS * 32,
+        old_item_offset + SEMANTIC_ENTITY_SLOTS * 32,
         dtype=current.dtype,
     )
     historical[:, :old_global] = current[:, :old_global]
     historical[:, old_entity_offset:old_item_offset] = current[
         :, SEMANTIC_GLOBAL_FEATURES:SEMANTIC_ITEM_OFFSET
     ]
-    historical[:, old_item_offset:old_numeric_dim] = current[
-        :, SEMANTIC_ITEM_OFFSET:SEMANTIC_NUMERIC_DIM
-    ]
-    historical[:, old_numeric_dim:] = current[:, SEMANTIC_NUMERIC_DIM:]
+    historical[:, old_item_offset:] = current[:, SEMANTIC_ITEM_OFFSET:]
     state["semantic_encoder.0.weight"] = historical
 
     restored = TFTPolicy(
@@ -193,11 +189,7 @@ def test_v7_semantic_encoder_weights_migrate_with_board_evaluation_columns_neutr
         historical[:, old_entity_offset:old_item_offset],
     )
     torch.testing.assert_close(
-        migrated[:, SEMANTIC_ITEM_OFFSET:SEMANTIC_NUMERIC_DIM],
-        historical[:, old_item_offset:old_numeric_dim],
-    )
-    torch.testing.assert_close(
-        migrated[:, SEMANTIC_NUMERIC_DIM:], historical[:, old_numeric_dim:]
+        migrated[:, SEMANTIC_ITEM_OFFSET:], historical[:, old_item_offset:]
     )
 
 
@@ -218,6 +210,50 @@ def test_board_evaluation_metrics_are_direct_inputs_to_semantic_encoder():
     handle.remove()
     assert captured
     torch.testing.assert_close(captured[0][:, 54:70], metrics)
+
+
+def test_v6_semantic_encoder_weights_migrate_entity_stride_and_board_globals():
+    obs, _, _ = _batch(batch_size=1)
+    source_policy = TFTPolicy(
+        obs_dim=obs.shape[-1], action_dims=list(ACTION_DIMS),
+        hidden_size=32, semantic_vocab_size=64,
+    )
+    state = {key: value.detach().clone() for key, value in source_policy.state_dict().items()}
+    current = state["semantic_encoder.0.weight"]
+    old_global, old_entity_features = 52, 39
+    old_item_offset = old_global + SEMANTIC_ENTITY_SLOTS * old_entity_features
+    historical = torch.zeros(
+        current.shape[0], old_item_offset + SEMANTIC_ENTITY_SLOTS * 32,
+        dtype=current.dtype,
+    )
+    historical[:, :old_global] = current[:, :old_global]
+    for slot in range(SEMANTIC_ENTITY_SLOTS):
+        old_start = old_global + slot * old_entity_features
+        new_start = SEMANTIC_GLOBAL_FEATURES + slot * SEMANTIC_ENTITY_FEATURES
+        historical[:, old_start:old_start + old_entity_features] = current[
+            :, new_start:new_start + old_entity_features
+        ]
+    historical[:, old_item_offset:] = current[:, SEMANTIC_ITEM_OFFSET:]
+    state["semantic_encoder.0.weight"] = historical
+
+    restored = TFTPolicy(
+        obs_dim=obs.shape[-1], action_dims=list(ACTION_DIMS),
+        hidden_size=32, semantic_vocab_size=64,
+    )
+    assert restored.load_compatible_state_dict(state) is True
+    migrated = restored.semantic_encoder[0].weight.detach()
+    assert torch.count_nonzero(migrated[:, old_global:SEMANTIC_GLOBAL_FEATURES]) == 0
+    torch.testing.assert_close(migrated[:, :old_global], historical[:, :old_global])
+    for slot in range(SEMANTIC_ENTITY_SLOTS):
+        old_start = old_global + slot * old_entity_features
+        new_start = SEMANTIC_GLOBAL_FEATURES + slot * SEMANTIC_ENTITY_FEATURES
+        torch.testing.assert_close(
+            migrated[:, new_start:new_start + old_entity_features],
+            historical[:, old_start:old_start + old_entity_features],
+        )
+    torch.testing.assert_close(
+        migrated[:, SEMANTIC_ITEM_OFFSET:], historical[:, old_item_offset:]
+    )
 
 
 def test_native_semantic_global_encoder_produces_finite_features():
