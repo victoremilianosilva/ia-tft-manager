@@ -251,9 +251,7 @@ bool apply_item_stats(CombatUnit& unit, std::string& error) {
                     effect.operation == "add_stat" &&
                     effect.stat == "attack_damage" && effect.percent_of_stat;
             });
-        if (!has_generic_ad_effect && item.api_name == "TFT_Item_Deathblade")
-            unit.attack_damage += base_attack_damage * 0.55f;
-        else if (!has_generic_ad_effect && item.api_name == "TFT_Item_Bloodthirster")
+        if (!has_generic_ad_effect && item.api_name == "TFT_Item_Bloodthirster")
             unit.attack_damage += base_attack_damage * 0.15f;
         else if (!has_generic_ad_effect && item.api_name == "TFT_Item_BlueBuff")
             unit.attack_damage += base_attack_damage * 0.15f;
