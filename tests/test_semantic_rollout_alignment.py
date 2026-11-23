@@ -182,6 +182,6 @@ def test_production_rollout_rejects_missing_semantic_state():
             torch.zeros(1), torch.zeros(1), masks,
         )
     except ValueError as exc:
-        assert "requires semantic_state v6" in str(exc)
+        assert "requires semantic_state v7" in str(exc)
     else:
         raise AssertionError("production rollout must reject a missing semantic state")
