@@ -2107,6 +2107,14 @@
           "trigger": "combat_start",
           "operation": "mana_regen",
           "value": 2
+        },
+        {
+          "trigger": "periodic",
+          "operation": "heal_missing_hp_pct",
+          "target": "self",
+          "value": 0.019999999552965164,
+          "interval": 1,
+          "max_amount": 250
         }
       ],
       "effect_coverage": {
@@ -2122,12 +2130,12 @@
           "Health"
         ],
         "generic_combat_keys": [
-          "ManaRegen"
+          "ManaRegen",
+          "MissingHealthHeal",
+          "HealTickRate",
+          "MaxHeal"
         ],
         "not_generic_normalized_keys": [
-          "HealTickRate",
-          "MaxHeal",
-          "MissingHealthHeal",
           "{cd951938}"
         ]
       },
