@@ -413,6 +413,7 @@ if(BUILD_TESTING)
         test_combat_prediction_pipeline
         PRIVATE "${TFT_COMBAT_INCLUDE_DIR}"
     )
+    target_link_libraries(test_combat_prediction_pipeline PRIVATE nlohmann_json::nlohmann_json)
     enable_tft_test_assertions(test_combat_prediction_pipeline)
     add_test(
         NAME combat_prediction_pipeline
