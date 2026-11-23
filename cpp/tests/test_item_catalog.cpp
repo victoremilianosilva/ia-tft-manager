@@ -259,6 +259,35 @@ int main(int argc, char** argv) {
             return 17;
         }
 
+        for (const auto& expected : {
+                 std::pair<const char*, float>{"TFT_Item_Leviathan", 2.0f},
+                 std::pair<const char*, float>{"TFT_Item_SpearOfShojin", 5.0f}}) {
+            const auto found = std::find_if(catalog.items.begin(), catalog.items.end(),
+                [&](const auto& item) { return item.id == expected.first; });
+            if (found == catalog.items.end() || !found->combat_effects_complete ||
+                std::none_of(found->combat_effects.begin(), found->combat_effects.end(),
+                    [&](const auto& effect) {
+                        return effect.trigger == "on_attack" &&
+                            effect.operation == "mana_on_attack" &&
+                            std::abs(effect.value - expected.second) < 0.0001f;
+                    })) {
+                std::cerr << "complete generic mana-on-attack effect missing for "
+                          << expected.first << '\\n';
+                return 18;
+            }
+        }
+        const auto leviathan = std::find_if(catalog.items.begin(), catalog.items.end(),
+            [](const auto& item) { return item.id == "TFT_Item_Leviathan"; });
+        if (leviathan == catalog.items.end() ||
+            std::none_of(leviathan->combat_effects.begin(), leviathan->combat_effects.end(),
+                [](const auto& effect) {
+                    return effect.operation == "mana_on_attack" &&
+                        std::abs(effect.critical_value - 4.0f) < 0.0001f;
+                })) {
+            std::cerr << "Leviathan critical-hit mana value was not preserved\\n";
+            return 19;
+        }
+
         std::set<std::string> component_ids;
         for (const auto& component : catalog.components) {
             if (component.first.empty() ||
