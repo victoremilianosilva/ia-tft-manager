@@ -434,8 +434,8 @@ int main() {
     exploration_waits_for_composition_and_then_binds_direction();
     strategic_planner_selected_direction_overrides_discovery_ranking();
     machine_owns_exploratory_direction_history_without_legacy_inputs();
-    shadow_runtime_isolates_players_and_resets_its_own_direction_history();
-    shadow_runtime_refreshes_without_an_audit_sidecar();
+    native_runtime_isolates_players_and_resets_its_own_direction_history();
+    native_runtime_refreshes_without_an_audit_sidecar();
     runtime_exposes_contained_refresh_exceptions_to_its_owner();
     pivot_evaluation_does_not_mutate_then_confirms_synchronized_state();
     invalidated_candidate_is_removed_and_old_direction_is_preserved();
