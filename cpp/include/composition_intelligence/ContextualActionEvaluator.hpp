@@ -601,11 +601,11 @@ public:
             alternative.unit_value = std::max(0.0, candidate_score.unit_priority_value);
             alternative.upgrade_value = std::max(0.0, candidate_score.upgrade_value);
             alternative.direct_economy_cost = candidate_score.liquidity_cost;
-            alternative.interest_cost = candidate_score.economy_cost -
-                candidate_score.liquidity_cost;
             if (candidate_score.opportunity_cost_available)
                 alternative.prior_opportunity_cost = candidate_score.opportunity_cost *
                     (1.0 - candidate_score.opportunity_cost_uncertainty) * 0.55;
+            alternative.interest_cost = candidate_score.economy_cost -
+                candidate_score.liquidity_cost - alternative.prior_opportunity_cost;
             alternative.horizon_rounds = candidate_score.evidence_horizon_rounds;
             alternative.uncertainty = candidate_score.evidence_uncertainty;
             alternative.available = candidate_score.eligible &&
