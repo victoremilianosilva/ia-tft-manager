@@ -944,10 +944,6 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
             runtime.unit.attack_damage *= 1.10f;
             runtime.unit.ability_power *= 1.10f;
         }
-        if (has_item(runtime.unit, "TFT_Item_Deathblade"))
-            runtime.unit.damage_amplification += 0.10f;
-        if (has_item(runtime.unit, "TFT_Item_RabadonsDeathcap"))
-            runtime.unit.damage_amplification += 0.15f;
         if (has_item(runtime.unit, "TFT_Item_NightHarvester")) {
             runtime.unit.damage_reduction += 0.05f;
             if (runtime.unit.hp / runtime.unit.max_hp > 0.50f)
