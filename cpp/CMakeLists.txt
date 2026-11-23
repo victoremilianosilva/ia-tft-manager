@@ -880,6 +880,25 @@ if(BUILD_TESTING)
             "${CMAKE_CURRENT_SOURCE_DIR}/../data/itens.json"
     )
 
+    # Validate the normalized Set 18 trait combat catalog and its coverage contracts.
+    add_executable(
+        test_trait_combat_catalog
+        tests/test_trait_combat_catalog.cpp
+    )
+    target_include_directories(
+        test_trait_combat_catalog
+        PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include"
+    )
+    target_link_libraries(
+        test_trait_combat_catalog
+        PRIVATE nlohmann_json::nlohmann_json
+    )
+    add_test(
+        NAME trait_combat_catalog_active
+        COMMAND test_trait_combat_catalog
+            "${CMAKE_CURRENT_SOURCE_DIR}/../data/trait_combat_effects.json"
+    )
+
     # Validate trait milestones and identifier mapping from the active production catalog.
     add_executable(
         test_trait_milestones
