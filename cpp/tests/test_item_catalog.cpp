@@ -128,6 +128,26 @@ int main(int argc, char** argv) {
             }
         }
 
+        const auto blue_buff = std::find_if(
+            catalog.items.begin(), catalog.items.end(),
+            [](const auto& item) { return item.id == "TFT_Item_BlueBuff"; });
+        if (blue_buff == catalog.items.end() || blue_buff->combat_effects_complete) {
+            std::cerr << "Blue Buff generic AD/AP effects are missing or falsely complete\\n";
+            return 20;
+        }
+        for (const auto* stat : {"attack_damage", "ability_power"}) {
+            if (std::none_of(blue_buff->combat_effects.begin(),
+                blue_buff->combat_effects.end(), [&](const auto& effect) {
+                    return effect.trigger == "combat_start" &&
+                        effect.operation == "add_stat" && effect.stat == stat &&
+                        effect.target == "self" && effect.percent_of_stat &&
+                        std::abs(effect.value - 0.10f) < 0.0001f;
+                })) {
+                std::cerr << "Blue Buff generic stat effect is missing: " << stat << '\\n';
+                return 21;
+            }
+        }
+
         const auto adaptive_helm = std::find_if(
             catalog.items.begin(), catalog.items.end(),
             [](const auto& item) { return item.id == "TFT_Item_AdaptiveHelm"; });
