@@ -280,6 +280,12 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
             read_bool("percent_of_max_health", effect.percent_of_max_health);
             read_bool("percent_of_stat", effect.percent_of_stat);
             read_bool("scale_by_base_stat", effect.scale_by_base_stat);
+            if (effect.scale_by_base_stat &&
+                (effect.trigger != "periodic" || effect.operation != "add_stat" ||
+                 effect.stat != "attack_speed")) {
+                throw std::invalid_argument(
+                    "scale_by_base_stat is supported only for periodic attack_speed effects");
+            }
             if (effect.operation == "add_stat" && effect.percent_of_max_health) {
                 throw std::invalid_argument(
                     "add_stat does not support percent_of_max_health; use percent_of_stat");
