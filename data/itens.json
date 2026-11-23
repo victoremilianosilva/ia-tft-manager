@@ -221,7 +221,8 @@
         ],
         "not_generic_normalized_keys": []
       },
-      "unit_equipable": true
+      "unit_equipable": true,
+      "combat_effects_complete": true
     },
     {
       "id": "TFT_Item_ArchangelsStaff",
@@ -293,7 +294,8 @@
         ],
         "not_generic_normalized_keys": []
       },
-      "unit_equipable": true
+      "unit_equipable": true,
+      "combat_effects_complete": true
     },
     {
       "id": "TFT_Item_Bloodthirster",
@@ -459,7 +461,8 @@
         ],
         "not_generic_normalized_keys": []
       },
-      "unit_equipable": true
+      "unit_equipable": true,
+      "combat_effects_complete": true
     },
     {
       "id": "TFT_Item_BrambleVest",
@@ -1086,7 +1089,8 @@
         ],
         "not_generic_normalized_keys": []
       },
-      "unit_equipable": true
+      "unit_equipable": true,
+      "combat_effects_complete": true
     },
     {
       "id": "TFT_Item_HextechGunblade",
@@ -1711,7 +1715,8 @@
         ],
         "not_generic_normalized_keys": []
       },
-      "unit_equipable": true
+      "unit_equipable": true,
+      "combat_effects_complete": true
     },
     {
       "id": "TFT_Item_PowerGauntlet",
@@ -2838,7 +2843,8 @@
         ],
         "not_generic_normalized_keys": []
       },
-      "unit_equipable": true
+      "unit_equipable": true,
+      "combat_effects_complete": true
     },
     {
       "id": "DA_18_EmblemBlackthorn",
@@ -2918,7 +2924,8 @@
         "generic_combat_keys": [],
         "not_generic_normalized_keys": []
       },
-      "unit_equipable": true
+      "unit_equipable": true,
+      "combat_effects_complete": true
     },
     {
       "id": "DA_18_EmblemBrawler",
@@ -2958,7 +2965,8 @@
         "generic_combat_keys": [],
         "not_generic_normalized_keys": []
       },
-      "unit_equipable": true
+      "unit_equipable": true,
+      "combat_effects_complete": true
     },
     {
       "id": "DA_18_EmblemElderwood",
@@ -3198,7 +3206,8 @@
         "generic_combat_keys": [],
         "not_generic_normalized_keys": []
       },
-      "unit_equipable": true
+      "unit_equipable": true,
+      "combat_effects_complete": true
     },
     {
       "id": "DA_18_EmblemLunar",
