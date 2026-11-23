@@ -4431,7 +4431,8 @@ struct TFTEngine::Impl {
                         {"min_trait_count", effect.min_trait_count},
                         {"percent_of_max_health", effect.percent_of_max_health},
                         {"percent_of_stat", effect.percent_of_stat},
-                        {"scale_by_active_trait_count", effect.scale_by_active_trait_count}
+                        {"scale_by_active_trait_count", effect.scale_by_active_trait_count},
+                        {"scale_by_base_stat", effect.scale_by_base_stat}
                     };
                 };
                 const auto serialize_unit = [&](const CombatUnit& unit) {
