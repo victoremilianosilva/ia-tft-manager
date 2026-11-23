@@ -143,7 +143,7 @@ int main(int argc, char** argv) {
                         effect.target == "self" && effect.percent_of_stat &&
                         std::abs(effect.value - 0.10f) < 0.0001f;
                 })) {
-                std::cerr << "Blue Buff generic stat effect is missing: " << stat << '\\n';
+                std::cerr << "Blue Buff generic stat effect is missing: " << stat << '\n';
                 return 21;
             }
         }
