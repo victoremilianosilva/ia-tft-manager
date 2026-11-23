@@ -3943,6 +3943,10 @@ struct TFTEngine::Impl {
             player.damage_taken += applied;
         };
 
+        std::string current_simulation_artifact_id;
+        constexpr const char* kSimulationDatasetVersion =
+            "native-combat-simulation-input.v1";
+
         // This is the authoritative environment outcome, not a CombatEngine
         // forecast. Replay infrastructure may persist it and attach immutable
         // artifact/dataset identities later; without those identities it is
@@ -3974,15 +3978,24 @@ struct TFTEngine::Impl {
                 {"mechanics_coverage_status", coverage_status},
                 {"source", "native_lobby_resolved_combat.v1"},
                 {"observed", true},
+                {"simulation_artifact_id", current_simulation_artifact_id.empty()
+                    ? nlohmann::json(nullptr) : nlohmann::json(current_simulation_artifact_id)},
+                {"simulation_dataset_version", current_simulation_artifact_id.empty()
+                    ? nlohmann::json(nullptr) : nlohmann::json(kSimulationDatasetVersion)},
+                // Native simulator traces are reproducible diagnostics, not
+                // authoritative game replays and never calibration samples.
                 {"replay_artifact_id", nullptr},
                 {"dataset_version", nullptr},
                 {"calibration_eligible", false},
-                {"calibration_ineligibility_reason", "awaiting_versioned_replay_artifact"}
+                {"calibration_ineligibility_reason", current_simulation_artifact_id.empty()
+                    ? "awaiting_authoritative_replay_artifact"
+                    : "native_simulation_trace_is_not_authoritative_game_replay"}
             };
             events.emplace_back("COMBAT_OUTCOME_V1:" + outcome.dump());
         };
 
         for (const auto& [a, b] : matchups) {
+            current_simulation_artifact_id.clear();
             if (!player_envs[a].info.alive || !player_envs[b].info.alive) continue;
             CombatInput input{};
             std::string combat_coverage_status{"unavailable_not_measured"};
@@ -4379,6 +4392,151 @@ struct TFTEngine::Impl {
                 index_team_units(input.player_b);
 
                 ++combat_sequence;
+                current_simulation_artifact_id =
+                    "native-sim-v1:" + std::to_string(episode_id) + ":" +
+                    std::to_string(round + 1) + ":" +
+                    std::to_string(combat_sequence) + ":" +
+                    std::to_string(a) + ":" + std::to_string(b);
+
+                // Persist the exact native simulator input and its result as a
+                // deterministic diagnostic artifact. This is intentionally
+                // separate from the authoritative replay artifact contract.
+                const auto serialize_effect = [](const CombatEffectDefinition& effect) {
+                    return nlohmann::json{
+                        {"trigger", effect.trigger}, {"operation", effect.operation},
+                        {"stat", effect.stat}, {"target", effect.target},
+                        {"condition", effect.condition},
+                        {"condition_trait", effect.condition_trait},
+                        {"stack_key", effect.stack_key},
+                        {"damage_type", static_cast<int>(effect.damage_type)},
+                        {"value", effect.value}, {"duration", effect.duration},
+                        {"interval", effect.interval}, {"delay", effect.delay},
+                        {"health_threshold", effect.health_threshold},
+                        {"max_stacks", effect.max_stacks},
+                        {"min_trait_count", effect.min_trait_count},
+                        {"percent_of_max_health", effect.percent_of_max_health},
+                        {"percent_of_stat", effect.percent_of_stat},
+                        {"scale_by_active_trait_count", effect.scale_by_active_trait_count}
+                    };
+                };
+                const auto serialize_unit = [&](const CombatUnit& unit) {
+                    nlohmann::json item_rows = nlohmann::json::array();
+                    for (const auto& item : unit.items) {
+                        nlohmann::json effects = nlohmann::json::array();
+                        for (const auto& effect : item.effects) effects.push_back(serialize_effect(effect));
+                        item_rows.push_back({
+                            {"api_name", item.api_name}, {"name", item.name},
+                            {"attack_damage", item.attack_damage}, {"ability_power", item.ability_power},
+                            {"attack_speed", item.attack_speed},
+                            {"critical_strike_chance", item.critical_strike_chance},
+                            {"critical_strike_damage", item.critical_strike_damage},
+                            {"health", item.health}, {"armor", item.armor},
+                            {"magic_resist", item.magic_resist}, {"mana", item.mana},
+                            {"omnivamp", item.omnivamp},
+                            {"damage_amplification", item.damage_amplification},
+                            {"damage_reduction", item.damage_reduction},
+                            {"grants_trait", item.grants_trait},
+                            {"granted_trait_active_count", item.granted_trait_active_count},
+                            {"effects_complete", item.effects_complete}, {"effects", effects}
+                        });
+                    }
+                    nlohmann::json trait_rows = nlohmann::json::array();
+                    for (const auto& trait : unit.traits) {
+                        nlohmann::json effects = nlohmann::json::array();
+                        for (const auto& effect : trait.effects) effects.push_back(serialize_effect(effect));
+                        trait_rows.push_back({
+                            {"api_name", trait.api_name}, {"name", trait.name},
+                            {"active_count", trait.active_count}, {"tier", trait.tier},
+                            {"active", trait.active}, {"effects_complete", trait.effects_complete},
+                            {"effects", effects}
+                        });
+                    }
+                    const auto& ability = unit.ability;
+                    return nlohmann::json{
+                        {"id", unit.id}, {"api_name", unit.api_name}, {"name", unit.name},
+                        {"star", unit.star}, {"team", static_cast<int>(unit.team)},
+                        {"role", static_cast<int>(unit.role)},
+                        {"position", {{"x", unit.position.x}, {"y", unit.position.y}}},
+                        {"hp", unit.hp}, {"max_hp", unit.max_hp},
+                        {"mana", unit.mana}, {"max_mana", unit.max_mana},
+                        {"attack_damage", unit.attack_damage}, {"ability_power", unit.ability_power},
+                        {"attack_speed", unit.attack_speed}, {"attack_range", unit.attack_range},
+                        {"critical_strike_chance", unit.critical_strike_chance},
+                        {"critical_strike_damage", unit.critical_strike_damage},
+                        {"armor", unit.armor}, {"magic_resist", unit.magic_resist},
+                        {"damage_amplification", unit.damage_amplification},
+                        {"damage_reduction", unit.damage_reduction}, {"omnivamp", unit.omnivamp},
+                        {"ability", {
+                            {"api_name", ability.api_name}, {"name", ability.name},
+                            {"mana_cost", ability.mana_cost}, {"initial_mana", ability.initial_mana},
+                            {"target_type", static_cast<int>(ability.target_type)},
+                            {"damage_type", static_cast<int>(ability.damage_type)},
+                            {"base_damage", ability.base_damage},
+                            {"base_healing", ability.base_healing},
+                            {"shield_amount", ability.shield_amount},
+                            {"ability_power_ratio", ability.ability_power_ratio},
+                            {"attack_damage_ratio", ability.attack_damage_ratio},
+                            {"area_radius", ability.area_radius}, {"duration", ability.duration},
+                            {"has_damage", ability.has_damage}, {"has_healing", ability.has_healing},
+                            {"has_shield", ability.has_shield}, {"has_buff", ability.has_buff},
+                            {"has_debuff", ability.has_debuff},
+                            {"has_area_effect", ability.has_area_effect}
+                        }},
+                        {"items", item_rows}, {"traits", trait_rows}
+                    };
+                };
+                nlohmann::json player_a_units = nlohmann::json::array();
+                nlohmann::json player_b_units = nlohmann::json::array();
+                for (const auto& unit : input.player_a.units)
+                    player_a_units.push_back(serialize_unit(unit));
+                for (const auto& unit : input.player_b.units)
+                    player_b_units.push_back(serialize_unit(unit));
+                nlohmann::json result_units = nlohmann::json::array();
+                for (const auto& unit : combat.units) {
+                    result_units.push_back({
+                        {"unit_id", unit.unit_id}, {"team", static_cast<int>(unit.team)},
+                        {"survived", unit.survived}, {"initial_hp", unit.initial_hp},
+                        {"final_hp", unit.final_hp}, {"damage_dealt", unit.damage_dealt},
+                        {"damage_taken", unit.damage_taken}, {"healing_done", unit.healing_done},
+                        {"kills", unit.kills}, {"attacks", unit.attacks},
+                        {"ability_casts", unit.ability_casts},
+                        {"final_x", unit.final_x}, {"final_y", unit.final_y}
+                    });
+                }
+                const nlohmann::json simulation_artifact{
+                    {"schema_version", 1},
+                    {"artifact_id", current_simulation_artifact_id},
+                    {"dataset_version", kSimulationDatasetVersion},
+                    {"source", "native_combat_engine_simulation"},
+                    {"authoritative_game_replay", false},
+                    {"calibration_eligible", false},
+                    {"match_id", episode_id}, {"round", round + 1},
+                    {"combat_sequence", combat_sequence},
+                    {"player_a_id", a}, {"player_b_id", b},
+                    {"seed", input.seed},
+                    {"config", {
+                        {"board_rows", input.config.board_rows},
+                        {"board_cols", input.config.board_cols},
+                        {"max_duration", input.config.max_duration},
+                        {"max_events", input.config.max_events},
+                        {"seed", input.config.seed},
+                        {"deterministic", input.config.deterministic}
+                    }},
+                    {"player_a_units", player_a_units}, {"player_b_units", player_b_units},
+                    {"result", {
+                        {"success", combat.success}, {"completed", combat.completed},
+                        {"timeout", combat.timeout}, {"winner", static_cast<int>(combat.winner)},
+                        {"duration", combat.duration},
+                        {"player_a_damage", combat.player_a_damage},
+                        {"player_b_damage", combat.player_b_damage},
+                        {"player_a_survivors", combat.player_a_survivors},
+                        {"player_b_survivors", combat.player_b_survivors},
+                        {"units", result_units}
+                    }}
+                };
+                events.emplace_back(
+                    "COMBAT_SIMULATION_REPLAY_V1:" + simulation_artifact.dump());
+
                 // Convert completed combat results into a factual per-unit
                 // damage-share signal. Identity is joined through the persistent
                 // board UUID; incomplete attribution never becomes evidence.
