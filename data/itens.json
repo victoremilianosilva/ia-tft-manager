@@ -208,11 +208,11 @@
           "MagicResist"
         ],
         "generic_combat_keys": [
+          "BacklineADAP",
+          "FrontlineResists",
           "ManaRegen"
         ],
         "not_generic_normalized_keys": [
-          "BacklineADAP",
-          "FrontlineResists",
           "ManaPercIncrease"
         ]
       },
@@ -441,11 +441,10 @@
         ],
         "generic_combat_keys": [
           "AD",
-          "ManaRegen"
-        ],
-        "not_generic_normalized_keys": [
+          "ManaRegen",
           "ModifiedADAP"
-        ]
+        ],
+        "not_generic_normalized_keys": []
       },
       "unit_equipable": true
     },
@@ -516,7 +515,9 @@
         "generic_stat_keys": [
           "Armor"
         ],
-        "generic_combat_keys": [],
+        "generic_combat_keys": [
+          "PercentMaxHP"
+        ],
         "not_generic_normalized_keys": [
           "1StarAoEDamage",
           "2StarAoEDamage",
@@ -524,7 +525,6 @@
           "4StarAoEDamage",
           "AutoDamageReduction",
           "ICD",
-          "PercentMaxHP",
           "{6688a0d5}"
         ]
       },
@@ -654,10 +654,10 @@
         ],
         "generic_stat_keys": [],
         "generic_combat_keys": [
-          "AD"
+          "AD",
+          "BonusDamage"
         ],
         "not_generic_normalized_keys": [
-          "BonusDamage",
           "{1543aa48}"
         ]
       },
@@ -722,12 +722,13 @@
         "generic_stat_keys": [
           "MagicResist"
         ],
-        "generic_combat_keys": [],
+        "generic_combat_keys": [
+          "PercentMaxHP"
+        ],
         "not_generic_normalized_keys": [
           "HealthRegenInterval",
           "ICD",
-          "PercentHealthDamage",
-          "PercentMaxHP"
+          "PercentHealthDamage"
         ]
       },
       "unit_equipable": true
@@ -1665,12 +1666,12 @@
           "CritChance",
           "Health"
         ],
-        "generic_combat_keys": [],
-        "not_generic_normalized_keys": [
+        "generic_combat_keys": [
           "BaseDurability",
           "EmpoweredDurability",
           "ThresholdForEmpower"
-        ]
+        ],
+        "not_generic_normalized_keys": []
       },
       "unit_equipable": true
     },
@@ -1854,9 +1855,10 @@
         "generic_stat_keys": [
           "AP"
         ],
-        "generic_combat_keys": [],
+        "generic_combat_keys": [
+          "BonusDamage"
+        ],
         "not_generic_normalized_keys": [
-          "BonusDamage",
           "{1543aa48}"
         ]
       },
@@ -1999,9 +2001,10 @@
           "Armor",
           "Health"
         ],
-        "generic_combat_keys": [],
+        "generic_combat_keys": [
+          "BonusPercentHP"
+        ],
         "not_generic_normalized_keys": [
-          "BonusPercentHP",
           "BurnDuration",
           "BurnPercent",
           "GrievousWoundsPercent",
@@ -2769,10 +2772,10 @@
         "generic_stat_keys": [
           "Health"
         ],
-        "generic_combat_keys": [],
-        "not_generic_normalized_keys": [
+        "generic_combat_keys": [
           "BonusPercentHP"
-        ]
+        ],
+        "not_generic_normalized_keys": []
       },
       "unit_equipable": true
     },
