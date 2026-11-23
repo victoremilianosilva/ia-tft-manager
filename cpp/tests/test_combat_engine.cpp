@@ -308,6 +308,48 @@ void test_generic_while_hp_above_effect_reverses_at_threshold() {
             "The conditional bonus should be removed after HP falls below 50 percent.");
 }
 
+void test_generic_role_condition_item_effect() {
+    tft::CombatEngine engine;
+    auto input = make_input();
+    input.config.max_duration = 0.2f;
+    input.config.record_damage = true;
+
+    auto& holder = input.player_a.units.front();
+    holder.role = tft::UnitRole::CARRY;
+    holder.attack_damage = 100.0f;
+    holder.attack_speed = 1.0f;
+    holder.attack_range = 7.0f;
+    holder.can_move = false;
+    holder.can_cast = false;
+
+    tft::CombatItem item;
+    item.api_name = "catalog_generic_role_item";
+    item.name = "Generic Role Item";
+    tft::CombatEffectDefinition effect;
+    effect.trigger = "combat_start";
+    effect.operation = "add_stat";
+    effect.stat = "attack_damage";
+    effect.target = "self";
+    effect.value = 0.10f;
+    effect.percent_of_stat = true;
+    effect.condition = "role_other";
+    item.effects.push_back(effect);
+    holder.items.push_back(item);
+
+    auto& target = input.player_b.units.front();
+    target.hp = target.max_hp = 1000.0f;
+    target.armor = 0.0f;
+    target.can_attack = false;
+    target.can_move = false;
+    target.can_cast = false;
+
+    const auto result = engine.simulate(input);
+    require(result.success && !result.damage_events.empty(),
+            "Role-conditioned generic item effect should reach combat.");
+    require(std::abs(result.damage_events.front().raw_damage - 110.0f) < 0.01f,
+            "Generic role_other effect should apply to carry units.");
+}
+
 void test_event_limit_is_reported_as_timeout() {
     tft::CombatEngine engine;
     auto input = make_input();
@@ -1019,6 +1061,7 @@ void test_generic_source_ad_effect_changes_combat() {
 int main() {
     try {
         test_deterministic_winner_and_damage();
+        test_generic_role_condition_item_effect();
         test_generic_while_hp_above_effect_reverses_at_threshold();
         test_generic_damage_amplification_item_effect();
         test_generic_percent_max_health_item_effect();
