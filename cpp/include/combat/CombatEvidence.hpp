@@ -230,6 +230,8 @@ public:
                 (effect.trigger == "on_attack" &&
                     (effect.operation == "bonus_damage" ||
                      effect.operation == "heal_max_hp_pct")) ||
+                (effect.trigger == "periodic" &&
+                    effect.operation == "heal_max_hp_pct" && effect.interval > 0.0f) ||
                 (effect.trigger == "on_kill" &&
                     (effect.operation == "grant_charges" ||
                      effect.operation == "heal_max_hp_pct")) ||
