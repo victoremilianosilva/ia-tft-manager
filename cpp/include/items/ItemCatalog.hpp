@@ -107,7 +107,8 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
                 effect.operation == "heal_max_hp_pct" ||
                 effect.operation == "grant_charges" ||
                 effect.operation == "mana_regen" ||
-                effect.operation == "mana_gain_multiplier";
+                effect.operation == "mana_gain_multiplier" ||
+                effect.operation == "mana_on_attack";
             if (!supported_operation) {
                 throw std::invalid_argument(
                     "Unsupported combat effect operation (not implemented by CombatEngine): " +
@@ -142,7 +143,9 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
                 (effect.operation == "mana_regen" &&
                     (effect.trigger.empty() || effect.trigger == "combat_start")) ||
                 (effect.operation == "mana_gain_multiplier" &&
-                    effect.trigger == "combat_start");
+                    effect.trigger == "combat_start") ||
+                (effect.operation == "mana_on_attack" &&
+                    effect.trigger == "on_attack");
             if (!supported_pair) {
                 throw std::invalid_argument(
                     "Unsupported combat effect operation/trigger pair: " +
@@ -252,6 +255,7 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
             read_number("interval", effect.interval);
             read_number("delay", effect.delay);
             read_number("health_threshold", effect.health_threshold);
+            read_number("critical_value", effect.critical_value);
             if (effect.trigger == "periodic" &&
                 (!std::isfinite(effect.interval) || effect.interval <= 0.0f)) {
                 throw std::invalid_argument("Periodic combat effects require a positive interval");
