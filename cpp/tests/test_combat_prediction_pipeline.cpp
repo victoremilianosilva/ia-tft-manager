@@ -2,6 +2,7 @@
 #include "items/CombatItemAdapter.hpp"
 #include "combat/CombatTraitCatalog.hpp"
 
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <iostream>
@@ -489,6 +490,23 @@ int main() {
                     "condition_trait": "DA_18_Brawler"
                 }]}
             ]
+        }, {
+            "api_name": "DA_18_Defender",
+            "effects_complete": true,
+            "tiers": [
+                {"min_units": 2, "effects": [
+                    {"trigger":"combat_start","operation":"add_stat","stat":"armor","target":"allies","value":12,"condition":"trait_count_at_least","condition_trait":"DA_18_Defender","scale_by_active_trait_count":true},
+                    {"trigger":"combat_start","operation":"add_stat","stat":"magic_resist","target":"allies","value":12,"condition":"trait_count_at_least","condition_trait":"DA_18_Defender","scale_by_active_trait_count":true},
+                    {"trigger":"combat_start","operation":"add_stat","stat":"armor","target":"self","value":13,"condition":"trait_count_at_least","condition_trait":"DA_18_Defender"},
+                    {"trigger":"combat_start","operation":"add_stat","stat":"magic_resist","target":"self","value":13,"condition":"trait_count_at_least","condition_trait":"DA_18_Defender"}
+                ]},
+                {"min_units": 4, "effects": [
+                    {"trigger":"combat_start","operation":"add_stat","stat":"armor","target":"allies","value":12,"condition":"trait_count_at_least","condition_trait":"DA_18_Defender","scale_by_active_trait_count":true},
+                    {"trigger":"combat_start","operation":"add_stat","stat":"magic_resist","target":"allies","value":12,"condition":"trait_count_at_least","condition_trait":"DA_18_Defender","scale_by_active_trait_count":true},
+                    {"trigger":"combat_start","operation":"add_stat","stat":"armor","target":"self","value":48,"condition":"trait_count_at_least","condition_trait":"DA_18_Defender"},
+                    {"trigger":"combat_start","operation":"add_stat","stat":"magic_resist","target":"self","value":48,"condition":"trait_count_at_least","condition_trait":"DA_18_Defender"}
+                ]}
+            ]
         }]
     })json");
     const auto trait_catalog = combat::load_trait_combat_catalog(trait_catalog_json);
@@ -501,6 +519,26 @@ int main() {
     assert(active_brawler.effects.size() == 1);
     assert(active_brawler.effects.front().percent_of_stat);
     assert(active_brawler.effects.front().value == 0.4f);
+
+    CombatTrait active_defender;
+    active_defender.api_name = "DA_18_Defender";
+    active_defender.active = true;
+    active_defender.active_count = 4;
+    combat::apply_trait_combat_metadata(active_defender, trait_catalog);
+    assert(active_defender.effects_complete);
+    assert(active_defender.effects.size() == 4);
+    const auto team_armor = std::find_if(active_defender.effects.begin(),
+        active_defender.effects.end(), [](const auto& effect) {
+            return effect.stat == "armor" && effect.target == "allies";
+        });
+    const auto defender_armor = std::find_if(active_defender.effects.begin(),
+        active_defender.effects.end(), [](const auto& effect) {
+            return effect.stat == "armor" && effect.target == "self";
+        });
+    assert(team_armor != active_defender.effects.end());
+    assert(team_armor->scale_by_active_trait_count && team_armor->value == 12.0f);
+    assert(defender_armor != active_defender.effects.end());
+    assert(defender_armor->value == 48.0f);
 
     CombatTrait inactive_brawler;
     inactive_brawler.api_name = "DA_18_Brawler";
