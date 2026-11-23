@@ -1,5 +1,7 @@
 #include "combat/CombatTraitCatalog.hpp"
 
+#include <algorithm>
+#include <cmath>
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
