@@ -306,3 +306,9 @@ represented as generic `combat_start` and `while_hp_above` effects. The
 generic conditional resolver activates and reverses the bonus as health crosses
 the threshold; the item-name branch and its dedicated runtime flag were
 removed. Coverage tests exercise the transition in both directions.
+
+Adaptive Helm's role-specific combat stats are also normalized as generic
+role-conditioned effects: frontline roles receive armor/MR, while other roles
+receive AD/AP. The corresponding role branch was removed from the combat
+runtime. Its separate mana-gain multiplier remains a legacy item-specific
+mechanic and is not claimed as migrated.
