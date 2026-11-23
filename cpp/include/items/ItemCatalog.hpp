@@ -408,6 +408,13 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
         if (entry.contains("combat_effects")) {
             item.combat_effects = parse_effects(entry["combat_effects"]);
         }
+        if (entry.contains("combat_effects_complete")) {
+            if (!entry["combat_effects_complete"].is_boolean()) {
+                throw std::invalid_argument("combat_effects_complete must be a boolean");
+            }
+            item.combat_effects_complete =
+                entry["combat_effects_complete"].get<bool>();
+        }
         if (entry.contains("deferred_stats")) {
             if (!entry["deferred_stats"].is_array()) {
                 throw std::invalid_argument("deferred_stats must be an array");
