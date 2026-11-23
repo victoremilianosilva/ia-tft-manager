@@ -121,7 +121,8 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
                 effect.trigger == "after_delay" ||
                 effect.trigger == "while_hp_below" ||
                 effect.trigger == "while_hp_above" ||
-                effect.trigger == "on_ally_shield";
+                effect.trigger == "on_ally_shield" ||
+                effect.trigger == "periodic";
             if (!supported_trigger) {
                 throw std::invalid_argument(
                     "Unsupported combat effect trigger (not implemented by CombatEngine): " +
@@ -134,12 +135,17 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
                      effect.trigger == "while_hp_above" || effect.trigger == "on_ally_shield")) ||
                 (effect.operation == "bonus_damage" && effect.trigger == "on_attack") ||
                 (effect.operation == "heal_max_hp_pct" &&
-                    (effect.trigger == "on_kill" || effect.trigger == "on_attack")) ||
+                    (effect.trigger == "on_kill" || effect.trigger == "on_attack" ||
+                     effect.trigger == "periodic")) ||
                 (effect.operation == "grant_charges" && effect.trigger == "on_kill") ||
                 (effect.operation == "mana_regen" &&
                     (effect.trigger.empty() || effect.trigger == "combat_start")) ||
                 (effect.operation == "mana_gain_multiplier" &&
                     effect.trigger == "combat_start");
+            if (effect.trigger == "periodic" &&
+                (!std::isfinite(effect.interval) || effect.interval <= 0.0f)) {
+                throw std::invalid_argument("Periodic combat effects require a positive interval");
+            }
             if (!supported_pair) {
                 throw std::invalid_argument(
                     "Unsupported combat effect operation/trigger pair: " +
