@@ -85,6 +85,95 @@ void test_deterministic_winner_and_damage() {
             "Deterministic replay changed survivor counts.");
 }
 
+void test_trait_team_effect_scaling_applies_once() {
+    tft::CombatEngine engine;
+    auto input = make_input();
+    input.config.max_duration = 0.05f;
+
+    auto make_brawler_trait = [] {
+        tft::CombatTrait trait;
+        trait.api_name = "DA_18_Brawler";
+        trait.name = "Brawler";
+        trait.active = true;
+        trait.active_count = 2;
+
+        tft::CombatEffectDefinition team_health;
+        team_health.trigger = "combat_start";
+        team_health.operation = "add_stat";
+        team_health.stat = "max_hp";
+        team_health.target = "allies";
+        team_health.value = 120.0f;
+        team_health.condition = "trait_count_at_least";
+        team_health.condition_trait = "DA_18_Brawler";
+        team_health.min_trait_count = 2;
+        team_health.scale_by_active_trait_count = true;
+
+        tft::CombatEffectDefinition brawler_health;
+        brawler_health.trigger = "combat_start";
+        brawler_health.operation = "add_stat";
+        brawler_health.stat = "max_hp";
+        brawler_health.target = "self";
+        brawler_health.value = 0.25f;
+        brawler_health.percent_of_stat = true;
+        brawler_health.condition = "trait_count_at_least";
+        brawler_health.condition_trait = "DA_18_Brawler";
+        brawler_health.min_trait_count = 2;
+
+        trait.effects = {team_health, brawler_health};
+        trait.effects_complete = true;
+        return trait;
+    };
+
+    auto& first = input.player_a.units.front();
+    first.can_attack = false;
+    first.can_move = false;
+    first.can_cast = false;
+    first.hp = first.max_hp = 100.0f;
+    first.traits.push_back(make_brawler_trait());
+
+    auto second = first;
+    second.id = 2;
+    second.api_name = "second_brawler";
+    second.name = "Second Brawler";
+    second.position = {2, 1};
+    input.player_a.units.push_back(second);
+
+    tft::CombatUnit ally;
+    ally.id = 3;
+    ally.api_name = "non_brawler_ally";
+    ally.name = "Non-Brawler Ally";
+    ally.team = tft::UnitTeam::PLAYER_A;
+    ally.role = tft::UnitRole::SUPPORT;
+    ally.position = {4, 1};
+    ally.hp = ally.max_hp = 100.0f;
+    ally.attack_damage = 1.0f;
+    ally.attack_speed = 1.0f;
+    ally.can_attack = false;
+    ally.can_move = false;
+    ally.can_cast = false;
+    input.player_a.units.push_back(ally);
+
+    auto& enemy = input.player_b.units.front();
+    enemy.can_attack = false;
+    enemy.can_move = false;
+    enemy.can_cast = false;
+
+    const auto result = engine.simulate(input);
+    require(result.success, "Trait effect combat should succeed.");
+    const auto final_hp = [&](int unit_id) {
+        const auto found = std::find_if(result.units.begin(), result.units.end(),
+            [&](const auto& unit) { return unit.unit_id == unit_id; });
+        require(found != result.units.end(), "Trait effect result unit is missing.");
+        return found->final_hp;
+    };
+    require(std::abs(final_hp(0) - 245.0f) < 0.01f,
+            "Each Brawler should receive the team health aura once plus its trait bonus.");
+    require(std::abs(final_hp(2) - 245.0f) < 0.01f,
+            "The second Brawler should receive the same tier effects.");
+    require(std::abs(final_hp(3) - 220.0f) < 0.01f,
+            "Non-Brawler allies should receive the team health aura exactly once.");
+}
+
 void test_event_limit_is_reported_as_timeout() {
     tft::CombatEngine engine;
     auto input = make_input();
@@ -796,6 +885,7 @@ void test_generic_source_ad_effect_changes_combat() {
 int main() {
     try {
         test_deterministic_winner_and_damage();
+        test_trait_team_effect_scaling_applies_once();
         test_event_limit_is_reported_as_timeout();
         test_invalid_configuration_returns_error();
         test_equipped_items_change_combat_stats();
