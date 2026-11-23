@@ -440,7 +440,7 @@ struct TFTEngine::Impl {
     std::uint64_t composition_intelligence_sequence{0};
     bool composition_intelligence_enabled{false};
     std::array<std::unique_ptr<strategy::UnifiedStrategicRuntime>, kPlayersPerLobby>
-        strategic_shadow_runtimes{};
+        strategic_runtimes{};
     // Per-player idempotency ledgers for the read-only strategic action resolver.
     std::array<composition_intelligence::StrategicActionExecutor, kPlayersPerLobby>
         strategic_action_executors{};
@@ -453,15 +453,15 @@ struct TFTEngine::Impl {
         pending_combat_prediction_evidence{};
     std::vector<std::string> pending_combat_prediction_events;
     std::array<std::string, kPlayersPerLobby>
-        strategic_shadow_external_active_identity{};
+        strategic_external_active_identity{};
     std::array<std::uint64_t, kPlayersPerLobby>
-        strategic_shadow_external_active_version{};
+        strategic_external_active_version{};
     std::array<std::string, kPlayersPerLobby> strategic_refresh_failure_reasons{};
     std::array<std::string, kPlayersPerLobby>
         strategic_pivot_generation_diagnostics{};
     std::array<std::vector<AuditUnitOpportunityCostSnapshot>, kPlayersPerLobby> strategic_opportunity_costs{};
 
-    std::string strategic_shadow_audit_path;
+    std::string strategic_audit_path;
 
 
     // Serviços compartilhados pela lobby, não pertencem a um jogador.
@@ -1734,23 +1734,23 @@ struct TFTEngine::Impl {
         // evidence without waiting for optional Viewer/diagnostic processing.
         strategic_refresh_failure_reasons[i].clear();
         strategic_pivot_generation_diagnostics[i] = "not_evaluated";
-        if (strategic_shadow_runtimes[i]) {
+        if (strategic_runtimes[i]) {
             try {
-                auto& native_runtime = *strategic_shadow_runtimes[i];
+                auto& native_runtime = *strategic_runtimes[i];
                 auto& active_manager = composition_intelligence_players[i].active;
                 const auto native_active = active_manager.current();
         
                 if (native_active) {
                     const auto& last_identity =
-                        strategic_shadow_external_active_identity[i];
+                        strategic_external_active_identity[i];
                     const auto last_version =
-                        strategic_shadow_external_active_version[i];
+                        strategic_external_active_version[i];
                     if (last_identity != native_active->candidate.composition_id ||
                         last_version != native_active->version) {
                         native_runtime.reset_machine();
-                        strategic_shadow_external_active_identity[i] =
+                        strategic_external_active_identity[i] =
                             native_active->candidate.composition_id;
-                        strategic_shadow_external_active_version[i] =
+                        strategic_external_active_version[i] =
                             native_active->version;
                     }
                 }
@@ -2262,9 +2262,9 @@ struct TFTEngine::Impl {
                         planner_commitment.confidence;
                 }
                 if (const auto& committed = active_manager.current()) {
-                    strategic_shadow_external_active_identity[i] =
+                    strategic_external_active_identity[i] =
                         committed->candidate.composition_id;
-                    strategic_shadow_external_active_version[i] =
+                    strategic_external_active_version[i] =
                         committed->version;
                 }
                 (void)native_result;
@@ -3492,7 +3492,7 @@ struct TFTEngine::Impl {
                     {"composition_id", ""},
                     {"composition_version", 0},
                     {"stale", true},
-                    {"stale_reason", std::string("shadow_runtime_exception: ") + error.what()},
+                    {"stale_reason", std::string("native_strategic_runtime_exception: ") + error.what()},
                     {"player_id", static_cast<std::int32_t>(i)},
                     {"diagnostics", {{"runtime_error", error.what()}}},
                     {"catalog_diagnostics", composition_intelligence_catalog_diagnostics}
@@ -5393,25 +5393,25 @@ ResetResult TFTEngine::reset(
     impl_->composition_intelligence_native_diagnostics =
         decltype(impl_->composition_intelligence_native_diagnostics){};
     impl_->composition_intelligence_sequence = 0;
-    impl_->strategic_shadow_external_active_identity.fill(std::string{});
-    impl_->strategic_shadow_external_active_version.fill(0);
+    impl_->strategic_external_active_identity.fill(std::string{});
+    impl_->strategic_external_active_version.fill(0);
     impl_->strategic_planner_commitments = {};
     for (auto& executor : impl_->strategic_action_executors) executor.reset();
     impl_->strategic_context_sequences.fill(0);
     for (auto& evidence : impl_->pending_combat_prediction_evidence) evidence.reset();
     impl_->pending_combat_prediction_events.clear();
-    if (!impl_->strategic_shadow_audit_path.empty()) {
+    if (!impl_->strategic_audit_path.empty()) {
         std::error_code remove_error;
-        std::filesystem::remove(impl_->strategic_shadow_audit_path, remove_error);
+        std::filesystem::remove(impl_->strategic_audit_path, remove_error);
     }
     // The unified state machine is a native strategic owner used by PPO;
     // the JSONL sidecar is optional diagnostics, not a runtime activation gate.
     for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
-        impl_->strategic_shadow_runtimes[i] =
+        impl_->strategic_runtimes[i] =
             std::make_unique<strategy::UnifiedStrategicRuntime>(
                 impl_->composition_intelligence_players[i].active,
                 impl_->strategic_planner_commitments[i],
-                impl_->strategic_shadow_audit_path);
+                impl_->strategic_audit_path);
     }
 
     impl_->round = 0;
@@ -5930,15 +5930,15 @@ std::string TFTEngine::adapt_opgg_compositions_json(const std::string& catalog_j
 void TFTEngine::set_strategic_direction_pivot_audit_path(const std::string& path) {
     if (!impl_) throw std::runtime_error("TFTEngine nao possui estado interno.");
     impl_->ensure_open();
-    impl_->strategic_shadow_audit_path = path;
-    impl_->strategic_shadow_external_active_identity.fill(std::string{});
-    impl_->strategic_shadow_external_active_version.fill(0);
+    impl_->strategic_audit_path = path;
+    impl_->strategic_external_active_identity.fill(std::string{});
+    impl_->strategic_external_active_version.fill(0);
     if (!path.empty()) {
         std::error_code remove_error;
         std::filesystem::remove(path, remove_error);
     }
     for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
-        impl_->strategic_shadow_runtimes[i] =
+        impl_->strategic_runtimes[i] =
             std::make_unique<strategy::UnifiedStrategicRuntime>(
                 impl_->composition_intelligence_players[i].active,
                 impl_->strategic_planner_commitments[i], path);
@@ -6186,8 +6186,8 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
             strategic.direction_selected_round = commitment.selected_round;
         }
 
-        if (impl_->strategic_shadow_runtimes[i]) {
-            const auto& anchors = impl_->strategic_shadow_runtimes[i]->machine().anchors();
+        if (impl_->strategic_runtimes[i]) {
+            const auto& anchors = impl_->strategic_runtimes[i]->machine().anchors();
             if (anchors.direction_anchor.is_valid()) {
                 strategic.direction_valid = true;
                 strategic.direction_identity = anchors.direction_anchor.identity;
