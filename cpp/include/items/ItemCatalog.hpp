@@ -119,6 +119,7 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
                 effect.trigger == "on_kill" ||
                 effect.trigger == "after_delay" ||
                 effect.trigger == "while_hp_below" ||
+                effect.trigger == "while_hp_above" ||
                 effect.trigger == "on_ally_shield";
             if (!supported_trigger) {
                 throw std::invalid_argument(
@@ -128,7 +129,8 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
             const bool supported_pair =
                 (effect.operation == "add_stat" &&
                     (effect.trigger == "combat_start" || effect.trigger == "after_delay" ||
-                     effect.trigger == "while_hp_below" || effect.trigger == "on_ally_shield")) ||
+                     effect.trigger == "while_hp_below" ||
+                     effect.trigger == "while_hp_above" || effect.trigger == "on_ally_shield")) ||
                 (effect.operation == "bonus_damage" && effect.trigger == "on_attack") ||
                 (effect.operation == "heal_max_hp_pct" &&
                     (effect.trigger == "on_kill" || effect.trigger == "on_attack")) ||
