@@ -237,6 +237,25 @@ def test_semantic_validation_accepts_normalized_stats_or_explicit_effects():
     }
     validate_catalog_semantics(catalog)
 
+
+def test_semantic_validation_accepts_generic_mana_gain_multiplier():
+    catalog = {
+        "items": [
+            {
+                "id": "Item_AdaptiveHelm",
+                "stats": {},
+                "combat_effects": [{
+                    "trigger": "combat_start",
+                    "operation": "mana_gain_multiplier",
+                    "target": "self",
+                    "value": 1.15,
+                }],
+            },
+        ]
+    }
+    validate_catalog_semantics(catalog)
+
+
 def test_semantic_validation_rejects_effect_without_combat_handler():
     catalog = {
         "items": [
