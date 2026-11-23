@@ -296,7 +296,7 @@ private:
         }
 
         return {
-            {"schema_version", 1},
+            {"schema_version", 2},
             {"match_id", context.match_id},
             {"sequence", sequence},
             {"player_id", context.player_id},
@@ -316,7 +316,8 @@ private:
             {"feasibility", feasibility},
             {"transition", transition},
             {"reason", result.diagnostics.transition_reason},
-            {"shadow_only", true}
+            {"state_ownership", "native_canonical"},
+            {"action_execution_enabled", false}
         };
     }
 
