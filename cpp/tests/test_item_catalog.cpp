@@ -155,6 +155,20 @@ int main(int argc, char** argv) {
             return 24;
         }
 
+        const auto archangels_staff = std::find_if(
+            catalog.items.begin(), catalog.items.end(),
+            [](const auto& item) { return item.id == "TFT_Item_ArchangelsStaff"; });
+        if (archangels_staff == catalog.items.end() ||
+            std::none_of(archangels_staff->combat_effects.begin(),
+                archangels_staff->combat_effects.end(), [](const auto& effect) {
+                    return effect.trigger == "combat_start" &&
+                        effect.operation == "mana_regen" &&
+                        std::abs(effect.value - 1.0f) < 0.0001f;
+                })) {
+            std::cerr << "Archangel's Staff generic mana regeneration is missing\\n";
+            return 25;
+        }
+
         const auto dragons_claw = std::find_if(
             catalog.items.begin(), catalog.items.end(),
             [](const auto& item) { return item.id == "TFT_Item_DragonsClaw"; });
