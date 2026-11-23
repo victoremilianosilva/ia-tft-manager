@@ -31,6 +31,8 @@ int main() {
     input.owned[0].board_contribution_available = true;
     input.owned[1].copies_by_star[1] = 1;
     input.owned[1].item_fit_available = true;
+    input.owned[1].item_fit_source = "test.item_profile.v1";
+    input.owned[1].item_fit_uncertainty = 0.2;
     input.shop_ids = {4, 6};
     input.pool_remaining = {{1, 10}, {2, 8}, {3, 12}, {4, 5}, {5, 7}, {6, 9}, {7, 0}};
     input.trait_thresholds = {{"Bruiser", 2}, {"Invoker", 2}};
