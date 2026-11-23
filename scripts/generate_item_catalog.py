@@ -463,6 +463,7 @@ def _combat_effect_is_supported(effect: Any) -> bool:
         "heal_max_hp_pct": {"on_attack", "on_kill"},
         "grant_charges": {"on_kill"},
         "mana_regen": {"", "combat_start"},
+        "mana_gain_multiplier": {"combat_start"},
     }
     if not isinstance(operation, str) or not isinstance(trigger, str):
         return False
@@ -472,7 +473,7 @@ def _combat_effect_is_supported(effect: Any) -> bool:
     target = effect.get("target", "")
     if not isinstance(target, str) or target not in {"", "self", "allies", "allies_same_row_within_1"}:
         return False
-    if operation in {"mana_regen", "grant_charges", "heal_max_hp_pct"} and target not in {"", "self"}:
+    if operation in {"mana_regen", "mana_gain_multiplier", "grant_charges", "heal_max_hp_pct"} and target not in {"", "self"}:
         return False
     if operation == "bonus_damage" and target == "allies_same_row_within_1":
         return False
