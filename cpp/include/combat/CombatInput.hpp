@@ -96,6 +96,8 @@ struct CombatEffectDefinition
     bool percent_of_stat = false;
     // Divide team-wide per-source contributions by the active trait count.
     bool scale_by_active_trait_count = false;
+    // Periodic stat changes may scale from a captured base stat (e.g. attack speed).
+    bool scale_by_base_stat = false;
 };
 
 // ============================================================
