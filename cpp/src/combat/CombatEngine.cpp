@@ -963,7 +963,6 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                          item.api_name == "TFT_Item_StatikkShiv") loaded.mana_regen_per_second += 1.0f;
                 else if (item.api_name == "TFT_Item_Redemption") loaded.mana_regen_per_second += 2.0f;
             }
-            loaded.mana_regen_per_second += effect_mana_regeneration(loaded.unit);
             if (has_item(loaded.unit, "TFT_Item_UnstableConcoction")) {
                 loaded.hand_of_justice_ad_bonus =
                     loaded.unit.attack_damage * (0.15f / 1.15f);
@@ -989,6 +988,10 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
     // teams are present, so ally targeting is independent of input order.
     for (auto& runtime : units) apply_start_combat_effects(runtime.unit);
     apply_start_combat_team_effects(units);
+    // Team auras are attached above; calculate generic mana regeneration only
+    // after that expansion so every recipient receives the shared trait aura.
+    for (auto& runtime : units)
+        runtime.mana_regen_per_second += effect_mana_regeneration(runtime.unit);
 
     // Effects are immutable during combat. Build their ordered descriptors
     // once so event updates reuse stable IDs and only visit relevant effects.
