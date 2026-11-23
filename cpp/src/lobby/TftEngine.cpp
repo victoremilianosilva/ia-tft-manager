@@ -5477,6 +5477,7 @@ ResetResult TFTEngine::reset(
     impl_->strategic_planner_commitments = {};
     for (auto& executor : impl_->strategic_action_executors) executor.reset();
     impl_->strategic_context_sequences.fill(0);
+    for (auto& evidence : impl_->strategic_board_contribution_evidence) evidence.clear();
     for (auto& evidence : impl_->pending_combat_prediction_evidence) evidence.reset();
     impl_->pending_combat_prediction_events.clear();
     if (!impl_->strategic_audit_path.empty()) {
