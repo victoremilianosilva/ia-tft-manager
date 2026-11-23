@@ -2072,6 +2072,15 @@ struct TFTEngine::Impl {
                             continue;
                         }
 
+                        // A generated candidate may omit catalog entries while being
+                        // materialized into the composition contract. Normalize the
+                        // board size to the units that will actually be published, and
+                        // inherit the active composition's set identity when the
+                        // champion API name does not encode a parseable TFT set.
+                        destination_it->target_board_size = destination_it->units.size();
+                        if (destination_it->set_id.empty() && source_active)
+                            destination_it->set_id = source_active->candidate.set_id;
+
                         strategy::StrategicPivotAnchorCandidate pivot;
                         pivot.target_direction = generated.direction;
                         pivot.target_composition_identity = destination_it->composition_id;
