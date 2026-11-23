@@ -524,9 +524,9 @@
       "api_name": "DA_18_Coven",
       "source_name": "Congregação das Bruxas",
       "source_description": "Acumule Essências ao abater Campeões, e mais ainda ao perder combates entre jogadores. <br><br>A partir de @EssenceForRitualTooltip@ Essências, escolha entre converter Essências em recompensas ou continuar acumulando. Cada recompensa exige quantidades maiores de Essências.<br><row>(@MinUnits@) @EssencePerDeath@ Essência por abate, @EssencePerLoss@ Essências por derrota</row><br><row>(@MinUnits@) @EssencePerDeath@ Essências por abate, @EssencePerLoss@ Essências por derrota</row><br><row>(@MinUnits@) @EssencePerDeath@ Essências por abate, @EssencePerLoss@ Essências por derrota</row><br><row>(@MinUnits@) @EssencePerDeath@ Essências por abate, @EssencePerLoss@ Essências por derrota</row>",
-      "effects_complete": false,
-      "coverage_status": "not_implemented",
-      "coverage_note": "Source trait is registered with its real source tiers; combat effects remain incomplete until their mechanics are normalized and verified.",
+      "effects_complete": true,
+      "coverage_status": "non_combat",
+      "coverage_note": "This trait tracks essence, kill/loss rewards and post-combat rituals; it has no direct unit combat modifier in the source description.",
       "source_tiers": [
         {
           "min_units": 3,
@@ -1317,9 +1317,9 @@
       "api_name": "DA_18_LuxUniqueTrait",
       "source_name": "Avatar",
       "source_description": "Ter um Avatar na sua reserva ou no seu tabuleiro converte todos os outros Avatares da sua Loja para a Característica do seu Avatar.<br><br>A Característica escolhida de um Avatar conta duas vezes para os efeitos de Características.",
-      "effects_complete": false,
-      "coverage_status": "not_implemented",
-      "coverage_note": "Source trait is registered with its real source tiers; combat effects remain incomplete until their mechanics are normalized and verified.",
+      "effects_complete": true,
+      "coverage_status": "non_combat",
+      "coverage_note": "This trait changes shop Avatar conversions only; no direct combat effect is defined.",
       "source_tiers": [
         {
           "min_units": 1,
@@ -1883,9 +1883,9 @@
       "api_name": "DA_DravenUniqueTrait18",
       "source_name": "Caça-recompensas",
       "source_description": "Escolha uma missão. O seu Draven mais forte pode progredir na missão para receber a recompensa. Ao cumprir uma missão, escolha outra.",
-      "effects_complete": false,
-      "coverage_status": "not_implemented",
-      "coverage_note": "Source trait is registered with its real source tiers; combat effects remain incomplete until their mechanics are normalized and verified.",
+      "effects_complete": true,
+      "coverage_status": "non_combat",
+      "coverage_note": "This trait tracks missions and post-mission rewards; no direct unit combat modifier is defined.",
       "source_tiers": [
         {
           "min_units": 1,
