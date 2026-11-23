@@ -714,6 +714,13 @@
           "target": "self",
           "value": 0.06,
           "percent_of_stat": true
+        },
+        {
+          "trigger": "periodic",
+          "operation": "heal_max_hp_pct",
+          "target": "self",
+          "value": 0.025,
+          "interval": 2
         }
       ],
       "effect_coverage": {
@@ -728,12 +735,12 @@
           "MagicResist"
         ],
         "generic_combat_keys": [
+          "HealthRegenInterval",
+          "PercentHealthDamage",
           "PercentMaxHP"
         ],
         "not_generic_normalized_keys": [
-          "HealthRegenInterval",
-          "ICD",
-          "PercentHealthDamage"
+          "ICD"
         ]
       },
       "unit_equipable": true
