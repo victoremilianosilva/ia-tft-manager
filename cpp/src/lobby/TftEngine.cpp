@@ -2065,25 +2065,25 @@ struct TFTEngine::Impl {
                                 "destination_candidate_missing:" + generated.identity;
                             continue;
                         }
-                        if (destination_it->units.empty() ||
-                            destination_it->main_carry_id != generated.main_carry_id) {
+                        if (destination_candidate.units.empty() ||
+                            destination_candidate.main_carry_id != generated.main_carry_id) {
                             pivot_generation_diagnostic =
                                 "destination_candidate_contract_mismatch:" + generated.identity;
                             continue;
                         }
 
-                        // A generated candidate may omit catalog entries while being
-                        // materialized into the composition contract. Normalize the
-                        // board size to the units that will actually be published, and
-                        // inherit the active composition's set identity when the
-                        // champion API name does not encode a parseable TFT set.
-                        destination_it->target_board_size = destination_it->units.size();
-                        if (destination_it->set_id.empty() && source_active)
-                            destination_it->set_id = source_active->candidate.set_id;
+                        // Materialize a mutable value snapshot before normalizing the
+                        // destination contract. The candidate collection is read-only
+                        // at this point in the engine refresh.
+                        auto destination_candidate = *destination_it;
+                        destination_candidate.target_board_size =
+                            destination_candidate.units.size();
+                        if (destination_candidate.set_id.empty() && source_active)
+                            destination_candidate.set_id = source_active->candidate.set_id;
 
                         strategy::StrategicPivotAnchorCandidate pivot;
                         pivot.target_direction = generated.direction;
-                        pivot.target_composition_identity = destination_it->composition_id;
+                        pivot.target_composition_identity = destination_candidate.composition_id;
                         pivot.source_direction_anchor_identity =
                             active_direction_anchor.identity;
                         pivot.source_composition_version =
@@ -2106,7 +2106,7 @@ struct TFTEngine::Impl {
 
                         strategy::PivotFeasibilityInput feasibility;
                         feasibility.candidate_composition_identity =
-                            destination_it->composition_id;
+                            destination_candidate.composition_id;
                         feasibility.source_direction_anchor_identity =
                             active_direction_anchor.identity;
                         feasibility.source_composition_version =
@@ -2120,16 +2120,16 @@ struct TFTEngine::Impl {
                                     ++shop_copies[offer->champion_internal_id];
                             }
                         }
-                        feasibility.required_units.reserve(destination_it->units.size());
-                        feasibility.observed_units.reserve(destination_it->units.size());
-                        for (const auto& destination_unit : destination_it->units) {
+                        feasibility.required_units.reserve(destination_candidate.units.size());
+                        feasibility.observed_units.reserve(destination_candidate.units.size());
+                        for (const auto& destination_unit : destination_candidate.units) {
                             const auto* definition = catalog->find_by_id(
                                 destination_unit.champion_id);
                             if (!definition) {
                                 continue;
                             }
                             const bool is_carry =
-                                destination_unit.champion_id == destination_it->main_carry_id;
+                                destination_unit.champion_id == destination_candidate.main_carry_id;
                             strategy::PivotRequiredUnit required;
                             required.champion_id = destination_unit.champion_id;
                             required.cost = definition->cost;
@@ -2169,7 +2169,7 @@ struct TFTEngine::Impl {
                         }
 
                         if (feasibility.required_units.size() !=
-                            destination_it->units.size()) {
+                            destination_candidate.units.size()) {
                             pivot_generation_diagnostic =
                                 "required_unit_evidence_incomplete:" + generated.identity;
                             continue;
@@ -2218,7 +2218,7 @@ struct TFTEngine::Impl {
                             continue;
                         best_feasible_pivot_score = preliminary.score;
                         best_pivot_candidate = std::move(pivot);
-                        best_pivot_destination = *destination_it;
+                        best_pivot_destination = destination_candidate;
                         best_pivot_feasibility = std::move(feasibility);
                         pivot_generation_diagnostic =
                             "best_feasible_candidate:" + generated.direction +
