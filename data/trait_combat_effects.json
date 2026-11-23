@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "set_id": "Set18",
+  "source": "data/traits.json",
+  "source_contract": "normalized combat-relevant trait mechanics only; unsupported traits remain incomplete",
+  "traits": [
+    {
+      "api_name": "DA_18_Brawler",
+      "effects_complete": true,
+      "tiers": [
+        {
+          "min_units": 2,
+          "effects": [
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "max_hp",
+              "target": "allies",
+              "value": 120.0,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Brawler",
+              "scale_by_active_trait_count": true
+            },
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "max_hp",
+              "target": "self",
+              "value": 0.25,
+              "percent_of_stat": true,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Brawler"
+            }
+          ]
+        },
+        {
+          "min_units": 4,
+          "effects": [
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "max_hp",
+              "target": "allies",
+              "value": 120.0,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Brawler",
+              "scale_by_active_trait_count": true
+            },
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "max_hp",
+              "target": "self",
+              "value": 0.40,
+              "percent_of_stat": true,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Brawler"
+            }
+          ]
+        },
+        {
+          "min_units": 6,
+          "effects": [
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "max_hp",
+              "target": "allies",
+              "value": 120.0,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Brawler",
+              "scale_by_active_trait_count": true
+            },
+            {
+              "trigger": "combat_start",
+              "operation": "add_stat",
+              "stat": "max_hp",
+              "target": "self",
+              "value": 0.65,
+              "percent_of_stat": true,
+              "condition": "trait_count_at_least",
+              "condition_trait": "DA_18_Brawler"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
