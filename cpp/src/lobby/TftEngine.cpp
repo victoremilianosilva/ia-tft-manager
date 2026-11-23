@@ -30,6 +30,7 @@
 #include "lobby/UnitPool.hpp"
 #include "lobby/EconomyEngine.hpp"
 #include "combat/CombatEngine.hpp"
+#include "combat/CombatTraitCatalog.hpp"
 #include "combat/CombatEvidence.hpp"
 #include "combat/CombatProjectionEngine.hpp"
 #include "lobby/ShopEngine.hpp"
@@ -67,6 +68,10 @@
 
 #ifndef TFT_DEFAULT_ITEM_CATALOG_PATH
 #define TFT_DEFAULT_ITEM_CATALOG_PATH "data/itens.json"
+#endif
+
+#ifndef TFT_DEFAULT_TRAIT_COMBAT_CATALOG_PATH
+#define TFT_DEFAULT_TRAIT_COMBAT_CATALOG_PATH "data/trait_combat_effects.json"
 #endif
 
 #ifndef TFT_COMP_DIRECTION_MIN_RELATIVE_ADVANTAGE
@@ -406,6 +411,7 @@ struct TFTEngine::Impl {
 
     std::unique_ptr<ChampionCatalog> catalog;
     std::optional<items::ItemCatalog> item_catalog;
+    std::optional<combat::TraitCombatCatalog> trait_combat_catalog;
     // Catalog-derived recipe observations are immutable for this engine
     // instance and shared by every player's observation.
     std::array<std::array<float, kItemSemanticFeatureDim>, 100>
@@ -572,6 +578,26 @@ struct TFTEngine::Impl {
                 );
             }
             item_catalog = items::load_item_catalog(item_file);
+        }
+
+        const char* configured_trait_catalog = std::getenv("TFT_TRAIT_COMBAT_CATALOG");
+        const std::string resolved_trait_catalog_path =
+            configured_trait_catalog && *configured_trait_catalog
+                ? configured_trait_catalog
+                : TFT_DEFAULT_TRAIT_COMBAT_CATALOG_PATH;
+        std::ifstream trait_file(resolved_trait_catalog_path);
+        if (!trait_file) {
+            throw std::runtime_error(
+                "Nao foi possivel abrir catalogo de efeitos de traits: " +
+                resolved_trait_catalog_path
+            );
+        }
+        trait_combat_catalog = combat::load_trait_combat_catalog(trait_file);
+        if (item_catalog && trait_combat_catalog &&
+            item_catalog->set_id != trait_combat_catalog->set_id) {
+            throw std::runtime_error(
+                "Catalogos de itens e traits pertencem a sets diferentes"
+            );
         }
 
         // Recipes and their encoded attributes depend only on the loaded item
@@ -3762,6 +3788,8 @@ struct TFTEngine::Impl {
                 const auto count = combat_trait_counts.find(trait_name);
                 trait.active_count = count == combat_trait_counts.end() ? 0 : count->second;
                 trait.active = trait.active_count > 0;
+                if (trait_combat_catalog)
+                    combat::apply_trait_combat_metadata(trait, *trait_combat_catalog);
                 unit.traits.push_back(std::move(trait));
             }
 
