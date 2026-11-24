@@ -678,10 +678,8 @@ def test_rollout_metadata_isolated_on_store_and_shared_read_only_in_batches():
         "decision_sequence": 22, "player_decision_sequence": 22, "player_id": 0, "lobby_index": 0,
         "action_trace": trace,
     }
-    next_state = {
-        "engine_instance_id": "engine-A", "episode_id": 4,
-        "decision_sequence": 22, "player_decision_sequence": 22, "player_id": 0, "lobby_index": 0,
-    }
+    # The same post-step state may serve as result and next observation.
+    next_state = dict(result)
 
     buffer.add(
         obs=np.zeros((1, 3), dtype=np.float32),
@@ -702,6 +700,17 @@ def test_rollout_metadata_isolated_on_store_and_shared_read_only_in_batches():
     stored_trace = buffer.result_snapshot_metadata[0][0]["action_trace"]
     assert stored_trace["requested_action"] == [6, 0, 0, 0, 0, 0]
     assert stored_trace["status_reason"] == "applied"
+
+    # Equal result/next envelopes share one buffer-owned object.
+    assert buffer.result_snapshot_metadata[0][0] is buffer.next_snapshot_metadata[0][0]
+
+    # Audit retrieval returns complete but isolated envelopes.
+    audit = buffer.get_transition_metadata(0, 0)
+    assert audit["snapshot_metadata"]["mask_snapshot_hash"] == "a" * 64
+    assert audit["result_snapshot_metadata"]["action_trace"]["status_reason"] == "applied"
+    assert audit["result_snapshot_metadata"] == audit["next_snapshot_metadata"]
+    audit["result_snapshot_metadata"]["action_trace"]["status_reason"] = "audit-mutated"
+    assert buffer.result_snapshot_metadata[0][0]["action_trace"]["status_reason"] == "applied"
 
     # Normal PPO minibatches must not materialize or expose diagnostic envelopes.
     training_batch = next(buffer.get_batches(batch_size=1))
