@@ -446,6 +446,7 @@ struct TFTEngine::Impl {
     std::uint64_t composition_intelligence_sequence{0};
     bool composition_intelligence_enabled{false};
     bool composition_diagnostics_enabled{false};
+    bool composition_diagnostics_debug{false};
     std::string composition_diagnostics_mode{"off"};
     std::array<std::unique_ptr<strategy::UnifiedStrategicRuntime>, kPlayersPerLobby>
         strategic_runtimes{};
@@ -547,6 +548,7 @@ struct TFTEngine::Impl {
             ? std::string(diagnostics_mode) : std::string("off");
         if (composition_diagnostics_mode == "audit" || composition_diagnostics_mode == "debug") {
             composition_diagnostics_enabled = true;
+            composition_diagnostics_debug = composition_diagnostics_mode == "debug";
         } else if (composition_diagnostics_mode != "off") {
             throw std::invalid_argument(
                 "TFT_COMPOSITION_DIAGNOSTICS_MODE must be off, audit or debug.");
@@ -2903,7 +2905,7 @@ struct TFTEngine::Impl {
                 auto& runtime = composition_intelligence_players[i];
                 const auto round_id = static_cast<std::uint32_t>(current_round);
                 runtime.begin_cycle(episode_id, static_cast<std::int32_t>(i), round_id,
-                    composition_diagnostics_enabled);
+                    composition_diagnostics_enabled, composition_diagnostics_debug);
                 const auto active_before = runtime.active.current();
                 ci::CompositionEvaluationContext composition_context;
                 // TransitionManager hysteresis is scoped to the real match/player
@@ -3086,7 +3088,7 @@ struct TFTEngine::Impl {
                     composition_context.candidate_evidence.push_back(std::move(evidence));
                 }
 
-                runtime.mark_stage("candidate_sources", source_candidates.empty() ? "unavailable" : "completed",
+                if (composition_diagnostics_debug) runtime.mark_stage("candidate_sources", source_candidates.empty() ? "unavailable" : "completed",
                     source_candidates.empty() ? "no validated Native or OP.GG candidates" : "validated candidates received",
                     active_before);
                 const auto proposal = runtime.transitions.propose(active_before, source_candidates, composition_context);
@@ -3597,7 +3599,7 @@ struct TFTEngine::Impl {
                 };
                 auto& failed_runtime = composition_intelligence_players[i];
                 failed_runtime.planner_outputs_valid = false;
-                failed_runtime.mark_stage("runtime", "failed", error.what());
+                if (composition_diagnostics_debug) failed_runtime.mark_stage("runtime", "failed", error.what());
                 if (composition_diagnostics_enabled) {
                     failed["sequence"] = composition_intelligence_sequence + 1;
                     if (failed_runtime.append_snapshot(std::move(failed)))
