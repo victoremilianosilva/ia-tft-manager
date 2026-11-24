@@ -1619,6 +1619,7 @@ void test_movement_distance_handles_board_edges_and_preserves_input() {
 
     auto& mover = input.player_a.units.front();
     mover.position = {0, 1};
+    mover.role = tft::UnitRole::FIGHTER;
     mover.attack_range = 1.0f;
     mover.can_attack = false;
     mover.can_cast = false;
