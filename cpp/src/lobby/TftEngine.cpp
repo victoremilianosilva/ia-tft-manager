@@ -3611,7 +3611,6 @@ struct TFTEngine::Impl {
             }
 
 
-        }
         }, [this, i]() noexcept {
             strategic_refresh_failure_reasons[i] =
                 "composition_intelligence_refresh_exception: unknown";
