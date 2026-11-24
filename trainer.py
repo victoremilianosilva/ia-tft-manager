@@ -23,7 +23,7 @@ from rich.progress import (
 from training_config import TrainingConfig, cosine_lr_factor
 from decision_identity import build_player_identity_envelopes
 
-from cpp_lobby_env import CppTFTLobbyWrapper
+from cpp_lobby_env import CppTFTLobbyWrapper, _NativeLobbyBatchManager
 
 from torch.utils.tensorboard import SummaryWriter
 
@@ -264,19 +264,34 @@ class Trainer:
         # PPO consumes the native strategic-owner projection directly.
         # Diagnostic JSONL sidecars are not enabled as a side effect of training.
         resolved_item_catalog = item_catalog_path or os.environ.get("TFT_ITEM_CATALOG_PATH")
+        self._lobby_batch_manager = _NativeLobbyBatchManager(
+            self.num_envs,
+            self.config.seed,
+            "",
+            str(
+                Path(resolved_item_catalog).expanduser().resolve()
+                if resolved_item_catalog
+                else Path(__file__).resolve().parent / "data" / "itens.json"
+            ),
+        )
         env_fns = [
             (
-                lambda lobby_seed=self.config.seed + lobby_index:
+                lambda lobby_index=lobby_index:
                 CppTFTLobbyWrapper(
-                    seed=lobby_seed,
+                    seed=self.config.seed + lobby_index,
                     item_catalog_path=resolved_item_catalog,
+                    native_engine=self._lobby_batch_manager.engine(lobby_index),
                 )
             )
             for lobby_index in range(self.num_envs)
         ]
 
-        # LobbyVectorEnv is serial: one native Engine instance per lobby.
-        self.vec_env = LobbyVectorEnv(env_fns)
+        # Reset/step are submitted as one native batch. Python retains
+        # semantic projection, reward audit, and PPO ownership.
+        self.vec_env = LobbyVectorEnv(
+            env_fns,
+            batch_manager=self._lobby_batch_manager,
+        )
         dummy_obs = self.vec_env.reset(seed=self.config.seed)
         catalog_maps = self.vec_env.env_method("get_champion_id_map")
         if not catalog_maps or any(not isinstance(item, dict) for item in catalog_maps):
