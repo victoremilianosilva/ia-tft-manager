@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
+#include <sstream>
 #include <string>
 
 namespace {
@@ -44,6 +45,16 @@ int main(int argc, char** argv) {
                 require(!tier.effects.empty(),
                         "Every tier of a complete combat trait must have effects.");
         }
+
+        const auto& coven = find("DA_18_Coven");
+        require(coven.coverage_status == "non_combat" && coven.effects_complete,
+                "Non-combat status must be explicit and complete for combat scope.");
+        const auto& eclipse = find("DA_18_Eclipse");
+        require(eclipse.coverage_status == "not_implemented" && !eclipse.effects_complete,
+                "Unimplemented combat mechanics must remain explicitly unavailable.");
+        const auto& slayer_status = find("DA_18_Slayer");
+        require(slayer_status.coverage_status == "partial" && !slayer_status.effects_complete,
+                "Partial mechanics must not be promoted to complete.");
 
         const auto& invoker = find("DA_18_Invoker");
         require(invoker.tiers.size() == 4 &&
@@ -105,6 +116,35 @@ int main(int argc, char** argv) {
                              std::abs(effect.interval - 5.0f) < 0.0001f);
                     }),
                 "Riftbeast growth must include combat-start and five-second effects.");
+
+        {
+            std::istringstream invalid_complete(R"JSON({
+                "schema_version": 1, "set_id": "Set18", "traits": [{
+                    "api_name": "invalid", "effects_complete": true,
+                    "coverage_status": "complete",
+                    "tiers": [{"min_units": 1, "effects": []}]
+                }]
+            })JSON");
+            bool rejected = false;
+            try { (void)tft::combat::load_trait_combat_catalog(invalid_complete); }
+            catch (const std::invalid_argument&) { rejected = true; }
+            require(rejected,
+                    "A complete trait with an empty tier must be rejected.");
+        }
+        {
+            std::istringstream inconsistent_status(R"JSON({
+                "schema_version": 1, "set_id": "Set18", "traits": [{
+                    "api_name": "invalid", "effects_complete": true,
+                    "coverage_status": "not_implemented",
+                    "tiers": [{"min_units": 1, "effects": []}]
+                }]
+            })JSON");
+            bool rejected = false;
+            try { (void)tft::combat::load_trait_combat_catalog(inconsistent_status); }
+            catch (const std::invalid_argument&) { rejected = true; }
+            require(rejected,
+                    "Contradictory trait coverage metadata must be rejected.");
+        }
 
         std::cout << "Loaded " << catalog.traits.size()
                   << " Set 18 traits; complete combat mappings: 5; non-combat traits: 3; partial mappings: 5.\n";
