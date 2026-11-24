@@ -237,6 +237,131 @@ def test_semantic_validation_accepts_normalized_stats_or_explicit_effects():
     }
     validate_catalog_semantics(catalog)
 
+
+def test_semantic_validation_accepts_periodic_percent_of_stat_effect():
+    catalog = {
+        "items": [{
+            "id": "TFT_Item_ArchangelsStaff",
+            "stats": {},
+            "combat_effects": [{
+                "trigger": "periodic",
+                "operation": "add_stat",
+                "stat": "ability_power",
+                "target": "self",
+                "value": 0.2,
+                "percent_of_stat": True,
+                "interval": 5,
+            }],
+        }]
+    }
+    validate_catalog_semantics(catalog)
+
+
+def test_semantic_validation_accepts_all_native_healing_and_attack_mana_effects():
+    catalog = {
+        "items": [{
+            "id": "Item_NativeEffects",
+            "stats": {},
+            "combat_effects": [
+                {
+                    "trigger": "periodic",
+                    "operation": "heal_max_hp_pct",
+                    "target": "self",
+                    "value": 0.025,
+                    "interval": 2,
+                },
+                {
+                    "trigger": "periodic",
+                    "operation": "heal_missing_hp_pct",
+                    "target": "self",
+                    "value": 0.18,
+                    "interval": 1,
+                    "max_amount": 100,
+                },
+                {
+                    "trigger": "while_hp_above",
+                    "operation": "add_stat",
+                    "stat": "damage_reduction",
+                    "target": "self",
+                    "value": 0.15,
+                    "health_threshold": 0.5,
+                },
+                {
+                    "trigger": "on_attack",
+                    "operation": "mana_on_attack",
+                    "target": "self",
+                    "value": 5,
+                    "critical_value": 10,
+                },
+                {
+                    "trigger": "on_damage_dealt",
+                    "operation": "heal_damage_pct_lowest_ally",
+                    "target": "lowest_health_ally",
+                    "value": 0.12,
+                },
+            ],
+        }]
+    }
+    validate_catalog_semantics(catalog)
+
+
+@pytest.mark.parametrize("operation", ["heal_max_hp_pct", "heal_missing_hp_pct"])
+def test_semantic_validation_rejects_periodic_healing_without_positive_interval(operation):
+    catalog = {
+        "items": [{
+            "id": "invalid_periodic_healing",
+            "stats": {},
+            "combat_effects": [{
+                "trigger": "periodic",
+                "operation": operation,
+                "target": "self",
+                "value": 0.1,
+                "interval": 0,
+            }],
+        }]
+    }
+    with pytest.raises(ValueError, match="Efeito sem handler/contrato suportado"):
+        validate_catalog_semantics(catalog)
+
+
+def test_semantic_validation_rejects_periodic_add_stat_without_positive_interval():
+    catalog = {
+        "items": [{
+            "id": "invalid_periodic_item",
+            "stats": {},
+            "combat_effects": [{
+                "trigger": "periodic",
+                "operation": "add_stat",
+                "stat": "ability_power",
+                "target": "self",
+                "value": 0.2,
+                "percent_of_stat": True,
+                "interval": 0,
+            }],
+        }]
+    }
+    with pytest.raises(ValueError, match="Efeito sem handler/contrato suportado"):
+        validate_catalog_semantics(catalog)
+
+
+def test_semantic_validation_accepts_generic_mana_gain_multiplier():
+    catalog = {
+        "items": [
+            {
+                "id": "Item_AdaptiveHelm",
+                "stats": {},
+                "combat_effects": [{
+                    "trigger": "combat_start",
+                    "operation": "mana_gain_multiplier",
+                    "target": "self",
+                    "value": 1.15,
+                }],
+            },
+        ]
+    }
+    validate_catalog_semantics(catalog)
+
+
 def test_semantic_validation_rejects_effect_without_combat_handler():
     catalog = {
         "items": [

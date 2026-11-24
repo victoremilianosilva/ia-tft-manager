@@ -38,6 +38,8 @@ inline CombatItem to_combat_item(const ItemDefinition& definition) {
     item.grants_trait = definition.grants_trait;
     item.granted_trait_active_count = definition.granted_trait_active_count;
     item.effects = definition.combat_effects;
+    item.effects_complete = definition.combat_effects_complete;
+    item.effects_complete = definition.combat_effects_complete;
     return item;
 }
 

@@ -1,5 +1,7 @@
 #include "lobby/TftEngine.hpp"
 
+#include <nlohmann/json.hpp>
+
 #include <array>
 #include <cmath>
 #include <cstdint>
@@ -121,6 +123,8 @@ int main(int argc, char** argv) {
         const std::string catalog_path = argv[1];
 
         std::uint64_t total_combat_events = 0;
+        std::uint64_t total_simulation_artifacts = 0;
+        std::uint64_t total_linked_simulation_outcomes = 0;
         std::uint64_t total_rounds = 0;
         std::uint64_t total_blocks = 0;
         std::uint64_t total_attempts = 0;
@@ -152,6 +156,37 @@ int main(int argc, char** argv) {
                 for (const auto& event : result.events) {
                     if (event.rfind("COMBAT:", 0) == 0) {
                         ++total_combat_events;
+                    } else if (event.rfind("COMBAT_SIMULATION_REPLAY_V1:", 0) == 0) {
+                        const auto artifact = nlohmann::json::parse(
+                            event.substr(std::string("COMBAT_SIMULATION_REPLAY_V1:").size()));
+                        require(artifact.value("schema_version", 0) == 1,
+                                "Simulation replay artifact schema version is missing.");
+                        require(artifact.value("authoritative_game_replay", true) == false,
+                                "Native simulation trace was mislabeled as an authoritative replay.");
+                        require(artifact.value("calibration_eligible", true) == false,
+                                "Native simulation trace became calibration eligible.");
+                        require(artifact.contains("player_a_units") &&
+                                artifact.contains("player_b_units") &&
+                                artifact.contains("result"),
+                                "Simulation replay artifact is missing input/result data.");
+                        ++total_simulation_artifacts;
+                    } else if (event.rfind("COMBAT_OUTCOME_V1:", 0) == 0) {
+                        const auto outcome = nlohmann::json::parse(
+                            event.substr(std::string("COMBAT_OUTCOME_V1:").size()));
+                        require(outcome.value("calibration_eligible", true) == false,
+                                "Combat outcome became calibration eligible without an authoritative replay.");
+                        require(outcome.value("authoritative_game_replay", true) == false &&
+                                outcome.value("observation_scope", "") == "native_lobby_simulation",
+                                "Native outcome was mislabeled as an authoritative game replay.");
+                        require(outcome["replay_artifact_id"].is_null() &&
+                                outcome["dataset_version"].is_null(),
+                                "Native simulation artifact leaked into authoritative replay fields.");
+                        if (outcome.contains("simulation_artifact_id") &&
+                            outcome["simulation_artifact_id"].is_string()) {
+                            require(outcome.value("simulation_dataset_version", "").size() > 0,
+                                    "Linked simulation artifact has no dataset schema version.");
+                            ++total_linked_simulation_outcomes;
+                        }
                     }
                 }
 
@@ -189,6 +224,10 @@ int main(int argc, char** argv) {
                 "A simulação terminou cedo demais para ser um soak test.");
         require(total_combat_events > 0,
                 "Nenhum combate PVP foi integrado/executado durante o teste.");
+        require(total_simulation_artifacts > 0,
+                "Nenhum artefato de replay do simulador nativo foi emitido.");
+        require(total_linked_simulation_outcomes > 0,
+                "Nenhum resultado de combate foi ligado ao artefato do simulador.");
         require(total_attempts > 0,
                 "O teste não executou tentativas de movimentação.");
         require(total_blocks > 0,

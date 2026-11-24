@@ -30,6 +30,7 @@
 #include "lobby/UnitPool.hpp"
 #include "lobby/EconomyEngine.hpp"
 #include "combat/CombatEngine.hpp"
+#include "combat/CombatTraitCatalog.hpp"
 #include "combat/CombatEvidence.hpp"
 #include "combat/CombatProjectionEngine.hpp"
 #include "lobby/ShopEngine.hpp"
@@ -67,6 +68,10 @@
 
 #ifndef TFT_DEFAULT_ITEM_CATALOG_PATH
 #define TFT_DEFAULT_ITEM_CATALOG_PATH "data/itens.json"
+#endif
+
+#ifndef TFT_DEFAULT_TRAIT_COMBAT_CATALOG_PATH
+#define TFT_DEFAULT_TRAIT_COMBAT_CATALOG_PATH "data/trait_combat_effects.json"
 #endif
 
 #ifndef TFT_COMP_DIRECTION_MIN_RELATIVE_ADVANTAGE
@@ -406,6 +411,7 @@ struct TFTEngine::Impl {
 
     std::unique_ptr<ChampionCatalog> catalog;
     std::optional<items::ItemCatalog> item_catalog;
+    std::optional<combat::TraitCombatCatalog> trait_combat_catalog;
     // Catalog-derived recipe observations are immutable for this engine
     // instance and shared by every player's observation.
     std::array<std::array<float, kItemSemanticFeatureDim>, 100>
@@ -572,6 +578,40 @@ struct TFTEngine::Impl {
                 );
             }
             item_catalog = items::load_item_catalog(item_file);
+        }
+
+        const char* configured_trait_catalog = std::getenv("TFT_TRAIT_COMBAT_CATALOG");
+        std::string resolved_trait_catalog_path =
+            configured_trait_catalog && *configured_trait_catalog
+                ? configured_trait_catalog
+                : TFT_DEFAULT_TRAIT_COMBAT_CATALOG_PATH;
+        std::ifstream trait_file(resolved_trait_catalog_path);
+        if (!trait_file && !(configured_trait_catalog && *configured_trait_catalog)) {
+            // CTest and native tools may execute from cpp/ or cpp/build/.
+            for (const auto* candidate : {
+                    "../data/trait_combat_effects.json",
+                    "../../data/trait_combat_effects.json"}) {
+                trait_file.clear();
+                trait_file.open(candidate);
+                if (trait_file) {
+                    resolved_trait_catalog_path = candidate;
+                    break;
+                }
+            }
+        }
+        if (!trait_file) {
+            throw std::runtime_error(
+                "Nao foi possivel abrir catalogo de efeitos de traits: " +
+                resolved_trait_catalog_path
+            );
+        }
+        trait_combat_catalog = combat::load_trait_combat_catalog(trait_file);
+        if (item_catalog && trait_combat_catalog &&
+            item_catalog->set_id != trait_combat_catalog->set_id) {
+            // A mismatched trait catalog is not safe to apply. Keep the
+            // engine usable for fixtures/alternate sets and leave trait
+            // effect coverage incomplete rather than loading foreign effects.
+            trait_combat_catalog.reset();
         }
 
         // Recipes and their encoded attributes depend only on the loaded item
@@ -3762,6 +3802,8 @@ struct TFTEngine::Impl {
                 const auto count = combat_trait_counts.find(trait_name);
                 trait.active_count = count == combat_trait_counts.end() ? 0 : count->second;
                 trait.active = trait.active_count > 0;
+                if (trait_combat_catalog)
+                    combat::apply_trait_combat_metadata(trait, *trait_combat_catalog);
                 unit.traits.push_back(std::move(trait));
             }
 
@@ -3914,6 +3956,10 @@ struct TFTEngine::Impl {
             player.damage_taken += applied;
         };
 
+        std::string current_simulation_artifact_id;
+        constexpr const char* kSimulationDatasetVersion =
+            "native-combat-simulation-input.v1";
+
         // This is the authoritative environment outcome, not a CombatEngine
         // forecast. Replay infrastructure may persist it and attach immutable
         // artifact/dataset identities later; without those identities it is
@@ -3926,8 +3972,8 @@ struct TFTEngine::Impl {
                                           const char* outcome_kind,
                                           const std::string& simulator_version,
                                           const std::string& coverage_status) {
-            if (episode_id == 0 || decision_sequence == 0 ||
-                strategic_context_sequences[player_index] == 0) return;
+            if (player_index >= kPlayersPerLobby ||
+                opponent_index >= kPlayersPerLobby) return;
             const nlohmann::json outcome{
                 {"contract_id", "tft.combat-outcome.v1"},
                 {"match_id", episode_id},
@@ -3945,15 +3991,26 @@ struct TFTEngine::Impl {
                 {"mechanics_coverage_status", coverage_status},
                 {"source", "native_lobby_resolved_combat.v1"},
                 {"observed", true},
+                {"observation_scope", "native_lobby_simulation"},
+                {"authoritative_game_replay", false},
+                {"simulation_artifact_id", current_simulation_artifact_id.empty()
+                    ? nlohmann::json(nullptr) : nlohmann::json(current_simulation_artifact_id)},
+                {"simulation_dataset_version", current_simulation_artifact_id.empty()
+                    ? nlohmann::json(nullptr) : nlohmann::json(kSimulationDatasetVersion)},
+                // Native simulator traces are reproducible diagnostics, not
+                // authoritative game replays and never calibration samples.
                 {"replay_artifact_id", nullptr},
                 {"dataset_version", nullptr},
                 {"calibration_eligible", false},
-                {"calibration_ineligibility_reason", "awaiting_versioned_replay_artifact"}
+                {"calibration_ineligibility_reason", current_simulation_artifact_id.empty()
+                    ? "awaiting_authoritative_replay_artifact"
+                    : "native_simulation_trace_is_not_authoritative_game_replay"}
             };
             events.emplace_back("COMBAT_OUTCOME_V1:" + outcome.dump());
         };
 
         for (const auto& [a, b] : matchups) {
+            current_simulation_artifact_id.clear();
             if (!player_envs[a].info.alive || !player_envs[b].info.alive) continue;
             CombatInput input{};
             std::string combat_coverage_status{"unavailable_not_measured"};
@@ -4350,6 +4407,200 @@ struct TFTEngine::Impl {
                 index_team_units(input.player_b);
 
                 ++combat_sequence;
+                current_simulation_artifact_id =
+                    "native-sim-v1:" + std::to_string(episode_id) + ":" +
+                    std::to_string(round + 1) + ":" +
+                    std::to_string(combat_sequence) + ":" +
+                    std::to_string(a) + ":" + std::to_string(b);
+
+                // Persist the exact native simulator input and its result as a
+                // deterministic diagnostic artifact. This is intentionally
+                // separate from the authoritative replay artifact contract.
+                const auto serialize_effect = [](const CombatEffectDefinition& effect) {
+                    return nlohmann::json{
+                        {"trigger", effect.trigger}, {"operation", effect.operation},
+                        {"stat", effect.stat}, {"target", effect.target},
+                        {"condition", effect.condition},
+                        {"condition_trait", effect.condition_trait},
+                        {"stack_key", effect.stack_key},
+                        {"damage_type", static_cast<int>(effect.damage_type)},
+                        {"value", effect.value}, {"duration", effect.duration},
+                        {"interval", effect.interval}, {"delay", effect.delay},
+                        {"health_threshold", effect.health_threshold},
+                        {"max_stacks", effect.max_stacks},
+                        {"min_trait_count", effect.min_trait_count},
+                        {"percent_of_max_health", effect.percent_of_max_health},
+                        {"percent_of_stat", effect.percent_of_stat},
+                        {"scale_by_active_trait_count", effect.scale_by_active_trait_count},
+                        {"scale_by_base_stat", effect.scale_by_base_stat}
+                    };
+                };
+                const auto serialize_unit = [&](const CombatUnit& unit) {
+                    nlohmann::json item_rows = nlohmann::json::array();
+                    for (const auto& item : unit.items) {
+                        nlohmann::json effects = nlohmann::json::array();
+                        for (const auto& effect : item.effects) effects.push_back(serialize_effect(effect));
+                        item_rows.push_back({
+                            {"id", item.id}, {"api_name", item.api_name}, {"name", item.name},
+                            {"attack_damage", item.attack_damage}, {"ability_power", item.ability_power},
+                            {"attack_speed", item.attack_speed},
+                            {"critical_strike_chance", item.critical_strike_chance},
+                            {"critical_strike_damage", item.critical_strike_damage},
+                            {"health", item.health}, {"armor", item.armor},
+                            {"magic_resist", item.magic_resist}, {"mana", item.mana},
+                            {"omnivamp", item.omnivamp},
+                            {"damage_amplification", item.damage_amplification},
+                            {"damage_reduction", item.damage_reduction},
+                            {"grants_trait", item.grants_trait},
+                            {"granted_trait_active_count", item.granted_trait_active_count},
+                            {"is_temporary", item.is_temporary},
+                            {"effects_complete", item.effects_complete}, {"effects", effects}
+                        });
+                    }
+                    nlohmann::json trait_rows = nlohmann::json::array();
+                    for (const auto& trait : unit.traits) {
+                        nlohmann::json effects = nlohmann::json::array();
+                        for (const auto& effect : trait.effects) effects.push_back(serialize_effect(effect));
+                        trait_rows.push_back({
+                            {"id", trait.id}, {"api_name", trait.api_name}, {"name", trait.name},
+                            {"active_count", trait.active_count}, {"tier", trait.tier},
+                            {"active", trait.active}, {"effects_complete", trait.effects_complete},
+                            {"effects", effects}
+                        });
+                    }
+                    const auto& ability = unit.ability;
+                    return nlohmann::json{
+                        {"id", unit.id}, {"api_name", unit.api_name}, {"name", unit.name},
+                        {"star", unit.star}, {"team", static_cast<int>(unit.team)},
+                        {"role", static_cast<int>(unit.role)},
+                        {"position", {{"x", unit.position.x}, {"y", unit.position.y}}},
+                        {"hp", unit.hp}, {"max_hp", unit.max_hp},
+                        {"mana", unit.mana}, {"max_mana", unit.max_mana},
+                        {"attack_damage", unit.attack_damage}, {"ability_power", unit.ability_power},
+                        {"attack_speed", unit.attack_speed}, {"attack_range", unit.attack_range},
+                        {"critical_strike_chance", unit.critical_strike_chance},
+                        {"critical_strike_damage", unit.critical_strike_damage},
+                        {"armor", unit.armor}, {"magic_resist", unit.magic_resist},
+                        {"damage_amplification", unit.damage_amplification},
+                        {"damage_reduction", unit.damage_reduction}, {"omnivamp", unit.omnivamp},
+                        {"ability", {
+                            {"id", ability.id}, {"api_name", ability.api_name},
+                            {"name", ability.name}, {"description", ability.description},
+                            {"metadata_complete", ability.metadata_complete},
+                            {"mana_cost", ability.mana_cost}, {"initial_mana", ability.initial_mana},
+                            {"target_type", static_cast<int>(ability.target_type)},
+                            {"damage_type", static_cast<int>(ability.damage_type)},
+                            {"base_damage", ability.base_damage},
+                            {"base_healing", ability.base_healing},
+                            {"shield_amount", ability.shield_amount},
+                            {"ability_power_ratio", ability.ability_power_ratio},
+                            {"attack_damage_ratio", ability.attack_damage_ratio},
+                            {"area_radius", ability.area_radius}, {"duration", ability.duration},
+                            {"has_damage", ability.has_damage}, {"has_healing", ability.has_healing},
+                            {"has_shield", ability.has_shield}, {"has_buff", ability.has_buff},
+                            {"has_debuff", ability.has_debuff},
+                            {"has_area_effect", ability.has_area_effect},
+                            {"variables", [&] {
+                                nlohmann::json variables = nlohmann::json::array();
+                                for (const auto& variable : ability.variables) {
+                                    variables.push_back({
+                                        {"name", variable.name}, {"values", variable.values}
+                                    });
+                                }
+                                return variables;
+                            }()}
+                        }},
+                        {"items", item_rows}, {"traits", trait_rows},
+                        {"alive", unit.alive}, {"can_move", unit.can_move},
+                        {"can_attack", unit.can_attack}, {"can_cast", unit.can_cast},
+                        {"source_board_position", unit.source_board_position},
+                        {"source_unit_uuid", unit.source_unit_uuid}
+                    };
+                };
+                nlohmann::json player_a_units = nlohmann::json::array();
+                nlohmann::json player_b_units = nlohmann::json::array();
+                for (const auto& unit : input.player_a.units)
+                    player_a_units.push_back(serialize_unit(unit));
+                for (const auto& unit : input.player_b.units)
+                    player_b_units.push_back(serialize_unit(unit));
+                nlohmann::json result_units = nlohmann::json::array();
+                for (const auto& unit : combat.units) {
+                    result_units.push_back({
+                        {"unit_id", unit.unit_id}, {"team", static_cast<int>(unit.team)},
+                        {"survived", unit.survived}, {"initial_hp", unit.initial_hp},
+                        {"final_hp", unit.final_hp}, {"damage_dealt", unit.damage_dealt},
+                        {"damage_taken", unit.damage_taken}, {"healing_done", unit.healing_done},
+                        {"kills", unit.kills}, {"attacks", unit.attacks},
+                        {"ability_casts", unit.ability_casts},
+                        {"final_x", unit.final_x}, {"final_y", unit.final_y}
+                    });
+                }
+                const nlohmann::json simulation_artifact{
+                    {"schema_version", 1},
+                    {"artifact_id", current_simulation_artifact_id},
+                    {"dataset_version", kSimulationDatasetVersion},
+                    {"source", "native_combat_engine_simulation"},
+                    {"authoritative_game_replay", false},
+                    {"calibration_eligible", false},
+                    {"match_id", episode_id}, {"round", round + 1},
+                    {"combat_sequence", combat_sequence},
+                    {"player_a_id", a}, {"player_b_id", b},
+                    {"seed", input.seed},
+                    {"context", static_cast<int>(input.context)},
+                    {"simulator_version", "combat-engine-generic.v1"},
+                    {"player_a_team", static_cast<int>(input.player_a.team)},
+                    {"player_a_id", input.player_a.player_id},
+                    {"player_a_hp", input.player_a.player_hp},
+                    {"player_b_team", static_cast<int>(input.player_b.team)},
+                    {"player_b_id", input.player_b.player_id},
+                    {"player_b_hp", input.player_b.player_hp},
+                    {"config", {
+                        {"board_rows", input.config.board_rows},
+                        {"board_cols", input.config.board_cols},
+                        {"max_duration", input.config.max_duration},
+                        {"max_events", input.config.max_events},
+                        {"seed", input.config.seed},
+                        {"deterministic", input.config.deterministic},
+                        {"debug", input.config.debug},
+                        {"record_events", input.config.record_events},
+                        {"record_damage", input.config.record_damage},
+                        {"record_targets", input.config.record_targets},
+                        {"record_positions", input.config.record_positions},
+                        {"record_mana", input.config.record_mana},
+                        {"record_abilities", input.config.record_abilities}
+                    }},
+                    {"global_modifiers", [&] {
+                        nlohmann::json modifiers = nlohmann::json::array();
+                        for (const auto& modifier : input.global_modifiers) {
+                            modifiers.push_back({
+                                {"id", modifier.id}, {"source", modifier.source},
+                                {"attack_damage", modifier.attack_damage},
+                                {"ability_power", modifier.ability_power},
+                                {"attack_speed", modifier.attack_speed},
+                                {"health", modifier.health}, {"armor", modifier.armor},
+                                {"magic_resist", modifier.magic_resist},
+                                {"damage_amplification", modifier.damage_amplification},
+                                {"damage_reduction", modifier.damage_reduction},
+                                {"duration", modifier.duration}, {"temporary", modifier.temporary}
+                            });
+                        }
+                        return modifiers;
+                    }()},
+                    {"player_a_units", player_a_units}, {"player_b_units", player_b_units},
+                    {"result", {
+                        {"success", combat.success}, {"completed", combat.completed},
+                        {"timeout", combat.timeout}, {"winner", static_cast<int>(combat.winner)},
+                        {"duration", combat.duration},
+                        {"player_a_damage", combat.player_a_damage},
+                        {"player_b_damage", combat.player_b_damage},
+                        {"player_a_survivors", combat.player_a_survivors},
+                        {"player_b_survivors", combat.player_b_survivors},
+                        {"units", result_units}
+                    }}
+                };
+                events.emplace_back(
+                    "COMBAT_SIMULATION_REPLAY_V1:" + simulation_artifact.dump());
+
                 // Convert completed combat results into a factual per-unit
                 // damage-share signal. Identity is joined through the persistent
                 // board UUID; incomplete attribution never becomes evidence.

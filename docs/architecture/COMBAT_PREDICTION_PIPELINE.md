@@ -222,3 +222,126 @@ target match; requires one independent sample per match; and permits multiple
 replay artifacts only when they belong to the same immutable dataset version.
 Multi-round risk is handled separately through complete weighted trajectories,
 not through the single-round damage distribution.
+
+
+## Item catalog completeness contract
+
+The item adapter now carries an explicit `combat_effects_complete` assertion
+from `ItemDefinition` into `CombatItem::effects_complete`. The default is
+false: an empty vector is ambiguous and must not be interpreted as an
+authoritative “no passive” declaration. The normalized JSON loader accepts this field only as a boolean and
+rejects malformed values; omission preserves the conservative false default.
+A set catalog loader may set the flag
+true only after it has resolved the complete combat-relevant item metadata for
+the active set, including an explicit empty effect list when the item truly has
+no passive. This keeps coverage fail-closed and prevents an incomplete catalog
+from silently qualifying an item for calibration.
+
+Champion ability scripts are intentionally outside this change. Active trait
+effect production and migration of all legacy item-name mechanics remain
+separate implementation work; this PR does not claim those mechanics are
+complete or replay-calibrated.
+
+## Item completeness validation
+
+- Adapter tests verify that missing metadata remains incomplete.
+- Adapter tests verify that a catalog-declared complete effect list is copied
+  without loss.
+- Adapter tests verify that an explicitly complete empty list is distinct
+  from missing metadata.
+- Coverage validation continues to reject active traits whose effect metadata
+  has not been explicitly populated.
+
+
+
+## Native trait effect production
+
+`TraitCombatCatalog` loads a versioned, set-scoped normalized catalog and
+selects the highest tier whose minimum unit count is satisfied by the actual
+active trait count. `TftEngine::append_combat_team` attaches those effects to
+the factual trait instances before the combat input is built. Unknown traits,
+missing tiers, inactive traits, and mismatched set catalogs remain incomplete.
+
+The initial Set 18 mapping covers the Brawler health effects only. Its team
+health contribution is divided across active Brawler sources so the team aura
+is applied exactly once in aggregate; the trait's own health multiplier is
+applied to Brawler units. This is not a claim that every Set 18 trait is
+modeled. Other traits continue to fail closed until their full combat
+semantics are normalized and tested.
+
+## Native simulation trace versus authoritative replay
+
+The lobby now emits `COMBAT_SIMULATION_REPLAY_V1` with the deterministic
+native simulator input, set/trait/item effect metadata, simulator result
+summary, stable artifact identity, and a versioned diagnostic dataset label.
+The corresponding `COMBAT_OUTCOME_V1` references this simulation artifact
+separately from the authoritative replay fields.
+
+A native simulator trace is reproducible evidence about this simulator; it is
+not an observed game replay. Therefore `replay_artifact_id` and the
+authoritative `dataset_version` remain null, and
+`calibration_eligible` remains false. Empirical calibration still requires
+an authoritative replay collector/ingestor, immutable dataset manifests, and
+held-out evaluation under the approved protocol.
+
+
+## Generic item effect migration tranche
+
+The active item catalog now expresses the static maximum-health bonuses for
+Warmog's Armor, Dragon's Claw, Bramble Vest and Red Buff as generic
+`combat_start/add_stat/max_hp` effects. Their item-name branches were removed
+from `apply_item_stats`; the normal generic effect resolver applies them.
+The catalog loader tests that these effects are present and explicitly keeps
+their overall item metadata incomplete because other passives on these items
+are not yet modeled. Runtime tests verify the generic percentage effect is
+applied once without relying on an item API name.
+
+The same tranche also moves Deathblade and Rabadon's Deathcap damage
+amplification into generic `combat_start/add_stat/damage_amplification`
+effects and removes their item-name branches. Their other metadata remains
+incomplete where applicable; this migration does not assert full item coverage.
+
+Night Harvester's base damage reduction and above-50%-HP bonus are now
+represented as generic `combat_start` and `while_hp_above` effects. The
+generic conditional resolver activates and reverses the bonus as health crosses
+the threshold; the item-name branch and its dedicated runtime flag were
+removed. Coverage tests exercise the transition in both directions.
+
+Adaptive Helm's role-specific combat stats are also normalized as generic
+role-conditioned effects: frontline roles receive armor/MR, while other roles
+receive AD/AP. The corresponding role branch was removed from the combat
+runtime. Its separate mana-gain multiplier remains a legacy item-specific
+mechanic and is not claimed as migrated.
+
+Blue Buff's modified AD/AP bonuses are also generic percentage-stat effects;
+the corresponding combat-start item-name branch was removed. Its mana-regeneration
+metadata remains separately catalogued.
+
+Adaptive Helm's remaining mana-gain multiplier is now a generic
+`mana_gain_multiplier` effect, applied by the runtime alongside its catalogued
+mana regeneration. The last Adaptive Helm ID-specific mana fallback was removed;
+the item-specific combat behavior for this item is now represented by catalog
+effects.
+
+Dragon's Claw's periodic 2.5%-of-max-HP self-heal is now a generic
+`periodic/heal_max_hp_pct` effect with a two-second interval. The periodic
+effect scheduler advances missed ticks deterministically and applies healing
+through the shared combat heal resolver; the dedicated item-name tick state
+and branch were removed.
+
+The generic periodic scheduler now also supports stat effects. Archangel's
+Staff's interval AP growth, Quicksilver's per-second attack-speed gain, and
+Guinsoo's base-attack-speed-scaled growth are catalogued as periodic effects;
+their dedicated item clocks and item-name branches were removed. Base-stat
+scaling is explicitly constrained to periodic attack-speed effects.
+
+The Set 18 Defender trait is now normalized for its 2/4/6 tiers. The shared
+team aura contributes 12 armor and MR once across the team; Defender units
+receive the tier-specific total (25/60/115) through an additional self effect.
+The shared contribution is divided across active Defender sources, preventing
+the team aura from being multiplied by the number of Defenders. Other traits
+remain incomplete until their mechanics are mapped and tested.
+
+Archangel's Staff's catalogued mana regeneration is now consumed through the
+same generic `mana_regen` effect path, and its final item-name mana fallback
+was removed along with its periodic AP clock.

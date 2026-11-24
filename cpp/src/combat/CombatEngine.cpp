@@ -20,6 +20,7 @@ struct GenericEffectDescriptor {
     std::string prefix;
     std::string delayed_key;
     std::string conditional_key;
+    std::string periodic_key;
 };
 
 struct RuntimeUnit {
@@ -30,6 +31,7 @@ struct RuntimeUnit {
     std::vector<GenericEffectDescriptor> generic_effect_descriptors;
     std::vector<std::size_t> delayed_effect_indices;
     std::vector<std::size_t> conditional_effect_indices;
+    std::vector<std::size_t> periodic_effect_indices;
     float damage_dealt = 0.0f;
     float damage_taken = 0.0f;
     float healing_done = 0.0f;
@@ -38,11 +40,6 @@ struct RuntimeUnit {
     int ability_casts = 0;
     int kills = 0;
     int titans_stacks = 0;
-    float last_guinsoo_tick = 0.0f;
-    float last_dragons_claw_tick = 0.0f;
-    float last_redemption_tick = 0.0f;
-    float last_archangel_tick = 0.0f;
-    float last_quicksilver_tick = 0.0f;
     float last_redbuff_tick = 0.0f;
     float last_bramble_proc = -1000.0f;
     float last_ionic_proc = -1000.0f;
@@ -67,7 +64,6 @@ struct RuntimeUnit {
     bool frozen_heart_triggered = false;
     bool guardian_angel_triggered = false;
     bool crown_shield_triggered = false;
-    bool night_harvester_bonus_active = false;
     bool hand_of_justice_ad_ap_active = false;
     float hand_of_justice_ad_bonus = 0.0f;
     float hand_of_justice_ap_bonus = 15.0f;
@@ -85,6 +81,7 @@ struct RuntimeUnit {
     std::unordered_set<std::string> generic_effects_active;
     std::unordered_set<std::string> generic_effects_triggered;
     std::unordered_map<std::string, float> generic_effect_expiry;
+    std::unordered_map<std::string, float> generic_effect_next_tick;
 };
 
 struct ScheduledEvent {
@@ -133,12 +130,49 @@ void add_titans_stack(RuntimeUnit& unit) {
         unit.unit.damage_amplification += 0.10f;
 }
 
+bool effect_condition_matches(
+    const CombatUnit& unit, const CombatEffectDefinition& effect
+);
+
 float apply_heal(RuntimeUnit& target, float amount, float now) {
     if (target.grievous_until > now) amount *= 0.67f;
     const float actual = std::min(std::max(0.0f, amount),
         std::max(0.0f, target.unit.max_hp - target.unit.hp));
     target.unit.hp += actual;
     return actual;
+}
+
+void apply_damage_healing_effects(
+    RuntimeUnit& source, std::vector<RuntimeUnit>& units, float damage, float now
+) {
+    if (!std::isfinite(damage) || damage <= 0.0f) return;
+    const auto apply = [&](const std::vector<CombatEffectDefinition>& effects) {
+        for (const auto& effect : effects) {
+            if (effect.trigger != "on_damage_dealt" ||
+                effect.operation != "heal_damage_pct_lowest_ally" ||
+                effect.target != "lowest_health_ally" ||
+                !effect_condition_matches(source.unit, effect)) continue;
+
+            std::size_t ally_index = units.size();
+            float lowest_health_ratio = std::numeric_limits<float>::infinity();
+            for (std::size_t i = 0; i < units.size(); ++i) {
+                if (!is_alive(units[i]) ||
+                    units[i].unit.team != source.unit.team) continue;
+                const float ratio = units[i].unit.hp / units[i].unit.max_hp;
+                if (ratio < lowest_health_ratio) {
+                    lowest_health_ratio = ratio;
+                    ally_index = i;
+                }
+            }
+            if (ally_index >= units.size()) continue;
+            const float healing = apply_heal(
+                units[ally_index], damage * effect.value, now);
+            units[ally_index].healing_done += healing;
+        }
+    };
+    for (const auto& item : source.unit.items) apply(item.effects);
+    for (const auto& trait : source.unit.traits)
+        if (trait.active || trait.active_count > 0) apply(trait.effects);
 }
 
 void trigger_defensive_items(RuntimeUnit& unit, float now) {
@@ -213,7 +247,6 @@ bool apply_item_stats(CombatUnit& unit, std::string& error) {
     }
 
     const float base_attack_damage = unit.attack_damage;
-    const float base_max_hp = unit.max_hp;
     for (const auto& item : unit.items) {
         const float values[] = {
             item.attack_damage, item.ability_power, item.attack_speed,
@@ -253,11 +286,7 @@ bool apply_item_stats(CombatUnit& unit, std::string& error) {
                     effect.operation == "add_stat" &&
                     effect.stat == "attack_damage" && effect.percent_of_stat;
             });
-        if (!has_generic_ad_effect && item.api_name == "TFT_Item_Deathblade")
-            unit.attack_damage += base_attack_damage * 0.55f;
-        else if (!has_generic_ad_effect && item.api_name == "TFT_Item_Bloodthirster")
-            unit.attack_damage += base_attack_damage * 0.15f;
-        else if (!has_generic_ad_effect && item.api_name == "TFT_Item_BlueBuff")
+        if (!has_generic_ad_effect && item.api_name == "TFT_Item_Bloodthirster")
             unit.attack_damage += base_attack_damage * 0.15f;
         else if (!has_generic_ad_effect && item.api_name == "TFT_Item_LastWhisper")
             unit.attack_damage += base_attack_damage * 0.15f;
@@ -269,14 +298,6 @@ bool apply_item_stats(CombatUnit& unit, std::string& error) {
             unit.attack_damage += base_attack_damage * 0.15f;
         else if (!has_generic_ad_effect && item.api_name == "TFT_Item_InfinityEdge")
             unit.attack_damage += base_attack_damage * 0.35f;
-        else if (item.api_name == "TFT_Item_WarmogsArmor")
-            unit.max_hp += base_max_hp * 0.18f, unit.hp += base_max_hp * 0.18f;
-        else if (item.api_name == "TFT_Item_DragonsClaw")
-            unit.max_hp += base_max_hp * 0.06f, unit.hp += base_max_hp * 0.06f;
-        else if (item.api_name == "TFT_Item_BrambleVest")
-            unit.max_hp += base_max_hp * 0.06f, unit.hp += base_max_hp * 0.06f;
-        else if (item.api_name == "TFT_Item_RedBuff")
-            unit.max_hp += base_max_hp * 0.08f, unit.hp += base_max_hp * 0.08f;
         else if (item.api_name == "TFT_Item_UnstableConcoction") {
             if (!has_generic_ad_effect)
                 unit.attack_damage += base_attack_damage * 0.15f;
@@ -346,6 +367,9 @@ void apply_effect_stat(CombatUnit& unit, const CombatEffectDefinition& effect) {
         else if (effect.stat == "magic_resist") amount *= unit.magic_resist;
     }
     if (effect.stat == "attack_damage") unit.attack_damage += amount;
+    else if (effect.stat == "critical_strike_chance")
+        unit.critical_strike_chance = std::clamp(
+            unit.critical_strike_chance + amount, 0.0f, 1.0f);
     else if (effect.stat == "attack_speed") unit.attack_speed += amount;
     else if (effect.stat == "ability_power") unit.ability_power += amount;
     else if (effect.stat == "armor") unit.armor += amount;
@@ -406,7 +430,23 @@ void apply_start_combat_team_effects(std::vector<RuntimeUnit>& units) {
                 const bool team_attack_effect = effect.target == "allies" &&
                     effect.trigger == "on_attack" &&
                     effect.operation == "bonus_damage";
-                if (!team_stat && !team_attack_effect) continue;
+                const bool team_mana_regen = effect.target == "allies" &&
+                    effect.trigger == "combat_start" &&
+                    effect.operation == "mana_regen";
+                if (!team_stat && !team_attack_effect && !team_mana_regen) continue;
+
+                CombatEffectDefinition source_effect = effect;
+                if (source_effect.scale_by_active_trait_count) {
+                    const auto trait_count = std::find_if(
+                        source.unit.traits.begin(), source.unit.traits.end(),
+                        [&](const CombatTrait& trait) {
+                            return trait.api_name == source_effect.condition_trait &&
+                                (trait.active || trait.active_count > 0);
+                        });
+                    if (trait_count == source.unit.traits.end() ||
+                        trait_count->active_count <= 0) continue;
+                    source_effect.value /= static_cast<float>(trait_count->active_count);
+                }
 
                 for (std::size_t i = 0; i < units.size(); ++i) {
                     const auto& recipient = units[i];
@@ -423,8 +463,8 @@ void apply_start_combat_team_effects(std::vector<RuntimeUnit>& units) {
                         (recipient.unit.position.y != source.unit.position.y ||
                          std::abs(recipient.unit.position.x - source.unit.position.x) > 1))
                         continue;
-                    if (team_stat) pending.push_back({i, effect, false});
-                    else pending.push_back({i, effect, true});
+                    if (team_stat) pending.push_back({i, source_effect, false});
+                    else pending.push_back({i, source_effect, true});
                 }
             }
         };
@@ -491,8 +531,27 @@ float effect_mana_regeneration(const CombatUnit& unit) {
         for (const auto& effect : effects) {
             if (effect.operation == "mana_regen" &&
                 (effect.trigger.empty() || effect.trigger == "combat_start") &&
+                (effect.target.empty() || effect.target == "self") &&
                 effect_condition_matches(unit, effect))
                 amount += effect.value;
+        }
+    };
+    for (const auto& item : unit.items) accumulate(item.effects);
+    for (const auto& trait : unit.traits) {
+        if (trait.active || trait.active_count > 0) accumulate(trait.effects);
+    }
+    return amount;
+}
+
+float effect_mana_on_attack(const CombatUnit& unit, bool critical) {
+    float amount = 0.0f;
+    auto accumulate = [&](const std::vector<CombatEffectDefinition>& effects) {
+        for (const auto& effect : effects) {
+            if (effect.trigger != "on_attack" ||
+                effect.operation != "mana_on_attack" ||
+                !effect_condition_matches(unit, effect)) continue;
+            amount += critical && effect.critical_value > 0.0f
+                ? effect.critical_value : effect.value;
         }
     };
     for (const auto& item : unit.items) accumulate(item.effects);
@@ -531,6 +590,7 @@ void prepare_generic_effect_descriptors(RuntimeUnit& runtime) {
     runtime.generic_effect_descriptors.reserve(total);
     runtime.delayed_effect_indices.reserve(total);
     runtime.conditional_effect_indices.reserve(total);
+    runtime.periodic_effect_indices.reserve(total);
 
     const auto append = [&](const CombatEffectDefinition& effect, std::string prefix) {
         GenericEffectDescriptor descriptor;
@@ -540,16 +600,28 @@ void prepare_generic_effect_descriptors(RuntimeUnit& runtime) {
             descriptor.delayed_key = descriptor.prefix + "delayed:" + effect.stat + ":" +
                 std::to_string(effect.delay) + ":" + std::to_string(effect.value);
         }
-        if (effect.trigger == "while_hp_below" && effect.operation == "add_stat" &&
-            effect.health_threshold > 0.0f) {
-            descriptor.conditional_key = descriptor.prefix + "conditional:" + effect.stat + ":" +
+        if ((effect.trigger == "while_hp_below" ||
+             effect.trigger == "while_hp_above") &&
+            effect.operation == "add_stat" && effect.health_threshold > 0.0f) {
+            descriptor.conditional_key = descriptor.prefix + "conditional:" +
+                effect.trigger + ":" + effect.stat + ":" +
                 std::to_string(effect.health_threshold) + ":" + std::to_string(effect.value);
+        }
+        if (effect.trigger == "periodic" &&
+            (effect.operation == "heal_max_hp_pct" ||
+             effect.operation == "heal_missing_hp_pct" || effect.operation == "add_stat") &&
+            std::isfinite(effect.interval) && effect.interval > 0.0f) {
+            descriptor.periodic_key = descriptor.prefix + "periodic:" +
+                effect.operation + ":" + effect.stat + ":" + effect.condition + ":" +
+                std::to_string(effect.interval) + ":" + std::to_string(effect.value) +
+                ":" + std::to_string(effect.max_amount);
         }
         const std::size_t index = runtime.generic_effect_descriptors.size();
         runtime.generic_effect_descriptors.push_back(std::move(descriptor));
         const auto& stored = runtime.generic_effect_descriptors.back();
         if (!stored.delayed_key.empty()) runtime.delayed_effect_indices.push_back(index);
         if (!stored.conditional_key.empty()) runtime.conditional_effect_indices.push_back(index);
+        if (!stored.periodic_key.empty()) runtime.periodic_effect_indices.push_back(index);
     };
 
     for (std::size_t item_index = 0; item_index < unit.items.size(); ++item_index) {
@@ -609,16 +681,65 @@ void apply_delayed_effects(RuntimeUnit& runtime, float now) {
     }
 }
 
+void apply_periodic_effects(RuntimeUnit& runtime, float now) {
+    for (const std::size_t index : runtime.periodic_effect_indices) {
+        const auto& descriptor = runtime.generic_effect_descriptors[index];
+        const auto& effect = *descriptor.effect;
+        if (!effect_condition_matches(runtime.unit, effect)) continue;
+        auto [next_tick, inserted] = runtime.generic_effect_next_tick.emplace(
+            descriptor.periodic_key, effect.interval);
+        (void)inserted;
+        if (now + 1e-5f < next_tick->second) continue;
+        const int ticks = static_cast<int>(
+            std::floor((now - next_tick->second) / effect.interval)) + 1;
+        if (ticks <= 0) continue;
+        if (effect.operation == "heal_max_hp_pct" && effect.target == "self") {
+            const float requested = runtime.unit.max_hp * effect.value *
+                static_cast<float>(ticks);
+            runtime.healing_done += apply_heal(runtime, requested, now);
+        } else if (effect.operation == "heal_missing_hp_pct" &&
+                   effect.target == "self") {
+            for (int tick = 0; tick < ticks; ++tick) {
+                const float missing = std::max(0.0f,
+                    runtime.unit.max_hp - runtime.unit.hp);
+                float requested = missing * effect.value;
+                if (effect.max_amount > 0.0f)
+                    requested = std::min(requested, effect.max_amount);
+                runtime.healing_done += apply_heal(runtime, requested, now);
+            }
+        } else if (effect.operation == "add_stat" && effect.target == "self") {
+            CombatEffectDefinition periodic_effect = effect;
+            if (periodic_effect.scale_by_base_stat) {
+                float base_stat = 0.0f;
+                if (periodic_effect.stat == "attack_speed")
+                    base_stat = runtime.base_attack_speed;
+                if (!std::isfinite(base_stat) || base_stat <= 0.0f) continue;
+                periodic_effect.value = base_stat * periodic_effect.value;
+                periodic_effect.percent_of_stat = false;
+                periodic_effect.scale_by_base_stat = false;
+            }
+            // The legacy clocks applied missed intervals as one aggregate
+            // increment against the current/base stat. Preserve that behavior.
+            periodic_effect.value *= static_cast<float>(ticks);
+            apply_effect_stat(runtime.unit, periodic_effect);
+        }
+        next_tick->second += effect.interval * static_cast<float>(ticks);
+    }
+}
+
 void update_conditional_effects(RuntimeUnit& runtime, float now) {
     for (const std::size_t index : runtime.conditional_effect_indices) {
         const auto& descriptor = runtime.generic_effect_descriptors[index];
         const auto& effect = *descriptor.effect;
         if (!effect_condition_matches(runtime.unit, effect)) continue;
         const auto& key = descriptor.conditional_key;
-        const bool below = runtime.unit.hp / runtime.unit.max_hp <= effect.health_threshold;
+        const float health_ratio = runtime.unit.hp / runtime.unit.max_hp;
+        const bool condition_met = effect.trigger == "while_hp_above"
+            ? health_ratio >= effect.health_threshold
+            : health_ratio <= effect.health_threshold;
         const bool active = runtime.generic_effects_active.contains(key);
         const bool triggered = runtime.generic_effects_triggered.contains(key);
-        if (below && !active && !triggered) {
+        if (condition_met && !active && !triggered) {
             apply_effect_stat(runtime.unit, effect);
             runtime.generic_effects_active.insert(key);
             runtime.generic_effects_triggered.insert(key);
@@ -628,7 +749,7 @@ void update_conditional_effects(RuntimeUnit& runtime, float now) {
             const auto expiry = runtime.generic_effect_expiry.find(key);
             const bool expired = expiry != runtime.generic_effect_expiry.end() &&
                                  now >= expiry->second;
-            const bool condition_ended = effect.duration <= 0.0f && !below;
+            const bool condition_ended = effect.duration <= 0.0f && !condition_met;
             if (expired || condition_ended) {
                 CombatEffectDefinition inverse = effect;
                 inverse.value = -inverse.value;
@@ -859,9 +980,15 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
             loaded.base_attack_speed = loaded.unit.attack_speed;
             loaded.titans_base_ad = loaded.unit.attack_damage;
             loaded.runaans_base_ad = loaded.unit.attack_damage;
-            if (has_item(loaded.unit, "TFT_Item_AdaptiveHelm"))
-                loaded.mana_gain_multiplier = 1.15f;
             for (const auto& item : loaded.unit.items) {
+                for (const auto& effect : item.effects) {
+                    if (effect.trigger == "combat_start" &&
+                        effect.operation == "mana_gain_multiplier" &&
+                        effect_condition_matches(loaded.unit, effect) &&
+                        std::isfinite(effect.value) && effect.value > 0.0f) {
+                        loaded.mana_gain_multiplier *= effect.value;
+                    }
+                }
                 const bool has_generic_mana_regen = std::any_of(
                     item.effects.begin(), item.effects.end(),
                     [](const CombatEffectDefinition& effect) {
@@ -870,16 +997,12 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                 if (has_generic_mana_regen) continue;
                 // Backward compatibility for old fixtures; generated catalogs
                 // carry ManaRegen as a generic effect and skip this ID fallback.
-                if (item.api_name == "TFT_Item_AdaptiveHelm") loaded.mana_regen_per_second += 3.0f;
-                else if (item.api_name == "TFT_Item_ArchangelsStaff" ||
-                         item.api_name == "TFT_Item_HextechGunblade" ||
+                if (item.api_name == "TFT_Item_HextechGunblade" ||
                          item.api_name == "TFT_Item_Morellonomicon" ||
                          item.api_name == "TFT_Item_SpearOfShojin" ||
                          item.api_name == "TFT_Item_StatikkShiv") loaded.mana_regen_per_second += 1.0f;
-                else if (item.api_name == "TFT_Item_BlueBuff") loaded.mana_regen_per_second += 5.0f;
                 else if (item.api_name == "TFT_Item_Redemption") loaded.mana_regen_per_second += 2.0f;
             }
-            loaded.mana_regen_per_second += effect_mana_regeneration(loaded.unit);
             if (has_item(loaded.unit, "TFT_Item_UnstableConcoction")) {
                 loaded.hand_of_justice_ad_bonus =
                     loaded.unit.attack_damage * (0.15f / 1.15f);
@@ -905,6 +1028,10 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
     // teams are present, so ally targeting is independent of input order.
     for (auto& runtime : units) apply_start_combat_effects(runtime.unit);
     apply_start_combat_team_effects(units);
+    // Team auras are attached above; calculate generic mana regeneration only
+    // after that expansion so every recipient receives the shared trait aura.
+    for (auto& runtime : units)
+        runtime.mana_regen_per_second += effect_mana_regeneration(runtime.unit);
 
     // Effects are immutable during combat. Build their ordered descriptors
     // once so event updates reuse stable IDs and only visit relevant effects.
@@ -925,32 +1052,6 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
         if (has_item(runtime.unit, "TFT_Item_FrozenHeart"))
             runtime.unit.mana = std::min(runtime.unit.max_mana,
                 runtime.unit.mana + 20.0f * runtime.mana_gain_multiplier);
-        if (has_item(runtime.unit, "TFT_Item_AdaptiveHelm")) {
-
-            if (runtime.unit.role == UnitRole::TANK ||
-                runtime.unit.role == UnitRole::FIGHTER) {
-                runtime.unit.armor += 30.0f;
-                runtime.unit.magic_resist += 30.0f;
-            } else {
-                runtime.unit.attack_damage *= 1.10f;
-                runtime.unit.ability_power *= 1.10f;
-            }
-        }
-        if (has_item(runtime.unit, "TFT_Item_BlueBuff")) {
-            runtime.unit.attack_damage *= 1.10f;
-            runtime.unit.ability_power *= 1.10f;
-        }
-        if (has_item(runtime.unit, "TFT_Item_Deathblade"))
-            runtime.unit.damage_amplification += 0.10f;
-        if (has_item(runtime.unit, "TFT_Item_RabadonsDeathcap"))
-            runtime.unit.damage_amplification += 0.15f;
-        if (has_item(runtime.unit, "TFT_Item_NightHarvester")) {
-            runtime.unit.damage_reduction += 0.05f;
-            if (runtime.unit.hp / runtime.unit.max_hp > 0.50f)
-                runtime.unit.damage_reduction += 0.15f;
-            runtime.night_harvester_bonus_active =
-                runtime.unit.hp / runtime.unit.max_hp > 0.50f;
-        }
         if (has_item(runtime.unit, "TFT17_Item_FlexTraitEmblemItem")) {
             for (auto& ally : units) {
                 if (ally.unit.team != runtime.unit.team ||
@@ -1030,6 +1131,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
         now = event.time;
         ++result.events_processed;
         for (auto& runtime : units) {
+            apply_periodic_effects(runtime, now);
             apply_delayed_effects(runtime, now);
             update_conditional_effects(runtime, now);
         }
@@ -1087,35 +1189,6 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
             actor.unit.mana = std::min(actor.unit.max_mana,
                 actor.unit.mana + actor.mana_regen_per_second *
                     elapsed * actor.mana_gain_multiplier);
-            if (has_item(actor.unit, "TFT_Item_ArchangelsStaff") &&
-                now - actor.last_archangel_tick >= 5.0f) {
-                const int ticks = static_cast<int>((now - actor.last_archangel_tick) / 5.0f);
-                actor.unit.ability_power += actor.unit.ability_power * 0.20f * ticks;
-                actor.last_archangel_tick += 5.0f * ticks;
-            }
-            if (has_item(actor.unit, "TFT_Item_Quicksilver") &&
-                now - actor.last_quicksilver_tick >= 1.0f) {
-                const int ticks = static_cast<int>(now - actor.last_quicksilver_tick);
-                actor.unit.attack_speed += 0.03f * ticks;
-                actor.last_quicksilver_tick += static_cast<float>(ticks);
-            }
-            if (has_item(actor.unit, "TFT_Item_Redemption") &&
-                now - actor.last_redemption_tick >= 1.0f) {
-                const int ticks = static_cast<int>(now - actor.last_redemption_tick);
-                const float missing = actor.unit.max_hp - actor.unit.hp;
-                const float heal = apply_heal(actor,
-                    std::min(missing * 0.02f * ticks, 250.0f * ticks), now);
-                actor.healing_done += heal;
-                actor.last_redemption_tick += static_cast<float>(ticks);
-            }
-            if (has_item(actor.unit, "TFT_Item_DragonsClaw") &&
-                now - actor.last_dragons_claw_tick >= 2.0f) {
-                const int ticks = static_cast<int>((now - actor.last_dragons_claw_tick) / 2.0f);
-                const float heal = apply_heal(actor,
-                    actor.unit.max_hp * 0.025f * ticks, now);
-                actor.healing_done += heal;
-                actor.last_dragons_claw_tick += 2.0f * ticks;
-            }
             if (actor.crown_shield_triggered && actor.crown_shield_expires_at > 0.0f &&
                 now >= actor.crown_shield_expires_at) {
                 actor.unit.ability_power += 25.0f;
@@ -1144,18 +1217,6 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
             actor.guardian_angel_until = 0.0f;
         }
 
-
-        // Guinsoo's and item cooldown clocks use elapsed combat time.
-        for (const auto& item : actor.unit.items) {
-            if (item.api_name == "TFT_Item_GuinsoosRageblade") {
-                const int ticks = static_cast<int>(std::floor(now)) -
-                                  static_cast<int>(std::floor(actor.last_guinsoo_tick));
-                if (ticks > 0) {
-                    actor.unit.attack_speed += actor.base_attack_speed * 0.07f * static_cast<float>(ticks);
-                    actor.last_guinsoo_tick = now;
-                }
-            }
-        }
 
         // Escolhe o inimigo vivo mais próximo; desempate por ID.
         std::size_t target_index = units.size();
@@ -1346,19 +1407,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                             ability_target.grievous_until = std::max(ability_target.grievous_until,
                                 now + (has_item(actor.unit, "TFT_Item_Morellonomicon") ? 10.0f : 5.0f));
                         }
-                        if (has_item(actor.unit, "TFT_Item_HextechGunblade")) {
-                            std::size_t ally = units.size();
-                            float lowest = std::numeric_limits<float>::infinity();
-                            for (std::size_t i = 0; i < units.size(); ++i) {
-                                if (!is_alive(units[i]) || units[i].unit.team != actor.unit.team) continue;
-                                const float ratio = units[i].unit.hp / units[i].unit.max_hp;
-                                if (ratio < lowest) { lowest = ratio; ally = i; }
-                            }
-                            if (ally < units.size()) {
-                                const float heal = apply_heal(units[ally], damage * 0.20f, now);
-                                units[ally].healing_done += heal;
-                            }
-                        }
+                        apply_damage_healing_effects(actor, units, damage, now);
                         if (actor.unit.omnivamp > 0.0f && damage > 0.0f) {
                             const float heal = apply_heal(actor,
                                 damage * actor.unit.omnivamp, now);
@@ -1558,17 +1607,13 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
             actor.unit.mana = std::min(actor.unit.max_mana,
                 actor.unit.mana + 10.0f * actor.mana_gain_multiplier);
 
-            // Shojin e Leviathan: mana adicional por ataque acertado.
+            // Item and trait mana-on-hit passives are data-driven.
+            const float generic_mana_on_attack =
+                effect_mana_on_attack(actor.unit, critical);
+            actor.unit.mana = std::min(actor.unit.max_mana,
+                actor.unit.mana + generic_mana_on_attack * actor.mana_gain_multiplier);
             for (const auto& item : actor.unit.items) {
-                if (item.api_name == "TFT_Item_SpearOfShojin")
-                    actor.unit.mana = std::min(actor.unit.max_mana,
-                        actor.unit.mana + 5.0f * actor.mana_gain_multiplier);
-                else if (item.api_name == "TFT_Item_Leviathan") {
-                    const float mana_on_hit = critical ? 4.0f : 2.0f;
-                    actor.unit.mana = std::min(actor.unit.max_mana,
-                        actor.unit.mana + mana_on_hit * actor.mana_gain_multiplier);
-                }
-                else if (item.api_name == "TFT_Item_TitansResolve")
+                if (item.api_name == "TFT_Item_TitansResolve")
                     add_titans_stack(actor);
                 else if (item.api_name == "TFT_Item_RunaansHurricane") {
                     if (actor.runaan_stacks < 15) {
@@ -1607,19 +1652,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                 target.grievous_until = std::max(target.grievous_until,
                     now + (has_item(actor.unit, "TFT_Item_Morellonomicon") ? 10.0f : 5.0f));
             }
-            if (has_item(actor.unit, "TFT_Item_HextechGunblade") && damage > 0.0f) {
-                std::size_t ally = units.size();
-                float lowest = std::numeric_limits<float>::infinity();
-                for (std::size_t i = 0; i < units.size(); ++i) {
-                    if (!is_alive(units[i]) || units[i].unit.team != actor.unit.team) continue;
-                    const float ratio = units[i].unit.hp / units[i].unit.max_hp;
-                    if (ratio < lowest) { lowest = ratio; ally = i; }
-                }
-                if (ally < units.size()) {
-                    const float heal = apply_heal(units[ally], damage * 0.20f, now);
-                    units[ally].healing_done += heal;
-                }
-            }
+            apply_damage_healing_effects(actor, units, damage, now);
 
             // Colete Espinhoso: dano mágico em área com recarga de 2 segundos.
             for (const auto& item : target.unit.items) {

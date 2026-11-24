@@ -230,11 +230,18 @@ public:
                 (effect.trigger == "on_attack" &&
                     (effect.operation == "bonus_damage" ||
                      effect.operation == "heal_max_hp_pct")) ||
+                (effect.trigger == "periodic" &&
+                    (effect.operation == "heal_max_hp_pct" ||
+                     effect.operation == "add_stat") &&
+                    std::isfinite(effect.interval) && effect.interval > 0.0f) ||
                 (effect.trigger == "on_kill" &&
                     (effect.operation == "grant_charges" ||
                      effect.operation == "heal_max_hp_pct")) ||
+                (effect.trigger == "combat_start" &&
+                    effect.operation == "mana_gain_multiplier") ||
                 ((effect.trigger == "after_delay" ||
-                  effect.trigger == "while_hp_below") &&
+                  effect.trigger == "while_hp_below" ||
+                  effect.trigger == "while_hp_above") &&
                     effect.operation == "add_stat");
 
             const bool target_supported =

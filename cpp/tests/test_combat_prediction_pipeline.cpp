@@ -1,8 +1,12 @@
 #include "combat/CombatProjectionEngine.hpp"
+#include "items/CombatItemAdapter.hpp"
+#include "combat/CombatTraitCatalog.hpp"
 
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <iostream>
+#include <sstream>
 #include <limits>
 
 using namespace tft;
@@ -425,6 +429,122 @@ int main() {
     assert(!invalid_matchup_projection.simulation_completed);
     assert(invalid_matchup_projection.reason ==
         "matchup_probabilities_do_not_sum_to_one");
+
+    // Item catalog completeness must be explicit. A missing effect list is
+    // not equivalent to an authoritative declaration that an item has no
+    // combat passive.
+    items::ItemDefinition incomplete_item_definition;
+    incomplete_item_definition.id = "TFT_TestItemWithoutMetadata";
+    incomplete_item_definition.name = "Test Item";
+    const auto incomplete_combat_item =
+        items::to_combat_item(incomplete_item_definition);
+    assert(!incomplete_combat_item.effects_complete);
+
+    auto complete_item_definition = incomplete_item_definition;
+    complete_item_definition.combat_effects_complete = true;
+    CombatEffectDefinition catalog_effect;
+    catalog_effect.trigger = "combat_start";
+    catalog_effect.operation = "add_stat";
+    catalog_effect.stat = "attack_damage";
+    catalog_effect.target = "self";
+    catalog_effect.value = 5.0f;
+    complete_item_definition.combat_effects.push_back(catalog_effect);
+    const auto complete_combat_item =
+        items::to_combat_item(complete_item_definition);
+    assert(complete_combat_item.effects_complete);
+    assert(complete_combat_item.effects.size() == 1);
+    assert(complete_combat_item.effects.front().value == 5.0f);
+
+    auto authoritative_no_passive = incomplete_item_definition;
+    authoritative_no_passive.combat_effects_complete = true;
+    const auto no_passive_combat_item =
+        items::to_combat_item(authoritative_no_passive);
+    assert(no_passive_combat_item.effects_complete);
+    assert(no_passive_combat_item.effects.empty());
+
+    std::stringstream trait_catalog_json(R"json({
+        "schema_version": 1,
+        "set_id": "Set18",
+        "traits": [{
+            "api_name": "DA_18_Brawler",
+            "effects_complete": true,
+            "tiers": [
+                {"min_units": 2, "effects": [{
+                    "trigger": "combat_start",
+                    "operation": "add_stat",
+                    "stat": "max_hp",
+                    "target": "allies",
+                    "value": 120,
+                    "condition": "trait_count_at_least",
+                    "condition_trait": "DA_18_Brawler",
+                    "scale_by_active_trait_count": true
+                }]},
+                {"min_units": 4, "effects": [{
+                    "trigger": "combat_start",
+                    "operation": "add_stat",
+                    "stat": "max_hp",
+                    "target": "self",
+                    "value": 0.4,
+                    "percent_of_stat": true,
+                    "condition": "trait_count_at_least",
+                    "condition_trait": "DA_18_Brawler"
+                }]}
+            ]
+        }, {
+            "api_name": "DA_18_Defender",
+            "effects_complete": true,
+            "tiers": [
+                {"min_units": 2, "effects": [
+                    {"trigger":"combat_start","operation":"add_stat","stat":"armor","target":"allies","value":12,"condition":"trait_count_at_least","condition_trait":"DA_18_Defender","scale_by_active_trait_count":true},
+                    {"trigger":"combat_start","operation":"add_stat","stat":"magic_resist","target":"allies","value":12,"condition":"trait_count_at_least","condition_trait":"DA_18_Defender","scale_by_active_trait_count":true},
+                    {"trigger":"combat_start","operation":"add_stat","stat":"armor","target":"self","value":13,"condition":"trait_count_at_least","condition_trait":"DA_18_Defender"},
+                    {"trigger":"combat_start","operation":"add_stat","stat":"magic_resist","target":"self","value":13,"condition":"trait_count_at_least","condition_trait":"DA_18_Defender"}
+                ]},
+                {"min_units": 4, "effects": [
+                    {"trigger":"combat_start","operation":"add_stat","stat":"armor","target":"allies","value":12,"condition":"trait_count_at_least","condition_trait":"DA_18_Defender","scale_by_active_trait_count":true},
+                    {"trigger":"combat_start","operation":"add_stat","stat":"magic_resist","target":"allies","value":12,"condition":"trait_count_at_least","condition_trait":"DA_18_Defender","scale_by_active_trait_count":true},
+                    {"trigger":"combat_start","operation":"add_stat","stat":"armor","target":"self","value":48,"condition":"trait_count_at_least","condition_trait":"DA_18_Defender"},
+                    {"trigger":"combat_start","operation":"add_stat","stat":"magic_resist","target":"self","value":48,"condition":"trait_count_at_least","condition_trait":"DA_18_Defender"}
+                ]}
+            ]
+        }]
+    })json");
+    const auto trait_catalog = combat::load_trait_combat_catalog(trait_catalog_json);
+    CombatTrait active_brawler;
+    active_brawler.api_name = "DA_18_Brawler";
+    active_brawler.active = true;
+    active_brawler.active_count = 4;
+    combat::apply_trait_combat_metadata(active_brawler, trait_catalog);
+    assert(active_brawler.effects_complete);
+    assert(active_brawler.effects.size() == 1);
+    assert(active_brawler.effects.front().percent_of_stat);
+    assert(active_brawler.effects.front().value == 0.4f);
+
+    CombatTrait active_defender;
+    active_defender.api_name = "DA_18_Defender";
+    active_defender.active = true;
+    active_defender.active_count = 4;
+    combat::apply_trait_combat_metadata(active_defender, trait_catalog);
+    assert(active_defender.effects_complete);
+    assert(active_defender.effects.size() == 4);
+    const auto team_armor = std::find_if(active_defender.effects.begin(),
+        active_defender.effects.end(), [](const auto& effect) {
+            return effect.stat == "armor" && effect.target == "allies";
+        });
+    const auto defender_armor = std::find_if(active_defender.effects.begin(),
+        active_defender.effects.end(), [](const auto& effect) {
+            return effect.stat == "armor" && effect.target == "self";
+        });
+    assert(team_armor != active_defender.effects.end());
+    assert(team_armor->scale_by_active_trait_count && team_armor->value == 12.0f);
+    assert(defender_armor != active_defender.effects.end());
+    assert(defender_armor->value == 48.0f);
+
+    CombatTrait inactive_brawler;
+    inactive_brawler.api_name = "DA_18_Brawler";
+    combat::apply_trait_combat_metadata(inactive_brawler, trait_catalog);
+    assert(!inactive_brawler.effects_complete);
+    assert(inactive_brawler.effects.empty());
 
     std::cout << "combat prediction pipeline tests passed\n";
 }
