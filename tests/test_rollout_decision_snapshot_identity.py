@@ -701,7 +701,12 @@ def test_rollout_metadata_isolated_on_store_and_shared_read_only_in_batches():
 
     trace["requested_action"][0] = 0
     result["action_trace"]["status_reason"] = "caller-mutated"
+    # Compatibility accessors return defensive copies; compare their values,
+    # then retain the canonical sidecar reference for zero-copy batch checks.
     stored_trace = buffer.result_snapshot_metadata[0][0]["action_trace"]
+    canonical_trace = buffer._metadata_records[0][0][1]["action_trace"]
+    assert stored_trace is not canonical_trace
+    assert stored_trace == canonical_trace
     assert stored_trace["requested_action"] == [6, 0, 0, 0, 0, 0]
     assert stored_trace["status_reason"] == "applied"
 
@@ -726,7 +731,7 @@ def test_rollout_metadata_isolated_on_store_and_shared_read_only_in_batches():
     assert batch["snapshot_metadata"][0] is buffer._metadata_records[0][0][0]
     assert batch["result_snapshot_metadata"][0] is buffer._metadata_records[0][0][1]
     assert batch["next_snapshot_metadata"][0] is buffer._metadata_records[0][0][2]
-    assert batch_trace is stored_trace
+    assert batch_trace is canonical_trace
     assert batch_trace["effective_action"] == [6, 0, 0, 0, 0, 0]
     assert batch_trace["status_reason"] == "applied"
 
