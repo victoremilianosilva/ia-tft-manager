@@ -175,7 +175,9 @@ def _run_case(
                     if mode == "wrapper":
                         if "python_wrapper_total" in profile:
                             profile["python_wrapper_exclusive_ms"] = max(
-                                0.0, float(profile["python_wrapper_total"]) - binding_total
+                                0.0,
+                                float(profile["python_wrapper_total"])
+                                - float(profile.get("pybind_call_inclusive", 0.0)),
                             )
                         if "pybind_call_inclusive" in profile:
                             profile["pybind_argument_conversion_overhead_ms"] = max(
@@ -301,7 +303,9 @@ def _run_parallel_case(
                     if mode == "wrapper":
                         if "python_wrapper_total" in profile:
                             profile["python_wrapper_exclusive_ms"] = max(
-                                0.0, float(profile["python_wrapper_total"]) - binding_total
+                                0.0,
+                                float(profile["python_wrapper_total"])
+                                - float(profile.get("pybind_call_inclusive", 0.0)),
                             )
                         if "pybind_call_inclusive" in profile:
                             profile["pybind_argument_conversion_overhead_ms"] = max(
