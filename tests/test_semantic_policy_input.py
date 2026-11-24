@@ -644,3 +644,70 @@ def test_policy_reuses_entity_projection_across_encoder_candidate_and_item_paths
     with torch.no_grad():
         policy.get_action(obs, masks=masks, deterministic=True, semantic_state=semantic)
     assert calls["count"] == 1
+
+
+
+def test_repeated_projection_reference_preserves_policy_outputs_and_ppo_loss(monkeypatch):
+    from ppo import PPOTrainer
+
+    torch.manual_seed(20261124)
+    obs, masks, semantic = _batch(batch_size=1)
+    policy = TFTPolicy(
+        obs_dim=obs.shape[-1], action_dims=list(ACTION_DIMS),
+        hidden_size=32, semantic_vocab_size=64, require_semantic_state=True,
+    ).eval()
+
+    with torch.no_grad():
+        optimized = policy.get_action(
+            obs, masks=masks, deterministic=True, semantic_state=semantic
+        )
+        actions = optimized[0].clone()
+
+    optimized_trainer = PPOTrainer(
+        policy, optimizer=None, writer=None, clip_coef=0.2,
+        ent_coef=0.02, vf_coef=0.5, target_kl=None,
+    )
+    old_logprobs = optimized[1].detach().clone()
+    old_values = optimized[3].detach().clone()
+    advantages = torch.tensor([0.75])
+    returns = old_values + torch.tensor([0.25])
+
+    with torch.no_grad():
+        optimized_loss = optimized_trainer.compute_loss(
+            obs, actions, old_logprobs, old_values, advantages, returns,
+            masks, semantic_state=semantic,
+        )
+
+    original_encode = policy.encode
+    original_candidates = policy._candidate_features
+    original_items = policy._item_state_features
+
+    # Emulate the pre-optimization call pattern: each consumer independently
+    # derives the same entity tensor instead of receiving the shared projection.
+    def independently_projected_encode(observation, semantic_state=None, semantic_entities=None):
+        return original_encode(observation, semantic_state, semantic_entities=None)
+
+    def independently_projected_candidates(observation, semantic_state=None, semantic_entities=None):
+        return original_candidates(observation, semantic_state, semantic_entities=None)
+
+    def independently_projected_items(observation, semantic_state=None, semantic_entities=None):
+        return original_items(observation, semantic_state, semantic_entities=None)
+
+    monkeypatch.setattr(policy, "encode", independently_projected_encode)
+    monkeypatch.setattr(policy, "_candidate_features", independently_projected_candidates)
+    monkeypatch.setattr(policy, "_item_state_features", independently_projected_items)
+
+    with torch.no_grad():
+        repeated = policy.get_action(
+            obs, masks=masks, deterministic=True, semantic_state=semantic
+        )
+        repeated_loss = optimized_trainer.compute_loss(
+            obs, actions, old_logprobs, old_values, advantages, returns,
+            masks, semantic_state=semantic,
+        )
+
+    assert torch.equal(optimized[0], repeated[0])
+    for before, after in zip(optimized[1:], repeated[1:]):
+        torch.testing.assert_close(before, after, atol=1e-7, rtol=1e-7)
+    for before, after in zip(optimized_loss, repeated_loss):
+        torch.testing.assert_close(before, after, atol=1e-7, rtol=1e-7)
