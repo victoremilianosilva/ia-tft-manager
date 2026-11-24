@@ -3092,7 +3092,7 @@ struct TFTEngine::Impl {
                     source_candidates.empty() ? "no validated Native or OP.GG candidates" : "validated candidates received",
                     active_before);
                 const auto proposal = runtime.transitions.propose(active_before, source_candidates, composition_context);
-                runtime.mark_stage("candidate_evaluation",
+                if (composition_diagnostics_debug) runtime.mark_stage("candidate_evaluation",
                     proposal.target ? "completed" : "partial",
                     proposal.reason, active_before);
                 // Composition publication belongs exclusively to the native
@@ -3100,7 +3100,7 @@ struct TFTEngine::Impl {
                 // record alternatives, but must not compete for the canonical owner.
                 const std::optional<ci::CompositionTransition> published_transition;
                 const auto active = runtime.active.current();
-                runtime.mark_stage("transition_publication",
+                if (composition_diagnostics_debug) runtime.mark_stage("transition_publication",
                     proposal.approved ? "diagnostic_only" : "skipped",
                     proposal.approved
                         ? "native_strategic_runtime_owns_composition_publication"
@@ -3151,7 +3151,7 @@ struct TFTEngine::Impl {
                             round_id, round_id);
                     }
                 }
-                runtime.mark_stage("planner_evidence", version > 0 ? "completed" : "skipped",
+                if (composition_diagnostics_debug) runtime.mark_stage("planner_evidence", version > 0 ? "completed" : "skipped",
                     version > 0 ? "economy/board/item evidence bound to active version" : "no active composition version",
                     active);
 
@@ -3186,7 +3186,7 @@ struct TFTEngine::Impl {
                 for (const auto& pair : owned_priority) priority_context.owned_units.push_back(pair.second);
                 for (const auto& pair : unit_evidence) priority_context.evidence.push_back(pair.second);
                 const auto priorities = ci::UnitPriorityPlanner{}.resolve(active, priority_context);
-                runtime.mark_stage("unit_priorities", priorities.stale ? "unavailable" : "completed",
+                if (composition_diagnostics_debug) runtime.mark_stage("unit_priorities", priorities.stale ? "unavailable" : "completed",
                     priorities.stale ? priorities.stale_reason : "priorities resolved against active version",
                     active);
 
@@ -3212,7 +3212,7 @@ struct TFTEngine::Impl {
                     priorities.composition_version == active->version &&
                     lineup.composition_id == active->candidate.composition_id &&
                     lineup.composition_version == active->version;
-                runtime.mark_stage("lineup", lineup.stale ? "unavailable" : "completed",
+                if (composition_diagnostics_debug) runtime.mark_stage("lineup", lineup.stale ? "unavailable" : "completed",
                     lineup.stale ? lineup.stale_reason : lineup.status, active);
 
                 // Build the native action snapshot before evaluating candidates.
@@ -3265,10 +3265,11 @@ struct TFTEngine::Impl {
                         if (definition) unit_costs[priority.champion_id] = definition->cost;
                     }
                 const auto candidate_build = ci::StrategicActionCandidateBuilder{}.build(
-                    strategic_context, active, priorities, lineup, native_action_state, unit_costs);
+                    strategic_context, active, priorities, lineup, native_action_state, unit_costs,
+                    composition_diagnostics_enabled);
                 strategic_context.action_candidates = candidate_build.candidates;
                 evidence_context.planner_context.action_candidates = candidate_build.candidates;
-                runtime.mark_stage("action_candidate_generation",
+                if (composition_diagnostics_debug) runtime.mark_stage("action_candidate_generation",
                     candidate_build.status == "candidates_generated" ? "completed" : "unavailable",
                     candidate_build.status, active);
                 action_decision = action_evaluator.evaluate(
@@ -3287,7 +3288,7 @@ struct TFTEngine::Impl {
                         composition_actions.stale_reason = "no active composition";
                         composition_actions.evaluation.shadow_only = true;
                     }
-                    runtime.mark_stage("action_evaluation",
+                    if (composition_diagnostics_debug) runtime.mark_stage("action_evaluation",
                         composition_actions.stale ? "unavailable" : "completed",
                         composition_actions.stale ? composition_actions.stale_reason :
                             "frozen #209 baseline action evaluation completed in Shadow mode", active);
@@ -3310,7 +3311,7 @@ struct TFTEngine::Impl {
                     contextual_actions.stale_reason = "contextual_evaluator_exception: unknown";
                     contextual_actions.rationale = "contextual_evaluator_failed_isolated";
                 }
-                runtime.mark_stage("contextual_action_evaluation",
+                if (composition_diagnostics_debug) runtime.mark_stage("contextual_action_evaluation",
                     contextual_actions.stale ? "unavailable" : "completed",
                     contextual_actions.stale ? contextual_actions.stale_reason :
                         "independent contextual evaluator completed in Shadow mode", active);
@@ -3391,7 +3392,7 @@ struct TFTEngine::Impl {
                 resolution_request.current_state = &native_action_state;
                 const auto action_resolution =
                     strategic_action_executors[i].resolve(resolution_request);
-                runtime.mark_stage("native_action_resolution",
+                if (composition_diagnostics_debug) runtime.mark_stage("native_action_resolution",
                     action_resolution.accepted ? "completed" : "unavailable",
                     action_resolution.accepted ? action_resolution.resolution_reason :
                         action_resolution.resolution_reason + ":" + action_resolution.validation_reason,
@@ -3428,7 +3429,7 @@ struct TFTEngine::Impl {
                 const auto diagnostic = runtime.recorder.capture(
                     round_id, active, proposal, priorities, lineup, evidence,
                     composition_actions, published_transition, later_outcome);
-                runtime.mark_stage("diagnostic_recording", "completed",
+                if (composition_diagnostics_debug) runtime.mark_stage("diagnostic_recording", "completed",
                     "read-only diagnostic snapshot assembled", active);
                 auto diagnostic_json = diagnostic.to_json();
                 nlohmann::json baseline_candidate_scores = nlohmann::json::array();
@@ -3599,7 +3600,7 @@ struct TFTEngine::Impl {
                 };
                 auto& failed_runtime = composition_intelligence_players[i];
                 failed_runtime.planner_outputs_valid = false;
-                if (composition_diagnostics_debug) failed_runtime.mark_stage("runtime", "failed", error.what());
+                if (composition_diagnostics_debug) failed_if (composition_diagnostics_debug) runtime.mark_stage("runtime", "failed", error.what());
                 if (composition_diagnostics_enabled) {
                     failed["sequence"] = composition_intelligence_sequence + 1;
                     if (failed_runtime.append_snapshot(std::move(failed)))
