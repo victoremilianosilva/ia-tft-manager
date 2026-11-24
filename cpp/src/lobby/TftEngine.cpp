@@ -6707,7 +6707,11 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
                     if (found != profile_by_uuid.end())
                         profile_by_target[kBoardSlots + slot] = found->second;
                 }
-                items::ItemFitCache fit_cache(source.item_engine.get());
+                auto& fit_cache = impl_->strategic_item_fit_caches[i];
+                if (!fit_cache || !fit_cache->uses(source.item_engine.get())) {
+                    fit_cache = std::make_unique<items::ItemFitCache>(
+                        source.item_engine.get());
+                }
                 for (std::size_t item_slot = 0; item_slot < 9; ++item_slot) {
                     if (item_slot >= source.item_engine->inventory().size()) continue;
                     const auto& item_id = source.item_engine->inventory()[item_slot];
@@ -6715,7 +6719,7 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
                          target_slot < profile_by_target.size(); ++target_slot) {
                         const auto* profile = profile_by_target[target_slot];
                         if (!profile) continue;
-                        const double fit = fit_cache.get(item_id, *profile);
+                        const double fit = fit_cache->get(item_id, *profile);
                         target.item_inventory_target_fit[item_slot][target_slot] =
                             static_cast<float>(std::clamp(fit / 50.0, 0.0, 1.0));
                     }
