@@ -1345,10 +1345,24 @@ class Trainer:
             # 📥 COLETA DE EXPERIÊNCIAS
             # ========================================================
 
+            training_step_profile_totals = {}
+            policy_cuda_events = []
+            profile_gpu_enabled = (
+                os.environ.get("TFT_PROFILE_GPU") == "1"
+                and torch.cuda.is_available()
+                and str(self.device).startswith("cuda")
+            )
+            def record_training_step_stage(stage_name, started_ns):
+                elapsed_ms = (time.perf_counter_ns() - started_ns) / 1_000_000.0
+                training_step_profile_totals[stage_name] = (
+                    training_step_profile_totals.get(stage_name, 0.0) + elapsed_ms
+                )
+
             semantic_cache = None
             for step in range(
                 rollout_steps
             ):
+                semantic_stage_start_ns = time.perf_counter_ns()
 
                 # ====================================================
                 # 🎭 MÁSCARAS
@@ -1417,6 +1431,8 @@ class Trainer:
                     semantic_batch, flat_snapshot_metadata, self.semantic_state_contract,
                     self.champion_id_map, reproject=False, verify_catalog=False,
                 )
+                record_training_step_stage("semantic_projection_and_validation_ms", semantic_stage_start_ns)
+                mask_stage_start_ns = time.perf_counter_ns()
                 semantic_entities = np.asarray(
                     semantic_batch["numeric"], dtype=np.float32
                 )[:, SEMANTIC_GLOBAL_FEATURES:SEMANTIC_ITEM_OFFSET].reshape(
@@ -1502,11 +1518,18 @@ class Trainer:
                 # 📸 Fotografa quem pode gerar experiência neste passo.
                 # A cópia precisa acontecer ANTES da ação.
                 transition_valid = active_agents.copy()
+                record_training_step_stage("mask_retrieval_flatten_and_audit_ms", mask_stage_start_ns)
 
                 # ====================================================
                 # 🤖 POLICY
                 # ====================================================
 
+                policy_stage_start_ns = time.perf_counter_ns()
+                policy_cuda_start = policy_cuda_end = None
+                if profile_gpu_enabled:
+                    policy_cuda_start = torch.cuda.Event(enable_timing=True)
+                    policy_cuda_end = torch.cuda.Event(enable_timing=True)
+                    policy_cuda_start.record()
                 head_entropy_diagnostics = None
                 with torch.no_grad():
                     if step % 10 == 0:
@@ -1523,6 +1546,11 @@ class Trainer:
                         actions, logprobs, _, values = self.policy.get_action(
                             obs, masks=masks, semantic_state=semantic_state
                         )
+                if profile_gpu_enabled:
+                    policy_cuda_end.record()
+                    policy_cuda_events.append((policy_cuda_start, policy_cuda_end))
+                record_training_step_stage("policy_inference_host_ms", policy_stage_start_ns)
+                action_materialization_start_ns = time.perf_counter_ns()
 
                 # Sample entropy diagnostics every ten rollout steps to avoid
                 # CPU synchronization/logging overhead on every action batch.
@@ -1579,11 +1607,13 @@ class Trainer:
                         actions, action_array=action_np
                     )
                 )
+                record_training_step_stage("action_materialization_audit_and_format_ms", action_materialization_start_ns)
 
                 # ====================================================
                 # 🏟️ EXECUTAR LOBBIES
                 # ====================================================
 
+                env_step_start_ns = time.perf_counter_ns()
                 (
                     next_obs_raw,
                     rewards_raw,
@@ -1592,6 +1622,8 @@ class Trainer:
                 ) = self.vec_env.step(
                     lobby_actions
                 )
+                record_training_step_stage("vector_environment_step_ms", env_step_start_ns)
+                transition_processing_start_ns = time.perf_counter_ns()
                 # Aggregate per-lobby wrapper/native timings without changing
                 # the transition payload or synchronizing the training device.
                 for lobby_info in infos:
@@ -1665,6 +1697,8 @@ class Trainer:
                     "batch": next_semantic_batch,
                     "state": next_semantic_state,
                 }
+                record_training_step_stage("next_semantic_projection_ms", transition_processing_start_ns)
+                rollout_write_start_ns = time.perf_counter_ns()
 
                 # Resultado final, colocação e duração de cada partida.
                 for lobby_idx, info in enumerate(infos):
@@ -1864,6 +1898,7 @@ class Trainer:
                     next_snapshot_metadata=flat_next_snapshot_metadata,
                     semantic_state=semantic_state,
                 )
+                record_training_step_stage("transition_processing_and_rollout_write_ms", rollout_write_start_ns)
 
                 # ====================================================
                 # 🔄 UPDATE STATE
@@ -1909,6 +1944,13 @@ class Trainer:
             rollout_collection_ms = (
                 time.perf_counter_ns() - rollout_profile_start_ns
             ) / 1_000_000.0
+            if profile_gpu_enabled and policy_cuda_events:
+                torch.cuda.synchronize(self.device)
+                policy_gpu_ms = sum(start_event.elapsed_time(end_event) for start_event, end_event in policy_cuda_events)
+                self.writer.add_scalar("performance/gpu/policy_inference_ms", policy_gpu_ms, update)
+            for stage_name, elapsed_total_ms in training_step_profile_totals.items():
+                self.writer.add_scalar(f"performance/rollout_step_total_ms/{stage_name}", elapsed_total_ms, update)
+                self.writer.add_scalar(f"performance/rollout_step_mean_ms/{stage_name}", elapsed_total_ms / max(1, rollout_steps), update)
             bootstrap_profile_start_ns = time.perf_counter_ns()
 
             # ========================================================
@@ -2066,6 +2108,11 @@ class Trainer:
             self.policy.train()
 
             ppo_profile_start_ns = time.perf_counter_ns()
+            ppo_cuda_start = ppo_cuda_end = None
+            if profile_gpu_enabled:
+                ppo_cuda_start = torch.cuda.Event(enable_timing=True)
+                ppo_cuda_end = torch.cuda.Event(enable_timing=True)
+                ppo_cuda_start.record()
             ppo_metrics = self.ppo.update(
                 rollout,
                 batch_size=self.config.batch_size,
@@ -2074,6 +2121,10 @@ class Trainer:
             ppo_update_ms = (
                 time.perf_counter_ns() - ppo_profile_start_ns
             ) / 1_000_000.0
+            if profile_gpu_enabled:
+                ppo_cuda_end.record()
+                torch.cuda.synchronize(self.device)
+                self.writer.add_scalar("performance/gpu/ppo_update_ms", ppo_cuda_start.elapsed_time(ppo_cuda_end), update)
             self.writer.add_scalar("performance/update/rollout_collection_ms", rollout_collection_ms, update)
             self.writer.add_scalar("performance/update/bootstrap_gae_ms", bootstrap_gae_ms, update)
             self.writer.add_scalar("performance/update/ppo_optimization_ms", ppo_update_ms, update)
