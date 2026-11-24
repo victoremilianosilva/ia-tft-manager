@@ -1053,7 +1053,7 @@ PYBIND11_MODULE(tft_engine, module) {
                     for (auto item : conversion_profile)
                         profile[item.first] = item.second;
                     profile["binding_action_parse_ms"] =
-                        std::chrono::duration<double, std::milli>(parse_end - total_start).count();
+                        std::chrono::duration<double, std::milli>(parse_end - parse_start).count();
                     profile["native_engine_step_ms"] =
                         std::chrono::duration<double, std::milli>(engine_end - parse_end).count();
                     profile["binding_result_conversion_ms"] =
