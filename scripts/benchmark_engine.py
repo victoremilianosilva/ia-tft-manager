@@ -30,6 +30,10 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Callable
+try:
+    import psutil
+except ImportError:
+    psutil = None
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -133,11 +137,14 @@ def _run_case(
         completed_lobby_steps = 0
         terminal_resets = 0
         memory_before = None
+        rss_before = None
         if memory_profile:
             gc.collect()
             tracemalloc.start()
             tracemalloc.reset_peak()
             memory_before = tracemalloc.get_traced_memory()
+            if psutil is not None:
+                rss_before = psutil.Process(os.getpid()).memory_info().rss
 
         for _ in range(iterations):
             batch_start = time.perf_counter()
@@ -179,6 +186,11 @@ def _run_case(
                 "python_tracemalloc_peak_bytes": peak_bytes,
                 "python_tracemalloc_peak_delta_bytes": max(0, peak_bytes - before_current),
             }
+            if psutil is not None and rss_before is not None:
+                rss_after = psutil.Process(os.getpid()).memory_info().rss
+                memory_metrics["process_rss_before_bytes"] = rss_before
+                memory_metrics["process_rss_after_bytes"] = rss_after
+                memory_metrics["process_rss_delta_bytes"] = rss_after - rss_before
             tracemalloc.stop()
 
         return {
