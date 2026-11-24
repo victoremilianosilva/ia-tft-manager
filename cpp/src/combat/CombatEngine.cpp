@@ -1370,41 +1370,6 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
     for (std::size_t i = 0; i < units.size(); ++i) {
         index_by_id[units[i].unit.id] = i;
         auto& runtime = units[i];
-        if (has_item(runtime.unit, "TFT17_Item_FlexTraitEmblemItem")) {
-            for (auto& ally : units) {
-                if (ally.unit.team != runtime.unit.team ||
-                    std::abs(ally.unit.position.y - runtime.unit.position.y) != 0 ||
-                    std::abs(ally.unit.position.x - runtime.unit.position.x) > 1) continue;
-                if (ally.unit.role == UnitRole::TANK) {
-                    ally.unit.armor += 10.0f;
-                    ally.unit.magic_resist += 10.0f;
-                } else if (ally.unit.role == UnitRole::FIGHTER ||
-                           ally.unit.role == UnitRole::ASSASSIN) {
-                    ally.unit.omnivamp = std::min(1.0f, ally.unit.omnivamp + 0.10f);
-                } else {
-                    ally.unit.attack_speed += 0.10f;
-                }
-            }
-        }
-        if (has_item(runtime.unit, "TFT_Item_IonicSpark")) {
-            for (auto& enemy : units) {
-                if (enemy.unit.team != runtime.unit.team && is_alive(enemy) &&
-                    distance_between(runtime.unit, enemy.unit) <= 2) {
-                    enemy.mr_shred_until = config.max_duration;
-                    enemy.mr_shred_percent = 0.30f;
-                }
-            }
-        }
-        if (has_item(runtime.unit, "TFT_Item_GargoyleStoneplate")) {
-            int nearby_enemies = 0;
-            for (const auto& enemy : units) {
-                if (enemy.unit.team != runtime.unit.team &&
-                    is_alive(enemy) && distance_between(runtime.unit, enemy.unit) <= 2)
-                    ++nearby_enemies;
-            }
-            runtime.unit.armor += 10.0f * nearby_enemies;
-            runtime.unit.magic_resist += 10.0f * nearby_enemies;
-        }
     }
 
     std::mt19937_64 rng(
