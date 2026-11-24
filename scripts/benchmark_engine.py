@@ -128,6 +128,7 @@ def _run_case(
 
         per_lobby_samples = [[] for _ in targets]
         stage_samples = [{} for _ in targets]
+        counter_samples = [{} for _ in targets]
         batch_samples = []
         completed_lobby_steps = 0
         terminal_resets = 0
@@ -161,7 +162,8 @@ def _run_case(
                             0.0, elapsed_ms - binding_total
                         )
                 for stage_name, stage_ms in profile.items():
-                    stage_samples[index].setdefault(stage_name, []).append(float(stage_ms))
+                    destination = counter_samples if stage_name.startswith("native_count_") else stage_samples
+                    destination[index].setdefault(stage_name, []).append(float(stage_ms))
                 completed_lobby_steps += 1
                 if done:
                     _reset(target, (seed + index) & 0xFFFFFFFF, native)
@@ -193,6 +195,10 @@ def _run_case(
             "stage_metrics_per_lobby": [
                 {name: _stats(values) for name, values in stages.items()}
                 for stages in stage_samples
+            ],
+            "counter_metrics_per_lobby": [
+                {name: _stats(values) for name, values in counters.items()}
+                for counters in counter_samples
             ],
             "interpretation": (
                 "pybind native TFTLobby.step call (native engine + binding result conversion)"
@@ -244,6 +250,7 @@ def _run_parallel_case(
 
             per_lobby_samples = [[] for _ in targets]
             stage_samples = [{} for _ in targets]
+            counter_samples = [{} for _ in targets]
             batch_samples = []
             terminal_resets = 0
             for _ in range(iterations):
@@ -267,7 +274,8 @@ def _run_parallel_case(
                             0.0, elapsed_ms - binding_total
                         )
                     for stage_name, stage_ms in profile.items():
-                        stage_samples[index].setdefault(stage_name, []).append(float(stage_ms))
+                        destination = counter_samples if stage_name.startswith("native_count_") else stage_samples
+                        destination[index].setdefault(stage_name, []).append(float(stage_ms))
                     if done:
                         _reset(targets[index], (seed + index) & 0xFFFFFFFF, native)
                         terminal_resets += 1
@@ -283,6 +291,10 @@ def _run_parallel_case(
             "stage_metrics_per_lobby": [
                 {name: _stats(values) for name, values in stages.items()}
                 for stages in stage_samples
+            ],
+            "counter_metrics_per_lobby": [
+                {name: _stats(values) for name, values in counters.items()}
+                for counters in counter_samples
             ],
         }
     finally:
