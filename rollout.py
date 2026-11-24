@@ -729,24 +729,24 @@ class RolloutBuffer:
                         )
 
         if all(supplied_groups):
+            # Intern equal result/next envelopes before ownership transfer so
+            # the redundant payload is never deep-copied in the first place.
+            source_results = normalized_groups["result_snapshot_metadata"]
+            source_next = normalized_groups["next_snapshot_metadata"]
+            for index, (result, next_state) in enumerate(zip(source_results, source_next)):
+                if self._metadata_values_equal(result, next_state):
+                    source_next[index] = result
+
             # One ownership boundary for the complete transition batch. A
-            # shared deepcopy memo preserves aliases across the three groups.
+            # shared deepcopy memo preserves aliases across all three groups.
             owned_decisions, owned_results, owned_next = copy.deepcopy((
                 normalized_groups["snapshot_metadata"],
-                normalized_groups["result_snapshot_metadata"],
-                normalized_groups["next_snapshot_metadata"],
+                source_results,
+                source_next,
             ))
-            records = []
-            for decision, result, next_state in zip(
+            self._metadata_records[self.ptr] = list(zip(
                 owned_decisions, owned_results, owned_next
-            ):
-                # Auto-reset transitions intentionally differ: the result
-                # belongs to the ending episode while next_state belongs to
-                # the newly reset episode. Share only structurally equal data.
-                if self._metadata_values_equal(result, next_state):
-                    next_state = result
-                records.append((decision, result, next_state))
-            self._metadata_records[self.ptr] = records
+            ))
         else:
             self._metadata_records[self.ptr] = None
 
