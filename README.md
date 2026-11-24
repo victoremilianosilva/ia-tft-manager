@@ -40,6 +40,16 @@ python scripts/run_training_battery.py --output-root training_runs/native-batter
 
 O runner exige um diretório de saída vazio, fixa as seeds por lobby, desabilita refresh externo de catálogo e não habilita migração de checkpoints antigos. Cada execução gera `native_ppo_checkpoint.pt`, `run_manifest.json`, `artifact_manifest.json` com o SHA-256 do modelo e logs TensorBoard. A bateria gera `battery_manifest.json` com os hashes dos checkpoints. Isso prepara e executa treinamento; não declara qualidade do modelo sem avaliação independente.
 
+## Benchmark isolado da engine
+
+Para medir a engine C++ sem PPO, policy, construção de batch semântico ou otimizador, execute:
+
+~~~powershell
+python scripts/benchmark_engine.py --mode both --lobbies 1 4 --warmup 10 --iterations 100 --json-out training_runs/engine-benchmark.json --csv-out training_runs/engine-benchmark.csv
+~~~
+
+O modo `native` mede a chamada pybind de `TFTLobby.step()` (execução C++ e conversão do resultado na fronteira Python). O modo `wrapper` mede também o custo Python de validação, snapshots, auditoria de recompensa e eventos de outcome. As lobbies são executadas sequencialmente, como no `LobbyVectorEnv` atual. O relatório apresenta média, mediana, P95/P99, mínimo, máximo e throughput. Esse benchmark não mede PPO nem representa execução paralela.
+
 ## Avaliação de checkpoints
 
 O módulo scripts/evaluate_checkpoints.py contém helpers de avaliação pareada e publicação de artefatos, mas ainda não oferece um entrypoint CLI completo. O protocolo de avaliação independente, splits sem vazamento e promoção de modelo permanece parte da trilha #523; não trate o smoke de treinamento como benchmark.
