@@ -941,7 +941,11 @@ class CppTFTLobbyWrapper:
             # Evaluation-only ablation: suppress item equip/transfer and craft
             # actions. Copy only the type mask that is actually modified.
             for player_idx, player_masks in enumerate(masks):
-                type_mask = player_masks["type_mask"].copy()
+                type_mask = (
+                    player_masks["type_mask"]
+                    if detach_arrays
+                    else player_masks["type_mask"].copy()
+                )
                 legal_types = np.flatnonzero(type_mask)
                 mandatory_anvil_choice = (
                     len(legal_types) == 1 and int(legal_types[0]) == 7
