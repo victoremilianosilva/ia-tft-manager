@@ -71,6 +71,10 @@ struct NativeCompositionGenerationInput {
     std::int32_t player_id{-1};
     std::uint32_t round{0};
     std::uint64_t sequence{0};
+
+    // Optional immutable catalog view. The owning vector must outlive generate().
+    // The value-owned catalog remains available for tests and standalone callers.
+    const std::vector<NativeCompositionUnitDefinition>* catalog_ref{nullptr};
 };
 
 struct NativeGeneratedComposition {
@@ -129,7 +133,9 @@ public:
                 std::to_string(input.round) + ":" +
                 std::to_string(input.sequence);
         }
-        if (input.catalog.empty() || input.target_slots <= 0 ||
+        const auto& catalog = input.catalog_ref
+            ? *input.catalog_ref : input.catalog;
+        if (catalog.empty() || input.target_slots <= 0 ||
             input.maximum_candidates == 0) {
             result.reason = "insufficient_catalog_or_capacity";
             return result;
@@ -139,7 +145,7 @@ public:
         std::unordered_map<std::int32_t, const NativeCompositionUnitDefinition*> definitions;
         std::map<std::string, std::int32_t> direction_evidence;
         std::map<std::string, std::int32_t> thresholds;
-        for (const auto& unit : input.catalog) {
+        for (const auto& unit : catalog) {
             if (unit.champion_id < 0 || unit.cost < 1 || unit.cost > 5) continue;
             definitions[unit.champion_id] = &unit;
         }
