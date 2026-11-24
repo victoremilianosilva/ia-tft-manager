@@ -830,7 +830,7 @@ class CppTFTLobbyWrapper:
             SimpleNamespace(player_id=i, alive=True, eliminated=False)
             for i in range(self.PLAYERS_PER_LOBBY)
         ]
-        self._last_action_masks = self._copy_action_masks(result.get("action_masks"))
+        self._last_action_masks = result.get("action_masks")
         self._last_snapshot_metadata = {
             "engine_instance_id": str(result["engine_instance_id"]),
             "episode_id": int(result["episode_id"]),
@@ -891,7 +891,7 @@ class CppTFTLobbyWrapper:
         observations = np.asarray(result["observations"], dtype=np.float32)
         rewards = np.asarray(result["rewards"], dtype=np.float32)
         self._last_dones = np.asarray(result["dones"], dtype=np.bool_)
-        self._last_action_masks = self._copy_action_masks(result.get("action_masks"))
+        self._last_action_masks = result.get("action_masks")
         self._last_snapshot_metadata = {
             "engine_instance_id": str(result["engine_instance_id"]),
             "episode_id": int(result["episode_id"]),
@@ -1030,8 +1030,64 @@ class CppTFTLobbyWrapper:
         return self._get_action_masks(detach_arrays=True)
 
     def get_action_masks_for_training(self):
-        """Borrow immutable masks for the Trainer; no per-player buffer copies."""
+        """Compatibility mapping API for callers outside the optimized Trainer path."""
         return self._get_action_masks(detach_arrays=False)
+
+    def get_packed_action_masks_for_training(self):
+        """Borrow the contiguous native mask matrix without rebuilding player dictionaries."""
+        if self._last_action_masks is None:
+            raise RuntimeError("Execute reset() antes de solicitar action masks.")
+
+        packed = self._last_action_masks
+        if not isinstance(packed, np.ndarray):
+            # Legacy fixtures/engines remain supported, but production native
+            # results use the packed branch and never materialize these mappings.
+            players = self._copy_action_masks(packed, detach_arrays=False)
+            packed = np.empty(
+                (self.PLAYERS_PER_LOBBY, self._PACKED_ACTION_MASK_WIDTH),
+                dtype=np.bool_,
+            )
+            for player_index, player_masks in enumerate(players):
+                offset = 0
+                for key, shape in self._PACKED_ACTION_MASK_LAYOUT:
+                    width = int(np.prod(shape))
+                    packed[player_index, offset:offset + width] = np.asarray(
+                        player_masks[key], dtype=np.bool_
+                    ).reshape(-1)
+                    offset += width
+
+        expected_shape = (
+            self.PLAYERS_PER_LOBBY,
+            self._PACKED_ACTION_MASK_WIDTH,
+        )
+        if packed.dtype != np.bool_ or packed.shape != expected_shape:
+            raise RuntimeError(
+                "Buffer compacto de action masks inválido: "
+                f"dtype={packed.dtype}, shape={packed.shape}, esperado bool{expected_shape}."
+            )
+
+        if os.environ.get("TFT_ABLATE_ITEM_ACTIONS") == "1":
+            # The first nine packed values are the type mask. Copy only when
+            # this explicit evaluation ablation changes those values.
+            packed = packed.copy()
+            for player_idx in range(self.PLAYERS_PER_LOBBY):
+                type_mask = packed[player_idx, :9]
+                legal_types = np.flatnonzero(type_mask)
+                mandatory_anvil_choice = (
+                    len(legal_types) == 1 and int(legal_types[0]) == 7
+                )
+                if not mandatory_anvil_choice:
+                    type_mask[7] = False
+                    type_mask[8] = False
+                if not bool(type_mask.any()):
+                    raise RuntimeError(
+                        "A ablação de ações de item removeu todas as ações legais "
+                        f"do snapshot nativo para o jogador {player_idx}; "
+                        "nenhuma ação substituta será inventada."
+                    )
+
+        packed.flags.writeable = False
+        return packed
 
     def get_snapshot_metadata(self):
         """Return non-neural metadata for the exact observation/mask snapshot."""

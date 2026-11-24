@@ -1181,3 +1181,36 @@ def test_training_action_masks_borrow_read_only_snapshot_buffers(monkeypatch):
     wrapper._last_action_masks = make_masks(3)
     assert borrowed[0]["type_mask"][2]
     assert wrapper.get_action_masks_for_training()[0]["type_mask"][3]
+
+def test_packed_training_mask_api_borrows_single_read_only_buffer(monkeypatch):
+    monkeypatch.delenv("TFT_ABLATE_ITEM_ACTIONS", raising=False)
+    wrapper = cpp_lobby_env.CppTFTLobbyWrapper.__new__(
+        cpp_lobby_env.CppTFTLobbyWrapper
+    )
+    packed = np.zeros((8, 1280), dtype=np.bool_)
+    packed[:, 0] = True
+    wrapper._last_action_masks = packed
+
+    borrowed = wrapper.get_packed_action_masks_for_training()
+    assert borrowed is packed
+    assert borrowed.shape == (8, 1280)
+    assert borrowed.dtype == np.bool_
+    assert not borrowed.flags.writeable
+
+
+def test_packed_training_mask_api_applies_item_ablation_without_mutating_source(monkeypatch):
+    monkeypatch.setenv("TFT_ABLATE_ITEM_ACTIONS", "1")
+    wrapper = cpp_lobby_env.CppTFTLobbyWrapper.__new__(
+        cpp_lobby_env.CppTFTLobbyWrapper
+    )
+    packed = np.zeros((8, 1280), dtype=np.bool_)
+    packed[:, 0] = True
+    packed[:, 7] = True
+    packed[:, 8] = True
+    wrapper._last_action_masks = packed
+
+    borrowed = wrapper.get_packed_action_masks_for_training()
+    assert borrowed is not packed
+    assert not borrowed[:, 7:9].any()
+    assert packed[:, 7:9].all()
+

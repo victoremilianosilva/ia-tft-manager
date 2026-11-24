@@ -876,3 +876,26 @@ def test_freeze_snapshot_is_deeply_immutable_and_deepcopy_shares_ownership():
         frozen["units"][0]["items"].append(3)
     with pytest.raises(TypeError, match="immutable"):
         frozen["strategic_state"]["active_unit_ids"][0] = 99
+
+def test_trainer_flattens_packed_action_masks_to_contract_tensors():
+    trainer = Trainer.__new__(Trainer)
+    trainer.num_envs = 1
+    trainer.device = torch.device("cpu")
+    trainer.PLAYERS_PER_LOBBY = 8
+
+    packed = np.zeros((8, 1280), dtype=np.bool_)
+    packed[:, 0] = True
+    packed[:, 9] = True
+
+    flattened = trainer._flatten_masks(
+        [packed],
+        lobby_player_alive=[[True] * 8],
+    )
+
+    assert set(flattened) == set(Trainer.MASK_SHAPES)
+    assert tuple(flattened["type_mask"].shape) == (8, 9)
+    assert tuple(flattened["shop_mask"].shape) == (8, 5)
+    assert flattened["type_mask"][:, 0].all()
+    assert flattened["shop_mask"][:, 0].all()
+    assert all(value.dtype == torch.bool for value in flattened.values())
+
