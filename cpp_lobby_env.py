@@ -851,8 +851,6 @@ class CppTFTLobbyWrapper:
             bool(timer_expired),
         )
         profile_mark("pybind_call_inclusive")
-        if profile_enabled:
-            profile["binding_gil_held_ms"] = profile["pybind_call_inclusive"]
         binding_profile = result.pop("_binding_profile", {})
         engine_profile = result.pop("_engine_profile_ms", {})
         engine_counts = result.pop("_engine_profile_counts", {})
@@ -862,6 +860,8 @@ class CppTFTLobbyWrapper:
         if profile_enabled and isinstance(engine_profile, Mapping):
             for key, value in engine_profile.items():
                 profile[f"native_{key}"] = float(value)
+        if profile_enabled:
+            profile["binding_gil_held_ms"] = profile["pybind_call_inclusive"]
         if profile_enabled and isinstance(engine_counts, Mapping):
             for key, value in engine_counts.items():
                 profile[f"native_count_{key}"] = int(value)
