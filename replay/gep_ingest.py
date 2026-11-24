@@ -109,7 +109,7 @@ def _match_groups(capture: dict[str, Any]) -> dict[tuple[str, str], list[dict[st
 
 def _write_hash_chain(path: Path, records: list[tuple[str, dict[str, Any]]]) -> str:
     previous_hash = ""
-    with path.open("x", encoding="utf-8", newline="\\n") as stream:
+    with path.open("x", encoding="utf-8", newline="\n") as stream:
         for sequence, (record_type, source_payload) in enumerate(records):
             payload = dict(source_payload)
             if record_type == "footer":
@@ -126,7 +126,7 @@ def _write_hash_chain(path: Path, records: list[tuple[str, dict[str, Any]]]) -> 
                 (previous_hash + body_json).encode("utf-8")
             ).hexdigest()
             stream.write(body_json[:-1] + ',"record_sha256":' +
-                         json.dumps(record_hash) + "}\\n")
+                         json.dumps(record_hash) + "}\n")
             previous_hash = record_hash
     return previous_hash
 
@@ -304,8 +304,8 @@ def build_gep_dataset_manifest(
     dataset_hash = hashlib.sha256(_canonical(hash_payload).encode("utf-8")).hexdigest()
     manifest = dict(payload, dataset_version=f"sha256:{dataset_hash}",
                     dataset_sha256=dataset_hash)
-    with destination.open("x", encoding="utf-8", newline="\\n") as stream:
-        stream.write(json.dumps(manifest, ensure_ascii=False, indent=2) + "\\n")
+    with destination.open("x", encoding="utf-8", newline="\n") as stream:
+        stream.write(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n")
     return manifest
 
 
