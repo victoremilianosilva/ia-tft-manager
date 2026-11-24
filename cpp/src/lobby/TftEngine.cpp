@@ -1788,6 +1788,9 @@ struct TFTEngine::Impl {
             native_composition_candidates,
         const Shop& strategic_shop, const Pool& pool,
         const TraitMilestones& trait_milestones) {
+        using ProfileClock = std::chrono::steady_clock;
+        const bool profile_runtime = step_profile_enabled;
+        auto runtime_stage_start = profile_runtime ? ProfileClock::now() : ProfileClock::time_point{};
         // Native strategic lifecycle is independent of the optional
         // Composition Intelligence diagnostics/Viewer pipeline. It consumes
         // the canonical per-player ActiveCompositionManager and live native
@@ -2288,8 +2291,20 @@ struct TFTEngine::Impl {
                     episode_id, static_cast<std::int32_t>(i),
                     static_cast<std::uint32_t>(current_round)
                 };
+                if (profile_runtime) {
+                    step_profile_ms["strategic_native_runtime_input_preparation_ms"] +=
+                        std::chrono::duration<double, std::milli>(ProfileClock::now() - runtime_stage_start).count();
+                    ++step_profile_counts["strategic_native_runtime_input_preparation_calls"];
+                    runtime_stage_start = ProfileClock::now();
+                }
                 const auto native_result =
                     native_runtime.refresh(native_audit_context, native_input);
+                if (profile_runtime) {
+                    step_profile_ms["strategic_unified_runtime_refresh_ms"] +=
+                        std::chrono::duration<double, std::milli>(ProfileClock::now() - runtime_stage_start).count();
+                    ++step_profile_counts["strategic_unified_runtime_refresh_calls"];
+                    runtime_stage_start = ProfileClock::now();
+                }
                 if (native_result.diagnostics.pivot_feasibility) {
                     const auto& evaluated = *native_result.diagnostics.pivot_feasibility;
                     pivot_generation_diagnostic +=
