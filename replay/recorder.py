@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any, Iterable
 
 
-REPLAY_FORMAT = "TFT_AUTHORITATIVE_REPLAY_V1"
+REPLAY_FORMAT = "TFT_NATIVE_LOBBY_REPLAY_V1"
 SCHEMA_VERSION = 1
 
 
@@ -86,7 +86,7 @@ class ReplayRecorder:
             "replay_format": REPLAY_FORMAT,
             "schema_version": SCHEMA_VERSION,
             "replay_id": self.replay_id,
-            "source": "native_engine_wrapper",
+            "source": "native_lobby_simulation",
             "created_at": datetime.now(timezone.utc).isoformat(),
             "engine_instance_id": self.engine_instance_id,
             "episode_id": self.episode_id,
