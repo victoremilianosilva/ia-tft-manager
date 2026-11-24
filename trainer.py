@@ -8,6 +8,7 @@ import json
 import copy
 import hashlib
 import random
+import time
 from pathlib import Path
 
 from rich.console import Console
@@ -1314,6 +1315,10 @@ class Trainer:
             start,
             end
         ):
+            update_profile_start_ns = time.perf_counter_ns()
+            wrapper_profile_totals = {}
+            wrapper_profile_calls = 0
+            rollout_profile_start_ns = time.perf_counter_ns()
 
             anti_loop_start_totals = dict(anti_loop_totals)
             mask_audit_counts = {
@@ -1587,6 +1592,20 @@ class Trainer:
                 ) = self.vec_env.step(
                     lobby_actions
                 )
+                # Aggregate per-lobby wrapper/native timings without changing
+                # the transition payload or synchronizing the training device.
+                for lobby_info in infos:
+                    stage_profile = lobby_info.get("performance_profile", {})
+                    if isinstance(stage_profile, dict):
+                        wrapper_profile_calls += 1
+                        for stage_name, elapsed_ms in stage_profile.items():
+                            try:
+                                wrapper_profile_totals[stage_name] = (
+                                    wrapper_profile_totals.get(stage_name, 0.0)
+                                    + float(elapsed_ms)
+                                )
+                            except (TypeError, ValueError):
+                                continue
 
                 # Reward/done belong to the Engine step result; next_obs may
                 # instead belong to a freshly auto-reset episode.
@@ -1887,6 +1906,11 @@ class Trainer:
                         episode_active[start_idx:end_idx] = True
                         episode_returns[start_idx:end_idx] = 0.0
 
+            rollout_collection_ms = (
+                time.perf_counter_ns() - rollout_profile_start_ns
+            ) / 1_000_000.0
+            bootstrap_profile_start_ns = time.perf_counter_ns()
+
             # ========================================================
             # 🧮 BOOTSTRAP VALUE
             # ========================================================
@@ -1924,6 +1948,9 @@ class Trainer:
                     self.num_agents, dtype=torch.bool, device=self.device
                 ),
             )
+            bootstrap_gae_ms = (
+                time.perf_counter_ns() - bootstrap_profile_start_ns
+            ) / 1_000_000.0
 
             # ========================================================
             # 🔥 ENTROPY COEFFICIENT — PROGRESSO GLOBAL
@@ -2038,11 +2065,34 @@ class Trainer:
 
             self.policy.train()
 
+            ppo_profile_start_ns = time.perf_counter_ns()
             ppo_metrics = self.ppo.update(
                 rollout,
                 batch_size=self.config.batch_size,
                 epochs=self.config.ppo_epochs,
             ) or {}
+            ppo_update_ms = (
+                time.perf_counter_ns() - ppo_profile_start_ns
+            ) / 1_000_000.0
+            self.writer.add_scalar("performance/update/rollout_collection_ms", rollout_collection_ms, update)
+            self.writer.add_scalar("performance/update/bootstrap_gae_ms", bootstrap_gae_ms, update)
+            self.writer.add_scalar("performance/update/ppo_optimization_ms", ppo_update_ms, update)
+            self.writer.add_scalar(
+                "performance/update/total_through_ppo_ms",
+                (time.perf_counter_ns() - update_profile_start_ns) / 1_000_000.0,
+                update,
+            )
+            if wrapper_profile_calls:
+                self.writer.add_scalar("performance/wrapper/profiled_lobby_steps", wrapper_profile_calls, update)
+                for stage_name, elapsed_total_ms in wrapper_profile_totals.items():
+                    self.writer.add_scalar(
+                        f"performance/wrapper_total_ms/{stage_name}", elapsed_total_ms, update
+                    )
+                    self.writer.add_scalar(
+                        f"performance/wrapper_mean_ms/{stage_name}",
+                        elapsed_total_ms / wrapper_profile_calls,
+                        update,
+                    )
             self.writer.add_scalar("training/optimizer_steps", ppo_metrics.get("optimizer_steps", 0), update)
             self.writer.add_scalar("training/grad_norm_mean", ppo_metrics.get("grad_norm_mean", 0.0), update)
             self.writer.add_scalar("training/grad_norm_max", ppo_metrics.get("grad_norm_max", 0.0), update)
