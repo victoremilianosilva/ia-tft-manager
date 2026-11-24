@@ -54,6 +54,19 @@ def _percentile(values: list[float], percentile: float) -> float:
     return ordered[index]
 
 
+def _counter_stats(samples: list[float]) -> dict[str, float | int]:
+    return {
+        "samples": len(samples),
+        "total_count": round(sum(samples), 3),
+        "mean_count": round(statistics.fmean(samples), 3) if samples else 0.0,
+        "median_count": round(statistics.median(samples), 3) if samples else 0.0,
+        "p95_count": round(_percentile(samples, 0.95), 3),
+        "p99_count": round(_percentile(samples, 0.99), 3),
+        "min_count": round(min(samples), 3) if samples else 0.0,
+        "max_count": round(max(samples), 3) if samples else 0.0,
+    }
+
+
 def _stats(samples_ms: list[float]) -> dict[str, float | int]:
     total_seconds = sum(samples_ms) / 1000.0
     return {
@@ -213,7 +226,7 @@ def _run_case(
                 for stages in stage_samples
             ],
             "counter_metrics_per_lobby": [
-                {name: _stats(values) for name, values in counters.items()}
+                {name: _counter_stats(values) for name, values in counters.items()}
                 for counters in counter_samples
             ],
             "interpretation": (
@@ -240,6 +253,7 @@ def _run_parallel_case(
 ) -> dict:
     """Run independent lobbies concurrently; exposes GIL/native scaling limits."""
     native = mode == "native"
+    os.environ["TFT_PROFILE_STEPS"] = "1"
     factory = _make_native if native else _make_wrapper
     step_fn: Callable = _step_native if native else _step_wrapper
     targets = []
@@ -457,7 +471,9 @@ def main(argv: list[str] | None = None) -> int:
                 fieldnames=(
                     "mode", "lobbies", "scope", "calls", "total_ms", "mean_ms",
                     "median_ms", "p95_ms", "p99_ms", "min_ms", "max_ms",
-                    "calls_per_second", "stage",
+                    "calls_per_second", "stage", "metric_type", "samples",
+                    "total_count", "mean_count", "median_count", "p95_count",
+                    "p99_count", "min_count", "max_count",
                 ),
             )
             writer.writeheader()
@@ -468,19 +484,27 @@ def main(argv: list[str] | None = None) -> int:
                 ):
                     writer.writerow({
                         "mode": result["mode"], "lobbies": result["lobbies"],
-                        "scope": scope, "stage": "total_step", **stats,
+                        "scope": scope, "stage": "total_step", "metric_type": "time_ms", **stats,
                     })
                 for lobby_index, stage_map in enumerate(result["stage_metrics_per_lobby"]):
                     for stage_name, stats in stage_map.items():
                         writer.writerow({
                             "mode": result["mode"], "lobbies": result["lobbies"],
-                            "scope": f"lobby_{lobby_index}", "stage": stage_name, **stats,
+                            "scope": f"lobby_{lobby_index}", "stage": stage_name,
+                            "metric_type": "time_ms", **stats,
                         })
                 for lobby_index, counter_map in enumerate(result["counter_metrics_per_lobby"]):
                     for counter_name, stats in counter_map.items():
                         writer.writerow({
                             "mode": result["mode"], "lobbies": result["lobbies"],
                             "scope": f"lobby_{lobby_index}", "stage": counter_name, **stats,
+                        })
+                for lobby_index, counter_map in enumerate(result["counter_metrics_per_lobby"]):
+                    for counter_name, stats in counter_map.items():
+                        writer.writerow({
+                            "mode": result["mode"], "lobbies": result["lobbies"],
+                            "scope": f"lobby_{lobby_index}", "stage": counter_name,
+                            "metric_type": "count", **stats,
                         })
         print(f"CSV: {output.resolve()}")
 
