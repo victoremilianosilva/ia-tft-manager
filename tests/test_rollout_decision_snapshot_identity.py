@@ -665,6 +665,12 @@ def test_rollout_metadata_isolated_on_store_and_shared_read_only_in_batches():
         "decision_sequence": 21, "player_decision_sequence": 21, "player_id": 0, "lobby_index": 0,
         "mask_snapshot_hash": "a" * 64,
         "mask_snapshot_hash_algorithm": "tft-action-mask-snapshot-v1",
+        "native_player_state": {
+            "board": [{"unit": "unit-a", "items": ["item-a", "item-b"]}],
+            "bench": [],
+            "traits": [{"name": "trait-a", "count": 2}],
+        },
+        "item_recipes": [{"components": ["item-a", "item-b"], "result": "item-c"}],
     }
     trace = {
         "player_id": 0,
@@ -702,6 +708,8 @@ def test_rollout_metadata_isolated_on_store_and_shared_read_only_in_batches():
     assert buffer._metadata_records[0][0][1] is buffer._metadata_records[0][0][2]
     audit = buffer.get_transition_metadata(0, 0)
     assert audit["snapshot_metadata"]["mask_snapshot_hash"] == "a" * 64
+    assert audit["snapshot_metadata"]["native_player_state"]["board"][0]["items"] == ["item-a", "item-b"]
+    assert audit["snapshot_metadata"]["item_recipes"][0]["result"] == "item-c"
     assert audit["result_snapshot_metadata"]["action_trace"]["status_reason"] == "applied"
     audit["result_snapshot_metadata"]["action_trace"]["status_reason"] = "audit-mutated"
     assert buffer.result_snapshot_metadata[0][0]["action_trace"]["status_reason"] == "applied"
