@@ -88,6 +88,9 @@ void builder_emits_snapshot_bound_physical_candidates() {
     native.composition_version = 3;
     native.gold = 20;
     native.alive = true;
+    // Unoccupied board slots must be represented by -1; zero is a valid champion ID.
+    native.board_champion_ids.fill(-1);
+    native.bench_champion_ids.fill(-1);
     native.shop_champion_ids[0] = 10;
     native.shop_champion_ids[1] = 20;
     native.bench_champion_ids[0] = 20;
@@ -109,8 +112,27 @@ void builder_emits_snapshot_bound_physical_candidates() {
     const std::unordered_map<std::int32_t, std::int32_t> costs{
         {10, 3}, {20, 2}, {30, 1}
     };
+    auto audit_native = native;
+    auto training_native = native;
     const auto result = StrategicActionCandidateBuilder{}.build(
-        context, active, priorities, lineup, native, costs);
+        context, active, priorities, lineup, audit_native, costs, true);
+    const auto training_result = StrategicActionCandidateBuilder{}.build(
+        context, active, priorities, lineup, training_native, costs, false);
+    assert(training_result.candidates.size() == result.candidates.size());
+    assert(training_result.positioning.empty());
+    assert(training_native.requested_move_targets.size() == audit_native.requested_move_targets.size());
+    for (std::size_t index = 0;
+         index < audit_native.requested_move_targets.size(); ++index) {
+        assert(training_native.requested_move_targets[index].champion_id ==
+               audit_native.requested_move_targets[index].champion_id);
+        assert(training_native.requested_move_targets[index].target_board_slot ==
+               audit_native.requested_move_targets[index].target_board_slot);
+    }
+    for (std::size_t index = 0; index < result.candidates.size(); ++index) {
+        assert(training_result.candidates[index].candidate_id == result.candidates[index].candidate_id);
+        assert(training_result.candidates[index].kind == result.candidates[index].kind);
+        assert(training_result.candidates[index].champion_id == result.candidates[index].champion_id);
+    }
     assert(result.status == "candidates_generated");
     assert(result.candidates.size() >= 6);
 
@@ -161,7 +183,7 @@ void builder_emits_snapshot_bound_physical_candidates() {
     assert(deploy->candidate_id.find("candidate-builder") != std::string::npos);
     assert(deploy->candidate_id.find("unit-20") != std::string::npos);
     assert(deploy->evidence_source.find("StrategicPositionPlanner") != std::string::npos);
-    assert(!native.requested_move_targets.empty());
+    assert(!audit_native.requested_move_targets.empty());
 
     const auto hold = find(StrategicActionKind::Hold);
     assert(hold != result.candidates.end());

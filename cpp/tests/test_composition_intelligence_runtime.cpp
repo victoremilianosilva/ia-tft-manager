@@ -138,7 +138,7 @@ int main() {
     CompositionIntelligencePlayerRuntime player_a;
     CompositionIntelligencePlayerRuntime player_b;
 
-    player_a.begin_cycle(77, 0, 12);
+    player_a.begin_cycle(77, 0, 12, true, true);
     player_a.mark_stage("candidate_evaluation", "completed", "two candidates");
     player_a.mark_stage("transition_publication", "skipped", "no approved transition");
     nlohmann::json a = {{"composition_id", "comp-a"}, {"composition_version", 3},

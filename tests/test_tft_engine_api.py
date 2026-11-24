@@ -719,6 +719,7 @@ def test_opgg_adapter_resolves_units_through_native_catalog():
 def test_native_composition_intelligence_emits_per_player_diagnostics(monkeypatch):
     import json
     monkeypatch.setenv("TFT_COMPOSITION_INTELLIGENCE_ENABLED", "1")
+    monkeypatch.setenv("TFT_COMPOSITION_DIAGNOSTICS_MODE", "audit")
 
     engine = TFTLobby(seed=20261111)
     try:
