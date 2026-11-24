@@ -743,7 +743,7 @@ class RolloutBuffer:
                 # Auto-reset transitions intentionally differ: the result
                 # belongs to the ending episode while next_state belongs to
                 # the newly reset episode. Share only structurally equal data.
-                if result == next_state:
+                if self._metadata_values_equal(result, next_state):
                     next_state = result
                 records.append((decision, result, next_state))
             self._metadata_records[self.ptr] = records
@@ -847,11 +847,20 @@ class RolloutBuffer:
         if rows is None:
             return None
         decision, result, next_state = rows[env_index]
-        return {
+        return copy.deepcopy({
             "snapshot_metadata": decision,
             "result_snapshot_metadata": result,
             "next_snapshot_metadata": next_state,
-        }
+        })
+
+    @staticmethod
+    def _metadata_values_equal(left, right):
+        """Compare JSON-like metadata without allowing exotic equality to break storage."""
+        try:
+            result = left == right
+            return result if isinstance(result, bool) else False
+        except (TypeError, ValueError):
+            return False
 
     # =================================================================
     # TENSOR HELPER
