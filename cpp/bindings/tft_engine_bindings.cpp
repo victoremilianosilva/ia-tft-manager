@@ -3,6 +3,7 @@
 #include <array>
 #include <chrono>
 #include <cstdint>
+#include <cstdlib>
 #include <memory>
 #include <optional>
 #include <stdexcept>
