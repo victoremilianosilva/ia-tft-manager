@@ -754,6 +754,14 @@ py::dict step_to_dict(tft::StepResult step) {
     }
     result["action_traces"] = std::move(action_traces);
     result["events"] = step.events;
+    py::dict engine_profile;
+    for (const auto& [name, elapsed_ms] : step.performance_profile_ms)
+        engine_profile[py::str(name)] = elapsed_ms;
+    py::dict engine_counts;
+    for (const auto& [name, count] : step.performance_profile_counts)
+        engine_counts[py::str(name)] = count;
+    result["_engine_profile_ms"] = std::move(engine_profile);
+    result["_engine_profile_counts"] = std::move(engine_counts);
 
     return result;
 }
@@ -1016,6 +1024,9 @@ PYBIND11_MODULE(tft_engine, module) {
                     std::chrono::duration<double, std::milli>(conversion_end - engine_end).count();
                 profile["binding_total_ms"] =
                     std::chrono::duration<double, std::milli>(conversion_end - total_start).count();
+                // The pybind lambda runs with the GIL held. This is the measured
+                // in-lambda GIL hold window, not an estimate of contention wait.
+                profile["binding_gil_held_ms"] = profile["binding_total_ms"];
                 result["_binding_profile"] = std::move(profile);
                 return result;
             },
