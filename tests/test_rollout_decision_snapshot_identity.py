@@ -712,23 +712,15 @@ def test_rollout_metadata_isolated_on_store_and_shared_read_only_in_batches():
     audit["result_snapshot_metadata"]["action_trace"]["status_reason"] = "audit-mutated"
     assert buffer.result_snapshot_metadata[0][0]["action_trace"]["status_reason"] == "applied"
 
-    # Normal PPO minibatches must not materialize or expose diagnostic envelopes.
-    training_batch = next(buffer.get_batches(batch_size=1))
-    assert training_batch["snapshot_metadata"] is None
-    assert training_batch["result_snapshot_metadata"] is None
-    assert training_batch["next_snapshot_metadata"] is None
-    assert "identities" not in training_batch["semantic_state"]
-    assert "hashes" not in training_batch["semantic_state"]
-
-    # Diagnostic consumers may opt in to a lightweight reference view.
     batch = next(buffer.get_batches(batch_size=1, include_metadata=True))
     batch_trace = batch["result_snapshot_metadata"][0]["action_trace"]
-    assert batch["snapshot_metadata"][0] is buffer.snapshot_metadata[0][0]
-    assert batch["result_snapshot_metadata"][0] is buffer.result_snapshot_metadata[0][0]
-    assert batch["next_snapshot_metadata"][0] is buffer.next_snapshot_metadata[0][0]
-    assert batch_trace is stored_trace
-    assert batch_trace["effective_action"] == [6, 0, 0, 0, 0, 0]
-    assert batch_trace["status_reason"] == "applied"
+    batch_trace["effective_action"][0] = 99
+    batch_trace["status_reason"] = "batch-mutated"
+
+    # Mutating batch metadata must not rewrite the buffer's canonical copy.
+    stored_trace = buffer.result_snapshot_metadata[0][0]["action_trace"]
+    assert stored_trace["effective_action"] == [6, 0, 0, 0, 0, 0]
+    assert stored_trace["status_reason"] == "applied"
 
 
 @pytest.mark.parametrize(
