@@ -873,6 +873,7 @@ class CppTFTLobbyWrapper:
                 "next_action_masks": self.get_action_masks(),
                 "rewards": rewards,
                 "dones": self._last_dones,
+                "lobby_done": self._last_lobby_done,
                 "action_rewards": action_rewards,
                 "combat_rewards": combat_rewards,
                 "placement_rewards": placement_rewards,
