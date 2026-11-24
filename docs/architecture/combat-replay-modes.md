@@ -30,6 +30,22 @@ Variável de ambiente `TFT_COMBAT_REPLAY_MODE`:
 
 Valores diferentes são rejeitados explicitamente. O modo é lido durante a resolução de combate; portanto, a configuração deve ser definida antes do step que executa o combate.
 
+## Matriz de consumidores e propriedade
+
+| Dado/artefato | Produção | Consumidor efetivo | Política |
+|---|---|---|---|
+| `CombatUnitResult` (dano agregado, sobrevivência, cura, kills, ataques, conjurações e HP final) | Sempre, no fechamento do combate | `TftEngine.cpp`: agregação por unidade/equipe e publicação de `strategic_board_contribution_evidence`; estado factual do resultado | Obrigatório em `off`, `audit` e `debug` |
+| `DamageEvent` detalhado | `record_damage` | Adaptador de auditoria da lobby: mapeia IDs locais para player/UUID e publica `combat_damage_events` no `AuditSnapshot` | Somente `audit`/`debug`; não é a fonte da evidência estratégica agregada |
+| `AttackEvent` e `DeathEvent` | `record_events` | Adaptador de auditoria da lobby: publica `combat_attack_events` e `combat_death_events` com sequência e proveniência | Somente `audit`/`debug` |
+| `CombatEvent` genérico | `record_events` | Resultado detalhado de combate/replay; não participa do cálculo do reward nem da decisão PPO | Somente `audit`/`debug` |
+| `COMBAT_SNAPSHOT_V2` | Projeção do input factual antes da simulação | Transporte de diagnóstico/auditoria em `StepResult.events`; não consumido pelo caminho de decisão PPO verificado | Somente `audit`/`debug` |
+| `COMBAT_SIMULATION_REPLAY_V1` | Resultado + input/configuração de replay | Transporte de diagnóstico/reprodução em `StepResult.events`; não consumido pelo caminho de decisão PPO verificado | Somente `audit`/`debug` |
+| `PositionEvent` | `record_positions`, configuração independente | Telemetria de movimento quando explicitamente solicitada | Não é habilitada por `TFT_COMBAT_REPLAY_MODE`; permanece sob seu próprio opt-in |
+
+**Fronteira de propriedade:** `CombatEngine::simulate(const CombatInput&)` recebe input somente leitura. A cópia `effective_unit` é a área de preparação mutável por unidade; após aplicar efeitos e validar os atributos, ela é movida para `RuntimeUnit`. O runtime passa a ser proprietário dessa estrutura. Não há referência/ponteiro para a cópia movida nem escrita de volta em `CombatInput`. A otimização da distância usa apenas coordenadas escalares e não materializa outra `CombatUnit`.
+
+A matriz distingue explicitamente o sinal agregado efetivamente usado pela estratégia dos eventos detalhados que servem à auditoria. O fato de os artefatos de auditoria serem transportados em `StepResult.events` não os torna entrada do PPO.
+
 ## Contratos e invariantes
 
 - A mesma entrada e seed produzem o mesmo vencedor, duração, sobreviventes, dano agregado e estatísticas finais por unidade nos modos `off` e `audit`.
@@ -43,7 +59,7 @@ Valores diferentes são rejeitados explicitamente. O modo é lido durante a reso
 
 - `cpp/src/lobby/TftEngine.cpp`: configuração do modo, opt-in dos eventos, snapshots e replay JSON; preserva builders/validadores de evidência e agregações.
 - `cpp/src/combat/CombatEngine.cpp`: move da unidade preparada e cálculo de distância sem cópia de probe.
-- `cpp/tests/test_combat_engine.cpp`: equivalência de resultado e evidência agregada com eventos ligados/desligados.
+- `cpp/tests/test_combat_engine.cpp`: equivalência de resultado/evidência agregada, limites do tabuleiro no movimento e imutabilidade do input após simulação.
 - `tests/test_tft_engine_api.py`: teste de proveniência de eventos configura explicitamente o modo `audit`.
 
 ## Critérios de validação
@@ -52,4 +68,5 @@ Valores diferentes são rejeitados explicitamente. O modo é lido durante a reso
 - Modo normal não retém vetores de eventos detalhados.
 - Modo `audit` continua publicando eventos tipados com sequência e UUIDs de origem/destino.
 - Build e testes nativos/Python passam.
-- Sanitizers e medição de alocações podem ser executados posteriormente; não são substituídos por estimativas de performance.
+- Job dedicado executa `test_combat_engine` com AddressSanitizer e UndefinedBehaviorSanitizer para detectar uso após move, acesso inválido e comportamento indefinido no caminho coberto.
+- Benchmark de tempo/alocações continua explicitamente adiado: CI funcional e sanitizers não são substitutos de medição de performance.
