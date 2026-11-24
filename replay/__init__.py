@@ -7,8 +7,10 @@ from .recorder import (
     build_dataset_manifest,
     load_replay,
 )
+from .runner import ReplayCompatibilityError, run_deterministic_replay
 
 __all__ = [
     "REPLAY_FORMAT", "ReplayIntegrityError", "ReplayRecorder",
-    "build_dataset_manifest", "load_replay",
+    "build_dataset_manifest", "load_replay", "ReplayCompatibilityError",
+    "run_deterministic_replay",
 ]
