@@ -113,7 +113,6 @@ def test_complete_gep_capture_is_ingested_as_observational_match_artifact(tmp_pa
     assert capture["complete"] is True
 
     dataset_path = tmp_path / "live_dataset.json"
-    manifest = build_gep_dataset_manifest([capture_path], dataset_path) if False else None
     # Three independent matches are required for disjoint train/validation/test.
     captures = [
         _write_capture(tmp_path / f"capture-{index}.jsonl", f"match-{index}")
