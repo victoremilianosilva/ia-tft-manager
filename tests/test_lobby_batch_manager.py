@@ -62,3 +62,22 @@ def test_lobby_batch_manager_rejects_invalid_lifecycle_and_batch_shapes():
     manager.close()
     with pytest.raises(RuntimeError, match="encerrado"):
         manager.reset()
+
+
+
+def test_lobby_batch_manager_requires_full_reset_after_partial_step_failure():
+    manager = native.LobbyBatchManager(2, 500)
+    try:
+        manager.reset(seed=1200)
+        malformed = _pass_actions(2)
+        malformed[1] = [[6, 0, 0, 0, 0, 0] for _ in range(7)]
+        with pytest.raises(ValueError, match="8 jogadores"):
+            manager.step(malformed)
+        with pytest.raises(RuntimeError, match="reset"):
+            manager.step(_pass_actions(2))
+
+        recovered = manager.reset(seed=1300)
+        assert len(recovered) == 2
+        assert len(manager.step(_pass_actions(2))) == 2
+    finally:
+        manager.close()

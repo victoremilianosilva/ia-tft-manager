@@ -38,6 +38,13 @@ def test_lobby_vector_batch_path_matches_individual_wrapper_path():
         batch_obs = batch.reset(seed=9200)
         individual_obs = individual.reset(seed=9200)
         np.testing.assert_array_equal(batch_obs, individual_obs)
+        for batch_env, individual_env in zip(batch.envs, individual.envs):
+            batch_masks = batch_env.get_action_masks_for_training()
+            individual_masks = individual_env.get_action_masks_for_training()
+            for batch_player, individual_player in zip(batch_masks, individual_masks):
+                assert batch_player.keys() == individual_player.keys()
+                for key in batch_player:
+                    np.testing.assert_array_equal(batch_player[key], individual_player[key])
 
         actions = _actions(count)
         batch_obs, batch_rewards, batch_dones, batch_infos = batch.step(actions)
@@ -45,6 +52,12 @@ def test_lobby_vector_batch_path_matches_individual_wrapper_path():
         np.testing.assert_array_equal(batch_obs, individual_obs)
         np.testing.assert_array_equal(batch_rewards, individual_rewards)
         np.testing.assert_array_equal(batch_dones, individual_dones)
+        for batch_env, individual_env in zip(batch.envs, individual.envs):
+            batch_masks = batch_env.get_action_masks_for_training()
+            individual_masks = individual_env.get_action_masks_for_training()
+            for batch_player, individual_player in zip(batch_masks, individual_masks):
+                for key in batch_player:
+                    np.testing.assert_array_equal(batch_player[key], individual_player[key])
 
         for batch_info, individual_info in zip(batch_infos, individual_infos):
             assert batch_info["round"] == individual_info["round"]
