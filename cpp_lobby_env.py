@@ -959,6 +959,15 @@ class CppTFTLobbyWrapper:
             profile["python_wrapper_total"] = (
                 time.perf_counter_ns() - profile_start_ns
             ) / 1_000_000.0
+            profile["python_wrapper_exclusive_ms"] = max(
+                0.0,
+                profile["python_wrapper_total"] - profile.get("pybind_call_inclusive", 0.0),
+            )
+            if "binding_total_ms" in profile and "pybind_call_inclusive" in profile:
+                profile["pybind_argument_conversion_overhead_ms"] = max(
+                    0.0,
+                    profile["pybind_call_inclusive"] - profile["binding_total_ms"],
+                )
             self._last_step_profile = profile
             info["performance_profile"] = dict(profile)
         else:
