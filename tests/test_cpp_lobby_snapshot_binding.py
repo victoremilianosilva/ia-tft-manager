@@ -1075,3 +1075,37 @@ def test_native_snapshot_mapping_defers_combat_event_materialization():
     assert handle.event_calls == [
         "combat_damage_events", "combat_attack_events"
     ]
+
+
+
+def test_native_binding_pins_snapshot_and_defers_unused_combat_rows():
+    lobby = cpp_lobby_env.CppTFTLobbyWrapper(seed=37)
+    try:
+        lobby.reset()
+        source_snapshot = lobby._last_snapshot_metadata["native_state_snapshot"]
+        assert isinstance(source_snapshot, cpp_lobby_env._NativeSnapshotMapping)
+        source_sequence = source_snapshot["snapshot_sequence"]
+        assert source_snapshot._combat_cache == {}
+
+        _, _, _, info = lobby.step(
+            [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        )
+
+        # The old view remains tied to the exact pre-action native value.
+        assert source_snapshot["snapshot_sequence"] == source_sequence
+        # Reward/outcome/semantic consumers do not request combat event rows.
+        assert source_snapshot._combat_cache == {}
+
+        events = source_snapshot["combat_damage_events"]
+        assert isinstance(events, list)
+        assert source_snapshot._combat_cache["combat_damage_events"] is events
+
+        # The observer-facing API still returns the complete eager schema.
+        full_audit = lobby.get_audit_snapshot()
+        assert isinstance(full_audit, dict)
+        assert "combat_damage_events" in full_audit
+        assert "combat_attack_events" in full_audit
+        assert "combat_death_events" in full_audit
+        assert info["decision_snapshot"]["decision_sequence"] > source_sequence
+    finally:
+        lobby.close()
