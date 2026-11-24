@@ -811,20 +811,59 @@ void update_conditional_effects(RuntimeUnit& runtime, float now) {
         const bool active = runtime.generic_effects_active.contains(key);
         const bool triggered = runtime.generic_effects_triggered.contains(key);
         if (condition_met && !active && !triggered) {
-            apply_effect_stat(runtime.unit, effect);
-            runtime.generic_effects_active.insert(key);
-            runtime.generic_effects_triggered.insert(key);
-            if (effect.duration > 0.0f)
+            if (effect.operation == "add_stat") {
+                const float applied = apply_effect_stat(runtime.unit, effect);
+                runtime.generic_effect_applied_amounts[key] = applied;
+                runtime.generic_effects_active.insert(key);
+                if (effect.duration > 0.0f)
+                    runtime.generic_effect_expiry[key] = now + effect.duration;
+            } else if (effect.operation == "grant_shield") {
+                runtime.shield_hp += runtime.unit.max_hp * effect.value;
+                runtime.shield_expires_at = std::max(
+                    runtime.shield_expires_at, now + effect.duration);
+                runtime.generic_effects_active.insert(key);
                 runtime.generic_effect_expiry[key] = now + effect.duration;
+            } else if (effect.operation == "restore_mana") {
+                runtime.unit.mana = std::min(runtime.unit.max_mana,
+                    runtime.unit.mana + effect.value * runtime.mana_gain_multiplier);
+            } else if (effect.operation == "revive") {
+                if (runtime.unit.hp <= 0.0f) {
+                    runtime.unit.hp = runtime.unit.max_hp * effect.critical_value;
+                    runtime.unit.alive = true;
+                } else {
+                    const float requested = std::max(
+                        0.0f, runtime.unit.max_hp - runtime.unit.hp) * effect.value;
+                    runtime.healing_done += apply_heal(runtime, requested, now);
+                }
+                runtime.generic_effect_previous_values[key] =
+                    runtime.unit.damage_reduction;
+                runtime.unit.damage_reduction = 1.0f;
+                runtime.generic_effects_active.insert(key);
+                runtime.generic_effect_expiry[key] = now + effect.duration;
+            }
+            runtime.generic_effects_triggered.insert(key);
         } else if (active) {
             const auto expiry = runtime.generic_effect_expiry.find(key);
             const bool expired = expiry != runtime.generic_effect_expiry.end() &&
                                  now >= expiry->second;
             const bool condition_ended = effect.duration <= 0.0f && !condition_met;
             if (expired || condition_ended) {
-                CombatEffectDefinition inverse = effect;
-                inverse.value = -inverse.value;
-                apply_effect_stat(runtime.unit, inverse);
+                if (effect.operation == "add_stat") {
+                    const auto applied = runtime.generic_effect_applied_amounts.find(key);
+                    CombatEffectDefinition inverse = effect;
+                    inverse.value = applied != runtime.generic_effect_applied_amounts.end()
+                        ? -applied->second : -effect.value;
+                    inverse.percent_of_stat = false;
+                    inverse.scale_by_base_stat = false;
+                    apply_effect_stat(runtime.unit, inverse);
+                    runtime.generic_effect_applied_amounts.erase(key);
+                } else if (effect.operation == "revive") {
+                    const auto previous = runtime.generic_effect_previous_values.find(key);
+                    if (previous != runtime.generic_effect_previous_values.end()) {
+                        runtime.unit.damage_reduction = previous->second;
+                        runtime.generic_effect_previous_values.erase(previous);
+                    }
+                }
                 runtime.generic_effects_active.erase(key);
                 runtime.generic_effect_expiry.erase(key);
                 if (condition_ended) runtime.generic_effects_triggered.erase(key);
