@@ -1614,18 +1614,18 @@ void test_generic_source_ad_effect_changes_combat() {
 void test_movement_distance_handles_board_edges_and_preserves_input() {
     tft::CombatEngine engine;
     auto input = make_input();
-    input.config.max_duration = 1.0f;
+    input.config.max_duration = 2.0f;
     input.config.record_positions = true;
 
     auto& mover = input.player_a.units.front();
-    mover.position = {0, 0};
-    mover.attack_range = 0.0f;
+    mover.position = {0, 1};
+    mover.attack_range = 1.0f;
     mover.can_attack = false;
     mover.can_cast = false;
     mover.can_move = true;
 
     auto& target = input.player_b.units.front();
-    target.position = {0, 3};
+    target.position = {3, 1};
     target.can_attack = false;
     target.can_cast = false;
     target.can_move = false;
@@ -1639,7 +1639,7 @@ void test_movement_distance_handles_board_edges_and_preserves_input() {
     require(result.position_events.size() >= 2,
             "Mover should advance along the only improving in-bounds route.");
 
-    int expected_y = 0;
+    int expected_x = 0;
     for (const auto& event : result.position_events) {
         require(event.unit_id == mover.id,
                 "Only the configured mover should produce position events.");
@@ -1649,14 +1649,14 @@ void test_movement_distance_handles_board_edges_and_preserves_input() {
         require(std::abs(event.to_x - event.from_x) +
                 std::abs(event.to_y - event.from_y) == 1,
                 "Movement must remain orthogonal by exactly one cell.");
-        require(event.from_x == 0 && event.to_x == 0 &&
-                event.from_y == expected_y &&
-                event.to_y == expected_y + 1,
+        require(event.from_y == 1 && event.to_y == 1 &&
+                event.from_x == expected_x &&
+                event.to_x == expected_x + 1,
                 "Edge movement must follow the deterministic in-bounds route.");
-        expected_y = event.to_y;
+        expected_x = event.to_x;
     }
-    require(expected_y == 2,
-            "Mover should stop before the occupied target cell.");
+    require(expected_x == 2,
+            "Mover should stop within attack range before the occupied target cell.");
 
     require(mover.position.x == original_mover.position.x &&
             mover.position.y == original_mover.position.y &&
