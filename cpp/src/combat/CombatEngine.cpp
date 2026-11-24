@@ -1818,9 +1818,8 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
 
             raw_damage *= std::max(
                 0.0f, 1.0f + actor.unit.damage_amplification);
-            if (has_item(actor.unit, "TFT_Item_MadredsBloodrazor") &&
-                target.unit.role == UnitRole::TANK)
-                raw_damage *= 1.15f;
+            raw_damage *= effect_target_damage_multiplier(
+                actor, target, "on_attack");
 
             const float effective_armor = target.armor_shred_until > now
                 ? target.unit.armor * (1.0f - target.armor_shred_percent)
@@ -1829,8 +1828,6 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
 
             damage *= std::clamp(
                 1.0f - target.unit.damage_reduction, 0.0f, 1.0f);
-            if (has_item(target.unit, "TFT_Item_BrambleVest"))
-                damage *= 0.95f;
 
             damage = std::min(damage, target.unit.hp + target.shield_hp);
 
@@ -1839,9 +1836,8 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
             const float hp_damage = std::min(target.unit.hp, damage - absorbed);
             target.unit.hp -= hp_damage;
             target.damage_taken += damage;
-            if (has_item(target.unit, "TFT_Item_TitansResolve"))
-                add_titans_stack(target);
-            trigger_defensive_items(target, now);
+            update_conditional_effects(target, now);
+            apply_stack_effects(target, "on_damage_taken", now);
             actor.damage_dealt += damage;
             if (actor.unit.omnivamp > 0.0f && damage > 0.0f) {
                 const float heal = apply_heal(actor,
@@ -1891,65 +1887,15 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                 effect_mana_on_attack(actor.unit, critical);
             actor.unit.mana = std::min(actor.unit.max_mana,
                 actor.unit.mana + generic_mana_on_attack * actor.mana_gain_multiplier);
-            for (const auto& item : actor.unit.items) {
-                if (item.api_name == "TFT_Item_TitansResolve")
-                    add_titans_stack(actor);
-                else if (item.api_name == "TFT_Item_RunaansHurricane") {
-                    if (actor.runaan_stacks < 15) {
-                        ++actor.runaan_stacks;
-                        actor.unit.attack_damage += actor.runaans_base_ad * 0.035f;
-                        if (actor.runaan_stacks == 15)
-                            actor.unit.attack_speed += actor.base_attack_speed * 0.15f;
-                    }
-                }
-                else if (item.api_name == "TFT_Item_PowerGauntlet" && critical) {
-                    if (actor.power_gauntlet_stacks < 4) {
-                        actor.power_gauntlet_stack_times.push_back(now);
-                        ++actor.power_gauntlet_stacks;
-                        actor.unit.damage_amplification += 0.05f;
-                    }
-                }
-            }
-
-            // Efeitos aplicados ao alvo por ataques: fatiamento, queimadura e ferimentos.
-            if (has_item(actor.unit, "TFT_Item_LastWhisper")) {
-                target.armor_shred_until = now + 3.0f;
-                target.armor_shred_percent = 0.30f;
-            }
-            if (has_item(actor.unit, "TFT_Item_StatikkShiv")) {
-                target.mr_shred_until = now + 5.0f;
-                target.mr_shred_percent = 0.30f;
-            }
-            if (has_item(actor.unit, "TFT_Item_Morellonomicon") ||
-                has_item(actor.unit, "TFT_Item_RedBuff") ||
-                has_item(actor.unit, "TFT_Item_RapidFireCannon")) {
-                target.burn_until = std::max(target.burn_until, now +
-                    (has_item(actor.unit, "TFT_Item_Morellonomicon") ? 10.0f : 5.0f));
-                target.burn_percent = std::max(target.burn_percent, 1.0f);
-                target.burn_source_id = actor.unit.id;
-                if (target.burn_next_tick < now) target.burn_next_tick = now + 1.0f;
-                target.grievous_until = std::max(target.grievous_until,
-                    now + (has_item(actor.unit, "TFT_Item_Morellonomicon") ? 10.0f : 5.0f));
-            }
+            apply_stack_effects(actor, "on_attack", now);
+            if (critical) apply_stack_effects(actor, "on_critical_attack", now);
+            apply_target_status_effects(actor, target, "on_attack", now);
             apply_damage_healing_effects(actor, units, damage, now);
 
-            // Colete Espinhoso: dano mágico em área com recarga de 2 segundos.
-            for (const auto& item : target.unit.items) {
-                if (item.api_name == "TFT_Item_BrambleVest" &&
-                    now - target.last_bramble_proc >= 2.0f) {
-                    target.last_bramble_proc = now;
-                    for (auto& enemy : units) {
-                        if (!is_alive(enemy) || enemy.unit.team == target.unit.team ||
-                            distance_between(enemy.unit, target.unit) > 2) continue;
-                        const float reflected = mitigate_physical_damage(100.0f,
-                            enemy.unit.magic_resist);
-                        const float absorbed_reflect = std::min(enemy.shield_hp, reflected);
-                        enemy.shield_hp -= absorbed_reflect;
-                        const float hp_loss = std::min(enemy.unit.hp, reflected - absorbed_reflect);
-                        enemy.unit.hp -= hp_loss;
-                        enemy.damage_taken += reflected;
-                        target.damage_dealt += reflected;
-                        if (config.record_damage) {
+
+            apply_reflect_effects(target, units, now, result, config);
+
+            if (config.record_damage) {
                             DamageEvent reflected_event;
                             reflected_event.timestamp = now;
                             reflected_event.source_unit_id = target.unit.id;
