@@ -3,6 +3,7 @@
 #include <array>
 #include <cstdint>
 #include <memory>
+#include <limits>
 #include <optional>
 #include <stdexcept>
 #include <string>
@@ -867,6 +868,98 @@ py::dict anti_loop_to_dict(
 }
 
 
+
+// Native sequential owner of independent complete-lobby Engines.
+class NativeLobbyBatchManager {
+public:
+    NativeLobbyBatchManager(std::size_t lobby_count, std::uint64_t base_seed,
+        const std::string& catalog_path, const std::string& item_catalog_path) {
+        if (lobby_count == 0) throw std::invalid_argument("lobby_count deve ser maior que zero.");
+        if (lobby_count - 1 > std::numeric_limits<std::uint64_t>::max() - base_seed)
+            throw std::overflow_error("Seeds independentes excedem uint64.");
+        engines_.reserve(lobby_count);
+        for (std::size_t i = 0; i < lobby_count; ++i)
+            engines_.push_back(std::make_unique<TFTEngine>(
+                base_seed + static_cast<std::uint64_t>(i), catalog_path, item_catalog_path));
+    }
+    ~NativeLobbyBatchManager() { close(); }
+
+    py::list reset(py::object seed) {
+        ensure_open();
+        has_reset_ = false;
+        std::optional<std::uint64_t> base_seed;
+        if (!seed.is_none()) {
+            if (!py::isinstance<py::int_>(seed) || PyBool_Check(seed.ptr()))
+                throw py::type_error("seed deve ser um inteiro nao negativo ou None.");
+            try { base_seed = seed.cast<std::uint64_t>(); }
+            catch (const py::cast_error&) {
+                throw py::value_error("seed deve estar entre 0 e 18446744073709551615.");
+            }
+            if (engines_.size() - 1 > std::numeric_limits<std::uint64_t>::max() - *base_seed)
+                throw py::value_error("Offsets de seed por lobby excedem uint64.");
+        }
+        py::list results;
+        for (std::size_t i = 0; i < engines_.size(); ++i) {
+            std::optional<std::uint64_t> lobby_seed;
+            if (base_seed) lobby_seed = *base_seed + static_cast<std::uint64_t>(i);
+            results.append(reset_to_dict(engines_[i]->reset(lobby_seed)));
+        }
+        has_reset_ = true;
+        return results;
+    }
+
+    py::list step(const std::vector<std::vector<std::vector<std::int32_t>>>& batch_actions) {
+        ensure_open();
+        if (!has_reset_) throw std::runtime_error("Execute reset() antes de step().");
+        if (batch_actions.size() != engines_.size())
+            throw py::value_error("actions deve conter exatamente uma entrada por lobby.");
+        py::list results;
+        try {
+            for (std::size_t lobby = 0; lobby < engines_.size(); ++lobby) {
+                const auto& raw = batch_actions[lobby];
+                if (raw.size() != tft::kPlayersPerLobby)
+                    throw py::value_error("Cada lobby deve conter exatamente 8 jogadores.");
+                std::array<tft::PlayerAction, tft::kPlayersPerLobby> actions{};
+                for (std::size_t player = 0; player < tft::kPlayersPerLobby; ++player) {
+                    if (raw[player].size() != tft::kActionComponents)
+                        throw py::value_error("Cada acao deve conter exatamente 6 componentes.");
+                    for (std::size_t component = 0; component < tft::kActionComponents; ++component)
+                        actions[player].values[component] = raw[player][component];
+                }
+                results.append(step_to_dict(engines_[lobby]->step(actions)));
+            }
+        } catch (...) {
+            has_reset_ = false;
+            throw;
+        }
+        return results;
+    }
+
+    std::size_t lobby_count() const noexcept { return engines_.size(); }
+    std::vector<std::string> engine_instance_ids() const {
+        ensure_open();
+        std::vector<std::string> ids;
+        ids.reserve(engines_.size());
+        for (const auto& engine : engines_) ids.push_back(engine->engine_instance_id());
+        return ids;
+    }
+    void close() noexcept {
+        if (closed_) return;
+        for (auto& engine : engines_) if (engine) {
+            try { engine->close(); } catch (...) {}
+        }
+        closed_ = true;
+        has_reset_ = false;
+    }
+private:
+    void ensure_open() const {
+        if (closed_) throw std::runtime_error("LobbyBatchManager ja foi encerrado.");
+    }
+    std::vector<std::unique_ptr<TFTEngine>> engines_;
+    bool has_reset_{false};
+    bool closed_{false};
+};
+
 }  // namespace
 
 PYBIND11_MODULE(tft_engine, module) {
@@ -1088,6 +1181,18 @@ PYBIND11_MODULE(tft_engine, module) {
         .def_property_readonly("alive_players", &TFTEngine::alive_players)
         .def_property_readonly("is_done", &TFTEngine::is_done)
         .def("close", &TFTEngine::close);
+
+
+
+    py::class_<NativeLobbyBatchManager>(module, "LobbyBatchManager")
+        .def(py::init<std::size_t, std::uint64_t, const std::string&, const std::string&>(),
+            py::arg("lobby_count"), py::arg("base_seed") = 0,
+            py::arg("catalog_path") = "", py::arg("item_catalog_path") = "")
+        .def("reset", &NativeLobbyBatchManager::reset, py::arg("seed") = py::none())
+        .def("step", &NativeLobbyBatchManager::step, py::arg("actions"))
+        .def_property_readonly("lobby_count", &NativeLobbyBatchManager::lobby_count)
+        .def_property_readonly("engine_instance_ids", &NativeLobbyBatchManager::engine_instance_ids)
+        .def("close", &NativeLobbyBatchManager::close);
 
 
     // CombatProfileManager.py parity API. This is deliberately stateless:
