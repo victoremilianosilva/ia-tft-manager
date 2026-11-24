@@ -21,6 +21,12 @@ class LobbyVectorEnv:
         if self.num_envs == 0:
             raise ValueError("É necessário criar pelo menos uma lobby.")
 
+    def _invalidate_all_wrapper_snapshots(self):
+        for env in self.envs:
+            invalidate = getattr(env, "_invalidate_current_snapshot", None)
+            if callable(invalidate):
+                invalidate()
+
     def reset(self, seed=None):
         """Reset every lobby; a supplied seed is deterministically offset per lobby."""
         observations = []
@@ -60,7 +66,9 @@ class LobbyVectorEnv:
                             raise ValueError("seed e offsets por lobby devem caber em uint32.")
                         observations.append(env.reset(seed=int(seed) + lobby_index))
         except Exception:
-            # A partial reset cannot restore a known vector boundary.
+            # A partial reset cannot restore a known vector boundary. Clear
+            # every wrapper, including those not reached by the failing loop.
+            self._invalidate_all_wrapper_snapshots()
             self._requires_full_reset = True
             raise
 
@@ -211,7 +219,9 @@ class LobbyVectorEnv:
 
         except Exception as exc:
             # The failing env.step may itself have advanced before raising.
-            # Fail closed: no further vector step until every lobby is reset.
+            # Clear every wrapper so no stale or partially published snapshot
+            # remains observable while the vector is in its recovery state.
+            self._invalidate_all_wrapper_snapshots()
             self._requires_full_reset = True
             raise RuntimeError(
                 "LobbyVectorEnv interrompido durante step; o estado das lobbies "

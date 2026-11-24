@@ -169,3 +169,32 @@ def test_batch_terminal_autoreset_keeps_transition_and_next_episode_snapshots_se
         assert rewards.shape == (1, 8)
     finally:
         batch.close()
+
+def test_lobby_vector_batch_step_preparation_failure_invalidates_every_wrapper():
+    item_catalog = Path(__file__).resolve().parents[1] / "data" / "itens.json"
+    batch = _make_batch_vector(2, 5700, item_catalog)
+    try:
+        batch.reset(seed=12100)
+        original_prepare = batch.envs[0]._prepare_batch_step
+
+        def fail_preparation(actions):
+            raise RuntimeError("synthetic action preparation failure")
+
+        batch.envs[0]._prepare_batch_step = fail_preparation
+        with pytest.raises(RuntimeError, match="interrompido durante step"):
+            batch.step(_actions(2))
+
+        for env in batch.envs:
+            with pytest.raises(RuntimeError, match="Execute reset"):
+                env.get_action_masks_for_training()
+            with pytest.raises(RuntimeError, match="Execute reset"):
+                env.get_snapshot_metadata()
+
+        with pytest.raises(RuntimeError, match="estado inconsistente"):
+            batch.step(_actions(2))
+
+        batch.envs[0]._prepare_batch_step = original_prepare
+        assert batch.reset(seed=12200).shape[0] == 2
+        assert len(batch.step(_actions(2))[3]) == 2
+    finally:
+        batch.close()
