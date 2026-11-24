@@ -103,6 +103,8 @@ def run_deterministic_replay(
 ) -> dict[str, Any]:
     loaded = load_replay(replay_path, require_complete=True)
     manifest = loaded["manifest"]
+    if manifest.get("source") != "native_lobby_simulation":
+        raise ReplayCompatibilityError("Replay source is not the native lobby simulator")
     if verify_runtime_identity:
         validate_runtime_compatibility(manifest)
     if wrapper_factory is None:
@@ -114,10 +116,17 @@ def run_deterministic_replay(
     env = None
     try:
         env = wrapper_factory(seed=int(manifest["seed"]))
-        reset_record = next(
+        reset_records = [
             record for record in loaded["records"]
             if record["record_type"] == "reset"
-        )
+        ]
+        transitions = [
+            record for record in loaded["records"]
+            if record["record_type"] == "transition"
+        ]
+        if len(reset_records) != 1 or not transitions:
+            raise ReplayIntegrityError("Replay requires one reset and at least one transition")
+        reset_record = reset_records[0]
         expected_reset = reset_record["payload"]
         observations = env.reset(seed=int(manifest["seed"]))
         difference = _first_difference(
@@ -137,13 +146,38 @@ def run_deterministic_replay(
                 "reproduced": False, "replay_id": manifest["replay_id"],
                 "first_divergence": difference, "transitions_checked": 0,
             }
+        difference = _first_difference(
+            expected_reset["snapshot"], env.get_snapshot_metadata(),
+            "$.reset.snapshot",
+        )
+        if difference:
+            return {
+                "reproduced": False, "replay_id": manifest["replay_id"],
+                "first_divergence": difference, "transitions_checked": 0,
+            }
 
         checked = 0
-        for record in loaded["records"]:
-            if record["record_type"] != "transition":
-                continue
+        for record in transitions:
             payload = record["payload"]
             current = env.get_snapshot_metadata()
+            difference = _first_difference(
+                payload["source_observations"], observations,
+                f"$.transition[{checked}].source_observations",
+            )
+            if difference:
+                return {
+                    "reproduced": False, "replay_id": manifest["replay_id"],
+                    "first_divergence": difference, "transitions_checked": checked,
+                }
+            difference = _first_difference(
+                payload["source_action_masks"], env.get_action_masks(),
+                f"$.transition[{checked}].source_action_masks",
+            )
+            if difference:
+                return {
+                    "reproduced": False, "replay_id": manifest["replay_id"],
+                    "first_divergence": difference, "transitions_checked": checked,
+                }
             for key in ("episode_id", "decision_sequence", "player_decision_sequences",
                         "round", "stage"):
                 difference = _first_difference(
@@ -155,7 +189,7 @@ def run_deterministic_replay(
                         "reproduced": False, "replay_id": manifest["replay_id"],
                         "first_divergence": difference, "transitions_checked": checked,
                     }
-            observations, rewards, _, info = env.step(
+            observations, rewards, lobby_done, info = env.step(
                 payload["normalized_actions"],
                 timer_enabled=bool(payload.get("timer_enabled", False)),
                 timer_expired=bool(payload.get("timer_expired", False)),
@@ -163,8 +197,13 @@ def run_deterministic_replay(
             comparisons = (
                 ("next_observations", observations),
                 ("rewards", rewards),
+                ("lobby_done", lobby_done),
                 ("dones", env._last_dones),
                 ("next_action_masks", env.get_action_masks()),
+                ("next_snapshot", {
+                    key: env.get_snapshot_metadata().get(key)
+                    for key in ("episode_id", "decision_sequence", "player_decision_sequences", "round", "stage")
+                }),
                 ("players", info["players"]),
                 ("action_traces", info["action_trace"]),
                 ("events", info["events"]),
