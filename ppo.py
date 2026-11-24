@@ -309,6 +309,11 @@ class PPOTrainer:
         profile_gradient_clip_ms = 0.0
         profile_optimizer_step_ms = 0.0
         profile_minibatches = 0
+        profile_batch_samples = []
+        profile_loss_samples = []
+        profile_backward_samples = []
+        profile_clip_samples = []
+        profile_optimizer_samples = []
         profile_cuda_device = next(self.policy.parameters()).device
         profile_gpu_enabled = (
             profile_enabled
@@ -380,7 +385,9 @@ class PPOTrainer:
                 except StopIteration:
                     break
                 if profile_enabled:
-                    profile_batch_materialization_ms += (time.perf_counter_ns() - batch_start_ns) / 1_000_000.0
+                    batch_elapsed_ms = (time.perf_counter_ns() - batch_start_ns) / 1_000_000.0
+                    profile_batch_materialization_ms += batch_elapsed_ms
+                    profile_batch_samples.append(batch_elapsed_ms)
                 yield batch
 
         # ============================================================
@@ -430,7 +437,9 @@ class PPOTrainer:
                     semantic_state=batch["semantic_state"],
                 )
                 if profile_enabled:
-                    profile_loss_ms += (time.perf_counter_ns() - loss_start_ns) / 1_000_000.0
+                    loss_elapsed_ms = (time.perf_counter_ns() - loss_start_ns) / 1_000_000.0
+                    profile_loss_ms += loss_elapsed_ms
+                    profile_loss_samples.append(loss_elapsed_ms)
                 if profile_gpu_enabled:
                     loss_cuda_end.record(profile_cuda_stream)
                     profile_loss_cuda_events.append((loss_cuda_start, loss_cuda_end))
@@ -483,7 +492,9 @@ class PPOTrainer:
                 backward_start_ns = time.perf_counter_ns() if profile_enabled else 0
                 loss.backward()
                 if profile_enabled:
-                    profile_backward_ms += (time.perf_counter_ns() - backward_start_ns) / 1_000_000.0
+                    backward_elapsed_ms = (time.perf_counter_ns() - backward_start_ns) / 1_000_000.0
+                    profile_backward_ms += backward_elapsed_ms
+                    profile_backward_samples.append(backward_elapsed_ms)
 
                 # ====================================================
                 # GRADIENT CLIPPING
@@ -495,7 +506,9 @@ class PPOTrainer:
                     self.max_grad_norm,
                 )
                 if profile_enabled:
-                    profile_gradient_clip_ms += (time.perf_counter_ns() - clip_start_ns) / 1_000_000.0
+                    clip_elapsed_ms = (time.perf_counter_ns() - clip_start_ns) / 1_000_000.0
+                    profile_gradient_clip_ms += clip_elapsed_ms
+                    profile_clip_samples.append(clip_elapsed_ms)
                 grad_norm_value = float(grad_norm.detach().item())
                 grad_norm_sum += grad_norm_value
                 grad_norm_max = max(grad_norm_max, grad_norm_value)
@@ -503,7 +516,9 @@ class PPOTrainer:
                 optimizer_step_start_ns = time.perf_counter_ns() if profile_enabled else 0
                 self.optimizer.step()
                 if profile_enabled:
-                    profile_optimizer_step_ms += (time.perf_counter_ns() - optimizer_step_start_ns) / 1_000_000.0
+                    optimizer_elapsed_ms = (time.perf_counter_ns() - optimizer_step_start_ns) / 1_000_000.0
+                    profile_optimizer_step_ms += optimizer_elapsed_ms
+                    profile_optimizer_samples.append(optimizer_elapsed_ms)
                     profile_backward_optimizer_ms += (time.perf_counter_ns() - optimizer_stage_start_ns) / 1_000_000.0
                 if profile_gpu_enabled:
                     backward_cuda_end.record(profile_cuda_stream)
@@ -680,6 +695,17 @@ class PPOTrainer:
             self.writer.add_scalar("performance/ppo/backward_ms", profile_backward_ms, self.update_step)
             self.writer.add_scalar("performance/ppo/gradient_clip_ms", profile_gradient_clip_ms, self.update_step)
             self.writer.add_scalar("performance/ppo/optimizer_step_ms", profile_optimizer_step_ms, self.update_step)
+            for stage_name, samples in (
+                ("batch_materialization", profile_batch_samples),
+                ("compute_loss", profile_loss_samples),
+                ("backward", profile_backward_samples),
+                ("gradient_clip", profile_clip_samples),
+                ("optimizer_step", profile_optimizer_samples),
+            ):
+                ordered = sorted(samples)
+                if ordered:
+                    self.writer.add_scalar(f"performance/ppo/{stage_name}_p95_ms", ordered[min(len(ordered)-1, round((len(ordered)-1)*0.95))], self.update_step)
+                    self.writer.add_scalar(f"performance/ppo/{stage_name}_p99_ms", ordered[min(len(ordered)-1, round((len(ordered)-1)*0.99))], self.update_step)
             if profile_gpu_enabled:
                 self.writer.add_scalar("performance/gpu/ppo_compute_loss_ms", sum(a.elapsed_time(b) for a, b in profile_loss_cuda_events), self.update_step)
                 self.writer.add_scalar("performance/gpu/ppo_backward_clip_optimizer_ms", sum(a.elapsed_time(b) for a, b in profile_backward_cuda_events), self.update_step)
