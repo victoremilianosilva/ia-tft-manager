@@ -696,12 +696,19 @@ py::dict reset_to_dict(tft::ResetResult reset) {
 }
 
 py::dict step_to_dict(tft::StepResult step) {
+    using Clock = std::chrono::steady_clock;
+    const auto conversion_start = Clock::now();
+    auto conversion_stage_start = conversion_start;
+    py::dict conversion_profile;
     py::dict result;
 
     result["observations"] = observations_to_array(
         step.observations,
         step.observation_dim
     );
+    conversion_profile["binding_observation_array_conversion_ms"] =
+        std::chrono::duration<double, std::milli>(Clock::now() - conversion_stage_start).count();
+    conversion_stage_start = Clock::now();
 
     py::array_t<float> rewards(8);
     py::array_t<float> action_rewards(8);
@@ -729,6 +736,9 @@ py::dict step_to_dict(tft::StepResult step) {
     result["combat_rewards"] = std::move(combat_rewards);
     result["placement_rewards"] = std::move(placement_rewards);
     result["dones"] = std::move(dones);
+    conversion_profile["binding_reward_and_done_array_conversion_ms"] =
+        std::chrono::duration<double, std::milli>(Clock::now() - conversion_stage_start).count();
+    conversion_stage_start = Clock::now();
     result["lobby_done"] = step.lobby_done;
     result["engine_instance_id"] = step.engine_instance_id;
     result["episode_id"] = step.episode_id;
@@ -737,11 +747,20 @@ py::dict step_to_dict(tft::StepResult step) {
     result["native_state_snapshot"] = NativeAuditSnapshotHandle(
         std::make_shared<const tft::AuditSnapshot>(std::move(step.native_state_snapshot))
     );
+    conversion_profile["binding_snapshot_handle_conversion_ms"] =
+        std::chrono::duration<double, std::milli>(Clock::now() - conversion_stage_start).count();
+    conversion_stage_start = Clock::now();
     result["round"] = step.round;
     result["stage"] = step.stage;
     result["alive_players"] = step.alive_players;
     result["action_masks"] = masks_to_list(step.action_masks);
+    conversion_profile["binding_action_masks_conversion_ms"] =
+        std::chrono::duration<double, std::milli>(Clock::now() - conversion_stage_start).count();
+    conversion_stage_start = Clock::now();
     result["players"] = player_info_to_list(step.players);
+    conversion_profile["binding_player_info_conversion_ms"] =
+        std::chrono::duration<double, std::milli>(Clock::now() - conversion_stage_start).count();
+    conversion_stage_start = Clock::now();
     py::list action_traces;
     for (const auto& trace : step.action_traces) {
         py::dict item;
@@ -762,6 +781,11 @@ py::dict step_to_dict(tft::StepResult step) {
         engine_counts[py::str(name)] = count;
     result["_engine_profile_ms"] = std::move(engine_profile);
     result["_engine_profile_counts"] = std::move(engine_counts);
+    conversion_profile["binding_action_traces_and_events_conversion_ms"] =
+        std::chrono::duration<double, std::milli>(Clock::now() - conversion_stage_start).count();
+    conversion_profile["binding_step_to_dict_total_ms"] =
+        std::chrono::duration<double, std::milli>(Clock::now() - conversion_start).count();
+    result["_binding_conversion_profile"] = std::move(conversion_profile);
 
     return result;
 }
@@ -1015,7 +1039,10 @@ PYBIND11_MODULE(tft_engine, module) {
                 const auto engine_end = Clock::now();
                 auto result = step_to_dict(std::move(native_result));
                 const auto conversion_end = Clock::now();
+                py::dict conversion_profile = result.attr("pop")("_binding_conversion_profile").cast<py::dict>();
                 py::dict profile;
+                for (auto item : conversion_profile)
+                    profile[item.first] = item.second;
                 profile["binding_action_parse_ms"] =
                     std::chrono::duration<double, std::milli>(parse_end - total_start).count();
                 profile["native_engine_step_ms"] =
