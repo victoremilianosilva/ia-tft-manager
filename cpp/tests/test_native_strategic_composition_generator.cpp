@@ -202,6 +202,19 @@ int main() {
         assert(reordered_result.candidates[index].direction == missing_pool.candidates[index].direction);
     }
 
+    // A borrowed immutable catalog must produce the same proposals without
+    // copying the catalog into each decision input.
+    auto borrowed_catalog = input;
+    borrowed_catalog.catalog_ref = &input.catalog;
+    borrowed_catalog.catalog.clear();
+    const auto borrowed_result =
+        NativeStrategicCompositionGenerator{}.generate(borrowed_catalog);
+    assert(borrowed_result.candidates.size() == missing_pool.candidates.size());
+    for (std::size_t index = 0; index < missing_pool.candidates.size(); ++index) {
+        assert(borrowed_result.candidates[index].identity == missing_pool.candidates[index].identity);
+        assert(borrowed_result.candidates[index].unit_ids == missing_pool.candidates[index].unit_ids);
+    }
+
     // Candidate caps are respected.
     auto capped = input;
     capped.maximum_candidates = 1;
