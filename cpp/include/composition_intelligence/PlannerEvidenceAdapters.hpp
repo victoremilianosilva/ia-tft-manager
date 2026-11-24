@@ -192,7 +192,8 @@ public:
   return o;
  }
  static BoardPlannerEvidence board(const strategy::BoardEvaluationResult& r,
-  std::uint32_t source_round,std::uint32_t expected_round) {
+  std::uint32_t source_round,std::uint32_t expected_round,
+  items::ItemFitCache* fit_cache=nullptr) {
   BoardPlannerEvidence o;o.metadata=make_metadata("BoardEvaluation",source_round,expected_round,r.unit_count>0);
   if(!o.metadata.available)return o;
   if(!std::isfinite(r.positional_score)||!std::isfinite(r.structural_score)||!std::isfinite(r.synergy_score)||!std::isfinite(r.total_score)||!std::isfinite(r.strategic_fit_score)||!std::isfinite(r.unit_quality_score)||!std::isfinite(r.trait_coherence_score)){o.metadata.available=false;o.metadata.quality=EvidenceQuality::Invalid;o.metadata.reason="non_finite_board_metric";return o;}
@@ -221,11 +222,13 @@ public:
    if(eq!=state.equipped_by_unit_uuid.end()) {
     u.equipped_item_ids=eq->second;u.has_equipped_items=!eq->second.empty();
     double sum=0;std::size_t count=0;
-    for(const auto& id:eq->second){double fit=engine.item_fit(id,b.profile);
+    for(const auto& id:eq->second){double fit=fit_cache
+      ?fit_cache->get(id,b.profile):engine.item_fit(id,b.profile);
      if(fit>=0&&std::isfinite(fit)){sum+=fit;++count;}}
     u.equipped_fit=count?unit(sum/static_cast<double>(count)):0;
    }
-   for(const auto& id:state.inventory){double fit=engine.item_fit(id,b.profile);
+   for(const auto& id:state.inventory){double fit=fit_cache
+     ?fit_cache->get(id,b.profile):engine.item_fit(id,b.profile);
     if(fit>=0&&std::isfinite(fit)&&(!u.has_inventory_candidate||fit>u.best_inventory_fit)){
      u.has_inventory_candidate=true;u.best_inventory_fit=unit(fit);u.best_inventory_item_id=id;}}
    o.units.push_back(std::move(u));
