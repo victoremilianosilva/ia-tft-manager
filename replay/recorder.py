@@ -128,11 +128,12 @@ class ReplayRecorder:
             "previous_record_sha256": self._previous_hash or None,
             "payload": _jsonable(payload),
         }
+        body_json = _canonical(body)
         record_hash = hashlib.sha256(
-            (self._previous_hash + _canonical(body)).encode("utf-8")
+            (self._previous_hash + body_json).encode("utf-8")
         ).hexdigest()
-        record = dict(body, record_sha256=record_hash)
-        self._stream.write(_canonical(record) + "\n")
+        line = body_json[:-1] + ',"record_sha256":' + json.dumps(record_hash) + "}"
+        self._stream.write(line + "\n")
         self._stream.flush()
         os.fsync(self._stream.fileno())
         self._sequence += 1
@@ -180,11 +181,12 @@ def load_replay(path: str | Path, *, require_complete: bool = False) -> dict[str
             if record.get("previous_record_sha256") != (previous_hash or None):
                 raise ReplayIntegrityError(f"Broken replay hash link at line {line_number}")
             supplied_hash = record.get("record_sha256")
-            marker = ',\\\"record_sha256\\\":'
-            marker_index = line.rstrip("\\r\\n").rfind(marker)
-            if marker_index < 0 or marker_index + len(marker) >= len(line):
+            raw_line = line.rstrip("\r\n")
+            marker = ',"record_sha256":'
+            marker_index = raw_line.rfind(marker)
+            if marker_index < 0:
                 raise ReplayIntegrityError(f"Missing terminal record hash at line {line_number}")
-            body_json = line.rstrip("\\r\\n")[:marker_index] + "}"
+            body_json = raw_line[:marker_index] + "}"
             expected_hash = hashlib.sha256(
                 (previous_hash + body_json).encode("utf-8")
             ).hexdigest()
