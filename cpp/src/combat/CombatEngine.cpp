@@ -122,15 +122,6 @@ bool has_item(const CombatUnit& unit, const char* api_name) {
         [&](const CombatItem& item) { return item.api_name == api_name; });
 }
 
-void add_titans_stack(RuntimeUnit& unit) {
-    if (unit.titans_stacks >= 25) return;
-    ++unit.titans_stacks;
-    unit.unit.attack_damage += unit.titans_base_ad * 0.02f;
-    unit.unit.ability_power += 2.0f;
-    if (unit.titans_stacks == 25)
-        unit.unit.damage_amplification += 0.10f;
-}
-
 bool effect_condition_matches(
     const CombatUnit& unit, const CombatEffectDefinition& effect
 );
@@ -174,40 +165,6 @@ void apply_damage_healing_effects(
     for (const auto& item : source.unit.items) apply(item.effects);
     for (const auto& trait : source.unit.traits)
         if (trait.active || trait.active_count > 0) apply(trait.effects);
-}
-
-void trigger_defensive_items(RuntimeUnit& unit, float now) {
-    if (has_item(unit.unit, "TFT_Item_Bloodthirster") &&
-        !unit.bloodthirster_triggered && unit.unit.hp <= unit.unit.max_hp * 0.40f) {
-        unit.shield_hp += unit.unit.max_hp * 0.25f;
-        unit.shield_expires_at = std::max(unit.shield_expires_at, now + 5.0f);
-        unit.bloodthirster_triggered = true;
-    }
-    if (has_item(unit.unit, "TFT_Item_SteraksGage") &&
-        !unit.sterak_triggered && unit.unit.hp <= unit.unit.max_hp * 0.60f) {
-        unit.shield_hp += unit.unit.max_hp * 0.40f;
-        unit.shield_expires_at = std::max(unit.shield_expires_at, now + 4.0f);
-        unit.sterak_triggered = true;
-    }
-    if (has_item(unit.unit, "TFT_Item_FrozenHeart") &&
-        !unit.frozen_heart_triggered && unit.unit.hp <= unit.unit.max_hp * 0.40f) {
-        unit.unit.mana = std::min(unit.unit.max_mana, unit.unit.mana + 15.0f);
-        unit.shield_hp += unit.unit.max_hp * 0.20f;
-        unit.shield_expires_at = std::max(unit.shield_expires_at, now + 60.0f);
-        unit.frozen_heart_triggered = true;
-    }
-    if (has_item(unit.unit, "TFT_Item_GuardianAngel") &&
-        !unit.guardian_angel_triggered && unit.unit.hp <= unit.unit.max_hp * 0.60f) {
-        unit.guardian_angel_triggered = true;
-        unit.guardian_previous_damage_reduction = unit.unit.damage_reduction;
-        unit.unit.damage_reduction = 1.0f;
-        unit.guardian_angel_until = now + 1.0f;
-        const float heal = apply_heal(unit,
-            std::max(0.0f, (unit.unit.max_hp - unit.unit.hp) * 0.20f), now);
-        if (unit.unit.hp <= 0.0f) unit.unit.hp = unit.unit.max_hp * 0.20f;
-        unit.unit.alive = true;
-        unit.healing_done += heal;
-    }
 }
 
 int count_alive(const std::vector<RuntimeUnit>& units,
