@@ -1017,7 +1017,7 @@ void apply_stack_effects(RuntimeUnit& runtime, const std::string& trigger,
                                                const std::string& prefix) {
                 if (effect.operation == "add_stat" &&
                     effect.trigger == "on_stack_cap" &&
-                    prefix + effect.stack_key == key &&
+                    prefix + "stack:" + effect.stack_key == key &&
                     effect_condition_matches(runtime.unit, effect)) {
                     CombatEffectDefinition cap_effect = effect;
                     if (cap_effect.scale_by_base_stat) {
