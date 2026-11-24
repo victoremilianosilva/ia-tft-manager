@@ -851,6 +851,8 @@ class CppTFTLobbyWrapper:
             bool(timer_expired),
         )
         profile_mark("pybind_call_inclusive")
+        if profile_enabled:
+            profile["binding_gil_held_ms"] = profile["pybind_call_inclusive"]
         binding_profile = result.pop("_binding_profile", {})
         engine_profile = result.pop("_engine_profile_ms", {})
         engine_counts = result.pop("_engine_profile_counts", {})
