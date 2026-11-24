@@ -656,7 +656,7 @@ def test_attach_native_action_traces_rejects_non_mapping_lobby_info():
 
 
 
-def test_rollout_metadata_nested_action_trace_is_isolated_on_store_and_batch():
+def test_rollout_metadata_isolated_on_store_and_shared_read_only_in_batches():
     buffer = RolloutBuffer(
         num_steps=1, num_envs=1, obs_dim=3, action_dim=6, device=torch.device("cpu")
     )
@@ -705,14 +705,15 @@ def test_rollout_metadata_nested_action_trace_is_isolated_on_store_and_batch():
 
     batch = next(buffer.get_batches(batch_size=1))
     batch_trace = batch["result_snapshot_metadata"][0]["action_trace"]
-    batch_trace["effective_action"][0] = 99
-    batch_trace["status_reason"] = "batch-mutated"
 
-    # Mutating batch metadata must not rewrite the buffer's canonical copy.
-    stored_trace = buffer.result_snapshot_metadata[0][0]["action_trace"]
-    assert stored_trace["effective_action"] == [6, 0, 0, 0, 0, 0]
-    assert stored_trace["status_reason"] == "applied"
-
+    # Minibatches expose buffer-owned diagnostic rows by reference. This proves
+    # large nested native snapshots are not deep-copied for every PPO epoch.
+    assert batch["snapshot_metadata"][0] is buffer.snapshot_metadata[0][0]
+    assert batch["result_snapshot_metadata"][0] is buffer.result_snapshot_metadata[0][0]
+    assert batch["next_snapshot_metadata"][0] is buffer.next_snapshot_metadata[0][0]
+    assert batch_trace is stored_trace
+    assert batch_trace["effective_action"] == [6, 0, 0, 0, 0, 0]
+    assert batch_trace["status_reason"] == "applied"
 
 @pytest.mark.parametrize(
     ("field", "invalid_value"),
