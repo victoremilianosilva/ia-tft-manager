@@ -824,17 +824,17 @@ class RolloutBuffer:
 
     @property
     def snapshot_metadata(self):
-        return [None if rows is None else [row[0] for row in rows]
+        return [None if rows is None else copy.deepcopy([row[0] for row in rows])
                 for rows in self._metadata_records]
 
     @property
     def result_snapshot_metadata(self):
-        return [None if rows is None else [row[1] for row in rows]
+        return [None if rows is None else copy.deepcopy([row[1] for row in rows])
                 for rows in self._metadata_records]
 
     @property
     def next_snapshot_metadata(self):
-        return [None if rows is None else [row[2] for row in rows]
+        return [None if rows is None else copy.deepcopy([row[2] for row in rows])
                 for rows in self._metadata_records]
 
     def get_transition_metadata(self, step_index, env_index):
@@ -1234,15 +1234,13 @@ class RolloutBuffer:
                     divmod(int(flat_index), self.num_envs)
                     for flat_index in batch_idx.detach().cpu().tolist()
                 )
-                batch_snapshot_metadata = self._metadata_for_batch(
-                    self.snapshot_metadata, metadata_indices
+                metadata_rows = tuple(
+                    self._metadata_records[step_index][env_index]
+                    for step_index, env_index in metadata_indices
                 )
-                batch_result_metadata = self._metadata_for_batch(
-                    self.result_snapshot_metadata, metadata_indices
-                )
-                batch_next_metadata = self._metadata_for_batch(
-                    self.next_snapshot_metadata, metadata_indices
-                )
+                batch_snapshot_metadata = tuple(row[0] for row in metadata_rows)
+                batch_result_metadata = tuple(row[1] for row in metadata_rows)
+                batch_next_metadata = tuple(row[2] for row in metadata_rows)
             semantic_numeric_batch = flat_semantic_numeric[batch_idx]
             semantic_batch = {
                 "numeric": semantic_numeric_batch,
