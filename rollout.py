@@ -1165,14 +1165,22 @@ class RolloutBuffer:
                     batch_advantages.std(unbiased=False) + 1e-8
                 )
 
+            # Decode flat indices once. Metadata is a read-only sidecar for
+            # diagnostics; PPO consumes only tensors and semantic features.
+            # Reuse references to the buffer-owned rows instead of deep-copying
+            # large native snapshots for every epoch.
+            metadata_indices = tuple(
+                divmod(int(flat_index), self.num_envs)
+                for flat_index in batch_idx.detach().cpu().tolist()
+            )
             batch_snapshot_metadata = self._metadata_for_batch(
-                self.snapshot_metadata, batch_idx
+                self.snapshot_metadata, metadata_indices
             )
             batch_result_metadata = self._metadata_for_batch(
-                self.result_snapshot_metadata, batch_idx
+                self.result_snapshot_metadata, metadata_indices
             )
             batch_next_metadata = self._metadata_for_batch(
-                self.next_snapshot_metadata, batch_idx
+                self.next_snapshot_metadata, metadata_indices
             )
             semantic_numeric_batch = flat_semantic_numeric[batch_idx]
             semantic_batch = {
@@ -1218,18 +1226,24 @@ class RolloutBuffer:
             }
 
     @staticmethod
-    def _metadata_for_batch(metadata_by_step, batch_indices):
+    def _metadata_for_batch(metadata_by_step, transition_indices):
+        """Return read-only references to buffer-owned diagnostic metadata rows.
+
+        The buffer isolates stored rows from caller mutation at insertion time.
+        Minibatch consumers must treat returned rows and nested mappings as
+        read-only. PPO does not consume these envelopes; this view is retained
+        for diagnostics and compatibility without cloning native snapshots
+        for every minibatch/epoch.
+        """
         if not metadata_by_step or metadata_by_step[0] is None:
             return None
-        num_envs = len(metadata_by_step[0])
         result = []
-        for flat_index in batch_indices.detach().cpu().tolist():
-            step_index, env_index = divmod(int(flat_index), num_envs)
+        for step_index, env_index in transition_indices:
             step_metadata = metadata_by_step[step_index]
             if step_metadata is None:
                 raise RuntimeError("Metadata parcial dentro do RolloutBuffer.")
-            result.append(copy.deepcopy(step_metadata[env_index]))
-        return result
+            result.append(step_metadata[env_index])
+        return tuple(result)
 
     # =================================================================
     # READY
