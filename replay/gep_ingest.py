@@ -109,8 +109,12 @@ def _match_groups(capture: dict[str, Any]) -> dict[tuple[str, str], list[dict[st
 
 def _write_hash_chain(path: Path, records: list[tuple[str, dict[str, Any]]]) -> str:
     previous_hash = ""
-    with path.open("x", encoding="utf-8", newline="\n") as stream:
-        for sequence, (record_type, payload) in enumerate(records):
+    with path.open("x", encoding="utf-8", newline="\\n") as stream:
+        for sequence, (record_type, source_payload) in enumerate(records):
+            payload = dict(source_payload)
+            if record_type == "footer":
+                payload["records_before_footer"] = sequence
+                payload["final_record_sha256"] = previous_hash
             body = {
                 "sequence": sequence,
                 "record_type": record_type,
@@ -122,7 +126,7 @@ def _write_hash_chain(path: Path, records: list[tuple[str, dict[str, Any]]]) -> 
                 (previous_hash + body_json).encode("utf-8")
             ).hexdigest()
             stream.write(body_json[:-1] + ',"record_sha256":' +
-                         json.dumps(record_hash) + "}\n")
+                         json.dumps(record_hash) + "}\\n")
             previous_hash = record_hash
     return previous_hash
 
@@ -213,14 +217,9 @@ def ingest_gep_capture(path: str | Path, output_dir: str | Path) -> list[dict[st
         final_hash = _write_hash_chain(artifact_path, output_records + [(
             "footer", {
                 "status": "completed",
-                "records_before_footer": len(output_records),
-                "final_record_sha256": "",
                 "complete": True,
             }
         )])
-        # The footer commits to the hash of the final source record. Rewrite is
-        # avoided: the footer payload above is informational; the chain itself
-        # commits to every record and the artifact file hash commits to footer.
         artifacts.append({
             "replay_artifact_id": artifact_id,
             "path": artifact_name,
@@ -242,18 +241,25 @@ def build_gep_dataset_manifest(
     split_seed: str = "tft-gep-split-v1",
 ) -> dict[str, Any]:
     destination = Path(output_path)
+    captures = [load_gep_capture(path, require_complete=True) for path in capture_paths]
+    if not captures:
+        raise ValueError("At least one complete GEP capture is required")
+    all_match_ids = []
+    for capture in captures:
+        all_match_ids.extend(match_id for _, match_id in _match_groups(capture))
+    if len(set(all_match_ids)) != len(all_match_ids):
+        raise ValueError("Duplicate match_id across GEP captures; refusing split leakage")
+    if len(all_match_ids) < 3:
+        raise ValueError("Train/validation/test require at least three independent live matches")
+
+    destination.parent.mkdir(parents=True, exist_ok=True)
     artifact_dir = destination.parent / f"{destination.stem}_artifacts"
     artifact_dir.mkdir(parents=True, exist_ok=False)
     artifacts = []
-    for capture_path in capture_paths:
-        artifacts.extend(ingest_gep_capture(capture_path, artifact_dir))
-    match_ids = [item["match_id"] for item in artifacts]
-    if len(set(match_ids)) != len(match_ids):
-        raise ValueError("Duplicate match_id across GEP captures; refusing split leakage")
-    if len(match_ids) < 3:
-        raise ValueError("Train/validation/test require at least three independent live matches")
+    for capture in captures:
+        artifacts.extend(ingest_gep_capture(capture["path"], artifact_dir))
 
-    ranked = sorted(match_ids, key=lambda match_id: hashlib.sha256(
+    ranked = sorted(all_match_ids, key=lambda match_id: hashlib.sha256(
         f"{split_seed}:{match_id}".encode("utf-8")
     ).hexdigest())
     count = len(ranked)
@@ -270,7 +276,7 @@ def build_gep_dataset_manifest(
     split_by_match = {
         match_id: ("test" if match_id in test_ids else
                    "validation" if match_id in validation_ids else "train")
-        for match_id in match_ids
+        for match_id in all_match_ids
     }
     for artifact in artifacts:
         artifact["split"] = split_by_match[artifact["match_id"]]
@@ -280,7 +286,7 @@ def build_gep_dataset_manifest(
         "schema_version": 1,
         "created_at": datetime.now(timezone.utc).isoformat(),
         "split_seed": split_seed,
-        "match_count": len(match_ids),
+        "match_count": len(all_match_ids),
         "replay_count": len(artifacts),
         "replay_mode": "observational_only",
         "deterministic_reexecution": False,
@@ -298,8 +304,8 @@ def build_gep_dataset_manifest(
     dataset_hash = hashlib.sha256(_canonical(hash_payload).encode("utf-8")).hexdigest()
     manifest = dict(payload, dataset_version=f"sha256:{dataset_hash}",
                     dataset_sha256=dataset_hash)
-    with destination.open("x", encoding="utf-8", newline="\n") as stream:
-        stream.write(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n")
+    with destination.open("x", encoding="utf-8", newline="\\n") as stream:
+        stream.write(json.dumps(manifest, ensure_ascii=False, indent=2) + "\\n")
     return manifest
 
 
