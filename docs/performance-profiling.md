@@ -168,7 +168,8 @@ The Trainer records per rollout step:
 - transition processing and rollout-buffer write.
 
 It also records per-lobby wrapper/native/vector metrics, rollout collection, bootstrap
-and GAE, PPO optimization, and total update time.
+and GAE, PPO optimization, and total update time. Per-lobby, wrapper, rollout-stage
+and PPO minibatch samples include P95/P99 distributions where repeated samples exist.
 
 PPO internals report:
 
