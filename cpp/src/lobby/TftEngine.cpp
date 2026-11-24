@@ -2888,17 +2888,32 @@ struct TFTEngine::Impl {
             }
             static const strategy::StrategicPlanner strategic_planner{};
             auto diagnostic_commitment = strategic_planner_commitments[i];
+            auto detail_profile_start = profile_strategic ? ProfileClock::now() : ProfileClock::time_point{};
             const auto strategic_decision = strategic_planner.evaluate(
                 evidence_context, diagnostic_commitment);
+            if (profile_strategic) {
+                step_profile_ms["strategic_direction_planner_ms"] += std::chrono::duration<double, std::milli>(ProfileClock::now() - detail_profile_start).count();
+                ++step_profile_counts["strategic_direction_planner_calls"];
+            }
 
             // Economic posture and marginal action are independent shadow
             // evaluations. Neither is allowed to alter the policy action path.
             static const strategy::EconomicController economic_controller{};
             static const strategy::ActionEvaluator action_evaluator{};
+            detail_profile_start = profile_strategic ? ProfileClock::now() : ProfileClock::time_point{};
             const auto economic_decision =
                 economic_controller.evaluate(evidence_context.planner_context);
+            if (profile_strategic) {
+                step_profile_ms["strategic_economic_controller_ms"] += std::chrono::duration<double, std::milli>(ProfileClock::now() - detail_profile_start).count();
+                ++step_profile_counts["strategic_economic_controller_calls"];
+            }
+            detail_profile_start = profile_strategic ? ProfileClock::now() : ProfileClock::time_point{};
             auto action_decision = action_evaluator.evaluate(
                 evidence_context.planner_context, economic_decision);
+            if (profile_strategic) {
+                step_profile_ms["strategic_action_evaluator_ms"] += std::chrono::duration<double, std::milli>(ProfileClock::now() - detail_profile_start).count();
+                ++step_profile_counts["strategic_action_evaluator_calls"];
+            }
 
             // Composition Intelligence remains opt-in for engine consumers; native
             // PPO training explicitly enables it in train_native.py.
@@ -3096,7 +3111,12 @@ struct TFTEngine::Impl {
                 runtime.mark_stage("candidate_sources", source_candidates.empty() ? "unavailable" : "completed",
                     source_candidates.empty() ? "no validated Native or OP.GG candidates" : "validated candidates received",
                     active_before);
+                detail_profile_start = profile_strategic ? ProfileClock::now() : ProfileClock::time_point{};
                 const auto proposal = runtime.transitions.propose(active_before, source_candidates, composition_context);
+                if (profile_strategic) {
+                    step_profile_ms["strategic_composition_transition_proposal_ms"] += std::chrono::duration<double, std::milli>(ProfileClock::now() - detail_profile_start).count();
+                    ++step_profile_counts["strategic_composition_transition_proposal_calls"];
+                }
                 runtime.mark_stage("candidate_evaluation",
                     proposal.target ? "completed" : "partial",
                     proposal.reason, active_before);
@@ -3119,6 +3139,7 @@ struct TFTEngine::Impl {
                 evidence.composition_version = version;
                 evidence.round = round_id;
                 if (version > 0) {
+                    detail_profile_start = profile_strategic ? ProfileClock::now() : ProfileClock::time_point{};
                     evidence.economy = ci::PlannerEvidenceAdapters::economic(
                         strategic_context, economic_decision, round_id,
                         static_cast<std::int32_t>(i));
@@ -3155,6 +3176,10 @@ struct TFTEngine::Impl {
                             *player_envs[i].item_engine, item_state, item_bindings,
                             round_id, round_id);
                     }
+                }
+                if (profile_strategic) {
+                    step_profile_ms["strategic_planner_evidence_adapters_ms"] += std::chrono::duration<double, std::milli>(ProfileClock::now() - detail_profile_start).count();
+                    ++step_profile_counts["strategic_planner_evidence_adapter_calls"];
                 }
                 runtime.mark_stage("planner_evidence", version > 0 ? "completed" : "skipped",
                     version > 0 ? "economy/board/item evidence bound to active version" : "no active composition version",
@@ -3232,7 +3257,12 @@ struct TFTEngine::Impl {
                 native_action_state.composition_version = active ? active->version : 0;
                 native_action_state.gold = strategic_context.gold;
                 native_action_state.alive = strategic_context.alive;
+                detail_profile_start = profile_strategic ? ProfileClock::now() : ProfileClock::time_point{};
                 populate_strategic_action_masks(i, native_action_state);
+                if (profile_strategic) {
+                    step_profile_ms["strategic_action_mask_population_ms"] += std::chrono::duration<double, std::milli>(ProfileClock::now() - detail_profile_start).count();
+                    ++step_profile_counts["strategic_action_mask_population_calls"];
+                }
                 native_action_state.shop_champion_ids.fill(-1);
                 native_action_state.bench_champion_ids.fill(-1);
                 native_action_state.board_champion_ids.fill(-1);
