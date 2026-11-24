@@ -666,8 +666,6 @@ class TFTPolicy(nn.Module):
             raise ValueError(f"semantic numeric input must have shape {expected}")
         if numeric.dtype != torch.float32 or numeric.device != obs.device:
             raise TypeError("semantic numeric input must be float32 on the observation device")
-        if not torch.isfinite(numeric).all():
-            raise ValueError("semantic numeric input contains NaN or infinity")
         return numeric[:, SEMANTIC_GLOBAL_FEATURES:SEMANTIC_ITEM_OFFSET].reshape(
             obs.shape[0], SEMANTIC_ENTITY_SLOTS, SEMANTIC_ENTITY_FEATURES
         )
@@ -730,7 +728,6 @@ class TFTPolicy(nn.Module):
                     or tuple(value.shape) != shape
                     or value.dtype != torch.float32
                     or value.device != obs.device
-                    or not torch.isfinite(value).all()
                 ):
                     raise ValueError(f"native semantic item field {field} is missing or misaligned")
             anvil_pending = item_state.get("anvil_pending")
@@ -924,6 +921,7 @@ class TFTPolicy(nn.Module):
     def get_value(self, obs, masks=None, semantic_state=None):
         """Return value from the exact observation, semantic state and mask snapshot."""
         masks = self._validate_mask_bundle(obs, masks)
+        self._validate_semantic_state_finite(semantic_state, obs)
         return self._critic_value(self.encode(obs, semantic_state=semantic_state), masks)
 
     def get_action(self, obs, masks=None, deterministic=False, semantic_state=None):
@@ -1094,11 +1092,32 @@ class TFTPolicy(nn.Module):
             collect_entropy_diagnostics=True
         )
 
+    @staticmethod
+    def _validate_semantic_state_finite(semantic_state, obs):
+        """Check floating semantic inputs once at the policy call boundary."""
+        if semantic_state is None:
+            return
+        numeric = semantic_state.get("numeric") if isinstance(semantic_state, Mapping) else None
+        if not isinstance(numeric, torch.Tensor) or tuple(numeric.shape) != (obs.shape[0], SEMANTIC_NUMERIC_DIM):
+            raise ValueError("semantic numeric input is missing or misaligned")
+        if numeric.dtype != torch.float32 or numeric.device != obs.device:
+            raise TypeError("semantic numeric input must be float32 on the observation device")
+        if not torch.isfinite(numeric).all():
+            raise ValueError("semantic numeric input contains NaN or infinity")
+        items = semantic_state.get("items")
+        if not isinstance(items, Mapping):
+            raise ValueError("native semantic item state is missing")
+        for name, value in items.items():
+            if isinstance(value, torch.Tensor) and value.is_floating_point():
+                if not torch.isfinite(value).all():
+                    raise ValueError(f"native semantic item field {name} contains NaN or infinity")
+
     def _get_action_and_value_impl(
         self, obs, masks=None, deterministic=False, semantic_state=None, collect_diagnostics=False,
         collect_entropy_diagnostics=False
     ):
         masks = self._validate_mask_bundle(obs, masks)
+        self._validate_semantic_state_finite(semantic_state, obs)
         device = obs.device
         batch_size = obs.shape[0]
         player_diagnostics = [[] for _ in range(batch_size)]
