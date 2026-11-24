@@ -445,6 +445,8 @@ struct TFTEngine::Impl {
     std::vector<std::string> composition_intelligence_catalog_diagnostics;
     std::uint64_t composition_intelligence_sequence{0};
     bool composition_intelligence_enabled{false};
+    bool composition_diagnostics_enabled{false};
+    std::string composition_diagnostics_mode{"off"};
     std::array<std::unique_ptr<strategy::UnifiedStrategicRuntime>, kPlayersPerLobby>
         strategic_runtimes{};
     // Per-player idempotency ledgers for the read-only strategic action resolver.
@@ -539,6 +541,16 @@ struct TFTEngine::Impl {
             (std::string(feature_enabled) == "1" ||
              std::string(feature_enabled) == "true" ||
              std::string(feature_enabled) == "yes");
+
+        const char* diagnostics_mode = std::getenv("TFT_COMPOSITION_DIAGNOSTICS_MODE");
+        composition_diagnostics_mode = diagnostics_mode && *diagnostics_mode
+            ? std::string(diagnostics_mode) : std::string("off");
+        if (composition_diagnostics_mode == "audit" || composition_diagnostics_mode == "debug") {
+            composition_diagnostics_enabled = true;
+        } else if (composition_diagnostics_mode != "off") {
+            throw std::invalid_argument(
+                "TFT_COMPOSITION_DIAGNOSTICS_MODE must be off, audit or debug.");
+        }
 
         if (composition_intelligence_enabled) {
         try {
@@ -2510,9 +2522,10 @@ struct TFTEngine::Impl {
 
         }
 
-        if (composition_intelligence_enabled) {
-            composition_intelligence_native_diagnostics[i].push_back(
-                strategic_native_generation.reason);
+        if (composition_intelligence_enabled && composition_diagnostics_enabled) {
+            auto& source_diagnostics = composition_intelligence_native_diagnostics[i];
+            source_diagnostics.clear();
+            source_diagnostics.push_back(strategic_native_generation.reason);
         }
         for (const auto& generated : strategic_native_generation.candidates) {
                 composition_intelligence::CompositionCandidate candidate;
@@ -2889,7 +2902,8 @@ struct TFTEngine::Impl {
                 namespace ci = composition_intelligence;
                 auto& runtime = composition_intelligence_players[i];
                 const auto round_id = static_cast<std::uint32_t>(current_round);
-                runtime.begin_cycle(episode_id, static_cast<std::int32_t>(i), round_id);
+                runtime.begin_cycle(episode_id, static_cast<std::int32_t>(i), round_id,
+                    composition_diagnostics_enabled);
                 const auto active_before = runtime.active.current();
                 ci::CompositionEvaluationContext composition_context;
                 // TransitionManager hysteresis is scoped to the real match/player
@@ -3258,20 +3272,24 @@ struct TFTEngine::Impl {
                 action_decision = action_evaluator.evaluate(
                     evidence_context.planner_context, economic_decision);
 
+                // The frozen baseline evaluator exists only for diagnostics/comparison.
+                // It is not a PPO input and is skipped in the normal training mode.
                 ci::CompositionActionEvaluation composition_actions;
-                if (active) {
-                    composition_actions = ci::CompositionActionEvaluator{}.evaluate(
-                        active, priorities, lineup, strategic_context, economic_decision,
-                        strategy::StrategicActionKind::None, &evidence, episode_id);
-                } else {
-                    composition_actions.stale = true;
-                    composition_actions.stale_reason = "no active composition";
-                    composition_actions.evaluation.shadow_only = true;
+                if (composition_diagnostics_enabled) {
+                    if (active) {
+                        composition_actions = ci::CompositionActionEvaluator{}.evaluate(
+                            active, priorities, lineup, strategic_context, economic_decision,
+                            strategy::StrategicActionKind::None, &evidence, episode_id);
+                    } else {
+                        composition_actions.stale = true;
+                        composition_actions.stale_reason = "no active composition";
+                        composition_actions.evaluation.shadow_only = true;
+                    }
+                    runtime.mark_stage("action_evaluation",
+                        composition_actions.stale ? "unavailable" : "completed",
+                        composition_actions.stale ? composition_actions.stale_reason :
+                            "frozen #209 baseline action evaluation completed in Shadow mode", active);
                 }
-                runtime.mark_stage("action_evaluation",
-                    composition_actions.stale ? "unavailable" : "completed",
-                    composition_actions.stale ? composition_actions.stale_reason :
-                        "frozen #209 baseline action evaluation completed in Shadow mode", active);
 
                 // Independent contextual evaluator: same original context/candidate
                 // list, but separate contracts and scoring. Its failure is isolated
@@ -3340,6 +3358,7 @@ struct TFTEngine::Impl {
                     }
                 }
 
+                if (composition_diagnostics_enabled) {
                 // Resolve the independent recommendation against the exact current
                 // native slots and masks. The result is audit-only: it is never fed
                 // into step(), PPO, the action queue, or game-state mutation.
@@ -3559,6 +3578,7 @@ struct TFTEngine::Impl {
                 };
                 if (runtime.append_snapshot(std::move(diagnostic_json)))
                     ++composition_intelligence_sequence;
+                }
             }
             } catch (const std::exception& error) {
                 strategic_refresh_failure_reasons[i] =
@@ -3578,9 +3598,11 @@ struct TFTEngine::Impl {
                 auto& failed_runtime = composition_intelligence_players[i];
                 failed_runtime.planner_outputs_valid = false;
                 failed_runtime.mark_stage("runtime", "failed", error.what());
-                failed["sequence"] = composition_intelligence_sequence + 1;
-                if (failed_runtime.append_snapshot(std::move(failed)))
-                    ++composition_intelligence_sequence;
+                if (composition_diagnostics_enabled) {
+                    failed["sequence"] = composition_intelligence_sequence + 1;
+                    if (failed_runtime.append_snapshot(std::move(failed)))
+                        ++composition_intelligence_sequence;
+                }
             }
             }
 
