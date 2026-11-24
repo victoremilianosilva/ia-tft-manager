@@ -25,8 +25,10 @@ public:
     static constexpr std::size_t kMaxDiagnosticSnapshots = 4096;
 
     void begin_cycle(std::uint64_t match_id, std::int32_t player_id,
-                     std::uint32_t round, bool diagnostics_enabled = true) {
+                     std::uint32_t round, bool diagnostics_enabled = true,
+                     bool debug_enabled = false) {
         diagnostics_enabled_ = diagnostics_enabled;
+        debug_enabled_ = diagnostics_enabled && debug_enabled;
         match_id_ = match_id;
         player_id_ = player_id;
         round_ = round;
@@ -40,7 +42,7 @@ public:
 
     void mark_stage(std::string name, std::string status, std::string reason = {},
                     const std::optional<ActiveComposition>& active_composition = std::nullopt) {
-        if (!diagnostics_enabled_) return;
+        if (!debug_enabled_) return;
         nlohmann::json stage = {
             {"stage", std::move(name)},
             {"status", std::move(status)},
@@ -67,9 +69,11 @@ public:
         snapshot["player_id"] = player_id_;
         snapshot["round"] = round_;
         snapshot["player_sequence"] = next_player_sequence();
-        snapshot["runtime_execution"] = {
-            {"stages", stage_trace_}
-        };
+        if (debug_enabled_) {
+            snapshot["runtime_execution"] = {
+                {"stages", stage_trace_}
+            };
+        }
 
         auto canonical = snapshot;
         canonical.erase("sequence");
@@ -101,10 +105,13 @@ public:
         next_stage_sequence_ = 0;
         last_snapshot_fingerprint_.clear();
         stage_trace_.clear();
+        diagnostics_enabled_ = false;
+        debug_enabled_ = false;
     }
 
 private:
     bool diagnostics_enabled_{true};
+    bool debug_enabled_{false};
     std::uint64_t match_id_{0};
     std::int32_t player_id_{-1};
     std::uint32_t round_{0};
