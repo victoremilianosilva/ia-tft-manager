@@ -678,7 +678,6 @@ def test_rollout_metadata_isolated_on_store_and_shared_read_only_in_batches():
         "decision_sequence": 22, "player_decision_sequence": 22, "player_id": 0, "lobby_index": 0,
         "action_trace": trace,
     }
-    # The same post-step state may serve as result and next observation.
     next_state = dict(result)
 
     buffer.add(
@@ -694,33 +693,34 @@ def test_rollout_metadata_isolated_on_store_and_shared_read_only_in_batches():
         next_snapshot_metadata=[next_state],
     )
 
-    # Mutating caller-owned nested data must not rewrite stored rollout history.
     trace["requested_action"][0] = 0
     result["action_trace"]["status_reason"] = "caller-mutated"
     stored_trace = buffer.result_snapshot_metadata[0][0]["action_trace"]
     assert stored_trace["requested_action"] == [6, 0, 0, 0, 0, 0]
     assert stored_trace["status_reason"] == "applied"
 
-    # Equal result/next envelopes share one buffer-owned object.
-    assert buffer.result_snapshot_metadata[0][0] is buffer.next_snapshot_metadata[0][0]
-
-    # Audit retrieval returns complete but isolated envelopes.
+    assert buffer._metadata_records[0][0][1] is buffer._metadata_records[0][0][2]
     audit = buffer.get_transition_metadata(0, 0)
     assert audit["snapshot_metadata"]["mask_snapshot_hash"] == "a" * 64
     assert audit["result_snapshot_metadata"]["action_trace"]["status_reason"] == "applied"
-    assert audit["result_snapshot_metadata"] == audit["next_snapshot_metadata"]
     audit["result_snapshot_metadata"]["action_trace"]["status_reason"] = "audit-mutated"
     assert buffer.result_snapshot_metadata[0][0]["action_trace"]["status_reason"] == "applied"
 
+    training_batch = next(buffer.get_batches(batch_size=1))
+    assert training_batch["snapshot_metadata"] is None
+    assert training_batch["result_snapshot_metadata"] is None
+    assert training_batch["next_snapshot_metadata"] is None
+    assert "identities" not in training_batch["semantic_state"]
+    assert "hashes" not in training_batch["semantic_state"]
+
     batch = next(buffer.get_batches(batch_size=1, include_metadata=True))
     batch_trace = batch["result_snapshot_metadata"][0]["action_trace"]
-    batch_trace["effective_action"][0] = 99
-    batch_trace["status_reason"] = "batch-mutated"
-
-    # Mutating batch metadata must not rewrite the buffer's canonical copy.
-    stored_trace = buffer.result_snapshot_metadata[0][0]["action_trace"]
-    assert stored_trace["effective_action"] == [6, 0, 0, 0, 0, 0]
-    assert stored_trace["status_reason"] == "applied"
+    assert batch["snapshot_metadata"][0] is buffer._metadata_records[0][0][0]
+    assert batch["result_snapshot_metadata"][0] is buffer._metadata_records[0][0][1]
+    assert batch["next_snapshot_metadata"][0] is buffer._metadata_records[0][0][2]
+    assert batch_trace is stored_trace
+    assert batch_trace["effective_action"] == [6, 0, 0, 0, 0, 0]
+    assert batch_trace["status_reason"] == "applied"
 
 
 @pytest.mark.parametrize(
