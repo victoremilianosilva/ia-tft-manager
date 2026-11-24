@@ -5794,6 +5794,8 @@ ResetResult TFTEngine::reset(
     }
 
     ++impl_->episode_id;
+    for (auto& cache : impl_->strategic_item_fit_caches)
+        if (cache) cache->clear();
     impl_->composition_intelligence_players =
         decltype(impl_->composition_intelligence_players){};
     impl_->composition_intelligence_native_candidates =
