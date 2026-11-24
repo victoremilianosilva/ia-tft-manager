@@ -4034,6 +4034,16 @@ struct TFTEngine::Impl {
             events.emplace_back("COMBAT_OUTCOME_V1:" + outcome.dump());
         };
 
+        const char* combat_replay_mode_env = std::getenv("TFT_COMBAT_REPLAY_MODE");
+        const std::string combat_replay_mode =
+            combat_replay_mode_env == nullptr ? "off" : combat_replay_mode_env;
+        if (combat_replay_mode != "off" && combat_replay_mode != "audit" &&
+            combat_replay_mode != "debug") {
+            throw std::invalid_argument(
+                "TFT_COMBAT_REPLAY_MODE deve ser off, audit ou debug.");
+        }
+        const bool combat_replay_enabled = combat_replay_mode != "off";
+
         for (const auto& [a, b] : matchups) {
             current_simulation_artifact_id.clear();
             if (!player_envs[a].info.alive || !player_envs[b].info.alive) continue;
@@ -4049,8 +4059,10 @@ struct TFTEngine::Impl {
             input.config.max_duration = 30.0f;
             input.config.max_events = 100000;
             input.config.deterministic = true;
-            input.config.record_damage = true;
-            input.config.record_events = true;
+            // Detailed combat traces are opt-in; aggregate CombatUnitResult
+            // statistics remain active and continue feeding strategic evidence.
+            input.config.record_damage = combat_replay_enabled;
+            input.config.record_events = combat_replay_enabled;
             int next_unit_id = 0;
             append_combat_team(a, UnitTeam::PLAYER_A, input.player_a, next_unit_id);
             append_combat_team(b, UnitTeam::PLAYER_B, input.player_b, next_unit_id);
@@ -4065,8 +4077,10 @@ struct TFTEngine::Impl {
                     }
                 }
             };
-            record_combat_item_inputs(a, input.player_a);
-            record_combat_item_inputs(b, input.player_b);
+            if (combat_replay_enabled) {
+                record_combat_item_inputs(a, input.player_a);
+                record_combat_item_inputs(b, input.player_b);
+            }
 
             const bool empty_a = input.player_a.units.empty();
             const bool empty_b = input.player_b.units.empty();
@@ -4321,6 +4335,7 @@ struct TFTEngine::Impl {
                     const auto coverage_result =
                         combat_evidence::CombatCoverageValidator{}.validate(coverage);
                     combat_coverage_status = coverage_result.status;
+                    if (combat_replay_enabled) {
                     const nlohmann::json combat_snapshot_event{
                         {"contract_id", "tft.combat-snapshot.v2"},
                         {"match_id", snapshot.match_id},
@@ -4394,6 +4409,7 @@ struct TFTEngine::Impl {
                     };
                     events.emplace_back(
                         "COMBAT_SNAPSHOT_V2:" + combat_snapshot_event.dump());
+                    }
                 }
                 const auto combat = combat_engine.simulate(input);
                 if (!combat.success || !combat.completed)
@@ -4438,6 +4454,7 @@ struct TFTEngine::Impl {
                     std::to_string(combat_sequence) + ":" +
                     std::to_string(a) + ":" + std::to_string(b);
 
+                if (combat_replay_enabled) {
                 // Persist the exact native simulator input and its result as a
                 // deterministic diagnostic artifact. This is intentionally
                 // separate from the authoritative replay artifact contract.
@@ -4625,6 +4642,7 @@ struct TFTEngine::Impl {
                 };
                 events.emplace_back(
                     "COMBAT_SIMULATION_REPLAY_V1:" + simulation_artifact.dump());
+                }
 
                 // Convert completed combat results into a factual per-unit
                 // damage-share signal. Identity is joined through the persistent
@@ -4671,6 +4689,7 @@ struct TFTEngine::Impl {
                         }
                     }
                 }
+                if (combat_replay_enabled) {
                 constexpr std::size_t kCombatDamageAuditLimit = 4096;
                 for (const auto& damage_event : combat.damage_events) {
                     if (last_combat_damage_events.size() >= kCombatDamageAuditLimit) {
@@ -4751,6 +4770,7 @@ struct TFTEngine::Impl {
                         audit_event.killer_unit_uuid = killer_owner->second.unit_uuid;
                     }
                     last_combat_death_events.push_back(std::move(audit_event));
+                }
                 }
 
                 events.emplace_back("COMBAT: jogador " + std::to_string(a) +
