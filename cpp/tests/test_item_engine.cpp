@@ -102,6 +102,22 @@ int main() {
                 loaded_engine.item_fit("catalog_emblem", natural_emblem_target),
             "an emblem should have lower marginal value on a unit that already has that trait");
 
+    // The persistent compatibility cache reuses exact profiles and invalidates
+    // when any semantic profile input (including composition traits) changes.
+    ItemFitCache fit_cache(&loaded_engine);
+    const double cached_plan_fit = fit_cache.get("catalog_emblem", planned_emblem_target);
+    require(fit_cache.evaluation_count() == 1,
+            "first profile/item pair should perform one compatibility evaluation");
+    require(fit_cache.get("catalog_emblem", planned_emblem_target) == cached_plan_fit &&
+            fit_cache.evaluation_count() == 1,
+            "an unchanged profile should reuse its compatibility result");
+    const double cached_natural_fit = fit_cache.get("catalog_emblem", natural_emblem_target);
+    require(cached_natural_fit == loaded_engine.item_fit("catalog_emblem", natural_emblem_target) &&
+            fit_cache.evaluation_count() == 2,
+            "changing equipped traits must invalidate the cached compatibility result");
+    require(cached_natural_fit < cached_plan_fit,
+            "cache invalidation must preserve the changed semantic item fit");
+
     std::istringstream inert_catalog_json(R"json({
         "schema_version": 1,
         "set_id": "synthetic-inert-test",
