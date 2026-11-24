@@ -2009,6 +2009,12 @@ class Trainer:
                 lobby_player_alive=lobby_player_alive,
             )
 
+            bootstrap_cuda_start = bootstrap_cuda_end = None
+            if profile_gpu_enabled:
+                bootstrap_cuda_start = torch.cuda.Event(enable_timing=True)
+                bootstrap_cuda_end = torch.cuda.Event(enable_timing=True)
+                bootstrap_cuda_start.record()
+            bootstrap_value_start_ns = time.perf_counter_ns()
             with torch.no_grad():
 
                 next_value = (
@@ -2018,7 +2024,12 @@ class Trainer:
                         semantic_state=next_semantic_state,
                     )
                 )
-
+            bootstrap_value_host_ms = (
+                time.perf_counter_ns() - bootstrap_value_start_ns
+            ) / 1_000_000.0
+            if profile_gpu_enabled:
+                bootstrap_cuda_end.record()
+            gae_profile_start_ns = time.perf_counter_ns()
             rollout.compute_returns_and_advantages(
                 next_value,
                 dones,
@@ -2028,9 +2039,14 @@ class Trainer:
                     self.num_agents, dtype=torch.bool, device=self.device
                 ),
             )
+            gae_ms = (time.perf_counter_ns() - gae_profile_start_ns) / 1_000_000.0
             bootstrap_gae_ms = (
                 time.perf_counter_ns() - bootstrap_profile_start_ns
             ) / 1_000_000.0
+            self.writer.add_scalar("performance/update/bootstrap_value_host_ms", bootstrap_value_host_ms, update)
+            self.writer.add_scalar("performance/update/gae_ms", gae_ms, update)
+            if profile_gpu_enabled:
+                self.writer.add_scalar("performance/gpu/bootstrap_value_ms", bootstrap_cuda_start.elapsed_time(bootstrap_cuda_end), update)
 
             # ========================================================
             # 🔥 ENTROPY COEFFICIENT — PROGRESSO GLOBAL
