@@ -346,10 +346,14 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
             read_bool("percent_of_stat", effect.percent_of_stat);
             read_bool("scale_by_base_stat", effect.scale_by_base_stat);
             if (effect.scale_by_base_stat &&
-                (effect.trigger != "periodic" || effect.operation != "add_stat" ||
-                 effect.stat != "attack_speed")) {
+                !((effect.operation == "add_stat" &&
+                   ((effect.trigger == "periodic" && effect.stat == "attack_speed") ||
+                    (effect.trigger == "on_stack_cap" &&
+                     (effect.stat == "attack_speed" || effect.stat == "attack_damage")))) ||
+                  (effect.operation == "stack_stat" &&
+                   (effect.stat == "attack_speed" || effect.stat == "attack_damage")))) {
                 throw std::invalid_argument(
-                    "scale_by_base_stat is supported only for periodic attack_speed effects");
+                    "scale_by_base_stat requires a supported base attack stat effect");
             }
             if (effect.operation == "add_stat" && effect.percent_of_max_health) {
                 throw std::invalid_argument(
@@ -372,6 +376,83 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
                     throw std::invalid_argument(
                         "bonus_damage percent_of_stat requires a supported stat");
                 }
+            }
+            if (effect.operation == "grant_shield" &&
+                (effect.target != "self" || effect.value <= 0.0f ||
+                 effect.duration <= 0.0f || !effect.percent_of_max_health)) {
+                throw std::invalid_argument(
+                    "grant_shield requires self target, positive max-health fraction and duration");
+            }
+            if (effect.operation == "restore_mana" &&
+                (effect.target != "self" || effect.value <= 0.0f)) {
+                throw std::invalid_argument("restore_mana requires positive value and self target");
+            }
+            if (effect.operation == "revive" &&
+                (effect.target != "self" || effect.health_threshold <= 0.0f ||
+                 effect.health_threshold > 1.0f || effect.duration <= 0.0f ||
+                 effect.value <= 0.0f || effect.value > 1.0f ||
+                 effect.critical_value <= 0.0f || effect.critical_value > 1.0f)) {
+                throw std::invalid_argument(
+                    "revive requires self target, valid health threshold, duration and heal fractions");
+            }
+            if (effect.operation == "apply_shred" &&
+                ((effect.stat != "armor" && effect.stat != "magic_resist") ||
+                 effect.value <= 0.0f || effect.value > 1.0f || effect.duration <= 0.0f ||
+                 (effect.trigger == "combat_start" && effect.target != "enemies_within_radius") ||
+                 (effect.trigger != "combat_start" && effect.target != "target" &&
+                  effect.target != "enemies_within_radius") ||
+                 (effect.target == "enemies_within_radius" && effect.radius <= 0.0f))) {
+                throw std::invalid_argument("apply_shred requires a valid stat, target, fraction and duration");
+            }
+            if (effect.operation == "apply_burn" &&
+                ((effect.target != "target" && effect.target != "enemies_within_radius") ||
+                 effect.value <= 0.0f || effect.duration <= 0.0f ||
+                 !effect.percent_of_max_health ||
+                 (effect.target == "enemies_within_radius" && effect.radius <= 0.0f))) {
+                throw std::invalid_argument("apply_burn requires target, max-health fraction and duration");
+            }
+            if (effect.operation == "apply_wound" &&
+                ((effect.target != "target" && effect.target != "enemies_within_radius") ||
+                 effect.duration <= 0.0f ||
+                 (effect.target == "enemies_within_radius" && effect.radius <= 0.0f))) {
+                throw std::invalid_argument("apply_wound requires target and positive duration");
+            }
+            if (effect.operation == "damage_on_enemy_cast" &&
+                (effect.target != "self" || effect.value <= 0.0f ||
+                 effect.radius <= 0.0f || effect.interval <= 0.0f)) {
+                throw std::invalid_argument(
+                    "damage_on_enemy_cast requires self target, positive damage, radius and cooldown");
+            }
+            if (effect.operation == "add_stat_per_nearby_enemy" &&
+                (effect.target != "self" ||
+                 (effect.stat != "armor" && effect.stat != "magic_resist") ||
+                 effect.value <= 0.0f || effect.radius <= 0.0f)) {
+                throw std::invalid_argument(
+                    "add_stat_per_nearby_enemy requires self target, armor/MR, value and radius");
+            }
+            if (effect.operation == "reflect_damage" &&
+                (effect.target != "enemies_within_radius" || effect.value <= 0.0f ||
+                 effect.radius <= 0.0f || effect.interval <= 0.0f)) {
+                throw std::invalid_argument(
+                    "reflect_damage requires enemy radius, positive damage and cooldown");
+            }
+            if (effect.operation == "stack_stat" &&
+                (effect.target != "self" || effect.stat.empty() ||
+                 effect.value <= 0.0f || effect.max_stacks <= 0 ||
+                 effect.stack_key.empty())) {
+                throw std::invalid_argument(
+                    "stack_stat requires self target, stat, positive value, max_stacks and stack_key");
+            }
+            if (effect.trigger == "on_stack_cap" &&
+                (effect.operation != "add_stat" || effect.target != "self" ||
+                 effect.stack_key.empty() || effect.max_stacks <= 0)) {
+                throw std::invalid_argument(
+                    "on_stack_cap add_stat requires self target, stack_key and max_stacks");
+            }
+            if (effect.condition == "target_role_tank" &&
+                (effect.operation != "bonus_damage" || effect.target != "target")) {
+                throw std::invalid_argument(
+                    "target_role_tank is supported only by target-scoped bonus_damage");
             }
             if (effect.condition == "trait_count_at_least" &&
                 effect.min_trait_count <= 0) {
