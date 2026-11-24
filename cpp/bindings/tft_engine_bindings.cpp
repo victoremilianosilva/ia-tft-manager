@@ -583,6 +583,33 @@ public:
         return result;
     }
 
+    py::object item(const std::string& field) const {
+        if (field == "combat_damage_events" ||
+            field == "combat_attack_events" ||
+            field == "combat_death_events") {
+            return combat_events(field);
+        }
+        const auto values = to_dict();
+        if (!values.contains(field.c_str())) {
+            throw py::key_error(field);
+        }
+        return values[field.c_str()];
+    }
+
+    py::object get(
+        const std::string& field,
+        py::object default_value = py::none()
+    ) const {
+        if (field == "combat_damage_events" ||
+            field == "combat_attack_events" ||
+            field == "combat_death_events") {
+            return combat_events(field);
+        }
+        const auto values = to_dict();
+        if (!values.contains(field.c_str())) return default_value;
+        return values[field.c_str()];
+    }
+
     py::list combat_events(const std::string& field) const {
         py::list result;
         if (field == "combat_damage_events") {
@@ -914,6 +941,9 @@ PYBIND11_MODULE(tft_engine, module) {
     py::class_<NativeAuditSnapshotHandle>(module, "NativeAuditSnapshotHandle")
         .def("to_dict", &NativeAuditSnapshotHandle::to_dict)
         .def("keys", &NativeAuditSnapshotHandle::keys)
+        .def("get", &NativeAuditSnapshotHandle::get,
+             py::arg("field"), py::arg("default_value") = py::none())
+        .def("__getitem__", &NativeAuditSnapshotHandle::item)
         .def("combat_events", &NativeAuditSnapshotHandle::combat_events, py::arg("field"));
 
     py::class_<TFTEngine>(module, "TFTLobby")
