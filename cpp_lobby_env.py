@@ -852,6 +852,10 @@ class CppTFTLobbyWrapper:
             bool(timer_expired),
         )
         profile_mark("pybind_call_inclusive")
+        binding_profile = result.pop("_binding_profile", {})
+        if profile_enabled and isinstance(binding_profile, Mapping):
+            for key, value in binding_profile.items():
+                profile[key] = float(value)
         native_snapshot = result.get("native_state_snapshot")
         if native_snapshot is not None and not isinstance(native_snapshot, Mapping):
             native_snapshot = _NativeSnapshotMapping(native_snapshot)
