@@ -252,6 +252,20 @@ def _run_parallel_case(
                 batch_samples.append((time.perf_counter() - batch_start) * 1000.0)
                 for index, done, profile, elapsed_ms in results:
                     per_lobby_samples[index].append(elapsed_ms)
+                    binding_total = float(profile.get("binding_total_ms", 0.0))
+                    if mode == "wrapper":
+                        if "python_wrapper_total" in profile:
+                            profile["python_wrapper_exclusive_ms"] = max(
+                                0.0, float(profile["python_wrapper_total"]) - binding_total
+                            )
+                        if "pybind_call_inclusive" in profile:
+                            profile["pybind_argument_conversion_overhead_ms"] = max(
+                                0.0, float(profile["pybind_call_inclusive"]) - binding_total
+                            )
+                    else:
+                        profile["native_pybind_boundary_overhead_ms"] = max(
+                            0.0, elapsed_ms - binding_total
+                        )
                     for stage_name, stage_ms in profile.items():
                         stage_samples[index].setdefault(stage_name, []).append(float(stage_ms))
                     if done:
@@ -329,6 +343,7 @@ def main(argv: list[str] | None = None) -> int:
             "profiling_env_var": "TFT_PROFILE_STEPS=1",
         },
         "results": [],
+        "parallel_results": [],
     }
 
     for mode in modes:
@@ -365,6 +380,25 @@ def main(argv: list[str] | None = None) -> int:
                         f"p95={stage_stats['p95_ms']:.3f} ms",
                         flush=True,
                     )
+
+            if args.parallel_check and lobby_count > 1:
+                parallel_result = _run_parallel_case(
+                    mode, lobby_count, args.warmup, args.iterations,
+                    args.seed, args.item_catalog,
+                )
+                serial_mean = result["sequential_batch"]["mean_ms"]
+                parallel_mean = parallel_result["concurrent_batch"]["mean_ms"]
+                parallel_result["sequential_batch_mean_ms"] = serial_mean
+                parallel_result["speedup_vs_sequential"] = (
+                    serial_mean / parallel_mean if parallel_mean > 0 else 0.0
+                )
+                report["parallel_results"].append(parallel_result)
+                print(
+                    f"  threaded: mean={parallel_mean:.2f} ms | "
+                    f"serial={serial_mean:.2f} ms | "
+                    f"speedup={parallel_result['speedup_vs_sequential']:.2f}x",
+                    flush=True,
+                )
 
     if args.json_out:
         output = Path(args.json_out).expanduser()
