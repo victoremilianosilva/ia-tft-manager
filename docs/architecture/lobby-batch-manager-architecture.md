@@ -82,6 +82,37 @@ As máscaras já possuem um contrato fixo de campos, dimensões e ordem em `acti
 ### Impactos e limites
 A conversão C++ deixa de alocar 96 arrays e 8 dicionários de máscaras por lobby/resultado e passa a alocar um único array contíguo. O wrapper ainda reconstrói mappings leves com views para preservar os contratos atuais do Trainer e da policy; remover esses mappings do hot path é uma etapa posterior e separada da Fase C. Observações, rewards e dones já atravessam o binding como arrays NumPy contíguos. Snapshots de auditoria/replay permanecem imutáveis e lazy, sem redução de campos ou validações nesta entrega.
 
+### Fase C — ownership imutável de estado por jogador
+
+#### Problema anterior
+A expansão do snapshot da lobby copiava profundamente cada registro de jogador para criar as linhas do rollout. Em seguida, o `RolloutBuffer` copiava novamente esses subtrees ao assumir ownership e voltava a copiá-los ao expor metadados. O conteúdo nativo é evidência de auditoria associada a uma identidade de snapshot e não deve ser mutável pelo Trainer ou por consumidores do buffer.
+
+#### Racional técnico
+O estado nativo por jogador é um valor JSON-like que pode ser copiado uma vez na fronteira de ownership e congelado. Containers congelados compatíveis com `dict` e `list` preservam os contratos de leitura existentes, mas implementam `__deepcopy__` por identidade: cópias posteriores de envelopes de rollout compartilham o mesmo subtree imutável, em vez de reconstruí-lo.
+
+#### Responsabilidade nova
+- `freeze_snapshot` cria uma cópia recursivamente imutável do subtree nativo do jogador.
+- `Trainer._expand_lobby_snapshot_metadata` transfere o subtree congelado para a linha do jogador.
+- `RolloutBuffer` pode continuar usando sua fronteira defensiva de `deepcopy` para metadados mutáveis; subtrees congelados são compartilhados com segurança.
+- Leitores continuam recebendo envelopes mutáveis isolados nas partes que não são snapshot nativo.
+
+#### Contratos e invariantes
+- O snapshot de origem não é compartilhado mutavelmente com o rollout.
+- Dicts e listas mantêm compatibilidade de leitura e os tipos reconhecidos por consumidores existentes.
+- Qualquer tentativa de mutação em qualquer nível do subtree congelado falha explicitamente.
+- `deepcopy` de um subtree congelado retorna a mesma referência imutável; isso preserva aliases sem duplicar conteúdo.
+- Identidade de Engine, episódio, sequência, jogador, contrato e hashes continuam validados como antes.
+- Não são removidos campos, validações, eventos, provenance ou snapshots de auditoria.
+
+#### Impactos e limites
+A primeira cópia continua ocorrendo na fronteira de ownership, mas as cópias profundas subsequentes feitas pelo armazenamento e leitura de metadados do rollout deixam de duplicar o estado nativo do jogador. Metadados mutáveis e envelopes continuam isolados por cópia. Esta otimização não substitui a compactação dos demais payloads nem declara a Fase C concluída.
+
+#### Validação
+- provar isolamento em relação à fonte mutável;
+- provar imutabilidade recursiva de dicts e listas;
+- provar identidade compartilhada após `deepcopy`;
+- executar testes de identidade do rollout e toda a suíte de integração nativa/Python.
+ 
 ### Validação
 - testar layout completo e ordem de todos os campos;
 - provar que as views internas compartilham memória com o buffer e que cópias públicas não compartilham;
