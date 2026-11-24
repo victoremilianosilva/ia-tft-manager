@@ -5825,7 +5825,9 @@ ResetResult TFTEngine::reset(
         }
         result.player_decision_sequences[i] = ++impl_->player_decision_sequences[i];
     }
+    auto snapshot_start = ProfileClock::now();
     result.native_state_snapshot = get_audit_snapshot();
+    record_profile("engine_audit_snapshot_ms", snapshot_start);
 
     return result;
 }
@@ -5846,6 +5848,16 @@ StepResult TFTEngine::step(
     }
 
     impl_->ensure_open();
+
+    using ProfileClock = std::chrono::steady_clock;
+    const auto step_profile_start = ProfileClock::now();
+    impl_->step_profile_ms.clear();
+    impl_->step_profile_counts.clear();
+    auto record_profile = [&](const std::string& name, ProfileClock::time_point start) {
+        impl_->step_profile_ms[name] +=
+            std::chrono::duration<double, std::milli>(ProfileClock::now() - start).count();
+        ++impl_->step_profile_counts[name + "_calls"];
+    };
 
     if (impl_->done) {
         throw std::runtime_error(
@@ -5869,6 +5881,7 @@ StepResult TFTEngine::step(
         }
     }
 
+    auto preflight_start = ProfileClock::now();
     // Preflight em duas fases: valida limites e disponibilidade semântica
     // de todas as ações antes de executar a primeira. Se qualquer ação for
     // impossível, o lote falha sem alterar ouro, unidades ou posições.
@@ -5878,6 +5891,8 @@ StepResult TFTEngine::step(
     for (std::size_t i = 0; i < actions.size(); ++i) {
         impl_->validate_action_against_masks(i, effective_actions[i]);
     }
+
+    record_profile("engine_action_preflight_ms", preflight_start);
 
     // ========================================================
     // AÇÕES DE LOJA, ECONOMIA E MOVIMENTAÇÃO
@@ -5900,6 +5915,7 @@ StepResult TFTEngine::step(
     std::array<std::int32_t, kPlayersPerLobby> xp_after_actions{};
     std::array<ActionExecutionTrace, kPlayersPerLobby> action_traces{};
     std::vector<std::string> item_action_events;
+    auto action_execution_start = ProfileClock::now();
     for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
         auto& trace = action_traces[i];
         trace.player_id = static_cast<std::int32_t>(i);
@@ -5955,11 +5971,17 @@ StepResult TFTEngine::step(
         impl_->player_envs[i].round_reward_total = round_rewards[i];
         impl_->player_envs[i].total_reward += round_rewards[i];
         impl_->sync_player_economy(i);
+        auto mask_refresh_start = ProfileClock::now();
         impl_->refresh_masks(i);
+        impl_->step_profile_ms["engine_action_mask_refresh_ms"] +=
+            std::chrono::duration<double, std::milli>(ProfileClock::now() - mask_refresh_start).count();
+        ++impl_->step_profile_counts["engine_action_mask_refresh_calls"];
         if (!timer_enabled) {
             impl_->mark_round_completion(i);
         }
     }
+
+    record_profile("engine_action_execution_ms", action_execution_start);
 
     // ========================================================
     // RESOLUÇÃO CONDICIONAL DA RODADA
@@ -5995,7 +6017,9 @@ StepResult TFTEngine::step(
         const auto rewards_before_combat = round_rewards;
         const auto current_round_number = impl_->round + 1;
         if (is_pvp_round(current_round_number)) {
+            auto combat_start = ProfileClock::now();
             impl_->resolve_combats(round_events, round_rewards, combat_rewards);
+            record_profile("engine_combat_resolution_ms", combat_start);
         } else {
             for (auto& player_env : impl_->player_envs) {
                 player_env.info.opponent_id.reset();
@@ -6009,7 +6033,9 @@ StepResult TFTEngine::step(
         // Resolve item-anvil rewards from the completed PvE encounter. The
         // choices are generated once from the active catalog and then selected
         // by the policy during the next preparation phase.
+        auto pve_rewards_start = ProfileClock::now();
         impl_->grant_round_pve_item_rewards(current_round_number, round_events);
+        record_profile("engine_pve_item_rewards_ms", pve_rewards_start);
 
         // A renda/XP calculada é para a próxima preparação; o estado começa
         // em round=0 (1-1), então a próxima rodada é current_round_number + 1.
@@ -6017,6 +6043,7 @@ StepResult TFTEngine::step(
             static_cast<std::int32_t>(current_round_number + 1);
 
         if (!impl_->done && impl_->alive_players > 1) {
+            auto economy_resolution_start = ProfileClock::now();
             for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
                 auto& player_env = impl_->player_envs[i];
                 if (!player_env.info.alive || player_env.info.hp <= 0.0f) {
@@ -6050,8 +6077,13 @@ StepResult TFTEngine::step(
 
                 // A loja é renovada para o próximo turno após atualizar o nível.
                 player_env.shop->roll(player_env.economy.level);
+                auto economy_mask_start = ProfileClock::now();
                 impl_->refresh_masks(i);
+                impl_->step_profile_ms["engine_economy_mask_refresh_ms"] +=
+                    std::chrono::duration<double, std::milli>(ProfileClock::now() - economy_mask_start).count();
+                ++impl_->step_profile_counts["engine_economy_mask_refresh_calls"];
             }
+            record_profile("engine_economy_resolution_ms", economy_resolution_start);
         }
 
         // TFTLobby aplica a recompensa de colocação uma única vez assim que
@@ -6085,7 +6117,11 @@ StepResult TFTEngine::step(
             impl_->player_envs[i].round_reward_total = round_rewards[i];
             impl_->player_envs[i].total_reward += round_rewards[i] - rewards_before_combat[i];
             if (impl_->player_envs[i].info.alive) {
+                auto strategic_start = ProfileClock::now();
                 impl_->refresh_native_strategic_state(i);
+                impl_->step_profile_ms["engine_strategic_refresh_total_ms"] +=
+                    std::chrono::duration<double, std::milli>(ProfileClock::now() - strategic_start).count();
+                ++impl_->step_profile_counts["engine_strategic_refresh_calls"];
             }
         }
 
@@ -6129,7 +6165,9 @@ StepResult TFTEngine::step(
 
     StepResult result{};
 
+    auto observation_start = ProfileClock::now();
     result.observations = impl_->build_observations();
+    record_profile("engine_observation_build_ms", observation_start);
     result.observation_dim = impl_->observation_dim();
 
     result.rewards = round_rewards;
@@ -6162,6 +6200,7 @@ StepResult TFTEngine::step(
     result.alive_players = impl_->alive_players;
     result.native_state_snapshot = get_audit_snapshot();
 
+    auto event_build_start = ProfileClock::now();
     result.events.emplace_back(
         "Acoes de loja, economia, venda e movimentacao "
         "executadas pelo TFTEngine."
@@ -6207,6 +6246,12 @@ StepResult TFTEngine::step(
         impl_->pending_combat_prediction_events.end()
     );
     impl_->pending_combat_prediction_events.clear();
+    record_profile("engine_event_materialization_ms", event_build_start);
+    impl_->step_profile_ms["engine_step_total_ms"] =
+        std::chrono::duration<double, std::milli>(ProfileClock::now() - step_profile_start).count();
+    impl_->step_profile_counts["engine_action_players"] = kPlayersPerLobby;
+    result.performance_profile_ms = impl_->step_profile_ms;
+    result.performance_profile_counts = impl_->step_profile_counts;
 
     return result;
 }
