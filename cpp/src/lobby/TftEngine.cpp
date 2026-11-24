@@ -3169,7 +3169,7 @@ struct TFTEngine::Impl {
                         }
                         evidence.items = ci::PlannerEvidenceAdapters::item(
                             *player_envs[i].item_engine, item_state, item_bindings,
-                            round_id, round_id, fit_cache.get());
+                            round_id, round_id, fit_cache->get());
                     }
                 }
                 if (composition_diagnostics_debug) runtime.mark_stage("planner_evidence", version > 0 ? "completed" : "skipped",
@@ -6746,7 +6746,7 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
                          target_slot < profile_by_target.size(); ++target_slot) {
                         const auto* profile = profile_by_target[target_slot];
                         if (!profile) continue;
-                        const double fit = fit_cache.get(item_id, *profile);
+                        const double fit = fit_cache->get(item_id, *profile);
                         target.item_recipe_target_fit[recipe][target_slot] =
                             static_cast<float>(std::clamp(fit / 50.0, 0.0, 1.0));
                     }
@@ -6773,7 +6773,7 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
                                     candidate_item.recipe_components[1] != option_id) continue;
                                 for (const auto& profile : profiles)
                                     best_fit = std::max(best_fit,
-                                        fit_cache.get(candidate_item.id, profile));
+                                        fit_cache->get(candidate_item.id, profile));
                             }
                         } else if (const auto* definition = source.item_engine->find(option_id)) {
                             const std::array<double, 10> stats{
@@ -6793,7 +6793,7 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
                                     std::clamp(stats[stat], 0.0, 1.0));
                             for (const auto& profile : profiles)
                                 best_fit = std::max(best_fit,
-                                    fit_cache.get(option_id, profile));
+                                    fit_cache->get(option_id, profile));
                         }
                         features[10] = static_cast<float>(
                             std::clamp(best_fit / 20.0, 0.0, 1.0));
