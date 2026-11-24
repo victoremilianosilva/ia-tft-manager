@@ -232,7 +232,8 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
                 effect.target == "allies_same_row_within_1" ||
                 effect.target == "lowest_health_ally" ||
                 effect.target == "target" ||
-                effect.target == "enemies_within_radius";
+                effect.target == "enemies_within_radius" ||
+                effect.target == "nearest_enemy_within_radius";
             if (!supported_target) {
                 throw std::invalid_argument(
                     "Unsupported combat effect target: " + effect.target);
@@ -401,14 +402,16 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
                  (effect.trigger == "combat_start" && effect.target != "enemies_within_radius") ||
                  (effect.trigger != "combat_start" && effect.target != "target" &&
                   effect.target != "enemies_within_radius") ||
-                 (effect.target == "enemies_within_radius" && effect.radius <= 0.0f))) {
+                 ((effect.target == "enemies_within_radius" ||
+                  effect.target == "nearest_enemy_within_radius") && effect.radius <= 0.0f))) {
                 throw std::invalid_argument("apply_shred requires a valid stat, target, fraction and duration");
             }
             if (effect.operation == "apply_burn" &&
                 ((effect.target != "target" && effect.target != "enemies_within_radius") ||
                  effect.value <= 0.0f || effect.duration <= 0.0f ||
                  !effect.percent_of_max_health ||
-                 (effect.target == "enemies_within_radius" && effect.radius <= 0.0f))) {
+                 ((effect.target == "enemies_within_radius" ||
+                   effect.target == "nearest_enemy_within_radius") && effect.radius <= 0.0f))) {
                 throw std::invalid_argument("apply_burn requires target, max-health fraction and duration");
             }
             if (effect.operation == "apply_wound" &&
