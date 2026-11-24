@@ -12,10 +12,11 @@ class LobbyVectorEnv:
 
     PLAYERS_PER_LOBBY = 8
 
-    def __init__(self, env_fns):
+    def __init__(self, env_fns, *, batch_manager=None):
         self.envs = [make_env() for make_env in env_fns]
         self.num_envs = len(self.envs)
         self._requires_full_reset = False
+        self._batch_manager = batch_manager
 
         if self.num_envs == 0:
             raise ValueError("É necessário criar pelo menos uma lobby.")
@@ -24,18 +25,34 @@ class LobbyVectorEnv:
         """Reset every lobby; a supplied seed is deterministically offset per lobby."""
         observations = []
         try:
-            for lobby_index, env in enumerate(self.envs):
-                if seed is None:
-                    observations.append(env.reset())
-                else:
-                    if (
-                        isinstance(seed, bool)
-                        or not isinstance(seed, (int, np.integer))
-                        or not 0 <= int(seed) <= 0xFFFFFFFF
-                        or int(seed) + self.num_envs - 1 > 0xFFFFFFFF
-                    ):
-                        raise ValueError("seed e offsets por lobby devem caber em uint32.")
-                    observations.append(env.reset(seed=int(seed) + lobby_index))
+            if self._batch_manager is not None:
+                if seed is not None and (
+                    isinstance(seed, bool)
+                    or not isinstance(seed, (int, np.integer))
+                    or not 0 <= int(seed) <= 0xFFFFFFFF
+                    or int(seed) + self.num_envs - 1 > 0xFFFFFFFF
+                ):
+                    raise ValueError("seed e offsets por lobby devem caber em uint32.")
+                native_results = self._batch_manager.reset(seed=seed)
+                if len(native_results) != self.num_envs:
+                    raise RuntimeError("LobbyBatchManager retornou quantidade incorreta de resets.")
+                observations = [
+                    env._consume_reset_result(result)
+                    for env, result in zip(self.envs, native_results)
+                ]
+            else:
+                for lobby_index, env in enumerate(self.envs):
+                    if seed is None:
+                        observations.append(env.reset())
+                    else:
+                        if (
+                            isinstance(seed, bool)
+                            or not isinstance(seed, (int, np.integer))
+                            or not 0 <= int(seed) <= 0xFFFFFFFF
+                            or int(seed) + self.num_envs - 1 > 0xFFFFFFFF
+                        ):
+                            raise ValueError("seed e offsets por lobby devem caber em uint32.")
+                        observations.append(env.reset(seed=int(seed) + lobby_index))
         except Exception:
             # A partial reset cannot restore a known vector boundary.
             self._requires_full_reset = True
@@ -102,9 +119,25 @@ class LobbyVectorEnv:
             all_dones = []
             all_infos = []
 
-            for env, lobby_actions in zip(self.envs, actions):
-                obs, rewards, lobby_done, info = env.step(lobby_actions)
+            if self._batch_manager is not None:
+                prepared = [
+                    env._prepare_batch_step(lobby_actions)
+                    for env, lobby_actions in zip(self.envs, actions)
+                ]
+                native_results = self._batch_manager.step([entry[0] for entry in prepared])
+                if len(native_results) != self.num_envs:
+                    raise RuntimeError("LobbyBatchManager retornou quantidade incorreta de steps.")
+                step_results = [
+                    env._consume_step_result(result, prepared[index][1])
+                    for index, (env, result) in enumerate(zip(self.envs, native_results))
+                ]
+            else:
+                step_results = [
+                    env.step(lobby_actions)
+                    for env, lobby_actions in zip(self.envs, actions)
+                ]
 
+            for env, (obs, rewards, lobby_done, info) in zip(self.envs, step_results):
                 rewards = np.asarray(rewards, dtype=np.float32)
                 if rewards.shape != (self.PLAYERS_PER_LOBBY,):
                     raise ValueError(
@@ -180,6 +213,9 @@ class LobbyVectorEnv:
             ) from exc
 
     def close(self):
+        if self._batch_manager is not None:
+            self._batch_manager.close()
+            return
         for env in self.envs:
             close_method = getattr(env, "close", None)
             if callable(close_method):

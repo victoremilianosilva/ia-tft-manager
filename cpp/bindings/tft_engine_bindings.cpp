@@ -935,6 +935,11 @@ public:
         return results;
     }
 
+    TFTEngine& engine(std::size_t index) {
+        ensure_open();
+        if (index >= engines_.size()) throw py::index_error("lobby index fora do intervalo.");
+        return *engines_[index];
+    }
     std::size_t lobby_count() const noexcept { return engines_.size(); }
     std::vector<std::string> engine_instance_ids() const {
         ensure_open();
@@ -1189,6 +1194,7 @@ PYBIND11_MODULE(tft_engine, module) {
             py::arg("lobby_count"), py::arg("base_seed") = 0,
             py::arg("catalog_path") = "", py::arg("item_catalog_path") = "")
         .def("reset", &NativeLobbyBatchManager::reset, py::arg("seed") = py::none())
+        .def("engine", &NativeLobbyBatchManager::engine, py::arg("index"), py::return_value_policy::reference_internal)
         .def("step", &NativeLobbyBatchManager::step, py::arg("actions"))
         .def_property_readonly("lobby_count", &NativeLobbyBatchManager::lobby_count)
         .def_property_readonly("engine_instance_ids", &NativeLobbyBatchManager::engine_instance_ids)

@@ -26,7 +26,7 @@ A `TFTEngine` já representa uma lobby completa de oito jogadores. O manager dev
 - PPO, policy, reward shaping, GAE, loss, optimizer, estratégia e action masks permanecem fora do manager.
 
 ## Impactos e limites desta entrega
-Esta entrega adiciona a API e ownership nativos sequenciais, mas ainda não substitui o caminho do `Trainer`: integrar os wrappers e `LobbyVectorEnv` à API batch será uma etapa própria, com comparação old/new para seeds e ações idênticas. Nenhum ganho de throughput é alegado nesta fase. A API converte resultados para os mesmos dicionários/arrays já usados pelo binding atual; a fronteira compacta é escopo da Fase C.
+Esta entrega integra a API batch ao caminho real do `Trainer`: `LobbyVectorEnv` envia reset/step como uma única chamada nativa por lote, enquanto cada `CppTFTLobbyWrapper` continua responsável pela projeção de snapshots, máscaras, auditoria de rewards e eventos factuais. O manager empresta referências estáveis às Engines que possui; wrappers não encerram individualmente Engines compartilhadas. O caminho legado por factories continua disponível para testes e consumidores que não fornecem manager. Não há paralelismo, liberação do GIL ou alegação de ganho de throughput nesta fase. A API ainda materializa os dicionários/arrays atuais; a fronteira compacta é escopo da Fase C.
 
 ## Validação
 - rejeitar zero lobbies, seed inválida/overflow e batches com dimensões inválidas;
@@ -34,3 +34,12 @@ Esta entrega adiciona a API e ownership nativos sequenciais, mas ainda não subs
 - comparar reset/step batch com execução direta por Engine para seeds e ações idênticas;
 - confirmar falha de lifecycle antes do reset e após close;
 - executar suíte C++ e testes Python com o módulo `tft_engine` compilado.
+
+
+## Integração Fase B — fluxo batch do Trainer
+- `Trainer` instancia um único `LobbyBatchManager` para o conjunto de lobbies e injeta cada referência de Engine no wrapper correspondente.
+- `LobbyVectorEnv.reset` chama `manager.reset(seed)` uma vez e entrega cada resultado ao processamento de snapshot do wrapper.
+- `LobbyVectorEnv.step` normaliza as ações por wrapper, envia o lote em uma única chamada `manager.step(actions)` e processa cada resultado com o mesmo pipeline de auditoria/proveniência já existente.
+- Auto-reset de uma lobby terminal continua individual, preservando a identidade do snapshot terminal e a observação do novo episódio.
+- O manager é o único proprietário do lifecycle das Engines compartilhadas; `close()` é executado uma vez no fechamento do vetor.
+- A API batch permanece sequencial em C++; o ganho desta etapa é a fronteira de ownership e chamada, não paralelismo.
