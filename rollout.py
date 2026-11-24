@@ -1083,10 +1083,15 @@ class RolloutBuffer:
     def get_batches(
         self,
         batch_size,
-        normalize_advantages=False
+        normalize_advantages=False,
+        include_metadata=False,
     ):
         """
         Gera mini-lotes contendo exclusivamente transições válidas.
+
+        Full snapshot metadata is excluded by default because PPO optimizes
+        only tensor/semantic inputs. Diagnostic callers may opt in; that view
+        reuses buffer-owned rows and must be treated as read-only.
         """
 
         if self.ptr <= 0:
@@ -1165,23 +1170,25 @@ class RolloutBuffer:
                     batch_advantages.std(unbiased=False) + 1e-8
                 )
 
-            # Decode flat indices once. Metadata is a read-only sidecar for
-            # diagnostics; PPO consumes only tensors and semantic features.
-            # Reuse references to the buffer-owned rows instead of deep-copying
-            # large native snapshots for every epoch.
-            metadata_indices = tuple(
-                divmod(int(flat_index), self.num_envs)
-                for flat_index in batch_idx.detach().cpu().tolist()
-            )
-            batch_snapshot_metadata = self._metadata_for_batch(
-                self.snapshot_metadata, metadata_indices
-            )
-            batch_result_metadata = self._metadata_for_batch(
-                self.result_snapshot_metadata, metadata_indices
-            )
-            batch_next_metadata = self._metadata_for_batch(
-                self.next_snapshot_metadata, metadata_indices
-            )
+            batch_snapshot_metadata = None
+            batch_result_metadata = None
+            batch_next_metadata = None
+            if include_metadata:
+                # Decode flattened indices once, only for explicit diagnostic
+                # consumers. The PPO hot path does not need native envelopes.
+                metadata_indices = tuple(
+                    divmod(int(flat_index), self.num_envs)
+                    for flat_index in batch_idx.detach().cpu().tolist()
+                )
+                batch_snapshot_metadata = self._metadata_for_batch(
+                    self.snapshot_metadata, metadata_indices
+                )
+                batch_result_metadata = self._metadata_for_batch(
+                    self.result_snapshot_metadata, metadata_indices
+                )
+                batch_next_metadata = self._metadata_for_batch(
+                    self.next_snapshot_metadata, metadata_indices
+                )
             semantic_numeric_batch = flat_semantic_numeric[batch_idx]
             semantic_batch = {
                 "numeric": semantic_numeric_batch,
