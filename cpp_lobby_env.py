@@ -728,9 +728,9 @@ class CppTFTLobbyWrapper:
                 raise RuntimeError("Ownership ativo presente após aposentadoria terminal dos itens.")
             if not retired_flag and retired_has_evidence:
                 raise RuntimeError("Evidência de aposentadoria presente sem estado terminal.")
-        # The pybind layer materializes this payload as Python-owned dicts,
-        # lists and NumPy arrays. Retain that ownership instead of cloning the
-        # entire (large) semantic snapshot after validating it.
+        # The pybind handle pins the immutable native value. Its Mapping view
+        # materializes semantic fields on demand and defers combat event rows;
+        # deepcopy creates an independent Python cache over the same pinned value.
         return value
 
     @staticmethod
