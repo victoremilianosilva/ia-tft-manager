@@ -48,7 +48,7 @@ except ImportError as exc:
     ) from exc
 
 
-class _NativeSnapshotMapping(Mapping):
+class _NativeSnapshotMapping(dict):
     """Read-only mapping over one pinned native snapshot.
 
     The large combat event lists are converted to Python only when requested.
@@ -84,6 +84,27 @@ class _NativeSnapshotMapping(Mapping):
 
     def __len__(self):
         return len(self._handle.keys())
+
+    def get(self, key, default=None):
+        try:
+            return self[key]
+        except KeyError:
+            return default
+
+    def __contains__(self, key):
+        return key in self._handle.keys()
+
+    def keys(self):
+        return self._handle.keys()
+
+    def items(self):
+        return ((key, self[key]) for key in self)
+
+    def values(self):
+        return (self[key] for key in self)
+
+    def copy(self):
+        return {key: self[key] for key in self}
 
     def __deepcopy__(self, memo):
         clone = type(self)(self._handle)
