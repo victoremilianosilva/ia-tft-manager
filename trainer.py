@@ -1550,7 +1550,7 @@ class Trainer:
                 if profile_gpu_enabled:
                     policy_cuda_start = torch.cuda.Event(enable_timing=True)
                     policy_cuda_end = torch.cuda.Event(enable_timing=True)
-                    policy_cuda_start.record()
+                    policy_cuda_start.record(torch.cuda.current_stream(self.device))
                 head_entropy_diagnostics = None
                 with torch.no_grad():
                     if step % 10 == 0:
@@ -2013,7 +2013,7 @@ class Trainer:
             if profile_gpu_enabled:
                 bootstrap_cuda_start = torch.cuda.Event(enable_timing=True)
                 bootstrap_cuda_end = torch.cuda.Event(enable_timing=True)
-                bootstrap_cuda_start.record()
+                bootstrap_cuda_start.record(torch.cuda.current_stream(self.device))
             bootstrap_value_start_ns = time.perf_counter_ns()
             with torch.no_grad():
 
@@ -2028,7 +2028,7 @@ class Trainer:
                 time.perf_counter_ns() - bootstrap_value_start_ns
             ) / 1_000_000.0
             if profile_gpu_enabled:
-                bootstrap_cuda_end.record()
+                bootstrap_cuda_end.record(torch.cuda.current_stream(self.device))
             gae_profile_start_ns = time.perf_counter_ns()
             rollout.compute_returns_and_advantages(
                 next_value,
@@ -2167,7 +2167,7 @@ class Trainer:
             if profile_gpu_enabled:
                 ppo_cuda_start = torch.cuda.Event(enable_timing=True)
                 ppo_cuda_end = torch.cuda.Event(enable_timing=True)
-                ppo_cuda_start.record()
+                ppo_cuda_start.record(torch.cuda.current_stream(self.device))
             ppo_metrics = self.ppo.update(
                 rollout,
                 batch_size=self.config.batch_size,
@@ -2177,7 +2177,7 @@ class Trainer:
                 time.perf_counter_ns() - ppo_profile_start_ns
             ) / 1_000_000.0
             if profile_gpu_enabled:
-                ppo_cuda_end.record()
+                ppo_cuda_end.record(torch.cuda.current_stream(self.device))
                 torch.cuda.synchronize(self.device)
                 self.writer.add_scalar("performance/gpu/ppo_update_ms", ppo_cuda_start.elapsed_time(ppo_cuda_end), update)
             self.writer.add_scalar("performance/update/rollout_collection_ms", rollout_collection_ms, update)
