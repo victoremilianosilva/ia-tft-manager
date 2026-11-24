@@ -176,9 +176,8 @@ py::dict player_info_to_dict(const tft::PlayerInfo& player) {
 }
 
 
-py::list player_info_to_list(
-    const std::vector<tft::PlayerInfo>& players
-) {
+template <typename Players>
+py::list player_info_to_list(const Players& players) {
     py::list result;
 
     for (const auto& player : players) {
@@ -583,11 +582,7 @@ py::dict step_to_dict(const tft::StepResult& step) {
     result["stage"] = step.stage;
     result["alive_players"] = step.alive_players;
     result["action_masks"] = masks_to_list(step.action_masks);
-    result["players"] = player_info_to_list(
-        std::vector<tft::PlayerInfo>(
-            step.players.begin(), step.players.end()
-        )
-    );
+    result["players"] = player_info_to_list(step.players);
     py::list action_traces;
     for (const auto& trace : step.action_traces) {
         py::dict item;
