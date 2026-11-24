@@ -1053,7 +1053,7 @@ void apply_reflect_effects(RuntimeUnit& defender, std::vector<RuntimeUnit>& unit
             enemy.damage_taken += damage;
             defender.damage_dealt += damage;
             update_conditional_effects(enemy, now);
-            apply_stack_effects(enemy, "on_damage_taken", now);
+            apply_stack_effects(enemy, "on_attack_or_damage_taken", now);
             if (config.record_damage) {
                 DamageEvent reflected;
                 reflected.timestamp = now;
@@ -1115,7 +1115,7 @@ void apply_enemy_cast_effects(RuntimeUnit& caster, std::vector<RuntimeUnit>& uni
             caster.damage_taken += damage;
             holder.damage_dealt += damage;
             update_conditional_effects(caster, now);
-            apply_stack_effects(caster, "on_damage_taken", now);
+            apply_stack_effects(caster, "on_attack_or_damage_taken", now);
             if (config.record_damage) {
                 DamageEvent spark;
                 spark.timestamp = now;
@@ -1408,7 +1408,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
             burning.unit.hp -= hp_loss;
             burning.damage_taken += hp_loss;
             update_conditional_effects(burning, now);
-            apply_stack_effects(burning, "on_damage_taken", now);
+            apply_stack_effects(burning, "on_attack_or_damage_taken", now);
             if (burning.burn_source_id >= 0) {
                 const auto source_it = index_by_id.find(burning.burn_source_id);
                 if (source_it != index_by_id.end())
@@ -1620,7 +1620,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                         ability_target.unit.hp -= hp_damage;
                         ability_target.damage_taken += damage;
                         update_conditional_effects(ability_target, now);
-                        apply_stack_effects(ability_target, "on_damage_taken", now);
+                        apply_stack_effects(ability_target, "on_attack_or_damage_taken", now);
                         actor.damage_dealt += damage;
                         ability_event.damage += damage;
                         apply_target_status_effects(
@@ -1730,7 +1730,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
             target.unit.hp -= hp_damage;
             target.damage_taken += damage;
             update_conditional_effects(target, now);
-            apply_stack_effects(target, "on_damage_taken", now);
+            apply_stack_effects(target, "on_attack_or_damage_taken", now);
             actor.damage_dealt += damage;
             if (actor.unit.omnivamp > 0.0f && damage > 0.0f) {
                 const float heal = apply_heal(actor,
@@ -1760,7 +1760,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                 target.unit.hp -= hp_bonus;
                 target.damage_taken += bonus;
                 update_conditional_effects(target, now);
-                apply_stack_effects(target, "on_damage_taken", now);
+                apply_stack_effects(target, "on_attack_or_damage_taken", now);
                 actor.damage_dealt += bonus;
                 if (config.record_damage) {
                     DamageEvent bonus_event;
@@ -1782,6 +1782,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
             actor.unit.mana = std::min(actor.unit.max_mana,
                 actor.unit.mana + generic_mana_on_attack * actor.mana_gain_multiplier);
             apply_stack_effects(actor, "on_attack", now);
+            apply_stack_effects(actor, "on_attack_or_damage_taken", now);
             if (critical) apply_stack_effects(actor, "on_critical_attack", now);
             apply_target_status_effects(actor, target, "on_attack", now);
             apply_damage_healing_effects(actor, units, damage, now);
