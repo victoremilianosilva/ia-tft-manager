@@ -62,6 +62,7 @@ from semantic_observation import (
     catalog_identity,
     validate_semantic_state_checkpoint_contract,
     validate_semantic_batch_alignment,
+    semantic_batch_matches_snapshot_rows,
 )
 
 from engine_contracts import ActionType
@@ -1337,6 +1338,7 @@ class Trainer:
             # 📥 COLETA DE EXPERIÊNCIAS
             # ========================================================
 
+            semantic_cache = None
             for step in range(
                 rollout_steps
             ):
@@ -1360,23 +1362,39 @@ class Trainer:
                     metadata["observation_snapshot_hash"] = observation_hash
                     metadata["observation_snapshot_hash_algorithm"] = "tft-ppo-observation-row-v1"
 
-                semantic_batch = build_semantic_batch(
-                    flat_snapshot_metadata, self.champion_id_map
+                # The previous transition's next snapshot is the current decision
+                # snapshot when its immutable native revision identity still matches.
+                can_reuse_semantic = (
+                    semantic_cache is not None
+                    and semantic_batch_matches_snapshot_rows(
+                        semantic_cache["batch"],
+                        flat_snapshot_metadata,
+                        self.semantic_state_contract,
+                    )
                 )
-                semantic_numeric = torch.as_tensor(
-                    semantic_batch["numeric"], dtype=torch.float32, device=self.device
-                )
-                semantic_state = {
-                    "numeric": semantic_numeric,
-                    "items": semantic_item_state_tensors(semantic_numeric),
-                    "champion_ids": torch.as_tensor(
-                        semantic_batch["champion_ids"], dtype=torch.long, device=self.device
-                    ),
-                    "identities": semantic_batch["identities"],
-                    "hashes": semantic_batch["hashes"],
-                    "contract_id": semantic_batch["contract_id"],
-                    "contract_hash": semantic_batch["contract_hash"],
-                }
+                if can_reuse_semantic:
+                    semantic_batch = semantic_cache["batch"]
+                    semantic_state = semantic_cache["state"]
+                else:
+                    semantic_batch = build_semantic_batch(
+                        flat_snapshot_metadata,
+                        self.champion_id_map,
+                        contract=self.semantic_state_contract,
+                    )
+                    semantic_numeric = torch.as_tensor(
+                        semantic_batch["numeric"], dtype=torch.float32, device=self.device
+                    )
+                    semantic_state = {
+                        "numeric": semantic_numeric,
+                        "items": semantic_item_state_tensors(semantic_numeric),
+                        "champion_ids": torch.as_tensor(
+                            semantic_batch["champion_ids"], dtype=torch.long, device=self.device
+                        ),
+                        "identities": semantic_batch["identities"],
+                        "hashes": semantic_batch["hashes"],
+                        "contract_id": semantic_batch["contract_id"],
+                        "contract_hash": semantic_batch["contract_hash"],
+                    }
                 for metadata, semantic_hash, semantic_identity in zip(
                     flat_snapshot_metadata, semantic_batch["hashes"], semantic_batch["identities"]
                 ):
@@ -1390,7 +1408,7 @@ class Trainer:
                     )
                 validate_semantic_batch_alignment(
                     semantic_batch, flat_snapshot_metadata, self.semantic_state_contract,
-                    self.champion_id_map,
+                    self.champion_id_map, reproject=False, verify_catalog=False,
                 )
                 semantic_entities = np.asarray(
                     semantic_batch["numeric"], dtype=np.float32
@@ -1588,7 +1606,9 @@ class Trainer:
                     "snapshot da próxima observação",
                 )
                 next_semantic_batch = build_semantic_batch(
-                    flat_next_snapshot_metadata, self.champion_id_map
+                    flat_next_snapshot_metadata,
+                    self.champion_id_map,
+                    contract=self.semantic_state_contract,
                 )
                 next_semantic_numeric = torch.as_tensor(
                     next_semantic_batch["numeric"], dtype=torch.float32, device=self.device
@@ -1617,8 +1637,13 @@ class Trainer:
                     )
                 validate_semantic_batch_alignment(
                     next_semantic_batch, flat_next_snapshot_metadata, self.semantic_state_contract,
-                    self.champion_id_map,
+                    self.champion_id_map, reproject=False, verify_catalog=False,
                 )
+                semantic_cache = {
+                    "identities": next_semantic_batch["identities"],
+                    "batch": next_semantic_batch,
+                    "state": next_semantic_state,
+                }
 
                 # Resultado final, colocação e duração de cada partida.
                 for lobby_idx, info in enumerate(infos):

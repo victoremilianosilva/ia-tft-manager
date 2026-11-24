@@ -19,6 +19,7 @@ from semantic_observation import (
     validate_semantic_state_checkpoint_integrity,
     validate_semantic_state_warm_start_migration,
     validate_semantic_batch_alignment,
+    semantic_batch_matches_snapshot_rows,
 )
 
 
@@ -622,3 +623,102 @@ def test_semantic_v8_checkpoint_weight_contract_requires_trait_embedding():
     assert semantic_policy_state_keys(incomplete) != SEMANTIC_POLICY_STATE_KEYS
     with pytest.raises(ValueError, match="Semantic v8 policy weights are incomplete"):
         validate_semantic_policy_state_dict(incomplete)
+
+
+
+def test_semantic_alignment_can_validate_binding_without_reprojecting(monkeypatch):
+    import semantic_observation
+
+    catalog = {"TFT_TestChampion": 17}
+    row = _metadata()
+    contract = build_semantic_state_checkpoint_contract(catalog)
+    batch = build_semantic_batch([row], catalog, contract=contract)
+    row["semantic_projection_hash"] = batch["hashes"][0]
+    row["semantic_projection_contract_id"] = batch["contract_id"]
+    row["semantic_projection_contract_hash"] = batch["contract_hash"]
+
+    def unexpected_projection(*args, **kwargs):
+        raise AssertionError("alignment validation must not rebuild an existing projection")
+
+    monkeypatch.setattr(semantic_observation, "project_native_player_state", unexpected_projection)
+    validate_semantic_batch_alignment(
+        batch, [row], contract, catalog, reproject=False, verify_catalog=False
+    )
+
+
+def test_semantic_batch_reuses_precomputed_v8_contract(monkeypatch):
+    import semantic_observation
+
+    catalog = {"TFT_TestChampion": 17}
+    contract = build_semantic_state_checkpoint_contract(catalog)
+
+    def unexpected_contract_build(*args, **kwargs):
+        raise AssertionError("precomputed contract should be reused")
+
+    monkeypatch.setattr(
+        semantic_observation, "build_semantic_state_checkpoint_contract",
+        unexpected_contract_build,
+    )
+    batch = build_semantic_batch([_metadata()], catalog, contract=contract)
+    assert batch["contract_id"] == contract["contract"]["contract_id"]
+    assert batch["contract_hash"] == contract["sha256"]
+
+
+
+def test_semantic_projection_cache_requires_exact_native_snapshot_revision():
+    catalog = {"TFT_TestChampion": 17}
+    contract = build_semantic_state_checkpoint_contract(catalog)
+    row = _metadata()
+    batch = build_semantic_batch([row], catalog, contract=contract)
+    assert semantic_batch_matches_snapshot_rows(batch, [row], contract)
+
+    for field, changed in (
+        ("engine_instance_id", "engine-other"),
+        ("episode_id", 6),
+        ("decision_sequence", 12),
+        ("player_decision_sequence", 8),
+        ("player_id", 3),
+        ("round", 13),
+        ("lobby_index", 1),
+        ("native_state_contract_version", 5),
+    ):
+        altered = dict(row, **{field: changed})
+        assert not semantic_batch_matches_snapshot_rows(batch, [altered], contract), field
+
+    stale_contract = dict(contract, sha256="0" * 64)
+    assert not semantic_batch_matches_snapshot_rows(batch, [row], stale_contract)
+
+
+
+def test_semantic_cache_invalidates_unit_item_and_trait_mutations_when_revision_advances():
+    from copy import deepcopy
+
+    catalog = {"TFT_TestChampion": 17}
+    contract = build_semantic_state_checkpoint_contract(catalog)
+    original = _metadata()
+    batch = build_semantic_batch([original], catalog, contract=contract)
+
+    mutations = (
+        ("unit", lambda row: row["native_player_state"]["board"][0].update(star=3)),
+        ("items", lambda row: row["native_player_state"]["board"][0]["items"].append("ItemB")),
+        ("traits", lambda row: row["native_player_state"]["board"][0]["trait_names"].append("TraitC")),
+        ("inventory", lambda row: row["native_player_state"]["item_inventory"].append("completed_item_alpha")),
+    )
+    for name, mutate in mutations:
+        changed = deepcopy(original)
+        mutate(changed)
+        changed["decision_sequence"] += 1
+        changed["player_decision_sequence"] += 1
+        assert not semantic_batch_matches_snapshot_rows(batch, [changed], contract), name
+
+
+def test_semantic_cache_invalidates_on_real_catalog_contract_change():
+    original_catalog = {"TFT_TestChampion": 17}
+    changed_catalog = {"TFT_TestChampion": 17, "TFT_AnotherChampion": 18}
+    original_contract = build_semantic_state_checkpoint_contract(original_catalog)
+    changed_contract = build_semantic_state_checkpoint_contract(changed_catalog)
+    row = _metadata()
+    batch = build_semantic_batch([row], original_catalog, contract=original_contract)
+
+    assert original_contract["sha256"] != changed_contract["sha256"]
+    assert not semantic_batch_matches_snapshot_rows(batch, [row], changed_contract)
