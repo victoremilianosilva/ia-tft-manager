@@ -1,0 +1,32 @@
+name: Combat ownership sanitizers
+
+on:
+  pull_request:
+
+concurrency:
+  group: combat-sanitizers-${{ github.workflow }}-${{ github.event.pull_request.head.ref || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  combat-address-undefined-sanitizers:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure combat test with ASan and UBSan
+        run: >-
+          cmake -S cpp -B cpp/build-sanitizers
+          -DCMAKE_BUILD_TYPE=Debug
+          -DBUILD_TESTING=ON
+          -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer"
+          -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined"
+
+      - name: Build focused combat test
+        run: cmake --build cpp/build-sanitizers --target test_combat_engine --parallel 2
+
+      - name: Run combat ownership and movement tests under sanitizers
+        env:
+          ASAN_OPTIONS: detect_leaks=1:strict_string_checks=1
+          UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+        run: ctest --test-dir cpp/build-sanitizers --output-on-failure -R "^test_combat_engine$"
