@@ -60,6 +60,7 @@ A matriz distingue explicitamente o sinal agregado efetivamente usado pela estra
 - `cpp/src/lobby/TftEngine.cpp`: configuração do modo, opt-in dos eventos, snapshots e replay JSON; preserva builders/validadores de evidência e agregações.
 - `cpp/src/combat/CombatEngine.cpp`: move da unidade preparada e cálculo de distância sem cópia de probe.
 - `cpp/tests/test_combat_engine.cpp`: equivalência de resultado/evidência agregada, limites do tabuleiro no movimento e imutabilidade do input após simulação.
+- `.github/workflows/combat-ownership-sanitizers.yml`: execução isolada do teste nativo sob ASan/UBSan.
 - `tests/test_tft_engine_api.py`: teste de proveniência de eventos configura explicitamente o modo `audit`.
 
 ## Critérios de validação
