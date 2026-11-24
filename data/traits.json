@@ -31,8 +31,16 @@
           }
         }
       ],
-      "units": [],
-      "en_name": "Adaptador"
+      "units": [
+        "DA_18_Akali_AD",
+        "DA_18_MasterYi_AD",
+        "DA_Gromp18_AP",
+        "DA_KogMaw18_AD",
+        "DA_Nidalee18_AP"
+      ],
+      "en_name": "Adaptador",
+      "unit_mapping_source": "data/units_gerado.json",
+      "unit_mapping_status": "mapped"
     },
     {
       "apiName": "DA_18_ApexPredator",
@@ -47,8 +55,12 @@
           "variables": {}
         }
       ],
-      "units": [],
-      "en_name": "Predador Perfeito"
+      "units": [
+        "DA_18_ElderDragon"
+      ],
+      "en_name": "Predador Perfeito",
+      "unit_mapping_source": "data/units_gerado.json",
+      "unit_mapping_status": "mapped"
     },
     {
       "apiName": "DA_18_Battlemage",
@@ -61,12 +73,16 @@
           "minUnits": 1,
           "style": 4,
           "variables": {
-            "Resists": 10.0
+            "Resists": 10
           }
         }
       ],
-      "units": [],
-      "en_name": "Monólito"
+      "units": [
+        "DA_18_Malphite"
+      ],
+      "en_name": "Monólito",
+      "unit_mapping_source": "data/units_gerado.json",
+      "unit_mapping_status": "mapped"
     },
     {
       "apiName": "DA_18_Blackthorn",
@@ -79,7 +95,7 @@
           "minUnits": 2,
           "style": 1,
           "variables": {
-            "Health": 175.0
+            "Health": 175
           }
         },
         {
@@ -87,7 +103,7 @@
           "minUnits": 4,
           "style": 3,
           "variables": {
-            "Health": 350.0,
+            "Health": 350,
             "StatMultiplier": 0.2999999523162842
           }
         },
@@ -96,13 +112,22 @@
           "minUnits": 6,
           "style": 5,
           "variables": {
-            "Health": 600.0,
+            "Health": 600,
             "StatMultiplier": 0.5
           }
         }
       ],
-      "units": [],
-      "en_name": "Espinhos Negros"
+      "units": [
+        "DA_18_Azir",
+        "DA_18_Malphite",
+        "DA_18_RekSai",
+        "DA_18_Veigar",
+        "DA_18_Warwick",
+        "DA_Lux18_Blackthorn"
+      ],
+      "en_name": "Espinhos Negros",
+      "unit_mapping_source": "data/units_gerado.json",
+      "unit_mapping_status": "mapped"
     },
     {
       "apiName": "DA_18_Blossom",
@@ -135,7 +160,7 @@
           "variables": {
             "ADAP": 0.5,
             "BonusHealth": 0.10000002384185791,
-            "{91925b8e}": 4.0
+            "{91925b8e}": 4
           }
         },
         {
@@ -152,13 +177,24 @@
           "minUnits": 11,
           "style": 6,
           "variables": {
-            "ADAP": 1.0,
+            "ADAP": 1,
             "BonusHealth": 0.10000002384185791
           }
         }
       ],
-      "units": [],
-      "en_name": "Florescer"
+      "units": [
+        "DA_18_Ahri",
+        "DA_18_Ashe",
+        "DA_18_MasterYi_AD",
+        "DA_18_Sett",
+        "DA_18_Yorick",
+        "DA_18_Yunara",
+        "DA_Karma18",
+        "DA_Lux18_Blossom"
+      ],
+      "en_name": "Florescer",
+      "unit_mapping_source": "data/units_gerado.json",
+      "unit_mapping_status": "mapped"
     },
     {
       "apiName": "DA_18_Brawler",
@@ -171,7 +207,7 @@
           "minUnits": 2,
           "style": 1,
           "variables": {
-            "{da2472a7}": 120.0,
+            "{da2472a7}": 120,
             "{f1ed73eb}": 0.25
           }
         },
@@ -180,7 +216,7 @@
           "minUnits": 4,
           "style": 3,
           "variables": {
-            "{da2472a7}": 120.0,
+            "{da2472a7}": 120,
             "{f1ed73eb}": 0.4000000059604645
           }
         },
@@ -189,13 +225,22 @@
           "minUnits": 6,
           "style": 5,
           "variables": {
-            "{da2472a7}": 120.0,
+            "{da2472a7}": 120,
             "{f1ed73eb}": 0.6499999761581421
           }
         }
       ],
-      "units": [],
-      "en_name": "Lutador"
+      "units": [
+        "DA_18_Alistar",
+        "DA_18_GnarSmall",
+        "DA_18_Kobuko",
+        "DA_18_RekSai",
+        "DA_18_Sett",
+        "DA_Krug18"
+      ],
+      "en_name": "Lutador",
+      "unit_mapping_source": "data/units_gerado.json",
+      "unit_mapping_status": "mapped"
     },
     {
       "apiName": "DA_18_Caustic",
@@ -208,13 +253,17 @@
           "minUnits": 1,
           "style": 4,
           "variables": {
-            "ShredDuration": 4.0,
-            "ShredPercent": 30.0
+            "ShredDuration": 4,
+            "ShredPercent": 30
           }
         }
       ],
-      "units": [],
-      "en_name": "Cáustico"
+      "units": [
+        "DA_KogMaw18_AD"
+      ],
+      "en_name": "Cáustico",
+      "unit_mapping_source": "data/units_gerado.json",
+      "unit_mapping_status": "mapped"
     },
     {
       "apiName": "DA_18_Coven",
@@ -227,9 +276,9 @@
           "minUnits": 3,
           "style": 1,
           "variables": {
-            "{7a9d7f0e}": 2.0,
-            "{d62ae6ae}": 40.0,
-            "{de46577b}": 22.0
+            "{7a9d7f0e}": 2,
+            "{d62ae6ae}": 40,
+            "{de46577b}": 22
           }
         },
         {
@@ -237,9 +286,9 @@
           "minUnits": 4,
           "style": 3,
           "variables": {
-            "{7a9d7f0e}": 2.0,
-            "{d62ae6ae}": 40.0,
-            "{de46577b}": 28.0
+            "{7a9d7f0e}": 2,
+            "{d62ae6ae}": 40,
+            "{de46577b}": 28
           }
         },
         {
@@ -247,9 +296,9 @@
           "minUnits": 5,
           "style": 3,
           "variables": {
-            "{7a9d7f0e}": 3.0,
-            "{d62ae6ae}": 40.0,
-            "{de46577b}": 35.0
+            "{7a9d7f0e}": 3,
+            "{d62ae6ae}": 40,
+            "{de46577b}": 35
           }
         },
         {
@@ -257,14 +306,23 @@
           "minUnits": 7,
           "style": 5,
           "variables": {
-            "{7a9d7f0e}": 10.0,
-            "{d62ae6ae}": 40.0,
-            "{de46577b}": 60.0
+            "{7a9d7f0e}": 10,
+            "{d62ae6ae}": 40,
+            "{de46577b}": 60
           }
         }
       ],
-      "units": [],
-      "en_name": "Congregação das Bruxas"
+      "units": [
+        "DA_18_Caitlyn",
+        "DA_18_Camille",
+        "DA_18_Cassiopeia",
+        "DA_18_Elise",
+        "DA_18_Lux_Coven",
+        "DA_18_Morgana"
+      ],
+      "en_name": "Congregação das Bruxas",
+      "unit_mapping_source": "data/units_gerado.json",
+      "unit_mapping_status": "mapped"
     },
     {
       "apiName": "DA_18_Defender",
@@ -277,8 +335,8 @@
           "minUnits": 2,
           "style": 1,
           "variables": {
-            "{0eb6405e}": 12.0,
-            "{8c16b281}": 25.0
+            "{0eb6405e}": 12,
+            "{8c16b281}": 25
           }
         },
         {
@@ -286,8 +344,8 @@
           "minUnits": 4,
           "style": 3,
           "variables": {
-            "{0eb6405e}": 12.0,
-            "{8c16b281}": 60.0
+            "{0eb6405e}": 12,
+            "{8c16b281}": 60
           }
         },
         {
@@ -295,13 +353,22 @@
           "minUnits": 6,
           "style": 5,
           "variables": {
-            "{0eb6405e}": 12.0,
-            "{8c16b281}": 115.0
+            "{0eb6405e}": 12,
+            "{8c16b281}": 115
           }
         }
       ],
-      "units": [],
-      "en_name": "Defendente"
+      "units": [
+        "DA_18_Leona",
+        "DA_18_Lillia",
+        "DA_18_Ornn",
+        "DA_18_Rammus",
+        "DA_18_Shen",
+        "DA_Fiddlesticks18"
+      ],
+      "en_name": "Defendente",
+      "unit_mapping_source": "data/units_gerado.json",
+      "unit_mapping_status": "mapped"
     },
     {
       "apiName": "DA_18_Eclipse",
@@ -314,13 +381,15 @@
           "minUnits": null,
           "style": 1,
           "variables": {
-            "DelaySeconds": 8.0,
+            "DelaySeconds": 8,
             "{53db05e8}": 3.5
           }
         }
       ],
       "units": [],
-      "en_name": "Eclipse"
+      "en_name": "Eclipse",
+      "unit_mapping_source": "data/units_gerado.json",
+      "unit_mapping_status": "unmapped_source_trait"
     },
     {
       "apiName": "DA_18_Elderwood",
@@ -344,7 +413,7 @@
           "variables": {
             "{0f90e7a4}": 0.25,
             "{4013f48e}": 0.10000000149011612,
-            "{b027c2f9}": 200.0
+            "{b027c2f9}": 200
           }
         },
         {
@@ -375,8 +444,19 @@
           }
         }
       ],
-      "units": [],
-      "en_name": "Sabugueiro"
+      "units": [
+        "DA_18_Alistar",
+        "DA_18_Ezreal",
+        "DA_18_GnarSmall",
+        "DA_18_Hecarim",
+        "DA_18_LeBlanc",
+        "DA_18_Lux_Elderwood",
+        "DA_18_Ornn",
+        "DA_18_Xayah"
+      ],
+      "en_name": "Sabugueiro",
+      "unit_mapping_source": "data/units_gerado.json",
+      "unit_mapping_status": "mapped"
     },
     {
       "apiName": "DA_18_Executioner",
@@ -397,7 +477,7 @@
           "minUnits": 3,
           "style": 3,
           "variables": {
-            "BleedDuration": 3.0,
+            "BleedDuration": 3,
             "{2c61751d}": 0.25
           }
         },
@@ -410,8 +490,16 @@
           }
         }
       ],
-      "units": [],
-      "en_name": "Carrasco"
+      "units": [
+        "DA_18_Azir",
+        "DA_18_Ezreal",
+        "DA_18_Kennen",
+        "DA_18_Soraka",
+        "DA_18_Yunara"
+      ],
+      "en_name": "Carrasco",
+      "unit_mapping_source": "data/units_gerado.json",
+      "unit_mapping_status": "mapped"
     },
     {
       "apiName": "DA_18_Fae",
@@ -425,7 +513,7 @@
           "style": 1,
           "variables": {
             "ADAP": 4.5,
-            "Heal": 3.0,
+            "Heal": 3,
             "HealThreshold": 0.5
           }
         },
@@ -434,14 +522,22 @@
           "minUnits": 4,
           "style": 5,
           "variables": {
-            "ADAP": 7.0,
-            "Heal": 5.0,
+            "ADAP": 7,
+            "Heal": 5,
             "HealThreshold": 0.5
           }
         }
       ],
-      "units": [],
-      "en_name": "Feérico"
+      "units": [
+        "DA_18_Lillia",
+        "DA_18_Lux_Fae",
+        "DA_18_Rakan",
+        "DA_18_Tristana",
+        "DA_18_Xayah"
+      ],
+      "en_name": "Feérico",
+      "unit_mapping_source": "data/units_gerado.json",
+      "unit_mapping_status": "mapped"
     },
     {
       "apiName": "DA_18_Greenfather",
@@ -454,14 +550,18 @@
           "minUnits": 1,
           "style": 4,
           "variables": {
-            "{5f537bd3}": 1.0,
-            "{5fea9917}": 3.0,
-            "{b133da98}": 5.0
+            "{5f537bd3}": 1,
+            "{5fea9917}": 3,
+            "{b133da98}": 5
           }
         }
       ],
-      "units": [],
-      "en_name": "Pai do Verde"
+      "units": [
+        "DA_18_Ivern"
+      ],
+      "en_name": "Pai do Verde",
+      "unit_mapping_source": "data/units_gerado.json",
+      "unit_mapping_status": "mapped"
     },
     {
       "apiName": "DA_18_Hunter",
@@ -476,7 +576,7 @@
           "variables": {
             "DamageAmp": 0.10000000149011612,
             "{641254b6}": 0.20000000298023224,
-            "{83011ee7}": 3.0
+            "{83011ee7}": 3
           }
         },
         {
@@ -486,7 +586,7 @@
           "variables": {
             "DamageAmp": 0.10000000149011612,
             "{641254b6}": 0.30000001192092896,
-            "{83011ee7}": 3.0
+            "{83011ee7}": 3
           }
         },
         {
@@ -496,7 +596,7 @@
           "variables": {
             "DamageAmp": 0.10000000149011612,
             "{641254b6}": 0.44999998807907104,
-            "{83011ee7}": 3.0
+            "{83011ee7}": 3
           }
         },
         {
@@ -506,12 +606,20 @@
           "variables": {
             "DamageAmp": 0.10000000149011612,
             "{641254b6}": 0.6000000238418579,
-            "{83011ee7}": 3.0
+            "{83011ee7}": 3
           }
         }
       ],
-      "units": [],
-      "en_name": "Caçador"
+      "units": [
+        "DA_18_Ashe",
+        "DA_18_Caitlyn",
+        "DA_18_Sivir",
+        "DA_18_Tristana",
+        "DA_Cinderling18"
+      ],
+      "en_name": "Caçador",
+      "unit_mapping_source": "data/units_gerado.json",
+      "unit_mapping_status": "mapped"
     },
     {
       "apiName": "DA_18_Inferno",
@@ -524,9 +632,9 @@
           "minUnits": 2,
           "style": 1,
           "variables": {
-            "Duration": 3.0,
-            "WoundPercent": 33.0,
-            "{2c202877}": 1.0
+            "Duration": 3,
+            "WoundPercent": 33,
+            "{2c202877}": 1
           }
         },
         {
@@ -534,8 +642,8 @@
           "minUnits": 3,
           "style": 3,
           "variables": {
-            "Duration": 3.0,
-            "{c4c70a4e}": 1.0
+            "Duration": 3,
+            "{c4c70a4e}": 1
           }
         },
         {
@@ -543,9 +651,9 @@
           "minUnits": 5,
           "style": 5,
           "variables": {
-            "Duration": 3.0,
-            "{2c202877}": 3.0,
-            "{c4c70a4e}": 2.0
+            "Duration": 3,
+            "{2c202877}": 3,
+            "{c4c70a4e}": 2
           }
         },
         {
@@ -553,14 +661,23 @@
           "minUnits": 7,
           "style": 5,
           "variables": {
-            "Duration": 3.0,
-            "{2c202877}": 4.0,
-            "{c4c70a4e}": 4.0
+            "Duration": 3,
+            "{2c202877}": 4,
+            "{c4c70a4e}": 4
           }
         }
       ],
-      "units": [],
-      "en_name": "Inferno"
+      "units": [
+        "DA_18_Akali_AD",
+        "DA_18_Kennen",
+        "DA_18_Lux_Inferno",
+        "DA_18_Shen",
+        "DA_18_Varus",
+        "DA_Amumu18"
+      ],
+      "en_name": "Inferno",
+      "unit_mapping_source": "data/units_gerado.json",
+      "unit_mapping_status": "mapped"
     },
     {
       "apiName": "DA_18_Invoker",
@@ -573,8 +690,8 @@
           "minUnits": 2,
           "style": 1,
           "variables": {
-            "TeamManaRegen": 1.0,
-            "{de27cb95}": 3.0
+            "TeamManaRegen": 1,
+            "{de27cb95}": 3
           }
         },
         {
@@ -582,8 +699,8 @@
           "minUnits": 3,
           "style": 3,
           "variables": {
-            "TeamManaRegen": 1.0,
-            "{de27cb95}": 4.0
+            "TeamManaRegen": 1,
+            "{de27cb95}": 4
           }
         },
         {
@@ -591,8 +708,8 @@
           "minUnits": 4,
           "style": 3,
           "variables": {
-            "TeamManaRegen": 2.0,
-            "{de27cb95}": 6.0
+            "TeamManaRegen": 2,
+            "{de27cb95}": 6
           }
         },
         {
@@ -600,13 +717,21 @@
           "minUnits": 5,
           "style": 5,
           "variables": {
-            "TeamManaRegen": 2.0,
-            "{de27cb95}": 8.0
+            "TeamManaRegen": 2,
+            "{de27cb95}": 8
           }
         }
       ],
-      "units": [],
-      "en_name": "Emanador"
+      "units": [
+        "DA_18_Morgana",
+        "DA_18_Sentry",
+        "DA_18_Teemo",
+        "DA_KogMaw18_AD",
+        "DA_Sentinel18"
+      ],
+      "en_name": "Emanador",
+      "unit_mapping_source": "data/units_gerado.json",
+      "unit_mapping_status": "mapped"
     },
     {
       "apiName": "DA_18_Lunar",
@@ -621,7 +746,7 @@
           "variables": {
             "AbilityPower": 0.07000000029802322,
             "AttackSpeed": 0.0700000524520874,
-            "{6d27fbd4}": 1.0
+            "{6d27fbd4}": 1
           }
         },
         {
@@ -631,7 +756,7 @@
           "variables": {
             "AbilityPower": 0.11999999731779099,
             "AttackSpeed": 0.10000002384185791,
-            "{6d27fbd4}": 1.0
+            "{6d27fbd4}": 1
           }
         },
         {
@@ -641,7 +766,7 @@
           "variables": {
             "AbilityPower": 0.1599999964237213,
             "AttackSpeed": 0.13999998569488525,
-            "{6d27fbd4}": 1.0
+            "{6d27fbd4}": 1
           }
         },
         {
@@ -651,12 +776,19 @@
           "variables": {
             "AbilityPower": 0.20000000298023224,
             "AttackSpeed": 0.1799999475479126,
-            "{6d27fbd4}": 1.0
+            "{6d27fbd4}": 1
           }
         }
       ],
-      "units": [],
-      "en_name": "Lunar"
+      "units": [
+        "DA_18_Alune",
+        "DA_18_Aphelios",
+        "DA_18_Diana",
+        "DA_18_Lux_Moonbeam"
+      ],
+      "en_name": "Lunar",
+      "unit_mapping_source": "data/units_gerado.json",
+      "unit_mapping_status": "mapped"
     },
     {
       "apiName": "DA_18_LuxUniqueTrait",
@@ -671,8 +803,21 @@
           "variables": {}
         }
       ],
-      "units": [],
-      "en_name": "Avatar"
+      "units": [
+        "DA_18_Lux_Coven",
+        "DA_18_Lux_Elderwood",
+        "DA_18_Lux_Fae",
+        "DA_18_Lux_Inferno",
+        "DA_18_Lux_Moonbeam",
+        "DA_18_Lux_Primal",
+        "DA_18_Lux_Sunbeam",
+        "DA_Lux18_Base",
+        "DA_Lux18_Blackthorn",
+        "DA_Lux18_Blossom"
+      ],
+      "en_name": "Avatar",
+      "unit_mapping_source": "data/units_gerado.json",
+      "unit_mapping_status": "mapped"
     },
     {
       "apiName": "DA_18_Maokai_UniqueTrait",
@@ -685,13 +830,17 @@
           "minUnits": 1,
           "style": 4,
           "variables": {
-            "{36e69059}": 30.0,
-            "{56607148}": 3.0
+            "{36e69059}": 30,
+            "{56607148}": 3
           }
         }
       ],
-      "units": [],
-      "en_name": "Crescimento Antigo"
+      "units": [
+        "DA_18_Maokai"
+      ],
+      "en_name": "Crescimento Antigo",
+      "unit_mapping_source": "data/units_gerado.json",
+      "unit_mapping_status": "mapped"
     },
     {
       "apiName": "DA_18_Rapidfire",
@@ -705,7 +854,7 @@
           "style": 1,
           "variables": {
             "ASperAttack": 0.029999971389770508,
-            "MaxStacks": 10.0,
+            "MaxStacks": 10,
             "{1d98dcec}": 0.10000002384185791
           }
         },
@@ -715,7 +864,7 @@
           "style": 3,
           "variables": {
             "ASperAttack": 0.04999995231628418,
-            "MaxStacks": 10.0,
+            "MaxStacks": 10,
             "{1d98dcec}": 0.10000002384185791
           }
         },
@@ -725,7 +874,7 @@
           "style": 3,
           "variables": {
             "ASperAttack": 0.0700000524520874,
-            "MaxStacks": 10.0,
+            "MaxStacks": 10,
             "{1d98dcec}": 0.10000002384185791
           }
         },
@@ -735,13 +884,21 @@
           "style": 5,
           "variables": {
             "ASperAttack": 0.10000002384185791,
-            "MaxStacks": 10.0,
+            "MaxStacks": 10,
             "{1d98dcec}": 0.10000002384185791
           }
         }
       ],
-      "units": [],
-      "en_name": "Fumegante"
+      "units": [
+        "DA_18_Aphelios",
+        "DA_18_Kayle",
+        "DA_18_Varus",
+        "DA_18_Xayah",
+        "DA_CrimsonRaptor18"
+      ],
+      "en_name": "Fumegante",
+      "unit_mapping_source": "data/units_gerado.json",
+      "unit_mapping_status": "mapped"
     },
     {
       "apiName": "DA_18_Rival",
@@ -760,12 +917,12 @@
           "minUnits": 1,
           "style": 1,
           "variables": {
-            "{1b5b0a96}": 2.0,
-            "{3bcd79f5}": 30.0,
-            "{740d1888}": 5.0,
-            "{750d1a1b}": 3.0,
+            "{1b5b0a96}": 2,
+            "{3bcd79f5}": 30,
+            "{740d1888}": 5,
+            "{750d1a1b}": 3,
             "{a1ab72d6}": 0.05000000074505806,
-            "{a6d81c50}": 8.0,
+            "{a6d81c50}": 8,
             "{f1f3dbfc}": 0.0020000000949949026
           }
         },
@@ -776,8 +933,13 @@
           "variables": {}
         }
       ],
-      "units": [],
-      "en_name": "Rival"
+      "units": [
+        "DA_18_KhaZix",
+        "DA_18_Rengar"
+      ],
+      "en_name": "Rival",
+      "unit_mapping_source": "data/units_gerado.json",
+      "unit_mapping_status": "mapped"
     },
     {
       "apiName": "DA_18_Slayer",
@@ -816,8 +978,17 @@
           }
         }
       ],
-      "units": [],
-      "en_name": "Devastador"
+      "units": [
+        "DA_18_Akali_AD",
+        "DA_18_Camille",
+        "DA_18_Diana",
+        "DA_18_Warwick",
+        "DA_Brambleback18",
+        "DA_Murkwolf18"
+      ],
+      "en_name": "Devastador",
+      "unit_mapping_source": "data/units_gerado.json",
+      "unit_mapping_status": "mapped"
     },
     {
       "apiName": "DA_18_Solar",
@@ -832,19 +1003,26 @@
           "variables": {
             "BonusMagicDamage": 0.07999999821186066,
             "ShieldRatio": 0.05000000074505806,
-            "{092e2b2b}": 3.0,
-            "{0a2e2cbe}": 5.0,
-            "{0b2e2e51}": 8.0,
+            "{092e2b2b}": 3,
+            "{0a2e2cbe}": 5,
+            "{0b2e2e51}": 8,
             "{5cfe766f}": 0.4000000059604645,
             "{617a160e}": 0.1499999761581421,
-            "{7e77da03}": 12.0,
+            "{7e77da03}": 12,
             "{a51b2ace}": 0.009999999776482582,
-            "{d91f7c21}": 4.0
+            "{d91f7c21}": 4
           }
         }
       ],
-      "units": [],
-      "en_name": "Solar"
+      "units": [
+        "DA_18_Kayle",
+        "DA_18_Leona",
+        "DA_18_Lux_Sunbeam",
+        "DA_18_Sejuani"
+      ],
+      "en_name": "Solar",
+      "unit_mapping_source": "data/units_gerado.json",
+      "unit_mapping_status": "mapped"
     },
     {
       "apiName": "DA_18_Spellweaver",
@@ -883,8 +1061,18 @@
           }
         }
       ],
-      "units": [],
-      "en_name": "Enfeitiçador"
+      "units": [
+        "DA_18_Ahri",
+        "DA_18_Alune",
+        "DA_18_Cassiopeia",
+        "DA_18_LeBlanc",
+        "DA_18_Veigar",
+        "DA_Fiddlesticks18",
+        "DA_Karma18"
+      ],
+      "en_name": "Enfeitiçador",
+      "unit_mapping_source": "data/units_gerado.json",
+      "unit_mapping_status": "mapped"
     },
     {
       "apiName": "DA_18_Sprykin",
@@ -918,12 +1106,21 @@
           "variables": {
             "AttackSpeedIncrease": 0.5499999523162842,
             "HealthIncrease": 0.5499999523162842,
-            "{aa3fad66}": 1.0
+            "{aa3fad66}": 1
           }
         }
       ],
-      "units": [],
-      "en_name": "Vivaz"
+      "units": [
+        "DA_18_GnarSmall",
+        "DA_18_Kobuko",
+        "DA_18_Rammus",
+        "DA_18_Teemo",
+        "DA_18_Tristana",
+        "DA_18_Veigar"
+      ],
+      "en_name": "Vivaz",
+      "unit_mapping_source": "data/units_gerado.json",
+      "unit_mapping_status": "mapped"
     },
     {
       "apiName": "DA_18_Summoner",
@@ -937,7 +1134,7 @@
           "style": 1,
           "variables": {
             "DamageMult": 0.4500000476837158,
-            "{1cb64e3c}": 4.0,
+            "{1cb64e3c}": 4,
             "{5311f791}": 0.2999999523162842,
             "{6bba9a92}": 0.20000004768371582
           }
@@ -948,14 +1145,21 @@
           "style": 5,
           "variables": {
             "DamageMult": 0.4500000476837158,
-            "{1cb64e3c}": 4.0,
+            "{1cb64e3c}": 4,
             "{5311f791}": 0.2999999523162842,
             "{6bba9a92}": 0.20000004768371582
           }
         }
       ],
-      "units": [],
-      "en_name": "Invocador"
+      "units": [
+        "DA_18_Azir",
+        "DA_18_Yorick",
+        "DA_18_Zyra",
+        "DA_CrimsonRaptor18"
+      ],
+      "en_name": "Invocador",
+      "unit_mapping_source": "data/units_gerado.json",
+      "unit_mapping_status": "mapped"
     },
     {
       "apiName": "DA_18_Vanguard",
@@ -970,7 +1174,7 @@
           "variables": {
             "HealthThreshold": 0.5,
             "MaxHealthShield": 0.18000000715255737,
-            "ShieldDuration": 10.0
+            "ShieldDuration": 10
           }
         },
         {
@@ -980,7 +1184,7 @@
           "variables": {
             "HealthThreshold": 0.5,
             "MaxHealthShield": 0.30000001192092896,
-            "ShieldDuration": 10.0
+            "ShieldDuration": 10
           }
         },
         {
@@ -990,13 +1194,22 @@
           "variables": {
             "HealthThreshold": 0.5,
             "MaxHealthShield": 0.4000000059604645,
-            "ShieldDuration": 10.0,
+            "ShieldDuration": 10,
             "{b58e0b6e}": 0.050000011920928955
           }
         }
       ],
-      "units": [],
-      "en_name": "Vanguarda"
+      "units": [
+        "DA_18_Diana",
+        "DA_18_Elise",
+        "DA_18_Hecarim",
+        "DA_18_Rakan",
+        "DA_Sentinel18",
+        "DA_Taric18"
+      ],
+      "en_name": "Vanguarda",
+      "unit_mapping_source": "data/units_gerado.json",
+      "unit_mapping_status": "mapped"
     },
     {
       "apiName": "DA_18_ZyraUniqueTrait",
@@ -1010,13 +1223,17 @@
           "style": 4,
           "variables": {
             "BaseDurability": 0.050000011920928955,
-            "{7c65d9f5}": 6.0,
+            "{7c65d9f5}": 6,
             "{8e1b920c}": 0.10000002384185791
           }
         }
       ],
-      "units": [],
-      "en_name": "Dama de Espinhos"
+      "units": [
+        "DA_18_Zyra"
+      ],
+      "en_name": "Dama de Espinhos",
+      "unit_mapping_source": "data/units_gerado.json",
+      "unit_mapping_status": "mapped"
     },
     {
       "apiName": "DA_AluneUniqueTrait18",
@@ -1034,8 +1251,12 @@
           }
         }
       ],
-      "units": [],
-      "en_name": "Comunhão"
+      "units": [
+        "DA_18_Alune"
+      ],
+      "en_name": "Comunhão",
+      "unit_mapping_source": "data/units_gerado.json",
+      "unit_mapping_status": "mapped"
     },
     {
       "apiName": "DA_DravenUniqueTrait18",
@@ -1050,8 +1271,12 @@
           "variables": {}
         }
       ],
-      "units": [],
-      "en_name": "Caça-recompensas"
+      "units": [
+        "DA_Draven18"
+      ],
+      "en_name": "Caça-recompensas",
+      "unit_mapping_source": "data/units_gerado.json",
+      "unit_mapping_status": "mapped"
     },
     {
       "apiName": "DA_Emerald18",
@@ -1066,8 +1291,12 @@
           "variables": {}
         }
       ],
-      "units": [],
-      "en_name": "Aspecto Esmeralda"
+      "units": [
+        "DA_Taric18"
+      ],
+      "en_name": "Aspecto Esmeralda",
+      "unit_mapping_source": "data/units_gerado.json",
+      "unit_mapping_status": "mapped"
     },
     {
       "apiName": "DA_FloraFatalis18",
@@ -1080,7 +1309,7 @@
           "minUnits": 1,
           "style": 1,
           "variables": {
-            "Mana": 10.0
+            "Mana": 10
           }
         },
         {
@@ -1092,8 +1321,13 @@
           }
         }
       ],
-      "units": [],
-      "en_name": "Flora Fatalis"
+      "units": [
+        "DA_18_Soraka",
+        "DA_Fiddlesticks18"
+      ],
+      "en_name": "Flora Fatalis",
+      "unit_mapping_source": "data/units_gerado.json",
+      "unit_mapping_status": "mapped"
     },
     {
       "apiName": "DA_Juggernaut18",
@@ -1129,8 +1363,18 @@
           }
         }
       ],
-      "units": [],
-      "en_name": "Colosso"
+      "units": [
+        "DA_18_Maokai",
+        "DA_18_Rakan",
+        "DA_18_Sejuani",
+        "DA_18_Yorick",
+        "DA_Amumu18",
+        "DA_Scuttlecrab18",
+        "DA_Vi18"
+      ],
+      "en_name": "Colosso",
+      "unit_mapping_source": "data/units_gerado.json",
+      "unit_mapping_status": "mapped"
     },
     {
       "apiName": "DA_Primal18",
@@ -1151,8 +1395,15 @@
           "variables": {}
         }
       ],
-      "units": [],
-      "en_name": "Primordial"
+      "units": [
+        "DA_18_Lux_Primal",
+        "DA_18_Sivir",
+        "DA_Nidalee18_AP",
+        "DA_Vi18"
+      ],
+      "en_name": "Primordial",
+      "unit_mapping_source": "data/units_gerado.json",
+      "unit_mapping_status": "mapped"
     },
     {
       "apiName": "DA_Riftbeast18",
@@ -1171,7 +1422,7 @@
           "minUnits": 5,
           "style": 3,
           "variables": {
-            "{e8d16db1}": 3.0
+            "{e8d16db1}": 3
           }
         },
         {
@@ -1180,12 +1431,12 @@
           "style": 5,
           "variables": {
             "{0776b071}": 0.05999999865889549,
-            "{08cfb22e}": 50.0,
-            "{0d6c2c87}": 5.0,
+            "{08cfb22e}": 50,
+            "{0d6c2c87}": 5,
             "{1b76cfed}": 0.05999999865889549,
-            "{3230276c}": 1.0,
+            "{3230276c}": 1,
             "{4e1998f4}": 0.059999942779541016,
-            "{a8c6eeaf}": 5.0
+            "{a8c6eeaf}": 5
           }
         },
         {
@@ -1193,12 +1444,25 @@
           "minUnits": 10,
           "style": 5,
           "variables": {
-            "TeamSize": 2.0
+            "TeamSize": 2
           }
         }
       ],
-      "units": [],
-      "en_name": "Fera do Rift"
+      "units": [
+        "DA_18_ElderDragon",
+        "DA_18_Sentry",
+        "DA_Brambleback18",
+        "DA_Cinderling18",
+        "DA_CrimsonRaptor18",
+        "DA_Gromp18_AP",
+        "DA_Krug18",
+        "DA_Murkwolf18",
+        "DA_Scuttlecrab18",
+        "DA_Sentinel18"
+      ],
+      "en_name": "Fera do Rift",
+      "unit_mapping_source": "data/units_gerado.json",
+      "unit_mapping_status": "mapped"
     }
   ]
 }
