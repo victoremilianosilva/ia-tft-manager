@@ -1324,6 +1324,7 @@ class Trainer:
             wrapper_profile_totals = {}
             wrapper_profile_counts = {}
             wrapper_profile_per_lobby = {}
+            vector_batch_profile_totals = {}
             wrapper_profile_calls = 0
             profile_memory_enabled = os.environ.get("TFT_PROFILE_MEMORY") == "1"
             profile_memory_rss_start = None
@@ -1644,6 +1645,12 @@ class Trainer:
                 # Aggregate per-lobby wrapper/native timings without changing
                 # the transition payload or synchronizing the training device.
                 for lobby_index, lobby_info in enumerate(infos):
+                    batch_profile = lobby_info.get("vector_batch_performance_profile", {})
+                    if isinstance(batch_profile, dict):
+                        for batch_stage, elapsed_ms in batch_profile.items():
+                            vector_batch_profile_totals[batch_stage] = (
+                                vector_batch_profile_totals.get(batch_stage, 0.0) + float(elapsed_ms)
+                            )
                     stage_profile = lobby_info.get("performance_profile", {})
                     vector_profile = lobby_info.get("vector_performance_profile", {})
                     combined_profile = {}
@@ -2189,6 +2196,8 @@ class Trainer:
                             )
                 for count_name, count_value in wrapper_profile_counts.items():
                     self.writer.add_scalar(f"performance/counts/{count_name}", count_value, update)
+                for batch_stage, elapsed_total_ms in vector_batch_profile_totals.items():
+                    self.writer.add_scalar(f"performance/vector_batch/{batch_stage}", elapsed_total_ms, update)
             if profile_memory_enabled:
                 memory_current, memory_peak = tracemalloc.get_traced_memory()
                 self.writer.add_scalar("performance/memory/python_current_bytes", memory_current, update)
