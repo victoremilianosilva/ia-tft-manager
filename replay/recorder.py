@@ -180,9 +180,13 @@ def load_replay(path: str | Path, *, require_complete: bool = False) -> dict[str
             if record.get("previous_record_sha256") != (previous_hash or None):
                 raise ReplayIntegrityError(f"Broken replay hash link at line {line_number}")
             supplied_hash = record.get("record_sha256")
-            body = {key: value for key, value in record.items() if key != "record_sha256"}
+            marker = ',\\\"record_sha256\\\":'
+            marker_index = line.rstrip("\\r\\n").rfind(marker)
+            if marker_index < 0 or marker_index + len(marker) >= len(line):
+                raise ReplayIntegrityError(f"Missing terminal record hash at line {line_number}")
+            body_json = line.rstrip("\\r\\n")[:marker_index] + "}"
             expected_hash = hashlib.sha256(
-                (previous_hash + _canonical(body)).encode("utf-8")
+                (previous_hash + body_json).encode("utf-8")
             ).hexdigest()
             if supplied_hash != expected_hash:
                 raise ReplayIntegrityError(f"Replay hash mismatch at line {line_number}")
