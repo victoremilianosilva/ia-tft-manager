@@ -3586,26 +3586,27 @@ struct TFTEngine::Impl {
             } catch (const std::exception& error) {
                 strategic_refresh_failure_reasons[i] =
                     std::string("composition_intelligence_refresh_exception: ") + error.what();
-                nlohmann::json failed = {
-                    {"schema_version", 1},
-                    {"sequence", ++composition_intelligence_sequence},
-                    {"round", static_cast<std::uint32_t>(current_round)},
-                    {"composition_id", ""},
-                    {"composition_version", 0},
-                    {"stale", true},
-                    {"stale_reason", std::string("native_strategic_runtime_exception: ") + error.what()},
-                    {"player_id", static_cast<std::int32_t>(i)},
-                    {"diagnostics", {{"runtime_error", error.what()}}},
-                    {"catalog_diagnostics", composition_intelligence_catalog_diagnostics}
-                };
                 auto& failed_runtime = composition_intelligence_players[i];
                 failed_runtime.planner_outputs_valid = false;
-                if (composition_diagnostics_debug) failed_if (composition_diagnostics_debug) runtime.mark_stage("runtime", "failed", error.what());
+                if (composition_diagnostics_debug)
+                    failed_runtime.mark_stage("runtime", "failed", error.what());
                 if (composition_diagnostics_enabled) {
-                    failed["sequence"] = composition_intelligence_sequence + 1;
+                    nlohmann::json failed = {
+                        {"schema_version", 1},
+                        {"sequence", composition_intelligence_sequence + 1},
+                        {"round", static_cast<std::uint32_t>(current_round)},
+                        {"composition_id", ""},
+                        {"composition_version", 0},
+                        {"stale", true},
+                        {"stale_reason", std::string("native_strategic_runtime_exception: ") + error.what()},
+                        {"player_id", static_cast<std::int32_t>(i)},
+                        {"diagnostics", {{"runtime_error", error.what()}}},
+                        {"catalog_diagnostics", composition_intelligence_catalog_diagnostics}
+                    };
                     if (failed_runtime.append_snapshot(std::move(failed)))
                         ++composition_intelligence_sequence;
                 }
+            }
             }
             }
 
