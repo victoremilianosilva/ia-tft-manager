@@ -19,6 +19,7 @@ from semantic_observation import (
     validate_semantic_state_checkpoint_integrity,
     validate_semantic_state_warm_start_migration,
     validate_semantic_batch_alignment,
+    semantic_batch_matches_snapshot_rows,
 )
 
 
@@ -661,3 +662,28 @@ def test_semantic_batch_reuses_precomputed_v8_contract(monkeypatch):
     batch = build_semantic_batch([_metadata()], catalog, contract=contract)
     assert batch["contract_id"] == contract["contract"]["contract_id"]
     assert batch["contract_hash"] == contract["sha256"]
+
+
+
+def test_semantic_projection_cache_requires_exact_native_snapshot_revision():
+    catalog = {"TFT_TestChampion": 17}
+    contract = build_semantic_state_checkpoint_contract(catalog)
+    row = _metadata()
+    batch = build_semantic_batch([row], catalog, contract=contract)
+    assert semantic_batch_matches_snapshot_rows(batch, [row], contract)
+
+    for field, changed in (
+        ("engine_instance_id", "engine-other"),
+        ("episode_id", 6),
+        ("decision_sequence", 12),
+        ("player_decision_sequence", 8),
+        ("player_id", 3),
+        ("round", 13),
+        ("lobby_index", 1),
+        ("native_state_contract_version", 5),
+    ):
+        altered = dict(row, **{field: changed})
+        assert not semantic_batch_matches_snapshot_rows(batch, [altered], contract), field
+
+    stale_contract = dict(contract, sha256="0" * 64)
+    assert not semantic_batch_matches_snapshot_rows(batch, [row], stale_contract)
