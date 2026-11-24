@@ -622,3 +622,42 @@ def test_semantic_v8_checkpoint_weight_contract_requires_trait_embedding():
     assert semantic_policy_state_keys(incomplete) != SEMANTIC_POLICY_STATE_KEYS
     with pytest.raises(ValueError, match="Semantic v8 policy weights are incomplete"):
         validate_semantic_policy_state_dict(incomplete)
+
+
+
+def test_semantic_alignment_can_validate_binding_without_reprojecting(monkeypatch):
+    import semantic_observation
+
+    catalog = {"TFT_TestChampion": 17}
+    row = _metadata()
+    contract = build_semantic_state_checkpoint_contract(catalog)
+    batch = build_semantic_batch([row], catalog, contract=contract)
+    row["semantic_projection_hash"] = batch["hashes"][0]
+    row["semantic_projection_contract_id"] = batch["contract_id"]
+    row["semantic_projection_contract_hash"] = batch["contract_hash"]
+
+    def unexpected_projection(*args, **kwargs):
+        raise AssertionError("alignment validation must not rebuild an existing projection")
+
+    monkeypatch.setattr(semantic_observation, "project_native_player_state", unexpected_projection)
+    validate_semantic_batch_alignment(
+        batch, [row], contract, catalog, reproject=False, verify_catalog=False
+    )
+
+
+def test_semantic_batch_reuses_precomputed_v8_contract(monkeypatch):
+    import semantic_observation
+
+    catalog = {"TFT_TestChampion": 17}
+    contract = build_semantic_state_checkpoint_contract(catalog)
+
+    def unexpected_contract_build(*args, **kwargs):
+        raise AssertionError("precomputed contract should be reused")
+
+    monkeypatch.setattr(
+        semantic_observation, "build_semantic_state_checkpoint_contract",
+        unexpected_contract_build,
+    )
+    batch = build_semantic_batch([_metadata()], catalog, contract=contract)
+    assert batch["contract_id"] == contract["contract"]["contract_id"]
+    assert batch["contract_hash"] == contract["sha256"]
