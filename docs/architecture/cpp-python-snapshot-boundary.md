@@ -4,9 +4,10 @@ Status: contract for the native lobby training path (binding v1 / native-state s
 
 ## Ownership and lifecycle
 
-1. `TFTEngine::reset/step` creates a value-owned native result. The binding converts that result into Python-owned objects; no NumPy view points into a C++ buffer.
-2. `reset_to_dict` / `step_to_dict` are the sole producers of the Python result envelope. Each NumPy array and each nested dict/list is newly materialized for that result.
-3. `CppTFTLobbyWrapper` validates the native snapshot envelope and its identity before retaining it. After validation, it retains the Python-owned snapshot by reference; it does not deep-copy it.
+1. `TFTEngine::reset/step` creates a value-owned native result. The binding moves its `AuditSnapshot` into a `shared_ptr<const AuditSnapshot>` pinned to that exact engine/episode/decision sequence; no later Engine read is involved.
+2. `reset_to_dict` / `step_to_dict` publish a `NativeAuditSnapshotHandle`, not an eagerly expanded tree. The handle owns the immutable native value and materializes the normal snapshot mapping only when Python consumers first read it.
+3. Combat damage/attack/death event lists are separate lazy fields. Their sequence bounds are validated against the pinned parent `combat_sequence` in C++; Python dictionaries are allocated only if a consumer asks for those fields. The full `get_audit_snapshot()` API still returns the complete eager dictionary.
+4. `CppTFTLobbyWrapper` validates the base snapshot contract and identity through a `Mapping` view. `deepcopy` creates an independent Python materialization cache over the same immutable native value, preserving public mutation isolation without copying native event vectors or materializing unused event rows.
 4. The wrapper's current snapshot and masks belong to one observation/decision. At step entry, the previous snapshot is held in a local reference as the source decision; the current cache is invalidated before calling C++.
 5. The new result is validated and published as the next decision snapshot. The prior source snapshot remains alive until reward audit and outcome attribution finish.
 6. Public mask reads detach NumPy arrays. Public metadata reads remain defensive deep copies because callers are allowed to mutate their returned dictionaries.
@@ -36,12 +37,14 @@ Status: contract for the native lobby training path (binding v1 / native-state s
 - Removed: copying native mask arrays when normalizing into the wrapper's private cache. The binding creates owned arrays; the public getter still detaches them.
 - Removed: deep-copying the previous decision snapshot at the start of a step. A local reference preserves its lifetime while the cache is replaced.
 - Retained intentionally: `info["decision_snapshot"]` is a defensive snapshot copy, and `get_snapshot_metadata()` returns a defensive copy. Both cross a mutable public Python boundary; aliasing the wrapper's private snapshot would allow a caller to corrupt the next transition's source facts.
-- Retained intentionally: C++ → Python conversion of the full native-state snapshot. This payload is not merely diagnostic: semantic PPO consumes strategic, board, unit, item, trait, economy and pool state; outcome attribution compares pre/post player and inventory facts; reward audit requires paired snapshot identity. Omitting it from the normal path would break training semantics or require a separately synchronized second native read.
+- Optimized: the exact full native snapshot remains available, but high-volume combat event rows are no longer eagerly converted on every reset/step. Strategic, board, unit, item, trait, economy, pool, economy-resolution and PvP-credit data remain in the normal mapping because PPO projection and reward/outcome attribution consume them. Combat event rows are converted on demand from the pinned immutable snapshot; no second Engine read can drift to another sequence.
 - Retained intentionally: conversion of reward components, action traces, masks and player info; each has an active training/audit consumer.
 
-## Why detailed snapshot materialization is not yet optional
+## Safe separation of training and audit materialization
 
-A split into a minimal training payload and an optional audit payload is not safe merely by classifying the entire snapshot as “audit”. The same v6 payload currently feeds semantic PPO projection and factual action-outcome/reward auditing. A lazy second read from the engine would also be incorrect unless the native API pins the exact result snapshot: after another step it could return a different decision sequence. Any future split must introduce an immutable, sequence-bound native snapshot handle (or equivalent value) and prove exact parity for semantic tensors, action outcomes, rewards and rollout identity before changing the default path.
+The binding now introduces the required immutable, sequence-bound native snapshot handle. It moves the `AuditSnapshot` value out of `ResetResult`/`StepResult` into shared immutable ownership. The Python mapping lazily converts combat damage/attack/death event collections, which are not consumed by the PPO semantic projection, action outcome attribution or reward ledger. Accessing any of those keys still returns the same list-of-dicts schema and exact events as before. The complete observer-facing `get_audit_snapshot()` remains eager and unchanged.
+
+The strategic/player/economy portions remain materialized because they are semantically active. This is a safe first split: defer fields with no hot-path consumer while preserving the full snapshot contract and exact transition identity. A more aggressive field-level split must be based on measured consumer coverage and retain the same pinned-snapshot semantics.
 
 ## Required invariants
 
