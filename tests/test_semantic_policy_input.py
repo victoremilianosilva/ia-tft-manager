@@ -711,3 +711,43 @@ def test_repeated_projection_reference_preserves_policy_outputs_and_ppo_loss(mon
         torch.testing.assert_close(before, after, atol=1e-7, rtol=1e-7)
     for before, after in zip(optimized_loss, repeated_loss):
         torch.testing.assert_close(before, after, atol=1e-7, rtol=1e-7)
+
+
+
+def test_ppo_replay_reuses_one_semantic_entity_projection(monkeypatch):
+    obs, masks, semantic = _batch(batch_size=1)
+    policy = TFTPolicy(
+        obs_dim=obs.shape[-1],
+        action_dims=list(ACTION_DIMS),
+        hidden_size=32,
+        semantic_vocab_size=64,
+    ).eval()
+
+    actions = torch.tensor([[6, 0, 0, 0, 0, 0]], dtype=torch.long)
+    calls = []
+    original = policy._semantic_entity_features
+
+    def counted_projection(state, observation):
+        calls.append(1)
+        return original(state, observation)
+
+    monkeypatch.setattr(policy, "_semantic_entity_features", counted_projection)
+    with torch.no_grad():
+        policy.evaluate_actions(obs, actions, masks, semantic_state=semantic)
+
+    assert len(calls) == 1
+
+
+def test_ppo_replay_rejects_non_finite_semantic_inputs():
+    obs, masks, semantic = _batch(batch_size=1)
+    policy = TFTPolicy(
+        obs_dim=obs.shape[-1],
+        action_dims=list(ACTION_DIMS),
+        hidden_size=32,
+        semantic_vocab_size=64,
+    ).eval()
+    semantic["numeric"][0, 0] = float("nan")
+    actions = torch.tensor([[6, 0, 0, 0, 0, 0]], dtype=torch.long)
+
+    with pytest.raises(ValueError, match="NaN or infinity"):
+        policy.evaluate_actions(obs, actions, masks, semantic_state=semantic)
