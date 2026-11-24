@@ -792,6 +792,7 @@ class CppTFTLobbyWrapper:
             for i in range(self.PLAYERS_PER_LOBBY)
         ]
         self._last_action_masks = self._copy_action_masks(result.get("action_masks"))
+        profile_mark("python_numpy_arrays_and_mask_materialization")
         profile_mark("python_arrays_and_action_masks")
         self._last_snapshot_metadata = {
             "engine_instance_id": str(result["engine_instance_id"]),
@@ -808,6 +809,7 @@ class CppTFTLobbyWrapper:
         self._last_snapshot_metadata["native_state_snapshot"] = self._copy_native_state_snapshot(
             result.get("native_state_snapshot"), self._last_snapshot_metadata
         )
+        profile_mark("python_snapshot_validation_and_projection")
         profile_mark("python_snapshot_projection_and_validation")
         self._reward_audit_ledger.reset(
             self._last_snapshot_metadata["engine_instance_id"],
@@ -860,6 +862,7 @@ class CppTFTLobbyWrapper:
         if native_snapshot is not None and not isinstance(native_snapshot, Mapping):
             native_snapshot = _NativeSnapshotMapping(native_snapshot)
             result["native_state_snapshot"] = native_snapshot
+        profile_mark("python_native_snapshot_handle_wrap")
 
         observations = np.asarray(result["observations"], dtype=np.float32)
         rewards = np.asarray(result["rewards"], dtype=np.float32)
@@ -890,6 +893,7 @@ class CppTFTLobbyWrapper:
             for idx, player in enumerate(player_info)
         ]
 
+        profile_mark("python_player_info_materialization")
         # Reward component arrays are mandatory for the audit contract. Falling
         # back to the combined reward would fabricate component provenance.
         if not all(key in result for key in (
@@ -904,6 +908,7 @@ class CppTFTLobbyWrapper:
         combat_rewards = np.asarray(result["combat_rewards"], dtype=np.float32)
         placement_rewards = np.asarray(result["placement_rewards"], dtype=np.float32)
         action_traces = [dict(item) for item in result["action_traces"]]
+        profile_mark("python_reward_arrays_and_action_trace_materialization")
         if not isinstance(source_decision_snapshot, dict) or not isinstance(
             source_decision_snapshot.get("native_state_snapshot"), dict
         ):
