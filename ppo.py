@@ -1,6 +1,7 @@
 import math
 
 import torch
+import time
 import torch.nn.functional as F
 from torch.utils.tensorboard import SummaryWriter
 
@@ -296,6 +297,13 @@ class PPOTrainer:
         O PPO não precisa saber a origem das experiências.
         """
 
+        profile_update_start_ns = time.perf_counter_ns()
+        profile_normalize_ms = 0.0
+        profile_loss_ms = 0.0
+        profile_backward_optimizer_ms = 0.0
+        profile_metrics_ms = 0.0
+        profile_minibatches = 0
+
         # ============================================================
         # VALIDAR ROLLOUT
         # ============================================================
@@ -310,7 +318,9 @@ class PPOTrainer:
         # NORMALIZAÇÃO DAS ADVANTAGES
         # ============================================================
 
+        normalize_start_ns = time.perf_counter_ns()
         rollout.normalize_advantages()
+        profile_normalize_ms = (time.perf_counter_ns() - normalize_start_ns) / 1_000_000.0
 
         # ============================================================
         # MÉTRICAS
@@ -352,11 +362,13 @@ class PPOTrainer:
                 include_metadata=False,
             ):
                 attempted_batches += 1
+                profile_minibatches += 1
 
                 # ====================================================
                 # COMPUTE LOSS
                 # ====================================================
 
+                loss_start_ns = time.perf_counter_ns()
                 (
                     loss,
                     pg_loss,
@@ -379,6 +391,7 @@ class PPOTrainer:
                     batch["masks"],
                     semantic_state=batch["semantic_state"],
                 )
+                profile_loss_ms += (time.perf_counter_ns() - loss_start_ns) / 1_000_000.0
 
                 max_kl = max(max_kl, float(approx_kl.item()))
 
@@ -415,6 +428,7 @@ class PPOTrainer:
                 # BACKPROP
                 # ====================================================
 
+                optimizer_stage_start_ns = time.perf_counter_ns()
                 self.optimizer.zero_grad(
                     set_to_none=True
                 )
@@ -434,12 +448,14 @@ class PPOTrainer:
                 grad_norm_max = max(grad_norm_max, grad_norm_value)
 
                 self.optimizer.step()
+                profile_backward_optimizer_ms += (time.perf_counter_ns() - optimizer_stage_start_ns) / 1_000_000.0
                 optimizer_steps += 1
 
                 # ====================================================
                 # MÉTRICAS
                 # ====================================================
 
+                metrics_stage_start_ns = time.perf_counter_ns()
                 mean_loss += loss.item()
                 mean_pg += pg_loss.item()
                 mean_v += v_loss.item()
@@ -458,6 +474,7 @@ class PPOTrainer:
                 mean_ratio += batch_ratio.item()
 
                 total_batches += 1
+                profile_metrics_ms += (time.perf_counter_ns() - metrics_stage_start_ns) / 1_000_000.0
 
 
         # ============================================================
@@ -594,6 +611,14 @@ class PPOTrainer:
                 batch_size,
                 self.update_step
             )
+
+        if hasattr(self, "writer") and self.writer is not None:
+            self.writer.add_scalar("performance/ppo/advantage_normalization_ms", profile_normalize_ms, self.update_step)
+            self.writer.add_scalar("performance/ppo/compute_loss_total_ms", profile_loss_ms, self.update_step)
+            self.writer.add_scalar("performance/ppo/backward_optimizer_total_ms", profile_backward_optimizer_ms, self.update_step)
+            self.writer.add_scalar("performance/ppo/metric_sync_total_ms", profile_metrics_ms, self.update_step)
+            self.writer.add_scalar("performance/ppo/profiled_minibatches", profile_minibatches, self.update_step)
+            self.writer.add_scalar("performance/ppo/update_internal_total_ms", (time.perf_counter_ns() - profile_update_start_ns) / 1_000_000.0, self.update_step)
 
         # ============================================================
         # UPDATE COUNTER
