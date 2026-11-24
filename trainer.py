@@ -1429,7 +1429,7 @@ class Trainer:
 
                 gym_masks = (
                     self.vec_env.env_method(
-                        "get_action_masks"
+                        "get_action_masks_for_training"
                     )
                 )
 
@@ -1893,7 +1893,7 @@ class Trainer:
 
             gym_masks = (
                 self.vec_env.env_method(
-                    "get_action_masks"
+                    "get_action_masks_for_training"
                 )
             )
 
