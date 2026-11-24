@@ -23,6 +23,7 @@ struct TraitCombatTier {
 struct TraitCombatDefinition {
     std::string api_name;
     bool effects_complete{false};
+    std::string coverage_status{"not_implemented"};
     std::vector<TraitCombatTier> tiers;
 };
 
@@ -49,6 +50,8 @@ inline TraitCombatCatalog load_trait_combat_catalog(std::istream& input) {
             !raw_trait["api_name"].is_string() ||
             !raw_trait.contains("effects_complete") ||
             !raw_trait["effects_complete"].is_boolean() ||
+            !raw_trait.contains("coverage_status") ||
+            !raw_trait["coverage_status"].is_string() ||
             !raw_trait.contains("tiers") || !raw_trait["tiers"].is_array()) {
             throw std::invalid_argument("Trait entry requires api_name, effects_complete and tiers");
         }
@@ -56,6 +59,18 @@ inline TraitCombatCatalog load_trait_combat_catalog(std::istream& input) {
         TraitCombatDefinition definition;
         definition.api_name = raw_trait["api_name"].get<std::string>();
         definition.effects_complete = raw_trait["effects_complete"].get<bool>();
+        definition.coverage_status = raw_trait["coverage_status"].get<std::string>();
+        const bool known_coverage_status =
+            definition.coverage_status == "complete" ||
+            definition.coverage_status == "non_combat" ||
+            definition.coverage_status == "partial" ||
+            definition.coverage_status == "not_implemented";
+        if (!known_coverage_status ||
+            definition.effects_complete !=
+                (definition.coverage_status == "complete" ||
+                 definition.coverage_status == "non_combat")) {
+            throw std::invalid_argument("Trait coverage_status/effects_complete mismatch");
+        }
         if (definition.api_name.empty() || catalog.traits.contains(definition.api_name))
             throw std::invalid_argument("Empty or duplicate trait combat api_name");
 
@@ -192,8 +207,21 @@ inline TraitCombatCatalog load_trait_combat_catalog(std::istream& input) {
             }
             definition.tiers.push_back(std::move(tier));
         }
-        if (definition.effects_complete && definition.tiers.empty())
-            throw std::invalid_argument("Complete trait combat metadata requires at least one tier");
+        if (definition.tiers.empty())
+            throw std::invalid_argument("Trait combat metadata requires at least one source tier");
+        const bool any_tier_has_effects = std::any_of(
+            definition.tiers.begin(), definition.tiers.end(),
+            [](const TraitCombatTier& tier) { return !tier.effects.empty(); });
+        const bool any_tier_is_empty = std::any_of(
+            definition.tiers.begin(), definition.tiers.end(),
+            [](const TraitCombatTier& tier) { return tier.effects.empty(); });
+        if (definition.coverage_status == "complete" && any_tier_is_empty)
+            throw std::invalid_argument("Complete trait combat metadata requires effects at every tier");
+        if ((definition.coverage_status == "non_combat" ||
+             definition.coverage_status == "not_implemented") && any_tier_has_effects)
+            throw std::invalid_argument("Non-combat/unimplemented traits cannot publish executable effects");
+        if (definition.coverage_status == "partial" && !any_tier_has_effects)
+            throw std::invalid_argument("Partial trait metadata must contain at least one modeled effect");
         catalog.traits.emplace(definition.api_name, std::move(definition));
     }
     return catalog;
