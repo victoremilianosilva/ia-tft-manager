@@ -43,3 +43,15 @@ Esta entrega integra a API batch ao caminho real do `Trainer`: `LobbyVectorEnv` 
 - Auto-reset de uma lobby terminal continua individual, preservando a identidade do snapshot terminal e a observação do novo episódio.
 - O manager é o único proprietário do lifecycle das Engines compartilhadas; `close()` é executado uma vez no fechamento do vetor.
 - A API batch permanece sequencial em C++; o ganho desta etapa é a fronteira de ownership e chamada, não paralelismo.
+
+## Evidências adicionais de integração e recuperação — Fase B
+
+A conclusão da fase exige validar não apenas a chamada batch, mas também a fronteira de estado observável pelo Trainer:
+
+- falha em reset invalida máscaras e metadados antigos em todos os wrappers antes que qualquer Engine possa avançar parcialmente;
+- após falha de reset/step, LobbyVectorEnv bloqueia novas decisões até um reset completo;
+- a trajetória de uma lobby deve permanecer idêntica quando outra lobby recebe uma sequência de ações diferente, demonstrando isolamento de estado/RNG;
+- paridade batch vs. wrappers individuais inclui rewards por componente, eventos, action traces, eventos factuais, auditoria e identidades/seqüências dos snapshots terminal e seguinte;
+- o smoke test nativo de treinamento deve completar com PPO ativo e validar o contrato de checkpoint; uma execução que não chega a essa etapa não é evidência de integração end-to-end.
+
+A fase permanece aberta até que o CI execute também o smoke test PPO e todas as verificações acima passem. Não se declara ganho de throughput: a execução continua sequencial e a fronteira compacta permanece na Fase C.

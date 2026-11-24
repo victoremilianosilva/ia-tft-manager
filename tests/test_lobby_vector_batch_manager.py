@@ -68,3 +68,73 @@ def test_lobby_vector_batch_path_matches_individual_wrapper_path():
     finally:
         batch.close()
         individual.close()
+
+def test_lobby_vector_batch_reset_failure_invalidates_all_wrappers_and_recovers(monkeypatch):
+    item_catalog = Path(__file__).resolve().parents[1] / "data" / "itens.json"
+    batch = _make_batch_vector(2, 2700, item_catalog)
+    real_manager = batch._batch_manager
+
+    class FailingResetManager:
+        def reset(self, *, seed=None):
+            raise RuntimeError("synthetic batch reset failure")
+
+    try:
+        batch.reset(seed=9300)
+        assert all(env.get_action_masks_for_training() for env in batch.envs)
+        batch._batch_manager = FailingResetManager()
+
+        import pytest
+        with pytest.raises(RuntimeError, match="synthetic batch reset failure"):
+            batch.reset(seed=9400)
+
+        for env in batch.envs:
+            with pytest.raises(RuntimeError, match="Execute reset"):
+                env.get_action_masks_for_training()
+            with pytest.raises(RuntimeError, match="Execute reset"):
+                env.get_snapshot_metadata()
+
+        with pytest.raises(RuntimeError, match="estado inconsistente"):
+            batch.step(_actions(2))
+
+        batch._batch_manager = real_manager
+        recovered = batch.reset(seed=9500)
+        assert recovered.shape[0] == 2
+        assert len(batch.step(_actions(2))[3]) == 2
+    finally:
+        batch._batch_manager = real_manager
+        batch.close()
+
+
+def test_lobby_vector_batch_parity_includes_reward_provenance_and_action_events():
+    item_catalog = Path(__file__).resolve().parents[1] / "data" / "itens.json"
+    batch = _make_batch_vector(2, 3700, item_catalog)
+    individual = LobbyVectorEnv([
+        lambda index=index: CppTFTLobbyWrapper(
+            seed=3700 + index,
+            item_catalog_path=str(item_catalog),
+        )
+        for index in range(2)
+    ])
+    try:
+        batch.reset(seed=10100)
+        individual.reset(seed=10100)
+        actions = _actions(2)
+        _, batch_rewards, batch_dones, batch_infos = batch.step(actions)
+        _, single_rewards, single_dones, single_infos = individual.step(actions)
+
+        np.testing.assert_array_equal(batch_rewards, single_rewards)
+        np.testing.assert_array_equal(batch_dones, single_dones)
+        for batch_info, single_info in zip(batch_infos, single_infos):
+            for field in ("round", "stage", "lobby_done", "action_trace", "events"):
+                assert batch_info[field] == single_info[field]
+            for field in ("action_rewards", "combat_rewards", "placement_rewards"):
+                np.testing.assert_array_equal(batch_info[field], single_info[field])
+            assert batch_info["step_result_snapshot"]["episode_id"] == single_info["step_result_snapshot"]["episode_id"]
+            assert batch_info["step_result_snapshot"]["decision_sequence"] == single_info["step_result_snapshot"]["decision_sequence"]
+            assert batch_info["next_snapshot"]["episode_id"] == single_info["next_snapshot"]["episode_id"]
+            assert batch_info["next_snapshot"]["decision_sequence"] == single_info["next_snapshot"]["decision_sequence"]
+            assert batch_info["action_outcome_events"] == single_info["action_outcome_events"]
+            assert batch_info["reward_audit"]["players"] == single_info["reward_audit"]["players"]
+    finally:
+        batch.close()
+        individual.close()

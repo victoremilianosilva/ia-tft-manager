@@ -33,6 +33,12 @@ class LobbyVectorEnv:
                     or int(seed) + self.num_envs - 1 > 0xFFFFFFFF
                 ):
                     raise ValueError("seed e offsets por lobby devem caber em uint32.")
+                # A failed batch reset must invalidate every wrapper's prior
+                # masks and snapshot before native state can partially advance.
+                for env in self.envs:
+                    invalidate = getattr(env, "_invalidate_current_snapshot", None)
+                    if callable(invalidate):
+                        invalidate()
                 native_results = self._batch_manager.reset(seed=seed)
                 if len(native_results) != self.num_envs:
                     raise RuntimeError("LobbyBatchManager retornou quantidade incorreta de resets.")

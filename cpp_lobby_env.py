@@ -811,7 +811,14 @@ class CppTFTLobbyWrapper:
         )
         return np.asarray(result["observations"], dtype=np.float32)
 
+    def _invalidate_current_snapshot(self):
+        """Prevent consumers from reusing masks/metadata after a reset attempt."""
+        self._last_action_masks = None
+        self._last_snapshot_metadata = None
+        self._last_dones.fill(False)
+
     def reset(self, seed: int | None = None):
+        self._invalidate_current_snapshot()
         return self._consume_reset_result(self._engine.reset(seed))
 
     def _prepare_batch_step(self, actions):

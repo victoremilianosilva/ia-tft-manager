@@ -81,3 +81,27 @@ def test_lobby_batch_manager_requires_full_reset_after_partial_step_failure():
         assert len(manager.step(_pass_actions(2))) == 2
     finally:
         manager.close()
+
+def test_lobby_batch_manager_keeps_lobby_rng_and_state_independent():
+    batch = native.LobbyBatchManager(2, 4400)
+    reference = native.LobbyBatchManager(1, 4400)
+    try:
+        batch_reset = batch.reset(seed=9910)
+        reference_reset = reference.reset(seed=9910)
+        np.testing.assert_array_equal(batch_reset[0]["observations"], reference_reset[0]["observations"])
+
+        # Advance the second lobby with a different action stream. Its RNG and
+        # state must not perturb the first lobby's deterministic trajectory.
+        batch.step(_pass_actions(2))
+        reference.step(_pass_actions(1))
+        batch_next = batch.step(_pass_actions(2))[0]
+        reference_next = reference.step(_pass_actions(1))[0]
+
+        np.testing.assert_array_equal(batch_next["observations"], reference_next["observations"])
+        np.testing.assert_array_equal(batch_next["rewards"], reference_next["rewards"])
+        np.testing.assert_array_equal(batch_next["dones"], reference_next["dones"])
+        assert batch_next["decision_sequence"] == reference_next["decision_sequence"]
+        assert batch_next["player_decision_sequences"] == reference_next["player_decision_sequences"]
+    finally:
+        batch.close()
+        reference.close()
