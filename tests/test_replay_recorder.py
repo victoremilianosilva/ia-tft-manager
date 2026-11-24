@@ -49,7 +49,8 @@ def test_replay_records_are_hash_chained_and_loadable(tmp_path):
     assert [record["record_type"] for record in loaded["records"]] == [
         "manifest", "reset", "transition", "footer"
     ]
-    assert loaded["manifest"]["reexecution_eligible"] is True
+    assert loaded["manifest"]["reexecution_eligible"] is False
+    assert loaded["manifest"]["seed_available"] is True
 
 
 def test_replay_tampering_is_detected(tmp_path):
