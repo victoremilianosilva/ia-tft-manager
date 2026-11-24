@@ -1,4 +1,5 @@
 import numpy as np
+import time
 
 
 class LobbyVectorEnv:
@@ -97,19 +98,25 @@ class LobbyVectorEnv:
             )
 
         try:
+            vector_step_start_ns = time.perf_counter_ns()
             all_obs = []
             all_rewards = []
             all_dones = []
             all_infos = []
 
-            for env, lobby_actions in zip(self.envs, actions):
+            for lobby_index, (env, lobby_actions) in enumerate(zip(self.envs, actions)):
+                lobby_step_start_ns = time.perf_counter_ns()
                 obs, rewards, lobby_done, info = env.step(lobby_actions)
+                wrapper_step_ms = (time.perf_counter_ns() - lobby_step_start_ns) / 1_000_000.0
+                vector_stage_start_ns = time.perf_counter_ns()
 
                 rewards = np.asarray(rewards, dtype=np.float32)
                 if rewards.shape != (self.PLAYERS_PER_LOBBY,):
                     raise ValueError(
                         f"Shape de rewards inválido: {rewards.shape}"
                     )
+                reward_conversion_ms = (time.perf_counter_ns() - vector_stage_start_ns) / 1_000_000.0
+                vector_stage_start_ns = time.perf_counter_ns()
 
                 dones = np.asarray(
                     [not player.alive for player in env.players],
@@ -157,16 +164,31 @@ class LobbyVectorEnv:
                     )
 
                 info["next_snapshot"] = next_snapshot
+                reset_snapshot_ms = (time.perf_counter_ns() - vector_stage_start_ns) / 1_000_000.0
+                info["vector_performance_profile"] = {
+                    "vector_wrapper_step_inclusive_ms": wrapper_step_ms,
+                    "vector_reward_conversion_ms": reward_conversion_ms,
+                    "vector_done_snapshot_reset_ms": reset_snapshot_ms,
+                }
 
                 all_obs.append(obs)
                 all_rewards.append(rewards)
                 all_dones.append(dones)
                 all_infos.append(info)
 
+            vector_batch_start_ns = time.perf_counter_ns()
+            stacked_obs = np.stack(all_obs).astype(np.float32, copy=False)
+            stacked_rewards = np.stack(all_rewards).astype(np.float32, copy=False)
+            stacked_dones = np.stack(all_dones).astype(np.bool_, copy=False)
+            vector_batch_ms = (time.perf_counter_ns() - vector_batch_start_ns) / 1_000_000.0
+            total_vector_ms = (time.perf_counter_ns() - vector_step_start_ns) / 1_000_000.0
+            for info in all_infos:
+                info["vector_performance_profile"]["vector_batch_stack_ms"] = vector_batch_ms
+                info["vector_performance_profile"]["vector_total_ms"] = total_vector_ms
             return (
-                np.stack(all_obs).astype(np.float32, copy=False),
-                np.stack(all_rewards).astype(np.float32, copy=False),
-                np.stack(all_dones).astype(np.bool_, copy=False),
+                stacked_obs,
+                stacked_rewards,
+                stacked_dones,
                 all_infos,
             )
 
