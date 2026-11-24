@@ -198,9 +198,50 @@ class CppTFTLobbyWrapper:
             raise ValueError("Cada ação deve conter exatamente 6 componentes.")
         return [int(value) for value in values]
 
+    _PACKED_ACTION_MASK_LAYOUT = (
+        ("type_mask", (9,)),
+        ("shop_mask", (5,)),
+        ("bench_source_mask", (9,)),
+        ("board_target_mask", (28,)),
+        ("board_source_mask", (28,)),
+        ("board_move_target_masks", (28, 28)),
+        ("bench_move_source_mask", (9,)),
+        ("bench_to_board_target_masks", (9, 28)),
+        ("item_inventory_mask", (9,)),
+        ("item_component_first_mask", (10,)),
+        ("item_component_pair_masks", (10, 10)),
+        ("item_target_mask", (37,)),
+    )
+    _PACKED_ACTION_MASK_WIDTH = 1280
+
     @staticmethod
     def _copy_action_masks(masks, *, detach_arrays=False):
-        """Normalize native masks; detach buffers only when exposing them publicly."""
+        """Normalize either the packed native buffer or legacy mapping fixtures."""
+        if isinstance(masks, np.ndarray):
+            packed = np.asarray(masks)
+            expected_shape = (
+                CppTFTLobbyWrapper.PLAYERS_PER_LOBBY,
+                CppTFTLobbyWrapper._PACKED_ACTION_MASK_WIDTH,
+            )
+            if packed.dtype != np.bool_ or packed.shape != expected_shape:
+                raise RuntimeError(
+                    "Buffer compacto de action masks inválido: "
+                    f"dtype={packed.dtype}, shape={packed.shape}, esperado bool{expected_shape}."
+                )
+            normalized = []
+            for player_index in range(CppTFTLobbyWrapper.PLAYERS_PER_LOBBY):
+                offset = 0
+                player_masks = {}
+                for key, shape in CppTFTLobbyWrapper._PACKED_ACTION_MASK_LAYOUT:
+                    width = int(np.prod(shape))
+                    view = packed[player_index, offset:offset + width].reshape(shape)
+                    player_masks[key] = view.copy() if detach_arrays else view
+                    offset += width
+                if offset != CppTFTLobbyWrapper._PACKED_ACTION_MASK_WIDTH:
+                    raise RuntimeError("Layout compacto de action masks incompatível.")
+                normalized.append(player_masks)
+            return normalized
+
         if masks is None or len(masks) != CppTFTLobbyWrapper.PLAYERS_PER_LOBBY:
             raise RuntimeError("Snapshot nativo sem as oito action masks esperadas.")
         return [

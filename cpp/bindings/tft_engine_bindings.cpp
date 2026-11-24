@@ -100,13 +100,50 @@ py::dict masks_to_dict(const PlayerActionMasks& masks) {
     return result;
 }
 
-py::list masks_to_list(
+// Stable packed layout shared with CppTFTLobbyWrapper._copy_action_masks.
+// The field order matches action_contract.MASK_SHAPES exactly.
+constexpr std::size_t kPackedActionMaskWidth = 1280;
+
+template <std::size_t N>
+void append_packed_mask(
+    bool* destination,
+    std::size_t& offset,
+    const std::array<std::uint8_t, N>& source
+) {
+    for (const auto value : source) {
+        destination[offset++] = value != 0;
+    }
+}
+
+py::array_t<bool> masks_to_packed_array(
     const std::array<PlayerActionMasks, 8>& masks
 ) {
-    py::list result;
+    py::array_t<bool> result({
+        static_cast<py::ssize_t>(8),
+        static_cast<py::ssize_t>(kPackedActionMaskWidth)
+    });
+    auto* destination = result.mutable_data();
 
-    for (const auto& masks_for_player : masks) {
-        result.append(masks_to_dict(masks_for_player));
+    for (std::size_t player = 0; player < masks.size(); ++player) {
+        std::size_t offset = player * kPackedActionMaskWidth;
+        const auto& source = masks[player];
+        bool* row = destination + offset;
+        offset = 0;
+        append_packed_mask(row, offset, source.type_mask);
+        append_packed_mask(row, offset, source.shop_mask);
+        append_packed_mask(row, offset, source.bench_source_mask);
+        append_packed_mask(row, offset, source.board_target_mask);
+        append_packed_mask(row, offset, source.board_source_mask);
+        append_packed_mask(row, offset, source.board_move_target_masks);
+        append_packed_mask(row, offset, source.bench_move_source_mask);
+        append_packed_mask(row, offset, source.bench_to_board_target_masks);
+        append_packed_mask(row, offset, source.item_inventory_mask);
+        append_packed_mask(row, offset, source.item_component_first_mask);
+        append_packed_mask(row, offset, source.item_component_pair_masks);
+        append_packed_mask(row, offset, source.item_target_mask);
+        if (offset != kPackedActionMaskWidth) {
+            throw std::runtime_error("Layout compactado de action masks inconsistente.");
+        }
     }
 
     return result;
@@ -681,7 +718,7 @@ py::dict reset_to_dict(tft::ResetResult reset) {
     );
 
     result["action_masks"] =
-        masks_to_list(reset.action_masks);
+        masks_to_packed_array(reset.action_masks);
 
     result["engine_instance_id"] = reset.engine_instance_id;
     result["episode_id"] = reset.episode_id;
@@ -740,7 +777,7 @@ py::dict step_to_dict(tft::StepResult step) {
     result["round"] = step.round;
     result["stage"] = step.stage;
     result["alive_players"] = step.alive_players;
-    result["action_masks"] = masks_to_list(step.action_masks);
+    result["action_masks"] = masks_to_packed_array(step.action_masks);
     result["players"] = player_info_to_list(step.players);
     py::list action_traces;
     for (const auto& trace : step.action_traces) {

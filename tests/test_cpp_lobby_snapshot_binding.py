@@ -232,6 +232,46 @@ class FakeNativeLobby:
         pass
 
 
+def test_packed_native_action_masks_expand_as_zero_copy_views():
+    layout = cpp_lobby_env.CppTFTLobbyWrapper._PACKED_ACTION_MASK_LAYOUT
+    width = cpp_lobby_env.CppTFTLobbyWrapper._PACKED_ACTION_MASK_WIDTH
+    packed = np.zeros((8, width), dtype=np.bool_)
+    expected = []
+    for player_index in range(8):
+        offset = 0
+        row = {}
+        for key, shape in layout:
+            size = int(np.prod(shape))
+            view = packed[player_index, offset:offset + size].reshape(shape)
+            view.flat[player_index % view.size] = True
+            row[key] = view.copy()
+            offset += size
+        expected.append(row)
+
+    normalized = cpp_lobby_env.CppTFTLobbyWrapper._copy_action_masks(packed)
+    assert len(normalized) == 8
+    for player_index, player in enumerate(normalized):
+        for key, _shape in layout:
+            assert np.array_equal(player[key], expected[player_index][key])
+            assert np.shares_memory(player[key], packed)
+
+    detached = cpp_lobby_env.CppTFTLobbyWrapper._copy_action_masks(
+        packed, detach_arrays=True
+    )
+    assert not np.shares_memory(detached[0]["type_mask"], packed)
+
+
+def test_packed_native_action_masks_reject_invalid_shape_or_dtype():
+    with pytest.raises(RuntimeError, match="Buffer compacto de action masks inválido"):
+        cpp_lobby_env.CppTFTLobbyWrapper._copy_action_masks(
+            np.zeros((8, 1279), dtype=np.bool_)
+        )
+    with pytest.raises(RuntimeError, match="Buffer compacto de action masks inválido"):
+        cpp_lobby_env.CppTFTLobbyWrapper._copy_action_masks(
+            np.zeros((8, 1280), dtype=np.uint8)
+        )
+
+
 def test_wrapper_rejects_duplicate_unit_instance_uuid_across_active_owners():
     native = FakeNativeLobby()
     snapshot = native._native_state_snapshot()
