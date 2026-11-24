@@ -1,5 +1,7 @@
 """Regression tests for observation/action-mask snapshot correlation."""
 
+import copy
+
 import numpy as np
 import pytest
 
@@ -1028,3 +1030,45 @@ def test_published_step_snapshot_isolated_and_source_survives_later_steps(monkey
         assert second_info["reward_audit"]["decision_sequence"] == 3
     finally:
         lobby.close()
+
+
+
+def test_native_snapshot_mapping_defers_combat_event_materialization():
+    class Handle:
+        def __init__(self):
+            self.base_calls = 0
+            self.event_calls = []
+
+        def to_dict(self):
+            self.base_calls += 1
+            return {
+                "contract_id": "tft.native-state-snapshot",
+                "players": [{"board": [1, 2, 3]}],
+            }
+
+        def keys(self):
+            return ["contract_id", "players", "combat_damage_events",
+                    "combat_attack_events", "combat_death_events"]
+
+        def combat_events(self, field):
+            self.event_calls.append(field)
+            return [{"combat_sequence": 1, "field": field}]
+
+    handle = Handle()
+    snapshot = cpp_lobby_env._NativeSnapshotMapping(handle)
+
+    assert snapshot["contract_id"] == "tft.native-state-snapshot"
+    assert handle.base_calls == 1
+    assert handle.event_calls == []
+
+    clone = copy.deepcopy(snapshot)
+    clone["players"][0]["board"].clear()
+    assert snapshot["players"][0]["board"] == [1, 2, 3]
+    assert handle.base_calls == 2
+
+    assert clone["combat_damage_events"][0]["field"] == "combat_damage_events"
+    assert handle.event_calls == ["combat_damage_events"]
+    assert snapshot["combat_attack_events"][0]["field"] == "combat_attack_events"
+    assert handle.event_calls == [
+        "combat_damage_events", "combat_attack_events"
+    ]
