@@ -3169,7 +3169,7 @@ struct TFTEngine::Impl {
                         }
                         evidence.items = ci::PlannerEvidenceAdapters::item(
                             *player_envs[i].item_engine, item_state, item_bindings,
-                            round_id, round_id, fit_cache->get());
+                            round_id, round_id, fit_cache.get());
                     }
                 }
                 if (composition_diagnostics_debug) runtime.mark_stage("planner_evidence", version > 0 ? "completed" : "skipped",
