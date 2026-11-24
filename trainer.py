@@ -62,6 +62,7 @@ from semantic_observation import (
     catalog_identity,
     validate_semantic_state_checkpoint_contract,
     validate_semantic_batch_alignment,
+    semantic_batch_matches_snapshot_rows,
 )
 
 from engine_contracts import ActionType
@@ -1338,10 +1339,6 @@ class Trainer:
             # ========================================================
 
             semantic_cache = None
-            semantic_identity_fields = (
-                "engine_instance_id", "episode_id", "decision_sequence",
-                "player_decision_sequence", "player_id", "round", "lobby_index",
-            )
             for step in range(
                 rollout_steps
             ):
@@ -1365,14 +1362,14 @@ class Trainer:
                     metadata["observation_snapshot_hash"] = observation_hash
                     metadata["observation_snapshot_hash_algorithm"] = "tft-ppo-observation-row-v1"
 
+                # The previous transition's next snapshot is the current decision
+                # snapshot when its immutable native revision identity still matches.
                 can_reuse_semantic = (
                     semantic_cache is not None
-                    and len(semantic_cache["identities"]) == len(flat_snapshot_metadata)
-                    and all(
-                        all(metadata.get(field) == identity.get(field) for field in semantic_identity_fields)
-                        for metadata, identity in zip(
-                            flat_snapshot_metadata, semantic_cache["identities"]
-                        )
+                    and semantic_batch_matches_snapshot_rows(
+                        semantic_cache["batch"],
+                        flat_snapshot_metadata,
+                        self.semantic_state_contract,
                     )
                 )
                 if can_reuse_semantic:
