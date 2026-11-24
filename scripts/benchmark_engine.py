@@ -208,6 +208,76 @@ def _run_case(
                 close()
 
 
+def _run_parallel_case(
+    mode: str,
+    lobby_count: int,
+    warmup: int,
+    iterations: int,
+    seed: int,
+    item_catalog: str | None,
+) -> dict:
+    """Run independent lobbies concurrently; exposes GIL/native scaling limits."""
+    native = mode == "native"
+    factory = _make_native if native else _make_wrapper
+    step_fn: Callable = _step_native if native else _step_wrapper
+    targets = []
+    try:
+        for index in range(lobby_count):
+            target = factory((seed + index) & 0xFFFFFFFF, item_catalog)
+            targets.append(target)
+            _reset(target, (seed + index) & 0xFFFFFFFF, native)
+
+        def step_one(pair):
+            index, target = pair
+            started = time.perf_counter()
+            done, profile = step_fn(target, seed + index)
+            elapsed_ms = (time.perf_counter() - started) * 1000.0
+            return index, done, profile, elapsed_ms
+
+        with ThreadPoolExecutor(max_workers=lobby_count) as executor:
+            pairs = list(enumerate(targets))
+            for _ in range(warmup):
+                results = list(executor.map(step_one, pairs))
+                for index, done, _profile, _elapsed in results:
+                    if done:
+                        _reset(targets[index], (seed + index) & 0xFFFFFFFF, native)
+
+            per_lobby_samples = [[] for _ in targets]
+            stage_samples = [{} for _ in targets]
+            batch_samples = []
+            terminal_resets = 0
+            for _ in range(iterations):
+                batch_start = time.perf_counter()
+                results = list(executor.map(step_one, pairs))
+                batch_samples.append((time.perf_counter() - batch_start) * 1000.0)
+                for index, done, profile, elapsed_ms in results:
+                    per_lobby_samples[index].append(elapsed_ms)
+                    for stage_name, stage_ms in profile.items():
+                        stage_samples[index].setdefault(stage_name, []).append(float(stage_ms))
+                    if done:
+                        _reset(targets[index], (seed + index) & 0xFFFFFFFF, native)
+                        terminal_resets += 1
+
+        return {
+            "mode": mode,
+            "lobbies": lobby_count,
+            "execution": "thread_pool_independent_engines",
+            "max_workers": lobby_count,
+            "terminal_resets_during_measurement": terminal_resets,
+            "concurrent_batch": _stats(batch_samples),
+            "per_lobby": [_stats(samples) for samples in per_lobby_samples],
+            "stage_metrics_per_lobby": [
+                {name: _stats(values) for name, values in stages.items()}
+                for stages in stage_samples
+            ],
+        }
+    finally:
+        for target in targets:
+            close = getattr(target, "close", None)
+            if callable(close):
+                close()
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Mede o custo da engine C++ e, separadamente, do wrapper Python."
