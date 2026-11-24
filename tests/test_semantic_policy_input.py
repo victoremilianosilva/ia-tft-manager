@@ -613,3 +613,14 @@ def test_sampling_value_and_action_re_evaluation_share_the_same_semantic_row():
     assert torch.allclose(replay_value, perturbed_replay_value, atol=1e-7, rtol=1e-7)
     assert replay_entropy.shape == (1,)
     assert not torch.allclose(sampled_value, missing_context_value)
+
+
+def test_policy_rejects_non_finite_semantic_state_at_call_boundary():
+    obs, masks, semantic = _batch(batch_size=1)
+    policy = TFTPolicy(
+        obs_dim=obs.shape[-1], action_dims=list(ACTION_DIMS),
+        hidden_size=32, semantic_vocab_size=64, require_semantic_state=True,
+    ).eval()
+    semantic["numeric"][0, 0] = float("nan")
+    with pytest.raises(ValueError, match="semantic numeric input contains NaN or infinity"):
+        policy.get_action(obs, masks=masks, semantic_state=semantic)
