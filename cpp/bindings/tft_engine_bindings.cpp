@@ -697,7 +697,9 @@ py::dict reset_to_dict(tft::ResetResult reset) {
 
 py::dict step_to_dict(tft::StepResult step) {
     using Clock = std::chrono::steady_clock;
-    const auto conversion_start = Clock::now();
+    const char* profile_env = std::getenv("TFT_PROFILE_STEPS");
+    const bool profile_enabled = profile_env != nullptr && std::string(profile_env) == "1";
+    const auto conversion_start = profile_enabled ? Clock::now() : Clock::time_point{};
     auto conversion_stage_start = conversion_start;
     py::dict conversion_profile;
     py::dict result;
@@ -706,9 +708,9 @@ py::dict step_to_dict(tft::StepResult step) {
         step.observations,
         step.observation_dim
     );
-    conversion_profile["binding_observation_array_conversion_ms"] =
+    if (profile_enabled) conversion_profile["binding_observation_array_conversion_ms"] =
         std::chrono::duration<double, std::milli>(Clock::now() - conversion_stage_start).count();
-    conversion_stage_start = Clock::now();
+    conversion_stage_start = profile_enabled ? Clock::now() : Clock::time_point{};
 
     py::array_t<float> rewards(8);
     py::array_t<float> action_rewards(8);
@@ -736,9 +738,9 @@ py::dict step_to_dict(tft::StepResult step) {
     result["combat_rewards"] = std::move(combat_rewards);
     result["placement_rewards"] = std::move(placement_rewards);
     result["dones"] = std::move(dones);
-    conversion_profile["binding_reward_and_done_array_conversion_ms"] =
+    if (profile_enabled) conversion_profile["binding_reward_and_done_array_conversion_ms"] =
         std::chrono::duration<double, std::milli>(Clock::now() - conversion_stage_start).count();
-    conversion_stage_start = Clock::now();
+    conversion_stage_start = profile_enabled ? Clock::now() : Clock::time_point{};
     result["lobby_done"] = step.lobby_done;
     result["engine_instance_id"] = step.engine_instance_id;
     result["episode_id"] = step.episode_id;
@@ -747,20 +749,20 @@ py::dict step_to_dict(tft::StepResult step) {
     result["native_state_snapshot"] = NativeAuditSnapshotHandle(
         std::make_shared<const tft::AuditSnapshot>(std::move(step.native_state_snapshot))
     );
-    conversion_profile["binding_snapshot_handle_conversion_ms"] =
+    if (profile_enabled) conversion_profile["binding_snapshot_handle_conversion_ms"] =
         std::chrono::duration<double, std::milli>(Clock::now() - conversion_stage_start).count();
-    conversion_stage_start = Clock::now();
+    conversion_stage_start = profile_enabled ? Clock::now() : Clock::time_point{};
     result["round"] = step.round;
     result["stage"] = step.stage;
     result["alive_players"] = step.alive_players;
     result["action_masks"] = masks_to_list(step.action_masks);
-    conversion_profile["binding_action_masks_conversion_ms"] =
+    if (profile_enabled) conversion_profile["binding_action_masks_conversion_ms"] =
         std::chrono::duration<double, std::milli>(Clock::now() - conversion_stage_start).count();
-    conversion_stage_start = Clock::now();
+    conversion_stage_start = profile_enabled ? Clock::now() : Clock::time_point{};
     result["players"] = player_info_to_list(step.players);
-    conversion_profile["binding_player_info_conversion_ms"] =
+    if (profile_enabled) conversion_profile["binding_player_info_conversion_ms"] =
         std::chrono::duration<double, std::milli>(Clock::now() - conversion_stage_start).count();
-    conversion_stage_start = Clock::now();
+    conversion_stage_start = profile_enabled ? Clock::now() : Clock::time_point{};
     py::list action_traces;
     for (const auto& trace : step.action_traces) {
         py::dict item;
@@ -773,19 +775,21 @@ py::dict step_to_dict(tft::StepResult step) {
     }
     result["action_traces"] = std::move(action_traces);
     result["events"] = step.events;
-    py::dict engine_profile;
-    for (const auto& [name, elapsed_ms] : step.performance_profile_ms)
-        engine_profile[py::str(name)] = elapsed_ms;
-    py::dict engine_counts;
-    for (const auto& [name, count] : step.performance_profile_counts)
-        engine_counts[py::str(name)] = count;
-    result["_engine_profile_ms"] = std::move(engine_profile);
-    result["_engine_profile_counts"] = std::move(engine_counts);
-    conversion_profile["binding_action_traces_and_events_conversion_ms"] =
-        std::chrono::duration<double, std::milli>(Clock::now() - conversion_stage_start).count();
-    conversion_profile["binding_step_to_dict_total_ms"] =
-        std::chrono::duration<double, std::milli>(Clock::now() - conversion_start).count();
-    result["_binding_conversion_profile"] = std::move(conversion_profile);
+    if (profile_enabled) {
+        py::dict engine_profile;
+        for (const auto& [name, elapsed_ms] : step.performance_profile_ms)
+            engine_profile[py::str(name)] = elapsed_ms;
+        py::dict engine_counts;
+        for (const auto& [name, count] : step.performance_profile_counts)
+            engine_counts[py::str(name)] = count;
+        result["_engine_profile_ms"] = std::move(engine_profile);
+        result["_engine_profile_counts"] = std::move(engine_counts);
+        conversion_profile["binding_action_traces_and_events_conversion_ms"] =
+            std::chrono::duration<double, std::milli>(Clock::now() - conversion_stage_start).count();
+        conversion_profile["binding_step_to_dict_total_ms"] =
+            std::chrono::duration<double, std::milli>(Clock::now() - conversion_start).count();
+        result["_binding_conversion_profile"] = std::move(conversion_profile);
+    }
 
     return result;
 }
@@ -1015,7 +1019,9 @@ PYBIND11_MODULE(tft_engine, module) {
                bool timer_enabled,
                bool timer_expired) {
                 using Clock = std::chrono::steady_clock;
-                const auto total_start = Clock::now();
+                const char* profile_env = std::getenv("TFT_PROFILE_STEPS");
+                const bool profile_enabled = profile_env != nullptr && std::string(profile_env) == "1";
+                const auto total_start = profile_enabled ? Clock::now() : Clock::time_point{};
                 if (raw_actions.size() != tft::kPlayersPerLobby) {
                     throw py::value_error("actions deve conter 8 jogadores.");
                 }
@@ -1034,27 +1040,43 @@ PYBIND11_MODULE(tft_engine, module) {
                             raw_actions[player][component];
                     }
                 }
-                const auto parse_end = Clock::now();
+                std::array<tft::PlayerAction, tft::kPlayersPerLobby> actions{};
+                for (std::size_t player = 0; player < tft::kPlayersPerLobby; ++player) {
+                    if (raw_actions[player].size() != tft::kActionComponents) {
+                        throw py::value_error(
+                            "Cada acao deve conter 6 componentes."
+                        );
+                    }
+                    for (std::size_t component = 0;
+                         component < tft::kActionComponents;
+                         ++component) {
+                        actions[player].values[component] =
+                            raw_actions[player][component];
+                    }
+                }
+                const auto parse_end = profile_enabled ? Clock::now() : Clock::time_point{};
                 auto native_result = self.step(actions, timer_enabled, timer_expired);
-                const auto engine_end = Clock::now();
+                const auto engine_end = profile_enabled ? Clock::now() : Clock::time_point{};
                 auto result = step_to_dict(std::move(native_result));
-                const auto conversion_end = Clock::now();
-                py::dict conversion_profile = result.attr("pop")("_binding_conversion_profile").cast<py::dict>();
-                py::dict profile;
-                for (auto item : conversion_profile)
-                    profile[item.first] = item.second;
-                profile["binding_action_parse_ms"] =
-                    std::chrono::duration<double, std::milli>(parse_end - total_start).count();
-                profile["native_engine_step_ms"] =
-                    std::chrono::duration<double, std::milli>(engine_end - parse_end).count();
-                profile["binding_result_conversion_ms"] =
-                    std::chrono::duration<double, std::milli>(conversion_end - engine_end).count();
-                profile["binding_total_ms"] =
-                    std::chrono::duration<double, std::milli>(conversion_end - total_start).count();
-                // The pybind lambda runs with the GIL held. This is the measured
-                // in-lambda GIL hold window, not an estimate of contention wait.
-                profile["binding_gil_held_ms"] = profile["binding_total_ms"];
-                result["_binding_profile"] = std::move(profile);
+                if (profile_enabled) {
+                    const auto conversion_end = Clock::now();
+                    py::dict conversion_profile = result.attr("pop")("_binding_conversion_profile").cast<py::dict>();
+                    py::dict profile;
+                    for (auto item : conversion_profile)
+                        profile[item.first] = item.second;
+                    profile["binding_action_parse_ms"] =
+                        std::chrono::duration<double, std::milli>(parse_end - total_start).count();
+                    profile["native_engine_step_ms"] =
+                        std::chrono::duration<double, std::milli>(engine_end - parse_end).count();
+                    profile["binding_result_conversion_ms"] =
+                        std::chrono::duration<double, std::milli>(conversion_end - engine_end).count();
+                    profile["binding_total_ms"] =
+                        std::chrono::duration<double, std::milli>(conversion_end - total_start).count();
+                    // The pybind lambda runs with the GIL held. This is the measured
+                    // in-lambda GIL hold window, not an estimate of contention wait.
+                    profile["binding_gil_held_ms"] = profile["binding_total_ms"];
+                    result["_binding_profile"] = std::move(profile);
+                }
                 return result;
             },
             py::arg("actions"),
