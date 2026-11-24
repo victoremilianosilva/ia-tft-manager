@@ -1126,7 +1126,7 @@ def test_training_action_masks_borrow_read_only_snapshot_buffers(monkeypatch):
     assert not borrowed[0]["type_mask"].flags.writeable
 
     detached = wrapper.get_action_masks()
-    for key in original_type_mask:
+    for key in borrowed[0]:
         np.testing.assert_array_equal(
             borrowed[0][key], detached[0][key]
         )
