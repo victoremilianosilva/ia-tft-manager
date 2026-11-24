@@ -3138,8 +3138,8 @@ struct TFTEngine::Impl {
                 evidence.composition_id = active ? active->candidate.composition_id : "";
                 evidence.composition_version = version;
                 evidence.round = round_id;
+                detail_profile_start = profile_strategic ? ProfileClock::now() : ProfileClock::time_point{};
                 if (version > 0) {
-                    detail_profile_start = profile_strategic ? ProfileClock::now() : ProfileClock::time_point{};
                     evidence.economy = ci::PlannerEvidenceAdapters::economic(
                         strategic_context, economic_decision, round_id,
                         static_cast<std::int32_t>(i));
