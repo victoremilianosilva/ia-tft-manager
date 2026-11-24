@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 
+from replay.runner import run_deterministic_replay
 from replay.recorder import (
     ReplayIntegrityError,
     ReplayRecorder,
@@ -102,3 +103,86 @@ def test_dataset_rejects_fewer_than_three_independent_matches(tmp_path):
     paths = [_write_replay(tmp_path, episode) for episode in range(2)]
     with pytest.raises(ValueError, match="three independent matches"):
         build_dataset_manifest(paths, tmp_path / "dataset.json")
+
+
+def test_deterministic_runner_checks_reset_and_transition_contract(tmp_path):
+    class FakeLobby:
+        def __init__(self, seed):
+            self.seed = seed
+            self._last_dones = [False]
+            self._masks = [{"type_mask": [True]}]
+            self._snapshot = {
+                "episode_id": 9, "decision_sequence": 0,
+                "player_decision_sequences": [0], "round": 1, "stage": "2-1",
+            }
+            self.closed = False
+
+        def reset(self, seed=None):
+            assert seed == 5
+            return [1.0]
+
+        def get_action_masks(self):
+            return self._masks
+
+        def get_snapshot_metadata(self):
+            return self._snapshot
+
+        def step(self, actions, timer_enabled=False, timer_expired=False):
+            assert actions == [[6, 0, 0, 0, 0, 0]]
+            self._snapshot = {
+                "episode_id": 9, "decision_sequence": 1,
+                "player_decision_sequences": [1], "round": 1, "stage": "2-1",
+            }
+            info = {
+                "players": [], "action_trace": [], "events": [],
+                "action_outcome_events": [], "action_rewards": [0.0],
+                "combat_rewards": [0.0], "placement_rewards": [0.0],
+                "reward_audit": {},
+            }
+            return [2.0], [0.5], False, info
+
+        def close(self):
+            self.closed = True
+
+    recorder = ReplayRecorder(
+        tmp_path, engine_instance_id="engine-9", episode_id=9, seed=5,
+        code_version="test-commit",
+    )
+    recorder.append("reset", {
+        "snapshot": {
+            "episode_id": 9, "decision_sequence": 0,
+            "player_decision_sequences": [0], "round": 1, "stage": "2-1",
+            "engine_instance_id": "original-engine",
+        },
+        "observations": [1.0],
+        "action_masks": [{"type_mask": [True]}],
+    })
+    recorder.append("transition", {
+        "source_snapshot": {
+            "episode_id": 9, "decision_sequence": 0,
+            "player_decision_sequences": [0], "round": 1, "stage": "2-1",
+        },
+        "source_observations": [1.0],
+        "source_action_masks": [{"type_mask": [True]}],
+        "normalized_actions": [[6, 0, 0, 0, 0, 0]],
+        "timer_enabled": False, "timer_expired": False,
+        "next_snapshot": {
+            "episode_id": 9, "decision_sequence": 1,
+            "player_decision_sequences": [1], "round": 1, "stage": "2-1",
+            "engine_instance_id": "original-engine",
+        },
+        "next_observations": [2.0],
+        "next_action_masks": [{"type_mask": [True]}],
+        "rewards": [0.5], "dones": [False], "lobby_done": False,
+        "players": [], "action_traces": [], "events": [],
+        "action_outcome_events": [], "action_rewards": [0.0],
+        "combat_rewards": [0.0], "placement_rewards": [0.0],
+        "reward_audit": {},
+    })
+    recorder.close()
+
+    report = run_deterministic_replay(
+        recorder.path, wrapper_factory=FakeLobby, verify_runtime_identity=False
+    )
+    assert report["reproduced"] is True
+    assert report["transitions_checked"] == 1
