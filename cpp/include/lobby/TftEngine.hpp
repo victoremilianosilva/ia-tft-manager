@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <map>
 #include <optional>
 #include <string>
 #include <utility>
@@ -650,6 +651,9 @@ struct StepResult {
 
     // Diagnósticos adicionais sem acoplar o PPO às engines.
     std::vector<std::string> events;
+    // Diagnostic-only stage timings/counters; never consumed by game logic.
+    std::map<std::string, double> performance_profile_ms;
+    std::map<std::string, std::uint64_t> performance_profile_counts;
 };
 
 struct PublicState {
