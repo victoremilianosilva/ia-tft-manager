@@ -2047,6 +2047,7 @@ struct TFTEngine::Impl {
                         planner_context.current_composition_direction;
                 }
                 strategy::StrategicPlanDecision planner_decision;
+                auto initial_direction_profile_start = profile_runtime ? ProfileClock::now() : ProfileClock::time_point{};
                 if (planner_context.current_composition_direction.empty()) {
                     planner_decision =
                         strategy::StrategicPlanner{}.evaluate(planner_context, planner_commitment);
@@ -2056,6 +2057,11 @@ struct TFTEngine::Impl {
                 }
                 native_input.selected_initial_direction =
                     planner_decision.target_composition_direction;
+                if (profile_runtime) {
+                    step_profile_ms["strategic_initial_direction_discovery_ms"] +=
+                        std::chrono::duration<double, std::milli>(ProfileClock::now() - initial_direction_profile_start).count();
+                    ++step_profile_counts["strategic_initial_direction_discovery_calls"];
+                }
 
                 // Build a pivot proposal from the same native candidate set and
                 // physical evidence used by initial direction discovery. The
@@ -2079,6 +2085,7 @@ struct TFTEngine::Impl {
                         pivot_generation_diagnostic = "no_alternative_generated_direction";
                     }
                 }
+                auto pivot_profile_start = profile_runtime ? ProfileClock::now() : ProfileClock::time_point{};
                 if (source_active && active_direction_anchor.is_valid() &&
                     active_direction_anchor.composition_bound &&
                     active_direction_anchor.composition_identity ==
@@ -2287,6 +2294,11 @@ struct TFTEngine::Impl {
                     }
                 }
 
+                if (profile_runtime) {
+                    step_profile_ms["strategic_pivot_candidate_and_feasibility_ms"] +=
+                        std::chrono::duration<double, std::milli>(ProfileClock::now() - pivot_profile_start).count();
+                    ++step_profile_counts["strategic_pivot_candidate_and_feasibility_calls"];
+                }
                 const strategy::StrategicCycleAuditContext native_audit_context{
                     episode_id, static_cast<std::int32_t>(i),
                     static_cast<std::uint32_t>(current_round)
