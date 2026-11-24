@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cmath>
 #include <chrono>
+#include <cstdlib>
 #include <cstdint>
 #include <fstream>
 #include <filesystem>
@@ -313,6 +314,7 @@ struct TFTEngine::Impl {
     // Per-step profiling is diagnostic-only and reset at the start of each step.
     std::map<std::string, double> step_profile_ms;
     std::map<std::string, std::uint64_t> step_profile_counts;
+    bool step_profile_enabled{false};
 
     struct PlayerTransition {
         float action_reward{0.0f};
@@ -5850,10 +5852,15 @@ StepResult TFTEngine::step(
     impl_->ensure_open();
 
     using ProfileClock = std::chrono::steady_clock;
+    impl_->step_profile_enabled = [] {
+        const char* value = std::getenv("TFT_PROFILE_STEPS");
+        return value != nullptr && std::string(value) == "1";
+    }();
     const auto step_profile_start = ProfileClock::now();
     impl_->step_profile_ms.clear();
     impl_->step_profile_counts.clear();
     auto record_profile = [&](const std::string& name, ProfileClock::time_point start) {
+        if (!impl_->step_profile_enabled) return;
         impl_->step_profile_ms[name] +=
             std::chrono::duration<double, std::milli>(ProfileClock::now() - start).count();
         ++impl_->step_profile_counts[name + "_calls"];
@@ -5973,9 +5980,11 @@ StepResult TFTEngine::step(
         impl_->sync_player_economy(i);
         auto mask_refresh_start = ProfileClock::now();
         impl_->refresh_masks(i);
-        impl_->step_profile_ms["engine_action_mask_refresh_ms"] +=
-            std::chrono::duration<double, std::milli>(ProfileClock::now() - mask_refresh_start).count();
-        ++impl_->step_profile_counts["engine_action_mask_refresh_calls"];
+        if (impl_->step_profile_enabled) {
+            impl_->step_profile_ms["engine_action_mask_refresh_ms"] +=
+                std::chrono::duration<double, std::milli>(ProfileClock::now() - mask_refresh_start).count();
+            ++impl_->step_profile_counts["engine_action_mask_refresh_calls"];
+        }
         if (!timer_enabled) {
             impl_->mark_round_completion(i);
         }
@@ -6079,9 +6088,11 @@ StepResult TFTEngine::step(
                 player_env.shop->roll(player_env.economy.level);
                 auto economy_mask_start = ProfileClock::now();
                 impl_->refresh_masks(i);
-                impl_->step_profile_ms["engine_economy_mask_refresh_ms"] +=
-                    std::chrono::duration<double, std::milli>(ProfileClock::now() - economy_mask_start).count();
-                ++impl_->step_profile_counts["engine_economy_mask_refresh_calls"];
+                if (impl_->step_profile_enabled) {
+                    impl_->step_profile_ms["engine_economy_mask_refresh_ms"] +=
+                        std::chrono::duration<double, std::milli>(ProfileClock::now() - economy_mask_start).count();
+                    ++impl_->step_profile_counts["engine_economy_mask_refresh_calls"];
+                }
             }
             record_profile("engine_economy_resolution_ms", economy_resolution_start);
         }
@@ -6119,9 +6130,11 @@ StepResult TFTEngine::step(
             if (impl_->player_envs[i].info.alive) {
                 auto strategic_start = ProfileClock::now();
                 impl_->refresh_native_strategic_state(i);
-                impl_->step_profile_ms["engine_strategic_refresh_total_ms"] +=
-                    std::chrono::duration<double, std::milli>(ProfileClock::now() - strategic_start).count();
-                ++impl_->step_profile_counts["engine_strategic_refresh_calls"];
+                if (impl_->step_profile_enabled) {
+                    impl_->step_profile_ms["engine_strategic_refresh_total_ms"] +=
+                        std::chrono::duration<double, std::milli>(ProfileClock::now() - strategic_start).count();
+                    ++impl_->step_profile_counts["engine_strategic_refresh_calls"];
+                }
             }
         }
 
@@ -6247,11 +6260,13 @@ StepResult TFTEngine::step(
     );
     impl_->pending_combat_prediction_events.clear();
     record_profile("engine_event_materialization_ms", event_build_start);
-    impl_->step_profile_ms["engine_step_total_ms"] =
-        std::chrono::duration<double, std::milli>(ProfileClock::now() - step_profile_start).count();
-    impl_->step_profile_counts["engine_action_players"] = kPlayersPerLobby;
-    result.performance_profile_ms = impl_->step_profile_ms;
-    result.performance_profile_counts = impl_->step_profile_counts;
+    if (impl_->step_profile_enabled) {
+        impl_->step_profile_ms["engine_step_total_ms"] =
+            std::chrono::duration<double, std::milli>(ProfileClock::now() - step_profile_start).count();
+        impl_->step_profile_counts["engine_action_players"] = kPlayersPerLobby;
+        result.performance_profile_ms = impl_->step_profile_ms;
+        result.performance_profile_counts = impl_->step_profile_counts;
+    }
 
     return result;
 }
