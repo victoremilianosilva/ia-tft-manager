@@ -948,6 +948,7 @@ class CppTFTLobbyWrapper:
                 time.perf_counter_ns() - profile_start_ns
             ) / 1_000_000.0
             self._last_step_profile = profile
+            info["performance_profile"] = dict(profile)
         else:
             self._last_step_profile = None
         return observations, rewards, bool(result.get("lobby_done", False)), info
