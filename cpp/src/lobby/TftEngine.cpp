@@ -427,6 +427,13 @@ struct TFTEngine::Impl {
 
     // Uma instância C++ por jogador; o lobby coordena as oito.
     std::array<PlayerEnv, kPlayersPerLobby> player_envs{};
+    // Per-player memoization survives decision snapshots; profile signatures
+    // invalidate only the UUID whose semantic inputs actually changed.
+    std::array<std::unique_ptr<items::ItemFitCache>, kPlayersPerLobby>
+        strategic_item_fit_caches{};
+    // Immutable projection of the active unit catalog, shared across players.
+    std::vector<strategy::NativeCompositionUnitDefinition>
+        native_composition_catalog;
     std::array<CompositionIntelligencePlayerState, kPlayersPerLobby> composition_intelligence_players{};
     struct CompositionOutcomeBaseline {
         std::uint64_t episode_id{0};
@@ -2401,23 +2408,31 @@ struct TFTEngine::Impl {
             // capacity-deferred targets separately.
             native_input.target_slots = std::clamp(std::max(8, economy.level), 1, 10);
             native_input.maximum_candidates = 8;
-            native_input.catalog.reserve(catalog->all().size());
-            for (const auto& definition : catalog->all()) {
-                native_input.catalog.push_back({
-                    definition.internal_id, definition.api_name, definition.cost,
-                    definition.traits, definition.combat_profile.is_carry,
-                    definition.combat_profile.frontline ||
-                        definition.combat_profile.is_tank,
-                    definition.combat_profile.is_support
-                });
+            if (native_composition_catalog.empty()) {
+                native_composition_catalog.reserve(catalog->all().size());
+                for (const auto& definition : catalog->all()) {
+                    native_composition_catalog.push_back({
+                        definition.internal_id, definition.api_name, definition.cost,
+                        definition.traits, definition.combat_profile.is_carry,
+                        definition.combat_profile.frontline ||
+                            definition.combat_profile.is_tank,
+                        definition.combat_profile.is_support
+                    });
+                }
             }
+            native_input.catalog_ref = &native_composition_catalog;
             // Item compatibility is measured from the equipped item IDs and
             // the same champion combat/profile snapshot used by item planning.
             // No-item units and unsupported catalog entries remain unavailable.
             std::unordered_map<std::string, items::UnitProfile> native_item_profiles;
             for (auto& profile : semantic_item_unit_profiles(i))
                 native_item_profiles.emplace(profile.uuid, std::move(profile));
-            items::ItemFitCache native_item_fit_cache(player_envs[i].item_engine.get());
+            auto& native_item_fit_cache = strategic_item_fit_caches[i];
+            if (!native_item_fit_cache ||
+                !native_item_fit_cache->uses(player_envs[i].item_engine.get())) {
+                native_item_fit_cache = std::make_unique<items::ItemFitCache>(
+                    player_envs[i].item_engine.get());
+            }
             std::unordered_map<std::int32_t, double> native_item_fit_totals;
             std::unordered_map<std::int32_t, std::int32_t> native_item_fit_unit_counts;
             std::unordered_set<std::int32_t> native_item_fit_invalid;
@@ -2453,7 +2468,7 @@ struct TFTEngine::Impl {
                         native_item_fit_invalid.insert(definition->internal_id);
                         return;
                     }
-                    const double fit = native_item_fit_cache.get(item.api_name, profile->second);
+                    const double fit = native_item_fit_cache->get(item.api_name, profile->second);
                     if (!std::isfinite(fit) || fit < 0.0) {
                         native_item_fit_invalid.insert(definition->internal_id);
                         return;
@@ -3146,9 +3161,15 @@ struct TFTEngine::Impl {
                         };
                         for (const auto& unit : player_envs[i].board) if (unit) append_item_binding(*unit);
                         for (const auto& unit : player_envs[i].bench) if (unit) append_item_binding(*unit);
+                        auto& fit_cache = strategic_item_fit_caches[i];
+                        if (!fit_cache ||
+                            !fit_cache->uses(player_envs[i].item_engine.get())) {
+                            fit_cache = std::make_unique<items::ItemFitCache>(
+                                player_envs[i].item_engine.get());
+                        }
                         evidence.items = ci::PlannerEvidenceAdapters::item(
                             *player_envs[i].item_engine, item_state, item_bindings,
-                            round_id, round_id);
+                            round_id, round_id, fit_cache.get());
                     }
                 }
                 if (composition_diagnostics_debug) runtime.mark_stage("planner_evidence", version > 0 ? "completed" : "skipped",
@@ -5773,6 +5794,8 @@ ResetResult TFTEngine::reset(
     }
 
     ++impl_->episode_id;
+    for (auto& cache : impl_->strategic_item_fit_caches)
+        if (cache) cache->clear();
     impl_->composition_intelligence_players =
         decltype(impl_->composition_intelligence_players){};
     impl_->composition_intelligence_native_candidates =
@@ -6684,7 +6707,11 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
                     if (found != profile_by_uuid.end())
                         profile_by_target[kBoardSlots + slot] = found->second;
                 }
-                items::ItemFitCache fit_cache(source.item_engine.get());
+                auto& fit_cache = impl_->strategic_item_fit_caches[i];
+                if (!fit_cache || !fit_cache->uses(source.item_engine.get())) {
+                    fit_cache = std::make_unique<items::ItemFitCache>(
+                        source.item_engine.get());
+                }
                 for (std::size_t item_slot = 0; item_slot < 9; ++item_slot) {
                     if (item_slot >= source.item_engine->inventory().size()) continue;
                     const auto& item_id = source.item_engine->inventory()[item_slot];
@@ -6692,7 +6719,7 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
                          target_slot < profile_by_target.size(); ++target_slot) {
                         const auto* profile = profile_by_target[target_slot];
                         if (!profile) continue;
-                        const double fit = fit_cache.get(item_id, *profile);
+                        const double fit = fit_cache->get(item_id, *profile);
                         target.item_inventory_target_fit[item_slot][target_slot] =
                             static_cast<float>(std::clamp(fit / 50.0, 0.0, 1.0));
                     }
@@ -6719,7 +6746,7 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
                          target_slot < profile_by_target.size(); ++target_slot) {
                         const auto* profile = profile_by_target[target_slot];
                         if (!profile) continue;
-                        const double fit = fit_cache.get(item_id, *profile);
+                        const double fit = fit_cache->get(item_id, *profile);
                         target.item_recipe_target_fit[recipe][target_slot] =
                             static_cast<float>(std::clamp(fit / 50.0, 0.0, 1.0));
                     }
@@ -6746,7 +6773,7 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
                                     candidate_item.recipe_components[1] != option_id) continue;
                                 for (const auto& profile : profiles)
                                     best_fit = std::max(best_fit,
-                                        fit_cache.get(candidate_item.id, profile));
+                                        fit_cache->get(candidate_item.id, profile));
                             }
                         } else if (const auto* definition = source.item_engine->find(option_id)) {
                             const std::array<double, 10> stats{
@@ -6766,7 +6793,7 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
                                     std::clamp(stats[stat], 0.0, 1.0));
                             for (const auto& profile : profiles)
                                 best_fit = std::max(best_fit,
-                                    fit_cache.get(option_id, profile));
+                                    fit_cache->get(option_id, profile));
                         }
                         features[10] = static_cast<float>(
                             std::clamp(best_fit / 20.0, 0.0, 1.0));

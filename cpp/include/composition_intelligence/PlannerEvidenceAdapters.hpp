@@ -206,7 +206,8 @@ public:
  }
  static ItemPlannerEvidence item(const items::ItemEngine& engine,const items::ItemPlayerState& state,
   const std::vector<ItemUnitBinding>& bindings,
-  std::uint32_t source_round,std::uint32_t expected_round) {
+  std::uint32_t source_round,std::uint32_t expected_round,
+  items::ItemFitCache* fit_cache=nullptr) {
   ItemPlannerEvidence o;o.metadata=make_metadata("ItemEngine",source_round,expected_round,true);
   if(!o.metadata.available)return o;
   o.inventory_count=state.inventory.size();o.component_count=state.components.size();
@@ -221,11 +222,13 @@ public:
    if(eq!=state.equipped_by_unit_uuid.end()) {
     u.equipped_item_ids=eq->second;u.has_equipped_items=!eq->second.empty();
     double sum=0;std::size_t count=0;
-    for(const auto& id:eq->second){double fit=engine.item_fit(id,b.profile);
+    for(const auto& id:eq->second){double fit=fit_cache
+      ?fit_cache->get(id,b.profile):engine.item_fit(id,b.profile);
      if(fit>=0&&std::isfinite(fit)){sum+=fit;++count;}}
     u.equipped_fit=count?unit(sum/static_cast<double>(count)):0;
    }
-   for(const auto& id:state.inventory){double fit=engine.item_fit(id,b.profile);
+   for(const auto& id:state.inventory){double fit=fit_cache
+     ?fit_cache->get(id,b.profile):engine.item_fit(id,b.profile);
     if(fit>=0&&std::isfinite(fit)&&(!u.has_inventory_candidate||fit>u.best_inventory_fit)){
      u.has_inventory_candidate=true;u.best_inventory_fit=unit(fit);u.best_inventory_item_id=id;}}
    o.units.push_back(std::move(u));

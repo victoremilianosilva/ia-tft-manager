@@ -682,19 +682,32 @@ private:
 };
 
 
-// Observation-local memoization for item compatibility. The cache is created
-// from one immutable UnitProfile snapshot and discarded with that observation.
+// Engine/lobby-lifetime memoization. A UUID retains only its latest complete
+// profile signature, invalidating results whenever any semantic input changes.
 class ItemFitCache {
 public:
     explicit ItemFitCache(const ItemEngine* engine) noexcept : engine_(engine) {}
 
+    [[nodiscard]] bool uses(const ItemEngine* engine) const noexcept {
+        return engine_ == engine;
+    }
+
+    void clear() noexcept {
+        values_.clear();
+    }
+
     [[nodiscard]] double get(const std::string& item_id, const UnitProfile& unit) {
-        if (!engine_) return -1.0;
-        auto& by_item = values_[unit.uuid];
-        const auto found = by_item.find(item_id);
-        if (found != by_item.end()) return found->second;
+        if (!engine_ || unit.uuid.empty()) return -1.0;
+        auto& entry = values_[unit.uuid];
+        if (!entry.initialized || !same_profile(entry.profile, unit)) {
+            entry.profile = unit;
+            entry.initialized = true;
+            entry.by_item.clear();
+        }
+        const auto found = entry.by_item.find(item_id);
+        if (found != entry.by_item.end()) return found->second;
         const double value = engine_->item_fit(item_id, unit);
-        by_item.emplace(item_id, value);
+        entry.by_item.emplace(item_id, value);
         ++evaluation_count_;
         return value;
     }
@@ -704,8 +717,28 @@ public:
     }
 
 private:
+    struct ProfileValues {
+        UnitProfile profile;
+        bool initialized{false};
+        std::unordered_map<std::string, double> by_item;
+    };
+
+    static bool same_profile(const UnitProfile& lhs, const UnitProfile& rhs) {
+        return lhs.uuid == rhs.uuid && lhs.star == rhs.star &&
+            lhs.role == rhs.role && lhs.frontline == rhs.frontline &&
+            lhs.backline == rhs.backline &&
+            lhs.attack_damage == rhs.attack_damage &&
+            lhs.attack_speed == rhs.attack_speed &&
+            lhs.ability_power == rhs.ability_power &&
+            lhs.max_health == rhs.max_health && lhs.armor == rhs.armor &&
+            lhs.magic_resist == rhs.magic_resist &&
+            lhs.composition_fit == rhs.composition_fit &&
+            lhs.traits == rhs.traits &&
+            lhs.preferred_traits == rhs.preferred_traits;
+    }
+
     const ItemEngine* engine_{nullptr};
-    std::unordered_map<std::string, std::unordered_map<std::string, double>> values_;
+    std::unordered_map<std::string, ProfileValues> values_;
     std::size_t evaluation_count_{0};
 };
 
