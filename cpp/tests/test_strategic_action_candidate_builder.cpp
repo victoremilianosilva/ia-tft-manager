@@ -88,6 +88,9 @@ void builder_emits_snapshot_bound_physical_candidates() {
     native.composition_version = 3;
     native.gold = 20;
     native.alive = true;
+    // Unoccupied board slots must be represented by -1; zero is a valid champion ID.
+    native.board_champion_ids.fill(-1);
+    native.bench_champion_ids.fill(-1);
     native.shop_champion_ids[0] = 10;
     native.shop_champion_ids[1] = 20;
     native.bench_champion_ids[0] = 20;
@@ -117,6 +120,7 @@ void builder_emits_snapshot_bound_physical_candidates() {
         context, active, priorities, lineup, training_native, costs, false);
     assert(training_result.candidates.size() == result.candidates.size());
     assert(training_result.positioning.empty());
+    assert(training_native.requested_move_targets == audit_native.requested_move_targets);
     for (std::size_t index = 0; index < result.candidates.size(); ++index) {
         assert(training_result.candidates[index].candidate_id == result.candidates[index].candidate_id);
         assert(training_result.candidates[index].kind == result.candidates[index].kind);
