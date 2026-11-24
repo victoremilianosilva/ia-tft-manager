@@ -759,6 +759,10 @@ class CppTFTLobbyWrapper:
         self._last_action_masks = None
         self._last_snapshot_metadata = None
         result = self._engine.reset(seed)
+        native_snapshot = result.get("native_state_snapshot")
+        if native_snapshot is not None and not isinstance(native_snapshot, Mapping):
+            native_snapshot = _NativeSnapshotMapping(native_snapshot)
+            result["native_state_snapshot"] = native_snapshot
         self._last_dones.fill(False)
         self._players = [
             SimpleNamespace(player_id=i, alive=True, eliminated=False)
@@ -809,6 +813,10 @@ class CppTFTLobbyWrapper:
             bool(timer_enabled),
             bool(timer_expired),
         )
+        native_snapshot = result.get("native_state_snapshot")
+        if native_snapshot is not None and not isinstance(native_snapshot, Mapping):
+            native_snapshot = _NativeSnapshotMapping(native_snapshot)
+            result["native_state_snapshot"] = native_snapshot
 
         observations = np.asarray(result["observations"], dtype=np.float32)
         rewards = np.asarray(result["rewards"], dtype=np.float32)
