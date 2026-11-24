@@ -113,7 +113,7 @@ jobs:
           REQUIRE_CPP_ENGINE: "1"
         run: |
           output_dir="${RUNNER_TEMP}/native-ppo-smoke"
-          python train_native.py --output-dir "$output_dir" --seed 20261122 --updates 1 --lobbies 1 --rollout-steps 8 --batch-size 64 --ppo-epochs 1
+          python train_native.py --output-dir "$output_dir" --seed 20261122 --updates 1 --lobbies 2 --rollout-steps 8 --batch-size 64 --ppo-epochs 1
           python - "$output_dir" <<'PY'
           import hashlib
           import json

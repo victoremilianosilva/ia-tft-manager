@@ -138,3 +138,34 @@ def test_lobby_vector_batch_parity_includes_reward_provenance_and_action_events(
     finally:
         batch.close()
         individual.close()
+
+def test_batch_terminal_autoreset_keeps_transition_and_next_episode_snapshots_separate():
+    item_catalog = Path(__file__).resolve().parents[1] / "data" / "itens.json"
+    batch = _make_batch_vector(1, 4800, item_catalog)
+    try:
+        batch.reset(seed=11100)
+        env = batch.envs[0]
+        consume = env._consume_step_result
+
+        def force_terminal_boundary(result, source_snapshot):
+            obs, rewards, _native_done, info = consume(result, source_snapshot)
+            # Exercise the vector terminal-boundary contract without requiring
+            # a full match simulation in this focused lifecycle test.
+            return obs, rewards, True, info
+
+        env._consume_step_result = force_terminal_boundary
+        _, rewards, dones, infos = batch.step(_actions(1))
+        info = infos[0]
+        terminal_snapshot = info["step_result_snapshot"]
+        next_snapshot = info["next_snapshot"]
+
+        assert bool(dones.all())
+        assert info["lobby_done"] is True
+        assert terminal_snapshot["snapshot_kind"] == "step"
+        assert next_snapshot["snapshot_kind"] == "reset"
+        assert terminal_snapshot["episode_id"] != next_snapshot["episode_id"]
+        assert terminal_snapshot["decision_sequence"] > 0
+        assert next_snapshot["decision_sequence"] == 0
+        assert rewards.shape == (1, 8)
+    finally:
+        batch.close()
