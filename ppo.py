@@ -2,6 +2,7 @@ import math
 
 import torch
 import time
+import os
 import torch.nn.functional as F
 from torch.utils.tensorboard import SummaryWriter
 
@@ -302,7 +303,17 @@ class PPOTrainer:
         profile_loss_ms = 0.0
         profile_backward_optimizer_ms = 0.0
         profile_metrics_ms = 0.0
+        profile_batch_materialization_ms = 0.0
+        profile_backward_ms = 0.0
+        profile_gradient_clip_ms = 0.0
+        profile_optimizer_step_ms = 0.0
         profile_minibatches = 0
+        profile_gpu_enabled = (
+            os.environ.get("TFT_PROFILE_GPU") == "1"
+            and torch.cuda.is_available()
+        )
+        profile_loss_cuda_events = []
+        profile_backward_cuda_events = []
 
         # ============================================================
         # VALIDAR ROLLOUT
@@ -346,6 +357,22 @@ class PPOTrainer:
 
         stop_early = False
 
+        def profiled_batches():
+            nonlocal profile_batch_materialization_ms
+            iterator = iter(rollout.get_batches(
+                batch_size=batch_size,
+                normalize_advantages=False,
+                include_metadata=False,
+            ))
+            while True:
+                batch_start_ns = time.perf_counter_ns()
+                try:
+                    batch = next(iterator)
+                except StopIteration:
+                    break
+                profile_batch_materialization_ms += (time.perf_counter_ns() - batch_start_ns) / 1_000_000.0
+                yield batch
+
         # ============================================================
         # PPO EPOCHS
         # ============================================================
@@ -356,11 +383,7 @@ class PPOTrainer:
                 break
             epochs_started = epoch + 1
 
-            for batch in rollout.get_batches(
-                batch_size=batch_size,
-                normalize_advantages=False,
-                include_metadata=False,
-            ):
+            for batch in profiled_batches():
                 attempted_batches += 1
                 profile_minibatches += 1
 
@@ -369,6 +392,11 @@ class PPOTrainer:
                 # ====================================================
 
                 loss_start_ns = time.perf_counter_ns()
+                loss_cuda_start = loss_cuda_end = None
+                if profile_gpu_enabled:
+                    loss_cuda_start = torch.cuda.Event(enable_timing=True)
+                    loss_cuda_end = torch.cuda.Event(enable_timing=True)
+                    loss_cuda_start.record()
                 (
                     loss,
                     pg_loss,
@@ -392,6 +420,9 @@ class PPOTrainer:
                     semantic_state=batch["semantic_state"],
                 )
                 profile_loss_ms += (time.perf_counter_ns() - loss_start_ns) / 1_000_000.0
+                if profile_gpu_enabled:
+                    loss_cuda_end.record()
+                    profile_loss_cuda_events.append((loss_cuda_start, loss_cuda_end))
 
                 max_kl = max(max_kl, float(approx_kl.item()))
 
@@ -433,22 +464,36 @@ class PPOTrainer:
                     set_to_none=True
                 )
 
+                backward_start_ns = time.perf_counter_ns()
                 loss.backward()
+                profile_backward_ms += (time.perf_counter_ns() - backward_start_ns) / 1_000_000.0
+                backward_cuda_start = backward_cuda_end = None
+                if profile_gpu_enabled:
+                    backward_cuda_start = torch.cuda.Event(enable_timing=True)
+                    backward_cuda_end = torch.cuda.Event(enable_timing=True)
+                    backward_cuda_start.record()
 
                 # ====================================================
                 # GRADIENT CLIPPING
                 # ====================================================
 
+                clip_start_ns = time.perf_counter_ns()
                 grad_norm = torch.nn.utils.clip_grad_norm_(
                     self.policy.parameters(),
                     self.max_grad_norm,
                 )
+                profile_gradient_clip_ms += (time.perf_counter_ns() - clip_start_ns) / 1_000_000.0
                 grad_norm_value = float(grad_norm.detach().item())
                 grad_norm_sum += grad_norm_value
                 grad_norm_max = max(grad_norm_max, grad_norm_value)
 
+                optimizer_step_start_ns = time.perf_counter_ns()
                 self.optimizer.step()
+                profile_optimizer_step_ms += (time.perf_counter_ns() - optimizer_step_start_ns) / 1_000_000.0
                 profile_backward_optimizer_ms += (time.perf_counter_ns() - optimizer_stage_start_ns) / 1_000_000.0
+                if profile_gpu_enabled:
+                    backward_cuda_end.record()
+                    profile_backward_cuda_events.append((backward_cuda_start, backward_cuda_end))
                 optimizer_steps += 1
 
                 # ====================================================
@@ -612,8 +657,17 @@ class PPOTrainer:
                 self.update_step
             )
 
+        if profile_gpu_enabled and (profile_loss_cuda_events or profile_backward_cuda_events):
+            torch.cuda.synchronize()
         if hasattr(self, "writer") and self.writer is not None:
             self.writer.add_scalar("performance/ppo/advantage_normalization_ms", profile_normalize_ms, self.update_step)
+            self.writer.add_scalar("performance/ppo/batch_materialization_ms", profile_batch_materialization_ms, self.update_step)
+            self.writer.add_scalar("performance/ppo/backward_ms", profile_backward_ms, self.update_step)
+            self.writer.add_scalar("performance/ppo/gradient_clip_ms", profile_gradient_clip_ms, self.update_step)
+            self.writer.add_scalar("performance/ppo/optimizer_step_ms", profile_optimizer_step_ms, self.update_step)
+            if profile_gpu_enabled:
+                self.writer.add_scalar("performance/gpu/ppo_compute_loss_ms", sum(a.elapsed_time(b) for a, b in profile_loss_cuda_events), self.update_step)
+                self.writer.add_scalar("performance/gpu/ppo_backward_clip_optimizer_ms", sum(a.elapsed_time(b) for a, b in profile_backward_cuda_events), self.update_step)
             self.writer.add_scalar("performance/ppo/compute_loss_total_ms", profile_loss_ms, self.update_step)
             self.writer.add_scalar("performance/ppo/backward_optimizer_total_ms", profile_backward_optimizer_ms, self.update_step)
             self.writer.add_scalar("performance/ppo/metric_sync_total_ms", profile_metrics_ms, self.update_step)
