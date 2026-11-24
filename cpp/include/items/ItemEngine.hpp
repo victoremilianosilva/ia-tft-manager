@@ -695,9 +695,9 @@ public:
     [[nodiscard]] double get(const std::string& item_id, const UnitProfile& unit) {
         if (!engine_ || unit.uuid.empty()) return -1.0;
         auto& entry = values_[unit.uuid];
-        const auto signature = profile_signature(unit);
-        if (entry.signature != signature) {
-            entry.signature = signature;
+        if (!entry.initialized || !same_profile(entry.profile, unit)) {
+            entry.profile = unit;
+            entry.initialized = true;
             entry.by_item.clear();
         }
         const auto found = entry.by_item.find(item_id);
@@ -714,34 +714,23 @@ public:
 
 private:
     struct ProfileValues {
-        std::size_t signature{0};
+        UnitProfile profile;
+        bool initialized{false};
         std::unordered_map<std::string, double> by_item;
     };
 
-    static void combine(std::size_t& seed, std::size_t value) noexcept {
-        seed ^= value + 0x9e3779b9U + (seed << 6U) + (seed >> 2U);
-    }
-
-    static std::size_t profile_signature(const UnitProfile& unit) {
-        std::size_t seed = std::hash<std::string>{}(unit.uuid);
-        combine(seed, std::hash<int>{}(unit.star));
-        combine(seed, std::hash<int>{}(unit.role));
-        combine(seed, std::hash<bool>{}(unit.frontline));
-        combine(seed, std::hash<bool>{}(unit.backline));
-        combine(seed, std::hash<double>{}(unit.attack_damage));
-        combine(seed, std::hash<double>{}(unit.attack_speed));
-        combine(seed, std::hash<double>{}(unit.ability_power));
-        combine(seed, std::hash<double>{}(unit.max_health));
-        combine(seed, std::hash<double>{}(unit.armor));
-        combine(seed, std::hash<double>{}(unit.magic_resist));
-        combine(seed, std::hash<double>{}(unit.composition_fit));
-        for (const auto& trait : unit.traits)
-            combine(seed, std::hash<std::string>{}(trait));
-        combine(seed, unit.traits.size());
-        for (const auto& trait : unit.preferred_traits)
-            combine(seed, std::hash<std::string>{}(trait));
-        combine(seed, unit.preferred_traits.size());
-        return seed;
+    static bool same_profile(const UnitProfile& lhs, const UnitProfile& rhs) {
+        return lhs.uuid == rhs.uuid && lhs.star == rhs.star &&
+            lhs.role == rhs.role && lhs.frontline == rhs.frontline &&
+            lhs.backline == rhs.backline &&
+            lhs.attack_damage == rhs.attack_damage &&
+            lhs.attack_speed == rhs.attack_speed &&
+            lhs.ability_power == rhs.ability_power &&
+            lhs.max_health == rhs.max_health && lhs.armor == rhs.armor &&
+            lhs.magic_resist == rhs.magic_resist &&
+            lhs.composition_fit == rhs.composition_fit &&
+            lhs.traits == rhs.traits &&
+            lhs.preferred_traits == rhs.preferred_traits;
     }
 
     const ItemEngine* engine_{nullptr};
