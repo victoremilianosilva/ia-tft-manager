@@ -1866,7 +1866,8 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                 const float hp_bonus = std::min(target.unit.hp, bonus - absorbed_bonus);
                 target.unit.hp -= hp_bonus;
                 target.damage_taken += bonus;
-                trigger_defensive_items(target, now);
+                update_conditional_effects(target, now);
+                apply_stack_effects(target, "on_damage_taken", now);
                 actor.damage_dealt += bonus;
                 if (config.record_damage) {
                     DamageEvent bonus_event;
@@ -1894,34 +1895,6 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
 
 
             apply_reflect_effects(target, units, now, result, config);
-
-            if (config.record_damage) {
-                            DamageEvent reflected_event;
-                            reflected_event.timestamp = now;
-                            reflected_event.source_unit_id = target.unit.id;
-                            reflected_event.target_unit_id = enemy.unit.id;
-                            reflected_event.damage_type = DamageType::MAGIC;
-                            reflected_event.raw_damage = 100.0f;
-                            reflected_event.final_damage = reflected;
-                            reflected_event.ability_damage = false;
-                            result.damage_events.push_back(reflected_event);
-                        }
-                        if (enemy.unit.hp <= 0.0f && enemy.unit.alive) {
-                            enemy.unit.hp = 0.0f;
-                            enemy.unit.alive = false;
-                            ++target.kills;
-                            if (config.record_events) {
-                                DeathEvent death;
-                                death.timestamp = now;
-                                death.unit_id = enemy.unit.id;
-                                death.killer_unit_id = target.unit.id;
-                                result.death_events.push_back(death);
-                            }
-                        }
-                    }
-                    break;
-                }
-            }
 
             if (config.record_damage) {
                 DamageEvent de;
