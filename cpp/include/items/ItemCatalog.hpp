@@ -110,7 +110,17 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
                 effect.operation == "grant_charges" ||
                 effect.operation == "mana_regen" ||
                 effect.operation == "mana_gain_multiplier" ||
-                effect.operation == "mana_on_attack";
+                effect.operation == "mana_on_attack" ||
+                effect.operation == "grant_shield" ||
+                effect.operation == "restore_mana" ||
+                effect.operation == "revive" ||
+                effect.operation == "apply_shred" ||
+                effect.operation == "apply_burn" ||
+                effect.operation == "apply_wound" ||
+                effect.operation == "damage_on_enemy_cast" ||
+                effect.operation == "add_stat_per_nearby_enemy" ||
+                effect.operation == "reflect_damage" ||
+                effect.operation == "stack_stat";
             if (!supported_operation) {
                 throw std::invalid_argument(
                     "Unsupported combat effect operation (not implemented by CombatEngine): " +
@@ -126,7 +136,12 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
                 effect.trigger == "while_hp_below" ||
                 effect.trigger == "while_hp_above" ||
                 effect.trigger == "on_ally_shield" ||
-                effect.trigger == "periodic";
+                effect.trigger == "periodic" ||
+                effect.trigger == "on_ability_hit" ||
+                effect.trigger == "on_damage_taken" ||
+                effect.trigger == "on_critical_attack" ||
+                effect.trigger == "on_enemy_cast" ||
+                effect.trigger == "on_stack_cap";
             if (!supported_trigger) {
                 throw std::invalid_argument(
                     "Unsupported combat effect trigger (not implemented by CombatEngine): " +
@@ -152,7 +167,29 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
                 (effect.operation == "mana_gain_multiplier" &&
                     effect.trigger == "combat_start") ||
                 (effect.operation == "mana_on_attack" &&
-                    effect.trigger == "on_attack");
+                    effect.trigger == "on_attack") ||
+                (effect.operation == "grant_shield" &&
+                    (effect.trigger == "combat_start" || effect.trigger == "while_hp_below")) ||
+                (effect.operation == "restore_mana" &&
+                    (effect.trigger == "combat_start" || effect.trigger == "while_hp_below")) ||
+                (effect.operation == "revive" && effect.trigger == "while_hp_below") ||
+                (effect.operation == "apply_shred" &&
+                    (effect.trigger == "combat_start" || effect.trigger == "on_attack" ||
+                     effect.trigger == "on_ability_hit")) ||
+                (effect.operation == "apply_burn" &&
+                    (effect.trigger == "on_attack" || effect.trigger == "on_ability_hit" ||
+                     effect.trigger == "periodic")) ||
+                (effect.operation == "apply_wound" &&
+                    (effect.trigger == "on_attack" || effect.trigger == "on_ability_hit" ||
+                     effect.trigger == "periodic")) ||
+                (effect.operation == "damage_on_enemy_cast" && effect.trigger == "on_enemy_cast") ||
+                (effect.operation == "add_stat_per_nearby_enemy" && effect.trigger == "combat_start") ||
+                (effect.operation == "reflect_damage" && effect.trigger == "on_damage_taken") ||
+                (effect.operation == "stack_stat" &&
+                    (effect.trigger == "on_attack" || effect.trigger == "on_damage_taken" ||
+                     effect.trigger == "on_critical_attack")) ||
+                (effect.operation == "add_stat" && effect.trigger == "on_stack_cap") ||
+                (effect.operation == "bonus_damage" && effect.trigger == "on_ability_hit");
             if (!supported_pair) {
                 throw std::invalid_argument(
                     "Unsupported combat effect operation/trigger pair: " +
@@ -177,7 +214,8 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
                 effect.condition == "role_tank" ||
                 effect.condition == "role_fighter" ||
                 effect.condition == "role_assassin" ||
-                effect.condition == "role_other";
+                effect.condition == "role_other" ||
+                effect.condition == "target_role_tank";
             if (!supported_condition) {
                 throw std::invalid_argument(
                     "Unsupported combat effect condition: " + effect.condition);
@@ -192,7 +230,9 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
                 effect.target.empty() || effect.target == "self" ||
                 effect.target == "allies" ||
                 effect.target == "allies_same_row_within_1" ||
-                effect.target == "lowest_health_ally";
+                effect.target == "lowest_health_ally" ||
+                effect.target == "target" ||
+                effect.target == "enemies_within_radius";
             if (!supported_target) {
                 throw std::invalid_argument(
                     "Unsupported combat effect target: " + effect.target);
@@ -271,6 +311,7 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
             read_number("health_threshold", effect.health_threshold);
             read_number("critical_value", effect.critical_value);
             read_number("max_amount", effect.max_amount);
+            read_number("radius", effect.radius);
             if (effect.trigger == "periodic" &&
                 (!std::isfinite(effect.interval) || effect.interval <= 0.0f)) {
                 throw std::invalid_argument("Periodic combat effects require a positive interval");
