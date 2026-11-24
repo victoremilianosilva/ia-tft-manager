@@ -59,3 +59,22 @@ The strategic/player/economy portions remain materialized because they are seman
 ## Validation evidence
 
 The PR tests cover Python-owned snapshot retention, internal mask-array reuse, and defensive public mask reads. Existing native/Python integration, PPO contract, training smoke and replay CI suites validate the end-to-end consumers. Future removal of the detailed snapshot conversion requires additional parity tests and a pinned-snapshot native API; it is explicitly not claimed by this change.
+
+
+## Strategic diagnostics and training hot path (#542)
+
+Strategic context production and diagnostic materialization are separate responsibilities. `TFT_COMPOSITION_INTELLIGENCE_ENABLED=1` continues to enable the native composition/planner pipeline, including `StrategicActionCandidateBuilder`, `ContextualActionEvaluator`, and validated `strategic_opportunity_costs` consumed by semantic PPO state.
+
+Diagnostic work is controlled independently by `TFT_COMPOSITION_DIAGNOSTICS_MODE`:
+
+| Value | Behavior |
+|---|---|
+| `off` (default) | Normal training. No baseline evaluator comparison, action-resolution audit, recorder capture, diagnostic JSON construction/serialization, fingerprints, or retained diagnostic snapshots. |
+| `audit` | Produces detailed composition diagnostics and retains up to 4,096 snapshots per player for retrieval through `get_composition_diagnostics_jsonl()`. |
+| `debug` | Same complete diagnostic payload as audit, including stage execution trace. Intended for dedicated debugging runs, not normal training. |
+
+The following remain active in `off`, because they produce decision context rather than diagnostic artifacts: native strategic composition generation, active-composition ownership, planner evidence, unit priorities, lineup planning, native action candidate generation, `ContextualActionEvaluator`, and opportunity-cost validation/projection. PPO still selects actions; Shadow recommendations remain non-authoritative.
+
+The frozen baseline `CompositionActionEvaluator`, recommendation-vs-contextual comparison, position proposal serialization, native recommendation resolution, later-outcome correlation, `CompositionDiagnosticRecorder`, `StrategicContextBridge` JSON conversion, snapshot fingerprinting, and JSONL retention are diagnostic-only. They run only in `audit` or `debug`. The diagnostic snapshot buffer is bounded to 4,096 records per player; retrieval returns retained records in global sequence order. Invalid mode values fail engine initialization rather than silently selecting a different execution mode.
+
+`RewardAuditLedger`, reward decomposition, anti-duplication checks, semantic snapshot fields, masks, and factual action/outcome attribution are outside this switch and remain unchanged.
