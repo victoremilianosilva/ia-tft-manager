@@ -41,7 +41,7 @@ def test_every_active_set_trait_has_a_combat_coverage_disposition():
         source_tiers = source_by_id[api_name]["effects"]
         normalized_tiers = trait["tiers"]
         assert [tier["min_units"] for tier in normalized_tiers] == sorted({
-            tier["minUnits"] for tier in source_tiers if tier.get("minUnits") is not None
+            (tier["minUnits"] if tier.get("minUnits") is not None else 1) for tier in source_tiers
         })
         if trait["coverage_status"] == "complete":
             assert trait["effects_complete"] is True
