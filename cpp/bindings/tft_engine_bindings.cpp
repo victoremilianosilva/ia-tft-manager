@@ -1027,7 +1027,8 @@ PYBIND11_MODULE(tft_engine, module) {
                     throw py::value_error("actions deve conter 8 jogadores.");
                 }
 
-                const auto parse_end = profile_enabled ? Clock::now() : Clock::time_point{};
+                std::array<tft::PlayerAction, tft::kPlayersPerLobby> actions{};
+                const auto parse_start = profile_enabled ? Clock::now() : Clock::time_point{};
                 for (std::size_t player = 0; player < tft::kPlayersPerLobby; ++player) {
                     if (raw_actions[player].size() != tft::kActionComponents) {
                         throw py::value_error(
@@ -1062,7 +1063,7 @@ PYBIND11_MODULE(tft_engine, module) {
                     // The pybind lambda runs with the GIL held. This is the measured
                     // in-lambda GIL hold window, not an estimate of contention wait.
                     profile["binding_gil_held_ms"] = profile["binding_total_ms"];
-                    result["_binding_profile"] = std::move(profile);
+                    result[py::str("_binding_profile")] = std::move(profile);
                 }
                 return result;
             },
