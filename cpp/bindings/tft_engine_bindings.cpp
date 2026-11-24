@@ -6,6 +6,7 @@
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <pybind11/numpy.h>
@@ -215,57 +216,55 @@ py::dict audit_snapshot_to_dict(
     result["combat_attack_events_truncated"] = snapshot.combat_attack_events_truncated;
     result["combat_death_events_truncated"] = snapshot.combat_death_events_truncated;
     if (include_combat_events) {
-    py::list combat_damage_events;
-    for (const auto& event : snapshot.combat_damage_events) {
-        py::dict row;
-        row["combat_sequence"] = event.combat_sequence;
-        row["timestamp"] = event.timestamp;
-        row["source_unit_id"] = event.source_unit_id;
-        row["target_unit_id"] = event.target_unit_id;
-        row["source_player_id"] = event.source_player_id;
-        row["target_player_id"] = event.target_player_id;
-        row["source_unit_uuid"] = event.source_unit_uuid;
-        row["target_unit_uuid"] = event.target_unit_uuid;
-        row["damage_type"] = event.damage_type;
-        row["raw_damage"] = event.raw_damage;
-        row["final_damage"] = event.final_damage;
-        row["critical"] = event.critical;
-        row["ability_damage"] = event.ability_damage;
-        combat_damage_events.append(std::move(row));
+            py::list combat_damage_events;
+        for (const auto& event : snapshot.combat_damage_events) {
+            py::dict row;
+            row["combat_sequence"] = event.combat_sequence;
+            row["timestamp"] = event.timestamp;
+            row["source_unit_id"] = event.source_unit_id;
+            row["target_unit_id"] = event.target_unit_id;
+            row["source_player_id"] = event.source_player_id;
+            row["target_player_id"] = event.target_player_id;
+            row["source_unit_uuid"] = event.source_unit_uuid;
+            row["target_unit_uuid"] = event.target_unit_uuid;
+            row["damage_type"] = event.damage_type;
+            row["raw_damage"] = event.raw_damage;
+            row["final_damage"] = event.final_damage;
+            row["critical"] = event.critical;
+            row["ability_damage"] = event.ability_damage;
+            combat_damage_events.append(std::move(row));
     }
-    result["combat_damage_events"] = std::move(combat_damage_events);
-    result["combat_attack_events_truncated"] = snapshot.combat_attack_events_truncated;
-    py::list combat_attack_events;
-    for (const auto& event : snapshot.combat_attack_events) {
-        py::dict row;
-        row["combat_sequence"] = event.combat_sequence;
-        row["timestamp"] = event.timestamp;
-        row["source_unit_id"] = event.source_unit_id;
-        row["target_unit_id"] = event.target_unit_id;
-        row["source_player_id"] = event.source_player_id;
-        row["target_player_id"] = event.target_player_id;
-        row["source_unit_uuid"] = event.source_unit_uuid;
-        row["target_unit_uuid"] = event.target_unit_uuid;
-        row["critical"] = event.critical;
-        row["damage"] = event.damage;
-        combat_attack_events.append(std::move(row));
+        result["combat_damage_events"] = std::move(combat_damage_events);
+        py::list combat_attack_events;
+        for (const auto& event : snapshot.combat_attack_events) {
+            py::dict row;
+            row["combat_sequence"] = event.combat_sequence;
+            row["timestamp"] = event.timestamp;
+            row["source_unit_id"] = event.source_unit_id;
+            row["target_unit_id"] = event.target_unit_id;
+            row["source_player_id"] = event.source_player_id;
+            row["target_player_id"] = event.target_player_id;
+            row["source_unit_uuid"] = event.source_unit_uuid;
+            row["target_unit_uuid"] = event.target_unit_uuid;
+            row["critical"] = event.critical;
+            row["damage"] = event.damage;
+            combat_attack_events.append(std::move(row));
     }
-    result["combat_attack_events"] = std::move(combat_attack_events);
-    result["combat_death_events_truncated"] = snapshot.combat_death_events_truncated;
-    py::list combat_death_events;
-    for (const auto& event : snapshot.combat_death_events) {
-        py::dict row;
-        row["combat_sequence"] = event.combat_sequence;
-        row["timestamp"] = event.timestamp;
-        row["unit_id"] = event.unit_id;
-        row["killer_unit_id"] = event.killer_unit_id;
-        row["unit_player_id"] = event.unit_player_id;
-        row["killer_player_id"] = event.killer_player_id;
-        row["unit_uuid"] = event.unit_uuid;
-        row["killer_unit_uuid"] = event.killer_unit_uuid;
-        combat_death_events.append(std::move(row));
+        result["combat_attack_events"] = std::move(combat_attack_events);
+        py::list combat_death_events;
+        for (const auto& event : snapshot.combat_death_events) {
+            py::dict row;
+            row["combat_sequence"] = event.combat_sequence;
+            row["timestamp"] = event.timestamp;
+            row["unit_id"] = event.unit_id;
+            row["killer_unit_id"] = event.killer_unit_id;
+            row["unit_player_id"] = event.unit_player_id;
+            row["killer_player_id"] = event.killer_player_id;
+            row["unit_uuid"] = event.unit_uuid;
+            row["killer_unit_uuid"] = event.killer_unit_uuid;
+            combat_death_events.append(std::move(row));
     }
-    result["combat_death_events"] = std::move(combat_death_events);
+        result["combat_death_events"] = std::move(combat_death_events);
     }
     py::list economy_resolution_events;
     for (const auto& event : snapshot.economy_resolution_events) {
