@@ -793,7 +793,6 @@ class CppTFTLobbyWrapper:
         ]
         self._last_action_masks = self._copy_action_masks(result.get("action_masks"))
         profile_mark("python_numpy_arrays_and_mask_materialization")
-        profile_mark("python_arrays_and_action_masks")
         self._last_snapshot_metadata = {
             "engine_instance_id": str(result["engine_instance_id"]),
             "episode_id": int(result["episode_id"]),
@@ -809,8 +808,6 @@ class CppTFTLobbyWrapper:
         self._last_snapshot_metadata["native_state_snapshot"] = self._copy_native_state_snapshot(
             result.get("native_state_snapshot"), self._last_snapshot_metadata
         )
-        profile_mark("python_snapshot_validation_and_projection")
-        profile_mark("python_snapshot_projection_and_validation")
         self._reward_audit_ledger.reset(
             self._last_snapshot_metadata["engine_instance_id"],
             self._last_snapshot_metadata["episode_id"],
@@ -891,6 +888,7 @@ class CppTFTLobbyWrapper:
         self._last_snapshot_metadata["native_state_snapshot"] = self._copy_native_state_snapshot(
             result.get("native_state_snapshot"), self._last_snapshot_metadata
         )
+        profile_mark("python_snapshot_validation_and_projection")
         player_info = result.get("players", [])
         self._players = [
             SimpleNamespace(
