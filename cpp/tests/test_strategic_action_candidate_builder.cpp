@@ -109,8 +109,19 @@ void builder_emits_snapshot_bound_physical_candidates() {
     const std::unordered_map<std::int32_t, std::int32_t> costs{
         {10, 3}, {20, 2}, {30, 1}
     };
+    auto audit_native = native;
+    auto training_native = native;
     const auto result = StrategicActionCandidateBuilder{}.build(
-        context, active, priorities, lineup, native, costs);
+        context, active, priorities, lineup, audit_native, costs, true);
+    const auto training_result = StrategicActionCandidateBuilder{}.build(
+        context, active, priorities, lineup, training_native, costs, false);
+    assert(training_result.candidates.size() == result.candidates.size());
+    assert(training_result.positioning.empty());
+    for (std::size_t index = 0; index < result.candidates.size(); ++index) {
+        assert(training_result.candidates[index].candidate_id == result.candidates[index].candidate_id);
+        assert(training_result.candidates[index].kind == result.candidates[index].kind);
+        assert(training_result.candidates[index].champion_id == result.candidates[index].champion_id);
+    }
     assert(result.status == "candidates_generated");
     assert(result.candidates.size() >= 6);
 
