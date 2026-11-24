@@ -17,6 +17,9 @@ No PPO, policy inference, semantic batch construction or optimizer work runs.
 from __future__ import annotations
 
 import argparse
+import gc
+import tracemalloc
+from concurrent.futures import ThreadPoolExecutor
 import csv
 import json
 import os
@@ -83,7 +86,12 @@ def _reset(target, seed: int, native: bool) -> None:
 
 def _step_native(engine, _seed: int):
     result = engine.step(PASS_ACTIONS, False, False)
-    return bool(result.get("lobby_done", False)), result.get("_binding_profile", {})
+    profile = dict(result.pop("_binding_profile", {}))
+    for key, value in result.pop("_engine_profile_ms", {}).items():
+        profile[f"native_{key}"] = float(value)
+    for key, value in result.pop("_engine_profile_counts", {}).items():
+        profile[f"native_count_{key}"] = int(value)
+    return bool(result.get("lobby_done", False)), profile
 
 
 def _step_wrapper(env, _seed: int):
@@ -98,6 +106,7 @@ def _run_case(
     iterations: int,
     seed: int,
     item_catalog: str | None,
+    memory_profile: bool = False,
 ) -> dict:
     native = mode == "native"
     os.environ["TFT_PROFILE_STEPS"] = "1"
@@ -122,6 +131,12 @@ def _run_case(
         batch_samples = []
         completed_lobby_steps = 0
         terminal_resets = 0
+        memory_before = None
+        if memory_profile:
+            gc.collect()
+            tracemalloc.start()
+            tracemalloc.reset_peak()
+            memory_before = tracemalloc.get_traced_memory()
 
         for _ in range(iterations):
             batch_start = time.perf_counter()
@@ -153,8 +168,20 @@ def _run_case(
                     terminal_resets += 1
             batch_samples.append((time.perf_counter() - batch_start) * 1000.0)
 
+        memory_metrics = {}
+        if memory_profile:
+            current_bytes, peak_bytes = tracemalloc.get_traced_memory()
+            before_current, _before_peak = memory_before or (0, 0)
+            memory_metrics = {
+                "python_tracemalloc_current_delta_bytes": current_bytes - before_current,
+                "python_tracemalloc_peak_bytes": peak_bytes,
+                "python_tracemalloc_peak_delta_bytes": max(0, peak_bytes - before_current),
+            }
+            tracemalloc.stop()
+
         return {
             "mode": mode,
+            "memory": memory_metrics,
             "lobbies": lobby_count,
             "players_per_lobby": 8,
             "warmup_iterations_per_lobby": warmup,
@@ -193,6 +220,8 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--item-catalog", default=None)
     parser.add_argument("--json-out", default=None)
     parser.add_argument("--csv-out", default=None)
+    parser.add_argument("--memory-profile", action="store_true", help="Mede alocações Python via tracemalloc (altera o custo medido).")
+    parser.add_argument("--parallel-check", action="store_true", help="Compara steps em threads independentes para evidenciar contenção do GIL.")
     return parser
 
 
@@ -241,9 +270,11 @@ def main(argv: list[str] | None = None) -> int:
             )
             result = _run_case(
                 mode, lobby_count, args.warmup, args.iterations,
-                args.seed, args.item_catalog,
+                args.seed, args.item_catalog, args.memory_profile,
             )
             report["results"].append(result)
+            if result.get("memory"):
+                print(f"  memory: {result['memory']}", flush=True)
             batch = result["sequential_batch"]
             print(
                 f"  batch mean={batch['mean_ms']:.2f} ms | "
