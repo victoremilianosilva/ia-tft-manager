@@ -2580,7 +2580,8 @@ struct TFTEngine::Impl {
 
     void refresh_native_strategic_state(std::size_t i) {
         using ProfileClock = std::chrono::steady_clock;
-        auto strategic_stage_start = ProfileClock::now();
+        const bool profile_strategic = step_profile_enabled;
+        auto strategic_stage_start = profile_strategic ? ProfileClock::now() : ProfileClock::time_point{};
         strategic_opportunity_costs[i].clear();
         // Strategic direction and composition are projected from native owners below.
         const auto& player = player_envs[i].info;
@@ -2592,10 +2593,12 @@ struct TFTEngine::Impl {
         // Native owners receive a dedicated refresh from live engine facts.
         // Native strategic state is refreshed from canonical owners and live engine facts.
         auto native_composition = refresh_native_composition_candidates(i, current_round);
-        step_profile_ms["strategic_composition_candidates_ms"] +=
-            std::chrono::duration<double, std::milli>(ProfileClock::now() - strategic_stage_start).count();
-        ++step_profile_counts["strategic_composition_candidate_refresh_calls"];
-        strategic_stage_start = ProfileClock::now();
+        if (profile_strategic) {
+            step_profile_ms["strategic_composition_candidates_ms"] +=
+                std::chrono::duration<double, std::milli>(ProfileClock::now() - strategic_stage_start).count();
+            ++step_profile_counts["strategic_composition_candidate_refresh_calls"];
+            strategic_stage_start = ProfileClock::now();
+        }
         auto& strategic_native_generation = native_composition.generation;
         auto& strategic_native_owned = native_composition.owned;
         auto& physical_star_counts_by_unit = native_composition.physical_star_counts_by_unit;
@@ -2607,10 +2610,12 @@ struct TFTEngine::Impl {
             strategic_native_generation, strategic_native_owned,
             composition_intelligence_native_candidates[i],
             player_envs[i].shop, pool, trait_milestones);
-        step_profile_ms["strategic_native_runtime_ms"] +=
-            std::chrono::duration<double, std::milli>(ProfileClock::now() - strategic_stage_start).count();
-        ++step_profile_counts["strategic_native_runtime_calls"];
-        strategic_stage_start = ProfileClock::now();
+        if (profile_strategic) {
+            step_profile_ms["strategic_native_runtime_ms"] +=
+                std::chrono::duration<double, std::milli>(ProfileClock::now() - strategic_stage_start).count();
+            ++step_profile_counts["strategic_native_runtime_calls"];
+            strategic_stage_start = ProfileClock::now();
+        }
 
         // Raw shop snapshot shared by the native composition evaluation pipeline.
         const auto& strategic_shop = player_envs[i].shop;
@@ -3608,9 +3613,11 @@ struct TFTEngine::Impl {
             composition_intelligence_players[i].planner_outputs_valid = false;
         });
         (void)native_evaluation_completed;
-        step_profile_ms["strategic_shadow_evaluation_ms"] +=
-            std::chrono::duration<double, std::milli>(ProfileClock::now() - strategic_stage_start).count();
-        ++step_profile_counts["strategic_shadow_evaluation_calls"];
+        if (profile_strategic) {
+            step_profile_ms["strategic_shadow_evaluation_ms"] +=
+                std::chrono::duration<double, std::milli>(ProfileClock::now() - strategic_stage_start).count();
+            ++step_profile_counts["strategic_shadow_evaluation_calls"];
+        }
         // END READ-ONLY STRATEGIC EVALUATION BOUNDARY.
 
 
