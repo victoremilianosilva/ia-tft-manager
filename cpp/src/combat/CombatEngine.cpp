@@ -72,10 +72,11 @@ struct RuntimeUnit {
     float last_status_tick = 0.0f;
     float mana_regen_per_second = 0.0f;
     float mana_gain_multiplier = 1.0f;
+    float base_attack_damage = 0.0f;
     float base_attack_speed = 1.0f;
-    float titans_base_ad = 0.0f;
-    float runaans_base_ad = 0.0f;
-    std::vector<float> power_gauntlet_stack_times;
+    std::unordered_map<std::string, std::vector<float>> generic_effect_stack_expiry;
+    std::unordered_map<std::string, float> generic_effect_applied_amounts;
+    std::unordered_map<std::string, float> generic_effect_previous_values;
     std::unordered_map<std::string, int> generic_effect_charges;
     std::unordered_set<std::string> generic_effects_applied;
     std::unordered_set<std::string> generic_effects_active;
@@ -246,7 +247,6 @@ bool apply_item_stats(CombatUnit& unit, std::string& error) {
         return false;
     }
 
-    const float base_attack_damage = unit.attack_damage;
     for (const auto& item : unit.items) {
         const float values[] = {
             item.attack_damage, item.ability_power, item.attack_speed,
@@ -277,33 +277,6 @@ bool apply_item_stats(CombatUnit& unit, std::string& error) {
         unit.damage_amplification += item.damage_amplification;
         unit.damage_reduction += item.damage_reduction;
 
-        // Prefer catalog-defined generic effects. The legacy item-name fallback
-        // remains only for old hand-built CombatItem fixtures without effects.
-        const bool has_generic_ad_effect = std::any_of(
-            item.effects.begin(), item.effects.end(),
-            [](const CombatEffectDefinition& effect) {
-                return effect.trigger == "combat_start" &&
-                    effect.operation == "add_stat" &&
-                    effect.stat == "attack_damage" && effect.percent_of_stat;
-            });
-        if (!has_generic_ad_effect && item.api_name == "TFT_Item_Bloodthirster")
-            unit.attack_damage += base_attack_damage * 0.15f;
-        else if (!has_generic_ad_effect && item.api_name == "TFT_Item_LastWhisper")
-            unit.attack_damage += base_attack_damage * 0.15f;
-        else if (!has_generic_ad_effect && item.api_name == "TFT_Item_RunaansHurricane")
-            unit.attack_damage += base_attack_damage * 0.10f;
-        else if (!has_generic_ad_effect && item.api_name == "TFT_Item_SteraksGage")
-            unit.attack_damage += base_attack_damage * 0.45f;
-        else if (!has_generic_ad_effect && item.api_name == "TFT_Item_MadredsBloodrazor")
-            unit.attack_damage += base_attack_damage * 0.15f;
-        else if (!has_generic_ad_effect && item.api_name == "TFT_Item_InfinityEdge")
-            unit.attack_damage += base_attack_damage * 0.35f;
-        else if (item.api_name == "TFT_Item_UnstableConcoction") {
-            if (!has_generic_ad_effect)
-                unit.attack_damage += base_attack_damage * 0.15f;
-            unit.ability_power += 15.0f;
-            unit.omnivamp = std::min(1.0f, unit.omnivamp + 0.12f);
-        }
     }
 
     if (!std::isfinite(unit.max_hp) || !std::isfinite(unit.hp) ||
@@ -353,10 +326,11 @@ bool effect_condition_matches(const CombatUnit& unit,
         return unit.role != UnitRole::TANK &&
                unit.role != UnitRole::FIGHTER &&
                unit.role != UnitRole::ASSASSIN;
+    if (effect.condition == "target_role_tank") return true;
     return false;
 }
 
-void apply_effect_stat(CombatUnit& unit, const CombatEffectDefinition& effect) {
+float apply_effect_stat(CombatUnit& unit, const CombatEffectDefinition& effect) {
     float amount = effect.value;
     if (effect.percent_of_stat) {
         if (effect.stat == "attack_damage") amount *= unit.attack_damage;
@@ -366,39 +340,83 @@ void apply_effect_stat(CombatUnit& unit, const CombatEffectDefinition& effect) {
         else if (effect.stat == "armor") amount *= unit.armor;
         else if (effect.stat == "magic_resist") amount *= unit.magic_resist;
     }
-    if (effect.stat == "attack_damage") unit.attack_damage += amount;
-    else if (effect.stat == "critical_strike_chance")
+    float before = 0.0f;
+    if (effect.stat == "attack_damage") {
+        before = unit.attack_damage;
+        unit.attack_damage += amount;
+        return unit.attack_damage - before;
+    }
+    if (effect.stat == "critical_strike_chance") {
+        before = unit.critical_strike_chance;
         unit.critical_strike_chance = std::clamp(
             unit.critical_strike_chance + amount, 0.0f, 1.0f);
-    else if (effect.stat == "attack_speed") unit.attack_speed += amount;
-    else if (effect.stat == "ability_power") unit.ability_power += amount;
-    else if (effect.stat == "armor") unit.armor += amount;
-    else if (effect.stat == "magic_resist") unit.magic_resist += amount;
-    else if (effect.stat == "omnivamp")
+        return unit.critical_strike_chance - before;
+    }
+    if (effect.stat == "attack_speed") {
+        before = unit.attack_speed;
+        unit.attack_speed += amount;
+        return amount;
+    }
+    if (effect.stat == "ability_power") {
+        unit.ability_power += amount;
+        return amount;
+    }
+    if (effect.stat == "armor") {
+        unit.armor += amount;
+        return amount;
+    }
+    if (effect.stat == "magic_resist") {
+        unit.magic_resist += amount;
+        return amount;
+    }
+    if (effect.stat == "omnivamp") {
+        before = unit.omnivamp;
         unit.omnivamp = std::clamp(unit.omnivamp + amount, 0.0f, 1.0f);
-    else if (effect.stat == "damage_amplification")
+        return unit.omnivamp - before;
+    }
+    if (effect.stat == "damage_amplification") {
         unit.damage_amplification += amount;
-    else if (effect.stat == "damage_reduction")
+        return amount;
+    }
+    if (effect.stat == "damage_reduction") {
+        before = unit.damage_reduction;
         unit.damage_reduction = std::clamp(unit.damage_reduction + amount, 0.0f, 1.0f);
-    else if (effect.stat == "max_hp") {
+        return unit.damage_reduction - before;
+    }
+    if (effect.stat == "max_hp") {
         unit.max_hp += amount;
         unit.hp += amount;
+        return amount;
+    }
+    return 0.0f;
+}
+
+template <typename Callback>
+void visit_unit_effects(const CombatUnit& unit, Callback callback) {
+    for (const auto& item : unit.items)
+        for (const auto& effect : item.effects) callback(effect);
+    for (const auto& trait : unit.traits) {
+        if (trait.active || trait.active_count > 0)
+            for (const auto& effect : trait.effects) callback(effect);
     }
 }
 
-void apply_start_combat_effects(CombatUnit& unit) {
-    auto apply = [&](const std::vector<CombatEffectDefinition>& effects) {
-        for (const auto& effect : effects) {
-            if (effect.trigger == "combat_start" && effect.operation == "add_stat" &&
-                (effect.target.empty() || effect.target == "self") &&
-                effect_condition_matches(unit, effect))
-                apply_effect_stat(unit, effect);
+void apply_start_combat_effects(RuntimeUnit& runtime) {
+    visit_unit_effects(runtime.unit, [&](const CombatEffectDefinition& effect) {
+        if (effect.trigger != "combat_start" ||
+            !effect_condition_matches(runtime.unit, effect)) return;
+        if (effect.operation == "add_stat" &&
+            (effect.target.empty() || effect.target == "self")) {
+            apply_effect_stat(runtime.unit, effect);
+        } else if (effect.operation == "grant_shield" && effect.target == "self") {
+            runtime.shield_hp += runtime.unit.max_hp * effect.value;
+            runtime.shield_expires_at = std::max(
+                runtime.shield_expires_at, effect.duration);
+        } else if (effect.operation == "restore_mana" && effect.target == "self") {
+            runtime.unit.mana = std::min(runtime.unit.max_mana,
+                runtime.unit.mana + effect.value * runtime.mana_gain_multiplier);
         }
-    };
-    for (const auto& item : unit.items) apply(item.effects);
-    for (const auto& trait : unit.traits) {
-        if (trait.active || trait.active_count > 0) apply(trait.effects);
-    }
+    });
 }
 
 void apply_start_combat_team_effects(std::vector<RuntimeUnit>& units) {
