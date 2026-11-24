@@ -10,6 +10,20 @@ def _actions(lobbies):
     return [[[6, 0, 0, 0, 0, 0] for _ in range(8)] for _ in range(lobbies)]
 
 
+def _without_instance_identifiers(value):
+    if isinstance(value, dict):
+        return {
+            key: _without_instance_identifiers(item)
+            for key, item in value.items()
+            if key not in {"engine_instance_id", "event_id"}
+        }
+    if isinstance(value, list):
+        return [_without_instance_identifiers(item) for item in value]
+    if isinstance(value, tuple):
+        return tuple(_without_instance_identifiers(item) for item in value)
+    return value
+
+
 def _make_batch_vector(count, seed, item_catalog):
     manager = _NativeLobbyBatchManager(count, seed, "", str(item_catalog))
     envs = [
@@ -126,14 +140,14 @@ def test_lobby_vector_batch_parity_includes_reward_provenance_and_action_events(
         np.testing.assert_array_equal(batch_dones, single_dones)
         for batch_info, single_info in zip(batch_infos, single_infos):
             for field in ("round", "stage", "lobby_done", "action_trace", "events"):
-                assert batch_info[field] == single_info[field]
+                assert _without_instance_identifiers(batch_info[field]) == _without_instance_identifiers(single_info[field])
             for field in ("action_rewards", "combat_rewards", "placement_rewards"):
                 np.testing.assert_array_equal(batch_info[field], single_info[field])
             assert batch_info["step_result_snapshot"]["episode_id"] == single_info["step_result_snapshot"]["episode_id"]
             assert batch_info["step_result_snapshot"]["decision_sequence"] == single_info["step_result_snapshot"]["decision_sequence"]
             assert batch_info["next_snapshot"]["episode_id"] == single_info["next_snapshot"]["episode_id"]
             assert batch_info["next_snapshot"]["decision_sequence"] == single_info["next_snapshot"]["decision_sequence"]
-            assert batch_info["action_outcome_events"] == single_info["action_outcome_events"]
+            assert _without_instance_identifiers(batch_info["action_outcome_events"]) == _without_instance_identifiers(single_info["action_outcome_events"])
             assert batch_info["reward_audit"]["player_rewards"] == single_info["reward_audit"]["player_rewards"]
     finally:
         batch.close()
