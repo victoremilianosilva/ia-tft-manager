@@ -75,6 +75,17 @@ py::dict masks_to_dict(const PlayerActionMasks& masks) {
     return result;
 }
 
+// Preserve the structured public getter used by diagnostics and legacy callers.
+py::list masks_to_list(
+    const std::array<PlayerActionMasks, 8>& masks
+) {
+    py::list result;
+    for (const auto& player_masks : masks) {
+        result.append(masks_to_dict(player_masks));
+    }
+    return result;
+}
+
 // Stable packed layout shared with CppTFTLobbyWrapper._copy_action_masks.
 // The field order matches action_contract.MASK_SHAPES exactly.
 constexpr std::size_t kPackedActionMaskWidth =
