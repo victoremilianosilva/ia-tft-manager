@@ -172,7 +172,7 @@ void builder_emits_snapshot_bound_physical_candidates() {
     assert(deploy->candidate_id.find("candidate-builder") != std::string::npos);
     assert(deploy->candidate_id.find("unit-20") != std::string::npos);
     assert(deploy->evidence_source.find("StrategicPositionPlanner") != std::string::npos);
-    assert(!native.requested_move_targets.empty());
+    assert(!audit_native.requested_move_targets.empty());
 
     const auto hold = find(StrategicActionKind::Hold);
     assert(hold != result.candidates.end());
