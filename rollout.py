@@ -123,10 +123,9 @@ class RolloutBuffer:
         )
 
         self.ptr = 0
-        # Non-tensor correlation metadata, indexed exactly like rollout transitions.
-        self.snapshot_metadata = [None for _ in range(self.num_steps)]
-        self.result_snapshot_metadata = [None for _ in range(self.num_steps)]
-        self.next_snapshot_metadata = [None for _ in range(self.num_steps)]
+        # Compact per-transition sidecar. Each row owns one decision/result/next
+        # record; equal result/next envelopes share one owned object.
+        self._metadata_records = [None for _ in range(self.num_steps)]
 
         # ============================================================
         # DADOS PRINCIPAIS
@@ -454,7 +453,7 @@ class RolloutBuffer:
             )
 
         if self.ptr > 0:
-            previous_has_identity = self.snapshot_metadata[0] is not None
+            previous_has_identity = self._metadata_records[0] is not None
             if previous_has_identity != all(supplied_groups):
                 raise ValueError(
                     "O rollout não pode misturar transições com e sem identidade."
@@ -512,7 +511,7 @@ class RolloutBuffer:
                             raise ValueError(
                                 f"{group_name}[{index}].identity inválida: {exc}"
                             ) from exc
-                    normalized.append(copy.deepcopy(metadata))
+                    normalized.append(metadata)
                 normalized_groups[group_name] = normalized
     
             identity_presence = [
@@ -729,12 +728,27 @@ class RolloutBuffer:
                             f"Semantic projection hash/contract diverge do snapshot na transição {index}."
                         )
 
-        for group_name, normalized in normalized_groups.items():
-            getattr(self, group_name)[self.ptr] = normalized
-        if not all(supplied_groups):
-            self.snapshot_metadata[self.ptr] = None
-            self.result_snapshot_metadata[self.ptr] = None
-            self.next_snapshot_metadata[self.ptr] = None
+        if all(supplied_groups):
+            # Intern equal result/next envelopes before ownership transfer so
+            # the redundant payload is never deep-copied in the first place.
+            source_results = normalized_groups["result_snapshot_metadata"]
+            source_next = normalized_groups["next_snapshot_metadata"]
+            for index, (result, next_state) in enumerate(zip(source_results, source_next)):
+                if self._metadata_values_equal(result, next_state):
+                    source_next[index] = result
+
+            # One ownership boundary for the complete transition batch. A
+            # shared deepcopy memo preserves aliases across all three groups.
+            owned_decisions, owned_results, owned_next = copy.deepcopy((
+                normalized_groups["snapshot_metadata"],
+                source_results,
+                source_next,
+            ))
+            self._metadata_records[self.ptr] = list(zip(
+                owned_decisions, owned_results, owned_next
+            ))
+        else:
+            self._metadata_records[self.ptr] = None
 
         # ============================================================
         # SALVAR
@@ -807,6 +821,46 @@ class RolloutBuffer:
         # ============================================================
 
         self.ptr += 1
+
+    @property
+    def snapshot_metadata(self):
+        return [None if rows is None else copy.deepcopy([row[0] for row in rows])
+                for rows in self._metadata_records]
+
+    @property
+    def result_snapshot_metadata(self):
+        return [None if rows is None else copy.deepcopy([row[1] for row in rows])
+                for rows in self._metadata_records]
+
+    @property
+    def next_snapshot_metadata(self):
+        return [None if rows is None else copy.deepcopy([row[2] for row in rows])
+                for rows in self._metadata_records]
+
+    def get_transition_metadata(self, step_index, env_index):
+        """Recover full audit envelopes for one transition (read-only by contract)."""
+        if not 0 <= step_index < self.ptr:
+            raise IndexError("step_index is outside the populated rollout")
+        if not 0 <= env_index < self.num_envs:
+            raise IndexError("env_index is outside the rollout")
+        rows = self._metadata_records[step_index]
+        if rows is None:
+            return None
+        decision, result, next_state = rows[env_index]
+        return copy.deepcopy({
+            "snapshot_metadata": decision,
+            "result_snapshot_metadata": result,
+            "next_snapshot_metadata": next_state,
+        })
+
+    @staticmethod
+    def _metadata_values_equal(left, right):
+        """Compare JSON-like metadata without allowing exotic equality to break storage."""
+        try:
+            result = left == right
+            return result if isinstance(result, bool) else False
+        except (TypeError, ValueError):
+            return False
 
     # =================================================================
     # TENSOR HELPER
@@ -1083,10 +1137,15 @@ class RolloutBuffer:
     def get_batches(
         self,
         batch_size,
-        normalize_advantages=False
+        normalize_advantages=False,
+        include_metadata=False,
     ):
         """
         Gera mini-lotes contendo exclusivamente transições válidas.
+
+        Full snapshot metadata is excluded by default because PPO optimizes
+        only tensor/semantic inputs. Diagnostic callers may opt in; that view
+        reuses buffer-owned rows and must be treated as read-only.
         """
 
         if self.ptr <= 0:
@@ -1165,15 +1224,23 @@ class RolloutBuffer:
                     batch_advantages.std(unbiased=False) + 1e-8
                 )
 
-            batch_snapshot_metadata = self._metadata_for_batch(
-                self.snapshot_metadata, batch_idx
-            )
-            batch_result_metadata = self._metadata_for_batch(
-                self.result_snapshot_metadata, batch_idx
-            )
-            batch_next_metadata = self._metadata_for_batch(
-                self.next_snapshot_metadata, batch_idx
-            )
+            batch_snapshot_metadata = None
+            batch_result_metadata = None
+            batch_next_metadata = None
+            if include_metadata:
+                # Decode flattened indices once, only for explicit diagnostic
+                # consumers. The PPO hot path does not need native envelopes.
+                metadata_indices = tuple(
+                    divmod(int(flat_index), self.num_envs)
+                    for flat_index in batch_idx.detach().cpu().tolist()
+                )
+                metadata_rows = tuple(
+                    self._metadata_records[step_index][env_index]
+                    for step_index, env_index in metadata_indices
+                )
+                batch_snapshot_metadata = tuple(row[0] for row in metadata_rows)
+                batch_result_metadata = tuple(row[1] for row in metadata_rows)
+                batch_next_metadata = tuple(row[2] for row in metadata_rows)
             semantic_numeric_batch = flat_semantic_numeric[batch_idx]
             semantic_batch = {
                 "numeric": semantic_numeric_batch,
@@ -1218,18 +1285,24 @@ class RolloutBuffer:
             }
 
     @staticmethod
-    def _metadata_for_batch(metadata_by_step, batch_indices):
+    def _metadata_for_batch(metadata_by_step, transition_indices):
+        """Return read-only references to buffer-owned diagnostic metadata rows.
+
+        The buffer isolates stored rows from caller mutation at insertion time.
+        Minibatch consumers must treat returned rows and nested mappings as
+        read-only. PPO does not consume these envelopes; this view is retained
+        for diagnostics and compatibility without cloning native snapshots
+        for every minibatch/epoch.
+        """
         if not metadata_by_step or metadata_by_step[0] is None:
             return None
-        num_envs = len(metadata_by_step[0])
         result = []
-        for flat_index in batch_indices.detach().cpu().tolist():
-            step_index, env_index = divmod(int(flat_index), num_envs)
+        for step_index, env_index in transition_indices:
             step_metadata = metadata_by_step[step_index]
             if step_metadata is None:
                 raise RuntimeError("Metadata parcial dentro do RolloutBuffer.")
-            result.append(copy.deepcopy(step_metadata[env_index]))
-        return result
+            result.append(step_metadata[env_index])
+        return tuple(result)
 
     # =================================================================
     # READY
@@ -1264,9 +1337,7 @@ class RolloutBuffer:
         """
 
         for index in range(self.ptr):
-            self.snapshot_metadata[index] = None
-            self.result_snapshot_metadata[index] = None
-            self.next_snapshot_metadata[index] = None
+            self._metadata_records[index] = None
         self.ptr = 0
 
         # ------------------------------------------------------------

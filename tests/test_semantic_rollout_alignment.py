@@ -152,7 +152,7 @@ def test_rollout_replay_keeps_semantic_identity_and_hash_with_the_same_row():
         result_snapshot_metadata=[result],
         next_snapshot_metadata=[next_state],
     )
-    batch = next(buffer.get_batches(batch_size=1))
+    batch = next(buffer.get_batches(batch_size=1, include_metadata=True))
     assert batch["semantic_state"]["identities"] == [identity]
     assert batch["semantic_state"]["hashes"] == [digest]
     assert batch["snapshot_metadata"][0]["semantic_projection_hash"] == digest

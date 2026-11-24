@@ -174,7 +174,7 @@ def test_rollout_buffer_preserves_per_agent_snapshot_identity():
     assert buffer.result_snapshot_metadata[0][0]["action_trace"]["handler_applied"] is True
     assert buffer.next_snapshot_metadata[0][0]["decision_sequence"] == 13
 
-    batch = next(buffer.get_batches(batch_size=2))
+    batch = next(buffer.get_batches(batch_size=2, include_metadata=True))
     assert len(batch["snapshot_metadata"]) == 2
     assert all(item["mask_snapshot_hash"] == "a" * 64 for item in batch["snapshot_metadata"])
     assert all(item["decision_sequence"] == 13 for item in batch["result_snapshot_metadata"])
@@ -656,7 +656,7 @@ def test_attach_native_action_traces_rejects_non_mapping_lobby_info():
 
 
 
-def test_rollout_metadata_nested_action_trace_is_isolated_on_store_and_batch():
+def test_rollout_metadata_isolated_on_store_and_shared_read_only_in_batches():
     buffer = RolloutBuffer(
         num_steps=1, num_envs=1, obs_dim=3, action_dim=6, device=torch.device("cpu")
     )
@@ -665,6 +665,12 @@ def test_rollout_metadata_nested_action_trace_is_isolated_on_store_and_batch():
         "decision_sequence": 21, "player_decision_sequence": 21, "player_id": 0, "lobby_index": 0,
         "mask_snapshot_hash": "a" * 64,
         "mask_snapshot_hash_algorithm": "tft-action-mask-snapshot-v1",
+        "native_player_state": {
+            "board": [{"unit": "unit-a", "items": ["item-a", "item-b"]}],
+            "bench": [],
+            "traits": [{"name": "trait-a", "count": 2}],
+        },
+        "item_recipes": [{"components": ["item-a", "item-b"], "result": "item-c"}],
     }
     trace = {
         "player_id": 0,
@@ -678,10 +684,7 @@ def test_rollout_metadata_nested_action_trace_is_isolated_on_store_and_batch():
         "decision_sequence": 22, "player_decision_sequence": 22, "player_id": 0, "lobby_index": 0,
         "action_trace": trace,
     }
-    next_state = {
-        "engine_instance_id": "engine-A", "episode_id": 4,
-        "decision_sequence": 22, "player_decision_sequence": 22, "player_id": 0, "lobby_index": 0,
-    }
+    next_state = dict(result)
 
     buffer.add(
         obs=np.zeros((1, 3), dtype=np.float32),
@@ -696,22 +699,41 @@ def test_rollout_metadata_nested_action_trace_is_isolated_on_store_and_batch():
         next_snapshot_metadata=[next_state],
     )
 
-    # Mutating caller-owned nested data must not rewrite stored rollout history.
     trace["requested_action"][0] = 0
     result["action_trace"]["status_reason"] = "caller-mutated"
+    # Compatibility accessors return defensive copies; compare their values,
+    # then retain the canonical sidecar reference for zero-copy batch checks.
     stored_trace = buffer.result_snapshot_metadata[0][0]["action_trace"]
+    canonical_trace = buffer._metadata_records[0][0][1]["action_trace"]
+    assert stored_trace is not canonical_trace
+    assert stored_trace == canonical_trace
     assert stored_trace["requested_action"] == [6, 0, 0, 0, 0, 0]
     assert stored_trace["status_reason"] == "applied"
 
-    batch = next(buffer.get_batches(batch_size=1))
-    batch_trace = batch["result_snapshot_metadata"][0]["action_trace"]
-    batch_trace["effective_action"][0] = 99
-    batch_trace["status_reason"] = "batch-mutated"
+    assert buffer._metadata_records[0][0][1] is buffer._metadata_records[0][0][2]
+    audit = buffer.get_transition_metadata(0, 0)
+    assert audit["snapshot_metadata"]["mask_snapshot_hash"] == "a" * 64
+    assert audit["snapshot_metadata"]["native_player_state"]["board"][0]["items"] == ["item-a", "item-b"]
+    assert audit["snapshot_metadata"]["item_recipes"][0]["result"] == "item-c"
+    assert audit["result_snapshot_metadata"]["action_trace"]["status_reason"] == "applied"
+    audit["result_snapshot_metadata"]["action_trace"]["status_reason"] = "audit-mutated"
+    assert buffer.result_snapshot_metadata[0][0]["action_trace"]["status_reason"] == "applied"
 
-    # Mutating batch metadata must not rewrite the buffer's canonical copy.
-    stored_trace = buffer.result_snapshot_metadata[0][0]["action_trace"]
-    assert stored_trace["effective_action"] == [6, 0, 0, 0, 0, 0]
-    assert stored_trace["status_reason"] == "applied"
+    training_batch = next(buffer.get_batches(batch_size=1))
+    assert training_batch["snapshot_metadata"] is None
+    assert training_batch["result_snapshot_metadata"] is None
+    assert training_batch["next_snapshot_metadata"] is None
+    assert "identities" not in training_batch["semantic_state"]
+    assert "hashes" not in training_batch["semantic_state"]
+
+    batch = next(buffer.get_batches(batch_size=1, include_metadata=True))
+    batch_trace = batch["result_snapshot_metadata"][0]["action_trace"]
+    assert batch["snapshot_metadata"][0] is buffer._metadata_records[0][0][0]
+    assert batch["result_snapshot_metadata"][0] is buffer._metadata_records[0][0][1]
+    assert batch["next_snapshot_metadata"][0] is buffer._metadata_records[0][0][2]
+    assert batch_trace is canonical_trace
+    assert batch_trace["effective_action"] == [6, 0, 0, 0, 0, 0]
+    assert batch_trace["status_reason"] == "applied"
 
 
 @pytest.mark.parametrize(
