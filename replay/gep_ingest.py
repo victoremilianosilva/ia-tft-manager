@@ -334,7 +334,15 @@ def load_gep_dataset_manifest(path: str | Path, *, verify_artifacts: bool = True
             artifact_path = source.parent / f"{source.stem}_artifacts" / artifact["path"]
             if not artifact_path.is_file() or sha256_file(artifact_path) != artifact["sha256"]:
                 raise ReplayIntegrityError(f"GEP artifact hash mismatch: {artifact['replay_artifact_id']}")
-            _read_hash_chain(artifact_path, expected_format=GEP_MATCH_FORMAT)
+            loaded_artifact = _read_hash_chain(artifact_path, expected_format=GEP_MATCH_FORMAT)
+            if not loaded_artifact["complete"]:
+                raise ReplayIntegrityError(
+                    f"Incomplete GEP match artifact: {artifact['replay_artifact_id']}"
+                )
+            artifact_manifest = loaded_artifact["manifest"]
+            if (artifact_manifest.get("replay_artifact_id") != artifact["replay_artifact_id"] or
+                    artifact_manifest.get("match_id") != artifact["match_id"]):
+                raise ReplayIntegrityError("GEP match artifact identity mismatch")
     return manifest
 
 
