@@ -344,7 +344,10 @@ def main():
         "revision": report["revision"],
         "wall_ms": report["process"]["wall_ms"],
         "tracemalloc_peak_bytes": report["process"]["python_tracemalloc_peak_bytes"],
-        "timing_keys": sorted(report["timings"]),
+        "timing_keys_by_lobby_count": {
+            str(run["lobbies"]): sorted(run["timings"])
+            for run in reports
+        },
     }, indent=2))
     return 0
 
