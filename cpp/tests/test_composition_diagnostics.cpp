@@ -98,10 +98,16 @@ int main() {
 
     CompositionIntelligencePlayerRuntime audit_runtime;
     audit_runtime.begin_cycle(9, 0, 1, true);
-    audit_runtime.mark_stage("planner", "completed", "audit trace");
+    audit_runtime.mark_stage("planner", "completed", "not included in audit mode");
     assert(audit_runtime.append_snapshot({{"diagnostics", {{"enabled", true}}}}));
     assert(audit_runtime.snapshots.size() == 1);
-    assert(audit_runtime.snapshots.front()["runtime_execution"]["stages"].size() == 1);
+    assert(!audit_runtime.snapshots.front().contains("runtime_execution"));
+
+    CompositionIntelligencePlayerRuntime debug_runtime;
+    debug_runtime.begin_cycle(9, 0, 1, true, true);
+    debug_runtime.mark_stage("planner", "completed", "debug trace");
+    assert(debug_runtime.append_snapshot({{"diagnostics", {{"enabled", true}}}}));
+    assert(debug_runtime.snapshots.front()["runtime_execution"]["stages"].size() == 1);
 
     for (std::size_t index = 0;
          index < CompositionIntelligencePlayerRuntime::kMaxDiagnosticSnapshots + 4;
