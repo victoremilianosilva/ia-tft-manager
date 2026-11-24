@@ -4,6 +4,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import subprocess
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -72,6 +73,15 @@ class ReplayRecorder:
             else:
                 catalogs[key] = None
         version = code_version or os.environ.get("TFT_REPLAY_CODE_VERSION") or os.environ.get("GIT_COMMIT_SHA")
+        if not version:
+            try:
+                version = subprocess.run(
+                    ["git", "rev-parse", "HEAD"],
+                    cwd=Path(__file__).resolve().parents[1],
+                    check=True, capture_output=True, text=True, timeout=2,
+                ).stdout.strip()
+            except (OSError, subprocess.SubprocessError):
+                version = None
         self.manifest = {
             "replay_format": REPLAY_FORMAT,
             "schema_version": SCHEMA_VERSION,
@@ -86,6 +96,21 @@ class ReplayRecorder:
             "deterministic": True,
             "code_version": version or "unknown",
             "catalogs": catalogs,
+            "contracts": {
+                relative: sha256_file(Path(__file__).resolve().parents[1] / relative)
+                if (Path(__file__).resolve().parents[1] / relative).is_file() else None
+                for relative in (
+                    "action_contract.py", "decision_identity.py", "reward_audit.py",
+                    "cpp/include/decision/ActionMaskEngine.hpp",
+                )
+            },
+            "runtime_config": {
+                key: os.environ.get(key)
+                for key in (
+                    "TFT_ABLATE_ITEM_ACTIONS",
+                    "TFT_COMPOSITION_INTELLIGENCE_SHADOW",
+                )
+            },
             "reexecution_eligible": seed is not None and bool(version) and all(catalogs.values()),
         }
         # Exclusive creation prevents accidental overwrite of an existing artifact.
@@ -177,6 +202,8 @@ def load_replay(path: str | Path, *, require_complete: bool = False) -> dict[str
             raise ReplayIntegrityError("Replay footer record count mismatch")
         if footer_payload.get("final_record_sha256") != footer.get("previous_record_sha256"):
             raise ReplayIntegrityError("Replay footer final hash mismatch")
+        if footer_payload.get("complete") is not (footer_payload.get("status") == "completed"):
+            raise ReplayIntegrityError("Replay footer status/completeness mismatch")
     if require_complete and not complete:
         raise ReplayIntegrityError("Replay is valid but incomplete/non-terminal")
     return {
