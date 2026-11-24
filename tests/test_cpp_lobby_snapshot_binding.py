@@ -966,3 +966,40 @@ def test_wrapper_rejects_invalid_strategic_context_sequence():
     }
     with pytest.raises(RuntimeError, match="strategic_context_sequence"):
         cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
+
+
+
+def test_wrapper_retains_python_owned_native_snapshot_without_deepcopy():
+    native = FakeNativeLobby()
+    snapshot = native._native_state_snapshot()
+    identity = {
+        "engine_instance_id": f"fake-engine-{id(native)}",
+        "episode_id": 0,
+        "decision_sequence": 0,
+        "player_decision_sequences": [0] * 8,
+    }
+
+    validated = cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(
+        snapshot, identity
+    )
+
+    assert validated is snapshot
+
+
+def test_wrapper_normalizes_owned_native_masks_without_copying_arrays():
+    masks = make_masks(3)
+
+    normalized = cpp_lobby_env.CppTFTLobbyWrapper._copy_action_masks(masks)
+
+    assert normalized is not masks
+    assert normalized[0] is not masks[0]
+    for key, original in masks[0].items():
+        assert normalized[0][key] is original
+        assert normalized[0][key].dtype == np.bool_
+
+    # Public reads remain detached from the wrapper's cached mask arrays.
+    wrapper = object.__new__(cpp_lobby_env.CppTFTLobbyWrapper)
+    wrapper._last_action_masks = normalized
+    exposed = wrapper.get_action_masks()
+    exposed[0]["type_mask"][3] = False
+    assert wrapper._last_action_masks[0]["type_mask"][3]
