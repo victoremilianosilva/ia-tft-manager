@@ -130,6 +130,21 @@ def _run_case(
                 done, profile = step_fn(target, seed + index)
                 elapsed_ms = (time.perf_counter() - start) * 1000.0
                 per_lobby_samples[index].append(elapsed_ms)
+                if isinstance(profile, dict) and profile:
+                    binding_total = float(profile.get("binding_total_ms", 0.0))
+                    if mode == "wrapper":
+                        if "python_wrapper_total" in profile:
+                            profile["python_wrapper_exclusive_ms"] = max(
+                                0.0, float(profile["python_wrapper_total"]) - binding_total
+                            )
+                        if "pybind_call_inclusive" in profile:
+                            profile["pybind_argument_conversion_overhead_ms"] = max(
+                                0.0, float(profile["pybind_call_inclusive"]) - binding_total
+                            )
+                    else:
+                        profile["native_pybind_boundary_overhead_ms"] = max(
+                            0.0, elapsed_ms - binding_total
+                        )
                 for stage_name, stage_ms in profile.items():
                     stage_samples[index].setdefault(stage_name, []).append(float(stage_ms))
                 completed_lobby_steps += 1
