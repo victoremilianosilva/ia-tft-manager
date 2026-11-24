@@ -996,8 +996,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
             units.push_back(RuntimeUnit{effective_unit, effective_unit.hp});
             auto& loaded = units.back();
             loaded.base_attack_speed = loaded.unit.attack_speed;
-            loaded.titans_base_ad = loaded.unit.attack_damage;
-            loaded.runaans_base_ad = loaded.unit.attack_damage;
+            loaded.base_attack_damage = loaded.unit.attack_damage;
             for (const auto& item : loaded.unit.items) {
                 for (const auto& effect : item.effects) {
                     if (effect.trigger == "combat_start" &&
@@ -1006,31 +1005,6 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                         std::isfinite(effect.value) && effect.value > 0.0f) {
                         loaded.mana_gain_multiplier *= effect.value;
                     }
-                }
-                const bool has_generic_mana_regen = std::any_of(
-                    item.effects.begin(), item.effects.end(),
-                    [](const CombatEffectDefinition& effect) {
-                        return effect.operation == "mana_regen";
-                    });
-                if (has_generic_mana_regen) continue;
-                // Backward compatibility for old fixtures; generated catalogs
-                // carry ManaRegen as a generic effect and skip this ID fallback.
-                if (item.api_name == "TFT_Item_HextechGunblade" ||
-                         item.api_name == "TFT_Item_Morellonomicon" ||
-                         item.api_name == "TFT_Item_SpearOfShojin" ||
-                         item.api_name == "TFT_Item_StatikkShiv") loaded.mana_regen_per_second += 1.0f;
-                else if (item.api_name == "TFT_Item_Redemption") loaded.mana_regen_per_second += 2.0f;
-            }
-            if (has_item(loaded.unit, "TFT_Item_UnstableConcoction")) {
-                loaded.hand_of_justice_ad_bonus =
-                    loaded.unit.attack_damage * (0.15f / 1.15f);
-                loaded.hand_of_justice_ad_ap_active =
-                    loaded.unit.hp / loaded.unit.max_hp > 0.50f;
-                if (loaded.hand_of_justice_ad_ap_active) {
-                    loaded.unit.attack_damage += loaded.hand_of_justice_ad_bonus;
-                    loaded.unit.ability_power += loaded.hand_of_justice_ap_bonus;
-                } else {
-                    loaded.unit.omnivamp = std::min(1.0f, loaded.unit.omnivamp + 0.12f);
                 }
             }
         }
@@ -1044,8 +1018,9 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
 
     // Apply self and team-targeted start-of-combat effects only after both
     // teams are present, so ally targeting is independent of input order.
-    for (auto& runtime : units) apply_start_combat_effects(runtime.unit);
+    for (auto& runtime : units) apply_start_combat_effects(runtime);
     apply_start_combat_team_effects(units);
+    apply_start_combat_item_effects(units, config.max_duration);
     // Team auras are attached above; calculate generic mana regeneration only
     // after that expansion so every recipient receives the shared trait aura.
     for (auto& runtime : units)
@@ -1060,16 +1035,6 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
     for (std::size_t i = 0; i < units.size(); ++i) {
         index_by_id[units[i].unit.id] = i;
         auto& runtime = units[i];
-        // Efeitos de início de combate: escudo e mana inicial.
-        if (has_item(runtime.unit, "TFT_Item_Crownguard")) {
-            runtime.shield_hp += runtime.unit.max_hp * 0.25f;
-            runtime.crown_shield_triggered = true;
-            runtime.crown_shield_expires_at = 8.0f;
-            runtime.shield_expires_at = 8.0f;
-        }
-        if (has_item(runtime.unit, "TFT_Item_FrozenHeart"))
-            runtime.unit.mana = std::min(runtime.unit.max_mana,
-                runtime.unit.mana + 20.0f * runtime.mana_gain_multiplier);
         if (has_item(runtime.unit, "TFT17_Item_FlexTraitEmblemItem")) {
             for (auto& ally : units) {
                 if (ally.unit.team != runtime.unit.team ||
