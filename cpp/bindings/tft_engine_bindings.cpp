@@ -27,82 +27,10 @@ namespace {
 using tft::PlayerActionMasks;
 using tft::TFTEngine;
 
-template <std::size_t N>
-py::array_t<bool> mask_1d(
-    const std::array<std::uint8_t, N>& source
-) {
-    py::array_t<bool> result(
-        static_cast<py::ssize_t>(N)
-    );
-
-    auto out = result.mutable_unchecked<1>();
-
-    for (std::size_t i = 0; i < N; ++i) {
-        out(static_cast<py::ssize_t>(i)) =
-            source[i] != 0;
-    }
-
-    return result;
-}
-
-template <std::size_t Rows, std::size_t Cols>
-py::array_t<bool> mask_2d(
-    const std::array<std::uint8_t, Rows * Cols>& source
-) {
-    py::array_t<bool> result({
-        static_cast<py::ssize_t>(Rows),
-        static_cast<py::ssize_t>(Cols)
-    });
-
-    auto out = result.mutable_unchecked<2>();
-
-    for (std::size_t row = 0; row < Rows; ++row) {
-        for (std::size_t col = 0; col < Cols; ++col) {
-            out(
-                static_cast<py::ssize_t>(row),
-                static_cast<py::ssize_t>(col)
-            ) = source[row * Cols + col] != 0;
-        }
-    }
-
-    return result;
-}
-
-py::dict masks_to_dict(const PlayerActionMasks& masks) {
-    py::dict result;
-
-    result["type_mask"] = mask_1d(masks.type_mask);
-    result["shop_mask"] = mask_1d(masks.shop_mask);
-    result["bench_source_mask"] =
-        mask_1d(masks.bench_source_mask);
-    result["board_target_mask"] =
-        mask_1d(masks.board_target_mask);
-    result["board_source_mask"] =
-        mask_1d(masks.board_source_mask);
-
-    result["board_move_target_masks"] =
-        mask_2d<28, 28>(
-            masks.board_move_target_masks
-        );
-
-    result["bench_move_source_mask"] =
-        mask_1d(masks.bench_move_source_mask);
-
-    result["bench_to_board_target_masks"] =
-        mask_2d<9, 28>(
-            masks.bench_to_board_target_masks
-        );
-    result["item_inventory_mask"] = mask_1d(masks.item_inventory_mask);
-    result["item_component_first_mask"] = mask_1d(masks.item_component_first_mask);
-    result["item_component_pair_masks"] = mask_2d<10, 10>(masks.item_component_pair_masks);
-    result["item_target_mask"] = mask_1d(masks.item_target_mask);
-
-    return result;
-}
-
 // Stable packed layout shared with CppTFTLobbyWrapper._copy_action_masks.
 // The field order matches action_contract.MASK_SHAPES exactly.
-constexpr std::size_t kPackedActionMaskWidth = 1280;
+constexpr std::size_t kPackedActionMaskWidth =
+    9 + 5 + 9 + 28 + 28 + (28 * 28) + 9 + (9 * 28) + 9 + 10 + (10 * 10) + 37;
 
 template <std::size_t N>
 void append_packed_mask(
