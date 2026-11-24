@@ -86,6 +86,32 @@ def load_gep_capture(path: str | Path, *, require_complete: bool = True) -> dict
         raise ReplayIntegrityError("GEP capture must be marked observational-only")
     if manifest.get("combat_telemetry_enabled") is not False:
         raise ReplayIntegrityError("GEP capture combat telemetry disposition is ambiguous")
+    capture_session_id = manifest.get("capture_session_id")
+    game_id = manifest.get("game_id")
+    if not isinstance(capture_session_id, str) or not capture_session_id:
+        raise ReplayIntegrityError("GEP capture is missing capture_session_id")
+    if not isinstance(game_id, int):
+        raise ReplayIntegrityError("GEP capture is missing numeric game_id")
+    for record in capture["records"][1:-1]:
+        payload = record.get("payload", {})
+        if payload.get("capture_session_id") not in (None, capture_session_id):
+            raise ReplayIntegrityError("GEP capture_session_id mismatch")
+        if payload.get("game_id") not in (None, game_id):
+            raise ReplayIntegrityError("GEP game_id mismatch")
+        if record.get("record_type") not in {"raw_gep_event", "canonical_state_snapshot"}:
+            raise ReplayIntegrityError("Unexpected record type in GEP capture")
+        if record.get("record_type") == "raw_gep_event" and payload.get("event") == "capture-error":
+            raise ReplayIntegrityError("GEP capture contains a provider/recorder error")
+        if record.get("record_type") == "canonical_state_snapshot":
+            state_match = payload.get("state", {}).get("matchId", {})
+            if payload.get("match_id") is not None and (
+                not isinstance(state_match, dict) or
+                state_match.get("known") is not True or
+                str(state_match.get("value")) != payload.get("match_id")
+            ):
+                raise ReplayIntegrityError("Canonical snapshot match_id identity mismatch")
+            if payload.get("complete") is not True:
+                raise ReplayIntegrityError("GEP capture contains an incomplete canonical snapshot")
     if require_complete and not capture["complete"]:
         raise ReplayIntegrityError("GEP capture is incomplete")
     return capture
