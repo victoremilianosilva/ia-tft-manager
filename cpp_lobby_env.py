@@ -15,6 +15,7 @@ from types import SimpleNamespace
 import copy
 import os
 import sys
+import time
 
 import numpy as np
 
@@ -147,6 +148,7 @@ class CppTFTLobbyWrapper:
             for i in range(self.PLAYERS_PER_LOBBY)
         ]
         self._closed = False
+        self._last_step_profile = None
 
     def grant_item_component(self, player_id: int, component_id: str) -> bool:
         """Forward a validated loot event into the authoritative native player state."""
@@ -790,6 +792,7 @@ class CppTFTLobbyWrapper:
             for i in range(self.PLAYERS_PER_LOBBY)
         ]
         self._last_action_masks = self._copy_action_masks(result.get("action_masks"))
+        profile_mark("python_arrays_and_action_masks")
         self._last_snapshot_metadata = {
             "engine_instance_id": str(result["engine_instance_id"]),
             "episode_id": int(result["episode_id"]),
@@ -805,6 +808,7 @@ class CppTFTLobbyWrapper:
         self._last_snapshot_metadata["native_state_snapshot"] = self._copy_native_state_snapshot(
             result.get("native_state_snapshot"), self._last_snapshot_metadata
         )
+        profile_mark("python_snapshot_projection_and_validation")
         self._reward_audit_ledger.reset(
             self._last_snapshot_metadata["engine_instance_id"],
             self._last_snapshot_metadata["episode_id"],
@@ -818,7 +822,20 @@ class CppTFTLobbyWrapper:
                 f"Esperava {self.PLAYERS_PER_LOBBY} ações; recebi {len(actions)}."
             )
 
+        profile_enabled = os.environ.get("TFT_PROFILE_STEPS") == "1"
+        profile = {}
+        profile_start_ns = time.perf_counter_ns()
+        profile_last_ns = profile_start_ns
+
+        def profile_mark(name):
+            nonlocal profile_last_ns
+            if profile_enabled:
+                now_ns = time.perf_counter_ns()
+                profile[name] = (now_ns - profile_last_ns) / 1_000_000.0
+                profile_last_ns = now_ns
+
         native_actions = [self._normalize_action(action) for action in actions]
+        profile_mark("python_action_normalization")
         # Preserve the exact observation snapshot consumed by this action batch.
         # Clear the public cache before stepping so a failed native step cannot
         # accidentally authorize a second decision against stale state.
@@ -834,6 +851,7 @@ class CppTFTLobbyWrapper:
             bool(timer_enabled),
             bool(timer_expired),
         )
+        profile_mark("pybind_call_inclusive")
         native_snapshot = result.get("native_state_snapshot")
         if native_snapshot is not None and not isinstance(native_snapshot, Mapping):
             native_snapshot = _NativeSnapshotMapping(native_snapshot)
@@ -893,6 +911,7 @@ class CppTFTLobbyWrapper:
             after_snapshot=self._last_snapshot_metadata["native_state_snapshot"],
             action_traces=action_traces,
         )
+        profile_mark("python_action_outcome_events")
         reward_audit = self._reward_audit_ledger.build_record(
             rewards=rewards,
             action_rewards=action_rewards,
@@ -903,6 +922,7 @@ class CppTFTLobbyWrapper:
             decision_snapshot=self._last_snapshot_metadata,
             source_decision_snapshot=source_decision_snapshot,
         )
+        profile_mark("python_reward_audit")
         info = {
             "players": player_info,
             "action_trace": action_traces,
@@ -918,6 +938,14 @@ class CppTFTLobbyWrapper:
             "reward_audit": reward_audit,
             "action_outcome_events": action_outcome_events,
         }
+        profile_mark("python_info_and_deepcopy")
+        if profile_enabled:
+            profile["python_wrapper_total"] = (
+                time.perf_counter_ns() - profile_start_ns
+            ) / 1_000_000.0
+            self._last_step_profile = profile
+        else:
+            self._last_step_profile = None
         return observations, rewards, bool(result.get("lobby_done", False)), info
 
     def adapt_opgg_compositions(self, catalog):
@@ -969,6 +997,10 @@ class CppTFTLobbyWrapper:
         if len(self._players) != self.PLAYERS_PER_LOBBY:
             raise RuntimeError("Estado de jogadores incompleto; execute reset().")
         return [bool(player.alive) for player in self._players]
+
+    def get_last_step_profile(self):
+        """Return timing samples for the most recent step when profiling is enabled."""
+        return dict(self._last_step_profile or {})
 
     def get_anti_loop_metrics(self):
         return dict(self._engine.get_anti_loop_metrics())
