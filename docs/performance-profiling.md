@@ -69,10 +69,13 @@ Strategic refresh is decomposed further:
 - `native_strategic_native_runtime_ms`: canonical native strategic runtime input and execution, including its nested sub-stages.
 - `native_strategic_native_runtime_input_preparation_ms`: construction of the native strategic cycle input.
 - `native_strategic_unified_runtime_refresh_ms`: `UnifiedStrategicRuntime.refresh` execution.
+- `native_strategic_initial_direction_discovery_ms`: initial direction selection in the native strategic runtime input.
+- `native_strategic_pivot_candidate_and_feasibility_ms`: pivot candidate and feasibility input generation.
 - `native_strategic_shadow_evaluation_ms`: isolated Shadow evaluation envelope, including nested stages.
 - `native_strategic_direction_planner_ms`: strategic direction planner.
 - `native_strategic_economic_controller_ms`: economic controller.
 - `native_strategic_action_evaluator_ms`: contextual action evaluation before Composition Intelligence.
+- `native_strategic_action_evaluator_with_candidates_ms`: action evaluation after candidate-context enrichment.
 - `native_strategic_composition_transition_proposal_ms`: composition transition proposal.
 - `native_strategic_planner_evidence_adapters_ms`: economy, board and item evidence adapters.
 - `native_strategic_unit_priority_planner_ms`: unit priority resolution.
