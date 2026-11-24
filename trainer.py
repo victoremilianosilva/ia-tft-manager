@@ -2202,6 +2202,7 @@ class Trainer:
             if wrapper_profile_calls:
                 self.writer.add_scalar("performance/wrapper/profiled_lobby_steps", wrapper_profile_calls, update)
                 for stage_name, elapsed_total_ms in wrapper_profile_totals.items():
+                    samples = sorted(wrapper_profile_samples.get(stage_name, []))
                     self.writer.add_scalar(
                         f"performance/wrapper_total_ms/{stage_name}", elapsed_total_ms, update
                     )
@@ -2210,6 +2211,9 @@ class Trainer:
                         elapsed_total_ms / wrapper_profile_calls,
                         update,
                     )
+                    if samples:
+                        self.writer.add_scalar(f"performance/wrapper_p95/{stage_name}", samples[min(len(samples)-1, round((len(samples)-1)*0.95))], update)
+                        self.writer.add_scalar(f"performance/wrapper_p99/{stage_name}", samples[min(len(samples)-1, round((len(samples)-1)*0.99))], update)
                 for lobby_index, lobby_stages in wrapper_profile_per_lobby.items():
                     for stage_name, elapsed_total_ms in lobby_stages.items():
                         samples = sorted(wrapper_profile_samples_per_lobby.get(lobby_index, {}).get(stage_name, []))
