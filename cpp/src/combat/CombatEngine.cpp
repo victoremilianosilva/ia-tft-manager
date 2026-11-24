@@ -1698,6 +1698,8 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                             std::max(0.0f, ability.attack_damage_ratio) *
                                 actor.unit.attack_damage;
                         raw *= std::max(0.0f, 1.0f + actor.unit.damage_amplification);
+                        raw *= effect_target_damage_multiplier(
+                            actor, ability_target, "on_ability_hit");
                         float damage = raw;
                         if (ability.damage_type == DamageType::PHYSICAL) {
                             const float armor = ability_target.armor_shred_until > now
@@ -1717,40 +1719,12 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                         const float hp_damage = std::min(ability_target.unit.hp, damage - absorbed);
                         ability_target.unit.hp -= hp_damage;
                         ability_target.damage_taken += damage;
-                        if (has_item(ability_target.unit, "TFT_Item_TitansResolve"))
-                            add_titans_stack(ability_target);
-                        trigger_defensive_items(ability_target, now);
+                        update_conditional_effects(ability_target, now);
+                        apply_stack_effects(ability_target, "on_damage_taken", now);
                         actor.damage_dealt += damage;
                         ability_event.damage += damage;
-                        if (has_item(actor.unit, "TFT_Item_MadredsBloodrazor") &&
-                            ability_target.unit.role == UnitRole::TANK) {
-                            const float bonus = damage * 0.15f;
-                            const float extra_hp = std::min(ability_target.unit.hp, bonus);
-                            ability_target.unit.hp -= extra_hp;
-                            ability_target.damage_taken += extra_hp;
-                            actor.damage_dealt += extra_hp;
-                            ability_event.damage += extra_hp;
-                        }
-                        if (has_item(actor.unit, "TFT_Item_LastWhisper")) {
-                            ability_target.armor_shred_until = now + 3.0f;
-                            ability_target.armor_shred_percent = 0.30f;
-                        }
-                        if (has_item(actor.unit, "TFT_Item_StatikkShiv")) {
-                            ability_target.mr_shred_until = now + 5.0f;
-                            ability_target.mr_shred_percent = 0.30f;
-                        }
-                        if (has_item(actor.unit, "TFT_Item_Morellonomicon") ||
-                            has_item(actor.unit, "TFT_Item_RedBuff") ||
-                            has_item(actor.unit, "TFT_Item_RapidFireCannon")) {
-                            ability_target.burn_until = std::max(ability_target.burn_until,
-                                now + (has_item(actor.unit, "TFT_Item_Morellonomicon") ? 10.0f : 5.0f));
-                            ability_target.burn_percent = std::max(ability_target.burn_percent, 1.0f);
-                            ability_target.burn_source_id = actor.unit.id;
-                            if (ability_target.burn_next_tick < now)
-                                ability_target.burn_next_tick = now + 1.0f;
-                            ability_target.grievous_until = std::max(ability_target.grievous_until,
-                                now + (has_item(actor.unit, "TFT_Item_Morellonomicon") ? 10.0f : 5.0f));
-                        }
+                        apply_target_status_effects(
+                            actor, ability_target, "on_ability_hit", now);
                         apply_damage_healing_effects(actor, units, damage, now);
                         if (actor.unit.omnivamp > 0.0f && damage > 0.0f) {
                             const float heal = apply_heal(actor,
@@ -1815,47 +1789,8 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                         }
                     }
                 }
-                // Centelha Iônica pune conjurações inimigas próximas, com recarga.
-                for (auto& holder : units) {
-                    if (!is_alive(holder) || holder.unit.team == actor.unit.team ||
-                        !has_item(holder.unit, "TFT_Item_IonicSpark") ||
-                        now - holder.last_ionic_proc < 2.0f ||
-                        distance_between(holder.unit, actor.unit) > 2) continue;
-                    holder.last_ionic_proc = now;
-                    const float raw = ability.mana_cost * 1.50f;
-                    const float mitigated = mitigate_physical_damage(raw, actor.unit.magic_resist);
-                    const float final_damage = mitigated *
-                        std::clamp(1.0f - actor.unit.damage_reduction, 0.0f, 1.0f);
-                    const float absorbed = std::min(actor.shield_hp, final_damage);
-                    actor.shield_hp -= absorbed;
-                    const float hp_loss = std::min(actor.unit.hp, final_damage - absorbed);
-                    actor.unit.hp -= hp_loss;
-                    actor.damage_taken += final_damage;
-                    holder.damage_dealt += final_damage;
-                    if (config.record_damage) {
-                        DamageEvent spark;
-                        spark.timestamp = now;
-                        spark.source_unit_id = holder.unit.id;
-                        spark.target_unit_id = actor.unit.id;
-                        spark.damage_type = DamageType::MAGIC;
-                        spark.raw_damage = raw;
-                        spark.final_damage = final_damage;
-                        result.damage_events.push_back(spark);
-                    }
-                    if (actor.unit.hp <= 0.0f) {
-                        trigger_defensive_items(actor, now);
-                        if (actor.unit.hp <= 0.0f) {
-                            actor.unit.alive = false;
-                            if (config.record_events) {
-                                DeathEvent death;
-                                death.timestamp = now;
-                                death.unit_id = actor.unit.id;
-                                death.killer_unit_id = holder.unit.id;
-                                result.death_events.push_back(death);
-                            }
-                        }
-                    }
-                }
+                apply_enemy_cast_effects(
+                    actor, units, ability.mana_cost, now, result, config);
                 if (config.record_abilities) result.ability_events.push_back(ability_event);
                 if (config.record_events)
                     append_generic_event(result, now, "ability",
