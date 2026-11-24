@@ -9,6 +9,7 @@ interface expected by LobbyVectorEnv/Trainer.
 """
 from __future__ import annotations
 
+from collections.abc import Mapping
 from pathlib import Path
 from types import SimpleNamespace
 import copy
@@ -45,6 +46,49 @@ except ImportError as exc:
         "Não foi possível importar tft_engine. "
         "Compile o módulo C++ com CMake antes de iniciar o Trainer."
     ) from exc
+
+
+class _NativeSnapshotMapping(Mapping):
+    """Read-only mapping over one pinned native snapshot.
+
+    The large combat event lists are converted to Python only when requested.
+    Each deepcopy creates an independent Python materialization cache while
+    retaining the immutable native snapshot value and its exact sequence.
+    """
+
+    _COMBAT_FIELDS = frozenset((
+        "combat_damage_events",
+        "combat_attack_events",
+        "combat_death_events",
+    ))
+
+    def __init__(self, handle):
+        self._handle = handle
+        self._base = None
+        self._combat_cache = {}
+
+    def _base_dict(self):
+        if self._base is None:
+            self._base = self._handle.to_dict()
+        return self._base
+
+    def __getitem__(self, key):
+        if key in self._COMBAT_FIELDS:
+            if key not in self._combat_cache:
+                self._combat_cache[key] = self._handle.combat_events(key)
+            return self._combat_cache[key]
+        return self._base_dict()[key]
+
+    def __iter__(self):
+        return iter(self._handle.keys())
+
+    def __len__(self):
+        return len(self._handle.keys())
+
+    def __deepcopy__(self, memo):
+        clone = type(self)(self._handle)
+        memo[id(self)] = clone
+        return clone
 
 
 class CppTFTLobbyWrapper:
@@ -145,7 +189,7 @@ class CppTFTLobbyWrapper:
 
     @classmethod
     def _copy_native_state_snapshot(cls, value, expected_identity):
-        if not isinstance(value, dict):
+        if not isinstance(value, Mapping):
             raise RuntimeError("Snapshot nativo estruturado ausente ou inválido.")
         version = value.get("contract_version")
         if (
@@ -259,19 +303,23 @@ class CppTFTLobbyWrapper:
             or parent_combat_sequence < 0
         ):
             raise RuntimeError("Snapshot estruturado contém combat_sequence inválido.")
-        for field in ("combat_damage_events", "combat_attack_events", "combat_death_events"):
-            rows = value.get(field)
-            if not isinstance(rows, list) or any(not isinstance(row, dict) for row in rows):
-                raise RuntimeError(f"Snapshot estruturado contém {field} inválido.")
-            for row in rows:
-                sequence = row.get("combat_sequence")
-                if "round" in row:
-                    raise RuntimeError(f"{field} duplicou round do envelope pai.")
-                if (
-                    isinstance(sequence, bool) or not isinstance(sequence, int)
-                    or sequence <= 0 or sequence > parent_combat_sequence
-                ):
-                    raise RuntimeError(f"{field} contém combat_sequence inválido.")
+        # NativeAuditSnapshotHandle validates every event sequence against the
+        # pinned parent combat_sequence in C++ before publishing this view.
+        # Dict-backed fixtures retain the full Python-side validation path.
+        if not isinstance(value, _NativeSnapshotMapping):
+            for field in ("combat_damage_events", "combat_attack_events", "combat_death_events"):
+                rows = value.get(field)
+                if not isinstance(rows, list) or any(not isinstance(row, dict) for row in rows):
+                    raise RuntimeError(f"Snapshot estruturado contém {field} inválido.")
+                for row in rows:
+                    sequence = row.get("combat_sequence")
+                    if "round" in row:
+                        raise RuntimeError(f"{field} duplicou round do envelope pai.")
+                    if (
+                        isinstance(sequence, bool) or not isinstance(sequence, int)
+                        or sequence <= 0 or sequence > parent_combat_sequence
+                    ):
+                        raise RuntimeError(f"{field} contém combat_sequence inválido.")
 
         event_contracts = (
             ("economy_resolution_events", "tft.economy-resolution-event",
