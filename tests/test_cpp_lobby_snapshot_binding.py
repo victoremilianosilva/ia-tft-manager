@@ -1125,8 +1125,13 @@ def test_training_action_masks_borrow_read_only_snapshot_buffers(monkeypatch):
     assert borrowed[0]["type_mask"] is original_type_mask
     assert not borrowed[0]["type_mask"].flags.writeable
 
-    # The public API remains detached and safe for mutable consumers.
     detached = wrapper.get_action_masks()
+    for key in original_type_mask:
+        np.testing.assert_array_equal(
+            borrowed[0][key], detached[0][key]
+        )
+
+    # The public API remains detached and safe for mutable consumers.
     assert detached[0]["type_mask"] is not original_type_mask
     detached[0]["type_mask"][2] = False
     assert original_type_mask[2]
