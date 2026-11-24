@@ -1517,13 +1517,26 @@ class TFTPolicy(nn.Module):
         if actions.device != obs.device:
             raise ValueError("Ações e observação devem estar no mesmo device.")
         self._validate_canonical_action_parameters(actions)
-        hidden = self.encode(obs, semantic_state=semantic_state)
-        bench_candidate_features, shop_candidate_features = self._candidate_features(obs, semantic_state)
+
+        # Validate once at the PPO replay boundary and share the exact entity
+        # projection across encoder, candidate heads and item-state features.
+        # This keeps NaN/Inf rejection while avoiding repeated semantic slicing
+        # and reshape work for the same batch.
+        self._validate_semantic_state_finite(semantic_state, obs)
+        semantic_entities = self._semantic_entity_features(semantic_state, obs)
+        hidden = self.encode(
+            obs, semantic_state=semantic_state, semantic_entities=semantic_entities
+        )
+        bench_candidate_features, shop_candidate_features = self._candidate_features(
+            obs, semantic_state, semantic_entities=semantic_entities
+        )
         (
             item_component_features, item_inventory_features, item_recipe_features,
             item_target_features, item_inventory_target_fit, item_recipe_target_fit,
             item_anvil_options, item_anvil_pending, item_anvil_kind_features,
-        ) = self._item_state_features(obs, semantic_state)
+        ) = self._item_state_features(
+            obs, semantic_state, semantic_entities=semantic_entities
+        )
 
         # Type
         type_logits = self.type_head(hidden)
