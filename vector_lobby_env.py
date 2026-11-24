@@ -182,9 +182,11 @@ class LobbyVectorEnv:
             stacked_dones = np.stack(all_dones).astype(np.bool_, copy=False)
             vector_batch_ms = (time.perf_counter_ns() - vector_batch_start_ns) / 1_000_000.0
             total_vector_ms = (time.perf_counter_ns() - vector_step_start_ns) / 1_000_000.0
-            for info in all_infos:
-                info["vector_performance_profile"]["vector_batch_stack_ms"] = vector_batch_ms
-                info["vector_performance_profile"]["vector_total_ms"] = total_vector_ms
+            if all_infos:
+                all_infos[0]["vector_batch_performance_profile"] = {
+                    "vector_batch_stack_ms": vector_batch_ms,
+                    "vector_total_ms": total_vector_ms,
+                }
             return (
                 stacked_obs,
                 stacked_rewards,
