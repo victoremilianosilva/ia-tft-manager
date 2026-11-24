@@ -123,10 +123,9 @@ class RolloutBuffer:
         )
 
         self.ptr = 0
-        # Non-tensor correlation metadata, indexed exactly like rollout transitions.
-        self.snapshot_metadata = [None for _ in range(self.num_steps)]
-        self.result_snapshot_metadata = [None for _ in range(self.num_steps)]
-        self.next_snapshot_metadata = [None for _ in range(self.num_steps)]
+        # Compact per-transition sidecar. Each row owns one decision/result/next
+        # record; equal result/next envelopes share one owned object.
+        self._metadata_records = [None for _ in range(self.num_steps)]
 
         # ============================================================
         # DADOS PRINCIPAIS
@@ -512,7 +511,7 @@ class RolloutBuffer:
                             raise ValueError(
                                 f"{group_name}[{index}].identity inválida: {exc}"
                             ) from exc
-                    normalized.append(copy.deepcopy(metadata))
+                    normalized.append(metadata)
                 normalized_groups[group_name] = normalized
     
             identity_presence = [
@@ -729,12 +728,27 @@ class RolloutBuffer:
                             f"Semantic projection hash/contract diverge do snapshot na transição {index}."
                         )
 
-        for group_name, normalized in normalized_groups.items():
-            getattr(self, group_name)[self.ptr] = normalized
-        if not all(supplied_groups):
-            self.snapshot_metadata[self.ptr] = None
-            self.result_snapshot_metadata[self.ptr] = None
-            self.next_snapshot_metadata[self.ptr] = None
+        if all(supplied_groups):
+            # One ownership boundary for the complete transition batch. A
+            # shared deepcopy memo preserves aliases across the three groups.
+            owned_decisions, owned_results, owned_next = copy.deepcopy((
+                normalized_groups["snapshot_metadata"],
+                normalized_groups["result_snapshot_metadata"],
+                normalized_groups["next_snapshot_metadata"],
+            ))
+            records = []
+            for decision, result, next_state in zip(
+                owned_decisions, owned_results, owned_next
+            ):
+                # Auto-reset transitions intentionally differ: the result
+                # belongs to the ending episode while next_state belongs to
+                # the newly reset episode. Share only structurally equal data.
+                if result == next_state:
+                    next_state = result
+                records.append((decision, result, next_state))
+            self._metadata_records[self.ptr] = records
+        else:
+            self._metadata_records[self.ptr] = None
 
         # ============================================================
         # SALVAR
@@ -807,6 +821,37 @@ class RolloutBuffer:
         # ============================================================
 
         self.ptr += 1
+
+    @property
+    def snapshot_metadata(self):
+        return [None if rows is None else [row[0] for row in rows]
+                for rows in self._metadata_records]
+
+    @property
+    def result_snapshot_metadata(self):
+        return [None if rows is None else [row[1] for row in rows]
+                for rows in self._metadata_records]
+
+    @property
+    def next_snapshot_metadata(self):
+        return [None if rows is None else [row[2] for row in rows]
+                for rows in self._metadata_records]
+
+    def get_transition_metadata(self, step_index, env_index):
+        """Recover full audit envelopes for one transition (read-only by contract)."""
+        if not 0 <= step_index < self.ptr:
+            raise IndexError("step_index is outside the populated rollout")
+        if not 0 <= env_index < self.num_envs:
+            raise IndexError("env_index is outside the rollout")
+        rows = self._metadata_records[step_index]
+        if rows is None:
+            return None
+        decision, result, next_state = rows[env_index]
+        return {
+            "snapshot_metadata": decision,
+            "result_snapshot_metadata": result,
+            "next_snapshot_metadata": next_state,
+        }
 
     # =================================================================
     # TENSOR HELPER
@@ -1285,9 +1330,7 @@ class RolloutBuffer:
         """
 
         for index in range(self.ptr):
-            self.snapshot_metadata[index] = None
-            self.result_snapshot_metadata[index] = None
-            self.next_snapshot_metadata[index] = None
+            self._metadata_records[index] = None
         self.ptr = 0
 
         # ------------------------------------------------------------
