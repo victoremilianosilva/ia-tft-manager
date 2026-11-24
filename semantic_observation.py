@@ -1076,6 +1076,46 @@ def build_semantic_batch(
     }
 
 
+def semantic_batch_matches_snapshot_rows(
+    batch: Mapping,
+    metadata_rows: Sequence[Mapping],
+    expected_contract: Mapping,
+) -> bool:
+    """Return whether a cached v8 projection belongs to these exact snapshot revisions.
+
+    The native decision/player sequence numbers are the immutable snapshot revision.
+    A producer that changes facts without advancing those sequences violates the native
+    snapshot contract; a different engine, episode, player, round, lobby or catalog
+    contract always invalidates the cache.
+    """
+    if not isinstance(batch, Mapping) or not isinstance(expected_contract, Mapping):
+        return False
+    identities = batch.get("identities")
+    if not isinstance(metadata_rows, Sequence) or isinstance(metadata_rows, (str, bytes)):
+        return False
+    if not isinstance(identities, Sequence) or len(identities) != len(metadata_rows):
+        return False
+    if (
+        batch.get("contract_id") != expected_contract.get("contract", {}).get("contract_id")
+        or batch.get("contract_hash") != expected_contract.get("sha256")
+    ):
+        return False
+    identity_fields = (
+        "engine_instance_id", "episode_id", "decision_sequence",
+        "player_decision_sequence", "player_id", "round", "lobby_index",
+    )
+    for metadata, identity in zip(metadata_rows, identities):
+        if not isinstance(metadata, Mapping) or not isinstance(identity, Mapping):
+            return False
+        if (
+            metadata.get("native_state_contract_id") != "tft.native-state-snapshot"
+            or metadata.get("native_state_contract_version") != 6
+            or any(metadata.get(field) != identity.get(field) for field in identity_fields)
+        ):
+            return False
+    return True
+
+
 def validate_semantic_batch_alignment(
     batch: Mapping,
     metadata_rows: Sequence[Mapping],
