@@ -120,7 +120,14 @@ void builder_emits_snapshot_bound_physical_candidates() {
         context, active, priorities, lineup, training_native, costs, false);
     assert(training_result.candidates.size() == result.candidates.size());
     assert(training_result.positioning.empty());
-    assert(training_native.requested_move_targets == audit_native.requested_move_targets);
+    assert(training_native.requested_move_targets.size() == audit_native.requested_move_targets.size());
+    for (std::size_t index = 0;
+         index < audit_native.requested_move_targets.size(); ++index) {
+        assert(training_native.requested_move_targets[index].champion_id ==
+               audit_native.requested_move_targets[index].champion_id);
+        assert(training_native.requested_move_targets[index].target_board_slot ==
+               audit_native.requested_move_targets[index].target_board_slot);
+    }
     for (std::size_t index = 0; index < result.candidates.size(); ++index) {
         assert(training_result.candidates[index].candidate_id == result.candidates[index].candidate_id);
         assert(training_result.candidates[index].kind == result.candidates[index].kind);
