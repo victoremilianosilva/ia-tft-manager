@@ -88,6 +88,12 @@ class _NativeSnapshotMapping(Mapping):
     def __deepcopy__(self, memo):
         clone = type(self)(self._handle)
         memo[id(self)] = clone
+        # Reuse the already materialized base through a Python-level defensive
+        # copy; do not ask C++ to rebuild the same large player tree a second time.
+        if self._base is not None:
+            clone._base = copy.deepcopy(self._base, memo)
+        if self._combat_cache:
+            clone._combat_cache = copy.deepcopy(self._combat_cache, memo)
         return clone
 
 
