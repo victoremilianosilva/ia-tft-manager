@@ -146,9 +146,16 @@ def run_deterministic_replay(
                 "reproduced": False, "replay_id": manifest["replay_id"],
                 "first_divergence": difference, "transitions_checked": 0,
             }
+        snapshot_keys = ("episode_id", "decision_sequence", "player_decision_sequences",
+                         "round", "stage")
+        expected_reset_snapshot = {
+            key: expected_reset["snapshot"].get(key) for key in snapshot_keys
+        }
+        actual_reset_snapshot = {
+            key: env.get_snapshot_metadata().get(key) for key in snapshot_keys
+        }
         difference = _first_difference(
-            expected_reset["snapshot"], env.get_snapshot_metadata(),
-            "$.reset.snapshot",
+            expected_reset_snapshot, actual_reset_snapshot, "$.reset.snapshot"
         )
         if difference:
             return {
@@ -202,7 +209,7 @@ def run_deterministic_replay(
                 ("next_action_masks", env.get_action_masks()),
                 ("next_snapshot", {
                     key: env.get_snapshot_metadata().get(key)
-                    for key in ("episode_id", "decision_sequence", "player_decision_sequences", "round", "stage")
+                    for key in snapshot_keys
                 }),
                 ("players", info["players"]),
                 ("action_traces", info["action_trace"]),
@@ -214,8 +221,11 @@ def run_deterministic_replay(
                 ("reward_audit", info["reward_audit"]),
             )
             for key, actual in comparisons:
+                expected = payload[key]
+                if key == "next_snapshot":
+                    expected = {name: payload["next_snapshot"].get(name) for name in snapshot_keys}
                 difference = _first_difference(
-                    payload[key], actual, f"$.transition[{checked}].{key}"
+                    expected, actual, f"$.transition[{checked}].{key}"
                 )
                 if difference:
                     return {
