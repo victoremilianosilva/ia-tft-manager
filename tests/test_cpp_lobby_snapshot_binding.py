@@ -1109,3 +1109,28 @@ def test_native_binding_pins_snapshot_and_defers_unused_combat_rows():
         assert info["decision_snapshot"]["decision_sequence"] > source_sequence
     finally:
         lobby.close()
+
+def test_wrapper_step_profiling_is_opt_in_and_preserves_transition(monkeypatch):
+    monkeypatch.setattr(cpp_lobby_env, "_NativeTFTLobby", FakeNativeLobby)
+    monkeypatch.delenv("TFT_PROFILE_STEPS", raising=False)
+    lobby = cpp_lobby_env.CppTFTLobbyWrapper(seed=23)
+    try:
+        lobby.reset()
+        _, _, done, info = lobby.step([[6, 0, 0, 0, 0, 0] for _ in range(8)])
+        assert done is False
+        assert "performance_profile" not in info
+
+        monkeypatch.setenv("TFT_PROFILE_STEPS", "1")
+        _, _, profiled_done, profiled_info = lobby.step(
+            [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        )
+        assert profiled_done is False
+        profile = profiled_info["performance_profile"]
+        assert profile["python_action_normalization"] >= 0.0
+        assert profile["python_wrapper_total"] >= 0.0
+        assert "python_reward_audit" in profile
+        assert len(profiled_info["action_trace"]) == 8
+        assert len(profiled_info["action_outcome_events"]) == 8
+    finally:
+        lobby.close()
+
