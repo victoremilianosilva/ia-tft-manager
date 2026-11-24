@@ -22,6 +22,7 @@ from rich.progress import (
 
 from training_config import TrainingConfig, cosine_lr_factor
 from decision_identity import build_player_identity_envelopes
+from immutable_snapshot import freeze_snapshot
 
 from cpp_lobby_env import CppTFTLobbyWrapper, _NativeLobbyBatchManager
 
@@ -573,7 +574,7 @@ class Trainer:
                     native_player = native_players[player_idx]
                     if not isinstance(native_player, dict) or native_player.get("player_id") != player_idx:
                         raise RuntimeError(f"Registro estruturado desalinhado para lobby {lobby_idx}, jogador {player_idx}.")
-                    metadata["native_player_state"] = copy.deepcopy(native_player)
+                    metadata["native_player_state"] = freeze_snapshot(native_player)
                     metadata["native_state_contract_id"] = native_snapshot.get("contract_id")
                     metadata["native_state_contract_version"] = native_snapshot.get("contract_version")
                     metadata["native_state_producer"] = native_snapshot.get("producer")

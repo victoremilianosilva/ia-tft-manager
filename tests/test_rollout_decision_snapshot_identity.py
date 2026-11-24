@@ -850,3 +850,29 @@ def test_observation_row_hash_rejects_non_float32_or_non_matrix_input():
         Trainer._hash_observation_rows(torch.zeros((2, 3), dtype=torch.float64))
     with pytest.raises(TypeError, match="batch"):
         Trainer._hash_observation_rows(torch.zeros(3, dtype=torch.float32))
+
+
+def test_freeze_snapshot_is_deeply_immutable_and_deepcopy_shares_ownership():
+    from copy import deepcopy
+    from immutable_snapshot import freeze_snapshot
+
+    source = {
+        "player_id": 3,
+        "units": [{"champion_id": 42, "items": [1, 2]}],
+        "strategic_state": {"active_unit_ids": [42]},
+    }
+    frozen = freeze_snapshot(source)
+    source["units"][0]["items"].append(9)
+
+    assert isinstance(frozen, dict)
+    assert isinstance(frozen["units"], list)
+    assert frozen["units"][0]["items"] == [1, 2]
+    assert deepcopy(frozen) is frozen
+    assert deepcopy({"native_player_state": frozen})["native_player_state"] is frozen
+
+    with pytest.raises(TypeError, match="immutable"):
+        frozen["player_id"] = 4
+    with pytest.raises(TypeError, match="immutable"):
+        frozen["units"][0]["items"].append(3)
+    with pytest.raises(TypeError, match="immutable"):
+        frozen["strategic_state"]["active_unit_ids"][0] = 99
