@@ -1045,9 +1045,21 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
     }
 
 
-def build_semantic_batch(metadata_rows, catalog_map: Mapping[str, int]):
+def build_semantic_batch(
+    metadata_rows,
+    catalog_map: Mapping[str, int],
+    *,
+    contract: Mapping | None = None,
+):
+    """Project each native row once, reusing the caller's immutable catalog contract."""
     projected = [project_native_player_state(row, catalog_map) for row in metadata_rows]
-    contract = build_semantic_state_checkpoint_contract(catalog_map)
+    contract = contract if contract is not None else build_semantic_state_checkpoint_contract(catalog_map)
+    if (
+        not isinstance(contract, Mapping)
+        or contract.get("contract", {}).get("contract_id") != SEMANTIC_STATE_CONTRACT_ID
+        or contract.get("contract", {}).get("version") != SEMANTIC_STATE_CONTRACT_VERSION
+    ):
+        raise ValueError("semantic batch requires the active v8 checkpoint contract")
     item_catalog_hashes = {
         row["item_state_identity"]["item_catalog_sha256"] for row in projected
     }
@@ -1069,8 +1081,11 @@ def validate_semantic_batch_alignment(
     metadata_rows: Sequence[Mapping],
     expected_contract: Mapping,
     catalog_map: Mapping[str, int],
+    *,
+    reproject: bool = True,
+    verify_catalog: bool = True,
 ) -> None:
-    """Fail closed unless each semantic row is bound to its exact native snapshot."""
+    """Validate snapshot binding; optionally re-project only at an external trust boundary."""
     if not isinstance(batch, Mapping):
         raise TypeError("semantic batch must be a mapping")
     if not isinstance(metadata_rows, Sequence) or isinstance(metadata_rows, (str, bytes)):
@@ -1081,9 +1096,16 @@ def validate_semantic_batch_alignment(
     champion_ids = batch.get("champion_ids")
     expected_id = expected_contract.get("contract", {}).get("contract_id")
     expected_hash = expected_contract.get("sha256")
-    active_contract = build_semantic_state_checkpoint_contract(catalog_map)
-    if dict(expected_contract) != active_contract:
-        raise ValueError("active semantic checkpoint contract does not match the native catalog")
+    if verify_catalog:
+        active_contract = build_semantic_state_checkpoint_contract(catalog_map)
+        if dict(expected_contract) != active_contract:
+            raise ValueError("active semantic checkpoint contract does not match the native catalog")
+    elif (
+        not isinstance(expected_contract, Mapping)
+        or expected_contract.get("contract", {}).get("contract_id") != SEMANTIC_STATE_CONTRACT_ID
+        or expected_contract.get("contract", {}).get("version") != SEMANTIC_STATE_CONTRACT_VERSION
+    ):
+        raise ValueError("semantic checkpoint contract is not the active v8 contract")
     if batch.get("contract_id") != expected_id or batch.get("contract_hash") != expected_hash:
         raise ValueError("semantic batch contract identity/hash diverges from the active checkpoint contract")
     row_count = len(metadata_rows)
@@ -1112,23 +1134,25 @@ def validate_semantic_batch_alignment(
             raise ValueError(f"semantic row {index} contract ID is not bound to its snapshot metadata")
         if metadata.get("semantic_projection_contract_hash") != expected_hash:
             raise ValueError(f"semantic row {index} contract hash is not bound to its snapshot metadata")
-        # Re-project from the native source so a detached/mutated tensor cannot
-        # retain a stale digest merely because its metadata still looks valid.
-        expected_row = project_native_player_state(metadata, catalog_map)
-        observed_item_catalog_hashes.add(
-            expected_row["item_state_identity"]["item_catalog_sha256"]
+        if reproject:
+            # Full source-to-tensor verification remains available at external audit
+            # boundaries. The Trainer has just built this projection in-process.
+            expected_row = project_native_player_state(metadata, catalog_map)
+            observed_item_catalog_hashes.add(
+                expected_row["item_state_identity"]["item_catalog_sha256"]
+            )
+            if (
+                list(numeric[index]) != expected_row["numeric"]
+                or list(champion_ids[index]) != expected_row["champion_ids"]
+                or digest != expected_row["sha256"]
+            ):
+                raise ValueError(f"semantic row {index} tensor content does not match its native projection hash")
+    if reproject:
+        expected_item_catalog_hash = (
+            next(iter(observed_item_catalog_hashes)) if len(observed_item_catalog_hashes) == 1 else None
         )
         if (
-            list(numeric[index]) != expected_row["numeric"]
-            or list(champion_ids[index]) != expected_row["champion_ids"]
-            or digest != expected_row["sha256"]
+            len(observed_item_catalog_hashes) > 1
+            or batch.get("item_catalog_sha256") != expected_item_catalog_hash
         ):
-            raise ValueError(f"semantic row {index} tensor content does not match its native projection hash")
-    expected_item_catalog_hash = (
-        next(iter(observed_item_catalog_hashes)) if len(observed_item_catalog_hashes) == 1 else None
-    )
-    if (
-        len(observed_item_catalog_hashes) > 1
-        or batch.get("item_catalog_sha256") != expected_item_catalog_hash
-    ):
-        raise ValueError("semantic batch item catalog fingerprint diverges from native player snapshots")
+            raise ValueError("semantic batch item catalog fingerprint diverges from native player snapshots")
