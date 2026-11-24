@@ -28,6 +28,13 @@ from pathlib import Path
 from typing import Callable
 
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
+# Running a file under scripts/ puts that directory, not the repository root,
+# at sys.path[0]. The adapter and its sibling modules live at the root.
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+
 PASS_ACTIONS = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
 
 
