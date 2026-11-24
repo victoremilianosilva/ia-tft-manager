@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 from cpp_lobby_env import CppTFTLobbyWrapper, _NativeLobbyBatchManager
 from vector_lobby_env import LobbyVectorEnv
@@ -97,7 +98,6 @@ def test_lobby_vector_batch_reset_failure_invalidates_all_wrappers_and_recovers(
         assert all(env.get_action_masks_for_training() for env in batch.envs)
         batch._batch_manager = FailingResetManager()
 
-        import pytest
         with pytest.raises(RuntimeError, match="synthetic batch reset failure"):
             batch.reset(seed=9400)
 
@@ -179,7 +179,9 @@ def test_batch_terminal_autoreset_keeps_transition_and_next_episode_snapshots_se
         assert next_snapshot["snapshot_kind"] == "reset"
         assert terminal_snapshot["episode_id"] != next_snapshot["episode_id"]
         assert terminal_snapshot["decision_sequence"] > 0
-        assert next_snapshot["decision_sequence"] == 0
+        current_snapshot = env.get_snapshot_metadata()
+        assert next_snapshot["decision_sequence"] == current_snapshot["decision_sequence"]
+        assert next_snapshot["player_decision_sequences"] == current_snapshot["player_decision_sequences"]
         assert rewards.shape == (1, 8)
     finally:
         batch.close()
