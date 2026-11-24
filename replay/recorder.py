@@ -5,6 +5,7 @@ import hashlib
 import json
 import os
 import subprocess
+import shutil
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -240,6 +241,7 @@ def build_dataset_manifest(replay_paths: Iterable[str | Path], output_path: str 
     match_keys = sorted(grouped)
     if len(match_keys) < 3:
         raise ValueError("Train/validation/test require at least three independent matches")
+
     ranked = sorted(match_keys, key=lambda key: hashlib.sha256(
         f"{split_seed}:{key}".encode("utf-8")
     ).hexdigest())
@@ -260,19 +262,28 @@ def build_dataset_manifest(replay_paths: Iterable[str | Path], output_path: str 
         for key in match_keys
     }
 
+    destination = Path(output_path)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    artifact_dir = destination.parent / f"{destination.stem}_artifacts"
+    artifact_dir.mkdir(parents=True, exist_ok=False)
     artifacts = []
     for replay in replays:
         manifest = replay["manifest"]
+        artifact_name = f"{manifest['replay_id']}.jsonl"
+        artifact_path = artifact_dir / artifact_name
+        shutil.copyfile(replay["path"], artifact_path)
         artifacts.append({
             "replay_id": manifest["replay_id"],
-            "path": str(Path(replay["path"]).name),
-            "sha256": sha256_file(replay["path"]),
+            "path": artifact_name,
+            "sha256": sha256_file(artifact_path),
             "match_key": manifest["match_key"],
             "engine_instance_id": manifest["engine_instance_id"],
             "episode_id": manifest["episode_id"],
             "record_count": replay["record_count"],
             "split": split_by_match[manifest["match_key"]],
             "reexecution_eligible": manifest.get("reexecution_eligible", False),
+            "code_version": manifest.get("code_version"),
+            "catalogs": manifest.get("catalogs", {}),
         })
     payload = {
         "dataset_format": "TFT_REPLAY_DATASET_V1",
@@ -288,13 +299,14 @@ def build_dataset_manifest(replay_paths: Iterable[str | Path], output_path: str 
         },
         "artifacts": sorted(artifacts, key=lambda item: item["replay_id"]),
     }
-    dataset_hash = hashlib.sha256(_canonical(payload).encode("utf-8")).hexdigest()
+    hash_payload = dict(payload)
+    hash_payload.pop("created_at", None)
+    dataset_hash = hashlib.sha256(_canonical(hash_payload).encode("utf-8")).hexdigest()
     result = dict(payload, dataset_version=f"sha256:{dataset_hash}",
                   dataset_sha256=dataset_hash)
-    destination = Path(output_path)
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    with destination.open("x", encoding="utf-8", newline="\n") as stream:
-        stream.write(json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False) + "\n")
+    with destination.open("x", encoding="utf-8", newline="\\n") as stream:
+        stream.write(json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False) + "\\n")
         stream.flush()
         os.fsync(stream.fileno())
     return result
+
