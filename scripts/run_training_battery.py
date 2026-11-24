@@ -5,6 +5,7 @@ import argparse
 from datetime import datetime, timezone
 import json
 from pathlib import Path
+import secrets
 import subprocess
 import sys
 
@@ -24,7 +25,8 @@ def main(argv: list[str] | None = None) -> int:
         description="Executa treinos nativos independentes para cada seed."
     )
     parser.add_argument("--output-root", required=True)
-    parser.add_argument("--seeds", type=parse_seeds, default=parse_seeds("11,12,13"))
+    parser.add_argument("--seeds", type=parse_seeds, default=None)
+    parser.add_argument("--runs", type=int, default=3)
     parser.add_argument("--updates", type=int, default=160)
     parser.add_argument("--lobbies", type=int, default=4)
     parser.add_argument("--rollout-steps", type=int, default=128)
@@ -32,17 +34,30 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--ppo-epochs", type=int, default=4)
     args = parser.parse_args(argv)
 
+    if args.runs <= 0:
+        parser.error("runs deve ser > 0.")
     if min(args.updates, args.lobbies, args.rollout_steps, args.batch_size, args.ppo_epochs) <= 0:
         parser.error("updates, lobbies, rollout-steps, batch-size e ppo-epochs devem ser > 0.")
+    if args.seeds is None:
+        seeds: list[int] = []
+        while len(seeds) < args.runs:
+            seed = secrets.randbits(32)
+            if seed not in seeds:
+                seeds.append(seed)
+    else:
+        seeds = args.seeds
+        if args.runs != 3 and args.runs != len(seeds):
+            parser.error("Quando --seeds for informado, --runs deve corresponder à quantidade de seeds.")
 
     output_root = Path(args.output_root).expanduser().resolve()
     if output_root.exists() and (not output_root.is_dir() or any(output_root.iterdir())):
         parser.error(f"O diretório {output_root} não está vazio; não sobrescrever execuções anteriores.")
     output_root.mkdir(parents=True, exist_ok=True)
 
+    print("Seeds desta bateria:", ",".join(str(seed) for seed in seeds), flush=True)
     script = Path(__file__).resolve().parents[1] / "train_native.py"
     runs = []
-    for seed in args.seeds:
+    for seed in seeds:
         run_dir = output_root / f"seed-{seed}"
         command = [
             sys.executable, str(script),
