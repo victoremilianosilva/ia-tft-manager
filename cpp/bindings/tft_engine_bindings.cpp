@@ -549,12 +549,37 @@ public:
     }
 
     py::list keys() const {
-        py::dict base = to_dict();
+        static constexpr const char* fields[] = {
+            "contract_id",
+            "contract_version",
+            "board_geometry_id",
+            "board_geometry_version",
+            "board_rows",
+            "board_columns",
+            "board_position_formula",
+            "source_namespace",
+            "producer",
+            "engine_instance_id",
+            "episode_id",
+            "snapshot_sequence",
+            "player_decision_sequences",
+            "round",
+            "stage",
+            "finished",
+            "combat_sequence",
+            "combat_damage_events_truncated",
+            "combat_attack_events_truncated",
+            "combat_death_events_truncated",
+            "economy_resolution_events",
+            "pvp_result_credit_events",
+            "shared_pool",
+            "players",
+            "combat_damage_events",
+            "combat_attack_events",
+            "combat_death_events"
+        };
         py::list result;
-        for (auto item : base) result.append(item.first);
-        result.append("combat_damage_events");
-        result.append("combat_attack_events");
-        result.append("combat_death_events");
+        for (const auto* field : fields) result.append(field);
         return result;
     }
 
