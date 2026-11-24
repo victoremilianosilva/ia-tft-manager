@@ -34,7 +34,8 @@ public:
         const UnitPrioritySnapshot& priorities,
         const LineupPlan& lineup,
         StrategicActionNativeSnapshot& native,
-        const std::unordered_map<std::int32_t, std::int32_t>& unit_costs) const {
+        const std::unordered_map<std::int32_t, std::int32_t>& unit_costs,
+        bool retain_positioning_diagnostics = true) const {
         StrategicActionCandidateBuildResult out;
         if (native.match_id == 0 || native.player_id != context.player_id ||
             native.round != context.round || native.sequence == 0 ||
@@ -353,7 +354,8 @@ public:
                 candidate.evidence_horizon_rounds = 1;
                 candidate.evidence_uncertainty = 0.0; // deterministic same-snapshot board-position score
                 append(std::move(candidate));
-                out.positioning.push_back(std::move(proposal));
+                if (retain_positioning_diagnostics)
+                    out.positioning.push_back(std::move(proposal));
             }
         }
 
