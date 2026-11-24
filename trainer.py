@@ -1325,6 +1325,9 @@ class Trainer:
             wrapper_profile_totals = {}
             wrapper_profile_counts = {}
             wrapper_profile_per_lobby = {}
+            wrapper_profile_samples = {}
+            wrapper_profile_samples_per_lobby = {}
+            training_step_profile_samples = {}
             vector_batch_profile_totals = {}
             wrapper_profile_calls = 0
             profile_memory_enabled = os.environ.get("TFT_PROFILE_MEMORY") == "1"
@@ -1378,6 +1381,7 @@ class Trainer:
                 training_step_profile_totals[stage_name] = (
                     training_step_profile_totals.get(stage_name, 0.0) + elapsed_ms
                 )
+                training_step_profile_samples.setdefault(stage_name, []).append(elapsed_ms)
 
             semantic_cache = None
             for step in range(
@@ -1667,6 +1671,9 @@ class Trainer:
                         for stage_name, elapsed_ms in combined_profile.items():
                             try:
                                 value = float(elapsed_ms)
+                                lobby_samples = wrapper_profile_samples_per_lobby.setdefault(lobby_index, {}).setdefault(stage_name, [])
+                                lobby_samples.append(value)
+                                wrapper_profile_samples.setdefault(stage_name, []).append(value)
                                 if stage_name.startswith("native_count_"):
                                     wrapper_profile_counts[stage_name] = wrapper_profile_counts.get(stage_name, 0.0) + value
                                     lobby_totals[stage_name] = lobby_totals.get(stage_name, 0.0) + value
@@ -1987,8 +1994,12 @@ class Trainer:
                 self.writer.add_scalar("performance/gpu/policy_inference_ms", policy_gpu_ms, update)
             if profile_steps_enabled:
                 for stage_name, elapsed_total_ms in training_step_profile_totals.items():
+                    samples = sorted(training_step_profile_samples.get(stage_name, []))
                     self.writer.add_scalar(f"performance/rollout_step_total_ms/{stage_name}", elapsed_total_ms, update)
                     self.writer.add_scalar(f"performance/rollout_step_mean_ms/{stage_name}", elapsed_total_ms / max(1, rollout_steps), update)
+                    if samples:
+                        self.writer.add_scalar(f"performance/rollout_step_p95_ms/{stage_name}", samples[min(len(samples)-1, round((len(samples)-1)*0.95))], update)
+                        self.writer.add_scalar(f"performance/rollout_step_p99_ms/{stage_name}", samples[min(len(samples)-1, round((len(samples)-1)*0.99))], update)
             bootstrap_profile_start_ns = time.perf_counter_ns()
 
             # ========================================================
@@ -2201,6 +2212,7 @@ class Trainer:
                     )
                 for lobby_index, lobby_stages in wrapper_profile_per_lobby.items():
                     for stage_name, elapsed_total_ms in lobby_stages.items():
+                        samples = sorted(wrapper_profile_samples_per_lobby.get(lobby_index, {}).get(stage_name, []))
                         if stage_name.startswith("native_count_"):
                             self.writer.add_scalar(
                                 f"performance/lobby_{lobby_index}/counts/{stage_name}",
@@ -2215,6 +2227,9 @@ class Trainer:
                                 f"performance/lobby_{lobby_index}/{stage_name}_mean_ms",
                                 elapsed_total_ms / max(1, rollout_steps), update,
                             )
+                            if samples:
+                                self.writer.add_scalar(f"performance/lobby_{lobby_index}/{stage_name}_p95_ms", samples[min(len(samples)-1, round((len(samples)-1)*0.95))], update)
+                                self.writer.add_scalar(f"performance/lobby_{lobby_index}/{stage_name}_p99_ms", samples[min(len(samples)-1, round((len(samples)-1)*0.99))], update)
                 for count_name, count_value in wrapper_profile_counts.items():
                     self.writer.add_scalar(f"performance/counts/{count_name}", count_value, update)
                 for batch_stage, elapsed_total_ms in vector_batch_profile_totals.items():
