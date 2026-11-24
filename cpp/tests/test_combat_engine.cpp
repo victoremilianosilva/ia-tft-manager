@@ -1657,8 +1657,8 @@ void test_detailed_events_are_optional_without_changing_combat_outcome() {
                 "Disabling detailed events must preserve per-unit aggregate evidence.");
     }
 
-    require(!training.damage_events.size() && !training.attack_events.size() &&
-            !training.death_events.size() && !training.events.size(),
+    require(training.damage_events.empty() && training.attack_events.empty() &&
+            training.death_events.empty() && training.events.empty(),
             "Training mode must not retain detailed event collections.");
     require(!detailed.damage_events.empty() || !detailed.attack_events.empty() ||
             !detailed.death_events.empty() || !detailed.events.empty(),
