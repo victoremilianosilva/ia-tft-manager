@@ -28,6 +28,7 @@ def _records(engine):
 
 def test_shadow_pipeline_replays_multiple_rounds_with_correlated_sequences(monkeypatch):
     monkeypatch.setenv("TFT_COMPOSITION_INTELLIGENCE_ENABLED", "1")
+    monkeypatch.setenv("TFT_COMPOSITION_DIAGNOSTICS_MODE", "audit")
     engine = CppTFTLobbyWrapper(seed=20261119)
     try:
         engine.reset(seed=20261119)
