@@ -1322,6 +1322,7 @@ class Trainer:
         ):
             update_profile_start_ns = time.perf_counter_ns()
             wrapper_profile_totals = {}
+            wrapper_profile_counts = {}
             wrapper_profile_per_lobby = {}
             wrapper_profile_calls = 0
             profile_memory_enabled = os.environ.get("TFT_PROFILE_MEMORY") == "1"
@@ -1656,8 +1657,12 @@ class Trainer:
                         for stage_name, elapsed_ms in combined_profile.items():
                             try:
                                 value = float(elapsed_ms)
-                                wrapper_profile_totals[stage_name] = wrapper_profile_totals.get(stage_name, 0.0) + value
-                                lobby_totals[stage_name] = lobby_totals.get(stage_name, 0.0) + value
+                                if stage_name.startswith("native_count_"):
+                                    wrapper_profile_counts[stage_name] = wrapper_profile_counts.get(stage_name, 0.0) + value
+                                    lobby_totals[stage_name] = lobby_totals.get(stage_name, 0.0) + value
+                                else:
+                                    wrapper_profile_totals[stage_name] = wrapper_profile_totals.get(stage_name, 0.0) + value
+                                    lobby_totals[stage_name] = lobby_totals.get(stage_name, 0.0) + value
                             except (TypeError, ValueError):
                                 continue
 
@@ -2168,14 +2173,22 @@ class Trainer:
                     )
                 for lobby_index, lobby_stages in wrapper_profile_per_lobby.items():
                     for stage_name, elapsed_total_ms in lobby_stages.items():
-                        self.writer.add_scalar(
-                            f"performance/lobby_{lobby_index}/{stage_name}_total_ms",
-                            elapsed_total_ms, update,
-                        )
-                        self.writer.add_scalar(
-                            f"performance/lobby_{lobby_index}/{stage_name}_mean_ms",
-                            elapsed_total_ms / max(1, rollout_steps), update,
-                        )
+                        if stage_name.startswith("native_count_"):
+                            self.writer.add_scalar(
+                                f"performance/lobby_{lobby_index}/counts/{stage_name}",
+                                elapsed_total_ms, update,
+                            )
+                        else:
+                            self.writer.add_scalar(
+                                f"performance/lobby_{lobby_index}/{stage_name}_total_ms",
+                                elapsed_total_ms, update,
+                            )
+                            self.writer.add_scalar(
+                                f"performance/lobby_{lobby_index}/{stage_name}_mean_ms",
+                                elapsed_total_ms / max(1, rollout_steps), update,
+                            )
+                for count_name, count_value in wrapper_profile_counts.items():
+                    self.writer.add_scalar(f"performance/counts/{count_name}", count_value, update)
             if profile_memory_enabled:
                 memory_current, memory_peak = tracemalloc.get_traced_memory()
                 self.writer.add_scalar("performance/memory/python_current_bytes", memory_current, update)
