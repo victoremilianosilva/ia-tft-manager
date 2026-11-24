@@ -177,8 +177,7 @@ class FakeNativeLobby:
             "episode_id": self.episode_id,
             "decision_sequence": self.decision_sequence,
             "player_decision_sequences": list(self.player_decision_sequences),
-            "native_state_snapshot": self._native_state_snapshot(),
-            "observation_dim": 4,
+            "native_state_snapshot": self._native_state_snapshot(),            "observation_dim": 4,
         }
 
     def step(self, _actions, _timer_enabled=False, _timer_expired=False):
@@ -357,8 +356,7 @@ def test_step_masks_are_taken_from_same_native_snapshot(monkeypatch):
         masks = lobby.get_action_masks()
 
         assert observations.shape == (8, 4)
-        assert rewards.shape == (8,)
-        assert done is False
+        assert rewards.shape == (8,)        assert done is False
         assert all(mask["type_mask"][2] for mask in masks)
         assert all(not mask["type_mask"][8] for mask in masks)
         assert len(info["action_trace"]) == 8
@@ -537,8 +535,7 @@ def test_player_liveness_exposes_latest_wrapper_state(monkeypatch):
 
 
 class _VectorStepEnv:
-    def __init__(self, *, fail_step=False):
-        self.fail_step = fail_step
+    def __init__(self, *, fail_step=False):        self.fail_step = fail_step
         self.step_calls = 0
         self.reset_calls = 0
         self.players = [type("Player", (), {"alive": True})() for _ in range(8)]
@@ -718,7 +715,6 @@ def test_wrapper_rejects_economy_event_that_repeats_parent_identity():
     with pytest.raises(RuntimeError, match="duplicou identidade/sequence"):
         cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
 
-
 def test_wrapper_accepts_event_specific_combat_sequences_with_parent_envelope():
     native = FakeNativeLobby()
     native.episode_id = 1
@@ -897,8 +893,7 @@ def test_wrapper_rejects_live_item_ownership_after_retirement():
     player = snapshot["players"][0]
     player["item_ownership_retired"] = True
     player["item_components"] = ["sword"]
-    identity = {
-        "engine_instance_id": f"fake-engine-{id(native)}",
+    identity = {        "engine_instance_id": f"fake-engine-{id(native)}",
         "episode_id": 0,
         "decision_sequence": 0,
         "player_decision_sequences": [0] * 8,
@@ -1003,3 +998,33 @@ def test_wrapper_normalizes_owned_native_masks_without_copying_arrays():
     exposed = wrapper.get_action_masks()
     exposed[0]["type_mask"][3] = False
     assert wrapper._last_action_masks[0]["type_mask"][3]
+
+
+
+def test_published_step_snapshot_isolated_and_source_survives_later_steps(monkeypatch):
+    monkeypatch.setattr(cpp_lobby_env, "_NativeTFTLobby", FakeNativeLobby)
+    lobby = cpp_lobby_env.CppTFTLobbyWrapper(seed=11)
+
+    try:
+        lobby.reset()
+        _, _, _, first_info = lobby.step(
+            [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        )
+        first_snapshot = first_info["decision_snapshot"]
+        first_snapshot["native_state_snapshot"]["players"][0]["board"].clear()
+
+        # Public info is detached from the wrapper's private source snapshot.
+        retained = lobby.get_snapshot_metadata()
+        assert retained["decision_sequence"] == 2
+        assert len(retained["native_state_snapshot"]["players"][0]["board"]) == 28
+
+        _, _, _, second_info = lobby.step(
+            [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        )
+        second_event = second_info["action_outcome_events"][0]
+        assert second_event["source_decision"]["snapshot_sequence"] == 2
+        assert second_event["outcome_snapshot"]["snapshot_sequence"] == 3
+        assert second_info["decision_snapshot"]["decision_sequence"] == 3
+        assert second_info["reward_audit"]["decision_sequence"] == 3
+    finally:
+        lobby.close()
