@@ -192,8 +192,7 @@ public:
   return o;
  }
  static BoardPlannerEvidence board(const strategy::BoardEvaluationResult& r,
-  std::uint32_t source_round,std::uint32_t expected_round,
-  items::ItemFitCache* fit_cache=nullptr) {
+  std::uint32_t source_round,std::uint32_t expected_round) {
   BoardPlannerEvidence o;o.metadata=make_metadata("BoardEvaluation",source_round,expected_round,r.unit_count>0);
   if(!o.metadata.available)return o;
   if(!std::isfinite(r.positional_score)||!std::isfinite(r.structural_score)||!std::isfinite(r.synergy_score)||!std::isfinite(r.total_score)||!std::isfinite(r.strategic_fit_score)||!std::isfinite(r.unit_quality_score)||!std::isfinite(r.trait_coherence_score)){o.metadata.available=false;o.metadata.quality=EvidenceQuality::Invalid;o.metadata.reason="non_finite_board_metric";return o;}
@@ -207,7 +206,8 @@ public:
  }
  static ItemPlannerEvidence item(const items::ItemEngine& engine,const items::ItemPlayerState& state,
   const std::vector<ItemUnitBinding>& bindings,
-  std::uint32_t source_round,std::uint32_t expected_round) {
+  std::uint32_t source_round,std::uint32_t expected_round,
+  items::ItemFitCache* fit_cache=nullptr) {
   ItemPlannerEvidence o;o.metadata=make_metadata("ItemEngine",source_round,expected_round,true);
   if(!o.metadata.available)return o;
   o.inventory_count=state.inventory.size();o.component_count=state.components.size();
