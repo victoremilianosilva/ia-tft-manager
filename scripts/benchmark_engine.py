@@ -89,8 +89,12 @@ def _reset(target, seed: int, native: bool) -> None:
 
 
 def _step_native(engine, _seed: int):
+    call_start = time.perf_counter()
     result = engine.step(PASS_ACTIONS, False, False)
+    pybind_call_ms = (time.perf_counter() - call_start) * 1000.0
     profile = dict(result.pop("_binding_profile", {}))
+    profile["pybind_call_inclusive"] = pybind_call_ms
+    profile["binding_gil_held_ms"] = pybind_call_ms
     for key, value in result.pop("_engine_profile_ms", {}).items():
         profile[f"native_{key}"] = float(value)
     for key, value in result.pop("_engine_profile_counts", {}).items():
@@ -245,17 +249,25 @@ def _run_parallel_case(
             targets.append(target)
             _reset(target, (seed + index) & 0xFFFFFFFF, native)
 
-        def step_one(pair):
-            index, target = pair
+        def step_one(index, target, submitted_at):
             started = time.perf_counter()
+            dispatch_wait_ms = (started - submitted_at) * 1000.0
             done, profile = step_fn(target, seed + index)
             elapsed_ms = (time.perf_counter() - started) * 1000.0
+            profile["thread_dispatch_wait_ms"] = dispatch_wait_ms
             return index, done, profile, elapsed_ms
+
+        def run_parallel_iteration(executor, pairs):
+            futures = []
+            for index, target in pairs:
+                submitted_at = time.perf_counter()
+                futures.append(executor.submit(step_one, index, target, submitted_at))
+            return [future.result() for future in futures]
 
         with ThreadPoolExecutor(max_workers=lobby_count) as executor:
             pairs = list(enumerate(targets))
             for _ in range(warmup):
-                results = list(executor.map(step_one, pairs))
+                results = run_parallel_iteration(executor, pairs)
                 for index, done, _profile, _elapsed in results:
                     if done:
                         _reset(targets[index], (seed + index) & 0xFFFFFFFF, native)
@@ -267,7 +279,7 @@ def _run_parallel_case(
             terminal_resets = 0
             for _ in range(iterations):
                 batch_start = time.perf_counter()
-                results = list(executor.map(step_one, pairs))
+                results = run_parallel_iteration(executor, pairs)
                 batch_samples.append((time.perf_counter() - batch_start) * 1000.0)
                 for index, done, profile, elapsed_ms in results:
                     per_lobby_samples[index].append(elapsed_ms)
