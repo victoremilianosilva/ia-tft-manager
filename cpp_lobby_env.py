@@ -855,9 +855,17 @@ class CppTFTLobbyWrapper:
         )
         profile_mark("pybind_call_inclusive")
         binding_profile = result.pop("_binding_profile", {})
+        engine_profile = result.pop("_engine_profile_ms", {})
+        engine_counts = result.pop("_engine_profile_counts", {})
         if profile_enabled and isinstance(binding_profile, Mapping):
             for key, value in binding_profile.items():
                 profile[key] = float(value)
+        if profile_enabled and isinstance(engine_profile, Mapping):
+            for key, value in engine_profile.items():
+                profile[f"native_{key}"] = float(value)
+        if profile_enabled and isinstance(engine_counts, Mapping):
+            for key, value in engine_counts.items():
+                profile[f"native_count_{key}"] = int(value)
         native_snapshot = result.get("native_state_snapshot")
         if native_snapshot is not None and not isinstance(native_snapshot, Mapping):
             native_snapshot = _NativeSnapshotMapping(native_snapshot)
