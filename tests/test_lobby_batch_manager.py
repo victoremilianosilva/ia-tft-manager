@@ -54,7 +54,7 @@ def test_lobby_batch_manager_rejects_invalid_lifecycle_and_batch_shapes():
     with pytest.raises(ValueError, match="seed|lobby"):
         manager.reset(seed=2**64 - 1)
     manager.reset(seed=100)
-    with pytest.raises(ValueError, match="lobbies"):
+    with pytest.raises(ValueError, match="lobby"):
         manager.step(_pass_actions(1))
     with pytest.raises(ValueError, match="8 jogadores"):
         manager.step([[[6, 0, 0, 0, 0, 0] for _ in range(7)] for _ in range(2)])
