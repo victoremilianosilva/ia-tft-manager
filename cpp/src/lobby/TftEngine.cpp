@@ -3215,7 +3215,12 @@ struct TFTEngine::Impl {
                 }
                 for (const auto& pair : owned_priority) priority_context.owned_units.push_back(pair.second);
                 for (const auto& pair : unit_evidence) priority_context.evidence.push_back(pair.second);
+                detail_profile_start = profile_strategic ? ProfileClock::now() : ProfileClock::time_point{};
                 const auto priorities = ci::UnitPriorityPlanner{}.resolve(active, priority_context);
+                if (profile_strategic) {
+                    step_profile_ms["strategic_unit_priority_planner_ms"] += std::chrono::duration<double, std::milli>(ProfileClock::now() - detail_profile_start).count();
+                    ++step_profile_counts["strategic_unit_priority_planner_calls"];
+                }
                 runtime.mark_stage("unit_priorities", priorities.stale ? "unavailable" : "completed",
                     priorities.stale ? priorities.stale_reason : "priorities resolved against active version",
                     active);
@@ -3229,7 +3234,12 @@ struct TFTEngine::Impl {
                 lineup_context.player_id = static_cast<std::int32_t>(i);
                 lineup_context.round = round_id;
                 lineup_context.sequence = strategic_context_sequences[i];
+                detail_profile_start = profile_strategic ? ProfileClock::now() : ProfileClock::time_point{};
                 const auto lineup = ci::LineupPlanner{}.plan(active, priorities, lineup_context);
+                if (profile_strategic) {
+                    step_profile_ms["strategic_lineup_planner_ms"] += std::chrono::duration<double, std::milli>(ProfileClock::now() - detail_profile_start).count();
+                    ++step_profile_counts["strategic_lineup_planner_calls"];
+                }
                 // Keep the planner products attached to this player's runtime so
                 // engine consumers read the exact same composition version and
                 // evidence snapshot instead of reconstructing duplicated planned-unit arrays.
@@ -3299,8 +3309,13 @@ struct TFTEngine::Impl {
                         const auto* definition = catalog->find_by_id(priority.champion_id);
                         if (definition) unit_costs[priority.champion_id] = definition->cost;
                     }
+                detail_profile_start = profile_strategic ? ProfileClock::now() : ProfileClock::time_point{};
                 const auto candidate_build = ci::StrategicActionCandidateBuilder{}.build(
                     strategic_context, active, priorities, lineup, native_action_state, unit_costs);
+                if (profile_strategic) {
+                    step_profile_ms["strategic_action_candidate_generation_ms"] += std::chrono::duration<double, std::milli>(ProfileClock::now() - detail_profile_start).count();
+                    ++step_profile_counts["strategic_action_candidate_generation_calls"];
+                }
                 strategic_context.action_candidates = candidate_build.candidates;
                 evidence_context.planner_context.action_candidates = candidate_build.candidates;
                 runtime.mark_stage("action_candidate_generation",
@@ -3310,6 +3325,7 @@ struct TFTEngine::Impl {
                     evidence_context.planner_context, economic_decision);
 
                 ci::CompositionActionEvaluation composition_actions;
+                detail_profile_start = profile_strategic ? ProfileClock::now() : ProfileClock::time_point{};
                 if (active) {
                     composition_actions = ci::CompositionActionEvaluator{}.evaluate(
                         active, priorities, lineup, strategic_context, economic_decision,
@@ -3318,6 +3334,10 @@ struct TFTEngine::Impl {
                     composition_actions.stale = true;
                     composition_actions.stale_reason = "no active composition";
                     composition_actions.evaluation.shadow_only = true;
+                }
+                if (profile_strategic) {
+                    step_profile_ms["strategic_composition_action_evaluator_ms"] += std::chrono::duration<double, std::milli>(ProfileClock::now() - detail_profile_start).count();
+                    ++step_profile_counts["strategic_composition_action_evaluator_calls"];
                 }
                 runtime.mark_stage("action_evaluation",
                     composition_actions.stale ? "unavailable" : "completed",
@@ -3328,6 +3348,7 @@ struct TFTEngine::Impl {
                 // list, but separate contracts and scoring. Its failure is isolated
                 // and cannot prevent baseline diagnostics from being recorded.
                 ci::ContextualActionEvaluation contextual_actions;
+                detail_profile_start = profile_strategic ? ProfileClock::now() : ProfileClock::time_point{};
                 try {
                     contextual_actions = ci::ContextualActionEvaluator{}.evaluate(
                         active, priorities, lineup, strategic_context, &evidence, episode_id);
@@ -3340,6 +3361,10 @@ struct TFTEngine::Impl {
                     contextual_actions.stale = true;
                     contextual_actions.stale_reason = "contextual_evaluator_exception: unknown";
                     contextual_actions.rationale = "contextual_evaluator_failed_isolated";
+                }
+                if (profile_strategic) {
+                    step_profile_ms["strategic_contextual_action_evaluator_ms"] += std::chrono::duration<double, std::milli>(ProfileClock::now() - detail_profile_start).count();
+                    ++step_profile_counts["strategic_contextual_action_evaluator_calls"];
                 }
                 runtime.mark_stage("contextual_action_evaluation",
                     contextual_actions.stale ? "unavailable" : "completed",
@@ -3593,6 +3618,7 @@ struct TFTEngine::Impl {
                 const auto diagnostic_timestamp_unix_ms = static_cast<std::uint64_t>(
                     std::chrono::duration_cast<std::chrono::milliseconds>(
                         std::chrono::system_clock::now().time_since_epoch()).count());
+                detail_profile_start = profile_strategic ? ProfileClock::now() : ProfileClock::time_point{};
                 const auto context_bridge =
                     ci::StrategicContextBridge::adapt(bridge_input);
 
@@ -3610,6 +3636,10 @@ struct TFTEngine::Impl {
                 };
                 if (runtime.append_snapshot(std::move(diagnostic_json)))
                     ++composition_intelligence_sequence;
+                if (profile_strategic) {
+                    step_profile_ms["strategic_context_bridge_and_diagnostic_serialization_ms"] += std::chrono::duration<double, std::milli>(ProfileClock::now() - detail_profile_start).count();
+                    ++step_profile_counts["strategic_context_bridge_and_diagnostic_serialization_calls"];
+                }
             }
             } catch (const std::exception& error) {
                 strategic_refresh_failure_reasons[i] =
