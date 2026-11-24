@@ -3348,8 +3348,13 @@ struct TFTEngine::Impl {
                 runtime.mark_stage("action_candidate_generation",
                     candidate_build.status == "candidates_generated" ? "completed" : "unavailable",
                     candidate_build.status, active);
+                detail_profile_start = profile_strategic ? ProfileClock::now() : ProfileClock::time_point{};
                 action_decision = action_evaluator.evaluate(
                     evidence_context.planner_context, economic_decision);
+                if (profile_strategic) {
+                    step_profile_ms["strategic_action_evaluator_with_candidates_ms"] += std::chrono::duration<double, std::milli>(ProfileClock::now() - detail_profile_start).count();
+                    ++step_profile_counts["strategic_action_evaluator_with_candidates_calls"];
+                }
 
                 ci::CompositionActionEvaluation composition_actions;
                 detail_profile_start = profile_strategic ? ProfileClock::now() : ProfileClock::time_point{};
