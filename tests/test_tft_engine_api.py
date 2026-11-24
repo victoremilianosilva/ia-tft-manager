@@ -1406,6 +1406,38 @@ def test_audit_snapshot_publishes_identity_bound_economy_resolution_events():
         engine.close()
 
 
+def test_training_mode_omits_detailed_combat_events(monkeypatch):
+    """Normal training keeps combat progression but does not retain audit traces."""
+    monkeypatch.setenv("TFT_COMBAT_REPLAY_MODE", "off")
+    engine = TFTLobby(seed=20261121)
+
+    try:
+        engine.reset()
+        initial = engine.get_audit_snapshot()
+        champion_id = initial["players"][0]["bench"][0]["champion_id"]
+        assert champion_id
+
+        for slot in range(28):
+            assert engine.set_unit_for_testing(0, True, slot, champion_id, 1)
+        for player_id in range(1, 8):
+            assert engine.set_unit_for_testing(player_id, True, 0, champion_id, 1)
+
+        pass_actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        for _ in range(5 * 15):
+            engine.step(pass_actions)
+
+        after = engine.get_audit_snapshot()
+        assert after["combat_sequence"] >= 4
+        assert after["combat_damage_events"] == []
+        assert after["combat_attack_events"] == []
+        assert after["combat_death_events"] == []
+        assert after["combat_damage_events_truncated"] is False
+        assert after["combat_attack_events_truncated"] is False
+        assert after["combat_death_events_truncated"] is False
+    finally:
+        engine.close()
+
+
 def test_audit_snapshot_publishes_identity_bound_combat_damage_events(monkeypatch):
     """Combat damage events retain native player and UnitInstance provenance."""
     # Detailed event retention is opt-in; this test exercises the audit path.
