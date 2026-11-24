@@ -1,6 +1,7 @@
 
 #include <algorithm>
 #include <array>
+#include <chrono>
 #include <cstdint>
 #include <memory>
 #include <optional>
@@ -981,6 +982,8 @@ PYBIND11_MODULE(tft_engine, module) {
                const std::vector<std::vector<std::int32_t>>& raw_actions,
                bool timer_enabled,
                bool timer_expired) {
+                using Clock = std::chrono::steady_clock;
+                const auto total_start = Clock::now();
                 if (raw_actions.size() != tft::kPlayersPerLobby) {
                     throw py::value_error("actions deve conter 8 jogadores.");
                 }
@@ -999,7 +1002,22 @@ PYBIND11_MODULE(tft_engine, module) {
                             raw_actions[player][component];
                     }
                 }
-                return step_to_dict(self.step(actions, timer_enabled, timer_expired));
+                const auto parse_end = Clock::now();
+                auto native_result = self.step(actions, timer_enabled, timer_expired);
+                const auto engine_end = Clock::now();
+                auto result = step_to_dict(std::move(native_result));
+                const auto conversion_end = Clock::now();
+                py::dict profile;
+                profile["binding_action_parse_ms"] =
+                    std::chrono::duration<double, std::milli>(parse_end - total_start).count();
+                profile["native_engine_step_ms"] =
+                    std::chrono::duration<double, std::milli>(engine_end - parse_end).count();
+                profile["binding_result_conversion_ms"] =
+                    std::chrono::duration<double, std::milli>(conversion_end - engine_end).count();
+                profile["binding_total_ms"] =
+                    std::chrono::duration<double, std::milli>(conversion_end - total_start).count();
+                result["_binding_profile"] = std::move(profile);
+                return result;
             },
             py::arg("actions"),
             py::arg("timer_enabled") = false,
