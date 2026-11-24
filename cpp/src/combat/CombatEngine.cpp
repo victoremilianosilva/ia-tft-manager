@@ -56,7 +56,6 @@ struct RuntimeUnit {
     float mr_shred_percent = 0.0f;
     int runaan_stacks = 0;
     int power_gauntlet_stacks = 0;
-    int challenger_attacks_remaining = 0;
     bool resist_emblem_triggered = false;
     bool assassin_omnivamp_active = false;
     bool bloodthirster_triggered = false;
@@ -115,11 +114,6 @@ int distance_between(const CombatUnit& a, const CombatUnit& b) {
 
 bool is_alive(const RuntimeUnit& unit) {
     return unit.unit.alive && unit.unit.hp > 0.0f;
-}
-
-bool has_item(const CombatUnit& unit, const char* api_name) {
-    return std::any_of(unit.items.begin(), unit.items.end(),
-        [&](const CombatItem& item) { return item.api_name == api_name; });
 }
 
 bool effect_condition_matches(
@@ -1681,11 +1675,6 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                                 actor.unit.ability_power;
                         ability_target.shield_hp += shield;
                         ability_event.shield += shield;
-                        for (auto& ally : units) {
-                            if (ally.unit.team == actor.unit.team &&
-                                has_item(ally.unit, "TFT17_Item_ShieldTankEmblemItem"))
-                                ally.unit.ability_power += 2.0f;
-                        }
                     }
 
                     if (ability_target.unit.hp <= 0.0f && ability_target.unit.alive) {
@@ -1698,8 +1687,6 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                             const float actual_heal = apply_heal(actor, generic_kill_heal, now);
                             actor.healing_done += actual_heal;
                         }
-                        if (has_item(actor.unit, "TFT17_Item_ASTraitEmblemItem"))
-                            actor.challenger_attacks_remaining = 3;
                         if (config.record_events) {
                             DeathEvent death;
                             death.timestamp = now;
@@ -1853,8 +1840,6 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                     const float actual_heal = apply_heal(actor, generic_kill_heal, now);
                     actor.healing_done += actual_heal;
                 }
-                if (has_item(actor.unit, "TFT17_Item_ASTraitEmblemItem"))
-                    actor.challenger_attacks_remaining = 3;
 
                 if (config.record_events) {
                     DeathEvent de;
