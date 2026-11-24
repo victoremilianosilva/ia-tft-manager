@@ -127,12 +127,19 @@ class CppTFTLobbyWrapper:
         return [int(value) for value in values]
 
     @staticmethod
-    def _copy_action_masks(masks):
-        """Detach the exact native mask payload from mutable binding buffers."""
+    def _copy_action_masks(masks, *, detach_arrays=False):
+        """Normalize native masks; detach buffers only when exposing them publicly."""
         if masks is None or len(masks) != CppTFTLobbyWrapper.PLAYERS_PER_LOBBY:
             raise RuntimeError("Snapshot nativo sem as oito action masks esperadas.")
         return [
-            {key: np.asarray(value, dtype=np.bool_) for key, value in player.items()}
+            {
+                key: (
+                    np.asarray(value, dtype=np.bool_).copy()
+                    if detach_arrays
+                    else np.asarray(value, dtype=np.bool_)
+                )
+                for key, value in player.items()
+            }
             for player in masks
         ]
 
@@ -845,7 +852,7 @@ class CppTFTLobbyWrapper:
         if self._last_action_masks is None:
             raise RuntimeError("Execute reset() antes de solicitar action masks.")
 
-        masks = self._copy_action_masks(self._last_action_masks)
+        masks = self._copy_action_masks(self._last_action_masks, detach_arrays=True)
         if os.environ.get("TFT_ABLATE_ITEM_ACTIONS") != "1":
             return masks
 
