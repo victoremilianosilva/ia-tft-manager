@@ -682,19 +682,28 @@ private:
 };
 
 
-// Observation-local memoization for item compatibility. The cache is created
-// from one immutable UnitProfile snapshot and discarded with that observation.
+// Engine/lobby-lifetime memoization. A UUID retains only its latest complete
+// profile signature, invalidating results whenever any semantic input changes.
 class ItemFitCache {
 public:
     explicit ItemFitCache(const ItemEngine* engine) noexcept : engine_(engine) {}
 
+    [[nodiscard]] bool uses(const ItemEngine* engine) const noexcept {
+        return engine_ == engine;
+    }
+
     [[nodiscard]] double get(const std::string& item_id, const UnitProfile& unit) {
-        if (!engine_) return -1.0;
-        auto& by_item = values_[unit.uuid];
-        const auto found = by_item.find(item_id);
-        if (found != by_item.end()) return found->second;
+        if (!engine_ || unit.uuid.empty()) return -1.0;
+        auto& entry = values_[unit.uuid];
+        const auto signature = profile_signature(unit);
+        if (entry.signature != signature) {
+            entry.signature = signature;
+            entry.by_item.clear();
+        }
+        const auto found = entry.by_item.find(item_id);
+        if (found != entry.by_item.end()) return found->second;
         const double value = engine_->item_fit(item_id, unit);
-        by_item.emplace(item_id, value);
+        entry.by_item.emplace(item_id, value);
         ++evaluation_count_;
         return value;
     }
@@ -704,8 +713,39 @@ public:
     }
 
 private:
+    struct ProfileValues {
+        std::size_t signature{0};
+        std::unordered_map<std::string, double> by_item;
+    };
+
+    static void combine(std::size_t& seed, std::size_t value) noexcept {
+        seed ^= value + 0x9e3779b9U + (seed << 6U) + (seed >> 2U);
+    }
+
+    static std::size_t profile_signature(const UnitProfile& unit) {
+        std::size_t seed = std::hash<std::string>{}(unit.uuid);
+        combine(seed, std::hash<int>{}(unit.star));
+        combine(seed, std::hash<int>{}(unit.role));
+        combine(seed, std::hash<bool>{}(unit.frontline));
+        combine(seed, std::hash<bool>{}(unit.backline));
+        combine(seed, std::hash<double>{}(unit.attack_damage));
+        combine(seed, std::hash<double>{}(unit.attack_speed));
+        combine(seed, std::hash<double>{}(unit.ability_power));
+        combine(seed, std::hash<double>{}(unit.max_health));
+        combine(seed, std::hash<double>{}(unit.armor));
+        combine(seed, std::hash<double>{}(unit.magic_resist));
+        combine(seed, std::hash<double>{}(unit.composition_fit));
+        for (const auto& trait : unit.traits)
+            combine(seed, std::hash<std::string>{}(trait));
+        combine(seed, unit.traits.size());
+        for (const auto& trait : unit.preferred_traits)
+            combine(seed, std::hash<std::string>{}(trait));
+        combine(seed, unit.preferred_traits.size());
+        return seed;
+    }
+
     const ItemEngine* engine_{nullptr};
-    std::unordered_map<std::string, std::unordered_map<std::string, double>> values_;
+    std::unordered_map<std::string, ProfileValues> values_;
     std::size_t evaluation_count_{0};
 };
 
