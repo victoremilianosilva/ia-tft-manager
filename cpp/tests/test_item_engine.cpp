@@ -117,6 +117,10 @@ int main() {
             "changing equipped traits must invalidate the cached compatibility result");
     require(cached_natural_fit < cached_plan_fit,
             "cache invalidation must preserve the changed semantic item fit");
+    fit_cache.clear();
+    (void)fit_cache.get("catalog_emblem", natural_emblem_target);
+    require(fit_cache.evaluation_count() == 3,
+            "episode cache clear must force the next compatibility evaluation");
 
     std::istringstream inert_catalog_json(R"json({
         "schema_version": 1,
