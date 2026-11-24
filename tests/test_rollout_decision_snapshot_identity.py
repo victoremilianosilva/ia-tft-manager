@@ -715,6 +715,7 @@ def test_rollout_metadata_isolated_on_store_and_shared_read_only_in_batches():
     assert batch_trace["effective_action"] == [6, 0, 0, 0, 0, 0]
     assert batch_trace["status_reason"] == "applied"
 
+
 @pytest.mark.parametrize(
     ("field", "invalid_value"),
     [
