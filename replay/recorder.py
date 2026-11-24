@@ -304,8 +304,8 @@ def build_dataset_manifest(replay_paths: Iterable[str | Path], output_path: str 
     dataset_hash = hashlib.sha256(_canonical(hash_payload).encode("utf-8")).hexdigest()
     result = dict(payload, dataset_version=f"sha256:{dataset_hash}",
                   dataset_sha256=dataset_hash)
-    with destination.open("x", encoding="utf-8", newline="\\n") as stream:
-        stream.write(json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False) + "\\n")
+    with destination.open("x", encoding="utf-8", newline="\n") as stream:
+        stream.write(json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False) + "\n")
         stream.flush()
         os.fsync(stream.fileno())
     return result
