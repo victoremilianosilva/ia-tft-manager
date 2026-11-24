@@ -69,7 +69,7 @@ def test_lobby_vector_batch_path_matches_individual_wrapper_path():
         batch.close()
         individual.close()
 
-def test_lobby_vector_batch_reset_failure_invalidates_all_wrappers_and_recovers(monkeypatch):
+def test_lobby_vector_batch_reset_failure_invalidates_all_wrappers_and_recovers():
     item_catalog = Path(__file__).resolve().parents[1] / "data" / "itens.json"
     batch = _make_batch_vector(2, 2700, item_catalog)
     real_manager = batch._batch_manager
@@ -134,7 +134,7 @@ def test_lobby_vector_batch_parity_includes_reward_provenance_and_action_events(
             assert batch_info["next_snapshot"]["episode_id"] == single_info["next_snapshot"]["episode_id"]
             assert batch_info["next_snapshot"]["decision_sequence"] == single_info["next_snapshot"]["decision_sequence"]
             assert batch_info["action_outcome_events"] == single_info["action_outcome_events"]
-            assert batch_info["reward_audit"]["player_rewards"] == single_info["reward_audit"]["players"]
+            assert batch_info["reward_audit"]["player_rewards"] == single_info["reward_audit"]["player_rewards"]
     finally:
         batch.close()
         individual.close()
