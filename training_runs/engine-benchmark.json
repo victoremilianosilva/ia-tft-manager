@@ -1,0 +1,227 @@
+{
+  "benchmark_id": "tft.native-engine-cost",
+  "version": 1,
+  "created_at": "2026-11-24T18:54:43.429793+00:00",
+  "environment": {
+    "python": "3.11.9 (tags/v3.11.9:de54cf5, Apr  2 2024, 10:12:12) [MSC v.1938 64 bit (AMD64)]",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "processor": "AMD64 Family 23 Model 24 Stepping 1, AuthenticAMD",
+    "logical_cpu_count": 8
+  },
+  "configuration": {
+    "seed": 20261124,
+    "warmup_iterations": 10,
+    "measured_iterations": 100,
+    "lobbies": [
+      1,
+      4
+    ],
+    "lobby_execution": "sequential",
+    "ppo_enabled": false,
+    "semantic_batch_enabled": false
+  },
+  "results": [
+    {
+      "mode": "native",
+      "lobbies": 1,
+      "players_per_lobby": 8,
+      "warmup_iterations_per_lobby": 10,
+      "measured_iterations_per_lobby": 100,
+      "total_lobby_steps": 100,
+      "terminal_resets_during_measurement": 0,
+      "sequential_batch": {
+        "calls": 100,
+        "total_ms": 742.174,
+        "mean_ms": 7.422,
+        "median_ms": 6.645,
+        "p95_ms": 12.542,
+        "p99_ms": 15.295,
+        "min_ms": 5.988,
+        "max_ms": 16.018,
+        "calls_per_second": 134.74
+      },
+      "per_lobby": [
+        {
+          "calls": 100,
+          "total_ms": 741.676,
+          "mean_ms": 7.417,
+          "median_ms": 6.64,
+          "p95_ms": 12.537,
+          "p99_ms": 15.29,
+          "min_ms": 5.985,
+          "max_ms": 16.011,
+          "calls_per_second": 134.83
+        }
+      ],
+      "interpretation": "pybind native TFTLobby.step call (native engine + binding result conversion)"
+    },
+    {
+      "mode": "native",
+      "lobbies": 4,
+      "players_per_lobby": 8,
+      "warmup_iterations_per_lobby": 10,
+      "measured_iterations_per_lobby": 100,
+      "total_lobby_steps": 400,
+      "terminal_resets_during_measurement": 0,
+      "sequential_batch": {
+        "calls": 100,
+        "total_ms": 3671.074,
+        "mean_ms": 36.711,
+        "median_ms": 28.235,
+        "p95_ms": 70.018,
+        "p99_ms": 93.296,
+        "min_ms": 24.641,
+        "max_ms": 224.635,
+        "calls_per_second": 27.24
+      },
+      "per_lobby": [
+        {
+          "calls": 100,
+          "total_ms": 914.943,
+          "mean_ms": 9.149,
+          "median_ms": 7.059,
+          "p95_ms": 17.601,
+          "p99_ms": 31.186,
+          "min_ms": 6.242,
+          "max_ms": 35.188,
+          "calls_per_second": 109.3
+        },
+        {
+          "calls": 100,
+          "total_ms": 938.873,
+          "mean_ms": 9.389,
+          "median_ms": 7.029,
+          "p95_ms": 16.689,
+          "p99_ms": 24.889,
+          "min_ms": 6.085,
+          "max_ms": 84.716,
+          "calls_per_second": 106.51
+        },
+        {
+          "calls": 100,
+          "total_ms": 908.144,
+          "mean_ms": 9.081,
+          "median_ms": 6.967,
+          "p95_ms": 17.851,
+          "p99_ms": 29.007,
+          "min_ms": 6.114,
+          "max_ms": 48.599,
+          "calls_per_second": 110.11
+        },
+        {
+          "calls": 100,
+          "total_ms": 907.313,
+          "mean_ms": 9.073,
+          "median_ms": 7.0,
+          "p95_ms": 16.766,
+          "p99_ms": 22.083,
+          "min_ms": 6.091,
+          "max_ms": 56.104,
+          "calls_per_second": 110.22
+        }
+      ],
+      "interpretation": "pybind native TFTLobby.step call (native engine + binding result conversion)"
+    },
+    {
+      "mode": "wrapper",
+      "lobbies": 1,
+      "players_per_lobby": 8,
+      "warmup_iterations_per_lobby": 10,
+      "measured_iterations_per_lobby": 100,
+      "total_lobby_steps": 100,
+      "terminal_resets_during_measurement": 0,
+      "sequential_batch": {
+        "calls": 100,
+        "total_ms": 6266.297,
+        "mean_ms": 62.663,
+        "median_ms": 59.236,
+        "p95_ms": 82.501,
+        "p99_ms": 100.911,
+        "min_ms": 53.166,
+        "max_ms": 127.148,
+        "calls_per_second": 15.96
+      },
+      "per_lobby": [
+        {
+          "calls": 100,
+          "total_ms": 6265.358,
+          "mean_ms": 62.654,
+          "median_ms": 59.227,
+          "p95_ms": 82.491,
+          "p99_ms": 100.9,
+          "min_ms": 53.156,
+          "max_ms": 127.134,
+          "calls_per_second": 15.96
+        }
+      ],
+      "interpretation": "CppTFTLobbyWrapper.step (native call + Python validation, snapshots, reward audit and action outcome event construction)"
+    },
+    {
+      "mode": "wrapper",
+      "lobbies": 4,
+      "players_per_lobby": 8,
+      "warmup_iterations_per_lobby": 10,
+      "measured_iterations_per_lobby": 100,
+      "total_lobby_steps": 400,
+      "terminal_resets_during_measurement": 0,
+      "sequential_batch": {
+        "calls": 100,
+        "total_ms": 24068.177,
+        "mean_ms": 240.682,
+        "median_ms": 238.083,
+        "p95_ms": 264.45,
+        "p99_ms": 275.253,
+        "min_ms": 219.925,
+        "max_ms": 277.335,
+        "calls_per_second": 4.15
+      },
+      "per_lobby": [
+        {
+          "calls": 100,
+          "total_ms": 6006.293,
+          "mean_ms": 60.063,
+          "median_ms": 58.35,
+          "p95_ms": 70.502,
+          "p99_ms": 80.45,
+          "min_ms": 53.299,
+          "max_ms": 83.55,
+          "calls_per_second": 16.65
+        },
+        {
+          "calls": 100,
+          "total_ms": 6008.19,
+          "mean_ms": 60.082,
+          "median_ms": 58.508,
+          "p95_ms": 72.797,
+          "p99_ms": 75.945,
+          "min_ms": 53.97,
+          "max_ms": 83.198,
+          "calls_per_second": 16.64
+        },
+        {
+          "calls": 100,
+          "total_ms": 6031.277,
+          "mean_ms": 60.313,
+          "median_ms": 58.357,
+          "p95_ms": 72.71,
+          "p99_ms": 81.511,
+          "min_ms": 54.614,
+          "max_ms": 83.52,
+          "calls_per_second": 16.58
+        },
+        {
+          "calls": 100,
+          "total_ms": 6019.889,
+          "mean_ms": 60.199,
+          "median_ms": 58.651,
+          "p95_ms": 70.073,
+          "p99_ms": 76.105,
+          "min_ms": 53.516,
+          "max_ms": 76.11,
+          "calls_per_second": 16.61
+        }
+      ],
+      "interpretation": "CppTFTLobbyWrapper.step (native call + Python validation, snapshots, reward audit and action outcome event construction)"
+    }
+  ]
+}
