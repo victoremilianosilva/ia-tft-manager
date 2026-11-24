@@ -692,6 +692,10 @@ public:
         return engine_ == engine;
     }
 
+    void clear() noexcept {
+        values_.clear();
+    }
+
     [[nodiscard]] double get(const std::string& item_id, const UnitProfile& unit) {
         if (!engine_ || unit.uuid.empty()) return -1.0;
         auto& entry = values_[unit.uuid];
