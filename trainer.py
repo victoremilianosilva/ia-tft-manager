@@ -9,6 +9,11 @@ import copy
 import hashlib
 import random
 import time
+import tracemalloc
+try:
+    import psutil
+except ImportError:
+    psutil = None
 from pathlib import Path
 
 from rich.console import Console
@@ -1317,7 +1322,18 @@ class Trainer:
         ):
             update_profile_start_ns = time.perf_counter_ns()
             wrapper_profile_totals = {}
+            wrapper_profile_per_lobby = {}
             wrapper_profile_calls = 0
+            profile_memory_enabled = os.environ.get("TFT_PROFILE_MEMORY") == "1"
+            profile_memory_rss_start = None
+            if profile_memory_enabled:
+                if not tracemalloc.is_tracing():
+                    tracemalloc.start()
+                tracemalloc.reset_peak()
+                if psutil is not None:
+                    profile_memory_rss_start = psutil.Process(os.getpid()).memory_info().rss
+                if torch.cuda.is_available() and str(self.device).startswith("cuda"):
+                    torch.cuda.reset_peak_memory_stats(self.device)
             rollout_profile_start_ns = time.perf_counter_ns()
 
             anti_loop_start_totals = dict(anti_loop_totals)
@@ -1626,16 +1642,22 @@ class Trainer:
                 transition_processing_start_ns = time.perf_counter_ns()
                 # Aggregate per-lobby wrapper/native timings without changing
                 # the transition payload or synchronizing the training device.
-                for lobby_info in infos:
+                for lobby_index, lobby_info in enumerate(infos):
                     stage_profile = lobby_info.get("performance_profile", {})
+                    vector_profile = lobby_info.get("vector_performance_profile", {})
+                    combined_profile = {}
                     if isinstance(stage_profile, dict):
+                        combined_profile.update(stage_profile)
+                    if isinstance(vector_profile, dict):
+                        combined_profile.update(vector_profile)
+                    if combined_profile:
                         wrapper_profile_calls += 1
-                        for stage_name, elapsed_ms in stage_profile.items():
+                        lobby_totals = wrapper_profile_per_lobby.setdefault(lobby_index, {})
+                        for stage_name, elapsed_ms in combined_profile.items():
                             try:
-                                wrapper_profile_totals[stage_name] = (
-                                    wrapper_profile_totals.get(stage_name, 0.0)
-                                    + float(elapsed_ms)
-                                )
+                                value = float(elapsed_ms)
+                                wrapper_profile_totals[stage_name] = wrapper_profile_totals.get(stage_name, 0.0) + value
+                                lobby_totals[stage_name] = lobby_totals.get(stage_name, 0.0) + value
                             except (TypeError, ValueError):
                                 continue
 
@@ -2144,6 +2166,27 @@ class Trainer:
                         elapsed_total_ms / wrapper_profile_calls,
                         update,
                     )
+                for lobby_index, lobby_stages in wrapper_profile_per_lobby.items():
+                    for stage_name, elapsed_total_ms in lobby_stages.items():
+                        self.writer.add_scalar(
+                            f"performance/lobby_{lobby_index}/{stage_name}_total_ms",
+                            elapsed_total_ms, update,
+                        )
+                        self.writer.add_scalar(
+                            f"performance/lobby_{lobby_index}/{stage_name}_mean_ms",
+                            elapsed_total_ms / max(1, rollout_steps), update,
+                        )
+            if profile_memory_enabled:
+                memory_current, memory_peak = tracemalloc.get_traced_memory()
+                self.writer.add_scalar("performance/memory/python_current_bytes", memory_current, update)
+                self.writer.add_scalar("performance/memory/python_peak_bytes", memory_peak, update)
+                if psutil is not None:
+                    rss_end = psutil.Process(os.getpid()).memory_info().rss
+                    self.writer.add_scalar("performance/memory/process_rss_start_bytes", profile_memory_rss_start or 0, update)
+                    self.writer.add_scalar("performance/memory/process_rss_end_bytes", rss_end, update)
+                if torch.cuda.is_available() and str(self.device).startswith("cuda"):
+                    self.writer.add_scalar("performance/memory/cuda_peak_allocated_bytes", torch.cuda.max_memory_allocated(self.device), update)
+                    self.writer.add_scalar("performance/memory/cuda_peak_reserved_bytes", torch.cuda.max_memory_reserved(self.device), update)
             self.writer.add_scalar("training/optimizer_steps", ppo_metrics.get("optimizer_steps", 0), update)
             self.writer.add_scalar("training/grad_norm_mean", ppo_metrics.get("grad_norm_mean", 0.0), update)
             self.writer.add_scalar("training/grad_norm_max", ppo_metrics.get("grad_norm_max", 0.0), update)
