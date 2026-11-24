@@ -501,13 +501,33 @@ def main(argv: list[str] | None = None) -> int:
                     for counter_name, stats in counter_map.items():
                         writer.writerow({
                             "mode": result["mode"], "lobbies": result["lobbies"],
-                            "scope": f"lobby_{lobby_index}", "stage": counter_name, **stats,
+                            "scope": f"lobby_{lobby_index}", "stage": counter_name,
+                            "metric_type": "count", **stats,
+                        })
+            for result in report["parallel_results"]:
+                writer.writerow({
+                    "mode": result["mode"], "lobbies": result["lobbies"],
+                    "scope": "threaded_batch", "stage": "concurrent_batch",
+                    "metric_type": "time_ms", **result["concurrent_batch"],
+                })
+                for lobby_index, stats in enumerate(result["per_lobby"]):
+                    writer.writerow({
+                        "mode": result["mode"], "lobbies": result["lobbies"],
+                        "scope": f"threaded_lobby_{lobby_index}", "stage": "total_step",
+                        "metric_type": "time_ms", **stats,
+                    })
+                for lobby_index, stage_map in enumerate(result["stage_metrics_per_lobby"]):
+                    for stage_name, stats in stage_map.items():
+                        writer.writerow({
+                            "mode": result["mode"], "lobbies": result["lobbies"],
+                            "scope": f"threaded_lobby_{lobby_index}", "stage": stage_name,
+                            "metric_type": "time_ms", **stats,
                         })
                 for lobby_index, counter_map in enumerate(result["counter_metrics_per_lobby"]):
                     for counter_name, stats in counter_map.items():
                         writer.writerow({
                             "mode": result["mode"], "lobbies": result["lobbies"],
-                            "scope": f"lobby_{lobby_index}", "stage": counter_name,
+                            "scope": f"threaded_lobby_{lobby_index}", "stage": counter_name,
                             "metric_type": "count", **stats,
                         })
         print(f"CSV: {output.resolve()}")
