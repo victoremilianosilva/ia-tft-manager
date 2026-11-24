@@ -5926,9 +5926,10 @@ ResetResult TFTEngine::reset(
         }
         result.player_decision_sequences[i] = ++impl_->player_decision_sequences[i];
     }
-    auto snapshot_start = ProfileClock::now();
+    // ResetResult does not carry per-step profile data. Keep reset snapshot
+    // construction outside the step profiler rather than referencing its
+    // function-local clock and recorder here.
     result.native_state_snapshot = get_audit_snapshot();
-    record_profile("engine_audit_snapshot_ms", snapshot_start);
 
     return result;
 }
