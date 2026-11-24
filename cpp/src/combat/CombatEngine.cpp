@@ -982,7 +982,7 @@ void apply_stack_effects(RuntimeUnit& runtime, const std::string& trigger,
                                        const std::string& prefix) {
         if (effect.operation == "stack_stat" && effect.trigger == trigger &&
             !effect.stack_key.empty() && effect_condition_matches(runtime.unit, effect))
-            keys.insert(prefix + effect.stack_key);
+            keys.insert(prefix + "stack:" + effect.stack_key);
     });
 
     for (const auto& key : keys) {
@@ -991,7 +991,7 @@ void apply_stack_effects(RuntimeUnit& runtime, const std::string& trigger,
         visit_generic_effects(runtime, [&](const CombatEffectDefinition& effect,
                                            const std::string& prefix) {
             if (effect.operation == "stack_stat" &&
-                prefix + effect.stack_key == key &&
+                prefix + "stack:" + effect.stack_key == key &&
                 effect_condition_matches(runtime.unit, effect)) {
                 maximum = std::max(maximum, effect.max_stacks);
                 duration = std::max(duration, effect.duration);
@@ -1007,7 +1007,7 @@ void apply_stack_effects(RuntimeUnit& runtime, const std::string& trigger,
         visit_generic_effects(runtime, [&](const CombatEffectDefinition& effect,
                                            const std::string& prefix) {
             if (effect.operation == "stack_stat" &&
-                prefix + effect.stack_key == key &&
+                prefix + "stack:" + effect.stack_key == key &&
                 effect_condition_matches(runtime.unit, effect))
                 apply_stack_stat_delta(runtime, effect, 1.0f);
         });
