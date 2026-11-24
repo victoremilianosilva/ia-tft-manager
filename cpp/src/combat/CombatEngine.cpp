@@ -1492,7 +1492,8 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
         now = event.time;
         ++result.events_processed;
         for (auto& runtime : units) {
-            apply_periodic_effects(runtime, now);
+            expire_generic_stacks(runtime, now);
+            apply_periodic_effects(runtime, now, units);
             apply_delayed_effects(runtime, now);
             update_conditional_effects(runtime, now);
         }
@@ -1506,6 +1507,8 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
             const float hp_loss = std::min(burning.unit.hp, raw_burn);
             burning.unit.hp -= hp_loss;
             burning.damage_taken += hp_loss;
+            update_conditional_effects(burning, now);
+            apply_stack_effects(burning, "on_damage_taken", now);
             if (burning.burn_source_id >= 0) {
                 const auto source_it = index_by_id.find(burning.burn_source_id);
                 if (source_it != index_by_id.end())
@@ -1544,38 +1547,18 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
             continue;
         }
 
-        // Passivas temporizadas e gatilhos defensivos dos itens do Set 17.
+        // Mana regeneration and generic timed effects are driven by the
+        // effect descriptors; no item identity is inspected in the event loop.
         const float elapsed = std::max(0.0f, now - actor.last_status_tick);
         if (elapsed > 0.0f) {
             actor.unit.mana = std::min(actor.unit.max_mana,
                 actor.unit.mana + actor.mana_regen_per_second *
                     elapsed * actor.mana_gain_multiplier);
-            if (actor.crown_shield_triggered && actor.crown_shield_expires_at > 0.0f &&
-                now >= actor.crown_shield_expires_at) {
-                actor.unit.ability_power += 25.0f;
-                actor.crown_shield_expires_at = 0.0f;
-            }
             actor.last_status_tick = now;
         }
-        if (has_item(actor.unit, "TFT_Item_PowerGauntlet")) {
-            while (!actor.power_gauntlet_stack_times.empty() &&
-                   now - actor.power_gauntlet_stack_times.front() >= 5.0f) {
-                actor.power_gauntlet_stack_times.erase(
-                    actor.power_gauntlet_stack_times.begin());
-                actor.unit.damage_amplification = std::max(
-                    0.0f, actor.unit.damage_amplification - 0.05f);
-            }
-            actor.power_gauntlet_stacks =
-                static_cast<int>(actor.power_gauntlet_stack_times.size());
-        }
-        trigger_defensive_items(actor, now);
         if (actor.shield_expires_at > 0.0f && now >= actor.shield_expires_at) {
             actor.shield_hp = 0.0f;
             actor.shield_expires_at = 0.0f;
-        }
-        if (actor.guardian_angel_until > 0.0f && now >= actor.guardian_angel_until) {
-            actor.unit.damage_reduction = actor.guardian_previous_damage_reduction;
-            actor.guardian_angel_until = 0.0f;
         }
 
 
