@@ -729,6 +729,40 @@ void apply_shred_status(RuntimeUnit& target,
     }
 }
 
+void apply_start_combat_item_effects(std::vector<RuntimeUnit>& units,
+                                      float max_duration) {
+    for (auto& source : units) {
+        visit_unit_effects(source.unit, [&](const CombatEffectDefinition& effect) {
+            if (effect.trigger != "combat_start" ||
+                !effect_condition_matches(source.unit, effect)) return;
+            if (effect.operation == "add_stat_per_nearby_enemy" &&
+                effect.target == "self") {
+                int nearby = 0;
+                for (const auto& enemy : units) {
+                    if (enemy.unit.team == source.unit.team || !is_alive(enemy)) continue;
+                    if (distance_between(source.unit, enemy.unit) <=
+                        static_cast<int>(std::ceil(effect.radius))) ++nearby;
+                }
+                if (nearby > 0) {
+                    CombatEffectDefinition scaled = effect;
+                    scaled.value *= static_cast<float>(nearby);
+                    apply_effect_stat(source.unit, scaled);
+                }
+            } else if (effect.operation == "apply_shred" &&
+                       effect.target == "enemies_within_radius") {
+                CombatEffectDefinition bounded = effect;
+                bounded.duration = std::min(effect.duration, max_duration);
+                for (auto& enemy : units) {
+                    if (enemy.unit.team == source.unit.team || !is_alive(enemy)) continue;
+                    if (distance_between(source.unit, enemy.unit) >
+                        static_cast<int>(std::ceil(effect.radius))) continue;
+                    apply_shred_status(enemy, bounded, 0.0f);
+                }
+            }
+        });
+    }
+}
+
 void apply_periodic_effects(RuntimeUnit& runtime, float now,
                             std::vector<RuntimeUnit>& units) {
     for (const std::size_t index : runtime.periodic_effect_indices) {
