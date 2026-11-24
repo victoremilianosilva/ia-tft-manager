@@ -359,7 +359,7 @@ def main(argv: list[str] | None = None) -> int:
     modes = ("native", "wrapper") if args.mode == "both" else (args.mode,)
     report = {
         "benchmark_id": "tft.native-engine-cost",
-        "version": 2,
+        "version": 3,
         "created_at": datetime.now(timezone.utc).isoformat(),
         "environment": {
             "python": sys.version,
@@ -377,6 +377,9 @@ def main(argv: list[str] | None = None) -> int:
             "semantic_batch_enabled": False,
             "step_profiling_enabled": True,
             "profiling_env_var": "TFT_PROFILE_STEPS=1",
+            "memory_profile_enabled": args.memory_profile,
+            "parallel_check_enabled": args.parallel_check,
+            "gil_policy": "held_during_pybind_call",
         },
         "results": [],
         "parallel_results": [],
@@ -472,6 +475,12 @@ def main(argv: list[str] | None = None) -> int:
                         writer.writerow({
                             "mode": result["mode"], "lobbies": result["lobbies"],
                             "scope": f"lobby_{lobby_index}", "stage": stage_name, **stats,
+                        })
+                for lobby_index, counter_map in enumerate(result["counter_metrics_per_lobby"]):
+                    for counter_name, stats in counter_map.items():
+                        writer.writerow({
+                            "mode": result["mode"], "lobbies": result["lobbies"],
+                            "scope": f"lobby_{lobby_index}", "stage": counter_name, **stats,
                         })
         print(f"CSV: {output.resolve()}")
 
