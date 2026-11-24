@@ -1611,6 +1611,65 @@ void test_generic_source_ad_effect_changes_combat() {
 }
 
 
+void test_movement_distance_handles_board_edges_and_preserves_input() {
+    tft::CombatEngine engine;
+    auto input = make_input();
+    input.config.max_duration = 1.0f;
+    input.config.record_positions = true;
+
+    auto& mover = input.player_a.units.front();
+    mover.position = {0, 0};
+    mover.attack_range = 0.0f;
+    mover.can_attack = false;
+    mover.can_cast = false;
+    mover.can_move = true;
+
+    auto& target = input.player_b.units.front();
+    target.position = {0, 3};
+    target.can_attack = false;
+    target.can_cast = false;
+    target.can_move = false;
+
+    const auto original_mover = mover;
+    const auto original_target = target;
+    const auto result = engine.simulate(input);
+
+    require(result.success && result.completed,
+            "Movement edge fixture must complete.");
+    require(result.position_events.size() >= 2,
+            "Mover should advance along the only improving in-bounds route.");
+
+    int expected_y = 0;
+    for (const auto& event : result.position_events) {
+        require(event.unit_id == mover.id,
+                "Only the configured mover should produce position events.");
+        require(event.to_x >= 0 && event.to_x < input.config.board_cols &&
+                event.to_y >= 0 && event.to_y < input.config.board_rows,
+                "Movement must never select a position outside the board.");
+        require(std::abs(event.to_x - event.from_x) +
+                std::abs(event.to_y - event.from_y) == 1,
+                "Movement must remain orthogonal by exactly one cell.");
+        require(event.from_x == 0 && event.to_x == 0 &&
+                event.from_y == expected_y &&
+                event.to_y == expected_y + 1,
+                "Edge movement must follow the deterministic in-bounds route.");
+        expected_y = event.to_y;
+    }
+    require(expected_y == 2,
+            "Mover should stop before the occupied target cell.");
+
+    require(mover.position.x == original_mover.position.x &&
+            mover.position.y == original_mover.position.y &&
+            mover.hp == original_mover.hp &&
+            mover.items.size() == original_mover.items.size() &&
+            mover.traits.size() == original_mover.traits.size(),
+            "Simulation must not mutate the caller's mover input.");
+    require(target.position.x == original_target.position.x &&
+            target.position.y == original_target.position.y &&
+            target.hp == original_target.hp,
+            "Simulation must not mutate the caller's target input.");
+}
+
 void test_detailed_events_are_optional_without_changing_combat_outcome() {
     tft::CombatEngine engine;
     auto detailed_input = make_input();
@@ -1699,6 +1758,7 @@ int main() {
         test_data_driven_trait_emblem_effects();
         test_component_to_craft_to_equipment_to_combat_cycle();
         test_generic_source_ad_effect_changes_combat();
+        test_movement_distance_handles_board_edges_and_preserves_input();
         test_detailed_events_are_optional_without_changing_combat_outcome();
     } catch (const std::exception& error) {
         std::cerr << "test_combat_engine: " << error.what() << '\n';
