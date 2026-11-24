@@ -132,7 +132,7 @@ class CppTFTLobbyWrapper:
         if masks is None or len(masks) != CppTFTLobbyWrapper.PLAYERS_PER_LOBBY:
             raise RuntimeError("Snapshot nativo sem as oito action masks esperadas.")
         return [
-            {key: np.asarray(value, dtype=np.bool_).copy() for key, value in player.items()}
+            {key: np.asarray(value, dtype=np.bool_) for key, value in player.items()}
             for player in masks
         ]
 
@@ -673,7 +673,10 @@ class CppTFTLobbyWrapper:
                 raise RuntimeError("Ownership ativo presente após aposentadoria terminal dos itens.")
             if not retired_flag and retired_has_evidence:
                 raise RuntimeError("Evidência de aposentadoria presente sem estado terminal.")
-        return copy.deepcopy(value)
+        # The pybind layer materializes this payload as Python-owned dicts,
+        # lists and NumPy arrays. Retain that ownership instead of cloning the
+        # entire (large) semantic snapshot after validating it.
+        return value
 
     @staticmethod
     def _copy_player_decision_sequences(values):
@@ -733,7 +736,11 @@ class CppTFTLobbyWrapper:
         # Preserve the exact observation snapshot consumed by this action batch.
         # Clear the public cache before stepping so a failed native step cannot
         # accidentally authorize a second decision against stale state.
-        source_decision_snapshot = copy.deepcopy(self._last_snapshot_metadata)
+        # Published metadata is immutable for the lifetime of its decision.
+        # Keep a local reference while replacing the wrapper's current snapshot;
+        # the previous native payload is already Python-owned and won't be reused
+        # or overwritten by the next C++ step.
+        source_decision_snapshot = self._last_snapshot_metadata
         self._last_action_masks = None
         self._last_snapshot_metadata = None
         result = self._engine.step(
