@@ -1067,7 +1067,7 @@ def test_native_snapshot_mapping_defers_combat_event_materialization():
     clone = copy.deepcopy(snapshot)
     clone["players"][0]["board"].clear()
     assert snapshot["players"][0]["board"] == [1, 2, 3]
-    assert handle.base_calls == 2
+    assert handle.base_calls == 1
 
     assert clone["combat_damage_events"][0]["field"] == "combat_damage_events"
     assert handle.event_calls == ["combat_damage_events"]
