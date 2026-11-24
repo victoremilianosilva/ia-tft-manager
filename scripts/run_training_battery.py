@@ -1,4 +1,4 @@
-""""Run a reproducible multi-seed battery of fresh native PPO trainings."""
+"""Run a reproducible multi-seed battery of fresh native PPO trainings."""
 from __future__ import annotations
 
 import argparse
@@ -100,7 +100,7 @@ def main(argv: list[str] | None = None) -> int:
             "runs": runs,
         }
         (output_root / "battery_manifest.json").write_text(
-            json.dumps(battery_manifest, indent=2, ensure_ascii=False) + "\\n",
+            json.dumps(battery_manifest, indent=2, ensure_ascii=False) + "\n",
             encoding="utf-8",
         )
     print(f"Bateria concluída: {output_root}")
