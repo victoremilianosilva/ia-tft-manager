@@ -5,7 +5,7 @@
 The native snapshot and planner evidence paths repeated catalog projection and item-fit work:
 
 - The native composition producer rebuilt the compact unit catalog for each player and decision snapshot.
-- `get_audit_snapshot()` created a new `ItemFitCache` for each player snapshot, so results could not survive the next step.
+- `get_audit_snapshot()` created a new `ItemFitCache` for each player snapshot, so inventory-to-target and recipe-to-target compatibility results could not survive the next step.
 - `PlannerEvidenceAdapters::item()` independently called `ItemEngine::item_fit()`, duplicating evaluations already performed by the snapshot producer.
 - Item-fit results depend on the complete semantic `UnitProfile`, not only the unit UUID.
 
@@ -17,7 +17,7 @@ The unit catalog is immutable for the lifetime of the engine. Item-fit results a
 
 - `TFTEngine::Impl` owns one item-fit cache per player, scoped to that player's `ItemEngine`.
 - `ItemFitCache` keeps only the latest exact profile for each UUID and clears that UUID's item results when any profile field differs.
-- Both native snapshot item-fit production and planner item evidence use the same per-player cache.
+- Audit snapshot inventory/recipe target features, native owned-unit item-fit evidence, and planner item evidence use the same per-player cache.
 - `TFTEngine::Impl` prepares the compact native composition catalog once and passes a non-owning immutable reference to the generator.
 - Standalone generator callers may continue to supply the value-owned catalog.
 
@@ -38,7 +38,8 @@ The unit catalog is immutable for the lifetime of the engine. Item-fit results a
 | `TFTEngine::Impl::native_composition_catalog` | `NativeStrategicCompositionGenerator::generate()` | Engine/catalog lifetime |
 | `semantic_item_unit_profiles()` + equipped item IDs | Native owned-unit item-fit evidence | Player + exact unit profile + item ID |
 | `ItemFitCache` | `PlannerEvidenceAdapters::item()` | Same player ItemEngine and exact profile |
-| `ItemFitCache` | Native snapshot item-fit evidence | Same player ItemEngine and exact profile |
+| `ItemFitCache` | Audit snapshot inventory/recipe target matrices | Same player ItemEngine and exact profile |
+| `ItemFitCache` | Native owned-unit item-fit evidence | Same player ItemEngine and exact profile |
 
 ## Validation
 
