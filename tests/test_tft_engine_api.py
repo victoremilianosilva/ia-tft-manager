@@ -1408,6 +1408,8 @@ def test_audit_snapshot_publishes_identity_bound_economy_resolution_events():
 
 def test_audit_snapshot_publishes_identity_bound_combat_damage_events():
     """Combat damage events retain native player and UnitInstance provenance."""
+    # Detailed event retention is opt-in; this test exercises the audit path.
+    monkeypatch.setenv("TFT_COMBAT_REPLAY_MODE", "audit")
     engine = TFTLobby(seed=20261120)
 
     try:
