@@ -1109,3 +1109,30 @@ def test_native_binding_pins_snapshot_and_defers_unused_combat_rows():
         assert info["decision_snapshot"]["decision_sequence"] > source_sequence
     finally:
         lobby.close()
+
+
+
+def test_training_action_masks_borrow_read_only_snapshot_buffers(monkeypatch):
+    monkeypatch.delenv("TFT_ABLATE_ITEM_ACTIONS", raising=False)
+    wrapper = cpp_lobby_env.CppTFTLobbyWrapper.__new__(
+        cpp_lobby_env.CppTFTLobbyWrapper
+    )
+    wrapper._last_action_masks = make_masks(2)
+
+    borrowed = wrapper.get_action_masks_for_training()
+    original_type_mask = wrapper._last_action_masks[0]["type_mask"]
+
+    assert borrowed[0]["type_mask"] is original_type_mask
+    assert not borrowed[0]["type_mask"].flags.writeable
+
+    # The public API remains detached and safe for mutable consumers.
+    detached = wrapper.get_action_masks()
+    assert detached[0]["type_mask"] is not original_type_mask
+    detached[0]["type_mask"][2] = False
+    assert original_type_mask[2]
+
+    # A later decision replaces the wrapper's reference without overwriting
+    # buffers retained by a consumer of the previous decision.
+    wrapper._last_action_masks = make_masks(3)
+    assert borrowed[0]["type_mask"][2]
+    assert wrapper.get_action_masks_for_training()[0]["type_mask"][3]
