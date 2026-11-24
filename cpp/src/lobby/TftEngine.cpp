@@ -2420,7 +2420,7 @@ struct TFTEngine::Impl {
                     });
                 }
             }
-            native_input.catalog = native_composition_catalog;
+            native_input.catalog_ref = &native_composition_catalog;
             // Item compatibility is measured from the equipped item IDs and
             // the same champion combat/profile snapshot used by item planning.
             // No-item units and unsupported catalog entries remain unavailable.
