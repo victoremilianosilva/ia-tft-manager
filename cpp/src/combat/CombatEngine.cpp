@@ -10,6 +10,7 @@
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 namespace tft {
@@ -975,7 +976,8 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                 return false;
             }
 
-            units.push_back(RuntimeUnit{effective_unit, effective_unit.hp});
+            const float initial_hp = effective_unit.hp;
+            units.push_back(RuntimeUnit{std::move(effective_unit), initial_hp});
             auto& loaded = units.back();
             loaded.base_attack_speed = loaded.unit.attack_speed;
             loaded.titans_base_ad = loaded.unit.attack_damage;
@@ -1781,10 +1783,8 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                 }
                 if (blocked) continue;
 
-                CombatUnit probe = actor.unit;
-                probe.position.x = x;
-                probe.position.y = y;
-                const int d = distance_between(probe, target.unit);
+                const int d = std::abs(x - target.unit.position.x) +
+                              std::abs(y - target.unit.position.y);
 
                 if (d < next_distance) {
                     next_distance = d;
