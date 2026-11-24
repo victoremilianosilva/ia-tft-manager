@@ -2046,6 +2046,7 @@ class Trainer:
             self.writer.add_scalar("performance/update/bootstrap_value_host_ms", bootstrap_value_host_ms, update)
             self.writer.add_scalar("performance/update/gae_ms", gae_ms, update)
             if profile_gpu_enabled:
+                torch.cuda.synchronize(self.device)
                 self.writer.add_scalar("performance/gpu/bootstrap_value_ms", bootstrap_cuda_start.elapsed_time(bootstrap_cuda_end), update)
 
             # ========================================================
