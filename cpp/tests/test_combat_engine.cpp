@@ -1610,6 +1610,96 @@ void test_generic_source_ad_effect_changes_combat() {
             "Normalized percentage AD effect must change actual combat damage.");
 }
 
+
+void test_simulation_preserves_input_ownership_after_runtime_move() {
+    tft::CombatEngine engine;
+    const auto input = make_input();
+    const auto original_a = input.player_a.units;
+    const auto original_b = input.player_b.units;
+
+    const auto result = engine.simulate(input);
+    require(result.success && result.completed,
+            "Ownership fixture combat must complete.");
+
+    const auto unchanged = [](const auto& actual, const auto& original) {
+        if (actual.size() != original.size()) return false;
+        for (std::size_t i = 0; i < actual.size(); ++i) {
+            const auto& lhs = actual[i];
+            const auto& rhs = original[i];
+            if (lhs.id != rhs.id ||
+                lhs.position.x != rhs.position.x ||
+                lhs.position.y != rhs.position.y ||
+                lhs.hp != rhs.hp ||
+                lhs.max_hp != rhs.max_hp ||
+                lhs.attack_damage != rhs.attack_damage ||
+                lhs.attack_speed != rhs.attack_speed ||
+                lhs.items.size() != rhs.items.size() ||
+                lhs.traits.size() != rhs.traits.size()) {
+                return false;
+            }
+        }
+        return true;
+    };
+
+    require(unchanged(input.player_a.units, original_a) &&
+            unchanged(input.player_b.units, original_b),
+            "Moving prepared units into RuntimeUnit must not mutate CombatInput.");
+}
+
+void test_detailed_events_are_optional_without_changing_combat_outcome() {
+    tft::CombatEngine engine;
+    auto detailed_input = make_input();
+    detailed_input.config.max_duration = 2.0f;
+    detailed_input.config.deterministic = true;
+    detailed_input.config.seed = 987654;
+    detailed_input.config.record_damage = true;
+    detailed_input.config.record_events = true;
+
+    const auto detailed = engine.simulate(detailed_input);
+    require(detailed.success && detailed.completed,
+            "Detailed combat fixture must complete.");
+
+    auto training_input = detailed_input;
+    training_input.config.record_damage = false;
+    training_input.config.record_events = false;
+    const auto training = engine.simulate(training_input);
+    require(training.success && training.completed,
+            "Training combat fixture must complete.");
+
+    require(training.winner == detailed.winner &&
+            training.duration == detailed.duration &&
+            training.player_a_survivors == detailed.player_a_survivors &&
+            training.player_b_survivors == detailed.player_b_survivors &&
+            training.player_a_damage == detailed.player_a_damage &&
+            training.player_b_damage == detailed.player_b_damage &&
+            training.units.size() == detailed.units.size(),
+            "Disabling detailed events must preserve the combat outcome.");
+
+    for (std::size_t i = 0; i < detailed.units.size(); ++i) {
+        const auto& expected = detailed.units[i];
+        const auto& actual = training.units[i];
+        require(actual.unit_id == expected.unit_id &&
+                actual.team == expected.team &&
+                actual.survived == expected.survived &&
+                actual.initial_hp == expected.initial_hp &&
+                actual.final_hp == expected.final_hp &&
+                actual.damage_dealt == expected.damage_dealt &&
+                actual.damage_taken == expected.damage_taken &&
+                actual.healing_done == expected.healing_done &&
+                actual.kills == expected.kills &&
+                actual.attacks == expected.attacks &&
+                actual.ability_casts == expected.ability_casts,
+                "Disabling detailed events must preserve per-unit aggregate evidence.");
+    }
+
+    require(training.damage_events.empty() && training.attack_events.empty() &&
+            training.death_events.empty() && training.events.empty(),
+            "Training mode must not retain detailed event collections.");
+    require(!detailed.damage_events.empty() || !detailed.attack_events.empty() ||
+            !detailed.death_events.empty() || !detailed.events.empty(),
+            "Audit mode must continue to expose detailed event collections.");
+}
+
 } // namespace
 
 int main() {
@@ -1644,6 +1734,8 @@ int main() {
         test_data_driven_trait_emblem_effects();
         test_component_to_craft_to_equipment_to_combat_cycle();
         test_generic_source_ad_effect_changes_combat();
+        test_simulation_preserves_input_ownership_after_runtime_move();
+        test_detailed_events_are_optional_without_changing_combat_outcome();
     } catch (const std::exception& error) {
         std::cerr << "test_combat_engine: " << error.what() << '\n';
         return 1;
