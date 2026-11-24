@@ -620,19 +620,24 @@ void prepare_generic_effect_descriptors(RuntimeUnit& runtime) {
         }
         if ((effect.trigger == "while_hp_below" ||
              effect.trigger == "while_hp_above") &&
-            effect.operation == "add_stat" && effect.health_threshold > 0.0f) {
+            (effect.operation == "add_stat" || effect.operation == "grant_shield" ||
+             effect.operation == "restore_mana" || effect.operation == "revive") &&
+            effect.health_threshold > 0.0f) {
             descriptor.conditional_key = descriptor.prefix + "conditional:" +
-                effect.trigger + ":" + effect.stat + ":" +
-                std::to_string(effect.health_threshold) + ":" + std::to_string(effect.value);
+                effect.operation + ":" + effect.trigger + ":" + effect.stat + ":" +
+                std::to_string(effect.health_threshold) + ":" +
+                std::to_string(effect.value) + ":" + std::to_string(effect.duration);
         }
         if (effect.trigger == "periodic" &&
             (effect.operation == "heal_max_hp_pct" ||
-             effect.operation == "heal_missing_hp_pct" || effect.operation == "add_stat") &&
+             effect.operation == "heal_missing_hp_pct" || effect.operation == "add_stat" ||
+             effect.operation == "apply_burn" || effect.operation == "apply_wound") &&
             std::isfinite(effect.interval) && effect.interval > 0.0f) {
             descriptor.periodic_key = descriptor.prefix + "periodic:" +
                 effect.operation + ":" + effect.stat + ":" + effect.condition + ":" +
                 std::to_string(effect.interval) + ":" + std::to_string(effect.value) +
-                ":" + std::to_string(effect.max_amount);
+                ":" + std::to_string(effect.max_amount) + ":" +
+                std::to_string(effect.duration) + ":" + std::to_string(effect.radius);
         }
         const std::size_t index = runtime.generic_effect_descriptors.size();
         runtime.generic_effect_descriptors.push_back(std::move(descriptor));
@@ -699,7 +704,33 @@ void apply_delayed_effects(RuntimeUnit& runtime, float now) {
     }
 }
 
-void apply_periodic_effects(RuntimeUnit& runtime, float now) {
+void apply_burn_status(RuntimeUnit& source, RuntimeUnit& target,
+                        const CombatEffectDefinition& effect, float now) {
+    target.burn_until = std::max(target.burn_until, now + effect.duration);
+    target.burn_percent = std::max(target.burn_percent, effect.value * 100.0f);
+    target.burn_source_id = source.unit.id;
+    if (target.burn_next_tick < now + 1e-5f)
+        target.burn_next_tick = now + 1.0f;
+}
+
+void apply_wound_status(RuntimeUnit& target,
+                        const CombatEffectDefinition& effect, float now) {
+    target.grievous_until = std::max(target.grievous_until, now + effect.duration);
+}
+
+void apply_shred_status(RuntimeUnit& target,
+                        const CombatEffectDefinition& effect, float now) {
+    if (effect.stat == "armor") {
+        target.armor_shred_until = std::max(target.armor_shred_until, now + effect.duration);
+        target.armor_shred_percent = std::max(target.armor_shred_percent, effect.value);
+    } else if (effect.stat == "magic_resist") {
+        target.mr_shred_until = std::max(target.mr_shred_until, now + effect.duration);
+        target.mr_shred_percent = std::max(target.mr_shred_percent, effect.value);
+    }
+}
+
+void apply_periodic_effects(RuntimeUnit& runtime, float now,
+                            std::vector<RuntimeUnit>& units) {
     for (const std::size_t index : runtime.periodic_effect_indices) {
         const auto& descriptor = runtime.generic_effect_descriptors[index];
         const auto& effect = *descriptor.effect;
@@ -736,10 +767,32 @@ void apply_periodic_effects(RuntimeUnit& runtime, float now) {
                 periodic_effect.percent_of_stat = false;
                 periodic_effect.scale_by_base_stat = false;
             }
-            // The legacy clocks applied missed intervals as one aggregate
-            // increment against the current/base stat. Preserve that behavior.
             periodic_effect.value *= static_cast<float>(ticks);
             apply_effect_stat(runtime.unit, periodic_effect);
+        } else if ((effect.operation == "apply_burn" ||
+                    effect.operation == "apply_wound") &&
+                   effect.target == "nearest_enemy_within_radius") {
+            for (int tick = 0; tick < ticks; ++tick) {
+                std::size_t nearest = units.size();
+                int nearest_distance = std::numeric_limits<int>::max();
+                for (std::size_t candidate = 0; candidate < units.size(); ++candidate) {
+                    if (!is_alive(units[candidate]) ||
+                        units[candidate].unit.team == runtime.unit.team) continue;
+                    const int distance = distance_between(runtime.unit, units[candidate].unit);
+                    if (distance > static_cast<int>(std::ceil(effect.radius))) continue;
+                    if (distance < nearest_distance ||
+                        (distance == nearest_distance && nearest < units.size() &&
+                         units[candidate].unit.id < units[nearest].unit.id)) {
+                        nearest = candidate;
+                        nearest_distance = distance;
+                    }
+                }
+                if (nearest == units.size()) continue;
+                if (effect.operation == "apply_burn")
+                    apply_burn_status(runtime, units[nearest], effect, now);
+                else
+                    apply_wound_status(units[nearest], effect, now);
+            }
         }
         next_tick->second += effect.interval * static_cast<float>(ticks);
     }
