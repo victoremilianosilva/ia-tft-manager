@@ -5,6 +5,7 @@
 #include <array>
 #include <cmath>
 #include <cstdint>
+#include <cstdlib>
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -119,6 +120,15 @@ tft::PlayerAction choose_action(
 
 int main(int argc, char** argv) {
     try {
+#if defined(_WIN32)
+        if (_putenv_s("TFT_COMBAT_REPLAY_MODE", "audit") != 0) {
+            throw std::runtime_error("Não foi possível habilitar o modo audit de replay.");
+        }
+#else
+        if (setenv("TFT_COMBAT_REPLAY_MODE", "audit", 1) != 0) {
+            throw std::runtime_error("Não foi possível habilitar o modo audit de replay.");
+        }
+#endif
         require(argc == 2, "Informe o caminho de units_gerado.json.");
         const std::string catalog_path = argv[1];
 
