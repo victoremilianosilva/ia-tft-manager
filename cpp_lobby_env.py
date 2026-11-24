@@ -792,7 +792,6 @@ class CppTFTLobbyWrapper:
             for i in range(self.PLAYERS_PER_LOBBY)
         ]
         self._last_action_masks = self._copy_action_masks(result.get("action_masks"))
-        profile_mark("python_numpy_arrays_and_mask_materialization")
         self._last_snapshot_metadata = {
             "engine_instance_id": str(result["engine_instance_id"]),
             "episode_id": int(result["episode_id"]),
