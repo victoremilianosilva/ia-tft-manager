@@ -20,6 +20,26 @@ if str(ROOT) not in sys.path:
 from cpp_lobby_env import CppTFTLobbyWrapper
 from engine_contracts import ActionType
 from policy import TFTPolicy
+from action_contract import (
+    build_action_mask_checkpoint_contract,
+    build_critic_mask_input_checkpoint_contract,
+    validate_action_mask_checkpoint_contract,
+    validate_critic_mask_input_checkpoint_contract,
+)
+from reward_contract import (
+    build_reward_checkpoint_contract,
+    validate_reward_checkpoint_contract,
+)
+from semantic_observation import (
+    build_semantic_state_checkpoint_contract,
+    catalog_identity,
+    build_semantic_batch,
+    semantic_item_state_tensors,
+    validate_semantic_batch_alignment,
+    validate_semantic_state_checkpoint_contract,
+    SEMANTIC_POLICY_STATE_KEYS,
+    semantic_policy_state_keys,
+)
 from economy_finetuning.finetune import ACTION_DIMS, _actions_to_native, _flatten_masks
 
 
@@ -42,13 +62,114 @@ def repository_commit() -> str | None:
         return os.environ.get("GITHUB_SHA")
 
 
-def load_policy(checkpoint_path: Path, obs_dim: int, device) -> TFTPolicy:
-    payload = torch.load(checkpoint_path, map_location=device, weights_only=False)
+def validate_evaluation_checkpoint_contracts(payload: dict, catalog_map: dict) -> dict:
+    """Fail closed on semantic checkpoint drift; legacy weights require explicit opt-in."""
+    if not isinstance(payload, dict):
+        raise TypeError("Checkpoint de avaliação deve ser um mapping.")
+
+    status = {}
+    action_contract = payload.get("action_mask_contract")
+    if action_contract is None:
+        allow_legacy = os.environ.get(
+            "TFT_ALLOW_UNVERSIONED_ACTION_MASK_CHECKPOINT", ""
+        ).strip().lower() in {"1", "true", "yes"}
+        if not allow_legacy:
+            raise ValueError(
+                "Checkpoint sem Action/Mask Contract versionado. "
+                "Para avaliação somente de pesos legados, defina "
+                "TFT_ALLOW_UNVERSIONED_ACTION_MASK_CHECKPOINT=1."
+            )
+        status["action_mask"] = "unversioned_weights_only_opt_in"
+    else:
+        validate_action_mask_checkpoint_contract(action_contract)
+        status["action_mask"] = "validated"
+
     state = payload.get("policy", payload)
-    policy = TFTPolicy(obs_dim, ACTION_DIMS).to(device)
+    critic_mask_keys = {
+        key for key in state if key.startswith("critic_mask_encoder.")
+    }
+    critic_mask_contract = payload.get("critic_mask_input_contract")
+    if critic_mask_contract is None:
+        if critic_mask_keys:
+            raise ValueError(
+                "Checkpoint contém pesos do Critic mask encoder sem critic_mask_input_contract."
+            )
+        status["critic_mask_input"] = "not_present"
+    else:
+        validate_critic_mask_input_checkpoint_contract(critic_mask_contract)
+        if not critic_mask_keys:
+            raise ValueError(
+                "Checkpoint declara critic_mask_input_contract sem pesos do encoder."
+            )
+        status["critic_mask_input"] = "validated"
+
+    reward_contract = payload.get("reward_contract")
+    if reward_contract is None:
+        allow_legacy = os.environ.get(
+            "TFT_ALLOW_UNVERSIONED_REWARD_CHECKPOINT", ""
+        ).strip().lower() in {"1", "true", "yes"}
+        if not allow_legacy:
+            raise ValueError(
+                "Checkpoint sem Reward Contract versionado. "
+                "Para avaliação somente de pesos legados, defina "
+                "TFT_ALLOW_UNVERSIONED_REWARD_CHECKPOINT=1."
+            )
+        status["reward"] = "unversioned_weights_only_opt_in"
+    else:
+        validate_reward_checkpoint_contract(reward_contract)
+        status["reward"] = "validated"
+
+    semantic_keys = semantic_policy_state_keys(state)
+    expected_keys = SEMANTIC_POLICY_STATE_KEYS
+    if semantic_keys and semantic_keys != expected_keys:
+        raise ValueError("Checkpoint contém um encoder semântico parcial.")
+    semantic_contract = payload.get("semantic_state_contract")
+    if semantic_contract is None:
+        if semantic_keys:
+            raise ValueError(
+                "Checkpoint contém pesos semânticos sem semantic_state_contract."
+            )
+        raise ValueError(
+            "Checkpoint sem semantic_state v6 não pode ser usado em avaliação/finetuning; "
+            "execute o warm-start explícito e gere uma nova linhagem."
+        )
+    else:
+        validate_semantic_state_checkpoint_contract(semantic_contract, catalog_map)
+        if not semantic_keys:
+            raise ValueError(
+                "Checkpoint declara semantic_state_contract sem pesos do encoder semântico."
+            )
+        status["semantic_state"] = "validated"
+    return status
+
+
+def load_policy(checkpoint_path: Path, obs_dim: int, device, catalog_map: dict):
+    payload = torch.load(checkpoint_path, map_location=device, weights_only=False)
+    contract_status = validate_evaluation_checkpoint_contracts(payload, catalog_map)
+    state = payload.get("policy", payload)
+    policy = TFTPolicy(
+        obs_dim, ACTION_DIMS,
+        semantic_vocab_size=catalog_identity(catalog_map)["vocab_size"],
+        require_semantic_state=True,
+    ).to(device)
     policy.load_compatible_state_dict(state)
     policy.eval()
-    return policy
+    return policy, contract_status
+
+
+def mirrored_policy_variants(seed: int) -> tuple[list[str], list[str]]:
+    """Build a deterministic, seed-rotated 4v4 seat schedule and its exact mirror."""
+    seats = np.random.default_rng(int(seed)).permutation(8)
+    tuned_seats = set(int(player_id) for player_id in seats[:4])
+    first = [
+        "finetuned" if player_id in tuned_seats else "original"
+        for player_id in range(8)
+    ]
+    second = [
+        "original" if variant == "finetuned" else "finetuned"
+        for variant in first
+    ]
+    return first, second
 
 
 def masks_sha256(raw_masks) -> str:
@@ -142,7 +263,7 @@ def compare_final_metrics(original_metrics, tuned_metrics):
     return result
 
 
-def run_match(policies_by_player, policy_variants, seed: int, max_steps: int, device):
+def run_match(policies_by_player, policy_variants, seed: int, max_steps: int, device, catalog_map):
     """Run one 4-vs-4 lobby. Policy assignment is mirrored in the paired run."""
     if len(policies_by_player) != 8 or len(policy_variants) != 8:
         raise ValueError("A lobby requires exactly eight player policies and variants.")
@@ -160,6 +281,52 @@ def run_match(policies_by_player, policy_variants, seed: int, max_steps: int, de
             raw_masks = env.get_action_masks()
             if step == 0:
                 initial_masks_sha256 = masks_sha256(raw_masks)
+            snapshot = env.get_snapshot_metadata()
+            native = snapshot.get("native_state_snapshot") if isinstance(snapshot, dict) else None
+            native_players = native.get("players") if isinstance(native, dict) else None
+            if not isinstance(native_players, list) or len(native_players) != 8:
+                raise RuntimeError("Paired evaluation requires all eight native semantic player snapshots.")
+            metadata_rows = []
+            for player_id, native_player in enumerate(native_players):
+                strategic = native_player.get("strategic_state") if isinstance(native_player, dict) else None
+                player_sequence = strategic.get("player_decision_sequence") if isinstance(strategic, dict) else None
+                if isinstance(player_sequence, bool) or not isinstance(player_sequence, int) or player_sequence < 0:
+                    raise RuntimeError(f"Missing native decision sequence for paired-evaluation player {player_id}.")
+                metadata_rows.append({
+                    "engine_instance_id": snapshot.get("engine_instance_id"),
+                    "episode_id": snapshot.get("episode_id"),
+                    "decision_sequence": snapshot.get("decision_sequence"),
+                    "player_decision_sequence": player_sequence,
+                    "player_id": player_id,
+                    "lobby_index": 0,
+                    "stage": snapshot.get("stage"),
+                    "round": snapshot.get("round"),
+                    "native_state_contract_id": native.get("contract_id"),
+                    "native_state_contract_version": native.get("contract_version"),
+                    "native_state_producer": native.get("producer"),
+                    "native_state_source_namespace": native.get("source_namespace"),
+                    "native_player_state": native_player,
+                })
+            semantic_batch = build_semantic_batch(metadata_rows, catalog_map)
+            semantic_contract = build_semantic_state_checkpoint_contract(catalog_map)
+            for metadata, semantic_hash, semantic_identity in zip(
+                metadata_rows, semantic_batch["hashes"], semantic_batch["identities"]
+            ):
+                metadata["semantic_identity"] = semantic_identity
+                metadata["semantic_projection_hash"] = semantic_hash
+                metadata["semantic_projection_contract_id"] = (
+                    semantic_contract["contract"]["contract_id"]
+                )
+                metadata["semantic_projection_contract_hash"] = semantic_contract["sha256"]
+            validate_semantic_batch_alignment(
+                semantic_batch, metadata_rows, semantic_contract, catalog_map
+            )
+            semantic_numeric = torch.as_tensor(
+                semantic_batch["numeric"], dtype=torch.float32, device=device
+            )
+            semantic_champion_ids = torch.as_tensor(
+                semantic_batch["champion_ids"], dtype=torch.long, device=device
+            )
             action_array = np.zeros((8, len(ACTION_DIMS)), dtype=np.int64)
             # Batch the four agents controlled by each policy.
             policy_groups = {}
@@ -170,9 +337,21 @@ def run_match(policies_by_player, policy_variants, seed: int, max_steps: int, de
                 obs_subset = torch.as_tensor(
                     obs[player_ids], dtype=torch.float32, device=device
                 )
+                row_indices = torch.as_tensor(player_ids, dtype=torch.long, device=device)
+                semantic_numeric_subset = semantic_numeric.index_select(0, row_indices)
+                semantic_state_subset = {
+                    "numeric": semantic_numeric_subset,
+                    "items": semantic_item_state_tensors(semantic_numeric_subset),
+                    "champion_ids": semantic_champion_ids.index_select(0, row_indices),
+                    "identities": [semantic_batch["identities"][i] for i in player_ids],
+                    "hashes": [semantic_batch["hashes"][i] for i in player_ids],
+                    "contract_id": semantic_batch["contract_id"],
+                    "contract_hash": semantic_batch["contract_hash"],
+                }
                 with torch.no_grad():
                     selected, _, _, _ = policy.get_action_and_value(
-                        obs_subset, masks=mask_subset, deterministic=True
+                        obs_subset, masks=mask_subset, deterministic=True,
+                        semantic_state=semantic_state_subset,
                     )
                 action_array[player_ids] = selected.cpu().numpy().astype(np.int64)
             for player_id, row in enumerate(action_array):
@@ -321,10 +500,19 @@ def main():
     try:
         initial = probe.reset(seed=seeds[0])
         obs_dim = int(initial.shape[-1])
+        catalog_map = probe.get_champion_id_map()
     finally:
         probe.close()
-    original = load_policy(original_path, obs_dim, device)
-    tuned = load_policy(tuned_path, obs_dim, device)
+    original, original_contract_status = load_policy(
+        original_path, obs_dim, device, catalog_map
+    )
+    tuned, tuned_contract_status = load_policy(
+        tuned_path, obs_dim, device, catalog_map
+    )
+    semantic_contract = build_semantic_state_checkpoint_contract(catalog_map)
+    action_mask_contract = build_action_mask_checkpoint_contract()
+    critic_mask_contract = build_critic_mask_input_checkpoint_contract()
+    reward_contract = build_reward_checkpoint_contract()
     provenance = {
         "repository_commit": repository_commit(),
         "original_checkpoint_sha256": file_sha256(original_path),
@@ -341,7 +529,19 @@ def main():
         "policy_source_sha256": file_sha256(ROOT / "policy.py"),
         "observation_dim": obs_dim,
         "action_dims": ACTION_DIMS,
-        "evaluation_mode": "mixed_4v4_mirrored_seats",
+        "evaluation_mode": "mixed_4v4_seed_rotated_mirrored_seats",
+        "checkpoint_contract_validation": {
+            "original": original_contract_status,
+            "finetuned": tuned_contract_status,
+        },
+        "action_mask_contract": action_mask_contract,
+        "critic_mask_input_contract": critic_mask_contract,
+        "reward_contract": reward_contract,
+        "semantic_state_contract": {
+            "contract_id": semantic_contract["contract"]["contract_id"],
+            "version": semantic_contract["contract"]["version"],
+            "sha256": semantic_contract["sha256"],
+        },
     }
 
     output = Path(args.output)
@@ -352,15 +552,13 @@ def main():
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("w", encoding="utf-8") as stream:
         for seed in seeds:
-            # First lobby: tuned policy occupies even seats.
-            variants_a = ["finetuned" if player_id % 2 == 0 else "original" for player_id in range(8)]
+            # Rotate the four candidate seats by seed, then run the exact complement.
+            variants_a, variants_b = mirrored_policy_variants(seed)
             policies_a = [tuned if variant == "finetuned" else original for variant in variants_a]
-            run_a = run_match(policies_a, variants_a, seed, args.max_steps, device)
+            run_a = run_match(policies_a, variants_a, seed, args.max_steps, device, catalog_map)
 
-            # Mirror the assignment to cancel deterministic seat/ordering bias.
-            variants_b = ["original" if player_id % 2 == 0 else "finetuned" for player_id in range(8)]
             policies_b = [original if variant == "original" else tuned for variant in variants_b]
-            run_b = run_match(policies_b, variants_b, seed, args.max_steps, device)
+            run_b = run_match(policies_b, variants_b, seed, args.max_steps, device, catalog_map)
 
             row = aggregate_mirrored_runs(run_a, run_b, provenance)
             if not row["same_initial_state"]:

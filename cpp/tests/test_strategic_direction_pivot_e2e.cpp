@@ -39,6 +39,8 @@ DirectionDiscoveryInput make_early_snapshot() {
         {1, 1, 2, 1, false, true, false, false, true, 0.0, {"Bruiser"}},
         {2, 2, 1, 1, true, false, false, false, false, 3.0, {"Bruiser"}}
     };
+    input.units[0].copies_by_star[1] = 2;
+    input.units[1].copies_by_star[1] = 1;
     input.trait_thresholds = {{"Bruiser", 2}};
     return input;
 }
@@ -108,16 +110,19 @@ void early_pairs_create_a_cheap_unbound_direction() {
     assert(std::find(hypothesis.anchor.evidence.begin(), hypothesis.anchor.evidence.end(),
                      StrategicAnchorEvidenceKind::PairProgress) != hypothesis.anchor.evidence.end());
 
-    UnifiedStrategicStateMachine machine;
+    ActiveCompositionManager active_composition;
+    StrategicCommitment commitment;
+    UnifiedStrategicStateMachine machine(active_composition, commitment);
     StrategicCycleInput input;
     input.exploration = make_early_snapshot();
+    input.selected_initial_direction = "Bruiser";
     auto cycle = machine.refresh(input);
     assert(cycle.phase == StrategicCyclePhase::Exploration);
     assert(!cycle.active_composition);
-    input.initial_composition_candidate = make_composition("composition-bruiser");
+    input.initial_composition_candidates.push_back(make_composition("native:Bruiser"));
     cycle = machine.refresh(input);
     assert(cycle.phase == StrategicCyclePhase::CompositionActive);
-    assert(cycle.anchors.direction_anchor.composition_identity == "composition-bruiser");
+    assert(cycle.anchors.direction_anchor.composition_identity == "native:Bruiser");
 }
 
 void composition_hierarchy_beats_an_easy_external_two_star() {
@@ -131,12 +136,12 @@ void composition_hierarchy_beats_an_easy_external_two_star() {
     context.composition_id = active.candidate.composition_id;
     context.composition_version = active.version;
     context.owned_units = {
-        {1, 1, 1, true, {}},
+        {1, 3, 1, true, {}},
         {4, 1, 1, false, {}},
         {9, 2, 2, true, {}}
     };
     context.evidence = {
-        {1, 0.2, 0.2, 0.9, 1, 1, -1, false},
+        {1, 0.2, 0.2, 0.9, 2, 1, -1, false},
         {4, 0.2, 0.2, 0.9, 0, 0, -1, false},
         {9, 1.0, 1.0, 1.0, 0, 0, -1, false}
     };
@@ -185,7 +190,10 @@ void carry_two_star_is_an_alternative_to_four_or_five_cost() {
 }
 
 void evaluation_preserves_the_current_direction() {
-    UnifiedStrategicStateMachine machine({3, 60.0, 5});
+    ActiveCompositionManager active_composition;
+    StrategicCommitment commitment;
+    commitment.composition_direction = "composition-current";
+    UnifiedStrategicStateMachine machine(active_composition, commitment, {3, 60.0, 5});
     auto input = make_active_input();
     auto result = machine.refresh(input);
     assert(result.phase == StrategicCyclePhase::CompositionActive);
@@ -206,7 +214,10 @@ void evaluation_preserves_the_current_direction() {
 }
 
 void confirmed_pivot_commits_composition_and_direction_together() {
-    UnifiedStrategicStateMachine machine({3, 60.0, 5});
+    ActiveCompositionManager active_composition;
+    StrategicCommitment commitment;
+    commitment.composition_direction = "composition-current";
+    UnifiedStrategicStateMachine machine(active_composition, commitment, {3, 60.0, 5});
     auto input = make_active_input();
     machine.refresh(input);
     input.active_composition.reset();
@@ -225,6 +236,7 @@ void confirmed_pivot_commits_composition_and_direction_together() {
     assert(result.anchors.direction_anchor.composition_identity == "composition-next");
     assert(result.anchors.direction_anchor.composition_version == 2);
     assert(result.anchors.direction_anchor.identity == "direction:composition-next:v2");
+    assert(commitment.composition_direction == "composition-next");
     assert(!result.anchors.has_pivot_candidate());
     assert(machine.transition_history().size() == 1);
     const auto& transition = machine.transition_history().front();
@@ -246,7 +258,10 @@ void unknown_pool_data_never_approves_a_pivot() {
 }
 
 void invalidated_or_stale_candidate_cannot_be_confirmed() {
-    UnifiedStrategicStateMachine machine({3, 60.0, 5});
+    ActiveCompositionManager active_composition;
+    StrategicCommitment commitment;
+    commitment.composition_direction = "composition-current";
+    UnifiedStrategicStateMachine machine(active_composition, commitment, {3, 60.0, 5});
     auto input = make_active_input();
     machine.refresh(input);
     input.active_composition.reset();
@@ -264,7 +279,10 @@ void invalidated_or_stale_candidate_cannot_be_confirmed() {
 }
 
 void interrupted_evidence_resets_confirmation_streak() {
-    UnifiedStrategicStateMachine machine({3, 60.0, 5});
+    ActiveCompositionManager active_composition;
+    StrategicCommitment commitment;
+    commitment.composition_direction = "composition-current";
+    UnifiedStrategicStateMachine machine(active_composition, commitment, {3, 60.0, 5});
     auto input = make_active_input();
     machine.refresh(input);
     input.active_composition.reset();

@@ -34,6 +34,9 @@ UnitInstance UnitInstanceFactory::create(
     unit.champion_internal_id = champion->internal_id;
     unit.champion_id = champion->api_name;
     unit.uuid = generate_uuid();
+    if (!issued_uuids_.insert(unit.uuid).second) {
+        throw std::runtime_error("Colisao de UUID de UnitInstance dentro do episodio.");
+    }
     unit.star = 1;
 
     return unit;

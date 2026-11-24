@@ -101,6 +101,7 @@ class PPOTrainer:
         advantages,
         returns,
         masks,
+        semantic_state=None,
     ):
         """
         Calcula a loss PPO de um mini-batch.
@@ -122,7 +123,8 @@ class PPOTrainer:
         ) = self.policy.evaluate_actions(
             obs,
             actions,
-            masks=masks
+            masks=masks,
+            semantic_state=semantic_state,
         )
 
         # ============================================================
@@ -346,7 +348,8 @@ class PPOTrainer:
 
             for batch in rollout.get_batches(
                 batch_size=batch_size,
-                normalize_advantages=False
+                normalize_advantages=False,
+                include_metadata=False,
             ):
                 attempted_batches += 1
 
@@ -373,7 +376,8 @@ class PPOTrainer:
                     batch["advantages"],
                     batch["returns"],
 
-                    batch["masks"]
+                    batch["masks"],
+                    semantic_state=batch["semantic_state"],
                 )
 
                 max_kl = max(max_kl, float(approx_kl.item()))

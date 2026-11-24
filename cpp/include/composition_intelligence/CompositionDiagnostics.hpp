@@ -13,7 +13,7 @@ namespace tft::composition_intelligence {
 
 struct CompositionOutcomeObservation {
     std::uint32_t observed_round{0};
-    std::int32_t placement{0};
+    std::optional<std::int32_t> placement;
     double health_delta{0.0};
     double board_score_delta{0.0};
     std::string note;
@@ -22,8 +22,10 @@ struct CompositionOutcomeObservation {
 // Read-only, append-only diagnostic record. It is a Viewer/export contract,
 // not a runtime controller and never feeds decisions back into the engine.
 struct CompositionDiagnosticSnapshot {
-    std::uint32_t schema_version{1};
+    std::uint32_t schema_version{2};
     std::uint64_t sequence{0};
+    std::uint64_t match_id{0};
+    std::int32_t player_id{-1};
     std::uint32_t round{0};
     std::string composition_id;
     std::uint64_t composition_version{0};
@@ -35,6 +37,8 @@ struct CompositionDiagnosticSnapshot {
         return {
             {"schema_version", schema_version},
             {"sequence", sequence},
+            {"match_id", match_id},
+            {"player_id", player_id},
             {"round", round},
             {"composition_id", composition_id},
             {"composition_version", composition_version},
@@ -70,6 +74,8 @@ public:
         const std::optional<CompositionOutcomeObservation>& outcome = std::nullopt) {
         CompositionDiagnosticSnapshot out;
         out.sequence = next_sequence_++;
+        out.match_id = evidence.match_id;
+        out.player_id = evidence.player_id;
         out.round = round;
         out.stale = priorities.stale || lineup.stale || actions.stale ||
             (active && (priorities.composition_id != active->candidate.composition_id ||
@@ -145,6 +151,16 @@ public:
                 {"confidence_not_probability", u.confidence},
                 {"copies_owned", u.copies_owned}, {"highest_star", u.highest_star},
                 {"target_star", u.target_star}, {"on_board", u.on_board},
+                {"target_unit", u.target_unit},
+                {"copies_by_star", std::vector<std::int32_t>(u.copies_by_star.begin(), u.copies_by_star.end())},
+                {"copies_in_shop", u.copies_in_shop},
+                {"affordable_shop_copies", u.affordable_shop_copies},
+                {"copies_toward_next_star", u.copies_toward_next_star},
+                {"copies_needed_for_next_star", u.copies_needed_for_next_star},
+                {"has_pair", u.has_pair},
+                {"copies_needed_for_pair", u.copies_needed_for_pair},
+                {"pool_known", u.pool_known},
+                {"pool_remaining", u.pool_known ? nlohmann::json(u.pool_remaining) : nlohmann::json(nullptr)},
                 {"sale_restricted", u.sale_restricted},
                 {"board_contribution", u.board_contribution},
                 {"synergy_contribution", u.synergy_contribution}, {"reasons", reasons}
@@ -167,6 +183,21 @@ public:
             {"deferred_target_ids", lineup.deferred_target_ids},
             {"bridge_ids", lineup.bridge_ids}, {"status", lineup.status}
         };
+        p["lineup_plan"]["target_states"] = nlohmann::json::array();
+        for (const auto& target : lineup.target_states) {
+            p["lineup_plan"]["target_states"].push_back({
+                {"champion_id", target.champion_id},
+                {"availability", target.availability},
+                {"copies_owned", target.copies_owned},
+                {"copies_in_shop", target.copies_in_shop},
+                {"affordable_shop_copies", target.affordable_shop_copies},
+                {"pool_known", target.pool_known},
+                {"pool_remaining", target.pool_known ? nlohmann::json(target.pool_remaining) : nlohmann::json(nullptr)},
+                {"owned", target.owned}, {"selected", target.selected},
+                {"deferred", target.deferred},
+                {"deferred_reason", target.deferred_reason}
+            });
+        }
         p["evidence"] = evidence_json(evidence);
         p["action_recommendation"] = {
             {"stale", actions.stale}, {"stale_reason", actions.stale_reason},
@@ -178,10 +209,10 @@ public:
             {"evidence_consumption", {{"economy", actions.economy_evidence_consumed},
                 {"board_validated", actions.board_evidence_validated},
                 {"items", actions.item_evidence_consumed},
-                {"gold", actions.economy_evidence_consumed ? nlohmann::json(actions.observed_gold) : nlohmann::json(nullptr)},
-                {"interest", actions.economy_evidence_consumed ? nlohmann::json(actions.observed_interest) : nlohmann::json(nullptr)},
-                {"projected_next_round_income", actions.economy_evidence_consumed ? nlohmann::json(actions.projected_next_round_income) : nlohmann::json(nullptr)},
-                {"economic_posture", actions.economy_evidence_consumed ? nlohmann::json(actions.observed_economic_posture) : nlohmann::json(nullptr)},
+                {"gold", actions.observed_gold >= 0 ? nlohmann::json(actions.observed_gold) : nlohmann::json(nullptr)},
+                {"interest", actions.observed_interest >= 0 ? nlohmann::json(actions.observed_interest) : nlohmann::json(nullptr)},
+                {"projected_next_round_income", actions.projected_next_round_income >= 0 ? nlohmann::json(actions.projected_next_round_income) : nlohmann::json(nullptr)},
+                {"economic_posture", actions.observed_economic_posture >= 0 ? nlohmann::json(actions.observed_economic_posture) : nlohmann::json(nullptr)},
                 {"rejected", actions.evidence_rejected}}},
             {"candidates", nlohmann::json::array()}
         };
@@ -195,26 +226,51 @@ public:
         }
         if (outcome) {
             p["outcome_observation"] = {
-                {"observed_round", outcome->observed_round}, {"placement", outcome->placement},
+                {"observed_round", outcome->observed_round},
+                {"placement", outcome->placement ? nlohmann::json(*outcome->placement) : nlohmann::json(nullptr)},
                 {"health_delta", outcome->health_delta},
                 {"board_score_delta", outcome->board_score_delta}, {"note", outcome->note},
                 {"interpretation", "correlation_only_not_causation"}
             };
-            p["recommendation_to_later_outcome"] = {
-                {"recommendation_round", round}, {"outcome_round", outcome->observed_round},
-                {"composition_version", out.composition_version},
-                {"interpretation", "correlation_only_not_causation"}
-            };
+            const bool has_prior_recommendation = has_last_capture_ &&
+                last_capture_match_id_ == out.match_id &&
+                last_capture_player_id_ == out.player_id &&
+                last_capture_round_ < outcome->observed_round;
+            p["recommendation_to_later_outcome"] = has_prior_recommendation
+                ? nlohmann::json{
+                    {"recommendation_round", last_capture_round_},
+                    {"recommendation_sequence", last_capture_sequence_},
+                    {"recommendation_composition_id", last_capture_composition_id_},
+                    {"recommendation_composition_version", last_capture_composition_version_},
+                    {"outcome_round", outcome->observed_round},
+                    {"match_id", out.match_id}, {"player_id", out.player_id},
+                    {"interpretation", "correlation_only_not_causation"}
+                }
+                : nlohmann::json(nullptr);
         } else {
             p["outcome_observation"] = nullptr;
             p["recommendation_to_later_outcome"] = nullptr;
         }
+        last_capture_round_ = out.round;
+        last_capture_sequence_ = out.sequence;
+        last_capture_composition_id_ = out.composition_id;
+        last_capture_composition_version_ = out.composition_version;
+        last_capture_match_id_ = out.match_id;
+        last_capture_player_id_ = out.player_id;
+        has_last_capture_ = true;
         return out;
     }
 
     std::uint64_t next_sequence() const noexcept { return next_sequence_; }
 
 private:
+    bool has_last_capture_{false};
+    std::uint32_t last_capture_round_{0};
+    std::uint64_t last_capture_sequence_{0};
+    std::string last_capture_composition_id_;
+    std::uint64_t last_capture_composition_version_{0};
+    std::uint64_t last_capture_match_id_{0};
+    std::int32_t last_capture_player_id_{-1};
     static std::vector<std::int32_t> ids(const std::vector<CompositionUnit>& units) {
         std::vector<std::int32_t> out;
         for (const auto& u : units) out.push_back(u.champion_id);
@@ -268,9 +324,7 @@ private:
         return "unknown";
     }
     static nlohmann::json metadata_json(const EvidenceSourceMetadata& m) {
-        return {{"source", m.source}, {"source_version", m.source_version},
-            {"match_id", m.match_id}, {"player_id", m.player_id},
-            {"composition_id", m.composition_id},
+        return {{"source", m.source},
             {"source_round", m.source_round}, {"expected_round", m.expected_round},
             {"quality", static_cast<int>(m.quality)}, {"quality_name", evidence_quality_name(m.quality)},
             {"available", m.available}, {"reason", m.reason}};
@@ -286,32 +340,45 @@ private:
                 {"best_inventory_item_id", u.best_inventory_item_id},
                 {"best_inventory_fit", u.best_inventory_fit},
                 {"has_equipped_items", u.has_equipped_items},
-                {"has_inventory_candidate", u.has_inventory_candidate}});
+                {"has_inventory_candidate", u.has_inventory_candidate},
+                {"role_source", u.role_source},
+                {"composition_source", u.composition_source},
+                {"composition_id", u.composition_id},
+                {"composition_version", u.composition_version},
+                {"composition_fit", u.composition_fit},
+                {"preferred_traits", u.preferred_traits}});
         const bool economy_available = e.economy.metadata.available;
         const bool board_available = e.board.metadata.available;
         const bool items_available = e.items.metadata.available;
-        return {{"schema_version", e.schema_version}, {"match_id", e.match_id},
-            {"player_id", e.player_id}, {"composition_id", e.composition_id},
-            {"composition_version", e.composition_version}, {"round", e.round},
+        return {{"schema_version", e.schema_version},
             {"economy", {{"metadata", metadata_json(e.economy.metadata)},
-                {"gold", value_or_null(economy_available, e.economy.gold)},
-                {"level", value_or_null(economy_available, e.economy.level)},
-                {"xp", value_or_null(economy_available, e.economy.xp)},
-                {"xp_to_next", value_or_null(economy_available, e.economy.xp_to_next)},
-                {"interest", value_or_null(economy_available, e.economy.interest_if_resolved_now)},
-                {"projected_income", value_or_null(economy_available, e.economy.projected_next_round_income)},
-                {"win_streak", value_or_null(economy_available, e.economy.win_streak)},
-                {"loss_streak", value_or_null(economy_available, e.economy.loss_streak)},
-                {"posture", value_or_null(economy_available, static_cast<int>(e.economy.posture))},
+                {"gold", value_or_null(e.economy.gold_available, e.economy.gold)},
+                {"level", value_or_null(e.economy.level_available, e.economy.level)},
+                {"xp", value_or_null(e.economy.xp_available, e.economy.xp)},
+                {"xp_to_next", value_or_null(e.economy.xp_to_next_available, e.economy.xp_to_next)},
+                {"interest", value_or_null(e.economy.interest_available, e.economy.interest_if_resolved_now)},
+                {"projected_income", value_or_null(e.economy.projected_income_available, e.economy.projected_next_round_income)},
+                {"win_streak", value_or_null(e.economy.win_streak_available, e.economy.win_streak)},
+                {"loss_streak", value_or_null(e.economy.loss_streak_available, e.economy.loss_streak)},
+                {"posture", value_or_null(e.economy.sufficient_evidence, static_cast<int>(e.economy.posture))},
                 {"reason", value_or_null(economy_available, static_cast<int>(e.economy.reason))},
-                {"survival_pressure", value_or_null(economy_available, e.economy.survival_pressure)},
-                {"board_pressure", value_or_null(economy_available, e.economy.board_pressure)},
-                {"economy_pressure", value_or_null(economy_available, e.economy.economy_pressure)},
-                {"confidence_not_probability", value_or_null(economy_available, e.economy.confidence)},
-                {"buy_xp_opportunity_cost", value_or_null(economy_available, e.economy.buy_experience_opportunity_cost)},
-                {"reroll_with_target_opportunity_cost", value_or_null(economy_available, e.economy.reroll_with_target_opportunity_cost)},
-                {"reroll_without_target_opportunity_cost", value_or_null(economy_available, e.economy.reroll_without_target_opportunity_cost)},
-                {"buy_unit_opportunity_cost", value_or_null(economy_available, e.economy.buy_unit_opportunity_cost)}}},
+                {"survival_pressure", value_or_null(e.economy.survival_evidence_available, e.economy.survival_pressure)},
+                {"board_pressure", value_or_null(e.economy.board_pressure_available, e.economy.board_pressure)},
+                {"economy_pressure", value_or_null(e.economy.economy_pressure_available, e.economy.economy_pressure)},
+                {"confidence_not_probability", value_or_null(e.economy.sufficient_evidence, e.economy.confidence)},
+                {"projected_income_available", e.economy.projected_income_available},
+                {"incoming_damage_available", e.economy.incoming_damage_available},
+                {"elimination_risk_available", e.economy.elimination_risk_available},
+                {"progression_available", e.economy.progression_available},
+                {"evidence_used", e.economy.evidence_used},
+                {"evidence_missing", e.economy.evidence_missing},
+                {"evidence_invalid", e.economy.evidence_invalid},
+                // Preserve the diagnostic JSON keys, but report unavailable
+                // rather than reviving the removed fixed opportunity priors.
+                {"buy_xp_opportunity_cost", nullptr},
+                {"reroll_with_target_opportunity_cost", nullptr},
+                {"reroll_without_target_opportunity_cost", nullptr},
+                {"buy_unit_opportunity_cost", nullptr}}},
             {"board", {{"metadata", metadata_json(e.board.metadata)},
                 {"positional_score", value_or_null(board_available, e.board.positional_score)},
                 {"structural_score", value_or_null(board_available, e.board.structural_score)},

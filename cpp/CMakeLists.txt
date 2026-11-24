@@ -358,7 +358,11 @@ if(BUILD_TESTING)
         COMMAND test_lineup_planner
     )
 
-    add_executable(test_planner_evidence_adapters tests/test_planner_evidence_adapters.cpp)
+    add_executable(
+        test_planner_evidence_adapters
+        tests/test_planner_evidence_adapters.cpp
+        src/lobby/EconomyEngine.cpp
+    )
     configure_tft_module(test_planner_evidence_adapters)
     enable_tft_test_assertions(test_planner_evidence_adapters)
     add_test(NAME planner_evidence_adapters COMMAND test_planner_evidence_adapters)
@@ -375,22 +379,79 @@ if(BUILD_TESTING)
     enable_tft_test_assertions(test_composition_intelligence_runtime)
     add_test(NAME composition_intelligence_runtime COMMAND test_composition_intelligence_runtime)
 
-    add_executable(test_composition_action_evaluator tests/test_composition_action_evaluator.cpp)
+    add_executable(
+        test_composition_action_evaluator
+        tests/test_composition_action_evaluator.cpp
+        src/lobby/EconomyEngine.cpp
+    )
     configure_tft_module(test_composition_action_evaluator)
     enable_tft_test_assertions(test_composition_action_evaluator)
     add_test(NAME composition_action_evaluator COMMAND test_composition_action_evaluator)
 
-    add_executable(test_contextual_action_evaluator tests/test_contextual_action_evaluator.cpp)
+    add_executable(
+        test_contextual_action_evaluator
+        tests/test_contextual_action_evaluator.cpp
+        src/lobby/EconomyEngine.cpp
+    )
     configure_tft_module(test_contextual_action_evaluator)
     target_link_libraries(test_contextual_action_evaluator PRIVATE nlohmann_json::nlohmann_json)
     enable_tft_test_assertions(test_contextual_action_evaluator)
     add_test(NAME contextual_action_evaluator COMMAND test_contextual_action_evaluator)
+
+    add_executable(test_pr8_opportunity_combat_evidence tests/test_pr8_opportunity_combat_evidence.cpp)
+    configure_tft_module(test_pr8_opportunity_combat_evidence)
+    enable_tft_test_assertions(test_pr8_opportunity_combat_evidence)
+    add_test(NAME pr8_opportunity_combat_evidence COMMAND test_pr8_opportunity_combat_evidence)
+
+    add_executable(
+        test_combat_prediction_pipeline
+        tests/test_combat_prediction_pipeline.cpp
+        src/combat/CombatEngine.cpp
+    )
+    configure_tft_module(test_combat_prediction_pipeline)
+    target_include_directories(
+        test_combat_prediction_pipeline
+        PRIVATE "${TFT_COMBAT_INCLUDE_DIR}"
+    )
+    target_link_libraries(test_combat_prediction_pipeline PRIVATE nlohmann_json::nlohmann_json)
+    enable_tft_test_assertions(test_combat_prediction_pipeline)
+    add_test(
+        NAME combat_prediction_pipeline
+        COMMAND test_combat_prediction_pipeline
+    )
 
     add_executable(test_strategic_action_executor tests/test_strategic_action_executor.cpp)
     configure_tft_module(test_strategic_action_executor)
     target_link_libraries(test_strategic_action_executor PRIVATE nlohmann_json::nlohmann_json)
     enable_tft_test_assertions(test_strategic_action_executor)
     add_test(NAME strategic_action_executor COMMAND test_strategic_action_executor)
+
+    add_executable(
+        test_strategic_integrated_replay
+        tests/test_strategic_integrated_replay.cpp
+        src/lobby/EconomyEngine.cpp
+    )
+    configure_tft_module(test_strategic_integrated_replay)
+    target_link_libraries(test_strategic_integrated_replay PRIVATE nlohmann_json::nlohmann_json)
+    target_compile_definitions(test_strategic_integrated_replay PRIVATE
+        TFT_STRATEGIC_REPLAY_FIXTURE=\"${CMAKE_CURRENT_SOURCE_DIR}/../tests/fixtures/strategic_integrated_replay.v1.json\"
+    )
+    enable_tft_test_assertions(test_strategic_integrated_replay)
+    add_test(
+        NAME strategic_integrated_replay
+        COMMAND test_strategic_integrated_replay
+            "${CMAKE_CURRENT_BINARY_DIR}/strategic_integrated_replay.jsonl"
+    )
+
+    add_executable(
+        test_strategic_action_candidate_builder
+        tests/test_strategic_action_candidate_builder.cpp
+        src/lobby/EconomyEngine.cpp
+    )
+    configure_tft_module(test_strategic_action_candidate_builder)
+    target_link_libraries(test_strategic_action_candidate_builder PRIVATE nlohmann_json::nlohmann_json)
+    enable_tft_test_assertions(test_strategic_action_candidate_builder)
+    add_test(NAME strategic_action_candidate_builder COMMAND test_strategic_action_candidate_builder)
 
     add_executable(test_strategic_position_planner tests/test_strategic_position_planner.cpp)
     configure_tft_module(test_strategic_position_planner)
@@ -431,6 +492,7 @@ if(BUILD_TESTING)
     add_executable(
         test_strategic_planner
         tests/test_strategic_planner.cpp
+        src/lobby/EconomyEngine.cpp
     )
     configure_tft_module(test_strategic_planner)
     enable_tft_test_assertions(test_strategic_planner)
@@ -438,6 +500,11 @@ if(BUILD_TESTING)
         NAME strategic_planner_shadow
         COMMAND test_strategic_planner
     )
+
+    add_executable(test_economic_controller tests/test_economic_controller.cpp)
+    configure_tft_module(test_economic_controller)
+    enable_tft_test_assertions(test_economic_controller)
+    add_test(NAME economic_controller COMMAND test_economic_controller)
 
     add_executable(test_initial_strategic_direction_discovery tests/test_initial_strategic_direction_discovery.cpp)
     configure_tft_module(test_initial_strategic_direction_discovery)
@@ -486,6 +553,20 @@ if(BUILD_TESTING)
     enable_tft_test_assertions(test_unified_strategic_state_machine)
     add_test(NAME unified_strategic_state_machine COMMAND test_unified_strategic_state_machine)
 
+    add_executable(
+        test_unified_strategic_runtime
+        tests/test_unified_strategic_runtime.cpp
+    )
+    configure_tft_module(test_unified_strategic_runtime)
+    target_link_libraries(
+        test_unified_strategic_runtime
+        PRIVATE nlohmann_json::nlohmann_json
+    )
+    enable_tft_test_assertions(test_unified_strategic_runtime)
+    add_test(
+        NAME unified_strategic_runtime
+        COMMAND test_unified_strategic_runtime
+    )
     # Deterministic end-to-end scenarios spanning discovery, unit priorities,
     # pivot feasibility and atomic direction/composition transitions.
     add_executable(
@@ -497,17 +578,6 @@ if(BUILD_TESTING)
     add_test(
         NAME strategic_direction_pivot_e2e
         COMMAND test_strategic_direction_pivot_e2e
-    )
-
-    add_executable(
-        test_composition_direction_policy
-        tests/test_composition_direction_policy.cpp
-    )
-    configure_tft_module(test_composition_direction_policy)
-    enable_tft_test_assertions(test_composition_direction_policy)
-    add_test(
-        NAME composition_direction_policy
-        COMMAND test_composition_direction_policy
     )
 
     add_executable(
@@ -532,21 +602,6 @@ if(BUILD_TESTING)
         COMMAND test_strategic_evidence_context
     )
 
-    add_executable(test_composition_planner tests/test_composition_planner.cpp)
-    configure_tft_module(test_composition_planner)
-    target_link_libraries(test_composition_planner PRIVATE nlohmann_json::nlohmann_json)
-    enable_tft_test_assertions(test_composition_planner)
-    add_test(NAME composition_planner COMMAND test_composition_planner)
-
-    add_executable(test_composition_planner_opgg tests/test_composition_planner_opgg.cpp)
-    configure_tft_module(test_composition_planner_opgg)
-    target_link_libraries(test_composition_planner_opgg PRIVATE nlohmann_json::nlohmann_json)
-    enable_tft_test_assertions(test_composition_planner_opgg)
-    add_test(NAME composition_planner_opgg_selection
-        COMMAND test_composition_planner_opgg selection)
-    add_test(NAME composition_planner_opgg_incompatible_fallback
-        COMMAND test_composition_planner_opgg incompatible)
-
     add_executable(test_unit_combat_classifier tests/test_unit_combat_classifier.cpp)
     configure_tft_module(test_unit_combat_classifier)
     enable_tft_test_assertions(test_unit_combat_classifier)
@@ -557,12 +612,11 @@ if(BUILD_TESTING)
     enable_tft_test_assertions(test_board_evaluation)
     add_test(NAME test_board_evaluation COMMAND test_board_evaluation)
 
-    add_executable(test_strategy_policy tests/test_strategy_policy.cpp)
-    configure_tft_module(test_strategy_policy)
-    enable_tft_test_assertions(test_strategy_policy)
-    add_test(NAME test_strategy_policy COMMAND test_strategy_policy)
-
-    add_executable(test_action_evaluator tests/test_action_evaluator.cpp)
+    add_executable(
+        test_action_evaluator
+        tests/test_action_evaluator.cpp
+        src/lobby/EconomyEngine.cpp
+    )
     configure_tft_module(test_action_evaluator)
     enable_tft_test_assertions(test_action_evaluator)
     add_test(NAME test_action_evaluator COMMAND test_action_evaluator)
@@ -824,6 +878,25 @@ if(BUILD_TESTING)
         NAME item_catalog_active
         COMMAND test_item_catalog
             "${CMAKE_CURRENT_SOURCE_DIR}/../data/itens.json"
+    )
+
+    # Validate the normalized Set 18 trait combat catalog and its coverage contracts.
+    add_executable(
+        test_trait_combat_catalog
+        tests/test_trait_combat_catalog.cpp
+    )
+    target_include_directories(
+        test_trait_combat_catalog
+        PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include"
+    )
+    target_link_libraries(
+        test_trait_combat_catalog
+        PRIVATE nlohmann_json::nlohmann_json
+    )
+    add_test(
+        NAME trait_combat_catalog_active
+        COMMAND test_trait_combat_catalog
+            "${CMAKE_CURRENT_SOURCE_DIR}/../data/trait_combat_effects.json"
     )
 
     # Validate trait milestones and identifier mapping from the active production catalog.

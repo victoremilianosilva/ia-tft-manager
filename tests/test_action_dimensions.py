@@ -5,6 +5,27 @@ from policy import TFTPolicy
 from trainer import Trainer
 from scripts.evaluate_composition_ablation import ACTION_DIMS as ABLATION_ACTION_DIMS
 
+def _complete_mask_bundle(masks, batch_size, device="cpu"):
+    """Build full native mask snapshots for focused Policy unit fixtures."""
+    shapes = {
+        "type_mask": (9,), "shop_mask": (5,), "bench_source_mask": (9,),
+        "board_target_mask": (28,), "board_source_mask": (28,),
+        "board_move_target_masks": (28, 28), "bench_move_source_mask": (9,),
+        "bench_to_board_target_masks": (9, 28), "item_inventory_mask": (9,),
+        "item_component_first_mask": (10,), "item_component_pair_masks": (10, 10),
+        "item_target_mask": (37,),
+    }
+    result = {
+        key: torch.zeros((batch_size, *shape), dtype=torch.bool, device=device)
+        for key, shape in shapes.items()
+    }
+    # PASS is the safe neutral action for fixture rows that do not target a branch.
+    result["type_mask"][:, 6] = True
+    for key, value in masks.items():
+        result[key] = value
+    return result
+
+
 
 def test_action_dimensions_match_the_environment_contract():
     assert Trainer.ACTION_DIMS == [9, 5, 9, 28, 28, 28]
@@ -20,13 +41,14 @@ def test_policy_heads_match_action_dimensions():
         obs_dim=162,
         action_dims=Trainer.ACTION_DIMS,
         hidden_size=32,
+        require_semantic_state=False,
     )
 
     assert policy.type_head.out_features == 9
     assert policy.shop_head[-1].out_features == 1
-    assert policy.shop_head[0].in_features == 32 + 9 + 8
+    assert policy.shop_head[0].in_features == 32 + 9 + 6
     assert policy.sell_head[-1].out_features == 1
-    assert policy.sell_head[0].in_features == 32 + 9 + 8
+    assert policy.sell_head[0].in_features == 32 + 9 + 6
     assert policy.bench_head.out_features == 9
     assert policy.bench_to_board_head.out_features == 28
     assert policy.board_source_head.out_features == 28
@@ -46,11 +68,12 @@ def test_policy_rejects_invalid_action_dimensions():
                 obs_dim=162,
                 action_dims=dimensions,
                 hidden_size=32,
+                require_semantic_state=False,
             )
 
 
 def test_legacy_seven_type_checkpoint_migrates_to_nine_types():
-    policy = TFTPolicy(obs_dim=162, action_dims=Trainer.ACTION_DIMS, hidden_size=32)
+    policy = TFTPolicy(obs_dim=162, action_dims=Trainer.ACTION_DIMS, hidden_size=32, require_semantic_state=False)
     legacy = {key: value.detach().clone() for key, value in policy.state_dict().items()}
     legacy["type_head.weight"] = legacy["type_head.weight"][:7].clone()
     legacy["type_head.bias"] = legacy["type_head.bias"][:7].clone()
@@ -61,7 +84,7 @@ def test_legacy_seven_type_checkpoint_migrates_to_nine_types():
         )):
             del legacy[key]
 
-    restored = TFTPolicy(obs_dim=162, action_dims=Trainer.ACTION_DIMS, hidden_size=32)
+    restored = TFTPolicy(obs_dim=162, action_dims=Trainer.ACTION_DIMS, hidden_size=32, require_semantic_state=False)
     assert restored.load_compatible_state_dict(legacy) is True
     migrated = restored.state_dict()
     assert torch.equal(migrated["type_head.weight"][:7], legacy["type_head.weight"])
@@ -84,10 +107,10 @@ def _configure_candidate_ranker(head, hidden_size, feature_indices, signs):
 
 def test_candidate_policy_ranks_shop_slots_by_local_compatibility():
     hidden_size = 16
-    policy = TFTPolicy(obs_dim=400, action_dims=Trainer.ACTION_DIMS, hidden_size=hidden_size)
+    policy = TFTPolicy(obs_dim=400, action_dims=Trainer.ACTION_DIMS, hidden_size=hidden_size, require_semantic_state=False)
     _configure_candidate_ranker(policy.shop_head, hidden_size, [0], [1.0])
     context = torch.zeros(1, hidden_size + Trainer.ACTION_DIMS[0])
-    candidates = torch.zeros(1, 5, 8)
+    candidates = torch.zeros(1, 5, 6)
     candidates[0, :, 0] = torch.tensor([0.1, 0.9, 0.2, 0.4, 0.3])
 
     logits = policy._candidate_logits(policy.shop_head, context, candidates)
@@ -97,10 +120,10 @@ def test_candidate_policy_ranks_shop_slots_by_local_compatibility():
 
 def test_candidate_policy_avoids_selling_core_upgrade_copies():
     hidden_size = 16
-    policy = TFTPolicy(obs_dim=400, action_dims=Trainer.ACTION_DIMS, hidden_size=hidden_size)
+    policy = TFTPolicy(obs_dim=400, action_dims=Trainer.ACTION_DIMS, hidden_size=hidden_size, require_semantic_state=False)
     _configure_candidate_ranker(policy.sell_head, hidden_size, [4, 5], [-1.0, -1.0])
     context = torch.zeros(1, hidden_size + Trainer.ACTION_DIMS[0])
-    candidates = torch.zeros(1, 9, 8)
+    candidates = torch.zeros(1, 9, 6)
 
     # Two valid sale candidates: slot 0 is core and contributes to an upgrade;
     # slot 1 is non-core and has fewer copies. Other slots are marked protected
@@ -115,16 +138,16 @@ def test_candidate_policy_avoids_selling_core_upgrade_copies():
 
 
 def test_candidate_observation_tail_aligns_bench_and_shop_slots():
-    policy = TFTPolicy(obs_dim=400, action_dims=Trainer.ACTION_DIMS, hidden_size=16)
+    policy = TFTPolicy(obs_dim=400, action_dims=Trainer.ACTION_DIMS, hidden_size=16, require_semantic_state=False)
     observations = torch.zeros(2, 400)
     tail = observations[:, -policy.candidate_observation_dim:]
-    tail[:, :9 * 8] = 1.0
-    tail[:, 9 * 8:] = 2.0
+    tail[:, :9 * 6] = 1.0
+    tail[:, 9 * 6:] = 2.0
 
     bench, shop = policy._candidate_features(observations)
 
-    assert bench.shape == (2, 9, 8)
-    assert shop.shape == (2, 5, 8)
+    assert bench.shape == (2, 9, 6)
+    assert shop.shape == (2, 5, 6)
     assert torch.all(bench == 1.0)
     assert torch.all(shop == 2.0)
 
@@ -140,11 +163,13 @@ def test_checkpoint_migration_inserts_composition_features_before_candidate_tail
         obs_dim=old_obs_dim,
         action_dims=Trainer.ACTION_DIMS,
         hidden_size=hidden_size,
+        require_semantic_state=False,
     )
     new_policy = TFTPolicy(
         obs_dim=new_obs_dim,
         action_dims=Trainer.ACTION_DIMS,
         hidden_size=hidden_size,
+        require_semantic_state=False,
     )
 
     old_weight = old_policy.global_mlp[0].weight.detach().clone()
@@ -173,11 +198,14 @@ def test_policy_accepts_observation_with_composition_control_features():
         obs_dim=obs_dim,
         action_dims=Trainer.ACTION_DIMS,
         hidden_size=32,
+        require_semantic_state=False,
     )
     observations = torch.zeros(2, obs_dim)
-    values = policy.get_value(observations)
+    masks = _complete_mask_bundle({}, observations.shape[0])
+    values = policy.get_value(observations, masks=masks)
     actions, log_prob, entropy, values_again = policy.get_action_and_value(
         observations,
+        masks=masks,
         deterministic=True,
     )
 
@@ -195,6 +223,7 @@ def test_composition_focus_and_lock_features_reach_policy_encoder():
         obs_dim=obs_dim,
         action_dims=Trainer.ACTION_DIMS,
         hidden_size=hidden_size,
+        require_semantic_state=False,
     )
     # In this fixture the composition-control block has 18 trait weights plus
     # lock and strength. It sits immediately before the 112-value candidate tail.

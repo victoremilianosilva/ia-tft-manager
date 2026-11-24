@@ -91,6 +91,15 @@ public:
         return active_;
     }
 
+    // Confirms that a supplied snapshot is the exact canonical publication,
+    // including version and candidate content. Consumers must not hydrate a
+    // second copy when this manager already owns the active composition.
+    bool matches(const ActiveComposition& snapshot) const noexcept {
+        return active_.has_value() &&
+            active_->version == snapshot.version &&
+            equivalent(active_->candidate, snapshot.candidate);
+    }
+
     void reset() noexcept {
         active_.reset();
     }

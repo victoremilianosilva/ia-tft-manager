@@ -1,0 +1,753 @@
+import pytest
+import torch
+
+from action_contract import MASK_SHAPES
+from policy import ACTION_DIMS, TFTPolicy
+from semantic_observation import SEMANTIC_ENTITY_FEATURES, SEMANTIC_ENTITY_SLOTS, SEMANTIC_GLOBAL_FEATURES, SEMANTIC_ITEM_OFFSET, SEMANTIC_NUMERIC_DIM, SEMANTIC_TRAIT_VOCAB_SIZE, semantic_item_state_tensors
+
+
+def _batch(batch_size=2):
+    # Native production layout: core + board + anvil/item blocks + candidate tail.
+    item_semantic = 17
+    item_target = 17
+    item_global = 10 + 9 * item_semantic + 100 * item_semantic + 37 * item_target
+    item_compatibility = (9 + 100) * 37
+    item_state = item_global + item_compatibility
+    anvil = 3 + 9 * 11
+    candidate = (9 + 5) * 6
+    obs_dim = 10 + 4 * 7 * 5 + anvil + item_state + candidate
+    obs = torch.zeros(batch_size, obs_dim, dtype=torch.float32)
+    masks = {
+        name: torch.zeros((batch_size, *shape), dtype=torch.bool)
+        for name, shape in MASK_SHAPES.items()
+    }
+    masks["type_mask"][:, 6] = True
+    semantic_numeric = torch.zeros(batch_size, SEMANTIC_NUMERIC_DIM, dtype=torch.float32)
+    semantic = {
+        "numeric": semantic_numeric,
+        "items": semantic_item_state_tensors(semantic_numeric),
+        "champion_ids": torch.zeros(batch_size, SEMANTIC_ENTITY_SLOTS, dtype=torch.long),
+    }
+    return obs, masks, semantic
+
+
+
+def test_native_carrier_rejects_legacy_policy_fallback():
+    with pytest.raises(ValueError, match="neutral carrier"):
+        TFTPolicy(
+            obs_dim=1,
+            action_dims=list(ACTION_DIMS),
+            hidden_size=32,
+            semantic_vocab_size=64,
+            require_semantic_state=False,
+        )
+
+
+def test_strict_semantic_policy_uses_only_neutral_observation_carrier():
+    _, _, semantic = _batch(batch_size=1)
+    carrier = torch.zeros((1, 1), dtype=torch.float32)
+    policy = TFTPolicy(
+        obs_dim=1,
+        action_dims=list(ACTION_DIMS),
+        hidden_size=32,
+        semantic_vocab_size=64,
+        require_semantic_state=True,
+    ).eval()
+
+    assert isinstance(policy.global_mlp, torch.nn.Identity)
+    assert not any(key.startswith("global_mlp.") for key in policy.state_dict())
+
+    historical_weights = dict(policy.state_dict())
+    historical_weights.update({
+        "global_mlp.0.weight": torch.zeros((256, 128)),
+        "global_mlp.0.bias": torch.zeros(256),
+        "global_mlp.2.weight": torch.zeros((256, 256)),
+        "global_mlp.2.bias": torch.zeros(256),
+    })
+    assert policy.load_compatible_state_dict(historical_weights) is True
+
+    first = policy.encode(carrier, semantic_state=semantic)
+    second = policy.encode(carrier + 1.0, semantic_state=semantic)
+    torch.testing.assert_close(first, second)
+
+
+def test_policy_defaults_to_native_semantic_state():
+    policy = TFTPolicy(
+        obs_dim=64,
+        action_dims=list(ACTION_DIMS),
+        hidden_size=32,
+        semantic_vocab_size=64,
+    )
+    assert policy.require_semantic_state is True
+
+
+def test_native_policy_checkpoint_roundtrip_is_strict():
+    obs, _, _ = _batch(batch_size=1)
+    policy = TFTPolicy(
+        obs_dim=obs.shape[-1],
+        action_dims=list(ACTION_DIMS),
+        hidden_size=32,
+        semantic_vocab_size=64,
+        require_semantic_state=True,
+    )
+    restored = TFTPolicy(
+        obs_dim=obs.shape[-1],
+        action_dims=list(ACTION_DIMS),
+        hidden_size=32,
+        semantic_vocab_size=64,
+        require_semantic_state=True,
+    )
+    restored.load_state_dict(policy.state_dict(), strict=True)
+    for name, tensor in policy.state_dict().items():
+        torch.testing.assert_close(restored.state_dict()[name], tensor)
+
+    incomplete = dict(policy.state_dict())
+    incomplete.pop("semantic_encoder.0.weight")
+    with pytest.raises(RuntimeError, match="Missing key"):
+        restored.load_state_dict(incomplete, strict=True)
+
+
+def test_native_semantic_entities_drive_board_cnn_and_action_candidates():
+    obs, _, semantic = _batch(batch_size=1)
+    policy = TFTPolicy(obs_dim=obs.shape[-1], action_dims=list(ACTION_DIMS), hidden_size=32, semantic_vocab_size=64).eval()
+    entities = semantic["numeric"][:, SEMANTIC_GLOBAL_FEATURES:SEMANTIC_ITEM_OFFSET].view(1, SEMANTIC_ENTITY_SLOTS, SEMANTIC_ENTITY_FEATURES)
+    entities[0, 0, 0] = 1.0
+    entities[0, 0, 1] = 2.0 / 3.0
+    entities[0, 0, 2] = 4.0 / 5.0
+    entities[0, 0, 3] = 1.0 / 3.0
+    entities[0, 0, 4] = 0.2
+    entities[0, 28, 0] = 1.0
+    entities[0, 28, 1] = 1.0 / 3.0
+    entities[0, 28, 2] = 3.0 / 5.0
+    entities[0, 28, 4] = 2.0 / 3.0
+    entities[0, 28, 10] = 0.3
+    entities[0, 28, 11] = 4.0 / 9.0
+    entities[0, 37, 0] = 1.0
+    entities[0, 37, 1] = 1.0 / 3.0
+    entities[0, 37, 2] = 2.0 / 5.0
+    entities[0, 37, 10] = 2.0 / 9.0
+    captured = {}
+    def capture_board(_module, args):
+        captured["board"] = args[0].detach().clone()
+    handle = policy.board_cnn[0].register_forward_pre_hook(capture_board)
+    with torch.no_grad():
+        policy.encode(obs, semantic_state=semantic)
+        bench, shop = policy._candidate_features(obs, semantic_state=semantic)
+    handle.remove()
+    assert captured["board"].shape == (1, 5, 4, 7)
+    assert torch.allclose(captured["board"][0, :, 0, 0], torch.tensor([1.0, 0.8, 2.0 / 3.0, 1.0 / 3.0, 0.2]))
+    assert torch.allclose(bench[0, 0], torch.tensor([1.0, 0.6, 1.0 / 3.0, 2.0 / 3.0, 0.3, 4.0 / 9.0]))
+    assert torch.allclose(shop[0, 0], torch.tensor([1.0, 0.4, 1.0 / 3.0, 0.0, 2.0 / 9.0, 0.0]))
+    entities[0, 0, 12] = 1.0
+    entities[0, 0, 13] = 1.0
+    entities[0, 0, 15] = 2.0 / 3.0
+    entities[0, 0, 16] = 1.0
+    entities[0, 0, 23] = 0.5
+    _, _, _, targets, _, _, _, _, _ = policy._item_state_features(obs, semantic_state=semantic)
+    assert targets[0, 0, 0].item() == 1.0
+    assert targets[0, 0, 1].item() == 1.0
+    assert targets[0, 0, 2].item() == 0.0
+    assert targets[0, 0, 4].item() == 1.0
+    assert targets[0, 0, 11].item() == 0.5
+
+
+def test_v7_semantic_encoder_weights_migrate_with_board_evaluation_columns_neutral():
+    obs, _, _ = _batch(batch_size=1)
+    source_policy = TFTPolicy(
+        obs_dim=obs.shape[-1], action_dims=list(ACTION_DIMS),
+        hidden_size=32, semantic_vocab_size=64,
+    )
+    state = {key: value.detach().clone() for key, value in source_policy.state_dict().items()}
+    current = state["semantic_encoder.0.weight"]
+    old_global = SEMANTIC_GLOBAL_FEATURES - 16
+    old_entity_offset = old_global
+    old_item_offset = old_entity_offset + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ENTITY_FEATURES
+    historical = torch.zeros(
+        current.shape[0],
+        old_item_offset + SEMANTIC_ENTITY_SLOTS * 32,
+        dtype=current.dtype,
+    )
+    historical[:, :old_global] = current[:, :old_global]
+    historical[:, old_entity_offset:old_item_offset] = current[
+        :, SEMANTIC_GLOBAL_FEATURES:SEMANTIC_ITEM_OFFSET
+    ]
+    historical[:, old_item_offset:] = current[:, SEMANTIC_ITEM_OFFSET:]
+    state["semantic_encoder.0.weight"] = historical
+
+    restored = TFTPolicy(
+        obs_dim=obs.shape[-1], action_dims=list(ACTION_DIMS),
+        hidden_size=32, semantic_vocab_size=64,
+    )
+    assert restored.load_compatible_state_dict(state) is True
+    migrated = restored.semantic_encoder[0].weight.detach()
+    assert torch.count_nonzero(migrated[:, old_global:SEMANTIC_GLOBAL_FEATURES]) == 0
+    torch.testing.assert_close(
+        migrated[:, :old_global], historical[:, :old_global]
+    )
+    torch.testing.assert_close(
+        migrated[:, SEMANTIC_GLOBAL_FEATURES:SEMANTIC_ITEM_OFFSET],
+        historical[:, old_entity_offset:old_item_offset],
+    )
+    torch.testing.assert_close(
+        migrated[:, SEMANTIC_ITEM_OFFSET:], historical[:, old_item_offset:]
+    )
+
+
+def test_board_evaluation_metrics_are_direct_inputs_to_semantic_encoder():
+    obs, _, semantic = _batch(batch_size=1)
+    metrics = torch.arange(16, dtype=torch.float32).unsqueeze(0) / 16.0
+    semantic["numeric"][:, 54:70] = metrics
+    policy = TFTPolicy(
+        obs_dim=obs.shape[-1], action_dims=list(ACTION_DIMS),
+        hidden_size=32, semantic_vocab_size=64,
+    ).eval()
+    captured = []
+    handle = policy.semantic_encoder[0].register_forward_pre_hook(
+        lambda _module, args: captured.append(args[0].detach().clone())
+    )
+    with torch.no_grad():
+        policy.encode(obs, semantic_state=semantic)
+    handle.remove()
+    assert captured
+    torch.testing.assert_close(captured[0][:, 54:70], metrics)
+
+
+def test_v6_semantic_encoder_weights_migrate_entity_stride_and_board_globals():
+    obs, _, _ = _batch(batch_size=1)
+    source_policy = TFTPolicy(
+        obs_dim=obs.shape[-1], action_dims=list(ACTION_DIMS),
+        hidden_size=32, semantic_vocab_size=64,
+    )
+    state = {key: value.detach().clone() for key, value in source_policy.state_dict().items()}
+    current = state["semantic_encoder.0.weight"]
+    old_global, old_entity_features = 52, 39
+    old_item_offset = old_global + SEMANTIC_ENTITY_SLOTS * old_entity_features
+    historical = torch.zeros(
+        current.shape[0], old_item_offset + SEMANTIC_ENTITY_SLOTS * 32,
+        dtype=current.dtype,
+    )
+    historical[:, :old_global] = current[:, :old_global]
+    for slot in range(SEMANTIC_ENTITY_SLOTS):
+        old_start = old_global + slot * old_entity_features
+        new_start = SEMANTIC_GLOBAL_FEATURES + slot * SEMANTIC_ENTITY_FEATURES
+        historical[:, old_start:old_start + old_entity_features] = current[
+            :, new_start:new_start + old_entity_features
+        ]
+    historical[:, old_item_offset:] = current[:, SEMANTIC_ITEM_OFFSET:]
+    state["semantic_encoder.0.weight"] = historical
+
+    restored = TFTPolicy(
+        obs_dim=obs.shape[-1], action_dims=list(ACTION_DIMS),
+        hidden_size=32, semantic_vocab_size=64,
+    )
+    assert restored.load_compatible_state_dict(state) is True
+    migrated = restored.semantic_encoder[0].weight.detach()
+    assert torch.count_nonzero(migrated[:, old_global:SEMANTIC_GLOBAL_FEATURES]) == 0
+    torch.testing.assert_close(migrated[:, :old_global], historical[:, :old_global])
+    for slot in range(SEMANTIC_ENTITY_SLOTS):
+        old_start = old_global + slot * old_entity_features
+        new_start = SEMANTIC_GLOBAL_FEATURES + slot * SEMANTIC_ENTITY_FEATURES
+        torch.testing.assert_close(
+            migrated[:, new_start:new_start + old_entity_features],
+            historical[:, old_start:old_start + old_entity_features],
+        )
+    torch.testing.assert_close(
+        migrated[:, SEMANTIC_ITEM_OFFSET:], historical[:, old_item_offset:]
+    )
+
+
+def test_native_semantic_global_encoder_produces_finite_features():
+    torch.manual_seed(20261118)
+    obs, masks, semantic = _batch()
+    policy = TFTPolicy(
+        obs_dim=obs.shape[-1],
+        action_dims=list(ACTION_DIMS),
+        hidden_size=32,
+        semantic_vocab_size=64,
+    ).eval()
+
+    with torch.no_grad():
+        semantic_values = policy.get_value(obs, masks=masks, semantic_state=semantic)
+    assert semantic_values.shape == (obs.shape[0],)
+    assert torch.isfinite(semantic_values).all()
+
+
+
+
+def test_historical_anvil_scorer_weights_migrate_with_zero_kind_columns():
+    obs, _, _ = _batch(batch_size=1)
+    policy = TFTPolicy(
+        obs_dim=obs.shape[-1], action_dims=list(ACTION_DIMS),
+        hidden_size=32, semantic_vocab_size=64,
+    )
+    state = {key: value.detach().clone() for key, value in policy.state_dict().items()}
+    current = state["item_anvil_candidate_head.0.weight"]
+    historical = torch.arange(
+        current.shape[0] * (current.shape[1] - 2), dtype=torch.float32
+    ).reshape(current.shape[0], current.shape[1] - 2)
+    state["item_anvil_candidate_head.0.weight"] = historical
+
+    assert policy.load_compatible_state_dict(state) is True
+    migrated = policy.item_anvil_candidate_head[0].weight.detach()
+    assert torch.equal(migrated[:, :-2], historical)
+    assert torch.count_nonzero(migrated[:, -2:]) == 0
+
+
+def test_anvil_candidate_scorer_distinguishes_component_and_completed_item_options():
+    obs, _, _ = _batch(batch_size=1)
+    policy = TFTPolicy(
+        obs_dim=obs.shape[-1], action_dims=list(ACTION_DIMS),
+        hidden_size=32, semantic_vocab_size=64,
+    )
+    with torch.no_grad():
+        policy.item_anvil_candidate_head[0].weight[:, -2].fill_(1.0)
+        policy.item_anvil_candidate_head[0].weight[:, -1].fill_(2.0)
+        policy.item_anvil_candidate_head[0].bias.zero_()
+        policy.item_anvil_candidate_head[-1].weight.fill_(1.0)
+        policy.item_anvil_candidate_head[-1].bias.zero_()
+    conditioned = torch.zeros(1, 32 + ACTION_DIMS[0])
+    option_features = torch.zeros(1, 9, 11)
+    pending = torch.ones(1, dtype=torch.bool)
+    component_kind = torch.tensor([[1.0, 0.0]])
+    completed_kind = torch.tensor([[0.0, 1.0]])
+
+    component_scores = policy._item_inventory_logits(
+        conditioned, torch.zeros(1, 9, 17), torch.zeros(1, 9, 37),
+        option_features, pending, component_kind,
+    )
+    completed_scores = policy._item_inventory_logits(
+        conditioned, torch.zeros(1, 9, 17), torch.zeros(1, 9, 37),
+        option_features, pending, completed_kind,
+    )
+    assert not torch.allclose(component_scores, completed_scores)
+
+def test_semantic_global_encoder_embeds_trait_identity_and_receives_gradients():
+    obs, _, semantic = _batch(batch_size=1)
+    policy = TFTPolicy(
+        obs_dim=obs.shape[-1], action_dims=list(ACTION_DIMS),
+        hidden_size=32, semantic_vocab_size=64,
+    )
+    trait_offset = SEMANTIC_GLOBAL_FEATURES + 29
+    semantic["numeric"][0, trait_offset] = 123.0 / SEMANTIC_TRAIT_VOCAB_SIZE
+    semantic["numeric"][0, trait_offset + 1] = 456.0 / SEMANTIC_TRAIT_VOCAB_SIZE
+    semantic["items"] = semantic_item_state_tensors(semantic["numeric"])
+
+    latent = policy.encode(obs, semantic_state=semantic)
+    latent.square().mean().backward()
+
+    gradient = policy.semantic_trait_embedding.weight.grad
+    assert gradient is not None
+    assert gradient[123].abs().sum().item() > 0.0
+    assert gradient[456].abs().sum().item() > 0.0
+
+def test_native_policy_fails_closed_when_semantic_state_is_missing():
+    obs, masks, semantic = _batch(batch_size=1)
+    policy = TFTPolicy(
+        obs_dim=obs.shape[-1], action_dims=list(ACTION_DIMS),
+        hidden_size=32, semantic_vocab_size=64, require_semantic_state=True,
+    )
+    with pytest.raises(ValueError, match="semantic_state v8"):
+        policy.get_value(obs, masks=masks)
+    assert torch.isfinite(policy.get_value(obs, masks=masks, semantic_state=semantic)).all()
+
+
+def test_native_semantic_consumers_ignore_legacy_flat_board_item_and_candidate_blocks():
+    obs, _, semantic = _batch(batch_size=2)
+    policy = TFTPolicy(
+        obs_dim=obs.shape[-1], action_dims=list(ACTION_DIMS),
+        hidden_size=32, semantic_vocab_size=64,
+    )
+    policy.eval()
+    unrelated_flat = torch.randn_like(obs) * 100.0
+
+    assert torch.equal(
+        policy.encode(obs, semantic_state=semantic),
+        policy.encode(unrelated_flat, semantic_state=semantic),
+    )
+    candidates = policy._candidate_features(obs, semantic_state=semantic)
+    changed_candidates = policy._candidate_features(
+        unrelated_flat, semantic_state=semantic
+    )
+    for left, right in zip(candidates, changed_candidates):
+        assert torch.equal(left, right)
+
+    item_features = policy._item_state_features(obs, semantic_state=semantic)
+    changed_item_features = policy._item_state_features(
+        unrelated_flat, semantic_state=semantic
+    )
+    for left, right in zip(item_features, changed_item_features):
+        assert torch.equal(left, right)
+
+
+def test_semantic_side_input_changes_actor_and_critic_and_receives_gradients():
+    torch.manual_seed(20261119)
+    obs, masks, semantic = _batch()
+    policy = TFTPolicy(
+        obs_dim=obs.shape[-1],
+        action_dims=list(ACTION_DIMS),
+        hidden_size=32,
+        semantic_vocab_size=64,
+    )
+    with torch.no_grad():
+        policy.semantic_encoder[0].weight.fill_(0.001)
+        policy.semantic_encoder[0].bias.fill_(0.1)
+        policy.semantic_encoder[-1].weight.fill_(0.01)
+        policy.semantic_encoder[-1].bias.zero_()
+        policy.type_head.weight.fill_(0.01)
+        policy.type_head.bias.zero_()
+        policy.value_head.weight[:, :32].fill_(0.01)
+
+    changed_numeric = torch.ones_like(semantic["numeric"])
+    changed = {
+        "numeric": changed_numeric,
+        "items": semantic_item_state_tensors(changed_numeric),
+        "champion_ids": torch.ones_like(semantic["champion_ids"]),
+    }
+    policy.eval()
+    with torch.no_grad():
+        base_features = policy.encode(obs, semantic_state=semantic)
+        enriched_features = policy.encode(obs, semantic_state=changed)
+        base_logits = policy.type_head(base_features)
+        enriched_logits = policy.type_head(enriched_features)
+        base_values = policy.get_value(obs, masks=masks, semantic_state=semantic)
+        enriched_values = policy.get_value(obs, masks=masks, semantic_state=changed)
+    assert not torch.allclose(base_values, enriched_values)
+    assert not torch.allclose(base_logits, enriched_logits)
+
+    policy.train()
+    policy.zero_grad(set_to_none=True)
+    policy.get_value(obs, masks=masks, semantic_state=changed).sum().backward()
+    gradient = policy.semantic_encoder[-1].weight.grad
+    assert gradient is not None
+    assert float(gradient.abs().sum()) > 0.0
+
+
+def test_historical_policy_checkpoint_loads_with_native_semantic_encoder():
+    torch.manual_seed(20261120)
+    obs, masks, semantic = _batch()
+    source = TFTPolicy(
+        obs_dim=obs.shape[-1],
+        action_dims=list(ACTION_DIMS),
+        hidden_size=32,
+        semantic_vocab_size=64,
+        require_semantic_state=False,
+    ).eval()
+    legacy_state = {
+        key: value.detach().clone()
+        for key, value in source.state_dict().items()
+        if not key.startswith(("semantic_id_embedding.", "semantic_trait_embedding.", "semantic_encoder."))
+    }
+
+    migrated = TFTPolicy(
+        obs_dim=obs.shape[-1],
+        action_dims=list(ACTION_DIMS),
+        hidden_size=32,
+        semantic_vocab_size=64,
+    ).eval()
+    assert migrated.load_compatible_state_dict(legacy_state) is True
+    with torch.no_grad():
+        after = migrated.get_value(obs, masks=masks, semantic_state=semantic)
+    assert after.shape == (obs.shape[0],)
+    assert torch.isfinite(after).all()
+
+def test_v1_semantic_encoder_checkpoint_maps_old_feature_offsets():
+    torch.manual_seed(20261121)
+    obs, _, _ = _batch()
+    policy = TFTPolicy(
+        obs_dim=obs.shape[-1],
+        action_dims=list(ACTION_DIMS),
+        hidden_size=32,
+        semantic_vocab_size=64,
+    )
+    old_numeric_dim = 269
+    old_weight = torch.arange(
+        256 * (old_numeric_dim + SEMANTIC_ENTITY_SLOTS * 16), dtype=torch.float32
+    ).reshape(256, old_numeric_dim + SEMANTIC_ENTITY_SLOTS * 16)
+    state = {
+        key: value.detach().clone()
+        for key, value in policy.state_dict().items()
+        if not key.startswith(("semantic_encoder.", "semantic_trait_embedding."))
+    }
+    state["semantic_encoder.0.weight"] = old_weight
+    state["semantic_encoder.0.bias"] = torch.zeros(256)
+    state["semantic_encoder.2.weight"] = policy.semantic_encoder[2].weight.detach().clone()
+    state["semantic_encoder.2.bias"] = policy.semantic_encoder[2].bias.detach().clone()
+
+    assert policy.load_compatible_state_dict(state) is True
+    migrated = policy.semantic_encoder[0].weight.detach()
+    assert torch.equal(migrated[:, :17], old_weight[:, :17])
+    for slot in range(SEMANTIC_ENTITY_SLOTS):
+        old_start = 17 + slot * 6
+        new_start = SEMANTIC_GLOBAL_FEATURES + slot * SEMANTIC_ENTITY_FEATURES
+        assert torch.equal(migrated[:, new_start:new_start + 6], old_weight[:, old_start:old_start + 6])
+        assert torch.count_nonzero(migrated[:, new_start + 6:new_start + SEMANTIC_ENTITY_FEATURES]) == 0
+    champion_end = SEMANTIC_ITEM_OFFSET + SEMANTIC_ENTITY_SLOTS * 16
+    assert torch.equal(
+        migrated[:, SEMANTIC_ITEM_OFFSET:champion_end], old_weight[:, old_numeric_dim:]
+    )
+    assert torch.count_nonzero(migrated[:, champion_end:]) == 0
+
+
+
+
+def test_semantic_v6_warm_start_resets_only_reinterpreted_consumer_columns():
+    obs, _, _ = _batch(batch_size=1)
+    policy = TFTPolicy(
+        obs_dim=obs.shape[-1], action_dims=list(ACTION_DIMS),
+        hidden_size=32, semantic_vocab_size=64,
+    )
+    with torch.no_grad():
+        policy.board_cnn[0].weight.fill_(1.0)
+        policy.shop_head[0].weight.fill_(1.0)
+        policy.sell_head[0].weight.fill_(1.0)
+        policy.bench_to_board_head.weight.fill_(1.0)
+
+    policy.reset_migrated_semantic_consumer_columns()
+
+    assert torch.count_nonzero(policy.board_cnn[0].weight[:, :3, :, :]) > 0
+    assert torch.count_nonzero(policy.board_cnn[0].weight[:, 3:5, :, :]) == 0
+    assert torch.count_nonzero(policy.shop_head[0].weight[:, :-6]) > 0
+    assert torch.count_nonzero(policy.shop_head[0].weight[:, -6:]) == 0
+    assert torch.count_nonzero(policy.sell_head[0].weight[:, -6:]) == 0
+    assert torch.count_nonzero(policy.bench_to_board_head.weight[:, -6:]) == 0
+    assert torch.count_nonzero(policy.item_anvil_candidate_head[0].weight[:, -2:]) == 0
+
+def test_v2_semantic_encoder_checkpoint_maps_global_target_item_and_trait_extensions():
+    torch.manual_seed(20261122)
+    obs, _, _ = _batch()
+    policy = TFTPolicy(
+        obs_dim=obs.shape[-1], action_dims=list(ACTION_DIMS),
+        hidden_size=32, semantic_vocab_size=64,
+    )
+    old_numeric_dim = 21 + SEMANTIC_ENTITY_SLOTS * 12
+    old_weight = torch.arange(
+        256 * (old_numeric_dim + SEMANTIC_ENTITY_SLOTS * 16),
+        dtype=torch.float32,
+    ).reshape(256, old_numeric_dim + SEMANTIC_ENTITY_SLOTS * 16)
+    state = {
+        key: value.detach().clone()
+        for key, value in policy.state_dict().items()
+        if not key.startswith(("semantic_encoder.", "semantic_trait_embedding."))
+    }
+    state["semantic_encoder.0.weight"] = old_weight
+    state["semantic_encoder.0.bias"] = torch.zeros(256)
+    state["semantic_encoder.2.weight"] = policy.semantic_encoder[2].weight.detach().clone()
+    state["semantic_encoder.2.bias"] = policy.semantic_encoder[2].bias.detach().clone()
+
+    assert policy.load_compatible_state_dict(state) is True
+    migrated = policy.semantic_encoder[0].weight.detach()
+    assert torch.equal(migrated[:, :21], old_weight[:, :21])
+    assert torch.count_nonzero(migrated[:, 21:SEMANTIC_GLOBAL_FEATURES]) == 0
+    for slot in range(SEMANTIC_ENTITY_SLOTS):
+        old_start = 21 + slot * 12
+        new_start = SEMANTIC_GLOBAL_FEATURES + slot * SEMANTIC_ENTITY_FEATURES
+        assert torch.equal(migrated[:, new_start:new_start + 12], old_weight[:, old_start:old_start + 12])
+        assert torch.count_nonzero(migrated[:, new_start + 12:new_start + SEMANTIC_ENTITY_FEATURES]) == 0
+    champion_end = SEMANTIC_ITEM_OFFSET + SEMANTIC_ENTITY_SLOTS * 16
+    assert torch.equal(
+        migrated[:, SEMANTIC_ITEM_OFFSET:champion_end], old_weight[:, old_numeric_dim:]
+    )
+    assert torch.count_nonzero(migrated[:, champion_end:]) == 0
+
+def test_compact_observation_prefix_has_no_strategy_or_padding_slots():
+    obs, _, _ = _batch(batch_size=3)
+    policy = TFTPolicy(
+        obs_dim=obs.shape[-1],
+        action_dims=list(ACTION_DIMS),
+        hidden_size=32,
+        semantic_vocab_size=64,
+    )
+    assert policy.pre_board_dim == 10
+    assert policy.board_flat_dim == 4 * 7 * 5
+    assert policy.obs_dim == obs.shape[-1]
+
+    with torch.no_grad():
+        context = policy._economic_context_features(obs)
+
+    assert context.shape == (obs.shape[0], 5)
+    assert torch.count_nonzero(context) == 0
+
+
+
+def test_sampling_value_and_action_re_evaluation_share_the_same_semantic_row():
+    torch.manual_seed(20261120)
+    obs, masks, semantic = _batch(batch_size=1)
+    policy = TFTPolicy(
+        obs_dim=obs.shape[-1], action_dims=list(ACTION_DIMS),
+        hidden_size=32, semantic_vocab_size=64, require_semantic_state=True,
+    ).eval()
+    with torch.no_grad():
+        policy.semantic_encoder[0].weight.fill_(0.001)
+        policy.semantic_encoder[0].bias.fill_(0.1)
+        policy.semantic_encoder[-1].weight.fill_(0.01)
+        policy.semantic_encoder[-1].bias.zero_()
+
+    with torch.no_grad():
+        actions, sampled_logprob, _, sampled_value = policy.get_action(
+            obs, masks=masks, deterministic=True, semantic_state=semantic
+        )
+        replay_logprob, replay_entropy, replay_value = policy.evaluate_actions(
+            obs, actions, masks=masks, semantic_state=semantic
+        )
+        unrelated_flat = torch.randn_like(obs) * 100.0
+        perturbed_actions, perturbed_logprob, _, perturbed_value = policy.get_action(
+            unrelated_flat, masks=masks, deterministic=True, semantic_state=semantic
+        )
+        perturbed_replay_logprob, _, perturbed_replay_value = policy.evaluate_actions(
+            unrelated_flat, actions, masks=masks, semantic_state=semantic
+        )
+        changed_numeric = torch.ones_like(semantic["numeric"])
+        missing_context_value = policy.get_value(obs, masks=masks, semantic_state={
+            "numeric": changed_numeric,
+            "items": semantic_item_state_tensors(changed_numeric),
+            "champion_ids": torch.ones_like(semantic["champion_ids"]),
+        })
+
+    assert actions[0, 0].item() == 6
+    assert torch.equal(actions, perturbed_actions)
+    assert torch.allclose(sampled_logprob, replay_logprob, atol=1e-7, rtol=1e-7)
+    assert torch.allclose(sampled_value, replay_value, atol=1e-7, rtol=1e-7)
+    assert torch.allclose(sampled_logprob, perturbed_logprob, atol=1e-7, rtol=1e-7)
+    assert torch.allclose(sampled_value, perturbed_value, atol=1e-7, rtol=1e-7)
+    assert torch.allclose(replay_logprob, perturbed_replay_logprob, atol=1e-7, rtol=1e-7)
+    assert torch.allclose(replay_value, perturbed_replay_value, atol=1e-7, rtol=1e-7)
+    assert replay_entropy.shape == (1,)
+    assert not torch.allclose(sampled_value, missing_context_value)
+
+
+def test_policy_rejects_non_finite_semantic_state_at_call_boundary():
+    obs, masks, semantic = _batch(batch_size=1)
+    policy = TFTPolicy(
+        obs_dim=obs.shape[-1], action_dims=list(ACTION_DIMS),
+        hidden_size=32, semantic_vocab_size=64, require_semantic_state=True,
+    ).eval()
+    semantic["numeric"][0, 0] = float("nan")
+    with pytest.raises(ValueError, match="semantic numeric input contains NaN or infinity"):
+        policy.get_action(obs, masks=masks, semantic_state=semantic)
+
+
+
+def test_policy_reuses_entity_projection_across_encoder_candidate_and_item_paths(monkeypatch):
+    obs, masks, semantic = _batch(batch_size=1)
+    policy = TFTPolicy(
+        obs_dim=obs.shape[-1], action_dims=list(ACTION_DIMS),
+        hidden_size=32, semantic_vocab_size=64, require_semantic_state=True,
+    ).eval()
+    original = policy._semantic_entity_features
+    calls = {"count": 0}
+
+    def counted(state, observation):
+        calls["count"] += 1
+        return original(state, observation)
+
+    monkeypatch.setattr(policy, "_semantic_entity_features", counted)
+    with torch.no_grad():
+        policy.get_action(obs, masks=masks, deterministic=True, semantic_state=semantic)
+    assert calls["count"] == 1
+
+
+
+def test_repeated_projection_reference_preserves_policy_outputs_and_ppo_loss(monkeypatch):
+    from ppo import PPOTrainer
+
+    torch.manual_seed(20261124)
+    obs, masks, semantic = _batch(batch_size=1)
+    policy = TFTPolicy(
+        obs_dim=obs.shape[-1], action_dims=list(ACTION_DIMS),
+        hidden_size=32, semantic_vocab_size=64, require_semantic_state=True,
+    ).eval()
+
+    with torch.no_grad():
+        optimized = policy.get_action(
+            obs, masks=masks, deterministic=True, semantic_state=semantic
+        )
+        actions = optimized[0].clone()
+
+    optimized_trainer = PPOTrainer(
+        policy, optimizer=None, writer=None, clip_coef=0.2,
+        ent_coef=0.02, vf_coef=0.5, target_kl=None,
+    )
+    old_logprobs = optimized[1].detach().clone()
+    old_values = optimized[3].detach().clone()
+    advantages = torch.tensor([0.75])
+    returns = old_values + torch.tensor([0.25])
+
+    with torch.no_grad():
+        optimized_loss = optimized_trainer.compute_loss(
+            obs, actions, old_logprobs, old_values, advantages, returns,
+            masks, semantic_state=semantic,
+        )
+
+    original_encode = policy.encode
+    original_candidates = policy._candidate_features
+    original_items = policy._item_state_features
+
+    # Emulate the pre-optimization call pattern: each consumer independently
+    # derives the same entity tensor instead of receiving the shared projection.
+    def independently_projected_encode(observation, semantic_state=None, semantic_entities=None):
+        return original_encode(observation, semantic_state, semantic_entities=None)
+
+    def independently_projected_candidates(observation, semantic_state=None, semantic_entities=None):
+        return original_candidates(observation, semantic_state, semantic_entities=None)
+
+    def independently_projected_items(observation, semantic_state=None, semantic_entities=None):
+        return original_items(observation, semantic_state, semantic_entities=None)
+
+    monkeypatch.setattr(policy, "encode", independently_projected_encode)
+    monkeypatch.setattr(policy, "_candidate_features", independently_projected_candidates)
+    monkeypatch.setattr(policy, "_item_state_features", independently_projected_items)
+
+    with torch.no_grad():
+        repeated = policy.get_action(
+            obs, masks=masks, deterministic=True, semantic_state=semantic
+        )
+        repeated_loss = optimized_trainer.compute_loss(
+            obs, actions, old_logprobs, old_values, advantages, returns,
+            masks, semantic_state=semantic,
+        )
+
+    assert torch.equal(optimized[0], repeated[0])
+    for before, after in zip(optimized[1:], repeated[1:]):
+        torch.testing.assert_close(before, after, atol=1e-7, rtol=1e-7)
+    for before, after in zip(optimized_loss, repeated_loss):
+        torch.testing.assert_close(before, after, atol=1e-7, rtol=1e-7)
+
+
+
+def test_ppo_replay_reuses_one_semantic_entity_projection(monkeypatch):
+    obs, masks, semantic = _batch(batch_size=1)
+    policy = TFTPolicy(
+        obs_dim=obs.shape[-1],
+        action_dims=list(ACTION_DIMS),
+        hidden_size=32,
+        semantic_vocab_size=64,
+    ).eval()
+
+    actions = torch.tensor([[6, 0, 0, 0, 0, 0]], dtype=torch.long)
+    calls = []
+    original = policy._semantic_entity_features
+
+    def counted_projection(state, observation):
+        calls.append(1)
+        return original(state, observation)
+
+    monkeypatch.setattr(policy, "_semantic_entity_features", counted_projection)
+    with torch.no_grad():
+        policy.evaluate_actions(obs, actions, masks, semantic_state=semantic)
+
+    assert len(calls) == 1
+
+
+def test_ppo_replay_rejects_non_finite_semantic_inputs():
+    obs, masks, semantic = _batch(batch_size=1)
+    policy = TFTPolicy(
+        obs_dim=obs.shape[-1],
+        action_dims=list(ACTION_DIMS),
+        hidden_size=32,
+        semantic_vocab_size=64,
+    ).eval()
+    semantic["numeric"][0, 0] = float("nan")
+    actions = torch.tensor([[6, 0, 0, 0, 0, 0]], dtype=torch.long)
+
+    with pytest.raises(ValueError, match="NaN or infinity"):
+        policy.evaluate_actions(obs, actions, masks, semantic_state=semantic)

@@ -3,6 +3,7 @@
 // Data-only contracts for the strategic/economic planner architecture.
 // This header must not change PPO observations, masks, rewards, or execution.
 
+#include <array>
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -45,16 +46,6 @@ enum class StrategicReason : std::uint8_t {
     EconomyConstraint = 10, InsufficientEvidence = 11
 };
 
-// Explicit heuristic opportunity premiums. Reroll is intentionally more
-// expensive than XP because it consumes a shop search without guaranteeing
-// a unit or advancing level progression.
-namespace action_opportunity_cost {
-inline constexpr double kBuyExperience = 0.25;
-inline constexpr double kRerollWithUpgradeTarget = 3.50;
-inline constexpr double kRerollWithoutUpgradeTarget = 4.00;
-inline constexpr double kBuyUnit = 0.35;
-} // namespace action_opportunity_cost
-
 struct StrategicUnitCandidate {
     std::int32_t champion_id{-1};
     std::string champion_key;
@@ -68,6 +59,12 @@ struct StrategicUnitCandidate {
     double composition_fit{0.0};
     double item_fit{0.0};
     std::vector<std::string> traits;
+    // Physical owned instances by star tier; index zero is unused.
+    std::array<std::int32_t, 4> copies_by_star{};
+    bool board_contribution_available{false};
+    bool item_fit_available{false};
+    std::string item_fit_source;
+    double item_fit_uncertainty{0.0};
 };
 
 struct StrategicAnchorCandidate {
@@ -92,11 +89,43 @@ struct StrategicActionCandidate {
     double direct_gold_cost{0.0};
     double lost_interest_cost{0.0};
     double opportunity_cost{0.0};
+    bool opportunity_cost_evidence_available{false};
+    std::string opportunity_cost_source{"unavailable_no_validated_alternative"};
+    std::string opportunity_cost_forgone_candidate_id;
+    std::uint32_t opportunity_cost_horizon_rounds{0};
+    double opportunity_cost_uncertainty{1.0};
     double expected_economy_cost{0.0};
     double expected_board_delta{0.0};
     double composition_fit{0.0};
     double upgrade_value{0.0};
     bool available{true};
+    // Physical parameters are tied to the source snapshot; -1 means absent.
+    std::string candidate_id;
+    std::uint64_t source_sequence{0};
+    std::int32_t shop_slot{-1};
+    std::int32_t source_slot{-1};
+    std::int32_t target_board_slot{-1};
+    bool source_is_bench{false};
+    std::string evidence_reason;
+    // Additive audit fields: estimates remain distinguishable from facts and
+    // unknown costs are never silently represented as measured zero.
+    std::string evidence_source{"unknown"};
+    std::uint32_t evidence_horizon_rounds{0};
+    double evidence_uncertainty{1.0}; // [0,1], not a probability of success
+    bool lost_interest_evidence_available{false};
+    // Native physical instance identity for owned-unit actions; empty for shop/economy actions.
+    std::string source_unit_uuid;
+    // Exact same-snapshot marginal economy delta. Opportunity costs that lack
+    // a validated producer remain unavailable rather than receiving priors.
+    bool marginal_economy_evidence_available{false};
+    std::int32_t marginal_gold_before{0};
+    std::int32_t marginal_gold_after{0};
+    std::int32_t marginal_interest_before{0};
+    std::int32_t marginal_interest_after{0};
+    std::int32_t marginal_interest_delta{0};
+    std::string marginal_cost_source{"unavailable"};
+    std::uint32_t marginal_cost_horizon_rounds{0};
+    double marginal_cost_uncertainty{1.0};
 };
 
 struct ActionCandidateScore {
@@ -132,6 +161,25 @@ struct StrategicCandidateGenerationDiagnostics {
     std::string no_candidate_reason{"not_evaluated"};
 };
 
+struct StrategicEvidenceAvailability {
+    bool hp{false};
+    bool gold{false};
+    bool level{false};
+    bool xp{false};
+    bool xp_to_next{false};
+    bool interest_if_resolved_now{false};
+    bool streaks{false};
+    bool board_power{false};
+    bool relative_board_power{false};
+    bool projected_next_round_income{false};
+    bool estimated_incoming_damage{false};
+    bool elimination_risk{false};
+    bool progression_plan{false};
+    // True only when a native direction candidate was actually matched to the commitment.
+    bool current_direction{false};
+    bool stage{false};
+};
+
 struct StrategicSharedContext {
     std::uint32_t schema_version{1};
     std::int32_t player_id{-1};
@@ -164,12 +212,27 @@ struct StrategicSharedContext {
     bool alive{true};
     // Candidate actions are diagnostic estimates assembled from native state.
     std::vector<StrategicActionCandidate> action_candidates;
+    // Appended to preserve existing aggregate initialization contracts.
+    StrategicEvidenceAvailability evidence;
+    std::uint64_t sequence{0};
+    // Match identity for cross-round evidence correlation; appended for aggregate compatibility.
+    std::uint64_t match_id{0};
+    // Calibrated combat evidence carries explicit provenance and horizon.
+    // Defaults remain unavailable and are never interpreted as measured zero.
+    std::string incoming_damage_source{"unavailable"};
+    std::string elimination_risk_source{"unavailable"};
+    std::uint32_t combat_evidence_horizon_rounds{0};
+    std::uint64_t combat_evidence_sequence{0};
+    double combat_evidence_uncertainty{1.0};
+    std::string combat_calibration_protocol_id;
+    std::string combat_calibration_report_sha256;
+    std::string combat_dataset_version;
+    std::vector<std::string> combat_replay_artifact_ids;
 };
 
 struct StrategicCommitment {
     ProgressionPlan progression{ProgressionPlan::Flexible};
     std::string composition_direction;
-    std::vector<std::int32_t> core_unit_ids;
     std::vector<std::int32_t> flexible_unit_ids;
     std::uint32_t selected_round{0};
     std::uint32_t last_review_round{0};
@@ -231,6 +294,11 @@ struct EconomicControlDecision {
     double board_pressure{0.0};
     double economy_pressure{0.0};
     bool shadow_only{true};
+    // Appended to preserve existing aggregate initialization contracts.
+    bool sufficient_evidence{false};
+    std::vector<std::string> evidence_used;
+    std::vector<std::string> evidence_missing;
+    std::vector<std::string> evidence_invalid;
 };
 
 struct ActionEvaluation {

@@ -171,3 +171,57 @@ def test_movement_combat_is_deterministic():
     assert first.events_processed == second.events_processed
     assert len(first.position_events) == len(second.position_events)
     assert len(first.attack_events) == len(second.attack_events)
+
+def test_movement_from_left_board_edge_stays_in_bounds():
+    combat = ce.CombatInput()
+    combat.context = ce.CombatContext.PVP
+    combat.seed = 20261124
+
+    config = ce.CombatConfig()
+    config.board_rows = 4
+    config.board_cols = 7
+    config.max_duration = 2.0
+    config.max_events = 10_000
+    config.deterministic = True
+    config.seed = 20261124
+    config.record_events = True
+    config.record_positions = True
+    combat.config = config
+
+    mover = make_unit(0, ce.UnitTeam.PLAYER_A, 0, 1.0)
+    mover.can_move = True
+    mover.can_attack = False
+    target = make_unit(1, ce.UnitTeam.PLAYER_B, 3, 1.0)
+    target.can_move = False
+    target.can_attack = False
+
+    team_a = ce.CombatTeam()
+    team_a.team = ce.UnitTeam.PLAYER_A
+    team_a.player_id = 0
+    team_a.player_hp = 100.0
+    team_a.units = [mover]
+
+    team_b = ce.CombatTeam()
+    team_b.team = ce.UnitTeam.PLAYER_B
+    team_b.player_id = 1
+    team_b.player_hp = 100.0
+    team_b.units = [target]
+
+    combat.player_a = team_a
+    combat.player_b = team_b
+    result = ce.simulate(combat)
+
+    assert result.success and result.completed, (
+        f"{result.error_code}: {result.error_message}"
+    )
+    moves = [event for event in result.position_events if event.unit_id == 0]
+    assert moves, "The fighter at the left edge should move toward the target."
+    assert moves[0].from_x == 0
+    assert moves[0].to_x == 1
+    assert all(0 <= event.to_x < config.board_cols for event in moves)
+    assert all(0 <= event.to_y < config.board_rows for event in moves)
+    assert all(
+        abs(event.to_x - event.from_x) + abs(event.to_y - event.from_y) == 1
+        for event in moves
+    )
+

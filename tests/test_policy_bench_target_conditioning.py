@@ -2,14 +2,35 @@ import torch
 
 from policy import TFTPolicy
 
+def _complete_mask_bundle(masks, batch_size, device="cpu"):
+    """Build full native mask snapshots for focused Policy unit fixtures."""
+    shapes = {
+        "type_mask": (9,), "shop_mask": (5,), "bench_source_mask": (9,),
+        "board_target_mask": (28,), "board_source_mask": (28,),
+        "board_move_target_masks": (28, 28), "bench_move_source_mask": (9,),
+        "bench_to_board_target_masks": (9, 28), "item_inventory_mask": (9,),
+        "item_component_first_mask": (10,), "item_component_pair_masks": (10, 10),
+        "item_target_mask": (37,),
+    }
+    result = {
+        key: torch.zeros((batch_size, *shape), dtype=torch.bool, device=device)
+        for key, shape in shapes.items()
+    }
+    # PASS is the safe neutral action for fixture rows that do not target a branch.
+    result["type_mask"][:, 6] = True
+    for key, value in masks.items():
+        result[key] = value
+    return result
+
+
 
 ACTION_DIMS = [9, 5, 9, 28, 28, 28]
-OBS_DIM = 22 + (4 * 7 * 5) + (1 + 4 * 7) + ((9 + 5) * 8)
+OBS_DIM = 10 + (4 * 7 * 5) + (1 + 4 * 7) + ((9 + 5) * 6)
 
 
 def _policy_and_observation(batch_size=1):
     torch.manual_seed(7)
-    policy = TFTPolicy(obs_dim=OBS_DIM, action_dims=ACTION_DIMS, hidden_size=64)
+    policy = TFTPolicy(obs_dim=OBS_DIM, action_dims=ACTION_DIMS, hidden_size=64, require_semantic_state=False)
     obs = torch.randn(batch_size, OBS_DIM)
     return policy, obs
 
@@ -23,12 +44,12 @@ def _move_bench_masks(batch_size=1):
         batch_size, ACTION_DIMS[2], ACTION_DIMS[3], dtype=torch.bool
     )
     target_masks[:, :2, :3] = True
-    return {
+    return _complete_mask_bundle({
         "type_mask": type_mask,
         "bench_move_source_mask": source_mask,
         "bench_source_mask": source_mask.clone(),
         "bench_to_board_target_masks": target_masks,
-    }
+    }, batch_size)
 
 
 def test_bench_to_board_logits_include_selected_slot_and_candidate_features():
@@ -50,9 +71,9 @@ def test_bench_to_board_logits_include_selected_slot_and_candidate_features():
     actual = captured["input"]
     expected_slot = torch.nn.functional.one_hot(selected_slots, num_classes=9).float()
     expected_features = bench_features[:, 1, :]
-    assert actual.shape[-1] == conditioned.shape[-1] + 9 + 8
+    assert actual.shape[-1] == conditioned.shape[-1] + 9 + 6
     assert torch.equal(actual[:, conditioned.shape[-1]:conditioned.shape[-1] + 9], expected_slot)
-    assert torch.allclose(actual[:, -8:], expected_features)
+    assert torch.allclose(actual[:, -6:], expected_features)
 
 
 def test_bench_to_board_logits_change_when_selected_unit_features_change():
@@ -90,7 +111,7 @@ def test_legacy_checkpoint_migrates_new_observation_and_bench_target_inputs():
     old_state["global_mlp.0.weight"] = old_global
     old_state["bench_to_board_head.weight"] = old_bench_target
 
-    restored = TFTPolicy(obs_dim=OBS_DIM, action_dims=ACTION_DIMS, hidden_size=64)
+    restored = TFTPolicy(obs_dim=OBS_DIM, action_dims=ACTION_DIMS, hidden_size=64, require_semantic_state=False)
     assert restored.load_compatible_state_dict(old_state)
 
     migrated_global = restored.state_dict()["global_mlp.0.weight"]
@@ -107,30 +128,25 @@ def test_legacy_checkpoint_migrates_new_observation_and_bench_target_inputs():
     assert torch.count_nonzero(migrated_target[:, -17:]) == 0
 
 
-def test_economic_phase_features_reach_the_policy_encoder():
+def test_retired_economic_context_does_not_encode_named_strategy_rules():
     policy, obs = _policy_and_observation()
     obs.zero_()
-    # Round 4-1, level 7, 75 gold, healthy FAST8 plan.
+    # Keep identical factual HP/gold/level/round while changing only the old
+    # strategy one-hot. Neither variant may synthesize a target or reserve.
     obs[:, 0] = 0.80
     obs[:, 1] = 1.50
     obs[:, 2] = 7.0 / 9.0
     obs[:, 6] = 19.0 / 29.0
-    obs[:, 12] = 1.0
+    fast8 = obs.clone()
+    slowroll = obs.clone()
+    fast8[:, 12] = 1.0
+    slowroll[:, 13] = 1.0
 
-    features = policy._economic_context_features(obs)
-    assert torch.allclose(features[0, 0], torch.tensor(0.8))
-    assert torch.allclose(features[0, 1], torch.tensor(1.0 / 8.0))
-    assert torch.allclose(features[0, 2], torch.tensor(10.0 / 50.0))
-    assert torch.allclose(features[0, 3], torch.tensor(65.0 / 200.0))
-    assert torch.allclose(features[0, 4], torch.tensor(1.0 / 6.0), atol=1e-6)
-
-    # The same phase under SLOWROLL exposes its level-6 target and roll reserve.
-    obs[:, 12] = 0.0
-    obs[:, 13] = 1.0
-    slowroll = policy._economic_context_features(obs)
-    assert torch.allclose(slowroll[0, 0], torch.tensor(0.6))
-    assert torch.allclose(slowroll[0, 1], torch.tensor(0.0))
-    assert torch.allclose(slowroll[0, 2], torch.tensor(25.0 / 50.0))
+    fast8_features = policy._economic_context_features(fast8)
+    slowroll_features = policy._economic_context_features(slowroll)
+    assert fast8_features.shape == (1, 5)
+    assert torch.count_nonzero(fast8_features) == 0
+    assert torch.equal(fast8_features, slowroll_features)
 
 
 def test_legacy_global_encoder_migrates_five_derived_economic_features():
@@ -146,7 +162,7 @@ def test_legacy_global_encoder_migrates_five_derived_economic_features():
         dim=1,
     )
 
-    restored = TFTPolicy(obs_dim=OBS_DIM, action_dims=ACTION_DIMS, hidden_size=64)
+    restored = TFTPolicy(obs_dim=OBS_DIM, action_dims=ACTION_DIMS, hidden_size=64, require_semantic_state=False)
     assert restored.load_compatible_state_dict(state)
     migrated = restored.state_dict()["global_mlp.0.weight"]
     assert torch.equal(migrated[:, :insertion], current[:, :insertion])
@@ -160,7 +176,7 @@ def test_legacy_global_encoder_migrates_five_derived_economic_features():
 def test_entropy_only_diagnostics_are_compact_and_finite():
     policy, obs = _policy_and_observation()
     with torch.no_grad():
-        _, _, _, _, diagnostics = policy.get_action_and_value_with_entropy_diagnostics(obs)
+        _, _, _, _, diagnostics = policy.get_action_and_value_with_entropy_diagnostics(obs, masks=_complete_mask_bundle({}, obs.shape[0]))
     assert diagnostics and diagnostics[0]
     for record in diagnostics[0]:
         assert torch.isfinite(torch.tensor(record["entropy_nats"]))

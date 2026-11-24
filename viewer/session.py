@@ -16,6 +16,16 @@ import torch
 from policy import TFTPolicy, ACTION_DIMS, LEGACY_ACTION_DIMS
 from cpp_lobby_env import CppTFTLobbyWrapper
 from viewer.player_logs import PlayerJsonLogWriter
+from action_contract import validate_critic_mask_input_checkpoint_contract
+from semantic_observation import (
+    build_semantic_state_checkpoint_contract,
+    catalog_identity,
+    project_native_player_state,
+    semantic_item_state_tensors,
+    SEMANTIC_POLICY_STATE_KEYS,
+    semantic_policy_state_keys,
+    validate_semantic_state_checkpoint_contract,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 CATALOG = ROOT / "data" / "units_gerado.json"
@@ -43,6 +53,51 @@ def _resolve_action_dims(payload: dict) -> list[int]:
     if normalized == LEGACY_ACTION_DIMS:
         return list(ACTION_DIMS)
     return normalized
+
+
+def _validate_critic_mask_checkpoint_payload(payload: dict, state_dict: dict) -> None:
+    """Require the side-input identity whenever a checkpoint contains Critic mask weights."""
+    contract = payload.get("critic_mask_input_contract")
+    has_encoder = any(
+        key.startswith("critic_mask_encoder.")
+        for key in state_dict
+    )
+    if contract is None:
+        if has_encoder:
+            raise ValueError(
+                "Checkpoint contém pesos do Critic mask encoder sem "
+                "critic_mask_input_contract."
+            )
+        return
+    validate_critic_mask_input_checkpoint_contract(contract)
+    if not has_encoder:
+        raise ValueError(
+            "Checkpoint declara critic_mask_input_contract, mas não contém "
+            "os pesos do Critic mask encoder."
+        )
+
+
+def _validate_semantic_checkpoint_payload(payload: dict, state_dict: dict, catalog_map: dict) -> None:
+    contract = payload.get("semantic_state_contract")
+    expected_semantic_keys = SEMANTIC_POLICY_STATE_KEYS
+    present_semantic_keys = semantic_policy_state_keys(state_dict)
+    has_encoder = bool(present_semantic_keys)
+    if present_semantic_keys and present_semantic_keys != expected_semantic_keys:
+        raise ValueError("Checkpoint contém um encoder semântico parcial.")
+    if contract is None:
+        if has_encoder:
+            raise ValueError(
+                "Checkpoint contém pesos do encoder sem semantic_state_contract."
+            )
+        raise ValueError(
+            "Viewer exige checkpoint semântico v6; checkpoints históricos precisam "
+            "passar pelo warm-start explícito no Trainer."
+        )
+    validate_semantic_state_checkpoint_contract(contract, catalog_map)
+    if not has_encoder:
+        raise ValueError(
+            "Checkpoint declara semantic_state_contract, mas não contém os pesos do encoder semântico."
+        )
 
 
 def _jsonable(value: Any):
@@ -94,6 +149,8 @@ class ViewerSession:
     def __init__(self):
         self.lobby: CppTFTLobbyWrapper | None = None
         self.policy: TFTPolicy | None = None
+        self.champion_id_map: dict[str, int] = {}
+        self.semantic_state_contract: dict | None = None
         self.obs: np.ndarray | None = None
         self.masks: list[dict] | None = None
         self.public_state: dict = {}
@@ -111,6 +168,7 @@ class ViewerSession:
         self._player_log_writer: PlayerJsonLogWriter | None = None
         self._session_dir: Path | None = None
         self._composition_diagnostics_written = 0
+        self._composition_diagnostics_episode_id: int | None = None
         self._metadata_path: Path | None = None
         self._sequence = 0
         self._rng = torch.Generator(device="cpu")
@@ -145,6 +203,7 @@ class ViewerSession:
             raise ValueError("Formato de checkpoint não reconhecido: esperado um dicionário de pesos/metadata.")
         if not isinstance(state_dict, dict) or not state_dict:
             raise ValueError("O checkpoint não contém state_dict de política.")
+        _validate_critic_mask_checkpoint_payload(payload, state_dict)
         if obs_dim is None:
             # Validate old checkpoint metadata, but construct the live policy
             # from the observation dimension produced by the current native engine.
@@ -177,16 +236,26 @@ class ViewerSession:
                     print(f"OP.GG meta refresh skipped: {exc}")
         self.lobby = CppTFTLobbyWrapper(seed=int(seed), catalog_path=str(CATALOG))
         self.obs = self.lobby.reset(seed=int(seed))
+        self.champion_id_map = self.lobby.get_champion_id_map()
+        _validate_semantic_checkpoint_payload(payload, state_dict, self.champion_id_map)
+        self.semantic_state_contract = (
+            build_semantic_state_checkpoint_contract(self.champion_id_map)
+        )
+        semantic_vocab_size = catalog_identity(self.champion_id_map)["vocab_size"]
         current_obs_dim = int(self.obs.shape[-1])
-        self.policy = TFTPolicy(current_obs_dim, list(action_dims), hidden_size=int(hidden_size))
+        self.policy = TFTPolicy(
+            current_obs_dim, list(action_dims), hidden_size=int(hidden_size),
+            semantic_vocab_size=semantic_vocab_size,
+            require_semantic_state=True,
+        )
         try:
             migrated_checkpoint = self.policy.load_compatible_state_dict(state_dict)
         except RuntimeError as exc:
             raise ValueError(f"Checkpoint incompatível com TFTPolicy atual: {exc}") from exc
         if migrated_checkpoint:
             print(
-                "Checkpoint migrado: colunas novas da observação e condicionamento "
-                "MOVE_BENCH inicializados sem alterar os pesos antigos compatíveis."
+                "Checkpoint migrado: novas entradas neutras de observação/ação/Critic "
+                "inicializadas sem alterar os pesos antigos compatíveis."
             )
         self.policy.eval()
         for parameter in self.policy.parameters():
@@ -276,22 +345,101 @@ class ViewerSession:
         return self._snapshot_for_event()
 
     def _refresh_audit_snapshot(self):
-        """Refresh board state and attach the native StrategyInfo snapshot per seat."""
+        """Attach the latest canonical Shadow diagnostic without enriching native state from StrategyInfo."""
         self.audit_snapshot = self.lobby.get_audit_snapshot()
-        strategies = self.lobby.get_strategy_snapshots()
-        self.strategy_snapshots = strategies
+        metadata_getter = getattr(self.lobby, "get_snapshot_metadata", None)
+        metadata = metadata_getter() if callable(metadata_getter) else {}
+        engine_episode_id = metadata.get("episode_id") if isinstance(metadata, dict) else None
+        if isinstance(engine_episode_id, bool) or not isinstance(engine_episode_id, int):
+            engine_episode_id = None
+        latest_by_player = {}
+        for raw_line in self.lobby.get_composition_diagnostics_jsonl():
+            try:
+                record = json.loads(str(raw_line))
+            except (TypeError, json.JSONDecodeError):
+                continue
+            if not isinstance(record, dict) or engine_episode_id is None:
+                continue
+            player_id = record.get("player_id")
+            sequence = record.get("sequence")
+            round_number = record.get("round")
+            native_episode_id = record.get("engine_match_id")
+            if any(isinstance(value, bool) or not isinstance(value, int) for value in (
+                player_id, sequence, round_number, native_episode_id,
+            )):
+                continue
+            if (
+                player_id < 0 or sequence <= 0 or round_number < 1
+                or native_episode_id != engine_episode_id
+            ):
+                continue
+            previous = latest_by_player.get(player_id)
+            if previous is None or sequence > previous["sequence"]:
+                latest_by_player[player_id] = record
+
+        current_round = self.audit_snapshot.get("round")
+        current_round = current_round if type(current_round) is int and current_round >= 1 else None
         for player in self.audit_snapshot.get("players", []):
             try:
                 player_id = int(player.get("player_id", -1))
             except (TypeError, ValueError):
                 continue
-            player["strategy_info"] = strategies[player_id] if 0 <= player_id < len(strategies) else {}
+            shadow = latest_by_player.get(player_id)
+            if shadow is not None:
+                stale_reason = None
+                if current_round is not None and shadow.get("round") != current_round:
+                    stale_reason = "diagnostic_round_does_not_match_current_native_snapshot"
+
+                strategic_state = player.get("strategic_state")
+                if stale_reason is None and isinstance(strategic_state, dict):
+                    state_episode = strategic_state.get("episode_id")
+                    if type(state_episode) is int and state_episode != engine_episode_id:
+                        stale_reason = "strategic_owner_episode_mismatch"
+                    state_round = strategic_state.get("round")
+                    if stale_reason is None and type(state_round) is int and state_round != shadow.get("round"):
+                        stale_reason = "strategic_owner_round_mismatch"
+
+                    expected_sequence = strategic_state.get("strategic_context_sequence")
+                    comparison = shadow.get("action_evaluator_comparison")
+                    resolution = comparison.get("native_action_resolution") if isinstance(comparison, dict) else None
+                    identity = resolution.get("identity") if isinstance(resolution, dict) else None
+                    source_sequence = identity.get("source_sequence") if isinstance(identity, dict) else None
+                    if stale_reason is None and (
+                        type(expected_sequence) is not int or expected_sequence <= 0
+                        or type(source_sequence) is not int
+                        or source_sequence != expected_sequence
+                    ):
+                        stale_reason = "diagnostic_sequence_does_not_match_current_native_player_state"
+
+                    if stale_reason is None and strategic_state.get("active_composition_valid") is True:
+                        if (
+                            shadow.get("composition_id") != strategic_state.get("active_composition_id")
+                            or shadow.get("composition_version") != strategic_state.get("active_composition_version")
+                        ):
+                            stale_reason = "diagnostic_composition_identity_does_not_match_current_native_state"
+
+                if stale_reason is not None:
+                    shadow = dict(shadow)
+                    shadow["stale"] = True
+                    shadow["stale_reason"] = stale_reason
+
+            player["shadow_composition"] = (
+                shadow if shadow is not None else {
+                    "status": "unavailable",
+                    "reason": "no_shadow_snapshot_for_player_in_current_episode",
+                }
+            )
         self._persist_composition_diagnostics()
         return self.audit_snapshot
 
     def _persist_composition_diagnostics(self):
         if self.lobby is None or self._session_dir is None:
             return
+        metadata = self.lobby.get_snapshot_metadata()
+        episode_id = int(metadata.get("episode_id", -1))
+        if episode_id != self._composition_diagnostics_episode_id:
+            self._composition_diagnostics_written = 0
+            self._composition_diagnostics_episode_id = episode_id
         lines = self.lobby.get_composition_diagnostics_jsonl()
         if self._composition_diagnostics_written >= len(lines):
             return
@@ -334,8 +482,12 @@ class ViewerSession:
                     "composition_id": record.get("composition_id"),
                     "composition_version": record.get("composition_version"),
                     "identity_complete": (
-                        isinstance(player_id, int) and isinstance(round_number, int)
-                        and isinstance(sequence, int)
+                        type(player_id) is int and player_id >= 0
+                        and type(round_number) is int and round_number >= 1
+                        and type(sequence) is int and sequence > 0
+                        and type(record.get("engine_match_id")) is int
+                        and record.get("engine_match_id") > 0
+                        and bool(self.match_id)
                     ),
                     "timestamp_available": timestamp is not None,
                 }
@@ -385,10 +537,54 @@ class ViewerSession:
                 tensor_masks[key] = torch.as_tensor(np.asarray(value), dtype=torch.bool).unsqueeze(0)
             except (ValueError, TypeError):
                 continue
+        snapshot = self.lobby.get_snapshot_metadata()
+        native_snapshot = snapshot.get("native_state_snapshot")
+        if not isinstance(native_snapshot, dict):
+            raise RuntimeError("Viewer requires the native semantic snapshot for PPO inference.")
+        native_players = native_snapshot.get("players")
+        player_sequences = native_snapshot.get("player_decision_sequences")
+        if (
+            not isinstance(native_players, list) or len(native_players) != 8
+            or not isinstance(player_sequences, list) or len(player_sequences) != 8
+        ):
+            raise RuntimeError("Viewer semantic snapshot is missing aligned player state/sequence rows.")
+        semantic_metadata = {
+            "engine_instance_id": snapshot.get("engine_instance_id"),
+            "episode_id": snapshot.get("episode_id"),
+            "decision_sequence": snapshot.get("decision_sequence"),
+            "player_decision_sequence": player_sequences[player_id],
+            "player_id": player_id,
+            "lobby_index": 0,
+            "stage": snapshot.get("stage"),
+            "round": snapshot.get("round"),
+            "native_state_contract_id": native_snapshot.get("contract_id"),
+            "native_state_contract_version": native_snapshot.get("contract_version"),
+            "native_state_producer": native_snapshot.get("producer"),
+            "native_state_source_namespace": native_snapshot.get("source_namespace"),
+            "native_player_state": native_players[player_id],
+        }
+        semantic = project_native_player_state(
+            semantic_metadata, self.champion_id_map
+        )
+        semantic_numeric = torch.as_tensor(
+            [semantic["numeric"]], dtype=torch.float32, device=obs.device
+        )
+        semantic_state = {
+            "numeric": semantic_numeric,
+            "items": semantic_item_state_tensors(semantic_numeric),
+            "champion_ids": torch.as_tensor(
+                [semantic["champion_ids"]], dtype=torch.long, device=obs.device
+            ),
+            "identities": [semantic["identity"]],
+            "hashes": [semantic["sha256"]],
+            "contract_id": self.semantic_state_contract["contract"]["contract_id"],
+            "contract_hash": self.semantic_state_contract["sha256"],
+        }
         infer = self.policy.get_action_and_value_with_diagnostics
         with torch.inference_mode():
             actions, logprob, entropy, value, diagnostics = infer(
-                obs, masks=tensor_masks, deterministic=self.config.deterministic
+                obs, masks=tensor_masks, deterministic=self.config.deterministic,
+                semantic_state=semantic_state,
             )
         action = [int(x) for x in actions[0].detach().cpu().tolist()]
         diag = {
@@ -675,12 +871,36 @@ class ViewerSession:
         source = Path(path).expanduser().resolve()
         if source.is_dir():
             legacy_stream = source / "events.jsonl"
-            source = legacy_stream if legacy_stream.is_file() else source / "player_1_log.json"
+            structured_player_log = source / "player_1_log.json"
+            legacy_text_log = source / "player_1_log.tft"
+            if legacy_stream.is_file():
+                source = legacy_stream
+            elif structured_player_log.is_file():
+                source = structured_player_log
+            else:
+                source = legacy_text_log
         if not source.is_file():
             raise FileNotFoundError(source)
 
         events = []
-        if source.suffix.casefold() == ".json":
+        if source.suffix.casefold() in {".tft", ".txt"}:
+            # Historical .tft logs are human-readable timelines, not structured
+            # Engine replays. Preserve their exact text and ordering without
+            # fabricating actions, board states, rewards or Engine identities.
+            lines = source.read_text(encoding="utf-8").splitlines()
+            events = [
+                {
+                    "schema_version": 1,
+                    "sequence_id": line_number,
+                    "event_type": "legacy_text_line",
+                    "legacy_source_format": "tft_text_v1",
+                    "legacy_line_number": line_number,
+                    "text": line,
+                }
+                for line_number, line in enumerate(lines, 1)
+                if line.strip()
+            ]
+        elif source.suffix.casefold() == ".json":
             try:
                 document = json.loads(source.read_text(encoding="utf-8"))
             except json.JSONDecodeError as exc:
@@ -752,6 +972,8 @@ class ViewerSession:
         self.finished = False
         self._metadata_path = None
         self._session_dir = None
+        self._composition_diagnostics_written = 0
+        self._composition_diagnostics_episode_id = None
         self._sequence = 0
         self.replay_events = []
         self.live_events = []

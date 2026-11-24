@@ -1,10 +1,13 @@
 #pragma once
 
-// Shadow-only pivot feasibility evaluation. This contract consumes an
-// already-normalized strategic snapshot and never mutates the active direction,
-// composition, PPO state, observations, masks, rewards, or action execution.
+// Advisory pivot-feasibility evaluation over an already-normalized native
+// strategic snapshot. It never publishes composition/direction or executes game
+// actions; canonical publication belongs exclusively to the transition coordinator.
+
+#include "strategy/UnitCopyProgress.hpp"
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstdint>
 #include <string>
@@ -35,6 +38,9 @@ struct PivotObservedUnit {
     std::int32_t shop_copies{0};
     // -1 means pool availability was not supplied.
     std::int32_t pool_remaining{-1};
+    // Appended physical star-tier evidence; absent callers retain compatibility semantics.
+    std::array<std::int32_t, 4> copies_by_star{};
+    bool physical_tier_counts_available{false};
 };
 
 struct PivotTraitRequirement {
@@ -60,6 +66,8 @@ struct PivotTraitEvidence {
     std::int32_t required{0};
     std::int32_t owned{0};
     std::int32_t reachable_with_shop{0};
+    std::int32_t reachable_with_pool{0};
+    std::int32_t reachable_with_acquisition{0};
     bool satisfied{false};
 };
 
@@ -74,6 +82,8 @@ struct PivotUnitEvidence {
     bool availability_unknown{false};
     std::int32_t copies_to_two_star{0};
     bool two_star_reachable{false};
+    std::array<std::int32_t, 4> copies_by_star{};
+    bool physical_tier_counts_available{false};
 };
 
 struct PivotFeasibilityResult {
@@ -91,7 +101,8 @@ struct PivotFeasibilityResult {
     std::string candidate_composition_identity;
     std::string source_direction_anchor_identity;
     std::uint64_t source_composition_version{0};
-    bool shadow_only{true};
+    // This evaluator emits advisory evidence only; it never executes a game action.
+    bool advisory_only{true};
 };
 
 class PivotFeasibilityEvaluator {
@@ -122,6 +133,9 @@ public:
             if (unit.champion_id < 0 || unit.owned_copies < 0 ||
                 unit.shop_copies < 0 || unit.star < 1 ||
                 unit.star > 3 || unit.pool_remaining < -1 ||
+                (unit.physical_tier_counts_available && std::any_of(
+                    unit.copies_by_star.begin() + 1, unit.copies_by_star.end(),
+                    [](std::int32_t count) { return count < 0; })) ||
                 !observed.emplace(unit.champion_id, unit).second) {
                 out.blockers.push_back("invalid_or_duplicate_unit_evidence");
                 continue;
@@ -131,6 +145,7 @@ public:
         std::unordered_set<std::int32_t> required_ids;
         std::unordered_map<std::string, std::int32_t> owned_traits;
         std::unordered_map<std::string, std::int32_t> reachable_traits;
+        std::unordered_map<std::string, std::int32_t> pool_reachable_traits;
         std::unordered_map<std::string, std::int32_t> unknown_traits;
         std::int32_t core_total = 0;
         std::int32_t core_reachable = 0;
@@ -162,13 +177,21 @@ public:
             const bool unknown = owned == 0 && shop == 0 && pool < 0;
             const bool available = owned > 0 || shop > 0 || pool > 0;
 
-            const std::int32_t copies_to_two_star = evidence && evidence->star >= 2
-                ? 0 : std::max(0, 3 - owned - shop);
-            const bool two_star_reachable = evidence && evidence->star >= 2
-                ? true : (owned + shop >= 3);
+            const bool physical_counts_available = evidence &&
+                evidence->physical_tier_counts_available;
+            const std::int32_t copies_to_two_star = physical_counts_available
+                ? additional_one_star_copies_to_two_star(
+                    evidence->copies_by_star, evidence->star, shop)
+                : (evidence && evidence->star >= 2 ? 0 : std::max(0, 3 - owned - shop));
+            const bool two_star_reachable = physical_counts_available
+                ? (evidence->star >= 2 ||
+                    evidence->copies_by_star[1] + shop >= 3)
+                : (evidence && evidence->star >= 2 ? true : (owned + shop >= 3));
             out.units.push_back({required.champion_id, owned, shop, pool,
                 required.core, required.carry, available, unknown,
-                copies_to_two_star, two_star_reachable});
+                copies_to_two_star, two_star_reachable,
+                physical_counts_available ? evidence->copies_by_star : std::array<std::int32_t, 4>{},
+                physical_counts_available});
             if (owned > 0 && owned < 3 && shop > 0 && two_star_reachable)
                 out.favorable_evidence.push_back(
                     "shop_completes_two_star_progress_for_unit_" +
@@ -181,6 +204,10 @@ public:
             if (shop > 0) shop_support += 1.0;
             if (owned == 0 && shop > 0) {
                 for (const auto& trait : required.traits) ++reachable_traits[trait];
+            } else if (owned == 0 && shop == 0 && pool > 0) {
+                // Pool-positive means the copy is acquirable in a future shop,
+                // not currently purchasable. Keep it separate from shop evidence.
+                for (const auto& trait : required.traits) ++pool_reachable_traits[trait];
             }
             if (unknown) {
                 for (const auto& trait : required.traits) ++unknown_traits[trait];
@@ -215,12 +242,16 @@ public:
                 continue;
             }
             const auto owned = owned_traits[requirement.trait];
-            const auto reachable = owned + reachable_traits[requirement.trait];
+            const auto shop_reachable = owned + reachable_traits[requirement.trait];
+            const auto pool_reachable = pool_reachable_traits[requirement.trait];
+            const auto reachable = shop_reachable + pool_reachable;
             const bool satisfied = reachable >= requirement.minimum_units;
             out.traits.push_back({requirement.trait, requirement.minimum_units,
-                owned, reachable, satisfied});
+                owned, shop_reachable, pool_reachable, reachable, satisfied});
             if (satisfied) {
                 out.favorable_evidence.push_back("trait_reachable_" + requirement.trait);
+                if (pool_reachable > 0 && shop_reachable < requirement.minimum_units)
+                    out.favorable_evidence.push_back("trait_reachable_through_future_pool_acquisition_" + requirement.trait);
             } else if (reachable + unknown_traits[requirement.trait] >=
                        requirement.minimum_units) {
                 // Unknown pool evidence is not proof that a trait is impossible.

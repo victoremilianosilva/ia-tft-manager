@@ -140,6 +140,66 @@
           "trigger": "combat_start",
           "operation": "mana_regen",
           "value": 3
+        },
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "armor",
+          "target": "self",
+          "value": 30,
+          "condition": "role_tank",
+          "percent_of_stat": false
+        },
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "magic_resist",
+          "target": "self",
+          "value": 30,
+          "condition": "role_tank",
+          "percent_of_stat": false
+        },
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "armor",
+          "target": "self",
+          "value": 30,
+          "condition": "role_fighter",
+          "percent_of_stat": false
+        },
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "magic_resist",
+          "target": "self",
+          "value": 30,
+          "condition": "role_fighter",
+          "percent_of_stat": false
+        },
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "attack_damage",
+          "target": "self",
+          "value": 0.1,
+          "condition": "role_other",
+          "percent_of_stat": true
+        },
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "ability_power",
+          "target": "self",
+          "value": 0.1,
+          "condition": "role_other",
+          "percent_of_stat": true
+        },
+        {
+          "trigger": "combat_start",
+          "operation": "mana_gain_multiplier",
+          "target": "self",
+          "value": 1.15
         }
       ],
       "effect_coverage": {
@@ -162,7 +222,8 @@
           "ManaPercIncrease"
         ]
       },
-      "unit_equipable": true
+      "unit_equipable": true,
+      "combat_effects_complete": true
     },
     {
       "id": "TFT_Item_ArchangelsStaff",
@@ -206,6 +267,15 @@
           "trigger": "combat_start",
           "operation": "mana_regen",
           "value": 1
+        },
+        {
+          "trigger": "periodic",
+          "operation": "add_stat",
+          "stat": "ability_power",
+          "target": "self",
+          "value": 0.2,
+          "percent_of_stat": true,
+          "interval": 5
         }
       ],
       "effect_coverage": {
@@ -226,7 +296,8 @@
           "IntervalSeconds"
         ]
       },
-      "unit_equipable": true
+      "unit_equipable": true,
+      "combat_effects_complete": true
     },
     {
       "id": "TFT_Item_Bloodthirster",
@@ -357,6 +428,22 @@
           "trigger": "combat_start",
           "operation": "mana_regen",
           "value": 5
+        },
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "attack_damage",
+          "target": "self",
+          "value": 0.1,
+          "percent_of_stat": true
+        },
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "ability_power",
+          "target": "self",
+          "value": 0.1,
+          "percent_of_stat": true
         }
       ],
       "effect_coverage": {
@@ -377,7 +464,8 @@
           "ModifiedADAP"
         ]
       },
-      "unit_equipable": true
+      "unit_equipable": true,
+      "combat_effects_complete": true
     },
     {
       "id": "TFT_Item_BrambleVest",
@@ -421,7 +509,16 @@
         "{6688a0d5}": 100
       },
       "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
-      "combat_effects": [],
+      "combat_effects": [
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "max_hp",
+          "target": "self",
+          "value": 0.06,
+          "percent_of_stat": true
+        }
+      ],
       "effect_coverage": {
         "source_keys": [
           "1StarAoEDamage",
@@ -558,6 +655,13 @@
           "target": "self",
           "value": 0.550000011920929,
           "percent_of_stat": true
+        },
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "damage_amplification",
+          "target": "self",
+          "value": 0.1
         }
       ],
       "effect_coverage": {
@@ -615,7 +719,23 @@
         "PercentMaxHP": 0.05999999865889549
       },
       "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
-      "combat_effects": [],
+      "combat_effects": [
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "max_hp",
+          "target": "self",
+          "value": 0.06,
+          "percent_of_stat": true
+        },
+        {
+          "trigger": "periodic",
+          "operation": "heal_max_hp_pct",
+          "target": "self",
+          "value": 0.025,
+          "interval": 2
+        }
+      ],
       "effect_coverage": {
         "source_keys": [
           "HealthRegenInterval",
@@ -944,7 +1064,17 @@
         "AttackSpeedPerStack": 7
       },
       "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
-      "combat_effects": [],
+      "combat_effects": [
+        {
+          "trigger": "periodic",
+          "operation": "add_stat",
+          "stat": "attack_speed",
+          "target": "self",
+          "value": 0.07,
+          "scale_by_base_stat": true,
+          "interval": 1
+        }
+      ],
       "effect_coverage": {
         "source_keys": [
           "AP",
@@ -960,7 +1090,8 @@
           "AttackSpeedPerStack"
         ]
       },
-      "unit_equipable": true
+      "unit_equipable": true,
+      "combat_effects_complete": true
     },
     {
       "id": "TFT_Item_HextechGunblade",
@@ -1014,6 +1145,12 @@
           "trigger": "combat_start",
           "operation": "mana_regen",
           "value": 1
+        },
+        {
+          "trigger": "on_damage_dealt",
+          "operation": "heal_damage_pct_lowest_ally",
+          "target": "lowest_health_ally",
+          "value": 0.20000000298023224
         }
       ],
       "effect_coverage": {
@@ -1038,7 +1175,8 @@
           "AllyHealing"
         ]
       },
-      "unit_equipable": true
+      "unit_equipable": true,
+      "combat_effects_complete": true
     },
     {
       "id": "TFT_Item_InfinityEdge",
@@ -1327,7 +1465,14 @@
         "ManaOnCrit": 4
       },
       "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
-      "combat_effects": [],
+      "combat_effects": [
+        {
+          "trigger": "on_attack",
+          "operation": "mana_on_attack",
+          "value": 2,
+          "critical_value": 4
+        }
+      ],
       "effect_coverage": {
         "source_keys": [
           "AP",
@@ -1349,7 +1494,8 @@
           "ManaOnCrit"
         ]
       },
-      "unit_equipable": true
+      "unit_equipable": true,
+      "combat_effects_complete": true
     },
     {
       "id": "TFT_Item_MadredsBloodrazor",
@@ -1539,7 +1685,23 @@
         "ThresholdForEmpower": 0.5
       },
       "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
-      "combat_effects": [],
+      "combat_effects": [
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "damage_reduction",
+          "target": "self",
+          "value": 0.05
+        },
+        {
+          "trigger": "while_hp_above",
+          "operation": "add_stat",
+          "stat": "damage_reduction",
+          "target": "self",
+          "value": 0.15,
+          "health_threshold": 0.5
+        }
+      ],
       "effect_coverage": {
         "source_keys": [
           "Armor",
@@ -1561,7 +1723,8 @@
           "ThresholdForEmpower"
         ]
       },
-      "unit_equipable": true
+      "unit_equipable": true,
+      "combat_effects_complete": true
     },
     {
       "id": "TFT_Item_PowerGauntlet",
@@ -1667,7 +1830,16 @@
         "SpellShieldDuration": 18
       },
       "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
-      "combat_effects": [],
+      "combat_effects": [
+        {
+          "trigger": "periodic",
+          "operation": "add_stat",
+          "stat": "attack_speed",
+          "target": "self",
+          "value": 0.03,
+          "interval": 1
+        }
+      ],
       "effect_coverage": {
         "source_keys": [
           "AS",
@@ -1725,7 +1897,15 @@
         "{1543aa48}": 0.15000000596046448
       },
       "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
-      "combat_effects": [],
+      "combat_effects": [
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "damage_amplification",
+          "target": "self",
+          "value": 0.15
+        }
+      ],
       "effect_coverage": {
         "source_keys": [
           "AP",
@@ -1854,7 +2034,16 @@
         "MonsterCap": 100
       },
       "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
-      "combat_effects": [],
+      "combat_effects": [
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "max_hp",
+          "target": "self",
+          "value": 0.08,
+          "percent_of_stat": true
+        }
+      ],
       "effect_coverage": {
         "source_keys": [
           "Armor",
@@ -1928,6 +2117,14 @@
           "trigger": "combat_start",
           "operation": "mana_regen",
           "value": 2
+        },
+        {
+          "trigger": "periodic",
+          "operation": "heal_missing_hp_pct",
+          "target": "self",
+          "value": 0.019999999552965164,
+          "interval": 1,
+          "max_amount": 250
         }
       ],
       "effect_coverage": {
@@ -2077,6 +2274,11 @@
           "trigger": "combat_start",
           "operation": "mana_regen",
           "value": 1
+        },
+        {
+          "trigger": "on_attack",
+          "operation": "mana_on_attack",
+          "value": 5
         }
       ],
       "effect_coverage": {
@@ -2097,7 +2299,8 @@
           "FlatManaRestore"
         ]
       },
-      "unit_equipable": true
+      "unit_equipable": true,
+      "combat_effects_complete": true
     },
     {
       "id": "TFT_Item_SpectralGauntlet",
@@ -2623,7 +2826,16 @@
         "Health": 500
       },
       "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
-      "combat_effects": [],
+      "combat_effects": [
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "max_hp",
+          "target": "self",
+          "value": 0.18,
+          "percent_of_stat": true
+        }
+      ],
       "effect_coverage": {
         "source_keys": [
           "BonusPercentHP",
@@ -2637,7 +2849,8 @@
           "BonusPercentHP"
         ]
       },
-      "unit_equipable": true
+      "unit_equipable": true,
+      "combat_effects_complete": true
     },
     {
       "id": "DA_18_EmblemBlackthorn",
@@ -2717,7 +2930,8 @@
         "generic_combat_keys": [],
         "not_generic_normalized_keys": []
       },
-      "unit_equipable": true
+      "unit_equipable": true,
+      "combat_effects_complete": true
     },
     {
       "id": "DA_18_EmblemBrawler",
@@ -2757,7 +2971,8 @@
         "generic_combat_keys": [],
         "not_generic_normalized_keys": []
       },
-      "unit_equipable": true
+      "unit_equipable": true,
+      "combat_effects_complete": true
     },
     {
       "id": "DA_18_EmblemElderwood",
@@ -2997,7 +3212,8 @@
         "generic_combat_keys": [],
         "not_generic_normalized_keys": []
       },
-      "unit_equipable": true
+      "unit_equipable": true,
+      "combat_effects_complete": true
     },
     {
       "id": "DA_18_EmblemLunar",

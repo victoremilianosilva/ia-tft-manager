@@ -35,7 +35,7 @@ int main() {
 
     {
         const auto result = evaluator.evaluate(viable_input());
-        assert(result.shadow_only);
+        assert(result.advisory_only);
         assert(result.status == PivotFeasibilityStatus::Viable);
         assert(result.carry_eligible); // 4-cost carry is eligible, not automatic approval.
         assert(result.score > 49.0);
@@ -79,6 +79,28 @@ int main() {
         const auto result = evaluator.evaluate(input);
         assert(result.status == PivotFeasibilityStatus::Rejected);
         assert(!result.blockers.empty());
+    }
+
+    {
+        auto input = viable_input();
+        // A trait member absent from both owned units and the current shop can
+        // still be reachable through a positive shared pool. This is future
+        // acquisition evidence, not a current purchase guarantee.
+        input.observed_units[2].owned_copies = 0;
+        input.observed_units[2].shop_copies = 0;
+        input.observed_units[2].pool_remaining = 4;
+        input.required_traits = {{"Arcanist", 2}};
+        const auto result = evaluator.evaluate(input);
+        assert(result.status == PivotFeasibilityStatus::Viable);
+        const auto trait = std::find_if(result.traits.begin(), result.traits.end(),
+            [](const auto& value) { return value.trait == "Arcanist"; });
+        assert(trait != result.traits.end());
+        assert(trait->reachable_with_pool == 1);
+        assert(trait->reachable_with_acquisition == 2);
+        assert(trait->reachable_with_shop == 1);
+        assert(std::find(result.favorable_evidence.begin(), result.favorable_evidence.end(),
+            "trait_reachable_through_future_pool_acquisition_Arcanist") !=
+            result.favorable_evidence.end());
     }
 
     {
@@ -141,6 +163,31 @@ int main() {
         input.observed_units.push_back(input.observed_units.front());
         const auto result = evaluator.evaluate(input);
         assert(result.status == PivotFeasibilityStatus::Rejected);
+    }
+
+    {
+        auto input = viable_input();
+        auto& unit = input.observed_units[0];
+        unit.star = 1;
+        unit.owned_copies = 5; // Aggregate equivalents must not imply a 2-star copy.
+        unit.shop_copies = 1;
+        unit.copies_by_star = {0, 1, 0, 0};
+        unit.physical_tier_counts_available = true;
+        const auto result = evaluator.evaluate(input);
+        const auto found = std::find_if(result.units.begin(), result.units.end(),
+            [](const auto& value) { return value.champion_id == 1; });
+        assert(found != result.units.end());
+        assert(found->physical_tier_counts_available);
+        assert(found->copies_to_two_star == 1);
+        assert(!found->two_star_reachable);
+
+        unit.copies_by_star = {0, 2, 0, 0};
+        const auto completed = evaluator.evaluate(input);
+        const auto completed_unit = std::find_if(completed.units.begin(), completed.units.end(),
+            [](const auto& value) { return value.champion_id == 1; });
+        assert(completed_unit != completed.units.end());
+        assert(completed_unit->copies_to_two_star == 0);
+        assert(completed_unit->two_star_reachable);
     }
 
     std::cout << "Pivot feasibility evidence tests passed\n";

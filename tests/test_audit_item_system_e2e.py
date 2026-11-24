@@ -87,7 +87,7 @@ class ItemSystemE2EAuditTests(unittest.TestCase):
             validate_action([7, 2, 37, 0, 0, 0], masks, 0)
 
     def _checkpoint(self, path):
-        policy = TFTPolicy(252, ACTION_DIMS)
+        policy = TFTPolicy(252, ACTION_DIMS, require_semantic_state=False)
         torch.save({"policy": policy.state_dict(), "update": 123}, path)
 
     def test_complete_match_writes_checkpoint_trace_and_metrics(self):

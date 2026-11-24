@@ -1,8 +1,14 @@
+from collections.abc import Mapping
+
 import torch
 import torch.optim as optim
 import numpy as np
 import os
 import json
+import copy
+import hashlib
+import random
+from pathlib import Path
 
 from rich.console import Console
 from rich.progress import (
@@ -15,6 +21,7 @@ from rich.progress import (
 )
 
 from training_config import TrainingConfig, cosine_lr_factor
+from decision_identity import build_player_identity_envelopes
 
 from cpp_lobby_env import CppTFTLobbyWrapper
 
@@ -24,11 +31,60 @@ from torch.utils.tensorboard import SummaryWriter
 from vector_lobby_env import LobbyVectorEnv
 
 from policy import TFTPolicy
+from action_contract import (
+    MASK_SHAPES,
+    MASK_SNAPSHOT_HASH_ALGORITHM,
+    ACTION_CONTRACT_ID, ACTION_CONTRACT_VERSION, ACTION_CONTRACT_HASH,
+    MASK_CONTRACT_ID, MASK_CONTRACT_VERSION, MASK_CONTRACT_HASH,
+    build_action_mask_checkpoint_contract, hash_mask_rows,
+    validate_action_mask_checkpoint_contract,
+    build_critic_mask_input_checkpoint_contract,
+    validate_critic_mask_input_checkpoint_contract,
+)
 from rollout import RolloutBuffer
+from checkpoint_contract import (
+    build_checkpoint_lineage_contract,
+    validate_checkpoint_lineage_contract,
+    build_training_resume_contract,
+    validate_training_resume_contract,
+)
+from reward_contract import (
+    build_reward_checkpoint_contract,
+    validate_reward_checkpoint_contract,
+)
 from ppo import PPOTrainer, exponential_schedule_value
+from semantic_observation import (
+    SEMANTIC_ENTITY_FEATURES,
+    SEMANTIC_ENTITY_SLOTS,
+    SEMANTIC_GLOBAL_FEATURES,
+    SEMANTIC_ITEM_OFFSET,
+    build_semantic_batch,
+    semantic_item_state_tensors,
+    build_semantic_state_checkpoint_contract,
+    catalog_identity,
+    validate_semantic_state_checkpoint_contract,
+    validate_semantic_batch_alignment,
+    semantic_batch_matches_snapshot_rows,
+)
 
-from engine_contracts import Strategy
 from engine_contracts import ActionType
+from training_run_manifest import build_training_run_manifest, write_training_run_manifest
+
+def slice_batch_structure(value, selection):
+    """Slice every tensor leaf in a nested semantic batch structure."""
+    if isinstance(value, dict):
+        return {
+            key: slice_batch_structure(child, selection)
+            for key, child in value.items()
+        }
+    if isinstance(value, torch.Tensor):
+        return value[selection]
+    raise TypeError(
+        "Semantic batch structures may contain only dictionaries and tensors; "
+        f"received {type(value).__name__}."
+    )
+
+
 
 def refresh_opgg_meta_catalog() -> None:
     """Refresh at the training entrypoint, never when Trainer is imported or constructed in tests."""
@@ -88,20 +144,7 @@ class Trainer:
     # 🎭 MASK SHAPES
     # ================================================================
 
-    MASK_SHAPES = {
-        "type_mask": (9,),
-        "shop_mask": (5,),
-        "bench_source_mask": (9,),
-        "board_target_mask": (28,),
-        "board_source_mask": (28,),
-        "board_move_target_masks": (28, 28),
-        "bench_move_source_mask": (9,),
-        "bench_to_board_target_masks": (9, 28),
-        "item_inventory_mask": (9,),
-        "item_component_first_mask": (10,),
-        "item_component_pair_masks": (10, 10),
-        "item_target_mask": (37,),
-    }
+    MASK_SHAPES = MASK_SHAPES
 
     def __init__(
         self,
@@ -112,6 +155,11 @@ class Trainer:
     ):
         self.config = TrainingConfig.from_env(config)
         self.config.validate()
+        random.seed(self.config.seed)
+        np.random.seed(self.config.seed)
+        torch.manual_seed(self.config.seed)
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed_all(self.config.seed)
         print("⚙️ Configuração efetiva do treinamento:")
         print(json.dumps(self.config.to_dict(), indent=2, ensure_ascii=False))
 
@@ -198,9 +246,14 @@ class Trainer:
         # 📊 TENSORBOARD
         # ============================================================
 
-        self.writer = SummaryWriter(
-            "tft_logs/AkameIA_V4"
+        Path(self.config.log_dir).mkdir(parents=True, exist_ok=True)
+        Path(self.config.checkpoint_path).expanduser().resolve().parent.mkdir(
+            parents=True, exist_ok=True
         )
+        Path(self.config.run_manifest_path).expanduser().resolve().parent.mkdir(
+            parents=True, exist_ok=True
+        )
+        self.writer = SummaryWriter(self.config.log_dir)
 
         # ============================================================
         # 🏭 ENV FACTORY / ENGINE BACKEND
@@ -208,21 +261,34 @@ class Trainer:
 
         print("🧩 Engine selecionada: C++ (única engine)")
 
+        # PPO consumes the native strategic-owner projection directly.
+        # Diagnostic JSONL sidecars are not enabled as a side effect of training.
         resolved_item_catalog = item_catalog_path or os.environ.get("TFT_ITEM_CATALOG_PATH")
-        def make_env():
-            return CppTFTLobbyWrapper(item_catalog_path=resolved_item_catalog)
+        env_fns = [
+            (
+                lambda lobby_seed=self.config.seed + lobby_index:
+                CppTFTLobbyWrapper(
+                    seed=lobby_seed,
+                    item_catalog_path=resolved_item_catalog,
+                )
+            )
+            for lobby_index in range(self.num_envs)
+        ]
 
-# ============================================================
-        # 🚀 VECTOR ENV
-        # ============================================================
-
-        # LobbyVectorEnv é serial: uma instância por lobby.
-        # Inicializamos independentemente de use_subprocess.
-        self.vec_env = LobbyVectorEnv(
-            [make_env for _ in range(self.num_envs)]
+        # LobbyVectorEnv is serial: one native Engine instance per lobby.
+        self.vec_env = LobbyVectorEnv(env_fns)
+        dummy_obs = self.vec_env.reset(seed=self.config.seed)
+        catalog_maps = self.vec_env.env_method("get_champion_id_map")
+        if not catalog_maps or any(not isinstance(item, dict) for item in catalog_maps):
+            raise RuntimeError("Native champion catalog map is required for semantic PPO projection.")
+        canonical_catalog = catalog_maps[0]
+        if any(item != canonical_catalog for item in catalog_maps[1:]):
+            raise RuntimeError("Vector lobbies expose different champion catalog identities.")
+        self.champion_id_map = dict(canonical_catalog)
+        self.semantic_state_contract = build_semantic_state_checkpoint_contract(
+            self.champion_id_map
         )
-
-        dummy_obs = self.vec_env.reset()
+        self.semantic_vocab_size = catalog_identity(self.champion_id_map)["vocab_size"]
 
         if dummy_obs.ndim != 3:
             raise ValueError(
@@ -242,7 +308,9 @@ class Trainer:
 
         self.policy = TFTPolicy(
             self.obs_dim,
-            self.ACTION_DIMS
+            self.ACTION_DIMS,
+            semantic_vocab_size=self.semantic_vocab_size,
+            require_semantic_state=True,
         ).to(self.device)
 
         # ============================================================
@@ -252,14 +320,63 @@ class Trainer:
         self.start_update = 1
         checkpoint_path = self.config.checkpoint_path
         checkpoint = None
-        migrated_checkpoint = False
-
         if os.path.exists(checkpoint_path):
-            print(f"📂 Carregando checkpoint: {checkpoint_path}")
+            print(f"📂 Carregando checkpoint nativo: {checkpoint_path}")
             checkpoint = torch.load(checkpoint_path, map_location=self.device)
-            migrated_checkpoint = self.policy.load_compatible_state_dict(checkpoint["policy"])
-            print("⚠️ Checkpoint migrado; optimizer/scheduler serão reiniciados." if migrated_checkpoint
-                  else "✅ Pesos da policy carregados.")
+            if not isinstance(checkpoint, dict):
+                raise RuntimeError("Checkpoint inválido: esperado um manifesto de execução nativo.")
+
+            required_fields = (
+                "policy",
+                "optimizer",
+                "scheduler",
+                "scheduler_type",
+                "update",
+                "action_mask_contract",
+                "critic_mask_input_contract",
+                "semantic_state_contract",
+                "reward_contract",
+                "training_resume_contract",
+                "checkpoint_contract",
+                "training_run_manifest",
+            )
+            missing_fields = [name for name in required_fields if name not in checkpoint]
+            if missing_fields:
+                raise RuntimeError(
+                    "Checkpoint não pertence à linhagem PPO nativa; campos ausentes: "
+                    + ", ".join(missing_fields)
+                )
+
+            validate_action_mask_checkpoint_contract(checkpoint["action_mask_contract"])
+            validate_critic_mask_input_checkpoint_contract(checkpoint["critic_mask_input_contract"])
+            validate_reward_checkpoint_contract(checkpoint["reward_contract"])
+            validate_semantic_state_checkpoint_contract(
+                checkpoint["semantic_state_contract"], self.champion_id_map
+            )
+            validate_checkpoint_lineage_contract(
+                checkpoint["checkpoint_contract"],
+                self.policy.state_dict(),
+                checkpoint["action_mask_contract"],
+                checkpoint["critic_mask_input_contract"],
+                checkpoint["semantic_state_contract"],
+                checkpoint["reward_contract"],
+            )
+            if not validate_training_resume_contract(
+                checkpoint["training_resume_contract"], self.config.to_dict()
+            ):
+                raise RuntimeError(
+                    "Checkpoint pertence a outra configuração de treinamento. "
+                    "Inicie uma nova execução em outro diretório."
+                )
+            if checkpoint["scheduler_type"] != "cosine_clamped":
+                raise RuntimeError("Checkpoint usa um scheduler incompatível com a linhagem nativa.")
+            if isinstance(checkpoint["update"], bool) or not isinstance(checkpoint["update"], int) or checkpoint["update"] < 0:
+                raise RuntimeError("Checkpoint contém índice de update inválido.")
+
+            self.policy.load_state_dict(checkpoint["policy"], strict=True)
+            print("✅ Pesos nativos carregados com contratos semânticos exatos.")
+        else:
+            print("⚠️ Nenhum checkpoint nativo encontrado; iniciando do zero.")
 
         self.optimizer = optim.Adam(
             self.policy.parameters(),
@@ -268,29 +385,9 @@ class Trainer:
             betas=(self.config.adam_beta1, self.config.adam_beta2),
             weight_decay=self.config.weight_decay,
         )
-
-        saved_config = checkpoint.get("training_config", {}) if checkpoint else {}
-        saved_schedule = (
-            saved_config.get("lr_schedule_updates"),
-            saved_config.get("min_learning_rate"),
-            saved_config.get("learning_rate"),
-        )
-        current_schedule = (
-            self.config.lr_schedule_updates,
-            self.config.min_learning_rate,
-            self.config.learning_rate,
-        )
-        can_restore_optimizer = bool(checkpoint and "optimizer" in checkpoint and not migrated_checkpoint)
-        if can_restore_optimizer:
+        if checkpoint is not None:
             self.optimizer.load_state_dict(checkpoint["optimizer"])
-            # Restaura os momentos do Adam, mas o LR solicitado nesta execução
-            # sempre prevalece sobre o valor salvo no checkpoint.
-            for group in self.optimizer.param_groups:
-                group["lr"] = self.config.learning_rate
-                group["eps"] = self.config.adam_eps
-                group["betas"] = (self.config.adam_beta1, self.config.adam_beta2)
-                group["weight_decay"] = self.config.weight_decay
-            print("✅ Momentos do Adam restaurados; hiperparâmetros atuais aplicados.")
+            print("✅ Estado completo do Adam restaurado.")
 
         self.scheduler = optim.lr_scheduler.LambdaLR(
             self.optimizer,
@@ -301,29 +398,10 @@ class Trainer:
                 self.config.lr_schedule_updates,
             ),
         )
-        restore_scheduler = bool(
-            can_restore_optimizer and "scheduler" in checkpoint
-            and checkpoint.get("scheduler_type") == "cosine_clamped"
-            and saved_schedule == current_schedule
-        )
-        if restore_scheduler:
+        if checkpoint is not None:
             self.scheduler.load_state_dict(checkpoint["scheduler"])
-            # load_state_dict restaura o estado interno, mas não atualiza
-            # automaticamente o LR do optimizer para o último valor agendado.
-            for group, scheduled_lr in zip(self.optimizer.param_groups, self.scheduler.get_last_lr()):
-                group["lr"] = scheduled_lr
-            print(
-                f"✅ Scheduler restaurado | step={self.scheduler.last_epoch} | "
-                f"LR={self.optimizer.param_groups[0]['lr']:.3e}"
-            )
-        elif checkpoint:
-            print("ℹ️ Scheduler reiniciado: LR/schedule mudou ou checkpoint incompatível.")
-
-        if checkpoint:
-            self.start_update = int(checkpoint.get("update", 0)) + 1
-            print(f"▶️ Retomando do update {self.start_update}")
-        else:
-            print("⚠️ Nenhum checkpoint encontrado; iniciando do zero.")
+            self.start_update = int(checkpoint["update"]) + 1
+            print(f"▶️ Retomando execução nativa no update {self.start_update}")
 
         self.ppo = PPOTrainer(
             self.policy,
@@ -336,6 +414,49 @@ class Trainer:
             target_kl=self.config.target_kl,
         )
         self.ppo.update_step = self.start_update
+        self.training_run_manifest = build_training_run_manifest(
+            config=self.config,
+            policy=self.policy,
+            semantic_state_contract=self.semantic_state_contract,
+            engine=self.vec_env.envs[0]._engine,
+        )
+        manifest_path = Path(self.config.run_manifest_path)
+        saved_run_manifest = None
+        if checkpoint is not None:
+            saved_run_manifest = checkpoint.get("training_run_manifest")
+            if (
+                not isinstance(saved_run_manifest, dict)
+                or saved_run_manifest.get("identity_sha256")
+                != self.training_run_manifest.get("identity_sha256")
+            ):
+                raise RuntimeError(
+                    "Checkpoint sem manifesto de execução nativo compatível. "
+                    "Checkpoints históricos não podem ser retomados nesta linhagem."
+                )
+            self.training_run_manifest = saved_run_manifest
+        if manifest_path.exists():
+            import json as _json
+            with manifest_path.open("r", encoding="utf-8") as source:
+                existing_manifest = _json.load(source)
+            if (
+                existing_manifest.get("identity_sha256") != self.training_run_manifest.get("identity_sha256")
+                or (
+                    saved_run_manifest is not None
+                    and existing_manifest.get("manifest_sha256") != saved_run_manifest.get("manifest_sha256")
+                )
+            ):
+                raise RuntimeError(
+                    "O diretório de execução já contém um manifesto divergente. "
+                    "Use um diretório de saída novo; não sobrescreva artefatos de treino."
+                )
+            self.training_run_manifest = existing_manifest
+        else:
+            write_training_run_manifest(manifest_path, self.training_run_manifest)
+        self.writer.add_text(
+            "training/manifest",
+            json.dumps(self.training_run_manifest, indent=2, ensure_ascii=False),
+            self.start_update,
+        )
         self.writer.add_text(
             "training/config",
             json.dumps(self.config.to_dict(), indent=2, ensure_ascii=False),
@@ -389,6 +510,180 @@ class Trainer:
             self.num_agents,
             self.obs_dim
         )
+
+    @staticmethod
+    def _expand_lobby_snapshot_metadata(lobby_snapshots, players_per_lobby, label):
+        """Expand one lobby snapshot identity into stable per-player rollout rows."""
+        expanded = []
+        for lobby_idx, snapshot in enumerate(lobby_snapshots):
+            if not isinstance(snapshot, dict):
+                raise RuntimeError(
+                    f"Lobby {lobby_idx} não forneceu metadata de {label}."
+                )
+            player_sequences = snapshot.get("player_decision_sequences")
+            if not isinstance(player_sequences, (list, tuple)) or len(player_sequences) != players_per_lobby:
+                raise RuntimeError(
+                    f"Lobby {lobby_idx} não forneceu sequências individuais para {players_per_lobby} jogadores."
+                )
+            native_snapshot = snapshot.get("native_state_snapshot")
+            native_players = None
+            if native_snapshot is not None:
+                if not isinstance(native_snapshot, Mapping):
+                    raise RuntimeError(f"Snapshot estruturado inválido para lobby {lobby_idx}.")
+                for field in ("engine_instance_id", "episode_id"):
+                    if native_snapshot.get(field) != snapshot.get(field):
+                        raise RuntimeError(f"Snapshot estruturado diverge em {field} na lobby {lobby_idx}.")
+                if native_snapshot.get("snapshot_sequence") != snapshot.get("decision_sequence"):
+                    raise RuntimeError(f"Snapshot estruturado diverge na sequência da lobby {lobby_idx}.")
+                if native_snapshot.get("round") != snapshot.get("round"):
+                    raise RuntimeError(f"Snapshot estruturado diverge no round da lobby {lobby_idx}.")
+                if native_snapshot.get("player_decision_sequences") != player_sequences:
+                    raise RuntimeError(f"Snapshot estruturado diverge nas sequências individuais da lobby {lobby_idx}.")
+                native_players = native_snapshot.get("players")
+                if not isinstance(native_players, list) or len(native_players) != players_per_lobby:
+                    raise RuntimeError(f"Snapshot estruturado sem {players_per_lobby} jogadores na lobby {lobby_idx}.")
+            for player_idx, player_sequence in enumerate(player_sequences):
+                if (
+                    isinstance(player_sequence, bool)
+                    or not isinstance(player_sequence, int)
+                    or player_sequence < 0
+                ):
+                    raise RuntimeError(
+                        f"Sequência individual inválida para lobby {lobby_idx}, jogador {player_idx}."
+                    )
+                metadata = dict(snapshot)
+                metadata.pop("player_decision_sequences", None)
+                metadata.pop("native_state_snapshot", None)
+                if native_players is not None:
+                    native_player = native_players[player_idx]
+                    if not isinstance(native_player, dict) or native_player.get("player_id") != player_idx:
+                        raise RuntimeError(f"Registro estruturado desalinhado para lobby {lobby_idx}, jogador {player_idx}.")
+                    metadata["native_player_state"] = copy.deepcopy(native_player)
+                    metadata["native_state_contract_id"] = native_snapshot.get("contract_id")
+                    metadata["native_state_contract_version"] = native_snapshot.get("contract_version")
+                    metadata["native_state_producer"] = native_snapshot.get("producer")
+                    metadata["native_state_source_namespace"] = native_snapshot.get("source_namespace")
+                metadata["player_decision_sequence"] = player_sequence
+                metadata["lobby_index"] = lobby_idx
+                metadata["player_id"] = player_idx
+                envelopes = snapshot.get("player_identity_envelopes")
+                # Isolated fake environments without native snapshots may build
+                # deterministic fixtures; production native adapters must provide
+                # envelopes from their authoritative Engine result.
+                if envelopes is None and native_snapshot is None:
+                    envelopes = build_player_identity_envelopes(snapshot)
+                if not isinstance(envelopes, (list, tuple)) or len(envelopes) != players_per_lobby:
+                    raise RuntimeError(
+                        f"Lobby {lobby_idx} não forneceu envelopes canônicos para {players_per_lobby} jogadores."
+                    )
+                envelope = envelopes[player_idx]
+                if not isinstance(envelope, dict):
+                    raise RuntimeError(
+                        f"Envelope canônico inválido para lobby {lobby_idx}, jogador {player_idx}."
+                    )
+                expected_engine_match_id = f"{snapshot.get('engine_instance_id')}/episode/{snapshot.get('episode_id')}"
+                if (
+                    envelope.get("engine_match_id") != expected_engine_match_id
+                    or envelope.get("player_id") != f"player-{player_idx}"
+                    or envelope.get("decision_sequence") != {
+                        "namespace": "tft.engine.decision", "value": player_sequence,
+                    }
+                    or envelope.get("snapshot_sequence") != {
+                        "namespace": "tft.engine.observation-snapshot",
+                        "value": snapshot.get("decision_sequence"),
+                    }
+                ):
+                    raise RuntimeError(
+                        f"Envelope canônico diverge da identidade nativa para lobby {lobby_idx}, jogador {player_idx}."
+                    )
+                metadata.pop("player_identity_envelopes", None)
+                metadata["identity"] = copy.deepcopy(envelope)
+                expanded.append(metadata)
+        return expanded
+
+    @staticmethod
+    def _attach_native_action_traces(result_snapshot_metadata, infos, players_per_lobby):
+        """Bind each native execution trace to its exact lobby/player result row."""
+        if len(result_snapshot_metadata) != len(infos) * players_per_lobby:
+            raise RuntimeError(
+                "Quantidade de snapshots de resultado não corresponde às lobbies/traces."
+            )
+
+        for lobby_idx, info in enumerate(infos):
+            if not isinstance(info, dict):
+                raise RuntimeError(
+                    f"Info nativa inválida para lobby {lobby_idx}: esperado objeto."
+                )
+            traces = info.get("action_trace")
+            if not isinstance(traces, list) or len(traces) != players_per_lobby:
+                raise RuntimeError(
+                    f"Lobby {lobby_idx} não forneceu {players_per_lobby} registros nativos de execução de ação."
+                )
+            start = lobby_idx * players_per_lobby
+            for player_id, trace in enumerate(traces):
+                if not isinstance(trace, dict) or not {
+                    "player_id", "requested_action", "effective_action",
+                    "handler_applied", "status_reason",
+                }.issubset(trace):
+                    raise RuntimeError(
+                        f"Trace de ação inválido para lobby {lobby_idx}, jogador {player_id}."
+                    )
+                trace_player_id = trace.get("player_id")
+                if (
+                    isinstance(trace_player_id, bool)
+                    or not isinstance(trace_player_id, int)
+                    or trace_player_id != player_id
+                ):
+                    raise RuntimeError(
+                        f"Trace de ação da lobby {lobby_idx} pertence ao jogador "
+                        f"{trace_player_id}, esperado {player_id}."
+                    )
+                row = result_snapshot_metadata[start + player_id]
+                if not isinstance(row, dict):
+                    raise RuntimeError(
+                        f"Snapshot de resultado inválido para lobby {lobby_idx}, jogador {player_id}."
+                    )
+                row_lobby = row.get("lobby_index")
+                row_player = row.get("player_id")
+                if (
+                    isinstance(row_lobby, bool)
+                    or not isinstance(row_lobby, int)
+                    or row_lobby != lobby_idx
+                    or isinstance(row_player, bool)
+                    or not isinstance(row_player, int)
+                    or row_player != player_id
+                ):
+                    raise RuntimeError(
+                        f"Snapshot de resultado desalinhado para lobby {lobby_idx}, jogador {player_id}."
+                    )
+                row["action_trace"] = dict(trace)
+
+        return result_snapshot_metadata
+
+    @classmethod
+    def _hash_mask_rows(cls, masks):
+        """Hash each exact per-agent mask payload with the canonical v1 helper."""
+        return hash_mask_rows(masks, cls.MASK_SHAPES)
+
+    @staticmethod
+    def _hash_observation_rows(observations):
+        """Hash each exact float32 observation row independently and deterministically."""
+        if not isinstance(observations, torch.Tensor) or observations.ndim != 2:
+            raise TypeError("Observations para correlação devem ser tensor [batch, features].")
+        if observations.dtype != torch.float32:
+            raise TypeError("Observations para correlação devem usar torch.float32.")
+        rows = observations.detach().to(device="cpu").contiguous().numpy()
+        shape_identity = f"{rows.shape[1]}:float32".encode("ascii")
+        hashes = []
+        for row in rows:
+            digest = hashlib.sha256()
+            digest.update(b"tft-ppo-observation-row-v1\\x00")
+            digest.update(shape_identity)
+            digest.update(b"\\x00")
+            digest.update(row.tobytes(order="C"))
+            hashes.append(digest.hexdigest())
+        return hashes
+
 
     # ================================================================
     # 🎭 FLATTEN MASKS
@@ -479,7 +774,8 @@ class Trainer:
 
     def _flatten_masks(
         self,
-        gym_masks
+        gym_masks,
+        lobby_player_alive=None,
     ):
         """
         Converte as máscaras:
@@ -514,11 +810,11 @@ class Trainer:
         ⚠️ JOGADOR MORTO
         ============================================================
 
-        Jogador morto recebe máscara de PASS.
+        Jogadores eliminados recebem PASS quando a Engine publica uma
+        type_mask vazia. Uma máscara vazia para jogador ainda ativo é erro
+        de contrato e nunca pode ser convertida silenciosamente em PASS.
 
         PASS = ActionType.PASS = 6
-
-        Isso evita distribuição categórica inválida.
         """
 
         flat_masks = {}
@@ -642,25 +938,62 @@ class Trainer:
         invalid_agents = ~type_mask.any(dim=1)
 
         if bool(invalid_agents.any()):
-            # Apply the same PASS fallback to all invalid agents in one
-            # tensor operation instead of synchronizing/checking each row.
-            type_mask[invalid_agents] = False
-            type_mask[invalid_agents, int(ActionType.PASS)] = True
+            if lobby_player_alive is None:
+                raise RuntimeError(
+                    "A Engine publicou type_mask vazia, mas o estado de "
+                    "vida dos jogadores não foi fornecido; fallback PASS "
+                    "não pode ser inferido."
+                )
+            if len(lobby_player_alive) != self.num_envs:
+                raise ValueError(
+                    "Quantidade de lobbies no estado de vida "
+                    f"({len(lobby_player_alive)}) != num_envs ({self.num_envs})."
+                )
 
-            flat_masks["shop_mask"][invalid_agents] = False
-            flat_masks["shop_mask"][invalid_agents, 0] = True
+            alive_rows = []
+            for lobby_idx, players_alive in enumerate(lobby_player_alive):
+                if len(players_alive) != self.PLAYERS_PER_LOBBY:
+                    raise ValueError(
+                        f"Lobby {lobby_idx} possui {len(players_alive)} "
+                        "estados de vida; eram esperados "
+                        f"{self.PLAYERS_PER_LOBBY}."
+                    )
+                alive_rows.extend(bool(value) for value in players_alive)
 
-            flat_masks["bench_source_mask"][invalid_agents] = False
-            flat_masks["bench_source_mask"][invalid_agents, 0] = True
+            alive_agents = torch.as_tensor(
+                alive_rows, dtype=torch.bool, device=self.device
+            )
+            invalid_active_agents = invalid_agents & alive_agents
+            if bool(invalid_active_agents.any()):
+                indices = torch.nonzero(
+                    invalid_active_agents, as_tuple=False
+                ).flatten().tolist()
+                raise RuntimeError(
+                    "A Engine publicou type_mask vazia para jogador(es) "
+                    f"ativo(s): {indices}. Nenhuma ação substituta será "
+                    "fabricada; verifique o produtor nativo de masks."
+                )
 
-            flat_masks["board_target_mask"][invalid_agents] = False
-            flat_masks["board_target_mask"][invalid_agents, 0] = True
+            eliminated_agents = invalid_agents & ~alive_agents
+            # PASS is a transport-safe no-op only for players explicitly
+            # reported as eliminated by the authoritative lobby state.
+            type_mask[eliminated_agents] = False
+            type_mask[eliminated_agents, int(ActionType.PASS)] = True
 
-            flat_masks["board_source_mask"][invalid_agents] = False
-            flat_masks["board_source_mask"][invalid_agents, 0] = True
+            flat_masks["shop_mask"][eliminated_agents] = False
+            flat_masks["shop_mask"][eliminated_agents, 0] = True
 
-            flat_masks["board_move_target_masks"][invalid_agents] = False
-            flat_masks["board_move_target_masks"][invalid_agents, 0, 0] = True
+            flat_masks["bench_source_mask"][eliminated_agents] = False
+            flat_masks["bench_source_mask"][eliminated_agents, 0] = True
+
+            flat_masks["board_target_mask"][eliminated_agents] = False
+            flat_masks["board_target_mask"][eliminated_agents, 0] = True
+
+            flat_masks["board_source_mask"][eliminated_agents] = False
+            flat_masks["board_source_mask"][eliminated_agents, 0] = True
+
+            flat_masks["board_move_target_masks"][eliminated_agents] = False
+            flat_masks["board_move_target_masks"][eliminated_agents, 0, 0] = True
 
         return flat_masks
 
@@ -708,12 +1041,12 @@ class Trainer:
         )
 
         if actions.shape != expected_shape:
-
             raise ValueError(
-                f"Shape de actions inválido: "
-                f"{actions.shape} "
-                f"!= {expected_shape}"
+                f"Shape de actions inválido: {actions.shape} != {expected_shape}"
             )
+        if actions.dtype != np.int64:
+            raise TypeError("Ações encaminhadas à Engine devem ser registros PPO int64.")
+        TFTPolicy._validate_canonical_action_parameters(torch.from_numpy(actions))
 
         lobby_actions = []
 
@@ -813,56 +1146,6 @@ class Trainer:
         )
 
     # ================================================================
-    # 🧠 STRATEGY LOGGING
-    # ================================================================
-
-    def _collect_strategy_counts(
-        self,
-        strategies
-    ):
-        """
-        strategies vem como:
-
-            [
-                [
-                    strategy_p0,
-                    ...
-                    strategy_p7
-                ],
-                ...
-            ]
-
-        Conta todos os jogadores.
-        """
-
-        counts = np.zeros(
-            len(Strategy),
-            dtype=np.int32
-        )
-
-        for lobby_strategies in strategies:
-
-            for strategy in lobby_strategies:
-
-                if strategy is None:
-                    continue
-
-                try:
-
-                    counts[
-                        strategy.value
-                    ] += 1
-
-                except (
-                    AttributeError,
-                    IndexError
-                ):
-
-                    pass
-
-        return counts
-
-    # ================================================================
     # 🏋️ TRAIN
     # ================================================================
 
@@ -874,9 +1157,12 @@ class Trainer:
 
         total_updates = self.config.total_updates if total_updates is None else int(total_updates)
         rollout_steps = self.config.rollout_steps if rollout_steps is None else int(rollout_steps)
+        if total_updates != self.config.total_updates:
+            raise ValueError("total_updates deve corresponder à configuração registrada no manifesto.")
+        if rollout_steps != self.config.rollout_steps:
+            raise ValueError("rollout_steps deve corresponder à configuração registrada no manifesto.")
         if rollout_steps <= 0:
             raise ValueError("rollout_steps deve ser > 0.")
-        self.config.rollout_steps = rollout_steps
         self.writer.add_text(
             "training/config",
             json.dumps(self.config.to_dict(), indent=2, ensure_ascii=False),
@@ -923,7 +1209,8 @@ class Trainer:
             self.obs_dim,
             self.ACTION_DIM,
             self.device,
-            self.MASK_SHAPES
+            self.MASK_SHAPES,
+            require_semantic_state=True,
         )
 
         # ============================================================
@@ -1047,17 +1334,13 @@ class Trainer:
                 dtype=np.int32
             )
 
-            strategy_counts = np.zeros(
-                len(Strategy),
-                dtype=np.int32
-            )
-
             self.policy.eval()
 
             # ========================================================
             # 📥 COLETA DE EXPERIÊNCIAS
             # ========================================================
 
+            semantic_cache = None
             for step in range(
                 rollout_steps
             ):
@@ -1066,15 +1349,112 @@ class Trainer:
                 # 🎭 MÁSCARAS
                 # ====================================================
 
+                # Capture identity for the exact observation/masks used by
+                # this policy decision, before any lobby is advanced.
+                lobby_snapshots = self.vec_env.get_snapshot_metadata()
+                flat_snapshot_metadata = self._expand_lobby_snapshot_metadata(
+                    lobby_snapshots,
+                    self.PLAYERS_PER_LOBBY,
+                    "snapshot da decisão PPO",
+                )
+                for metadata, observation_hash in zip(
+                    flat_snapshot_metadata,
+                    self._hash_observation_rows(obs),
+                ):
+                    metadata["observation_snapshot_hash"] = observation_hash
+                    metadata["observation_snapshot_hash_algorithm"] = "tft-ppo-observation-row-v1"
+
+                # The previous transition's next snapshot is the current decision
+                # snapshot when its immutable native revision identity still matches.
+                can_reuse_semantic = (
+                    semantic_cache is not None
+                    and semantic_batch_matches_snapshot_rows(
+                        semantic_cache["batch"],
+                        flat_snapshot_metadata,
+                        self.semantic_state_contract,
+                    )
+                )
+                if can_reuse_semantic:
+                    semantic_batch = semantic_cache["batch"]
+                    semantic_state = semantic_cache["state"]
+                else:
+                    semantic_batch = build_semantic_batch(
+                        flat_snapshot_metadata,
+                        self.champion_id_map,
+                        contract=self.semantic_state_contract,
+                    )
+                    semantic_numeric = torch.as_tensor(
+                        semantic_batch["numeric"], dtype=torch.float32, device=self.device
+                    )
+                    semantic_state = {
+                        "numeric": semantic_numeric,
+                        "items": semantic_item_state_tensors(semantic_numeric),
+                        "champion_ids": torch.as_tensor(
+                            semantic_batch["champion_ids"], dtype=torch.long, device=self.device
+                        ),
+                        "identities": semantic_batch["identities"],
+                        "hashes": semantic_batch["hashes"],
+                        "contract_id": semantic_batch["contract_id"],
+                        "contract_hash": semantic_batch["contract_hash"],
+                    }
+                for metadata, semantic_hash, semantic_identity in zip(
+                    flat_snapshot_metadata, semantic_batch["hashes"], semantic_batch["identities"]
+                ):
+                    metadata["semantic_identity"] = semantic_identity
+                    metadata["semantic_projection_hash"] = semantic_hash
+                    metadata["semantic_projection_contract_id"] = (
+                        self.semantic_state_contract["contract"]["contract_id"]
+                    )
+                    metadata["semantic_projection_contract_hash"] = (
+                        self.semantic_state_contract["sha256"]
+                    )
+                validate_semantic_batch_alignment(
+                    semantic_batch, flat_snapshot_metadata, self.semantic_state_contract,
+                    self.champion_id_map, reproject=False, verify_catalog=False,
+                )
+                semantic_entities = np.asarray(
+                    semantic_batch["numeric"], dtype=np.float32
+                )[:, SEMANTIC_GLOBAL_FEATURES:SEMANTIC_ITEM_OFFSET].reshape(
+                    -1, SEMANTIC_ENTITY_SLOTS, SEMANTIC_ENTITY_FEATURES
+                )
+                unknown_semantic_champions = int(
+                    ((semantic_entities[:, :, 0] > 0.5) &
+                     (semantic_entities[:, :, 5] < 0.5)).sum()
+                )
+                self.writer.add_scalar(
+                    "semantic/unknown_occupied_champion_slots",
+                    unknown_semantic_champions,
+                    update * rollout_steps + step,
+                )
+
                 gym_masks = (
                     self.vec_env.env_method(
-                        "get_action_masks"
+                        "get_action_masks_for_training"
                     )
                 )
 
-                masks = self._flatten_masks(
-                    gym_masks
+                lobby_player_alive = self.vec_env.env_method(
+                    "get_player_liveness"
                 )
+                masks = self._flatten_masks(
+                    gym_masks,
+                    lobby_player_alive=lobby_player_alive,
+                )
+
+                # Hash the exact post-ablation masks consumed by Actor and
+                # persisted with this action; each player has an independent payload.
+                for metadata, mask_hash in zip(
+                    flat_snapshot_metadata,
+                    self._hash_mask_rows(masks),
+                ):
+                    metadata["mask_snapshot_hash"] = mask_hash
+                    metadata["mask_snapshot_hash_algorithm"] = MASK_SNAPSHOT_HASH_ALGORITHM
+                    metadata["action_contract_id"] = ACTION_CONTRACT_ID
+                    metadata["action_contract_version"] = ACTION_CONTRACT_VERSION
+                    metadata["action_contract_hash"] = ACTION_CONTRACT_HASH
+                    metadata["mask_contract_id"] = MASK_CONTRACT_ID
+                    metadata["mask_contract_version"] = MASK_CONTRACT_VERSION
+                    metadata["mask_contract_hash"] = MASK_CONTRACT_HASH
 
                 # 📊 Quantas opções permaneceram válidas após as máscaras?
                 valid_type_mean = (
@@ -1114,27 +1494,6 @@ class Trainer:
 
                 mask_samples += 1
 
-                # ====================================================
-                # 🧠 STRATEGIES
-                # ====================================================
-
-                current_strategies = (
-                    self.vec_env.env_method(
-                        "get_strategies"
-                    )
-                )
-
-                current_strategy_counts = (
-                    self._collect_strategy_counts(
-                        current_strategies
-                    )
-                )
-
-                strategy_counts += (
-                    current_strategy_counts
-                )
-
-
                 # 📸 Fotografa quem pode gerar experiência neste passo.
                 # A cópia precisa acontecer ANTES da ação.
                 transition_valid = active_agents.copy()
@@ -1153,11 +1512,11 @@ class Trainer:
                             values,
                             head_entropy_diagnostics,
                         ) = self.policy.get_action_and_value_with_entropy_diagnostics(
-                            obs, masks=masks
+                            obs, masks=masks, semantic_state=semantic_state
                         )
                     else:
                         actions, logprobs, _, values = self.policy.get_action(
-                            obs, masks=masks
+                            obs, masks=masks, semantic_state=semantic_state
                         )
 
                 # Sample entropy diagnostics every ten rollout steps to avoid
@@ -1228,6 +1587,65 @@ class Trainer:
                 ) = self.vec_env.step(
                     lobby_actions
                 )
+
+                # Reward/done belong to the Engine step result; next_obs may
+                # instead belong to a freshly auto-reset episode.
+                flat_result_snapshot_metadata = self._expand_lobby_snapshot_metadata(
+                    [info.get("step_result_snapshot") for info in infos],
+                    self.PLAYERS_PER_LOBBY,
+                    "snapshot de resultado da transição",
+                )
+                # Keep native action provenance beside the exact StepResult identity.
+                self._attach_native_action_traces(
+                    flat_result_snapshot_metadata,
+                    infos,
+                    self.PLAYERS_PER_LOBBY,
+                )
+
+                flat_next_snapshot_metadata = self._expand_lobby_snapshot_metadata(
+                    [info.get("next_snapshot") for info in infos],
+                    self.PLAYERS_PER_LOBBY,
+                    "snapshot da próxima observação",
+                )
+                next_semantic_batch = build_semantic_batch(
+                    flat_next_snapshot_metadata,
+                    self.champion_id_map,
+                    contract=self.semantic_state_contract,
+                )
+                next_semantic_numeric = torch.as_tensor(
+                    next_semantic_batch["numeric"], dtype=torch.float32, device=self.device
+                )
+                next_semantic_state = {
+                    "numeric": next_semantic_numeric,
+                    "items": semantic_item_state_tensors(next_semantic_numeric),
+                    "champion_ids": torch.as_tensor(
+                        next_semantic_batch["champion_ids"], dtype=torch.long, device=self.device
+                    ),
+                    "identities": next_semantic_batch["identities"],
+                    "hashes": next_semantic_batch["hashes"],
+                    "contract_id": next_semantic_batch["contract_id"],
+                    "contract_hash": next_semantic_batch["contract_hash"],
+                }
+                for metadata, semantic_hash, semantic_identity in zip(
+                    flat_next_snapshot_metadata, next_semantic_batch["hashes"], next_semantic_batch["identities"]
+                ):
+                    metadata["semantic_identity"] = semantic_identity
+                    metadata["semantic_projection_hash"] = semantic_hash
+                    metadata["semantic_projection_contract_id"] = (
+                        self.semantic_state_contract["contract"]["contract_id"]
+                    )
+                    metadata["semantic_projection_contract_hash"] = (
+                        self.semantic_state_contract["sha256"]
+                    )
+                validate_semantic_batch_alignment(
+                    next_semantic_batch, flat_next_snapshot_metadata, self.semantic_state_contract,
+                    self.champion_id_map, reproject=False, verify_catalog=False,
+                )
+                semantic_cache = {
+                    "identities": next_semantic_batch["identities"],
+                    "batch": next_semantic_batch,
+                    "state": next_semantic_state,
+                }
 
                 # Resultado final, colocação e duração de cada partida.
                 for lobby_idx, info in enumerate(infos):
@@ -1349,6 +1767,12 @@ class Trainer:
                     dtype=torch.float32,
                     device=self.device
                 )
+                for metadata, observation_hash in zip(
+                    flat_next_snapshot_metadata,
+                    self._hash_observation_rows(next_obs),
+                ):
+                    metadata["observation_snapshot_hash"] = observation_hash
+                    metadata["observation_snapshot_hash_algorithm"] = "tft-ppo-observation-row-v1"
 
                 # ====================================================
                 # ❤️ REWARDS
@@ -1414,7 +1838,12 @@ class Trainer:
                     next_dones,
                     values,
                     masks,
-                    valid=transition_valid,
+                    trajectory_valid=transition_valid,
+                    optimization_valid=transition_valid,
+                    snapshot_metadata=flat_snapshot_metadata,
+                    result_snapshot_metadata=flat_result_snapshot_metadata,
+                    next_snapshot_metadata=flat_next_snapshot_metadata,
+                    semantic_state=semantic_state,
                 )
 
                 # ====================================================
@@ -1464,12 +1893,16 @@ class Trainer:
 
             gym_masks = (
                 self.vec_env.env_method(
-                    "get_action_masks"
+                    "get_action_masks_for_training"
                 )
             )
 
+            lobby_player_alive = self.vec_env.env_method(
+                "get_player_liveness"
+            )
             next_masks = self._flatten_masks(
-                gym_masks
+                gym_masks,
+                lobby_player_alive=lobby_player_alive,
             )
 
             with torch.no_grad():
@@ -1477,7 +1910,8 @@ class Trainer:
                 next_value = (
                     self.policy.get_value(
                         obs,
-                        masks=next_masks
+                        masks=next_masks,
+                        semantic_state=next_semantic_state,
                     )
                 )
 
@@ -1486,6 +1920,9 @@ class Trainer:
                 dones,
                 gamma=self.config.gamma,
                 gae_lambda=self.config.gae_lambda,
+                next_state_valid=torch.ones(
+                    self.num_agents, dtype=torch.bool, device=self.device
+                ),
             )
 
             # ========================================================
@@ -1516,7 +1953,7 @@ class Trainer:
                 # ----------------------------------------------------
 
                 valid_indices = torch.nonzero(
-                    rollout.valid[:rollout.ptr].reshape(-1),
+                    rollout.optimization_valid[:rollout.ptr].reshape(-1),
                     as_tuple=False,
                 ).squeeze(-1)
 
@@ -1545,6 +1982,16 @@ class Trainer:
                         )[valid_indices]
                         for k, v in rollout.masks.items()
                     }
+                    sample_semantic_numeric = rollout.semantic_numeric[:rollout.ptr].reshape(
+                        -1, rollout.semantic_numeric_dim
+                    )[valid_indices]
+                    sample_semantic_state = {
+                        "numeric": sample_semantic_numeric,
+                        "items": semantic_item_state_tensors(sample_semantic_numeric),
+                        "champion_ids": rollout.semantic_champion_ids[:rollout.ptr].reshape(
+                            -1, rollout.semantic_entity_slots
+                        )[valid_indices],
+                    }
 
                     # ------------------------------------------------
                     # Limitar a amostra às primeiras 256 transições
@@ -1563,6 +2010,10 @@ class Trainer:
                         k: v[:sample_size]
                         for k, v in sample_masks.items()
                     }
+                    sample_semantic_state = slice_batch_structure(
+                        sample_semantic_state,
+                        slice(0, sample_size),
+                    )
 
                     (
                         _,
@@ -1571,7 +2022,8 @@ class Trainer:
                     ) = self.policy.evaluate_actions(
                         sample_obs,
                         sample_actions,
-                        masks=sample_masks
+                        masks=sample_masks,
+                        semantic_state=sample_semantic_state,
                     )
 
                     self.writer.add_scalar(
@@ -1633,7 +2085,7 @@ class Trainer:
             # 📊 GENERAL LOGS
             # ========================================================
             mean_reward = None
-            valid_mask = rollout.valid[:rollout.ptr]
+            valid_mask = rollout.optimization_valid[:rollout.ptr]
 
             if valid_mask.any():
 
@@ -1802,19 +2254,11 @@ class Trainer:
                 update
             )
 
-            # ========================================================
-            # 🎭 STRATEGIES
-            # ========================================================
-
-            for strat in Strategy:
-
-                self.writer.add_scalar(
-                    f"strategy/{strat.name}",
-                    strategy_counts[
-                        strat.value
-                    ],
-                    update
-                )
+            self.writer.add_scalar(
+                "semantic/catalog_vocab_size",
+                self.semantic_vocab_size,
+                update,
+            )
 
             # ========================================================
             # 📈 EPISODE RETURN
@@ -1896,6 +2340,21 @@ class Trainer:
                             self.config.to_dict(),
                         "scheduler_type":
                             "cosine_clamped",
+                        "action_mask_contract":
+                            build_action_mask_checkpoint_contract(),
+                        "critic_mask_input_contract":
+                            build_critic_mask_input_checkpoint_contract(),
+                        "semantic_state_contract": self.semantic_state_contract,
+                        "reward_contract": build_reward_checkpoint_contract(),
+                        "training_resume_contract": build_training_resume_contract(self.config.to_dict()),
+                        "training_run_manifest": self.training_run_manifest,
+                        "checkpoint_contract": build_checkpoint_lineage_contract(
+                            self.policy.state_dict(),
+                            build_action_mask_checkpoint_contract(),
+                            build_critic_mask_input_checkpoint_contract(),
+                            self.semantic_state_contract,
+                            build_reward_checkpoint_contract(),
+                        ),
                     },
                     self.config.checkpoint_path
                 )
@@ -1930,6 +2389,19 @@ class Trainer:
                 "update": end - 1,
                 "training_config": self.config.to_dict(),
                 "scheduler_type": "cosine_clamped",
+                "action_mask_contract": build_action_mask_checkpoint_contract(),
+                "critic_mask_input_contract": build_critic_mask_input_checkpoint_contract(),
+                "semantic_state_contract": self.semantic_state_contract,
+                "reward_contract": build_reward_checkpoint_contract(),
+                "training_resume_contract": build_training_resume_contract(self.config.to_dict()),
+                "training_run_manifest": self.training_run_manifest,
+                "checkpoint_contract": build_checkpoint_lineage_contract(
+                    self.policy.state_dict(),
+                    build_action_mask_checkpoint_contract(),
+                    build_critic_mask_input_checkpoint_contract(),
+                    self.semantic_state_contract,
+                    build_reward_checkpoint_contract(),
+                ),
             },
             self.config.checkpoint_path,
         )
@@ -1949,24 +2421,8 @@ class Trainer:
 # ====================================================================
 
 if __name__ == "__main__":
-
-    refresh_opgg_meta_catalog()
-
-    # ================================================================
-    # 🏟️ IMPORTANTE
-    # ================================================================
-    #
-    # Agora:
-    #
-    #     num_envs = número de LOBBIES
-    #
-    # Exemplo:
-    #
-    #     4 lobbies
-    #     × 8 jogadores
-    #     = 32 agentes
-    #
-    # ================================================================
-
-    trainer = Trainer(use_subprocess=True)
-    trainer.train()
+    raise SystemExit(
+        "O módulo trainer.py é uma biblioteca. Use "
+        "'python train_native.py --output-dir <diretorio> --seed <seed>' "
+        "para iniciar uma execução nativa reproduzível."
+    )

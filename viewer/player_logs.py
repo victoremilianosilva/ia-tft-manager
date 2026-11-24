@@ -330,12 +330,21 @@ class PlayerJsonLogWriter:
 
     def _player_snapshot(self, audit: dict, public: dict) -> dict:
         audit, public = audit or {}, public or {}
-        # Native get_audit_snapshot() flattens StrategyInfo fields onto each
-        # audit-player record. Older adapters wrapped them in strategy_info.
-        # Normalize both contracts here so the persisted shadow snapshot is complete.
+        # Preserve the flattened native diagnostic fields for compatibility
+        # with existing log consumers, but label StrategyInfo only when its
+        # legacy-specific fields were actually supplied.
         strategy_info = audit.get("strategy_info")
         if not isinstance(strategy_info, dict):
             strategy_info = audit
+        legacy_keys = {
+            "strategy_name", "strategy_id", "composition_direction",
+            "composition_focus", "planned_units", "planned_unit_ids",
+            "planned_main_carry_id", "core_traits", "active_traits",
+        }
+        legacy_strategy_present = (
+            isinstance(audit.get("strategy_info"), dict)
+            or any(key in audit for key in legacy_keys)
+        )
         return {
             "player_id": int(public.get("player_id", audit.get("player_id", -1))),
             "hp": public.get("hp"), "gold": public.get("gold", audit.get("gold")),
@@ -366,25 +375,39 @@ class PlayerJsonLogWriter:
                 int(audit.get("round_gold", 0) or 0)
                 + int(audit.get("round_win_gold", 0) or 0)
             ),
-            "strategy_name": strategy_info.get("strategy_name", "ECON"),
-            "strategy_id": strategy_info.get("strategy", 0),
-            "comp_direction": strategy_info.get("composition_direction", ""),
-            "comp_focus": strategy_info.get("composition_focus", ""),
-            "composition_locked": bool(strategy_info.get("composition_locked", False)),
-            "composition_strength": float(strategy_info.get("composition_strength", 0.0) or 0.0),
-            "composition_candidate_direction": strategy_info.get("composition_candidate_direction", ""),
-            "composition_candidate_strength": float(strategy_info.get("composition_candidate_strength", 0.0) or 0.0),
-            "composition_candidate_streak": int(strategy_info.get("composition_candidate_streak", 0) or 0),
-            "previous_composition_direction": strategy_info.get("previous_composition_direction", ""),
-            "previous_composition_strength": float(strategy_info.get("previous_composition_strength", 0.0) or 0.0),
-            "composition_direction_change_was_locked": bool(strategy_info.get("composition_direction_change_was_locked", False)),
-            "composition_direction_change_round": int(strategy_info.get("composition_direction_change_round", 0) or 0),
-            "composition_direction_change_focus_weight": float(strategy_info.get("composition_direction_change_focus_weight", 0.0) or 0.0),
-            "composition_direction_change_reason": strategy_info.get("composition_direction_change_reason", ""),
-            "composition_direction_change_count": int(strategy_info.get("composition_direction_change_count", 0) or 0),
-            "composition_focus_weights": dict(strategy_info.get("composition_focus_weights", {}) or {}),
-            "strategy_confidence": strategy_info.get("confidence", 0.0),
-            "strategy_reason": strategy_info.get("reason", ""),
+            "legacy_strategy_compatibility": {
+                "status": "present" if legacy_strategy_present else "unavailable",
+                "source": "native StrategyInfo audit compatibility fields" if legacy_strategy_present else None,
+                "authority": "compatibility_only_not_canonical_strategy_state",
+                "canonical_shadow_source": "composition_diagnostics.jsonl",
+            },
+            "shadow_composition": _jsonable(audit.get("shadow_composition", {
+                "status": "unavailable",
+                "reason": "shadow_diagnostics_not_attached_to_snapshot",
+            })),
+            # Legacy fields remain readable for historical logs, but missing
+            # StrategyInfo is represented as unavailable rather than fabricated
+            # ECON/zero/false strategy state. Canonical new state is the
+            # shadow_composition diagnostic above.
+            "strategy_name": strategy_info.get("strategy_name"),
+            "strategy_id": strategy_info.get("strategy"),
+            "comp_direction": strategy_info.get("composition_direction"),
+            "comp_focus": strategy_info.get("composition_focus"),
+            "composition_locked": strategy_info.get("composition_locked"),
+            "composition_strength": strategy_info.get("composition_strength"),
+            "composition_candidate_direction": strategy_info.get("composition_candidate_direction"),
+            "composition_candidate_strength": strategy_info.get("composition_candidate_strength"),
+            "composition_candidate_streak": strategy_info.get("composition_candidate_streak"),
+            "previous_composition_direction": strategy_info.get("previous_composition_direction"),
+            "previous_composition_strength": strategy_info.get("previous_composition_strength"),
+            "composition_direction_change_was_locked": strategy_info.get("composition_direction_change_was_locked"),
+            "composition_direction_change_round": strategy_info.get("composition_direction_change_round"),
+            "composition_direction_change_focus_weight": strategy_info.get("composition_direction_change_focus_weight"),
+            "composition_direction_change_reason": strategy_info.get("composition_direction_change_reason"),
+            "composition_direction_change_count": strategy_info.get("composition_direction_change_count"),
+            "composition_focus_weights": strategy_info.get("composition_focus_weights"),
+            "strategy_confidence": strategy_info.get("confidence"),
+            "strategy_reason": strategy_info.get("reason"),
             # Keep new shadow recommendations beside the state at decision time.
             # Older native bindings may not expose these fields; omit unavailable values.
             "shadow_planning": {

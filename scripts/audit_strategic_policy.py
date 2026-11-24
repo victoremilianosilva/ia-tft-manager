@@ -27,10 +27,12 @@ if str(_REPO_ROOT) not in sys.path:
 
 from cpp_lobby_env import CppTFTLobbyWrapper
 from policy import TFTPolicy
-from scripts.audit_native_ppo_loops import _strategic_summary, _effect_for_action, MOVEMENT_TYPES
-from scripts.strategic_audit_state import state_signature, diff_units, composition_delta, detect_cycle
+from semantic_observation import catalog_identity, validate_semantic_state_checkpoint_contract
+from scripts.evaluate_checkpoints import native_semantic_state_for_players
+from scripts.audit_native_ppo_loops import _effect_for_action, MOVEMENT_TYPES
+from scripts.strategic_audit_state import state_signature, diff_units, detect_cycle
 
-ACTION_DIMS = [7, 5, 9, 28, 28, 28]
+ACTION_DIMS = [9, 5, 9, 28, 28, 28]
 PASS_ACTION = {"type": 6}
 
 
@@ -97,11 +99,19 @@ def _write_player_record(output_handles, player_id, record):
     output_handles[player_id].write(json.dumps(record, ensure_ascii=False) + "\n")
 
 
-def load_policy(checkpoint_path: Path, obs_dim: int):
+def load_policy(checkpoint_path: Path, obs_dim: int, catalog_map):
     device = torch.device("cpu")
     checkpoint = torch.load(checkpoint_path, map_location=device)
     state_dict = checkpoint.get("policy", checkpoint)
-    policy = TFTPolicy(obs_dim, ACTION_DIMS).to(device)
+    semantic_contract = checkpoint.get("semantic_state_contract")
+    if semantic_contract is None:
+        raise RuntimeError("Native semantic audit requires a checkpoint with semantic_state_contract v6.")
+    validate_semantic_state_checkpoint_contract(semantic_contract, catalog_map)
+    policy = TFTPolicy(
+        obs_dim, ACTION_DIMS,
+        semantic_vocab_size=catalog_identity(catalog_map)["vocab_size"],
+        require_semantic_state=True,
+    ).to(device)
     try:
         policy.load_state_dict(state_dict)
     except RuntimeError as exc:
@@ -114,7 +124,7 @@ def load_policy(checkpoint_path: Path, obs_dim: int):
     return policy, device
 
 
-def audit_seed(policy, device, seed, output_handles, max_steps):
+def audit_seed(policy, device, seed, output_handles, max_steps, catalog_map):
     lobby = CppTFTLobbyWrapper(seed=seed)
     try:
         observations = np.asarray(lobby.reset(seed=seed), dtype=np.float32)
@@ -132,11 +142,6 @@ def audit_seed(policy, device, seed, output_handles, max_steps):
 
             before_snapshot = lobby.get_audit_snapshot()
             before_players = before_snapshot["players"]
-            strategies_before = lobby.get_strategy_snapshots()
-            strategic_before = [
-                _strategic_summary(lobby, player_id, before_players[player_id], strategies_before[player_id])
-                for player_id in range(8)
-            ]
             masks = lobby.get_action_masks()
             gold_before = {
                 int(player.get("player_id", index)): int(player["gold"])
@@ -155,9 +160,13 @@ def audit_seed(policy, device, seed, output_handles, max_steps):
                     observations[alive], dtype=torch.float32, device=device
                 )
                 mask_batch = _mask_batch(masks, alive, device)
+                semantic_state = native_semantic_state_for_players(
+                    lobby, alive, catalog_map, device
+                )
                 with torch.no_grad():
                     actions, _, _, _, diagnostics = policy.get_action_and_value_with_diagnostics(
-                        obs_batch, masks=mask_batch, deterministic=True
+                        obs_batch, masks=mask_batch, deterministic=True,
+                        semantic_state=semantic_state,
                     )
                 actions = actions.detach().cpu().numpy()
                 for row, player_id in enumerate(alive):
@@ -172,7 +181,6 @@ def audit_seed(policy, device, seed, output_handles, max_steps):
             observations = np.asarray(observations, dtype=np.float32)
             after_snapshot = lobby.get_audit_snapshot()
             after_players = after_snapshot["players"]
-            strategies_after = lobby.get_strategy_snapshots()
             gold_after = {
                 int(player.get("player_id", index)): int(player["gold"])
                 for index, player in enumerate(after_players)
@@ -197,12 +205,6 @@ def audit_seed(policy, device, seed, output_handles, max_steps):
                 if int(action[0]) in MOVEMENT_TYPES and effect_observed:
                     cycle = detect_cycle(after_sig, visited[player_id], step_index)
                     visited[player_id][after_sig] = {"step": step_index, "action": action}
-                strategy_after = _strategic_summary(
-                    lobby, player_id, after, strategies_after[player_id]
-                )
-                comp_delta = composition_delta(
-                    strategic_before[player_id], strategy_after, before, after
-                )
                 record = {
                     "schema_version": 2,
                     "seed": int(seed),
@@ -232,9 +234,6 @@ def audit_seed(policy, device, seed, output_handles, max_steps):
                     "board_bench_state_changed": bool(state_changed),
                     "unit_changes": unit_diff,
                     "moved_units": unit_diff["moved_units"],
-                    "strategy_before": strategic_before[player_id],
-                    "strategy_after": strategy_after,
-                    "composition_delta": comp_delta,
                     "loop_detected": cycle,
                     "engine_events": info.get("events", []),
                 }
@@ -273,10 +272,13 @@ def main():
         if probe_obs.ndim != 2 or probe_obs.shape[0] != 8:
             raise ValueError(f"Observações inesperadas no probe: {probe_obs.shape}")
         obs_dim = probe_obs.shape[-1]
+        catalog_map = probe.get_champion_id_map()
+        if not isinstance(catalog_map, dict) or not catalog_map:
+            raise RuntimeError("Native champion catalog map is unavailable for semantic inference.")
     finally:
         probe.close()
 
-    policy, device = load_policy(args.checkpoint, obs_dim)
+    policy, device = load_policy(args.checkpoint, obs_dim, catalog_map)
     output_paths = _player_output_paths(args.output)
     output_dir = args.output.parent / args.output.stem
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -289,7 +291,7 @@ def main():
             for player_id, path in output_paths.items()
         }
         for seed in seeds:
-            logged = audit_seed(policy, device, seed, output_handles, args.max_steps)
+            logged = audit_seed(policy, device, seed, output_handles, args.max_steps, catalog_map)
             count += logged
             print(f"seed={seed}: {logged} registros jogador/step")
 

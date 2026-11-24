@@ -31,7 +31,7 @@ void resolves_keep_upgrade_seek_and_version() {
     manager.publish(comp());
     const auto active = *manager.current();
     auto ctx = context(active);
-    ctx.owned_units = {{1, 2, 1, true, {}}, {2, 1, 1, true, {}}};
+    ctx.owned_units = {{1, 3, 1, true, {}}, {2, 1, 1, true, {}}};
     ctx.evidence = {{1, 0.8, 0.7, 0.9, 2}, {2, 0.7, 0.8, 0.9, 0}};
     UnitPriorityPlanner planner;
     auto result = planner.resolve(active, ctx);
@@ -139,10 +139,6 @@ void validated_item_snapshot_protects_outside_target_unit() {
     evidence.composition_version = active.version;
     evidence.round = 12;
     evidence.items.metadata.source = "ItemEngine";
-    evidence.items.metadata.source_version = active.version;
-    evidence.items.metadata.match_id = 99;
-    evidence.items.metadata.player_id = 0;
-    evidence.items.metadata.composition_id = active.candidate.composition_id;
     evidence.items.metadata.source_round = 12;
     evidence.items.metadata.expected_round = 12;
     evidence.items.metadata.quality = EvidenceQuality::Valid;
@@ -170,9 +166,7 @@ void board_gap_increases_matching_missing_unit_priority() {
     evidence.composition_id = active.candidate.composition_id;
     evidence.composition_version = active.version; evidence.round = 10;
     auto& metadata = evidence.board.metadata;
-    metadata.source = "BoardEvaluation"; metadata.source_version = active.version;
-    metadata.match_id = 91; metadata.player_id = 0;
-    metadata.composition_id = active.candidate.composition_id;
+    metadata.source = "BoardEvaluation";
     metadata.source_round = 10; metadata.expected_round = 10;
     metadata.quality = EvidenceQuality::Valid; metadata.available = true;
     evidence.board.missing_frontline_count = 1;
@@ -200,12 +194,12 @@ void composition_hierarchy_beats_easy_external_upgrade() {
     const auto active = *manager.current();
     auto ctx = context(active);
     ctx.owned_units = {
-        {1, 1, 1, true, {}},
+        {1, 2, 1, true, {}},
         {4, 1, 1, false, {}},
         {9, 2, 2, true, {}}
     };
     ctx.evidence = {
-        {1, 0.2, 0.2, 0.9, 1, 1, -1, false},
+        {1, 0.2, 0.2, 0.9, 2, 1, -1, false},
         {4, 0.2, 0.2, 0.9, 0, 0, -1, false},
         {9, 1.0, 1.0, 1.0, 0, 0, -1, false}
     };
@@ -260,8 +254,9 @@ void shop_copies_advance_two_star_priority_for_core() {
     manager.publish(comp());
     const auto active = *manager.current();
     auto ctx = context(active);
+    ctx.gold_available = 1;
     ctx.owned_units = {{1, 1, 1, false, {}}};
-    ctx.evidence = {{1, 0.0, 0.0, 0.9, 1, 1, -1, false}};
+    ctx.evidence = {{1, 0.0, 0.0, 0.9, 1, 1, 1, false}};
     const auto result = UnitPriorityPlanner{}.resolve(active, ctx);
     const auto carry = std::find_if(result.units.begin(), result.units.end(),
         [](const auto& u) { return u.champion_id == 1; });
@@ -287,6 +282,59 @@ void unaffordable_shop_copy_does_not_create_upgrade_priority() {
     assert(carry != result.units.end());
     assert(carry->intent == UnitIntent::Keep);
     assert(carry->target_star == 0);
+}
+
+void shop_upgrade_progress_respects_affordable_offer_count() {
+    ActiveCompositionManager manager;
+    manager.publish(comp());
+    const auto active = *manager.current();
+    auto ctx = context(active);
+    ctx.gold_available = 3;
+    ctx.owned_units = {{1, 1, 1, false, {}}};
+    ctx.evidence = {{1, 0.0, 0.0, 0.9, 0, 2, 3, false}};
+    auto result = UnitPriorityPlanner{}.resolve(active, ctx);
+    auto carry = std::find_if(result.units.begin(), result.units.end(),
+        [](const auto& unit) { return unit.champion_id == 1; });
+    assert(carry != result.units.end());
+    assert(carry->intent == UnitIntent::Keep);
+
+    ctx.gold_available = 6;
+    result = UnitPriorityPlanner{}.resolve(active, ctx);
+    carry = std::find_if(result.units.begin(), result.units.end(),
+        [](const auto& unit) { return unit.champion_id == 1; });
+    assert(carry != result.units.end());
+    assert(carry->intent == UnitIntent::Upgrade);
+    assert(carry->target_star == 2);
+    assert(carry->copies_in_shop == 2);
+    assert(carry->affordable_shop_copies == 2);
+    assert(carry->copies_toward_next_star == 2);
+    assert(carry->copies_needed_for_next_star == 0);
+    assert(!carry->has_pair && carry->copies_needed_for_pair == 1);
+}
+
+void missing_targets_keep_shop_and_pool_facts_separate() {
+    ActiveCompositionManager manager;
+    manager.publish(comp());
+    const auto active = *manager.current();
+    auto ctx = context(active);
+    ctx.gold_available = 3;
+    UnitPriorityEvidence evidence;
+    evidence.champion_id = 3;
+    evidence.confidence = 0.9;
+    evidence.copies_in_shop = 2;
+    evidence.unit_cost = 3;
+    evidence.pool_remaining = 4;
+    ctx.evidence = {evidence};
+    const auto result = UnitPriorityPlanner{}.resolve(active, ctx);
+    const auto target = std::find_if(result.units.begin(), result.units.end(),
+        [](const auto& unit) { return unit.champion_id == 3; });
+    assert(target != result.units.end());
+    assert(target->target_unit && target->intent == UnitIntent::Seek);
+    assert(target->copies_owned == 0 && target->copies_in_shop == 2);
+    assert(target->affordable_shop_copies == 1);
+    assert(target->pool_known && target->pool_remaining == 4);
+    assert(target->copies_by_star[1] == 0 && target->copies_toward_next_star == 0);
+    assert(!target->has_pair && target->copies_needed_for_pair == 2);
 }
 
 void external_temporary_unit_requires_explicit_reason() {
@@ -332,6 +380,123 @@ void priority_ties_are_deterministic_by_champion_id() {
     assert(result.units[1].champion_id == 7);
 }
 
+void copy_progress_preserves_mixed_star_tier_copies() {
+    assert(copy_progress_toward_next_star(1, 1) == 0);
+    assert(copy_progress_toward_next_star(2, 1) == 1);
+    assert(copy_progress_toward_next_star(3, 1) == 2);
+    // One 2-star plus two 1-star units represents five equivalent copies:
+    // three are the 2-star baseline and two are progress toward 3-star.
+    assert(copy_progress_toward_next_star(3, 2) == 0);
+    assert(copy_progress_toward_next_star(5, 2) == 2);
+    assert(copy_progress_toward_next_star(8, 2) == 5);
+    assert(copy_progress_toward_next_star(9, 2) == 6);
+    assert(copy_progress_toward_next_star(9, 3) == 0);
+    assert(copy_progress_toward_next_star(0, 1) == 0);
+}
+
+void physical_star_tiers_prevent_false_mixed_upgrade_progress() {
+    ActiveCompositionManager manager;
+    manager.publish(comp());
+    const auto active = *manager.current();
+    auto ctx = context(active);
+    UnitPriorityOwnedUnit mixed;
+    mixed.champion_id = 1;
+    mixed.copies = 5;
+    mixed.highest_star = 2;
+    mixed.on_board = true;
+    mixed.copies_by_star[1] = 2;
+    mixed.copies_by_star[2] = 1;
+    ctx.owned_units = {mixed};
+    // Deliberately misleading aggregate progress: physical tier counts win.
+    ctx.evidence = {{1, 0.8, 0.7, 0.9, 6}};
+    auto result = UnitPriorityPlanner{}.resolve(active, ctx);
+    auto found = std::find_if(result.units.begin(), result.units.end(),
+        [](const auto& unit) { return unit.champion_id == 1; });
+    assert(found != result.units.end());
+    assert(found->intent == UnitIntent::Keep);
+    assert(found->target_star == 0);
+    assert(found->copies_by_star[1] == 2 && found->copies_by_star[2] == 1);
+    assert(found->copies_toward_next_star == 0);
+    assert(found->copies_needed_for_next_star == 2);
+    assert(!found->has_pair && found->copies_needed_for_pair == 1);
+
+    mixed.copies = 9;
+    mixed.copies_by_star[1] = 6;
+    ctx.owned_units = {mixed};
+    result = UnitPriorityPlanner{}.resolve(active, ctx);
+    found = std::find_if(result.units.begin(), result.units.end(),
+        [](const auto& unit) { return unit.champion_id == 1; });
+    assert(found != result.units.end());
+    assert(found->intent == UnitIntent::Upgrade);
+    assert(found->target_star == 3);
+    assert(found->copies_by_star[1] == 6 && found->copies_by_star[2] == 1);
+    assert(found->copies_toward_next_star == 2);
+    assert(found->copies_needed_for_next_star == 0);
+    assert(found->has_pair && found->copies_needed_for_pair == 0);
+}
+
+void unknown_shop_affordability_does_not_create_upgrade_priority() {
+    ActiveCompositionManager manager;
+    manager.publish(comp());
+    const auto active = *manager.current();
+    auto ctx = context(active);
+    // A shop copy exists, but both cost and available gold are unknown.
+    // The planner must not silently treat the offer as affordable.
+    ctx.owned_units = {{1, 1, 1, false, {}}};
+    ctx.evidence = {{1, 0.0, 0.0, 0.9, 1, 1, -1, false}};
+    const auto result = UnitPriorityPlanner{}.resolve(active, ctx);
+    const auto carry = std::find_if(result.units.begin(), result.units.end(),
+        [](const auto& u) { return u.champion_id == 1; });
+    assert(carry != result.units.end());
+    assert(carry->intent == UnitIntent::Keep);
+    assert(carry->target_star == 0);
+}
+
+void two_owned_one_star_copies_do_not_form_an_upgrade() {
+    ActiveCompositionManager manager;
+    manager.publish(comp());
+    const auto active = *manager.current();
+    auto ctx = context(active);
+    // Two 1-star instances are only one additional copy beyond the base unit.
+    ctx.owned_units = {{1, 2, 1, true, {}}};
+    ctx.evidence = {{1, 0.8, 0.7, 0.9, 1}};
+    const auto result = UnitPriorityPlanner{}.resolve(active, ctx);
+    const auto carry = std::find_if(result.units.begin(), result.units.end(),
+        [](const auto& unit) { return unit.champion_id == 1; });
+    assert(carry != result.units.end());
+    assert(carry->intent != UnitIntent::Upgrade);
+    assert(carry->target_star == 0);
+}
+
+void unavailable_contribution_is_not_promoted_to_measured_evidence() {
+    ActiveCompositionManager manager;
+    manager.publish(comp());
+    const auto active = *manager.current();
+    auto ctx = context(active);
+    ctx.owned_units = {{1, 1, 1, true, {}}};
+
+    UnitPriorityEvidence evidence;
+    evidence.champion_id = 1;
+    evidence.board_contribution = 1.0;
+    evidence.synergy_contribution = 1.0;
+    evidence.confidence = 0.9;
+    evidence.board_contribution_available = false;
+    evidence.synergy_contribution_available = false;
+    ctx.evidence = {evidence};
+
+    const auto result = UnitPriorityPlanner{}.resolve(active, ctx);
+    const auto carry = std::find_if(result.units.begin(), result.units.end(),
+        [](const auto& unit) { return unit.champion_id == 1; });
+    assert(carry != result.units.end());
+    assert(carry->board_contribution == 0.0);
+    assert(carry->synergy_contribution == 0.0);
+    assert(std::none_of(carry->reasons.begin(), carry->reasons.end(),
+        [](const auto& reason) {
+            return reason.code == UnitReasonCode::BoardContribution ||
+                reason.code == UnitReasonCode::SynergyContribution;
+        }));
+}
+
 void missing_active_is_safe() {
     auto result = UnitPriorityPlanner{}.resolve(std::nullopt, {});
     assert(result.stale && result.units.empty());
@@ -365,15 +530,36 @@ int main() {
     std::cerr << "RUN shop_copies_advance_two_star_priority_for_core\n";
     shop_copies_advance_two_star_priority_for_core();
     std::cerr << "PASS shop_copies_advance_two_star_priority_for_core\n";
+    std::cerr << "RUN shop_upgrade_progress_respects_affordable_offer_count\n";
+    shop_upgrade_progress_respects_affordable_offer_count();
+    std::cerr << "PASS shop_upgrade_progress_respects_affordable_offer_count\n";
     std::cerr << "RUN unaffordable_shop_copy_does_not_create_upgrade_priority\n";
     unaffordable_shop_copy_does_not_create_upgrade_priority();
     std::cerr << "PASS unaffordable_shop_copy_does_not_create_upgrade_priority\n";
+    std::cerr << "RUN missing_targets_keep_shop_and_pool_facts_separate\n";
+    missing_targets_keep_shop_and_pool_facts_separate();
+    std::cerr << "PASS missing_targets_keep_shop_and_pool_facts_separate\n";
     std::cerr << "RUN external_temporary_unit_requires_explicit_reason\n";
     external_temporary_unit_requires_explicit_reason();
     std::cerr << "PASS external_temporary_unit_requires_explicit_reason\n";
     std::cerr << "RUN priority_ties_are_deterministic_by_champion_id\n";
     priority_ties_are_deterministic_by_champion_id();
     std::cerr << "PASS priority_ties_are_deterministic_by_champion_id\n";
+    std::cerr << "RUN copy_progress_preserves_mixed_star_tier_copies\\n";
+    copy_progress_preserves_mixed_star_tier_copies();
+    std::cerr << "PASS copy_progress_preserves_mixed_star_tier_copies\\n";
+    std::cerr << "RUN physical_star_tiers_prevent_false_mixed_upgrade_progress\\n";
+    physical_star_tiers_prevent_false_mixed_upgrade_progress();
+    std::cerr << "PASS physical_star_tiers_prevent_false_mixed_upgrade_progress\\n";
+    std::cerr << "RUN unknown_shop_affordability_does_not_create_upgrade_priority\\n";
+    unknown_shop_affordability_does_not_create_upgrade_priority();
+    std::cerr << "PASS unknown_shop_affordability_does_not_create_upgrade_priority\\n";
+    std::cerr << "RUN two_owned_one_star_copies_do_not_form_an_upgrade\n";
+    two_owned_one_star_copies_do_not_form_an_upgrade();
+    std::cerr << "PASS two_owned_one_star_copies_do_not_form_an_upgrade\n";
+    std::cerr << "RUN unavailable_contribution_is_not_promoted_to_measured_evidence\n";
+    unavailable_contribution_is_not_promoted_to_measured_evidence();
+    std::cerr << "PASS unavailable_contribution_is_not_promoted_to_measured_evidence\n";
     std::cerr << "RUN missing_active_is_safe\n";
     missing_active_is_safe();
     std::cerr << "PASS missing_active_is_safe\n";

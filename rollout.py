@@ -1,4 +1,18 @@
+from collections.abc import Sequence
+import copy
+
+from decision_identity import validate_player_identity_envelope
+
 import torch
+
+from action_contract import (
+    MASK_SHAPES,
+    MASK_SNAPSHOT_HASH_ALGORITHM,
+    ACTION_CONTRACT_ID, ACTION_CONTRACT_VERSION, ACTION_CONTRACT_HASH,
+    MASK_CONTRACT_ID, MASK_CONTRACT_VERSION, MASK_CONTRACT_HASH,
+    hash_mask_row,
+)
+from semantic_observation import SEMANTIC_NUMERIC_DIM, SEMANTIC_ENTITY_SLOTS, semantic_item_state_tensors
 
 
 class RolloutBuffer:
@@ -68,7 +82,10 @@ class RolloutBuffer:
         obs_dim,
         action_dim,
         device,
-        mask_shapes=None
+        mask_shapes=None,
+        semantic_numeric_dim=SEMANTIC_NUMERIC_DIM,
+        semantic_entity_slots=SEMANTIC_ENTITY_SLOTS,
+        require_semantic_state=False,
     ):
         self.device = device
 
@@ -95,12 +112,20 @@ class RolloutBuffer:
 
         self.obs_dim = int(obs_dim)
         self.action_dim = int(action_dim)
+        self.semantic_numeric_dim = int(semantic_numeric_dim)
+        self.semantic_entity_slots = int(semantic_entity_slots)
+        self.require_semantic_state = bool(require_semantic_state)
+        if self.semantic_numeric_dim <= 0 or self.semantic_entity_slots <= 0:
+            raise ValueError("semantic projection dimensions must be positive")
 
         self.total_transitions = (
             self.num_steps * self.num_envs
         )
 
         self.ptr = 0
+        # Compact per-transition sidecar. Each row owns one decision/result/next
+        # record; equal result/next envelopes share one owned object.
+        self._metadata_records = [None for _ in range(self.num_steps)]
 
         # ============================================================
         # DADOS PRINCIPAIS
@@ -182,6 +207,17 @@ class RolloutBuffer:
             device=self.device
         )
 
+        self.semantic_numeric = torch.zeros(
+            (self.num_steps, self.num_envs, self.semantic_numeric_dim),
+            dtype=torch.float32,
+            device=self.device,
+        )
+        self.semantic_champion_ids = torch.zeros(
+            (self.num_steps, self.num_envs, self.semantic_entity_slots),
+            dtype=torch.long,
+            device=self.device,
+        )
+
         # ============================================================
         # GAE / RETURNS
         # ============================================================
@@ -204,11 +240,14 @@ class RolloutBuffer:
             device=self.device
         )
 
-        self.valid = torch.zeros(
+        self.trajectory_valid = torch.zeros(
             (self.num_steps, self.num_envs),
             dtype=torch.bool,
             device=self.device,
         )
+        self.optimization_valid = torch.zeros_like(self.trajectory_valid)
+        # Backwards-compatible alias for historical PPO batch eligibility.
+        self.valid = self.optimization_valid
 
         # ============================================================
         # ACTION MASKS
@@ -244,6 +283,12 @@ class RolloutBuffer:
         values,
         masks_dict,
         valid=None,
+        snapshot_metadata=None,
+        result_snapshot_metadata=None,
+        next_snapshot_metadata=None,
+        semantic_state=None,
+        trajectory_valid=None,
+        optimization_valid=None,
     ):
         """
         Adiciona uma transição de todos os agentes.
@@ -273,24 +318,32 @@ class RolloutBuffer:
                 f"num_steps={self.num_steps}"
             )
 
-        if valid is None:
-            valid = torch.ones(
-                self.num_envs,
-                dtype=torch.bool,
-                device=self.device,
+        if valid is not None and optimization_valid is not None:
+            raise ValueError("Use valid (legado) ou optimization_valid, não ambos.")
+        if optimization_valid is None:
+            optimization_valid = valid
+        if optimization_valid is None:
+            optimization_valid = torch.ones(
+                self.num_envs, dtype=torch.bool, device=self.device
             )
         else:
-            valid = self._to_tensor(
-                valid,
-                dtype=torch.bool,
-            )
+            optimization_valid = self._to_tensor(optimization_valid, dtype=torch.bool)
 
-        if tuple(valid.shape) != (self.num_envs,):
-            raise ValueError(
-                f"Shape inválido para valid: {tuple(valid.shape)}"
-            )
+        if trajectory_valid is None:
+            trajectory_valid = optimization_valid
+        else:
+            trajectory_valid = self._to_tensor(trajectory_valid, dtype=torch.bool)
 
-        self.valid[self.ptr].copy_(valid)
+        expected_valid_shape = (self.num_envs,)
+        if tuple(trajectory_valid.shape) != expected_valid_shape:
+            raise ValueError("Shape inválido para trajectory_valid.")
+        if tuple(optimization_valid.shape) != expected_valid_shape:
+            raise ValueError("Shape inválido para optimization_valid.")
+        if bool((optimization_valid & ~trajectory_valid).any()):
+            raise ValueError("optimization_valid deve ser subconjunto de trajectory_valid.")
+
+        self.trajectory_valid[self.ptr].copy_(trajectory_valid)
+        self.optimization_valid[self.ptr].copy_(optimization_valid)
 
         # ============================================================
         # CONVERSÃO PARA TENSOR
@@ -338,6 +391,364 @@ class RolloutBuffer:
             dones,
             values
         )
+
+        if semantic_state is None:
+            if self.require_semantic_state:
+                raise ValueError("Native PPO rollout requires semantic_state v8 for every transition.")
+            semantic_numeric = torch.zeros(
+                (self.num_envs, self.semantic_numeric_dim),
+                dtype=torch.float32,
+                device=self.device,
+            )
+            semantic_champion_ids = torch.zeros(
+                (self.num_envs, self.semantic_entity_slots),
+                dtype=torch.long,
+                device=self.device,
+            )
+        else:
+            if not isinstance(semantic_state, dict):
+                raise TypeError("semantic_state must be a mapping")
+            semantic_numeric = self._to_tensor(semantic_state.get("numeric"), dtype=torch.float32)
+            semantic_champion_ids = self._to_tensor(semantic_state.get("champion_ids"), dtype=torch.long)
+            if tuple(semantic_numeric.shape) != (self.num_envs, self.semantic_numeric_dim):
+                raise ValueError("semantic numeric batch has an incompatible shape")
+            if tuple(semantic_champion_ids.shape) != (self.num_envs, self.semantic_entity_slots):
+                raise ValueError("semantic champion ID batch has an incompatible shape")
+            if not torch.isfinite(semantic_numeric).all():
+                raise ValueError("semantic numeric batch contains NaN or infinity")
+            if semantic_champion_ids.numel() and (semantic_champion_ids < 0).any():
+                raise ValueError("semantic champion IDs must be non-negative")
+            item_state = semantic_state.get("items")
+            if not isinstance(item_state, dict):
+                raise ValueError("semantic item/anvil tensors are required for native rollout rows")
+            expected_item_state = semantic_item_state_tensors(semantic_numeric)
+            if set(item_state) != set(expected_item_state):
+                raise ValueError("semantic item/anvil tensor fields do not match the v6 contract")
+            for field, expected_value in expected_item_state.items():
+                provided_value = item_state.get(field)
+                if (
+                    not isinstance(provided_value, torch.Tensor)
+                    or provided_value.dtype != expected_value.dtype
+                    or provided_value.device != expected_value.device
+                    or tuple(provided_value.shape) != tuple(expected_value.shape)
+                    or not torch.equal(provided_value, expected_value)
+                ):
+                    raise ValueError(
+                        f"semantic item/anvil field {field} is not aligned with the numeric projection"
+                    )
+
+        self.semantic_numeric[self.ptr].copy_(semantic_numeric)
+        self.semantic_champion_ids[self.ptr].copy_(semantic_champion_ids)
+
+        metadata_groups = (
+            ("snapshot_metadata", snapshot_metadata),
+            ("result_snapshot_metadata", result_snapshot_metadata),
+            ("next_snapshot_metadata", next_snapshot_metadata),
+        )
+        supplied_groups = [value is not None for _, value in metadata_groups]
+        if any(supplied_groups) and not all(supplied_groups):
+            raise ValueError(
+                "Identidade da decisão, resultado e próxima observação devem ser "
+                "armazenadas juntas."
+            )
+
+        if self.ptr > 0:
+            previous_has_identity = self._metadata_records[0] is not None
+            if previous_has_identity != all(supplied_groups):
+                raise ValueError(
+                    "O rollout não pode misturar transições com e sem identidade."
+                )
+
+        normalized_groups = {}
+        if all(supplied_groups):
+            for group_name, group in metadata_groups:
+                if len(group) != self.num_envs:
+                    raise ValueError(
+                        f"{group_name} deve conter uma identidade por agente: "
+                        f"{len(group)} != {self.num_envs}"
+                    )
+                normalized = []
+                for index, metadata in enumerate(group):
+                    if not isinstance(metadata, dict):
+                        raise TypeError(f"{group_name}[{index}] deve ser um dicionário.")
+                    required = (
+                        "engine_instance_id", "episode_id",
+                        "decision_sequence", "player_decision_sequence", "player_id", "lobby_index",
+                    )
+                    missing = [key for key in required if key not in metadata]
+                    if missing:
+                        raise ValueError(
+                            f"{group_name}[{index}] sem campos obrigatórios: {missing}"
+                        )
+                    engine_instance_id = metadata["engine_instance_id"]
+                    if not isinstance(engine_instance_id, str) or not engine_instance_id.strip():
+                        raise ValueError(
+                            f"{group_name}[{index}].engine_instance_id deve ser texto não vazio."
+                        )
+                    for identity_field in ("episode_id", "decision_sequence", "player_id", "lobby_index"):
+                        identity_value = metadata[identity_field]
+                        if (
+                            isinstance(identity_value, bool)
+                            or not isinstance(identity_value, int)
+                            or identity_value < 0
+                        ):
+                            raise ValueError(
+                                f"{group_name}[{index}].{identity_field} deve ser inteiro não negativo."
+                            )
+                    envelope = metadata.get("identity")
+                    if envelope is not None:
+                        try:
+                            validate_player_identity_envelope(
+                                envelope,
+                                engine_instance_id=engine_instance_id,
+                                episode_id=metadata["episode_id"],
+                                snapshot_sequence=metadata["decision_sequence"],
+                                player_decision_sequence=metadata["player_decision_sequence"],
+                                player_id=metadata["player_id"],
+                                round_number=metadata.get("round", 0),
+                            )
+                        except (TypeError, ValueError) as exc:
+                            raise ValueError(
+                                f"{group_name}[{index}].identity inválida: {exc}"
+                            ) from exc
+                    normalized.append(metadata)
+                normalized_groups[group_name] = normalized
+    
+            identity_presence = [
+                metadata.get("identity") is not None
+                for group in normalized_groups.values()
+                for metadata in group
+            ]
+            if any(identity_presence) and not all(identity_presence):
+                raise ValueError(
+                    "O rollout não pode misturar linhas com e sem envelope canônico de identidade."
+                )
+    
+            for index, (decision, result, next_state) in enumerate(zip(
+                normalized_groups["snapshot_metadata"],
+                normalized_groups["result_snapshot_metadata"],
+                normalized_groups["next_snapshot_metadata"],
+            )):
+                if decision["player_id"] != result["player_id"] or decision["player_id"] != next_state["player_id"]:
+                    raise ValueError(f"Identidade de player divergente na transição {index}.")
+                if decision["lobby_index"] != result["lobby_index"] or decision["lobby_index"] != next_state["lobby_index"]:
+                    raise ValueError(f"Identidade de lobby divergente na transição {index}.")
+                if decision["engine_instance_id"] != result["engine_instance_id"] or decision["engine_instance_id"] != next_state["engine_instance_id"]:
+                    raise ValueError(f"Engine divergente na transição {index}.")
+                if decision["episode_id"] != result["episode_id"]:
+                    raise ValueError(f"Episode divergente entre decisão e resultado na transição {index}.")
+                if result["player_decision_sequence"] <= decision["player_decision_sequence"]:
+                    raise ValueError(f"Sequência individual do resultado não avança na transição {index}.")
+                action_trace = result.get("action_trace")
+                if action_trace is None:
+                    raise ValueError(
+                        f"result_snapshot_metadata[{index}].action_trace é obrigatório para transições identificadas."
+                    )
+                if not isinstance(action_trace, dict):
+                    raise TypeError(
+                        f"result_snapshot_metadata[{index}].action_trace deve ser um dicionário."
+                    )
+                trace_player_id = action_trace.get("player_id")
+                if (
+                    isinstance(trace_player_id, bool)
+                    or not isinstance(trace_player_id, int)
+                    or trace_player_id != decision["player_id"]
+                ):
+                    raise ValueError(
+                        f"result_snapshot_metadata[{index}].action_trace.player_id "
+                        "não corresponde ao jogador da transição."
+                    )
+                for action_field in ("requested_action", "effective_action"):
+                    action_values = action_trace.get(action_field)
+                    if not isinstance(action_values, (list, tuple)) or len(action_values) != actions.shape[1]:
+                        raise ValueError(
+                            f"result_snapshot_metadata[{index}].action_trace.{action_field} "
+                            f"deve conter {actions.shape[1]} parâmetros."
+                        )
+                    try:
+                        normalized_values = [int(value) for value in action_values]
+                    except (TypeError, ValueError, OverflowError) as exc:
+                        raise ValueError(
+                            f"result_snapshot_metadata[{index}].action_trace.{action_field} "
+                            "deve conter inteiros."
+                        ) from exc
+                    if any(isinstance(value, bool) or int(value) != value for value in action_values):
+                        raise ValueError(
+                            f"result_snapshot_metadata[{index}].action_trace.{action_field} "
+                            "deve conter inteiros sem coerção."
+                        )
+                    if action_field == "requested_action":
+                        stored_action = actions[index].detach().cpu().tolist()
+                        if normalized_values != stored_action:
+                            raise ValueError(
+                                f"Ação PPO diverge da ação solicitada à Engine na transição {index}: "
+                                f"{stored_action} != {normalized_values}."
+                            )
+                if not isinstance(action_trace.get("handler_applied"), bool):
+                    raise ValueError(
+                        f"result_snapshot_metadata[{index}].action_trace.handler_applied deve ser booleano."
+                    )
+                status_reason = action_trace.get("status_reason")
+                if not isinstance(status_reason, str) or not status_reason.strip():
+                    raise ValueError(
+                        f"result_snapshot_metadata[{index}].action_trace.status_reason deve ser texto não vazio."
+                    )
+                if result["decision_sequence"] <= decision["decision_sequence"]:
+                    raise ValueError(f"Sequência do resultado não avança na transição {index}.")
+                if next_state["episode_id"] == result["episode_id"]:
+                    if next_state["decision_sequence"] != result["decision_sequence"]:
+                        raise ValueError(f"Próximo snapshot não corresponde ao resultado na transição {index}.")
+                    if next_state["player_decision_sequence"] != result["player_decision_sequence"]:
+                        raise ValueError(f"Próxima sequência individual não corresponde ao resultado na transição {index}.")
+                elif (
+                    next_state["episode_id"] <= result["episode_id"]
+                    or next_state["decision_sequence"] <= result["decision_sequence"]
+                    or next_state["player_decision_sequence"] <= result["player_decision_sequence"]
+                ):
+                    raise ValueError(f"Auto-reset não avança identidade na transição {index}.")
+    
+                mask_hash = decision.get("mask_snapshot_hash")
+                if not isinstance(mask_hash, str) or len(mask_hash) != 64 or any(
+                    char not in "0123456789abcdef" for char in mask_hash
+                ):
+                    raise ValueError(
+                        f"snapshot_metadata[{index}].mask_snapshot_hash deve ser SHA-256 hexadecimal."
+                    )
+                if decision.get("mask_snapshot_hash_algorithm") != MASK_SNAPSHOT_HASH_ALGORITHM:
+                    raise ValueError(
+                        f"snapshot_metadata[{index}] usa algoritmo de hash de mask desconhecido."
+                    )
+    
+                # Production collection supplies the complete bundle. Recompute
+                # its digest at the storage boundary instead of trusting a
+                # well-formed SHA-256 string detached from the actual tensors.
+                if self.masks:
+                    expected_contract = {
+                        "action_contract_id": ACTION_CONTRACT_ID,
+                        "action_contract_version": ACTION_CONTRACT_VERSION,
+                        "action_contract_hash": ACTION_CONTRACT_HASH,
+                        "mask_contract_id": MASK_CONTRACT_ID,
+                        "mask_contract_version": MASK_CONTRACT_VERSION,
+                        "mask_contract_hash": MASK_CONTRACT_HASH,
+                    }
+                    for field, expected_value in expected_contract.items():
+                        if decision.get(field) != expected_value:
+                            raise ValueError(
+                                f"snapshot_metadata[{index}].{field} ausente ou incompatível."
+                            )
+                    if set(masks_dict) != set(MASK_SHAPES):
+                        raise ValueError(
+                            "Rollout exige exatamente as 12 action masks do contrato v1."
+                        )
+                    for mask_name, mask_shape in MASK_SHAPES.items():
+                        mask_tensor = masks_dict[mask_name]
+                        if not isinstance(mask_tensor, torch.Tensor):
+                            raise TypeError(f"Máscara '{mask_name}' deve ser torch.Tensor.")
+                        if mask_tensor.dtype != torch.bool:
+                            raise TypeError(f"Máscara '{mask_name}' deve usar torch.bool.")
+                        if tuple(mask_tensor.shape) != (self.num_envs, *mask_shape):
+                            raise ValueError(
+                                f"Shape inválido para máscara '{mask_name}' no rollout: "
+                                f"{tuple(mask_tensor.shape)}."
+                            )
+                    actual_mask_hash = hash_mask_row({
+                        name: masks_dict[name][index]
+                        for name in MASK_SHAPES
+                    })
+                    if actual_mask_hash != mask_hash:
+                        raise ValueError(
+                            f"Hash da máscara não corresponde ao conteúdo armazenado "
+                            f"na transição {index}."
+                        )
+    
+            for group_name, group in normalized_groups.items():
+                by_lobby = {}
+                for metadata in group:
+                    key = metadata["lobby_index"]
+                    identity = (
+                        metadata["engine_instance_id"],
+                        metadata["episode_id"],
+                        metadata["decision_sequence"],
+                    )
+                    previous = by_lobby.setdefault(key, identity)
+                    if previous != identity:
+                        raise ValueError(
+                            f"Snapshot inconsistente em {group_name} dentro da lobby {key}."
+                        )
+    
+        # Semantic projection is part of the same decision record, not an
+        # independently shuffled feature batch. Bind every row to its native
+        # snapshot hash and full decision identity before storing it.
+        if all(supplied_groups):
+            decision_metadata = normalized_groups["snapshot_metadata"]
+            if any("semantic_projection_hash" in row for row in decision_metadata):
+                if semantic_state is None:
+                    raise ValueError("Transição identificada exige semantic_state nativo.")
+                semantic_identities = semantic_state.get("identities")
+                semantic_hashes = semantic_state.get("hashes")
+                contract_hash = semantic_state.get("contract_hash")
+                if (
+                    semantic_state.get("contract_id") != "tft.ppo.semantic-native-state.v8"
+                    or not isinstance(contract_hash, str)
+                    or len(contract_hash) != 64
+                    or any(char not in "0123456789abcdef" for char in contract_hash)
+                ):
+                    raise ValueError("Semantic state is missing its versioned projection contract identity.")
+                if (
+                    not isinstance(semantic_identities, Sequence)
+                    or len(semantic_identities) != self.num_envs
+                    or not isinstance(semantic_hashes, Sequence)
+                    or len(semantic_hashes) != self.num_envs
+                ):
+                    raise ValueError("Semantic state não contém identidade/hash por transição.")
+                identity_fields = (
+                    "engine_instance_id", "episode_id", "decision_sequence",
+                    "player_decision_sequence", "player_id", "round", "lobby_index",
+                )
+                for index, metadata in enumerate(decision_metadata):
+                    expected_identity = {field: metadata.get(field) for field in identity_fields}
+                    if (
+                        not isinstance(semantic_identities[index], dict)
+                        or dict(semantic_identities[index]) != expected_identity
+                        or metadata.get("semantic_identity") != expected_identity
+                    ):
+                        raise ValueError(
+                            f"Semantic identity diverge do snapshot na transição {index}."
+                        )
+                    digest = semantic_hashes[index]
+                    if (
+                        not isinstance(digest, str)
+                        or len(digest) != 64
+                        or any(char not in "0123456789abcdef" for char in digest)
+                        or digest != metadata.get("semantic_projection_hash")
+                        or metadata.get("semantic_projection_contract_id") != semantic_state.get("contract_id")
+                        or metadata.get("semantic_projection_contract_hash") != semantic_state.get("contract_hash")
+                    ):
+                        raise ValueError(
+                            f"Semantic projection hash/contract diverge do snapshot na transição {index}."
+                        )
+
+        if all(supplied_groups):
+            # Intern equal result/next envelopes before ownership transfer so
+            # the redundant payload is never deep-copied in the first place.
+            source_results = normalized_groups["result_snapshot_metadata"]
+            source_next = normalized_groups["next_snapshot_metadata"]
+            for index, (result, next_state) in enumerate(zip(source_results, source_next)):
+                if self._metadata_values_equal(result, next_state):
+                    source_next[index] = result
+
+            # One ownership boundary for the complete transition batch. A
+            # shared deepcopy memo preserves aliases across all three groups.
+            owned_decisions, owned_results, owned_next = copy.deepcopy((
+                normalized_groups["snapshot_metadata"],
+                source_results,
+                source_next,
+            ))
+            self._metadata_records[self.ptr] = list(zip(
+                owned_decisions, owned_results, owned_next
+            ))
+        else:
+            self._metadata_records[self.ptr] = None
 
         # ============================================================
         # SALVAR
@@ -410,6 +821,46 @@ class RolloutBuffer:
         # ============================================================
 
         self.ptr += 1
+
+    @property
+    def snapshot_metadata(self):
+        return [None if rows is None else copy.deepcopy([row[0] for row in rows])
+                for rows in self._metadata_records]
+
+    @property
+    def result_snapshot_metadata(self):
+        return [None if rows is None else copy.deepcopy([row[1] for row in rows])
+                for rows in self._metadata_records]
+
+    @property
+    def next_snapshot_metadata(self):
+        return [None if rows is None else copy.deepcopy([row[2] for row in rows])
+                for rows in self._metadata_records]
+
+    def get_transition_metadata(self, step_index, env_index):
+        """Recover full audit envelopes for one transition (read-only by contract)."""
+        if not 0 <= step_index < self.ptr:
+            raise IndexError("step_index is outside the populated rollout")
+        if not 0 <= env_index < self.num_envs:
+            raise IndexError("env_index is outside the rollout")
+        rows = self._metadata_records[step_index]
+        if rows is None:
+            return None
+        decision, result, next_state = rows[env_index]
+        return copy.deepcopy({
+            "snapshot_metadata": decision,
+            "result_snapshot_metadata": result,
+            "next_snapshot_metadata": next_state,
+        })
+
+    @staticmethod
+    def _metadata_values_equal(left, right):
+        """Compare JSON-like metadata without allowing exotic equality to break storage."""
+        try:
+            result = left == right
+            return result if isinstance(result, bool) else False
+        except (TypeError, ValueError):
+            return False
 
     # =================================================================
     # TENSOR HELPER
@@ -522,7 +973,8 @@ class RolloutBuffer:
         next_value,
         next_done,
         gamma=0.99,
-        gae_lambda=0.95
+        gae_lambda=0.95,
+        next_state_valid=None,
     ):
         """
         Calcula GAE separadamente para cada agente.
@@ -563,6 +1015,14 @@ class RolloutBuffer:
                 next_done,
                 dtype=torch.float32
             ).reshape(self.num_envs)
+            if next_state_valid is None:
+                next_state_valid = torch.ones(
+                    self.num_envs, dtype=torch.bool, device=self.device
+                )
+            else:
+                next_state_valid = self._to_tensor(
+                    next_state_valid, dtype=torch.bool
+                ).reshape(self.num_envs)
 
             # --------------------------------------------------------
             # GAE atual de cada agente
@@ -608,34 +1068,25 @@ class RolloutBuffer:
                         self.values[t + 1]
                     )
 
-                # ----------------------------------------------------
-                # VALIDITY BOUNDARY
-                # Invalid transitions are excluded from PPO batches and must
-                # also break temporal return propagation. Otherwise an invalid
-                # reward at t+1 can leak into the preceding valid advantage.
-                valid_t = self.valid[t].to(dtype=torch.float32)
+                # Trajectory integrity controls TD/GAE. Optimizer eligibility
+                # is independent: a trustworthy row may carry temporal credit
+                # without entering a PPO minibatch.
+                trajectory_valid_t = self.trajectory_valid[t]
                 if t == self.num_steps - 1:
-                    next_step_valid = torch.ones_like(valid_t)
+                    next_state_is_valid = next_state_valid
                 else:
-                    next_step_valid = self.valid[t + 1].to(dtype=torch.float32)
+                    next_state_is_valid = self.trajectory_valid[t + 1]
 
-                # TD ERROR
+                bootstrap_mask = (
+                    next_non_terminal * next_state_is_valid.to(dtype=torch.float32)
+                )
                 delta = (
                     self.rewards[t]
-                    + gamma
-                    * next_values
-                    * next_non_terminal
+                    + gamma * next_values * bootstrap_mask
                     - self.values[t]
                 )
-
-                # GAE is isolated per agent and only crosses valid transitions.
-                gae = valid_t * (
-                    delta
-                    + gamma
-                    * gae_lambda
-                    * next_non_terminal
-                    * next_step_valid
-                    * gae
+                gae = trajectory_valid_t.to(dtype=torch.float32) * (
+                    delta + gamma * gae_lambda * bootstrap_mask * gae
                 )
 
                 self.advantages[t] = gae
@@ -661,7 +1112,7 @@ class RolloutBuffer:
         if self.ptr <= 0:
             return
 
-        valid_mask = self.valid[:self.ptr]
+        valid_mask = self.optimization_valid[:self.ptr]
 
         if not valid_mask.any():
             return
@@ -686,10 +1137,15 @@ class RolloutBuffer:
     def get_batches(
         self,
         batch_size,
-        normalize_advantages=False
+        normalize_advantages=False,
+        include_metadata=False,
     ):
         """
         Gera mini-lotes contendo exclusivamente transições válidas.
+
+        Full snapshot metadata is excluded by default because PPO optimizes
+        only tensor/semantic inputs. Diagnostic callers may opt in; that view
+        reuses buffer-owned rows and must be treated as read-only.
         """
 
         if self.ptr <= 0:
@@ -702,7 +1158,7 @@ class RolloutBuffer:
 
         # 🔎 Seleciona apenas experiências válidas.
         valid_indices = torch.nonzero(
-            self.valid[:steps].reshape(-1),
+            self.optimization_valid[:steps].reshape(-1),
             as_tuple=False,
         ).squeeze(-1)
 
@@ -740,6 +1196,12 @@ class RolloutBuffer:
         flat_values = self.values[:steps].reshape(
             total_transitions
         )
+        flat_semantic_numeric = self.semantic_numeric[:steps].reshape(
+            total_transitions, self.semantic_numeric_dim
+        )
+        flat_semantic_champion_ids = self.semantic_champion_ids[:steps].reshape(
+            total_transitions, self.semantic_entity_slots
+        )
 
         flat_masks = {
             key: tensor[:steps].reshape(
@@ -762,6 +1224,49 @@ class RolloutBuffer:
                     batch_advantages.std(unbiased=False) + 1e-8
                 )
 
+            batch_snapshot_metadata = None
+            batch_result_metadata = None
+            batch_next_metadata = None
+            if include_metadata:
+                # Decode flattened indices once, only for explicit diagnostic
+                # consumers. The PPO hot path does not need native envelopes.
+                metadata_indices = tuple(
+                    divmod(int(flat_index), self.num_envs)
+                    for flat_index in batch_idx.detach().cpu().tolist()
+                )
+                metadata_rows = tuple(
+                    self._metadata_records[step_index][env_index]
+                    for step_index, env_index in metadata_indices
+                )
+                batch_snapshot_metadata = tuple(row[0] for row in metadata_rows)
+                batch_result_metadata = tuple(row[1] for row in metadata_rows)
+                batch_next_metadata = tuple(row[2] for row in metadata_rows)
+            semantic_numeric_batch = flat_semantic_numeric[batch_idx]
+            semantic_batch = {
+                "numeric": semantic_numeric_batch,
+                "items": semantic_item_state_tensors(semantic_numeric_batch),
+                "champion_ids": flat_semantic_champion_ids[batch_idx],
+            }
+            if batch_snapshot_metadata is not None:
+                semantic_batch["identities"] = [
+                    row.get("semantic_identity") for row in batch_snapshot_metadata
+                ]
+                semantic_batch["hashes"] = [
+                    row.get("semantic_projection_hash") for row in batch_snapshot_metadata
+                ]
+                semantic_batch["contract_id"] = batch_snapshot_metadata[0].get(
+                    "semantic_projection_contract_id"
+                )
+                semantic_batch["contract_hash"] = batch_snapshot_metadata[0].get(
+                    "semantic_projection_contract_hash"
+                )
+                if any(
+                    row.get("semantic_projection_contract_id") != semantic_batch["contract_id"]
+                    or row.get("semantic_projection_contract_hash") != semantic_batch["contract_hash"]
+                    for row in batch_snapshot_metadata
+                ):
+                    raise RuntimeError("Semantic contract drift inside PPO minibatch.")
+
             yield {
                 "obs": flat_obs[batch_idx],
                 "actions": flat_actions[batch_idx],
@@ -769,11 +1274,36 @@ class RolloutBuffer:
                 "advantages": batch_advantages,
                 "returns": flat_returns[batch_idx],
                 "values": flat_values[batch_idx],
+                "semantic_state": semantic_batch,
                 "masks": {
                     key: value[batch_idx]
                     for key, value in flat_masks.items()
                 },
+                "snapshot_metadata": batch_snapshot_metadata,
+                "result_snapshot_metadata": batch_result_metadata,
+                "next_snapshot_metadata": batch_next_metadata,
             }
+
+    @staticmethod
+    def _metadata_for_batch(metadata_by_step, transition_indices):
+        """Return read-only references to buffer-owned diagnostic metadata rows.
+
+        The buffer isolates stored rows from caller mutation at insertion time.
+        Minibatch consumers must treat returned rows and nested mappings as
+        read-only. PPO does not consume these envelopes; this view is retained
+        for diagnostics and compatibility without cloning native snapshots
+        for every minibatch/epoch.
+        """
+        if not metadata_by_step or metadata_by_step[0] is None:
+            return None
+        result = []
+        for step_index, env_index in transition_indices:
+            step_metadata = metadata_by_step[step_index]
+            if step_metadata is None:
+                raise RuntimeError("Metadata parcial dentro do RolloutBuffer.")
+            result.append(step_metadata[env_index])
+        return tuple(result)
+
     # =================================================================
     # READY
     # =================================================================
@@ -806,6 +1336,8 @@ class RolloutBuffer:
         desnecessárias a cada rollout.
         """
 
+        for index in range(self.ptr):
+            self._metadata_records[index] = None
         self.ptr = 0
 
         # ------------------------------------------------------------
@@ -825,10 +1357,14 @@ class RolloutBuffer:
 
         return {
             "num_steps": self.num_steps,
+            "trajectory_valid_count": int(self.trajectory_valid[:self.ptr].sum().item()),
+            "optimization_valid_count": int(self.optimization_valid[:self.ptr].sum().item()),
             "num_agents": self.num_envs,
             "total_transitions": self.size(),
             "obs_dim": self.obs_dim,
             "action_dim": self.action_dim,
+            "semantic_numeric_dim": self.semantic_numeric_dim,
+            "semantic_entity_slots": self.semantic_entity_slots,
             "ptr": self.ptr,
             "full": self.is_full(),
             "mask_names": list(self.masks.keys()),

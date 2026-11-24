@@ -1,0 +1,1143 @@
+"""Regression tests for observation/action-mask snapshot correlation."""
+
+import copy
+
+import numpy as np
+import pytest
+
+import cpp_lobby_env
+
+
+def make_masks(marker):
+    keys = {
+        "type_mask": (9,),
+        "shop_mask": (5,),
+        "bench_source_mask": (9,),
+        "board_target_mask": (28,),
+        "board_source_mask": (28,),
+        "board_move_target_masks": (28, 28),
+        "bench_move_source_mask": (9,),
+        "bench_to_board_target_masks": (9, 28),
+        "item_inventory_mask": (9,),
+        "item_component_first_mask": (10,),
+        "item_component_pair_masks": (10, 10),
+        "item_target_mask": (37,),
+    }
+    masks = []
+    for player in range(8):
+        item = {key: np.zeros(shape, dtype=np.bool_) for key, shape in keys.items()}
+        item["type_mask"][marker] = True
+        masks.append(item)
+    return masks
+
+
+class FakeNativeLobby:
+    def __init__(self, *_args):
+        self.mask_reads = 0
+        self.episode_id = 0
+        self.decision_sequence = 0
+        self.round = 1
+        self.player_decision_sequences = [0] * 8
+        self.fail_reset = False
+        self.fail_step = False
+
+    def _native_state_snapshot(self):
+        return {
+            "contract_id": "tft.native-state-snapshot",
+            "contract_version": 6,
+            "board_geometry_id": "tft.board-grid.rectangular-4x7",
+            "board_geometry_version": 1,
+            "board_rows": 4,
+            "board_columns": 7,
+            "board_position_formula": "row=slot/7;column=slot%7",
+            "source_namespace": "tft.engine.observation-snapshot",
+            "producer": "TFTEngine::get_audit_snapshot",
+            "engine_instance_id": f"fake-engine-{id(self)}",
+            "episode_id": self.episode_id,
+            "snapshot_sequence": self.decision_sequence,
+            "player_decision_sequences": list(self.player_decision_sequences),
+            "round": self.round,
+            "stage": 1,
+            "finished": False,
+            "combat_sequence": 0,
+            "combat_damage_events": [],
+            "combat_attack_events": [],
+            "combat_death_events": [],
+            "economy_resolution_events": [],
+            "pvp_result_credit_events": [],
+            "shared_pool": {
+                "contract_id": "tft.shared-champion-pool-snapshot",
+                "contract_version": 2,
+                "producer": "UnitPool::available",
+                "total_available": 17,
+                "champions": [
+                    {"champion_internal_id": 0, "champion_id": "Test_A", "cost": 1, "initial_count": 30, "available_count": 10},
+                    {"champion_internal_id": 1, "champion_id": "Test_B", "cost": 2, "initial_count": 25, "available_count": 7},
+                ],
+            },
+            "players": [
+                {
+                    "player_id": player_id,
+                    "gold": 30,
+                    "level": 5,
+                    "xp": 0,
+                    "interest_if_resolved_now": 1,
+                    "positioning_score": 0.0,
+                    "board_quality_score": 0.0,
+                    "board_positional_score": 0.0,
+                    "board_structural_score": 0.0,
+                    "board_exposed_carries": 0,
+                    "board_frontline_count": 0,
+                    "board_isolated_frontline_count": 0,
+                    "board_important_bench_units_unplayed": 0,
+                    "board_frontline_lane_count": 0,
+                    "board_exposed_main_carries": 0,
+                    "board_fragile_frontline_count": 0,
+                    "board_missing_frontline_count": 0,
+                    "board_missing_backline_count": 0,
+                    "board_active_trait_count": 0,
+                    "board_strategic_fit_score": 0.0,
+                    "board_unit_quality_score": 0.0,
+                    "board_trait_coherence_score": 0.0,
+                    "strategic_state": {
+                        "contract_id": "tft.strategic-owner-observation",
+                        "contract_version": 3,
+                        "source_namespace": "tft.engine.strategic-owners",
+                        "producer": "TFTEngine::get_audit_snapshot",
+                        "episode_id": self.episode_id,
+                        "player_decision_sequence": self.player_decision_sequences[player_id],
+                        "strategic_context_sequence": 0,
+                        "player_id": player_id,
+                        "round": self.round,
+                        "active_composition_valid": False,
+                        "active_composition_id": "",
+                        "active_composition_version": 0,
+                        "active_source_sequence": 0,
+                        "active_unit_ids": [],
+                        "active_core_unit_ids": [],
+                        "direction_valid": False,
+                        "direction_identity": "",
+                        "direction_selected_round": 0,
+                        "direction_reference_unit_ids": [],
+                        "pivot_candidate_valid": False,
+                        "pivot_candidate_identity": "",
+                        "pivot_target_composition_identity": "",
+                        "pivot_source_composition_version": 0,
+                        "pivot_reference_unit_ids": [],
+                        "unit_copy_progress": [],
+                        "opportunity_cost_available": False,
+                        "planner_outputs_valid": False,
+                        "planner_output_sequence": 0,
+                        "unit_priorities": [],
+        "opportunity_costs": [],
+                        "lineup_selected_unit_ids": [],
+                        "lineup_entry_unit_ids": [],
+                        "lineup_exit_unit_ids": [],
+                        "lineup_deferred_unit_ids": [],
+                        "strategic_refresh_failed": False,
+                        "strategic_refresh_failure_reason": "",
+                    },
+                    "board": [{"occupied": False, "champion_id": "", "uuid": "", "star": 0, "cost": 0, "items": [], "trait_names": [], "role": 3, "attack_damage": 0.0, "attack_speed": 0.0, "max_health": 0.0, "armor": 0.0, "magic_resist": 0.0} for _ in range(28)],
+                    "bench": [{"occupied": False, "champion_id": "", "uuid": "", "star": 0, "cost": 0, "items": [], "trait_names": [], "role": 3, "attack_damage": 0.0, "attack_speed": 0.0, "max_health": 0.0, "armor": 0.0, "magic_resist": 0.0} for _ in range(9)],
+                    "shop": [{"occupied": False, "champion_id": "", "uuid": "", "star": 0, "cost": 0, "items": [], "trait_names": [], "role": 3, "attack_damage": 0.0, "attack_speed": 0.0, "max_health": 0.0, "armor": 0.0, "magic_resist": 0.0} for _ in range(5)],
+                    "shop_offer_revisions": [0] * 5,
+                    "item_components": [], "item_inventory": [], "item_component_counts": [], "item_inventory_counts": [], "equipped_items": [], "item_component_catalog": [],
+                    "pending_anvil": False,
+                    "pending_anvil_sequence": 0,
+                    "pending_anvil_kind": -1,
+                    "pending_anvil_options": [],
+                    "item_component_features": [0.0] * 10,
+                    "item_inventory_features": [[0.0] * 17 for _ in range(9)],
+                    "item_recipe_features": [[0.0] * 17 for _ in range(100)],
+                    "item_inventory_target_fit": [[0.0] * 37 for _ in range(9)],
+                    "item_recipe_target_fit": [[0.0] * 37 for _ in range(100)],
+                    "pending_anvil_option_features": [[0.0] * 11 for _ in range(9)],
+                    "actions_taken_this_round": 0,
+                    "board_move_age": [10] * 28,
+                    "item_ownership_retired": False,
+                    "retired_item_component_counts": [],
+                    "retired_item_inventory_counts": [],
+                    "retired_equipped_item_counts": [],
+                    "retired_pending_anvils": [],
+                }
+                for player_id in range(8)
+            ],
+        }
+
+    def reset(self, _seed=None):
+        if self.fail_reset:
+            self.fail_reset = False
+            raise RuntimeError("synthetic reset failure")
+        self.episode_id += 1
+        self.round = 1
+        self.decision_sequence += 1
+        self.player_decision_sequences = [value + 1 for value in self.player_decision_sequences]
+        return {
+            "observations": np.full((8, 4), self.episode_id, dtype=np.float32),
+            "action_masks": make_masks(0),
+            "engine_instance_id": f"fake-engine-{id(self)}",
+            "episode_id": self.episode_id,
+            "decision_sequence": self.decision_sequence,
+            "player_decision_sequences": list(self.player_decision_sequences),
+            "native_state_snapshot": self._native_state_snapshot(),
+            "observation_dim": 4,
+        }
+
+    def step(self, _actions, _timer_enabled=False, _timer_expired=False):
+        if self.fail_step:
+            self.fail_step = False
+            raise RuntimeError("synthetic step failure")
+        self.decision_sequence += 1
+        self.round = 3
+        self.player_decision_sequences = [value + 1 for value in self.player_decision_sequences]
+        return {
+            "observations": np.full((8, 4), 2, dtype=np.float32),
+            "rewards": np.zeros(8, dtype=np.float32),
+            "action_rewards": np.zeros(8, dtype=np.float32),
+            "combat_rewards": np.zeros(8, dtype=np.float32),
+            "placement_rewards": np.zeros(8, dtype=np.float32),
+            "dones": np.zeros(8, dtype=np.bool_),
+            "action_masks": make_masks(2),
+            "engine_instance_id": f"fake-engine-{id(self)}",
+            "episode_id": self.episode_id,
+            "decision_sequence": self.decision_sequence,
+            "player_decision_sequences": list(self.player_decision_sequences),
+            "native_state_snapshot": self._native_state_snapshot(),
+            "round": 3,
+            "stage": 2,
+            "lobby_done": False,
+            "players": [
+                {"player_id": i, "alive": True, "eliminated": False, "placement": None}
+                for i in range(8)
+            ],
+            "action_traces": [
+                {
+                    "player_id": player_id,
+                    "requested_action": [6, 0, 0, 0, 0, 0],
+                    "effective_action": [6, 0, 0, 0, 0, 0],
+                    "handler_applied": True,
+                    "status_reason": "applied",
+                }
+                for player_id in range(8)
+            ],
+            "events": [],
+        }
+
+    def get_action_masks(self):
+        self.mask_reads += 1
+        # A later live read deliberately differs from the returned snapshot.
+        return make_masks(8)
+
+    def close(self):
+        pass
+
+
+def test_wrapper_rejects_duplicate_unit_instance_uuid_across_active_owners():
+    native = FakeNativeLobby()
+    snapshot = native._native_state_snapshot()
+    unit = {
+        "occupied": True,
+        "champion_id": "Test_A",
+        "uuid": "duplicate-unit-uuid",
+        "star": 1,
+        "cost": 1,
+        "items": [],
+        "trait_names": ["TestTrait"],
+        "role": 3,
+        "attack_damage": 0.0,
+        "attack_speed": 0.0,
+        "max_health": 0.0,
+        "armor": 0.0,
+        "magic_resist": 0.0,
+    }
+    snapshot["players"][0]["board"][0] = dict(unit)
+    snapshot["players"][1]["bench"][0] = dict(unit)
+    identity = {
+        "engine_instance_id": f"fake-engine-{id(native)}",
+        "episode_id": 0,
+        "decision_sequence": 0,
+        "player_decision_sequences": [0] * 8,
+    }
+    with pytest.raises(RuntimeError, match="UUID de UnitInstance duplicado"):
+        cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
+
+
+def test_wrapper_rejects_stale_strategic_owner_snapshot():
+    native = FakeNativeLobby()
+    snapshot = native._native_state_snapshot()
+    snapshot["players"][3]["strategic_state"]["player_decision_sequence"] = 99
+    identity = {
+        "engine_instance_id": f"fake-engine-{id(native)}",
+        "episode_id": 0,
+        "decision_sequence": 0,
+        "player_decision_sequences": [0] * 8,
+    }
+    with pytest.raises(RuntimeError, match="Strategic owner snapshot diverge"):
+        cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
+
+
+def test_wrapper_rejects_invalid_unit_trait_membership():
+    native = FakeNativeLobby()
+    snapshot = native._native_state_snapshot()
+    snapshot["players"][0]["bench"][0] = {
+        "occupied": True,
+        "champion_id": "Test_A",
+        "uuid": "unit-with-invalid-trait",
+        "star": 1,
+        "cost": 1,
+        "items": [],
+        "trait_names": ["", 7],
+    }
+    identity = {
+        "engine_instance_id": f"fake-engine-{id(native)}",
+        "episode_id": 0,
+        "decision_sequence": 0,
+        "player_decision_sequences": [0] * 8,
+    }
+    with pytest.raises(RuntimeError, match="trait_names inválido"):
+        cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
+
+
+def test_reset_masks_are_taken_from_same_native_snapshot(monkeypatch):
+    monkeypatch.setattr(cpp_lobby_env, "_NativeTFTLobby", FakeNativeLobby)
+    lobby = cpp_lobby_env.CppTFTLobbyWrapper(seed=7)
+
+    try:
+        observations = lobby.reset()
+        masks = lobby.get_action_masks()
+
+        assert observations.shape == (8, 4)
+        assert all(mask["type_mask"][0] for mask in masks)
+        assert all(not mask["type_mask"][8] for mask in masks)
+        metadata = lobby.get_snapshot_metadata()
+        assert metadata["engine_instance_id"] == f"fake-engine-{id(lobby._engine)}"
+        assert metadata["episode_id"] == 1
+        assert metadata["decision_sequence"] == 1
+        assert metadata["round"] == 1
+        assert metadata["player_decision_sequences"] == [1] * 8
+        strategic = metadata["native_state_snapshot"]["players"][0]["strategic_state"]
+        assert strategic["contract_id"] == "tft.strategic-owner-observation"
+        assert strategic["contract_version"] == 3
+        assert strategic["player_decision_sequence"] == 1
+        assert strategic["strategic_context_sequence"] == 0
+        assert strategic["active_composition_valid"] is False
+        assert strategic["opportunity_cost_available"] is False
+        envelopes = metadata["player_identity_envelopes"]
+        assert len(envelopes) == 8
+        assert envelopes[0]["engine_match_id"] == f"{metadata['engine_instance_id']}/episode/1"
+        assert envelopes[0]["decision_sequence"] == {
+            "namespace": "tft.engine.decision", "value": 1,
+        }
+        assert envelopes[0]["snapshot_sequence"] == {
+            "namespace": "tft.engine.observation-snapshot", "value": 1,
+        }
+        assert envelopes[0]["decision_identity_hash"].startswith("sha256:")
+        assert metadata["native_state_snapshot"]["snapshot_sequence"] == 1
+        pool = metadata["native_state_snapshot"]["shared_pool"]
+        assert "snapshot_sequence" not in pool
+        assert pool["total_available"] == 17
+        assert len(pool["champions"]) == 2
+        assert len(metadata["native_state_snapshot"]["players"][0]["board"]) == 28
+        assert len(metadata["native_state_snapshot"]["players"][0]["bench"]) == 9
+        assert len(metadata["native_state_snapshot"]["players"][0]["shop"]) == 5
+        metadata["native_state_snapshot"]["players"][0]["board"].clear()
+        assert len(lobby.get_snapshot_metadata()["native_state_snapshot"]["players"][0]["board"]) == 28
+        assert lobby._engine.mask_reads == 0
+    finally:
+        lobby.close()
+
+
+def test_step_masks_are_taken_from_same_native_snapshot(monkeypatch):
+    monkeypatch.setattr(cpp_lobby_env, "_NativeTFTLobby", FakeNativeLobby)
+    lobby = cpp_lobby_env.CppTFTLobbyWrapper(seed=7)
+
+    try:
+        lobby.reset()
+        observations, rewards, done, info = lobby.step(
+            [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        )
+        masks = lobby.get_action_masks()
+
+        assert observations.shape == (8, 4)
+        assert rewards.shape == (8,)
+        assert done is False
+        assert all(mask["type_mask"][2] for mask in masks)
+        assert all(not mask["type_mask"][8] for mask in masks)
+        assert len(info["action_trace"]) == 8
+        assert len(info["action_outcome_events"]) == 8
+        assert info["action_outcome_events"][0]["contract_id"] == "tft.reward-action-outcome.v1"
+        assert info["action_outcome_events"][0]["action"]["family"] == "pass"
+        assert info["action_outcome_events"][0]["source_decision"]["snapshot_sequence"] == 1
+        assert info["action_outcome_events"][0]["outcome_snapshot"]["snapshot_sequence"] == 2
+        assert info["action_outcome_events"][0]["reward"] is None
+        assert info["reward_audit"]["contract_id"] == "tft.ppo.reward-audit.v1"
+        assert info["reward_audit"]["decision_sequence"] == 2
+        assert info["reward_audit"]["player_rewards"][0]["components"] == {
+            "action": 0.0, "combat": 0.0, "placement": 0.0, "total": 0.0,
+        }
+        assert info["reward_audit"]["player_rewards"][0]["action_decision"]["trace"] == {
+            "player_id": 0,
+            "requested_action": [6, 0, 0, 0, 0, 0],
+            "effective_action": [6, 0, 0, 0, 0, 0],
+            "handler_applied": True,
+            "status_reason": "applied",
+        }
+        assert info["action_trace"][0] == {
+            "player_id": 0,
+            "requested_action": [6, 0, 0, 0, 0, 0],
+            "effective_action": [6, 0, 0, 0, 0, 0],
+            "handler_applied": True,
+            "status_reason": "applied",
+        }
+        metadata = info["decision_snapshot"]
+        assert metadata["engine_instance_id"] == f"fake-engine-{id(lobby._engine)}"
+        assert metadata["episode_id"] == 1
+        assert metadata["decision_sequence"] == 2
+        assert metadata["player_decision_sequences"] == [2] * 8
+        assert metadata["native_state_snapshot"]["snapshot_sequence"] == 2
+        assert lobby.get_snapshot_metadata() == info["decision_snapshot"]
+        assert lobby._engine.mask_reads == 0
+    finally:
+        lobby.close()
+
+
+def test_policy_requires_branch_specific_bench_masks():
+    from policy import TFTPolicy
+
+    with pytest.raises(ValueError, match="bench_move_source_mask"):
+        TFTPolicy._require_mask(
+            {"bench_source_mask": np.ones((8, 9), dtype=np.bool_)},
+            "bench_move_source_mask",
+        )
+
+    with pytest.raises(ValueError, match="bench_to_board_target_masks"):
+        TFTPolicy._require_mask(
+            {"board_target_mask": np.ones((8, 28), dtype=np.bool_)},
+            "bench_to_board_target_masks",
+        )
+
+
+def test_policy_required_mask_returns_exact_snapshot_payload():
+    from policy import TFTPolicy
+
+    expected = np.ones((8, 9, 28), dtype=np.bool_)
+    actual = TFTPolicy._require_mask(
+        {"bench_to_board_target_masks": expected},
+        "bench_to_board_target_masks",
+    )
+    assert actual is expected
+
+
+def test_item_ablation_fails_closed_when_it_removes_all_legal_actions(monkeypatch):
+    monkeypatch.setattr(cpp_lobby_env, "_NativeTFTLobby", FakeNativeLobby)
+    monkeypatch.setenv("TFT_ABLATE_ITEM_ACTIONS", "1")
+    lobby = cpp_lobby_env.CppTFTLobbyWrapper(seed=7)
+
+    try:
+        lobby.reset()
+        # The fake native snapshot permits only craft (type 8). Ablation removes
+        # it; the wrapper must not fabricate HOLD/PASS as a replacement.
+        lobby._last_action_masks = make_masks(8)
+        import pytest
+        with pytest.raises(RuntimeError, match="nenhuma ação substituta será inventada"):
+            lobby.get_action_masks()
+    finally:
+        lobby.close()
+
+
+def test_item_ablation_preserves_mandatory_anvil_choice(monkeypatch):
+    monkeypatch.setattr(cpp_lobby_env, "_NativeTFTLobby", FakeNativeLobby)
+    monkeypatch.setenv("TFT_ABLATE_ITEM_ACTIONS", "1")
+    lobby = cpp_lobby_env.CppTFTLobbyWrapper(seed=7)
+
+    try:
+        lobby.reset()
+        lobby._last_action_masks = make_masks(7)
+        result = lobby.get_action_masks()
+        assert all(mask["type_mask"][7] for mask in result)
+        assert all(not mask["type_mask"][8] for mask in result)
+    finally:
+        lobby.close()
+
+
+def test_returned_masks_are_copies_not_mutable_snapshot_storage(monkeypatch):
+    monkeypatch.setattr(cpp_lobby_env, "_NativeTFTLobby", FakeNativeLobby)
+    lobby = cpp_lobby_env.CppTFTLobbyWrapper(seed=7)
+
+    try:
+        lobby.reset()
+        first = lobby.get_action_masks()
+        first[0]["type_mask"][:] = False
+        second = lobby.get_action_masks()
+
+        assert second[0]["type_mask"][0]
+        assert lobby._engine.mask_reads == 0
+    finally:
+        lobby.close()
+
+
+
+def test_failed_step_invalidates_previous_snapshot_and_masks(monkeypatch):
+    monkeypatch.setattr(cpp_lobby_env, "_NativeTFTLobby", FakeNativeLobby)
+    lobby = cpp_lobby_env.CppTFTLobbyWrapper(seed=7)
+
+    try:
+        lobby.reset()
+        assert lobby.get_action_masks()
+        assert lobby.get_snapshot_metadata()["snapshot_kind"] == "reset"
+
+        lobby._engine.fail_step = True
+        with pytest.raises(RuntimeError, match="synthetic step failure"):
+            lobby.step([[6, 0, 0, 0, 0, 0] for _ in range(8)])
+
+        with pytest.raises(RuntimeError, match="Execute reset"):
+            lobby.get_action_masks()
+        with pytest.raises(RuntimeError, match="Execute reset"):
+            lobby.get_snapshot_metadata()
+
+        # A successful reset establishes a fresh usable pair again.
+        lobby.reset()
+        assert lobby.get_snapshot_metadata()["snapshot_kind"] == "reset"
+        assert lobby.get_action_masks()
+    finally:
+        lobby.close()
+
+
+def test_failed_reset_invalidates_previous_snapshot_and_masks(monkeypatch):
+    monkeypatch.setattr(cpp_lobby_env, "_NativeTFTLobby", FakeNativeLobby)
+    lobby = cpp_lobby_env.CppTFTLobbyWrapper(seed=7)
+
+    try:
+        lobby.reset()
+        assert lobby.get_action_masks()
+        assert lobby.get_snapshot_metadata()["snapshot_kind"] == "reset"
+
+        lobby._engine.fail_reset = True
+        with pytest.raises(RuntimeError, match="synthetic reset failure"):
+            lobby.reset()
+
+        with pytest.raises(RuntimeError, match="Execute reset"):
+            lobby.get_action_masks()
+        with pytest.raises(RuntimeError, match="Execute reset"):
+            lobby.get_snapshot_metadata()
+    finally:
+        lobby.close()
+
+
+def test_player_liveness_exposes_latest_wrapper_state(monkeypatch):
+    monkeypatch.setattr(cpp_lobby_env, "_NativeTFTLobby", FakeNativeLobby)
+    lobby = cpp_lobby_env.CppTFTLobbyWrapper(seed=7)
+
+    try:
+        lobby.reset()
+        assert lobby.get_player_liveness() == [True] * 8
+
+        lobby._players[3].alive = False
+        assert lobby.get_player_liveness() == [True, True, True, False, True, True, True, True]
+    finally:
+        lobby.close()
+
+
+class _VectorStepEnv:
+    def __init__(self, *, fail_step=False):
+        self.fail_step = fail_step
+        self.step_calls = 0
+        self.reset_calls = 0
+        self.players = [type("Player", (), {"alive": True})() for _ in range(8)]
+
+    def reset(self):
+        self.reset_calls += 1
+        return np.zeros((8, 3), dtype=np.float32)
+
+    def step(self, _actions):
+        self.step_calls += 1
+        if self.fail_step:
+            raise ValueError("synthetic step failure")
+        return (
+            np.zeros((8, 3), dtype=np.float32),
+            np.zeros(8, dtype=np.float32),
+            False,
+            {},
+        )
+
+
+def test_vector_env_fails_closed_after_partial_step_and_recovers_on_full_reset():
+    from vector_lobby_env import LobbyVectorEnv
+
+    first = _VectorStepEnv()
+    second = _VectorStepEnv(fail_step=True)
+    vector = LobbyVectorEnv([lambda: first, lambda: second])
+
+    with pytest.raises(RuntimeError, match="estado das lobbies"):
+        vector.step([np.zeros((8, 6)), np.zeros((8, 6))])
+
+    assert first.step_calls == 1
+    assert second.step_calls == 1
+
+    with pytest.raises(RuntimeError, match="estado inconsistente"):
+        vector.step([np.zeros((8, 6)), np.zeros((8, 6))])
+
+    second.fail_step = False
+    observations = vector.reset()
+    assert observations.shape == (2, 8, 3)
+    assert first.reset_calls == 1
+    assert second.reset_calls == 1
+
+    result = vector.step([np.zeros((8, 6)), np.zeros((8, 6))])
+    assert result[0].shape == (2, 8, 3)
+
+
+
+class _VectorResetShapeEnv:
+    def __init__(self, observation_shape):
+        self.observation_shape = observation_shape
+        self.players = [type("Player", (), {"alive": True})() for _ in range(8)]
+
+    def reset(self):
+        return np.zeros(self.observation_shape, dtype=np.float32)
+
+    def step(self, _actions):
+        return (
+            np.zeros(self.observation_shape, dtype=np.float32),
+            np.zeros(8, dtype=np.float32),
+            False,
+            {},
+        )
+
+
+def test_vector_reset_stays_poisoned_when_observation_batch_cannot_be_stacked():
+    from vector_lobby_env import LobbyVectorEnv
+    first = _VectorResetShapeEnv((8, 3))
+    second = _VectorResetShapeEnv((8, 4))
+    vector = LobbyVectorEnv([lambda: first, lambda: second])
+
+    with pytest.raises(ValueError):
+        vector.reset()
+
+    with pytest.raises(RuntimeError, match="estado inconsistente"):
+        vector.step([np.zeros((8, 6)), np.zeros((8, 6))])
+
+    # Once all environments can produce a compatible reset batch, the vector
+    # may recover and accept a new step.
+    second.observation_shape = (8, 3)
+    observations = vector.reset()
+    assert observations.shape == (2, 8, 3)
+
+    result = vector.step([np.zeros((8, 6)), np.zeros((8, 6))])
+    assert result[0].shape == (2, 8, 3)
+
+
+def test_wrapper_rejects_structured_snapshot_with_mismatched_sequence():
+    native = FakeNativeLobby()
+    native.episode_id = 1
+    native.decision_sequence = 2
+    native.player_decision_sequences = [2] * 8
+    snapshot = native._native_state_snapshot()
+    snapshot["snapshot_sequence"] = 1
+    identity = {
+        "engine_instance_id": f"fake-engine-{id(native)}",
+        "episode_id": 1,
+        "decision_sequence": 2,
+        "player_decision_sequences": [2] * 8,
+    }
+    with pytest.raises(RuntimeError, match="sequência publicada"):
+        cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
+
+
+def test_wrapper_rejects_structured_snapshot_with_wrong_slot_cardinality():
+    native = FakeNativeLobby()
+    native.episode_id = 1
+    native.decision_sequence = 1
+    native.player_decision_sequences = [1] * 8
+    snapshot = native._native_state_snapshot()
+    snapshot["players"][0]["board"].pop()
+    identity = {
+        "engine_instance_id": f"fake-engine-{id(native)}",
+        "episode_id": 1,
+        "decision_sequence": 1,
+        "player_decision_sequences": [1] * 8,
+    }
+    with pytest.raises(RuntimeError, match="cardinalidade inválida em board"):
+        cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
+
+
+
+def test_wrapper_rejects_pool_snapshot_with_mismatched_sequence():
+    native = FakeNativeLobby()
+    native.episode_id = 1
+    native.decision_sequence = 2
+    native.player_decision_sequences = [2] * 8
+    snapshot = native._native_state_snapshot()
+    snapshot["shared_pool"]["snapshot_sequence"] = 1
+    identity = {"engine_instance_id": f"fake-engine-{id(native)}", "episode_id": 1, "decision_sequence": 2, "player_decision_sequences": [2] * 8}
+    with pytest.raises(RuntimeError, match="duplicou campos do envelope nativo"):
+        cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
+
+
+def test_wrapper_rejects_economy_event_without_parent_player_sequence():
+    native = FakeNativeLobby()
+    native.episode_id = 1
+    native.decision_sequence = 1
+    native.player_decision_sequences = [1] * 8
+    snapshot = native._native_state_snapshot()
+    snapshot["economy_resolution_events"] = [{
+        "contract_id": "tft.economy-resolution-event",
+        "contract_version": 2,
+        "source_namespace": "tft.economy-engine.resolve-round",
+        "producer": "EconomyEngine::resolve_round",
+        "player_id": 8,
+    }]
+    identity = {
+        "engine_instance_id": f"fake-engine-{id(native)}",
+        "episode_id": 1,
+        "decision_sequence": 1,
+        "player_decision_sequences": [1] * 8,
+    }
+    with pytest.raises(RuntimeError, match="player_id sem sequência"):
+        cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
+
+
+def test_wrapper_rejects_economy_event_that_repeats_parent_identity():
+    native = FakeNativeLobby()
+    native.episode_id = 1
+    native.decision_sequence = 1
+    native.player_decision_sequences = [1] * 8
+    snapshot = native._native_state_snapshot()
+    snapshot["economy_resolution_events"] = [{
+        "contract_id": "tft.economy-resolution-event",
+        "contract_version": 2,
+        "source_namespace": "tft.economy-engine.resolve-round",
+        "producer": "EconomyEngine::resolve_round",
+        "player_id": 0,
+        "engine_instance_id": f"fake-engine-{id(native)}",
+    }]
+    identity = {
+        "engine_instance_id": f"fake-engine-{id(native)}",
+        "episode_id": 1,
+        "decision_sequence": 1,
+        "player_decision_sequences": [1] * 8,
+    }
+    with pytest.raises(RuntimeError, match="duplicou identidade/sequence"):
+        cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
+
+
+def test_wrapper_accepts_event_specific_combat_sequences_with_parent_envelope():
+    native = FakeNativeLobby()
+    native.episode_id = 1
+    native.decision_sequence = 1
+    native.player_decision_sequences = [1] * 8
+    snapshot = native._native_state_snapshot()
+    snapshot["combat_sequence"] = 2
+    snapshot["combat_damage_events"] = [
+        {"combat_sequence": 1, "timestamp": 0.1},
+        {"combat_sequence": 2, "timestamp": 0.2},
+    ]
+    snapshot["economy_resolution_events"] = [{
+        "contract_id": "tft.economy-resolution-event",
+        "contract_version": 2,
+        "source_namespace": "tft.economy-engine.resolve-round",
+        "producer": "EconomyEngine::resolve_round",
+        "player_id": 3,
+        "resolved_after_round": 1,
+        "income_for_round": 2,
+    }]
+    snapshot["pvp_result_credit_events"] = [{
+        "combat_sequence": 1,
+        "contract_id": "tft.pvp-result-credit-event",
+        "contract_version": 2,
+        "source_namespace": "tft.economy-engine.register-pvp-win",
+        "producer": "EconomyEngine::register_pvp_win",
+        "winner_player_id": 0,
+        "loser_player_id": 1,
+    }]
+    identity = {
+        "engine_instance_id": f"fake-engine-{id(native)}",
+        "episode_id": 1,
+        "decision_sequence": 1,
+        "player_decision_sequences": [1] * 8,
+    }
+    copied = cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
+    assert [event["combat_sequence"] for event in copied["combat_damage_events"]] == [1, 2]
+    assert copied["pvp_result_credit_events"][0]["combat_sequence"] == 1
+    assert copied["player_decision_sequences"][3] == 1
+
+
+def test_wrapper_rejects_combat_event_that_repeats_parent_round():
+    native = FakeNativeLobby()
+    native.episode_id = 1
+    native.decision_sequence = 1
+    native.player_decision_sequences = [1] * 8
+    snapshot = native._native_state_snapshot()
+    snapshot["combat_sequence"] = 1
+    snapshot["combat_damage_events"] = [{"round": 1, "combat_sequence": 1}]
+    identity = {
+        "engine_instance_id": f"fake-engine-{id(native)}",
+        "episode_id": 1,
+        "decision_sequence": 1,
+        "player_decision_sequences": [1] * 8,
+    }
+    with pytest.raises(RuntimeError, match="duplicou round do envelope pai"):
+        cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
+
+
+def test_wrapper_rejects_pool_snapshot_with_inconsistent_total():
+    native = FakeNativeLobby()
+    native.episode_id = 1
+    native.decision_sequence = 1
+    native.player_decision_sequences = [1] * 8
+    snapshot = native._native_state_snapshot()
+    snapshot["shared_pool"]["total_available"] = 18
+    identity = {"engine_instance_id": f"fake-engine-{id(native)}", "episode_id": 1, "decision_sequence": 1, "player_decision_sequences": [1] * 8}
+    with pytest.raises(RuntimeError, match="soma das disponibilidades"):
+        cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
+
+
+def test_wrapper_accepts_counted_item_ownership_rows_and_live_equipment():
+    native = FakeNativeLobby()
+    native.episode_id = 1
+    native.decision_sequence = 1
+    native.player_decision_sequences = [1] * 8
+    snapshot = native._native_state_snapshot()
+    player = snapshot["players"][0]
+    player["item_component_counts"] = [{"catalog_id": "component_x", "count": 2}]
+    player["item_inventory_counts"] = [{"catalog_id": "item_y", "count": 1}]
+    player["equipped_items"] = [{
+        "unit_uuid": "unit-live-1", "location": "board", "slot": 3, "catalog_id": "item_z"
+    }]
+    identity = {
+        "engine_instance_id": f"fake-engine-{id(native)}",
+        "episode_id": 1,
+        "decision_sequence": 1,
+        "player_decision_sequences": [1] * 8,
+    }
+    copied = cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
+    assert copied["players"][0]["item_component_counts"][0]["count"] == 2
+    assert copied["players"][0]["equipped_items"][0]["unit_uuid"] == "unit-live-1"
+
+
+def test_wrapper_rejects_invalid_item_ownership_count():
+    native = FakeNativeLobby()
+    native.episode_id = 1
+    native.decision_sequence = 1
+    native.player_decision_sequences = [1] * 8
+    snapshot = native._native_state_snapshot()
+    snapshot["players"][0]["item_inventory_counts"] = [{"catalog_id": "item_x", "count": True}]
+    identity = {
+        "engine_instance_id": f"fake-engine-{id(native)}",
+        "episode_id": 1,
+        "decision_sequence": 1,
+        "player_decision_sequences": [1] * 8,
+    }
+    with pytest.raises(RuntimeError, match="item_inventory_counts inválido"):
+        cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
+
+
+def test_wrapper_rejects_equipment_without_valid_live_slot():
+    native = FakeNativeLobby()
+    native.episode_id = 1
+    native.decision_sequence = 1
+    native.player_decision_sequences = [1] * 8
+    snapshot = native._native_state_snapshot()
+    snapshot["players"][0]["equipped_items"] = [{
+        "unit_uuid": "unit-live-1", "location": "board", "slot": 28, "catalog_id": "item_x"
+    }]
+    identity = {
+        "engine_instance_id": f"fake-engine-{id(native)}",
+        "episode_id": 1,
+        "decision_sequence": 1,
+        "player_decision_sequences": [1] * 8,
+    }
+    with pytest.raises(RuntimeError, match="equipped_items inválido"):
+        cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
+
+
+def test_native_snapshot_rejects_invalid_shop_offer_revisions():
+    wrapper = cpp_lobby_env.CppTFTLobbyWrapper.__new__(cpp_lobby_env.CppTFTLobbyWrapper)
+    snapshot = FakeNativeLobby()._native_state_snapshot()
+    snapshot["players"][0]["shop_offer_revisions"] = [0, True, 0, 0, 0]
+    identity = {"engine_instance_id": snapshot["engine_instance_id"], "episode_id": snapshot["episode_id"], "decision_sequence": snapshot["snapshot_sequence"], "player_decision_sequences": snapshot["player_decision_sequences"]}
+    with pytest.raises(RuntimeError, match="revisões de oferta inválidas"):
+        wrapper._copy_native_state_snapshot(snapshot, identity)
+
+
+def test_native_snapshot_rejects_occupied_shop_offer_without_revision():
+    wrapper = cpp_lobby_env.CppTFTLobbyWrapper.__new__(cpp_lobby_env.CppTFTLobbyWrapper)
+    snapshot = FakeNativeLobby()._native_state_snapshot()
+    snapshot["players"][0]["shop"][0] = {"occupied": True, "champion_id": "Test_A", "uuid": "unit-a", "star": 1, "cost": 1, "items": [], "trait_names": [], "role": 3, "attack_damage": 0.0, "attack_speed": 0.0, "max_health": 0.0, "armor": 0.0, "magic_resist": 0.0}
+    identity = {"engine_instance_id": snapshot["engine_instance_id"], "episode_id": snapshot["episode_id"], "decision_sequence": snapshot["snapshot_sequence"], "player_decision_sequences": snapshot["player_decision_sequences"]}
+    with pytest.raises(RuntimeError, match="sem revisão nativa"):
+        wrapper._copy_native_state_snapshot(snapshot, identity)
+
+
+def test_wrapper_accepts_terminal_item_retirement_summary():
+    native = FakeNativeLobby()
+    snapshot = native._native_state_snapshot()
+    player = snapshot["players"][0]
+    player["item_ownership_retired"] = True
+    player["retired_item_component_counts"] = [{"catalog_id": "sword", "count": 2}]
+    player["retired_item_inventory_counts"] = [{"catalog_id": "damage_blade", "count": 1}]
+    player["retired_equipped_item_counts"] = [
+        {"unit_uuid": "unit-retired", "catalog_id": "guard_plate", "count": 1}
+    ]
+    player["retired_pending_anvils"] = [
+        {"sequence": 7, "kind": 0, "options": ["sword", "bow"]}
+    ]
+    identity = {
+        "engine_instance_id": f"fake-engine-{id(native)}",
+        "episode_id": 0,
+        "decision_sequence": 0,
+        "player_decision_sequences": [0] * 8,
+    }
+    copied = cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
+    assert copied["players"][0]["item_ownership_retired"] is True
+    assert copied["players"][0]["retired_item_component_counts"][0]["count"] == 2
+
+
+def test_wrapper_rejects_live_item_ownership_after_retirement():
+    native = FakeNativeLobby()
+    snapshot = native._native_state_snapshot()
+    player = snapshot["players"][0]
+    player["item_ownership_retired"] = True
+    player["item_components"] = ["sword"]
+    identity = {
+        "engine_instance_id": f"fake-engine-{id(native)}",
+        "episode_id": 0,
+        "decision_sequence": 0,
+        "player_decision_sequences": [0] * 8,
+    }
+    with pytest.raises(RuntimeError, match="Ownership ativo presente"):
+        cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
+
+
+def test_wrapper_rejects_malformed_retired_equipment_count():
+    native = FakeNativeLobby()
+    snapshot = native._native_state_snapshot()
+    snapshot["players"][0]["retired_equipped_item_counts"] = [
+        {"unit_uuid": "unit-retired", "catalog_id": "guard_plate", "count": True}
+    ]
+    identity = {
+        "engine_instance_id": f"fake-engine-{id(native)}",
+        "episode_id": 0,
+        "decision_sequence": 0,
+        "player_decision_sequences": [0] * 8,
+    }
+    with pytest.raises(RuntimeError, match="retired_equipped_item_counts inválido"):
+        cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
+
+
+def test_wrapper_rejects_pending_anvil_without_identity_sequence():
+    native = FakeNativeLobby()
+    snapshot = native._native_state_snapshot()
+    player = snapshot["players"][0]
+    player["pending_anvil"] = True
+    player["pending_anvil_options"] = ["sword"]
+    identity = {
+        "engine_instance_id": f"fake-engine-{id(native)}",
+        "episode_id": 0,
+        "decision_sequence": 0,
+        "player_decision_sequences": [0] * 8,
+    }
+    with pytest.raises(RuntimeError, match="Bigorna pendente sem sequência"):
+        cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
+
+
+def test_wrapper_rejects_anvil_sequence_without_pending_choice():
+    native = FakeNativeLobby()
+    snapshot = native._native_state_snapshot()
+    snapshot["players"][0]["pending_anvil_sequence"] = 3
+    identity = {
+        "engine_instance_id": f"fake-engine-{id(native)}",
+        "episode_id": 0,
+        "decision_sequence": 0,
+        "player_decision_sequences": [0] * 8,
+    }
+    with pytest.raises(RuntimeError, match="Identidade de bigorna presente sem escolha pendente"):
+        cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
+
+
+
+def test_wrapper_rejects_invalid_strategic_context_sequence():
+    native = FakeNativeLobby()
+    snapshot = native._native_state_snapshot()
+    snapshot["players"][0]["strategic_state"]["strategic_context_sequence"] = True
+    identity = {
+        "engine_instance_id": f"fake-engine-{id(native)}",
+        "episode_id": 0,
+        "decision_sequence": 0,
+        "player_decision_sequences": [0] * 8,
+    }
+    with pytest.raises(RuntimeError, match="strategic_context_sequence"):
+        cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
+
+
+
+def test_wrapper_retains_python_owned_native_snapshot_without_deepcopy():
+    native = FakeNativeLobby()
+    snapshot = native._native_state_snapshot()
+    identity = {
+        "engine_instance_id": f"fake-engine-{id(native)}",
+        "episode_id": 0,
+        "decision_sequence": 0,
+        "player_decision_sequences": [0] * 8,
+    }
+
+    validated = cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(
+        snapshot, identity
+    )
+
+    assert validated is snapshot
+
+
+def test_wrapper_normalizes_owned_native_masks_without_copying_arrays():
+    masks = make_masks(3)
+
+    normalized = cpp_lobby_env.CppTFTLobbyWrapper._copy_action_masks(masks)
+
+    assert normalized is not masks
+    assert normalized[0] is not masks[0]
+    for key, original in masks[0].items():
+        assert normalized[0][key] is original
+        assert normalized[0][key].dtype == np.bool_
+
+    # Public reads remain detached from the wrapper's cached mask arrays.
+    wrapper = object.__new__(cpp_lobby_env.CppTFTLobbyWrapper)
+    wrapper._last_action_masks = normalized
+    exposed = wrapper.get_action_masks()
+    exposed[0]["type_mask"][3] = False
+    assert wrapper._last_action_masks[0]["type_mask"][3]
+
+
+
+def test_published_step_snapshot_isolated_and_source_survives_later_steps(monkeypatch):
+    monkeypatch.setattr(cpp_lobby_env, "_NativeTFTLobby", FakeNativeLobby)
+    lobby = cpp_lobby_env.CppTFTLobbyWrapper(seed=11)
+
+    try:
+        lobby.reset()
+        _, _, _, first_info = lobby.step(
+            [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        )
+        first_snapshot = first_info["decision_snapshot"]
+        first_snapshot["native_state_snapshot"]["players"][0]["board"].clear()
+
+        retained = lobby.get_snapshot_metadata()
+        assert retained["decision_sequence"] == 2
+        assert len(retained["native_state_snapshot"]["players"][0]["board"]) == 28
+
+        _, _, _, second_info = lobby.step(
+            [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        )
+        second_event = second_info["action_outcome_events"][0]
+        assert second_event["source_decision"]["snapshot_sequence"] == 2
+        assert second_event["outcome_snapshot"]["snapshot_sequence"] == 3
+        assert second_info["decision_snapshot"]["decision_sequence"] == 3
+        assert second_info["reward_audit"]["decision_sequence"] == 3
+    finally:
+        lobby.close()
+
+
+def test_native_snapshot_mapping_defers_combat_event_materialization():
+    class Handle:
+        def __init__(self):
+            self.base_calls = 0
+            self.event_calls = []
+
+        def to_dict(self):
+            self.base_calls += 1
+            return {
+                "contract_id": "tft.native-state-snapshot",
+                "players": [{"board": [1, 2, 3]}],
+            }
+
+        def keys(self):
+            return ["contract_id", "players", "combat_damage_events",
+                    "combat_attack_events", "combat_death_events"]
+
+        def combat_events(self, field):
+            self.event_calls.append(field)
+            return [{"combat_sequence": 1, "field": field}]
+
+    handle = Handle()
+    snapshot = cpp_lobby_env._NativeSnapshotMapping(handle)
+
+    assert snapshot["contract_id"] == "tft.native-state-snapshot"
+    assert handle.base_calls == 1
+    assert handle.event_calls == []
+
+    clone = copy.deepcopy(snapshot)
+    clone["players"][0]["board"].clear()
+    assert snapshot["players"][0]["board"] == [1, 2, 3]
+    assert handle.base_calls == 1
+
+    assert clone["combat_damage_events"][0]["field"] == "combat_damage_events"
+    assert handle.event_calls == ["combat_damage_events"]
+    assert snapshot["combat_attack_events"][0]["field"] == "combat_attack_events"
+    assert handle.event_calls == [
+        "combat_damage_events", "combat_attack_events"
+    ]
+
+
+
+def test_native_binding_pins_snapshot_and_defers_unused_combat_rows():
+    lobby = cpp_lobby_env.CppTFTLobbyWrapper(seed=37)
+    try:
+        lobby.reset()
+        source_snapshot = lobby._last_snapshot_metadata["native_state_snapshot"]
+        assert isinstance(source_snapshot, cpp_lobby_env._NativeSnapshotMapping)
+        source_sequence = source_snapshot["snapshot_sequence"]
+        assert source_snapshot._combat_cache == {}
+
+        _, _, _, info = lobby.step(
+            [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        )
+
+        # The old view remains tied to the exact pre-action native value.
+        assert source_snapshot["snapshot_sequence"] == source_sequence
+        # Reward/outcome/semantic consumers do not request combat event rows.
+        assert source_snapshot._combat_cache == {}
+
+        events = source_snapshot["combat_damage_events"]
+        assert isinstance(events, list)
+        assert source_snapshot._combat_cache["combat_damage_events"] is events
+
+        # The observer-facing API still returns the complete eager schema.
+        full_audit = lobby.get_audit_snapshot()
+        assert isinstance(full_audit, dict)
+        assert "combat_damage_events" in full_audit
+        assert "combat_attack_events" in full_audit
+        assert "combat_death_events" in full_audit
+        assert info["decision_snapshot"]["decision_sequence"] > source_sequence
+    finally:
+        lobby.close()
+
+
+
+def test_training_action_masks_borrow_read_only_snapshot_buffers(monkeypatch):
+    monkeypatch.delenv("TFT_ABLATE_ITEM_ACTIONS", raising=False)
+    wrapper = cpp_lobby_env.CppTFTLobbyWrapper.__new__(
+        cpp_lobby_env.CppTFTLobbyWrapper
+    )
+    wrapper._last_action_masks = make_masks(2)
+
+    borrowed = wrapper.get_action_masks_for_training()
+    original_type_mask = wrapper._last_action_masks[0]["type_mask"]
+
+    assert borrowed[0]["type_mask"] is original_type_mask
+    assert not borrowed[0]["type_mask"].flags.writeable
+
+    detached = wrapper.get_action_masks()
+    for key in borrowed[0]:
+        np.testing.assert_array_equal(
+            borrowed[0][key], detached[0][key]
+        )
+
+    # The public API remains detached and safe for mutable consumers.
+    assert detached[0]["type_mask"] is not original_type_mask
+    detached[0]["type_mask"][2] = False
+    assert original_type_mask[2]
+
+    # A later decision replaces the wrapper's reference without overwriting
+    # buffers retained by a consumer of the previous decision.
+    wrapper._last_action_masks = make_masks(3)
+    assert borrowed[0]["type_mask"][2]
+    assert wrapper.get_action_masks_for_training()[0]["type_mask"][3]

@@ -1,5 +1,6 @@
 #pragma once
 #include "items/ItemEngine.hpp"
+#include "lobby/EconomyEngine.hpp"
 #include "strategy/BoardEvaluation.hpp"
 #include "strategy/EconomicController.hpp"
 #include <algorithm>
@@ -11,8 +12,7 @@
 namespace tft::composition_intelligence {
 enum class EvidenceQuality { Missing, Stale, Valid, Partial, Invalid };
 struct EvidenceSourceMetadata {
- std::string source; std::uint64_t source_version{0}; std::uint64_t match_id{0};
- std::int32_t player_id{-1}; std::string composition_id;
+ std::string source;
  std::uint32_t source_round{0}; std::uint32_t expected_round{0}; EvidenceQuality quality{EvidenceQuality::Missing};
  std::string reason{"not_provided"}; bool available{false};
 };
@@ -22,8 +22,31 @@ struct EconomicPlannerEvidence {
  strategy::EconomicPosture posture{strategy::EconomicPosture::AccumulateResources};
  strategy::StrategicReason reason{strategy::StrategicReason::InsufficientEvidence};
  double survival_pressure{0},board_pressure{0},economy_pressure{0},confidence{0};
- double buy_experience_opportunity_cost{0},reroll_with_target_opportunity_cost{0};
- double reroll_without_target_opportunity_cost{0},buy_unit_opportunity_cost{0};
+ // Appended to preserve existing aggregate initialization contracts.
+ bool sufficient_evidence{false};
+ std::vector<std::string> evidence_used,evidence_missing;
+ bool survival_evidence_available{false};
+ bool streak_evidence_available{false};
+ // Per-field availability: a valid source envelope does not make every field present.
+ bool gold_available{false},level_available{false},xp_available{false},xp_to_next_available{false};
+ bool interest_available{false},projected_income_available{false};
+ bool incoming_damage_available{false},elimination_risk_available{false},progression_available{false};
+ std::vector<std::string> evidence_invalid;
+ bool win_streak_available{false},loss_streak_available{false};
+ bool board_pressure_available{false},economy_pressure_available{false};
+ // Per-field provenance; projected income is the deterministic base-gold component only.
+ std::string projected_income_source{"unavailable"};
+ std::uint32_t projected_income_horizon_rounds{0};
+ double projected_income_uncertainty{1.0};
+ double incoming_damage{0.0}, elimination_risk{0.0};
+ std::string incoming_damage_source{"unavailable"}, elimination_risk_source{"unavailable"};
+ std::uint32_t combat_horizon_rounds{0};
+ std::uint64_t combat_evidence_sequence{0};
+ double combat_evidence_uncertainty{1.0};
+ std::string combat_calibration_protocol_id;
+ std::string combat_calibration_report_sha256;
+ std::string combat_dataset_version;
+ std::vector<std::string> combat_replay_artifact_ids;
 };
 struct BoardPlannerEvidence {
  EvidenceSourceMetadata metadata;
@@ -32,45 +55,145 @@ struct BoardPlannerEvidence {
  std::int32_t unit_count{0},frontline_count{0},carry_count{0},exposed_carry_count{0};
  std::int32_t missing_frontline_count{0},missing_backline_count{0};
 };
-struct ItemUnitBinding { std::int32_t champion_id{-1}; items::UnitProfile profile; };
+struct ItemUnitBinding {
+ std::int32_t champion_id{-1};
+ items::UnitProfile profile;
+ std::string role_source{"derived:UnitCombatClassifier"};
+ std::string composition_source{"unavailable_without_active_composition"};
+ std::string composition_id;
+ std::uint64_t composition_version{0};
+};
 struct ItemUnitPlannerEvidence {
  std::int32_t champion_id{-1}; std::vector<std::string> equipped_item_ids;
  std::string best_inventory_item_id; double equipped_fit{0},best_inventory_fit{0};
  bool has_equipped_items{false},has_inventory_candidate{false};
+ // Observed profile facts and composition-derived preferences remain distinct.
+ std::string role_source{"unknown"};
+ std::string composition_source{"unavailable"};
+ std::string composition_id;
+ std::uint64_t composition_version{0};
+ double composition_fit{0.0};
+ std::vector<std::string> preferred_traits;
 };
 struct ItemPlannerEvidence {
  EvidenceSourceMetadata metadata; std::size_t inventory_count{0},component_count{0};
  std::vector<ItemUnitPlannerEvidence> units;
 };
 struct PlannerEvidenceSnapshot {
- std::uint32_t schema_version{1}; std::uint64_t match_id{0}; std::int32_t player_id{-1};
+ std::uint32_t schema_version{3}; std::uint64_t match_id{0}; std::int32_t player_id{-1};
  std::string composition_id; std::uint64_t composition_version{0}; std::uint32_t round{0};
  EconomicPlannerEvidence economy; BoardPlannerEvidence board; ItemPlannerEvidence items;
 };
 class PlannerEvidenceAdapters {
 public:
+ static bool combat_context_valid(const strategy::StrategicSharedContext& c) {
+  const bool has_combat = c.evidence.estimated_incoming_damage ||
+   c.evidence.elimination_risk;
+  if(!has_combat)return true;
+  const auto approved_source=[](const std::string& source) {
+   return source=="observed_hp+approved_replay_calibration.v1" ||
+    source=="observed_hp+approved_replay_trajectory.v1";
+  };
+  return c.sequence>0&&c.combat_evidence_sequence==c.sequence&&
+   c.combat_evidence_horizon_rounds>0&&c.combat_evidence_horizon_rounds<=10&&
+   approved_source(c.incoming_damage_source)&&
+   approved_source(c.elimination_risk_source)&&
+   c.combat_calibration_protocol_id.size()>0&&
+   is_sha256(c.combat_calibration_report_sha256)&&
+   !c.combat_dataset_version.empty()&&!c.combat_replay_artifact_ids.empty()&&
+   std::isfinite(c.combat_evidence_uncertainty)&&
+   c.combat_evidence_uncertainty>=0.0&&c.combat_evidence_uncertainty<=1.0&&
+   (!c.evidence.estimated_incoming_damage||
+    (std::isfinite(c.estimated_incoming_damage)&&c.estimated_incoming_damage>=0.0))&&
+   (!c.evidence.elimination_risk||
+    (std::isfinite(c.elimination_risk)&&c.elimination_risk>=0.0&&c.elimination_risk<=1.0));
+ }
+
+ static bool combat_evidence_valid(
+  const strategy::StrategicSharedContext& c,const EconomicPlannerEvidence& e) {
+  if(c.evidence.estimated_incoming_damage!=e.incoming_damage_available||
+     c.evidence.elimination_risk!=e.elimination_risk_available||
+     !combat_context_valid(c))return false;
+  if(!e.incoming_damage_available&&!e.elimination_risk_available)return true;
+  return e.incoming_damage_source==c.incoming_damage_source&&
+   e.elimination_risk_source==c.elimination_risk_source&&
+   e.combat_horizon_rounds==c.combat_evidence_horizon_rounds&&
+   e.combat_evidence_sequence==c.combat_evidence_sequence&&
+   e.combat_calibration_protocol_id==c.combat_calibration_protocol_id&&
+   e.combat_calibration_report_sha256==c.combat_calibration_report_sha256&&
+   e.combat_dataset_version==c.combat_dataset_version&&
+   e.combat_replay_artifact_ids==c.combat_replay_artifact_ids&&
+   std::abs(e.combat_evidence_uncertainty-c.combat_evidence_uncertainty)<=1e-9&&
+   (!e.incoming_damage_available||
+    std::abs(e.incoming_damage-c.estimated_incoming_damage)<=1e-9)&&
+   (!e.elimination_risk_available||
+    std::abs(e.elimination_risk-c.elimination_risk)<=1e-9);
+ }
+
  static EconomicPlannerEvidence economic(const strategy::StrategicSharedContext& c,
-  const strategy::EconomicControlDecision& d,std::uint64_t version,std::uint32_t expected_round,
-  std::uint64_t match_id=0,std::int32_t player_id=-1,const std::string& composition_id={}) {
+  const strategy::EconomicControlDecision& d,std::uint32_t expected_round,
+  std::int32_t expected_player_id) {
   EconomicPlannerEvidence o;
-  o.metadata=make_metadata("EconomicController",version,c.round,expected_round,c.alive&&d.shadow_only,match_id,player_id,composition_id);
-  if(c.player_id!=player_id){o.metadata.available=false;o.metadata.quality=EvidenceQuality::Invalid;o.metadata.reason="player_id_mismatch";return o;}
+  o.metadata=make_metadata("EconomicController",c.round,expected_round,c.alive&&d.shadow_only);
+  if(c.player_id!=expected_player_id){o.metadata.available=false;o.metadata.quality=EvidenceQuality::Invalid;o.metadata.reason="player_id_mismatch";return o;}
   if(!std::isfinite(d.survival_pressure)||!std::isfinite(d.board_pressure)||!std::isfinite(d.economy_pressure)||!std::isfinite(d.confidence)){o.metadata.available=false;o.metadata.quality=EvidenceQuality::Invalid;o.metadata.reason="non_finite_economic_metric";return o;}
+  if(!d.evidence_invalid.empty()){o.metadata.available=false;o.metadata.quality=EvidenceQuality::Invalid;o.metadata.reason="economic_controller_rejected_contradictory_evidence";o.evidence_invalid=d.evidence_invalid;return o;}
+  if(c.evidence.interest_if_resolved_now &&
+      (!c.evidence.gold || c.interest_if_resolved_now != EconomyEngine{}.get_interest(c.gold))){
+   o.metadata.available=false;o.metadata.quality=EvidenceQuality::Invalid;
+   o.metadata.reason="interest_gold_inconsistency";o.evidence_invalid.push_back("interest_if_resolved_now");return o;
+  }
+  if(!combat_context_valid(c) &&
+   (c.evidence.estimated_incoming_damage || c.evidence.elimination_risk)) {
+   o.metadata.available=false;o.metadata.quality=EvidenceQuality::Invalid;
+   o.metadata.reason="combat_evidence_provenance_horizon_or_sequence_invalid";
+   o.evidence_invalid.push_back("combat_evidence_provenance");
+   return o;
+  }
   if(!o.metadata.available)return o;
   o.gold=c.gold;o.level=c.level;o.xp=c.xp;o.xp_to_next=c.xp_to_next;
   o.interest_if_resolved_now=c.interest_if_resolved_now;o.projected_next_round_income=c.projected_next_round_income;
   o.win_streak=c.win_streak;o.loss_streak=c.loss_streak;o.posture=d.posture;o.reason=d.reason;
+  o.gold_available=c.evidence.gold;o.level_available=c.evidence.level;
+  o.xp_available=c.evidence.xp;o.xp_to_next_available=c.evidence.xp_to_next;
+  o.interest_available=c.evidence.interest_if_resolved_now;
+  o.projected_income_available=c.evidence.projected_next_round_income;
+  if (o.projected_income_available) {
+   o.projected_income_source = "EconomyEngine::get_base_round_gold:base_only";
+   o.projected_income_horizon_rounds = 1;
+   o.projected_income_uncertainty = 0.0;
+  }
+  o.incoming_damage_available=c.evidence.estimated_incoming_damage;
+  o.elimination_risk_available=c.evidence.elimination_risk;
+  if (o.incoming_damage_available || o.elimination_risk_available) {
+   o.incoming_damage=c.estimated_incoming_damage;
+   o.elimination_risk=c.elimination_risk;
+   o.incoming_damage_source=c.incoming_damage_source;
+   o.elimination_risk_source=c.elimination_risk_source;
+   o.combat_horizon_rounds=c.combat_evidence_horizon_rounds;
+   o.combat_evidence_sequence=c.combat_evidence_sequence;
+   o.combat_evidence_uncertainty=c.combat_evidence_uncertainty;
+   o.combat_calibration_protocol_id=c.combat_calibration_protocol_id;
+   o.combat_calibration_report_sha256=c.combat_calibration_report_sha256;
+   o.combat_dataset_version=c.combat_dataset_version;
+   o.combat_replay_artifact_ids=c.combat_replay_artifact_ids;
+  }
+  o.progression_available=c.evidence.progression_plan;
+  o.win_streak_available=c.evidence.streaks;o.loss_streak_available=c.evidence.streaks;
+  o.sufficient_evidence=d.sufficient_evidence;
+  o.evidence_used=d.evidence_used;o.evidence_missing=d.evidence_missing;
+  o.survival_evidence_available=c.evidence.hp ||
+   c.evidence.estimated_incoming_damage || c.evidence.elimination_risk;
+  o.streak_evidence_available=c.evidence.streaks;
+  o.board_pressure_available=c.evidence.relative_board_power;
+  o.economy_pressure_available=c.evidence.gold;
   o.survival_pressure=unit(d.survival_pressure);o.board_pressure=unit(d.board_pressure);
   o.economy_pressure=unit(d.economy_pressure);o.confidence=unit(d.confidence);
-  o.buy_experience_opportunity_cost=strategy::action_opportunity_cost::kBuyExperience;
-  o.reroll_with_target_opportunity_cost=strategy::action_opportunity_cost::kRerollWithUpgradeTarget;
-  o.reroll_without_target_opportunity_cost=strategy::action_opportunity_cost::kRerollWithoutUpgradeTarget;
-  o.buy_unit_opportunity_cost=strategy::action_opportunity_cost::kBuyUnit;return o;
+  return o;
  }
  static BoardPlannerEvidence board(const strategy::BoardEvaluationResult& r,
-  std::uint64_t version,std::uint32_t source_round,std::uint32_t expected_round,
-  std::uint64_t match_id=0,std::int32_t player_id=-1,const std::string& composition_id={}) {
-  BoardPlannerEvidence o;o.metadata=make_metadata("BoardEvaluation",version,source_round,expected_round,r.unit_count>0,match_id,player_id,composition_id);
+  std::uint32_t source_round,std::uint32_t expected_round) {
+  BoardPlannerEvidence o;o.metadata=make_metadata("BoardEvaluation",source_round,expected_round,r.unit_count>0);
   if(!o.metadata.available)return o;
   if(!std::isfinite(r.positional_score)||!std::isfinite(r.structural_score)||!std::isfinite(r.synergy_score)||!std::isfinite(r.total_score)||!std::isfinite(r.strategic_fit_score)||!std::isfinite(r.unit_quality_score)||!std::isfinite(r.trait_coherence_score)){o.metadata.available=false;o.metadata.quality=EvidenceQuality::Invalid;o.metadata.reason="non_finite_board_metric";return o;}
   o.positional_score=unit(r.positional_score);o.structural_score=unit(r.structural_score);
@@ -82,24 +205,30 @@ public:
   o.missing_backline_count=r.missing_backline_count;return o;
  }
  static ItemPlannerEvidence item(const items::ItemEngine& engine,const items::ItemPlayerState& state,
-  const std::vector<ItemUnitBinding>& bindings,std::uint64_t version,
+  const std::vector<ItemUnitBinding>& bindings,
   std::uint32_t source_round,std::uint32_t expected_round,
-  std::uint64_t match_id=0,std::int32_t player_id=-1,const std::string& composition_id={}) {
-  ItemPlannerEvidence o;o.metadata=make_metadata("ItemEngine",version,source_round,expected_round,true,match_id,player_id,composition_id);
+  items::ItemFitCache* fit_cache=nullptr) {
+  ItemPlannerEvidence o;o.metadata=make_metadata("ItemEngine",source_round,expected_round,true);
   if(!o.metadata.available)return o;
   o.inventory_count=state.inventory.size();o.component_count=state.components.size();
   for(const auto& b:bindings) {
    if(b.champion_id<0||b.profile.uuid.empty())continue;
    ItemUnitPlannerEvidence u;u.champion_id=b.champion_id;
+   u.role_source=b.role_source;u.composition_source=b.composition_source;
+   u.composition_id=b.composition_id;u.composition_version=b.composition_version;
+   u.composition_fit=unit(b.profile.composition_fit);
+   u.preferred_traits=b.profile.preferred_traits;
    const auto eq=state.equipped_by_unit_uuid.find(b.profile.uuid);
    if(eq!=state.equipped_by_unit_uuid.end()) {
     u.equipped_item_ids=eq->second;u.has_equipped_items=!eq->second.empty();
     double sum=0;std::size_t count=0;
-    for(const auto& id:eq->second){double fit=engine.item_fit(id,b.profile);
+    for(const auto& id:eq->second){double fit=fit_cache
+      ?fit_cache->get(id,b.profile):engine.item_fit(id,b.profile);
      if(fit>=0&&std::isfinite(fit)){sum+=fit;++count;}}
     u.equipped_fit=count?unit(sum/static_cast<double>(count)):0;
    }
-   for(const auto& id:state.inventory){double fit=engine.item_fit(id,b.profile);
+   for(const auto& id:state.inventory){double fit=fit_cache
+     ?fit_cache->get(id,b.profile):engine.item_fit(id,b.profile);
     if(fit>=0&&std::isfinite(fit)&&(!u.has_inventory_candidate||fit>u.best_inventory_fit)){
      u.has_inventory_candidate=true;u.best_inventory_fit=unit(fit);u.best_inventory_item_id=id;}}
    o.units.push_back(std::move(u));
@@ -114,29 +243,25 @@ public:
    snapshot.composition_id==composition_id&&snapshot.composition_version==composition_version&&
    snapshot.round==round;
  }
- static bool source_matches(const EvidenceSourceMetadata& m,
-  std::uint64_t match_id,std::int32_t player_id,const std::string& composition_id,
-  std::uint64_t composition_version,std::uint32_t round) {
-  return m.available&&m.match_id==match_id&&m.player_id==player_id&&
-   m.composition_id==composition_id&&m.source_version==composition_version&&
-   m.source_round==round&&m.expected_round==round&&m.quality==EvidenceQuality::Valid;
- }
- static PlannerEvidenceSnapshot combine(std::string id,std::uint64_t version,std::uint32_t round,
-  EconomicPlannerEvidence economy,BoardPlannerEvidence board,ItemPlannerEvidence item) {
-  PlannerEvidenceSnapshot o;o.composition_id=std::move(id);o.composition_version=version;o.round=round;
-  o.economy=std::move(economy);o.board=std::move(board);o.items=std::move(item);return o;
+ static bool source_matches(const EvidenceSourceMetadata& m,std::uint32_t round) {
+  return m.available&&m.source_round==round&&m.expected_round==round&&
+   m.quality==EvidenceQuality::Valid;
  }
 private:
- static EvidenceSourceMetadata make_metadata(std::string source,std::uint64_t version,
-  std::uint32_t source_round,std::uint32_t expected_round,bool available,
-  std::uint64_t match_id,std::int32_t player_id,const std::string& composition_id) {
-  EvidenceSourceMetadata o;o.source=std::move(source);o.source_version=version;o.match_id=match_id;
-  o.player_id=player_id;o.composition_id=composition_id;o.source_round=source_round;o.expected_round=expected_round;o.available=available&&version>0;
-  if(!o.available){o.quality=EvidenceQuality::Missing;o.reason="source_unavailable_or_unversioned";}
+ static EvidenceSourceMetadata make_metadata(std::string source,
+  std::uint32_t source_round,std::uint32_t expected_round,bool available) {
+  EvidenceSourceMetadata o;o.source=std::move(source);
+  o.source_round=source_round;o.expected_round=expected_round;o.available=available;
+  if(!o.available){o.quality=EvidenceQuality::Missing;o.reason="source_unavailable";}
   else if(source_round!=expected_round){o.available=false;o.quality=EvidenceQuality::Stale;o.reason="round_mismatch";}
   else{o.quality=EvidenceQuality::Valid;o.reason="validated_read_only_snapshot";}return o;
  }
  static double unit(double v){return std::isfinite(v)?std::clamp(v,0.0,1.0):0.0;}
  static double signed_unit(double v){return std::isfinite(v)?std::clamp(v,-1.0,1.0):0.0;}
+ static bool is_sha256(const std::string& value) {
+  return value.size()==64&&std::all_of(value.begin(),value.end(),[](unsigned char c) {
+   return (c>='0'&&c<='9')||(c>='a'&&c<='f');
+  });
+ }
 };
 } // namespace tft::composition_intelligence

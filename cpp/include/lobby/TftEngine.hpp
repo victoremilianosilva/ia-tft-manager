@@ -13,6 +13,10 @@
 #include <utility>
 #include <vector>
 
+namespace tft::combat_evidence {
+struct SurvivalRiskEvidence;
+}
+
 namespace tft {
 
 inline constexpr std::size_t kPlayersPerLobby = 8;
@@ -201,7 +205,327 @@ struct RewardState {
     double total_reward{0.0};
 };
 
+struct AuditUnitSnapshot {
+    bool occupied{false};
+    std::string champion_id;
+    std::string uuid;
+    std::int32_t star{0};
+    std::int32_t cost{0};
+    std::vector<std::string> item_ids;
+    // Exact static catalog membership from ChampionDefinition::traits.
+    // This excludes item-granted traits and active trait counts.
+    std::vector<std::string> trait_names;
+    // Native target profile consumed by item-target action heads.
+    std::int32_t role{3};
+    double attack_damage{0.0};
+    double attack_speed{0.0};
+    double max_health{0.0};
+    double armor{0.0};
+    double magic_resist{0.0};
+};
+
+struct AuditItemCount { std::string catalog_id; std::uint32_t count{0}; };
+struct AuditEquippedItemSnapshot { std::string unit_uuid; std::string location; std::int32_t slot{-1}; std::string catalog_id; };
+struct AuditRetiredEquippedItemCount { std::string unit_uuid; std::string catalog_id; std::uint32_t count{0}; };
+struct AuditRetiredAnvilSnapshot { std::uint64_t sequence{0}; std::int32_t kind{-1}; std::vector<std::string> options; };
+// Combat rows inherit round/decision identity; each retains its own combat_sequence.
+struct AuditCombatDamageEvent {
+    std::uint64_t combat_sequence{0};
+    float timestamp{0.0f};
+    std::int32_t source_unit_id{-1};
+    std::int32_t target_unit_id{-1};
+    std::int32_t source_player_id{-1};
+    std::int32_t target_player_id{-1};
+    std::string source_unit_uuid;
+    std::string target_unit_uuid;
+    std::uint8_t damage_type{0};
+    float raw_damage{0.0f};
+    float final_damage{0.0f};
+    bool critical{false};
+    bool ability_damage{false};
+};
+struct AuditCombatAttackEvent {
+    std::uint64_t combat_sequence{0};
+    float timestamp{0.0f};
+    std::int32_t source_unit_id{-1};
+    std::int32_t target_unit_id{-1};
+    std::int32_t source_player_id{-1};
+    std::int32_t target_player_id{-1};
+    std::string source_unit_uuid;
+    std::string target_unit_uuid;
+    bool critical{false};
+    float damage{0.0f};
+};
+struct AuditCombatDeathEvent {
+    std::uint64_t combat_sequence{0};
+    float timestamp{0.0f};
+    std::int32_t unit_id{-1};
+    std::int32_t killer_unit_id{-1};
+    std::int32_t unit_player_id{-1};
+    std::int32_t killer_player_id{-1};
+    std::string unit_uuid;
+    std::string killer_unit_uuid;
+};
+struct AuditEconomyResolutionEvent {
+    std::string contract_id{"tft.economy-resolution-event"};
+    std::uint32_t contract_version{2};
+    std::string source_namespace{"tft.economy-engine.resolve-round"};
+    std::string producer{"EconomyEngine::resolve_round"};
+    // Engine/episode/snapshot/player sequence are inherited from AuditSnapshot.
+    std::int32_t player_id{-1};
+    // The completed preparation round and the next round receiving this income.
+    std::uint32_t resolved_after_round{0};
+    std::int32_t income_for_round{0};
+    std::int32_t old_gold{0};
+    std::int32_t gold_before_interest{0};
+    std::int32_t gold_before_income{0};
+    std::int32_t new_gold{0};
+    std::int32_t base_gold{0};
+    std::int32_t interest_gold{0};
+    std::int32_t streak_gold{0};
+    std::int32_t win_gold{0};
+    std::int32_t total_gold{0};
+    std::int32_t old_level{0};
+    std::int32_t new_level{0};
+    bool leveled_up{false};
+    std::int32_t xp{0};
+    std::int32_t xp_to_next{0};
+};
+
+struct AuditPvpResultCreditEvent {
+    std::string contract_id{"tft.pvp-result-credit-event"};
+    std::uint32_t contract_version{2};
+    std::string source_namespace{"tft.economy-engine.register-pvp-win"};
+    std::string producer{"EconomyEngine::register_pvp_win"};
+    // Identity and round are inherited; combat_sequence identifies this specific matchup.
+    std::uint64_t combat_sequence{0};
+    std::int32_t winner_player_id{-1};
+    std::int32_t loser_player_id{-1};
+    std::int32_t gold_before_credit{0};
+    std::int32_t gold_after_credit{0};
+    std::int32_t credited_gold{0};
+    std::int32_t win_streak_before{0};
+    std::int32_t win_streak_after{0};
+};
+
+struct AuditUnitCopyProgressSnapshot {
+    std::int32_t champion_internal_id{-1};
+    std::int32_t owned_copy_equivalent{0};
+    std::int32_t copies_toward_next_star{0};
+    std::int32_t highest_star{0};
+};
+
+struct AuditUnitStrategicPrioritySnapshot {
+    std::int32_t champion_internal_id{-1};
+    std::int32_t intent{0};
+    std::int32_t relation{0};
+    std::int32_t priority{0};
+    std::int32_t target_star{0};
+    bool sale_restricted{false};
+    double confidence{0.0};
+};
+
+struct AuditUnitOpportunityCostSnapshot {
+    std::int32_t champion_internal_id{-1};
+    double value{0.0};
+    double uncertainty{1.0};
+    std::uint32_t horizon_rounds{0};
+    std::string source;
+    std::string forgone_candidate_id;
+    std::string value_basis;
+};
+
+struct AuditStrategicOwnerSnapshot {
+    std::string contract_id{"tft.strategic-owner-observation"};
+    std::uint32_t contract_version{3};
+    std::string source_namespace{"tft.engine.strategic-owners"};
+    std::string producer{"TFTEngine::get_audit_snapshot"};
+    std::uint64_t episode_id{0};
+    std::uint64_t player_decision_sequence{0};
+    std::int32_t player_id{-1};
+    std::uint32_t round{0};
+    bool active_composition_valid{false};
+    std::string active_composition_id;
+    std::uint64_t active_composition_version{0};
+    std::uint64_t active_source_sequence{0};
+    std::vector<std::int32_t> active_unit_ids;
+    std::vector<std::int32_t> active_core_unit_ids;
+    bool direction_valid{false};
+    std::string direction_identity;
+    // Internal audit diagnostic; not part of the serialized PPO contract.
+    std::string direction_value_for_diagnostics;
+    std::uint32_t direction_selected_round{0};
+    std::vector<std::int32_t> direction_reference_unit_ids;
+    bool pivot_candidate_valid{false};
+    std::string pivot_candidate_identity;
+    std::string pivot_target_composition_identity;
+    // Internal diagnostic for native pivot proposal production; not serialized.
+    std::string pivot_generation_diagnostic_for_diagnostics;
+    std::uint64_t pivot_source_composition_version{0};
+    std::vector<std::int32_t> pivot_reference_unit_ids;
+    // Values are produced by strategy::UnitCopyProgress from this snapshot's
+    // physical board/bench copies; the Python projection must not recalculate.
+    std::vector<AuditUnitCopyProgressSnapshot> unit_copy_progress;
+    // False means unavailable, never a measured zero.
+    bool opportunity_cost_available{false};
+    // Sequence consumed by strategic evidence/candidate/action owners; a distinct scope.
+    // Appended to preserve existing aggregate initialization.
+    std::uint64_t strategic_context_sequence{0};
+    // Same-cycle native planner outputs projected as PPO context, never as forced actions.
+    bool planner_outputs_valid{false};
+    std::uint64_t planner_output_sequence{0};
+    std::vector<AuditUnitStrategicPrioritySnapshot> unit_priorities;
+    std::vector<AuditUnitOpportunityCostSnapshot> opportunity_costs;
+    std::vector<std::int32_t> lineup_selected_unit_ids;
+    std::vector<std::int32_t> lineup_entry_unit_ids;
+    std::vector<std::int32_t> lineup_exit_unit_ids;
+    std::vector<std::int32_t> lineup_deferred_unit_ids;
+    bool strategic_refresh_failed{false};
+    std::string strategic_refresh_failure_reason;
+};
+
+struct AuditPlayerSnapshot {
+    std::int32_t player_id{-1};
+    AuditStrategicOwnerSnapshot strategic_state{};
+    // Player survival and standing facts, correlated by the enclosing snapshot identity.
+    double hp{100.0};
+    double damage_taken{0.0};
+    bool alive{true};
+    std::int32_t wins{0};
+    std::int32_t losses{0};
+    std::optional<std::int32_t> placement;
+    std::optional<std::int32_t> opponent_id;
+    std::int32_t gold{0};
+    std::int32_t level{0};
+    std::int32_t xp{0};
+    std::int32_t win_streak{0};
+    std::int32_t loss_streak{0};
+    std::int32_t gold_before_interest{0};
+    std::int32_t interest_if_resolved_now{0};
+    double board_power{0.0};
+    double synergy_score{0.0};
+    double positioning_score{0.0};
+    // Keep native board-evaluation diagnostics in the audit snapshot; the
+    // Viewer cannot reconstruct structural quality from board power alone.
+    double board_quality_score{0.0};
+    double board_positional_score{0.0};
+    double board_structural_score{0.0};
+    double board_quality_delta{0.0};
+    std::int32_t board_exposed_carries{0};
+    std::int32_t board_frontline_count{0};
+    std::int32_t board_isolated_frontline_count{0};
+    std::int32_t board_important_bench_units_unplayed{0};
+    std::int32_t board_frontline_lane_count{0};
+    std::int32_t board_exposed_main_carries{0};
+    std::int32_t board_fragile_frontline_count{0};
+    std::int32_t board_missing_frontline_count{0};
+    std::int32_t board_missing_backline_count{0};
+    std::int32_t board_active_trait_count{0};
+    double board_strategic_fit_score{0.0};
+    double board_unit_quality_score{0.0};
+    double board_trait_coherence_score{0.0};
+    std::int32_t round_gold{0};
+    std::int32_t round_base_gold{0};
+    std::int32_t round_interest{0};
+    std::int32_t round_streak_gold{0};
+    std::int32_t round_win_gold{0};
+    std::array<AuditUnitSnapshot, kBoardSlots> board{};
+    std::array<AuditUnitSnapshot, kBenchSlots> bench{};
+    std::array<AuditUnitSnapshot, kShopSlots> shop{};
+    std::array<std::uint64_t, kShopSlots> shop_offer_revisions{};
+    // Item state is part of the audit snapshot so the viewer can distinguish
+    // loose components, completed items in the bag, and unit equipment.
+    std::vector<std::string> item_components;
+    std::vector<std::string> item_inventory;
+    std::vector<AuditItemCount> item_component_counts;
+    std::vector<AuditItemCount> item_inventory_counts;
+    std::vector<AuditEquippedItemSnapshot> equipped_items;
+    bool item_ownership_retired{false};
+    std::vector<AuditItemCount> retired_item_component_counts;
+    std::vector<AuditItemCount> retired_item_inventory_counts;
+    std::vector<AuditRetiredEquippedItemCount> retired_equipped_item_counts;
+    std::vector<AuditRetiredAnvilSnapshot> retired_pending_anvils;
+    std::vector<std::string> item_component_catalog;
+    bool pending_anvil{false};
+    std::uint64_t pending_anvil_sequence{0};
+    std::int32_t pending_anvil_kind{-1};
+    std::vector<std::string> pending_anvil_options;
+    // Structured native item observations. These are populated from the same
+    // ItemEngine/catalog/profile producers as the legacy observation writer.
+    std::array<float, 10> item_component_features{};
+    std::array<std::array<float, 17>, 9> item_inventory_features{};
+    std::array<std::array<float, 17>, 100> item_recipe_features{};
+    std::array<std::array<float, 37>, 9> item_inventory_target_fit{};
+    std::array<std::array<float, 37>, 100> item_recipe_target_fit{};
+    std::array<std::array<float, 11>, 9> pending_anvil_option_features{};
+    // Native temporal facts used by the PPO semantic global encoder.
+    std::uint32_t actions_taken_this_round{0};
+    std::array<std::uint32_t, kBoardSlots> board_move_age{};
+    // Last item decision is carried by the post-action snapshot for exact
+    // Viewer attribution (normal equip/craft versus forced anvil selection).
+    std::string last_item_action_kind;
+    std::string last_item_id;
+    std::string last_item_first_component;
+    std::string last_item_second_component;
+    std::string last_item_target_uuid;
+    std::int32_t last_item_target_slot{-1};
+    bool last_item_target_on_board{false};
+    double last_item_fit{0.0};
+    double last_item_immediate_strength{0.0};
+    double last_item_role_alignment{0.0};
+    double last_item_assignment_reward{0.0};
+    PlayerActionMasks masks{};
+};
+
+struct AuditPoolChampionCount {
+    std::int32_t champion_internal_id{-1};
+    std::string champion_id;
+    std::int32_t cost{0};
+    std::int32_t initial_count{0};
+    std::int32_t available_count{0};
+};
+struct AuditSharedPoolSnapshot {
+    std::string contract_id{"tft.shared-champion-pool-snapshot"};
+    std::uint32_t contract_version{2};
+    std::string producer{"UnitPool::available"};
+    // Correlation identity and source namespace are inherited from AuditSnapshot.
+    std::int64_t total_available{0};
+    std::vector<AuditPoolChampionCount> champions;
+};
+struct AuditSnapshot {
+    AuditSharedPoolSnapshot shared_pool;
+    std::string contract_id{"tft.native-state-snapshot"};
+    std::uint32_t contract_version{6};
+    // Current native board-slot geometry: rectangular 4x7, not canonical hex.
+    std::string board_geometry_id{"tft.board-grid.rectangular-4x7"};
+    std::uint32_t board_geometry_version{1};
+    std::uint32_t board_rows{4};
+    std::uint32_t board_columns{7};
+    std::string board_position_formula{"row=slot/7;column=slot%7"};
+    std::string source_namespace{"tft.engine.observation-snapshot"};
+    std::string producer{"TFTEngine::get_audit_snapshot"};
+    std::string engine_instance_id;
+    std::uint64_t episode_id{0};
+    std::uint64_t snapshot_sequence{0};
+    std::array<std::uint64_t, kPlayersPerLobby> player_decision_sequences{};
+    std::uint32_t round{0};
+    std::uint32_t stage{1};
+    bool finished{false};
+    std::uint64_t combat_sequence{0};
+    bool combat_damage_events_truncated{false};
+    std::vector<AuditCombatDamageEvent> combat_damage_events;
+    bool combat_attack_events_truncated{false};
+    std::vector<AuditCombatAttackEvent> combat_attack_events;
+    bool combat_death_events_truncated{false};
+    std::vector<AuditCombatDeathEvent> combat_death_events;
+    std::vector<AuditEconomyResolutionEvent> economy_resolution_events;
+    std::vector<AuditPvpResultCreditEvent> pvp_result_credit_events;
+    std::array<AuditPlayerSnapshot, kPlayersPerLobby> players{};
+};
+
+
 struct ResetResult {
+    std::string engine_instance_id;
     // Row-major: (8, observation_dim).
     std::vector<float> observations;
     std::size_t observation_dim{0};
@@ -210,6 +534,12 @@ struct ResetResult {
         action_masks{};
 
     std::uint64_t episode_id{0};
+    // Monotonic per Engine instance; identifies the exact published observation/mask snapshot.
+    std::uint64_t decision_sequence{0};
+    // Per-player decision-snapshot sequence; advances with every published row.
+    std::array<std::uint64_t, kPlayersPerLobby> player_decision_sequences{};
+    // Structured native facts captured atomically with observations and masks.
+    AuditSnapshot native_state_snapshot{};
 };
 
 
@@ -244,162 +574,6 @@ struct PlayerInfo {
     std::int32_t board_important_bench_units_unplayed{0};
 };
 
-struct StrategicCandidateDiagnosticInfo {
-    std::int32_t champion_id{-1};
-    std::string target_direction;
-    double score{0.0};
-    bool accepted{false};
-    std::string evaluation_reason;
-    std::string composition_identity;
-    std::vector<std::int32_t> candidate_unit_ids;
-    std::int32_t main_carry_id{-1};
-    std::vector<std::string> candidate_traits;
-    std::vector<std::string> evidence;
-};
-
-struct ActionCandidateScoreInfo {
-    std::string action;
-    std::int32_t champion_id{-1};
-    double direct_gold_cost{0.0};
-    double lost_interest_cost{0.0};
-    double opportunity_cost{0.0};
-    double board_component{0.0};
-    double survival_component{0.0};
-    double streak_component{0.0};
-    double composition_component{0.0};
-    double upgrade_component{0.0};
-    double posture_component{0.0};
-    double direct_cost_component{0.0};
-    double lost_interest_component{0.0};
-    double opportunity_cost_component{0.0};
-    double total_score{0.0};
-    bool available{true};
-    bool selected{false};
-};
-
-struct StrategyInfo {
-    // Valores compatíveis com StrategyManager.py.
-    std::int32_t strategy{0};
-    std::string strategy_name{"ECON"};
-
-    std::optional<std::int32_t> previous_strategy;
-
-    float confidence{0.0f};
-    std::int32_t strategy_age{0};
-    std::string reason;
-    bool changed{false};
-    float state_confidence{0.0f};
-    std::int32_t best_scored_strategy{0};
-    std::vector<std::pair<std::int32_t, double>> strategy_scores;
-    double board_power{0.0};
-    double bench_strength{0.0};
-    std::int32_t active_traits_count{0};
-
-    // Snapshot de CompositionManager: foco/direção e elementos core.
-    std::string composition_focus;
-    std::int32_t composition_focus_id{-1};
-    std::string composition_direction;
-    // Persistent state migrated from Python comp_direction/comp_focus logic.
-    bool composition_locked{false};
-    std::uint32_t comp_direction_update_steps{0};
-    std::int32_t comp_stabilize_start_round{-1};
-    double composition_strength{0.0};
-    // Hysteresis state and auditable direction-transition diagnostics.
-    std::string composition_candidate_direction;
-    double composition_candidate_strength{0.0};
-    std::uint32_t composition_candidate_streak{0};
-    std::string previous_composition_direction;
-    double previous_composition_strength{0.0};
-    bool composition_direction_change_was_locked{false};
-    std::int32_t composition_direction_change_round{0};
-    double composition_direction_change_focus_weight{0.0};
-    std::string composition_direction_change_reason{"initial"};
-    std::uint64_t composition_direction_change_count{0};
-    std::vector<std::pair<std::string, double>> composition_focus_weights;
-    std::vector<std::string> core_units;
-    std::vector<std::int32_t> core_unit_ids;
-    std::vector<std::string> core_traits;
-    // Explicit target lineup planned from the full champion pool. Unlike
-    // core_units (owned/observed pieces), these may include units not acquired yet.
-    std::vector<std::string> planned_units;
-    std::vector<std::int32_t> planned_unit_ids;
-    std::vector<std::string> planned_traits;
-    std::int32_t planned_main_carry_id{-1};
-    double planned_composition_score{0.0};
-    // Estimated chance that an unowned planned champion appears in a five-slot shop.
-    std::vector<std::string> planned_acquisition_notes;
-    std::vector<std::pair<std::string, std::int32_t>> active_traits;
-    std::vector<std::pair<std::string, std::int32_t>> unit_counts;
-    std::vector<std::pair<std::int32_t, std::int32_t>> unit_counts_by_id;
-
-    // Strategic Planner shadow diagnostics. These fields are observational
-    // only and never feed PPO observations, rewards, masks, or action execution.
-    std::int32_t strategic_composition_decision{5};
-    std::string strategic_composition_decision_name{"INSUFFICIENT_EVIDENCE"};
-    std::string strategic_target_direction;
-    std::string strategic_reason;
-    std::int32_t strategic_anchor_champion_id{-1};
-    double strategic_confidence{0.0};
-    double strategic_transition_cost{0.0};
-    std::vector<std::int32_t> strategic_preserve_unit_ids;
-    std::vector<std::int32_t> strategic_replaceable_unit_ids;
-    std::vector<StrategicCandidateDiagnosticInfo> strategic_candidate_diagnostics;
-    // Explain why INSUFFICIENT_EVIDENCE was emitted and expose both sides
-    // of the comparison. Confidence values are score-derived, uncalibrated.
-    std::string strategic_decision_path_reason;
-    double strategic_current_direction_score{0.0};
-    double strategic_best_anchor_score{0.0};
-    double strategic_alternative_advantage{0.0};
-    double strategic_minimum_adapt_advantage{0.0};
-    double strategic_required_pivot_advantage{0.0};
-    double strategic_anchor_confidence{0.0};
-    double strategic_current_direction_confidence{0.0};
-    bool strategic_current_direction_viable{false};
-    bool strategic_has_anchor_candidate{false};
-    std::string strategic_candidate_generation_reason;
-    std::uint32_t strategic_anchors_considered{0};
-    std::uint32_t strategic_rejected_cost_below_four{0};
-    std::uint32_t strategic_rejected_missing_champion_definition{0};
-    std::uint32_t strategic_rejected_empty_trait{0};
-    std::uint32_t strategic_rejected_duplicate_direction{0};
-    std::uint32_t strategic_rejected_direction_limit{0};
-    std::uint32_t strategic_rejected_empty_plan{0};
-    std::uint32_t strategic_rejected_anchor_not_in_plan{0};
-    std::uint32_t strategic_candidates_generated{0};
-    std::string strategic_candidate_direction;
-    std::int32_t strategic_candidate_anchor_id{-1};
-    double strategic_candidate_score{0.0};
-    std::uint32_t strategic_candidate_streak{0};
-    std::uint32_t strategic_candidate_last_review_round{0};
-    std::string strategic_committed_direction;
-    std::uint32_t strategic_selected_round{0};
-    bool strategic_shadow_only{true};
-
-    // Economic Controller and Action Evaluator diagnostics. Shadow-only:
-    // these fields never feed PPO observations, rewards, masks or execution.
-    std::int32_t economic_posture{0};
-    std::string economic_posture_name{"ACCUMULATE_RESOURCES"};
-    std::string economic_posture_reason;
-    double economic_posture_confidence{0.0};
-    double economic_survival_pressure{0.0};
-    double economic_board_pressure{0.0};
-    double economic_resource_pressure{0.0};
-    std::int32_t strategic_action_recommendation{6};
-    std::string strategic_action_recommendation_name{"HOLD"};
-    std::string strategic_action_reason;
-    double strategic_action_expected_board_delta{0.0};
-    double strategic_action_expected_hp_preservation{0.0};
-    double strategic_action_expected_economy_cost{0.0};
-    double strategic_action_expected_direct_gold_cost{0.0};
-    double strategic_action_expected_lost_interest_cost{0.0};
-    double strategic_action_expected_opportunity_cost{0.0};
-    double strategic_action_expected_streak_value{0.0};
-    std::int32_t strategic_action_recommended_champion_id{-1};
-    std::vector<ActionCandidateScoreInfo> strategic_action_candidate_scores;
-    double strategic_action_confidence{0.0};
-    bool economic_shadow_only{true};
-};
-
 struct AntiLoopMetrics {
     // Nomes alinhados ao AntiLoopManager.execution_metrics.
     std::uint64_t execution_attempts{0};
@@ -431,7 +605,19 @@ struct AntiLoopMetrics {
 };
 
 
+struct ActionExecutionTrace {
+    // Explicit owner of this trace; array position alone is not identity.
+    std::int32_t player_id{-1};
+    std::array<std::int32_t, kActionComponents> requested_action{};
+    std::array<std::int32_t, kActionComponents> effective_action{};
+    // True only when the native action handler reports successful application.
+    bool handler_applied{false};
+    // Stable machine-readable reason; never inferred from reward values.
+    std::string status_reason;
+};
+
 struct StepResult {
+    std::string engine_instance_id;
     // Row-major: (8, observation_dim).
     std::vector<float> observations;
     std::size_t observation_dim{0};
@@ -447,12 +633,20 @@ struct StepResult {
         action_masks{};
 
     std::array<PlayerInfo, kPlayersPerLobby> players{};
+    // Per-player trace linking caller input to Engine-normalized and applied action.
+    std::array<ActionExecutionTrace, kPlayersPerLobby> action_traces{};
 
     bool lobby_done{false};
     std::uint64_t episode_id{0};
+    // Monotonic per Engine instance; identifies the exact published observation/mask snapshot.
+    std::uint64_t decision_sequence{0};
+    // Per-player decision-snapshot sequence; advances with every published row.
+    std::array<std::uint64_t, kPlayersPerLobby> player_decision_sequences{};
     std::uint32_t round{0};
     std::uint32_t stage{1};
     std::int32_t alive_players{8};
+    // Structured native facts captured atomically with observations and masks.
+    AuditSnapshot native_state_snapshot{};
 
     // Diagnósticos adicionais sem acoplar o PPO às engines.
     std::vector<std::string> events;
@@ -472,75 +666,6 @@ struct PublicState {
 };
 
 
-struct AuditUnitSnapshot {
-    bool occupied{false};
-    std::string champion_id;
-    std::string uuid;
-    std::int32_t star{0};
-    std::int32_t cost{0};
-    std::vector<std::string> item_ids;
-};
-
-struct AuditPlayerSnapshot {
-    std::int32_t player_id{-1};
-    std::int32_t gold{0};
-    std::int32_t level{0};
-    std::int32_t xp{0};
-    std::int32_t win_streak{0};
-    std::int32_t loss_streak{0};
-    std::int32_t gold_before_interest{0};
-    std::int32_t interest_if_resolved_now{0};
-    double board_power{0.0};
-    double synergy_score{0.0};
-    double positioning_score{0.0};
-    // Keep native board-evaluation diagnostics in the audit snapshot; the
-    // Viewer cannot reconstruct structural quality from board power alone.
-    double board_quality_score{0.0};
-    double board_positional_score{0.0};
-    double board_structural_score{0.0};
-    double board_quality_delta{0.0};
-    std::int32_t board_exposed_carries{0};
-    std::int32_t board_frontline_count{0};
-    std::int32_t board_isolated_frontline_count{0};
-    std::int32_t board_important_bench_units_unplayed{0};
-    std::int32_t round_gold{0};
-    std::int32_t round_base_gold{0};
-    std::int32_t round_interest{0};
-    std::int32_t round_streak_gold{0};
-    std::int32_t round_win_gold{0};
-    std::array<AuditUnitSnapshot, kBoardSlots> board{};
-    std::array<AuditUnitSnapshot, kBenchSlots> bench{};
-    std::array<AuditUnitSnapshot, kShopSlots> shop{};
-    // Item state is part of the audit snapshot so the viewer can distinguish
-    // loose components, completed items in the bag, and unit equipment.
-    std::vector<std::string> item_components;
-    std::vector<std::string> item_inventory;
-    std::vector<std::string> item_component_catalog;
-    bool pending_anvil{false};
-    std::int32_t pending_anvil_kind{-1};
-    std::vector<std::string> pending_anvil_options;
-    // Last item decision is carried by the post-action snapshot for exact
-    // Viewer attribution (normal equip/craft versus forced anvil selection).
-    std::string last_item_action_kind;
-    std::string last_item_id;
-    std::string last_item_first_component;
-    std::string last_item_second_component;
-    std::string last_item_target_uuid;
-    std::int32_t last_item_target_slot{-1};
-    bool last_item_target_on_board{false};
-    double last_item_fit{0.0};
-    double last_item_immediate_strength{0.0};
-    double last_item_role_alignment{0.0};
-    double last_item_assignment_reward{0.0};
-    PlayerActionMasks masks{};
-};
-
-struct AuditSnapshot {
-    std::uint32_t round{0};
-    std::uint32_t stage{1};
-    bool finished{false};
-    std::array<AuditPlayerSnapshot, kPlayersPerLobby> players{};
-};
 
 
 class TFTEngine {
@@ -588,6 +713,13 @@ public:
 
     // Configures the optional session sidecar for unified strategic Shadow events.
     void set_strategic_direction_pivot_audit_path(const std::string& path);
+
+    // Injects one approved, identity-bound combat risk for the next Shadow
+    // decision snapshot. Experimental projections are rejected by the contract.
+    // This never changes PPO observations, rewards, masks or action execution.
+    bool publish_combat_prediction_evidence(
+        const combat_evidence::SurvivalRiskEvidence& evidence
+    );
 
     // Hooks de fixture determinística para testes de paridade Python/C++.
     // Não alteram o pool compartilhado; usar apenas em cenários de teste.
@@ -639,10 +771,9 @@ public:
     bool toggle_shop_lock(std::int32_t player_id);
     bool is_shop_locked(std::int32_t player_id) const;
 
+    // Neutral [players, 1] transport only. Decision features are read from
+    // the identity-bound native semantic snapshot, never positional offsets.
     std::vector<float> get_observations() const;
-
-    std::array<std::vector<StrategyInfo>, kPlayersPerLobby>
-    get_strategies() const;
 
     RewardState get_reward_state(std::int32_t player_id) const;
     double get_unit_comp_score(std::int32_t player_id, const std::string& champion_api_name, std::int32_t star = 1) const;
@@ -666,6 +797,7 @@ public:
     std::int64_t pool_total_available() const;
 
     std::size_t observation_dim() const noexcept;
+    std::string engine_instance_id() const;
     std::uint64_t episode_id() const noexcept;
     std::uint32_t round() const noexcept;
     std::uint32_t stage() const noexcept;

@@ -4,6 +4,10 @@ The module keeps evaluation plumbing importable independently from training.
 """
 from __future__ import annotations
 
+import hashlib
+import json
+from pathlib import Path
+
 import numpy as np
 import torch
 
@@ -11,33 +15,175 @@ ACTION_DIMS = [9, 5, 9, 28, 28, 28]
 
 
 def action_dict(values):
-    values = [int(x) for x in values]
-    result = {"type": values[0], "shop_slot": values[1], "bench_slot": values[2],
-              "board_target": values[3], "board_source": values[4],
-              "conditioned_board_target": values[5]}
-    if result["type"] == 7:
-        result.update(item_slot=values[1], item_target=values[2])
-    elif result["type"] == 8:
-        result.update(component_first=values[1], component_second=values[2],
-                      item_target=values[3])
-    return result
+    """Serialize the six PPO action components for the native engine adapter."""
+    action = {
+        "type": int(values[0]),
+        "shop_slot": int(values[1]),
+        "bench_slot": int(values[2]),
+        "board_target": int(values[3]),
+        "board_source": int(values[4]),
+        "conditioned_board_target": int(values[5]),
+    }
+    action_type = action["type"]
+    if action_type == 7:
+        action.update({
+            "item_slot": int(values[1]),
+            "item_target": int(values[2]),
+        })
+    elif action_type == 8:
+        action.update({
+            "component_first": int(values[1]),
+            "component_second": int(values[2]),
+            "item_target": int(values[3]),
+        })
+    return action
 
 
 def as_mask_batch(masks, indices, device):
+    """Select per-player legal-action masks and preserve boolean semantics."""
     if not indices:
         return {}
-    keys = masks[indices[0]].keys()
-    return {key: torch.as_tensor(np.stack([masks[i][key] for i in indices]),
-                                 dtype=torch.bool, device=device) for key in keys}
+    if not isinstance(masks, (list, tuple)):
+        raise TypeError("action masks must be a per-player list or tuple")
+    selected = []
+    for index in indices:
+        if isinstance(index, bool) or not isinstance(index, (int, np.integer)):
+            raise TypeError("mask player indices must be integers")
+        if index < 0 or index >= len(masks):
+            raise IndexError(f"mask player index {index} is outside the available batch")
+        row = masks[index]
+        if not isinstance(row, dict):
+            raise TypeError(f"action masks for player {index} must be a mapping")
+        selected.append(row)
+    keys = set(selected[0])
+    if any(set(row) != keys for row in selected[1:]):
+        raise ValueError("selected players expose different action-mask contracts")
+    result = {}
+    for key in sorted(keys):
+        tensors = []
+        expected_shape = None
+        for row in selected:
+            value = torch.as_tensor(row[key], dtype=torch.bool, device=device)
+            if value.ndim != 1:
+                raise ValueError(f"action mask {key!r} must be one-dimensional per player")
+            if expected_shape is None:
+                expected_shape = tuple(value.shape)
+            elif tuple(value.shape) != expected_shape:
+                raise ValueError(f"action mask {key!r} has inconsistent player dimensions")
+            tensors.append(value)
+        result[key] = torch.stack(tensors, dim=0)
+    return result
 
 
-def policy_actions(policy, observations, masks, indices, device):
+def native_semantic_state_for_players(lobby, player_ids, catalog_map, device):
+    """Build and validate the exact native semantic rows required by live PPO inference."""
+    from semantic_observation import (
+        SEMANTIC_ENTITY_SLOTS,
+        SEMANTIC_NUMERIC_DIM,
+        build_semantic_batch,
+        build_semantic_state_checkpoint_contract,
+        semantic_item_state_tensors,
+        validate_semantic_batch_alignment,
+    )
+
+    contract = build_semantic_state_checkpoint_contract(catalog_map)
+    if not player_ids:
+        numeric = torch.zeros((0, SEMANTIC_NUMERIC_DIM), dtype=torch.float32, device=device)
+        return {
+            "numeric": numeric,
+            "items": semantic_item_state_tensors(numeric),
+            "champion_ids": torch.zeros((0, SEMANTIC_ENTITY_SLOTS), dtype=torch.long, device=device),
+            "identities": [],
+            "hashes": [],
+            "snapshot_metadata": [],
+            "contract_id": contract["contract"]["contract_id"],
+            "contract_hash": contract["sha256"],
+        }
+
+    snapshot = lobby.get_snapshot_metadata()
+    native = snapshot.get("native_state_snapshot") if isinstance(snapshot, dict) else None
+    players = native.get("players") if isinstance(native, dict) else None
+    if not isinstance(players, list) or len(players) != 8:
+        raise RuntimeError("Checkpoint evaluation requires all eight native semantic player snapshots.")
+
+    metadata_rows = []
+    for player_id in player_ids:
+        if isinstance(player_id, bool) or not isinstance(player_id, int) or not 0 <= player_id < 8:
+            raise ValueError("semantic player IDs must be integers in [0, 7]")
+        native_player = players[player_id]
+        strategic_state = (
+            native_player.get("strategic_state")
+            if isinstance(native_player, dict) else None
+        )
+        player_sequence = (
+            strategic_state.get("player_decision_sequence")
+            if isinstance(strategic_state, dict) else None
+        )
+        if isinstance(player_sequence, bool) or not isinstance(player_sequence, int) or player_sequence < 0:
+            raise RuntimeError(
+                f"Checkpoint evaluation requires a valid native decision sequence for player {player_id}."
+            )
+        metadata_rows.append({
+            "engine_instance_id": snapshot.get("engine_instance_id"),
+            "episode_id": snapshot.get("episode_id"),
+            "decision_sequence": snapshot.get("decision_sequence"),
+            "player_decision_sequence": player_sequence,
+            "player_id": player_id,
+            "lobby_index": 0,
+            "stage": snapshot.get("stage"),
+            "round": snapshot.get("round"),
+            "native_state_contract_id": native.get("contract_id"),
+            "native_state_contract_version": native.get("contract_version"),
+            "native_state_producer": native.get("producer"),
+            "native_state_source_namespace": native.get("source_namespace"),
+            "native_player_state": native_player,
+        })
+
+    batch = build_semantic_batch(metadata_rows, catalog_map)
+    for metadata, semantic_hash, semantic_identity in zip(
+        metadata_rows, batch["hashes"], batch["identities"]
+    ):
+        metadata["semantic_identity"] = semantic_identity
+        metadata["semantic_projection_hash"] = semantic_hash
+        metadata["semantic_projection_contract_id"] = contract["contract"]["contract_id"]
+        metadata["semantic_projection_contract_hash"] = contract["sha256"]
+    validate_semantic_batch_alignment(batch, metadata_rows, contract, catalog_map)
+
+    numeric = torch.as_tensor(batch["numeric"], dtype=torch.float32, device=device)
+    return {
+        "numeric": numeric,
+        "items": semantic_item_state_tensors(numeric),
+        "champion_ids": torch.as_tensor(
+            batch["champion_ids"], dtype=torch.long, device=device
+        ),
+        "identities": batch["identities"],
+        "hashes": batch["hashes"],
+        "snapshot_metadata": metadata_rows,
+        "contract_id": batch["contract_id"],
+        "contract_hash": batch["contract_hash"],
+        "item_catalog_sha256": batch["item_catalog_sha256"],
+    }
+
+def policy_actions(policy, observations, masks, indices, device, semantic_state):
     if not indices:
         return {}
     obs = torch.as_tensor(np.asarray(observations)[indices], dtype=torch.float32, device=device)
     batch_masks = as_mask_batch(masks, indices, device)
+    if semantic_state is None:
+        raise ValueError("PPO checkpoint evaluation requires native semantic_state for every sampled player.")
+    if semantic_state["numeric"].shape[0] != len(indices) or semantic_state["champion_ids"].shape[0] != len(indices):
+        raise ValueError("native semantic_state rows do not match sampled player indices")
+    if (
+        len(semantic_state.get("identities", [])) != len(indices)
+        or len(semantic_state.get("hashes", [])) != len(indices)
+        or not semantic_state.get("contract_id")
+        or not semantic_state.get("contract_hash")
+    ):
+        raise ValueError("checkpoint inference requires semantic identity, projection hashes and contract lineage")
     with torch.no_grad():
-        actions = policy.get_action(obs, masks=batch_masks, deterministic=True)[0]
+        actions = policy.get_action(
+            obs, masks=batch_masks, deterministic=True, semantic_state=semantic_state
+        )[0]
     actions = actions.detach().cpu().numpy()
     return {player_id: [int(v) for v in actions[row]]
             for row, player_id in enumerate(indices)}
@@ -62,7 +208,30 @@ def _ranking_from_state(info, lobby):
     raise RuntimeError("Partida terminou sem ranking completo; não vou inferir rankings ausentes.")
 
 
-def run_match(factory, baseline, candidate, candidate_slots, seed, device, max_steps=10000):
+def candidate_slots_for_seed(seed: int, master_seed: int = 0) -> set[int]:
+    """Deterministic balanced four-seat rotation for one paired lobby seed."""
+    if isinstance(seed, bool) or not isinstance(seed, (int, np.integer)):
+        raise TypeError("seed must be an integer, not bool")
+    if isinstance(master_seed, bool) or not isinstance(master_seed, (int, np.integer)):
+        raise TypeError("master_seed must be an integer, not bool")
+    # A coprime step of 1 visits all eight rotations before repeating.
+    offset = (int(seed) + int(master_seed)) % 8
+    return {(offset + index) % 8 for index in range(4)}
+
+
+def validate_candidate_slots(candidate_slots) -> set[int]:
+    if candidate_slots is None:
+        raise ValueError("candidate_slots must be explicitly derived or supplied")
+    slots = set(candidate_slots)
+    if len(slots) != 4 or any(
+        isinstance(slot, bool) or not isinstance(slot, (int, np.integer))
+        or int(slot) < 0 or int(slot) >= 8 for slot in slots
+    ):
+        raise ValueError("candidate_slots must contain exactly four distinct player IDs in [0, 7]")
+    return {int(slot) for slot in slots}
+
+
+def run_match(factory, baseline, candidate, candidate_slots, seed, device, catalog_map, max_steps=10000):
     lobby = factory(seed)
     try:
         try:
@@ -71,6 +240,9 @@ def run_match(factory, baseline, candidate, candidate_slots, seed, device, max_s
             observations = lobby.reset()
         done = False
         info = {}
+        action_counts = {player_id: {"actions": 0, "item_actions": 0,
+                                     "equip_actions": 0, "craft_and_equip_actions": 0}
+                         for player_id in range(8)}
         for _ in range(max_steps):
             masks = lobby.get_action_masks()
             alive = [i for i, player in enumerate(lobby.players)
@@ -79,9 +251,24 @@ def run_match(factory, baseline, candidate, candidate_slots, seed, device, max_s
             for slots, policy in ((set(range(8)) - set(candidate_slots), baseline),
                                   (set(candidate_slots), candidate)):
                 selected = sorted(set(alive).intersection(slots))
-                chosen = policy_actions(policy, observations, masks, selected, device)
+                if not selected:
+                    continue
+                semantic_state = native_semantic_state_for_players(
+                    lobby, selected, catalog_map, device
+                )
+                chosen = policy_actions(
+                    policy, observations, masks, selected, device, semantic_state
+                )
                 for player_id, action in chosen.items():
                     actions[player_id] = action
+                    counts = action_counts[player_id]
+                    counts["actions"] += 1
+                    if action[0] in (7, 8):
+                        counts["item_actions"] += 1
+                    if action[0] == 7:
+                        counts["equip_actions"] += 1
+                    elif action[0] == 8:
+                        counts["craft_and_equip_actions"] += 1
             observations, rewards, done, info = lobby.step(
                 [action_dict(a) for a in actions])
             if done or getattr(lobby, "finished", False):
@@ -93,7 +280,8 @@ def run_match(factory, baseline, candidate, candidate_slots, seed, device, max_s
             raise RuntimeError("Partida terminou sem ranking completo; não vou inferir rankings ausentes.")
         return [{"seed": int(seed), "player_id": player_id,
                  "version": "candidate" if player_id in candidate_slots else "baseline",
-                 "placement": ranking[player_id], "win": int(ranking[player_id] == 1)}
+                 "placement": ranking[player_id], "win": int(ranking[player_id] == 1),
+                 "candidate_slots": sorted(candidate_slots), **action_counts[player_id]}
                 for player_id in range(8)]
     finally:
         close = getattr(lobby, "close", None)
@@ -126,6 +314,14 @@ def summarize_paired_seeds(rows, bootstrap_samples=2000, bootstrap_seed=0):
     for seed, pair in grouped.items():
         if len(pair["baseline"]) != 4 or len(pair["candidate"]) != 4:
             raise ValueError(f"Seed {seed} must contain exactly four players per policy")
+        for version in ("baseline", "candidate"):
+            player_ids = [int(row["player_id"]) for row in pair[version]]
+            if len(set(player_ids)) != 4 or any(pid < 0 or pid >= 8 for pid in player_ids):
+                raise ValueError(f"Seed {seed} {version} must contain four distinct player IDs in [0, 7]")
+        if set(int(row["player_id"]) for row in pair["baseline"]) & set(
+            int(row["player_id"]) for row in pair["candidate"]
+        ):
+            raise ValueError(f"Seed {seed} policies must use distinct player IDs; a player is assigned to both policies")
     if not grouped:
         raise ValueError("No paired seed rows supplied")
     baseline_rows = [r for p in grouped.values() for r in p["baseline"]]
@@ -153,3 +349,149 @@ def summarize_paired_seeds(rows, bootstrap_samples=2000, bootstrap_seed=0):
             "candidate": _metric_summary(candidate_rows),
             "paired_delta_candidate_minus_baseline": paired,
             "per_seed": per_seed}
+
+
+def _validate_evaluation_artifact(artifact, label):
+    if not isinstance(artifact, dict):
+        raise TypeError(f"{label} artifact manifest must be a dict")
+    checkpoint_sha = artifact.get("checkpoint_sha256")
+    if not isinstance(checkpoint_sha, str) or len(checkpoint_sha) != 64:
+        raise ValueError(f"{label} checkpoint SHA-256 is missing or malformed")
+    lineage = artifact.get("checkpoint_contract")
+    if not isinstance(lineage, dict):
+        raise ValueError(f"{label} checkpoint lineage contract is required")
+    digest = lineage.get("sha256")
+    contract = lineage.get("contract")
+    if not isinstance(digest, str) or len(digest) != 64 or not isinstance(contract, dict):
+        raise ValueError(f"{label} checkpoint lineage contract is malformed")
+    if contract.get("contract_id") != "tft.ppo-checkpoint-lineage.v1":
+        raise ValueError(f"{label} checkpoint lineage contract ID is unsupported")
+    import hashlib
+    import json
+    canonical = json.dumps(
+        contract, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    ).encode("utf-8")
+    if hashlib.sha256(canonical).hexdigest() != digest:
+        raise ValueError(f"{label} checkpoint lineage hash does not match its payload")
+    components = contract.get("components")
+    required = {
+        "action_mask_contract", "critic_mask_input_contract",
+        "semantic_state_contract", "reward_contract",
+    }
+    if not isinstance(components, dict) or set(components) != required:
+        raise ValueError(f"{label} checkpoint lineage components are incomplete")
+    return lineage
+
+
+def run_paired_evaluation(
+    factory, baseline, candidate, baseline_artifact, candidate_artifact,
+    seeds, device, *, split, catalog_map, master_seed=0, max_steps=10000,
+):
+    """Run paired, seat-rotated lobbies only for semantically identical lineages.
+
+    This is evaluation-only: policies are called in deterministic inference mode,
+    and the function never updates weights or optimizer state.
+    """
+    if split not in {"validation", "test"}:
+        raise ValueError("split must be validation or test")
+    baseline_lineage = _validate_evaluation_artifact(baseline_artifact, "baseline")
+    candidate_lineage = _validate_evaluation_artifact(candidate_artifact, "candidate")
+    if baseline_lineage != candidate_lineage:
+        raise ValueError("baseline and candidate checkpoint lineages are not semantically compatible")
+    from semantic_observation import build_semantic_state_checkpoint_contract
+    runtime_semantic_contract = build_semantic_state_checkpoint_contract(catalog_map)
+    saved_semantic_contract = (
+        baseline_lineage.get("contract", {}).get("components", {}).get("semantic_state_contract")
+    )
+    if saved_semantic_contract != runtime_semantic_contract:
+        raise ValueError(
+            "evaluation catalog/native semantic projection does not match checkpoint lineage"
+        )
+    normalized_seeds = []
+    for seed in seeds:
+        if isinstance(seed, bool) or not isinstance(seed, (int, np.integer)):
+            raise TypeError("evaluation seeds must be integers, not bool")
+        normalized_seeds.append(int(seed))
+    if not normalized_seeds or len(set(normalized_seeds)) != len(normalized_seeds):
+        raise ValueError("evaluation seeds must be non-empty and unique")
+    raw_rows = []
+    schedule = []
+    for seed in normalized_seeds:
+        slots = candidate_slots_for_seed(seed, master_seed)
+        schedule.append({"seed": seed, "candidate_player_ids": sorted(slots)})
+        raw_rows.extend(run_match(
+            factory, baseline, candidate, slots, seed, device, catalog_map, max_steps=max_steps
+        ))
+    return {
+        "schema_version": 1,
+        "evaluation_mode": "evaluation_only",
+        "split": split,
+        "baseline_checkpoint_sha256": baseline_artifact["checkpoint_sha256"],
+        "candidate_checkpoint_sha256": candidate_artifact["checkpoint_sha256"],
+        "checkpoint_lineage_sha256": baseline_lineage["sha256"],
+        "master_seed": int(master_seed),
+        "seat_rotation": schedule,
+        "raw_results": raw_rows,
+        "summary": summarize_paired_seeds(raw_rows),
+    }
+
+
+def write_paired_evaluation_artifacts(result, experiment_manifest, output_dir):
+    """Persist immutable, hash-linked raw results and summary for one evaluation run."""
+    if not isinstance(result, dict) or result.get("evaluation_mode") != "evaluation_only":
+        raise ValueError("only evaluation_only results can be published")
+    if not isinstance(experiment_manifest, dict):
+        raise TypeError("experiment_manifest must be a dict")
+    required = (
+        "experiment_id", "code_revision", "engine_build",
+        "catalog_sha256", "split_manifest_sha256",
+        "primary_metric", "practical_effect_threshold",
+    )
+    missing = [key for key in required if experiment_manifest.get(key) in (None, "")]
+    if missing:
+        raise ValueError(f"experiment manifest is missing: {', '.join(missing)}")
+    for key in ("catalog_sha256", "split_manifest_sha256"):
+        value = experiment_manifest[key]
+        if not isinstance(value, str) or len(value) != 64 or any(ch not in "0123456789abcdef" for ch in value.lower()):
+            raise ValueError(f"{key} must be a 64-character SHA-256")
+    if experiment_manifest.get("split") != result.get("split"):
+        raise ValueError("experiment manifest split does not match evaluation result")
+    if experiment_manifest.get("baseline_checkpoint_sha256") != result.get("baseline_checkpoint_sha256"):
+        raise ValueError("baseline checkpoint hash does not match evaluation result")
+    if experiment_manifest.get("candidate_checkpoint_sha256") != result.get("candidate_checkpoint_sha256"):
+        raise ValueError("candidate checkpoint hash does not match evaluation result")
+    if not isinstance(result.get("raw_results"), list) or not result["raw_results"]:
+        raise ValueError("evaluation result must contain raw episode rows")
+    if not isinstance(result.get("summary"), dict) or result["summary"].get("seed_count", 0) < 1:
+        raise ValueError("evaluation result must contain a non-empty paired summary")
+
+    target = Path(output_dir).expanduser().resolve()
+    target.mkdir(parents=True, exist_ok=False)
+    raw_payload = json.dumps(result["raw_results"], sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    summary_payload = json.dumps(result["summary"], sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    manifest_payload = json.dumps(experiment_manifest, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    hashes = {
+        "raw_results_sha256": hashlib.sha256(raw_payload.encode("utf-8")).hexdigest(),
+        "summary_sha256": hashlib.sha256(summary_payload.encode("utf-8")).hexdigest(),
+        "experiment_manifest_sha256": hashlib.sha256(manifest_payload.encode("utf-8")).hexdigest(),
+    }
+    report = {
+        "schema_version": 1,
+        "evaluation_mode": "evaluation_only",
+        "split": result["split"],
+        "checkpoint_lineage_sha256": result["checkpoint_lineage_sha256"],
+        "experiment_id": experiment_manifest["experiment_id"],
+        "artifacts": {
+            "raw_results": "raw_results.json",
+            "summary": "summary.json",
+            "experiment_manifest": "experiment_manifest.json",
+        },
+        "sha256": hashes,
+    }
+    report_payload = json.dumps(report, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    report["sha256"]["report_payload_sha256"] = hashlib.sha256(report_payload.encode("utf-8")).hexdigest()
+    (target / "raw_results.json").write_text(json.dumps(result["raw_results"], ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    (target / "summary.json").write_text(json.dumps(result["summary"], ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    (target / "experiment_manifest.json").write_text(json.dumps(experiment_manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    (target / "report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return {"directory": str(target), "report": report}

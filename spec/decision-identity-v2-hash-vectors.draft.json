@@ -1,0 +1,166 @@
+{
+  "vector_set_id": "tft.decision-identity.v2.rfc8785-sha256",
+  "status": "draft",
+  "canonicalization": "RFC 8785 JSON Canonicalization Scheme; UTF-8; SHA-256; lowercase hex with sha256: prefix",
+  "hash_scope_fields": [
+    "identity_version",
+    "match_id",
+    "engine_match_id",
+    "player_id",
+    "round",
+    "decision_sequence.namespace",
+    "decision_sequence.value",
+    "snapshot_sequence.namespace",
+    "snapshot_sequence.value"
+  ],
+  "note": "Synthetic fixtures only. tft.engine.decision and tft.engine.observation-snapshot are proposed namespaces, not current runtime capabilities.",
+  "vectors": [
+    {
+      "id": "baseline",
+      "input": {
+        "identity_version": "tft.decision-identity.v2",
+        "match_id": "match-001",
+        "engine_match_id": "engine-match-001",
+        "player_id": "player-2",
+        "round": 12,
+        "decision_sequence": {
+          "namespace": "tft.engine.decision",
+          "value": 184
+        },
+        "snapshot_sequence": {
+          "namespace": "tft.engine.observation-snapshot",
+          "value": 184
+        }
+      },
+      "expected_hash": "sha256:db10775d5ce64a663a883591ba0303cf5da362b5b7719577216c0a0851d0c3bf",
+      "canonical_bytes": "{\"decision_sequence\":{\"namespace\":\"tft.engine.decision\",\"value\":184},\"engine_match_id\":\"engine-match-001\",\"identity_version\":\"tft.decision-identity.v2\",\"match_id\":\"match-001\",\"player_id\":\"player-2\",\"round\":12,\"snapshot_sequence\":{\"namespace\":\"tft.engine.observation-snapshot\",\"value\":184}}"
+    },
+    {
+      "id": "different_decision_namespace",
+      "input": {
+        "identity_version": "tft.decision-identity.v2",
+        "match_id": "match-001",
+        "engine_match_id": "engine-match-001",
+        "player_id": "player-2",
+        "round": 12,
+        "decision_sequence": {
+          "namespace": "tft.ci.player-sequence",
+          "value": 184
+        },
+        "snapshot_sequence": {
+          "namespace": "tft.engine.observation-snapshot",
+          "value": 184
+        }
+      },
+      "expected_hash": "sha256:1e61f3e46fc41ef8e06e788c8c8d877f4d7de3aa0a329f2676534566af1f2641",
+      "canonical_bytes": "{\"decision_sequence\":{\"namespace\":\"tft.ci.player-sequence\",\"value\":184},\"engine_match_id\":\"engine-match-001\",\"identity_version\":\"tft.decision-identity.v2\",\"match_id\":\"match-001\",\"player_id\":\"player-2\",\"round\":12,\"snapshot_sequence\":{\"namespace\":\"tft.engine.observation-snapshot\",\"value\":184}}"
+    },
+    {
+      "id": "different_match",
+      "input": {
+        "identity_version": "tft.decision-identity.v2",
+        "match_id": "match-002",
+        "engine_match_id": "engine-match-001",
+        "player_id": "player-2",
+        "round": 12,
+        "decision_sequence": {
+          "namespace": "tft.engine.decision",
+          "value": 184
+        },
+        "snapshot_sequence": {
+          "namespace": "tft.engine.observation-snapshot",
+          "value": 184
+        }
+      },
+      "expected_hash": "sha256:377850c58f27ba34fa1a73804e8631309e55b2c9fba45634f73ae681a20d04f1",
+      "canonical_bytes": "{\"decision_sequence\":{\"namespace\":\"tft.engine.decision\",\"value\":184},\"engine_match_id\":\"engine-match-001\",\"identity_version\":\"tft.decision-identity.v2\",\"match_id\":\"match-002\",\"player_id\":\"player-2\",\"round\":12,\"snapshot_sequence\":{\"namespace\":\"tft.engine.observation-snapshot\",\"value\":184}}"
+    },
+    {
+      "id": "different_player",
+      "input": {
+        "identity_version": "tft.decision-identity.v2",
+        "match_id": "match-001",
+        "engine_match_id": "engine-match-001",
+        "player_id": "player-3",
+        "round": 12,
+        "decision_sequence": {
+          "namespace": "tft.engine.decision",
+          "value": 184
+        },
+        "snapshot_sequence": {
+          "namespace": "tft.engine.observation-snapshot",
+          "value": 184
+        }
+      },
+      "expected_hash": "sha256:9110083c919dfcf84f6eadfd607c20f4e0b6c98ee83549c0e4fba449bd1eeaa7",
+      "canonical_bytes": "{\"decision_sequence\":{\"namespace\":\"tft.engine.decision\",\"value\":184},\"engine_match_id\":\"engine-match-001\",\"identity_version\":\"tft.decision-identity.v2\",\"match_id\":\"match-001\",\"player_id\":\"player-3\",\"round\":12,\"snapshot_sequence\":{\"namespace\":\"tft.engine.observation-snapshot\",\"value\":184}}"
+    },
+    {
+      "id": "different_round",
+      "input": {
+        "identity_version": "tft.decision-identity.v2",
+        "match_id": "match-001",
+        "engine_match_id": "engine-match-001",
+        "player_id": "player-2",
+        "round": 13,
+        "decision_sequence": {
+          "namespace": "tft.engine.decision",
+          "value": 184
+        },
+        "snapshot_sequence": {
+          "namespace": "tft.engine.observation-snapshot",
+          "value": 184
+        }
+      },
+      "expected_hash": "sha256:8dd34fc7be4c187df9a4762614116c8aa181ee0173ab3e1b81f1ba2678baf6eb",
+      "canonical_bytes": "{\"decision_sequence\":{\"namespace\":\"tft.engine.decision\",\"value\":184},\"engine_match_id\":\"engine-match-001\",\"identity_version\":\"tft.decision-identity.v2\",\"match_id\":\"match-001\",\"player_id\":\"player-2\",\"round\":13,\"snapshot_sequence\":{\"namespace\":\"tft.engine.observation-snapshot\",\"value\":184}}"
+    },
+    {
+      "id": "different_snapshot_namespace",
+      "input": {
+        "identity_version": "tft.decision-identity.v2",
+        "match_id": "match-001",
+        "engine_match_id": "engine-match-001",
+        "player_id": "player-2",
+        "round": 12,
+        "decision_sequence": {
+          "namespace": "tft.engine.decision",
+          "value": 184
+        },
+        "snapshot_sequence": {
+          "namespace": "tft.viewer.session-sequence",
+          "value": 184
+        }
+      },
+      "expected_hash": "sha256:8ff8e0a07808a6717e328a05f79ae55c2fb4e9dffe4339bf6c74d4610a1dc489",
+      "canonical_bytes": "{\"decision_sequence\":{\"namespace\":\"tft.engine.decision\",\"value\":184},\"engine_match_id\":\"engine-match-001\",\"identity_version\":\"tft.decision-identity.v2\",\"match_id\":\"match-001\",\"player_id\":\"player-2\",\"round\":12,\"snapshot_sequence\":{\"namespace\":\"tft.viewer.session-sequence\",\"value\":184}}"
+    },
+    {
+      "id": "new_engine_match_after_reset",
+      "input": {
+        "identity_version": "tft.decision-identity.v2",
+        "match_id": "match-001",
+        "engine_match_id": "engine-match-002",
+        "player_id": "player-2",
+        "round": 12,
+        "decision_sequence": {
+          "namespace": "tft.engine.decision",
+          "value": 184
+        },
+        "snapshot_sequence": {
+          "namespace": "tft.engine.observation-snapshot",
+          "value": 184
+        }
+      },
+      "expected_hash": "sha256:19a52a24bb95bba9c187074618a92df26cf3e503e976e6f37f870a6ad2a0fe4a",
+      "canonical_bytes": "{\"decision_sequence\":{\"namespace\":\"tft.engine.decision\",\"value\":184},\"engine_match_id\":\"engine-match-002\",\"identity_version\":\"tft.decision-identity.v2\",\"match_id\":\"match-001\",\"player_id\":\"player-2\",\"round\":12,\"snapshot_sequence\":{\"namespace\":\"tft.engine.observation-snapshot\",\"value\":184}}"
+    }
+  ],
+  "incomplete_identity": {
+    "status": "incomplete",
+    "reason": "missing required typed sequence reference",
+    "decision_identity_hash": null,
+    "canonical_bytes": null,
+    "expected_hash": null
+  }
+}

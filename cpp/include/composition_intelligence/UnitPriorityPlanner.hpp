@@ -2,8 +2,10 @@
 
 #include "composition_intelligence/CompositionEvaluation.hpp"
 #include "composition_intelligence/PlannerEvidenceAdapters.hpp"
+#include "strategy/UnitCopyProgress.hpp"
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstdint>
 #include <optional>
@@ -31,6 +33,27 @@ struct UnitPriorityReason {
     std::string message;
 };
 
+// Returns additional physical progress beyond the strongest owned instance.
+// A 2-star target needs two additional 1-star copies. A 3-star target needs two
+// additional 2-star instances; only complete groups of three 1-star copies
+// can form those instances. Partial mixed-tier groups are not upgrade progress.
+inline std::int32_t copy_progress_toward_next_star(
+    const std::array<std::int32_t, 4>& copies_by_star,
+    std::int32_t highest_star,
+    std::int32_t affordable_shop_copies = 0) noexcept {
+    return strategy::copies_toward_next_star(
+        copies_by_star, highest_star, affordable_shop_copies);
+}
+
+// Compatibility overload for callers that only have the old aggregate count.
+// New runtime integrations must provide physical per-tier counts.
+inline std::int32_t copy_progress_toward_next_star(
+    std::int32_t copies_owned, std::int32_t highest_star) noexcept {
+    if (copies_owned <= 0 || highest_star < 1 || highest_star >= 3) return 0;
+    const std::int32_t baseline = highest_star == 1 ? 1 : 3;
+    return std::clamp(copies_owned - baseline, 0, highest_star == 1 ? 2 : 6);
+}
+
 struct UnitPriorityEvidence {
     std::int32_t champion_id{-1};
     double board_contribution{0.5}; // normalized [0,1], supplied by caller
@@ -40,6 +63,11 @@ struct UnitPriorityEvidence {
     std::int32_t copies_in_shop{0};
     std::int32_t unit_cost{-1}; // -1 means unknown; never infer affordability.
     bool trait_completion{false};
+    // Pool availability is separate from owned/shop copies. -1 means unknown.
+    std::int32_t pool_remaining{-1};
+    // Appended availability flags preserve legacy aggregate initialization.
+    bool board_contribution_available{true};
+    bool synergy_contribution_available{true};
 };
 
 struct UnitPriorityOwnedUnit {
@@ -48,6 +76,9 @@ struct UnitPriorityOwnedUnit {
     std::int32_t highest_star{1};
     bool on_board{false};
     std::vector<std::string> equipped_item_ids;
+    // Physical instance counts by star tier; index 0 is intentionally unused.
+    // This prevents mixed 1★/2★ copies from being flattened into false progress.
+    std::array<std::int32_t, 4> copies_by_star{};
 };
 
 struct UnitPriorityTemporarySupport {
@@ -94,6 +125,17 @@ struct UnitPriority {
     std::vector<UnitPriorityReason> reasons;
     // Appended to preserve positional aggregate initialization in existing consumers.
     UnitPriorityTier tier{UnitPriorityTier::OutsideTarget};
+    // Canonical upgrade evidence; physical counts never include shop or pool.
+    std::array<std::int32_t, 4> copies_by_star{};
+    std::int32_t copies_in_shop{0};
+    std::int32_t affordable_shop_copies{0};
+    std::int32_t copies_toward_next_star{0};
+    std::int32_t copies_needed_for_next_star{0};
+    std::int32_t pool_remaining{-1};
+    bool pool_known{false};
+    bool target_unit{false};
+    bool has_pair{false};
+    std::int32_t copies_needed_for_pair{0};
 };
 
 struct UnitPrioritySnapshot {
@@ -135,14 +177,12 @@ public:
             if (PlannerEvidenceAdapters::snapshot_identity_matches(snapshot, context.match_id,
                     context.player_id, active->candidate.composition_id, active->version, context.round)) {
                 accepted_evidence = &snapshot;
-                if (PlannerEvidenceAdapters::source_matches(snapshot.board.metadata, context.match_id,
-                        context.player_id, active->candidate.composition_id, active->version, context.round)) {
+                if (PlannerEvidenceAdapters::source_matches(snapshot.board.metadata, context.round)) {
                     board_evidence_valid = true;
                     out.evidence_consumed.push_back("BoardEvaluation:role_gap_priority_context");
                 }
                 else out.evidence_rejected.push_back("BoardEvaluation:" + snapshot.board.metadata.reason);
-                if (PlannerEvidenceAdapters::source_matches(snapshot.items.metadata, context.match_id,
-                        context.player_id, active->candidate.composition_id, active->version, context.round))
+                if (PlannerEvidenceAdapters::source_matches(snapshot.items.metadata, context.round))
                     out.evidence_consumed.push_back("ItemEngine:equipped_item_risk");
                 else out.evidence_rejected.push_back("ItemEngine:" + snapshot.items.metadata.reason);
             } else out.evidence_rejected.push_back("PlannerEvidenceSnapshot:identity_mismatch");
@@ -161,10 +201,11 @@ public:
             const auto found = owned.find(target.champion_id);
             if (found == owned.end()) {
                 const auto* ev = find_evidence(evidence, target.champion_id);
-                auto item = missing_target(target);
+                auto item = missing_target(target, ev);
                 item.tier = priority_tier(target, ev);
                 item.priority = tier_base(item.tier) + std::clamp(target.priority, 0, 49);
                 const auto affordable_shop = affordable_shop_copies(ev, context);
+                item.affordable_shop_copies = affordable_shop;
                 if (affordable_shop > 0) {
                     item.priority += std::min(15, affordable_shop * 5);
                     item.reasons.push_back({UnitReasonCode::UpgradeProgress,
@@ -191,9 +232,7 @@ public:
             }
             const auto* ev = find_evidence(evidence, target.champion_id);
             auto owned_with_items = *found->second;
-            if (accepted_evidence && PlannerEvidenceAdapters::source_matches(
-                    accepted_evidence->items.metadata, context.match_id, context.player_id,
-                    active->candidate.composition_id, active->version, context.round)) {
+            if (accepted_evidence && PlannerEvidenceAdapters::source_matches(accepted_evidence->items.metadata, context.round)) {
                 const auto item_unit = std::find_if(accepted_evidence->items.units.begin(),
                     accepted_evidence->items.units.end(), [&](const auto& item) {
                         return item.champion_id == target.champion_id;
@@ -218,7 +257,7 @@ public:
             if (emitted.count(owned_pair.first)) continue;
             const auto* ev = find_evidence(evidence, owned_pair.first);
             auto owned_with_items = *owned_pair.second;
-            if (accepted_evidence && PlannerEvidenceAdapters::source_matches(accepted_evidence->items.metadata, context.match_id, context.player_id, active->candidate.composition_id, active->version, context.round)) {
+            if (accepted_evidence && PlannerEvidenceAdapters::source_matches(accepted_evidence->items.metadata, context.round)) {
                 const auto item_unit = std::find_if(accepted_evidence->items.units.begin(), accepted_evidence->items.units.end(), [&](const auto& item) { return item.champion_id == owned_pair.first; });
                 if (item_unit != accepted_evidence->items.units.end()) owned_with_items.equipped_item_ids = item_unit->equipped_item_ids;
             }
@@ -234,10 +273,9 @@ public:
 private:
     static std::int32_t affordable_shop_copies(
         const UnitPriorityEvidence* ev, const UnitPriorityContext& context) {
-        if (!ev) return 0;
-        if (ev->unit_cost >= 0 && context.gold_available >= 0 &&
-            ev->unit_cost > context.gold_available) return 0;
-        return std::max(0, ev->copies_in_shop);
+        if (!ev || ev->unit_cost <= 0 || context.gold_available < 0) return 0;
+        const auto affordable = context.gold_available / ev->unit_cost;
+        return std::clamp(ev->copies_in_shop, 0, affordable);
     }
     static std::int32_t tier_base(UnitPriorityTier tier) {
         switch (tier) {
@@ -286,12 +324,19 @@ private:
             return unit.core ? UnitStrategicRelation::SharedCore : UnitStrategicRelation::SharedFlex;
         return unit.core ? UnitStrategicRelation::ActiveCore : UnitStrategicRelation::ActiveFlex;
     }
-    static UnitPriority missing_target(const CompositionUnit& target) {
+    static UnitPriority missing_target(const CompositionUnit& target,
+                                       const UnitPriorityEvidence* ev) {
         UnitPriority out;
         out.champion_id = target.champion_id;
         out.intent = UnitIntent::Seek;
         out.relation = UnitStrategicRelation::MissingTarget;
-        out.priority = target.priority;
+        out.target_unit = true;
+        out.copies_needed_for_pair = 2;
+        if (ev) {
+            out.copies_in_shop = std::max(0, ev->copies_in_shop);
+            out.pool_known = ev->pool_remaining >= 0;
+            out.pool_remaining = out.pool_known ? ev->pool_remaining : -1;
+        }
         out.reasons.push_back({UnitReasonCode::TargetUnitMissing, "Unidade prevista na composição, mas ainda não possuída."});
         return out;
     }
@@ -305,22 +350,45 @@ private:
         out.copies_owned = owned.copies;
         out.highest_star = std::clamp(owned.highest_star, 1, 3);
         out.on_board = owned.on_board;
-        out.board_contribution = ev ? clamp01(ev->board_contribution) : 0.5;
-        out.synergy_contribution = ev ? clamp01(ev->synergy_contribution) : 0.5;
+        out.target_unit = true;
+        out.copies_by_star = owned.copies_by_star;
+        out.copies_in_shop = ev ? std::max(0, ev->copies_in_shop) : 0;
+        out.pool_known = ev && ev->pool_remaining >= 0;
+        out.pool_remaining = out.pool_known ? ev->pool_remaining : -1;
+        out.board_contribution = ev && ev->board_contribution_available
+            ? clamp01(ev->board_contribution) : 0.0;
+        out.synergy_contribution = ev && ev->synergy_contribution_available
+            ? clamp01(ev->synergy_contribution) : 0.0;
         out.confidence = ev ? clamp01(ev->confidence) : 0.25;
         out.priority = tier_base(out.tier) + std::clamp(target.priority, 0, 49);
         out.reasons.push_back({UnitReasonCode::RequiredByActiveComposition,
             target.core ? "Unidade core da composição ativa." : "Unidade prevista na composição ativa."});
         if (target.core)
             out.reasons.push_back({UnitReasonCode::CorePriority, "A composição marca esta unidade como core."});
-        if (ev && out.board_contribution >= config_.keep_contribution_threshold)
+        if (ev && ev->board_contribution_available &&
+            out.board_contribution >= config_.keep_contribution_threshold)
             out.reasons.push_back({UnitReasonCode::BoardContribution, "Contribuição observada no board acima do limite configurado."});
-        if (ev && out.synergy_contribution >= config_.keep_contribution_threshold)
+        if (ev && ev->synergy_contribution_available &&
+            out.synergy_contribution >= config_.keep_contribution_threshold)
             out.reasons.push_back({UnitReasonCode::SynergyContribution, "Contribuição observada para sinergias acima do limite configurado."});
 
-        const auto copies_to_upgrade = ev
-            ? std::max(0, ev->copies_toward_next_star) + affordable_shop_copies(ev, context)
-            : 0;
+        const auto affordable_shop = affordable_shop_copies(ev, context);
+        const bool has_physical_tier_counts =
+            std::any_of(owned.copies_by_star.begin() + 1, owned.copies_by_star.end(),
+                [](std::int32_t count) { return count > 0; });
+        const auto copies_to_upgrade = has_physical_tier_counts
+            ? copy_progress_toward_next_star(
+                owned.copies_by_star, out.highest_star, affordable_shop)
+            : (ev ? std::max(0, ev->copies_toward_next_star) + affordable_shop : 0);
+        out.affordable_shop_copies = affordable_shop;
+        out.copies_toward_next_star = copies_to_upgrade;
+        out.copies_needed_for_next_star = out.highest_star < 3
+            ? std::max(0, 2 - copies_to_upgrade) : 0;
+        const auto owned_upgrade_progress = has_physical_tier_counts
+            ? copy_progress_toward_next_star(owned.copies_by_star, out.highest_star, 0)
+            : (ev ? std::max(0, ev->copies_toward_next_star) : 0);
+        out.has_pair = out.highest_star < 3 && owned_upgrade_progress >= 1;
+        out.copies_needed_for_pair = out.highest_star < 3 && !out.has_pair ? 1 : 0;
         if (ev && ev->trait_completion)
             out.reasons.push_back({UnitReasonCode::TraitCompletionPriority,
                 "Unidade completa ou ativa trait relevante da composição; prioridade acima das demais peças flexíveis."});
@@ -332,7 +400,8 @@ private:
             out.reasons.push_back({UnitReasonCode::InsufficientEvidence, "Evidência insuficiente para promover upgrade ou substituição; manter em observação."});
         } else if (out.highest_star < 3 &&
                    copies_to_upgrade >= std::max(1, config_.copies_to_next_star_threshold) &&
-                   (out.board_contribution >= config_.upgrade_contribution_threshold || target.core ||
+                   ((ev && ev->board_contribution_available &&
+                     out.board_contribution >= config_.upgrade_contribution_threshold) || target.core ||
                     target.role == UnitRole::MainCarry || target.role == UnitRole::SecondaryCarry ||
                     (ev && ev->trait_completion))) {
             out.intent = UnitIntent::Upgrade;
@@ -360,8 +429,23 @@ private:
         out.copies_owned = owned.copies;
         out.highest_star = std::clamp(owned.highest_star, 1, 3);
         out.on_board = owned.on_board;
-        out.board_contribution = ev ? clamp01(ev->board_contribution) : 0.0;
-        out.synergy_contribution = ev ? clamp01(ev->synergy_contribution) : 0.0;
+        out.copies_by_star = owned.copies_by_star;
+        out.copies_in_shop = ev ? std::max(0, ev->copies_in_shop) : 0;
+        out.pool_known = ev && ev->pool_remaining >= 0;
+        out.pool_remaining = out.pool_known ? ev->pool_remaining : -1;
+        out.affordable_shop_copies = affordable_shop_copies(ev, context);
+        out.copies_toward_next_star = copy_progress_toward_next_star(
+            owned.copies_by_star, out.highest_star, out.affordable_shop_copies);
+        out.copies_needed_for_next_star = out.highest_star < 3
+            ? std::max(0, 2 - out.copies_toward_next_star) : 0;
+        const auto owned_upgrade_progress = copy_progress_toward_next_star(
+            owned.copies_by_star, out.highest_star, 0);
+        out.has_pair = out.highest_star < 3 && owned_upgrade_progress >= 1;
+        out.copies_needed_for_pair = out.highest_star < 3 && !out.has_pair ? 1 : 0;
+        out.board_contribution = ev && ev->board_contribution_available
+            ? clamp01(ev->board_contribution) : 0.0;
+        out.synergy_contribution = ev && ev->synergy_contribution_available
+            ? clamp01(ev->synergy_contribution) : 0.0;
         out.confidence = ev ? clamp01(ev->confidence) : 0.2;
         out.priority = 0;
         const auto* transition = context.transition ? &*context.transition : nullptr;

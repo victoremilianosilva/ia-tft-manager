@@ -2,6 +2,7 @@
 #include "items/ItemEngine.hpp"
 #include "items/CombatItemAdapter.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <limits>
@@ -83,6 +84,797 @@ void test_deterministic_winner_and_damage() {
     require(first.player_a_survivors == second.player_a_survivors &&
             first.player_b_survivors == second.player_b_survivors,
             "Deterministic replay changed survivor counts.");
+}
+
+void test_trait_team_effect_scaling_applies_once() {
+    tft::CombatEngine engine;
+    auto input = make_input();
+    input.config.max_duration = 0.05f;
+
+    auto make_brawler_trait = [] {
+        tft::CombatTrait trait;
+        trait.api_name = "DA_18_Brawler";
+        trait.name = "Brawler";
+        trait.active = true;
+        trait.active_count = 2;
+
+        tft::CombatEffectDefinition team_health;
+        team_health.trigger = "combat_start";
+        team_health.operation = "add_stat";
+        team_health.stat = "max_hp";
+        team_health.target = "allies";
+        team_health.value = 120.0f;
+        team_health.condition = "trait_count_at_least";
+        team_health.condition_trait = "DA_18_Brawler";
+        team_health.min_trait_count = 2;
+        team_health.scale_by_active_trait_count = true;
+
+        tft::CombatEffectDefinition brawler_health;
+        brawler_health.trigger = "combat_start";
+        brawler_health.operation = "add_stat";
+        brawler_health.stat = "max_hp";
+        brawler_health.target = "self";
+        brawler_health.value = 0.25f;
+        brawler_health.percent_of_stat = true;
+        brawler_health.condition = "trait_count_at_least";
+        brawler_health.condition_trait = "DA_18_Brawler";
+        brawler_health.min_trait_count = 2;
+
+        trait.effects = {team_health, brawler_health};
+        trait.effects_complete = true;
+        return trait;
+    };
+
+    auto& first = input.player_a.units.front();
+    first.can_attack = false;
+    first.can_move = false;
+    first.can_cast = false;
+    first.hp = first.max_hp = 100.0f;
+    first.traits.push_back(make_brawler_trait());
+
+    auto second = first;
+    second.id = 2;
+    second.api_name = "second_brawler";
+    second.name = "Second Brawler";
+    second.position = {2, 1};
+    input.player_a.units.push_back(second);
+
+    tft::CombatUnit ally;
+    ally.id = 3;
+    ally.api_name = "non_brawler_ally";
+    ally.name = "Non-Brawler Ally";
+    ally.team = tft::UnitTeam::PLAYER_A;
+    ally.role = tft::UnitRole::SUPPORT;
+    ally.position = {4, 1};
+    ally.hp = ally.max_hp = 100.0f;
+    ally.attack_damage = 1.0f;
+    ally.attack_speed = 1.0f;
+    ally.can_attack = false;
+    ally.can_move = false;
+    ally.can_cast = false;
+    input.player_a.units.push_back(ally);
+
+    auto& enemy = input.player_b.units.front();
+    enemy.can_attack = false;
+    enemy.can_move = false;
+    enemy.can_cast = false;
+
+    const auto result = engine.simulate(input);
+    require(result.success, "Trait effect combat should succeed.");
+    const auto final_hp = [&](int unit_id) {
+        const auto found = std::find_if(result.units.begin(), result.units.end(),
+            [&](const auto& unit) { return unit.unit_id == unit_id; });
+        require(found != result.units.end(), "Trait effect result unit is missing.");
+        return found->final_hp;
+    };
+    require(std::abs(final_hp(0) - 245.0f) < 0.01f,
+            "Each Brawler should receive the team health aura once plus its trait bonus.");
+    require(std::abs(final_hp(2) - 245.0f) < 0.01f,
+            "The second Brawler should receive the same tier effects.");
+    require(std::abs(final_hp(3) - 220.0f) < 0.01f,
+            "Non-Brawler allies should receive the team health aura exactly once.");
+}
+
+void test_generic_percent_max_health_item_effect() {
+    tft::CombatEngine engine;
+    auto input = make_input();
+    input.config.max_duration = 0.05f;
+    auto& holder = input.player_a.units.front();
+    holder.hp = holder.max_hp = 100.0f;
+    holder.can_attack = false;
+    holder.can_move = false;
+    holder.can_cast = false;
+
+    tft::CombatItem item;
+    item.api_name = "catalog_generic_health_item";
+    item.name = "Generic Health Item";
+    item.effects_complete = true;
+    tft::CombatEffectDefinition effect;
+    effect.trigger = "combat_start";
+    effect.operation = "add_stat";
+    effect.stat = "max_hp";
+    effect.target = "self";
+    effect.value = 0.18f;
+    effect.percent_of_stat = true;
+    item.effects.push_back(effect);
+    holder.items.push_back(item);
+
+    auto& enemy = input.player_b.units.front();
+    enemy.can_attack = false;
+    enemy.can_move = false;
+    enemy.can_cast = false;
+
+    const auto result = engine.simulate(input);
+    require(result.success, "Generic max-health item effect combat should succeed.");
+    const auto found = std::find_if(result.units.begin(), result.units.end(),
+        [](const auto& unit) { return unit.unit_id == 0; });
+    require(found != result.units.end(), "Generic max-health result unit is missing.");
+    require(std::abs(found->final_hp - 118.0f) < 0.01f,
+            "Generic percent max-health effect must be applied exactly once.");
+}
+
+void test_generic_damage_amplification_item_effect() {
+    tft::CombatEngine engine;
+    auto input = make_input();
+    input.config.max_duration = 0.2f;
+    input.config.record_damage = true;
+
+    auto& holder = input.player_a.units.front();
+    holder.attack_damage = 10.0f;
+    holder.attack_speed = 1.0f;
+    holder.attack_range = 7.0f;
+    holder.can_move = false;
+    holder.can_cast = false;
+
+    tft::CombatItem item;
+    item.api_name = "catalog_generic_damage_item";
+    item.name = "Generic Damage Item";
+    item.effects_complete = true;
+    tft::CombatEffectDefinition effect;
+    effect.trigger = "combat_start";
+    effect.operation = "add_stat";
+    effect.stat = "damage_amplification";
+    effect.target = "self";
+    effect.value = 0.15f;
+    item.effects.push_back(effect);
+    holder.items.push_back(item);
+
+    auto& target = input.player_b.units.front();
+    target.hp = target.max_hp = 1000.0f;
+    target.armor = 0.0f;
+    target.can_attack = false;
+    target.can_move = false;
+    target.can_cast = false;
+
+    const auto result = engine.simulate(input);
+    require(result.success, "Generic damage amplification combat should succeed.");
+    require(!result.damage_events.empty(),
+            "Generic damage amplification should reach the basic attack resolver.");
+    require(std::abs(result.damage_events.front().raw_damage - 11.5f) < 0.01f,
+            "Generic damage amplification should increase raw attack damage by 15 percent.");
+}
+
+void test_generic_while_hp_above_effect_reverses_at_threshold() {
+    tft::CombatEngine engine;
+    auto input = make_input();
+    input.config.max_duration = 3.1f;
+    input.config.record_damage = true;
+
+    auto& attacker = input.player_a.units.front();
+    attacker.attack_damage = 300.0f;
+    attacker.attack_speed = 1.0f;
+    attacker.attack_range = 7.0f;
+    attacker.can_move = false;
+    attacker.can_cast = false;
+
+    auto& holder = input.player_b.units.front();
+    holder.hp = holder.max_hp = 1200.0f;
+    holder.armor = 0.0f;
+    holder.can_attack = false;
+    holder.can_move = false;
+    holder.can_cast = false;
+
+    tft::CombatItem item;
+    item.api_name = "catalog_generic_conditional_durability";
+    item.name = "Generic Conditional Durability";
+    item.effects_complete = false;
+
+    tft::CombatEffectDefinition base;
+    base.trigger = "combat_start";
+    base.operation = "add_stat";
+    base.stat = "damage_reduction";
+    base.target = "self";
+    base.value = 0.05f;
+
+    tft::CombatEffectDefinition empowered;
+    empowered.trigger = "while_hp_above";
+    empowered.operation = "add_stat";
+    empowered.stat = "damage_reduction";
+    empowered.target = "self";
+    empowered.value = 0.15f;
+    empowered.health_threshold = 0.5f;
+    item.effects = {base, empowered};
+    holder.items.push_back(item);
+
+    const auto result = engine.simulate(input);
+    require(result.success, "Conditional generic item effect combat should succeed.");
+    require(result.damage_events.size() >= 4,
+            "Expected four attacks to cross the conditional health threshold.");
+    require(std::abs(result.damage_events[0].final_damage - 240.0f) < 0.01f &&
+            std::abs(result.damage_events[1].final_damage - 240.0f) < 0.01f &&
+            std::abs(result.damage_events[2].final_damage - 240.0f) < 0.01f,
+            "The empowered damage reduction should apply while HP remains above 50 percent.");
+    require(std::abs(result.damage_events[3].final_damage - 285.0f) < 0.01f,
+            "The conditional bonus should be removed after HP falls below 50 percent.");
+}
+
+void test_generic_role_condition_item_effect() {
+    tft::CombatEngine engine;
+    auto input = make_input();
+    input.config.max_duration = 0.2f;
+    input.config.record_damage = true;
+
+    auto& holder = input.player_a.units.front();
+    holder.role = tft::UnitRole::CARRY;
+    holder.attack_damage = 100.0f;
+    holder.attack_speed = 1.0f;
+    holder.attack_range = 7.0f;
+    holder.can_move = false;
+    holder.can_cast = false;
+
+    tft::CombatItem item;
+    item.api_name = "catalog_generic_role_item";
+    item.name = "Generic Role Item";
+    tft::CombatEffectDefinition effect;
+    effect.trigger = "combat_start";
+    effect.operation = "add_stat";
+    effect.stat = "attack_damage";
+    effect.target = "self";
+    effect.value = 0.10f;
+    effect.percent_of_stat = true;
+    effect.condition = "role_other";
+    item.effects.push_back(effect);
+    holder.items.push_back(item);
+
+    auto& target = input.player_b.units.front();
+    target.hp = target.max_hp = 1000.0f;
+    target.armor = 0.0f;
+    target.can_attack = false;
+    target.can_move = false;
+    target.can_cast = false;
+
+    const auto result = engine.simulate(input);
+    require(result.success && !result.damage_events.empty(),
+            "Role-conditioned generic item effect should reach combat.");
+    require(std::abs(result.damage_events.front().raw_damage - 110.0f) < 0.01f,
+            "Generic role_other effect should apply to carry units.");
+}
+
+void test_generic_mana_gain_multiplier_effect() {
+    tft::CombatEngine engine;
+    auto input = make_input();
+    input.config.max_duration = 2.1f;
+
+    auto& holder = input.player_a.units.front();
+    holder.hp = holder.max_hp = 1000.0f;
+    holder.mana = 77.0f;
+    holder.max_mana = 105.0f;
+    holder.attack_damage = 1.0f;
+    holder.attack_speed = 1.0f;
+    holder.attack_range = 7.0f;
+    holder.can_attack = true;
+    holder.can_move = false;
+    holder.can_cast = true;
+    holder.ability.mana_cost = 105.0f;
+    holder.ability.has_damage = true;
+    holder.ability.base_damage = 1.0f;
+
+    tft::CombatItem item;
+    item.api_name = "catalog_generic_mana_multiplier";
+    item.name = "Generic Mana Multiplier";
+
+    tft::CombatEffectDefinition regen;
+    regen.trigger = "combat_start";
+    regen.operation = "mana_regen";
+    regen.value = 3.0f;
+
+    tft::CombatEffectDefinition multiplier;
+    multiplier.trigger = "combat_start";
+    multiplier.operation = "mana_gain_multiplier";
+    multiplier.target = "self";
+    multiplier.value = 1.15f;
+    item.effects = {regen, multiplier};
+    holder.items.push_back(item);
+
+    auto& target = input.player_b.units.front();
+    target.hp = target.max_hp = 1000.0f;
+    target.can_attack = false;
+    target.can_move = false;
+    target.can_cast = false;
+
+    const auto result = engine.simulate(input);
+    require(result.success, "Generic mana multiplier combat should succeed.");
+    const auto found = std::find_if(result.units.begin(), result.units.end(),
+        [](const auto& unit) { return unit.unit_id == 0; });
+    require(found != result.units.end(), "Mana multiplier result unit is missing.");
+    require(found->ability_casts > 0,
+            "Generic mana gain multiplier should allow the unit to reach its cast threshold.");
+}
+
+void test_trait_team_mana_regeneration_is_applied_once() {
+    tft::CombatEngine engine;
+    auto input = make_input();
+    input.config.max_duration = 1.1f;
+
+    auto make_invoker = [](tft::CombatUnit unit) {
+        tft::CombatTrait trait;
+        trait.api_name = "DA_18_Invoker";
+        trait.name = "Invoker";
+        trait.active = true;
+        trait.active_count = 2;
+
+        tft::CombatEffectDefinition team_regen;
+        team_regen.trigger = "combat_start";
+        team_regen.operation = "mana_regen";
+        team_regen.target = "allies";
+        team_regen.value = 1.0f;
+        team_regen.condition = "trait_count_at_least";
+        team_regen.condition_trait = "DA_18_Invoker";
+        team_regen.min_trait_count = 2;
+        team_regen.scale_by_active_trait_count = true;
+
+        tft::CombatEffectDefinition invoker_bonus;
+        invoker_bonus.trigger = "combat_start";
+        invoker_bonus.operation = "mana_regen";
+        invoker_bonus.target = "self";
+        invoker_bonus.value = 3.0f;
+        invoker_bonus.condition = "trait_count_at_least";
+        invoker_bonus.condition_trait = "DA_18_Invoker";
+        invoker_bonus.min_trait_count = 2;
+
+        trait.effects = {team_regen, invoker_bonus};
+        unit.traits.push_back(trait);
+        return unit;
+    };
+
+    auto& first = input.player_a.units.front();
+    first = make_invoker(first);
+    first.mana = 86.0f;
+    first.max_mana = 100.0f;
+    first.attack_damage = 1.0f;
+    first.attack_speed = 1.0f;
+    first.attack_range = 7.0f;
+    first.can_attack = true;
+    first.can_move = false;
+    first.can_cast = true;
+    first.ability.mana_cost = 100.0f;
+    first.ability.has_damage = true;
+    first.ability.base_damage = 1.0f;
+    first.ability.target_type = tft::AbilityTargetType::ENEMY;
+
+    auto second = first;
+    second.id = 2;
+    second.api_name = "second_invoker";
+    second.name = "Second Invoker";
+    second.position = {2, 1};
+    input.player_a.units.push_back(second);
+
+    tft::CombatUnit ally;
+    ally.id = 3;
+    ally.api_name = "non_invoker_ally";
+    ally.name = "Non-Invoker Ally";
+    ally.team = tft::UnitTeam::PLAYER_A;
+    ally.role = tft::UnitRole::SUPPORT;
+    ally.position = {4, 1};
+    ally.hp = ally.max_hp = 1000.0f;
+    ally.mana = 86.0f;
+    ally.max_mana = 100.0f;
+    ally.attack_damage = 1.0f;
+    ally.attack_speed = 1.0f;
+    ally.attack_range = 7.0f;
+    ally.can_attack = true;
+    ally.can_move = false;
+    ally.can_cast = true;
+    ally.ability.mana_cost = 100.0f;
+    ally.ability.has_damage = true;
+    ally.ability.base_damage = 1.0f;
+    ally.ability.target_type = tft::AbilityTargetType::ENEMY;
+    input.player_a.units.push_back(ally);
+
+    auto& enemy = input.player_b.units.front();
+    enemy.hp = enemy.max_hp = 10000.0f;
+    enemy.can_attack = false;
+    enemy.can_move = false;
+    enemy.can_cast = false;
+
+    const auto result = engine.simulate(input);
+    require(result.success, "Invoker team mana regeneration combat should succeed.");
+    const auto casts = [&](int unit_id) {
+        const auto found = std::find_if(result.units.begin(), result.units.end(),
+            [&](const auto& unit) { return unit.unit_id == unit_id; });
+        require(found != result.units.end(), "Invoker result unit is missing.");
+        return found->ability_casts;
+    };
+    require(casts(0) > 0 && casts(2) > 0,
+            "Invoker holders should receive team and self mana regeneration.");
+    require(casts(3) == 0,
+            "Non-Invoker allies should receive the team aura once, not the Invoker bonus.");
+}
+
+void test_riftbeast_periodic_stat_growth_effect() {
+    tft::CombatEngine engine;
+    auto input = make_input();
+    input.config.max_duration = 5.1f;
+    input.config.record_damage = true;
+
+    auto& attacker = input.player_a.units.front();
+    attacker.attack_damage = 100.0f;
+    attacker.attack_speed = 1.0f;
+    attacker.attack_range = 7.0f;
+    attacker.can_attack = true;
+    attacker.can_move = false;
+    attacker.can_cast = false;
+
+    tft::CombatTrait riftbeast;
+    riftbeast.api_name = "DA_Riftbeast18";
+    riftbeast.active = true;
+    riftbeast.active_count = 7;
+
+    tft::CombatEffectDefinition combat_start;
+    combat_start.trigger = "combat_start";
+    combat_start.operation = "add_stat";
+    combat_start.stat = "attack_damage";
+    combat_start.target = "self";
+    combat_start.value = 0.06f;
+    combat_start.percent_of_stat = true;
+    combat_start.condition = "trait_count_at_least";
+    combat_start.condition_trait = riftbeast.api_name;
+    combat_start.min_trait_count = 7;
+
+    tft::CombatEffectDefinition periodic = combat_start;
+    periodic.trigger = "periodic";
+    periodic.interval = 5.0f;
+    riftbeast.effects = {combat_start, periodic};
+    attacker.traits.push_back(riftbeast);
+
+    auto& target = input.player_b.units.front();
+    target.hp = target.max_hp = 10000.0f;
+    target.armor = 0.0f;
+    target.can_attack = false;
+    target.can_move = false;
+    target.can_cast = false;
+
+    const auto result = engine.simulate(input);
+    require(result.success && result.damage_events.size() >= 6,
+            "Riftbeast periodic growth combat should complete with attack samples.");
+    require(std::abs(result.damage_events.front().raw_damage - 106.0f) < 0.01f,
+            "Riftbeast combat-start growth should apply before the first attack.");
+    const auto fifth_second_hit = std::find_if(result.damage_events.begin(),
+        result.damage_events.end(), [](const auto& event) {
+            return std::abs(event.timestamp - 5.0f) < 0.01f;
+        });
+    require(fifth_second_hit != result.damage_events.end() &&
+            std::abs(fifth_second_hit->raw_damage - 112.36f) < 0.02f,
+            "Riftbeast periodic growth should apply again after five seconds.");
+}
+
+void test_generic_trait_critical_chance_effect() {
+    tft::CombatEngine engine;
+    auto input = make_input();
+    input.config.max_duration = 0.1f;
+    input.config.record_damage = true;
+
+    auto& attacker = input.player_a.units.front();
+    attacker.attack_damage = 10.0f;
+    attacker.attack_speed = 1.0f;
+    attacker.attack_range = 7.0f;
+    attacker.critical_strike_chance = 0.85f;
+    attacker.critical_strike_damage = 2.0f;
+    attacker.can_attack = true;
+    attacker.can_move = false;
+    attacker.can_cast = false;
+
+    tft::CombatTrait executioner;
+    executioner.api_name = "DA_18_Executioner";
+    executioner.active = true;
+    executioner.active_count = 2;
+    tft::CombatEffectDefinition crit_chance;
+    crit_chance.trigger = "combat_start";
+    crit_chance.operation = "add_stat";
+    crit_chance.stat = "critical_strike_chance";
+    crit_chance.target = "self";
+    crit_chance.value = 0.15f;
+    crit_chance.condition = "trait_count_at_least";
+    crit_chance.condition_trait = executioner.api_name;
+    crit_chance.min_trait_count = 2;
+    executioner.effects.push_back(crit_chance);
+    attacker.traits.push_back(executioner);
+
+    auto& target = input.player_b.units.front();
+    target.hp = target.max_hp = 1000.0f;
+    target.armor = 0.0f;
+    target.can_attack = false;
+    target.can_move = false;
+    target.can_cast = false;
+
+    const auto result = engine.simulate(input);
+    require(result.success && !result.damage_events.empty(),
+            "Generic trait critical-chance effect should reach the attack resolver.");
+    require(std::abs(result.damage_events.front().raw_damage - 20.0f) < 0.01f,
+            "Trait critical chance should be applied before the first attack roll.");
+}
+
+void test_generic_mana_on_attack_item_effects() {
+    const auto casts_with_effect = [](float base_mana, float critical_mana,
+                                      float crit_chance) {
+        tft::CombatEngine engine;
+        auto input = make_input();
+        input.config.max_duration = 1.1f;
+
+        auto& attacker = input.player_a.units.front();
+        attacker.mana = 86.0f;
+        attacker.max_mana = 100.0f;
+        attacker.attack_damage = 1.0f;
+        attacker.attack_speed = 1.0f;
+        attacker.attack_range = 7.0f;
+        attacker.critical_strike_chance = crit_chance;
+        attacker.critical_strike_damage = 1.0f;
+        attacker.can_attack = true;
+        attacker.can_move = false;
+        attacker.can_cast = true;
+        attacker.ability.mana_cost = 100.0f;
+        attacker.ability.has_damage = true;
+        attacker.ability.base_damage = 1.0f;
+        attacker.ability.target_type = tft::AbilityTargetType::ENEMY;
+
+        tft::CombatItem item;
+        item.api_name = "generic_mana_on_attack_test";
+        tft::CombatEffectDefinition effect;
+        effect.trigger = "on_attack";
+        effect.operation = "mana_on_attack";
+        effect.value = base_mana;
+        effect.critical_value = critical_mana;
+        item.effects.push_back(effect);
+        attacker.items.push_back(item);
+
+        auto& target = input.player_b.units.front();
+        target.hp = target.max_hp = 10000.0f;
+        target.can_attack = false;
+        target.can_move = false;
+        target.can_cast = false;
+
+        const auto result = engine.simulate(input);
+        require(result.success, "Generic mana-on-attack combat should succeed.");
+        const auto found = std::find_if(result.units.begin(), result.units.end(),
+            [](const auto& unit) { return unit.unit_id == 0; });
+        require(found != result.units.end(), "Mana-on-attack result unit is missing.");
+        return found->ability_casts;
+    };
+
+    require(casts_with_effect(2.0f, 4.0f, 1.0f) > 0,
+            "Critical Leviathan-style hit should use the critical mana value.");
+    require(casts_with_effect(2.0f, 4.0f, 0.0f) == 0,
+            "Non-critical Leviathan-style hit should use only the base mana value.");
+    require(casts_with_effect(5.0f, 0.0f, 0.0f) > 0,
+            "Shojin-style mana-on-attack should be applied generically.");
+}
+
+void test_generic_periodic_heal_effect() {
+    tft::CombatEngine engine;
+    auto input = make_input();
+    input.config.max_duration = 2.1f;
+
+    auto& holder = input.player_a.units.front();
+    holder.hp = 500.0f;
+    holder.max_hp = 1000.0f;
+    holder.can_attack = false;
+    holder.can_move = false;
+    holder.can_cast = false;
+
+    tft::CombatItem item;
+    item.api_name = "catalog_generic_periodic_heal";
+    item.name = "Generic Periodic Heal";
+    tft::CombatEffectDefinition heal;
+    heal.trigger = "periodic";
+    heal.operation = "heal_max_hp_pct";
+    heal.target = "self";
+    heal.value = 0.025f;
+    heal.interval = 2.0f;
+    item.effects.push_back(heal);
+    holder.items.push_back(item);
+
+    auto& attacker = input.player_b.units.front();
+    attacker.attack_damage = 1.0f;
+    attacker.attack_speed = 1.0f;
+    attacker.attack_range = 7.0f;
+    attacker.can_attack = true;
+    attacker.can_move = false;
+    attacker.can_cast = false;
+
+    const auto result = engine.simulate(input);
+    require(result.success, "Generic periodic heal combat should succeed.");
+    const auto found = std::find_if(result.units.begin(), result.units.end(),
+        [](const auto& unit) { return unit.unit_id == 0; });
+    require(found != result.units.end(), "Periodic heal result unit is missing.");
+    require(found->healing_done >= 24.9f,
+            "Generic periodic heal should restore 2.5 percent max HP every two seconds.");
+}
+
+void test_generic_periodic_missing_health_heal_effect() {
+    tft::CombatEngine engine;
+    auto input = make_input();
+    input.config.max_duration = 2.1f;
+
+    auto& holder = input.player_a.units.front();
+    holder.hp = 500.0f;
+    holder.max_hp = 1000.0f;
+    holder.can_attack = false;
+    holder.can_move = false;
+    holder.can_cast = false;
+
+    tft::CombatItem redemption;
+    redemption.api_name = "generic_missing_health_heal";
+    tft::CombatEffectDefinition heal;
+    heal.trigger = "periodic";
+    heal.operation = "heal_missing_hp_pct";
+    heal.target = "self";
+    heal.value = 0.02f;
+    heal.interval = 1.0f;
+    heal.max_amount = 250.0f;
+    redemption.effects.push_back(heal);
+    holder.items.push_back(redemption);
+
+    auto& attacker = input.player_b.units.front();
+    attacker.attack_damage = 1.0f;
+    attacker.attack_speed = 1.0f;
+    attacker.attack_range = 7.0f;
+    attacker.can_attack = true;
+    attacker.can_move = false;
+    attacker.can_cast = false;
+
+    const auto result = engine.simulate(input);
+    require(result.success, "Generic missing-health periodic heal combat should succeed.");
+    const auto found = std::find_if(result.units.begin(), result.units.end(),
+        [](const auto& unit) { return unit.unit_id == 0; });
+    require(found != result.units.end(), "Missing-health heal result unit is missing.");
+    require(std::abs(found->healing_done - 19.8f) < 0.2f,
+            "Missing-health healing should recalculate the missing-health amount per tick.");
+}
+
+void test_generic_periodic_stat_effect() {
+    tft::CombatEngine engine;
+    auto input = make_input();
+    input.config.max_duration = 2.1f;
+    input.config.record_damage = true;
+
+    auto& attacker = input.player_a.units.front();
+    attacker.attack_damage = 100.0f;
+    attacker.attack_speed = 1.0f;
+    attacker.attack_range = 7.0f;
+    attacker.can_move = false;
+    attacker.can_cast = false;
+
+    tft::CombatItem item;
+    item.api_name = "catalog_generic_periodic_stat";
+    item.name = "Generic Periodic Stat";
+    tft::CombatEffectDefinition effect;
+    effect.trigger = "periodic";
+    effect.operation = "add_stat";
+    effect.stat = "attack_damage";
+    effect.target = "self";
+    effect.value = 0.10f;
+    effect.percent_of_stat = true;
+    effect.interval = 1.0f;
+    item.effects.push_back(effect);
+    attacker.items.push_back(item);
+
+    auto& target = input.player_b.units.front();
+    target.hp = target.max_hp = 10000.0f;
+    target.armor = 0.0f;
+    target.can_attack = false;
+    target.can_move = false;
+    target.can_cast = false;
+
+    const auto result = engine.simulate(input);
+    require(result.success && result.damage_events.size() >= 3,
+            "Generic periodic stat effect should produce three attack samples.");
+    require(std::abs(result.damage_events[0].raw_damage - 100.0f) < 0.01f &&
+            std::abs(result.damage_events[1].raw_damage - 110.0f) < 0.01f &&
+            std::abs(result.damage_events[2].raw_damage - 121.0f) < 0.01f,
+            "Periodic percentage stat effect should apply and compound once per interval.");
+}
+
+void test_defender_team_aura_and_tier_bonus_apply_once() {
+    tft::CombatEngine engine;
+    auto input = make_input();
+    input.config.max_duration = 0.05f;
+    input.config.record_damage = true;
+
+    auto make_defender_trait = [] {
+        tft::CombatTrait trait;
+        trait.api_name = "DA_18_Defender";
+        trait.name = "Defender";
+        trait.active = true;
+        trait.active_count = 2;
+        trait.effects_complete = true;
+
+        const auto make_effect = [](const char* stat, const char* target,
+                                    float value, bool team_aura) {
+            tft::CombatEffectDefinition effect;
+            effect.trigger = "combat_start";
+            effect.operation = "add_stat";
+            effect.stat = stat;
+            effect.target = target;
+            effect.value = value;
+            effect.condition = "trait_count_at_least";
+            effect.condition_trait = "DA_18_Defender";
+            effect.min_trait_count = 2;
+            effect.scale_by_active_trait_count = team_aura;
+            return effect;
+        };
+        trait.effects = {
+            make_effect("armor", "allies", 12.0f, true),
+            make_effect("magic_resist", "allies", 12.0f, true),
+            make_effect("armor", "self", 13.0f, false),
+            make_effect("magic_resist", "self", 13.0f, false)
+        };
+        return trait;
+    };
+
+    auto& first_defender = input.player_a.units.front();
+    first_defender.position = {0, 0};
+    first_defender.role = tft::UnitRole::TANK;
+    first_defender.hp = first_defender.max_hp = 1000.0f;
+    first_defender.can_attack = false;
+    first_defender.can_move = false;
+    first_defender.can_cast = false;
+    first_defender.traits.push_back(make_defender_trait());
+
+    auto second_defender = first_defender;
+    second_defender.id = 2;
+    second_defender.api_name = "second_defender";
+    second_defender.position = {0, 2};
+    input.player_a.units.push_back(second_defender);
+
+    auto non_defender = input.player_a.units.front();
+    non_defender.id = 4;
+    non_defender.api_name = "non_defender_ally";
+    non_defender.role = tft::UnitRole::CARRY;
+    non_defender.position = {4, 1};
+    non_defender.traits.clear();
+    input.player_a.units.push_back(non_defender);
+
+    auto& first_attacker = input.player_b.units.front();
+    first_attacker.position = {5, 1};
+    first_attacker.attack_damage = 100.0f;
+    first_attacker.attack_speed = 1.0f;
+    first_attacker.attack_range = 7.0f;
+    first_attacker.can_attack = true;
+    first_attacker.can_move = false;
+    first_attacker.can_cast = false;
+
+    auto second_attacker = first_attacker;
+    second_attacker.id = 3;
+    second_attacker.api_name = "second_attacker";
+    second_attacker.position = {1, 0};
+    input.player_b.units.push_back(second_attacker);
+
+    const auto result = engine.simulate(input);
+    require(result.success && result.damage_events.size() >= 2,
+            "Defender team aura combat should resolve both attacks.");
+
+    const auto damage_to = [&](int target_id) {
+        const auto found = std::find_if(result.damage_events.begin(),
+            result.damage_events.end(), [&](const auto& event) {
+                return event.target_unit_id == target_id;
+            });
+        require(found != result.damage_events.end(), "Expected Defender test target was not attacked.");
+        return found->final_damage;
+    };
+    require(std::abs(damage_to(4) - (100.0f * 100.0f / 112.0f)) < 0.05f,
+            "Non-Defender allies should receive the shared 12 armor aura exactly once.");
+    require(std::abs(damage_to(0) - 80.0f) < 0.05f,
+            "Defenders should receive their tier bonus in addition to the shared aura.");
 }
 
 void test_event_limit_is_reported_as_timeout() {
@@ -334,6 +1126,11 @@ void test_shojin_changes_cast_timing_and_dragons_claw_heals() {
     const auto no_shojin = engine.simulate(mana_input);
     tft::CombatItem shojin;
     shojin.api_name = "TFT_Item_SpearOfShojin";
+    tft::CombatEffectDefinition shojin_mana;
+    shojin_mana.trigger = "on_attack";
+    shojin_mana.operation = "mana_on_attack";
+    shojin_mana.value = 5.0f;
+    shojin.effects.push_back(shojin_mana);
     mana_input.player_a.units[0].items.push_back(shojin);
     const auto with_shojin = engine.simulate(mana_input);
     require(no_shojin.success && with_shojin.success, "Shojin comparison should simulate.");
@@ -354,6 +1151,22 @@ void test_shojin_changes_cast_timing_and_dragons_claw_heals() {
     const auto no_claw = engine.simulate(healing_input);
     tft::CombatItem claw;
     claw.api_name = "TFT_Item_DragonsClaw";
+    // Direct CombatEngine tests must provide the normalized catalog contract;
+    // the simulator no longer infers item mechanics from API-name branches.
+    tft::CombatEffectDefinition claw_health;
+    claw_health.trigger = "combat_start";
+    claw_health.operation = "add_stat";
+    claw_health.stat = "max_hp";
+    claw_health.target = "self";
+    claw_health.value = 0.06f;
+    claw_health.percent_of_stat = true;
+    tft::CombatEffectDefinition claw_heal;
+    claw_heal.trigger = "periodic";
+    claw_heal.operation = "heal_max_hp_pct";
+    claw_heal.target = "self";
+    claw_heal.value = 0.025f;
+    claw_heal.interval = 2.0f;
+    claw.effects = {claw_health, claw_heal};
     healing_input.player_a.units[0].items.push_back(claw);
     const auto with_claw = engine.simulate(healing_input);
     require(no_claw.success && with_claw.success, "Dragon's Claw comparison should simulate.");
@@ -477,6 +1290,12 @@ void test_set17_healing_and_defensive_items_change_survival() {
     healing_input.player_a.units.push_back(ally);
     tft::CombatItem gunblade;
     gunblade.api_name = "TFT_Item_HextechGunblade";
+    tft::CombatEffectDefinition ally_healing;
+    ally_healing.trigger = "on_damage_dealt";
+    ally_healing.operation = "heal_damage_pct_lowest_ally";
+    ally_healing.target = "lowest_health_ally";
+    ally_healing.value = 0.20f;
+    gunblade.effects.push_back(ally_healing);
     healing_input.player_a.units[0].items.push_back(gunblade);
     const auto healed = engine.simulate(healing_input);
     require(healed.success, "Gunblade ally-healing battle should complete.");
@@ -791,11 +1610,115 @@ void test_generic_source_ad_effect_changes_combat() {
             "Normalized percentage AD effect must change actual combat damage.");
 }
 
+
+void test_simulation_preserves_input_ownership_after_runtime_move() {
+    tft::CombatEngine engine;
+    const auto input = make_input();
+    const auto original_a = input.player_a.units;
+    const auto original_b = input.player_b.units;
+
+    const auto result = engine.simulate(input);
+    require(result.success && result.completed,
+            "Ownership fixture combat must complete.");
+
+    const auto unchanged = [](const auto& actual, const auto& original) {
+        if (actual.size() != original.size()) return false;
+        for (std::size_t i = 0; i < actual.size(); ++i) {
+            const auto& lhs = actual[i];
+            const auto& rhs = original[i];
+            if (lhs.id != rhs.id ||
+                lhs.position.x != rhs.position.x ||
+                lhs.position.y != rhs.position.y ||
+                lhs.hp != rhs.hp ||
+                lhs.max_hp != rhs.max_hp ||
+                lhs.attack_damage != rhs.attack_damage ||
+                lhs.attack_speed != rhs.attack_speed ||
+                lhs.items.size() != rhs.items.size() ||
+                lhs.traits.size() != rhs.traits.size()) {
+                return false;
+            }
+        }
+        return true;
+    };
+
+    require(unchanged(input.player_a.units, original_a) &&
+            unchanged(input.player_b.units, original_b),
+            "Moving prepared units into RuntimeUnit must not mutate CombatInput.");
+}
+
+void test_detailed_events_are_optional_without_changing_combat_outcome() {
+    tft::CombatEngine engine;
+    auto detailed_input = make_input();
+    detailed_input.config.max_duration = 2.0f;
+    detailed_input.config.deterministic = true;
+    detailed_input.config.seed = 987654;
+    detailed_input.config.record_damage = true;
+    detailed_input.config.record_events = true;
+
+    const auto detailed = engine.simulate(detailed_input);
+    require(detailed.success && detailed.completed,
+            "Detailed combat fixture must complete.");
+
+    auto training_input = detailed_input;
+    training_input.config.record_damage = false;
+    training_input.config.record_events = false;
+    const auto training = engine.simulate(training_input);
+    require(training.success && training.completed,
+            "Training combat fixture must complete.");
+
+    require(training.winner == detailed.winner &&
+            training.duration == detailed.duration &&
+            training.player_a_survivors == detailed.player_a_survivors &&
+            training.player_b_survivors == detailed.player_b_survivors &&
+            training.player_a_damage == detailed.player_a_damage &&
+            training.player_b_damage == detailed.player_b_damage &&
+            training.units.size() == detailed.units.size(),
+            "Disabling detailed events must preserve the combat outcome.");
+
+    for (std::size_t i = 0; i < detailed.units.size(); ++i) {
+        const auto& expected = detailed.units[i];
+        const auto& actual = training.units[i];
+        require(actual.unit_id == expected.unit_id &&
+                actual.team == expected.team &&
+                actual.survived == expected.survived &&
+                actual.initial_hp == expected.initial_hp &&
+                actual.final_hp == expected.final_hp &&
+                actual.damage_dealt == expected.damage_dealt &&
+                actual.damage_taken == expected.damage_taken &&
+                actual.healing_done == expected.healing_done &&
+                actual.kills == expected.kills &&
+                actual.attacks == expected.attacks &&
+                actual.ability_casts == expected.ability_casts,
+                "Disabling detailed events must preserve per-unit aggregate evidence.");
+    }
+
+    require(training.damage_events.empty() && training.attack_events.empty() &&
+            training.death_events.empty() && training.events.empty(),
+            "Training mode must not retain detailed event collections.");
+    require(!detailed.damage_events.empty() || !detailed.attack_events.empty() ||
+            !detailed.death_events.empty() || !detailed.events.empty(),
+            "Audit mode must continue to expose detailed event collections.");
+}
+
 } // namespace
 
 int main() {
     try {
         test_deterministic_winner_and_damage();
+        test_defender_team_aura_and_tier_bonus_apply_once();
+        test_generic_periodic_stat_effect();
+        test_generic_periodic_heal_effect();
+        test_generic_periodic_missing_health_heal_effect();
+        test_generic_mana_gain_multiplier_effect();
+        test_riftbeast_periodic_stat_growth_effect();
+        test_generic_trait_critical_chance_effect();
+        test_generic_mana_on_attack_item_effects();
+        test_trait_team_mana_regeneration_is_applied_once();
+        test_generic_role_condition_item_effect();
+        test_generic_while_hp_above_effect_reverses_at_threshold();
+        test_generic_damage_amplification_item_effect();
+        test_generic_percent_max_health_item_effect();
+        test_trait_team_effect_scaling_applies_once();
         test_event_limit_is_reported_as_timeout();
         test_invalid_configuration_returns_error();
         test_equipped_items_change_combat_stats();
@@ -811,6 +1734,8 @@ int main() {
         test_data_driven_trait_emblem_effects();
         test_component_to_craft_to_equipment_to_combat_cycle();
         test_generic_source_ad_effect_changes_combat();
+        test_simulation_preserves_input_ownership_after_runtime_move();
+        test_detailed_events_are_optional_without_changing_combat_outcome();
     } catch (const std::exception& error) {
         std::cerr << "test_combat_engine: " << error.what() << '\n';
         return 1;

@@ -105,8 +105,12 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
                 effect.operation == "add_stat" ||
                 effect.operation == "bonus_damage" ||
                 effect.operation == "heal_max_hp_pct" ||
+                effect.operation == "heal_missing_hp_pct" ||
+                effect.operation == "heal_damage_pct_lowest_ally" ||
                 effect.operation == "grant_charges" ||
-                effect.operation == "mana_regen";
+                effect.operation == "mana_regen" ||
+                effect.operation == "mana_gain_multiplier" ||
+                effect.operation == "mana_on_attack";
             if (!supported_operation) {
                 throw std::invalid_argument(
                     "Unsupported combat effect operation (not implemented by CombatEngine): " +
@@ -116,10 +120,13 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
                 effect.trigger.empty() ||
                 effect.trigger == "combat_start" ||
                 effect.trigger == "on_attack" ||
+                effect.trigger == "on_damage_dealt" ||
                 effect.trigger == "on_kill" ||
                 effect.trigger == "after_delay" ||
                 effect.trigger == "while_hp_below" ||
-                effect.trigger == "on_ally_shield";
+                effect.trigger == "while_hp_above" ||
+                effect.trigger == "on_ally_shield" ||
+                effect.trigger == "periodic";
             if (!supported_trigger) {
                 throw std::invalid_argument(
                     "Unsupported combat effect trigger (not implemented by CombatEngine): " +
@@ -128,13 +135,24 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
             const bool supported_pair =
                 (effect.operation == "add_stat" &&
                     (effect.trigger == "combat_start" || effect.trigger == "after_delay" ||
-                     effect.trigger == "while_hp_below" || effect.trigger == "on_ally_shield")) ||
+                     effect.trigger == "while_hp_below" ||
+                     effect.trigger == "while_hp_above" || effect.trigger == "on_ally_shield" ||
+                     effect.trigger == "periodic")) ||
                 (effect.operation == "bonus_damage" && effect.trigger == "on_attack") ||
                 (effect.operation == "heal_max_hp_pct" &&
-                    (effect.trigger == "on_kill" || effect.trigger == "on_attack")) ||
+                    (effect.trigger == "on_kill" || effect.trigger == "on_attack" ||
+                     effect.trigger == "periodic")) ||
+                (effect.operation == "heal_missing_hp_pct" &&
+                    effect.trigger == "periodic") ||
+                (effect.operation == "heal_damage_pct_lowest_ally" &&
+                    effect.trigger == "on_damage_dealt") ||
                 (effect.operation == "grant_charges" && effect.trigger == "on_kill") ||
                 (effect.operation == "mana_regen" &&
-                    (effect.trigger.empty() || effect.trigger == "combat_start"));
+                    (effect.trigger.empty() || effect.trigger == "combat_start")) ||
+                (effect.operation == "mana_gain_multiplier" &&
+                    effect.trigger == "combat_start") ||
+                (effect.operation == "mana_on_attack" &&
+                    effect.trigger == "on_attack");
             if (!supported_pair) {
                 throw std::invalid_argument(
                     "Unsupported combat effect operation/trigger pair: " +
@@ -173,18 +191,25 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
             const bool supported_target =
                 effect.target.empty() || effect.target == "self" ||
                 effect.target == "allies" ||
-                effect.target == "allies_same_row_within_1";
+                effect.target == "allies_same_row_within_1" ||
+                effect.target == "lowest_health_ally";
             if (!supported_target) {
                 throw std::invalid_argument(
                     "Unsupported combat effect target: " + effect.target);
             }
             if ((effect.operation == "mana_regen" ||
                  effect.operation == "grant_charges" ||
-                 effect.operation == "heal_max_hp_pct") &&
+                 effect.operation == "heal_max_hp_pct" ||
+                 effect.operation == "heal_missing_hp_pct") &&
                 !effect.target.empty() && effect.target != "self") {
                 throw std::invalid_argument(
                     "This combat effect operation only supports the self target: " +
                     effect.operation);
+            }
+            if (effect.operation == "heal_damage_pct_lowest_ally" &&
+                effect.target != "lowest_health_ally") {
+                throw std::invalid_argument(
+                    "heal_damage_pct_lowest_ally requires lowest_health_ally target");
             }
             if (effect.operation == "bonus_damage" &&
                 effect.target == "allies_same_row_within_1") {
@@ -244,6 +269,17 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
             read_number("interval", effect.interval);
             read_number("delay", effect.delay);
             read_number("health_threshold", effect.health_threshold);
+            read_number("critical_value", effect.critical_value);
+            read_number("max_amount", effect.max_amount);
+            if (effect.trigger == "periodic" &&
+                (!std::isfinite(effect.interval) || effect.interval <= 0.0f)) {
+                throw std::invalid_argument("Periodic combat effects require a positive interval");
+            }
+            if (effect.operation == "heal_missing_hp_pct" &&
+                (!std::isfinite(effect.max_amount) || effect.max_amount <= 0.0f)) {
+                throw std::invalid_argument(
+                    "Missing-health periodic healing requires a positive max_amount");
+            }
             if (raw.contains("max_stacks")) {
                 if (!raw["max_stacks"].is_number_integer() ||
                     raw["max_stacks"].get<int>() < 0) {
@@ -267,6 +303,13 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
             };
             read_bool("percent_of_max_health", effect.percent_of_max_health);
             read_bool("percent_of_stat", effect.percent_of_stat);
+            read_bool("scale_by_base_stat", effect.scale_by_base_stat);
+            if (effect.scale_by_base_stat &&
+                (effect.trigger != "periodic" || effect.operation != "add_stat" ||
+                 effect.stat != "attack_speed")) {
+                throw std::invalid_argument(
+                    "scale_by_base_stat is supported only for periodic attack_speed effects");
+            }
             if (effect.operation == "add_stat" && effect.percent_of_max_health) {
                 throw std::invalid_argument(
                     "add_stat does not support percent_of_max_health; use percent_of_stat");
@@ -407,6 +450,13 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
         }
         if (entry.contains("combat_effects")) {
             item.combat_effects = parse_effects(entry["combat_effects"]);
+        }
+        if (entry.contains("combat_effects_complete")) {
+            if (!entry["combat_effects_complete"].is_boolean()) {
+                throw std::invalid_argument("combat_effects_complete must be a boolean");
+            }
+            item.combat_effects_complete =
+                entry["combat_effects_complete"].get<bool>();
         }
         if (entry.contains("deferred_stats")) {
             if (!entry["deferred_stats"].is_array()) {

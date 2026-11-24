@@ -3,10 +3,31 @@ import torch
 
 from policy import TFTPolicy
 
+def _complete_mask_bundle(masks, batch_size, device="cpu"):
+    """Build full native mask snapshots for focused Policy unit fixtures."""
+    shapes = {
+        "type_mask": (9,), "shop_mask": (5,), "bench_source_mask": (9,),
+        "board_target_mask": (28,), "board_source_mask": (28,),
+        "board_move_target_masks": (28, 28), "bench_move_source_mask": (9,),
+        "bench_to_board_target_masks": (9, 28), "item_inventory_mask": (9,),
+        "item_component_first_mask": (10,), "item_component_pair_masks": (10, 10),
+        "item_target_mask": (37,),
+    }
+    result = {
+        key: torch.zeros((batch_size, *shape), dtype=torch.bool, device=device)
+        for key, shape in shapes.items()
+    }
+    # PASS is the safe neutral action for fixture rows that do not target a branch.
+    result["type_mask"][:, 6] = True
+    for key, value in masks.items():
+        result[key] = value
+    return result
+
+
 
 def _fixture():
     torch.manual_seed(781)
-    policy = TFTPolicy(obs_dim=162, action_dims=[9, 5, 9, 28, 28, 28], hidden_size=64)
+    policy = TFTPolicy(obs_dim=162, action_dims=[9, 5, 9, 28, 28, 28], hidden_size=64, require_semantic_state=False)
     obs = torch.randn(2, 162)
     masks = {
         "type_mask": torch.zeros(2, 9, dtype=torch.bool),
@@ -18,6 +39,7 @@ def _fixture():
         "board_source_mask": torch.ones(2, 28, dtype=torch.bool),
         "board_move_target_masks": torch.ones(2, 28, 28, dtype=torch.bool),
     }
+    masks = _complete_mask_bundle(masks, obs.shape[0])
     masks["type_mask"][0, 0] = True  # BUY
     masks["type_mask"][1, 4] = True  # MOVE_BOARD
     return policy.eval(), obs, masks
@@ -58,3 +80,63 @@ def test_diagnostics_do_not_consume_extra_rng_in_stochastic_mode():
         )
     for expected, actual in zip(normal, diagnostic[:4]):
         assert torch.equal(expected, actual)
+
+
+def test_viewer_validates_critic_mask_checkpoint_identity_without_breaking_legacy():
+    import pytest
+    from action_contract import build_critic_mask_input_checkpoint_contract
+    from viewer.session import _validate_critic_mask_checkpoint_payload
+
+    legacy_state = {"value_head.weight": torch.zeros(1, 32)}
+    _validate_critic_mask_checkpoint_payload({}, legacy_state)
+
+    new_state = {
+        "value_head.weight": torch.zeros(1, 96),
+        "critic_mask_encoder.weight": torch.zeros(64, 1280),
+        "critic_mask_encoder.bias": torch.zeros(64),
+    }
+    contract = build_critic_mask_input_checkpoint_contract()
+    _validate_critic_mask_checkpoint_payload(
+        {"critic_mask_input_contract": contract}, new_state
+    )
+
+    with pytest.raises(ValueError, match="sem critic_mask_input_contract"):
+        _validate_critic_mask_checkpoint_payload({}, new_state)
+    with pytest.raises(ValueError, match="não contém"):
+        _validate_critic_mask_checkpoint_payload(
+            {"critic_mask_input_contract": contract}, legacy_state
+        )
+
+
+def test_viewer_validates_semantic_projection_contract_and_catalog_identity():
+    import pytest
+    from semantic_observation import build_semantic_state_checkpoint_contract
+    from viewer.session import _validate_semantic_checkpoint_payload
+
+    catalog = {"TFT_Example": 7}
+    contract = build_semantic_state_checkpoint_contract(catalog)
+    state = {
+        "semantic_id_embedding.weight": torch.zeros(9, 16),
+        "semantic_trait_embedding.weight": torch.zeros(65537, 16),
+        "semantic_encoder.0.weight": torch.zeros(256, 3034),
+        "semantic_encoder.0.bias": torch.zeros(256),
+        "semantic_encoder.2.weight": torch.zeros(512, 256),
+        "semantic_encoder.2.bias": torch.zeros(512),
+    }
+    _validate_semantic_checkpoint_payload(
+        {"semantic_state_contract": contract}, state, catalog
+    )
+    with pytest.raises(ValueError, match="semantic_state_contract"):
+        _validate_semantic_checkpoint_payload({}, state, catalog)
+    with pytest.raises(ValueError, match="Viewer exige checkpoint semântico v6"):
+        _validate_semantic_checkpoint_payload({}, {}, catalog)
+    partial_state = dict(state)
+    partial_state.pop("semantic_encoder.2.bias")
+    with pytest.raises(ValueError, match="parcial"):
+        _validate_semantic_checkpoint_payload(
+            {"semantic_state_contract": contract}, partial_state, catalog
+        )
+    with pytest.raises(ValueError, match="catalog"):
+        _validate_semantic_checkpoint_payload(
+            {"semantic_state_contract": contract}, state, {"TFT_Example": 8}
+        )

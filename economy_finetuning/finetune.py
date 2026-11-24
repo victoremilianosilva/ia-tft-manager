@@ -23,13 +23,20 @@ if str(ROOT) not in sys.path:
 
 from cpp_lobby_env import CppTFTLobbyWrapper
 from engine_contracts import ActionType
+from action_contract import (
+    ACTION_CONTRACT_ID, ACTION_CONTRACT_VERSION, ACTION_CONTRACT_HASH,
+    MASK_CONTRACT_ID, MASK_CONTRACT_VERSION, MASK_CONTRACT_HASH,
+    MASK_SNAPSHOT_HASH_ALGORITHM, hash_mask_rows,
+)
 from policy import TFTPolicy
 from ppo import PPOTrainer
 from rollout import RolloutBuffer
 from economy_finetuning.scenario_generator import (
-    SCENARIOS, decode_observation, matching_scenarios, shaped_action_reward,
+    SCENARIOS, decode_semantic_observation, matching_scenarios, shaped_action_reward,
 )
 from economy_finetuning.chain_manager import check_scenario, record_training
+from scripts.evaluate_checkpoints import native_semantic_state_for_players
+from semantic_observation import catalog_identity
 
 ACTION_DIMS = [9, 5, 9, 28, 28, 28]
 MASK_SHAPES = {
@@ -68,10 +75,16 @@ def _display_path(path: Path) -> str:
         return path.name
 
 
-def _load_checkpoint(path: Path, obs_dim: int, device: torch.device):
+def _load_checkpoint(path: Path, obs_dim: int, device: torch.device, catalog_map: dict):
     checkpoint = torch.load(path, map_location=device, weights_only=False)
+    from economy_finetuning.paired_evaluator import validate_evaluation_checkpoint_contracts
+    validate_evaluation_checkpoint_contracts(checkpoint, catalog_map)
     state = checkpoint.get("policy", checkpoint)
-    policy = TFTPolicy(obs_dim, ACTION_DIMS).to(device)
+    policy = TFTPolicy(
+        obs_dim, ACTION_DIMS,
+        semantic_vocab_size=catalog_identity(catalog_map)["vocab_size"],
+        require_semantic_state=True,
+    ).to(device)
     migrated = policy.load_compatible_state_dict(state)
     return checkpoint, policy, migrated
 
@@ -128,12 +141,52 @@ def _individual_dones(info, lobby_done: bool):
     return dones
 
 
-def _type_probabilities(policy, observations, masks):
+def _type_probabilities(policy, observations, masks, semantic_state):
     with torch.no_grad():
-        features = policy.encode(observations)
+        features = policy.encode(observations, semantic_state=semantic_state)
         logits = policy.type_head(features)
         logits = policy._mask_logits(logits, masks["type_mask"])
         return torch.softmax(logits, dim=-1).cpu().numpy()
+
+
+def _rollout_snapshot_metadata(semantic_state, next_semantic_state, masks, action_traces):
+    """Bind one fine-tuning transition to its native decision/result/next snapshots."""
+    decision_rows = semantic_state.get("snapshot_metadata")
+    next_rows = next_semantic_state.get("snapshot_metadata")
+    if (
+        not isinstance(decision_rows, list) or len(decision_rows) != 8
+        or not isinstance(next_rows, list) or len(next_rows) != 8
+        or not isinstance(action_traces, (list, tuple)) or len(action_traces) != 8
+    ):
+        raise RuntimeError("Fine-tuning requires eight aligned native semantic/action-trace rows.")
+
+    mask_hashes = hash_mask_rows(masks)
+    decision_metadata = []
+    result_metadata = []
+    next_metadata = []
+    contract_fields = {
+        "action_contract_id": ACTION_CONTRACT_ID,
+        "action_contract_version": ACTION_CONTRACT_VERSION,
+        "action_contract_hash": ACTION_CONTRACT_HASH,
+        "mask_contract_id": MASK_CONTRACT_ID,
+        "mask_contract_version": MASK_CONTRACT_VERSION,
+        "mask_contract_hash": MASK_CONTRACT_HASH,
+    }
+    for player_id, (decision, next_row, trace, mask_hash) in enumerate(
+        zip(decision_rows, next_rows, action_traces, mask_hashes)
+    ):
+        decision_row = dict(decision)
+        decision_row.update(contract_fields)
+        decision_row["mask_snapshot_hash"] = mask_hash
+        decision_row["mask_snapshot_hash_algorithm"] = MASK_SNAPSHOT_HASH_ALGORITHM
+        result_row = dict(next_row)
+        result_row["action_trace"] = dict(trace)
+        if result_row["action_trace"].get("player_id") != player_id:
+            raise RuntimeError("Native action trace is not aligned with its player row.")
+        decision_metadata.append(decision_row)
+        result_metadata.append(result_row)
+        next_metadata.append(dict(next_row))
+    return decision_metadata, result_metadata, next_metadata
 
 
 def _freeze_non_target_heads(policy, trainable_heads):
@@ -244,7 +297,10 @@ def run(args):
         if observations.ndim != 2 or observations.shape[0] != 8:
             raise ValueError(f"Shape de observação nativo inesperado: {observations.shape}")
         obs_dim = int(observations.shape[-1])
-        original_checkpoint, policy, migrated = _load_checkpoint(checkpoint_path, obs_dim, device)
+        catalog_map = env.get_champion_id_map()
+        original_checkpoint, policy, migrated = _load_checkpoint(
+            checkpoint_path, obs_dim, device, catalog_map
+        )
         original_policy = copy.deepcopy(policy).eval()
         trainable_names = _freeze_non_target_heads(policy, selected_scenario.trainable_heads)
         optimizer = optim.Adam(
@@ -334,7 +390,8 @@ def run(args):
 
         for update in range(1, args.updates + 1):
             rollout = RolloutBuffer(
-                args.rollout_steps, 8, obs_dim, 6, device, mask_shapes=MASK_SHAPES
+                args.rollout_steps, 8, obs_dim, 6, device,
+                mask_shapes=MASK_SHAPES, require_semantic_state=True,
             )
             matched_transitions = 0
             episode_reward = np.zeros(8, dtype=np.float64)
@@ -343,26 +400,32 @@ def run(args):
                 raw_masks = env.get_action_masks()
                 masks = _flatten_masks(raw_masks, device)
                 obs_tensor = torch.as_tensor(observations, dtype=torch.float32, device=device)
+                semantic_state = native_semantic_state_for_players(
+                    env, list(range(8)), catalog_map, device
+                )
                 with torch.no_grad():
                     actions, logprobs, _, values = policy.get_action_and_value(
-                        obs_tensor, masks=masks, deterministic=False
+                        obs_tensor, masks=masks, deterministic=False,
+                        semantic_state=semantic_state,
                     )
                     reference_actions, _, _, _ = original_policy.get_action_and_value(
-                        obs_tensor, masks=masks, deterministic=True
+                        obs_tensor, masks=masks, deterministic=True,
+                        semantic_state=semantic_state,
                     )
                     candidate_greedy_actions, _, _, _ = policy.get_action_and_value(
-                        obs_tensor, masks=masks, deterministic=True
+                        obs_tensor, masks=masks, deterministic=True,
+                        semantic_state=semantic_state,
                     )
                 action_array = actions.cpu().numpy().astype(np.int64)
                 reference_array = reference_actions.cpu().numpy().astype(np.int64)
                 candidate_greedy_array = candidate_greedy_actions.cpu().numpy().astype(np.int64)
-                candidate_type_probs = _type_probabilities(policy, obs_tensor, masks)
-                reference_type_probs = _type_probabilities(original_policy, obs_tensor, masks)
+                candidate_type_probs = _type_probabilities(policy, obs_tensor, masks, semantic_state)
+                reference_type_probs = _type_probabilities(original_policy, obs_tensor, masks, semantic_state)
 
                 shaped_rewards = []
                 valid = []
                 for player_id in range(8):
-                    state = decode_observation(observations[player_id], player_id=player_id)
+                    state = decode_semantic_observation(semantic_state, player_id=player_id)
                     action_type = int(action_array[player_id, 0])
                     shaping, matched_ids = shaped_action_reward(
                         state, action_type, selected_scenario_id=selected_scenario.scenario_id
@@ -386,6 +449,17 @@ def run(args):
                     })
 
                 next_observations, rewards, lobby_done, info = env.step(_actions_to_native(action_array))
+                next_semantic_state_for_transition = native_semantic_state_for_players(
+                    env, list(range(8)), catalog_map, device
+                )
+                (
+                    decision_snapshot_metadata,
+                    result_snapshot_metadata,
+                    next_snapshot_metadata,
+                ) = _rollout_snapshot_metadata(
+                    semantic_state, next_semantic_state_for_transition, masks,
+                    info.get("action_trace", []),
+                )
                 rewards = np.asarray(rewards, dtype=np.float32) + np.asarray(shaped_rewards, dtype=np.float32)
                 episode_reward += rewards
                 matched_transitions += int(sum(valid))
@@ -397,6 +471,10 @@ def run(args):
                     logprobs, torch.as_tensor(rewards, dtype=torch.float32, device=device),
                     torch.as_tensor(dones, dtype=torch.float32, device=device), values,
                     masks, valid=torch.as_tensor(valid, dtype=torch.bool, device=device),
+                    semantic_state=semantic_state,
+                    snapshot_metadata=decision_snapshot_metadata,
+                    result_snapshot_metadata=result_snapshot_metadata,
+                    next_snapshot_metadata=next_snapshot_metadata,
                 )
                 observations = next_observations
                 last_done = dones
@@ -414,10 +492,14 @@ def run(args):
                     episode_reward.fill(0.0)
 
             next_masks = _flatten_masks(env.get_action_masks(), device)
+            next_semantic_state = native_semantic_state_for_players(
+                env, list(range(8)), catalog_map, device
+            )
             with torch.no_grad():
                 next_value = policy.get_value(
                     torch.as_tensor(observations, dtype=torch.float32, device=device),
                     masks=next_masks,
+                    semantic_state=next_semantic_state,
                 )
             rollout.compute_returns_and_advantages(
                 next_value, torch.as_tensor(last_done, dtype=torch.float32, device=device),
@@ -460,14 +542,23 @@ def run(args):
             )
 
         # Always save a distinct fine-tuned artifact; never overwrite the source.
-        torch.save({
+        finetuned_payload = {
             "policy": policy.state_dict(),
             # Do not serialize the partial optimizer: the main Trainer has a
             # different full-parameter optimizer and must initialize it fresh.
             "update": 0,
             "fine_tuning": metadata,
             "source_checkpoint_sha256": metadata["checkpoint_sha256"],
-        }, output)
+        }
+        # Preserve the exact semantic lineage of the source checkpoint. Never
+        # manufacture missing manifests for historical weights.
+        for contract_key in (
+            "action_mask_contract", "critic_mask_input_contract",
+            "semantic_state_contract", "reward_contract",
+        ):
+            if contract_key in original_checkpoint:
+                finetuned_payload[contract_key] = original_checkpoint[contract_key]
+        torch.save(finetuned_payload, output)
         metadata["finetuned_checkpoint_sha256"] = _sha256(output)
         (reports_dir / "experiment_config.json").write_text(
             json.dumps(metadata, ensure_ascii=False, indent=2), encoding="utf-8"

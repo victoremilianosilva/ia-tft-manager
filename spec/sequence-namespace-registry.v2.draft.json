@@ -1,0 +1,131 @@
+{
+  "registry_id": "tft.sequence-namespace-registry",
+  "version": "2.1.0-draft",
+  "identity_envelope": "tft.decision-identity.v2",
+  "status": "proposed_not_approved_for_runtime",
+  "entries": [
+    {
+      "namespace": "tft.engine.decision",
+      "producer": "Native Engine",
+      "owner": "Native Engine",
+      "scope": "per_player_within_engine_instance",
+      "counter_meaning": "Canonical per-player decision counter; distinct from the Engine-wide snapshot publication counter.",
+      "monotonicity": "strictly_increasing_within_scope_no_wrap",
+      "reset_boundary": "new_engine_instance; counter continues across episode resets",
+      "availability": "implemented_native_engine_and_wrapper_metadata",
+      "canonical_decision_eligible": true,
+      "evidence": "TFTEngine maintains one player_decision_sequences counter per player and increments each on every published ResetResult/StepResult. The array is returned in native results, exposed in AuditSnapshot through pybind, and copied/validated by cpp_lobby_env._copy_player_decision_sequences into _last_snapshot_metadata. PR #504 composes it into the canonical per-player envelope and validates it through Trainer and Rollout. The counter is monotonic across episode resets within one Engine instance and is distinct from the Engine-wide observation-snapshot counter."
+    },
+    {
+      "namespace": "tft.engine.observation-snapshot",
+      "producer": "Native Engine observation producer",
+      "owner": "Native Engine",
+      "scope": "per_engine_instance_snapshot_stream",
+      "counter_meaning": "Exact observation and action-mask snapshot publication sequence shared by all eight player rows in one ResetResult or StepResult.",
+      "monotonicity": "strictly_increasing_within_engine_instance_no_wrap",
+      "reset_boundary": "new_engine_instance; counter continues across episode resets within the same Engine instance",
+      "availability": "implemented_native_engine_pr428",
+      "canonical_decision_eligible": false,
+      "evidence": "PR #428 adds TFTEngine::Impl::decision_sequence to ResetResult/StepResult; it increments once per published native snapshot, survives reset, and is shared by all player rows. It is snapshot identity, not a per-player decision counter."
+    },
+    {
+      "namespace": "tft.engine.action-mask-snapshot",
+      "producer": "Native ActionMaskEngine",
+      "owner": "Native ActionMaskEngine",
+      "scope": "per_player_within_engine_match_id",
+      "counter_meaning": "exact ordered mask snapshot sequence",
+      "monotonicity": "strictly_increasing_within_scope_no_wrap",
+      "reset_boundary": "new_engine_match_id",
+      "availability": "proposed_not_implemented",
+      "canonical_decision_eligible": false,
+      "evidence": "Current masks are retrieved separately and have no typed identity or payload hash envelope."
+    },
+    {
+      "namespace": "tft.composition-intelligence.player-sequence",
+      "producer": "Composition Intelligence player runtime",
+      "owner": "CompositionIntelligencePlayerRuntime",
+      "scope": "player_local_runtime_sequence",
+      "counter_meaning": "CI player-local runtime progression",
+      "monotonicity": "requires_runtime_verification",
+      "reset_boundary": "CI runtime reset on Engine reset is documented; exact counter restart/continuity needs runtime proof",
+      "availability": "observed_in_audit_requires_runtime_verification",
+      "canonical_decision_eligible": false,
+      "evidence": "Audit identifies player-local CI sequence; it is not the Engine decision counter."
+    },
+    {
+      "namespace": "tft.shadow.native-strategic-snapshot",
+      "producer": "Native strategic snapshot producer",
+      "owner": "Native strategic snapshot producer",
+      "scope": "producer_defined_snapshot_stream",
+      "counter_meaning": "native strategic snapshot sequence",
+      "monotonicity": "requires_runtime_verification",
+      "reset_boundary": "requires_runtime_verification",
+      "availability": "observed_in_audit_requires_runtime_verification",
+      "canonical_decision_eligible": false,
+      "evidence": "Distinct sequence domain identified by replay/producer-binding audits."
+    },
+    {
+      "namespace": "tft.shadow.context-bridge.player-sequence",
+      "producer": "ContextBridge/player adapter",
+      "owner": "ContextBridge/player adapter",
+      "scope": "player_scoped_bridge_stream",
+      "counter_meaning": "ContextBridge player sequence",
+      "monotonicity": "requires_runtime_verification",
+      "reset_boundary": "requires_runtime_verification",
+      "availability": "observed_in_audit_requires_runtime_verification",
+      "canonical_decision_eligible": false,
+      "evidence": "Distinct bridge/player sequence domain; not interchangeable with Engine or CI sequences."
+    },
+    {
+      "namespace": "tft.shadow.diagnostic-jsonl-append",
+      "producer": "Diagnostic recorder / JSONL writer",
+      "owner": "Diagnostic recorder",
+      "scope": "one_recorder_stream_or_file",
+      "counter_meaning": "append order in diagnostic JSONL",
+      "monotonicity": "append_order_only",
+      "reset_boundary": "recorder_file_lifecycle",
+      "availability": "observed_in_audit_requires_runtime_verification",
+      "canonical_decision_eligible": false,
+      "evidence": "Global append ordering is recorder metadata, not a game decision counter."
+    },
+    {
+      "namespace": "tft.viewer.session-sequence",
+      "producer": "Viewer session/replay adapter",
+      "owner": "Viewer session/replay adapter",
+      "scope": "viewer_session",
+      "counter_meaning": "session-local display/replay ordering",
+      "monotonicity": "session_local",
+      "reset_boundary": "new_viewer_session",
+      "availability": "observed_in_audit",
+      "canonical_decision_eligible": false,
+      "evidence": "Viewer/session sequence is for correlation only and never replaces Engine identity."
+    },
+    {
+      "namespace": "tft.ppo.rollout-timestep",
+      "producer": "PPO collector/rollout",
+      "owner": "PPO collector/rollout",
+      "scope": "rollout_collection_stream",
+      "counter_meaning": "training transition position",
+      "monotonicity": "rollout_order_only",
+      "reset_boundary": "new_rollout_or_collector_lifecycle",
+      "availability": "observed_in_audit",
+      "canonical_decision_eligible": false,
+      "evidence": "Rollout timestep is training metadata, not source decision identity."
+    }
+  ],
+  "promotion_requirements": [
+    "producer implementation and owner verification",
+    "scope, monotonicity, duplicate-delivery and reset semantics proven",
+    "typed serialization at source and every transport boundary",
+    "stale, mismatch, reset and conflict tests",
+    "exact observation-mask decision correlation evidence",
+    "registry version increment and architecture reconstruction review"
+  ],
+  "identity_scope_contract": {
+    "match_id": "Authoritative logical game-match identity from a validated game/platform source; never the ViewerSession UUID.",
+    "engine_match_id": "Canonical Engine-episode scope combining Engine-instance lifetime and native episode_id; episode_id alone is insufficient.",
+    "session_match_id": "ViewerSession UUID for recording/session correlation only; not part of canonical decision identity.",
+    "episode_id": "Native counter local to one TFTEngine::Impl lifetime; metadata only unless paired with Engine-instance scope.",
+    "player_id": "Episode-local native seat index encoded in v2 as player-0 through player-7; not a persistent player UUID."
+  }
+}

@@ -1,16 +1,33 @@
+from collections.abc import Mapping
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.distributions import Categorical
 
+from action_contract import (
+    MASK_SHAPES,
+    CRITIC_MASK_FEATURE_DIM,
+    CRITIC_MASK_EMBED_DIM,
+)
+from semantic_observation import (
+    SEMANTIC_NUMERIC_DIM,
+    SEMANTIC_ITEM_OFFSET,
+    SEMANTIC_ENTITY_SLOTS,
+    SEMANTIC_ENTITY_FEATURES,
+    SEMANTIC_GLOBAL_FEATURES,
+    SEMANTIC_ID_EMBED_DIM,
+    SEMANTIC_TRAIT_SLOTS,
+    SEMANTIC_TRAIT_VOCAB_SIZE,
+    SEMANTIC_TRAIT_EMBED_DIM,
+)
+
 
 ACTION_DIMS = [9, 5, 9, 28, 28, 28]
 LEGACY_ACTION_DIMS = [7, 5, 9, 28, 28, 28]
 
-
 class TFTPolicy(nn.Module):
   
-    def __init__(self, obs_dim, action_dims, hidden_size=512):
+    def __init__(self, obs_dim, action_dims, hidden_size=512, semantic_vocab_size=2, require_semantic_state=True):
         super().__init__()
 
         # 🛡️ Valida o contrato das seis dimensões antes de criar as camadas.
@@ -22,22 +39,28 @@ class TFTPolicy(nn.Module):
                 f"Esperado: {expected_dims}"
             )
 
-        self.obs_dim = obs_dim
+        self.obs_dim = int(obs_dim)
+        self.require_semantic_state = bool(require_semantic_state)
+        if self.obs_dim == 1 and not self.require_semantic_state:
+            raise ValueError(
+                "Native observation is a neutral carrier; "
+                "TFTPolicy requires require_semantic_state=True."
+            )
         self.action_dims = action_dims
         self.num_action_types = action_dims[0]
         
         # --- DIMENSÕES BLINDADAS (Lendo de frente para trás) ---
-        self.num_cell_features = 5  # [cost/5, star/3, impact, comp_score, role]
-        self.pre_board_dim = 22     # Tamanho fixo do início: 10 do Core + 12 de Strategy
+        self.num_cell_features = 5  # [occupied, cost/5, star/3, role, strength]
+        self.pre_board_dim = 10     # Apenas fatos globais; sem slots de estratégia/padding legado
         self.board_flat_dim = 4 * 7 * self.num_cell_features  # 140
         self.economic_context_dim = 5
-        self.candidate_feature_dim = 8
+        self.candidate_feature_dim = 6
         self.candidate_observation_dim = (
             action_dims[2] + action_dims[1]
         ) * self.candidate_feature_dim
         self.item_component_feature_dim = 10
         self.item_semantic_feature_dim = 17
-        self.item_target_feature_dim = 18
+        self.item_target_feature_dim = 17
         self.item_anvil_observation_dim = 3 + 9 * 11
         self.item_compatibility_observation_dim = (9 + 100) * 37
         self.item_global_observation_dim = (
@@ -49,20 +72,25 @@ class TFTPolicy(nn.Module):
         self.item_state_observation_dim = (
             self.item_global_observation_dim + self.item_compatibility_observation_dim
         )
-        self.has_item_compatibility_observation = obs_dim >= (
-            self.pre_board_dim + self.board_flat_dim
-            + self.item_anvil_observation_dim + self.item_state_observation_dim
-            + self.candidate_observation_dim
+        self.has_item_compatibility_observation = (
+            not self.require_semantic_state
+            and obs_dim >= (
+                self.pre_board_dim + self.board_flat_dim
+                + self.item_anvil_observation_dim + self.item_state_observation_dim
+                + self.candidate_observation_dim
+            )
         )
 
-        # Compatibility matrices are consumed by the autoregressive item-target
-        # scorer and excluded from the global MLP to avoid a 4k-wide global input.
-        # The semantic inventory/recipe/target block remains in the global encoder.
-        self.global_features_dim = (
+        # Native PPO has no positional observation payload. Its one-scalar
+        # carrier supplies only batch/device identity; semantic_encoder owns
+        # every decision feature. Keep the legacy dimension only for isolated
+        # non-production fixtures that explicitly opt out of strict semantics.
+        self.global_features_dim = 1 if self.require_semantic_state else max(
+            1,
             obs_dim - self.board_flat_dim
             - (self.item_compatibility_observation_dim
                if self.has_item_compatibility_observation else 0)
-            + self.economic_context_dim
+            + self.economic_context_dim,
         )
 
         # Encoder Convolucional (Percepção Espacial Geométrica)
@@ -76,11 +104,13 @@ class TFTPolicy(nn.Module):
         cnn_output_dim = 4 * 7 * 64  # 1792 neurônios de mapas de características
 
         # Encoder MLP para Dados Globais e Contextuais combinados
-        self.global_mlp = nn.Sequential(
-            nn.Linear(self.global_features_dim, 256),
-            nn.ReLU(),
-            nn.Linear(256, 256),
-            nn.ReLU()
+        self.global_mlp = (
+            nn.Identity() if self.require_semantic_state else nn.Sequential(
+                nn.Linear(self.global_features_dim, 256),
+                nn.ReLU(),
+                nn.Linear(256, 256),
+                nn.ReLU()
+            )
         )
 
         # Camada de Fusão de Alta Performance
@@ -94,7 +124,7 @@ class TFTPolicy(nn.Module):
         # --- Cabeças de Decisão Autorregressivas ---
         self.type_head = nn.Linear(hidden_size, action_dims[0])
         # The native observation ends with 9 bench + 5 shop candidate records,
-        # each with 8 explicit strategic features. Shared per-slot scorers make
+        # each with 6 factual/action-conditioning features. Shared per-slot scorers make
         # each action logit depend on that candidate, not only its slot index.
         self.shop_head = nn.Sequential(
             nn.Linear(hidden_size + self.num_action_types + self.candidate_feature_dim, 256),
@@ -135,7 +165,7 @@ class TFTPolicy(nn.Module):
             nn.Linear(64, 1),
         )
         self.item_anvil_candidate_head = nn.Sequential(
-            nn.Linear(hidden_size + self.num_action_types + 11, 64),
+            nn.Linear(hidden_size + self.num_action_types + 13, 64),
             nn.ReLU(),
             nn.Linear(64, 1),
         )
@@ -161,15 +191,61 @@ class TFTPolicy(nn.Module):
         ):
             nn.init.zeros_(candidate_head[-1].weight)
             nn.init.zeros_(candidate_head[-1].bias)
-        self.value_head = nn.Linear(hidden_size, 1)
+        # The Critic receives the exact decision-correlated mask bundle through
+        # an independent side input. Zero initialization preserves legacy value
+        # predictions while allowing the new lineage to learn mask relevance.
+        self.critic_mask_encoder = nn.Linear(
+            CRITIC_MASK_FEATURE_DIM, CRITIC_MASK_EMBED_DIM
+        )
+        nn.init.zeros_(self.critic_mask_encoder.weight)
+        nn.init.zeros_(self.critic_mask_encoder.bias)
+        self.value_head = nn.Linear(hidden_size + CRITIC_MASK_EMBED_DIM, 1)
+
+        # Native semantic state is an independent, versioned side input. A
+        # zero-initialized final layer preserves historical logits/values while
+        # allowing PPO gradients to train the new semantic path.
+        if isinstance(semantic_vocab_size, bool) or int(semantic_vocab_size) < 2:
+            raise ValueError("semantic_vocab_size must be an integer >= 2")
+        self.semantic_id_embedding = nn.Embedding(
+            int(semantic_vocab_size), SEMANTIC_ID_EMBED_DIM, padding_idx=0
+        )
+        self.semantic_trait_embedding = nn.Embedding(
+            SEMANTIC_TRAIT_VOCAB_SIZE + 1, SEMANTIC_TRAIT_EMBED_DIM, padding_idx=0
+        )
+        semantic_input_dim = (
+            SEMANTIC_ITEM_OFFSET
+            + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ID_EMBED_DIM
+            + SEMANTIC_ENTITY_SLOTS * SEMANTIC_TRAIT_EMBED_DIM
+        )
+        self.semantic_encoder = nn.Sequential(
+            nn.Linear(semantic_input_dim, 256),
+            nn.ReLU(),
+            nn.Linear(256, hidden_size),
+        )
+        nn.init.zeros_(self.semantic_encoder[-1].weight)
+        nn.init.zeros_(self.semantic_encoder[-1].bias)
+
+    @torch.no_grad()
+    def reset_migrated_semantic_consumer_columns(self):
+        """Neutralize columns whose meaning changed in semantic observation v6.
+
+        The first three board channels retain their factual meaning. The final
+        two now represent equipped-item and trait counts instead of role/strength.
+        Candidate feature columns changed from strategy-fit fields to native
+        entity facts, so only those input columns are reset on an explicit
+        v2 -> v6 warm-start.
+        """
+        self.board_cnn[0].weight[:, 3:5, :, :].zero_()
+        for head in (self.shop_head, self.sell_head):
+            head[0].weight[:, -self.candidate_feature_dim:].zero_()
+        self.bench_to_board_head.weight[:, -self.candidate_feature_dim:].zero_()
+        self.item_anvil_candidate_head[0].weight[:, -2:].zero_()
 
     def load_compatible_state_dict(self, state_dict):
-        """Load current weights or migrate supported input-shape changes.
+        """Viewer-only adapter for historical checkpoint shapes.
 
-        Native item features are inserted before the derived economic context and
-        fixed candidate tail. Existing economic/candidate columns are shifted to
-        retain their semantic alignment; new columns and candidate scorers start
-        neutral so inference initially preserves the old logits.
+        PPO training must use strict load_state_dict plus the native run manifest;
+        this compatibility path is retained only until the Viewer migration.
         """
         target = self.state_dict()
         item_head_keys = {key for key in target if key.startswith((
@@ -179,25 +255,129 @@ class TFTPolicy(nn.Module):
             "item_component_candidate_head.",
             "item_target_candidate_head."
         ))}
-        missing = sorted((set(target) - set(state_dict)) - item_head_keys)
-        unexpected = sorted(set(state_dict) - set(target))
+        critic_mask_keys = {key for key in target if key.startswith("critic_mask_encoder.")}
+        semantic_keys = {
+            key for key in target
+            if key.startswith(("semantic_id_embedding.", "semantic_encoder."))
+        }
+        optional_trait_keys = {
+            key for key in target if key.startswith("semantic_trait_embedding.")
+        }
+        present_semantic_keys = set(state_dict) & semantic_keys
+        if present_semantic_keys and present_semantic_keys != semantic_keys:
+            missing_semantic = sorted(semantic_keys - present_semantic_keys)
+            raise RuntimeError(
+                "Checkpoint semântico incompleto; pesos ausentes: "
+                f"{missing_semantic}"
+            )
+        optional_new_keys = item_head_keys | critic_mask_keys | semantic_keys | optional_trait_keys
+        missing = sorted((set(target) - set(state_dict)) - optional_new_keys)
+        ignored_retired_flat_keys = {
+            key for key in state_dict
+            if self.require_semantic_state and key.startswith("global_mlp.")
+        }
+        unexpected = sorted(set(state_dict) - set(target) - ignored_retired_flat_keys)
         if missing or unexpected:
             raise RuntimeError(
                 f"Checkpoint keys incompatible: missing={missing[:8]}, "
                 f"unexpected={unexpected[:8]}"
             )
 
-        migrated = False
+        # Dropping historical global_mlp weights is a model migration even
+        # though the strict semantic path never consumes them. This must reset
+        # optimizer/scheduler state because their parameter groups changed.
+        migrated = bool(ignored_retired_flat_keys)
         loaded = {}
         for key, target_value in target.items():
             if key not in state_dict:
-                # New item-specific heads start from their deterministic module initialization.
+                # New item, Critic-mask and semantic modules use their declared
+                # neutral initialization when migrating a historical checkpoint.
                 loaded[key] = target_value
                 migrated = True
                 continue
             source_value = state_dict[key]
             if source_value.shape == target_value.shape:
                 loaded[key] = source_value
+                continue
+
+            if (
+                key == "semantic_encoder.0.weight"
+                and source_value.ndim == 2
+                and target_value.ndim == 2
+                and source_value.shape[0] == target_value.shape[0]
+                and source_value.shape[1] == (
+                    (SEMANTIC_GLOBAL_FEATURES - 16)
+                    + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ENTITY_FEATURES
+                    + SEMANTIC_ENTITY_SLOTS * (
+                        SEMANTIC_ID_EMBED_DIM + SEMANTIC_TRAIT_EMBED_DIM
+                    )
+                )
+                and target_value.shape[1] == (
+                    SEMANTIC_ITEM_OFFSET
+                    + SEMANTIC_ENTITY_SLOTS * (
+                        SEMANTIC_ID_EMBED_DIM + SEMANTIC_TRAIT_EMBED_DIM
+                    )
+                )
+            ):
+                # v7 -> v8 appends sixteen BoardEvaluation globals. Preserve the
+                # old globals, relocate entity features and embeddings, and leave
+                # the new board-evaluation columns neutral for a safe warm-start.
+                old_global_dim = SEMANTIC_GLOBAL_FEATURES - 16
+                old_entity_offset = old_global_dim
+                old_item_offset = old_entity_offset + (
+                    SEMANTIC_ENTITY_SLOTS * SEMANTIC_ENTITY_FEATURES
+                )
+                new_entity_offset = SEMANTIC_GLOBAL_FEATURES
+                new_item_offset = SEMANTIC_ITEM_OFFSET
+                expanded = torch.zeros_like(target_value)
+                expanded[:, :old_global_dim] = source_value[:, :old_global_dim]
+                expanded[
+                    :, new_entity_offset:new_item_offset
+                ] = source_value[:, old_entity_offset:old_item_offset]
+                expanded[:, new_item_offset:] = source_value[:, old_item_offset:]
+                loaded[key] = expanded
+                migrated = True
+                continue
+
+            if (
+                key == "semantic_encoder.0.weight"
+                and source_value.ndim == 2
+                and target_value.ndim == 2
+                and source_value.shape[0] == target_value.shape[0]
+                and source_value.shape[1] == (
+                    52 + SEMANTIC_ENTITY_SLOTS * 39
+                    + SEMANTIC_ENTITY_SLOTS * (
+                        SEMANTIC_ID_EMBED_DIM + SEMANTIC_TRAIT_EMBED_DIM
+                    )
+                )
+                and target_value.shape[1] == (
+                    SEMANTIC_ITEM_OFFSET
+                    + SEMANTIC_ENTITY_SLOTS * (
+                        SEMANTIC_ID_EMBED_DIM + SEMANTIC_TRAIT_EMBED_DIM
+                    )
+                )
+            ):
+                # v6 -> v8 keeps the 39 historical entity facts, relocates each
+                # slot to the expanded stride, and initializes all new fields.
+                old_global_dim = 52
+                old_entity_features = 39
+                old_item_offset = old_global_dim + (
+                    SEMANTIC_ENTITY_SLOTS * old_entity_features
+                )
+                new_entity_offset = SEMANTIC_GLOBAL_FEATURES
+                new_entity_features = SEMANTIC_ENTITY_FEATURES
+                new_item_offset = SEMANTIC_ITEM_OFFSET
+                expanded = torch.zeros_like(target_value)
+                expanded[:, :old_global_dim] = source_value[:, :old_global_dim]
+                for slot in range(SEMANTIC_ENTITY_SLOTS):
+                    old_start = old_global_dim + slot * old_entity_features
+                    new_start = new_entity_offset + slot * new_entity_features
+                    expanded[:, new_start:new_start + old_entity_features] = (
+                        source_value[:, old_start:old_start + old_entity_features]
+                    )
+                expanded[:, new_item_offset:] = source_value[:, old_item_offset:]
+                loaded[key] = expanded
+                migrated = True
                 continue
 
             if (
@@ -248,6 +428,37 @@ class TFTPolicy(nn.Module):
                 continue
 
             if (
+                key == "item_anvil_candidate_head.0.weight"
+                and source_value.ndim == 2
+                and target_value.ndim == 2
+                and source_value.shape[0] == target_value.shape[0]
+                and target_value.shape[1] == source_value.shape[1] + 2
+            ):
+                # Explicit component/completed-item kind flags are new inputs.
+                # Preserve prior option scoring and initialize only the new flags.
+                expanded = torch.zeros_like(target_value)
+                expanded[:, :source_value.shape[1]] = source_value
+                loaded[key] = expanded
+                migrated = True
+                continue
+
+            if (
+                key == "value_head.weight"
+                and source_value.ndim == 2
+                and target_value.ndim == 2
+                and source_value.shape[0] == target_value.shape[0]
+                and target_value.shape[1] == source_value.shape[1] + CRITIC_MASK_EMBED_DIM
+            ):
+                # Keep the target module's deterministic mask columns.
+                # The mask encoder is zero-initialized, so the old value is
+                # preserved exactly while gradients can reach the encoder.
+                expanded = target_value.clone()
+                expanded[:, :source_value.shape[1]] = source_value
+                loaded[key] = expanded
+                migrated = True
+                continue
+
+            if (
                 key == "bench_to_board_head.weight"
                 and source_value.ndim == 2
                 and target_value.ndim == 2
@@ -260,6 +471,61 @@ class TFTPolicy(nn.Module):
                 migrated = True
                 continue
 
+            if (
+                key == "semantic_encoder.0.weight"
+                and source_value.ndim == 2
+                and target_value.ndim == 2
+                and source_value.shape[0] == target_value.shape[0]
+                and source_value.shape[1] == 525 + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ID_EMBED_DIM
+                and target_value.shape[1] == SEMANTIC_ITEM_OFFSET + SEMANTIC_ENTITY_SLOTS * (SEMANTIC_ID_EMBED_DIM + SEMANTIC_TRAIT_EMBED_DIM)
+            ):
+                # v2 -> v6 adds capacity/temporal facts, target profiles, trait IDs,
+                # and structured item/anvil blocks. Preserve the old 21 globals
+                # and 12 entity facts; initialize only newly sourced fields.
+                old_numeric_dim = 525
+                old_global_dim = 21
+                old_entity_features = 12
+                expanded = torch.zeros_like(target_value)
+                expanded[:, :old_global_dim] = source_value[:, :old_global_dim]
+                for slot in range(SEMANTIC_ENTITY_SLOTS):
+                    old_start = old_global_dim + slot * old_entity_features
+                    new_start = SEMANTIC_GLOBAL_FEATURES + slot * SEMANTIC_ENTITY_FEATURES
+                    expanded[:, new_start:new_start + old_entity_features] = (
+                        source_value[:, old_start:old_start + old_entity_features]
+                    )
+                expanded[
+                    :, SEMANTIC_ITEM_OFFSET:
+                    SEMANTIC_ITEM_OFFSET + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ID_EMBED_DIM
+                ] = source_value[:, old_numeric_dim:]
+                loaded[key] = expanded
+                migrated = True
+                continue
+
+            if (
+                key == "semantic_encoder.0.weight"
+                and source_value.ndim == 2
+                and target_value.ndim == 2
+                and source_value.shape[0] == target_value.shape[0]
+                and source_value.shape[1] == 269 + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ID_EMBED_DIM
+                and target_value.shape[1] == SEMANTIC_ITEM_OFFSET + SEMANTIC_ENTITY_SLOTS * (SEMANTIC_ID_EMBED_DIM + SEMANTIC_TRAIT_EMBED_DIM)
+            ):
+                # Map v1's named global/entity blocks; initialize only new fields.
+                old_numeric_dim = 269
+                old_entity_features = 6
+                expanded = torch.zeros_like(target_value)
+                expanded[:, :17] = source_value[:, :17]
+                for slot in range(SEMANTIC_ENTITY_SLOTS):
+                    old_start = 17 + slot * old_entity_features
+                    new_start = SEMANTIC_GLOBAL_FEATURES + slot * SEMANTIC_ENTITY_FEATURES
+                    expanded[:, new_start:new_start + old_entity_features] = source_value[:, old_start:old_start + old_entity_features]
+                expanded[
+                    :, SEMANTIC_ITEM_OFFSET:
+                    SEMANTIC_ITEM_OFFSET + SEMANTIC_ENTITY_SLOTS * SEMANTIC_ID_EMBED_DIM
+                ] = source_value[:, old_numeric_dim:]
+                loaded[key] = expanded
+                migrated = True
+                continue
+
             raise RuntimeError(
                 f"Checkpoint shape incompatível em {key}: "
                 f"{tuple(source_value.shape)} != {tuple(target_value.shape)}"
@@ -268,109 +534,167 @@ class TFTPolicy(nn.Module):
         self.load_state_dict(loaded, strict=True)
         return migrated
 
-    def encode(self, obs):
-        """ Fatia cirurgicamente o tabuleiro do meio do vetor de estado e processa em 2D """
+    def encode(self, obs, semantic_state=None, semantic_entities=None):
+        """Fatia o tabuleiro e reutiliza a projeção de entidades validada na chamada."""
         # FIX: se o env mudar de dimensão, o erro aparece aqui com mensagem clara
         # em vez do CNN processar features errados silenciosamente.
         assert obs.shape[-1] == self.obs_dim, (
             f"obs_dim mismatch: esperado {self.obs_dim}, recebido {obs.shape[-1]}. "
             f"Verifique se pre_board_dim={self.pre_board_dim} está alinhado com _get_state()."
         )
-        # Extrai a seção geométrica do tabuleiro usando o deslocamento inicial fixo
-        board_part = obs[:, self.pre_board_dim : self.pre_board_dim + self.board_flat_dim]
+        # Native board facts are projected from the identity-bound semantic
+        # entity records. The flat board slice remains only for isolated legacy
+        # fixtures; production native transitions must use the semantic path.
+        if semantic_entities is None:
+            semantic_entities = self._semantic_entity_features(semantic_state, obs)
+        if semantic_entities is not None:
+            board_entities = semantic_entities[:, :28, :]
+            board_features = torch.stack(
+                (
+                    board_entities[:, :, 0],  # occupied
+                    board_entities[:, :, 2],  # cost
+                    board_entities[:, :, 1],  # star
+                    board_entities[:, :, 3],  # equipped item count
+                    board_entities[:, :, 4],  # trait count
+                ),
+                dim=-1,
+            )
+            # Native slots are row-major [slot, feature], so transpose the
+            # feature axis only after restoring the 4x7 spatial grid.
+            board_2d = board_features.reshape(
+                obs.shape[0], 4, 7, self.num_cell_features
+            ).permute(0, 3, 1, 2).contiguous()
+            # No global facts are read from flat offsets on the native path.
+            global_part = None
+        else:
+            if self.require_semantic_state:
+                raise ValueError("native PPO inference requires semantic_state v8; flat positional fallback is disabled")
+            board_part = obs[:, self.pre_board_dim : self.pre_board_dim + self.board_flat_dim]
+            board_2d = board_part.view(-1, self.num_cell_features, 4, 7)
+            pre_part = obs[:, :self.pre_board_dim]
+            post_part = obs[:, self.pre_board_dim + self.board_flat_dim :]
+            candidate_tail = post_part[:, -self.candidate_observation_dim:]
+            middle_part = post_part[:, :-self.candidate_observation_dim]
+            if self.has_item_compatibility_observation:
+                middle_part = middle_part[:, :-self.item_compatibility_observation_dim]
+            economic_context = self._economic_context_features(obs)
+            global_part = torch.cat(
+                [pre_part, middle_part, economic_context, candidate_tail], dim=-1
+            )
 
-        # Keep candidate records at the tail. Native item semantics live in the
-        # middle block; derived economic context follows it before candidate slots.
-        pre_part = obs[:, :self.pre_board_dim]
-        post_part = obs[:, self.pre_board_dim + self.board_flat_dim :]
-        candidate_tail = post_part[:, -self.candidate_observation_dim:]
-        middle_part = post_part[:, :-self.candidate_observation_dim]
-        if self.has_item_compatibility_observation:
-            middle_part = middle_part[:, :-self.item_compatibility_observation_dim]
-        economic_context = self._economic_context_features(obs)
-        global_part = torch.cat(
-            [pre_part, middle_part, economic_context, candidate_tail], dim=-1
-        )
-
-        # Transforma o vetor plano em uma imagem estruturada (Batch, Features, Rows, Cols) -> (B, 5, 4, 7)
-        board_2d = board_part.view(-1, self.num_cell_features, 4, 7)
+        # (B, 5, 4, 7): semantic board facts replace positional CNN input.
         
         # Processamento paralelo nas sub-redes dedicadas
         cnn_features = self.board_cnn(board_2d)
-        global_features = self.global_mlp(global_part)
+        semantic_input = None
+        if semantic_entities is not None:
+            numeric = semantic_state["numeric"]
+            global_numeric = numeric[:, :SEMANTIC_ITEM_OFFSET]
+            champion_ids = semantic_state.get("champion_ids")
+            if (
+                not isinstance(champion_ids, torch.Tensor)
+                or tuple(champion_ids.shape) != (obs.shape[0], SEMANTIC_ENTITY_SLOTS)
+                or champion_ids.dtype != torch.long
+                or champion_ids.device != obs.device
+            ):
+                raise ValueError("semantic champion IDs are missing or misaligned")
+            if champion_ids.numel() and (
+                (champion_ids < 0).any()
+                or (champion_ids >= self.semantic_id_embedding.num_embeddings).any()
+            ):
+                raise ValueError("semantic champion ID is outside the checkpoint catalog vocabulary")
+            embedded_ids = self.semantic_id_embedding(champion_ids).reshape(obs.shape[0], -1)
+            item_state = semantic_state.get("items")
+            trait_ids = item_state.get("trait_ids") if isinstance(item_state, Mapping) else None
+            if (
+                not isinstance(trait_ids, torch.Tensor)
+                or tuple(trait_ids.shape) != (
+                    obs.shape[0], SEMANTIC_ENTITY_SLOTS, SEMANTIC_TRAIT_SLOTS
+                )
+                or trait_ids.dtype != torch.long
+                or trait_ids.device != obs.device
+            ):
+                raise ValueError("semantic trait IDs are missing or misaligned")
+            if trait_ids.numel() and (
+                (trait_ids < 0).any()
+                or (trait_ids > SEMANTIC_TRAIT_VOCAB_SIZE).any()
+            ):
+                raise ValueError("semantic trait ID is outside the stable hash vocabulary")
+            trait_embeddings = self.semantic_trait_embedding(trait_ids)
+            trait_mask = (trait_ids != 0).unsqueeze(-1)
+            trait_counts = trait_mask.sum(dim=2).clamp_min(1)
+            pooled_trait_embeddings = (
+                trait_embeddings * trait_mask.to(trait_embeddings.dtype)
+            ).sum(dim=2) / trait_counts.to(trait_embeddings.dtype)
+            semantic_input = torch.cat(
+                [global_numeric, embedded_ids, pooled_trait_embeddings.reshape(obs.shape[0], -1)],
+                dim=-1,
+            )
+            # The first semantic encoder stage is the global MLP input path.
+            # It consumes native facts and entity identity instead of flat
+            # global/trait/capacity/action-memory offsets.
+            global_features = self.semantic_encoder[0:2](semantic_input)
+        else:
+            global_features = self.global_mlp(global_part)
         
         # Fusão latente
         combined = torch.cat([cnn_features, global_features], dim=-1)
-        return self.fusion(combined)
+        latent = self.fusion(combined)
+        if semantic_input is not None:
+            latent = latent + self.semantic_encoder(semantic_input)
+        return latent
 
     def _economic_context_features(self, obs):
-        """Expose phase target/reserve context explicitly to the PPO encoder.
+        """Deprecated legacy slots retained as zero-width-semantic placeholders.
 
-        The native observation already contains the source fields. Deriving these
-        features here keeps the engine contract stable and ensures action sampling,
-        value estimation and PPO replay all see exactly the same deterministic data.
+        The old target-level/reserve formula encoded ECON/FAST8/SLOWROLL policy
+        rules through a StrategyInfo one-hot. Native gold, HP, level, XP and
+        round facts are already available in the factual observation and the
+        versioned semantic-state side input. No fixed strategic posture is
+        synthesized here while canonical strategic-owner inputs are migrated.
         """
-        gold = (obs[:, 1] * 50.0).clamp(min=0.0)
-        hp = (obs[:, 0] * 100.0).clamp(0.0, 100.0)
-        level = (obs[:, 2] * 9.0).clamp(1.0, 10.0)
+        return obs.new_zeros((obs.shape[0], 5))
 
-        round_fraction = obs[:, 6].clamp(0.0, 0.999)
-        round_number = (10.0 * round_fraction / (1.0 - round_fraction)).clamp(1.0, 42.0)
-        stage = torch.where(
-            round_number <= 4.0,
-            torch.ones_like(round_number),
-            2.0 + torch.floor((round_number - 5.0) / 7.0),
-        ).clamp(1.0, 7.0)
-
-        # Core strategy one-hot occupies [10:17], matching the C++ observation.
-        strategy = obs[:, 10:17].argmax(dim=-1)
-        target_level = torch.where(
-            stage <= 1.0, 3.0,
-            torch.where(stage <= 2.0, 5.0,
-                torch.where(stage <= 3.0, 7.0,
-                    torch.where(stage <= 4.0, 8.0, 9.0))),
-        )
-        target_level = torch.where(strategy == 2, 8.0, target_level)  # FAST8
-        target_level = torch.where(strategy == 3, 6.0, target_level)  # SLOWROLL
-
-        reserve = torch.where(
-            stage <= 2.0, 30.0,
-            torch.where(stage <= 3.0, 15.0,
-                torch.where(stage <= 4.0, 10.0,
-                    torch.where(stage <= 5.0, 5.0, 0.0))),
-        )
-        slowroll_reserve = torch.where(
-            stage <= 3.0, 30.0,
-            torch.where(stage <= 4.0, 25.0, 15.0),
-        )
-        reserve = torch.where(strategy == 3, slowroll_reserve, reserve)
-        reserve = torch.where(hp <= 30.0, 5.0, reserve)
-        reserve = torch.where((hp <= 20.0) | (strategy == 4), 0.0, reserve)
-        reserve = torch.where(
-            (hp <= 40.0) & (hp > 20.0) & (strategy != 4),
-            (reserve - 5.0).clamp(min=0.0),
-            reserve,
+    @staticmethod
+    def _semantic_entity_features(semantic_state, obs):
+        if semantic_state is None:
+            return None
+        if not isinstance(semantic_state, Mapping):
+            raise TypeError("semantic_state must be a mapping")
+        numeric = semantic_state.get("numeric")
+        expected = (obs.shape[0], SEMANTIC_NUMERIC_DIM)
+        if not isinstance(numeric, torch.Tensor) or tuple(numeric.shape) != expected:
+            raise ValueError(f"semantic numeric input must have shape {expected}")
+        if numeric.dtype != torch.float32 or numeric.device != obs.device:
+            raise TypeError("semantic numeric input must be float32 on the observation device")
+        return numeric[:, SEMANTIC_GLOBAL_FEATURES:SEMANTIC_ITEM_OFFSET].reshape(
+            obs.shape[0], SEMANTIC_ENTITY_SLOTS, SEMANTIC_ENTITY_FEATURES
         )
 
-        level_deficit = (target_level - level).clamp(0.0, 8.0)
-        spendable_gold = (gold - reserve).clamp(0.0, 200.0)
-        phase_pressure = (
-            ((stage - 2.0) / 4.0).clamp(0.0, 1.0)
-            * (level_deficit / 3.0).clamp(0.0, 1.0)
+    def _candidate_features(self, obs, semantic_state=None, semantic_entities=None):
+        """Build candidate conditioning from the already validated native entities."""
+        entities = (
+            semantic_entities if semantic_entities is not None
+            else self._semantic_entity_features(semantic_state, obs)
         )
-        return torch.stack(
-            [
-                target_level / 10.0,
-                level_deficit / 8.0,
-                reserve / 50.0,
-                spendable_gold / 200.0,
-                phase_pressure,
-            ],
-            dim=-1,
-        )
+        if entities is not None:
+            # Entity layout: board[0:28], bench[28:37], shop[37:42].
+            # All six features are factual and share the same semantic projection
+            # used by the CNN/global encoder; no positional candidate tail read.
+            candidates = entities[:, 28:, :]
+            features = torch.stack(
+                (
+                    candidates[:, :, 0],   # occupied
+                    candidates[:, :, 2],   # cost
+                    candidates[:, :, 1],   # star
+                    candidates[:, :, 4],   # trait count
+                    candidates[:, :, 10],  # owned copy-equivalent progress
+                    candidates[:, :, 11],  # same-star upgrade progress
+                ),
+                dim=-1,
+            )
+            return features[:, :self.action_dims[2], :], features[:, self.action_dims[2]:, :]
 
-    def _candidate_features(self, obs):
-        """Extract slot-aligned strategic features appended by the native C++ engine."""
         if obs.shape[-1] < self.candidate_observation_dim:
             raise ValueError(
                 f"Observação curta para features de candidatos: {obs.shape[-1]} < "
@@ -386,8 +710,59 @@ class TFTPolicy(nn.Module):
         )
         return bench, shop
 
-    def _item_state_features(self, obs):
-        """Decode the semantic item block appended immediately before the candidate tail."""
+    def _item_state_features(self, obs, semantic_state=None, semantic_entities=None):
+        """Return item/anvil tensors using the shared validated entity projection."""
+        if semantic_state is not None:
+            entities = (
+                semantic_entities if semantic_entities is not None
+                else self._semantic_entity_features(semantic_state, obs)
+            )
+            item_state = semantic_state.get("items")
+            if entities is None or not isinstance(item_state, Mapping):
+                raise ValueError("native semantic item state is missing")
+            expected = {
+                "components": (obs.shape[0], 10),
+                "inventory": (obs.shape[0], 9, self.item_semantic_feature_dim),
+                "recipes": (obs.shape[0], 100, self.item_semantic_feature_dim),
+                "inventory_target_fit": (obs.shape[0], 9, 37),
+                "recipe_target_fit": (obs.shape[0], 100, 37),
+                "anvil_options": (obs.shape[0], 9, 11),
+            }
+            for field, shape in expected.items():
+                value = item_state.get(field)
+                if (
+                    not isinstance(value, torch.Tensor)
+                    or tuple(value.shape) != shape
+                    or value.dtype != torch.float32
+                    or value.device != obs.device
+                ):
+                    raise ValueError(f"native semantic item field {field} is missing or misaligned")
+            anvil_pending = item_state.get("anvil_pending")
+            anvil_kind_features = item_state.get("anvil_kind_features")
+            if (
+                not isinstance(anvil_pending, torch.Tensor)
+                or tuple(anvil_pending.shape) != (obs.shape[0],)
+                or anvil_pending.dtype != torch.bool
+                or anvil_pending.device != obs.device
+                or not isinstance(anvil_kind_features, torch.Tensor)
+                or tuple(anvil_kind_features.shape) != (obs.shape[0], 2)
+                or anvil_kind_features.dtype != torch.float32
+                or anvil_kind_features.device != obs.device
+            ):
+                raise ValueError("native semantic anvil identity/kind is missing or misaligned")
+            targets = entities[:, :37, 12:29]
+            return (
+                item_state["components"],
+                item_state["inventory"],
+                item_state["recipes"],
+                targets,
+                item_state["inventory_target_fit"],
+                item_state["recipe_target_fit"],
+                item_state["anvil_options"],
+                anvil_pending,
+                anvil_kind_features,
+            )
+
         start = obs.shape[-1] - self.candidate_observation_dim - self.item_state_observation_dim
         end = obs.shape[-1] - self.candidate_observation_dim
         if start < self.item_anvil_observation_dim:
@@ -405,6 +780,7 @@ class TFTPolicy(nn.Module):
                 zeros.view(batch, 1, 1).expand(-1, 100, 37),
                 zeros.view(batch, 1, 1).expand(-1, 9, 11),
                 torch.zeros(batch, device=obs.device, dtype=torch.bool),
+                zeros.view(batch, 1).expand(-1, 2),
             )
         block = obs[:, start:end]
         offset = 0
@@ -421,9 +797,15 @@ class TFTPolicy(nn.Module):
         )
         offset += recipe_size
         target_size = 37 * self.item_target_feature_dim
-        targets = block[:, offset:offset + target_size].reshape(
-            -1, 37, self.item_target_feature_dim
-        )
+        semantic_entities = self._semantic_entity_features(semantic_state, obs)
+        if semantic_entities is not None:
+            # Board and bench target profiles are native entity attributes;
+            # the flat item-target record is skipped, never consumed.
+            targets = semantic_entities[:, :37, 12:29]
+        else:
+            targets = block[:, offset:offset + target_size].reshape(
+                -1, 37, self.item_target_feature_dim
+            )
         offset += target_size
         inventory_fit_size = 9 * 37
         inventory_target_fit = block[:, offset:offset + inventory_fit_size].reshape(
@@ -434,20 +816,23 @@ class TFTPolicy(nn.Module):
         anvil_index = start - self.item_anvil_observation_dim
         if anvil_index >= 0:
             anvil_pending = obs[:, anvil_index] > 0.5
+            anvil_kind_features = obs[:, anvil_index + 1:anvil_index + 3]
             anvil_options = obs[:, anvil_index + 3:anvil_index + self.item_anvil_observation_dim].reshape(
                 -1, 9, 11
             )
         else:
             anvil_pending = torch.zeros(obs.shape[0], device=obs.device, dtype=torch.bool)
+            anvil_kind_features = torch.zeros(obs.shape[0], 2, device=obs.device, dtype=obs.dtype)
             anvil_options = torch.zeros(obs.shape[0], 9, 11, device=obs.device, dtype=obs.dtype)
         return (
             components, inventory, recipes, targets,
-            inventory_target_fit, recipe_target_fit, anvil_options, anvil_pending
+            inventory_target_fit, recipe_target_fit, anvil_options, anvil_pending,
+            anvil_kind_features,
         )
 
     def _item_inventory_logits(
         self, conditioned, inventory_features, inventory_target_fit,
-        anvil_option_features, anvil_pending
+        anvil_option_features, anvil_pending, anvil_kind_features
     ):
         logits = self.item_inventory_head(conditioned)
         context = conditioned.unsqueeze(1).expand(-1, 9, -1)
@@ -463,7 +848,8 @@ class TFTPolicy(nn.Module):
             ], dim=-1
         )).squeeze(-1)
         anvil_scores = self.item_anvil_candidate_head(torch.cat(
-            [context, anvil_option_features.to(dtype=conditioned.dtype)], dim=-1
+            [context, anvil_option_features.to(dtype=conditioned.dtype),
+             anvil_kind_features.unsqueeze(1).expand(-1, 9, -1).to(dtype=conditioned.dtype)], dim=-1
         )).squeeze(-1)
         scores = torch.where(anvil_pending.unsqueeze(-1), anvil_scores, bag_scores)
         return logits + scores
@@ -525,13 +911,91 @@ class TFTPolicy(nn.Module):
         joined = torch.cat([context, candidate_features], dim=-1)
         return head(joined.reshape(batch * slots, -1)).reshape(batch, slots)
 
-    def get_value(self, obs, masks=None):
-        """ Retorna a estimativa de valor do estado (ignora as máscaras se enviadas) """
-        return self.value_head(self.encode(obs)).squeeze(-1)
+    def _critic_value(self, features, masks):
+        """Estimate value from state features plus the independent exact-mask side input."""
+        mask_features = torch.cat([
+            masks[name].reshape(masks[name].shape[0], -1).to(dtype=features.dtype)
+            for name in MASK_SHAPES
+        ], dim=-1)
+        if mask_features.shape[-1] != CRITIC_MASK_FEATURE_DIM:
+            raise ValueError(
+                f"Critic mask feature size mismatch: {mask_features.shape[-1]} != "
+                f"{CRITIC_MASK_FEATURE_DIM}."
+            )
+        mask_embedding = torch.tanh(self.critic_mask_encoder(mask_features))
+        return self.value_head(torch.cat([features, mask_embedding], dim=-1)).squeeze(-1)
 
-    def get_action(self, obs, masks=None, deterministic=False):
-        """ Atalho para compatibilidade com o trainer.py """
-        return self.get_action_and_value(obs, masks=masks, deterministic=deterministic)
+    def get_value(self, obs, masks=None, semantic_state=None):
+        """Return value from the exact observation, semantic state and mask snapshot."""
+        masks = self._validate_mask_bundle(obs, masks)
+        self._validate_semantic_state_finite(semantic_state, obs)
+        return self._critic_value(self.encode(obs, semantic_state=semantic_state), masks)
+
+    def get_action(self, obs, masks=None, deterministic=False, semantic_state=None):
+        """Atalho para compatibilidade com o trainer.py."""
+        return self.get_action_and_value(
+            obs, masks=masks, deterministic=deterministic, semantic_state=semantic_state
+        )
+
+    @staticmethod
+    def _validate_mask_bundle(obs, masks):
+        """Validate the complete native mask snapshot before any policy computation."""
+        if masks is None:
+            raise ValueError(
+                "Action masks nativas ausentes: a Policy exige o snapshot de "
+                "legalidade correlacionado à observação."
+            )
+        if not isinstance(masks, Mapping):
+            raise TypeError("Action masks devem ser fornecidas como um mapping.")
+
+        if not isinstance(obs, torch.Tensor) or obs.ndim != 2:
+            raise ValueError("Observação deve ser um tensor [batch, features].")
+
+        batch_size = obs.shape[0]
+        expected_keys = set(MASK_SHAPES)
+        actual_keys = set(masks)
+        missing = sorted(expected_keys - actual_keys)
+        unexpected = sorted(actual_keys - expected_keys)
+        if missing or unexpected:
+            raise ValueError(
+                f"Contrato de action masks inválido: ausentes={missing}, "
+                f"inesperadas={unexpected}."
+            )
+
+        for name, shape in MASK_SHAPES.items():
+            mask = masks[name]
+            if not isinstance(mask, torch.Tensor):
+                raise TypeError(f"Action mask '{name}' deve ser torch.Tensor.")
+            expected_shape = (batch_size, *shape)
+            if tuple(mask.shape) != expected_shape:
+                raise ValueError(
+                    f"Shape inválido para action mask '{name}': "
+                    f"{tuple(mask.shape)}; esperado: {expected_shape}."
+                )
+            if mask.dtype != torch.bool:
+                raise TypeError(
+                    f"Action mask '{name}' deve ter dtype torch.bool; "
+                    f"recebido {mask.dtype}."
+                )
+            if mask.device != obs.device:
+                raise ValueError(
+                    f"Action mask '{name}' está em {mask.device}, "
+                    f"mas a observação está em {obs.device}."
+                )
+        return masks
+
+    @staticmethod
+    def _require_mask(masks, key):
+        """Require a contract mask; never substitute a broader legacy mask."""
+        if masks is None:
+            raise ValueError(
+                f"Action masks ausentes ao resolver a máscara obrigatória '{key}'."
+            )
+        if key not in masks:
+            raise ValueError(
+                f"Action mask obrigatória '{key}' ausente no snapshot correlacionado."
+            )
+        return masks[key]
 
     @staticmethod
     def _mask_logits(logits, mask):
@@ -574,35 +1038,36 @@ class TFTPolicy(nn.Module):
 
     @staticmethod
     def _validate_selected_actions(actions, mask, name):
-        """🔎 Rejeita ações registradas que a máscara proíbe."""
-        actions = actions.long()
-
+        """Reject malformed or masked action indices without coercion."""
+        if not isinstance(actions, torch.Tensor) or actions.dtype != torch.long:
+            raise TypeError(f"Ação '{name}' deve ser um tensor torch.int64.")
+        if not isinstance(mask, torch.Tensor) or mask.dtype != torch.bool:
+            raise TypeError(f"Máscara de '{name}' deve ser um tensor torch.bool.")
+        if actions.device != mask.device:
+            raise ValueError(f"Ação e máscara de '{name}' devem estar no mesmo device.")
         if actions.ndim != 1 or mask.ndim != 2:
-            raise ValueError(
-                f"Formato inválido ao validar ação '{name}'."
-            )
-
+            raise ValueError(f"Formato inválido ao validar ação '{name}'.")
         if actions.shape[0] != mask.shape[0]:
-            raise ValueError(
-                f"Batch incompatível ao validar ação '{name}'."
-            )
-
+            raise ValueError(f"Batch incompatível ao validar ação '{name}'.")
         if ((actions < 0) | (actions >= mask.shape[1])).any():
-            raise ValueError(
-                f"Índice fora dos limites para a ação '{name}'."
-            )
+            raise ValueError(f"Índice fora dos limites para a ação '{name}'.")
 
-        selected_valid = mask.to(
-            device=actions.device,
-            dtype=torch.bool,
-        ).gather(1, actions.unsqueeze(1)).squeeze(1)
-
+        selected_valid = mask.gather(1, actions.unsqueeze(1)).squeeze(1)
         if not selected_valid.all():
             rows = (~selected_valid).nonzero().flatten().tolist()
             raise ValueError(
-                f"Ação '{name}' bloqueada pela máscara "
-                f"nas linhas: {rows}"
+                f"Ação '{name}' bloqueada pela máscara nas linhas: {rows}"
             )
+
+    @staticmethod
+    def _validate_canonical_action_parameters(actions):
+        """Validate the six-int PPO record without rewriting its parameter payload."""
+        if not isinstance(actions, torch.Tensor) or actions.ndim != 2 or actions.shape[1] != 6:
+            raise ValueError("Ações devem ter shape [batch, 6].")
+        if actions.dtype != torch.long:
+            raise TypeError("Ações PPO devem usar dtype torch.int64.")
+        if actions.numel() and ((actions[:, 0] < 0) | (actions[:, 0] >= 9)).any():
+            raise ValueError("Tipo de ação fora do catálogo PPO v1.")
 
     @staticmethod
     def _sample_categorical(logits, deterministic):
@@ -612,38 +1077,68 @@ class TFTPolicy(nn.Module):
             dist = Categorical(logits=logits)
             return dist.sample()
 
-    def get_action_and_value(self, obs, masks=None, deterministic=False):
+    def get_action_and_value(self, obs, masks=None, deterministic=False, semantic_state=None):
         """API original usada pelo PPO; mantém as quatro saídas existentes."""
         actions, logprob, entropy, value, _ = self._get_action_and_value_impl(
-            obs, masks=masks, deterministic=deterministic, collect_diagnostics=False
+            obs, masks=masks, deterministic=deterministic, semantic_state=semantic_state,
+            collect_diagnostics=False
         )
         return actions, logprob, entropy, value
 
-    def get_action_and_value_with_diagnostics(self, obs, masks=None, deterministic=False):
+    def get_action_and_value_with_diagnostics(self, obs, masks=None, deterministic=False, semantic_state=None):
         """Inferência opt-in com as distribuições realmente usadas, sem segunda amostragem."""
         return self._get_action_and_value_impl(
-            obs, masks=masks, deterministic=deterministic, collect_diagnostics=True
+            obs, masks=masks, deterministic=deterministic, semantic_state=semantic_state,
+            collect_diagnostics=True
         )
 
-    def get_action_and_value_with_entropy_diagnostics(self, obs, masks=None, deterministic=False):
+    def get_action_and_value_with_entropy_diagnostics(self, obs, masks=None, deterministic=False, semantic_state=None):
         """Retorna entropia por cabeça sem materializar probabilidades/top-k completos."""
         return self._get_action_and_value_impl(
-            obs, masks=masks, deterministic=deterministic, collect_entropy_diagnostics=True
+            obs, masks=masks, deterministic=deterministic, semantic_state=semantic_state,
+            collect_entropy_diagnostics=True
         )
 
+    @staticmethod
+    def _validate_semantic_state_finite(semantic_state, obs):
+        """Check floating semantic inputs once at the policy call boundary."""
+        if semantic_state is None:
+            return
+        numeric = semantic_state.get("numeric") if isinstance(semantic_state, Mapping) else None
+        if not isinstance(numeric, torch.Tensor) or tuple(numeric.shape) != (obs.shape[0], SEMANTIC_NUMERIC_DIM):
+            raise ValueError("semantic numeric input is missing or misaligned")
+        if numeric.dtype != torch.float32 or numeric.device != obs.device:
+            raise TypeError("semantic numeric input must be float32 on the observation device")
+        if not torch.isfinite(numeric).all():
+            raise ValueError("semantic numeric input contains NaN or infinity")
+        items = semantic_state.get("items")
+        if not isinstance(items, Mapping):
+            raise ValueError("native semantic item state is missing")
+        for name, value in items.items():
+            if isinstance(value, torch.Tensor) and value.is_floating_point():
+                if not torch.isfinite(value).all():
+                    raise ValueError(f"native semantic item field {name} contains NaN or infinity")
+
     def _get_action_and_value_impl(
-        self, obs, masks=None, deterministic=False, collect_diagnostics=False,
+        self, obs, masks=None, deterministic=False, semantic_state=None, collect_diagnostics=False,
         collect_entropy_diagnostics=False
     ):
+        masks = self._validate_mask_bundle(obs, masks)
+        self._validate_semantic_state_finite(semantic_state, obs)
+        semantic_entities = self._semantic_entity_features(semantic_state, obs)
         device = obs.device
         batch_size = obs.shape[0]
         player_diagnostics = [[] for _ in range(batch_size)]
-        bench_candidate_features, shop_candidate_features = self._candidate_features(obs)
+        bench_candidate_features, shop_candidate_features = self._candidate_features(
+            obs, semantic_state, semantic_entities=semantic_entities
+        )
         (
             item_component_features, item_inventory_features, item_recipe_features,
             item_target_features, item_inventory_target_fit, item_recipe_target_fit,
-            item_anvil_options, item_anvil_pending,
-        ) = self._item_state_features(obs)
+            item_anvil_options, item_anvil_pending, item_anvil_kind_features,
+        ) = self._item_state_features(
+            obs, semantic_state, semantic_entities=semantic_entities
+        )
 
         def record_distribution(name, logits, chosen, row_indices, applied_mask=None):
             if not collect_diagnostics and not collect_entropy_diagnostics:
@@ -707,7 +1202,9 @@ class TFTPolicy(nn.Module):
                     })
                 player_diagnostics[player_id].append(item)
 
-        features = self.encode(obs)
+        features = self.encode(
+            obs, semantic_state=semantic_state, semantic_entities=semantic_entities
+        )
 
         # --- Action type ---
         type_logits = self.type_head(features)
@@ -770,9 +1267,8 @@ class TFTPolicy(nn.Module):
             if masks is not None:
                 # Máscara específica para mover unidades do banco.
                 # bench_source_mask continua disponível para SELL.
-                source_mask = masks.get(
-                    "bench_move_source_mask",
-                    masks["bench_source_mask"]
+                source_mask = self._require_mask(
+                    masks, "bench_move_source_mask"
                 )
                 logits = self._mask_logits(
                     logits,
@@ -786,7 +1282,7 @@ class TFTPolicy(nn.Module):
             total_entropy[move_bench_mask] += dist.entropy()
             record_distribution(
                 "bench_slot", logits, sampled, torch.where(move_bench_mask)[0],
-                masks.get("bench_move_source_mask", masks["bench_source_mask"])[move_bench_mask]
+                self._require_mask(masks, "bench_move_source_mask")[move_bench_mask]
                 if masks is not None else None,
             )
 
@@ -800,15 +1296,13 @@ class TFTPolicy(nn.Module):
             if masks is not None:
                 batch_indices = torch.where(move_bench_mask)[0]
 
-                if "bench_to_board_target_masks" in masks:
-                    target_mask = masks["bench_to_board_target_masks"][
-                        batch_indices,
-                        sampled,
-                        :
-                    ]
-                else:
-                    # Compatibilidade com máscaras antigas.
-                    target_mask = masks["board_target_mask"][move_bench_mask]
+                target_mask = self._require_mask(
+                    masks, "bench_to_board_target_masks"
+                )[
+                    batch_indices,
+                    sampled,
+                    :
+                ]
 
                 logits = self._mask_logits(logits, target_mask)
 
@@ -886,7 +1380,7 @@ class TFTPolicy(nn.Module):
             logits = self._item_inventory_logits(
                 conditioned_item, item_inventory_features[equip_item_mask],
                 item_inventory_target_fit[equip_item_mask], item_anvil_options[equip_item_mask],
-                item_anvil_pending[equip_item_mask],
+                item_anvil_pending[equip_item_mask], item_anvil_kind_features[equip_item_mask],
             )
             inventory_mask = masks["item_inventory_mask"][equip_item_mask] if masks is not None else None
             if inventory_mask is not None:
@@ -1005,20 +1499,44 @@ class TFTPolicy(nn.Module):
             action_type, shop_slot, bench_slot, board_target, board_source, board_move_target
         ], dim=-1)
 
-        value = self.value_head(features).squeeze(-1)
+        value = self._critic_value(features, masks)
 
         if collect_diagnostics or collect_entropy_diagnostics:
             return actions, total_logprob, total_entropy, value, player_diagnostics
         return actions, total_logprob, total_entropy, value, None
 
-    def evaluate_actions(self, obs, actions, masks):
-        hidden = self.encode(obs)
-        bench_candidate_features, shop_candidate_features = self._candidate_features(obs)
+    def evaluate_actions(self, obs, actions, masks, semantic_state=None):
+        masks = self._validate_mask_bundle(obs, masks)
+        if not isinstance(actions, torch.Tensor) or tuple(actions.shape) != (obs.shape[0], 6):
+            raise ValueError(
+                f"Ações devem ter shape {(obs.shape[0], 6)}; "
+                f"recebido {getattr(actions, 'shape', None)}."
+            )
+        if actions.dtype != torch.long:
+            raise TypeError("Ações PPO devem usar dtype torch.int64; coerção silenciosa é proibida.")
+        if actions.device != obs.device:
+            raise ValueError("Ações e observação devem estar no mesmo device.")
+        self._validate_canonical_action_parameters(actions)
+
+        # Validate once at the PPO replay boundary and share the exact entity
+        # projection across encoder, candidate heads and item-state features.
+        # This keeps NaN/Inf rejection while avoiding repeated semantic slicing
+        # and reshape work for the same batch.
+        self._validate_semantic_state_finite(semantic_state, obs)
+        semantic_entities = self._semantic_entity_features(semantic_state, obs)
+        hidden = self.encode(
+            obs, semantic_state=semantic_state, semantic_entities=semantic_entities
+        )
+        bench_candidate_features, shop_candidate_features = self._candidate_features(
+            obs, semantic_state, semantic_entities=semantic_entities
+        )
         (
             item_component_features, item_inventory_features, item_recipe_features,
             item_target_features, item_inventory_target_fit, item_recipe_target_fit,
-            item_anvil_options, item_anvil_pending,
-        ) = self._item_state_features(obs)
+            item_anvil_options, item_anvil_pending, item_anvil_kind_features,
+        ) = self._item_state_features(
+            obs, semantic_state, semantic_entities=semantic_entities
+        )
 
         # Type
         type_logits = self.type_head(hidden)
@@ -1066,11 +1584,9 @@ class TFTPolicy(nn.Module):
             # Bench source
             logits = self.bench_head(conditioned[move_bench_mask])
 
-            source_mask = masks.get(
-                "bench_move_source_mask",
-                masks["bench_source_mask"]
-            )
-            source_mask = source_mask[move_bench_mask]
+            source_mask = self._require_mask(
+                masks, "bench_move_source_mask"
+            )[move_bench_mask]
 
             logits = self._mask_logits(logits, source_mask)
 
@@ -1097,15 +1613,13 @@ class TFTPolicy(nn.Module):
 
             batch_indices = torch.where(move_bench_mask)[0]
 
-            if "bench_to_board_target_masks" in masks:
-                target_mask = masks["bench_to_board_target_masks"][
-                    batch_indices,
-                    selected_bench_slots,
-                    :
-                ]
-            else:
-                # Compatibilidade com máscaras antigas.
-                target_mask = masks["board_target_mask"][move_bench_mask]
+            target_mask = self._require_mask(
+                masks, "bench_to_board_target_masks"
+            )[
+                batch_indices,
+                selected_bench_slots,
+                :
+            ]
 
             logits = self._mask_logits(logits, target_mask)
 
@@ -1191,7 +1705,7 @@ class TFTPolicy(nn.Module):
                 self._item_inventory_logits(
                     conditioned_item, item_inventory_features[equip_item_mask],
                     item_inventory_target_fit[equip_item_mask], item_anvil_options[equip_item_mask],
-                    item_anvil_pending[equip_item_mask],
+                    item_anvil_pending[equip_item_mask], item_anvil_kind_features[equip_item_mask],
                 ), inventory_mask
             )
             self._validate_selected_actions(item_index, inventory_mask, "item_inventory")
@@ -1297,5 +1811,5 @@ class TFTPolicy(nn.Module):
             total_logprob[sell_mask] += dist.log_prob(actions[sell_mask, 2])
             total_entropy[sell_mask] += dist.entropy()
 
-        value = self.value_head(hidden).squeeze(-1)
+        value = self._critic_value(hidden, masks)
         return total_logprob, total_entropy, value

@@ -397,3 +397,40 @@ def test_player_snapshot_marks_opgg_composition_source():
     native_snapshot = writer._player_snapshot(audit, {"player_id": 0, "level": 6})
     assert native_snapshot["composition_source"] == "NATIVE"
     assert native_snapshot["composition_source_name"] == ""
+
+
+
+def test_new_shadow_snapshot_does_not_fabricate_legacy_strategy_fields():
+    snapshot = _snapshot()
+    audit = dict(snapshot["audit_players"][0])
+    audit.pop("strategy_info", None)
+    canonical_shadow = {
+        "schema_version": 2,
+        "engine_match_id": 77,
+        "player_id": 0,
+        "round": 3,
+        "sequence": 12,
+        "composition_id": "native-comp-a",
+        "composition_version": 4,
+        "stale": False,
+        "diagnostics": {
+            "composition_decision": {"decision": "KEEP"},
+            "lineup_plan": {"selected_board": [{"champion_id": 101}]},
+        },
+    }
+    audit["shadow_composition"] = canonical_shadow
+    writer = object.__new__(PlayerJsonLogWriter)
+
+    projected = writer._player_snapshot(audit, snapshot["players"][0])
+
+    assert projected["legacy_strategy_compatibility"]["status"] == "unavailable"
+    assert projected["legacy_strategy_compatibility"]["authority"] == (
+        "compatibility_only_not_canonical_strategy_state"
+    )
+    assert projected["strategy_name"] is None
+    assert projected["strategy_id"] is None
+    assert projected["comp_direction"] is None
+    assert projected["composition_locked"] is None
+    assert projected["composition_strength"] is None
+    assert projected["strategy_confidence"] is None
+    assert projected["shadow_composition"] == canonical_shadow

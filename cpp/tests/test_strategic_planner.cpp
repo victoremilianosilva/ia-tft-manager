@@ -41,8 +41,12 @@ StrategicAnchorCandidate anchor(
     a.unit.cost = 5;
     a.unit.star = 1;
     a.unit.board_contribution = 0.4;
+    a.unit.board_contribution_available = true;
     a.unit.composition_fit = 0.9;
     a.unit.item_fit = 0.8;
+    a.unit.item_fit_available = true;
+    a.unit.item_fit_source = "test.item_profile.v1";
+    a.unit.item_fit_uncertainty = 0.2;
     a.target_composition_direction = direction;
     a.anchor_value = value;
     a.transition_cost = transition;
@@ -186,6 +190,9 @@ int main() {
     context.anchor_candidates.clear();
     auto invalid = anchor(95, "Assassin", 5.0, 0.1, 1);
     invalid.unit.item_fit = std::nan("");
+    invalid.unit.item_fit_available = true;
+    invalid.unit.item_fit_source = "test.item_profile.v1";
+    invalid.unit.item_fit_uncertainty = 0.2;
     context.anchor_candidates.push_back(invalid);
     context.current_composition_direction.clear();
     decision = planner.evaluate(context, commitment);
@@ -203,6 +210,12 @@ int main() {
     economy_context.stage = 4;
     economy_context.relative_board_power = 1.20;
     economy_context.win_streak = 5;
+    economy_context.evidence.hp = true;
+    economy_context.evidence.gold = true;
+    economy_context.evidence.level = true;
+    economy_context.evidence.xp_to_next = true;
+    economy_context.evidence.streaks = true;
+    economy_context.evidence.relative_board_power = true;
     auto posture = economic_controller.evaluate(economy_context);
     assert(posture.posture == EconomicPosture::PreserveWinStreak);
     assert(posture.shadow_only);
@@ -223,6 +236,12 @@ int main() {
     progression_context.stage = 4;
     progression_context.relative_board_power = 1.0;
     progression_context.progression_plan = ProgressionPlan::LevelToEight;
+    progression_context.evidence.hp = true;
+    progression_context.evidence.gold = true;
+    progression_context.evidence.level = true;
+    progression_context.evidence.xp_to_next = true;
+    progression_context.evidence.relative_board_power = true;
+    progression_context.evidence.progression_plan = true;
     const auto xp_posture = economic_controller.evaluate(progression_context);
     assert(xp_posture.posture == EconomicPosture::InvestExperience);
     progression_context.progression_plan = ProgressionPlan::RerollForThreeStar;
@@ -237,6 +256,11 @@ int main() {
     surplus_context.level = 6;
     surplus_context.stage = 4;
     surplus_context.relative_board_power = 0.70;
+    surplus_context.evidence.hp = true;
+    surplus_context.evidence.gold = true;
+    surplus_context.evidence.level = true;
+    surplus_context.evidence.xp_to_next = true;
+    surplus_context.evidence.relative_board_power = true;
     const auto surplus_posture = economic_controller.evaluate(surplus_context);
     assert(surplus_posture.posture == EconomicPosture::StabilizeBoard);
 
@@ -262,35 +286,31 @@ int main() {
     posture = economic_controller.evaluate(economy_context);
     const auto action = action_evaluator.evaluate(economy_context, posture);
     assert(action.recommended_action == StrategicActionKind::BuyUnit);
-    assert(action.expected_economy_cost == 3.0);
+    // expected_economy_cost without a same-snapshot marginal proof is unknown.
+    assert(action.expected_economy_cost == 0.0);
     assert(action.expected_board_delta == 0.62);
     assert(action.confidence >= 0.50);
     assert(economy_context.action_candidates.size() == 2);
     assert(!action.candidate_scores.empty());
 
-    // Reroll's search opportunity cost is intentionally higher than buying XP.
+    // No action-family opportunity premium is fabricated. Until a producer
+    // supplies a validated marginal opportunity value, the evaluator reports
+    // zero contribution for that component.
     StrategicActionCandidate xp_candidate;
     xp_candidate.kind = StrategicActionKind::BuyExperience;
     xp_candidate.gold_cost = 4;
     xp_candidate.direct_gold_cost = 4.0;
-    xp_candidate.opportunity_cost = 0.25;
+    xp_candidate.opportunity_cost = 999.0;
     StrategicActionCandidate reroll_candidate;
     reroll_candidate.kind = StrategicActionKind::RerollShop;
     reroll_candidate.gold_cost = 2;
     reroll_candidate.direct_gold_cost = 2.0;
-    reroll_candidate.opportunity_cost = 2.50;
-    reroll_candidate.opportunity_cost =
-        action_opportunity_cost::kRerollWithUpgradeTarget;
-    xp_candidate.opportunity_cost = action_opportunity_cost::kBuyExperience;
-    assert(reroll_candidate.opportunity_cost > xp_candidate.opportunity_cost);
-    // Even if XP crosses one extra interest threshold, reroll remains the
-    // more expensive opportunity once its search premium is included.
-    reroll_candidate.lost_interest_cost = 0.0;
-    xp_candidate.lost_interest_cost = 1.0;
-    assert(reroll_candidate.direct_gold_cost + reroll_candidate.lost_interest_cost +
-               reroll_candidate.opportunity_cost >
-           xp_candidate.direct_gold_cost + xp_candidate.lost_interest_cost +
-               xp_candidate.opportunity_cost);
+    reroll_candidate.opportunity_cost = 999.0;
+    economy_context.action_candidates = {hold, xp_candidate, reroll_candidate};
+    const auto no_prior_scores = action_evaluator.evaluate(economy_context, posture);
+    assert(no_prior_scores.candidate_scores.size() == 3);
+    for (const auto& score : no_prior_scores.candidate_scores)
+        assert(score.opportunity_cost == 0.0);
 
     economy_context.action_candidates.clear();
     const auto no_candidate = action_evaluator.evaluate(economy_context, posture);
@@ -305,6 +325,12 @@ int main() {
     streak_context.gold = 45;
     streak_context.relative_board_power = 1.15;
     streak_context.win_streak = 5;
+    // These values are observations, not defaults: expose their availability
+    // to the evidence-aware EconomicController.
+    streak_context.evidence.hp = true;
+    streak_context.evidence.gold = true;
+    streak_context.evidence.relative_board_power = true;
+    streak_context.evidence.streaks = true;
     StrategicActionCandidate streak_hold;
     streak_hold.kind = StrategicActionKind::Hold;
     streak_context.action_candidates.push_back(streak_hold);

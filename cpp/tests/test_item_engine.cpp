@@ -102,6 +102,26 @@ int main() {
                 loaded_engine.item_fit("catalog_emblem", natural_emblem_target),
             "an emblem should have lower marginal value on a unit that already has that trait");
 
+    // The persistent compatibility cache reuses exact profiles and invalidates
+    // when any semantic profile input (including composition traits) changes.
+    ItemFitCache fit_cache(&loaded_engine);
+    const double cached_plan_fit = fit_cache.get("catalog_emblem", planned_emblem_target);
+    require(fit_cache.evaluation_count() == 1,
+            "first profile/item pair should perform one compatibility evaluation");
+    require(fit_cache.get("catalog_emblem", planned_emblem_target) == cached_plan_fit &&
+            fit_cache.evaluation_count() == 1,
+            "an unchanged profile should reuse its compatibility result");
+    const double cached_natural_fit = fit_cache.get("catalog_emblem", natural_emblem_target);
+    require(cached_natural_fit == loaded_engine.item_fit("catalog_emblem", natural_emblem_target) &&
+            fit_cache.evaluation_count() == 2,
+            "changing equipped traits must invalidate the cached compatibility result");
+    require(cached_natural_fit < cached_plan_fit,
+            "cache invalidation must preserve the changed semantic item fit");
+    fit_cache.clear();
+    (void)fit_cache.get("catalog_emblem", natural_emblem_target);
+    require(fit_cache.evaluation_count() == 3,
+            "episode cache clear must force the next compatibility evaluation");
+
     std::istringstream inert_catalog_json(R"json({
         "schema_version": 1,
         "set_id": "synthetic-inert-test",
@@ -352,6 +372,7 @@ int main() {
     // option enters the inventory, and queued anvils are opened one at a time.
     require(engine.grant_component_anvil({"sword", "bow", "rod"}),
             "component anvil should accept unique known component options");
+    const auto component_anvil_sequence = engine.pending_anvil()->sequence;
     require(engine.has_pending_anvil() &&
             engine.pending_anvil()->kind == ItemAnvilKind::COMPONENT &&
             engine.pending_anvil()->options.size() == 3,
@@ -370,6 +391,9 @@ int main() {
 
     require(engine.grant_completed_item_anvil({"damage_blade", "guard_plate"}),
             "completed-item anvil should accept known catalog item options");
+    const auto completed_anvil_sequence = engine.pending_anvil()->sequence;
+    require(completed_anvil_sequence > component_anvil_sequence,
+            "anvil sequence should advance for each accepted choice set");
     require(engine.choose_anvil_option(0),
             "policy should select one completed item from the anvil");
     require(engine.inventory().back() == "damage_blade" &&
@@ -381,6 +405,57 @@ int main() {
 
     require(!engine.grant_component_anvil({"sword", "sword"}),
             "anvil must not present duplicate options");
+    ItemEngine reset_identity_engine({damage, guard});
+    require(reset_identity_engine.grant_component_anvil({"sword", "bow"}),
+            "initial identity fixture anvil should be accepted");
+    const auto before_reset_sequence = reset_identity_engine.pending_anvil()->sequence;
+    reset_identity_engine.reset();
+    require(reset_identity_engine.grant_component_anvil({"sword", "bow"}),
+            "new anvil after reset should be accepted");
+    require(reset_identity_engine.pending_anvil()->sequence > before_reset_sequence,
+            "anvil sequence must not be reused across ItemEngine reset");
+
+    // Elimination retires ownership without transferring copies to another owner.
+    ItemEngine retirement_engine({damage, guard}, {"sword", "bow"});
+    UnitProfile retirement_target{"retired-unit", 1, 1, false, true,
+                                  80.0, 1.2, 0.0, 900.0, 30.0, 30.0, 0.9};
+    require(retirement_engine.add_component("sword") &&
+            retirement_engine.add_component("sword") &&
+            retirement_engine.add_completed_item("damage_blade") &&
+            retirement_engine.add_completed_item("guard_plate") &&
+            retirement_engine.equip("guard_plate", retirement_target),
+            "retirement fixture should contain loose components, inventory and equipment");
+    require(retirement_engine.grant_component_anvil({"sword", "bow"}),
+            "retirement fixture should contain a pending anvil choice");
+    const auto retired_anvil_sequence = retirement_engine.pending_anvil()->sequence;
+    require(retirement_engine.retire_all_owned_state(),
+            "first terminal retirement should capture and clear ownership");
+    const auto& retirement = retirement_engine.retirement_snapshot();
+    require(retirement.retired && retirement.components.size() == 2 &&
+            retirement.inventory.size() == 1 && retirement.equipped.size() == 1,
+            "terminal summary should preserve component, inventory and equipped multiplicity");
+    require(retirement.equipped.front().unit_uuid == "retired-unit" &&
+            retirement.equipped.front().catalog_id == "guard_plate",
+            "retired equipment should retain unit ownership provenance");
+    require(retirement.pending_anvils.size() == 1 &&
+            retirement.pending_anvils.front().sequence == retired_anvil_sequence,
+            "terminal summary should preserve pending anvil identity separately from owned items");
+    require(retirement_engine.components().empty() &&
+            retirement_engine.inventory().empty() &&
+            retirement_engine.equipped("retired-unit").empty() &&
+            !retirement_engine.has_pending_anvil(),
+            "retirement must remove every live ownership reference");
+    require(!retirement_engine.add_component("bow") &&
+            !retirement_engine.add_completed_item("damage_blade") &&
+            !retirement_engine.grant_component_anvil({"sword", "bow"}),
+            "retired ownership must reject new item grants and choice sets");
+    require(!retirement_engine.retire_all_owned_state(),
+            "repeated retirement must not duplicate terminal evidence");
+    retirement_engine.reset();
+    require(!retirement_engine.ownership_retired() &&
+            retirement_engine.retirement_snapshot().components.empty() &&
+            retirement_engine.add_component("bow"),
+            "episode reset should clear terminal evidence and reopen ownership");
 
     // Auto-merge lifecycle: equipment moves to the upgraded unit; if the
     // three-slot cap is reached, overflow returns to the bag instead of vanishing.

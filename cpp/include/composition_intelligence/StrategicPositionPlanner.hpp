@@ -41,6 +41,9 @@ struct StrategicPositionSnapshot {
     std::array<std::int32_t, decision::BENCH_SIZE> bench_ids{};
     PlayerActionMasks masks{};
     std::vector<StrategicPositionUnit> composition_units;
+    std::uint64_t lineup_sequence{0};
+    std::array<std::string, decision::BOARD_SIZE> board_unit_uuids{};
+    std::array<std::string, decision::BENCH_SIZE> bench_unit_uuids{};
 };
 
 struct StrategicPositionProposal {
@@ -61,17 +64,20 @@ struct StrategicPositionProposal {
     double improvement{0.0};
     std::string reason;
     std::string status{"no_positioning_proposal"};
+    std::uint64_t lineup_sequence{0};
+    std::string source_unit_uuid;
 
     nlohmann::json to_json() const {
         return {
             {"schema_version", schema_version},
             {"identity", {{"match_id", match_id}, {"player_id", player_id},
                 {"round", round}, {"sequence", sequence},
+                {"lineup_sequence", lineup_sequence},
                 {"composition_id", composition_id},
                 {"composition_version", composition_version}}},
             {"unit", {{"champion_id", champion_id}, {"role", static_cast<int>(role)}}},
             {"source", {{"zone", source_zone == StrategicPositionZone::Bench ? "bench" : "board"},
-                {"slot", source_slot}}},
+                {"slot", source_slot}, {"unit_uuid", source_unit_uuid}}},
             {"target", {{"zone", "board"}, {"slot", target_board_slot}}},
             {"score", {{"current", current_position_score},
                 {"target", target_position_score}, {"improvement", improvement}}},
@@ -95,11 +101,13 @@ public:
         out.player_id = snapshot.player_id;
         out.round = snapshot.round;
         out.sequence = snapshot.sequence;
+        out.lineup_sequence = snapshot.lineup_sequence;
         out.composition_id = snapshot.composition_id;
         out.composition_version = snapshot.composition_version;
 
         if (snapshot.schema_version != 1 || snapshot.match_id == 0 ||
             snapshot.player_id < 0 || snapshot.sequence == 0 ||
+            snapshot.lineup_sequence == 0 || snapshot.lineup_sequence != snapshot.sequence ||
             snapshot.composition_id.empty() || snapshot.composition_version == 0) {
             out.reason = "positioning_snapshot_identity_or_schema_invalid";
             return out;
@@ -145,6 +153,10 @@ public:
             if (source == owned.end() || ambiguous.count(champion_id)) continue;
             const auto zone = source->second.first;
             const auto source_slot = source->second.second;
+            const auto& source_uuid = zone == StrategicPositionZone::Bench
+                ? snapshot.bench_unit_uuids[static_cast<std::size_t>(source_slot)]
+                : snapshot.board_unit_uuids[static_cast<std::size_t>(source_slot)];
+            if (source_uuid.empty()) continue;
             const auto current_score = zone == StrategicPositionZone::Board
                 ? score_position(role.role, source_slot, snapshot.board_ids, champion_id)
                 : 0.0;
@@ -182,6 +194,7 @@ public:
                     out.role = role.role;
                     out.source_zone = zone;
                     out.source_slot = source_slot;
+                    out.source_unit_uuid = source_uuid;
                     out.target_board_slot = static_cast<std::int32_t>(target);
                     out.current_position_score = current_score;
                     out.target_position_score = target_score;

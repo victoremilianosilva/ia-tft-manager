@@ -1,6 +1,6 @@
 #pragma once
 
-// Best-effort, read-only JSONL recorder for the unified strategic shadow cycle.
+// Best-effort, read-only JSONL recorder for the native canonical strategic cycle.
 // It observes value snapshots only; it never calls back into or mutates the planner.
 
 #include "strategy/UnifiedStrategicStateMachine.hpp"
@@ -29,11 +29,14 @@ public:
         : output_(std::move(output)) {}
 
     // Returns false on invalid context or any I/O/serialization failure.
-    // All failures are contained so callers can safely invoke this from Shadow.
+    // All failures are contained so callers can safely invoke this from the native runtime.
     bool append(const StrategicCycleAuditContext& context,
                 const StrategicCycleInput& input,
                 const StrategicCycleResult& result) noexcept {
         try {
+            // No sidecar means no audit serialization or file work. The
+            // state machine is still updated by its caller independently.
+            if (output_.empty()) return false;
             if (context.player_id < 0 || context.match_id == 0) return false;
             std::lock_guard<std::mutex> lock(mutex_);
             const auto next_sequence = sequences_[context.player_id] + 1;
@@ -228,7 +231,12 @@ private:
                     {"target_star", 2},
                     {"cost", required.cost},
                     {"core", required.core},
-                    {"carry", required.carry}
+                    {"carry", required.carry},
+                    {"shop_copies", shop_copies},
+                    {"pool_remaining", found == observed.end() ||
+                        found->second.pool_remaining < 0
+                            ? nlohmann::json(nullptr)
+                            : nlohmann::json(found->second.pool_remaining)}
                 });
                 if (shop_copies > 0) {
                     shop.push_back({
@@ -259,8 +267,20 @@ private:
                     {"blockers", evaluated->blockers},
                     {"missing_data", evaluated->missing_data},
                     {"favorable_evidence", evaluated->favorable_evidence},
+                    {"traits", nlohmann::json::array()},
                     {"score", evaluated->score}
                 };
+                for (const auto& trait : evaluated->traits) {
+                    feasibility["traits"].push_back({
+                        {"trait", trait.trait},
+                        {"required", trait.required},
+                        {"owned", trait.owned},
+                        {"reachable_with_shop", trait.reachable_with_shop},
+                        {"reachable_with_pool", trait.reachable_with_pool},
+                        {"reachable_with_acquisition", trait.reachable_with_acquisition},
+                        {"satisfied", trait.satisfied}
+                    });
+                }
                 carry["eligible"] = evaluated->carry_eligible;
             } else {
                 feasibility["missing_data"].push_back("pivot_evaluation_result_unavailable");
@@ -293,7 +313,7 @@ private:
         }
 
         return {
-            {"schema_version", 1},
+            {"schema_version", 2},
             {"match_id", context.match_id},
             {"sequence", sequence},
             {"player_id", context.player_id},
@@ -313,7 +333,8 @@ private:
             {"feasibility", feasibility},
             {"transition", transition},
             {"reason", result.diagnostics.transition_reason},
-            {"shadow_only", true}
+            {"state_ownership", "native_canonical"},
+            {"action_execution_enabled", false}
         };
     }
 

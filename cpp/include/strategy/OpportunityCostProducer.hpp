@@ -1,0 +1,144 @@
+#pragma once
+
+#include "strategy/StrategicPlanning.hpp"
+
+#include <algorithm>
+#include <cmath>
+#include <cstdint>
+#include <string>
+#include <unordered_set>
+#include <vector>
+
+namespace tft::strategy {
+
+// Evidence supplied by a producer that can quantify the value preserved or
+// sacrificed by an alternative on the exact same decision snapshot.
+struct OpportunitySnapshotIdentity {
+    std::uint64_t match_id{0};
+    std::int32_t player_id{-1};
+    std::uint32_t round{0};
+    std::uint64_t sequence{0};
+
+    [[nodiscard]] bool valid() const noexcept {
+        return match_id > 0 && player_id >= 0 && round > 0 && sequence > 0;
+    }
+    [[nodiscard]] bool matches(const OpportunitySnapshotIdentity& other) const noexcept {
+        return valid() && other.valid() && match_id == other.match_id &&
+            player_id == other.player_id && round == other.round && sequence == other.sequence;
+    }
+};
+
+struct OpportunityAlternativeEvidence {
+    OpportunitySnapshotIdentity identity;
+    std::string candidate_id;
+    std::string value_basis;
+    double marginal_strategic_value{0.0};
+    double direct_economy_cost{0.0};
+    double interest_cost{0.0};
+    double progression_value{0.0};
+    double unit_value{0.0};
+    double upgrade_value{0.0};
+    double liquidity_value{0.0};
+    double prior_opportunity_cost{0.0};
+    std::uint32_t horizon_rounds{0};
+    double uncertainty{1.0};
+    bool available{false};
+    bool identity_valid{false};
+};
+
+struct OpportunityCostResult {
+    bool available{false};
+    double cost{0.0};
+    std::string source{"unavailable_no_validated_alternative"};
+    std::string value_basis;
+    std::string sacrificed_candidate_id;
+    std::uint32_t horizon_rounds{0};
+    double uncertainty{1.0};
+    std::string reason{"no_competing_alternative"};
+    OpportunitySnapshotIdentity identity;
+};
+
+// Computes the best *forgone* alternative, not a fixed cost by action family.
+// All values must originate from the same native snapshot. Components are in
+// the declared value_basis units. The producer computes net forgone value once;
+// direct economy, interest and any already-validated opportunity cost are explicit.
+class OpportunityCostProducer {
+public:
+    OpportunityCostResult evaluate(
+        const std::string& selected_candidate_id,
+        const std::vector<OpportunityAlternativeEvidence>& alternatives,
+        std::uint32_t selected_horizon_rounds,
+        const std::string& selected_value_basis,
+        const OpportunitySnapshotIdentity& selected_identity
+    ) const {
+        OpportunityCostResult out;
+        if (selected_candidate_id.empty() || selected_horizon_rounds == 0 ||
+            selected_value_basis.empty() || !selected_identity.valid()) {
+            out.reason = "selected_candidate_contract_missing";
+            return out;
+        }
+        const OpportunityAlternativeEvidence* best = nullptr;
+        double best_value = 0.0;
+        double best_risk_adjusted_value = 0.0;
+        std::unordered_set<std::string> seen_candidate_ids;
+        for (const auto& alternative : alternatives) {
+            if (alternative.candidate_id.empty()) continue;
+            if (!seen_candidate_ids.insert(alternative.candidate_id).second) {
+                out.reason = "duplicate_competing_candidate_identity";
+                return out;
+            }
+            if (alternative.candidate_id == selected_candidate_id ||
+                !alternative.available || !alternative.identity_valid ||
+                !alternative.identity.matches(selected_identity) ||
+                alternative.horizon_rounds != selected_horizon_rounds ||
+                alternative.value_basis != selected_value_basis ||
+                !std::isfinite(alternative.marginal_strategic_value) ||
+                alternative.marginal_strategic_value < 0.0 ||
+                !std::isfinite(alternative.progression_value) ||
+                alternative.progression_value < 0.0 ||
+                !std::isfinite(alternative.unit_value) ||
+                alternative.unit_value < 0.0 ||
+                !std::isfinite(alternative.upgrade_value) ||
+                alternative.upgrade_value < 0.0 ||
+                !std::isfinite(alternative.liquidity_value) ||
+                alternative.liquidity_value < 0.0 ||
+                !std::isfinite(alternative.uncertainty) ||
+                alternative.uncertainty < 0.0 || alternative.uncertainty >= 1.0 ||
+                !std::isfinite(alternative.direct_economy_cost) ||
+                !std::isfinite(alternative.interest_cost) ||
+                !std::isfinite(alternative.prior_opportunity_cost) ||
+                alternative.prior_opportunity_cost < 0.0) {
+                continue;
+            }
+            const double gross_value = alternative.marginal_strategic_value +
+                alternative.progression_value + alternative.unit_value +
+                alternative.upgrade_value + alternative.liquidity_value;
+            const double value = gross_value - alternative.direct_economy_cost -
+                alternative.interest_cost - alternative.prior_opportunity_cost;
+            const double risk_adjusted_value = value * (1.0 - alternative.uncertainty);
+            if (!std::isfinite(gross_value) || !std::isfinite(value) ||
+                !std::isfinite(risk_adjusted_value) || value <= 0.0) continue;
+            if (best == nullptr || risk_adjusted_value > best_risk_adjusted_value) {
+                best = &alternative;
+                best_value = value;
+                best_risk_adjusted_value = risk_adjusted_value;
+            }
+        }
+        if (best == nullptr) {
+            out.reason = "no_valid_competing_alternative";
+            return out;
+        }
+        out.available = true;
+        out.cost = std::max(0.0, best_value);
+        out.source = "same_snapshot_competing_alternative.v1";
+        out.value_basis = selected_value_basis;
+        out.sacrificed_candidate_id = best->candidate_id;
+        out.horizon_rounds = selected_horizon_rounds;
+        out.uncertainty = best->uncertainty;
+        out.reason = "best_valid_forgone_alternative";
+        out.identity = selected_identity;
+        return out;
+    }
+};
+
+} // namespace tft::strategy

@@ -44,7 +44,10 @@ class TrainingConfig:
 
     num_lobbies: int = 4
     total_updates: int = 280
-    checkpoint_path: str = "tft_checkpoint.pt"
+    checkpoint_path: str = "checkpoints/native_ppo/seed_42.pt"
+    seed: int = 42
+    log_dir: str = "tft_logs/native_ppo"
+    run_manifest_path: str = "training_runs/native_ppo/run_manifest.json"
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -69,6 +72,8 @@ class TrainingConfig:
             value = getattr(self, name)
             if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
                 raise ValueError(f"{name} deve ser um inteiro > 0.")
+        if isinstance(self.seed, bool) or not isinstance(self.seed, int) or not 0 <= self.seed <= 0xFFFFFFFF:
+            raise ValueError("seed deve ser um inteiro entre 0 e 2^32-1.")
         for name in ("learning_rate", "adam_eps"):
             if getattr(self, name) <= 0:
                 raise ValueError(f"{name} deve ser > 0.")
@@ -90,8 +95,10 @@ class TrainingConfig:
             raise ValueError("target_kl deve ser > 0 ou None.")
         if not 0 <= self.gamma <= 1 or not 0 <= self.gae_lambda <= 1:
             raise ValueError("gamma e gae_lambda devem estar entre 0 e 1.")
-        if not self.checkpoint_path.strip():
-            raise ValueError("checkpoint_path não pode ser vazio.")
+        for name in ("checkpoint_path", "log_dir", "run_manifest_path"):
+            value = getattr(self, name)
+            if not isinstance(value, str) or not value.strip():
+                raise ValueError(f"{name} não pode ser vazio.")
 
     @classmethod
     def from_env(cls, base: TrainingConfig | dict[str, Any] | None = None) -> TrainingConfig:
@@ -131,6 +138,7 @@ class TrainingConfig:
             "total_updates": ("TFT_TOTAL_UPDATES", int),
             "gamma": ("TFT_PPO_GAMMA", float),
             "gae_lambda": ("TFT_PPO_GAE_LAMBDA", float),
+            "seed": ("TFT_TRAIN_SEED", int),
         }
         for name, (env_name, converter) in env_fields.items():
             raw = os.getenv(env_name)
@@ -146,5 +154,11 @@ class TrainingConfig:
         raw_checkpoint = os.getenv("TFT_CHECKPOINT_PATH")
         if raw_checkpoint:
             config.checkpoint_path = raw_checkpoint
+        raw_log_dir = os.getenv("TFT_TRAIN_LOG_DIR")
+        if raw_log_dir:
+            config.log_dir = raw_log_dir
+        raw_manifest_path = os.getenv("TFT_RUN_MANIFEST_PATH")
+        if raw_manifest_path:
+            config.run_manifest_path = raw_manifest_path
         config.validate()
         return config

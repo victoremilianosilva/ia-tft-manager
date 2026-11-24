@@ -3,6 +3,7 @@
 #include "composition_intelligence/ActiveCompositionManager.hpp"
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstdint>
 #include <map>
@@ -40,6 +41,11 @@ struct OwnedUnitEvidence {
     double synergy_contribution{0.5};
     bool completes_active_trait{false};
     bool explicit_sell_candidate{false};
+    // Physical owned instances by star tier; does not include shop or pool copies.
+    std::array<std::int32_t, 4> copies_by_star{};
+    // Appended availability flags: unavailable evidence is not a measured zero.
+    bool board_contribution_available{false};
+    bool synergy_contribution_available{false};
 };
 
 struct CandidateEvidence {
@@ -54,6 +60,9 @@ struct CandidateEvidence {
     double estimated_gold_cost{-1.0};
     double evidence_confidence{0.5};
     CompositionEvidenceSource source{CompositionEvidenceSource::Heuristic};
+    // Appended to preserve aggregate initialization compatibility.
+    bool board_fit_available{false};
+    bool item_fit_available{false};
 };
 
 struct CompositionEvaluationContext {
@@ -126,8 +135,10 @@ public:
         CompositionScoreBreakdown out;
         const auto* evidence = evidence_for(candidate.composition_id, context);
         if (evidence) {
-            out.board_fit = clamp01(evidence->board_fit);
-            out.item_fit = clamp01(evidence->item_fit);
+            out.board_fit = evidence->board_fit_available
+                ? clamp01(evidence->board_fit) : 0.5;
+            out.item_fit = evidence->item_fit_available
+                ? clamp01(evidence->item_fit) : 0.5;
             out.availability = clamp01(evidence->availability);
             out.economy_feasibility = clamp01(evidence->economy_feasibility);
             out.confidence = clamp01(evidence->evidence_confidence);

@@ -1,0 +1,783 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Legacy PPO observation to canonical semantic schema migration map",
+  "version": "1.0.0",
+  "audited_branch": "new-arquiteture",
+  "audited_commit": "3575d21cc0f7dbb5544d75526bd96939b37f5c96",
+  "source_feature_count": 66,
+  "decision_vocabulary": [
+    "preserve_fact",
+    "derive_on_demand",
+    "derive_from_catalog",
+    "rebuild_derived",
+    "rebuild_projection",
+    "replace_semantics",
+    "replace_heuristic",
+    "replace_representation",
+    "preserve_rebuild",
+    "drop_constant",
+    "drop_duplicate",
+    "exclude_legacy_alias",
+    "missing_until_produced",
+    "missing_until_authoritative",
+    "replace_calibration",
+    "preserve_typed_kind",
+    "rebuild_relations",
+    "rebuild_heuristic",
+    "replace_split_semantics",
+    "split_semantics"
+  ],
+  "invariants": [
+    "No legacy tensor offset, normalization, or one-hot identity is preserved merely for checkpoint compatibility.",
+    "Legacy StrategyInfo values are not treated as canonical evidence; missing/default ECON/false/zero are not observations.",
+    "Duplicated fields are represented once; constants and semantically overloaded features are dropped or split.",
+    "Derived and estimated values require formula/version, provenance, validity and uncertainty where applicable.",
+    "Action masks and action legality remain in the independent Action Contract and Engine."
+  ],
+  "mappings": [
+    {
+      "legacy_block": "core",
+      "legacy_field": "hp",
+      "legacy_source": "player.hp",
+      "legacy_notes": "player health; no explicit validity bit",
+      "destination_paths": [
+        "player.health"
+      ],
+      "decision": "preserve_fact",
+      "rationale": "Raw HP retained with explicit validity and provenance."
+    },
+    {
+      "legacy_block": "core",
+      "legacy_field": "gold",
+      "legacy_source": "economy.gold",
+      "legacy_notes": "duplicated in extra block",
+      "destination_paths": [
+        "player.economy.gold"
+      ],
+      "decision": "preserve_fact",
+      "rationale": "Keep one canonical gold value; remove duplicate legacy copy."
+    },
+    {
+      "legacy_block": "core",
+      "legacy_field": "level",
+      "legacy_source": "economy.level",
+      "legacy_notes": "duplicated in extra block",
+      "destination_paths": [
+        "player.economy.level"
+      ],
+      "decision": "preserve_fact",
+      "rationale": "Keep one canonical level value; remove duplicate legacy copy."
+    },
+    {
+      "legacy_block": "core",
+      "legacy_field": "xp_to_next_ratio",
+      "legacy_source": "economy.xp / max(1,xp_to_next)",
+      "legacy_notes": "xp_to_next denominator is implicit",
+      "destination_paths": [
+        "player.economy.xp",
+        "player.economy.xp_to_next"
+      ],
+      "decision": "rebuild_projection",
+      "rationale": "Preserve raw XP and XP-to-next separately; do not retain denominator-hidden ratio."
+    },
+    {
+      "legacy_block": "core",
+      "legacy_field": "win_streak",
+      "legacy_source": "economy.win_streak",
+      "legacy_notes": "streak",
+      "destination_paths": [
+        "player.streaks.win_streak"
+      ],
+      "decision": "preserve_fact",
+      "rationale": "Explicit streak value and validity."
+    },
+    {
+      "legacy_block": "core",
+      "legacy_field": "loss_streak",
+      "legacy_source": "economy.loss_streak",
+      "legacy_notes": "streak",
+      "destination_paths": [
+        "player.streaks.loss_streak"
+      ],
+      "decision": "preserve_fact",
+      "rationale": "Explicit streak value and validity."
+    },
+    {
+      "legacy_block": "core",
+      "legacy_field": "round_fraction",
+      "legacy_source": "round+1",
+      "legacy_notes": "policy inverses this to estimate round",
+      "destination_paths": [
+        "identity.round"
+      ],
+      "decision": "rebuild_projection",
+      "rationale": "Use raw round identity; do not invert normalized fraction."
+    },
+    {
+      "legacy_block": "core",
+      "legacy_field": "board_count_over_level",
+      "legacy_source": "board_count / max(1,level)",
+      "legacy_notes": "can exceed 1 if board over capacity",
+      "destination_paths": [
+        "entities.board",
+        "player.economy.level",
+        "derived_context.capacity"
+      ],
+      "decision": "derive_on_demand",
+      "rationale": "Derive occupancy and remaining capacity from explicit slots and level."
+    },
+    {
+      "legacy_block": "core",
+      "legacy_field": "bench_count_ratio",
+      "legacy_source": "bench_count / bench_slots",
+      "legacy_notes": "bench occupancy",
+      "destination_paths": [
+        "entities.bench",
+        "derived_context.capacity"
+      ],
+      "decision": "derive_on_demand",
+      "rationale": "Use slot presence and capacity; avoid ratio-only representation."
+    },
+    {
+      "legacy_block": "core",
+      "legacy_field": "shop_present",
+      "legacy_source": "constant 1",
+      "legacy_notes": "does not encode actual per-slot presence",
+      "destination_paths": [
+        "entities.shop"
+      ],
+      "decision": "preserve_fact",
+      "rationale": "Represent each shop slot's presence and identity, not a constant global one."
+    },
+    {
+      "legacy_block": "core",
+      "legacy_field": "legacy_strategy_one_hot",
+      "legacy_source": "StrategyInfo.strategy",
+      "legacy_notes": "missing StrategyInfo defaults to ECON; Python derives nominal strategy with argmax",
+      "destination_paths": [
+        "strategic_evidence.commitment_context.direction_id",
+        "strategic_evidence.commitment_context.direction_identity"
+      ],
+      "decision": "replace_semantics",
+      "rationale": "New native commitment identity; never translate legacy strategy enum/ECON fallback."
+    },
+    {
+      "legacy_block": "core",
+      "legacy_field": "reserved_core_tail",
+      "legacy_source": "constant zeros",
+      "legacy_notes": "reserved; not missing indicator",
+      "destination_paths": [],
+      "decision": "drop_constant",
+      "rationale": "Constant zero carries no state information."
+    },
+    {
+      "legacy_block": "board",
+      "legacy_field": "occupied",
+      "legacy_source": "board slot presence",
+      "legacy_notes": "zero when empty",
+      "destination_paths": [
+        "entities.board"
+      ],
+      "decision": "preserve_fact",
+      "rationale": "Explicit slot presence distinguishes empty, unknown and occupied."
+    },
+    {
+      "legacy_block": "board",
+      "legacy_field": "champion_cost",
+      "legacy_source": "ChampionCatalog.cost",
+      "legacy_notes": "requires catalog mapping",
+      "destination_paths": [
+        "catalogs.champions",
+        "entities.board"
+      ],
+      "decision": "derive_from_catalog",
+      "rationale": "Champion cost is catalog data keyed by stable champion_id."
+    },
+    {
+      "legacy_block": "board",
+      "legacy_field": "star",
+      "legacy_source": "UnitInstance.star",
+      "legacy_notes": "requires slot identity",
+      "destination_paths": [
+        "entities.board"
+      ],
+      "decision": "preserve_fact",
+      "rationale": "Retain per-unit star value with provenance."
+    },
+    {
+      "legacy_block": "board",
+      "legacy_field": "role",
+      "legacy_source": "UnitCombatClassifier.classify",
+      "legacy_notes": "comment in policy.py documents a different channel order",
+      "destination_paths": [
+        "derived_context.unit_roles"
+      ],
+      "decision": "rebuild_derived",
+      "rationale": "Recompute from current classifier with formula version; do not preserve channel order."
+    },
+    {
+      "legacy_block": "board",
+      "legacy_field": "strength_proxy",
+      "legacy_source": "champion cost + star",
+      "legacy_notes": "proxy, not combat power",
+      "destination_paths": [
+        "derived_context.economic_context.board_power"
+      ],
+      "decision": "replace_heuristic",
+      "rationale": "Legacy cost-plus-star proxy is not combat power; rebuild as explicitly estimated board evaluation."
+    },
+    {
+      "legacy_block": "bench",
+      "legacy_field": "occupied",
+      "legacy_source": "bench slot presence",
+      "legacy_notes": "zero when empty",
+      "destination_paths": [
+        "entities.bench"
+      ],
+      "decision": "preserve_fact",
+      "rationale": "Explicit bench slot presence."
+    },
+    {
+      "legacy_block": "bench",
+      "legacy_field": "champion_cost",
+      "legacy_source": "ChampionCatalog.cost",
+      "legacy_notes": "requires catalog mapping",
+      "destination_paths": [
+        "catalogs.champions",
+        "entities.bench"
+      ],
+      "decision": "derive_from_catalog",
+      "rationale": "Catalog lookup by stable champion_id."
+    },
+    {
+      "legacy_block": "bench",
+      "legacy_field": "star",
+      "legacy_source": "UnitInstance.star",
+      "legacy_notes": "requires slot identity",
+      "destination_paths": [
+        "entities.bench"
+      ],
+      "decision": "preserve_fact",
+      "rationale": "Per-unit star value."
+    },
+    {
+      "legacy_block": "bench",
+      "legacy_field": "role",
+      "legacy_source": "UnitCombatClassifier.classify",
+      "legacy_notes": "",
+      "destination_paths": [
+        "derived_context.unit_roles"
+      ],
+      "decision": "rebuild_derived",
+      "rationale": "Recompute from current classifier with provenance."
+    },
+    {
+      "legacy_block": "bench",
+      "legacy_field": "strength_proxy",
+      "legacy_source": "champion cost + star",
+      "legacy_notes": "proxy",
+      "destination_paths": [
+        "derived_context.economic_context.board_power"
+      ],
+      "decision": "replace_heuristic",
+      "rationale": "Do not combine bench strength with board power without an explicit evaluation definition."
+    },
+    {
+      "legacy_block": "shop",
+      "legacy_field": "occupied",
+      "legacy_source": "shop slot presence",
+      "legacy_notes": "",
+      "destination_paths": [
+        "entities.shop"
+      ],
+      "decision": "preserve_fact",
+      "rationale": "Per-offer slot presence."
+    },
+    {
+      "legacy_block": "shop",
+      "legacy_field": "champion_cost",
+      "legacy_source": "ChampionCatalog.cost",
+      "legacy_notes": "",
+      "destination_paths": [
+        "catalogs.champions",
+        "entities.shop"
+      ],
+      "decision": "derive_from_catalog",
+      "rationale": "Cost from champion catalog by offer champion_id."
+    },
+    {
+      "legacy_block": "shop",
+      "legacy_field": "star",
+      "legacy_source": "shop unit",
+      "legacy_notes": "shop offer assumed 1-star",
+      "destination_paths": [
+        "entities.shop"
+      ],
+      "decision": "preserve_fact",
+      "rationale": "Shop offer star is explicit; do not silently synthesize if unavailable."
+    },
+    {
+      "legacy_block": "shop",
+      "legacy_field": "role",
+      "legacy_source": "UnitCombatClassifier.classify",
+      "legacy_notes": "",
+      "destination_paths": [
+        "derived_context.unit_roles"
+      ],
+      "decision": "rebuild_derived",
+      "rationale": "Classifier output with formula version and validity."
+    },
+    {
+      "legacy_block": "shop",
+      "legacy_field": "strength",
+      "legacy_source": "constant zero",
+      "legacy_notes": "not comparable to board/bench strength",
+      "destination_paths": [],
+      "decision": "drop_constant",
+      "rationale": "Legacy shop strength is constant zero and has no comparable meaning."
+    },
+    {
+      "legacy_block": "extra",
+      "legacy_field": "board_count",
+      "legacy_source": "board occupancy",
+      "legacy_notes": "duplicates board-derived count",
+      "destination_paths": [
+        "entities.board"
+      ],
+      "decision": "derive_on_demand",
+      "rationale": "Count occupied board slots; no duplicate stored scalar required."
+    },
+    {
+      "legacy_block": "extra",
+      "legacy_field": "bench_count",
+      "legacy_source": "bench occupancy",
+      "legacy_notes": "duplicates bench-derived count",
+      "destination_paths": [
+        "entities.bench"
+      ],
+      "decision": "derive_on_demand",
+      "rationale": "Count occupied bench slots; no duplicate stored scalar required."
+    },
+    {
+      "legacy_block": "extra",
+      "legacy_field": "gold",
+      "legacy_source": "economy.gold",
+      "legacy_notes": "duplicates core",
+      "destination_paths": [
+        "player.economy.gold"
+      ],
+      "decision": "drop_duplicate",
+      "rationale": "Duplicate of canonical core gold."
+    },
+    {
+      "legacy_block": "extra",
+      "legacy_field": "level",
+      "legacy_source": "economy.level",
+      "legacy_notes": "duplicates core",
+      "destination_paths": [
+        "player.economy.level"
+      ],
+      "decision": "drop_duplicate",
+      "rationale": "Duplicate of canonical core level."
+    },
+    {
+      "legacy_block": "extra",
+      "legacy_field": "hp",
+      "legacy_source": "player.hp",
+      "legacy_notes": "duplicates core",
+      "destination_paths": [
+        "player.health"
+      ],
+      "decision": "drop_duplicate",
+      "rationale": "Duplicate of canonical core HP."
+    },
+    {
+      "legacy_block": "synergy_top_five",
+      "legacy_field": "active_trait_count_slot_0_to_4",
+      "legacy_source": "traits discovered while scanning board then bench",
+      "legacy_notes": "slot identity changes with insertion order; no trait IDs",
+      "destination_paths": [
+        "derived_context.trait_counts"
+      ],
+      "decision": "replace_representation",
+      "rationale": "Use stable trait IDs and counts; discard scan-order-dependent top-five slots."
+    },
+    {
+      "legacy_block": "positioning",
+      "legacy_field": "board_evaluation_score",
+      "legacy_source": "board_evaluation.total_score",
+      "legacy_notes": "heuristic score, not calibrated probability",
+      "destination_paths": [
+        "derived_context.economic_context.board_power"
+      ],
+      "decision": "rebuild_derived",
+      "rationale": "Heuristic evaluation with formula/version/confidence; not a calibrated probability."
+    },
+    {
+      "legacy_block": "positioning",
+      "legacy_field": "frontline_fraction",
+      "legacy_source": "frontline / board_count",
+      "legacy_notes": "",
+      "destination_paths": [
+        "derived_context.positioning"
+      ],
+      "decision": "rebuild_derived",
+      "rationale": "Keep explicit frontline count/measure and denominator; avoid ratio-only ambiguity."
+    },
+    {
+      "legacy_block": "positioning",
+      "legacy_field": "backline_fraction",
+      "legacy_source": "backline / board_count",
+      "legacy_notes": "",
+      "destination_paths": [
+        "derived_context.positioning"
+      ],
+      "decision": "rebuild_derived",
+      "rationale": "Keep explicit backline measure and denominator."
+    },
+    {
+      "legacy_block": "positioning",
+      "legacy_field": "unique_role_count",
+      "legacy_source": "unique roles /5",
+      "legacy_notes": "",
+      "destination_paths": [
+        "derived_context.positioning"
+      ],
+      "decision": "rebuild_derived",
+      "rationale": "Derive from unit role identities and expose validity."
+    },
+    {
+      "legacy_block": "trait_counts",
+      "legacy_field": "trait_count_by_catalog_order",
+      "legacy_source": "trait_counts and observation_trait_names",
+      "legacy_notes": "catalog-derived first-occurrence order; no IDs in tensor",
+      "destination_paths": [
+        "derived_context.trait_counts"
+      ],
+      "decision": "preserve_rebuild",
+      "rationale": "Key counts by stable trait IDs and fingerprint catalog ordering."
+    },
+    {
+      "legacy_block": "capacity",
+      "legacy_field": "board_capacity_remaining",
+      "legacy_source": "max(0,level-board_count)",
+      "legacy_notes": "",
+      "destination_paths": [
+        "derived_context.capacity"
+      ],
+      "decision": "derive_on_demand",
+      "rationale": "Compute from level and occupied board slots; keep raw capacity context."
+    },
+    {
+      "legacy_block": "capacity",
+      "legacy_field": "bench_capacity_remaining",
+      "legacy_source": "bench_slots-bench_count",
+      "legacy_notes": "",
+      "destination_paths": [
+        "derived_context.capacity"
+      ],
+      "decision": "derive_on_demand",
+      "rationale": "Compute from explicit bench occupancy and slot capacity."
+    },
+    {
+      "legacy_block": "composition_direction",
+      "legacy_field": "direction_one_hot_by_catalog_trait",
+      "legacy_source": "StrategyInfo.composition_direction",
+      "legacy_notes": "missing StrategyInfo becomes default ECON; direction identity not explicit",
+      "destination_paths": [
+        "strategic_evidence.commitment_context.direction_id",
+        "strategic_evidence.commitment_context.direction_identity"
+      ],
+      "decision": "replace_semantics",
+      "rationale": "Use new native commitment; keep direction label, composition identity and anchor identity distinct."
+    },
+    {
+      "legacy_block": "core_traits",
+      "legacy_field": "core_trait_flag_by_catalog_order",
+      "legacy_source": "StrategyInfo.core_traits",
+      "legacy_notes": "missing StrategyInfo yields all zero",
+      "destination_paths": [
+        "strategic_evidence.completed_traits"
+      ],
+      "decision": "exclude_legacy_alias",
+      "rationale": "Do not equate StrategyInfo core traits with native completed traits; preserve native source only with its own semantics."
+    },
+    {
+      "legacy_block": "composition_fit",
+      "legacy_field": "unit_fit_board_bench_shop",
+      "legacy_source": "unit_composition_score(StrategyInfo, ChampionDefinition, star)",
+      "legacy_notes": "28 board + 9 bench + 5 shop; missing candidate/definition becomes zero",
+      "destination_paths": [
+        "strategic_evidence.owned_unit_assessments",
+        "strategic_evidence.anchor_candidates"
+      ],
+      "decision": "rebuild_derived",
+      "rationale": "Use per-entity assessments/candidates with heuristic provenance and confidence."
+    },
+    {
+      "legacy_block": "action_memory",
+      "legacy_field": "remaining_actions_in_horizon",
+      "legacy_source": "actions_taken_this_round",
+      "legacy_notes": "bounded recent action count",
+      "destination_paths": [
+        "derived_context.decision_history.actions_taken_this_round",
+        "derived_context.decision_history.remaining_action_budget"
+      ],
+      "decision": "rebuild_derived",
+      "rationale": "Store raw count and versioned horizon separately; no normalized inverse."
+    },
+    {
+      "legacy_block": "action_memory",
+      "legacy_field": "board_slot_move_age",
+      "legacy_source": "board_move_age per slot",
+      "legacy_notes": "28 slots; no explicit source action ID/sequence",
+      "destination_paths": [
+        "derived_context.decision_history.board_move_age_by_slot"
+      ],
+      "decision": "preserve_rebuild",
+      "rationale": "Keep slot-aligned age with source decision sequence and explicit slot identity."
+    },
+    {
+      "legacy_block": "composition_focus",
+      "legacy_field": "focus_weight_by_catalog_trait",
+      "legacy_source": "StrategyInfo.composition_focus_weights",
+      "legacy_notes": "zero conflates no focus with missing",
+      "destination_paths": [
+        "strategic_evidence.focus_weights"
+      ],
+      "decision": "missing_until_produced",
+      "rationale": "Current native producer has no independent focus weights; never copy legacy DTO weights or encode missing as zero."
+    },
+    {
+      "legacy_block": "composition_control",
+      "legacy_field": "composition_locked",
+      "legacy_source": "StrategyInfo.composition_locked",
+      "legacy_notes": "missing StrategyInfo becomes false",
+      "destination_paths": [
+        "strategic_evidence.commitment_context.composition_locked"
+      ],
+      "decision": "missing_until_authoritative",
+      "rationale": "Builder currently hardcodes false; keep unavailable until authoritative new owner is wired."
+    },
+    {
+      "legacy_block": "composition_control",
+      "legacy_field": "composition_strength",
+      "legacy_source": "StrategyInfo.composition_strength",
+      "legacy_notes": "nominal scale; provenance absent",
+      "destination_paths": [
+        "strategic_evidence.commitment_context.confidence"
+      ],
+      "decision": "replace_calibration",
+      "rationale": "Legacy strength is not calibrated confidence; do not transfer values without a new defined estimator."
+    },
+    {
+      "legacy_block": "anvil",
+      "legacy_field": "pending",
+      "legacy_source": "ItemEngine.pending_anvil",
+      "legacy_notes": "",
+      "destination_paths": [
+        "entities.items.pending_anvil"
+      ],
+      "decision": "preserve_fact",
+      "rationale": "Pending choice state with explicit presence and provenance."
+    },
+    {
+      "legacy_block": "anvil",
+      "legacy_field": "kind_component",
+      "legacy_source": "pending anvil kind",
+      "legacy_notes": "",
+      "destination_paths": [
+        "entities.items.pending_anvil",
+        "entities.items.anvil_options"
+      ],
+      "decision": "preserve_typed_kind",
+      "rationale": "Represent option kind explicitly as component."
+    },
+    {
+      "legacy_block": "anvil",
+      "legacy_field": "kind_completed_item",
+      "legacy_source": "pending anvil kind",
+      "legacy_notes": "",
+      "destination_paths": [
+        "entities.items.pending_anvil",
+        "entities.items.anvil_options"
+      ],
+      "decision": "preserve_typed_kind",
+      "rationale": "Represent option kind explicitly as completed_item."
+    },
+    {
+      "legacy_block": "anvil",
+      "legacy_field": "option_features",
+      "legacy_source": "ItemCatalog component one-hot or completed-item stats",
+      "legacy_notes": "last feature is best fit across owned units; missing options zero",
+      "destination_paths": [
+        "entities.items.anvil_options"
+      ],
+      "decision": "rebuild_relations",
+      "rationale": "Use stable option/item/component IDs and per-target fit; no positional one-hot."
+    },
+    {
+      "legacy_block": "item_state",
+      "legacy_field": "component_counts",
+      "legacy_source": "ItemEngine.components + ItemCatalog.components order",
+      "legacy_notes": "component identity absent from tensor",
+      "destination_paths": [
+        "entities.items.components"
+      ],
+      "decision": "preserve_fact",
+      "rationale": "Keep stable component IDs and counts with catalog fingerprint."
+    },
+    {
+      "legacy_block": "item_state",
+      "legacy_field": "inventory_item_stats",
+      "legacy_source": "ItemEngine.inventory order + ItemDefinition",
+      "legacy_notes": "item ID absent; empty/missing definition zero",
+      "destination_paths": [
+        "entities.items.inventory",
+        "catalogs.items"
+      ],
+      "decision": "derive_from_catalog",
+      "rationale": "Keep inventory item IDs; derive stats from versioned item catalog."
+    },
+    {
+      "legacy_block": "item_state",
+      "legacy_field": "recipe_item_stats",
+      "legacy_source": "recipe_observation_features indexed first_component*10+second",
+      "legacy_notes": "symmetric recipe matrix; catalog order determines component axes",
+      "destination_paths": [
+        "catalogs.recipes"
+      ],
+      "decision": "derive_from_catalog",
+      "rationale": "Keep recipe identity and catalog fingerprint; do not encode positional symmetric matrix."
+    },
+    {
+      "legacy_block": "item_state",
+      "legacy_field": "target_profiles",
+      "legacy_source": "board+bench UnitInstance + ChampionDefinition",
+      "legacy_notes": "28 board + 9 bench; target UUID/champion ID absent",
+      "destination_paths": [
+        "entities.board",
+        "entities.bench",
+        "derived_context.unit_roles"
+      ],
+      "decision": "rebuild_derived",
+      "rationale": "Derive target profiles from stable unit identities and current champion definitions."
+    },
+    {
+      "legacy_block": "item_state",
+      "legacy_field": "inventory_target_compatibility",
+      "legacy_source": "ItemFitCache.get(item_id, UnitProfile)",
+      "legacy_notes": "heuristic compatibility",
+      "destination_paths": [
+        "derived_context.item_target_fit"
+      ],
+      "decision": "rebuild_heuristic",
+      "rationale": "Preserve item and target IDs plus heuristic formula/version."
+    },
+    {
+      "legacy_block": "item_state",
+      "legacy_field": "recipe_target_compatibility",
+      "legacy_source": "ItemFitCache.get(recipe_id, UnitProfile)",
+      "legacy_notes": "zero if recipe unavailable or target absent",
+      "destination_paths": [
+        "derived_context.recipe_target_fit"
+      ],
+      "decision": "rebuild_heuristic",
+      "rationale": "Keep recipe-target fit distinct from inventory-item fit."
+    },
+    {
+      "legacy_block": "candidate_tail",
+      "legacy_field": "composition_fit",
+      "legacy_source": "unit_composition_score",
+      "legacy_notes": "legacy StrategyInfo-dependent",
+      "destination_paths": [
+        "strategic_evidence.owned_unit_assessments",
+        "strategic_evidence.anchor_candidates"
+      ],
+      "decision": "rebuild_derived",
+      "rationale": "Use contextual evidence keyed by candidate/unit identity; no StrategyInfo dependency."
+    },
+    {
+      "legacy_block": "candidate_tail",
+      "legacy_field": "cost",
+      "legacy_source": "ChampionDefinition.cost",
+      "legacy_notes": "",
+      "destination_paths": [
+        "catalogs.champions"
+      ],
+      "decision": "derive_from_catalog",
+      "rationale": "Champion cost keyed by stable champion ID."
+    },
+    {
+      "legacy_block": "candidate_tail",
+      "legacy_field": "star",
+      "legacy_source": "UnitInstance.star or shop offer",
+      "legacy_notes": "",
+      "destination_paths": [
+        "entities.board",
+        "entities.bench",
+        "entities.shop"
+      ],
+      "decision": "preserve_fact",
+      "rationale": "Star belongs to an owned unit or explicit shop offer."
+    },
+    {
+      "legacy_block": "candidate_tail",
+      "legacy_field": "role",
+      "legacy_source": "observation_role",
+      "legacy_notes": "",
+      "destination_paths": [
+        "derived_context.unit_roles"
+      ],
+      "decision": "rebuild_derived",
+      "rationale": "Role classification with source/formula provenance."
+    },
+    {
+      "legacy_block": "candidate_tail",
+      "legacy_field": "core_or_planned",
+      "legacy_source": "StrategyInfo core/planned IDs",
+      "legacy_notes": "merges two concepts",
+      "destination_paths": [
+        "strategic_evidence.commitment_context.core_unit_ids",
+        "strategic_evidence.commitment_context.flexible_unit_ids"
+      ],
+      "decision": "replace_split_semantics",
+      "rationale": "Keep core and flexible/planned memberships distinct; do not merge into one bit."
+    },
+    {
+      "legacy_block": "candidate_tail",
+      "legacy_field": "owned_copies",
+      "legacy_source": "owned copies incl star-equivalent",
+      "legacy_notes": "",
+      "destination_paths": [
+        "entities.board",
+        "entities.bench"
+      ],
+      "decision": "derive_on_demand",
+      "rationale": "Derive copy counts from stable owned unit identities and star equivalence rules."
+    },
+    {
+      "legacy_block": "candidate_tail",
+      "legacy_field": "upgrade_path",
+      "legacy_source": "reward_model.upgrade_path_strength",
+      "legacy_notes": "",
+      "destination_paths": [
+        "derived_context.action_opportunity.items"
+      ],
+      "decision": "rebuild_derived",
+      "rationale": "Expose candidate upgrade value with horizon, cost and uncertainty."
+    },
+    {
+      "legacy_block": "candidate_tail",
+      "legacy_field": "sell_value_or_affordability",
+      "legacy_source": "sell value /50 for bench; affordability flag for shop",
+      "legacy_notes": "same feature index has different meaning for bench and shop",
+      "destination_paths": [
+        "derived_context.action_opportunity.items.sell_value",
+        "derived_context.action_opportunity.items.affordability"
+      ],
+      "decision": "split_semantics",
+      "rationale": "Separate gold sell value from affordability boolean; never overload one feature index."
+    }
+  ]
+}

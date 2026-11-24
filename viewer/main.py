@@ -22,6 +22,7 @@ from PySide6.QtWidgets import (
 from viewer.session import ViewerSession, unit_label, ACTION_NAMES, ROOT
 from viewer.composition_plan import summarize_planned_traits, suggest_initial_positions, is_position_misplaced
 from viewer.composition_diagnostics_widget import CompositionDiagnosticsWidget
+from viewer.shadow_projection import shadow_diagnostics, shadow_lineup_entries, shadow_status_text
 
 APP_STYLE = """
 QMainWindow, QWidget { background: #0b1020; color: #e5e7eb; font-family: 'Segoe UI'; font-size: 10pt; }
@@ -44,35 +45,6 @@ def _value(player, *keys, default=0):
         if key in player and player[key] is not None:
             return player[key]
     return default
-
-
-def _composition_focus_weights_text(strategy):
-    weights = strategy.get("composition_focus_weights") or {}
-    if not isinstance(weights, dict):
-        return "—"
-    ranked = sorted(weights.items(), key=lambda item: float(item[1] or 0.0), reverse=True)[:5]
-    return ", ".join(f"{name} {float(weight or 0.0):.2f}" for name, weight in ranked) or "—"
-
-
-def _composition_status_text(strategy):
-    locked = bool(strategy.get("composition_locked", False))
-    lock_text = "LOCKED" if locked else "OPEN"
-    strength = float(strategy.get("composition_strength", 0.0) or 0.0)
-    direction = strategy.get("composition_direction") or "—"
-    focus = strategy.get("composition_focus") or "—"
-    weights = _composition_focus_weights_text(strategy)
-    notes = strategy.get("planned_acquisition_notes") or []
-    opgg_note = next(
-        (str(note).split("OPGG_META_CANDIDATE:", 1)[1].split(" (score=", 1)[0].strip()
-         for note in notes if str(note).startswith("OPGG_META_CANDIDATE:")),
-        "",
-    )
-    composition_source = f"OP.GG — {opgg_note}" if opgg_note else "Nativa (não selecionada do OP.GG)"
-    return (
-        f"Comp direction: {direction} | Lock: {lock_text} | "
-        f"Strength: {strength:.2f} | Focus: {focus} | Focus weights: {weights} | "
-        f"Fonte da composição: {composition_source}"
-    )
 
 
 def _format_unit(unit):
@@ -502,12 +474,8 @@ class PlayerCard(QFrame):
         )
         self.items_line.setText("BAG · " + bag_text)
         self.items_line.setToolTip(bag_text)
-        strategy = audit.get("strategy_info") or {}
-        strategy_name = strategy.get("strategy_name") or "ECON"
-        self.strategy_line.setText(
-            f"Strategy: {strategy_name}\n{_composition_status_text(strategy)}"
-        )
-        has_plan = bool(strategy.get("planned_units"))
+        self.strategy_line.setText(shadow_status_text(audit))
+        has_plan = bool(shadow_lineup_entries(audit))
         self.composition_button.setVisible(has_plan)
         self.composition_button.setEnabled(has_plan)
         board = audit.get("board", [])
@@ -1131,14 +1099,12 @@ class ViewerWindow(QMainWindow):
         header = QLabel(f"JOGADOR {player_id + 1} · ROUND {self.session.public_state.get('round', 0)}")
         header.setStyleSheet("font-size:16pt;font-weight:800;color:#60a5fa;")
         outer.addWidget(header)
-        strategy = audit.get("strategy_info") or {}
         summary = QLabel(
             f"HP: {_value(player, 'hp', default='—')}   ·   Ouro: {_value(player, 'gold', default='—')}   ·   "
             f"Nível: {_value(player, 'level', default='—')}   ·   XP: {_value(player, 'xp', default='—')}\n"
             f"Colocação: {_value(player, 'placement', default='—')}   ·   "
             f"Status: {'ELIMINADO' if player.get('eliminated') or not player.get('alive', True) else 'VIVO'}\n"
-            f"Strategy: {strategy.get('strategy_name', 'ECON')}\n"
-            f"{_composition_status_text(strategy)}"
+            f"{shadow_status_text(audit)}"
         )
         summary.setWordWrap(True)
         outer.addWidget(summary)
@@ -1188,19 +1154,25 @@ class ViewerWindow(QMainWindow):
         dialog.show()
 
     def _show_composition_dialog(self, player_id: int):
-        """Show the planner's target lineup without changing policy or engine state."""
+        """Show the canonical Shadow lineup without changing policy or Engine state."""
         audit_players = self.session.audit_snapshot.get("players", [])
         audit = next((p for p in audit_players if int(p.get("player_id", -1)) == player_id), {})
-        strategy = audit.get("strategy_info") or {}
-        planned_names = strategy.get("planned_units") or []
-        if not planned_names:
+        shadow, diagnostics = shadow_diagnostics(audit)
+        lineup_plan = diagnostics.get("lineup_plan") or {}
+        selected_board = shadow_lineup_entries(audit)
+        if not selected_board:
             QMessageBox.information(
                 self, "Composição indisponível",
-                "A engine ainda não forneceu uma composição planejada para este jogador."
+                "O diagnóstico Shadow ainda não publicou um selected_board para este jogador."
             )
             return
 
         catalog = {}
+        catalog_by_id = {}
+        name_by_id = {
+            int(internal_id): str(api_name)
+            for api_name, internal_id in (self.session.champion_id_map or {}).items()
+        }
         try:
             raw_catalog = json.loads((ROOT / "data" / "units_gerado.json").read_text(encoding="utf-8"))
             for unit in raw_catalog if isinstance(raw_catalog, list) else []:
@@ -1209,31 +1181,50 @@ class ViewerWindow(QMainWindow):
                 for alias in (unit.get("apiName"), unit.get("characterName"), unit.get("name")):
                     if alias:
                         catalog[str(alias).casefold()] = unit
+            for internal_id, api_name in name_by_id.items():
+                record = catalog.get(api_name.casefold())
+                if record is not None:
+                    catalog_by_id[internal_id] = record
         except (OSError, json.JSONDecodeError):
             catalog = {}
+            catalog_by_id = {}
 
-        planned_ids = strategy.get("planned_unit_ids") or []
-        carry_id = strategy.get("planned_main_carry_id", -1)
         planned = []
-        for index, raw_name in enumerate(planned_names):
-            name = str(raw_name)
-            record = catalog.get(name.casefold(), {})
+        for entry in selected_board:
+            champion_id = entry.get("champion_id")
+            try:
+                internal_id = int(champion_id)
+            except (TypeError, ValueError):
+                continue
+            name = name_by_id.get(internal_id, str(champion_id))
+            record = catalog_by_id.get(internal_id, catalog.get(name.casefold(), {}))
             profile = record.get("combat_profile") or {}
-            planned_id = planned_ids[index] if index < len(planned_ids) else None
             planned.append({
                 "occupied": True,
                 "champion_id": name,
                 "apiName": name,
-                "internal_id": planned_id,
-                "star": 1,
+                "internal_id": internal_id,
+                "star": int(entry.get("star", 0) or 0),
                 "cost": int(record.get("cost", 0) or 0),
                 "name": record.get("name") or name,
                 "traits": record.get("traits") or [],
                 "role_name": profile.get("role_name") or record.get("role_name") or "função não informada",
                 "combat_profile": profile,
+                "shadow_priority": entry.get("priority"),
+                "shadow_owned": entry.get("owned"),
+                "shadow_currently_on_board": entry.get("currently_on_board"),
             })
+        if not planned:
+            QMessageBox.information(
+                self, "Composição indisponível",
+                "O selected_board Shadow não contém champion_id reconhecível."
+            )
+            return
 
-        carry = next((unit for unit in planned if unit.get("internal_id") == carry_id), None)
+        decision = diagnostics.get("composition_decision") or {}
+        target_score = decision.get("target_score") or {}
+        score = float(target_score.get("total", 0.0) or 0.0)
+        intentions = diagnostics.get("unit_intentions") or []
         previous_dialog = getattr(self, "_composition_dialog", None)
         if previous_dialog is not None:
             previous_dialog.close()
@@ -1246,14 +1237,19 @@ class ViewerWindow(QMainWindow):
                       min(820, max(560, int(screen.height() * 0.84))))
         outer = QVBoxLayout(dialog)
 
-        direction = strategy.get("composition_direction") or "Direção ainda não definida"
-        heading = QLabel(f"Direção: {direction}   ·   Unidades planejadas: {len(planned)}")
+        composition_id = shadow.get("composition_id") or "sem composição ativa"
+        composition_version = shadow.get("composition_version", 0)
+        direction = decision.get("decision") or "DECISÃO INDEFINIDA"
+        heading = QLabel(
+            f"Shadow: {direction}   ·   Composição {composition_id} v{composition_version}"
+            f"   ·   Unidades planejadas: {len(planned)}"
+        )
         heading.setStyleSheet("font-size:15pt;font-weight:800;color:#93c5fd;")
         outer.addWidget(heading)
-        score = float(strategy.get("planned_composition_score", 0.0) or 0.0)
         score_label = QLabel(
-            f"Carry principal: {carry['name'] if carry else 'não identificado'}"
-            f"   ·   Pontuação interna do plano: {score:.2f}"
+            f"Motivo: {decision.get('reason') or 'não informado'}"
+            f"   ·   Score alvo do planner: {score:.2f}"
+            f"   ·   Status do lineup: {lineup_plan.get('status') or 'indisponível'}"
         )
         score_label.setObjectName("muted")
         outer.addWidget(score_label)
@@ -1286,11 +1282,13 @@ class ViewerWindow(QMainWindow):
             traits_label.setWordWrap(True)
             traits_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
             tile_layout.addWidget(traits_label)
-            if unit is carry:
-                carry_label = QLabel("CARRY PRINCIPAL")
-                carry_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                carry_label.setStyleSheet("font-weight:800;color:#fbbf24;")
-                tile_layout.addWidget(carry_label)
+            ownership = "OWNED" if unit.get("shadow_owned") else "ALVO"
+            placement = "NO TABULEIRO" if unit.get("shadow_currently_on_board") else "FORA DO TABULEIRO"
+            priority = float(unit.get("shadow_priority", 0.0) or 0.0)
+            state_label = QLabel(f"{ownership} · {placement} · prioridade {priority:.2f}")
+            state_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            state_label.setObjectName("muted")
+            tile_layout.addWidget(state_label)
             lineup_grid.addWidget(tile, index // 4, index % 4)
         lineup_scroll.setWidget(lineup_content)
         lineup_layout.addWidget(lineup_scroll)
@@ -1298,7 +1296,7 @@ class ViewerWindow(QMainWindow):
 
         traits_tab = QWidget()
         traits_layout = QVBoxLayout(traits_tab)
-        trait_rows = summarize_planned_traits(planned, strategy.get("planned_traits") or [])
+        trait_rows = summarize_planned_traits(planned, [])
         if trait_rows:
             for trait_name, count, is_core in trait_rows:
                 marker = "  ·  PRIORIDADE DO PLANNER" if is_core else ""
@@ -1318,6 +1316,28 @@ class ViewerWindow(QMainWindow):
         traits_layout.addWidget(traits_note)
         traits_layout.addStretch()
         tabs.addTab(traits_tab, "Sinergias")
+
+        priorities_tab = QWidget()
+        priorities_layout = QVBoxLayout(priorities_tab)
+        if intentions:
+            for intention in intentions:
+                if not isinstance(intention, dict):
+                    continue
+                champion_id = intention.get("champion_id", "—")
+                intent_name = intention.get("intent", "—")
+                relation = intention.get("relation", "—")
+                priority = float(intention.get("priority", 0.0) or 0.0)
+                confidence = float(intention.get("confidence_not_probability", 0.0) or 0.0)
+                line = QLabel(
+                    f"Unidade {champion_id} · {intent_name} · {relation} · "
+                    f"prioridade {priority:.2f} · confiança {confidence:.2f}"
+                )
+                line.setWordWrap(True)
+                priorities_layout.addWidget(line)
+        else:
+            priorities_layout.addWidget(QLabel("O planner não publicou intenções de unidade neste snapshot."))
+        priorities_layout.addStretch()
+        tabs.addTab(priorities_tab, "Prioridades Shadow")
 
         position_tab = QWidget()
         position_layout = QVBoxLayout(position_tab)
@@ -1402,18 +1422,21 @@ class ViewerWindow(QMainWindow):
             occupied = unit and unit.get("occupied", False)
             cell.set_unit(unit if occupied else None, self.icon_loader)
             cell.setToolTip(f"Posição {index}: {unit.get('champion_id') if occupied else 'vazia'}")
-        strategy = audit.get("strategy_info") or {}
-        active_traits = strategy.get("active_traits") or {}
-        traits_text = ", ".join(f"{name}({count})" for name, count in sorted(active_traits.items())) or "—"
-        core_traits_text = ", ".join(strategy.get("core_traits") or []) or "—"
+        shadow, diagnostics = shadow_diagnostics(audit)
+        decision = diagnostics.get("composition_decision") or {}
+        intentions = diagnostics.get("unit_intentions") or []
+        intention_lines = [
+            f"{entry.get('champion_id')}: {entry.get('intent')} · prioridade {float(entry.get('priority', 0.0) or 0.0):.2f}"
+            for entry in intentions[:8] if isinstance(entry, dict)
+        ]
+        intention_text = "\n".join(intention_lines) if intention_lines else "sem intenções de unidade publicadas"
         self.player_summary.setText(
             f"JOGADOR {i + 1}\nHP: {_value(player, 'hp', default='—')}\n"
             f"Ouro: {_value(player, 'gold', default='—')}\nNível: {_value(player, 'level', default='—')} · "
             f"XP: {_value(player, 'xp', default='—')}\nColocação: {_value(player, 'placement', default='—')}\n"
-            f"Strategy: {strategy.get('strategy_name', 'ECON')} · "
-            f"Confiança: {float(strategy.get('confidence', 0.0) or 0.0):.2f}\n"
-            f"{_composition_status_text(strategy)}\n"
-            f"Core traits: {core_traits_text}\nTraits ativos: {traits_text}"
+            f"{shadow_status_text(audit)}\n"
+            f"Motivo da decisão: {decision.get('reason') or '—'}\n"
+            f"Intenções Shadow:\n{intention_text}"
         )
         components = list(audit.get("item_components", []) or [])
         inventory = list(audit.get("item_inventory", []) or [])

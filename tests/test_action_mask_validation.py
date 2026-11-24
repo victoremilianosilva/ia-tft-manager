@@ -150,12 +150,18 @@ def test_rejects_wrong_number_of_players(trainer):
     with pytest.raises(ValueError, match="jogadores"):
         trainer._flatten_masks(gym_masks)
 
-def test_empty_action_types_receive_same_pass_fallback_for_multiple_agents(trainer):
+def test_empty_action_types_receive_pass_fallback_only_for_eliminated_agents(trainer):
     gym_masks = create_valid_masks()
     for player_idx in (0, 3, 7):
         gym_masks[0][player_idx]["type_mask"] = np.zeros(9, dtype=np.float32)
 
-    masks = trainer._flatten_masks(gym_masks)
+    alive = [[True, True, True, False, True, True, True, False]]
+    # Player 0 is still alive and has no legal type: this must fail closed.
+    with pytest.raises(RuntimeError, match="jogador\\(es\\) ativo\\(s\\)"):
+        trainer._flatten_masks(gym_masks, lobby_player_alive=alive)
+
+    alive[0][0] = False
+    masks = trainer._flatten_masks(gym_masks, lobby_player_alive=alive)
 
     for player_idx in (0, 3, 7):
         expected_types = torch.zeros(9, dtype=torch.bool)
@@ -212,3 +218,19 @@ def test_reused_action_array_matches_tensor_conversion_path(trainer):
     ) == trainer._audit_selected_action_masks(
         actions, masks, action_array=action_array
     )
+
+
+def test_empty_action_type_mask_without_liveness_fails_closed(trainer):
+    gym_masks = create_valid_masks()
+    gym_masks[0][2]["type_mask"] = np.zeros(9, dtype=np.float32)
+
+    with pytest.raises(RuntimeError, match="estado de vida"):
+        trainer._flatten_masks(gym_masks)
+
+
+def test_empty_action_type_mask_requires_complete_liveness_snapshot(trainer):
+    gym_masks = create_valid_masks()
+    gym_masks[0][2]["type_mask"] = np.zeros(9, dtype=np.float32)
+
+    with pytest.raises(ValueError, match="estados de vida"):
+        trainer._flatten_masks(gym_masks, lobby_player_alive=[[True, True]])

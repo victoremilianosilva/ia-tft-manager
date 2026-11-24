@@ -4,7 +4,10 @@
 // This service consumes observed game facts only and has no dependency on
 // CompositionPlanner, CompositionDirectionPolicy, or StrategyInfo.
 
+#include "strategy/UnitCopyProgress.hpp"
+
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstdint>
 #include <map>
@@ -35,6 +38,13 @@ struct NativeCompositionOwnedUnit {
     bool on_bench{false};
     double board_contribution{0.0};
     double item_fit{0.0};
+    // Appended physical counts; aggregate copies remain only a legacy-equivalent signal.
+    std::array<std::int32_t, 4> copies_by_star{};
+    // Evidence flags prevent unavailable metrics from being interpreted as measured zero.
+    bool board_contribution_available{false};
+    bool item_fit_available{false};
+    std::string item_fit_source;
+    double item_fit_uncertainty{0.0};
 };
 
 struct NativeCompositionTraitThreshold {
@@ -53,10 +63,28 @@ struct NativeCompositionGenerationInput {
     std::int32_t gold{0};
     std::int32_t target_slots{8};
     std::size_t maximum_candidates{8};
+
+    // Optional decision-correlated identity envelope. When any field is
+    // supplied, the complete envelope is required and candidates are bound
+    // to this exact observed snapshot.
+    std::uint64_t match_id{0};
+    std::int32_t player_id{-1};
+    std::uint32_t round{0};
+    std::uint64_t sequence{0};
+
+    // Optional immutable catalog view. The owning vector must outlive generate().
+    // The value-owned catalog remains available for tests and standalone callers.
+    const std::vector<NativeCompositionUnitDefinition>* catalog_ref{nullptr};
 };
 
 struct NativeGeneratedComposition {
     std::string identity;
+    std::string candidate_set_id;
+    std::string producer_id{"native-strategic-composition-generator"};
+    std::uint64_t match_id{0};
+    std::int32_t player_id{-1};
+    std::uint32_t round{0};
+    std::uint64_t source_sequence{0};
     std::string direction;
     std::vector<std::int32_t> unit_ids;
     std::int32_t anchor_champion_id{-1};
@@ -71,6 +99,12 @@ struct NativeGeneratedComposition {
 
 struct NativeCompositionGenerationResult {
     std::vector<NativeGeneratedComposition> candidates;
+    std::string candidate_set_id;
+    std::string producer_id{"native-strategic-composition-generator"};
+    std::uint64_t match_id{0};
+    std::int32_t player_id{-1};
+    std::uint32_t round{0};
+    std::uint64_t source_sequence{0};
     std::uint32_t directions_considered{0};
     std::uint32_t rejected_missing_pool_data{0};
     std::string reason{"not_evaluated"};
@@ -81,7 +115,27 @@ public:
     NativeCompositionGenerationResult generate(
         const NativeCompositionGenerationInput& input) const {
         NativeCompositionGenerationResult result;
-        if (input.catalog.empty() || input.target_slots <= 0 ||
+        const bool has_identity_metadata = input.match_id != 0 ||
+            input.player_id != -1 || input.round != 0 || input.sequence != 0;
+        if (has_identity_metadata &&
+            (input.match_id == 0 || input.player_id < 0 || input.sequence == 0)) {
+            result.reason = "invalid_candidate_set_identity";
+            return result;
+        }
+        result.match_id = input.match_id;
+        result.player_id = input.player_id;
+        result.round = input.round;
+        result.source_sequence = input.sequence;
+        if (has_identity_metadata) {
+            result.candidate_set_id = "native-candidate-set:v1:" +
+                std::to_string(input.match_id) + ":" +
+                std::to_string(input.player_id) + ":" +
+                std::to_string(input.round) + ":" +
+                std::to_string(input.sequence);
+        }
+        const auto& catalog = input.catalog_ref
+            ? *input.catalog_ref : input.catalog;
+        if (catalog.empty() || input.target_slots <= 0 ||
             input.maximum_candidates == 0) {
             result.reason = "insufficient_catalog_or_capacity";
             return result;
@@ -91,14 +145,23 @@ public:
         std::unordered_map<std::int32_t, const NativeCompositionUnitDefinition*> definitions;
         std::map<std::string, std::int32_t> direction_evidence;
         std::map<std::string, std::int32_t> thresholds;
-        for (const auto& unit : input.catalog) {
+        for (const auto& unit : catalog) {
             if (unit.champion_id < 0 || unit.cost < 1 || unit.cost > 5) continue;
             definitions[unit.champion_id] = &unit;
         }
         for (const auto& unit : input.owned) {
             if (unit.champion_id < 0 || unit.copies < 0 || unit.star < 1 ||
-                unit.star > 3 || !std::isfinite(unit.board_contribution) ||
-                !std::isfinite(unit.item_fit)) continue;
+                unit.star > 3 ||
+                (unit.board_contribution_available &&
+                    (!std::isfinite(unit.board_contribution) ||
+                     unit.board_contribution < 0.0 || unit.board_contribution > 1.0)) ||
+                (unit.item_fit_available &&
+                    (!std::isfinite(unit.item_fit) ||
+                     unit.item_fit < 0.0 || unit.item_fit > 1.0 ||
+                     unit.item_fit_source.empty() ||
+                     !std::isfinite(unit.item_fit_uncertainty) ||
+                     unit.item_fit_uncertainty < 0.0 ||
+                     unit.item_fit_uncertainty >= 1.0))) continue;
             owned[unit.champion_id] = unit;
             const auto found = definitions.find(unit.champion_id);
             if (found != definitions.end()) {
@@ -126,8 +189,11 @@ public:
                 return lhs < rhs;
             });
 
+        // Candidate composition is the endgame target; current board capacity
+        // is applied later by LineupPlanner. Capping here erased deferred targets
+        // and made a level-4 player appear to have a four-unit endgame composition.
         const auto effective_target_slots = static_cast<std::size_t>(
-            std::clamp(std::min(input.target_slots, input.level), 1, 10));
+            std::clamp(input.target_slots, 1, 10));
 
         struct ScoredUnit {
             const NativeCompositionUnitDefinition* definition{nullptr};
@@ -157,7 +223,9 @@ public:
                     ? owned_it->second : NativeCompositionOwnedUnit{};
                 const double copies = has_owned
                     ? std::min(5, observed.copies) * 0.65 : 0.0;
-                const double pair_progress = has_owned && observed.copies >= 2 ? 1.1 : 0.0;
+                const double pair_progress = has_owned &&
+                    copies_toward_next_star(observed.copies_by_star, observed.star) > 0
+                    ? 1.1 : 0.0;
                 const double star_progress = has_owned
                     ? (observed.star >= 3 ? 0.9 : observed.star == 2 ? 0.55 : 0.0)
                     : 0.0;
@@ -173,8 +241,10 @@ public:
                     (definition->frontline ? 0.45 : 0.0) +
                     (definition->support ? 0.25 : 0.0) + pool_score +
                     cost_score + affordability +
-                    (has_owned ? std::max(0.0, observed.board_contribution) * 0.35 : 0.0) +
-                    (has_owned ? std::max(0.0, observed.item_fit) * 0.25 : 0.0);
+                    (has_owned && observed.board_contribution_available
+                        ? observed.board_contribution * 0.35 : 0.0) +
+                    (has_owned && observed.item_fit_available
+                        ? observed.item_fit * (1.0 - observed.item_fit_uncertainty) * 0.25 : 0.0);
                 scored.push_back({definition, score, has_owned, in_shop});
             }
             std::stable_sort(scored.begin(), scored.end(),
@@ -187,6 +257,11 @@ public:
             NativeGeneratedComposition candidate;
             candidate.direction = direction;
             candidate.identity = "native:" + direction;
+            candidate.candidate_set_id = result.candidate_set_id;
+            candidate.match_id = result.match_id;
+            candidate.player_id = result.player_id;
+            candidate.round = result.round;
+            candidate.source_sequence = result.source_sequence;
             bool has_carry = false;
             bool has_frontline = false;
             bool has_support = false;
@@ -199,13 +274,19 @@ public:
                     const auto id = unit.definition->champion_id;
                     candidate.evidence.push_back("owned_unit:" + std::to_string(id));
                     const auto& observed = owned.at(id);
-                    if (observed.copies >= 2)
+                    if (copies_toward_next_star(observed.copies_by_star, observed.star) > 0)
                         candidate.evidence.push_back("owned_pair:" + std::to_string(id));
                     if (observed.star >= 2)
                         candidate.evidence.push_back("star_progress:" +
                             std::to_string(observed.star) + ":" + std::to_string(id));
-                    if (observed.item_fit > 0.0)
-                        candidate.evidence.push_back("item_fit:" + std::to_string(id));
+                    if (observed.item_fit_available) {
+                        candidate.evidence.push_back("item_fit_measured:" + std::to_string(id));
+                        candidate.evidence.push_back("item_fit_source:" + observed.item_fit_source);
+                        candidate.evidence.push_back("item_fit_uncertainty:" +
+                            std::to_string(observed.item_fit_uncertainty));
+                    }
+                    if (observed.board_contribution_available)
+                        candidate.evidence.push_back("board_contribution_measured:" + std::to_string(id));
                 }
                 if (unit.shop)
                     candidate.evidence.push_back("shop_offer:" +
@@ -287,6 +368,8 @@ public:
                 if (index != 0) candidate.identity += ",";
                 candidate.identity += std::to_string(candidate.unit_ids[index]);
             }
+            if (!candidate.candidate_set_id.empty())
+                candidate.identity = candidate.candidate_set_id + ":" + candidate.identity;
             result.candidates.push_back(std::move(candidate));
         }
 
