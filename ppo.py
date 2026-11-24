@@ -316,6 +316,10 @@ class PPOTrainer:
             and torch.cuda.is_available()
             and profile_cuda_device.type == "cuda"
         )
+        profile_cuda_stream = (
+            torch.cuda.current_stream(profile_cuda_device)
+            if profile_gpu_enabled else None
+        )
         profile_loss_cuda_events = []
         profile_backward_cuda_events = []
 
@@ -402,7 +406,7 @@ class PPOTrainer:
                 if profile_gpu_enabled:
                     loss_cuda_start = torch.cuda.Event(enable_timing=True)
                     loss_cuda_end = torch.cuda.Event(enable_timing=True)
-                    loss_cuda_start.record()
+                    loss_cuda_start.record(profile_cuda_stream)
                 (
                     loss,
                     pg_loss,
@@ -428,7 +432,7 @@ class PPOTrainer:
                 if profile_enabled:
                     profile_loss_ms += (time.perf_counter_ns() - loss_start_ns) / 1_000_000.0
                 if profile_gpu_enabled:
-                    loss_cuda_end.record()
+                    loss_cuda_end.record(profile_cuda_stream)
                     profile_loss_cuda_events.append((loss_cuda_start, loss_cuda_end))
 
                 max_kl = max(max_kl, float(approx_kl.item()))
@@ -475,7 +479,7 @@ class PPOTrainer:
                 if profile_gpu_enabled:
                     backward_cuda_start = torch.cuda.Event(enable_timing=True)
                     backward_cuda_end = torch.cuda.Event(enable_timing=True)
-                    backward_cuda_start.record()
+                    backward_cuda_start.record(profile_cuda_stream)
                 backward_start_ns = time.perf_counter_ns() if profile_enabled else 0
                 loss.backward()
                 if profile_enabled:
@@ -502,7 +506,7 @@ class PPOTrainer:
                     profile_optimizer_step_ms += (time.perf_counter_ns() - optimizer_step_start_ns) / 1_000_000.0
                     profile_backward_optimizer_ms += (time.perf_counter_ns() - optimizer_stage_start_ns) / 1_000_000.0
                 if profile_gpu_enabled:
-                    backward_cuda_end.record()
+                    backward_cuda_end.record(profile_cuda_stream)
                     profile_backward_cuda_events.append((backward_cuda_start, backward_cuda_end))
                 optimizer_steps += 1
 
