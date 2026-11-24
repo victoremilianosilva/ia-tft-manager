@@ -380,7 +380,8 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
             }
             if (effect.operation == "grant_shield" &&
                 (effect.target != "self" || effect.value <= 0.0f ||
-                 effect.duration <= 0.0f || !effect.percent_of_max_health)) {
+                 effect.duration <= 0.0f || effect.value > 1.0f ||
+                 !effect.percent_of_max_health)) {
                 throw std::invalid_argument(
                     "grant_shield requires self target, positive max-health fraction and duration");
             }
@@ -407,17 +408,20 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
                 throw std::invalid_argument("apply_shred requires a valid stat, target, fraction and duration");
             }
             if (effect.operation == "apply_burn" &&
-                ((effect.target != "target" && effect.target != "enemies_within_radius") ||
-                 effect.value <= 0.0f || effect.duration <= 0.0f ||
+                ((effect.target != "target" && effect.target != "enemies_within_radius" &&
+                  effect.target != "nearest_enemy_within_radius") ||
+                 effect.value <= 0.0f || effect.value > 1.0f || effect.duration <= 0.0f ||
                  !effect.percent_of_max_health ||
                  ((effect.target == "enemies_within_radius" ||
                    effect.target == "nearest_enemy_within_radius") && effect.radius <= 0.0f))) {
                 throw std::invalid_argument("apply_burn requires target, max-health fraction and duration");
             }
             if (effect.operation == "apply_wound" &&
-                ((effect.target != "target" && effect.target != "enemies_within_radius") ||
+                ((effect.target != "target" && effect.target != "enemies_within_radius" &&
+                  effect.target != "nearest_enemy_within_radius") ||
                  effect.duration <= 0.0f ||
-                 (effect.target == "enemies_within_radius" && effect.radius <= 0.0f))) {
+                 ((effect.target == "enemies_within_radius" ||
+                   effect.target == "nearest_enemy_within_radius") && effect.radius <= 0.0f))) {
                 throw std::invalid_argument("apply_wound requires target and positive duration");
             }
             if (effect.operation == "damage_on_enemy_cast" &&
@@ -441,6 +445,8 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
             }
             if (effect.operation == "stack_stat" &&
                 (effect.target != "self" || effect.stat.empty() ||
+                 (effect.stat != "attack_damage" && effect.stat != "attack_speed" &&
+                  effect.stat != "ability_power" && effect.stat != "damage_amplification") ||
                  effect.value <= 0.0f || effect.max_stacks <= 0 ||
                  effect.stack_key.empty())) {
                 throw std::invalid_argument(
