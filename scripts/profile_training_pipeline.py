@@ -45,14 +45,19 @@ class Profiler:
             self.calls[name] += 1
 
     def wrap(self, owner, attribute, metric, *, descriptor=None):
-        original = getattr(owner, attribute)
-
-        def wrapped(*args, **kwargs):
-            return self.measure(metric, original, *args, **kwargs)
-
         if descriptor == "classmethod":
+            original = owner.__dict__[attribute].__func__
+
+            def wrapped(cls, *args, **kwargs):
+                return self.measure(metric, original, cls, *args, **kwargs)
+
             setattr(owner, attribute, classmethod(wrapped))
         else:
+            original = getattr(owner, attribute)
+
+            def wrapped(*args, **kwargs):
+                return self.measure(metric, original, *args, **kwargs)
+
             setattr(owner, attribute, wrapped)
         return original
 
@@ -225,7 +230,14 @@ def main():
     wall_start = time.perf_counter()
     reports = []
 
+    torch = install_instrumentation(profiler)
+    from trainer import Trainer
+
+    optimizer_step_types = set()
+
     for lobby_count in args.lobbies:
+        profiler.samples.clear()
+        profiler.calls.clear()
         run_dir = output_dir / f"lobbies-{lobby_count}"
         run_dir.mkdir(parents=True, exist_ok=True)
         os.environ.update({
@@ -242,13 +254,21 @@ def main():
             "TFT_COMPOSITION_INTELLIGENCE_ENABLED": "1",
         })
 
-        # Reinstall hooks per run; all samples remain separated by run label.
-        torch = install_instrumentation(profiler)
-        from trainer import Trainer
-
         init_start = time.perf_counter()
         trainer = Trainer(num_envs=lobby_count, use_subprocess=False)
         init_ms = (time.perf_counter() - init_start) * 1000.0
+        optimizer_type = type(trainer.optimizer)
+        if optimizer_type not in optimizer_step_types:
+            original_optimizer_step = optimizer_type.step
+
+            def timed_optimizer_step(self, *step_args, **step_kwargs):
+                return profiler.measure(
+                    "optimizer.step", original_optimizer_step,
+                    self, *step_args, **step_kwargs
+                )
+
+            optimizer_type.step = timed_optimizer_step
+            optimizer_step_types.add(optimizer_type)
         try:
             train_start = time.perf_counter()
             trainer.train(total_updates=args.updates, rollout_steps=args.rollout_steps)
@@ -263,6 +283,7 @@ def main():
             "initialization_ms": round(init_ms, 3),
             "training_wall_ms": round(train_ms, 3),
             "run_dir": str(run_dir),
+            "timings": profiler.report(),
         })
 
     wall_ms = (time.perf_counter() - wall_start) * 1000.0
@@ -298,7 +319,6 @@ def main():
             "lobby_execution": "sequential-current-vector-env",
         },
         "runs": reports,
-        "timings": profiler.report(),
         "process": {
             "wall_ms": round(wall_ms, 3),
             "cpu_ms": round(cpu_ms, 3),
