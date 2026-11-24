@@ -348,7 +348,8 @@ class PPOTrainer:
 
             for batch in rollout.get_batches(
                 batch_size=batch_size,
-                normalize_advantages=False
+                normalize_advantages=False,
+                include_metadata=False,
             ):
                 attempted_batches += 1
 
