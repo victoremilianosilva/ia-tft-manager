@@ -4448,11 +4448,13 @@ struct TFTEngine::Impl {
                 index_team_units(input.player_b);
 
                 ++combat_sequence;
-                current_simulation_artifact_id =
-                    "native-sim-v1:" + std::to_string(episode_id) + ":" +
-                    std::to_string(round + 1) + ":" +
-                    std::to_string(combat_sequence) + ":" +
-                    std::to_string(a) + ":" + std::to_string(b);
+                if (combat_replay_enabled) {
+                    current_simulation_artifact_id =
+                        "native-sim-v1:" + std::to_string(episode_id) + ":" +
+                        std::to_string(round + 1) + ":" +
+                        std::to_string(combat_sequence) + ":" +
+                        std::to_string(a) + ":" + std::to_string(b);
+                }
 
                 if (combat_replay_enabled) {
                 // Persist the exact native simulator input and its result as a
