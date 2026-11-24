@@ -687,3 +687,38 @@ def test_semantic_projection_cache_requires_exact_native_snapshot_revision():
 
     stale_contract = dict(contract, sha256="0" * 64)
     assert not semantic_batch_matches_snapshot_rows(batch, [row], stale_contract)
+
+
+
+def test_semantic_cache_invalidates_unit_item_and_trait_mutations_when_revision_advances():
+    from copy import deepcopy
+
+    catalog = {"TFT_TestChampion": 17}
+    contract = build_semantic_state_checkpoint_contract(catalog)
+    original = _metadata()
+    batch = build_semantic_batch([original], catalog, contract=contract)
+
+    mutations = (
+        ("unit", lambda row: row["native_player_state"]["board"][0].update(star=3)),
+        ("items", lambda row: row["native_player_state"]["board"][0]["items"].append("ItemB")),
+        ("traits", lambda row: row["native_player_state"]["board"][0]["trait_names"].append("TraitC")),
+        ("inventory", lambda row: row["native_player_state"]["item_inventory"].append("completed_item_alpha")),
+    )
+    for name, mutate in mutations:
+        changed = deepcopy(original)
+        mutate(changed)
+        changed["decision_sequence"] += 1
+        changed["player_decision_sequence"] += 1
+        assert not semantic_batch_matches_snapshot_rows(batch, [changed], contract), name
+
+
+def test_semantic_cache_invalidates_on_real_catalog_contract_change():
+    original_catalog = {"TFT_TestChampion": 17}
+    changed_catalog = {"TFT_TestChampion": 17, "TFT_AnotherChampion": 18}
+    original_contract = build_semantic_state_checkpoint_contract(original_catalog)
+    changed_contract = build_semantic_state_checkpoint_contract(changed_catalog)
+    row = _metadata()
+    batch = build_semantic_batch([row], original_catalog, contract=original_contract)
+
+    assert original_contract["sha256"] != changed_contract["sha256"]
+    assert not semantic_batch_matches_snapshot_rows(batch, [row], changed_contract)
