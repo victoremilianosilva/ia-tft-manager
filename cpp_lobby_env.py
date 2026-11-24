@@ -9,6 +9,7 @@ interface expected by LobbyVectorEnv/Trainer.
 """
 from __future__ import annotations
 
+from collections.abc import Mapping
 from pathlib import Path
 from types import SimpleNamespace
 import copy
@@ -45,6 +46,76 @@ except ImportError as exc:
         "Não foi possível importar tft_engine. "
         "Compile o módulo C++ com CMake antes de iniciar o Trainer."
     ) from exc
+
+
+class _NativeSnapshotMapping(dict):
+    """Read-only mapping over one pinned native snapshot.
+
+    The large combat event lists are converted to Python only when requested.
+    Each deepcopy creates an independent Python materialization cache while
+    retaining the immutable native snapshot value and its exact sequence.
+    """
+
+    _COMBAT_FIELDS = frozenset((
+        "combat_damage_events",
+        "combat_attack_events",
+        "combat_death_events",
+    ))
+
+    def __init__(self, handle):
+        self._handle = handle
+        self._base = None
+        self._combat_cache = {}
+
+    def _base_dict(self):
+        if self._base is None:
+            self._base = self._handle.to_dict()
+        return self._base
+
+    def __getitem__(self, key):
+        if key in self._COMBAT_FIELDS:
+            if key not in self._combat_cache:
+                self._combat_cache[key] = self._handle.combat_events(key)
+            return self._combat_cache[key]
+        return self._base_dict()[key]
+
+    def __iter__(self):
+        return iter(self._handle.keys())
+
+    def __len__(self):
+        return len(self._handle.keys())
+
+    def get(self, key, default=None):
+        try:
+            return self[key]
+        except KeyError:
+            return default
+
+    def __contains__(self, key):
+        return key in self._handle.keys()
+
+    def keys(self):
+        return self._handle.keys()
+
+    def items(self):
+        return ((key, self[key]) for key in self)
+
+    def values(self):
+        return (self[key] for key in self)
+
+    def copy(self):
+        return {key: self[key] for key in self}
+
+    def __deepcopy__(self, memo):
+        clone = type(self)(self._handle)
+        memo[id(self)] = clone
+        # Reuse the already materialized base through a Python-level defensive
+        # copy; do not ask C++ to rebuild the same large player tree a second time.
+        if self._base is not None:
+            clone._base = copy.deepcopy(self._base, memo)
+        if self._combat_cache:
+            clone._combat_cache = copy.deepcopy(self._combat_cache, memo)
+        return clone
 
 
 class CppTFTLobbyWrapper:
@@ -127,18 +198,25 @@ class CppTFTLobbyWrapper:
         return [int(value) for value in values]
 
     @staticmethod
-    def _copy_action_masks(masks):
-        """Detach the exact native mask payload from mutable binding buffers."""
+    def _copy_action_masks(masks, *, detach_arrays=False):
+        """Normalize native masks; detach buffers only when exposing them publicly."""
         if masks is None or len(masks) != CppTFTLobbyWrapper.PLAYERS_PER_LOBBY:
             raise RuntimeError("Snapshot nativo sem as oito action masks esperadas.")
         return [
-            {key: np.asarray(value, dtype=np.bool_).copy() for key, value in player.items()}
+            {
+                key: (
+                    np.asarray(value, dtype=np.bool_).copy()
+                    if detach_arrays
+                    else np.asarray(value, dtype=np.bool_)
+                )
+                for key, value in player.items()
+            }
             for player in masks
         ]
 
     @classmethod
     def _copy_native_state_snapshot(cls, value, expected_identity):
-        if not isinstance(value, dict):
+        if not isinstance(value, Mapping):
             raise RuntimeError("Snapshot nativo estruturado ausente ou inválido.")
         version = value.get("contract_version")
         if (
@@ -252,19 +330,23 @@ class CppTFTLobbyWrapper:
             or parent_combat_sequence < 0
         ):
             raise RuntimeError("Snapshot estruturado contém combat_sequence inválido.")
-        for field in ("combat_damage_events", "combat_attack_events", "combat_death_events"):
-            rows = value.get(field)
-            if not isinstance(rows, list) or any(not isinstance(row, dict) for row in rows):
-                raise RuntimeError(f"Snapshot estruturado contém {field} inválido.")
-            for row in rows:
-                sequence = row.get("combat_sequence")
-                if "round" in row:
-                    raise RuntimeError(f"{field} duplicou round do envelope pai.")
-                if (
-                    isinstance(sequence, bool) or not isinstance(sequence, int)
-                    or sequence <= 0 or sequence > parent_combat_sequence
-                ):
-                    raise RuntimeError(f"{field} contém combat_sequence inválido.")
+        # NativeAuditSnapshotHandle validates every event sequence against the
+        # pinned parent combat_sequence in C++ before publishing this view.
+        # Dict-backed fixtures retain the full Python-side validation path.
+        if not isinstance(value, _NativeSnapshotMapping):
+            for field in ("combat_damage_events", "combat_attack_events", "combat_death_events"):
+                rows = value.get(field)
+                if not isinstance(rows, list) or any(not isinstance(row, dict) for row in rows):
+                    raise RuntimeError(f"Snapshot estruturado contém {field} inválido.")
+                for row in rows:
+                    sequence = row.get("combat_sequence")
+                    if "round" in row:
+                        raise RuntimeError(f"{field} duplicou round do envelope pai.")
+                    if (
+                        isinstance(sequence, bool) or not isinstance(sequence, int)
+                        or sequence <= 0 or sequence > parent_combat_sequence
+                    ):
+                        raise RuntimeError(f"{field} contém combat_sequence inválido.")
 
         event_contracts = (
             ("economy_resolution_events", "tft.economy-resolution-event",
@@ -673,7 +755,10 @@ class CppTFTLobbyWrapper:
                 raise RuntimeError("Ownership ativo presente após aposentadoria terminal dos itens.")
             if not retired_flag and retired_has_evidence:
                 raise RuntimeError("Evidência de aposentadoria presente sem estado terminal.")
-        return copy.deepcopy(value)
+        # The pybind handle pins the immutable native value. Its Mapping view
+        # materializes semantic fields on demand and defers combat event rows;
+        # deepcopy creates an independent Python cache over the same pinned value.
+        return value
 
     @staticmethod
     def _copy_player_decision_sequences(values):
@@ -695,6 +780,10 @@ class CppTFTLobbyWrapper:
         self._last_action_masks = None
         self._last_snapshot_metadata = None
         result = self._engine.reset(seed)
+        native_snapshot = result.get("native_state_snapshot")
+        if native_snapshot is not None and not isinstance(native_snapshot, Mapping):
+            native_snapshot = _NativeSnapshotMapping(native_snapshot)
+            result["native_state_snapshot"] = native_snapshot
         self._last_dones.fill(False)
         self._players = [
             SimpleNamespace(player_id=i, alive=True, eliminated=False)
@@ -733,7 +822,11 @@ class CppTFTLobbyWrapper:
         # Preserve the exact observation snapshot consumed by this action batch.
         # Clear the public cache before stepping so a failed native step cannot
         # accidentally authorize a second decision against stale state.
-        source_decision_snapshot = copy.deepcopy(self._last_snapshot_metadata)
+        # Published metadata is immutable for the lifetime of its decision.
+        # Keep a local reference while replacing the wrapper's current snapshot;
+        # the previous native payload is already Python-owned and won't be reused
+        # or overwritten by the next C++ step.
+        source_decision_snapshot = self._last_snapshot_metadata
         self._last_action_masks = None
         self._last_snapshot_metadata = None
         result = self._engine.step(
@@ -741,6 +834,10 @@ class CppTFTLobbyWrapper:
             bool(timer_enabled),
             bool(timer_expired),
         )
+        native_snapshot = result.get("native_state_snapshot")
+        if native_snapshot is not None and not isinstance(native_snapshot, Mapping):
+            native_snapshot = _NativeSnapshotMapping(native_snapshot)
+            result["native_state_snapshot"] = native_snapshot
 
         observations = np.asarray(result["observations"], dtype=np.float32)
         rewards = np.asarray(result["rewards"], dtype=np.float32)
@@ -838,7 +935,7 @@ class CppTFTLobbyWrapper:
         if self._last_action_masks is None:
             raise RuntimeError("Execute reset() antes de solicitar action masks.")
 
-        masks = self._copy_action_masks(self._last_action_masks)
+        masks = self._copy_action_masks(self._last_action_masks, detach_arrays=True)
         if os.environ.get("TFT_ABLATE_ITEM_ACTIONS") != "1":
             return masks
 

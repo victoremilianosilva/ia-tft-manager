@@ -1,5 +1,7 @@
 """Regression tests for observation/action-mask snapshot correlation."""
 
+import copy
+
 import numpy as np
 import pytest
 
@@ -966,3 +968,144 @@ def test_wrapper_rejects_invalid_strategic_context_sequence():
     }
     with pytest.raises(RuntimeError, match="strategic_context_sequence"):
         cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
+
+
+
+def test_wrapper_retains_python_owned_native_snapshot_without_deepcopy():
+    native = FakeNativeLobby()
+    snapshot = native._native_state_snapshot()
+    identity = {
+        "engine_instance_id": f"fake-engine-{id(native)}",
+        "episode_id": 0,
+        "decision_sequence": 0,
+        "player_decision_sequences": [0] * 8,
+    }
+
+    validated = cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(
+        snapshot, identity
+    )
+
+    assert validated is snapshot
+
+
+def test_wrapper_normalizes_owned_native_masks_without_copying_arrays():
+    masks = make_masks(3)
+
+    normalized = cpp_lobby_env.CppTFTLobbyWrapper._copy_action_masks(masks)
+
+    assert normalized is not masks
+    assert normalized[0] is not masks[0]
+    for key, original in masks[0].items():
+        assert normalized[0][key] is original
+        assert normalized[0][key].dtype == np.bool_
+
+    # Public reads remain detached from the wrapper's cached mask arrays.
+    wrapper = object.__new__(cpp_lobby_env.CppTFTLobbyWrapper)
+    wrapper._last_action_masks = normalized
+    exposed = wrapper.get_action_masks()
+    exposed[0]["type_mask"][3] = False
+    assert wrapper._last_action_masks[0]["type_mask"][3]
+
+
+
+def test_published_step_snapshot_isolated_and_source_survives_later_steps(monkeypatch):
+    monkeypatch.setattr(cpp_lobby_env, "_NativeTFTLobby", FakeNativeLobby)
+    lobby = cpp_lobby_env.CppTFTLobbyWrapper(seed=11)
+
+    try:
+        lobby.reset()
+        _, _, _, first_info = lobby.step(
+            [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        )
+        first_snapshot = first_info["decision_snapshot"]
+        first_snapshot["native_state_snapshot"]["players"][0]["board"].clear()
+
+        retained = lobby.get_snapshot_metadata()
+        assert retained["decision_sequence"] == 2
+        assert len(retained["native_state_snapshot"]["players"][0]["board"]) == 28
+
+        _, _, _, second_info = lobby.step(
+            [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        )
+        second_event = second_info["action_outcome_events"][0]
+        assert second_event["source_decision"]["snapshot_sequence"] == 2
+        assert second_event["outcome_snapshot"]["snapshot_sequence"] == 3
+        assert second_info["decision_snapshot"]["decision_sequence"] == 3
+        assert second_info["reward_audit"]["decision_sequence"] == 3
+    finally:
+        lobby.close()
+
+
+def test_native_snapshot_mapping_defers_combat_event_materialization():
+    class Handle:
+        def __init__(self):
+            self.base_calls = 0
+            self.event_calls = []
+
+        def to_dict(self):
+            self.base_calls += 1
+            return {
+                "contract_id": "tft.native-state-snapshot",
+                "players": [{"board": [1, 2, 3]}],
+            }
+
+        def keys(self):
+            return ["contract_id", "players", "combat_damage_events",
+                    "combat_attack_events", "combat_death_events"]
+
+        def combat_events(self, field):
+            self.event_calls.append(field)
+            return [{"combat_sequence": 1, "field": field}]
+
+    handle = Handle()
+    snapshot = cpp_lobby_env._NativeSnapshotMapping(handle)
+
+    assert snapshot["contract_id"] == "tft.native-state-snapshot"
+    assert handle.base_calls == 1
+    assert handle.event_calls == []
+
+    clone = copy.deepcopy(snapshot)
+    clone["players"][0]["board"].clear()
+    assert snapshot["players"][0]["board"] == [1, 2, 3]
+    assert handle.base_calls == 1
+
+    assert clone["combat_damage_events"][0]["field"] == "combat_damage_events"
+    assert handle.event_calls == ["combat_damage_events"]
+    assert snapshot["combat_attack_events"][0]["field"] == "combat_attack_events"
+    assert handle.event_calls == [
+        "combat_damage_events", "combat_attack_events"
+    ]
+
+
+
+def test_native_binding_pins_snapshot_and_defers_unused_combat_rows():
+    lobby = cpp_lobby_env.CppTFTLobbyWrapper(seed=37)
+    try:
+        lobby.reset()
+        source_snapshot = lobby._last_snapshot_metadata["native_state_snapshot"]
+        assert isinstance(source_snapshot, cpp_lobby_env._NativeSnapshotMapping)
+        source_sequence = source_snapshot["snapshot_sequence"]
+        assert source_snapshot._combat_cache == {}
+
+        _, _, _, info = lobby.step(
+            [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        )
+
+        # The old view remains tied to the exact pre-action native value.
+        assert source_snapshot["snapshot_sequence"] == source_sequence
+        # Reward/outcome/semantic consumers do not request combat event rows.
+        assert source_snapshot._combat_cache == {}
+
+        events = source_snapshot["combat_damage_events"]
+        assert isinstance(events, list)
+        assert source_snapshot._combat_cache["combat_damage_events"] is events
+
+        # The observer-facing API still returns the complete eager schema.
+        full_audit = lobby.get_audit_snapshot()
+        assert isinstance(full_audit, dict)
+        assert "combat_damage_events" in full_audit
+        assert "combat_attack_events" in full_audit
+        assert "combat_death_events" in full_audit
+        assert info["decision_snapshot"]["decision_sequence"] > source_sequence
+    finally:
+        lobby.close()

@@ -1,3 +1,5 @@
+from collections.abc import Mapping
+
 import torch
 import torch.optim as optim
 import numpy as np
@@ -526,7 +528,7 @@ class Trainer:
             native_snapshot = snapshot.get("native_state_snapshot")
             native_players = None
             if native_snapshot is not None:
-                if not isinstance(native_snapshot, dict):
+                if not isinstance(native_snapshot, Mapping):
                     raise RuntimeError(f"Snapshot estruturado inválido para lobby {lobby_idx}.")
                 for field in ("engine_instance_id", "episode_id"):
                     if native_snapshot.get(field) != snapshot.get(field):
