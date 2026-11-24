@@ -957,6 +957,258 @@ void append_generic_event(CombatResult& result,
     }
 }
 
+void apply_stack_stat_delta(RuntimeUnit& runtime,
+                           const CombatEffectDefinition& effect,
+                           float direction) {
+    CombatEffectDefinition delta = effect;
+    float amount = effect.value;
+    if (effect.scale_by_base_stat) {
+        float base = 0.0f;
+        if (effect.stat == "attack_damage") base = runtime.base_attack_damage;
+        else if (effect.stat == "attack_speed") base = runtime.base_attack_speed;
+        if (!std::isfinite(base) || base <= 0.0f) return;
+        amount *= base;
+    }
+    delta.value = amount * direction;
+    delta.percent_of_stat = false;
+    delta.scale_by_base_stat = false;
+    apply_effect_stat(runtime.unit, delta);
+}
+
+void apply_stack_effects(RuntimeUnit& runtime, const std::string& trigger,
+                         float now) {
+    std::unordered_set<std::string> keys;
+    visit_generic_effects(runtime, [&](const CombatEffectDefinition& effect,
+                                       const std::string& prefix) {
+        if (effect.operation == "stack_stat" && effect.trigger == trigger &&
+            !effect.stack_key.empty() && effect_condition_matches(runtime.unit, effect))
+            keys.insert(prefix + effect.stack_key);
+    });
+
+    for (const auto& key : keys) {
+        int maximum = 0;
+        float duration = 0.0f;
+        visit_generic_effects(runtime, [&](const CombatEffectDefinition& effect,
+                                           const std::string& prefix) {
+            if (effect.operation == "stack_stat" &&
+                prefix + effect.stack_key == key &&
+                effect_condition_matches(runtime.unit, effect)) {
+                maximum = std::max(maximum, effect.max_stacks);
+                duration = std::max(duration, effect.duration);
+            }
+        });
+        if (maximum <= 0) continue;
+        int& stacks = runtime.generic_effect_charges[key];
+        if (stacks >= maximum) continue;
+        ++stacks;
+        if (duration > 0.0f)
+            runtime.generic_effect_stack_expiry[key].push_back(now + duration);
+
+        visit_generic_effects(runtime, [&](const CombatEffectDefinition& effect,
+                                           const std::string& prefix) {
+            if (effect.operation == "stack_stat" &&
+                prefix + effect.stack_key == key &&
+                effect_condition_matches(runtime.unit, effect))
+                apply_stack_stat_delta(runtime, effect, 1.0f);
+        });
+
+        if (stacks == maximum && runtime.generic_effects_triggered.insert(key + ":cap").second) {
+            visit_generic_effects(runtime, [&](const CombatEffectDefinition& effect,
+                                               const std::string& prefix) {
+                if (effect.operation == "add_stat" &&
+                    effect.trigger == "on_stack_cap" &&
+                    prefix + effect.stack_key == key &&
+                    effect_condition_matches(runtime.unit, effect)) {
+                    CombatEffectDefinition cap_effect = effect;
+                    if (cap_effect.scale_by_base_stat) {
+                        float base = cap_effect.stat == "attack_damage"
+                            ? runtime.base_attack_damage
+                            : cap_effect.stat == "attack_speed"
+                                ? runtime.base_attack_speed : 0.0f;
+                        cap_effect.value *= base;
+                        cap_effect.percent_of_stat = false;
+                        cap_effect.scale_by_base_stat = false;
+                    }
+                    apply_effect_stat(runtime.unit, cap_effect);
+                }
+            });
+        }
+    }
+}
+
+void expire_generic_stacks(RuntimeUnit& runtime, float now) {
+    for (auto& [key, expiries] : runtime.generic_effect_stack_expiry) {
+        while (!expiries.empty() && now + 1e-5f >= expiries.front()) {
+            expiries.erase(expiries.begin());
+            auto count = runtime.generic_effect_charges.find(key);
+            if (count != runtime.generic_effect_charges.end() && count->second > 0)
+                --count->second;
+            visit_generic_effects(runtime, [&](const CombatEffectDefinition& effect,
+                                               const std::string& prefix) {
+                if (effect.operation == "stack_stat" &&
+                    prefix + effect.stack_key == key &&
+                    effect_condition_matches(runtime.unit, effect))
+                    apply_stack_stat_delta(runtime, effect, -1.0f);
+            });
+        }
+    }
+}
+
+float effect_target_damage_multiplier(RuntimeUnit& source,
+                                      const RuntimeUnit& target,
+                                      const std::string& trigger) {
+    float multiplier = 1.0f;
+    visit_generic_effects(source, [&](const CombatEffectDefinition& effect,
+                                      const std::string&) {
+        if (effect.operation == "bonus_damage" && effect.trigger == trigger &&
+            effect.condition == "target_role_tank" &&
+            target.unit.role == UnitRole::TANK &&
+            effect_condition_matches(source.unit, effect))
+            multiplier *= 1.0f + effect.value;
+    });
+    return multiplier;
+}
+
+void apply_target_status_effects(RuntimeUnit& source, RuntimeUnit& target,
+                                 const std::string& trigger, float now) {
+    visit_generic_effects(source, [&](const CombatEffectDefinition& effect,
+                                      const std::string&) {
+        if (effect.trigger != trigger ||
+            !effect_condition_matches(source.unit, effect)) return;
+        if (effect.operation == "apply_shred" && effect.target == "target")
+            apply_shred_status(target, effect, now);
+        else if (effect.operation == "apply_burn" && effect.target == "target")
+            apply_burn_status(source, target, effect, now);
+        else if (effect.operation == "apply_wound" && effect.target == "target")
+            apply_wound_status(target, effect, now);
+    });
+}
+
+void apply_reflect_effects(RuntimeUnit& defender, std::vector<RuntimeUnit>& units,
+                           float now, CombatResult& result,
+                           const CombatConfig& config) {
+    visit_generic_effects(defender, [&](const CombatEffectDefinition& effect,
+                                        const std::string& prefix) {
+        if (effect.trigger != "on_damage_taken" ||
+            effect.operation != "reflect_damage" ||
+            !effect_condition_matches(defender.unit, effect)) return;
+        const std::string key = prefix + "reflect_damage";
+        auto [next_proc, inserted] = defender.generic_effect_next_tick.emplace(
+            key, -std::numeric_limits<float>::infinity());
+        (void)inserted;
+        if (now + 1e-5f < next_proc->second) return;
+        next_proc->second = now + effect.interval;
+
+        for (auto& enemy : units) {
+            if (!is_alive(enemy) || enemy.unit.team == defender.unit.team ||
+                distance_between(enemy.unit, defender.unit) >
+                    static_cast<int>(std::ceil(effect.radius))) continue;
+            float raw = effect.value;
+            float damage = raw;
+            if (effect.damage_type == DamageType::MAGIC)
+                damage = mitigate_physical_damage(damage, enemy.unit.magic_resist);
+            else if (effect.damage_type == DamageType::PHYSICAL)
+                damage = mitigate_physical_damage(damage, enemy.unit.armor);
+            damage *= std::clamp(1.0f - enemy.unit.damage_reduction, 0.0f, 1.0f);
+            damage = std::min(damage, enemy.unit.hp + enemy.shield_hp);
+            const float absorbed = std::min(enemy.shield_hp, damage);
+            enemy.shield_hp -= absorbed;
+            const float hp_loss = std::min(enemy.unit.hp, damage - absorbed);
+            enemy.unit.hp -= hp_loss;
+            enemy.damage_taken += damage;
+            defender.damage_dealt += damage;
+            update_conditional_effects(enemy, now);
+            apply_stack_effects(enemy, "on_damage_taken", now);
+            if (config.record_damage) {
+                DamageEvent reflected;
+                reflected.timestamp = now;
+                reflected.source_unit_id = defender.unit.id;
+                reflected.target_unit_id = enemy.unit.id;
+                reflected.damage_type = effect.damage_type;
+                reflected.raw_damage = raw;
+                reflected.final_damage = damage;
+                result.damage_events.push_back(reflected);
+            }
+            if (enemy.unit.hp <= 0.0f && enemy.unit.alive) {
+                enemy.unit.hp = 0.0f;
+                enemy.unit.alive = false;
+                ++defender.kills;
+                if (config.record_events) {
+                    DeathEvent death;
+                    death.timestamp = now;
+                    death.unit_id = enemy.unit.id;
+                    death.killer_unit_id = defender.unit.id;
+                    result.death_events.push_back(death);
+                    append_generic_event(result, now, "death",
+                        defender.unit.id, enemy.unit.id);
+                }
+            }
+        }
+    });
+}
+
+void apply_enemy_cast_effects(RuntimeUnit& caster, std::vector<RuntimeUnit>& units,
+                              float mana_cost, float now, CombatResult& result,
+                              const CombatConfig& config) {
+    for (auto& holder : units) {
+        if (!is_alive(holder) || holder.unit.team == caster.unit.team) continue;
+        visit_generic_effects(holder, [&](const CombatEffectDefinition& effect,
+                                          const std::string& prefix) {
+            if (effect.trigger != "on_enemy_cast" ||
+                effect.operation != "damage_on_enemy_cast" ||
+                !effect_condition_matches(holder.unit, effect) ||
+                distance_between(holder.unit, caster.unit) >
+                    static_cast<int>(std::ceil(effect.radius))) return;
+            const std::string key = prefix + "enemy_cast_damage";
+            auto [next_proc, inserted] = holder.generic_effect_next_tick.emplace(
+                key, -std::numeric_limits<float>::infinity());
+            (void)inserted;
+            if (now + 1e-5f < next_proc->second) return;
+            next_proc->second = now + effect.interval;
+            const float raw = std::max(0.0f, mana_cost * effect.value);
+            float damage = raw;
+            if (effect.damage_type == DamageType::MAGIC)
+                damage = mitigate_physical_damage(damage, caster.unit.magic_resist);
+            else if (effect.damage_type == DamageType::PHYSICAL)
+                damage = mitigate_physical_damage(damage, caster.unit.armor);
+            damage *= std::clamp(1.0f - caster.unit.damage_reduction, 0.0f, 1.0f);
+            damage = std::min(damage, caster.unit.hp + caster.shield_hp);
+            const float absorbed = std::min(caster.shield_hp, damage);
+            caster.shield_hp -= absorbed;
+            const float hp_loss = std::min(caster.unit.hp, damage - absorbed);
+            caster.unit.hp -= hp_loss;
+            caster.damage_taken += damage;
+            holder.damage_dealt += damage;
+            update_conditional_effects(caster, now);
+            apply_stack_effects(caster, "on_damage_taken", now);
+            if (config.record_damage) {
+                DamageEvent spark;
+                spark.timestamp = now;
+                spark.source_unit_id = holder.unit.id;
+                spark.target_unit_id = caster.unit.id;
+                spark.damage_type = effect.damage_type;
+                spark.raw_damage = raw;
+                spark.final_damage = damage;
+                result.damage_events.push_back(spark);
+            }
+            if (caster.unit.hp <= 0.0f && caster.unit.alive) {
+                caster.unit.hp = 0.0f;
+                caster.unit.alive = false;
+                ++holder.kills;
+                if (config.record_events) {
+                    DeathEvent death;
+                    death.timestamp = now;
+                    death.unit_id = caster.unit.id;
+                    death.killer_unit_id = holder.unit.id;
+                    result.death_events.push_back(death);
+                    append_generic_event(result, now, "death",
+                        holder.unit.id, caster.unit.id);
+                }
+            }
+        });
+    }
+}
+
 } // namespace
 
 CombatResult CombatEngine::simulate(const CombatInput& input) const {
