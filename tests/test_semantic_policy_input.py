@@ -624,3 +624,23 @@ def test_policy_rejects_non_finite_semantic_state_at_call_boundary():
     semantic["numeric"][0, 0] = float("nan")
     with pytest.raises(ValueError, match="semantic numeric input contains NaN or infinity"):
         policy.get_action(obs, masks=masks, semantic_state=semantic)
+
+
+
+def test_policy_reuses_entity_projection_across_encoder_candidate_and_item_paths(monkeypatch):
+    obs, masks, semantic = _batch(batch_size=1)
+    policy = TFTPolicy(
+        obs_dim=obs.shape[-1], action_dims=list(ACTION_DIMS),
+        hidden_size=32, semantic_vocab_size=64, require_semantic_state=True,
+    ).eval()
+    original = policy._semantic_entity_features
+    calls = {"count": 0}
+
+    def counted(state, observation):
+        calls["count"] += 1
+        return original(state, observation)
+
+    monkeypatch.setattr(policy, "_semantic_entity_features", counted)
+    with torch.no_grad():
+        policy.get_action(obs, masks=masks, deterministic=True, semantic_state=semantic)
+    assert calls["count"] == 1
