@@ -174,7 +174,7 @@ def test_rollout_buffer_preserves_per_agent_snapshot_identity():
     assert buffer.result_snapshot_metadata[0][0]["action_trace"]["handler_applied"] is True
     assert buffer.next_snapshot_metadata[0][0]["decision_sequence"] == 13
 
-    batch = next(buffer.get_batches(batch_size=2))
+    batch = next(buffer.get_batches(batch_size=2, include_metadata=True))
     assert len(batch["snapshot_metadata"]) == 2
     assert all(item["mask_snapshot_hash"] == "a" * 64 for item in batch["snapshot_metadata"])
     assert all(item["decision_sequence"] == 13 for item in batch["result_snapshot_metadata"])
