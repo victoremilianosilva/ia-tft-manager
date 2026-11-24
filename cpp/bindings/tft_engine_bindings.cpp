@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <array>
 #include <cstdint>
+#include <memory>
 #include <optional>
 #include <stdexcept>
 #include <string>
@@ -189,7 +190,8 @@ py::list player_info_to_list(const Players& players) {
 
 py::dict audit_snapshot_to_dict(
     const tft::AuditSnapshot& snapshot,
-    bool include_masks = true
+    bool include_masks = true,
+    bool include_combat_events = true
 ) {
     py::dict result;
     result["contract_id"] = snapshot.contract_id;
@@ -210,6 +212,9 @@ py::dict audit_snapshot_to_dict(
     result["finished"] = snapshot.finished;
     result["combat_sequence"] = snapshot.combat_sequence;
     result["combat_damage_events_truncated"] = snapshot.combat_damage_events_truncated;
+    result["combat_attack_events_truncated"] = snapshot.combat_attack_events_truncated;
+    result["combat_death_events_truncated"] = snapshot.combat_death_events_truncated;
+    if (include_combat_events) {
     py::list combat_damage_events;
     for (const auto& event : snapshot.combat_damage_events) {
         py::dict row;
@@ -261,6 +266,7 @@ py::dict audit_snapshot_to_dict(
         combat_death_events.append(std::move(row));
     }
     result["combat_death_events"] = std::move(combat_death_events);
+    }
     py::list economy_resolution_events;
     for (const auto& event : snapshot.economy_resolution_events) {
         py::dict row;
@@ -517,7 +523,104 @@ py::dict audit_snapshot_to_dict(
     return result;
 }
 
-py::dict reset_to_dict(const tft::ResetResult& reset) {
+
+// Pins the exact native transition snapshot and converts high-volume combat
+// event collections only when a consumer explicitly asks for those fields.
+class NativeAuditSnapshotHandle {
+public:
+    explicit NativeAuditSnapshotHandle(
+        std::shared_ptr<const tft::AuditSnapshot> snapshot
+    ) : snapshot_(std::move(snapshot)) {
+        if (!snapshot_) {
+            throw std::invalid_argument("Native audit snapshot handle is empty.");
+        }
+        const auto upper = snapshot_->combat_sequence;
+        const auto validate_sequence = [upper](std::uint64_t sequence) {
+            if (sequence == 0 || sequence > upper) {
+                throw std::runtime_error("Invalid combat event sequence in native snapshot.");
+            }
+        };
+        for (const auto& event : snapshot_->combat_damage_events) validate_sequence(event.combat_sequence);
+        for (const auto& event : snapshot_->combat_attack_events) validate_sequence(event.combat_sequence);
+        for (const auto& event : snapshot_->combat_death_events) validate_sequence(event.combat_sequence);
+    }
+
+    py::dict to_dict() const {
+        return audit_snapshot_to_dict(*snapshot_, false, false);
+    }
+
+    py::list keys() const {
+        py::dict base = to_dict();
+        py::list result;
+        for (auto item : base) result.append(item.first);
+        result.append("combat_damage_events");
+        result.append("combat_attack_events");
+        result.append("combat_death_events");
+        return result;
+    }
+
+    py::list combat_events(const std::string& field) const {
+        py::list result;
+        if (field == "combat_damage_events") {
+            for (const auto& event : snapshot_->combat_damage_events) {
+                py::dict row;
+                row["combat_sequence"] = event.combat_sequence;
+                row["timestamp"] = event.timestamp;
+                row["source_unit_id"] = event.source_unit_id;
+                row["target_unit_id"] = event.target_unit_id;
+                row["source_player_id"] = event.source_player_id;
+                row["target_player_id"] = event.target_player_id;
+                row["source_unit_uuid"] = event.source_unit_uuid;
+                row["target_unit_uuid"] = event.target_unit_uuid;
+                row["damage_type"] = event.damage_type;
+                row["raw_damage"] = event.raw_damage;
+                row["final_damage"] = event.final_damage;
+                row["critical"] = event.critical;
+                row["ability_damage"] = event.ability_damage;
+                result.append(std::move(row));
+            }
+            return result;
+        }
+        if (field == "combat_attack_events") {
+            for (const auto& event : snapshot_->combat_attack_events) {
+                py::dict row;
+                row["combat_sequence"] = event.combat_sequence;
+                row["timestamp"] = event.timestamp;
+                row["source_unit_id"] = event.source_unit_id;
+                row["target_unit_id"] = event.target_unit_id;
+                row["source_player_id"] = event.source_player_id;
+                row["target_player_id"] = event.target_player_id;
+                row["source_unit_uuid"] = event.source_unit_uuid;
+                row["target_unit_uuid"] = event.target_unit_uuid;
+                row["critical"] = event.critical;
+                row["damage"] = event.damage;
+                result.append(std::move(row));
+            }
+            return result;
+        }
+        if (field == "combat_death_events") {
+            for (const auto& event : snapshot_->combat_death_events) {
+                py::dict row;
+                row["combat_sequence"] = event.combat_sequence;
+                row["timestamp"] = event.timestamp;
+                row["unit_id"] = event.unit_id;
+                row["killer_unit_id"] = event.killer_unit_id;
+                row["unit_player_id"] = event.unit_player_id;
+                row["killer_player_id"] = event.killer_player_id;
+                row["unit_uuid"] = event.unit_uuid;
+                row["killer_unit_uuid"] = event.killer_unit_uuid;
+                result.append(std::move(row));
+            }
+            return result;
+        }
+        throw py::key_error(field);
+    }
+
+private:
+    std::shared_ptr<const tft::AuditSnapshot> snapshot_;
+};
+
+py::dict reset_to_dict(tft::ResetResult reset) {
     py::dict result;
 
     result["observations"] = observations_to_array(
@@ -532,13 +635,15 @@ py::dict reset_to_dict(const tft::ResetResult& reset) {
     result["episode_id"] = reset.episode_id;
     result["decision_sequence"] = reset.decision_sequence;
     result["player_decision_sequences"] = reset.player_decision_sequences;
-    result["native_state_snapshot"] = audit_snapshot_to_dict(reset.native_state_snapshot, false);
+    result["native_state_snapshot"] = NativeAuditSnapshotHandle(
+        std::make_shared<const tft::AuditSnapshot>(std::move(reset.native_state_snapshot))
+    );
     result["observation_dim"] = reset.observation_dim;
 
     return result;
 }
 
-py::dict step_to_dict(const tft::StepResult& step) {
+py::dict step_to_dict(tft::StepResult step) {
     py::dict result;
 
     result["observations"] = observations_to_array(
@@ -577,7 +682,9 @@ py::dict step_to_dict(const tft::StepResult& step) {
     result["episode_id"] = step.episode_id;
     result["decision_sequence"] = step.decision_sequence;
     result["player_decision_sequences"] = step.player_decision_sequences;
-    result["native_state_snapshot"] = audit_snapshot_to_dict(step.native_state_snapshot, false);
+    result["native_state_snapshot"] = NativeAuditSnapshotHandle(
+        std::make_shared<const tft::AuditSnapshot>(std::move(step.native_state_snapshot))
+    );
     result["round"] = step.round;
     result["stage"] = step.stage;
     result["alive_players"] = step.alive_players;
@@ -780,6 +887,11 @@ PYBIND11_MODULE(tft_engine, module) {
     // reset -> step -> máscaras/diagnósticos de treino -> close.
     // Estado interno, hooks de fixture e consultas de implementação não
     // atravessam a fronteira Python/C++.
+    py::class_<NativeAuditSnapshotHandle>(module, "NativeAuditSnapshotHandle")
+        .def("to_dict", &NativeAuditSnapshotHandle::to_dict)
+        .def("keys", &NativeAuditSnapshotHandle::keys)
+        .def("combat_events", &NativeAuditSnapshotHandle::combat_events, py::arg("field"));
+
     py::class_<TFTEngine>(module, "TFTLobby")
         .def(
             py::init<std::uint64_t, std::string, std::string>(),
