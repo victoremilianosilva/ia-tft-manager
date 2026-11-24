@@ -534,8 +534,8 @@ class TFTPolicy(nn.Module):
         self.load_state_dict(loaded, strict=True)
         return migrated
 
-    def encode(self, obs, semantic_state=None):
-        """ Fatia cirurgicamente o tabuleiro do meio do vetor de estado e processa em 2D """
+    def encode(self, obs, semantic_state=None, semantic_entities=None):
+        """Fatia o tabuleiro e reutiliza a projeção de entidades validada na chamada."""
         # FIX: se o env mudar de dimensão, o erro aparece aqui com mensagem clara
         # em vez do CNN processar features errados silenciosamente.
         assert obs.shape[-1] == self.obs_dim, (
@@ -545,7 +545,8 @@ class TFTPolicy(nn.Module):
         # Native board facts are projected from the identity-bound semantic
         # entity records. The flat board slice remains only for isolated legacy
         # fixtures; production native transitions must use the semantic path.
-        semantic_entities = self._semantic_entity_features(semantic_state, obs)
+        if semantic_entities is None:
+            semantic_entities = self._semantic_entity_features(semantic_state, obs)
         if semantic_entities is not None:
             board_entities = semantic_entities[:, :28, :]
             board_features = torch.stack(
@@ -670,9 +671,12 @@ class TFTPolicy(nn.Module):
             obs.shape[0], SEMANTIC_ENTITY_SLOTS, SEMANTIC_ENTITY_FEATURES
         )
 
-    def _candidate_features(self, obs, semantic_state=None):
-        """Build candidate conditioning from native identity-bound entities."""
-        entities = self._semantic_entity_features(semantic_state, obs)
+    def _candidate_features(self, obs, semantic_state=None, semantic_entities=None):
+        """Build candidate conditioning from the already validated native entities."""
+        entities = (
+            semantic_entities if semantic_entities is not None
+            else self._semantic_entity_features(semantic_state, obs)
+        )
         if entities is not None:
             # Entity layout: board[0:28], bench[28:37], shop[37:42].
             # All six features are factual and share the same semantic projection
@@ -706,10 +710,13 @@ class TFTPolicy(nn.Module):
         )
         return bench, shop
 
-    def _item_state_features(self, obs, semantic_state=None):
-        """Return named native item/anvil tensors and semantic target profiles."""
+    def _item_state_features(self, obs, semantic_state=None, semantic_entities=None):
+        """Return item/anvil tensors using the shared validated entity projection."""
         if semantic_state is not None:
-            entities = self._semantic_entity_features(semantic_state, obs)
+            entities = (
+                semantic_entities if semantic_entities is not None
+                else self._semantic_entity_features(semantic_state, obs)
+            )
             item_state = semantic_state.get("items")
             if entities is None or not isinstance(item_state, Mapping):
                 raise ValueError("native semantic item state is missing")
@@ -1118,15 +1125,20 @@ class TFTPolicy(nn.Module):
     ):
         masks = self._validate_mask_bundle(obs, masks)
         self._validate_semantic_state_finite(semantic_state, obs)
+        semantic_entities = self._semantic_entity_features(semantic_state, obs)
         device = obs.device
         batch_size = obs.shape[0]
         player_diagnostics = [[] for _ in range(batch_size)]
-        bench_candidate_features, shop_candidate_features = self._candidate_features(obs, semantic_state)
+        bench_candidate_features, shop_candidate_features = self._candidate_features(
+            obs, semantic_state, semantic_entities=semantic_entities
+        )
         (
             item_component_features, item_inventory_features, item_recipe_features,
             item_target_features, item_inventory_target_fit, item_recipe_target_fit,
             item_anvil_options, item_anvil_pending, item_anvil_kind_features,
-        ) = self._item_state_features(obs, semantic_state)
+        ) = self._item_state_features(
+            obs, semantic_state, semantic_entities=semantic_entities
+        )
 
         def record_distribution(name, logits, chosen, row_indices, applied_mask=None):
             if not collect_diagnostics and not collect_entropy_diagnostics:
@@ -1190,7 +1202,9 @@ class TFTPolicy(nn.Module):
                     })
                 player_diagnostics[player_id].append(item)
 
-        features = self.encode(obs, semantic_state=semantic_state)
+        features = self.encode(
+            obs, semantic_state=semantic_state, semantic_entities=semantic_entities
+        )
 
         # --- Action type ---
         type_logits = self.type_head(features)
