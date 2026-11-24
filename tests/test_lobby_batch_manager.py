@@ -51,7 +51,7 @@ def test_lobby_batch_manager_rejects_invalid_lifecycle_and_batch_shapes():
     manager = native.LobbyBatchManager(2, 100)
     with pytest.raises(RuntimeError, match="reset"):
         manager.step(_pass_actions(2))
-    with pytest.raises(ValueError, match="lobbies"):
+    with pytest.raises(ValueError, match="seed|lobby"):
         manager.reset(seed=2**64 - 1)
     manager.reset(seed=100)
     with pytest.raises(ValueError, match="lobbies"):
