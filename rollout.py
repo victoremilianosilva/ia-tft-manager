@@ -453,7 +453,7 @@ class RolloutBuffer:
             )
 
         if self.ptr > 0:
-            previous_has_identity = self.snapshot_metadata[0] is not None
+            previous_has_identity = self._metadata_records[0] is not None
             if previous_has_identity != all(supplied_groups):
                 raise ValueError(
                     "O rollout não pode misturar transições com e sem identidade."
