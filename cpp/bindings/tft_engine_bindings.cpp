@@ -1026,21 +1026,7 @@ PYBIND11_MODULE(tft_engine, module) {
                     throw py::value_error("actions deve conter 8 jogadores.");
                 }
 
-                std::array<tft::PlayerAction, tft::kPlayersPerLobby> actions{};
-                for (std::size_t player = 0; player < tft::kPlayersPerLobby; ++player) {
-                    if (raw_actions[player].size() != tft::kActionComponents) {
-                        throw py::value_error(
-                            "Cada acao deve conter 6 componentes."
-                        );
-                    }
-                    for (std::size_t component = 0;
-                         component < tft::kActionComponents;
-                         ++component) {
-                        actions[player].values[component] =
-                            raw_actions[player][component];
-                    }
-                }
-                std::array<tft::PlayerAction, tft::kPlayersPerLobby> actions{};
+                const auto parse_end = profile_enabled ? Clock::now() : Clock::time_point{};
                 for (std::size_t player = 0; player < tft::kPlayersPerLobby; ++player) {
                     if (raw_actions[player].size() != tft::kActionComponents) {
                         throw py::value_error(
