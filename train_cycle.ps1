@@ -33,9 +33,17 @@ if ([string]::IsNullOrWhiteSpace($OutputRoot)) {
 }
 
 # Generate independent, unpredictable seeds for this battery.
-$seedSet = [System.Collections.Generic.HashSet[int]]::new()
-while ($seedSet.Count -lt $Runs) {
-    [void]$seedSet.Add([System.Security.Cryptography.RandomNumberGenerator]::GetInt32(0, [int]::MaxValue))
+$seedSet = [System.Collections.Generic.HashSet[uint32]]::new()
+$rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+try {
+    while ($seedSet.Count -lt $Runs) {
+        $randomBytes = New-Object byte[] 4
+        $rng.GetBytes($randomBytes)
+        [void]$seedSet.Add([BitConverter]::ToUInt32($randomBytes, 0))
+    }
+}
+finally {
+    $rng.Dispose()
 }
 $Seeds = (@($seedSet) | ForEach-Object { $_ }) -join ","
 
