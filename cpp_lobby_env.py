@@ -830,7 +830,7 @@ class CppTFTLobbyWrapper:
             SimpleNamespace(player_id=i, alive=True, eliminated=False)
             for i in range(self.PLAYERS_PER_LOBBY)
         ]
-        self._last_action_masks = result.get("action_masks")
+        self._last_action_masks = self._validate_action_masks_payload(result.get("action_masks"))
         self._last_snapshot_metadata = {
             "engine_instance_id": str(result["engine_instance_id"]),
             "episode_id": int(result["episode_id"]),
@@ -891,7 +891,7 @@ class CppTFTLobbyWrapper:
         observations = np.asarray(result["observations"], dtype=np.float32)
         rewards = np.asarray(result["rewards"], dtype=np.float32)
         self._last_dones = np.asarray(result["dones"], dtype=np.bool_)
-        self._last_action_masks = result.get("action_masks")
+        self._last_action_masks = self._validate_action_masks_payload(result.get("action_masks"))
         self._last_snapshot_metadata = {
             "engine_instance_id": str(result["engine_instance_id"]),
             "episode_id": int(result["episode_id"]),
@@ -983,6 +983,21 @@ class CppTFTLobbyWrapper:
     def get_champion_id_map(self):
         """Return apiName -> internal_id from the catalog loaded by native C++."""
         return dict(self._engine.get_champion_id_map())
+
+    @classmethod
+    def _validate_action_masks_payload(cls, masks):
+        """Validate the native mask boundary without expanding packed buffers."""
+        if isinstance(masks, np.ndarray):
+            expected = (cls.PLAYERS_PER_LOBBY, cls._PACKED_ACTION_MASK_WIDTH)
+            if masks.dtype != np.bool_ or masks.shape != expected:
+                raise RuntimeError(
+                    "Buffer compacto de action masks inválido: "
+                    f"dtype={masks.dtype}, shape={masks.shape}, esperado bool{expected}."
+                )
+            return masks
+        # Keep legacy fixtures/adapters supported through the structured path.
+        cls._copy_action_masks(masks)
+        return masks
 
     def _get_action_masks(self, *, detach_arrays):
         if self._last_action_masks is None:

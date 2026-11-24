@@ -90,6 +90,13 @@ A expansão do snapshot da lobby copiava profundamente cada registro de jogador 
 #### Racional técnico
 O estado nativo por jogador é um valor JSON-like que pode ser copiado uma vez na fronteira de ownership e congelado. Containers congelados compatíveis com `dict` e `list` preservam os contratos de leitura existentes, mas implementam `__deepcopy__` por identidade: cópias posteriores de envelopes de rollout compartilham o mesmo subtree imutável, em vez de reconstruí-lo.
 
+#### Fronteira de masks no caminho quente do PPO
+- O wrapper mantém o buffer nativo `[8, 1280]` como fonte de verdade e valida dtype/shape no momento de consumir o resultado, sem expandi-lo em mappings.
+- `get_packed_action_masks_for_training()` empresta a matriz contígua e somente leitura ao Trainer.
+- `Trainer._flatten_masks` reconhece buffers compactos, valida o layout completo e cria os tensores por campo diretamente a partir das fatias do buffer; o caminho antigo de mappings permanece apenas para fixtures/adapters.
+- A ablação explícita de ações de item copia o buffer somente quando precisa alterar os nove bits de tipo; sem ablação, não há cópia no wrapper.
+- A API pública estruturada e `get_action_masks_for_training()` permanecem disponíveis para compatibilidade.
+
 #### Responsabilidade nova
 - `freeze_snapshot` cria uma cópia recursivamente imutável do subtree nativo do jogador.
 - `Trainer._expand_lobby_snapshot_metadata` transfere o subtree congelado para a linha do jogador.
