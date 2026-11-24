@@ -141,7 +141,8 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
                 effect.trigger == "on_damage_taken" ||
                 effect.trigger == "on_critical_attack" ||
                 effect.trigger == "on_enemy_cast" ||
-                effect.trigger == "on_stack_cap";
+                effect.trigger == "on_stack_cap" ||
+                effect.trigger == "on_attack_or_damage_taken";
             if (!supported_trigger) {
                 throw std::invalid_argument(
                     "Unsupported combat effect trigger (not implemented by CombatEngine): " +
@@ -187,7 +188,8 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
                 (effect.operation == "reflect_damage" && effect.trigger == "on_damage_taken") ||
                 (effect.operation == "stack_stat" &&
                     (effect.trigger == "on_attack" || effect.trigger == "on_damage_taken" ||
-                     effect.trigger == "on_critical_attack")) ||
+                     effect.trigger == "on_critical_attack" ||
+                     effect.trigger == "on_attack_or_damage_taken")) ||
                 (effect.operation == "add_stat" && effect.trigger == "on_stack_cap") ||
                 (effect.operation == "bonus_damage" && effect.trigger == "on_ability_hit");
             if (!supported_pair) {
