@@ -930,33 +930,54 @@ class CppTFTLobbyWrapper:
         """Return apiName -> internal_id from the catalog loaded by native C++."""
         return dict(self._engine.get_champion_id_map())
 
-    def get_action_masks(self):
-        """Return masks captured atomically with the latest observation snapshot."""
+    def _get_action_masks(self, *, detach_arrays):
         if self._last_action_masks is None:
             raise RuntimeError("Execute reset() antes de solicitar action masks.")
 
-        masks = self._copy_action_masks(self._last_action_masks, detach_arrays=True)
-        if os.environ.get("TFT_ABLATE_ITEM_ACTIONS") != "1":
-            return masks
-
-        # Evaluation-only ablation: suppress item equip/transfer and craft actions.
-        # Keep type 7 when it is the sole legal type because that state represents
-        # a mandatory anvil choice, not optional item management.
-        for player_idx, player_masks in enumerate(masks):
-            type_mask = np.asarray(player_masks["type_mask"], dtype=np.bool_).copy()
-            legal_types = np.flatnonzero(type_mask)
-            mandatory_anvil_choice = len(legal_types) == 1 and int(legal_types[0]) == 7
-            if not mandatory_anvil_choice:
-                type_mask[7] = False
-                type_mask[8] = False
-            if not bool(type_mask.any()):
-                raise RuntimeError(
-                    "A ablação de ações de item removeu todas as ações legais "
-                    f"do snapshot nativo para o jogador {player_idx}; "
-                    "nenhuma ação substituta será inventada."
+        masks = self._copy_action_masks(
+            self._last_action_masks, detach_arrays=detach_arrays
+        )
+        if os.environ.get("TFT_ABLATE_ITEM_ACTIONS") == "1":
+            # Evaluation-only ablation: suppress item equip/transfer and craft
+            # actions. Copy only the type mask that is actually modified.
+            for player_idx, player_masks in enumerate(masks):
+                type_mask = (
+                    player_masks["type_mask"]
+                    if detach_arrays
+                    else player_masks["type_mask"].copy()
                 )
-            player_masks["type_mask"] = type_mask
+                legal_types = np.flatnonzero(type_mask)
+                mandatory_anvil_choice = (
+                    len(legal_types) == 1 and int(legal_types[0]) == 7
+                )
+                if not mandatory_anvil_choice:
+                    type_mask[7] = False
+                    type_mask[8] = False
+                if not bool(type_mask.any()):
+                    raise RuntimeError(
+                        "A ablação de ações de item removeu todas as ações legais "
+                        f"do snapshot nativo para o jogador {player_idx}; "
+                        "nenhuma ação substituta será inventada."
+                    )
+                player_masks["type_mask"] = type_mask
+
+        if not detach_arrays:
+            # The pybind arrays are Python-owned snapshots. Keep their buffers
+            # alive through the returned references and forbid consumer mutation;
+            # a later step replaces the wrapper's references, never overwrites
+            # these arrays.
+            for player_masks in masks:
+                for value in player_masks.values():
+                    value.flags.writeable = False
         return masks
+
+    def get_action_masks(self):
+        """Return detached masks for callers that may retain or mutate them."""
+        return self._get_action_masks(detach_arrays=True)
+
+    def get_action_masks_for_training(self):
+        """Borrow immutable masks for the Trainer; no per-player buffer copies."""
+        return self._get_action_masks(detach_arrays=False)
 
     def get_snapshot_metadata(self):
         """Return non-neural metadata for the exact observation/mask snapshot."""
