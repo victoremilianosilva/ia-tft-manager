@@ -1,4 +1,5 @@
 #include "composition_intelligence/CompositionDiagnostics.hpp"
+#include "composition_intelligence/CompositionIntelligenceRuntime.hpp"
 #include <cassert>
 #include <sstream>
 #include <iostream>
@@ -89,5 +90,27 @@ int main() {
     assert(third_payload["recommendation_to_later_outcome"]["recommendation_sequence"] == second.sequence);
     assert(third_payload["recommendation_to_later_outcome"]["recommendation_composition_id"] == "comp-a");
     assert(third_payload["recommendation_to_later_outcome"]["recommendation_composition_version"] == 2);
+    CompositionIntelligencePlayerRuntime normal_runtime;
+    normal_runtime.begin_cycle(9, 0, 1, false);
+    normal_runtime.mark_stage("planner", "completed", "must not be retained");
+    assert(!normal_runtime.append_snapshot({{"diagnostics", {{"unused", true}}}}));
+    assert(normal_runtime.snapshots.empty());
+
+    CompositionIntelligencePlayerRuntime audit_runtime;
+    audit_runtime.begin_cycle(9, 0, 1, true);
+    audit_runtime.mark_stage("planner", "completed", "audit trace");
+    assert(audit_runtime.append_snapshot({{"diagnostics", {{"enabled", true}}}}));
+    assert(audit_runtime.snapshots.size() == 1);
+    assert(audit_runtime.snapshots.front()["runtime_execution"]["stages"].size() == 1);
+
+    for (std::size_t index = 0;
+         index < CompositionIntelligencePlayerRuntime::kMaxDiagnosticSnapshots + 4;
+         ++index) {
+        audit_runtime.begin_cycle(9, 0, static_cast<std::uint32_t>(index + 2), true);
+        assert(audit_runtime.append_snapshot({{"sample", index}}));
+    }
+    assert(audit_runtime.snapshots.size() ==
+        CompositionIntelligencePlayerRuntime::kMaxDiagnosticSnapshots);
+
     std::cout << "CompositionDiagnostics tests passed\n";
 }
