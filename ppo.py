@@ -308,9 +308,11 @@ class PPOTrainer:
         profile_gradient_clip_ms = 0.0
         profile_optimizer_step_ms = 0.0
         profile_minibatches = 0
+        profile_cuda_device = next(self.policy.parameters()).device
         profile_gpu_enabled = (
             os.environ.get("TFT_PROFILE_GPU") == "1"
             and torch.cuda.is_available()
+            and profile_cuda_device.type == "cuda"
         )
         profile_loss_cuda_events = []
         profile_backward_cuda_events = []
@@ -464,14 +466,14 @@ class PPOTrainer:
                     set_to_none=True
                 )
 
-                backward_start_ns = time.perf_counter_ns()
-                loss.backward()
-                profile_backward_ms += (time.perf_counter_ns() - backward_start_ns) / 1_000_000.0
                 backward_cuda_start = backward_cuda_end = None
                 if profile_gpu_enabled:
                     backward_cuda_start = torch.cuda.Event(enable_timing=True)
                     backward_cuda_end = torch.cuda.Event(enable_timing=True)
                     backward_cuda_start.record()
+                backward_start_ns = time.perf_counter_ns()
+                loss.backward()
+                profile_backward_ms += (time.perf_counter_ns() - backward_start_ns) / 1_000_000.0
 
                 # ====================================================
                 # GRADIENT CLIPPING
@@ -658,7 +660,7 @@ class PPOTrainer:
             )
 
         if profile_gpu_enabled and (profile_loss_cuda_events or profile_backward_cuda_events):
-            torch.cuda.synchronize()
+            torch.cuda.synchronize(profile_cuda_device)
         if hasattr(self, "writer") and self.writer is not None:
             self.writer.add_scalar("performance/ppo/advantage_normalization_ms", profile_normalize_ms, self.update_step)
             self.writer.add_scalar("performance/ppo/batch_materialization_ms", profile_batch_materialization_ms, self.update_step)
