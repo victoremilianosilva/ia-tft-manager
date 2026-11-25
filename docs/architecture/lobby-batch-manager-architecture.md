@@ -132,3 +132,35 @@ A primeira cópia continua ocorrendo na fronteira de ownership, mas as cópias p
 - rejeitar dtype/shape incompatíveis;
 - executar a suíte de paridade nativa e Python com o módulo compilado;
 - comparar paridade funcional das máscaras antes/depois para todas as famílias de ação cobertas pela suíte.
+
+
+### Fase C — validação semântica sem materialização duplicada
+
+#### Problema anterior
+O wrapper convertia seis blocos de features de itens de cada jogador em arrays NumPy temporários para verificar shape e finitude. No fluxo nativo do Trainer, a projeção semântica executa novamente a validação desses mesmos blocos e ainda aplica a faixa canônica `[0, 1]`. A conversão intermediária não alimentava nenhum consumidor: era uma materialização descartável antes da projeção.
+
+#### Racional técnico
+A validação estrutural do envelope e das identidades do snapshot continua no wrapper. Para snapshots nativos pinados, a validação semântica dos blocos de features fica concentrada em `project_native_player_state`, que já é a autoridade antes da criação dos tensores PPO e verifica tipo numérico, dimensões, finitude e faixa. Fixtures e snapshots construídos em Python não possuem a mesma fronteira de produtor nativo e mantêm a validação defensiva integral no wrapper.
+
+#### Responsabilidade nova
+- `CppTFTLobbyWrapper._copy_native_state_snapshot` preserva validações de contrato, identidade, ownership e integridade estrutural.
+- `project_native_player_state` é a autoridade única para validar os seis blocos numéricos semânticos consumidos pelo PPO.
+- O wrapper não cria arrays NumPy temporários desses blocos quando recebe `_NativeSnapshotMapping`.
+- O caminho dict-backed mantém a validação de shape e finitude para fixtures e adapters.
+
+#### Contratos e invariantes
+- Nenhum campo, dimensão, regra semântica ou validação de identidade é removido do fluxo PPO.
+- A projeção semântica continua rejeitando shape incorreto, valores não finitos e valores fora de `[0, 1]`.
+- Snapshots dict-backed continuam sendo validados integralmente pelo wrapper.
+- Nenhum snapshot é aceito pelo Trainer para PPO sem passar pela projeção semântica.
+- A validação de pool, eventos, UUIDs, ownership de itens, estado de bigorna e provenance permanece no wrapper.
+- A mudança não altera rewards, masks, observações, checkpoints ou a semântica das ações.
+
+#### Impactos e limites
+Para snapshots nativos, deixa de haver a conversão de seis matrizes/listas por jogador em arrays NumPy descartáveis durante a validação do wrapper. O custo da validação semântica permanece no estágio de projeção, onde os dados são efetivamente convertidos para a representação PPO. A melhoria esperada é redução de alocações temporárias e trabalho duplicado; não é declarada uma redução de latência end-to-end sem novo benchmark.
+
+#### Validação
+- confirmar que o wrapper continua rejeitando blocos inválidos em snapshots dict-backed;
+- confirmar que snapshots nativos passam pelo wrapper sem materialização NumPy redundante;
+- confirmar que a projeção semântica rejeita os mesmos blocos inválidos antes do uso pelo PPO;
+- executar testes de snapshot binding, projeção semântica, paridade nativa e smoke PPO.

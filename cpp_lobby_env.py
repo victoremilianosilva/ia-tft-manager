@@ -559,21 +559,28 @@ class CppTFTLobbyWrapper:
                 values = player.get(field)
                 if not isinstance(values, list) or any(not isinstance(item, str) for item in values):
                     raise RuntimeError(f"Campo estruturado {field} inválido para jogador {player_id}.")
-            semantic_item_shapes = {
-                "item_component_features": (10,),
-                "item_inventory_features": (9, 17),
-                "item_recipe_features": (100, 17),
-                "item_inventory_target_fit": (9, 37),
-                "item_recipe_target_fit": (100, 37),
-                "pending_anvil_option_features": (9, 11),
-            }
-            for field, expected_shape in semantic_item_shapes.items():
-                try:
-                    values = np.asarray(player.get(field), dtype=np.float32)
-                except (TypeError, ValueError) as exc:
-                    raise RuntimeError(f"Snapshot estruturado contém {field} inválido.") from exc
-                if values.shape != expected_shape or not np.isfinite(values).all():
-                    raise RuntimeError(f"Snapshot estruturado contém {field} com shape/valores inválidos.")
+            # Dict-backed fixtures have no native producer boundary, so keep
+            # their defensive Python validation here. For a pinned native
+            # snapshot, the semantic projection is the single authority for
+            # item-feature shape, finiteness and [0, 1] checks before PPO use.
+            # Avoid allocating six temporary NumPy arrays here only to repeat
+            # those checks during project_native_player_state().
+            if not isinstance(value, _NativeSnapshotMapping):
+                semantic_item_shapes = {
+                    "item_component_features": (10,),
+                    "item_inventory_features": (9, 17),
+                    "item_recipe_features": (100, 17),
+                    "item_inventory_target_fit": (9, 37),
+                    "item_recipe_target_fit": (100, 37),
+                    "pending_anvil_option_features": (9, 11),
+                }
+                for field, expected_shape in semantic_item_shapes.items():
+                    try:
+                        values = np.asarray(player.get(field), dtype=np.float32)
+                    except (TypeError, ValueError) as exc:
+                        raise RuntimeError(f"Snapshot estruturado contém {field} inválido.") from exc
+                    if values.shape != expected_shape or not np.isfinite(values).all():
+                        raise RuntimeError(f"Snapshot estruturado contém {field} com shape/valores inválidos.")
             for field in ("item_component_counts", "item_inventory_counts"):
                 rows = player.get(field)
                 if not isinstance(rows, list): raise RuntimeError(f"Snapshot estruturado sem {field}.")

@@ -343,6 +343,15 @@ def test_native_trait_identities_are_stably_hashed_and_exposed_to_policy():
     assert trait_ids[0, 1].count_nonzero().item() == 0
 
 
+def test_semantic_projection_remains_authoritative_for_item_feature_shapes():
+    metadata = _metadata()
+    metadata["native_player_state"]["item_recipe_features"] = [
+        [0.0] * 16 for _ in range(100)
+    ]
+    with pytest.raises(ValueError, match="native semantic item field item_recipe_features has invalid shape"):
+        project_native_player_state(metadata, {"TFT_TestChampion": 17})
+
+
 def test_item_identity_and_anvil_sequence_are_bound_to_projection_hash():
     base = _metadata()
     base["native_player_state"]["item_inventory"] = ["completed_item_alpha"]
