@@ -992,3 +992,93 @@ def test_expansion_reuses_native_player_state_only_for_exact_snapshot_revision()
         old_row["native_player_state"] is not new_row["native_player_state"]
         for old_row, new_row in zip(result_rows, new_episode_rows)
     )
+
+
+def test_expansion_rejects_contract_drift_for_same_native_snapshot_revision():
+    from copy import deepcopy
+    import pytest
+    from trainer import Trainer
+    from decision_identity import build_player_identity_envelopes
+
+    def make_snapshot():
+        value = {
+            "engine_instance_id": "engine-contract-cache",
+            "episode_id": 21,
+            "decision_sequence": 9,
+            "player_decision_sequences": [9] * 8,
+            "round": 3,
+            "native_state_snapshot": {
+                "engine_instance_id": "engine-contract-cache",
+                "episode_id": 21,
+                "snapshot_sequence": 9,
+                "round": 3,
+                "player_decision_sequences": [9] * 8,
+                "contract_id": "native-state-v1",
+                "contract_version": 1,
+                "producer": "test-engine",
+                "source_namespace": "tft.engine.snapshot",
+                "players": [
+                    {"player_id": player_id, "board": [], "bench": [], "shop": []}
+                    for player_id in range(8)
+                ],
+            },
+        }
+        value["player_identity_envelopes"] = build_player_identity_envelopes(value)
+        return value
+
+    first = make_snapshot()
+    changed_contract = deepcopy(first)
+    changed_contract["native_state_snapshot"]["contract_version"] = 2
+    cache = {}
+    Trainer._expand_lobby_snapshot_metadata(
+        [first], 8, "first", native_state_cache=cache
+    )
+
+    with pytest.raises(RuntimeError, match="Contrato nativo diverge"):
+        Trainer._expand_lobby_snapshot_metadata(
+            [changed_contract], 8, "changed contract", native_state_cache=cache
+        )
+
+
+def test_expansion_does_not_reuse_native_player_state_across_round_revisions():
+    from copy import deepcopy
+    from trainer import Trainer
+    from decision_identity import build_player_identity_envelopes
+
+    def make_snapshot(round_number):
+        value = {
+            "engine_instance_id": "engine-round-cache",
+            "episode_id": 4,
+            "decision_sequence": 18,
+            "player_decision_sequences": [18] * 8,
+            "round": round_number,
+            "native_state_snapshot": {
+                "engine_instance_id": "engine-round-cache",
+                "episode_id": 4,
+                "snapshot_sequence": 18,
+                "round": round_number,
+                "player_decision_sequences": [18] * 8,
+                "contract_id": "native-state-v1",
+                "contract_version": 1,
+                "producer": "test-engine",
+                "source_namespace": "tft.engine.snapshot",
+                "players": [
+                    {"player_id": player_id, "board": [], "bench": [], "shop": []}
+                    for player_id in range(8)
+                ],
+            },
+        }
+        value["player_identity_envelopes"] = build_player_identity_envelopes(value)
+        return value
+
+    cache = {}
+    first_rows = Trainer._expand_lobby_snapshot_metadata(
+        [make_snapshot(6)], 8, "round 6", native_state_cache=cache
+    )
+    next_rows = Trainer._expand_lobby_snapshot_metadata(
+        [make_snapshot(7)], 8, "round 7", native_state_cache=cache
+    )
+    assert all(
+        first["native_player_state"] is not next_["native_player_state"]
+        for first, next_ in zip(first_rows, next_rows)
+    )
