@@ -45,7 +45,9 @@ py::object freeze_native_python_value(
     const FrozenContainerTypes& types
 );
 
-template <typename T>
+template <typename T, std::enable_if_t<
+    !std::is_base_of_v<py::handle, std::decay_t<T>>, int
+> = 0>
 py::object freeze_cpp_value(T&& value, const FrozenContainerTypes& types);
 
 template <typename T>
