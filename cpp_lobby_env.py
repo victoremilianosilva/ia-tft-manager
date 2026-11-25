@@ -21,7 +21,7 @@ import numpy as np
 from decision_identity import build_player_identity_envelopes
 from reward_audit import RewardAuditLedger
 from reward_outcome_producers import build_action_outcome_events
-from immutable_snapshot import FrozenDict, freeze_snapshot
+from immutable_snapshot import FrozenDict, FrozenList, freeze_snapshot
 
 _REPO_ROOT = Path(__file__).resolve().parent
 # CMake builds may live at the repository root (build/) or under cpp/.
