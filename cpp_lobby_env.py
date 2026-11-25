@@ -1083,6 +1083,18 @@ class CppTFTLobbyWrapper:
                             f"Máscara legada '{key}' inválida para jogador {player_index}: "
                             f"shape={raw_mask.shape}, esperado={shape}."
                         )
+                    if not (
+                        np.issubdtype(raw_mask.dtype, np.bool_)
+                        or np.issubdtype(raw_mask.dtype, np.number)
+                    ):
+                        raise TypeError(f"Máscara legada '{key}' possui dtype inválido.")
+                    if not np.issubdtype(raw_mask.dtype, np.bool_):
+                        if not np.all(np.isfinite(raw_mask)) or not np.all(
+                            (raw_mask == 0) | (raw_mask == 1)
+                        ):
+                            raise ValueError(
+                                f"Máscara legada '{key}' deve conter somente valores finitos 0/1."
+                            )
                     packed[player_index, offset:offset + width] = raw_mask.astype(
                         np.bool_, copy=False
                     ).reshape(-1)
