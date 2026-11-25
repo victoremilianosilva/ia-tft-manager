@@ -1,5 +1,6 @@
 import hashlib
 
+import numpy as np
 import pytest
 import torch
 
@@ -789,3 +790,42 @@ def test_semantic_batch_reuses_catalog_and_trait_hash_work_within_batch(monkeypa
     assert len(context_builds) == 2
     assert trait_hash_inputs.count(b"TraitA") == 2
     assert trait_hash_inputs.count(b"TraitB") == 2
+
+
+def test_native_item_numpy_views_preserve_v8_projection_and_validate_contract():
+    catalog = {"TFT_TestChampion": 17}
+    list_backed = _metadata()
+    expected = project_native_player_state(list_backed["native_player_state"], catalog)
+
+    native = _metadata()
+    state = native["native_player_state"]
+    shapes = {
+        "item_component_features": (10,),
+        "item_inventory_features": (9, 17),
+        "item_recipe_features": (100, 17),
+        "item_inventory_target_fit": (9, 37),
+        "item_recipe_target_fit": (100, 37),
+        "pending_anvil_option_features": (9, 11),
+    }
+    for field, shape in shapes.items():
+        values = np.asarray(state[field], dtype=np.float32).reshape(shape)
+        values.setflags(write=False)
+        state[field] = values
+
+    actual = project_native_player_state(state, catalog)
+    assert actual["numeric"] == expected["numeric"]
+    assert actual["champion_ids"] == expected["champion_ids"]
+    assert actual["sha256"] == expected["sha256"]
+
+    writable = _metadata()["native_player_state"]
+    writable["item_component_features"] = np.zeros((10,), dtype=np.float32)
+    with pytest.raises(ValueError, match="invalid native view contract"):
+        project_native_player_state(writable, catalog)
+
+    non_finite = _metadata()["native_player_state"]
+    values = np.zeros((10,), dtype=np.float32)
+    values[0] = np.nan
+    values.setflags(write=False)
+    non_finite["item_component_features"] = values
+    with pytest.raises(ValueError, match="non-finite"):
+        project_native_player_state(non_finite, catalog)
