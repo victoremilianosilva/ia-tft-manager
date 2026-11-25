@@ -440,11 +440,12 @@ def _build_semantic_projection_context(catalog_map: Mapping[str, int]) -> dict:
         "trait_hash_cache": {},
     }
 
+
 def project_native_player_state(
     metadata: Mapping,
     catalog_map: Mapping[str, int],
     *,
-    _projection_context: Mapping | None = None,
+    _projection_context: dict | None = None,
 ) -> dict:
     if not isinstance(metadata, Mapping):
         raise TypeError("semantic projection metadata must be a mapping")
