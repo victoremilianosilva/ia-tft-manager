@@ -112,6 +112,22 @@ class _NativeSnapshotMapping(dict):
         # Reuse the already materialized base through a Python-level defensive
         # copy; do not ask C++ to rebuild the same large player tree a second time.
         if self._base is not None:
+            # NumPy item blocks are immutable views whose base capsule owns the
+            # native snapshot. Preserve those exact views across metadata
+            # deepcopy instead of silently allocating detached writable arrays.
+            for player in self._base.get("players", ()):
+                if isinstance(player, Mapping):
+                    for field in (
+                        "item_component_features",
+                        "item_inventory_features",
+                        "item_recipe_features",
+                        "item_inventory_target_fit",
+                        "item_recipe_target_fit",
+                        "pending_anvil_option_features",
+                    ):
+                        value = player.get(field)
+                        if isinstance(value, np.ndarray):
+                            memo[id(value)] = value
             clone._base = copy.deepcopy(self._base, memo)
         if self._combat_cache:
             clone._combat_cache = copy.deepcopy(self._combat_cache, memo)
