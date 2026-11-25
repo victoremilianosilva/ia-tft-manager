@@ -1154,54 +1154,45 @@ def test_native_snapshot_mapping_defers_combat_event_materialization():
 
 
 def test_native_snapshot_handle_caches_frozen_ownership_view(monkeypatch):
-    import immutable_snapshot
     from immutable_snapshot import FrozenDict, FrozenList
 
-    original_freeze = immutable_snapshot.freeze_snapshot
-    freeze_calls = []
-    freeze_depth = 0
+    player_calls = []
+    original_load = cpp_lobby_env._NativeSnapshotPlayers._load_player
 
-    def tracked_freeze(value):
-        nonlocal freeze_depth
-        if freeze_depth == 0:
-            freeze_calls.append(value)
-        freeze_depth += 1
-        try:
-            return original_freeze(value)
-        finally:
-            freeze_depth -= 1
+    def tracked_load(self, index):
+        player_calls.append(index)
+        return original_load(self, index)
 
-    monkeypatch.setattr(immutable_snapshot, "freeze_snapshot", tracked_freeze)
+    monkeypatch.setattr(
+        cpp_lobby_env._NativeSnapshotPlayers, "_load_player", tracked_load
+    )
 
     lobby = cpp_lobby_env.CppTFTLobbyWrapper(seed=53)
     try:
         lobby.reset()
         original_view = lobby._last_snapshot_metadata["native_state_snapshot"]
-        freeze_calls.clear()
-        # Use a fresh adapter over the same pinned native handle so reset-time
-        # contract validation is outside this lazy-materialization measurement.
+        # Use a fresh adapter over the same pinned handle so reset-time
+        # validation is outside this access-pattern assertion.
         native_view = cpp_lobby_env._NativeSnapshotMapping(original_view._handle)
         native_snapshot = native_view._base_dict()
         assert isinstance(native_view, __import__("collections.abc").abc.Mapping)
         assert isinstance(native_snapshot, FrozenDict)
         native_players = native_view["players"]
         assert len(native_players) == 8
+        assert player_calls == []
         with pytest.raises(IndexError, match="player index out of range"):
             native_players[8]
-        assert isinstance(native_players[0], FrozenDict)
-        assert isinstance(native_players[0]["board"], FrozenList)
-        assert len(freeze_calls) == 1
 
-        # Repeated envelope and player reads reuse their immutable views.
-        assert native_view["round"] == native_snapshot["round"]
-        assert native_view._base_dict() is native_snapshot
-        assert native_players[0] is native_players[0]
-        assert len(freeze_calls) == 1
+        first_player = native_players[0]
+        assert isinstance(first_player, FrozenDict)
+        assert isinstance(first_player["board"], FrozenList)
+        assert player_calls == [0]
+        assert native_players[0] is first_player
+        assert player_calls == [0]
 
         public_snapshot = lobby.get_audit_snapshot()
         # The lazy training handle intentionally omits per-player action masks;
-        # they are published through the dedicated packed-mask API. Compare
-        # the shared audit contract without this diagnostic-only public field.
+        # they are published through the dedicated packed-mask API.
         public_players = [
             {key: value for key, value in player.items() if key != "action_masks"}
             for player in public_snapshot["players"]
@@ -1212,7 +1203,10 @@ def test_native_snapshot_handle_caches_frozen_ownership_view(monkeypatch):
         public_projection["players"] = public_players
         assert {key: native_view[key] for key in native_view} == public_projection
         assert list(native_players) == public_players
-        assert len(freeze_calls) == 8
+        assert player_calls == list(range(8))
+
+        # The public native handle remains a complete snapshot API; only the
+        # dedicated envelope path omits players for the training adapter.
         complete_native_snapshot = native_view._handle.to_dict()
         assert len(complete_native_snapshot["players"]) == 8
         assert "players" not in native_view._handle.to_envelope_dict()
@@ -1220,9 +1214,10 @@ def test_native_snapshot_handle_caches_frozen_ownership_view(monkeypatch):
         with pytest.raises(TypeError, match="immutable"):
             native_snapshot["round"] = -1
         with pytest.raises(TypeError, match="immutable"):
-            native_players[0]["board"].append({})
+            first_player["board"].append({})
     finally:
         lobby.close()
+
 
 
 def test_native_binding_pins_snapshot_and_defers_unused_combat_rows():

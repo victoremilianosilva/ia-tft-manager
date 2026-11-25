@@ -49,8 +49,88 @@ except ImportError as exc:
     ) from exc
 
 
+class _NativeFrozenDict(FrozenDict):
+    """Shallow, recursively read-only view over one native-owned record."""
+
+    def __init__(self, values=()):
+        dict.__init__(self)
+        self._view_cache = {}
+        source = values.items() if isinstance(values, Mapping) else values
+        for key, value in source:
+            dict.__setitem__(self, key, value)
+
+    def __getitem__(self, key):
+        if key not in self._view_cache:
+            self._view_cache[key] = _wrap_native_snapshot_value(dict.__getitem__(self, key))
+        return self._view_cache[key]
+
+    def get(self, key, default=None):
+        if key not in self:
+            return default
+        return self[key]
+
+    def items(self):
+        return ((key, self[key]) for key in dict.__iter__(self))
+
+    def values(self):
+        return (self[key] for key in dict.__iter__(self))
+
+    def copy(self):
+        return {key: self[key] for key in dict.__iter__(self)}
+
+    def __deepcopy__(self, memo):
+        memo[id(self)] = self
+        return self
+
+
+class _NativeFrozenList(FrozenList):
+    """Shallow, recursively read-only list view over native-owned values."""
+
+    def __init__(self, values=()):
+        list.__init__(self)
+        self._view_cache = {}
+        for value in values:
+            list.append(self, value)
+
+    def __getitem__(self, index):
+        if isinstance(index, slice):
+            return [self[position] for position in range(*index.indices(len(self)))]
+        if index < 0:
+            index += len(self)
+        if index < 0 or index >= len(self):
+            raise IndexError("native snapshot sequence index out of range")
+        if index not in self._view_cache:
+            self._view_cache[index] = _wrap_native_snapshot_value(list.__getitem__(self, index))
+        return self._view_cache[index]
+
+    def __iter__(self):
+        for index in range(len(self)):
+            yield self[index]
+
+    def __eq__(self, other):
+        if isinstance(other, Sequence) and not isinstance(other, (str, bytes)):
+            return list(self) == list(other)
+        return NotImplemented
+
+    def __deepcopy__(self, memo):
+        memo[id(self)] = self
+        return self
+
+
+def _wrap_native_snapshot_value(value):
+    if isinstance(value, (_NativeFrozenDict, _NativeFrozenList)):
+        return value
+    if isinstance(value, Mapping):
+        return _NativeFrozenDict(value)
+    if isinstance(value, list):
+        return _NativeFrozenList(value)
+    if isinstance(value, tuple):
+        return tuple(_wrap_native_snapshot_value(item) for item in value)
+    return value
+
+
 class _NativeSnapshotPlayers(Sequence):
-    """Lazy immutable sequence of player snapshots owned by one native handle."""
+    """Lazy immutable sequence of player records owned by one native handle."""
 
     def __init__(self, handle):
         self._handle = handle
@@ -58,6 +138,12 @@ class _NativeSnapshotPlayers(Sequence):
 
     def __len__(self):
         return int(self._handle.player_count())
+
+    def _load_player(self, index):
+        # C++ returns a fresh value tree from the pinned const snapshot. The
+        # shallow wrappers make it recursively read-only without a second
+        # recursive Python copy/freeze pass.
+        return _NativeFrozenDict(self._handle.player(index))
 
     def __getitem__(self, index):
         if isinstance(index, slice):
@@ -69,7 +155,7 @@ class _NativeSnapshotPlayers(Sequence):
         if index < 0 or index >= size:
             raise IndexError("native snapshot player index out of range")
         if index not in self._cache:
-            self._cache[index] = freeze_snapshot(self._handle.player(index))
+            self._cache[index] = self._load_player(index)
         return self._cache[index]
 
     def __iter__(self):
