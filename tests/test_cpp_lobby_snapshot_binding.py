@@ -1171,8 +1171,9 @@ def test_native_snapshot_handle_caches_frozen_ownership_view(monkeypatch):
     try:
         lobby.reset()
         original_view = lobby._last_snapshot_metadata["native_state_snapshot"]
-        # Use a fresh adapter over the same pinned handle so reset-time
-        # validation is outside this access-pattern assertion.
+        # Reset validates the complete snapshot and therefore loads all players.
+        # Start a fresh measurement for the independent adapter's lazy access.
+        player_calls.clear()
         native_view = cpp_lobby_env._NativeSnapshotMapping(original_view._handle)
         native_snapshot = native_view._base_dict()
         assert isinstance(native_view, __import__("collections.abc").abc.Mapping)
