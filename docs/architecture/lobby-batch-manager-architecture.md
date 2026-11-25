@@ -269,3 +269,42 @@ Evita percorrer novamente subtrees nativos congelados que já foram compartilhad
 
 #### Correção de equivalência entre sequências
 A comparação estrutural não mistura listas e tuplas: cada família é comparada recursivamente apenas com a mesma família, preservando a semântica nativa do Python (`[1] != (1,)`). `FrozenList` continua compatível com listas por herança, sem perder o short-circuit por identidade.
+
+
+### Fase C — contexto compartilhado da projeção semântica
+
+#### Problema anterior
+build_semantic_batch projetava cada jogador de forma independente. Cada chamada recriava o dicionário do catálogo de campeões, reconstruía o conjunto de IDs conhecidos e calculava novamente SHA-256 para traits estáveis repetidos entre jogadores do mesmo batch. Esses dados são invariantes durante a projeção de um batch e não exigem recomputação por jogador.
+
+A auditoria também identificou validações estruturais no wrapper e validações semânticas no projetor que observam alguns campos relacionados. A sobreposição aparente, por si só, não prova que as verificações sejam redundantes: o wrapper protege a fronteira do snapshot e o projetor protege a entrada do PPO.
+
+#### Racional técnico
+O batch cria um contexto efêmero contendo uma única cópia normalizada do catálogo, o conjunto imutável de IDs conhecidos e um cache de hashes de traits. O contexto é compartilhado somente pelas projeções daquela chamada. Os hashes continuam sendo SHA-256 e produzem exatamente os mesmos buckets do contrato semântico v8.
+
+A validação estrutural do wrapper e a validação semântica do projetor permanecem intactas nesta entrega. Remover verificações entre fronteiras sem uma prova de autoridade equivalente poderia aceitar snapshots malformados antes de chegarem ao PPO.
+
+#### Responsabilidade nova
+- build_semantic_batch prepara o contexto uma vez e o fornece às projeções individuais.
+- project_native_player_state continua sendo a autoridade semântica e mantém o mesmo comportamento quando chamado isoladamente.
+- O cache de traits é local ao batch e não é retornado, persistido no Trainer ou compartilhado entre batches.
+- CppTFTLobbyWrapper._copy_native_state_snapshot continua responsável pela integridade estrutural, identidade, ownership e provenance do snapshot.
+
+#### Contratos e invariantes
+- O catálogo normalizado representa exatamente os mesmos pares nome/ID fornecidos ao projetor.
+- O conjunto de IDs conhecidos é derivado da mesma cópia normalizada e não pode ser alterado durante a projeção.
+- Cada trait mantém o bucket SHA-256(UTF-8(trait)) módulo SEMANTIC_TRAIT_VOCAB_SIZE, com o deslocamento canônico de padding.
+- Cache de hash não cruza chamadas de batch nem altera hashes de projeção, identidade, champion IDs ou features numéricas.
+- O projetor individual continua aceitando chamadas sem contexto compartilhado.
+- Nenhuma validação estrutural ou semântica, contrato, provenance ou regra de aceitação de snapshot é removida.
+- O contrato semântico v8, dimensões, pesos, rewards, masks e checkpoints permanecem inalterados.
+
+#### Impactos e limites
+Elimina a cópia do catálogo e a reconstrução do conjunto de IDs para cada jogador, além de evitar SHA-256 repetido para o mesmo trait dentro do batch. Não elimina o percurso dos slots nem a validação semântica individual, que continuam necessárias para produzir e autenticar cada linha do PPO. A economia end-to-end precisa ser confirmada pelo profiler com PPO ativo.
+
+#### Validação
+- Comparar features numéricas, champion IDs e hashes entre projeção individual e batch.
+- Provar que cada trait repetido é hasheado uma única vez dentro do batch.
+- Provar que batches independentes não compartilham cache.
+- Manter os testes de rejeição de contratos, sequências, ownership, features de itens e provenance.
+- Executar testes de projeção semântica, alinhamento de rollout, snapshot binding e smoke PPO.
+- Repetir o profiler completo e comparar semantic.build_batch, semantic.project_player, alocações e tempo end-to-end.
