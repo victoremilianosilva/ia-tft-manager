@@ -1,5 +1,7 @@
 import hashlib
 
+import numpy as np
+
 import pytest
 import torch
 
@@ -263,6 +265,44 @@ def test_semantic_projection_rejects_duplicate_or_unavailable_opportunity_cost()
     strategic["opportunity_cost_available"] = True
     with pytest.raises(ValueError, match="diverges from native opportunity rows"):
         project_native_player_state(row, {"TFT_TestChampion": 17})
+
+
+
+def test_native_item_numpy_views_preserve_v8_projection_and_validate_in_batches():
+    catalog = {"TFT_TestChampion": 17}
+    dict_metadata = _metadata()
+    view_metadata = _metadata()
+    fields = {
+        "item_component_features": (10,),
+        "item_inventory_features": (9, 17),
+        "item_recipe_features": (100, 17),
+        "item_inventory_target_fit": (9, 37),
+        "item_recipe_target_fit": (100, 37),
+        "pending_anvil_option_features": (9, 11),
+    }
+    for field, shape in fields.items():
+        view = np.asarray(view_metadata["native_player_state"][field], dtype=np.float32).reshape(shape)
+        view.setflags(write=False)
+        view_metadata["native_player_state"][field] = view
+
+    expected = project_native_player_state(dict_metadata, catalog)
+    actual = project_native_player_state(view_metadata, catalog)
+    assert actual["numeric"] == expected["numeric"]
+    assert actual["champion_ids"] == expected["champion_ids"]
+    assert actual["sha256"] == expected["sha256"]
+
+    writable = _metadata()
+    writable["native_player_state"]["item_component_features"] = np.zeros(10, dtype=np.float32)
+    with pytest.raises(ValueError, match="invalid native view contract"):
+        project_native_player_state(writable, catalog)
+
+    non_finite = _metadata()
+    invalid = np.zeros(10, dtype=np.float32)
+    invalid[3] = np.nan
+    invalid.setflags(write=False)
+    non_finite["native_player_state"]["item_component_features"] = invalid
+    with pytest.raises(ValueError, match="non-finite"):
+        project_native_player_state(non_finite, catalog)
 
 
 def test_native_semantic_projection_has_stable_shape_and_explicit_identity():
