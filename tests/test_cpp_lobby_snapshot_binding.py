@@ -1159,10 +1159,17 @@ def test_native_snapshot_handle_caches_frozen_ownership_view(monkeypatch):
 
     original_freeze = immutable_snapshot.freeze_snapshot
     freeze_calls = []
+    freeze_depth = 0
 
     def tracked_freeze(value):
-        freeze_calls.append(value)
-        return original_freeze(value)
+        nonlocal freeze_depth
+        if freeze_depth == 0:
+            freeze_calls.append(value)
+        freeze_depth += 1
+        try:
+            return original_freeze(value)
+        finally:
+            freeze_depth -= 1
 
     monkeypatch.setattr(immutable_snapshot, "freeze_snapshot", tracked_freeze)
 
