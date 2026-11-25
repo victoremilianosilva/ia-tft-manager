@@ -1363,3 +1363,40 @@ def test_native_frozen_list_does_not_cache_scalar_elements():
     assert view._view_cache == {}
     assert view[5] is view[5]
     assert set(view._view_cache) == {5}
+
+
+def test_native_item_feature_views_are_readonly_and_pin_snapshot_after_wrapper_release():
+    import gc
+
+    wrapper = cpp_lobby_env.CppTFTLobbyWrapper(seed=572)
+    wrapper.reset()
+    snapshot = wrapper._last_snapshot_metadata["native_state_snapshot"]
+    player = snapshot["players"][0]
+    expected_shapes = {
+        "item_component_features": (10,),
+        "item_inventory_features": (9, 17),
+        "item_recipe_features": (100, 17),
+        "item_inventory_target_fit": (9, 37),
+        "item_recipe_target_fit": (100, 37),
+        "pending_anvil_option_features": (9, 11),
+    }
+    retained = {}
+    for field, shape in expected_shapes.items():
+        value = player[field]
+        assert isinstance(value, np.ndarray)
+        assert value.dtype == np.float32
+        assert value.shape == shape
+        assert value.flags.c_contiguous
+        assert not value.flags.writeable
+        retained[field] = value
+
+    del player, snapshot
+    wrapper.close()
+    del wrapper
+    gc.collect()
+
+    for field, value in retained.items():
+        assert value.shape == expected_shapes[field]
+        assert value.dtype == np.float32
+        assert not value.flags.writeable
+        assert np.isfinite(value).all()
