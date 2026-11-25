@@ -1140,7 +1140,7 @@ def test_metadata_equality_short_circuits_shared_immutable_subtrees():
     right = {
         "identity": {"episode_id": 3, "player_id": 1},
         "native_player_state": shared_native_state,
-        "action_trace": {"requested_action": (6, 0, 0, 0, 0, 0)},
+        "action_trace": {"requested_action": [6, 0, 0, 0, 0, 0]},
     }
 
     assert RolloutBuffer._metadata_values_equal(left, right)
@@ -1161,3 +1161,10 @@ def test_metadata_equality_handles_non_scalar_equality_results_safely():
         {"value": AmbiguousEquality()},
         {"value": AmbiguousEquality()},
     )
+
+
+
+def test_metadata_equality_preserves_list_and_tuple_type_semantics():
+    assert not RolloutBuffer._metadata_values_equal([1, 2], (1, 2))
+    assert RolloutBuffer._metadata_values_equal([1, 2], [1, 2])
+    assert RolloutBuffer._metadata_values_equal((1, 2), (1, 2))

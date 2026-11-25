@@ -867,7 +867,15 @@ class RolloutBuffer:
                 for key in left
             )
 
-        if isinstance(left, (list, tuple)) and isinstance(right, (list, tuple)):
+        if isinstance(left, list) and isinstance(right, list):
+            if len(left) != len(right):
+                return False
+            return all(
+                RolloutBuffer._metadata_values_equal(left_value, right_value)
+                for left_value, right_value in zip(left, right)
+            )
+
+        if isinstance(left, tuple) and isinstance(right, tuple):
             if len(left) != len(right):
                 return False
             return all(

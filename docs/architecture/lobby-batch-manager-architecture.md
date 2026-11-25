@@ -265,3 +265,7 @@ Evita percorrer novamente subtrees nativos congelados que já foram compartilhad
 - provar tratamento defensivo de igualdade não escalar;
 - manter testes de isolamento, imutabilidade, identidade, auto-reset e paridade do rollout;
 - executar CI Python/nativo e comparar o tempo de rollout.add e alocações no profiler completo.
+
+
+#### Correção de equivalência entre sequências
+A comparação estrutural não mistura listas e tuplas: cada família é comparada recursivamente apenas com a mesma família, preservando a semântica nativa do Python (`[1] != (1,)`). `FrozenList` continua compatível com listas por herança, sem perder o short-circuit por identidade.
