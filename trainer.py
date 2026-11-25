@@ -590,6 +590,7 @@ class Trainer:
                         snapshot.get("engine_instance_id"),
                         snapshot.get("episode_id"),
                         snapshot.get("decision_sequence"),
+                        snapshot.get("round"),
                         player_sequence,
                         player_idx,
                     )
