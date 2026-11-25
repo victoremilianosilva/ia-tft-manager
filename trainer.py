@@ -528,8 +528,10 @@ class Trainer:
         )
 
     @staticmethod
-    def _expand_lobby_snapshot_metadata(lobby_snapshots, players_per_lobby, label):
-        """Expand one lobby snapshot identity into stable per-player rollout rows."""
+    def _expand_lobby_snapshot_metadata(
+        lobby_snapshots, players_per_lobby, label, native_state_cache=None
+    ):
+        """Expand lobby identity while reusing immutable state for an exact native revision."""
         expanded = []
         for lobby_idx, snapshot in enumerate(lobby_snapshots):
             if not isinstance(snapshot, dict):
@@ -574,11 +576,44 @@ class Trainer:
                     native_player = native_players[player_idx]
                     if not isinstance(native_player, dict) or native_player.get("player_id") != player_idx:
                         raise RuntimeError(f"Registro estruturado desalinhado para lobby {lobby_idx}, jogador {player_idx}.")
-                    metadata["native_player_state"] = freeze_snapshot(native_player)
-                    metadata["native_state_contract_id"] = native_snapshot.get("contract_id")
-                    metadata["native_state_contract_version"] = native_snapshot.get("contract_version")
-                    metadata["native_state_producer"] = native_snapshot.get("producer")
-                    metadata["native_state_source_namespace"] = native_snapshot.get("source_namespace")
+                    native_contract = (
+                        native_snapshot.get("contract_id"),
+                        native_snapshot.get("contract_version"),
+                        native_snapshot.get("producer"),
+                        native_snapshot.get("source_namespace"),
+                    )
+                    # A native snapshot identity names one immutable revision.
+                    # Result and next-observation envelopes may expose that same
+                    # revision through separate Python mappings; share the frozen
+                    # player subtree instead of materializing it twice.
+                    cache_key = (
+                        snapshot.get("engine_instance_id"),
+                        snapshot.get("episode_id"),
+                        snapshot.get("decision_sequence"),
+                        player_sequence,
+                        player_idx,
+                    )
+                    cached_state = (
+                        native_state_cache.get(cache_key)
+                        if native_state_cache is not None
+                        else None
+                    )
+                    if cached_state is not None:
+                        cached_contract, frozen_player = cached_state
+                        if cached_contract != native_contract:
+                            raise RuntimeError(
+                                f"Contrato nativo diverge para a mesma identidade de snapshot "
+                                f"na lobby {lobby_idx}, jogador {player_idx}."
+                            )
+                    else:
+                        frozen_player = freeze_snapshot(native_player)
+                        if native_state_cache is not None:
+                            native_state_cache[cache_key] = (native_contract, frozen_player)
+                    metadata["native_player_state"] = frozen_player
+                    metadata["native_state_contract_id"] = native_contract[0]
+                    metadata["native_state_contract_version"] = native_contract[1]
+                    metadata["native_state_producer"] = native_contract[2]
+                    metadata["native_state_source_namespace"] = native_contract[3]
                 metadata["player_decision_sequence"] = player_sequence
                 metadata["lobby_index"] = lobby_idx
                 metadata["player_id"] = player_idx
