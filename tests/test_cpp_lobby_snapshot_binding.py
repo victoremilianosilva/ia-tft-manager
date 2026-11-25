@@ -1170,13 +1170,18 @@ def test_frozen_container_native_factories_allocate_empty_subclasses():
         frozen_list.append(9)
 
 
-def test_native_snapshot_handle_builds_frozen_containers_directly_from_native_state(monkeypatch):
-    monkeypatch.setattr(
-        cpp_lobby_env,
-        "freeze_snapshot",
-        lambda _value: pytest.fail("native FrozenDict must bypass Python freeze_snapshot"),
-    )
+def test_native_snapshot_handle_caches_frozen_ownership_view(monkeypatch):
+    import immutable_snapshot
     from immutable_snapshot import FrozenDict, FrozenList
+
+    original_freeze = immutable_snapshot.freeze_snapshot
+    freeze_calls = []
+
+    def tracked_freeze(value):
+        freeze_calls.append(value)
+        return original_freeze(value)
+
+    monkeypatch.setattr(immutable_snapshot, "freeze_snapshot", tracked_freeze)
 
     lobby = cpp_lobby_env.CppTFTLobbyWrapper(seed=53)
     try:
@@ -1187,9 +1192,13 @@ def test_native_snapshot_handle_builds_frozen_containers_directly_from_native_st
         assert isinstance(native_snapshot["players"], FrozenList)
         assert isinstance(native_snapshot["players"][0], FrozenDict)
         assert isinstance(native_snapshot["players"][0]["board"], FrozenList)
+        assert len(freeze_calls) == 1
 
-        # The immutable native view must be structurally identical to the
-        # observer-facing mutable audit representation.
+        # Repeated field reads reuse the same immutable view.
+        assert native_view["round"] == native_snapshot["round"]
+        assert native_view._base_dict() is native_snapshot
+        assert len(freeze_calls) == 1
+
         public_snapshot = lobby.get_audit_snapshot()
         public_projection = {
             key: public_snapshot[key] for key in native_snapshot
