@@ -7,6 +7,7 @@
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -236,7 +237,9 @@ py::object freeze_cpp_value(
     return value.object();
 }
 
-template <typename T>
+template <typename T, std::enable_if_t<
+    !std::is_base_of_v<py::handle, std::decay_t<T>>, int
+> = 0>
 py::object freeze_cpp_value(T&& value, const FrozenContainerTypes& types) {
     py::object converted = py::cast(std::forward<T>(value));
     return freeze_native_python_value(converted, types);
@@ -730,7 +733,7 @@ py::object audit_snapshot_to_frozen_dict(
         p["round_interest"] = player.round_interest;
         p["round_streak_gold"] = player.round_streak_gold;
         p["round_win_gold"] = player.round_win_gold;
-        FrozenListBuilder board, bench, shop;
+        FrozenListBuilder board(types), bench(types), shop(types);
         for (const auto& unit : player.board) board.append(unit_to_dict(unit));
         for (const auto& unit : player.bench) bench.append(unit_to_dict(unit));
         for (const auto& unit : player.shop) shop.append(unit_to_dict(unit));
@@ -740,7 +743,7 @@ py::object audit_snapshot_to_frozen_dict(
         p["shop_offer_revisions"] = player.shop_offer_revisions;
         p["item_components"] = player.item_components;
         p["item_inventory"] = player.item_inventory;
-        FrozenListBuilder component_counts, inventory_counts, equipped_items;
+        FrozenListBuilder component_counts(types), inventory_counts(types), equipped_items(types);
         for (const auto& count : player.item_component_counts) { FrozenDictBuilder row(types); row["catalog_id"] = count.catalog_id; row["count"] = count.count; component_counts.append(std::move(row)); }
         for (const auto& count : player.item_inventory_counts) { FrozenDictBuilder row(types); row["catalog_id"] = count.catalog_id; row["count"] = count.count; inventory_counts.append(std::move(row)); }
         for (const auto& equipped : player.equipped_items) { FrozenDictBuilder row(types); row["unit_uuid"] = equipped.unit_uuid; row["location"] = equipped.location; row["slot"] = equipped.slot; row["catalog_id"] = equipped.catalog_id; equipped_items.append(std::move(row)); }
@@ -748,7 +751,7 @@ py::object audit_snapshot_to_frozen_dict(
         p["item_inventory_counts"] = std::move(inventory_counts);
         p["equipped_items"] = std::move(equipped_items);
         p["item_ownership_retired"] = player.item_ownership_retired;
-        FrozenListBuilder retired_component_counts, retired_inventory_counts, retired_equipped_counts, retired_anvils;
+        FrozenListBuilder retired_component_counts(types), retired_inventory_counts(types), retired_equipped_counts(types), retired_anvils(types);
         for (const auto& count : player.retired_item_component_counts) { FrozenDictBuilder row(types); row["catalog_id"] = count.catalog_id; row["count"] = count.count; retired_component_counts.append(std::move(row)); }
         for (const auto& count : player.retired_item_inventory_counts) { FrozenDictBuilder row(types); row["catalog_id"] = count.catalog_id; row["count"] = count.count; retired_inventory_counts.append(std::move(row)); }
         for (const auto& equipped : player.retired_equipped_item_counts) { FrozenDictBuilder row(types); row["unit_uuid"] = equipped.unit_uuid; row["catalog_id"] = equipped.catalog_id; row["count"] = equipped.count; retired_equipped_counts.append(std::move(row)); }
