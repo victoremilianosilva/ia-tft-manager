@@ -742,3 +742,33 @@ def test_semantic_cache_invalidates_on_real_catalog_contract_change():
 
     assert original_contract["sha256"] != changed_contract["sha256"]
     assert not semantic_batch_matches_snapshot_rows(batch, [row], changed_contract)
+
+
+def test_semantic_batch_reuses_catalog_and_trait_hash_work_within_batch(monkeypatch):
+    import semantic_observation
+
+    catalog = {"TFT_TestChampion": 17}
+    rows = [_metadata(), _metadata()]
+    for row in rows:
+        row["native_player_state"]["board"][0]["trait_names"] = ["TraitA", "TraitB"]
+
+    expected = [
+        project_native_player_state(row, catalog)
+        for row in rows
+    ]
+    original_sha256 = semantic_observation.hashlib.sha256
+    trait_hash_inputs = []
+
+    def tracked_sha256(value=b""):
+        if value in (b"TraitA", b"TraitB"):
+            trait_hash_inputs.append(value)
+        return original_sha256(value)
+
+    monkeypatch.setattr(semantic_observation.hashlib, "sha256", tracked_sha256)
+    actual = build_semantic_batch(rows, catalog)
+
+    assert actual["numeric"] == [row["numeric"] for row in expected]
+    assert actual["champion_ids"] == [row["champion_ids"] for row in expected]
+    assert actual["hashes"] == [row["sha256"] for row in expected]
+    assert trait_hash_inputs.count(b"TraitA") == 1
+    assert trait_hash_inputs.count(b"TraitB") == 1

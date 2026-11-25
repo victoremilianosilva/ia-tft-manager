@@ -430,7 +430,22 @@ def validate_semantic_state_checkpoint_contract(manifest: Mapping, catalog_map: 
         raise ValueError("semantic_state_contract is incompatible with the native source/catalog projection")
 
 
-def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int]) -> dict:
+
+def _build_semantic_projection_context(catalog_map: Mapping[str, int]) -> dict:
+    """Prepare catalog lookups and a batch-local stable trait hash cache."""
+    catalog = dict(catalog_map)
+    return {
+        "catalog": catalog,
+        "known_catalog_ids": frozenset(catalog.values()),
+        "trait_hash_cache": {},
+    }
+
+def project_native_player_state(
+    metadata: Mapping,
+    catalog_map: Mapping[str, int],
+    *,
+    _projection_context: Mapping | None = None,
+) -> dict:
     if not isinstance(metadata, Mapping):
         raise TypeError("semantic projection metadata must be a mapping")
     state = metadata.get("native_player_state")
@@ -757,7 +772,13 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
     deferred_set = validate_ids("lineup_deferred_unit_ids", deferred_ids)
     target_set = selected_set | entry_set | deferred_set
 
-    catalog = dict(catalog_map)
+    projection_context = (
+        _build_semantic_projection_context(catalog_map)
+        if _projection_context is None else _projection_context
+    )
+    catalog = projection_context["catalog"]
+    known_catalog_ids = projection_context["known_catalog_ids"]
+    trait_hash_cache = projection_context["trait_hash_cache"]
     observed_owned_ids = set()
     for group_name in ("board", "bench"):
         for entity in state[group_name]:
@@ -770,7 +791,6 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
                         raise ValueError(
                             f"native UnitCopyProgress is missing owned champion {champion_name}"
                         )
-    known_catalog_ids = set(catalog.values())
     if not (set(copy_progress) & known_catalog_ids).issubset(observed_owned_ids):
         raise ValueError("native UnitCopyProgress contains known champions absent from board/bench")
     numeric = list(global_values)
@@ -857,11 +877,16 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
             numeric.extend(target_features)
             if len(traits) > SEMANTIC_TRAIT_SLOTS:
                 raise ValueError(f"{group_name}[{slot}] exceeds the native trait slot limit")
-            trait_ids = [
-                int.from_bytes(hashlib.sha256(trait.encode("utf-8")).digest()[:4], "big")
-                % SEMANTIC_TRAIT_VOCAB_SIZE + 1
-                for trait in traits
-            ]
+            trait_ids = []
+            for trait in traits:
+                trait_id = trait_hash_cache.get(trait)
+                if trait_id is None:
+                    trait_id = (
+                        int.from_bytes(hashlib.sha256(trait.encode("utf-8")).digest()[:4], "big")
+                        % SEMANTIC_TRAIT_VOCAB_SIZE + 1
+                    )
+                    trait_hash_cache[trait] = trait_id
+                trait_ids.append(trait_id)
             numeric.extend(float(trait_id / SEMANTIC_TRAIT_VOCAB_SIZE) for trait_id in trait_ids)
             numeric.extend([0.0] * (SEMANTIC_TRAIT_SLOTS - len(trait_ids)))
             priority = priority_by_id.get(native_id, (0, 0, 0.0, 0, False)) if native_id is not None else (0, 0, 0.0, 0, False)
@@ -1052,7 +1077,6 @@ def build_semantic_batch(
     contract: Mapping | None = None,
 ):
     """Project each native row once, reusing the caller's immutable catalog contract."""
-    projected = [project_native_player_state(row, catalog_map) for row in metadata_rows]
     contract = contract if contract is not None else build_semantic_state_checkpoint_contract(catalog_map)
     if (
         not isinstance(contract, Mapping)
@@ -1060,6 +1084,13 @@ def build_semantic_batch(
         or contract.get("contract", {}).get("version") != SEMANTIC_STATE_CONTRACT_VERSION
     ):
         raise ValueError("semantic batch requires the active v8 checkpoint contract")
+    # Catalog normalization and stable trait hashing are shared only within this
+    # batch. No mutable cache escapes into the returned PPO projection.
+    projection_context = _build_semantic_projection_context(catalog_map)
+    projected = [
+        project_native_player_state(row, catalog_map, _projection_context=projection_context)
+        for row in metadata_rows
+    ]
     item_catalog_hashes = {
         row["item_state_identity"]["item_catalog_sha256"] for row in projected
     }
