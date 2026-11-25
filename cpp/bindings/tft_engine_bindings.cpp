@@ -147,6 +147,7 @@ public:
 
 private:
     const FrozenContainerTypes* types_;
+    py::object value_;
 };
 
 py::object freeze_native_python_value(
@@ -241,7 +242,7 @@ py::object freeze_cpp_value(
 
 template <typename T, std::enable_if_t<
     !std::is_base_of_v<py::handle, std::decay_t<T>>, int
-> = 0>
+>>
 py::object freeze_cpp_value(T&& value, const FrozenContainerTypes& types) {
     py::object converted = py::cast(std::forward<T>(value));
     return freeze_native_python_value(converted, types);
@@ -458,6 +459,340 @@ py::list player_info_to_list(const Players& players) {
 
     return result;
 }
+
+py::dict audit_snapshot_to_dict(
+    const tft::AuditSnapshot& snapshot,
+    bool include_masks = true,
+    bool include_combat_events = true
+) {
+    py::dict result;
+    result["contract_id"] = snapshot.contract_id;
+    result["contract_version"] = snapshot.contract_version;
+    result["board_geometry_id"] = snapshot.board_geometry_id;
+    result["board_geometry_version"] = snapshot.board_geometry_version;
+    result["board_rows"] = snapshot.board_rows;
+    result["board_columns"] = snapshot.board_columns;
+    result["board_position_formula"] = snapshot.board_position_formula;
+    result["source_namespace"] = snapshot.source_namespace;
+    result["producer"] = snapshot.producer;
+    result["engine_instance_id"] = snapshot.engine_instance_id;
+    result["episode_id"] = snapshot.episode_id;
+    result["snapshot_sequence"] = snapshot.snapshot_sequence;
+    result["player_decision_sequences"] = snapshot.player_decision_sequences;
+    result["round"] = snapshot.round;
+    result["stage"] = snapshot.stage;
+    result["finished"] = snapshot.finished;
+    result["combat_sequence"] = snapshot.combat_sequence;
+    result["combat_damage_events_truncated"] = snapshot.combat_damage_events_truncated;
+    result["combat_attack_events_truncated"] = snapshot.combat_attack_events_truncated;
+    result["combat_death_events_truncated"] = snapshot.combat_death_events_truncated;
+    if (include_combat_events) {
+            py::list combat_damage_events;
+        for (const auto& event : snapshot.combat_damage_events) {
+            py::dict row;
+            row["combat_sequence"] = event.combat_sequence;
+            row["timestamp"] = event.timestamp;
+            row["source_unit_id"] = event.source_unit_id;
+            row["target_unit_id"] = event.target_unit_id;
+            row["source_player_id"] = event.source_player_id;
+            row["target_player_id"] = event.target_player_id;
+            row["source_unit_uuid"] = event.source_unit_uuid;
+            row["target_unit_uuid"] = event.target_unit_uuid;
+            row["damage_type"] = event.damage_type;
+            row["raw_damage"] = event.raw_damage;
+            row["final_damage"] = event.final_damage;
+            row["critical"] = event.critical;
+            row["ability_damage"] = event.ability_damage;
+            combat_damage_events.append(std::move(row));
+    }
+        result["combat_damage_events"] = std::move(combat_damage_events);
+        py::list combat_attack_events;
+        for (const auto& event : snapshot.combat_attack_events) {
+            py::dict row;
+            row["combat_sequence"] = event.combat_sequence;
+            row["timestamp"] = event.timestamp;
+            row["source_unit_id"] = event.source_unit_id;
+            row["target_unit_id"] = event.target_unit_id;
+            row["source_player_id"] = event.source_player_id;
+            row["target_player_id"] = event.target_player_id;
+            row["source_unit_uuid"] = event.source_unit_uuid;
+            row["target_unit_uuid"] = event.target_unit_uuid;
+            row["critical"] = event.critical;
+            row["damage"] = event.damage;
+            combat_attack_events.append(std::move(row));
+    }
+        result["combat_attack_events"] = std::move(combat_attack_events);
+        py::list combat_death_events;
+        for (const auto& event : snapshot.combat_death_events) {
+            py::dict row;
+            row["combat_sequence"] = event.combat_sequence;
+            row["timestamp"] = event.timestamp;
+            row["unit_id"] = event.unit_id;
+            row["killer_unit_id"] = event.killer_unit_id;
+            row["unit_player_id"] = event.unit_player_id;
+            row["killer_player_id"] = event.killer_player_id;
+            row["unit_uuid"] = event.unit_uuid;
+            row["killer_unit_uuid"] = event.killer_unit_uuid;
+            combat_death_events.append(std::move(row));
+    }
+        result["combat_death_events"] = std::move(combat_death_events);
+    }
+    py::list economy_resolution_events;
+    for (const auto& event : snapshot.economy_resolution_events) {
+        py::dict row;
+        row["contract_id"] = event.contract_id;
+        row["contract_version"] = event.contract_version;
+        row["source_namespace"] = event.source_namespace;
+        row["producer"] = event.producer;
+        row["player_id"] = event.player_id;
+        row["resolved_after_round"] = event.resolved_after_round;
+        row["income_for_round"] = event.income_for_round;
+        row["old_gold"] = event.old_gold;
+        row["gold_before_interest"] = event.gold_before_interest;
+        row["gold_before_income"] = event.gold_before_income;
+        row["new_gold"] = event.new_gold;
+        row["base_gold"] = event.base_gold;
+        row["interest_gold"] = event.interest_gold;
+        row["streak_gold"] = event.streak_gold;
+        row["win_gold"] = event.win_gold;
+        row["total_gold"] = event.total_gold;
+        row["old_level"] = event.old_level;
+        row["new_level"] = event.new_level;
+        row["leveled_up"] = event.leveled_up;
+        row["xp"] = event.xp;
+        row["xp_to_next"] = event.xp_to_next;
+        economy_resolution_events.append(std::move(row));
+    }
+    result["economy_resolution_events"] = std::move(economy_resolution_events);
+    py::list pvp_result_credit_events;
+    for (const auto& event : snapshot.pvp_result_credit_events) {
+        py::dict row;
+        row["combat_sequence"] = event.combat_sequence;
+        row["contract_id"] = event.contract_id;
+        row["contract_version"] = event.contract_version;
+        row["source_namespace"] = event.source_namespace;
+        row["producer"] = event.producer;
+        row["winner_player_id"] = event.winner_player_id;
+        row["loser_player_id"] = event.loser_player_id;
+        row["gold_before_credit"] = event.gold_before_credit;
+        row["gold_after_credit"] = event.gold_after_credit;
+        row["credited_gold"] = event.credited_gold;
+        row["win_streak_before"] = event.win_streak_before;
+        row["win_streak_after"] = event.win_streak_after;
+        pvp_result_credit_events.append(std::move(row));
+    }
+    result["pvp_result_credit_events"] = std::move(pvp_result_credit_events);
+    const auto& pool = snapshot.shared_pool;
+    py::dict pool_dict;
+    pool_dict["contract_id"] = pool.contract_id;
+    pool_dict["contract_version"] = pool.contract_version;
+    pool_dict["producer"] = pool.producer;
+    pool_dict["total_available"] = pool.total_available;
+    py::list pool_champions;
+    for (const auto& champion : pool.champions) {
+        py::dict row;
+        row["champion_internal_id"] = champion.champion_internal_id;
+        row["champion_id"] = champion.champion_id;
+        row["cost"] = champion.cost;
+        row["initial_count"] = champion.initial_count;
+        row["available_count"] = champion.available_count;
+        pool_champions.append(std::move(row));
+    }
+    pool_dict["champions"] = std::move(pool_champions);
+    result["shared_pool"] = std::move(pool_dict);
+    py::list players;
+    const auto unit_to_dict = [](const tft::AuditUnitSnapshot& unit) {
+        py::dict d;
+        d["occupied"] = unit.occupied;
+        d["champion_id"] = unit.champion_id;
+        d["uuid"] = unit.uuid;
+        d["star"] = unit.star;
+        d["cost"] = unit.cost;
+        d["items"] = unit.item_ids;
+        d["trait_names"] = unit.trait_names;
+        d["role"] = unit.role;
+        d["attack_damage"] = unit.attack_damage;
+        d["attack_speed"] = unit.attack_speed;
+        d["max_health"] = unit.max_health;
+        d["armor"] = unit.armor;
+        d["magic_resist"] = unit.magic_resist;
+        return d;
+    };
+    for (const auto& player : snapshot.players) {
+        py::dict p;
+        p["player_id"] = player.player_id;
+        const auto& strategic = player.strategic_state;
+        py::dict strategic_state;
+        strategic_state["contract_id"] = strategic.contract_id;
+        strategic_state["contract_version"] = strategic.contract_version;
+        strategic_state["source_namespace"] = strategic.source_namespace;
+        strategic_state["producer"] = strategic.producer;
+        strategic_state["episode_id"] = strategic.episode_id;
+        strategic_state["player_decision_sequence"] = strategic.player_decision_sequence;
+        strategic_state["strategic_context_sequence"] = strategic.strategic_context_sequence;
+        strategic_state["player_id"] = strategic.player_id;
+        strategic_state["round"] = strategic.round;
+        strategic_state["active_composition_valid"] = strategic.active_composition_valid;
+        strategic_state["active_composition_id"] = strategic.active_composition_id;
+        strategic_state["active_composition_version"] = strategic.active_composition_version;
+        strategic_state["active_source_sequence"] = strategic.active_source_sequence;
+        strategic_state["active_unit_ids"] = strategic.active_unit_ids;
+        strategic_state["active_core_unit_ids"] = strategic.active_core_unit_ids;
+        strategic_state["direction_valid"] = strategic.direction_valid;
+        strategic_state["direction_identity"] = strategic.direction_identity;
+        strategic_state["direction_selected_round"] = strategic.direction_selected_round;
+        strategic_state["direction_reference_unit_ids"] = strategic.direction_reference_unit_ids;
+        strategic_state["pivot_candidate_valid"] = strategic.pivot_candidate_valid;
+        strategic_state["pivot_candidate_identity"] = strategic.pivot_candidate_identity;
+        strategic_state["pivot_target_composition_identity"] = strategic.pivot_target_composition_identity;
+        strategic_state["pivot_source_composition_version"] = strategic.pivot_source_composition_version;
+        strategic_state["pivot_reference_unit_ids"] = strategic.pivot_reference_unit_ids;
+        py::list unit_copy_progress;
+        for (const auto& progress : strategic.unit_copy_progress) {
+            py::dict row;
+            row["champion_internal_id"] = progress.champion_internal_id;
+            row["owned_copy_equivalent"] = progress.owned_copy_equivalent;
+            row["copies_toward_next_star"] = progress.copies_toward_next_star;
+            row["highest_star"] = progress.highest_star;
+            unit_copy_progress.append(std::move(row));
+        }
+        strategic_state["unit_copy_progress"] = std::move(unit_copy_progress);
+        strategic_state["opportunity_cost_available"] = strategic.opportunity_cost_available;
+        strategic_state["planner_outputs_valid"] = strategic.planner_outputs_valid;
+        strategic_state["planner_output_sequence"] = strategic.planner_output_sequence;
+        py::list unit_priorities;
+        for (const auto& priority : strategic.unit_priorities) {
+            py::dict row;
+            row["champion_internal_id"] = priority.champion_internal_id;
+            row["intent"] = priority.intent;
+            row["relation"] = priority.relation;
+            row["priority"] = priority.priority;
+            row["target_star"] = priority.target_star;
+            row["sale_restricted"] = priority.sale_restricted;
+            row["confidence"] = priority.confidence;
+            unit_priorities.append(std::move(row));
+        }
+        strategic_state["unit_priorities"] = std::move(unit_priorities);
+        py::list opportunity_costs;
+        for (const auto& opportunity : strategic.opportunity_costs) {
+            py::dict row;
+            row["champion_internal_id"] = opportunity.champion_internal_id;
+            row["value"] = opportunity.value;
+            row["uncertainty"] = opportunity.uncertainty;
+            row["horizon_rounds"] = opportunity.horizon_rounds;
+            row["source"] = opportunity.source;
+            row["forgone_candidate_id"] = opportunity.forgone_candidate_id;
+            row["value_basis"] = opportunity.value_basis;
+            opportunity_costs.append(std::move(row));
+        }
+        strategic_state["opportunity_costs"] = std::move(opportunity_costs);
+        strategic_state["lineup_selected_unit_ids"] = strategic.lineup_selected_unit_ids;
+        strategic_state["lineup_entry_unit_ids"] = strategic.lineup_entry_unit_ids;
+        strategic_state["lineup_exit_unit_ids"] = strategic.lineup_exit_unit_ids;
+        strategic_state["lineup_deferred_unit_ids"] = strategic.lineup_deferred_unit_ids;
+        strategic_state["strategic_refresh_failed"] = strategic.strategic_refresh_failed;
+        strategic_state["strategic_refresh_failure_reason"] =
+            strategic.strategic_refresh_failure_reason;
+        p["strategic_state"] = std::move(strategic_state);
+        p["hp"] = player.hp;
+        p["damage_taken"] = player.damage_taken;
+        p["alive"] = player.alive;
+        p["wins"] = player.wins;
+        p["losses"] = player.losses;
+        if (player.placement.has_value()) p["placement"] = *player.placement;
+        else p["placement"] = py::none();
+        if (player.opponent_id.has_value()) p["opponent_id"] = *player.opponent_id;
+        else p["opponent_id"] = py::none();
+        p["gold"] = player.gold;
+        p["level"] = player.level;
+        p["xp"] = player.xp;
+        p["win_streak"] = player.win_streak;
+        p["loss_streak"] = player.loss_streak;
+        p["gold_before_interest"] = player.gold_before_interest;
+        p["interest_if_resolved_now"] = player.interest_if_resolved_now;
+        p["board_power"] = player.board_power;
+        p["synergy_score"] = player.synergy_score;
+        p["positioning_score"] = player.positioning_score;
+        p["board_quality_score"] = player.board_quality_score;
+        p["board_positional_score"] = player.board_positional_score;
+        p["board_structural_score"] = player.board_structural_score;
+        p["board_quality_delta"] = player.board_quality_delta;
+        p["board_exposed_carries"] = player.board_exposed_carries;
+        p["board_frontline_count"] = player.board_frontline_count;
+        p["board_isolated_frontline_count"] = player.board_isolated_frontline_count;
+        p["board_important_bench_units_unplayed"] = player.board_important_bench_units_unplayed;
+        p["board_frontline_lane_count"] = player.board_frontline_lane_count;
+        p["board_exposed_main_carries"] = player.board_exposed_main_carries;
+        p["board_fragile_frontline_count"] = player.board_fragile_frontline_count;
+        p["board_missing_frontline_count"] = player.board_missing_frontline_count;
+        p["board_missing_backline_count"] = player.board_missing_backline_count;
+        p["board_active_trait_count"] = player.board_active_trait_count;
+        p["board_strategic_fit_score"] = player.board_strategic_fit_score;
+        p["board_unit_quality_score"] = player.board_unit_quality_score;
+        p["board_trait_coherence_score"] = player.board_trait_coherence_score;
+        p["round_gold"] = player.round_gold;
+        p["round_base_gold"] = player.round_base_gold;
+        p["round_interest"] = player.round_interest;
+        p["round_streak_gold"] = player.round_streak_gold;
+        p["round_win_gold"] = player.round_win_gold;
+        py::list board, bench, shop;
+        for (const auto& unit : player.board) board.append(unit_to_dict(unit));
+        for (const auto& unit : player.bench) bench.append(unit_to_dict(unit));
+        for (const auto& unit : player.shop) shop.append(unit_to_dict(unit));
+        p["board"] = board;
+        p["bench"] = bench;
+        p["shop"] = shop;
+        p["shop_offer_revisions"] = player.shop_offer_revisions;
+        p["item_components"] = player.item_components;
+        p["item_inventory"] = player.item_inventory;
+        py::list component_counts, inventory_counts, equipped_items;
+        for (const auto& count : player.item_component_counts) { py::dict row; row["catalog_id"] = count.catalog_id; row["count"] = count.count; component_counts.append(std::move(row)); }
+        for (const auto& count : player.item_inventory_counts) { py::dict row; row["catalog_id"] = count.catalog_id; row["count"] = count.count; inventory_counts.append(std::move(row)); }
+        for (const auto& equipped : player.equipped_items) { py::dict row; row["unit_uuid"] = equipped.unit_uuid; row["location"] = equipped.location; row["slot"] = equipped.slot; row["catalog_id"] = equipped.catalog_id; equipped_items.append(std::move(row)); }
+        p["item_component_counts"] = std::move(component_counts);
+        p["item_inventory_counts"] = std::move(inventory_counts);
+        p["equipped_items"] = std::move(equipped_items);
+        p["item_ownership_retired"] = player.item_ownership_retired;
+        py::list retired_component_counts, retired_inventory_counts, retired_equipped_counts, retired_anvils;
+        for (const auto& count : player.retired_item_component_counts) { py::dict row; row["catalog_id"] = count.catalog_id; row["count"] = count.count; retired_component_counts.append(std::move(row)); }
+        for (const auto& count : player.retired_item_inventory_counts) { py::dict row; row["catalog_id"] = count.catalog_id; row["count"] = count.count; retired_inventory_counts.append(std::move(row)); }
+        for (const auto& equipped : player.retired_equipped_item_counts) { py::dict row; row["unit_uuid"] = equipped.unit_uuid; row["catalog_id"] = equipped.catalog_id; row["count"] = equipped.count; retired_equipped_counts.append(std::move(row)); }
+        for (const auto& anvil : player.retired_pending_anvils) { py::dict row; row["sequence"] = anvil.sequence; row["kind"] = anvil.kind; row["options"] = anvil.options; retired_anvils.append(std::move(row)); }
+        p["retired_item_component_counts"] = std::move(retired_component_counts);
+        p["retired_item_inventory_counts"] = std::move(retired_inventory_counts);
+        p["retired_equipped_item_counts"] = std::move(retired_equipped_counts);
+        p["retired_pending_anvils"] = std::move(retired_anvils);
+        p["item_component_catalog"] = player.item_component_catalog;
+        p["pending_anvil"] = player.pending_anvil;
+        p["pending_anvil_sequence"] = player.pending_anvil_sequence;
+        p["pending_anvil_kind"] = player.pending_anvil_kind;
+        p["pending_anvil_options"] = player.pending_anvil_options;
+        p["item_component_features"] = player.item_component_features;
+        p["item_inventory_features"] = player.item_inventory_features;
+        p["item_recipe_features"] = player.item_recipe_features;
+        p["item_inventory_target_fit"] = player.item_inventory_target_fit;
+        p["item_recipe_target_fit"] = player.item_recipe_target_fit;
+        p["pending_anvil_option_features"] = player.pending_anvil_option_features;
+        p["actions_taken_this_round"] = player.actions_taken_this_round;
+        p["board_move_age"] = player.board_move_age;
+        p["last_item_action_kind"] = player.last_item_action_kind;
+        p["last_item_id"] = player.last_item_id;
+        p["last_item_first_component"] = player.last_item_first_component;
+        p["last_item_second_component"] = player.last_item_second_component;
+        p["last_item_target_uuid"] = player.last_item_target_uuid;
+        p["last_item_target_slot"] = player.last_item_target_slot;
+        p["last_item_target_on_board"] = player.last_item_target_on_board;
+        p["last_item_fit"] = player.last_item_fit;
+        p["last_item_immediate_strength"] = player.last_item_immediate_strength;
+        p["last_item_role_alignment"] = player.last_item_role_alignment;
+        p["last_item_assignment_reward"] = player.last_item_assignment_reward;
+        if (include_masks) p["action_masks"] = masks_to_dict(player.masks);
+        players.append(std::move(p));
+    }
+    result["players"] = std::move(players);
+    return result;
+}
+
 
 py::object audit_snapshot_to_frozen_dict(
     const tft::AuditSnapshot& snapshot,
