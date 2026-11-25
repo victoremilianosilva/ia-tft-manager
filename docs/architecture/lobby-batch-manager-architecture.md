@@ -159,8 +159,14 @@ A validação estrutural do envelope e das identidades do snapshot continua no w
 #### Impactos e limites
 Para snapshots nativos, deixa de haver a conversão de seis matrizes/listas por jogador em arrays NumPy descartáveis durante a validação do wrapper. O custo da validação semântica permanece no estágio de projeção, onde os dados são efetivamente convertidos para a representação PPO. A melhoria esperada é redução de alocações temporárias e trabalho duplicado; não é declarada uma redução de latência end-to-end sem novo benchmark.
 
+#### Fronteira de confiança e consumidores
+O snapshot nativo pinado pode ser lido por consumidores de auditoria/proveniência antes da projeção; isso não significa que seus seis blocos semânticos estejam validados para uso neural. Esses consumidores usam fatos estruturais/ownership/eventos e não podem alimentar tensores ou decisões da policy diretamente. A única entrada dos campos semânticos no PPO é `build_semantic_batch`, que projeta cada linha por `project_native_player_state` antes da criação dos tensores.
+
+O Trainer usa `build_semantic_batch` tanto para o snapshot da decisão atual quanto para o snapshot da próxima observação. O cache semântico só pode ser reutilizado quando a identidade imutável do snapshot coincide com a identidade da projeção já construída; a validade do cache depende do contrato nativo de que o conteúdo não muda sem avançar a sequência. Snapshots de resultado usados apenas para eventos factuais/auditoria não são considerados entradas PPO.
+
 #### Validação
 - confirmar que o wrapper continua rejeitando blocos inválidos em snapshots dict-backed;
 - confirmar que snapshots nativos passam pelo wrapper sem materialização NumPy redundante;
-- confirmar que a projeção semântica rejeita os mesmos blocos inválidos antes do uso pelo PPO;
+- confirmar que `build_semantic_batch` rejeita blocos inválidos no mesmo caminho usado para snapshots atuais e próximos antes da criação dos tensores PPO;
+- confirmar que o projetor individual permanece a autoridade de shape, tipo numérico, finitude e faixa [0, 1];
 - executar testes de snapshot binding, projeção semântica, paridade nativa e smoke PPO.
