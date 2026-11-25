@@ -1625,10 +1625,15 @@ class Trainer:
 
                 # Reward/done belong to the Engine step result; next_obs may
                 # instead belong to a freshly auto-reset episode.
+                # Scope interning to this transition only: a native revision
+                # can be shared between StepResult and next-observation metadata,
+                # but never across different transitions or episodes.
+                transition_native_state_cache = {}
                 flat_result_snapshot_metadata = self._expand_lobby_snapshot_metadata(
                     [info.get("step_result_snapshot") for info in infos],
                     self.PLAYERS_PER_LOBBY,
                     "snapshot de resultado da transição",
+                    native_state_cache=transition_native_state_cache,
                 )
                 # Keep native action provenance beside the exact StepResult identity.
                 self._attach_native_action_traces(
@@ -1641,6 +1646,7 @@ class Trainer:
                     [info.get("next_snapshot") for info in infos],
                     self.PLAYERS_PER_LOBBY,
                     "snapshot da próxima observação",
+                    native_state_cache=transition_native_state_cache,
                 )
                 next_semantic_batch = build_semantic_batch(
                     flat_next_snapshot_metadata,
