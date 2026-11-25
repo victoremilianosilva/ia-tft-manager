@@ -9,6 +9,8 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+
+import numpy as np
 from collections.abc import Mapping, Sequence
 
 SEMANTIC_STATE_CONTRACT_ID = "tft.ppo.semantic-native-state.v8"
@@ -878,6 +880,29 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
 
     def read_feature_block(field, shape):
         value = state.get(field)
+        if isinstance(value, np.ndarray):
+            # Native item blocks arrive as immutable, C-contiguous float32 views
+            # pinned to the owning AuditSnapshot. Validate the whole block in
+            # NumPy rather than walking thousands of scalars in Python.
+            if (
+                value.dtype != np.dtype(np.float32)
+                or value.shape != shape
+                or not value.flags.c_contiguous
+                or value.flags.writeable
+            ):
+                raise ValueError(
+                    f"native semantic item field {field} has invalid native view contract"
+                )
+            if not np.isfinite(value).all():
+                raise ValueError(f"native semantic item field {field} contains non-finite values")
+            if np.any(value < 0.0) or np.any(value > 1.0):
+                raise ValueError(f"native semantic item field {field} is outside [0, 1]")
+            # v8's canonical representation remains the same ordered sequence
+            # of Python floats; only validation/transport is vectorized.
+            return value.reshape(-1).tolist()
+
+        # Dict-backed fixtures and external audit inputs retain the strict
+        # recursive compatibility path.
         if not isinstance(value, Sequence) or isinstance(value, (str, bytes)):
             raise TypeError(f"native semantic item field {field} must be a sequence")
         flat = []
@@ -893,7 +918,7 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
             for child in node:
                 visit(child, depth + 1)
         visit(value)
-        if any(value < 0.0 or value > 1.0 for value in flat):
+        if any(item < 0.0 or item > 1.0 for item in flat):
             raise ValueError(f"native semantic item field {field} is outside [0, 1]")
         return flat
 
