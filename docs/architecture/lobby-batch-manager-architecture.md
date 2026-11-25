@@ -359,7 +359,7 @@ are cumulative, report milliseconds and invocation counts, and only include
 completed stages from successful validations.
 
 **Impacts.** Adds low-overhead timing calls when the wrapper supplies its
-collector, plus per-wrapper counters. The five per-player stages accumulate
+collector, plus per-wrapper counters. The three per-player stages each accumulate
 eight samples per successful lobby snapshot. These values must not be summed
 with the enclosing wall-clock measurement as if they were disjoint pipeline
 costs.

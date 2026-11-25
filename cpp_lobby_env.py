@@ -288,6 +288,7 @@ class CppTFTLobbyWrapper:
             nonlocal stage_started_ns
             if metrics is not None:
                 stage_started_ns = time.perf_counter_ns()
+
         if not isinstance(value, Mapping):
             raise RuntimeError("Snapshot nativo estruturado ausente ou inválido.")
         version = value.get("contract_version")
