@@ -1105,7 +1105,9 @@ def test_native_snapshot_mapping_defers_combat_event_materialization():
     assert handle.event_calls == []
 
     clone = copy.deepcopy(snapshot)
-    clone["players"][0]["board"].clear()
+    assert clone is snapshot
+    with pytest.raises(TypeError, match="immutable"):
+        clone["players"][0]["board"].clear()
     assert snapshot["players"][0]["board"] == [1, 2, 3]
     assert handle.base_calls == 1
 

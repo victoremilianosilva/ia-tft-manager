@@ -21,6 +21,7 @@ import numpy as np
 from decision_identity import build_player_identity_envelopes
 from reward_audit import RewardAuditLedger
 from reward_outcome_producers import build_action_outcome_events
+from immutable_snapshot import freeze_snapshot
 
 _REPO_ROOT = Path(__file__).resolve().parent
 # CMake builds may live at the repository root (build/) or under cpp/.
@@ -69,13 +70,15 @@ class _NativeSnapshotMapping(dict):
 
     def _base_dict(self):
         if self._base is None:
-            self._base = self._handle.to_dict()
+            # Materialize the native value once, then freeze it. All metadata
+            # envelopes may safely share this pinned immutable snapshot.
+            self._base = freeze_snapshot(self._handle.to_dict())
         return self._base
 
     def __getitem__(self, key):
         if key in self._COMBAT_FIELDS:
             if key not in self._combat_cache:
-                self._combat_cache[key] = self._handle.combat_events(key)
+                self._combat_cache[key] = freeze_snapshot(self._handle.combat_events(key))
             return self._combat_cache[key]
         return self._base_dict()[key]
 
@@ -106,16 +109,24 @@ class _NativeSnapshotMapping(dict):
     def copy(self):
         return {key: self[key] for key in self}
 
+    def _immutable(self, *_args, **_kwargs):
+        raise TypeError("native audit snapshot is immutable")
+
+    __setitem__ = _immutable
+    __delitem__ = _immutable
+    clear = _immutable
+    pop = _immutable
+    popitem = _immutable
+    setdefault = _immutable
+    update = _immutable
+    __ior__ = _immutable
+
     def __deepcopy__(self, memo):
-        clone = type(self)(self._handle)
-        memo[id(self)] = clone
-        # Reuse the already materialized base through a Python-level defensive
-        # copy; do not ask C++ to rebuild the same large player tree a second time.
-        if self._base is not None:
-            clone._base = copy.deepcopy(self._base, memo)
-        if self._combat_cache:
-            clone._combat_cache = copy.deepcopy(self._combat_cache, memo)
-        return clone
+        # The handle pins a const native value and all Python materializations
+        # are recursively frozen, so copying the mapping would only duplicate
+        # immutable audit evidence.
+        memo[id(self)] = self
+        return self
 
 
 class CppTFTLobbyWrapper:
