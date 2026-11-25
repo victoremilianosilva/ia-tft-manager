@@ -887,15 +887,33 @@ def test_trainer_flattens_packed_action_masks_to_contract_tensors():
     packed[:, 0] = True
     packed[:, 9] = True
 
-    flattened = trainer._flatten_masks(
+    packed_flattened = trainer._flatten_masks(
         [packed],
         lobby_player_alive=[[True] * 8],
     )
 
-    assert set(flattened) == set(Trainer.MASK_SHAPES)
-    assert tuple(flattened["type_mask"].shape) == (8, 9)
-    assert tuple(flattened["shop_mask"].shape) == (8, 5)
-    assert flattened["type_mask"][:, 0].all()
-    assert flattened["shop_mask"][:, 0].all()
-    assert all(value.dtype == torch.bool for value in flattened.values())
+    legacy_players = [dict() for _ in range(8)]
+    offset = 0
+    for key, shape in Trainer.MASK_SHAPES.items():
+        width = int(np.prod(shape))
+        for player_id in range(8):
+            legacy_players[player_id][key] = packed[
+                player_id, offset:offset + width
+            ].reshape(shape).copy()
+        offset += width
+
+    legacy_flattened = trainer._flatten_masks(
+        [legacy_players],
+        lobby_player_alive=[[True] * 8],
+    )
+
+    assert offset == 1280
+    assert set(packed_flattened) == set(Trainer.MASK_SHAPES)
+    assert tuple(packed_flattened["type_mask"].shape) == (8, 9)
+    assert tuple(packed_flattened["shop_mask"].shape) == (8, 5)
+    assert packed_flattened["type_mask"][:, 0].all()
+    assert packed_flattened["shop_mask"][:, 0].all()
+    assert all(value.dtype == torch.bool for value in packed_flattened.values())
+    for key in Trainer.MASK_SHAPES:
+        assert torch.equal(packed_flattened[key], legacy_flattened[key])
 

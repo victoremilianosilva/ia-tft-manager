@@ -1077,8 +1077,14 @@ class CppTFTLobbyWrapper:
                 offset = 0
                 for key, shape in self._PACKED_ACTION_MASK_LAYOUT:
                     width = int(np.prod(shape))
-                    packed[player_index, offset:offset + width] = np.asarray(
-                        player_masks[key], dtype=np.bool_
+                    raw_mask = np.asarray(player_masks[key])
+                    if raw_mask.shape != shape:
+                        raise RuntimeError(
+                            f"Máscara legada '{key}' inválida para jogador {player_index}: "
+                            f"shape={raw_mask.shape}, esperado={shape}."
+                        )
+                    packed[player_index, offset:offset + width] = raw_mask.astype(
+                        np.bool_, copy=False
                     ).reshape(-1)
                     offset += width
 
