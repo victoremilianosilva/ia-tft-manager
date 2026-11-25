@@ -21,7 +21,7 @@ import numpy as np
 from decision_identity import build_player_identity_envelopes
 from reward_audit import RewardAuditLedger
 from reward_outcome_producers import build_action_outcome_events
-from immutable_snapshot import freeze_snapshot
+from immutable_snapshot import FrozenDict, freeze_snapshot
 
 _REPO_ROOT = Path(__file__).resolve().parent
 # CMake builds may live at the repository root (build/) or under cpp/.
@@ -70,9 +70,14 @@ class _NativeSnapshotMapping(dict):
 
     def _base_dict(self):
         if self._base is None:
-            # Materialize the native value once, then freeze it. All metadata
-            # envelopes may safely share this pinned immutable snapshot.
-            self._base = freeze_snapshot(self._handle.to_dict())
+            # The native binding returns a recursively immutable FrozenDict.
+            # Keep a compatibility fallback for Python-backed test/fixture handles.
+            native_snapshot = self._handle.to_dict()
+            self._base = (
+                native_snapshot
+                if isinstance(native_snapshot, FrozenDict)
+                else freeze_snapshot(native_snapshot)
+            )
         return self._base
 
     def __getitem__(self, key):

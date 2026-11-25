@@ -39,24 +39,119 @@ struct FrozenContainerTypes {
 class FrozenDictBuilder;
 class FrozenListBuilder;
 
-py::object builder_to_python(const py::object& value);
-py::object builder_to_python(const py::handle& value);
-py::object builder_to_python(const FrozenDictBuilder& value);
-py::object builder_to_python(FrozenDictBuilder&& value);
-py::object builder_to_python(const FrozenListBuilder& value);
-py::object builder_to_python(FrozenListBuilder&& value);
+py::object freeze_native_python_value(
+    const py::handle& value,
+    const FrozenContainerTypes& types
+);
 
 template <typename T>
-py::object builder_to_python(T&& value) {
-    return py::cast(std::forward<T>(value));
-}
+py::object freeze_cpp_value(T&& value, const FrozenContainerTypes& types);
+
+template <typename T>
+py::object freeze_cpp_value(
+    const std::vector<T>& values,
+    const FrozenContainerTypes& types
+);
+
+template <typename T, std::size_t N>
+py::object freeze_cpp_value(
+    const std::array<T, N>& values,
+    const FrozenContainerTypes& types
+);
+
+py::object freeze_cpp_value(
+    const py::object& value,
+    const FrozenContainerTypes& types
+);
+py::object freeze_cpp_value(
+    const py::handle& value,
+    const FrozenContainerTypes& types
+);
+py::object freeze_cpp_value(
+    const FrozenDictBuilder& value,
+    const FrozenContainerTypes& types
+);
+py::object freeze_cpp_value(
+    FrozenDictBuilder&& value,
+    const FrozenContainerTypes& types
+);
+py::object freeze_cpp_value(
+    const FrozenListBuilder& value,
+    const FrozenContainerTypes& types
+);
+py::object freeze_cpp_value(
+    FrozenListBuilder&& value,
+    const FrozenContainerTypes& types
+);
+
+class FrozenDictBuilder {
+public:
+    explicit FrozenDictBuilder(const FrozenContainerTypes& types)
+        : types_(&types), value_(types.dict_type.attr("_empty")()) {}
+
+    class ItemProxy {
+    public:
+        ItemProxy(FrozenDictBuilder& owner, const char* key)
+            : owner_(owner), key_(key) {}
+
+        template <typename T>
+        ItemProxy& operator=(T&& value) {
+            owner_.set(key_, std::forward<T>(value));
+            return *this;
+        }
+
+    private:
+        FrozenDictBuilder& owner_;
+        const char* key_;
+    };
+
+    ItemProxy operator[](const char* key) { return ItemProxy(*this, key); }
+
+    template <typename T>
+    void set(const char* key, T&& value) {
+        py::object frozen_value = freeze_cpp_value(
+            std::forward<T>(value), *types_
+        );
+        const py::str python_key(key);
+        if (PyDict_SetItem(value_.ptr(), python_key.ptr(), frozen_value.ptr()) != 0) {
+            throw py::error_already_set();
+        }
+    }
+
+    py::object object() const { return value_; }
+
+private:
+    const FrozenContainerTypes* types_;
+    py::object value_;
+};
+
+class FrozenListBuilder {
+public:
+    explicit FrozenListBuilder(const FrozenContainerTypes& types)
+        : types_(&types), value_(types.list_type.attr("_empty")()) {}
+
+    template <typename T>
+    void append(T&& value) {
+        py::object frozen_value = freeze_cpp_value(
+            std::forward<T>(value), *types_
+        );
+        if (PyList_Append(value_.ptr(), frozen_value.ptr()) != 0) {
+            throw py::error_already_set();
+        }
+    }
+
+    py::object object() const { return value_; }
+
+private:
+    const FrozenContainerTypes* types_;
+};
 
 py::object freeze_native_python_value(
     const py::handle& value,
     const FrozenContainerTypes& types
 ) {
-    // Builder-created containers are already recursively immutable. Reuse
-    // them instead of traversing/copying the same subtree a second time.
+    // Values built by the native serializer are already immutable. Reuse them
+    // without traversing the same subtree a second time.
     if (py::isinstance(value, types.dict_type) ||
         py::isinstance(value, types.list_type)) {
         return py::reinterpret_borrow<py::object>(value);
@@ -99,75 +194,77 @@ py::object freeze_native_python_value(
     return py::module_::import("copy").attr("deepcopy")(value);
 }
 
-class FrozenDictBuilder {
-public:
-    explicit FrozenDictBuilder(const FrozenContainerTypes& types)
-        : types_(&types), value_(types.dict_type.attr("_empty")()) {}
-
-    class ItemProxy {
-    public:
-        ItemProxy(FrozenDictBuilder& owner, const char* key)
-            : owner_(owner), key_(key) {}
-
-        template <typename T>
-        ItemProxy& operator=(T&& value) {
-            owner_.set(key_, std::forward<T>(value));
-            return *this;
-        }
-
-    private:
-        FrozenDictBuilder& owner_;
-        const char* key_;
-    };
-
-    ItemProxy operator[](const char* key) { return ItemProxy(*this, key); }
-
-    template <typename T>
-    void set(const char* key, T&& value) {
-        py::object mutable_value = builder_to_python(std::forward<T>(value));
-        py::object frozen_value = freeze_native_python_value(mutable_value, *types_);
-        const py::str python_key(key);
-        if (PyDict_SetItem(value_.ptr(), python_key.ptr(), frozen_value.ptr()) != 0) {
-            throw py::error_already_set();
-        }
-    }
-
-    py::object object() const { return value_; }
-
-private:
-    const FrozenContainerTypes* types_;
-    py::object value_;
-};
-
-class FrozenListBuilder {
-public:
-    explicit FrozenListBuilder(const FrozenContainerTypes& types)
-        : types_(&types), value_(types.list_type.attr("_empty")()) {}
-
-    template <typename T>
-    void append(T&& value) {
-        py::object mutable_value = builder_to_python(std::forward<T>(value));
-        py::object frozen_value = freeze_native_python_value(mutable_value, *types_);
-        if (PyList_Append(value_.ptr(), frozen_value.ptr()) != 0) {
-            throw py::error_already_set();
-        }
-    }
-
-    py::object object() const { return value_; }
-
-private:
-    const FrozenContainerTypes* types_;
-    py::object value_;
-};
-
-py::object builder_to_python(const py::object& value) { return value; }
-py::object builder_to_python(const py::handle& value) {
-    return py::reinterpret_borrow<py::object>(value);
+py::object freeze_cpp_value(
+    const py::object& value,
+    const FrozenContainerTypes& types
+) {
+    return freeze_native_python_value(value, types);
 }
-py::object builder_to_python(const FrozenDictBuilder& value) { return value.object(); }
-py::object builder_to_python(FrozenDictBuilder&& value) { return value.object(); }
-py::object builder_to_python(const FrozenListBuilder& value) { return value.object(); }
-py::object builder_to_python(FrozenListBuilder&& value) { return value.object(); }
+
+py::object freeze_cpp_value(
+    const py::handle& value,
+    const FrozenContainerTypes& types
+) {
+    return freeze_native_python_value(value, types);
+}
+
+py::object freeze_cpp_value(
+    const FrozenDictBuilder& value,
+    const FrozenContainerTypes&
+) {
+    return value.object();
+}
+
+py::object freeze_cpp_value(
+    FrozenDictBuilder&& value,
+    const FrozenContainerTypes&
+) {
+    return value.object();
+}
+
+py::object freeze_cpp_value(
+    const FrozenListBuilder& value,
+    const FrozenContainerTypes&
+) {
+    return value.object();
+}
+
+py::object freeze_cpp_value(
+    FrozenListBuilder&& value,
+    const FrozenContainerTypes&
+) {
+    return value.object();
+}
+
+template <typename T>
+py::object freeze_cpp_value(T&& value, const FrozenContainerTypes& types) {
+    py::object converted = py::cast(std::forward<T>(value));
+    return freeze_native_python_value(converted, types);
+}
+
+template <typename T>
+py::object freeze_cpp_value(
+    const std::vector<T>& values,
+    const FrozenContainerTypes& types
+) {
+    FrozenListBuilder result(types);
+    for (const auto& value : values) {
+        result.append(value);
+    }
+    return result.object();
+}
+
+template <typename T, std::size_t N>
+py::object freeze_cpp_value(
+    const std::array<T, N>& values,
+    const FrozenContainerTypes& types
+) {
+    FrozenListBuilder result(types);
+    for (const auto& value : values) {
+        result.append(value);
+    }
+    return result.object();
+}
 
 
 template <std::size_t N>
@@ -499,7 +596,7 @@ py::object audit_snapshot_to_frozen_dict(
     pool_dict["champions"] = std::move(pool_champions);
     result["shared_pool"] = std::move(pool_dict);
     FrozenListBuilder players(types);
-    const auto unit_to_dict = [](const tft::AuditUnitSnapshot& unit) {
+    const auto unit_to_dict = [&types](const tft::AuditUnitSnapshot& unit) {
         FrozenDictBuilder d(types);
         d["occupied"] = unit.occupied;
         d["champion_id"] = unit.champion_id;
