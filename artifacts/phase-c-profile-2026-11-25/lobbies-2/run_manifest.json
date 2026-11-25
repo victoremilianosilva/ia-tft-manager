@@ -1214,14 +1214,14 @@
           "gae_lambda": 0.95,
           "gamma": 0.99,
           "learning_rate": 0.0003,
-          "log_dir": "C:\\Users\\Victor\\Desktop\\dev\\Projects\\TFT\\artifacts\\phase-a-profile-2026-11-24\\lobbies-2\\tensorboard",
+          "log_dir": "C:\\Users\\cilio\\Desktop\\Ideia louca\\ia-tft-manager\\artifacts\\phase-c-profile-2026-11-25\\lobbies-2\\tensorboard",
           "lr_schedule_updates": 1000,
           "max_grad_norm": 0.5,
           "min_learning_rate": 5e-05,
           "num_lobbies": 2,
           "ppo_epochs": 4,
           "rollout_steps": 16,
-          "run_manifest_path": "C:\\Users\\Victor\\Desktop\\dev\\Projects\\TFT\\artifacts\\phase-a-profile-2026-11-24\\lobbies-2\\run_manifest.json",
+          "run_manifest_path": "C:\\Users\\cilio\\Desktop\\Ideia louca\\ia-tft-manager\\artifacts\\phase-c-profile-2026-11-25\\lobbies-2\\run_manifest.json",
           "seed": 20261124,
           "target_kl": 0.02,
           "vf_coef": 0.5,
@@ -1230,18 +1230,18 @@
         "version": 1
       },
       "manifest_version": 1,
-      "sha256": "670b56d546b8e3f160559990f377aab8de142b77c66d0d671294b3388c36890c"
+      "sha256": "26204959370869b66c9c38936db4a63120d9b04f4312f0a7f06b21aded416aee"
     }
   },
-  "created_at": "2026-11-24T22:33:09.862483+00:00",
+  "created_at": "2026-11-25T11:06:10.519986+00:00",
   "engine": {
-    "artifact_sha256": "1476c3da1dd5a2d3280e3243fb9bc2632b6036760113e8e1d5e457e1457efe19",
+    "artifact_sha256": "c36f1a067e3db6925aef0a7d293dd5137cf1e9e904791294c5dc771a86e1d799",
     "module": "__main__"
   },
-  "identity_sha256": "b24bc71c89781ac281cf7b8e65c6e52716fa25f56db489eea3041cbb8f941bc8",
+  "identity_sha256": "c78b8b0ec34c079d71cacd4deaf54c43ac9d16adbaa29d42574e493aa8e25861",
   "initial_policy_state_sha256": "97236749f2c489827d61dfedb519c754cb20b2908027390ad02ef7e2b32b24dc",
   "manifest_id": "tft.ppo.native-training-run",
-  "manifest_sha256": "3f325cb2042741715b676581f055bc3af43ebd0981156727d8e6eebbdf225dfd",
+  "manifest_sha256": "72ecb6cf825e0d0ac3409441408dc250d1ee6082e093f60f119a8aa340f1313e",
   "manifest_version": 1,
   "policy": {
     "action_dimensions": [
@@ -1717,9 +1717,9 @@
     "state_dict_schema_sha256": "ce14c9e29394b8f9f37ee58224e60a497ecdd026a8119ed6d5a4d1dc9b872dd2"
   },
   "runtime": {
-    "numpy": "2.5.4",
-    "python": "3.14.4",
-    "torch": "2.14.1+cpu"
+    "numpy": "2.4.6",
+    "python": "3.11.9",
+    "torch": "2.15.0+cpu"
   },
   "runtime_features": {
     "external_catalog_refresh_disabled": true,
@@ -1727,16 +1727,16 @@
   },
   "seed": 20261124,
   "source": {
-    "revision": "0fc855575154a931260c23e007f30ca9c72e00db",
-    "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "working_tree_dirty": false
+    "revision": "7d3d37ca1ddce43693a53edb0ca17e900d159f04",
+    "tracked_diff_sha256": "8f4af0e5df915457511de68ccbd46bb10190940965a28676085ddf13de96a033",
+    "working_tree_dirty": true
   },
   "training_config": {
     "adam_beta1": 0.9,
     "adam_beta2": 0.999,
     "adam_eps": 1e-05,
     "batch_size": 256,
-    "checkpoint_path": "C:\\Users\\Victor\\Desktop\\dev\\Projects\\TFT\\artifacts\\phase-a-profile-2026-11-24\\lobbies-2\\native_ppo_checkpoint.pt",
+    "checkpoint_path": "C:\\Users\\cilio\\Desktop\\Ideia louca\\ia-tft-manager\\artifacts\\phase-c-profile-2026-11-25\\lobbies-2\\native_ppo_checkpoint.pt",
     "clip_coef": 0.2,
     "entropy_coef_final": 0.005,
     "entropy_coef_initial": 0.02,
@@ -1745,14 +1745,14 @@
     "gae_lambda": 0.95,
     "gamma": 0.99,
     "learning_rate": 0.0003,
-    "log_dir": "C:\\Users\\Victor\\Desktop\\dev\\Projects\\TFT\\artifacts\\phase-a-profile-2026-11-24\\lobbies-2\\tensorboard",
+    "log_dir": "C:\\Users\\cilio\\Desktop\\Ideia louca\\ia-tft-manager\\artifacts\\phase-c-profile-2026-11-25\\lobbies-2\\tensorboard",
     "lr_schedule_updates": 1000,
     "max_grad_norm": 0.5,
     "min_learning_rate": 5e-05,
     "num_lobbies": 2,
     "ppo_epochs": 4,
     "rollout_steps": 16,
-    "run_manifest_path": "C:\\Users\\Victor\\Desktop\\dev\\Projects\\TFT\\artifacts\\phase-a-profile-2026-11-24\\lobbies-2\\run_manifest.json",
+    "run_manifest_path": "C:\\Users\\cilio\\Desktop\\Ideia louca\\ia-tft-manager\\artifacts\\phase-c-profile-2026-11-25\\lobbies-2\\run_manifest.json",
     "seed": 20261124,
     "target_kl": 0.02,
     "total_updates": 2,
