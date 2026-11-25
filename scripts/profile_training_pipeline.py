@@ -144,7 +144,7 @@ def install_instrumentation(profiler):
     import cpp_lobby_env
     import vector_lobby_env
     import semantic_observation
-    from cpp_lobby_env import CppTFTLobbyWrapper
+    from cpp_lobby_env import CppTFTLobbyWrapper, _NativeSnapshotMapping
     from vector_lobby_env import LobbyVectorEnv
     from rollout import RolloutBuffer
     from ppo import PPOTrainer
@@ -158,6 +158,29 @@ def install_instrumentation(profiler):
         self._engine = NativeCallProxy(self._engine, profiler)
 
     CppTFTLobbyWrapper.__init__ = profiled_init
+
+    # Split the first lazy materialization into native conversion and freezing.
+    # This monkeypatch is confined to the profiler process; production wrapper
+    # code and snapshot validation rules remain untouched.
+    def profiled_base_dict(self):
+        def materialize():
+            if self._base is None:
+                native_value = profiler.measure(
+                    "snapshot.materialization.native_to_dict",
+                    self._handle.to_dict,
+                )
+                self._base = profiler.measure(
+                    "snapshot.materialization.freeze_snapshot",
+                    cpp_lobby_env.freeze_snapshot,
+                    native_value,
+                )
+            return self._base
+
+        return profiler.measure(
+            "snapshot.materialization.base_dict_total", materialize
+        )
+
+    _NativeSnapshotMapping._base_dict = profiled_base_dict
 
     profiler.wrap(CppTFTLobbyWrapper, "step", "wrapper.step")
     profiler.wrap(CppTFTLobbyWrapper, "reset", "wrapper.reset")
@@ -332,6 +355,7 @@ def main():
             "tracemalloc excludes native C++ allocations and some allocator-owned memory",
             "RSS is process-wide and sampled before/after; use an external sampler for peak RSS over time",
             "profiling hooks add overhead; compare revisions using the same script and configuration",
+            "snapshot.materialization.base_dict_total contains native_to_dict and freeze_snapshot; do not sum nested timings or add them to wrapper.snapshot_validation",
             "each lobby-count run uses a separate fresh checkpoint/log directory",
         ],
     }
