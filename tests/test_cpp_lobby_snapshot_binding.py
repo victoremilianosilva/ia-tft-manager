@@ -298,6 +298,34 @@ def test_wrapper_rejects_invalid_unit_trait_membership():
         cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
 
 
+
+def test_native_snapshot_mapping_deepcopy_preserves_readonly_item_views():
+    class Handle:
+        def __init__(self):
+            self.views = np.arange(10, dtype=np.float32)
+            self.views.setflags(write=False)
+
+        def to_dict(self):
+            return {"players": [{
+                "item_component_features": self.views,
+            }]}
+
+        def keys(self):
+            return ["players"]
+
+    handle = Handle()
+    mapping = cpp_lobby_env._NativeSnapshotMapping(handle)
+    original = mapping["players"][0]["item_component_features"]
+    cloned = copy.deepcopy(mapping)
+    copied = cloned["players"][0]["item_component_features"]
+
+    assert copied is original
+    assert copied.dtype == np.float32
+    assert copied.shape == (10,)
+    assert copied.flags.c_contiguous
+    assert not copied.flags.writeable
+
+
 def test_reset_masks_are_taken_from_same_native_snapshot(monkeypatch):
     monkeypatch.setattr(cpp_lobby_env, "_NativeTFTLobby", FakeNativeLobby)
     lobby = cpp_lobby_env.CppTFTLobbyWrapper(seed=7)
