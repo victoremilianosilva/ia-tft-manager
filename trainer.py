@@ -587,6 +587,7 @@ class Trainer:
                     # revision through separate Python mappings; share the frozen
                     # player subtree instead of materializing it twice.
                     cache_key = (
+                        lobby_idx,
                         snapshot.get("engine_instance_id"),
                         snapshot.get("episode_id"),
                         snapshot.get("decision_sequence"),
