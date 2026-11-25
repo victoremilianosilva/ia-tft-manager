@@ -1316,3 +1316,50 @@ def test_packed_training_mask_api_applies_item_ablation_without_mutating_source(
     assert borrowed is not packed
     assert not borrowed[:, 7:9].any()
     assert packed[:, 7:9].all()
+
+
+
+def test_native_frozen_views_cache_only_nested_values_and_use_single_lookup():
+    scalar = 42
+    nested_dict = {"value": 7}
+    nested_list = [1, {"leaf": True}]
+    view = cpp_lobby_env._NativeFrozenDict({
+        "scalar": scalar,
+        "nested_dict": nested_dict,
+        "nested_list": nested_list,
+    })
+
+    assert view["scalar"] == scalar
+    assert view.get("scalar") == scalar
+    assert "scalar" not in view._view_cache
+    assert view.get("missing", "fallback") == "fallback"
+    assert "missing" not in view._view_cache
+
+    first_dict = view["nested_dict"]
+    assert first_dict is view["nested_dict"]
+    assert first_dict is view.get("nested_dict")
+    assert "nested_dict" in view._view_cache
+    assert first_dict["value"] == 7
+    with pytest.raises(TypeError, match="immutable"):
+        first_dict["value"] = 8
+
+    first_list = view["nested_list"]
+    assert first_list is view["nested_list"]
+    assert first_list[0] == 1
+    assert 0 not in first_list._view_cache
+    nested_child = first_list[1]
+    assert nested_child is first_list[1]
+    assert 1 in first_list._view_cache
+    with pytest.raises(TypeError, match="immutable"):
+        nested_child["leaf"] = False
+    with pytest.raises(TypeError, match="immutable"):
+        first_list.append(2)
+
+
+def test_native_frozen_list_does_not_cache_scalar_elements():
+    view = cpp_lobby_env._NativeFrozenList([None, False, 3, 2.5, "text", {"x": 1}])
+
+    assert list(view[:5]) == [None, False, 3, 2.5, "text"]
+    assert view._view_cache == {}
+    assert view[5] is view[5]
+    assert set(view._view_cache) == {5}
