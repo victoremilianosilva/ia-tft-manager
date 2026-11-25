@@ -28,6 +28,37 @@ using tft::PlayerActionMasks;
 using tft::TFTEngine;
 
 template <std::size_t N>
+py::array_t<float> readonly_float_view(
+    const std::array<float, N>& source,
+    py::handle owner
+) {
+    py::array_t<float> view(
+        {static_cast<py::ssize_t>(N)},
+        {static_cast<py::ssize_t>(sizeof(float))},
+        source.data(),
+        owner
+    );
+    view.attr("setflags")(false);
+    return view;
+}
+
+template <std::size_t Rows, std::size_t Cols>
+py::array_t<float> readonly_float_view(
+    const std::array<std::array<float, Cols>, Rows>& source,
+    py::handle owner
+) {
+    py::array_t<float> view(
+        {static_cast<py::ssize_t>(Rows), static_cast<py::ssize_t>(Cols)},
+        {static_cast<py::ssize_t>(Cols * sizeof(float)),
+         static_cast<py::ssize_t>(sizeof(float))},
+        source.front().data(),
+        owner
+    );
+    view.attr("setflags")(false);
+    return view;
+}
+
+template <std::size_t N>
 py::array_t<bool> mask_1d(
     const std::array<std::uint8_t, N>& source
 ) {
@@ -607,7 +638,31 @@ public:
         if (index >= snapshot_->players.size()) {
             throw py::index_error("native snapshot player index out of range");
         }
-        return audit_player_snapshot_to_dict(snapshot_->players[index], false);
+
+        // Each returned array owns a capsule holding a shared_ptr to this exact
+        // immutable snapshot. Views therefore outlive the handle, mapping and
+        // Engine without copying or depending on mutable wrapper state.
+        auto* pinned_owner =
+            new std::shared_ptr<const tft::AuditSnapshot>(snapshot_);
+        py::capsule owner(pinned_owner, [](void* pointer) {
+            delete static_cast<std::shared_ptr<const tft::AuditSnapshot>*>(pointer);
+        });
+
+        const auto& source = snapshot_->players[index];
+        py::dict result = audit_player_snapshot_to_dict(source, false);
+        result["item_component_features"] =
+            readonly_float_view(source.item_component_features, owner);
+        result["item_inventory_features"] =
+            readonly_float_view(source.item_inventory_features, owner);
+        result["item_recipe_features"] =
+            readonly_float_view(source.item_recipe_features, owner);
+        result["item_inventory_target_fit"] =
+            readonly_float_view(source.item_inventory_target_fit, owner);
+        result["item_recipe_target_fit"] =
+            readonly_float_view(source.item_recipe_target_fit, owner);
+        result["pending_anvil_option_features"] =
+            readonly_float_view(source.pending_anvil_option_features, owner);
+        return result;
     }
 
     std::size_t player_count() const noexcept {
