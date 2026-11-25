@@ -826,6 +826,18 @@ def test_trainer_expands_native_state_snapshot_to_exact_player_rows():
     assert all(row["player_decision_sequence"] == 9 for row in rows)
     assert "native_state_snapshot" not in rows[0]
 
+    # Canonical identity is frozen once at expansion. RolloutBuffer's later
+    # deepcopy shares this immutable envelope instead of copying it again.
+    from copy import deepcopy
+    from immutable_snapshot import FrozenDict
+    for player_id, row in enumerate(rows):
+        source_envelope = snapshot["player_identity_envelopes"][player_id]
+        assert isinstance(row["identity"], FrozenDict)
+        assert row["identity"] == source_envelope
+        assert deepcopy(row["identity"]) is row["identity"]
+    with pytest.raises(TypeError, match="immutable"):
+        rows[0]["identity"]["player_id"] = "player-99"
+
 
 def test_observation_rows_receive_stable_content_hashes():
     observations = torch.tensor(
