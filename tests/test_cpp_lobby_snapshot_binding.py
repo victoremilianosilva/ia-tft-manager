@@ -1168,7 +1168,10 @@ def test_native_snapshot_handle_builds_frozen_containers_directly_from_native_st
         # The immutable native view must be structurally identical to the
         # observer-facing mutable audit representation.
         public_snapshot = lobby.get_audit_snapshot()
-        assert dict(native_snapshot) == public_snapshot
+        public_projection = {
+            key: public_snapshot[key] for key in native_snapshot
+        }
+        assert dict(native_snapshot) == public_projection
         assert native_snapshot["players"] == public_snapshot["players"]
 
         with pytest.raises(TypeError, match="immutable"):

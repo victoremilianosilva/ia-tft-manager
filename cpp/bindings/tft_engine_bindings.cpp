@@ -55,6 +55,12 @@ py::object freeze_native_python_value(
     const py::handle& value,
     const FrozenContainerTypes& types
 ) {
+    // Builder-created containers are already recursively immutable. Reuse
+    // them instead of traversing/copying the same subtree a second time.
+    if (py::isinstance(value, types.dict_type) ||
+        py::isinstance(value, types.list_type)) {
+        return py::reinterpret_borrow<py::object>(value);
+    }
     if (py::isinstance<py::dict>(value)) {
         py::object frozen = types.dict_type.attr("_empty")();
         const py::dict source = py::reinterpret_borrow<py::dict>(value);
