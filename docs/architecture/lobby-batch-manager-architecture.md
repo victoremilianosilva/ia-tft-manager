@@ -449,16 +449,16 @@ combat access. Benchmark comparison remains a separate user-run step.
 
 **Technical rationale.** Player records are independently addressable inside the pinned immutable `AuditSnapshot`. The binding can serialize one requested player at a time while retaining the same native snapshot owner. Python exposes that access as a read-only sequence, preserving indexing and iteration for consumers without requiring an eager list of all eight player dictionaries.
 
-**New responsibility.** `NativeAuditSnapshotHandle` owns the native player sequence and exposes bounded `player_count()` / `player(index)` access. Its envelope `to_dict()` excludes the player collection. `_NativeSnapshotPlayers` caches and freezes each player only on first access. `_NativeSnapshotMapping` combines the envelope with this lazy sequence. Python-backed fixture handles keep the legacy complete-dictionary fallback. `Trainer` consumes the sequence protocol and reuses an already-frozen player record rather than freezing it again.
+**New responsibility.** `NativeAuditSnapshotHandle` owns the native player sequence and exposes bounded `player_count()` / `player(index)` access. Its dedicated `to_envelope_dict()` excludes the player collection, while the established public `to_dict()` remains complete and includes all players. `_NativeSnapshotPlayers` caches and freezes each player only on first access. `_NativeSnapshotMapping` combines the envelope with this lazy sequence. Python-backed fixture handles keep the legacy complete-dictionary fallback. `Trainer` consumes the sequence protocol and reuses an already-frozen player record rather than freezing it again.
 
 **Contracts and invariants.**
 - The handle continues to pin `shared_ptr<const AuditSnapshot>`; the Python sequence retains the handle for the lifetime of its player views.
 - Player count remains exactly the native lobby cardinality (eight); indices are bounds-checked.
 - Player identity, strategic owner context, board/bench/shop slots, item ownership, and all snapshot fields retain their existing serialized names and values.
-- The public eager `get_audit_snapshot()` API remains unchanged, including its diagnostic action masks.
+- The public eager `get_audit_snapshot()` and `NativeAuditSnapshotHandle.to_dict()` APIs remain complete and unchanged in shape, including the diagnostic masks exposed by `get_audit_snapshot()`.
 - Training receives no action-mask copy through the player snapshot; masks remain available through the dedicated packed-mask API.
 - Fixture-backed mappings remain supported during migration.
 
-**Impact.** The first native envelope access no longer builds or freezes all eight player subtrees. Each player subtree is converted and frozen only when a consumer requests it, and repeated access reuses the same immutable object. This is an incremental lazy-materialization boundary, not yet a zero-copy typed C++ view; it does not claim that the per-player conversion/freeze cost has disappeared.
+**Impact.** The training adapter requests the dedicated native envelope and does not build or freeze the player collection as part of that read. Each player subtree is exposed by index and frozen on first Python access, with repeated reads reusing the same immutable object. The public `to_dict()` path remains intentionally eager for callers that request the complete snapshot. This is an incremental lazy-materialization boundary, not yet a zero-copy typed C++ view; it does not claim that the per-player conversion/freeze cost has disappeared.
 
 **Validation criteria.** Native binding tests verify envelope caching, lazy per-player materialization, per-player cache identity, structural parity with the public getter after excluding its diagnostic-only action masks, bounds behavior, and immutable nested player data. Wrapper validation, semantic projection, rollout alignment, and PPO contract tests must remain green. End-to-end performance claims require a separate PPO-enabled benchmark.

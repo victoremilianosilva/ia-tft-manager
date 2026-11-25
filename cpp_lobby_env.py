@@ -111,7 +111,8 @@ class _NativeSnapshotMapping(Mapping):
             # Native handles materialize only envelope-level fields here;
             # player subtrees are fetched independently on first access.
             # Python fixture handles retain the legacy complete-dictionary path.
-            native_snapshot = self._handle.to_dict()
+            envelope = getattr(self._handle, "to_envelope_dict", None)
+            native_snapshot = envelope() if callable(envelope) else self._handle.to_dict()
             self._base = (
                 native_snapshot
                 if isinstance(native_snapshot, FrozenDict)
@@ -997,8 +998,8 @@ class CppTFTLobbyWrapper:
         combat_rewards = np.asarray(result["combat_rewards"], dtype=np.float32)
         placement_rewards = np.asarray(result["placement_rewards"], dtype=np.float32)
         action_traces = [dict(item) for item in result["action_traces"]]
-        if not isinstance(source_decision_snapshot, dict) or not isinstance(
-            source_decision_snapshot.get("native_state_snapshot"), dict
+        if not isinstance(source_decision_snapshot, Mapping) or not isinstance(
+            source_decision_snapshot.get("native_state_snapshot"), Mapping
         ):
             raise RuntimeError(
                 "Não há snapshot nativo pré-ação para atribuir consequências factuais."

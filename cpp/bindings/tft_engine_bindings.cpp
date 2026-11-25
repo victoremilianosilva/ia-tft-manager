@@ -578,16 +578,24 @@ public:
         for (const auto& event : snapshot_->combat_death_events) validate_sequence(event.combat_sequence);
     }
 
-    py::object to_dict() const {
-        // Keep one immutable Python view per pinned native snapshot. Besides
-        // avoiding repeated full-tree serialization on field access, the
-        // cache makes the lifetime of every nested frozen container explicit.
-        if (!frozen_snapshot_cache_) {
-            // Keep the established Python ownership boundary while caching
-            // its immutable result per pinned native snapshot. The direct
-            // CPython-container builders caused a reproducible native crash.
-            py::object mutable_snapshot =
+    py::object to_envelope_dict() const {
+        // The training adapter consumes envelope metadata separately from
+        // player records. Keep this cache independent from public to_dict().
+        if (!frozen_envelope_cache_) {
+            py::object mutable_envelope =
                 audit_snapshot_to_dict(*snapshot_, false, false, false);
+            frozen_envelope_cache_ =
+                py::module_::import("immutable_snapshot")
+                    .attr("freeze_snapshot")(mutable_envelope);
+        }
+        return frozen_envelope_cache_;
+    }
+
+    py::object to_dict() const {
+        // Preserve the public complete-snapshot contract for existing callers.
+        if (!frozen_snapshot_cache_) {
+            py::object mutable_snapshot =
+                audit_snapshot_to_dict(*snapshot_, false, false, true);
             frozen_snapshot_cache_ =
                 py::module_::import("immutable_snapshot")
                     .attr("freeze_snapshot")(mutable_snapshot);
@@ -730,6 +738,7 @@ public:
 private:
     std::shared_ptr<const tft::AuditSnapshot> snapshot_;
     mutable py::object frozen_snapshot_cache_;
+    mutable py::object frozen_envelope_cache_;
 };
 
 py::dict reset_to_dict(tft::ResetResult reset) {
@@ -1098,6 +1107,7 @@ PYBIND11_MODULE(tft_engine, module) {
     // atravessam a fronteira Python/C++.
     py::class_<NativeAuditSnapshotHandle>(module, "NativeAuditSnapshotHandle")
         .def("to_dict", &NativeAuditSnapshotHandle::to_dict)
+        .def("to_envelope_dict", &NativeAuditSnapshotHandle::to_envelope_dict)
         .def("player", &NativeAuditSnapshotHandle::player, py::arg("index"))
         .def("player_count", &NativeAuditSnapshotHandle::player_count)
         .def("keys", &NativeAuditSnapshotHandle::keys)

@@ -1176,7 +1176,11 @@ def test_native_snapshot_handle_caches_frozen_ownership_view(monkeypatch):
     lobby = cpp_lobby_env.CppTFTLobbyWrapper(seed=53)
     try:
         lobby.reset()
-        native_view = lobby._last_snapshot_metadata["native_state_snapshot"]
+        original_view = lobby._last_snapshot_metadata["native_state_snapshot"]
+        freeze_calls.clear()
+        # Use a fresh adapter over the same pinned native handle so reset-time
+        # contract validation is outside this lazy-materialization measurement.
+        native_view = cpp_lobby_env._NativeSnapshotMapping(original_view._handle)
         native_snapshot = native_view._base_dict()
         assert isinstance(native_view, __import__("collections.abc").abc.Mapping)
         assert isinstance(native_snapshot, FrozenDict)
@@ -1186,13 +1190,13 @@ def test_native_snapshot_handle_caches_frozen_ownership_view(monkeypatch):
             native_players[8]
         assert isinstance(native_players[0], FrozenDict)
         assert isinstance(native_players[0]["board"], FrozenList)
-        assert len(freeze_calls) == 2
+        assert len(freeze_calls) == 1
 
         # Repeated envelope and player reads reuse their immutable views.
         assert native_view["round"] == native_snapshot["round"]
         assert native_view._base_dict() is native_snapshot
         assert native_players[0] is native_players[0]
-        assert len(freeze_calls) == 2
+        assert len(freeze_calls) == 1
 
         public_snapshot = lobby.get_audit_snapshot()
         # The lazy training handle intentionally omits per-player action masks;
@@ -1208,12 +1212,15 @@ def test_native_snapshot_handle_caches_frozen_ownership_view(monkeypatch):
         public_projection["players"] = public_players
         assert {key: native_view[key] for key in native_view} == public_projection
         assert list(native_players) == public_players
-        assert len(freeze_calls) == 9
+        assert len(freeze_calls) == 8
+        complete_native_snapshot = native_view._handle.to_dict()
+        assert len(complete_native_snapshot["players"]) == 8
+        assert "players" not in native_view._handle.to_envelope_dict()
 
         with pytest.raises(TypeError, match="immutable"):
             native_snapshot["round"] = -1
         with pytest.raises(TypeError, match="immutable"):
-            native_snapshot["players"][0]["board"].append({})
+            native_players[0]["board"].append({})
     finally:
         lobby.close()
 
