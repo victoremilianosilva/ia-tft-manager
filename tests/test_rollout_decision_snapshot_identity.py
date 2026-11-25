@@ -1123,3 +1123,48 @@ def test_expansion_keeps_native_player_state_isolated_between_lobby_rows():
         first["native_player_state"] is not second["native_player_state"]
         for first, second in zip(first_lobby_rows, second_lobby_rows)
     )
+
+
+
+def test_metadata_equality_short_circuits_shared_immutable_subtrees():
+    class EqualityMustNotRun(dict):
+        def __eq__(self, _other):
+            raise AssertionError("shared subtree equality should be skipped")
+
+    shared_native_state = EqualityMustNotRun({"board": [{"unit": 42}]})
+    left = {
+        "identity": {"episode_id": 3, "player_id": 1},
+        "native_player_state": shared_native_state,
+        "action_trace": {"requested_action": [6, 0, 0, 0, 0, 0]},
+    }
+    right = {
+        "identity": {"episode_id": 3, "player_id": 1},
+        "native_player_state": shared_native_state,
+        "action_trace": {"requested_action": [6, 0, 0, 0, 0, 0]},
+    }
+
+    assert RolloutBuffer._metadata_values_equal(left, right)
+
+    changed = {
+        **right,
+        "action_trace": {"requested_action": [6, 1, 0, 0, 0, 0]},
+    }
+    assert not RolloutBuffer._metadata_values_equal(left, changed)
+
+
+def test_metadata_equality_handles_non_scalar_equality_results_safely():
+    class AmbiguousEquality:
+        def __eq__(self, _other):
+            return np.array([True, False])
+
+    assert not RolloutBuffer._metadata_values_equal(
+        {"value": AmbiguousEquality()},
+        {"value": AmbiguousEquality()},
+    )
+
+
+
+def test_metadata_equality_preserves_list_and_tuple_type_semantics():
+    assert not RolloutBuffer._metadata_values_equal([1, 2], (1, 2))
+    assert RolloutBuffer._metadata_values_equal([1, 2], [1, 2])
+    assert RolloutBuffer._metadata_values_equal((1, 2), (1, 2))

@@ -235,3 +235,37 @@ Elimina uma segunda materialização do subtree nativo quando resultado e próxi
 - linhas de lobby distintas nunca compartilham subtrees;
 - manter testes existentes de auto-reset, alinhamento de snapshots, identidade e PPO smoke;
 - executar CI Python/nativo e comparar métricas de alocação/tempo após merge.
+
+
+### Fase C — comparação estrutural com curto-circuito de subtrees compartilhados
+
+#### Problema anterior
+Ao armazenar uma transição, RolloutBuffer.add compara os metadados de resultado e próxima observação para internar envelopes iguais. A comparação genérica left == right percorre recursivamente estruturas grandes mesmo quando native_player_state já é a mesma referência congelada, compartilhada pela otimização anterior. Esse trabalho não cria informação nova e pode consumir CPU proporcional ao tamanho do snapshot em cada jogador/transição.
+
+#### Racional técnico
+A comparação passa a ser estrutural e recursiva para mappings e sequências JSON-like. A identidade de objeto é verificada primeiro: referências idênticas são iguais sem percorrer seus descendentes. Valores não compartilhados continuam comparados recursivamente; tipos/valores incompatíveis continuam resultando em desigualdade. Resultados de igualdade não escalares e exceções continuam sendo tratados defensivamente como não iguais.
+
+#### Responsabilidade nova
+- RolloutBuffer._metadata_values_equal compara estruturas JSON-like e interrompe a recursão em qualquer subtree já compartilhado por identidade.
+- A rotina de armazenamento continua responsável por internar apenas envelopes integralmente iguais antes da cópia defensiva de ownership.
+
+#### Contratos e invariantes
+- Igualdade estrutural preserva a semântica para dicts, listas e tuplas; listas e tuplas são comparadas por conteúdo e comprimento, conforme o comportamento de igualdade Python.
+- Uma referência idêntica pode ser reutilizada sem inspecionar seus descendentes porque não houve alteração de objeto entre os dois envelopes.
+- Diferenças em qualquer campo mutável continuam impedindo o interning.
+- Valores cuja igualdade gere resultado ambíguo ou exceção continuam sendo tratados como diferentes.
+- A cópia defensiva agregada do RolloutBuffer e o isolamento de metadados mutáveis permanecem inalterados.
+
+#### Impactos e limites
+Evita percorrer novamente subtrees nativos congelados que já foram compartilhados entre resultado e próxima observação. O custo restante depende dos metadados mutáveis e da estrutura de cada envelope. Não há alegação de ganho end-to-end antes da repetição do profiler com PPO ativo.
+
+#### Validação
+- provar que subtrees compartilhados por identidade não invocam igualdade profunda;
+- provar que diferenças em campos aninhados são detectadas;
+- provar tratamento defensivo de igualdade não escalar;
+- manter testes de isolamento, imutabilidade, identidade, auto-reset e paridade do rollout;
+- executar CI Python/nativo e comparar o tempo de rollout.add e alocações no profiler completo.
+
+
+#### Correção de equivalência entre sequências
+A comparação estrutural não mistura listas e tuplas: cada família é comparada recursivamente apenas com a mesma família, preservando a semântica nativa do Python (`[1] != (1,)`). `FrozenList` continua compatível com listas por herança, sem perder o short-circuit por identidade.
