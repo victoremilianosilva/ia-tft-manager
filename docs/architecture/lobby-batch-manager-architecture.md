@@ -202,3 +202,34 @@ São eliminadas as cópias profundas duplicadas dos envelopes canônicos no cami
 - provar que mutações no envelope congelado são rejeitadas;
 - manter a cobertura existente de isolamento da entrada no RolloutBuffer, identidade de transição e auto-reset terminal;
 - executar testes de identidade do rollout, snapshot nativo, semantic alignment e smoke PPO.
+
+
+### Fase C — compartilhamento do estado nativo entre resultado e próxima observação
+
+#### Problema anterior
+Após cada step, o Trainer expande separadamente o snapshot de resultado da Engine e o snapshot da próxima observação. Em transições não terminais, ambos podem representar a mesma revisão nativa. A expansão congelava novamente o subtree do jogador em cada passagem, duplicando alocações e retenção de uma estrutura grande antes mesmo do RolloutBuffer.
+
+#### Racional técnico
+A identidade nativa composta por Engine, episódio, sequência do snapshot, round, sequência individual e jogador identifica uma revisão imutável. O Trainer agora mantém um cache local à transição e reutiliza o subtree congelado quando a segunda expansão apresenta exatamente essa mesma identidade. O cache também verifica a identidade do contrato/produtor; divergência contratual para a mesma chave falha explicitamente. O escopo local impede compartilhamento entre transições distintas.
+
+#### Responsabilidade nova
+- Trainer cria um cache efêmero por resultado de step.
+- _expand_lobby_snapshot_metadata valida os campos do snapshot e consulta o cache antes de congelar novamente o estado do jogador.
+- O cache é descartado após a expansão de resultado/próxima observação e não se torna estado persistente do Trainer ou da Engine.
+
+#### Contratos e invariantes
+- Apenas revisões com Engine, episódio, sequência, round, jogador e sequência individual idênticos podem compartilhar o subtree.
+- Contrato, versão, produtor e namespace de origem precisam coincidir para reutilização.
+- Episódios auto-reset e revisões posteriores nunca compartilham estado por coincidência de jogador.
+- O subtree continua recursivamente imutável e isolado da origem.
+- Identidade canônica, action trace, provenance, eventos, rewards, masks e semântica PPO permanecem inalterados.
+- Não há cache entre chamadas de step nem entre lobbies/episódios.
+
+#### Impactos e limites
+Elimina uma segunda materialização do subtree nativo quando resultado e próxima observação apontam para a mesma revisão. O benefício efetivo depende da frequência dessas transições e será quantificado pelo profiler end-to-end; não se declara ganho de throughput sem essa medição.
+
+#### Validação
+- duas mappings independentes da mesma revisão reutilizam a mesma referência congelada por jogador;
+- episódio diferente não reutiliza o subtree;
+- manter testes existentes de auto-reset, alinhamento de snapshots, identidade e PPO smoke;
+- executar CI Python/nativo e comparar métricas de alocação/tempo após merge.
