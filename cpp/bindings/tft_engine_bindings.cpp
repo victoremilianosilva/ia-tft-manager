@@ -247,7 +247,8 @@ py::list player_info_to_list(const Players& players) {
 
 py::dict audit_player_snapshot_to_dict(
     const tft::AuditPlayerSnapshot& player,
-    bool include_masks = true
+    bool include_masks = true,
+    py::object item_view_owner = py::none()
 ) {
     const auto unit_to_dict = [](const tft::AuditUnitSnapshot& unit) {
         py::dict d;
@@ -414,12 +415,27 @@ py::dict audit_player_snapshot_to_dict(
         p["pending_anvil_sequence"] = player.pending_anvil_sequence;
         p["pending_anvil_kind"] = player.pending_anvil_kind;
         p["pending_anvil_options"] = player.pending_anvil_options;
-        p["item_component_features"] = player.item_component_features;
-        p["item_inventory_features"] = player.item_inventory_features;
-        p["item_recipe_features"] = player.item_recipe_features;
-        p["item_inventory_target_fit"] = player.item_inventory_target_fit;
-        p["item_recipe_target_fit"] = player.item_recipe_target_fit;
-        p["pending_anvil_option_features"] = player.pending_anvil_option_features;
+        if (item_view_owner.is_none()) {
+            p["item_component_features"] = player.item_component_features;
+            p["item_inventory_features"] = player.item_inventory_features;
+            p["item_recipe_features"] = player.item_recipe_features;
+            p["item_inventory_target_fit"] = player.item_inventory_target_fit;
+            p["item_recipe_target_fit"] = player.item_recipe_target_fit;
+            p["pending_anvil_option_features"] = player.pending_anvil_option_features;
+        } else {
+            p["item_component_features"] =
+                readonly_float_view(player.item_component_features, item_view_owner);
+            p["item_inventory_features"] =
+                readonly_float_view(player.item_inventory_features, item_view_owner);
+            p["item_recipe_features"] =
+                readonly_float_view(player.item_recipe_features, item_view_owner);
+            p["item_inventory_target_fit"] =
+                readonly_float_view(player.item_inventory_target_fit, item_view_owner);
+            p["item_recipe_target_fit"] =
+                readonly_float_view(player.item_recipe_target_fit, item_view_owner);
+            p["pending_anvil_option_features"] =
+                readonly_float_view(player.pending_anvil_option_features, item_view_owner);
+        }
         p["actions_taken_this_round"] = player.actions_taken_this_round;
         p["board_move_age"] = player.board_move_age;
         p["last_item_action_kind"] = player.last_item_action_kind;
@@ -648,21 +664,11 @@ public:
             delete static_cast<std::shared_ptr<const tft::AuditSnapshot>*>(pointer);
         });
 
-        const auto& source = snapshot_->players[index];
-        py::dict result = audit_player_snapshot_to_dict(source, false);
-        result["item_component_features"] =
-            readonly_float_view(source.item_component_features, owner);
-        result["item_inventory_features"] =
-            readonly_float_view(source.item_inventory_features, owner);
-        result["item_recipe_features"] =
-            readonly_float_view(source.item_recipe_features, owner);
-        result["item_inventory_target_fit"] =
-            readonly_float_view(source.item_inventory_target_fit, owner);
-        result["item_recipe_target_fit"] =
-            readonly_float_view(source.item_recipe_target_fit, owner);
-        result["pending_anvil_option_features"] =
-            readonly_float_view(source.pending_anvil_option_features, owner);
-        return result;
+        return audit_player_snapshot_to_dict(
+            snapshot_->players[index],
+            false,
+            owner
+        );
     }
 
     std::size_t player_count() const noexcept {
