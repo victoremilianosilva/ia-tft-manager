@@ -1151,7 +1151,14 @@ public:
     }
 
     py::object to_dict() const {
-        return audit_snapshot_to_frozen_dict(*snapshot_, false, false);
+        // Keep one immutable Python view per pinned native snapshot. Besides
+        // avoiding repeated full-tree serialization on field access, the
+        // cache makes the lifetime of every nested frozen container explicit.
+        if (!frozen_snapshot_cache_) {
+            frozen_snapshot_cache_ =
+                audit_snapshot_to_frozen_dict(*snapshot_, false, false);
+        }
+        return frozen_snapshot_cache_;
     }
 
     py::list keys() const {
@@ -1195,11 +1202,12 @@ public:
             field == "combat_death_events") {
             return combat_events(field);
         }
-        const py::dict values = py::cast<py::dict>(to_dict());
-        if (!values.contains(field.c_str())) {
+        const py::object values = to_dict();
+        PyObject* value = PyDict_GetItemString(values.ptr(), field.c_str());
+        if (value == nullptr) {
             throw py::key_error(field);
         }
-        return values[field.c_str()];
+        return py::reinterpret_borrow<py::object>(value);
     }
 
     py::object get(
@@ -1211,9 +1219,10 @@ public:
             field == "combat_death_events") {
             return combat_events(field);
         }
-        const py::dict values = py::cast<py::dict>(to_dict());
-        if (!values.contains(field.c_str())) return default_value;
-        return values[field.c_str()];
+        const py::object values = to_dict();
+        PyObject* value = PyDict_GetItemString(values.ptr(), field.c_str());
+        if (value == nullptr) return default_value;
+        return py::reinterpret_borrow<py::object>(value);
     }
 
     py::list combat_events(const std::string& field) const {
@@ -1275,6 +1284,7 @@ public:
 
 private:
     std::shared_ptr<const tft::AuditSnapshot> snapshot_;
+    mutable py::object frozen_snapshot_cache_;
 };
 
 py::dict reset_to_dict(tft::ResetResult reset) {
