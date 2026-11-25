@@ -15,6 +15,7 @@ from types import SimpleNamespace
 import copy
 import os
 import sys
+import time
 
 import numpy as np
 
@@ -154,6 +155,7 @@ class CppTFTLobbyWrapper:
         self._last_action_masks = None
         self._last_snapshot_metadata = None
         self._reward_audit_ledger = RewardAuditLedger()
+        self._snapshot_validation_metrics = {}
         self._players = [
             SimpleNamespace(player_id=i, alive=True, eliminated=False)
             for i in range(self.PLAYERS_PER_LOBBY)
@@ -268,7 +270,25 @@ class CppTFTLobbyWrapper:
         ]
 
     @classmethod
-    def _copy_native_state_snapshot(cls, value, expected_identity):
+    def _copy_native_state_snapshot(cls, value, expected_identity, *, metrics=None):
+        stage_started_ns = time.perf_counter_ns() if metrics is not None else None
+
+        def record_validation_stage(name):
+            nonlocal stage_started_ns
+            if metrics is None:
+                return
+            elapsed_ms = (time.perf_counter_ns() - stage_started_ns) / 1_000_000.0
+            entry = metrics.setdefault(name, {"calls": 0, "total_ms": 0.0, "max_ms": 0.0})
+            entry["calls"] += 1
+            entry["total_ms"] += elapsed_ms
+            entry["max_ms"] = max(entry["max_ms"], elapsed_ms)
+            stage_started_ns = time.perf_counter_ns()
+
+        def start_validation_stage():
+            nonlocal stage_started_ns
+            if metrics is not None:
+                stage_started_ns = time.perf_counter_ns()
+
         if not isinstance(value, Mapping):
             raise RuntimeError("Snapshot nativo estruturado ausente ou inválido.")
         version = value.get("contract_version")
@@ -323,6 +343,7 @@ class CppTFTLobbyWrapper:
             raise RuntimeError("Snapshot estruturado contém sequências individuais inválidas.")
         if player_sequences != expected_identity["player_decision_sequences"]:
             raise RuntimeError("Snapshot estruturado não corresponde às sequências individuais publicadas.")
+        record_validation_stage("envelope_identity_provenance")
         pool = value.get("shared_pool")
         if not isinstance(pool, dict):
             raise RuntimeError("Snapshot estruturado sem shared_pool nativo.")
@@ -460,6 +481,7 @@ class CppTFTLobbyWrapper:
                             "pvp_result_credit_events contém combat_sequence inválido."
                         )
 
+        record_validation_stage("shared_pool_and_events")
         players = value.get("players")
         if not isinstance(players, list) or len(players) != cls.PLAYERS_PER_LOBBY:
             raise RuntimeError("Snapshot estruturado não contém exatamente oito jogadores.")
@@ -468,6 +490,7 @@ class CppTFTLobbyWrapper:
         # occupy exactly one board, bench or shop slot in this snapshot.
         seen_unit_uuids = set()
         for player_id, player in enumerate(players):
+            start_validation_stage()
             actual_player_id = player.get("player_id") if isinstance(player, dict) else None
             if (
                 isinstance(actual_player_id, bool)
@@ -520,6 +543,7 @@ class CppTFTLobbyWrapper:
                                 or float(stat_value) < 0.0
                             ):
                                 raise RuntimeError(f"Perfil de alvo nativo inválido: {stat_field}.")
+            record_validation_stage("player_units_and_slots")
             offer_revisions = player.get("shop_offer_revisions")
             if (not isinstance(offer_revisions, list) or len(offer_revisions) != expected_slots["shop"] or any(isinstance(x, bool) or not isinstance(x, int) or x < 0 for x in offer_revisions)):
                 raise RuntimeError(f"Snapshot do jogador {player_id} contém revisões de oferta inválidas.")
@@ -622,6 +646,7 @@ class CppTFTLobbyWrapper:
                 if (not isinstance(row, dict) or isinstance(row.get("sequence"), bool) or not isinstance(row.get("sequence"), int) or row["sequence"] <= 0 or row["sequence"] in retired_anvil_sequences or isinstance(row.get("kind"), bool) or row.get("kind") not in (0, 1) or not isinstance(row.get("options"), list) or not row["options"] or any(not isinstance(option, str) or not option for option in row["options"])):
                     raise RuntimeError("Snapshot estruturado contém retired_pending_anvils inválido.")
                 retired_anvil_sequences.add(row["sequence"])
+            record_validation_stage("player_item_ownership")
             strategic = player.get("strategic_state")
             if not isinstance(strategic, dict):
                 raise RuntimeError("Snapshot estruturado sem strategic_state dos owners nativos.")
@@ -815,6 +840,7 @@ class CppTFTLobbyWrapper:
                 raise RuntimeError("Ownership ativo presente após aposentadoria terminal dos itens.")
             if not retired_flag and retired_has_evidence:
                 raise RuntimeError("Evidência de aposentadoria presente sem estado terminal.")
+            record_validation_stage("strategic_owner_validation")
         # The pybind handle pins the immutable native value. Its Mapping view
         # materializes semantic fields on demand and defers combat event rows;
         # deepcopy creates an independent Python cache over the same pinned value.
@@ -862,13 +888,21 @@ class CppTFTLobbyWrapper:
             self._last_snapshot_metadata
         )
         self._last_snapshot_metadata["native_state_snapshot"] = self._copy_native_state_snapshot(
-            result.get("native_state_snapshot"), self._last_snapshot_metadata
+            result.get("native_state_snapshot"), self._last_snapshot_metadata,
+            metrics=self._snapshot_validation_metrics,
         )
         self._reward_audit_ledger.reset(
             self._last_snapshot_metadata["engine_instance_id"],
             self._last_snapshot_metadata["episode_id"],
         )
         return np.asarray(result["observations"], dtype=np.float32)
+
+    def get_snapshot_validation_metrics(self):
+        """Return cumulative successful snapshot-validation timings by stage."""
+        return {
+            stage: dict(values)
+            for stage, values in self._snapshot_validation_metrics.items()
+        }
 
     def _invalidate_current_snapshot(self):
         """Prevent consumers from reusing masks/metadata after a reset attempt."""
@@ -923,7 +957,8 @@ class CppTFTLobbyWrapper:
             self._last_snapshot_metadata
         )
         self._last_snapshot_metadata["native_state_snapshot"] = self._copy_native_state_snapshot(
-            result.get("native_state_snapshot"), self._last_snapshot_metadata
+            result.get("native_state_snapshot"), self._last_snapshot_metadata,
+            metrics=self._snapshot_validation_metrics,
         )
         player_info = result.get("players", [])
         self._players = [

@@ -1248,3 +1248,37 @@ def test_packed_training_mask_api_applies_item_ablation_without_mutating_source(
     assert not borrowed[:, 7:9].any()
     assert packed[:, 7:9].all()
 
+
+
+
+def test_snapshot_validation_metrics_are_split_by_validation_stage():
+    native = FakeNativeLobby()
+    snapshot = native._native_state_snapshot()
+    identity = {
+        "engine_instance_id": snapshot["engine_instance_id"],
+        "episode_id": snapshot["episode_id"],
+        "decision_sequence": snapshot["snapshot_sequence"],
+        "player_decision_sequences": snapshot["player_decision_sequences"],
+        "round": snapshot["round"],
+    }
+    metrics = {}
+
+    copied = cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(
+        snapshot, identity, metrics=metrics
+    )
+
+    assert copied is snapshot
+    assert set(metrics) == {
+        "envelope_identity_provenance",
+        "shared_pool_and_events",
+        "player_units_and_slots",
+        "player_item_ownership",
+        "strategic_owner_validation",
+    }
+    assert metrics["envelope_identity_provenance"]["calls"] == 1
+    assert metrics["shared_pool_and_events"]["calls"] == 1
+    assert all(metrics[name]["calls"] == 8 for name in (
+        "player_units_and_slots", "player_item_ownership", "strategic_owner_validation"
+    ))
+    assert all(row["total_ms"] >= 0.0 for row in metrics.values())
+    assert all(row["max_ms"] >= 0.0 for row in metrics.values())

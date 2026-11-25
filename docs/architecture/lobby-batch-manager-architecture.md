@@ -308,3 +308,65 @@ Elimina a cópia do catálogo e a reconstrução do conjunto de IDs para cada jo
 - Manter os testes de rejeição de contratos, sequências, ownership, features de itens e provenance.
 - Executar testes de projeção semântica, alinhamento de rollout, snapshot binding e smoke PPO.
 - Repetir o profiler completo e comparar semantic.build_batch, semantic.project_player, alocações e tempo end-to-end.
+
+
+## Snapshot validation profiling
+
+`CppTFTLobbyWrapper` exposes cumulative timings from successful native snapshot
+validations through `get_snapshot_validation_metrics()`. The optional metrics
+collector on `_copy_native_state_snapshot` separates the validation path into:
+
+- `envelope_identity_provenance`: snapshot contract, geometry, producer,
+  engine/episode/round identity and decision sequences;
+- `shared_pool_and_events`: shared champion pool and event contracts;
+- `player_units_and_slots`: eight-player ownership, board/bench/shop cardinality,
+  unit identity, slot and unit-stat invariants;
+- `player_item_ownership`: item inventory, equipped-item and retired-ownership
+  invariants;
+- `strategic_owner_validation`: strategic owner contracts, sequences, IDs,
+  progress, opportunity costs, planner outputs and lineup invariants.
+
+Each stage reports `calls`, `total_ms`, and `max_ms`. Metrics are cumulative
+per wrapper instance and include only stages completed by successful
+validations. They are diagnostic timings, not additive replacements for the
+existing end-to-end `wrapper.snapshot_validation` measurement: wrapper-level
+time includes surrounding Python work, and stage timings can be affected by
+profiling overhead. Passing no collector leaves the validator's behavior and
+validation contract unchanged; no checks are skipped or cached by this
+instrumentation.
+
+### Change rationale and contract
+
+**Prior problem.** The end-to-end profiler exposed a large
+`wrapper.snapshot_validation` cost, but its single aggregate measurement could
+not distinguish envelope checks, shared-pool/event checks, per-player slot and
+unit checks, item ownership, or strategic-owner validation.
+
+**Technical rationale.** Measure those existing validation blocks independently
+at their current boundaries. This is diagnostic instrumentation only: it does
+not infer that any block is redundant and does not move validation authority.
+
+**New responsibility.** The wrapper accumulates successful validation timings
+per instance and exposes a defensive snapshot through
+`get_snapshot_validation_metrics()`. The validator owns the stage boundaries;
+the caller owns when to collect and compare the counters.
+
+**Contract and invariants.** No validation is skipped, weakened, reordered, or
+cached. Existing snapshot identity, provenance, sequence, slot, UUID, item
+ownership, strategic-owner and planner invariants remain authoritative. The
+optional collector is absent by default for direct validator calls. Metrics
+are cumulative, report milliseconds and invocation counts, and only include
+completed stages from successful validations.
+
+**Impacts.** Adds low-overhead timing calls when the wrapper supplies its
+collector, plus per-wrapper counters. The three per-player stages each accumulate
+eight samples per successful lobby snapshot. These values must not be summed
+with the enclosing wall-clock measurement as if they were disjoint pipeline
+costs.
+
+**Validation criteria.** A regression test validates a representative
+eight-player snapshot and asserts all five stage keys, one sample for the
+envelope and pool/event stages, eight samples for each per-player stage, and
+non-negative timing values. Existing snapshot rejection tests continue to
+protect the validation contract; end-to-end profiling should compare these
+substage totals with the existing wrapper aggregate.
