@@ -348,8 +348,19 @@ def test_semantic_projection_remains_authoritative_for_item_feature_shapes():
     metadata["native_player_state"]["item_recipe_features"] = [
         [0.0] * 16 for _ in range(100)
     ]
+    catalog = {"TFT_TestChampion": 17}
+
+    # Exercise the exact batch entrypoint used by Trainer for both the
+    # current decision snapshot and the next-observation snapshot. The
+    # wrapper may defer native semantic checks, but malformed data must be
+    # rejected before a semantic batch can reach PPO.
     with pytest.raises(ValueError, match="native semantic item field item_recipe_features has invalid shape"):
-        project_native_player_state(metadata, {"TFT_TestChampion": 17})
+        build_semantic_batch([metadata], catalog)
+
+    # Keep the lower-level contract explicit as well: the batch builder's
+    # authority is the per-player semantic projector.
+    with pytest.raises(ValueError, match="native semantic item field item_recipe_features has invalid shape"):
+        project_native_player_state(metadata, catalog)
 
 
 def test_item_identity_and_anvil_sequence_are_bound_to_projection_hash():
