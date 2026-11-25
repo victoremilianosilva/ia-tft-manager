@@ -350,44 +350,46 @@ gate. Any future optimization of lazy materialization must preserve the exact
 snapshot values, immutability, identity correlation, and all existing rejection
 behavior.
 
-## Lazy native snapshot materialization profiling (temporary)
 
-**Prior problem.** The previous stage profile showed that the envelope interval
-contains the first access to a non-combat field on `_NativeSnapshotMapping`.
-That access performs both native `to_dict()` conversion and recursive
-`freeze_snapshot()`, so the existing result cannot distinguish conversion,
-freezing, and the remaining envelope validation work.
+## Lazy native snapshot materialization findings
 
-**Technical rationale.** Instrument the existing end-to-end profiler at the
-Python mapping boundary. In the isolated profiler process, wrap
-`_NativeSnapshotMapping._base_dict` and measure three nested intervals:
-`base_dict_total`, `native_to_dict`, and `freeze_snapshot`. The latter two
-identify the work inside the first-touch materialization without adding timers
-to the production wrapper or changing the native binding.
+**Prior problem.** The previous snapshot-validation profile grouped the first
+non-combat field access on `_NativeSnapshotMapping` with envelope validation.
+That first access lazily performs native `to_dict()` conversion followed by
+`freeze_snapshot()`, so the aggregate could not distinguish those costs.
 
-**New responsibility.** The profiler temporarily owns the monkeypatch and
-reports the three `snapshot.materialization.*` metrics alongside the existing
-inclusive `wrapper.snapshot_validation` metric. The wrapper, native handle,
-and snapshot producer retain their current responsibilities.
+**Observed evidence.** The isolated PPO-enabled profile on 25 November 2026
+recorded 34, 68, and 136 actual materializations for 1, 2, and 4 lobbies
+respectively. In the four-lobby run, `to_dict()` took 7.59 s total (55.8 ms
+per materialization) and `freeze_snapshot()` took 27.71 s (203.7 ms per
+materialization). Together they account for approximately 35.30 s, or
+259.6 ms per first materialization. The measured `base_dict_total` wrapper
+was called 24,672 times because it also includes cache-hit accesses; its
+35.66 s aggregate must not be interpreted as 24,672 materializations.
 
-**Contract and invariants.** This is measurement-only. It must preserve the
-existing lazy cache behavior: `to_dict()` and `freeze_snapshot()` execute only
-when `_base` is absent, and subsequent accesses return the same frozen value.
-No snapshot field, identity, sequence, validation, immutability rule, or
-accept/reject behavior may change. `base_dict_total` contains the two nested
-measurements; none of these timings may be summed with each other or with the
-inclusive wrapper timing.
+**Technical conclusion.** Within the measured first-touch work, recursive
+freezing is the larger component (about 78.5%) and native conversion accounts
+for about 21.5%. This identifies `freeze_snapshot()` as the first candidate
+for a focused investigation, not as proof that freezing can be skipped or
+replaced. The semantic projection remains the largest measured stage at
+87.51 s for four lobbies (1,088 player projections, about 80.4 ms each).
 
-**Impacts and limits.** The profiler adds timing overhead only during this
-diagnostic run. The measurement separates Python-visible conversion and
-freezing calls, but does not decompose internal C++ work inside `to_dict()` or
-allocator/native-memory costs. Results are diagnostic and are not a performance
-claim.
+**Responsibility and contracts.** `_NativeSnapshotMapping` remains responsible
+for lazy materialization and stable cached access. The native handle remains
+the source of the canonical snapshot, and `freeze_snapshot()` continues to
+provide the immutable Python representation. No validation, identity,
+provenance, sequence, ownership, or snapshot acceptance rule is changed by
+these findings.
 
-**Validation criteria.** Run the same PPO-enabled end-to-end profile and verify
-that each materialized mapping contributes one `native_to_dict` and one
-`freeze_snapshot` call, that the aggregate nested durations fit within
-`base_dict_total` within timer overhead, and that wrapper snapshot validation
-counts and functional snapshot tests remain unchanged. Compare 1/2/4-lobby
-results on the same machine and configuration; do not remove validation based
-on timing alone.
+**Profiling cleanup and limits.** The temporary monkeypatch and timing metrics
+have been removed from `scripts/profile_training_pipeline.py`; only the
+durable findings remain here. Timings are profiler-instrumented and inclusive
+where documented; nested durations must not be added to wrapper validation.
+The measurement does not decompose internal C++ work or fully capture native
+allocator memory. It is diagnostic evidence, not a performance guarantee.
+
+**Next validation criteria.** Any proposed optimization must preserve lazy
+cache behavior, exact snapshot values, immutability, identity correlation, and
+all existing rejection behavior. Compare the end-to-end PPO profile and run
+snapshot binding, semantic projection, rollout alignment, and PPO smoke tests
+before accepting a functional change.
