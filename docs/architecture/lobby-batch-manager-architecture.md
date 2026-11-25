@@ -170,3 +170,35 @@ O Trainer usa `build_semantic_batch` tanto para o snapshot da decisão atual qua
 - confirmar que `build_semantic_batch` rejeita blocos inválidos no mesmo caminho usado para snapshots atuais e próximos antes da criação dos tensores PPO;
 - confirmar que o projetor individual permanece a autoridade de shape, tipo numérico, finitude e faixa [0, 1];
 - executar testes de snapshot binding, projeção semântica, paridade nativa e smoke PPO.
+
+
+### Fase C — ownership único dos envelopes canônicos de identidade
+
+#### Problema anterior
+Durante _expand_lobby_snapshot_metadata, cada envelope canônico de identidade era copiado profundamente para o registro do jogador. Na sequência, RolloutBuffer.add fazia outra cópia profunda do conjunto completo de metadados para assumir ownership. O primeiro clone era redundante: o buffer já é a fronteira definitiva de ownership, e o envelope não é alterado entre expansão, validação semântica e armazenamento.
+
+#### Racional técnico
+Os envelopes são dados JSON-like usados como evidência imutável de correlação. freeze_snapshot cria uma cópia recursivamente imutável compatível com dict/list e cujo __deepcopy__ reutiliza a mesma referência. Assim, a expansão continua isolando o envelope da origem, mas o deepcopy agregado do RolloutBuffer não duplica novamente sua árvore. O restante dos metadados continua atravessando a cópia defensiva de ownership existente.
+
+#### Responsabilidade nova
+- Trainer._expand_lobby_snapshot_metadata congela o envelope canônico uma única vez ao anexá-lo à linha do jogador.
+- RolloutBuffer.add continua sendo a fronteira de ownership para os metadados completos da transição; sua cópia agregada compartilha o envelope congelado.
+- RolloutBuffer.get_batches(include_metadata=True) continua expondo referências do buffer sob contrato read-only; o envelope agora também impede mutações acidentais em profundidade.
+
+#### Contratos e invariantes
+- O envelope armazenado permanece isolado do envelope fornecido pelo produtor.
+- A identidade canônica conserva exatamente os mesmos campos, namespaces, valores e vínculos de Engine/episódio/jogador/sequência.
+- O envelope é compatível com os consumidores existentes que verificam dict/list e com validate_player_identity_envelope.
+- deepcopy posterior do envelope retorna a mesma referência imutável.
+- Metadados mutáveis fora do envelope continuam protegidos pela cópia agregada do RolloutBuffer.
+- Nenhuma identidade, provenance, evento, snapshot ou validação é removida.
+
+#### Impactos e limites
+São eliminadas as cópias profundas duplicadas dos envelopes canônicos no caminho de coleta. A expansão ainda faz uma cópia para estabelecer ownership imutável; a cópia agregada posterior do rollout reutiliza esse subtree. Não há alegação de ganho end-to-end até repetir o profiler com PPO ativo e comparar alocações/tempo do caminho completo.
+
+#### Validação
+- provar que o envelope expandido é FrozenDict compatível e preserva igualdade com a origem;
+- provar que deepcopy do envelope congelado reutiliza a identidade;
+- provar que mutações no envelope congelado são rejeitadas;
+- manter a cobertura existente de isolamento da entrada no RolloutBuffer, identidade de transição e auto-reset terminal;
+- executar testes de identidade do rollout, snapshot nativo, semantic alignment e smoke PPO.
