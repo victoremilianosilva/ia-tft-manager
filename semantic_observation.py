@@ -891,7 +891,10 @@ def project_native_player_state(metadata: Mapping, catalog_map: Mapping[str, int
                 or value.flags.writeable
             ):
                 raise ValueError(
-                    f"native semantic item field {field} has invalid native view contract"
+                    f"native semantic item field {field} has invalid native view contract: "
+                    f"dtype={value.dtype}, shape={value.shape}, expected_shape={shape}, "
+                    f"c_contiguous={value.flags.c_contiguous}, "
+                    f"writeable={value.flags.writeable}"
                 )
             if not np.isfinite(value).all():
                 raise ValueError(f"native semantic item field {field} contains non-finite values")
