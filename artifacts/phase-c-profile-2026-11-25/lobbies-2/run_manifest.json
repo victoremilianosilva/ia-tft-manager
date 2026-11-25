@@ -1233,15 +1233,15 @@
       "sha256": "26204959370869b66c9c38936db4a63120d9b04f4312f0a7f06b21aded416aee"
     }
   },
-  "created_at": "2026-11-25T11:28:37.930495+00:00",
+  "created_at": "2026-11-25T11:55:04.012407+00:00",
   "engine": {
-    "artifact_sha256": "1476c3da1dd5a2d3280e3243fb9bc2632b6036760113e8e1d5e457e1457efe19",
+    "artifact_sha256": "408f90daba5688fbd1f90ced5a6c07d38f79e6e09547e029a0eb764ca1f94242",
     "module": "__main__"
   },
-  "identity_sha256": "0f9ac76397745e97ec36339c8695c0a4d75d7fa6869fb1dd4e2804cf9a73d0be",
+  "identity_sha256": "ab9f3666a38c755ccfd1405d9fda3b4c072a3c0f96929a7a64e055b2d6d29c57",
   "initial_policy_state_sha256": "97236749f2c489827d61dfedb519c754cb20b2908027390ad02ef7e2b32b24dc",
   "manifest_id": "tft.ppo.native-training-run",
-  "manifest_sha256": "26766fd6e8f00e20651277c671b09cda7fc00d20da3fa63b0fed48885bee6ce0",
+  "manifest_sha256": "22ce977aeee0b347c9474ee21e29be214eaec515ca5a4642189033c85b6bec23",
   "manifest_version": 1,
   "policy": {
     "action_dimensions": [
@@ -1727,9 +1727,9 @@
   },
   "seed": 20261124,
   "source": {
-    "revision": "956394cf5cd5ef34238d339112d9e6eeccbb4262",
-    "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "working_tree_dirty": false
+    "revision": "4e21b9574a227ba65685f7c976d9cbf338e940fe",
+    "tracked_diff_sha256": "f532344562d36d549def0f0cbbe7297457e8eb63cd2a6913611ab0fde65b53cc",
+    "working_tree_dirty": true
   },
   "training_config": {
     "adam_beta1": 0.9,
