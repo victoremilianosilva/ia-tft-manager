@@ -84,6 +84,12 @@ A conversão C++ deixa de alocar 96 arrays e 8 dicionários de máscaras por lob
 
 ### Fase C — ownership imutável de estado por jogador
 
+#### Snapshot nativo lazy e compartilhável
+- `_NativeSnapshotMapping` mantém o handle nativo `const` como autoridade, materializa o dicionário base apenas na primeira leitura e congela recursivamente o resultado.
+- Eventos de combate continuam em caches separados e lazy; quando solicitados, também são congelados.
+- `deepcopy` do envelope de snapshot reutiliza o mesmo mapping imutável e pinado, em vez de clonar a árvore materializada.
+- A superfície de leitura continua compatível com `Mapping`/`dict` e `list`; mutações são rejeitadas explicitamente.
+
 #### Problema anterior
 A expansão do snapshot da lobby copiava profundamente cada registro de jogador para criar as linhas do rollout. Em seguida, o `RolloutBuffer` copiava novamente esses subtrees ao assumir ownership e voltava a copiá-los ao expor metadados. O conteúdo nativo é evidência de auditoria associada a uma identidade de snapshot e não deve ser mutável pelo Trainer ou por consumidores do buffer.
 
