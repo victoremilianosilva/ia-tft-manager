@@ -334,3 +334,39 @@ time includes surrounding Python work, and stage timings can be affected by
 profiling overhead. Passing no collector leaves the validator's behavior and
 validation contract unchanged; no checks are skipped or cached by this
 instrumentation.
+
+### Change rationale and contract
+
+**Prior problem.** The end-to-end profiler exposed a large
+`wrapper.snapshot_validation` cost, but its single aggregate measurement could
+not distinguish envelope checks, shared-pool/event checks, per-player slot and
+unit checks, item ownership, or strategic-owner validation.
+
+**Technical rationale.** Measure those existing validation blocks independently
+at their current boundaries. This is diagnostic instrumentation only: it does
+not infer that any block is redundant and does not move validation authority.
+
+**New responsibility.** The wrapper accumulates successful validation timings
+per instance and exposes a defensive snapshot through
+`get_snapshot_validation_metrics()`. The validator owns the stage boundaries;
+the caller owns when to collect and compare the counters.
+
+**Contract and invariants.** No validation is skipped, weakened, reordered, or
+cached. Existing snapshot identity, provenance, sequence, slot, UUID, item
+ownership, strategic-owner and planner invariants remain authoritative. The
+optional collector is absent by default for direct validator calls. Metrics
+are cumulative, report milliseconds and invocation counts, and only include
+completed stages from successful validations.
+
+**Impacts.** Adds low-overhead timing calls when the wrapper supplies its
+collector, plus per-wrapper counters. The five per-player stages accumulate
+eight samples per successful lobby snapshot. These values must not be summed
+with the enclosing wall-clock measurement as if they were disjoint pipeline
+costs.
+
+**Validation criteria.** A regression test validates a representative
+eight-player snapshot and asserts all five stage keys, one sample for the
+envelope and pool/event stages, eight samples for each per-player stage, and
+non-negative timing values. Existing snapshot rejection tests continue to
+protect the validation contract; end-to-end profiling should compare these
+substage totals with the existing wrapper aggregate.
