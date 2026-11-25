@@ -27,6 +27,49 @@ namespace {
 using tft::PlayerActionMasks;
 using tft::TFTEngine;
 
+// Convert a pybind value into the immutable Python container types expected
+// by training. Traversal runs in C++; Python freeze_snapshot remains available
+// for fixtures and non-native callers.
+py::object freeze_native_python_value(const py::handle& value) {
+    const auto snapshot_module = py::module_::import("immutable_snapshot");
+    if (py::isinstance<py::dict>(value)) {
+        py::object frozen = snapshot_module.attr("FrozenDict").attr("_empty")();
+        const py::dict source = py::reinterpret_borrow<py::dict>(value);
+        for (const auto& entry : source) {
+            py::object child = freeze_native_python_value(entry.second);
+            if (PyDict_SetItem(frozen.ptr(), entry.first.ptr(), child.ptr()) != 0) {
+                throw py::error_already_set();
+            }
+        }
+        return frozen;
+    }
+    if (py::isinstance<py::list>(value)) {
+        py::object frozen = snapshot_module.attr("FrozenList").attr("_empty")();
+        const py::list source = py::reinterpret_borrow<py::list>(value);
+        for (const auto& child_value : source) {
+            py::object child = freeze_native_python_value(child_value);
+            if (PyList_Append(frozen.ptr(), child.ptr()) != 0) {
+                throw py::error_already_set();
+            }
+        }
+        return frozen;
+    }
+    if (py::isinstance<py::tuple>(value)) {
+        const py::tuple source = py::reinterpret_borrow<py::tuple>(value);
+        py::tuple frozen(source.size());
+        for (py::ssize_t index = 0; index < source.size(); ++index) {
+            frozen[index] = freeze_native_python_value(source[index]);
+        }
+        return std::move(frozen);
+    }
+    if (PyUnicode_Check(value.ptr()) || PyBytes_Check(value.ptr()) ||
+        PyLong_Check(value.ptr()) || PyFloat_Check(value.ptr()) || value.is_none()) {
+        return py::reinterpret_borrow<py::object>(value);
+    }
+    return py::module_::import("copy").attr("deepcopy")(value);
+}
+
+
 template <std::size_t N>
 py::array_t<bool> mask_1d(
     const std::array<std::uint8_t, N>& source
@@ -569,8 +612,9 @@ public:
         for (const auto& event : snapshot_->combat_death_events) validate_sequence(event.combat_sequence);
     }
 
-    py::dict to_dict() const {
-        return audit_snapshot_to_dict(*snapshot_, false, false);
+    py::object to_dict() const {
+        py::dict mutable_snapshot = audit_snapshot_to_dict(*snapshot_, false, false);
+        return freeze_native_python_value(mutable_snapshot);
     }
 
     py::list keys() const {
@@ -614,7 +658,7 @@ public:
             field == "combat_death_events") {
             return combat_events(field);
         }
-        const auto values = to_dict();
+        const py::dict values = py::cast<py::dict>(to_dict());
         if (!values.contains(field.c_str())) {
             throw py::key_error(field);
         }
@@ -630,7 +674,7 @@ public:
             field == "combat_death_events") {
             return combat_events(field);
         }
-        const auto values = to_dict();
+        const py::dict values = py::cast<py::dict>(to_dict());
         if (!values.contains(field.c_str())) return default_value;
         return values[field.c_str()];
     }

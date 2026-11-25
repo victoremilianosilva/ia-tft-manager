@@ -12,6 +12,11 @@ import copy
 class FrozenDict(dict):
     """Dict-compatible immutable mapping; preserves isinstance(value, dict)."""
 
+    @classmethod
+    def _empty(cls):
+        """Allocate an empty instance for the native binding builder."""
+        return dict.__new__(cls)
+
     def __init__(self, values=()):
         dict.__init__(self)
         source = values.items() if isinstance(values, Mapping) else values
@@ -37,6 +42,11 @@ class FrozenDict(dict):
 
 class FrozenList(list):
     """List-compatible immutable sequence; preserves isinstance(value, list)."""
+
+    @classmethod
+    def _empty(cls):
+        """Allocate an empty instance for the native binding builder."""
+        return list.__new__(cls)
 
     def __init__(self, values=()):
         list.__init__(self, (freeze_snapshot(value) for value in values))
