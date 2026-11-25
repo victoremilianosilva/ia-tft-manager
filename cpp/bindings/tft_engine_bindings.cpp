@@ -27,6 +27,37 @@ using tft::PlayerActionMasks;
 using tft::TFTEngine;
 
 template <std::size_t N>
+py::array_t<float> readonly_float_view(
+    const std::array<float, N>& source,
+    py::handle owner
+) {
+    py::array_t<float> view(
+        {static_cast<py::ssize_t>(N)},
+        {static_cast<py::ssize_t>(sizeof(float))},
+        source.data(),
+        owner
+    );
+    view.attr("setflags")(false);
+    return view;
+}
+
+template <std::size_t Rows, std::size_t Cols>
+py::array_t<float> readonly_float_view(
+    const std::array<std::array<float, Cols>, Rows>& source,
+    py::handle owner
+) {
+    py::array_t<float> view(
+        {static_cast<py::ssize_t>(Rows), static_cast<py::ssize_t>(Cols)},
+        {static_cast<py::ssize_t>(Cols * sizeof(float)),
+         static_cast<py::ssize_t>(sizeof(float))},
+        source.front().data(),
+        owner
+    );
+    view.attr("setflags")(false);
+    return view;
+}
+
+template <std::size_t N>
 py::array_t<bool> mask_1d(
     const std::array<std::uint8_t, N>& source
 ) {
@@ -192,7 +223,8 @@ py::list player_info_to_list(const Players& players) {
 py::dict audit_snapshot_to_dict(
     const tft::AuditSnapshot& snapshot,
     bool include_masks = true,
-    bool include_combat_events = true
+    bool include_combat_events = true,
+    py::object item_view_owner = py::none()
 ) {
     py::dict result;
     result["contract_id"] = snapshot.contract_id;
@@ -496,12 +528,24 @@ py::dict audit_snapshot_to_dict(
         p["pending_anvil_sequence"] = player.pending_anvil_sequence;
         p["pending_anvil_kind"] = player.pending_anvil_kind;
         p["pending_anvil_options"] = player.pending_anvil_options;
-        p["item_component_features"] = player.item_component_features;
-        p["item_inventory_features"] = player.item_inventory_features;
-        p["item_recipe_features"] = player.item_recipe_features;
-        p["item_inventory_target_fit"] = player.item_inventory_target_fit;
-        p["item_recipe_target_fit"] = player.item_recipe_target_fit;
-        p["pending_anvil_option_features"] = player.pending_anvil_option_features;
+        if (!item_view_owner.is_none()) {
+            // These NumPy arrays are immutable views into the pinned AuditSnapshot.
+            // The shared capsule keeps the exact native owner alive independently
+            // of the wrapper, mapping, and engine lifecycle.
+            p["item_component_features"] = readonly_float_view(player.item_component_features, item_view_owner);
+            p["item_inventory_features"] = readonly_float_view(player.item_inventory_features, item_view_owner);
+            p["item_recipe_features"] = readonly_float_view(player.item_recipe_features, item_view_owner);
+            p["item_inventory_target_fit"] = readonly_float_view(player.item_inventory_target_fit, item_view_owner);
+            p["item_recipe_target_fit"] = readonly_float_view(player.item_recipe_target_fit, item_view_owner);
+            p["pending_anvil_option_features"] = readonly_float_view(player.pending_anvil_option_features, item_view_owner);
+        } else {
+            p["item_component_features"] = player.item_component_features;
+            p["item_inventory_features"] = player.item_inventory_features;
+            p["item_recipe_features"] = player.item_recipe_features;
+            p["item_inventory_target_fit"] = player.item_inventory_target_fit;
+            p["item_recipe_target_fit"] = player.item_recipe_target_fit;
+            p["pending_anvil_option_features"] = player.pending_anvil_option_features;
+        }
         p["actions_taken_this_round"] = player.actions_taken_this_round;
         p["board_move_age"] = player.board_move_age;
         p["last_item_action_kind"] = player.last_item_action_kind;
@@ -545,7 +589,12 @@ public:
     }
 
     py::dict to_dict() const {
-        return audit_snapshot_to_dict(*snapshot_, false, false);
+        auto* pinned_owner =
+            new std::shared_ptr<const tft::AuditSnapshot>(snapshot_);
+        py::capsule owner(pinned_owner, [](void* pointer) {
+            delete static_cast<std::shared_ptr<const tft::AuditSnapshot>*>(pointer);
+        });
+        return audit_snapshot_to_dict(*snapshot_, false, false, owner);
     }
 
     py::list keys() const {
