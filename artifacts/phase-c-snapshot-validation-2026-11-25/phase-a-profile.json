@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "benchmark": "tft.phase-a.full-training-profile",
-  "created_at_utc": "2026-11-25T12:52:53.429558+00:00",
-  "revision": "1b3b28c6461f35732216d927a0d5a940449af207",
+  "created_at_utc": "2026-11-25T13:37:55.968618+00:00",
+  "revision": "3f712163f88b0d21cc2dc7bbafb37cf3a373cdaf",
   "system": {
     "platform": "Windows-10-10.0.26200-SP0",
     "python": "3.11.9 (tags/v3.11.9:de54cf5, Apr  2 2024, 10:12:12) [MSC v.1938 64 bit (AMD64)]",
@@ -32,626 +32,734 @@
     {
       "lobbies": 1,
       "players": 8,
-      "initialization_ms": 15035.791,
-      "training_wall_ms": 44578.687,
-      "run_dir": "C:\\Users\\cilio\\Desktop\\Ideia louca\\ia-tft-manager\\artifacts\\phase-c-snapshot-validation-2026-11-25-01\\lobbies-1",
+      "initialization_ms": 14110.859,
+      "training_wall_ms": 44937.594,
+      "run_dir": "C:\\Users\\cilio\\Desktop\\Ideia louca\\ia-tft-manager\\artifacts\\phase-c-snapshot-validation-2026-11-25-01-2\\lobbies-1",
       "timings": {
         "binding.get_anti_loop_metrics": {
           "calls": 32,
-          "total_ms": 1.877,
+          "total_ms": 1.89,
           "mean_ms": 0.059,
-          "median_ms": 0.042,
-          "p95_ms": 0.05,
-          "p99_ms": 0.537,
-          "min_ms": 0.036,
-          "max_ms": 0.537
+          "median_ms": 0.044,
+          "p95_ms": 0.055,
+          "p99_ms": 0.478,
+          "min_ms": 0.04,
+          "max_ms": 0.478
         },
         "binding.get_champion_id_map": {
           "calls": 1,
-          "total_ms": 0.087,
-          "mean_ms": 0.087,
-          "median_ms": 0.087,
-          "p95_ms": 0.087,
-          "p99_ms": 0.087,
-          "min_ms": 0.087,
-          "max_ms": 0.087
+          "total_ms": 0.086,
+          "mean_ms": 0.086,
+          "median_ms": 0.086,
+          "p95_ms": 0.086,
+          "p99_ms": 0.086,
+          "min_ms": 0.086,
+          "max_ms": 0.086
         },
         "outcomes.build_factual_events": {
           "calls": 32,
-          "total_ms": 621.141,
-          "mean_ms": 19.411,
-          "median_ms": 17.402,
-          "p95_ms": 27.605,
-          "p99_ms": 30.309,
-          "min_ms": 16.245,
-          "max_ms": 30.309
+          "total_ms": 606.892,
+          "mean_ms": 18.965,
+          "median_ms": 17.372,
+          "p95_ms": 26.74,
+          "p99_ms": 32.863,
+          "min_ms": 15.968,
+          "max_ms": 32.863
         },
         "policy.evaluate_actions": {
           "calls": 10,
-          "total_ms": 510.576,
-          "mean_ms": 51.058,
-          "median_ms": 49.593,
-          "p95_ms": 62.194,
-          "p99_ms": 62.194,
-          "min_ms": 44.45,
-          "max_ms": 62.194
+          "total_ms": 537.642,
+          "mean_ms": 53.764,
+          "median_ms": 51.755,
+          "p95_ms": 80.532,
+          "p99_ms": 80.532,
+          "min_ms": 40.535,
+          "max_ms": 80.532
         },
         "policy.get_action": {
           "calls": 28,
-          "total_ms": 492.524,
-          "mean_ms": 17.59,
-          "median_ms": 17.378,
-          "p95_ms": 22.522,
-          "p99_ms": 24.197,
-          "min_ms": 13.504,
-          "max_ms": 24.197
+          "total_ms": 538.556,
+          "mean_ms": 19.234,
+          "median_ms": 18.474,
+          "p95_ms": 29.081,
+          "p99_ms": 35.79,
+          "min_ms": 13.491,
+          "max_ms": 35.79
         },
         "policy.get_action_with_diagnostics": {
           "calls": 4,
-          "total_ms": 276.173,
-          "mean_ms": 69.043,
-          "median_ms": 16.023,
-          "p95_ms": 229.555,
-          "p99_ms": 229.555,
-          "min_ms": 14.573,
-          "max_ms": 229.555
+          "total_ms": 183.843,
+          "mean_ms": 45.961,
+          "median_ms": 24.143,
+          "p95_ms": 119.265,
+          "p99_ms": 119.265,
+          "min_ms": 16.292,
+          "max_ms": 119.265
         },
         "policy.get_value": {
           "calls": 2,
-          "total_ms": 20.142,
-          "mean_ms": 10.071,
-          "median_ms": 10.071,
-          "p95_ms": 11.334,
-          "p99_ms": 11.334,
-          "min_ms": 8.808,
-          "max_ms": 11.334
+          "total_ms": 17.133,
+          "mean_ms": 8.566,
+          "median_ms": 8.566,
+          "p95_ms": 8.848,
+          "p99_ms": 8.848,
+          "min_ms": 8.285,
+          "max_ms": 8.848
         },
         "ppo.compute_loss": {
           "calls": 8,
-          "total_ms": 428.815,
-          "mean_ms": 53.602,
-          "median_ms": 52.989,
-          "p95_ms": 63.126,
-          "p99_ms": 63.126,
-          "min_ms": 45.539,
-          "max_ms": 63.126
+          "total_ms": 410.477,
+          "mean_ms": 51.31,
+          "median_ms": 51.316,
+          "p95_ms": 62.332,
+          "p99_ms": 62.332,
+          "min_ms": 41.388,
+          "max_ms": 62.332
         },
         "ppo.update_total": {
           "calls": 2,
-          "total_ms": 1333.121,
-          "mean_ms": 666.56,
-          "median_ms": 666.56,
-          "p95_ms": 791.893,
-          "p99_ms": 791.893,
-          "min_ms": 541.228,
-          "max_ms": 791.893
+          "total_ms": 1357.849,
+          "mean_ms": 678.925,
+          "median_ms": 678.925,
+          "p95_ms": 766.336,
+          "p99_ms": 766.336,
+          "min_ms": 591.513,
+          "max_ms": 766.336
         },
         "python.deepcopy": {
           "calls": 278,
-          "total_ms": 152.796,
-          "mean_ms": 0.55,
-          "median_ms": 0.004,
-          "p95_ms": 3.25,
-          "p99_ms": 4.283,
+          "total_ms": 160.87,
+          "mean_ms": 0.579,
+          "median_ms": 0.003,
+          "p95_ms": 3.742,
+          "p99_ms": 4.282,
           "min_ms": 0.002,
-          "max_ms": 4.944
+          "max_ms": 5.63
         },
         "rollout.add": {
           "calls": 32,
-          "total_ms": 2929.753,
-          "mean_ms": 91.555,
-          "median_ms": 89.725,
-          "p95_ms": 103.837,
-          "p99_ms": 112.423,
-          "min_ms": 79.659,
-          "max_ms": 112.423
+          "total_ms": 3068.011,
+          "mean_ms": 95.875,
+          "median_ms": 95.189,
+          "p95_ms": 113.585,
+          "p99_ms": 117.645,
+          "min_ms": 82.315,
+          "max_ms": 117.645
         },
         "rollout.gae": {
           "calls": 2,
-          "total_ms": 10.24,
-          "mean_ms": 5.12,
-          "median_ms": 5.12,
-          "p95_ms": 5.685,
-          "p99_ms": 5.685,
-          "min_ms": 4.555,
-          "max_ms": 5.685
+          "total_ms": 8.836,
+          "mean_ms": 4.418,
+          "median_ms": 4.418,
+          "p95_ms": 5.338,
+          "p99_ms": 5.338,
+          "min_ms": 3.498,
+          "max_ms": 5.338
         },
         "semantic.build_batch": {
           "calls": 34,
-          "total_ms": 21379.649,
-          "mean_ms": 628.813,
-          "median_ms": 625.998,
-          "p95_ms": 682.24,
-          "p99_ms": 703.447,
-          "min_ms": 583.732,
-          "max_ms": 703.447
+          "total_ms": 21586.422,
+          "mean_ms": 634.895,
+          "median_ms": 632.419,
+          "p95_ms": 671.7,
+          "p99_ms": 725.956,
+          "min_ms": 593.405,
+          "max_ms": 725.956
         },
         "semantic.project_player": {
           "calls": 272,
-          "total_ms": 21368.274,
-          "mean_ms": 78.56,
-          "median_ms": 77.861,
-          "p95_ms": 93.159,
-          "p99_ms": 101.62,
-          "min_ms": 65.238,
-          "max_ms": 115.41
+          "total_ms": 21574.487,
+          "mean_ms": 79.318,
+          "median_ms": 77.642,
+          "p95_ms": 95.303,
+          "p99_ms": 102.414,
+          "min_ms": 65.651,
+          "max_ms": 108.282
         },
         "semantic.validate_alignment": {
           "calls": 64,
-          "total_ms": 42.682,
-          "mean_ms": 0.667,
-          "median_ms": 0.62,
-          "p95_ms": 0.913,
-          "p99_ms": 1.142,
-          "min_ms": 0.552,
-          "max_ms": 1.24
+          "total_ms": 42.031,
+          "mean_ms": 0.657,
+          "median_ms": 0.636,
+          "p95_ms": 0.789,
+          "p99_ms": 0.86,
+          "min_ms": 0.537,
+          "max_ms": 0.88
         },
         "vector.reset_total": {
           "calls": 2,
-          "total_ms": 758.711,
-          "mean_ms": 379.356,
-          "median_ms": 379.356,
-          "p95_ms": 396.613,
-          "p99_ms": 396.613,
-          "min_ms": 362.098,
-          "max_ms": 396.613
+          "total_ms": 839.085,
+          "mean_ms": 419.542,
+          "median_ms": 419.542,
+          "p95_ms": 436.157,
+          "p99_ms": 436.157,
+          "min_ms": 402.928,
+          "max_ms": 436.157
         },
         "vector.step_total": {
           "calls": 32,
-          "total_ms": 14758.311,
-          "mean_ms": 461.197,
-          "median_ms": 447.443,
-          "p95_ms": 554.296,
-          "p99_ms": 600.911,
-          "min_ms": 416.589,
-          "max_ms": 600.911
+          "total_ms": 14762.435,
+          "mean_ms": 461.326,
+          "median_ms": 445.29,
+          "p95_ms": 557.339,
+          "p99_ms": 600.773,
+          "min_ms": 403.855,
+          "max_ms": 600.773
         },
         "wrapper.initialize": {
           "calls": 1,
-          "total_ms": 0.171,
-          "mean_ms": 0.171,
-          "median_ms": 0.171,
-          "p95_ms": 0.171,
-          "p99_ms": 0.171,
-          "min_ms": 0.171,
-          "max_ms": 0.171
+          "total_ms": 0.17,
+          "mean_ms": 0.17,
+          "median_ms": 0.17,
+          "p95_ms": 0.17,
+          "p99_ms": 0.17,
+          "min_ms": 0.17,
+          "max_ms": 0.17
         },
         "wrapper.snapshot_validation": {
           "calls": 34,
-          "total_ms": 13706.391,
-          "mean_ms": 403.129,
-          "median_ms": 407.772,
-          "p95_ms": 505.425,
-          "p99_ms": 546.266,
-          "min_ms": 125.247,
-          "max_ms": 546.266
+          "total_ms": 13826.528,
+          "mean_ms": 406.663,
+          "median_ms": 407.487,
+          "p95_ms": 515.607,
+          "p99_ms": 544.944,
+          "min_ms": 133.194,
+          "max_ms": 544.944
+        }
+      },
+      "snapshot_validation_stages": {
+        "wrappers": 1,
+        "collection_errors": 0,
+        "stages": {
+          "envelope_identity_provenance": {
+            "calls": 34,
+            "total_ms": 9013.428,
+            "mean_ms": 265.101,
+            "max_ms": 399.712
+          },
+          "player_item_ownership": {
+            "calls": 272,
+            "total_ms": 449.304,
+            "mean_ms": 1.652,
+            "max_ms": 12.261
+          },
+          "player_units_and_slots": {
+            "calls": 272,
+            "total_ms": 3011.303,
+            "mean_ms": 11.071,
+            "max_ms": 23.241
+          },
+          "shared_pool_and_events": {
+            "calls": 34,
+            "total_ms": 58.443,
+            "mean_ms": 1.719,
+            "max_ms": 3.195
+          },
+          "strategic_owner_validation": {
+            "calls": 272,
+            "total_ms": 1278.543,
+            "mean_ms": 4.701,
+            "max_ms": 77.998
+          }
         }
       }
     },
     {
       "lobbies": 2,
       "players": 16,
-      "initialization_ms": 1194.652,
-      "training_wall_ms": 82348.972,
-      "run_dir": "C:\\Users\\cilio\\Desktop\\Ideia louca\\ia-tft-manager\\artifacts\\phase-c-snapshot-validation-2026-11-25-01\\lobbies-2",
+      "initialization_ms": 1338.132,
+      "training_wall_ms": 82814.405,
+      "run_dir": "C:\\Users\\cilio\\Desktop\\Ideia louca\\ia-tft-manager\\artifacts\\phase-c-snapshot-validation-2026-11-25-01-2\\lobbies-2",
       "timings": {
         "binding.get_anti_loop_metrics": {
           "calls": 64,
           "total_ms": 2.494,
           "mean_ms": 0.039,
-          "median_ms": 0.038,
-          "p95_ms": 0.059,
-          "p99_ms": 0.07,
-          "min_ms": 0.024,
-          "max_ms": 0.074
+          "median_ms": 0.04,
+          "p95_ms": 0.056,
+          "p99_ms": 0.062,
+          "min_ms": 0.025,
+          "max_ms": 0.069
         },
         "binding.get_champion_id_map": {
           "calls": 2,
-          "total_ms": 0.175,
-          "mean_ms": 0.088,
-          "median_ms": 0.088,
-          "p95_ms": 0.092,
-          "p99_ms": 0.092,
-          "min_ms": 0.083,
-          "max_ms": 0.092
+          "total_ms": 0.145,
+          "mean_ms": 0.072,
+          "median_ms": 0.072,
+          "p95_ms": 0.084,
+          "p99_ms": 0.084,
+          "min_ms": 0.061,
+          "max_ms": 0.084
         },
         "optimizer.step": {
           "calls": 8,
-          "total_ms": 311.389,
-          "mean_ms": 38.924,
-          "median_ms": 37.562,
-          "p95_ms": 49.682,
-          "p99_ms": 49.682,
-          "min_ms": 33.447,
-          "max_ms": 49.682
+          "total_ms": 344.462,
+          "mean_ms": 43.058,
+          "median_ms": 40.058,
+          "p95_ms": 53.658,
+          "p99_ms": 53.658,
+          "min_ms": 35.834,
+          "max_ms": 53.658
         },
         "outcomes.build_factual_events": {
           "calls": 64,
-          "total_ms": 1237.231,
-          "mean_ms": 19.332,
-          "median_ms": 17.42,
-          "p95_ms": 30.115,
-          "p99_ms": 30.789,
-          "min_ms": 15.986,
-          "max_ms": 31.65
+          "total_ms": 1174.554,
+          "mean_ms": 18.352,
+          "median_ms": 17.252,
+          "p95_ms": 27.37,
+          "p99_ms": 30.416,
+          "min_ms": 15.966,
+          "max_ms": 31.63
         },
         "policy.evaluate_actions": {
           "calls": 10,
-          "total_ms": 798.314,
-          "mean_ms": 79.831,
-          "median_ms": 75.827,
-          "p95_ms": 115.513,
-          "p99_ms": 115.513,
-          "min_ms": 70.939,
-          "max_ms": 115.513
+          "total_ms": 750.613,
+          "mean_ms": 75.061,
+          "median_ms": 73.268,
+          "p95_ms": 87.566,
+          "p99_ms": 87.566,
+          "min_ms": 69.576,
+          "max_ms": 87.566
         },
         "policy.get_action": {
           "calls": 28,
-          "total_ms": 609.582,
-          "mean_ms": 21.771,
-          "median_ms": 21.458,
-          "p95_ms": 28.923,
-          "p99_ms": 36.254,
-          "min_ms": 14.88,
-          "max_ms": 36.254
+          "total_ms": 609.175,
+          "mean_ms": 21.756,
+          "median_ms": 22.007,
+          "p95_ms": 26.028,
+          "p99_ms": 35.107,
+          "min_ms": 17.052,
+          "max_ms": 35.107
         },
         "policy.get_action_with_diagnostics": {
           "calls": 4,
-          "total_ms": 100.916,
-          "mean_ms": 25.229,
-          "median_ms": 22.944,
-          "p95_ms": 35.879,
-          "p99_ms": 35.879,
-          "min_ms": 19.15,
-          "max_ms": 35.879
+          "total_ms": 100.879,
+          "mean_ms": 25.22,
+          "median_ms": 25.687,
+          "p95_ms": 28.423,
+          "p99_ms": 28.423,
+          "min_ms": 21.082,
+          "max_ms": 28.423
         },
         "policy.get_value": {
           "calls": 2,
-          "total_ms": 22.419,
-          "mean_ms": 11.21,
-          "median_ms": 11.21,
-          "p95_ms": 11.795,
-          "p99_ms": 11.795,
-          "min_ms": 10.624,
-          "max_ms": 11.795
+          "total_ms": 19.476,
+          "mean_ms": 9.738,
+          "median_ms": 9.738,
+          "p95_ms": 10.301,
+          "p99_ms": 10.301,
+          "min_ms": 9.175,
+          "max_ms": 10.301
         },
         "ppo.compute_loss": {
           "calls": 8,
-          "total_ms": 655.319,
-          "mean_ms": 81.915,
-          "median_ms": 76.886,
-          "p95_ms": 116.692,
-          "p99_ms": 116.692,
-          "min_ms": 71.991,
-          "max_ms": 116.692
+          "total_ms": 609.83,
+          "mean_ms": 76.229,
+          "median_ms": 74.205,
+          "p95_ms": 88.512,
+          "p99_ms": 88.512,
+          "min_ms": 70.614,
+          "max_ms": 88.512
         },
         "ppo.update_total": {
           "calls": 2,
-          "total_ms": 1775.857,
-          "mean_ms": 887.929,
-          "median_ms": 887.929,
-          "p95_ms": 932.789,
-          "p99_ms": 932.789,
-          "min_ms": 843.068,
-          "max_ms": 932.789
+          "total_ms": 1818.973,
+          "mean_ms": 909.487,
+          "median_ms": 909.487,
+          "p95_ms": 911.407,
+          "p99_ms": 911.407,
+          "min_ms": 907.566,
+          "max_ms": 911.407
         },
         "python.deepcopy": {
           "calls": 342,
-          "total_ms": 331.892,
-          "mean_ms": 0.97,
-          "median_ms": 0.006,
-          "p95_ms": 7.352,
-          "p99_ms": 9.461,
+          "total_ms": 329.905,
+          "mean_ms": 0.965,
+          "median_ms": 0.005,
+          "p95_ms": 6.706,
+          "p99_ms": 9.466,
           "min_ms": 0.002,
-          "max_ms": 10.39
+          "max_ms": 19.207
         },
         "rollout.add": {
           "calls": 32,
-          "total_ms": 5742.698,
-          "mean_ms": 179.459,
-          "median_ms": 179.866,
-          "p95_ms": 200.86,
-          "p99_ms": 222.072,
-          "min_ms": 156.097,
-          "max_ms": 222.072
+          "total_ms": 5780.457,
+          "mean_ms": 180.639,
+          "median_ms": 179.632,
+          "p95_ms": 197.274,
+          "p99_ms": 201.306,
+          "min_ms": 159.643,
+          "max_ms": 201.306
         },
         "rollout.gae": {
           "calls": 2,
-          "total_ms": 9.486,
-          "mean_ms": 4.743,
-          "median_ms": 4.743,
-          "p95_ms": 5.113,
-          "p99_ms": 5.113,
-          "min_ms": 4.373,
-          "max_ms": 5.113
+          "total_ms": 7.59,
+          "mean_ms": 3.795,
+          "median_ms": 3.795,
+          "p95_ms": 3.847,
+          "p99_ms": 3.847,
+          "min_ms": 3.743,
+          "max_ms": 3.847
         },
         "semantic.build_batch": {
           "calls": 34,
-          "total_ms": 42051.223,
-          "mean_ms": 1236.801,
-          "median_ms": 1236.318,
-          "p95_ms": 1331.106,
-          "p99_ms": 1476.252,
-          "min_ms": 1124.693,
-          "max_ms": 1476.252
+          "total_ms": 42181.758,
+          "mean_ms": 1240.64,
+          "median_ms": 1233.834,
+          "p95_ms": 1333.375,
+          "p99_ms": 1403.018,
+          "min_ms": 1136.451,
+          "max_ms": 1403.018
         },
         "semantic.project_player": {
           "calls": 544,
-          "total_ms": 42030.675,
-          "mean_ms": 77.262,
-          "median_ms": 75.388,
-          "p95_ms": 93.151,
-          "p99_ms": 106.573,
-          "min_ms": 57.937,
-          "max_ms": 242.065
+          "total_ms": 42161.004,
+          "mean_ms": 77.502,
+          "median_ms": 76.388,
+          "p95_ms": 92.63,
+          "p99_ms": 100.841,
+          "min_ms": 60.141,
+          "max_ms": 111.863
         },
         "semantic.validate_alignment": {
           "calls": 64,
-          "total_ms": 83.06,
-          "mean_ms": 1.298,
-          "median_ms": 1.183,
-          "p95_ms": 2.201,
-          "p99_ms": 2.452,
-          "min_ms": 0.99,
-          "max_ms": 2.51
+          "total_ms": 79.387,
+          "mean_ms": 1.24,
+          "median_ms": 1.158,
+          "p95_ms": 1.758,
+          "p99_ms": 1.982,
+          "min_ms": 1.019,
+          "max_ms": 2.111
         },
         "vector.reset_total": {
           "calls": 2,
-          "total_ms": 1592.517,
-          "mean_ms": 796.259,
-          "median_ms": 796.259,
-          "p95_ms": 929.3,
-          "p99_ms": 929.3,
-          "min_ms": 663.218,
-          "max_ms": 929.3
+          "total_ms": 1579.635,
+          "mean_ms": 789.818,
+          "median_ms": 789.818,
+          "p95_ms": 804.453,
+          "p99_ms": 804.453,
+          "min_ms": 775.182,
+          "max_ms": 804.453
         },
         "vector.step_total": {
           "calls": 32,
-          "total_ms": 27151.871,
-          "mean_ms": 848.496,
-          "median_ms": 829.425,
-          "p95_ms": 943.434,
-          "p99_ms": 1110.777,
-          "min_ms": 785.199,
-          "max_ms": 1110.777
+          "total_ms": 27527.239,
+          "mean_ms": 860.226,
+          "median_ms": 844.251,
+          "p95_ms": 950.196,
+          "p99_ms": 1020.352,
+          "min_ms": 780.984,
+          "max_ms": 1020.352
         },
         "wrapper.initialize": {
           "calls": 2,
-          "total_ms": 0.283,
-          "mean_ms": 0.142,
-          "median_ms": 0.142,
-          "p95_ms": 0.194,
-          "p99_ms": 0.194,
-          "min_ms": 0.089,
-          "max_ms": 0.194
+          "total_ms": 0.253,
+          "mean_ms": 0.127,
+          "median_ms": 0.127,
+          "p95_ms": 0.165,
+          "p99_ms": 0.165,
+          "min_ms": 0.088,
+          "max_ms": 0.165
         },
         "wrapper.snapshot_validation": {
           "calls": 68,
-          "total_ms": 25224.212,
-          "mean_ms": 370.944,
-          "median_ms": 373.902,
-          "p95_ms": 441.377,
-          "p99_ms": 518.98,
-          "min_ms": 117.636,
-          "max_ms": 595.994
+          "total_ms": 25708.144,
+          "mean_ms": 378.061,
+          "median_ms": 382.328,
+          "p95_ms": 458.736,
+          "p99_ms": 553.363,
+          "min_ms": 119.433,
+          "max_ms": 574.187
+        }
+      },
+      "snapshot_validation_stages": {
+        "wrappers": 2,
+        "collection_errors": 0,
+        "stages": {
+          "envelope_identity_provenance": {
+            "calls": 68,
+            "total_ms": 16403.823,
+            "mean_ms": 241.233,
+            "max_ms": 449.835
+          },
+          "player_item_ownership": {
+            "calls": 544,
+            "total_ms": 858.956,
+            "mean_ms": 1.579,
+            "max_ms": 11.901
+          },
+          "player_units_and_slots": {
+            "calls": 544,
+            "total_ms": 5936.683,
+            "mean_ms": 10.913,
+            "max_ms": 24.932
+          },
+          "shared_pool_and_events": {
+            "calls": 68,
+            "total_ms": 127.881,
+            "mean_ms": 1.881,
+            "max_ms": 13.478
+          },
+          "strategic_owner_validation": {
+            "calls": 544,
+            "total_ms": 2351.846,
+            "mean_ms": 4.323,
+            "max_ms": 22.966
+          }
         }
       }
     },
     {
       "lobbies": 4,
       "players": 32,
-      "initialization_ms": 1920.944,
-      "training_wall_ms": 168380.344,
-      "run_dir": "C:\\Users\\cilio\\Desktop\\Ideia louca\\ia-tft-manager\\artifacts\\phase-c-snapshot-validation-2026-11-25-01\\lobbies-4",
+      "initialization_ms": 1892.835,
+      "training_wall_ms": 165313.656,
+      "run_dir": "C:\\Users\\cilio\\Desktop\\Ideia louca\\ia-tft-manager\\artifacts\\phase-c-snapshot-validation-2026-11-25-01-2\\lobbies-4",
       "timings": {
         "binding.get_anti_loop_metrics": {
           "calls": 128,
-          "total_ms": 4.767,
-          "mean_ms": 0.037,
-          "median_ms": 0.034,
-          "p95_ms": 0.062,
-          "p99_ms": 0.071,
+          "total_ms": 4.895,
+          "mean_ms": 0.038,
+          "median_ms": 0.036,
+          "p95_ms": 0.065,
+          "p99_ms": 0.089,
           "min_ms": 0.023,
-          "max_ms": 0.078
+          "max_ms": 0.102
         },
         "binding.get_champion_id_map": {
           "calls": 4,
-          "total_ms": 0.31,
-          "mean_ms": 0.078,
-          "median_ms": 0.075,
-          "p95_ms": 0.09,
-          "p99_ms": 0.09,
-          "min_ms": 0.07,
-          "max_ms": 0.09
+          "total_ms": 0.346,
+          "mean_ms": 0.086,
+          "median_ms": 0.087,
+          "p95_ms": 0.095,
+          "p99_ms": 0.095,
+          "min_ms": 0.078,
+          "max_ms": 0.095
         },
         "optimizer.step": {
           "calls": 13,
-          "total_ms": 710.938,
-          "mean_ms": 54.688,
-          "median_ms": 51.639,
-          "p95_ms": 71.534,
-          "p99_ms": 79.244,
-          "min_ms": 40.617,
-          "max_ms": 79.244
+          "total_ms": 653.876,
+          "mean_ms": 50.298,
+          "median_ms": 48.379,
+          "p95_ms": 61.884,
+          "p99_ms": 63.9,
+          "min_ms": 39.895,
+          "max_ms": 63.9
         },
         "outcomes.build_factual_events": {
           "calls": 128,
-          "total_ms": 2429.76,
-          "mean_ms": 18.983,
-          "median_ms": 17.129,
-          "p95_ms": 30.896,
-          "p99_ms": 32.641,
-          "min_ms": 15.842,
-          "max_ms": 33.568
+          "total_ms": 2386.863,
+          "mean_ms": 18.647,
+          "median_ms": 17.424,
+          "p95_ms": 24.879,
+          "p99_ms": 32.448,
+          "min_ms": 15.955,
+          "max_ms": 41.271
         },
         "policy.evaluate_actions": {
           "calls": 16,
-          "total_ms": 1608.205,
-          "mean_ms": 100.513,
-          "median_ms": 99.714,
-          "p95_ms": 110.873,
-          "p99_ms": 123.786,
-          "min_ms": 89.125,
-          "max_ms": 123.786
+          "total_ms": 1436.151,
+          "mean_ms": 89.759,
+          "median_ms": 89.179,
+          "p95_ms": 105.313,
+          "p99_ms": 107.194,
+          "min_ms": 67.094,
+          "max_ms": 107.194
         },
         "policy.get_action": {
           "calls": 28,
-          "total_ms": 729.922,
-          "mean_ms": 26.069,
-          "median_ms": 23.864,
-          "p95_ms": 38.944,
-          "p99_ms": 40.61,
-          "min_ms": 17.344,
-          "max_ms": 40.61
+          "total_ms": 740.7,
+          "mean_ms": 26.454,
+          "median_ms": 24.137,
+          "p95_ms": 38.74,
+          "p99_ms": 39.278,
+          "min_ms": 19.098,
+          "max_ms": 39.278
         },
         "policy.get_action_with_diagnostics": {
           "calls": 4,
-          "total_ms": 112.773,
-          "mean_ms": 28.193,
-          "median_ms": 30.173,
-          "p95_ms": 32.512,
-          "p99_ms": 32.512,
-          "min_ms": 19.915,
-          "max_ms": 32.512
+          "total_ms": 109.805,
+          "mean_ms": 27.451,
+          "median_ms": 26.319,
+          "p95_ms": 35.41,
+          "p99_ms": 35.41,
+          "min_ms": 21.757,
+          "max_ms": 35.41
         },
         "policy.get_value": {
           "calls": 2,
-          "total_ms": 28.853,
-          "mean_ms": 14.427,
-          "median_ms": 14.427,
-          "p95_ms": 16.212,
-          "p99_ms": 16.212,
-          "min_ms": 12.641,
-          "max_ms": 16.212
+          "total_ms": 25.802,
+          "mean_ms": 12.901,
+          "median_ms": 12.901,
+          "p95_ms": 13.295,
+          "p99_ms": 13.295,
+          "min_ms": 12.507,
+          "max_ms": 13.295
         },
         "ppo.compute_loss": {
           "calls": 14,
-          "total_ms": 1418.326,
-          "mean_ms": 101.309,
-          "median_ms": 99.167,
-          "p95_ms": 112.386,
-          "p99_ms": 125.231,
-          "min_ms": 90.808,
-          "max_ms": 125.231
+          "total_ms": 1276.948,
+          "mean_ms": 91.211,
+          "median_ms": 90.449,
+          "p95_ms": 106.822,
+          "p99_ms": 108.375,
+          "min_ms": 68.091,
+          "max_ms": 108.375
         },
         "ppo.update_total": {
           "calls": 2,
-          "total_ms": 3997.232,
-          "mean_ms": 1998.616,
-          "median_ms": 1998.616,
-          "p95_ms": 2288.595,
-          "p99_ms": 2288.595,
-          "min_ms": 1708.637,
-          "max_ms": 2288.595
+          "total_ms": 3543.178,
+          "mean_ms": 1771.589,
+          "median_ms": 1771.589,
+          "p95_ms": 2013.388,
+          "p99_ms": 2013.388,
+          "min_ms": 1529.79,
+          "max_ms": 2013.388
         },
         "python.deepcopy": {
           "calls": 470,
-          "total_ms": 530.021,
-          "mean_ms": 1.128,
-          "median_ms": 0.517,
-          "p95_ms": 11.364,
-          "p99_ms": 12.554,
+          "total_ms": 542.39,
+          "mean_ms": 1.154,
+          "median_ms": 0.512,
+          "p95_ms": 11.269,
+          "p99_ms": 12.749,
           "min_ms": 0.002,
-          "max_ms": 13.952
+          "max_ms": 26.526
         },
         "rollout.add": {
           "calls": 32,
-          "total_ms": 11011.781,
-          "mean_ms": 344.118,
-          "median_ms": 347.578,
-          "p95_ms": 382.841,
-          "p99_ms": 394.31,
-          "min_ms": 291.944,
-          "max_ms": 394.31
+          "total_ms": 11226.722,
+          "mean_ms": 350.835,
+          "median_ms": 331.513,
+          "p95_ms": 376.658,
+          "p99_ms": 730.791,
+          "min_ms": 303.086,
+          "max_ms": 730.791
         },
         "rollout.gae": {
           "calls": 2,
-          "total_ms": 10.97,
-          "mean_ms": 5.485,
-          "median_ms": 5.485,
-          "p95_ms": 7.441,
-          "p99_ms": 7.441,
-          "min_ms": 3.529,
-          "max_ms": 7.441
+          "total_ms": 8.419,
+          "mean_ms": 4.21,
+          "median_ms": 4.21,
+          "p95_ms": 4.274,
+          "p99_ms": 4.274,
+          "min_ms": 4.145,
+          "max_ms": 4.274
         },
         "semantic.build_batch": {
           "calls": 34,
-          "total_ms": 87016.874,
-          "mean_ms": 2559.32,
-          "median_ms": 2577.019,
-          "p95_ms": 2691.081,
-          "p99_ms": 3388.613,
-          "min_ms": 2314.151,
-          "max_ms": 3388.613
+          "total_ms": 86598.141,
+          "mean_ms": 2547.004,
+          "median_ms": 2519.226,
+          "p95_ms": 2777.932,
+          "p99_ms": 2836.476,
+          "min_ms": 2341.217,
+          "max_ms": 2836.476
         },
         "semantic.project_player": {
           "calls": 1088,
-          "total_ms": 86976.695,
-          "mean_ms": 79.942,
-          "median_ms": 76.453,
-          "p95_ms": 100.531,
-          "p99_ms": 115.406,
-          "min_ms": 63.069,
-          "max_ms": 177.196
+          "total_ms": 86558.898,
+          "mean_ms": 79.558,
+          "median_ms": 76.652,
+          "p95_ms": 99.848,
+          "p99_ms": 111.899,
+          "min_ms": 64.082,
+          "max_ms": 239.59
         },
         "semantic.validate_alignment": {
           "calls": 64,
-          "total_ms": 146.514,
-          "mean_ms": 2.289,
-          "median_ms": 2.056,
-          "p95_ms": 3.613,
-          "p99_ms": 3.874,
-          "min_ms": 1.934,
-          "max_ms": 4.838
+          "total_ms": 142.809,
+          "mean_ms": 2.231,
+          "median_ms": 2.015,
+          "p95_ms": 3.358,
+          "p99_ms": 4.081,
+          "min_ms": 1.881,
+          "max_ms": 4.489
         },
         "vector.reset_total": {
           "calls": 2,
-          "total_ms": 2986.485,
-          "mean_ms": 1493.242,
-          "median_ms": 1493.242,
-          "p95_ms": 1603.396,
-          "p99_ms": 1603.396,
-          "min_ms": 1383.088,
-          "max_ms": 1603.396
+          "total_ms": 2963.537,
+          "mean_ms": 1481.769,
+          "median_ms": 1481.769,
+          "p95_ms": 1603.966,
+          "p99_ms": 1603.966,
+          "min_ms": 1359.572,
+          "max_ms": 1603.966
         },
         "vector.step_total": {
           "calls": 32,
-          "total_ms": 56866.478,
-          "mean_ms": 1777.077,
-          "median_ms": 1730.449,
-          "p95_ms": 1916.941,
-          "p99_ms": 2730.586,
-          "min_ms": 1551.198,
-          "max_ms": 2730.586
+          "total_ms": 54648.787,
+          "mean_ms": 1707.775,
+          "median_ms": 1700.312,
+          "p95_ms": 1910.752,
+          "p99_ms": 2018.208,
+          "min_ms": 1541.561,
+          "max_ms": 2018.208
         },
         "wrapper.initialize": {
           "calls": 4,
-          "total_ms": 0.416,
-          "mean_ms": 0.104,
-          "median_ms": 0.084,
-          "p95_ms": 0.165,
-          "p99_ms": 0.165,
-          "min_ms": 0.082,
-          "max_ms": 0.165
+          "total_ms": 0.426,
+          "mean_ms": 0.107,
+          "median_ms": 0.09,
+          "p95_ms": 0.162,
+          "p99_ms": 0.162,
+          "min_ms": 0.084,
+          "max_ms": 0.162
         },
         "wrapper.snapshot_validation": {
           "calls": 136,
-          "total_ms": 52994.84,
-          "mean_ms": 389.668,
-          "median_ms": 377.202,
-          "p95_ms": 558.63,
-          "p99_ms": 716.486,
-          "min_ms": 119.29,
-          "max_ms": 772.784
+          "total_ms": 50952.168,
+          "mean_ms": 374.648,
+          "median_ms": 369.383,
+          "p95_ms": 502.965,
+          "p99_ms": 646.293,
+          "min_ms": 118.313,
+          "max_ms": 647.204
+        }
+      },
+      "snapshot_validation_stages": {
+        "wrappers": 4,
+        "collection_errors": 0,
+        "stages": {
+          "envelope_identity_provenance": {
+            "calls": 136,
+            "total_ms": 32255.656,
+            "mean_ms": 237.174,
+            "max_ms": 499.292
+          },
+          "player_item_ownership": {
+            "calls": 1088,
+            "total_ms": 1766.892,
+            "mean_ms": 1.624,
+            "max_ms": 12.655
+          },
+          "player_units_and_slots": {
+            "calls": 1088,
+            "total_ms": 12141.959,
+            "mean_ms": 11.16,
+            "max_ms": 28.416
+          },
+          "shared_pool_and_events": {
+            "calls": 136,
+            "total_ms": 210.523,
+            "mean_ms": 1.548,
+            "max_ms": 3.369
+          },
+          "strategic_owner_validation": {
+            "calls": 1088,
+            "total_ms": 4505.025,
+            "mean_ms": 4.141,
+            "max_ms": 20.439
+          }
         }
       }
     }
   ],
   "process": {
-    "wall_ms": 330426.696,
-    "cpu_ms": 470656.25,
-    "python_tracemalloc_current_bytes": 161077223,
-    "python_tracemalloc_peak_bytes": 327714001,
+    "wall_ms": 325588.418,
+    "cpu_ms": 465875.0,
+    "python_tracemalloc_current_bytes": 168627338,
+    "python_tracemalloc_peak_bytes": 335254195,
     "memory_before": {
       "rss_bytes": null,
       "vms_bytes": null,
@@ -671,6 +779,7 @@
     "tracemalloc excludes native C++ allocations and some allocator-owned memory",
     "RSS is process-wide and sampled before/after; use an external sampler for peak RSS over time",
     "profiling hooks add overhead; compare revisions using the same script and configuration",
+    "snapshot_validation_stages aggregate the successful validation-stage timings exposed by each wrapper; missing getters are reported as collection_errors",
     "each lobby-count run uses a separate fresh checkpoint/log directory"
   ]
 }
