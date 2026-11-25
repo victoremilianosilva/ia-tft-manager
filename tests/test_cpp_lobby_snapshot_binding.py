@@ -1152,7 +1152,12 @@ def test_native_snapshot_mapping_defers_combat_event_materialization():
 
 
 
-def test_native_snapshot_handle_builds_frozen_containers_directly_from_native_state():
+def test_native_snapshot_handle_builds_frozen_containers_directly_from_native_state(monkeypatch):
+    monkeypatch.setattr(
+        cpp_lobby_env,
+        "freeze_snapshot",
+        lambda _value: pytest.fail("native FrozenDict must bypass Python freeze_snapshot"),
+    )
     from immutable_snapshot import FrozenDict, FrozenList
 
     lobby = cpp_lobby_env.CppTFTLobbyWrapper(seed=53)
