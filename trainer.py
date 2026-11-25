@@ -613,7 +613,7 @@ class Trainer:
                         f"Envelope canônico diverge da identidade nativa para lobby {lobby_idx}, jogador {player_idx}."
                     )
                 metadata.pop("player_identity_envelopes", None)
-                metadata["identity"] = copy.deepcopy(envelope)
+                metadata["identity"] = freeze_snapshot(envelope)
                 expanded.append(metadata)
         return expanded
 
