@@ -1152,6 +1152,75 @@ def test_native_snapshot_mapping_defers_combat_event_materialization():
 
 
 
+
+def test_native_snapshot_handle_caches_frozen_ownership_view(monkeypatch):
+    from immutable_snapshot import FrozenDict, FrozenList
+
+    player_calls = []
+    original_load = cpp_lobby_env._NativeSnapshotPlayers._load_player
+
+    def tracked_load(self, index):
+        player_calls.append(index)
+        return original_load(self, index)
+
+    monkeypatch.setattr(
+        cpp_lobby_env._NativeSnapshotPlayers, "_load_player", tracked_load
+    )
+
+    lobby = cpp_lobby_env.CppTFTLobbyWrapper(seed=53)
+    try:
+        lobby.reset()
+        original_view = lobby._last_snapshot_metadata["native_state_snapshot"]
+        # Reset validates the complete snapshot and therefore loads all players.
+        # Start a fresh measurement for the independent adapter's lazy access.
+        player_calls.clear()
+        native_view = cpp_lobby_env._NativeSnapshotMapping(original_view._handle)
+        native_snapshot = native_view._base_dict()
+        assert isinstance(native_view, __import__("collections.abc").abc.Mapping)
+        assert isinstance(native_snapshot, FrozenDict)
+        native_players = native_view["players"]
+        assert len(native_players) == 8
+        assert player_calls == []
+        with pytest.raises(IndexError, match="player index out of range"):
+            native_players[8]
+
+        first_player = native_players[0]
+        assert isinstance(first_player, FrozenDict)
+        assert isinstance(first_player["board"], FrozenList)
+        assert player_calls == [0]
+        assert native_players[0] is first_player
+        assert player_calls == [0]
+
+        public_snapshot = lobby.get_audit_snapshot()
+        # The lazy training handle intentionally omits per-player action masks;
+        # they are published through the dedicated packed-mask API.
+        public_players = [
+            {key: value for key, value in player.items() if key != "action_masks"}
+            for player in public_snapshot["players"]
+        ]
+        public_projection = {
+            key: public_snapshot[key] for key in native_view
+        }
+        public_projection["players"] = public_players
+        assert {key: native_view[key] for key in native_view} == public_projection
+        assert list(native_players) == public_players
+        assert player_calls == list(range(8))
+
+        # The public native handle remains a complete snapshot API; only the
+        # dedicated envelope path omits players for the training adapter.
+        complete_native_snapshot = native_view._handle.to_dict()
+        assert len(complete_native_snapshot["players"]) == 8
+        assert "players" not in native_view._handle.to_envelope_dict()
+
+        with pytest.raises(TypeError, match="immutable"):
+            native_snapshot["round"] = -1
+        with pytest.raises(TypeError, match="immutable"):
+            first_player["board"].append({})
+    finally:
+        lobby.close()
+
+
+
 def test_native_binding_pins_snapshot_and_defers_unused_combat_rows():
     lobby = cpp_lobby_env.CppTFTLobbyWrapper(seed=37)
     try:

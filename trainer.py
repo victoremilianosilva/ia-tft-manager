@@ -1,4 +1,4 @@
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 
 import torch
 import torch.optim as optim
@@ -22,7 +22,7 @@ from rich.progress import (
 
 from training_config import TrainingConfig, cosine_lr_factor
 from decision_identity import build_player_identity_envelopes
-from immutable_snapshot import freeze_snapshot
+from immutable_snapshot import FrozenDict, freeze_snapshot
 
 from cpp_lobby_env import CppTFTLobbyWrapper, _NativeLobbyBatchManager
 
@@ -558,7 +558,7 @@ class Trainer:
                 if native_snapshot.get("player_decision_sequences") != player_sequences:
                     raise RuntimeError(f"Snapshot estruturado diverge nas sequências individuais da lobby {lobby_idx}.")
                 native_players = native_snapshot.get("players")
-                if not isinstance(native_players, list) or len(native_players) != players_per_lobby:
+                if not isinstance(native_players, Sequence) or len(native_players) != players_per_lobby:
                     raise RuntimeError(f"Snapshot estruturado sem {players_per_lobby} jogadores na lobby {lobby_idx}.")
             for player_idx, player_sequence in enumerate(player_sequences):
                 if (
@@ -574,7 +574,7 @@ class Trainer:
                 metadata.pop("native_state_snapshot", None)
                 if native_players is not None:
                     native_player = native_players[player_idx]
-                    if not isinstance(native_player, dict) or native_player.get("player_id") != player_idx:
+                    if not isinstance(native_player, Mapping) or native_player.get("player_id") != player_idx:
                         raise RuntimeError(f"Registro estruturado desalinhado para lobby {lobby_idx}, jogador {player_idx}.")
                     native_contract = (
                         native_snapshot.get("contract_id"),
@@ -608,7 +608,11 @@ class Trainer:
                                 f"na lobby {lobby_idx}, jogador {player_idx}."
                             )
                     else:
-                        frozen_player = freeze_snapshot(native_player)
+                        frozen_player = (
+                            native_player
+                            if isinstance(native_player, FrozenDict)
+                            else freeze_snapshot(native_player)
+                        )
                         if native_state_cache is not None:
                             native_state_cache[cache_key] = (native_contract, frozen_player)
                     metadata["native_player_state"] = frozen_player

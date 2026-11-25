@@ -1,3 +1,4 @@
+from collections.abc import Mapping
 """Integration regressions for native action masks and PPO strategy signals.
 
 Champion identities are loaded from the active production catalog so these tests
@@ -180,7 +181,7 @@ def _run_native_ppo_identity_replay(
         for _ in range(decisions):
             metadata = lobby.get_snapshot_metadata()
             native_snapshot = metadata.get("native_state_snapshot")
-            assert isinstance(native_snapshot, dict)
+            assert isinstance(native_snapshot, Mapping)
             assert native_snapshot["contract_id"] == "tft.native-state-snapshot"
             assert native_snapshot["engine_instance_id"] == metadata["engine_instance_id"]
             assert native_snapshot["episode_id"] == metadata["episode_id"]

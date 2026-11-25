@@ -375,11 +375,11 @@ replaced. The semantic projection remains the largest measured stage at
 87.51 s for four lobbies (1,088 player projections, about 80.4 ms each).
 
 **Responsibility and contracts.** `_NativeSnapshotMapping` remains responsible
-for lazy materialization and stable cached access. The native handle remains
-the source of the canonical snapshot, and `freeze_snapshot()` continues to
-provide the immutable Python representation. No validation, identity,
-provenance, sequence, ownership, or snapshot acceptance rule is changed by
-these findings.
+for lazy materialization and stable cached access. At this measurement point,
+the native handle supplied the canonical snapshot and Python
+`freeze_snapshot()` supplied the immutable representation. The follow-up
+implementation is recorded below. No validation, identity, provenance,
+sequence, ownership, or snapshot acceptance rule is changed by these findings.
 
 **Profiling cleanup and limits.** The temporary monkeypatch and timing metrics
 have been removed from `scripts/profile_training_pipeline.py`; only the
@@ -393,3 +393,72 @@ cache behavior, exact snapshot values, immutability, identity correlation, and
 all existing rejection behavior. Compare the end-to-end PPO profile and run
 snapshot binding, semantic projection, rollout alignment, and PPO smoke tests
 before accepting a functional change.
+
+## Safe native snapshot materialization
+
+**Prior problem.** The lazy native snapshot handle previously serialized the
+same pinned `AuditSnapshot` into a new mutable Python tree on repeated field
+access. The benchmark showed that first-touch serialization and recursive
+freezing were a material part of snapshot validation cost.
+
+**Technical rationale.** A native snapshot is immutable and pinned by
+`shared_ptr<const AuditSnapshot>`. The handle can therefore cache one frozen
+Python view for its lifetime. This removes repeated serialization/freezing
+for subsequent reads without changing the established, tested conversion
+boundary.
+
+**Rejected implementation.** An attempted optimization built `FrozenDict`
+and `FrozenList` directly with CPython C-API container operations. The
+native integration workflow reproducibly terminated with a segmentation
+fault while reading the snapshot. That builder path was removed rather than
+treating a process crash as an acceptable trade-off.
+
+**New responsibility.** `NativeAuditSnapshotHandle.to_dict()` now creates
+the established mutable serialization once, freezes it through
+`immutable_snapshot.freeze_snapshot()`, and caches the immutable result.
+`_NativeSnapshotMapping` continues to cache field access and lazily
+materialize combat-event rows. The public `get_audit_snapshot()` serializer
+remains unchanged.
+
+**Contracts and invariants.**
+- The handle continues to pin `shared_ptr<const AuditSnapshot>`.
+- The cached view remains recursively immutable and compatible with
+  `dict`/`list` consumers through `FrozenDict`/`FrozenList`.
+- Repeated reads reuse the same frozen view; no repeated full-tree
+  serialization or freezing occurs for the same handle.
+- Combat event access remains lazy and separately cached.
+- Snapshot identity, provenance, sequence validation, schema, and
+  `deepcopy` sharing remain unchanged.
+
+**Impact.** This restores the safe conversion path while retaining the
+per-handle cache. It does not claim the larger direct-construction speedup:
+the mutable intermediate tree and initial Python freezing pass remain.
+The A/B benchmark must measure whether caching alone provides a worthwhile
+end-to-end improvement before another native construction strategy is tried.
+
+**Validation criteria.** CI must compile the binding and pass the native
+engine integration, snapshot binding, semantic projection, rollout alignment,
+and PPO contract tests. Tests verify one freeze per handle, stable cached
+identity, structural parity with the public getter, immutability, and lazy
+combat access. Benchmark comparison remains a separate user-run step.
+
+
+## Native player snapshot views
+
+**Prior problem.** The native handle materialized all eight player subtrees into one Python dictionary tree before the training pipeline could select a player. Recursive freezing then traversed every player subtree together, even though training expands and consumes players individually.
+
+**Technical rationale.** Player records are independently addressable inside the pinned immutable `AuditSnapshot`. The binding can serialize one requested player at a time while retaining the same native snapshot owner. Python exposes that access as a read-only sequence, preserving indexing and iteration for consumers without requiring an eager list of all eight player dictionaries.
+
+**New responsibility.** `NativeAuditSnapshotHandle` owns the native player sequence and exposes bounded `player_count()` / `player(index)` access. Its dedicated `to_envelope_dict()` excludes the player collection, while the established public `to_dict()` remains complete and includes all players. `_NativeSnapshotPlayers` caches each player on first access using shallow, recursively read-only Python views over the freshly serialized native record; it does not run a second recursive `freeze_snapshot()` copy. `_NativeSnapshotMapping` combines the envelope with this lazy sequence. Python-backed fixture handles keep the legacy complete-dictionary fallback. `Trainer` consumes the sequence protocol and reuses an already-frozen player record rather than freezing it again.
+
+**Contracts and invariants.**
+- The handle continues to pin `shared_ptr<const AuditSnapshot>`; the Python sequence retains the handle for the lifetime of its player views.
+- Player count remains exactly the native lobby cardinality (eight); indices are bounds-checked.
+- Player identity, strategic owner context, board/bench/shop slots, item ownership, and all snapshot fields retain their existing serialized names and values.
+- The public eager `get_audit_snapshot()` and `NativeAuditSnapshotHandle.to_dict()` APIs remain complete and unchanged in shape, including the diagnostic masks exposed by `get_audit_snapshot()`.
+- Training receives no action-mask copy through the player snapshot; masks remain available through the dedicated packed-mask API.
+- Fixture-backed mappings remain supported during migration.
+
+**Impact.** The training adapter requests the dedicated native envelope and does not build or freeze the player collection as part of that read. Each player subtree is exposed by index and frozen on first Python access, with repeated reads reusing the same immutable object. The public `to_dict()` path remains intentionally eager for callers that request the complete snapshot. This is an incremental lazy-materialization boundary, not yet a zero-copy typed C++ view; it does not claim that the per-player conversion/freeze cost has disappeared.
+
+**Validation criteria.** Native binding tests verify envelope caching, lazy per-player materialization, per-player cache identity, structural parity with the public getter after excluding its diagnostic-only action masks, bounds behavior, complete public `to_dict()` shape, and immutable nested player data. Wrapper validation, semantic projection, rollout alignment, and PPO contract tests must remain green. End-to-end performance claims require a separate PPO-enabled benchmark.

@@ -9,7 +9,7 @@ interface expected by LobbyVectorEnv/Trainer.
 """
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from pathlib import Path
 from types import SimpleNamespace
 import copy
@@ -21,7 +21,7 @@ import numpy as np
 from decision_identity import build_player_identity_envelopes
 from reward_audit import RewardAuditLedger
 from reward_outcome_producers import build_action_outcome_events
-from immutable_snapshot import freeze_snapshot
+from immutable_snapshot import FrozenDict, FrozenList, freeze_snapshot
 
 _REPO_ROOT = Path(__file__).resolve().parent
 # CMake builds may live at the repository root (build/) or under cpp/.
@@ -49,7 +49,130 @@ except ImportError as exc:
     ) from exc
 
 
-class _NativeSnapshotMapping(dict):
+class _NativeFrozenDict(FrozenDict):
+    """Shallow, recursively read-only view over one native-owned record."""
+
+    def __init__(self, values=()):
+        dict.__init__(self)
+        self._view_cache = {}
+        source = values.items() if isinstance(values, Mapping) else values
+        for key, value in source:
+            dict.__setitem__(self, key, value)
+
+    def __getitem__(self, key):
+        if key not in self._view_cache:
+            self._view_cache[key] = _wrap_native_snapshot_value(dict.__getitem__(self, key))
+        return self._view_cache[key]
+
+    def get(self, key, default=None):
+        if key not in self:
+            return default
+        return self[key]
+
+    def items(self):
+        return ((key, self[key]) for key in dict.__iter__(self))
+
+    def values(self):
+        return (self[key] for key in dict.__iter__(self))
+
+    def copy(self):
+        return {key: self[key] for key in dict.__iter__(self)}
+
+    def __deepcopy__(self, memo):
+        memo[id(self)] = self
+        return self
+
+
+class _NativeFrozenList(FrozenList):
+    """Shallow, recursively read-only list view over native-owned values."""
+
+    def __init__(self, values=()):
+        list.__init__(self)
+        self._view_cache = {}
+        for value in values:
+            list.append(self, value)
+
+    def __getitem__(self, index):
+        if isinstance(index, slice):
+            return [self[position] for position in range(*index.indices(len(self)))]
+        if index < 0:
+            index += len(self)
+        if index < 0 or index >= len(self):
+            raise IndexError("native snapshot sequence index out of range")
+        if index not in self._view_cache:
+            self._view_cache[index] = _wrap_native_snapshot_value(list.__getitem__(self, index))
+        return self._view_cache[index]
+
+    def __iter__(self):
+        for index in range(len(self)):
+            yield self[index]
+
+    def __eq__(self, other):
+        if isinstance(other, Sequence) and not isinstance(other, (str, bytes)):
+            return list(self) == list(other)
+        return NotImplemented
+
+    def __deepcopy__(self, memo):
+        memo[id(self)] = self
+        return self
+
+
+def _wrap_native_snapshot_value(value):
+    if isinstance(value, (_NativeFrozenDict, _NativeFrozenList)):
+        return value
+    if isinstance(value, Mapping):
+        return _NativeFrozenDict(value)
+    if isinstance(value, list):
+        return _NativeFrozenList(value)
+    if isinstance(value, tuple):
+        return tuple(_wrap_native_snapshot_value(item) for item in value)
+    return value
+
+
+class _NativeSnapshotPlayers(Sequence):
+    """Lazy immutable sequence of player records owned by one native handle."""
+
+    def __init__(self, handle):
+        self._handle = handle
+        self._cache = {}
+
+    def __len__(self):
+        return int(self._handle.player_count())
+
+    def _load_player(self, index):
+        # C++ returns a fresh value tree from the pinned const snapshot. The
+        # shallow wrappers make it recursively read-only without a second
+        # recursive Python copy/freeze pass.
+        return _NativeFrozenDict(self._handle.player(index))
+
+    def __getitem__(self, index):
+        if isinstance(index, slice):
+            return [self[position] for position in range(*index.indices(len(self)))]
+        index = int(index)
+        size = len(self)
+        if index < 0:
+            index += size
+        if index < 0 or index >= size:
+            raise IndexError("native snapshot player index out of range")
+        if index not in self._cache:
+            self._cache[index] = self._load_player(index)
+        return self._cache[index]
+
+    def __iter__(self):
+        for index in range(len(self)):
+            yield self[index]
+
+    def __eq__(self, other):
+        if isinstance(other, Sequence) and not isinstance(other, (str, bytes)):
+            return list(self) == list(other)
+        return NotImplemented
+
+    def __deepcopy__(self, memo):
+        memo[id(self)] = self
+        return self
+
+
+class _NativeSnapshotMapping(Mapping):
     """Read-only mapping over one pinned native snapshot.
 
     The large combat event lists are converted to Python only when requested.
@@ -67,15 +190,27 @@ class _NativeSnapshotMapping(dict):
         self._handle = handle
         self._base = None
         self._combat_cache = {}
+        self._players = None
 
     def _base_dict(self):
         if self._base is None:
-            # Materialize the native value once, then freeze it. All metadata
-            # envelopes may safely share this pinned immutable snapshot.
-            self._base = freeze_snapshot(self._handle.to_dict())
+            # Native handles materialize only envelope-level fields here;
+            # player subtrees are fetched independently on first access.
+            # Python fixture handles retain the legacy complete-dictionary path.
+            envelope = getattr(self._handle, "to_envelope_dict", None)
+            native_snapshot = envelope() if callable(envelope) else self._handle.to_dict()
+            self._base = (
+                native_snapshot
+                if isinstance(native_snapshot, FrozenDict)
+                else freeze_snapshot(native_snapshot)
+            )
         return self._base
 
     def __getitem__(self, key):
+        if key == "players" and callable(getattr(self._handle, "player", None)):
+            if self._players is None:
+                self._players = _NativeSnapshotPlayers(self._handle)
+            return self._players
         if key in self._COMBAT_FIELDS:
             if key not in self._combat_cache:
                 self._combat_cache[key] = freeze_snapshot(self._handle.combat_events(key))
@@ -461,7 +596,7 @@ class CppTFTLobbyWrapper:
                         )
 
         players = value.get("players")
-        if not isinstance(players, list) or len(players) != cls.PLAYERS_PER_LOBBY:
+        if not isinstance(players, Sequence) or len(players) != cls.PLAYERS_PER_LOBBY:
             raise RuntimeError("Snapshot estruturado não contém exatamente oito jogadores.")
         expected_slots = {"board": 28, "bench": 9, "shop": 5}
         # Unit UUID is scoped by Engine/episode/player. One active copy may
@@ -949,8 +1084,8 @@ class CppTFTLobbyWrapper:
         combat_rewards = np.asarray(result["combat_rewards"], dtype=np.float32)
         placement_rewards = np.asarray(result["placement_rewards"], dtype=np.float32)
         action_traces = [dict(item) for item in result["action_traces"]]
-        if not isinstance(source_decision_snapshot, dict) or not isinstance(
-            source_decision_snapshot.get("native_state_snapshot"), dict
+        if not isinstance(source_decision_snapshot, Mapping) or not isinstance(
+            source_decision_snapshot.get("native_state_snapshot"), Mapping
         ):
             raise RuntimeError(
                 "Não há snapshot nativo pré-ação para atribuir consequências factuais."
