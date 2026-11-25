@@ -18,11 +18,6 @@ class FrozenDict(dict):
         for key, value in source:
             dict.__setitem__(self, key, freeze_snapshot(value))
 
-    @classmethod
-    def _empty(cls):
-        """Allocate an empty instance for the native builder to populate."""
-        return dict.__new__(cls)
-
     def _immutable(self, *_args, **_kwargs):
         raise TypeError("snapshot ownership is immutable")
 
@@ -45,11 +40,6 @@ class FrozenList(list):
 
     def __init__(self, values=()):
         list.__init__(self, (freeze_snapshot(value) for value in values))
-
-    @classmethod
-    def _empty(cls):
-        """Allocate an empty instance for the native builder to populate."""
-        return list.__new__(cls)
 
     def _immutable(self, *_args, **_kwargs):
         raise TypeError("snapshot ownership is immutable")

@@ -1152,23 +1152,6 @@ def test_native_snapshot_mapping_defers_combat_event_materialization():
 
 
 
-def test_frozen_container_native_factories_allocate_empty_subclasses():
-    from immutable_snapshot import FrozenDict, FrozenList
-
-    frozen_dict = FrozenDict._empty()
-    frozen_list = FrozenList._empty()
-    dict.__setitem__(frozen_dict, "key", 7)
-    list.append(frozen_list, frozen_dict)
-
-    assert type(frozen_dict) is FrozenDict
-    assert type(frozen_list) is FrozenList
-    assert frozen_dict["key"] == 7
-    assert frozen_list[0] is frozen_dict
-    with pytest.raises(TypeError, match="immutable"):
-        frozen_dict["other"] = 8
-    with pytest.raises(TypeError, match="immutable"):
-        frozen_list.append(9)
-
 
 def test_native_snapshot_handle_caches_frozen_ownership_view(monkeypatch):
     import immutable_snapshot

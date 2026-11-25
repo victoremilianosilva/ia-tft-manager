@@ -394,49 +394,50 @@ all existing rejection behavior. Compare the end-to-end PPO profile and run
 snapshot binding, semantic projection, rollout alignment, and PPO smoke tests
 before accepting a functional change.
 
-## Native frozen snapshot construction
+## Safe native snapshot materialization
 
-**Prior problem.** The first lazy-materialization optimization still built a
-complete mutable Python `dict`/`list` tree in the pybind serializer and then
-walked that tree again to create `FrozenDict`/`FrozenList`. The benchmark
-showed that the second traversal was the larger part of first-touch cost.
+**Prior problem.** The lazy native snapshot handle previously serialized the
+same pinned `AuditSnapshot` into a new mutable Python tree on repeated field
+access. The benchmark showed that first-touch serialization and recursive
+freezing were a material part of snapshot validation cost.
 
-**Technical rationale.** The native `AuditSnapshot` already owns typed,
-stable values for every serialized field. Building the final immutable
-containers while traversing those structs avoids allocating a complete
-mutable container tree and then recursively copying it. STL vectors and
-arrays are also emitted directly as frozen lists, including nested feature
-arrays.
+**Technical rationale.** A native snapshot is immutable and pinned by
+`shared_ptr<const AuditSnapshot>`. The handle can therefore cache one frozen
+Python view for its lifetime. This removes repeated serialization/freezing
+for subsequent reads without changing the established, tested conversion
+boundary.
 
-**New responsibility.** `audit_snapshot_to_frozen_dict()` is the native
-handle's serializer for the lazy training/audit view. Its C++ builders allocate
-the final `FrozenDict`/`FrozenList` instances and populate them through the
-CPython C API. `_NativeSnapshotMapping` caches the returned `FrozenDict`
-directly. The existing `audit_snapshot_to_dict()` remains the mutable
-serializer for the public `get_audit_snapshot()` API.
+**Rejected implementation.** An attempted optimization built `FrozenDict`
+and `FrozenList` directly with CPython C-API container operations. The
+native integration workflow reproducibly terminated with a segmentation
+fault while reading the snapshot. That builder path was removed rather than
+treating a process crash as an acceptable trade-off.
+
+**New responsibility.** `NativeAuditSnapshotHandle.to_dict()` now creates
+the established mutable serialization once, freezes it through
+`immutable_snapshot.freeze_snapshot()`, and caches the immutable result.
+`_NativeSnapshotMapping` continues to cache field access and lazily
+materialize combat-event rows. The public `get_audit_snapshot()` serializer
+remains unchanged.
 
 **Contracts and invariants.**
-- Frozen containers remain subclasses of `dict` and `list`, preserving
-  structural validation and consumer compatibility.
-- The immutable serializer emits the same 216 distinct serialized field names
-  and 268 field assignments as the mutable serializer; combat event rows
-  remain deliberately lazy and action masks remain outside the native base
-  view.
-- The native handle continues to pin `shared_ptr<const AuditSnapshot>`.
-- Combat event access, cache behavior, snapshot identity, provenance,
-  sequence validation, and `deepcopy` sharing remain unchanged.
-- Python-backed fixtures retain the `freeze_snapshot()` fallback; the native
-  production path no longer invokes it for an already-frozen handle result.
+- The handle continues to pin `shared_ptr<const AuditSnapshot>`.
+- The cached view remains recursively immutable and compatible with
+  `dict`/`list` consumers through `FrozenDict`/`FrozenList`.
+- Repeated reads reuse the same frozen view; no repeated full-tree
+  serialization or freezing occurs for the same handle.
+- Combat event access remains lazy and separately cached.
+- Snapshot identity, provenance, sequence validation, schema, and
+  `deepcopy` sharing remain unchanged.
 
-**Impact.** The complete mutable snapshot tree and its recursive Python
-freezing pass are removed from the native lazy-materialization path. Individual
-native vectors/arrays are converted directly into frozen lists. This is a
-structural reduction in redundant Python container work; it is not yet a
-measured end-to-end speedup.
+**Impact.** This restores the safe conversion path while retaining the
+per-handle cache. It does not claim the larger direct-construction speedup:
+the mutable intermediate tree and initial Python freezing pass remain.
+The A/B benchmark must measure whether caching alone provides a worthwhile
+end-to-end improvement before another native construction strategy is tried.
 
-**Validation criteria.** CI must compile the pybind extension and pass native
-snapshot-binding, semantic projection, rollout alignment, and PPO smoke tests.
-The user-run A/B benchmark must compare the same 1/2/4-lobby configuration
-against the recorded baseline, with profiler instrumentation removed from
-production. Preserve exact values, immutability, lazy combat access, and all
-existing rejection behavior.
+**Validation criteria.** CI must compile the binding and pass the native
+engine integration, snapshot binding, semantic projection, rollout alignment,
+and PPO contract tests. Tests verify one freeze per handle, stable cached
+identity, structural parity with the public getter, immutability, and lazy
+combat access. Benchmark comparison remains a separate user-run step.
