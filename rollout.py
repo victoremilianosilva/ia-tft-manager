@@ -855,7 +855,26 @@ class RolloutBuffer:
 
     @staticmethod
     def _metadata_values_equal(left, right):
-        """Compare JSON-like metadata without allowing exotic equality to break storage."""
+        """Compare JSON-like metadata while short-circuiting shared immutable subtrees."""
+        if left is right:
+            return True
+
+        if isinstance(left, dict) and isinstance(right, dict):
+            if left.keys() != right.keys():
+                return False
+            return all(
+                RolloutBuffer._metadata_values_equal(left[key], right[key])
+                for key in left
+            )
+
+        if isinstance(left, (list, tuple)) and isinstance(right, (list, tuple)):
+            if len(left) != len(right):
+                return False
+            return all(
+                RolloutBuffer._metadata_values_equal(left_value, right_value)
+                for left_value, right_value in zip(left, right)
+            )
+
         try:
             result = left == right
             return result if isinstance(result, bool) else False
