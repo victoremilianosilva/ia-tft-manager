@@ -35,7 +35,6 @@ class Profiler:
         self.samples = defaultdict(list)
         self.calls = defaultdict(int)
         self.started = time.perf_counter()
-        self.snapshot_validation_wrappers = []
 
     def measure(self, name, fn, *args, **kwargs):
         start = time.perf_counter()
@@ -157,7 +156,6 @@ def install_instrumentation(profiler):
     def profiled_init(self, *args, **kwargs):
         profiler.measure("wrapper.initialize", original_init, self, *args, **kwargs)
         self._engine = NativeCallProxy(self._engine, profiler)
-        profiler.snapshot_validation_wrappers.append(self)
 
     CppTFTLobbyWrapper.__init__ = profiled_init
 
@@ -196,47 +194,6 @@ def install_instrumentation(profiler):
     copy.deepcopy = timed_deepcopy
 
     return torch
-
-
-def collect_snapshot_validation_stages(wrappers):
-    """Aggregate PR #565 stage metrics without changing validation behavior."""
-    stages = {}
-    collection_errors = 0
-    for wrapper in wrappers:
-        getter = getattr(wrapper, "get_snapshot_validation_metrics", None)
-        if not callable(getter):
-            collection_errors += 1
-            continue
-        try:
-            wrapper_metrics = getter()
-        except Exception:
-            collection_errors += 1
-            continue
-        for stage_name, values in wrapper_metrics.items():
-            aggregate = stages.setdefault(stage_name, {
-                "calls": 0, "total_ms": 0.0, "max_ms": 0.0,
-            })
-            aggregate["calls"] += int(values.get("calls", 0))
-            aggregate["total_ms"] += float(values.get("total_ms", 0.0))
-            aggregate["max_ms"] = max(
-                aggregate["max_ms"], float(values.get("max_ms", 0.0))
-            )
-
-    return {
-        "wrappers": len(wrappers),
-        "collection_errors": collection_errors,
-        "stages": {
-            name: {
-                "calls": values["calls"],
-                "total_ms": round(values["total_ms"], 3),
-                "mean_ms": round(
-                    values["total_ms"] / values["calls"], 3
-                ) if values["calls"] else 0.0,
-                "max_ms": round(values["max_ms"], 3),
-            }
-            for name, values in sorted(stages.items())
-        },
-    }
 
 
 def main():
@@ -296,7 +253,6 @@ def main():
             "TFT_COMPOSITION_INTELLIGENCE_ENABLED": "1",
         })
 
-        wrapper_start_index = len(profiler.snapshot_validation_wrappers)
         init_start = time.perf_counter()
         trainer = Trainer(num_envs=lobby_count, use_subprocess=False)
         init_ms = (time.perf_counter() - init_start) * 1000.0
@@ -320,7 +276,6 @@ def main():
             trainer.vec_env.close()
             trainer.writer.close()
 
-        run_wrappers = profiler.snapshot_validation_wrappers[wrapper_start_index:]
         reports.append({
             "lobbies": lobby_count,
             "players": lobby_count * 8,
@@ -328,9 +283,6 @@ def main():
             "training_wall_ms": round(train_ms, 3),
             "run_dir": str(run_dir),
             "timings": profiler.report(),
-            "snapshot_validation_stages": collect_snapshot_validation_stages(
-                run_wrappers
-            ),
         })
 
     wall_ms = (time.perf_counter() - wall_start) * 1000.0
@@ -380,7 +332,6 @@ def main():
             "tracemalloc excludes native C++ allocations and some allocator-owned memory",
             "RSS is process-wide and sampled before/after; use an external sampler for peak RSS over time",
             "profiling hooks add overhead; compare revisions using the same script and configuration",
-            "snapshot_validation_stages aggregate the successful validation-stage timings exposed by each wrapper; missing getters are reported as collection_errors",
             "each lobby-count run uses a separate fresh checkpoint/log directory",
         ],
     }
