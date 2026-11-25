@@ -1082,3 +1082,44 @@ def test_expansion_does_not_reuse_native_player_state_across_round_revisions():
         first["native_player_state"] is not next_["native_player_state"]
         for first, next_ in zip(first_rows, next_rows)
     )
+
+
+def test_expansion_keeps_native_player_state_isolated_between_lobby_rows():
+    from copy import deepcopy
+    from trainer import Trainer
+    from decision_identity import build_player_identity_envelopes
+
+    snapshot = {
+        "engine_instance_id": "duplicate-engine-fixture",
+        "episode_id": 2,
+        "decision_sequence": 11,
+        "player_decision_sequences": [11] * 8,
+        "round": 4,
+        "native_state_snapshot": {
+            "engine_instance_id": "duplicate-engine-fixture",
+            "episode_id": 2,
+            "snapshot_sequence": 11,
+            "round": 4,
+            "player_decision_sequences": [11] * 8,
+            "contract_id": "native-state-v1",
+            "contract_version": 1,
+            "producer": "test-engine",
+            "source_namespace": "tft.engine.snapshot",
+            "players": [
+                {"player_id": player_id, "board": [], "bench": [], "shop": []}
+                for player_id in range(8)
+            ],
+        },
+    }
+    snapshot["player_identity_envelopes"] = build_player_identity_envelopes(snapshot)
+    second_lobby = deepcopy(snapshot)
+    second_lobby["player_identity_envelopes"] = build_player_identity_envelopes(second_lobby)
+
+    rows = Trainer._expand_lobby_snapshot_metadata(
+        [snapshot, second_lobby], 8, "two lobbies", native_state_cache={}
+    )
+    first_lobby_rows, second_lobby_rows = rows[:8], rows[8:]
+    assert all(
+        first["native_player_state"] is not second["native_player_state"]
+        for first, second in zip(first_lobby_rows, second_lobby_rows)
+    )
