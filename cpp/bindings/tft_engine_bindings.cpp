@@ -27,16 +27,39 @@ namespace {
 using tft::PlayerActionMasks;
 using tft::TFTEngine;
 
-// Convert a pybind value into the immutable Python container types expected
-// by training. Traversal runs in C++; Python freeze_snapshot remains available
-// for fixtures and non-native callers.
-py::object freeze_native_python_value(const py::handle& value) {
-    const auto snapshot_module = py::module_::import("immutable_snapshot");
+struct FrozenContainerTypes {
+    py::object dict_type;
+    py::object list_type;
+
+    FrozenContainerTypes()
+        : dict_type(py::module_::import("immutable_snapshot").attr("FrozenDict")),
+          list_type(py::module_::import("immutable_snapshot").attr("FrozenList")) {}
+};
+
+class FrozenDictBuilder;
+class FrozenListBuilder;
+
+py::object builder_to_python(const py::object& value);
+py::object builder_to_python(const py::handle& value);
+py::object builder_to_python(const FrozenDictBuilder& value);
+py::object builder_to_python(FrozenDictBuilder&& value);
+py::object builder_to_python(const FrozenListBuilder& value);
+py::object builder_to_python(FrozenListBuilder&& value);
+
+template <typename T>
+py::object builder_to_python(T&& value) {
+    return py::cast(std::forward<T>(value));
+}
+
+py::object freeze_native_python_value(
+    const py::handle& value,
+    const FrozenContainerTypes& types
+) {
     if (py::isinstance<py::dict>(value)) {
-        py::object frozen = snapshot_module.attr("FrozenDict").attr("_empty")();
+        py::object frozen = types.dict_type.attr("_empty")();
         const py::dict source = py::reinterpret_borrow<py::dict>(value);
         for (const auto& entry : source) {
-            py::object child = freeze_native_python_value(entry.second);
+            py::object child = freeze_native_python_value(entry.second, types);
             if (PyDict_SetItem(frozen.ptr(), entry.first.ptr(), child.ptr()) != 0) {
                 throw py::error_already_set();
             }
@@ -44,10 +67,10 @@ py::object freeze_native_python_value(const py::handle& value) {
         return frozen;
     }
     if (py::isinstance<py::list>(value)) {
-        py::object frozen = snapshot_module.attr("FrozenList").attr("_empty")();
+        py::object frozen = types.list_type.attr("_empty")();
         const py::list source = py::reinterpret_borrow<py::list>(value);
         for (const auto& child_value : source) {
-            py::object child = freeze_native_python_value(child_value);
+            py::object child = freeze_native_python_value(child_value, types);
             if (PyList_Append(frozen.ptr(), child.ptr()) != 0) {
                 throw py::error_already_set();
             }
@@ -58,16 +81,87 @@ py::object freeze_native_python_value(const py::handle& value) {
         const py::tuple source = py::reinterpret_borrow<py::tuple>(value);
         py::tuple frozen(source.size());
         for (py::ssize_t index = 0; index < source.size(); ++index) {
-            frozen[index] = freeze_native_python_value(source[index]);
+            frozen[index] = freeze_native_python_value(source[index], types);
         }
         return std::move(frozen);
     }
     if (PyUnicode_Check(value.ptr()) || PyBytes_Check(value.ptr()) ||
-        PyLong_Check(value.ptr()) || PyFloat_Check(value.ptr()) || value.is_none()) {
+        PyLong_Check(value.ptr()) || PyFloat_Check(value.ptr()) ||
+        PyBool_Check(value.ptr()) || value.is_none()) {
         return py::reinterpret_borrow<py::object>(value);
     }
     return py::module_::import("copy").attr("deepcopy")(value);
 }
+
+class FrozenDictBuilder {
+public:
+    explicit FrozenDictBuilder(const FrozenContainerTypes& types)
+        : types_(&types), value_(types.dict_type.attr("_empty")()) {}
+
+    class ItemProxy {
+    public:
+        ItemProxy(FrozenDictBuilder& owner, const char* key)
+            : owner_(owner), key_(key) {}
+
+        template <typename T>
+        ItemProxy& operator=(T&& value) {
+            owner_.set(key_, std::forward<T>(value));
+            return *this;
+        }
+
+    private:
+        FrozenDictBuilder& owner_;
+        const char* key_;
+    };
+
+    ItemProxy operator[](const char* key) { return ItemProxy(*this, key); }
+
+    template <typename T>
+    void set(const char* key, T&& value) {
+        py::object mutable_value = builder_to_python(std::forward<T>(value));
+        py::object frozen_value = freeze_native_python_value(mutable_value, *types_);
+        const py::str python_key(key);
+        if (PyDict_SetItem(value_.ptr(), python_key.ptr(), frozen_value.ptr()) != 0) {
+            throw py::error_already_set();
+        }
+    }
+
+    py::object object() const { return value_; }
+
+private:
+    const FrozenContainerTypes* types_;
+    py::object value_;
+};
+
+class FrozenListBuilder {
+public:
+    explicit FrozenListBuilder(const FrozenContainerTypes& types)
+        : types_(&types), value_(types.list_type.attr("_empty")()) {}
+
+    template <typename T>
+    void append(T&& value) {
+        py::object mutable_value = builder_to_python(std::forward<T>(value));
+        py::object frozen_value = freeze_native_python_value(mutable_value, *types_);
+        if (PyList_Append(value_.ptr(), frozen_value.ptr()) != 0) {
+            throw py::error_already_set();
+        }
+    }
+
+    py::object object() const { return value_; }
+
+private:
+    const FrozenContainerTypes* types_;
+    py::object value_;
+};
+
+py::object builder_to_python(const py::object& value) { return value; }
+py::object builder_to_python(const py::handle& value) {
+    return py::reinterpret_borrow<py::object>(value);
+}
+py::object builder_to_python(const FrozenDictBuilder& value) { return value.object(); }
+py::object builder_to_python(FrozenDictBuilder&& value) { return value.object(); }
+py::object builder_to_python(const FrozenListBuilder& value) { return value.object(); }
+py::object builder_to_python(FrozenListBuilder&& value) { return value.object(); }
 
 
 template <std::size_t N>
@@ -257,12 +351,13 @@ py::list player_info_to_list(const Players& players) {
     return result;
 }
 
-py::dict audit_snapshot_to_dict(
+py::object audit_snapshot_to_frozen_dict(
     const tft::AuditSnapshot& snapshot,
     bool include_masks = true,
     bool include_combat_events = true
 ) {
-    py::dict result;
+    const FrozenContainerTypes types;
+    FrozenDictBuilder result(types);
     result["contract_id"] = snapshot.contract_id;
     result["contract_version"] = snapshot.contract_version;
     result["board_geometry_id"] = snapshot.board_geometry_id;
@@ -284,9 +379,9 @@ py::dict audit_snapshot_to_dict(
     result["combat_attack_events_truncated"] = snapshot.combat_attack_events_truncated;
     result["combat_death_events_truncated"] = snapshot.combat_death_events_truncated;
     if (include_combat_events) {
-            py::list combat_damage_events;
+            FrozenListBuilder combat_damage_events(types);
         for (const auto& event : snapshot.combat_damage_events) {
-            py::dict row;
+            FrozenDictBuilder row(types);
             row["combat_sequence"] = event.combat_sequence;
             row["timestamp"] = event.timestamp;
             row["source_unit_id"] = event.source_unit_id;
@@ -303,9 +398,9 @@ py::dict audit_snapshot_to_dict(
             combat_damage_events.append(std::move(row));
     }
         result["combat_damage_events"] = std::move(combat_damage_events);
-        py::list combat_attack_events;
+        FrozenListBuilder combat_attack_events(types);
         for (const auto& event : snapshot.combat_attack_events) {
-            py::dict row;
+            FrozenDictBuilder row(types);
             row["combat_sequence"] = event.combat_sequence;
             row["timestamp"] = event.timestamp;
             row["source_unit_id"] = event.source_unit_id;
@@ -319,9 +414,9 @@ py::dict audit_snapshot_to_dict(
             combat_attack_events.append(std::move(row));
     }
         result["combat_attack_events"] = std::move(combat_attack_events);
-        py::list combat_death_events;
+        FrozenListBuilder combat_death_events(types);
         for (const auto& event : snapshot.combat_death_events) {
-            py::dict row;
+            FrozenDictBuilder row(types);
             row["combat_sequence"] = event.combat_sequence;
             row["timestamp"] = event.timestamp;
             row["unit_id"] = event.unit_id;
@@ -334,9 +429,9 @@ py::dict audit_snapshot_to_dict(
     }
         result["combat_death_events"] = std::move(combat_death_events);
     }
-    py::list economy_resolution_events;
+    FrozenListBuilder economy_resolution_events(types);
     for (const auto& event : snapshot.economy_resolution_events) {
-        py::dict row;
+        FrozenDictBuilder row(types);
         row["contract_id"] = event.contract_id;
         row["contract_version"] = event.contract_version;
         row["source_namespace"] = event.source_namespace;
@@ -361,9 +456,9 @@ py::dict audit_snapshot_to_dict(
         economy_resolution_events.append(std::move(row));
     }
     result["economy_resolution_events"] = std::move(economy_resolution_events);
-    py::list pvp_result_credit_events;
+    FrozenListBuilder pvp_result_credit_events(types);
     for (const auto& event : snapshot.pvp_result_credit_events) {
-        py::dict row;
+        FrozenDictBuilder row(types);
         row["combat_sequence"] = event.combat_sequence;
         row["contract_id"] = event.contract_id;
         row["contract_version"] = event.contract_version;
@@ -380,14 +475,14 @@ py::dict audit_snapshot_to_dict(
     }
     result["pvp_result_credit_events"] = std::move(pvp_result_credit_events);
     const auto& pool = snapshot.shared_pool;
-    py::dict pool_dict;
+    FrozenDictBuilder pool_dict(types);
     pool_dict["contract_id"] = pool.contract_id;
     pool_dict["contract_version"] = pool.contract_version;
     pool_dict["producer"] = pool.producer;
     pool_dict["total_available"] = pool.total_available;
-    py::list pool_champions;
+    FrozenListBuilder pool_champions(types);
     for (const auto& champion : pool.champions) {
-        py::dict row;
+        FrozenDictBuilder row(types);
         row["champion_internal_id"] = champion.champion_internal_id;
         row["champion_id"] = champion.champion_id;
         row["cost"] = champion.cost;
@@ -397,9 +492,9 @@ py::dict audit_snapshot_to_dict(
     }
     pool_dict["champions"] = std::move(pool_champions);
     result["shared_pool"] = std::move(pool_dict);
-    py::list players;
+    FrozenListBuilder players(types);
     const auto unit_to_dict = [](const tft::AuditUnitSnapshot& unit) {
-        py::dict d;
+        FrozenDictBuilder d(types);
         d["occupied"] = unit.occupied;
         d["champion_id"] = unit.champion_id;
         d["uuid"] = unit.uuid;
@@ -416,10 +511,10 @@ py::dict audit_snapshot_to_dict(
         return d;
     };
     for (const auto& player : snapshot.players) {
-        py::dict p;
+        FrozenDictBuilder p(types);
         p["player_id"] = player.player_id;
         const auto& strategic = player.strategic_state;
-        py::dict strategic_state;
+        FrozenDictBuilder strategic_state(types);
         strategic_state["contract_id"] = strategic.contract_id;
         strategic_state["contract_version"] = strategic.contract_version;
         strategic_state["source_namespace"] = strategic.source_namespace;
@@ -444,9 +539,9 @@ py::dict audit_snapshot_to_dict(
         strategic_state["pivot_target_composition_identity"] = strategic.pivot_target_composition_identity;
         strategic_state["pivot_source_composition_version"] = strategic.pivot_source_composition_version;
         strategic_state["pivot_reference_unit_ids"] = strategic.pivot_reference_unit_ids;
-        py::list unit_copy_progress;
+        FrozenListBuilder unit_copy_progress(types);
         for (const auto& progress : strategic.unit_copy_progress) {
-            py::dict row;
+            FrozenDictBuilder row(types);
             row["champion_internal_id"] = progress.champion_internal_id;
             row["owned_copy_equivalent"] = progress.owned_copy_equivalent;
             row["copies_toward_next_star"] = progress.copies_toward_next_star;
@@ -457,9 +552,9 @@ py::dict audit_snapshot_to_dict(
         strategic_state["opportunity_cost_available"] = strategic.opportunity_cost_available;
         strategic_state["planner_outputs_valid"] = strategic.planner_outputs_valid;
         strategic_state["planner_output_sequence"] = strategic.planner_output_sequence;
-        py::list unit_priorities;
+        FrozenListBuilder unit_priorities(types);
         for (const auto& priority : strategic.unit_priorities) {
-            py::dict row;
+            FrozenDictBuilder row(types);
             row["champion_internal_id"] = priority.champion_internal_id;
             row["intent"] = priority.intent;
             row["relation"] = priority.relation;
@@ -470,9 +565,9 @@ py::dict audit_snapshot_to_dict(
             unit_priorities.append(std::move(row));
         }
         strategic_state["unit_priorities"] = std::move(unit_priorities);
-        py::list opportunity_costs;
+        FrozenListBuilder opportunity_costs(types);
         for (const auto& opportunity : strategic.opportunity_costs) {
-            py::dict row;
+            FrozenDictBuilder row(types);
             row["champion_internal_id"] = opportunity.champion_internal_id;
             row["value"] = opportunity.value;
             row["uncertainty"] = opportunity.uncertainty;
@@ -532,7 +627,7 @@ py::dict audit_snapshot_to_dict(
         p["round_interest"] = player.round_interest;
         p["round_streak_gold"] = player.round_streak_gold;
         p["round_win_gold"] = player.round_win_gold;
-        py::list board, bench, shop;
+        FrozenListBuilder board, bench, shop;
         for (const auto& unit : player.board) board.append(unit_to_dict(unit));
         for (const auto& unit : player.bench) bench.append(unit_to_dict(unit));
         for (const auto& unit : player.shop) shop.append(unit_to_dict(unit));
@@ -542,19 +637,19 @@ py::dict audit_snapshot_to_dict(
         p["shop_offer_revisions"] = player.shop_offer_revisions;
         p["item_components"] = player.item_components;
         p["item_inventory"] = player.item_inventory;
-        py::list component_counts, inventory_counts, equipped_items;
-        for (const auto& count : player.item_component_counts) { py::dict row; row["catalog_id"] = count.catalog_id; row["count"] = count.count; component_counts.append(std::move(row)); }
-        for (const auto& count : player.item_inventory_counts) { py::dict row; row["catalog_id"] = count.catalog_id; row["count"] = count.count; inventory_counts.append(std::move(row)); }
-        for (const auto& equipped : player.equipped_items) { py::dict row; row["unit_uuid"] = equipped.unit_uuid; row["location"] = equipped.location; row["slot"] = equipped.slot; row["catalog_id"] = equipped.catalog_id; equipped_items.append(std::move(row)); }
+        FrozenListBuilder component_counts, inventory_counts, equipped_items;
+        for (const auto& count : player.item_component_counts) { FrozenDictBuilder row(types); row["catalog_id"] = count.catalog_id; row["count"] = count.count; component_counts.append(std::move(row)); }
+        for (const auto& count : player.item_inventory_counts) { FrozenDictBuilder row(types); row["catalog_id"] = count.catalog_id; row["count"] = count.count; inventory_counts.append(std::move(row)); }
+        for (const auto& equipped : player.equipped_items) { FrozenDictBuilder row(types); row["unit_uuid"] = equipped.unit_uuid; row["location"] = equipped.location; row["slot"] = equipped.slot; row["catalog_id"] = equipped.catalog_id; equipped_items.append(std::move(row)); }
         p["item_component_counts"] = std::move(component_counts);
         p["item_inventory_counts"] = std::move(inventory_counts);
         p["equipped_items"] = std::move(equipped_items);
         p["item_ownership_retired"] = player.item_ownership_retired;
-        py::list retired_component_counts, retired_inventory_counts, retired_equipped_counts, retired_anvils;
-        for (const auto& count : player.retired_item_component_counts) { py::dict row; row["catalog_id"] = count.catalog_id; row["count"] = count.count; retired_component_counts.append(std::move(row)); }
-        for (const auto& count : player.retired_item_inventory_counts) { py::dict row; row["catalog_id"] = count.catalog_id; row["count"] = count.count; retired_inventory_counts.append(std::move(row)); }
-        for (const auto& equipped : player.retired_equipped_item_counts) { py::dict row; row["unit_uuid"] = equipped.unit_uuid; row["catalog_id"] = equipped.catalog_id; row["count"] = equipped.count; retired_equipped_counts.append(std::move(row)); }
-        for (const auto& anvil : player.retired_pending_anvils) { py::dict row; row["sequence"] = anvil.sequence; row["kind"] = anvil.kind; row["options"] = anvil.options; retired_anvils.append(std::move(row)); }
+        FrozenListBuilder retired_component_counts, retired_inventory_counts, retired_equipped_counts, retired_anvils;
+        for (const auto& count : player.retired_item_component_counts) { FrozenDictBuilder row(types); row["catalog_id"] = count.catalog_id; row["count"] = count.count; retired_component_counts.append(std::move(row)); }
+        for (const auto& count : player.retired_item_inventory_counts) { FrozenDictBuilder row(types); row["catalog_id"] = count.catalog_id; row["count"] = count.count; retired_inventory_counts.append(std::move(row)); }
+        for (const auto& equipped : player.retired_equipped_item_counts) { FrozenDictBuilder row(types); row["unit_uuid"] = equipped.unit_uuid; row["catalog_id"] = equipped.catalog_id; row["count"] = equipped.count; retired_equipped_counts.append(std::move(row)); }
+        for (const auto& anvil : player.retired_pending_anvils) { FrozenDictBuilder row(types); row["sequence"] = anvil.sequence; row["kind"] = anvil.kind; row["options"] = anvil.options; retired_anvils.append(std::move(row)); }
         p["retired_item_component_counts"] = std::move(retired_component_counts);
         p["retired_item_inventory_counts"] = std::move(retired_inventory_counts);
         p["retired_equipped_item_counts"] = std::move(retired_equipped_counts);
@@ -587,7 +682,7 @@ py::dict audit_snapshot_to_dict(
         players.append(std::move(p));
     }
     result["players"] = std::move(players);
-    return result;
+    return result.object();
 }
 
 
@@ -613,8 +708,7 @@ public:
     }
 
     py::object to_dict() const {
-        py::dict mutable_snapshot = audit_snapshot_to_dict(*snapshot_, false, false);
-        return freeze_native_python_value(mutable_snapshot);
+        return audit_snapshot_to_frozen_dict(*snapshot_, false, false);
     }
 
     py::list keys() const {

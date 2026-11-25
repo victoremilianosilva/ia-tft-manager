@@ -1152,6 +1152,33 @@ def test_native_snapshot_mapping_defers_combat_event_materialization():
 
 
 
+def test_native_snapshot_handle_builds_frozen_containers_directly_from_native_state():
+    from immutable_snapshot import FrozenDict, FrozenList
+
+    lobby = cpp_lobby_env.CppTFTLobbyWrapper(seed=53)
+    try:
+        lobby.reset()
+        native_view = lobby._last_snapshot_metadata["native_state_snapshot"]
+        native_snapshot = native_view._base_dict()
+        assert isinstance(native_snapshot, FrozenDict)
+        assert isinstance(native_snapshot["players"], FrozenList)
+        assert isinstance(native_snapshot["players"][0], FrozenDict)
+        assert isinstance(native_snapshot["players"][0]["board"], FrozenList)
+
+        # The immutable native view must be structurally identical to the
+        # observer-facing mutable audit representation.
+        public_snapshot = lobby.get_audit_snapshot()
+        assert dict(native_snapshot) == public_snapshot
+        assert native_snapshot["players"] == public_snapshot["players"]
+
+        with pytest.raises(TypeError, match="immutable"):
+            native_snapshot["round"] = -1
+        with pytest.raises(TypeError, match="immutable"):
+            native_snapshot["players"][0]["board"].append({})
+    finally:
+        lobby.close()
+
+
 def test_native_binding_pins_snapshot_and_defers_unused_combat_rows():
     lobby = cpp_lobby_env.CppTFTLobbyWrapper(seed=37)
     try:
