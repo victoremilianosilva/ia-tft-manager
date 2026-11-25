@@ -462,3 +462,46 @@ combat access. Benchmark comparison remains a separate user-run step.
 **Impact.** The training adapter requests the dedicated native envelope and does not build or freeze the player collection as part of that read. Each player subtree is exposed by index and frozen on first Python access, with repeated reads reusing the same immutable object. The public `to_dict()` path remains intentionally eager for callers that request the complete snapshot. This is an incremental lazy-materialization boundary, not yet a zero-copy typed C++ view; it does not claim that the per-player conversion/freeze cost has disappeared.
 
 **Validation criteria.** Native binding tests verify envelope caching, lazy per-player materialization, per-player cache identity, structural parity with the public getter after excluding its diagnostic-only action masks, bounds behavior, complete public `to_dict()` shape, and immutable nested player data. Wrapper validation, semantic projection, rollout alignment, and PPO contract tests must remain green. End-to-end performance claims require a separate PPO-enabled benchmark.
+
+
+
+## Native snapshot scalar access fast path
+
+**Prior problem.** The lazy player views cached every accessed value, including
+immutable scalar leaves. Semantic projection reads thousands of scalar feature
+values, so each read incurred cache membership/lookup work and populated a
+per-view cache that could not provide useful identity reuse. The mapping
+`get()` path also performed a membership check followed by a second lookup.
+
+**Technical rationale.** Scalar values (`None`, booleans, numbers, strings,
+and bytes) are immutable and have no nested view identity to preserve. They
+can be returned directly. Only nested mappings, lists, and tuples need cached
+wrappers to preserve stable read-only view identity. A direct underlying-dict
+lookup also lets `get()` distinguish missing keys without a second lookup.
+
+**New responsibility.** `_NativeFrozenDict` and `_NativeFrozenList` now
+return immutable scalar leaves without inserting them into `_view_cache`.
+They cache only wrapped nested values. `_NativeFrozenDict.get()` performs one
+underlying dictionary lookup and applies the same scalar/container policy.
+
+**Contracts and invariants.**
+- Native player views remain recursively read-only; no raw nested mapping or
+  list is exposed to consumers.
+- Repeated access to the same nested child returns the same wrapper instance.
+- Missing-key behavior and `get(key, default)` semantics remain unchanged.
+- Scalar values preserve their values and types; scalar object identity is
+  explicitly not a snapshot contract.
+- Player-level caching, pinned native ownership, schema, provenance,
+  sequence validation, and public eager snapshot APIs are unchanged.
+
+**Impact.** Semantic projection avoids cache entries and cache lookups for
+scalar leaves, and mapping `get()` avoids its previous membership-plus-read
+sequence. Nested structures still use cached immutable wrappers. This is a
+targeted Python adapter optimization; it does not claim zero-copy access or
+an end-to-end training speedup until the user-run benchmark confirms it.
+
+**Validation criteria.** Unit tests cover scalar cache omission, nested view
+identity, missing-key defaults, recursive immutability, list slicing and
+scalar iteration. CI must pass the native snapshot binding and semantic
+projection suites. The A/B PPO benchmark must compare the same workload and
+record the exact code revision before accepting a performance claim.

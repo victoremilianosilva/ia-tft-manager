@@ -60,14 +60,29 @@ class _NativeFrozenDict(FrozenDict):
             dict.__setitem__(self, key, value)
 
     def __getitem__(self, key):
-        if key not in self._view_cache:
-            self._view_cache[key] = _wrap_native_snapshot_value(dict.__getitem__(self, key))
-        return self._view_cache[key]
+        value = dict.__getitem__(self, key)
+        if _is_native_snapshot_scalar(value):
+            return value
+        cached = self._view_cache.get(key, _MISSING_NATIVE_VIEW)
+        if cached is not _MISSING_NATIVE_VIEW:
+            return cached
+        wrapped = _wrap_native_snapshot_value(value)
+        self._view_cache[key] = wrapped
+        return wrapped
 
     def get(self, key, default=None):
-        if key not in self:
+        try:
+            value = dict.__getitem__(self, key)
+        except KeyError:
             return default
-        return self[key]
+        if _is_native_snapshot_scalar(value):
+            return value
+        cached = self._view_cache.get(key, _MISSING_NATIVE_VIEW)
+        if cached is not _MISSING_NATIVE_VIEW:
+            return cached
+        wrapped = _wrap_native_snapshot_value(value)
+        self._view_cache[key] = wrapped
+        return wrapped
 
     def items(self):
         return ((key, self[key]) for key in dict.__iter__(self))
@@ -99,9 +114,15 @@ class _NativeFrozenList(FrozenList):
             index += len(self)
         if index < 0 or index >= len(self):
             raise IndexError("native snapshot sequence index out of range")
-        if index not in self._view_cache:
-            self._view_cache[index] = _wrap_native_snapshot_value(list.__getitem__(self, index))
-        return self._view_cache[index]
+        value = list.__getitem__(self, index)
+        if _is_native_snapshot_scalar(value):
+            return value
+        cached = self._view_cache.get(index, _MISSING_NATIVE_VIEW)
+        if cached is not _MISSING_NATIVE_VIEW:
+            return cached
+        wrapped = _wrap_native_snapshot_value(value)
+        self._view_cache[index] = wrapped
+        return wrapped
 
     def __iter__(self):
         for index in range(len(self)):
@@ -115,6 +136,15 @@ class _NativeFrozenList(FrozenList):
     def __deepcopy__(self, memo):
         memo[id(self)] = self
         return self
+
+
+_MISSING_NATIVE_VIEW = object()
+
+
+def _is_native_snapshot_scalar(value):
+    # Scalar leaves are immutable already; caching them only adds hash-table
+    # traffic and retains thousands of values during semantic projection.
+    return value is None or isinstance(value, (str, bytes, int, float, bool))
 
 
 def _wrap_native_snapshot_value(value):
