@@ -1181,6 +1181,8 @@ def test_native_snapshot_handle_caches_frozen_ownership_view(monkeypatch):
         assert isinstance(native_snapshot, FrozenDict)
         native_players = native_view["players"]
         assert len(native_players) == 8
+        with pytest.raises(IndexError, match="player index out of range"):
+            native_players[8]
         assert isinstance(native_players[0], FrozenDict)
         assert isinstance(native_players[0]["board"], FrozenList)
         assert len(freeze_calls) == 2

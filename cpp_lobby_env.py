@@ -509,7 +509,7 @@ class CppTFTLobbyWrapper:
                         )
 
         players = value.get("players")
-        if not isinstance(players, list) or len(players) != cls.PLAYERS_PER_LOBBY:
+        if not isinstance(players, Sequence) or len(players) != cls.PLAYERS_PER_LOBBY:
             raise RuntimeError("Snapshot estruturado não contém exatamente oito jogadores.")
         expected_slots = {"board": 28, "bench": 9, "shop": 5}
         # Unit UUID is scoped by Engine/episode/player. One active copy may
