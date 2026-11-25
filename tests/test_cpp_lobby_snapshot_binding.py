@@ -1193,8 +1193,16 @@ def test_native_snapshot_handle_caches_frozen_ownership_view(monkeypatch):
         public_projection = {
             key: public_snapshot[key] for key in native_snapshot
         }
+        # The lazy training handle intentionally omits per-player action masks;
+        # they are published through the dedicated packed-mask API. Compare
+        # the shared audit contract without this diagnostic-only public field.
+        public_players = [
+            {key: value for key, value in player.items() if key != "action_masks"}
+            for player in public_snapshot["players"]
+        ]
+        public_projection["players"] = public_players
         assert dict(native_snapshot) == public_projection
-        assert native_snapshot["players"] == public_snapshot["players"]
+        assert native_snapshot["players"] == public_players
 
         with pytest.raises(TypeError, match="immutable"):
             native_snapshot["round"] = -1
