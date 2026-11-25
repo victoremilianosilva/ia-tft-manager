@@ -1179,20 +1179,19 @@ def test_native_snapshot_handle_caches_frozen_ownership_view(monkeypatch):
         native_view = lobby._last_snapshot_metadata["native_state_snapshot"]
         native_snapshot = native_view._base_dict()
         assert isinstance(native_snapshot, FrozenDict)
-        assert isinstance(native_snapshot["players"], FrozenList)
-        assert isinstance(native_snapshot["players"][0], FrozenDict)
-        assert isinstance(native_snapshot["players"][0]["board"], FrozenList)
-        assert len(freeze_calls) == 1
+        native_players = native_view["players"]
+        assert len(native_players) == 8
+        assert isinstance(native_players[0], FrozenDict)
+        assert isinstance(native_players[0]["board"], FrozenList)
+        assert len(freeze_calls) == 2
 
-        # Repeated field reads reuse the same immutable view.
+        # Repeated envelope and player reads reuse their immutable views.
         assert native_view["round"] == native_snapshot["round"]
         assert native_view._base_dict() is native_snapshot
-        assert len(freeze_calls) == 1
+        assert native_players[0] is native_players[0]
+        assert len(freeze_calls) == 2
 
         public_snapshot = lobby.get_audit_snapshot()
-        public_projection = {
-            key: public_snapshot[key] for key in native_snapshot
-        }
         # The lazy training handle intentionally omits per-player action masks;
         # they are published through the dedicated packed-mask API. Compare
         # the shared audit contract without this diagnostic-only public field.
@@ -1200,9 +1199,13 @@ def test_native_snapshot_handle_caches_frozen_ownership_view(monkeypatch):
             {key: value for key, value in player.items() if key != "action_masks"}
             for player in public_snapshot["players"]
         ]
+        public_projection = {
+            key: public_snapshot[key] for key in native_view
+        }
         public_projection["players"] = public_players
-        assert dict(native_snapshot) == public_projection
-        assert native_snapshot["players"] == public_players
+        assert {key: native_view[key] for key in native_view} == public_projection
+        assert list(native_players) == public_players
+        assert len(freeze_calls) == 9
 
         with pytest.raises(TypeError, match="immutable"):
             native_snapshot["round"] = -1

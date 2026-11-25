@@ -9,7 +9,7 @@ interface expected by LobbyVectorEnv/Trainer.
 """
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from pathlib import Path
 from types import SimpleNamespace
 import copy
@@ -49,6 +49,43 @@ except ImportError as exc:
     ) from exc
 
 
+class _NativeSnapshotPlayers(Sequence):
+    """Lazy immutable sequence of player snapshots owned by one native handle."""
+
+    def __init__(self, handle):
+        self._handle = handle
+        self._cache = {}
+
+    def __len__(self):
+        return int(self._handle.player_count())
+
+    def __getitem__(self, index):
+        if isinstance(index, slice):
+            return [self[position] for position in range(*index.indices(len(self)))]
+        index = int(index)
+        size = len(self)
+        if index < 0:
+            index += size
+        if index < 0 or index >= size:
+            raise IndexError("native snapshot player index out of range")
+        if index not in self._cache:
+            self._cache[index] = freeze_snapshot(self._handle.player(index))
+        return self._cache[index]
+
+    def __iter__(self):
+        for index in range(len(self)):
+            yield self[index]
+
+    def __eq__(self, other):
+        if isinstance(other, Sequence) and not isinstance(other, (str, bytes)):
+            return list(self) == list(other)
+        return NotImplemented
+
+    def __deepcopy__(self, memo):
+        memo[id(self)] = self
+        return self
+
+
 class _NativeSnapshotMapping(dict):
     """Read-only mapping over one pinned native snapshot.
 
@@ -67,11 +104,13 @@ class _NativeSnapshotMapping(dict):
         self._handle = handle
         self._base = None
         self._combat_cache = {}
+        self._players = None
 
     def _base_dict(self):
         if self._base is None:
-            # The native binding returns a recursively immutable FrozenDict.
-            # Keep a compatibility fallback for Python-backed test/fixture handles.
+            # Native handles materialize only envelope-level fields here;
+            # player subtrees are fetched independently on first access.
+            # Python fixture handles retain the legacy complete-dictionary path.
             native_snapshot = self._handle.to_dict()
             self._base = (
                 native_snapshot
@@ -81,6 +120,10 @@ class _NativeSnapshotMapping(dict):
         return self._base
 
     def __getitem__(self, key):
+        if key == "players" and callable(getattr(self._handle, "player", None)):
+            if self._players is None:
+                self._players = _NativeSnapshotPlayers(self._handle)
+            return self._players
         if key in self._COMBAT_FIELDS:
             if key not in self._combat_cache:
                 self._combat_cache[key] = freeze_snapshot(self._handle.combat_events(key))
