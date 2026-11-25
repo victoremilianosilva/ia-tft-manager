@@ -1011,6 +1011,38 @@ def test_wrapper_rejects_invalid_strategic_context_sequence():
 
 
 
+def test_wrapper_defers_native_semantic_feature_validation_but_keeps_fixture_guard():
+    native = FakeNativeLobby()
+    snapshot = native._native_state_snapshot()
+    snapshot["players"][0]["item_recipe_features"] = [[0.0] * 16 for _ in range(100)]
+    identity = {
+        "engine_instance_id": f"fake-engine-{id(native)}",
+        "episode_id": 0,
+        "decision_sequence": 0,
+        "player_decision_sequences": [0] * 8,
+    }
+
+    # Dict-backed fixtures keep the complete defensive validation path.
+    with pytest.raises(RuntimeError, match="item_recipe_features com shape/valores inválidos"):
+        cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
+
+    class Handle:
+        def to_dict(self):
+            return snapshot
+
+        def keys(self):
+            return snapshot.keys()
+
+        def combat_events(self, field):
+            return snapshot[field]
+
+    native_view = cpp_lobby_env._NativeSnapshotMapping(Handle())
+    validated = cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(
+        native_view, identity
+    )
+    assert validated is native_view
+
+
 def test_wrapper_retains_python_owned_native_snapshot_without_deepcopy():
     native = FakeNativeLobby()
     snapshot = native._native_state_snapshot()
