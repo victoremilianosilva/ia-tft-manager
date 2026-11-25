@@ -1178,6 +1178,7 @@ def test_native_snapshot_handle_caches_frozen_ownership_view(monkeypatch):
         lobby.reset()
         native_view = lobby._last_snapshot_metadata["native_state_snapshot"]
         native_snapshot = native_view._base_dict()
+        assert isinstance(native_view, __import__("collections.abc").abc.Mapping)
         assert isinstance(native_snapshot, FrozenDict)
         native_players = native_view["players"]
         assert len(native_players) == 8

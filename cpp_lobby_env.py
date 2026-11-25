@@ -86,7 +86,7 @@ class _NativeSnapshotPlayers(Sequence):
         return self
 
 
-class _NativeSnapshotMapping(dict):
+class _NativeSnapshotMapping(Mapping):
     """Read-only mapping over one pinned native snapshot.
 
     The large combat event lists are converted to Python only when requested.
