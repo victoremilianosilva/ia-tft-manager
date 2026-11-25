@@ -218,7 +218,7 @@ A identidade nativa composta por Engine, episódio, sequência do snapshot, roun
 - O cache é descartado após a expansão de resultado/próxima observação e não se torna estado persistente do Trainer ou da Engine.
 
 #### Contratos e invariantes
-- Apenas revisões com Engine, episódio, sequência, round, jogador e sequência individual idênticos podem compartilhar o subtree.
+- Apenas revisões com lobby, Engine, episódio, sequência, round, jogador e sequência individual idênticos podem compartilhar o subtree; a partição por lobby impede alias mesmo diante de identificadores de Engine duplicados em fixtures ou entradas inválidas.
 - Contrato, versão, produtor e namespace de origem precisam coincidir para reutilização.
 - Episódios auto-reset e revisões posteriores nunca compartilham estado por coincidência de jogador.
 - O subtree continua recursivamente imutável e isolado da origem.
@@ -230,6 +230,8 @@ Elimina uma segunda materialização do subtree nativo quando resultado e próxi
 
 #### Validação
 - duas mappings independentes da mesma revisão reutilizam a mesma referência congelada por jogador;
-- episódio diferente não reutiliza o subtree;
+- episódio ou round diferente não reutiliza o subtree;
+- divergência de contrato para a mesma chave falha explicitamente;
+- linhas de lobby distintas nunca compartilham subtrees;
 - manter testes existentes de auto-reset, alinhamento de snapshots, identidade e PPO smoke;
 - executar CI Python/nativo e comparar métricas de alocação/tempo após merge.
