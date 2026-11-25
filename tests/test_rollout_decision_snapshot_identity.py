@@ -929,3 +929,66 @@ def test_trainer_flattens_packed_action_masks_to_contract_tensors():
     for key in Trainer.MASK_SHAPES:
         assert torch.equal(packed_flattened[key], legacy_flattened[key])
 
+
+
+def test_expansion_reuses_native_player_state_only_for_exact_snapshot_revision():
+    from copy import deepcopy
+    from trainer import Trainer
+    from decision_identity import build_player_identity_envelopes
+
+    snapshot = {
+        "engine_instance_id": "engine-cache",
+        "episode_id": 12,
+        "decision_sequence": 44,
+        "player_decision_sequences": [44] * 8,
+        "round": 5,
+        "native_state_snapshot": {
+            "engine_instance_id": "engine-cache",
+            "episode_id": 12,
+            "snapshot_sequence": 44,
+            "round": 5,
+            "player_decision_sequences": [44] * 8,
+            "contract_id": "native-state-v1",
+            "contract_version": 1,
+            "producer": "test-engine",
+            "source_namespace": "tft.engine.snapshot",
+            "players": [
+                {
+                    "player_id": player_id,
+                    "board": [{"occupied": player_id == 0}],
+                    "bench": [{"occupied": False}],
+                    "shop": [{"champion_id": player_id}],
+                }
+                for player_id in range(8)
+            ],
+        },
+    }
+    snapshot["player_identity_envelopes"] = build_player_identity_envelopes(snapshot)
+    # Separate mappings model the result and next-snapshot bridge outputs.
+    next_snapshot = deepcopy(snapshot)
+    next_snapshot["player_identity_envelopes"] = build_player_identity_envelopes(next_snapshot)
+
+    cache = {}
+    result_rows = Trainer._expand_lobby_snapshot_metadata(
+        [snapshot], 8, "result", native_state_cache=cache
+    )
+    next_rows = Trainer._expand_lobby_snapshot_metadata(
+        [next_snapshot], 8, "next", native_state_cache=cache
+    )
+
+    for result_row, next_row in zip(result_rows, next_rows):
+        assert result_row["native_player_state"] is next_row["native_player_state"]
+        assert result_row["native_player_state"] == next_row["native_player_state"]
+
+    # A new episode is a different revision namespace and must not alias.
+    new_episode = deepcopy(next_snapshot)
+    new_episode["episode_id"] = 13
+    new_episode["native_state_snapshot"]["episode_id"] = 13
+    new_episode["player_identity_envelopes"] = build_player_identity_envelopes(new_episode)
+    new_episode_rows = Trainer._expand_lobby_snapshot_metadata(
+        [new_episode], 8, "new episode", native_state_cache=cache
+    )
+    assert all(
+        old_row["native_player_state"] is not new_row["native_player_state"]
+        for old_row, new_row in zip(result_rows, new_episode_rows)
+    )
