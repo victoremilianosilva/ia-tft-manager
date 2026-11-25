@@ -22,6 +22,7 @@ from rich.progress import (
 
 from training_config import TrainingConfig, cosine_lr_factor
 from decision_identity import build_player_identity_envelopes
+from immutable_snapshot import freeze_snapshot
 
 from cpp_lobby_env import CppTFTLobbyWrapper, _NativeLobbyBatchManager
 
@@ -573,7 +574,7 @@ class Trainer:
                     native_player = native_players[player_idx]
                     if not isinstance(native_player, dict) or native_player.get("player_id") != player_idx:
                         raise RuntimeError(f"Registro estruturado desalinhado para lobby {lobby_idx}, jogador {player_idx}.")
-                    metadata["native_player_state"] = copy.deepcopy(native_player)
+                    metadata["native_player_state"] = freeze_snapshot(native_player)
                     metadata["native_state_contract_id"] = native_snapshot.get("contract_id")
                     metadata["native_state_contract_version"] = native_snapshot.get("contract_version")
                     metadata["native_state_producer"] = native_snapshot.get("producer")
@@ -846,101 +847,85 @@ class Trainer:
                 f"num_envs ({self.num_envs})"
             )
 
-        # ------------------------------------------------------------
-        # Percorrer lobbies
-        # ------------------------------------------------------------
-
-        for lobby_idx in range(
-            self.num_envs
-        ):
-
-            lobby_masks = gym_masks[
-                lobby_idx
-            ]
-
-            if len(lobby_masks) != self.PLAYERS_PER_LOBBY:
-
-                raise ValueError(
-                    f"Lobby {lobby_idx} possui "
-                    f"{len(lobby_masks)} jogadores "
-                    f"nas máscaras."
-                )
-
-        # ------------------------------------------------------------
-        # Cada máscara
-        # ------------------------------------------------------------
-
-        for key, shape in self.MASK_SHAPES.items():
-
-            values = []
-
-            for lobby_idx in range(
-                self.num_envs
-            ):
-
-                lobby_masks = gym_masks[
-                    lobby_idx
-                ]
-
-                for player_idx in range(
-                    self.PLAYERS_PER_LOBBY
+        # A native packed lobby matrix bypasses the per-player dictionary
+        # reconstruction. Legacy mapping fixtures keep the validation path below.
+        packed_inputs = [isinstance(value, np.ndarray) for value in gym_masks]
+        if any(packed_inputs) and not all(packed_inputs):
+            raise TypeError("Não misture buffers compactos e mappings de action masks.")
+        if all(packed_inputs):
+            packed_rows = []
+            expected_lobby_shape = (
+                self.PLAYERS_PER_LOBBY,
+                CppTFTLobbyWrapper._PACKED_ACTION_MASK_WIDTH,
+            )
+            for lobby_idx, lobby_buffer in enumerate(gym_masks):
+                if (
+                    lobby_buffer.dtype != np.bool_
+                    or lobby_buffer.shape != expected_lobby_shape
                 ):
-
-                    raw_mask = np.asarray(lobby_masks[player_idx][key])
-
-                    expected_shape = shape
-
-                    # 1. Validar o formato antes da conversão
-                    if raw_mask.shape != expected_shape:
-                        raise ValueError(
-                            f"Máscara '{key}' inválida para "
-                            f"lobby={lobby_idx}, player={player_idx}: "
-                            f"shape recebido={raw_mask.shape}, "
-                            f"esperado={expected_shape}"
-                        )
-
-                    # 2. Aceitar somente tipos booleanos ou numéricos
-                    if not (
-                        np.issubdtype(raw_mask.dtype, np.bool_)
-                        or np.issubdtype(raw_mask.dtype, np.number)
-                    ):
-                        raise TypeError(
-                            f"Máscara '{key}' possui tipo inválido: "
-                            f"{raw_mask.dtype}"
-                        )
-
-                    # Boolean masks already satisfy both value checks:
-                    # they cannot contain NaN/Inf and every value is 0 or 1.
-                    # Keep the full validation path for numeric masks.
-                    if not np.issubdtype(raw_mask.dtype, np.bool_):
-                        if not np.all(np.isfinite(raw_mask)):
-                            raise ValueError(
-                                f"Máscara '{key}' contém NaN ou infinito."
-                            )
-
-                        if not np.all((raw_mask == 0) | (raw_mask == 1)):
-                            raise ValueError(
-                                f"Máscara '{key}' deve conter somente 0 e 1."
-                            )
-
-                    # astype(copy=False) reuses bool arrays without copying.
-                    # Shape was checked before conversion; astype never changes it.
-                    player_mask = raw_mask.astype(np.bool_, copy=False)
-
-                    values.append(
-                        player_mask
+                    raise ValueError(
+                        f"Buffer compacto inválido na lobby {lobby_idx}: "
+                        f"dtype={lobby_buffer.dtype}, shape={lobby_buffer.shape}, "
+                        f"esperado bool{expected_lobby_shape}."
+                    )
+                packed_rows.append(lobby_buffer)
+            packed = np.concatenate(packed_rows, axis=0)
+            flat_masks = {}
+            offset = 0
+            for key, shape in self.MASK_SHAPES.items():
+                width = int(np.prod(shape))
+                field = packed[:, offset:offset + width].reshape(
+                    self.num_envs * self.PLAYERS_PER_LOBBY, *shape
+                )
+                # One explicit conversion/copy per field preserves the
+                # contiguous tensor contract expected by policy operations.
+                flat_masks[key] = torch.as_tensor(
+                    np.array(field, dtype=np.bool_, order="C", copy=True),
+                    dtype=torch.bool,
+                    device=self.device,
+                )
+                offset += width
+            if offset != CppTFTLobbyWrapper._PACKED_ACTION_MASK_WIDTH:
+                raise RuntimeError("Layout compacto de action masks diverge do contrato Python.")
+        else:
+            # Legacy mappings are retained for fixtures and external adapters.
+            for lobby_idx in range(self.num_envs):
+                lobby_masks = gym_masks[lobby_idx]
+                if len(lobby_masks) != self.PLAYERS_PER_LOBBY:
+                    raise ValueError(
+                        f"Lobby {lobby_idx} possui {len(lobby_masks)} jogadores nas máscaras."
                     )
 
-            flat_mask = np.asarray(
-                values,
-                dtype=np.bool_
-            )
-
-            flat_masks[key] = torch.as_tensor(
-                flat_mask,
-                dtype=torch.bool,
-                device=self.device
-            )
+            for key, shape in self.MASK_SHAPES.items():
+                values = []
+                for lobby_idx in range(self.num_envs):
+                    lobby_masks = gym_masks[lobby_idx]
+                    for player_idx in range(self.PLAYERS_PER_LOBBY):
+                        raw_mask = np.asarray(lobby_masks[player_idx][key])
+                        if raw_mask.shape != shape:
+                            raise ValueError(
+                                f"Máscara '{key}' inválida para lobby={lobby_idx}, "
+                                f"player={player_idx}: shape recebido={raw_mask.shape}, "
+                                f"esperado={shape}"
+                            )
+                        if not (
+                            np.issubdtype(raw_mask.dtype, np.bool_)
+                            or np.issubdtype(raw_mask.dtype, np.number)
+                        ):
+                            raise TypeError(
+                                f"Máscara '{key}' possui tipo inválido: {raw_mask.dtype}"
+                            )
+                        if not np.issubdtype(raw_mask.dtype, np.bool_):
+                            if not np.all(np.isfinite(raw_mask)):
+                                raise ValueError(f"Máscara '{key}' contém NaN ou infinito.")
+                            if not np.all((raw_mask == 0) | (raw_mask == 1)):
+                                raise ValueError(f"Máscara '{key}' deve conter somente 0 e 1.")
+                        values.append(raw_mask.astype(np.bool_, copy=False))
+                flat_masks[key] = torch.as_tensor(
+                    np.asarray(values, dtype=np.bool_),
+                    dtype=torch.bool,
+                    device=self.device,
+                )
 
         # ============================================================
         # ☠️ CORREÇÃO DE JOGADORES MORTOS
@@ -1444,7 +1429,7 @@ class Trainer:
 
                 gym_masks = (
                     self.vec_env.env_method(
-                        "get_action_masks_for_training"
+                        "get_packed_action_masks_for_training"
                     )
                 )
 
@@ -1908,7 +1893,7 @@ class Trainer:
 
             gym_masks = (
                 self.vec_env.env_method(
-                    "get_action_masks_for_training"
+                    "get_packed_action_masks_for_training"
                 )
             )
 

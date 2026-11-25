@@ -2,6 +2,40 @@
 import numpy as np
 import pytest
 ACTION_DIMS = (9, 5, 9, 28, 28, 28)
+
+PACKED_MASK_LAYOUT = (
+    ("type_mask", (9,)),
+    ("shop_mask", (5,)),
+    ("bench_source_mask", (9,)),
+    ("board_target_mask", (28,)),
+    ("board_source_mask", (28,)),
+    ("board_move_target_masks", (28, 28)),
+    ("bench_move_source_mask", (9,)),
+    ("bench_to_board_target_masks", (9, 28)),
+    ("item_inventory_mask", (9,)),
+    ("item_component_first_mask", (10,)),
+    ("item_component_pair_masks", (10, 10)),
+    ("item_target_mask", (37,)),
+)
+
+
+def unpack_packed_action_masks(packed):
+    assert isinstance(packed, np.ndarray)
+    assert packed.dtype == np.bool_
+    assert packed.shape == (8, 1280)
+
+    players = []
+    for row in packed:
+        masks = {}
+        offset = 0
+        for name, shape in PACKED_MASK_LAYOUT:
+            width = int(np.prod(shape))
+            masks[name] = row[offset:offset + width].reshape(shape)
+            offset += width
+        assert offset == packed.shape[1]
+        players.append(masks)
+    return players
+
 try:
     from tft_engine import TFTLobby
 except ImportError:
@@ -246,7 +280,8 @@ def test_observation_reward_done_and_mask_formats():
         assert observations.dtype == np.float32
 
         # Máscaras retornadas pelo reset.
-        masks = reset_result["action_masks"]
+        packed_masks = reset_result["action_masks"]
+        masks = unpack_packed_action_masks(packed_masks)
         assert len(masks) == 8
 
         expected_shapes = {
@@ -289,7 +324,8 @@ def test_observation_reward_done_and_mask_formats():
         assert step_result["dones"].shape == (8,)
         assert step_result["dones"].dtype == np.bool_
 
-        assert len(step_result["action_masks"]) == 8
+        assert step_result["action_masks"].shape == (8, 1280)
+        assert step_result["action_masks"].dtype == np.bool_
 
     finally:
         engine.close()
@@ -390,7 +426,7 @@ def test_default_action_masks_have_valid_fallbacks():
 
     try:
         result = engine.reset()
-        masks_by_player = result["action_masks"]
+        masks_by_player = unpack_packed_action_masks(result["action_masks"])
 
         assert len(masks_by_player) == 8
 

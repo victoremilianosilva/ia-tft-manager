@@ -31,17 +31,11 @@ template <std::size_t N>
 py::array_t<bool> mask_1d(
     const std::array<std::uint8_t, N>& source
 ) {
-    py::array_t<bool> result(
-        static_cast<py::ssize_t>(N)
-    );
-
+    py::array_t<bool> result(static_cast<py::ssize_t>(N));
     auto out = result.mutable_unchecked<1>();
-
     for (std::size_t i = 0; i < N; ++i) {
-        out(static_cast<py::ssize_t>(i)) =
-            source[i] != 0;
+        out(static_cast<py::ssize_t>(i)) = source[i] != 0;
     }
-
     return result;
 }
 
@@ -53,60 +47,90 @@ py::array_t<bool> mask_2d(
         static_cast<py::ssize_t>(Rows),
         static_cast<py::ssize_t>(Cols)
     });
-
     auto out = result.mutable_unchecked<2>();
-
     for (std::size_t row = 0; row < Rows; ++row) {
         for (std::size_t col = 0; col < Cols; ++col) {
-            out(
-                static_cast<py::ssize_t>(row),
-                static_cast<py::ssize_t>(col)
-            ) = source[row * Cols + col] != 0;
+            out(static_cast<py::ssize_t>(row), static_cast<py::ssize_t>(col)) =
+                source[row * Cols + col] != 0;
         }
     }
-
     return result;
 }
 
+// Snapshot serialization still needs its structured per-player mask mapping.
 py::dict masks_to_dict(const PlayerActionMasks& masks) {
     py::dict result;
-
     result["type_mask"] = mask_1d(masks.type_mask);
     result["shop_mask"] = mask_1d(masks.shop_mask);
-    result["bench_source_mask"] =
-        mask_1d(masks.bench_source_mask);
-    result["board_target_mask"] =
-        mask_1d(masks.board_target_mask);
-    result["board_source_mask"] =
-        mask_1d(masks.board_source_mask);
-
-    result["board_move_target_masks"] =
-        mask_2d<28, 28>(
-            masks.board_move_target_masks
-        );
-
-    result["bench_move_source_mask"] =
-        mask_1d(masks.bench_move_source_mask);
-
-    result["bench_to_board_target_masks"] =
-        mask_2d<9, 28>(
-            masks.bench_to_board_target_masks
-        );
+    result["bench_source_mask"] = mask_1d(masks.bench_source_mask);
+    result["board_target_mask"] = mask_1d(masks.board_target_mask);
+    result["board_source_mask"] = mask_1d(masks.board_source_mask);
+    result["board_move_target_masks"] = mask_2d<28, 28>(masks.board_move_target_masks);
+    result["bench_move_source_mask"] = mask_1d(masks.bench_move_source_mask);
+    result["bench_to_board_target_masks"] = mask_2d<9, 28>(masks.bench_to_board_target_masks);
     result["item_inventory_mask"] = mask_1d(masks.item_inventory_mask);
     result["item_component_first_mask"] = mask_1d(masks.item_component_first_mask);
     result["item_component_pair_masks"] = mask_2d<10, 10>(masks.item_component_pair_masks);
     result["item_target_mask"] = mask_1d(masks.item_target_mask);
-
     return result;
 }
 
+// Preserve the structured public getter used by diagnostics and legacy callers.
 py::list masks_to_list(
     const std::array<PlayerActionMasks, 8>& masks
 ) {
     py::list result;
+    for (const auto& player_masks : masks) {
+        result.append(masks_to_dict(player_masks));
+    }
+    return result;
+}
 
-    for (const auto& masks_for_player : masks) {
-        result.append(masks_to_dict(masks_for_player));
+// Stable packed layout shared with CppTFTLobbyWrapper._copy_action_masks.
+// The field order matches action_contract.MASK_SHAPES exactly.
+constexpr std::size_t kPackedActionMaskWidth =
+    9 + 5 + 9 + 28 + 28 + (28 * 28) + 9 + (9 * 28) + 9 + 10 + (10 * 10) + 37;
+
+template <std::size_t N>
+void append_packed_mask(
+    bool* destination,
+    std::size_t& offset,
+    const std::array<std::uint8_t, N>& source
+) {
+    for (const auto value : source) {
+        destination[offset++] = value != 0;
+    }
+}
+
+py::array_t<bool> masks_to_packed_array(
+    const std::array<PlayerActionMasks, 8>& masks
+) {
+    py::array_t<bool> result({
+        static_cast<py::ssize_t>(8),
+        static_cast<py::ssize_t>(kPackedActionMaskWidth)
+    });
+    auto* destination = result.mutable_data();
+
+    for (std::size_t player = 0; player < masks.size(); ++player) {
+        std::size_t offset = player * kPackedActionMaskWidth;
+        const auto& source = masks[player];
+        bool* row = destination + offset;
+        offset = 0;
+        append_packed_mask(row, offset, source.type_mask);
+        append_packed_mask(row, offset, source.shop_mask);
+        append_packed_mask(row, offset, source.bench_source_mask);
+        append_packed_mask(row, offset, source.board_target_mask);
+        append_packed_mask(row, offset, source.board_source_mask);
+        append_packed_mask(row, offset, source.board_move_target_masks);
+        append_packed_mask(row, offset, source.bench_move_source_mask);
+        append_packed_mask(row, offset, source.bench_to_board_target_masks);
+        append_packed_mask(row, offset, source.item_inventory_mask);
+        append_packed_mask(row, offset, source.item_component_first_mask);
+        append_packed_mask(row, offset, source.item_component_pair_masks);
+        append_packed_mask(row, offset, source.item_target_mask);
+        if (offset != kPackedActionMaskWidth) {
+            throw std::runtime_error("Layout compactado de action masks inconsistente.");
+        }
     }
 
     return result;
@@ -681,7 +705,7 @@ py::dict reset_to_dict(tft::ResetResult reset) {
     );
 
     result["action_masks"] =
-        masks_to_list(reset.action_masks);
+        masks_to_packed_array(reset.action_masks);
 
     result["engine_instance_id"] = reset.engine_instance_id;
     result["episode_id"] = reset.episode_id;
@@ -740,7 +764,7 @@ py::dict step_to_dict(tft::StepResult step) {
     result["round"] = step.round;
     result["stage"] = step.stage;
     result["alive_players"] = step.alive_players;
-    result["action_masks"] = masks_to_list(step.action_masks);
+    result["action_masks"] = masks_to_packed_array(step.action_masks);
     result["players"] = player_info_to_list(step.players);
     py::list action_traces;
     for (const auto& trace : step.action_traces) {

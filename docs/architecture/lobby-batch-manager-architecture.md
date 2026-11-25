@@ -55,3 +55,80 @@ A conclusão da fase exige validar não apenas a chamada batch, mas também a fr
 - o smoke test nativo de treinamento deve completar com PPO ativo e validar o contrato de checkpoint; uma execução que não chega a essa etapa não é evidência de integração end-to-end.
 
 A fase permanece aberta até que o CI execute também o smoke test PPO e todas as verificações acima passem. Não se declara ganho de throughput: a execução continua sequencial e a fronteira compacta permanece na Fase C.
+
+
+## Fase C — primeira fatia da fronteira compacta: action masks
+
+### Problema anterior
+O binding materializava as máscaras de cada jogador como doze arrays NumPy separados, agrupados em oito dicionários Python por lobby. Esse formato cria muitos objetos Python no limite C++/Python antes mesmo de o Trainer transformar os valores em tensores.
+
+### Racional técnico
+As máscaras já possuem um contrato fixo de campos, dimensões e ordem em `action_contract.MASK_SHAPES`. Portanto, a fronteira nativa pode transportar os mesmos bits em um único buffer booleano contíguo por lobby, sem alterar semântica, legalidade ou o contrato de checkpoint. A camada wrapper mantém a visão compatível por meio de slices/reshapes que compartilham a memória do buffer.
+
+### Responsabilidade nova
+- O binding publica `action_masks` como um array NumPy `bool` contíguo com shape `[8, 1280]`.
+- A ordem dos segmentos é idêntica à ordem canônica de `MASK_SHAPES`.
+- `CppTFTLobbyWrapper` valida dtype e dimensões e cria views por jogador/campo, sem cópia na ingestão.
+- A API pública de leitura continua entregando cópias defensivas; a API de treinamento continua expondo buffers somente leitura.
+
+### Contratos e invariantes
+- Nenhum bit, dimensão, nome de campo ou regra condicional de máscara é alterado.
+- A largura do buffer é a soma das dimensões do contrato atual (1280 booleanos por jogador).
+- Views internas permanecem ancoradas no array NumPy proprietário; nenhuma view pode sobreviver ao ciclo de vida do snapshot por referência solta.
+- Payloads legados em lista de mappings continuam aceitos pelo wrapper para fixtures e consumidores de teste.
+- Máscaras públicas continuam isoladas de mutações do consumidor; máscaras de treinamento continuam somente leitura.
+- A Engine continua sendo a autoridade final de legalidade; o buffer é apenas um formato de transporte.
+
+### Impactos e limites
+A conversão C++ deixa de alocar 96 arrays e 8 dicionários de máscaras por lobby/resultado e passa a alocar um único array contíguo. O wrapper ainda reconstrói mappings leves com views para preservar os contratos atuais do Trainer e da policy; remover esses mappings do hot path é uma etapa posterior e separada da Fase C. Observações, rewards e dones já atravessam o binding como arrays NumPy contíguos. Snapshots de auditoria/replay permanecem imutáveis e lazy, sem redução de campos ou validações nesta entrega.
+
+### Fase C — ownership imutável de estado por jogador
+
+#### Snapshot nativo lazy e compartilhável
+- `_NativeSnapshotMapping` mantém o handle nativo `const` como autoridade, materializa o dicionário base apenas na primeira leitura e congela recursivamente o resultado.
+- Eventos de combate continuam em caches separados e lazy; quando solicitados, também são congelados.
+- `deepcopy` do envelope de snapshot reutiliza o mesmo mapping imutável e pinado, em vez de clonar a árvore materializada.
+- A superfície de leitura continua compatível com `Mapping`/`dict` e `list`; mutações são rejeitadas explicitamente.
+
+#### Problema anterior
+A expansão do snapshot da lobby copiava profundamente cada registro de jogador para criar as linhas do rollout. Em seguida, o `RolloutBuffer` copiava novamente esses subtrees ao assumir ownership e voltava a copiá-los ao expor metadados. O conteúdo nativo é evidência de auditoria associada a uma identidade de snapshot e não deve ser mutável pelo Trainer ou por consumidores do buffer.
+
+#### Racional técnico
+O estado nativo por jogador é um valor JSON-like que pode ser copiado uma vez na fronteira de ownership e congelado. Containers congelados compatíveis com `dict` e `list` preservam os contratos de leitura existentes, mas implementam `__deepcopy__` por identidade: cópias posteriores de envelopes de rollout compartilham o mesmo subtree imutável, em vez de reconstruí-lo.
+
+#### Fronteira de masks no caminho quente do PPO
+- O wrapper mantém o buffer nativo `[8, 1280]` como fonte de verdade e valida dtype/shape no momento de consumir o resultado, sem expandi-lo em mappings.
+- `get_packed_action_masks_for_training()` empresta a matriz contígua e somente leitura ao Trainer.
+- `Trainer._flatten_masks` reconhece buffers compactos, valida o layout completo e cria os tensores por campo diretamente a partir das fatias do buffer; o caminho antigo de mappings permanece apenas para fixtures/adapters.
+- A ablação explícita de ações de item copia o buffer somente quando precisa alterar os nove bits de tipo; sem ablação, não há cópia no wrapper.
+- A API pública estruturada e `get_action_masks_for_training()` permanecem disponíveis para compatibilidade.
+
+#### Responsabilidade nova
+- `freeze_snapshot` cria uma cópia recursivamente imutável do subtree nativo do jogador.
+- `Trainer._expand_lobby_snapshot_metadata` transfere o subtree congelado para a linha do jogador.
+- `RolloutBuffer` pode continuar usando sua fronteira defensiva de `deepcopy` para metadados mutáveis; subtrees congelados são compartilhados com segurança.
+- Leitores continuam recebendo envelopes mutáveis isolados nas partes que não são snapshot nativo.
+
+#### Contratos e invariantes
+- O snapshot de origem não é compartilhado mutavelmente com o rollout.
+- Dicts e listas mantêm compatibilidade de leitura e os tipos reconhecidos por consumidores existentes.
+- Qualquer tentativa de mutação em qualquer nível do subtree congelado falha explicitamente.
+- `deepcopy` de um subtree congelado retorna a mesma referência imutável; isso preserva aliases sem duplicar conteúdo.
+- Identidade de Engine, episódio, sequência, jogador, contrato e hashes continuam validados como antes.
+- Não são removidos campos, validações, eventos, provenance ou snapshots de auditoria.
+
+#### Impactos e limites
+A primeira cópia continua ocorrendo na fronteira de ownership, mas as cópias profundas subsequentes feitas pelo armazenamento e leitura de metadados do rollout deixam de duplicar o estado nativo do jogador. Metadados mutáveis e envelopes continuam isolados por cópia. Esta otimização não substitui a compactação dos demais payloads nem declara a Fase C concluída.
+
+#### Validação
+- provar isolamento em relação à fonte mutável;
+- provar imutabilidade recursiva de dicts e listas;
+- provar identidade compartilhada após `deepcopy`;
+- executar testes de identidade do rollout e toda a suíte de integração nativa/Python.
+ 
+### Validação
+- testar layout completo e ordem de todos os campos;
+- provar que as views internas compartilham memória com o buffer e que cópias públicas não compartilham;
+- rejeitar dtype/shape incompatíveis;
+- executar a suíte de paridade nativa e Python com o módulo compilado;
+- comparar paridade funcional das máscaras antes/depois para todas as famílias de ação cobertas pela suíte.

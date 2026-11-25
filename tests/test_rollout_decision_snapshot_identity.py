@@ -850,3 +850,70 @@ def test_observation_row_hash_rejects_non_float32_or_non_matrix_input():
         Trainer._hash_observation_rows(torch.zeros((2, 3), dtype=torch.float64))
     with pytest.raises(TypeError, match="batch"):
         Trainer._hash_observation_rows(torch.zeros(3, dtype=torch.float32))
+
+
+def test_freeze_snapshot_is_deeply_immutable_and_deepcopy_shares_ownership():
+    from copy import deepcopy
+    from immutable_snapshot import freeze_snapshot
+
+    source = {
+        "player_id": 3,
+        "units": [{"champion_id": 42, "items": [1, 2]}],
+        "strategic_state": {"active_unit_ids": [42]},
+    }
+    frozen = freeze_snapshot(source)
+    source["units"][0]["items"].append(9)
+
+    assert isinstance(frozen, dict)
+    assert isinstance(frozen["units"], list)
+    assert frozen["units"][0]["items"] == [1, 2]
+    assert deepcopy(frozen) is frozen
+    assert deepcopy({"native_player_state": frozen})["native_player_state"] is frozen
+
+    with pytest.raises(TypeError, match="immutable"):
+        frozen["player_id"] = 4
+    with pytest.raises(TypeError, match="immutable"):
+        frozen["units"][0]["items"].append(3)
+    with pytest.raises(TypeError, match="immutable"):
+        frozen["strategic_state"]["active_unit_ids"][0] = 99
+
+def test_trainer_flattens_packed_action_masks_to_contract_tensors():
+    trainer = Trainer.__new__(Trainer)
+    trainer.num_envs = 1
+    trainer.device = torch.device("cpu")
+    trainer.PLAYERS_PER_LOBBY = 8
+
+    packed = np.zeros((8, 1280), dtype=np.bool_)
+    packed[:, 0] = True
+    packed[:, 9] = True
+
+    packed_flattened = trainer._flatten_masks(
+        [packed],
+        lobby_player_alive=[[True] * 8],
+    )
+
+    legacy_players = [dict() for _ in range(8)]
+    offset = 0
+    for key, shape in Trainer.MASK_SHAPES.items():
+        width = int(np.prod(shape))
+        for player_id in range(8):
+            legacy_players[player_id][key] = packed[
+                player_id, offset:offset + width
+            ].reshape(shape).copy()
+        offset += width
+
+    legacy_flattened = trainer._flatten_masks(
+        [legacy_players],
+        lobby_player_alive=[[True] * 8],
+    )
+
+    assert offset == 1280
+    assert set(packed_flattened) == set(Trainer.MASK_SHAPES)
+    assert tuple(packed_flattened["type_mask"].shape) == (8, 9)
+    assert tuple(packed_flattened["shop_mask"].shape) == (8, 5)
+    assert packed_flattened["type_mask"][:, 0].all()
+    assert packed_flattened["shop_mask"][:, 0].all()
+    assert all(value.dtype == torch.bool for value in packed_flattened.values())
+    for key in Trainer.MASK_SHAPES:
+        assert torch.equal(packed_flattened[key], legacy_flattened[key])
+

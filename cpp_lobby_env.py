@@ -21,6 +21,7 @@ import numpy as np
 from decision_identity import build_player_identity_envelopes
 from reward_audit import RewardAuditLedger
 from reward_outcome_producers import build_action_outcome_events
+from immutable_snapshot import freeze_snapshot
 
 _REPO_ROOT = Path(__file__).resolve().parent
 # CMake builds may live at the repository root (build/) or under cpp/.
@@ -69,13 +70,15 @@ class _NativeSnapshotMapping(dict):
 
     def _base_dict(self):
         if self._base is None:
-            self._base = self._handle.to_dict()
+            # Materialize the native value once, then freeze it. All metadata
+            # envelopes may safely share this pinned immutable snapshot.
+            self._base = freeze_snapshot(self._handle.to_dict())
         return self._base
 
     def __getitem__(self, key):
         if key in self._COMBAT_FIELDS:
             if key not in self._combat_cache:
-                self._combat_cache[key] = self._handle.combat_events(key)
+                self._combat_cache[key] = freeze_snapshot(self._handle.combat_events(key))
             return self._combat_cache[key]
         return self._base_dict()[key]
 
@@ -106,16 +109,24 @@ class _NativeSnapshotMapping(dict):
     def copy(self):
         return {key: self[key] for key in self}
 
+    def _immutable(self, *_args, **_kwargs):
+        raise TypeError("native audit snapshot is immutable")
+
+    __setitem__ = _immutable
+    __delitem__ = _immutable
+    clear = _immutable
+    pop = _immutable
+    popitem = _immutable
+    setdefault = _immutable
+    update = _immutable
+    __ior__ = _immutable
+
     def __deepcopy__(self, memo):
-        clone = type(self)(self._handle)
-        memo[id(self)] = clone
-        # Reuse the already materialized base through a Python-level defensive
-        # copy; do not ask C++ to rebuild the same large player tree a second time.
-        if self._base is not None:
-            clone._base = copy.deepcopy(self._base, memo)
-        if self._combat_cache:
-            clone._combat_cache = copy.deepcopy(self._combat_cache, memo)
-        return clone
+        # The handle pins a const native value and all Python materializations
+        # are recursively frozen, so copying the mapping would only duplicate
+        # immutable audit evidence.
+        memo[id(self)] = self
+        return self
 
 
 class CppTFTLobbyWrapper:
@@ -198,9 +209,50 @@ class CppTFTLobbyWrapper:
             raise ValueError("Cada ação deve conter exatamente 6 componentes.")
         return [int(value) for value in values]
 
+    _PACKED_ACTION_MASK_LAYOUT = (
+        ("type_mask", (9,)),
+        ("shop_mask", (5,)),
+        ("bench_source_mask", (9,)),
+        ("board_target_mask", (28,)),
+        ("board_source_mask", (28,)),
+        ("board_move_target_masks", (28, 28)),
+        ("bench_move_source_mask", (9,)),
+        ("bench_to_board_target_masks", (9, 28)),
+        ("item_inventory_mask", (9,)),
+        ("item_component_first_mask", (10,)),
+        ("item_component_pair_masks", (10, 10)),
+        ("item_target_mask", (37,)),
+    )
+    _PACKED_ACTION_MASK_WIDTH = 1280
+
     @staticmethod
     def _copy_action_masks(masks, *, detach_arrays=False):
-        """Normalize native masks; detach buffers only when exposing them publicly."""
+        """Normalize either the packed native buffer or legacy mapping fixtures."""
+        if isinstance(masks, np.ndarray):
+            packed = np.asarray(masks)
+            expected_shape = (
+                CppTFTLobbyWrapper.PLAYERS_PER_LOBBY,
+                CppTFTLobbyWrapper._PACKED_ACTION_MASK_WIDTH,
+            )
+            if packed.dtype != np.bool_ or packed.shape != expected_shape:
+                raise RuntimeError(
+                    "Buffer compacto de action masks inválido: "
+                    f"dtype={packed.dtype}, shape={packed.shape}, esperado bool{expected_shape}."
+                )
+            normalized = []
+            for player_index in range(CppTFTLobbyWrapper.PLAYERS_PER_LOBBY):
+                offset = 0
+                player_masks = {}
+                for key, shape in CppTFTLobbyWrapper._PACKED_ACTION_MASK_LAYOUT:
+                    width = int(np.prod(shape))
+                    view = packed[player_index, offset:offset + width].reshape(shape)
+                    player_masks[key] = view.copy() if detach_arrays else view
+                    offset += width
+                if offset != CppTFTLobbyWrapper._PACKED_ACTION_MASK_WIDTH:
+                    raise RuntimeError("Layout compacto de action masks incompatível.")
+                normalized.append(player_masks)
+            return normalized
+
         if masks is None or len(masks) != CppTFTLobbyWrapper.PLAYERS_PER_LOBBY:
             raise RuntimeError("Snapshot nativo sem as oito action masks esperadas.")
         return [
@@ -789,7 +841,7 @@ class CppTFTLobbyWrapper:
             SimpleNamespace(player_id=i, alive=True, eliminated=False)
             for i in range(self.PLAYERS_PER_LOBBY)
         ]
-        self._last_action_masks = self._copy_action_masks(result.get("action_masks"))
+        self._last_action_masks = self._validate_action_masks_payload(result.get("action_masks"))
         self._last_snapshot_metadata = {
             "engine_instance_id": str(result["engine_instance_id"]),
             "episode_id": int(result["episode_id"]),
@@ -850,7 +902,7 @@ class CppTFTLobbyWrapper:
         observations = np.asarray(result["observations"], dtype=np.float32)
         rewards = np.asarray(result["rewards"], dtype=np.float32)
         self._last_dones = np.asarray(result["dones"], dtype=np.bool_)
-        self._last_action_masks = self._copy_action_masks(result.get("action_masks"))
+        self._last_action_masks = self._validate_action_masks_payload(result.get("action_masks"))
         self._last_snapshot_metadata = {
             "engine_instance_id": str(result["engine_instance_id"]),
             "episode_id": int(result["episode_id"]),
@@ -943,6 +995,21 @@ class CppTFTLobbyWrapper:
         """Return apiName -> internal_id from the catalog loaded by native C++."""
         return dict(self._engine.get_champion_id_map())
 
+    @classmethod
+    def _validate_action_masks_payload(cls, masks):
+        """Validate the native mask boundary without expanding packed buffers."""
+        if isinstance(masks, np.ndarray):
+            expected = (cls.PLAYERS_PER_LOBBY, cls._PACKED_ACTION_MASK_WIDTH)
+            if masks.dtype != np.bool_ or masks.shape != expected:
+                raise RuntimeError(
+                    "Buffer compacto de action masks inválido: "
+                    f"dtype={masks.dtype}, shape={masks.shape}, esperado bool{expected}."
+                )
+            return masks
+        # Keep legacy fixtures/adapters supported through the structured path.
+        cls._copy_action_masks(masks)
+        return masks
+
     def _get_action_masks(self, *, detach_arrays):
         if self._last_action_masks is None:
             raise RuntimeError("Execute reset() antes de solicitar action masks.")
@@ -989,8 +1056,82 @@ class CppTFTLobbyWrapper:
         return self._get_action_masks(detach_arrays=True)
 
     def get_action_masks_for_training(self):
-        """Borrow immutable masks for the Trainer; no per-player buffer copies."""
+        """Compatibility mapping API for callers outside the optimized Trainer path."""
         return self._get_action_masks(detach_arrays=False)
+
+    def get_packed_action_masks_for_training(self):
+        """Borrow the contiguous native mask matrix without rebuilding player dictionaries."""
+        if self._last_action_masks is None:
+            raise RuntimeError("Execute reset() antes de solicitar action masks.")
+
+        packed = self._last_action_masks
+        if not isinstance(packed, np.ndarray):
+            # Legacy fixtures/engines remain supported, but production native
+            # results use the packed branch and never materialize these mappings.
+            players = self._copy_action_masks(packed, detach_arrays=False)
+            packed = np.empty(
+                (self.PLAYERS_PER_LOBBY, self._PACKED_ACTION_MASK_WIDTH),
+                dtype=np.bool_,
+            )
+            for player_index, player_masks in enumerate(players):
+                offset = 0
+                for key, shape in self._PACKED_ACTION_MASK_LAYOUT:
+                    width = int(np.prod(shape))
+                    raw_mask = np.asarray(player_masks[key])
+                    if raw_mask.shape != shape:
+                        raise RuntimeError(
+                            f"Máscara legada '{key}' inválida para jogador {player_index}: "
+                            f"shape={raw_mask.shape}, esperado={shape}."
+                        )
+                    if not (
+                        np.issubdtype(raw_mask.dtype, np.bool_)
+                        or np.issubdtype(raw_mask.dtype, np.number)
+                    ):
+                        raise TypeError(f"Máscara legada '{key}' possui dtype inválido.")
+                    if not np.issubdtype(raw_mask.dtype, np.bool_):
+                        if not np.all(np.isfinite(raw_mask)) or not np.all(
+                            (raw_mask == 0) | (raw_mask == 1)
+                        ):
+                            raise ValueError(
+                                f"Máscara legada '{key}' deve conter somente valores finitos 0/1."
+                            )
+                    packed[player_index, offset:offset + width] = raw_mask.astype(
+                        np.bool_, copy=False
+                    ).reshape(-1)
+                    offset += width
+
+        expected_shape = (
+            self.PLAYERS_PER_LOBBY,
+            self._PACKED_ACTION_MASK_WIDTH,
+        )
+        if packed.dtype != np.bool_ or packed.shape != expected_shape:
+            raise RuntimeError(
+                "Buffer compacto de action masks inválido: "
+                f"dtype={packed.dtype}, shape={packed.shape}, esperado bool{expected_shape}."
+            )
+
+        if os.environ.get("TFT_ABLATE_ITEM_ACTIONS") == "1":
+            # The first nine packed values are the type mask. Copy only when
+            # this explicit evaluation ablation changes those values.
+            packed = packed.copy()
+            for player_idx in range(self.PLAYERS_PER_LOBBY):
+                type_mask = packed[player_idx, :9]
+                legal_types = np.flatnonzero(type_mask)
+                mandatory_anvil_choice = (
+                    len(legal_types) == 1 and int(legal_types[0]) == 7
+                )
+                if not mandatory_anvil_choice:
+                    type_mask[7] = False
+                    type_mask[8] = False
+                if not bool(type_mask.any()):
+                    raise RuntimeError(
+                        "A ablação de ações de item removeu todas as ações legais "
+                        f"do snapshot nativo para o jogador {player_idx}; "
+                        "nenhuma ação substituta será inventada."
+                    )
+
+        packed.flags.writeable = False
+        return packed
 
     def get_snapshot_metadata(self):
         """Return non-neural metadata for the exact observation/mask snapshot."""
