@@ -5969,6 +5969,18 @@ StepResult TFTEngine::step(
         }
         const auto transition = impl_->player_envs[i].step(*impl_, i, effective_actions[i]);
         trace.handler_applied = transition.action_succeeded;
+        trace.transition_observed = transition.acted;
+        trace.board_capacity_violation = transition.board_capacity_violation;
+        trace.action_cost = transition.action_cost;
+        trace.sale_proceeds = transition.sale_proceeds;
+        trace.gold_before = transition.gold_before_action;
+        trace.gold_after = transition.gold_after_action;
+        trace.interest_before = transition.interest_before_action;
+        trace.interest_after = transition.interest_after_action;
+        trace.level_before = transition.level_before_action;
+        trace.level_after = transition.level_after_action;
+        trace.xp_before = transition.xp_before_action;
+        trace.xp_after = transition.xp_after_action;
         trace.status_reason = !transition.acted
             ? "not_processed"
             : (was_overridden
