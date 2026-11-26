@@ -581,6 +581,7 @@ def project_native_player_state(
         direction_confidence = _finite_number(
             strategic.get("direction_confidence"), "direction_confidence"
         )
+        direction_reason = strategic.get("direction_reason")
         direction_lifecycle = _non_negative_int(
             strategic.get("direction_lifecycle"), "direction_lifecycle"
         )
@@ -588,6 +589,7 @@ def project_native_player_state(
         pivot_target_direction = strategic.get("pivot_target_direction")
         pivot_source_direction = strategic.get("pivot_source_direction_identity")
         pivot_confidence = _finite_number(strategic.get("pivot_confidence"), "pivot_confidence")
+        pivot_reason = strategic.get("pivot_reason")
         pivot_lifecycle = _non_negative_int(strategic.get("pivot_lifecycle"), "pivot_lifecycle")
         pivot_evidence = strategic.get("pivot_evidence")
         if (
@@ -602,14 +604,16 @@ def project_native_player_state(
                 or direction_composition_id != strategic.get("active_composition_id")
                 or direction_composition_version != strategic.get("active_composition_version")
             ))
-            or not 0.0 <= direction_confidence <= 1.0 or direction_lifecycle > 7
+            or not 0.0 <= direction_confidence <= 1.0
+            or not isinstance(direction_reason, str) or direction_lifecycle > 7
             or not isinstance(direction_evidence, list)
             or any(isinstance(value, bool) or not isinstance(value, int) or not 0 <= value <= 7 for value in direction_evidence)
             or not isinstance(pivot_target_direction, str)
             or (pivot_valid and not pivot_target_direction)
             or not isinstance(pivot_source_direction, str)
             or (pivot_valid and not pivot_source_direction)
-            or not 0.0 <= pivot_confidence <= 1.0 or pivot_lifecycle > 7
+            or not 0.0 <= pivot_confidence <= 1.0
+            or not isinstance(pivot_reason, str) or pivot_lifecycle > 7
             or not isinstance(pivot_evidence, list)
             or any(isinstance(value, bool) or not isinstance(value, int) or not 0 <= value <= 7 for value in pivot_evidence)
         ):
@@ -620,11 +624,13 @@ def project_native_player_state(
         direction_composition_id = ""
         direction_composition_version = 0
         direction_confidence = 0.0
+        direction_reason = ""
         direction_lifecycle = 0
         direction_evidence = []
         pivot_target_direction = ""
         pivot_source_direction = ""
         pivot_confidence = 0.0
+        pivot_reason = ""
         pivot_lifecycle = 0
         pivot_evidence = []
 
@@ -1300,6 +1306,7 @@ def project_native_player_state(
                 "composition_identity": direction_composition_id,
                 "composition_version": direction_composition_version,
                 "confidence": direction_confidence,
+                "reason": direction_reason,
                 "lifecycle": direction_lifecycle,
                 "reference_unit_ids": tuple(strategic.get("direction_reference_unit_ids", [])),
                 "evidence": tuple(direction_evidence),
@@ -1312,6 +1319,7 @@ def project_native_player_state(
                 "source_direction_identity": pivot_source_direction,
                 "source_composition_version": strategic.get("pivot_source_composition_version"),
                 "confidence": pivot_confidence,
+                "reason": pivot_reason,
                 "lifecycle": pivot_lifecycle,
                 "reference_unit_ids": tuple(strategic.get("pivot_reference_unit_ids", [])),
                 "evidence": tuple(pivot_evidence),
