@@ -1044,7 +1044,9 @@ class CppTFTLobbyWrapper:
                             or any(isinstance(value, bool) or not isinstance(value, int) or value < 0 for value in copies_by_star)
                             or copies_by_star[0] != 0
                             or isinstance(pool_remaining, bool) or not isinstance(pool_remaining, int) or pool_remaining < -1
-                            or not isinstance(pool_known, bool) or (not pool_known and pool_remaining != -1)
+                            or not isinstance(pool_known, bool)
+                            or (pool_known and pool_remaining < 0)
+                            or (not pool_known and pool_remaining != -1)
                             or not isinstance(has_pair, bool)
                             or isinstance(copies_needed_for_pair, bool) or not isinstance(copies_needed_for_pair, int) or not 0 <= copies_needed_for_pair <= 2
                         ):
