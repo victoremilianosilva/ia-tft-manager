@@ -1411,28 +1411,44 @@ def build_semantic_batch(
     # Catalog normalization and stable trait hashing are shared only within this
     # batch. No mutable cache escapes into the returned PPO projection.
     projection_context = _build_semantic_projection_context(catalog_map)
-    projected = [
-        project_native_player_state(row, catalog_map, _projection_context=projection_context)
-        for row in metadata_rows
-    ]
-    item_catalog_hashes = {
-        row["item_state_identity"]["item_catalog_sha256"] for row in projected
-    }
+    # Retain only the batch outputs. Keeping every complete per-player
+    # projection alive until the batch is assembled duplicates references and
+    # extends the lifetime of temporary identity/item structures.
+    numeric = []
+    champion_ids = []
+    hashes = []
+    identities = []
+    strategic_context_sequences = []
+    entity_identity = []
+    strategic_context = []
+    item_catalog_hashes = set()
+    for row in metadata_rows:
+        projected = project_native_player_state(
+            row, catalog_map, _projection_context=projection_context
+        )
+        item_catalog_hashes.add(
+            projected["item_state_identity"]["item_catalog_sha256"]
+        )
+        numeric.append(projected["numeric"])
+        champion_ids.append(projected["champion_ids"])
+        hashes.append(projected["sha256"])
+        identities.append(projected["identity"])
+        strategic_context_sequences.append(projected["strategic_context_sequence"])
+        # Keep the 42-row physical entity projection available to downstream
+        # typed-context consumers instead of building and discarding it.
+        entity_identity.append(projected["entity_identity"])
+        strategic_context.append(projected["strategic_context"])
     if len(item_catalog_hashes) > 1:
         raise ValueError("native players in one batch disagree on the item catalog fingerprint")
     return {
         "item_catalog_sha256": next(iter(item_catalog_hashes), None),
-        "numeric": [row["numeric"] for row in projected],
-        "champion_ids": [row["champion_ids"] for row in projected],
-        "hashes": [row["sha256"] for row in projected],
-        "identities": [row["identity"] for row in projected],
-        "strategic_context_sequences": [
-            row["strategic_context_sequence"] for row in projected
-        ],
-        # Keep the 42-row physical entity projection available to downstream
-        # typed-context consumers instead of building and discarding it.
-        "entity_identity": [row["entity_identity"] for row in projected],
-        "strategic_context": [row["strategic_context"] for row in projected],
+        "numeric": numeric,
+        "champion_ids": champion_ids,
+        "hashes": hashes,
+        "identities": identities,
+        "strategic_context_sequences": strategic_context_sequences,
+        "entity_identity": entity_identity,
+        "strategic_context": strategic_context,
         "contract_id": contract["contract"]["contract_id"],
         "contract_hash": contract["sha256"],
     }
