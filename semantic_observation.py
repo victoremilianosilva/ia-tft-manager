@@ -881,16 +881,32 @@ def project_native_player_state(
             champion_name = entity.get("champion_id")
             star = _non_negative_int(entity.get("star"), f"{group_name}[{slot}].star")
             cost = _non_negative_int(entity.get("cost"), f"{group_name}[{slot}].cost")
+            # Read each structured field once. The native typed row is the
+            # hot-path representation; the structured record remains its parity oracle.
+            items = entity.get("items")
+            traits = entity.get("trait_names")
+            item_count = len(items) if isinstance(items, list) else 0
+            trait_count = len(traits) if isinstance(traits, list) else 0
+            entity_role = entity.get("role", 3)
+            entity_attack_damage = entity.get("attack_damage", 0.0)
+            entity_attack_speed = entity.get("attack_speed", 0.0)
+            entity_max_health = entity.get("max_health", 0.0)
+            entity_armor = entity.get("armor", 0.0)
+            entity_magic_resist = entity.get("magic_resist", 0.0)
             if use_typed_entities:
-                expected = np.asarray([
-                    float(star), float(cost), float(len(entity.get("items", []))),
-                    float(len(entity.get("trait_names", []))), float(entity.get("role", 3)),
-                    float(entity.get("attack_damage", 0.0)), float(entity.get("attack_speed", 0.0)),
-                    float(entity.get("max_health", 0.0)), float(entity.get("armor", 0.0)),
-                    float(entity.get("magic_resist", 0.0)),
-                ], dtype=np.float64)
-                if not np.array_equal(typed_row[1:], expected):
-                    raise ValueError(f"native typed entity values diverge from snapshot record at {group_name}[{slot}]")
+                # Compare scalar values directly: avoid a temporary ndarray and
+                # np.array_equal allocation for every occupied slot.
+                expected = (
+                    float(star), float(cost), float(item_count), float(trait_count),
+                    float(entity_role), float(entity_attack_damage),
+                    float(entity_attack_speed), float(entity_max_health),
+                    float(entity_armor), float(entity_magic_resist),
+                )
+                for column, expected_value in enumerate(expected, start=1):
+                    if float(typed_row[column]) != expected_value:
+                        raise ValueError(
+                            f"native typed entity values diverge from snapshot record at {group_name}[{slot}]"
+                        )
                 # Consume typed values after exact parity with the structured oracle.
                 star = int(typed_row[1])
                 cost = int(typed_row[2])
@@ -902,17 +918,6 @@ def project_native_player_state(
                 entity_max_health = float(typed_row[8])
                 entity_armor = float(typed_row[9])
                 entity_magic_resist = float(typed_row[10])
-            else:
-                item_count = len(entity.get("items", []))
-                trait_count = len(entity.get("trait_names", []))
-                entity_role = entity.get("role", 3)
-                entity_attack_damage = entity.get("attack_damage", 0.0)
-                entity_attack_speed = entity.get("attack_speed", 0.0)
-                entity_max_health = entity.get("max_health", 0.0)
-                entity_armor = entity.get("armor", 0.0)
-                entity_magic_resist = entity.get("magic_resist", 0.0)
-            items = entity.get("items")
-            traits = entity.get("trait_names")
             if not isinstance(champion_name, str) or not champion_name:
                 raise ValueError(f"occupied {group_name}[{slot}] has no champion identity")
             if not 1 <= star <= 3 or not 1 <= cost <= 5:
