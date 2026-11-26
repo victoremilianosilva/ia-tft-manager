@@ -885,8 +885,8 @@ def test_native_typed_entity_projection_is_validated_and_preserves_v8():
     player = row["native_player_state"]
     features = np.zeros((SEMANTIC_ENTITY_SLOTS, 11), dtype=np.float64)
     ids = np.full((SEMANTIC_ENTITY_SLOTS,), -1, dtype=np.int32)
-    features[0] = [1.0, 2.0, 3.0, 1.0, 2.0, 3.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-    features[28] = [1.0, 1.0, 3.0, 0.0, 0.0, 3.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    features[0] = [1.0, 2.0, 3.0, 1.0, 2.0, 1.0, 100.0, 1.0, 1000.0, 50.0, 50.0]
+    features[28] = [1.0, 1.0, 3.0, 0.0, 0.0, 1.0, 100.0, 1.0, 1000.0, 50.0, 50.0]
     ids[0] = ids[28] = 17
     features.setflags(write=False)
     ids.setflags(write=False)
