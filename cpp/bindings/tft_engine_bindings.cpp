@@ -954,6 +954,9 @@ py::dict step_to_dict(tft::StepResult step) {
         item["level_after"] = trace.level_after;
         item["xp_before"] = trace.xp_before;
         item["xp_after"] = trace.xp_after;
+        item["shop_revisions_observed"] = trace.shop_revisions_observed;
+        item["shop_revisions_before"] = trace.shop_revisions_before;
+        item["shop_revisions_after"] = trace.shop_revisions_after;
         item["status_reason"] = trace.status_reason;
         item["source_snapshot_sequence"] = trace.source_snapshot_sequence;
         item["outcome_snapshot_sequence"] = trace.outcome_snapshot_sequence;
