@@ -1,6 +1,7 @@
 """Regression tests for observation/action-mask snapshot correlation."""
 
 import copy
+from collections.abc import Mapping, Sequence
 
 import numpy as np
 import pytest
@@ -1162,7 +1163,7 @@ def _snapshot_value_mismatch(left, right, path="snapshot"):
         except (TypeError, ValueError):
             pass
         return path
-    if isinstance(left, dict) and isinstance(right, dict):
+    if isinstance(left, Mapping) and isinstance(right, Mapping):
         if left.keys() != right.keys():
             return path + ".keys"
         for key in left:
@@ -1170,7 +1171,12 @@ def _snapshot_value_mismatch(left, right, path="snapshot"):
             if mismatch is not None:
                 return mismatch
         return None
-    if isinstance(left, (list, tuple)) and isinstance(right, (list, tuple)):
+    if (
+        isinstance(left, Sequence)
+        and isinstance(right, Sequence)
+        and not isinstance(left, (str, bytes))
+        and not isinstance(right, (str, bytes))
+    ):
         if len(left) != len(right):
             return path + ".length"
         for index, pair in enumerate(zip(left, right)):
