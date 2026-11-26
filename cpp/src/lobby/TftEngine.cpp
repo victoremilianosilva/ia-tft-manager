@@ -5999,7 +5999,14 @@ StepResult TFTEngine::step(
     std::vector<std::string> item_action_events;
     for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
         auto& trace = action_traces[i];
-        const auto units_before = capture_unit_action_state(impl_->player_envs[i]);
+        const auto action_type = effective_actions[i].values[0];
+        const bool tracks_unit_identity =
+            action_type == 0 || action_type == 3 ||
+            action_type == 4 || action_type == 5;
+        std::array<UnitActionState, kBoardSlots + kBenchSlots> units_before{};
+        if (tracks_unit_identity) {
+            units_before = capture_unit_action_state(impl_->player_envs[i]);
+        }
         trace.player_id = static_cast<std::int32_t>(i);
         trace.requested_action = actions[i].values;
         trace.effective_action = effective_actions[i].values;
@@ -6030,7 +6037,7 @@ StepResult TFTEngine::step(
         trace.level_after = transition.level_after_action;
         trace.xp_before = transition.xp_before_action;
         trace.xp_after = transition.xp_after_action;
-        if (transition.acted) {
+        if (transition.acted && tracks_unit_identity) {
             const auto units_after = capture_unit_action_state(impl_->player_envs[i]);
             trace.unit_deltas.reserve(4);
             for (const auto& before_unit : units_before) {
