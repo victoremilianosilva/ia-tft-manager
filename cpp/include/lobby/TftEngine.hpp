@@ -661,6 +661,18 @@ struct AntiLoopMetrics {
 };
 
 
+struct ActionUnitDelta {
+    std::string kind;
+    std::string uuid;
+    std::string champion_id;
+    std::string location_before;
+    std::string location_after;
+    std::int32_t slot_before{-1};
+    std::int32_t slot_after{-1};
+    std::int32_t star_before{0};
+    std::int32_t star_after{0};
+};
+
 struct ActionExecutionTrace {
     // Explicit owner of this trace; array position alone is not identity.
     std::int32_t player_id{-1};
@@ -683,6 +695,7 @@ struct ActionExecutionTrace {
     bool shop_revisions_observed{false};
     std::array<std::uint64_t, 5> shop_revisions_before{};
     std::array<std::uint64_t, 5> shop_revisions_after{};
+    std::vector<ActionUnitDelta> unit_deltas;
     // Stable machine-readable reason; never inferred from reward values.
     std::string status_reason;
     // Causal identity inherited from the source and outcome decision snapshots.
