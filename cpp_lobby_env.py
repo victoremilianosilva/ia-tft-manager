@@ -795,7 +795,7 @@ class CppTFTLobbyWrapper:
                 strategic.get("contract_id") != "tft.strategic-owner-observation"
                 or isinstance(strategic_version, bool)
                 or not isinstance(strategic_version, int)
-                or strategic_version != 3
+                or strategic_version not in (3, 4)
                 or strategic.get("producer") != "TFTEngine::get_audit_snapshot"
                 or strategic.get("source_namespace") != "tft.engine.strategic-owners"
             ):
@@ -875,6 +875,33 @@ class CppTFTLobbyWrapper:
                 or not strategic["direction_identity"]
             ):
                 raise RuntimeError("Identidade da direção nativa inválida.")
+            if strategic_version >= 4:
+                direction_bound = strategic.get("direction_composition_bound")
+                direction_composition = strategic.get("direction_composition_identity")
+                direction_version = strategic.get("direction_composition_version")
+                direction_value = strategic.get("direction_value")
+                direction_confidence = strategic.get("direction_confidence")
+                direction_lifecycle = strategic.get("direction_lifecycle")
+                direction_evidence = strategic.get("direction_evidence")
+                if (
+                    not isinstance(direction_bound, bool)
+                    or not isinstance(direction_composition, str)
+                    or isinstance(direction_version, bool) or not isinstance(direction_version, int) or direction_version < 0
+                    or (direction_bound and (
+                        not strategic["active_composition_valid"]
+                        or direction_composition != strategic.get("active_composition_id")
+                        or direction_version != strategic.get("active_composition_version")
+                    ))
+                    or (not direction_bound and (direction_composition or direction_version != 0))
+                    or not isinstance(direction_value, str)
+                    or (strategic["direction_valid"] and not direction_value)
+                    or isinstance(direction_confidence, bool) or not isinstance(direction_confidence, (int, float))
+                    or not np.isfinite(direction_confidence) or not 0 <= direction_confidence <= 1
+                    or isinstance(direction_lifecycle, bool) or not isinstance(direction_lifecycle, int) or not 0 <= direction_lifecycle <= 7
+                    or not isinstance(direction_evidence, list)
+                    or any(isinstance(item, bool) or not isinstance(item, int) or not 0 <= item <= 7 for item in direction_evidence)
+                ):
+                    raise RuntimeError("Proveniência/composição da direção nativa inválida.")
             if not strategic["pivot_candidate_valid"] and pivot_ids:
                 raise RuntimeError("Pivot inválido não pode publicar referências.")
             if strategic["pivot_candidate_valid"] and (
@@ -887,6 +914,28 @@ class CppTFTLobbyWrapper:
                 or strategic["pivot_source_composition_version"] <= 0
             ):
                 raise RuntimeError("Identidade/versão do pivot nativo inválida.")
+            if strategic_version >= 4:
+                pivot_target_direction = strategic.get("pivot_target_direction")
+                pivot_source_direction = strategic.get("pivot_source_direction_identity")
+                pivot_confidence = strategic.get("pivot_confidence")
+                pivot_lifecycle = strategic.get("pivot_lifecycle")
+                pivot_evidence = strategic.get("pivot_evidence")
+                if (
+                    not isinstance(pivot_target_direction, str)
+                    or (strategic["pivot_candidate_valid"] and not pivot_target_direction)
+                    or not isinstance(pivot_source_direction, str)
+                    or (strategic["pivot_candidate_valid"] and not pivot_source_direction)
+                    or isinstance(pivot_confidence, bool) or not isinstance(pivot_confidence, (int, float))
+                    or not np.isfinite(pivot_confidence) or not 0 <= pivot_confidence <= 1
+                    or isinstance(pivot_lifecycle, bool) or not isinstance(pivot_lifecycle, int) or not 0 <= pivot_lifecycle <= 7
+                    or not isinstance(pivot_evidence, list)
+                    or any(isinstance(item, bool) or not isinstance(item, int) or not 0 <= item <= 7 for item in pivot_evidence)
+                    or (strategic["pivot_candidate_valid"] and (
+                        not strategic["active_composition_valid"]
+                        or strategic["pivot_source_composition_version"] != strategic["active_composition_version"]
+                    ))
+                ):
+                    raise RuntimeError("Proveniência/sincronização do pivot nativo inválida.")
             opportunity_rows = strategic.get("opportunity_costs")
             if not isinstance(opportunity_rows, list):
                 raise RuntimeError("Strategic owner snapshot sem opportunity_costs nativo.")
@@ -935,6 +984,8 @@ class CppTFTLobbyWrapper:
                 "lineup_selected_unit_ids", "lineup_entry_unit_ids",
                 "lineup_exit_unit_ids", "lineup_deferred_unit_ids",
             )
+            if strategic_version >= 4:
+                lineup_fields += ("lineup_bridge_unit_ids", "lineup_endgame_target_unit_ids")
             if not isinstance(priority_rows, list):
                 raise RuntimeError("Strategic owner snapshot sem unit_priorities nativo.")
             lineup_ids = {}
@@ -957,6 +1008,7 @@ class CppTFTLobbyWrapper:
                     champion_id = row.get("champion_internal_id")
                     priority = row.get("priority")
                     intent = row.get("intent")
+                    relation = row.get("relation")
                     confidence = row.get("confidence")
                     target_star = row.get("target_star")
                     sale_restricted = row.get("sale_restricted")
@@ -965,11 +1017,45 @@ class CppTFTLobbyWrapper:
                         or champion_id in priority_ids
                         or isinstance(priority, bool) or not isinstance(priority, int) or priority < 0
                         or isinstance(intent, bool) or not isinstance(intent, int) or not 0 <= intent <= 6
+                        or isinstance(relation, bool) or not isinstance(relation, int) or not 0 <= relation <= 6
                         or isinstance(confidence, bool) or not isinstance(confidence, (int, float)) or not np.isfinite(confidence) or not 0 <= confidence <= 1
                         or isinstance(target_star, bool) or not isinstance(target_star, int) or not 0 <= target_star <= 3
                         or not isinstance(sale_restricted, bool)
                     ):
                         raise RuntimeError("unit_priorities contém evidência inválida ou duplicada.")
+                    if strategic_version >= 4:
+                        tier = row.get("tier")
+                        highest_star = row.get("highest_star")
+                        on_board = row.get("on_board")
+                        board_contribution = row.get("board_contribution")
+                        synergy_contribution = row.get("synergy_contribution")
+                        copies_by_star = row.get("copies_by_star")
+                        pool_remaining = row.get("pool_remaining")
+                        pool_known = row.get("pool_known")
+                        has_pair = row.get("has_pair")
+                        copies_needed_for_pair = row.get("copies_needed_for_pair")
+                        if (
+                            isinstance(tier, bool) or not isinstance(tier, int) or not 0 <= tier <= 6
+                            or isinstance(highest_star, bool) or not isinstance(highest_star, int) or not 1 <= highest_star <= 3
+                            or not isinstance(on_board, bool)
+                            or isinstance(board_contribution, bool) or not isinstance(board_contribution, (int, float)) or not np.isfinite(board_contribution) or not 0 <= board_contribution <= 1
+                            or isinstance(synergy_contribution, bool) or not isinstance(synergy_contribution, (int, float)) or not np.isfinite(synergy_contribution) or not 0 <= synergy_contribution <= 1
+                            or not isinstance(copies_by_star, list) or len(copies_by_star) != 4
+                            or any(isinstance(value, bool) or not isinstance(value, int) or value < 0 for value in copies_by_star)
+                            or copies_by_star[0] != 0
+                            or isinstance(pool_remaining, bool) or not isinstance(pool_remaining, int) or pool_remaining < -1
+                            or not isinstance(pool_known, bool) or (not pool_known and pool_remaining != -1)
+                            or not isinstance(has_pair, bool)
+                            or isinstance(copies_needed_for_pair, bool) or not isinstance(copies_needed_for_pair, int) or not 0 <= copies_needed_for_pair <= 2
+                        ):
+                            raise RuntimeError("unit_priorities contém evidência de par/upgrade inválida.")
+                        for field in ("copies_owned", "copies_in_shop", "affordable_shop_copies",
+                                      "copies_toward_next_star", "copies_needed_for_next_star"):
+                            number = row.get(field)
+                            if isinstance(number, bool) or not isinstance(number, int) or number < 0:
+                                raise RuntimeError(f"unit_priorities contém valor inválido em {field}.")
+                        if not isinstance(row.get("target_unit"), bool):
+                            raise RuntimeError("unit_priorities contém target_unit inválido.")
                     priority_ids.add(champion_id)
             elif priority_rows or any(lineup_ids.values()):
                 raise RuntimeError("Saídas indisponíveis do planner não podem publicar prioridades ou lineup.")
