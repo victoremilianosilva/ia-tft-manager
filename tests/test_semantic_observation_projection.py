@@ -979,6 +979,7 @@ def test_v4_strategic_context_preserves_native_pair_upgrade_and_anchor_provenanc
     strategic["lineup_bridge_unit_ids"] = []
     strategic["lineup_endgame_target_unit_ids"] = [17]
     strategic["direction_value"] = "reroll-carry"
+    strategic["direction_composition_bound"] = True
     strategic["direction_composition_identity"] = "comp-a"
     strategic["direction_composition_version"] = 3
     strategic["direction_confidence"] = 0.9
