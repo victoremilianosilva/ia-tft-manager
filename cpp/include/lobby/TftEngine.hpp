@@ -207,6 +207,7 @@ struct RewardState {
 
 struct AuditUnitSnapshot {
     bool occupied{false};
+    std::int32_t champion_internal_id{-1};
     std::string champion_id;
     std::string uuid;
     std::int32_t star{0};

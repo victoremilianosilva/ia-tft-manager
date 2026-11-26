@@ -43,3 +43,8 @@ The change is limited to the native item-feature transport and its semantic proj
 - Semantic projection tests compare list-backed and NumPy-backed v8 numeric output, champion IDs, and SHA-256; writable and non-finite arrays are rejected.
 - Full CI must pass, including native compilation, Python tests, sanitizers, and the PPO training smoke.
 - Baseline/post-change performance profiles, including a PPO-active profile, remain a separate evidence gate. CI success alone is not performance evidence.
+
+
+## Performance follow-up
+
+The initial 4-lobby profile showed a regression relative to its baseline. Inspection found that native item views were validated with three NumPy passes per block, creating temporary boolean arrays before the required canonical v8 conversion. The follow-up in the #573 implementation uses scalar min/max reductions to validate finiteness and [0, 1] bounds without those temporary arrays. It also shares one snapshot-pinning capsule across the eight player mappings rather than allocating one capsule per player. The v8 projection still materializes canonical Python floats at its hash/tensor boundary; the native views remain read-only and lifetime-pinned. These changes are hypotheses to reduce overhead and must be measured with repeated, matched benchmarks.

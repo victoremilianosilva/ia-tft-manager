@@ -28,6 +28,7 @@ def _unit(occupied=False, champion_id="", star=0, cost=0):
     return {
         "occupied": occupied,
         "champion_id": champion_id,
+        "uuid": "",
         "star": star,
         "cost": cost,
         "items": [],
@@ -95,9 +96,14 @@ def _metadata():
         "pending_anvil_option_features": [[0.0] * 11 for _ in range(9)],
     }
     player["board"][0] = _unit(True, "TFT_TestChampion", 2, 3)
+    player["board"][0]["uuid"] = "unit-board-0"
+    player["board"][0]["champion_internal_id"] = 17
     player["board"][0]["items"] = ["ItemA"]
     player["board"][0]["trait_names"] = ["TraitA", "TraitB"]
     player["bench"][0] = _unit(True, "TFT_TestChampion", 1, 3)
+    player["bench"][0]["uuid"] = "unit-bench-0"
+    player["bench"][0]["champion_internal_id"] = 17
+    player["shop_offer_revisions"] = [0, 0, 0, 0, 0]
     player["strategic_state"] = {
         "contract_id": "tft.strategic-owner-observation",
         "contract_version": 3,
@@ -394,6 +400,10 @@ def test_semantic_batch_is_deterministic_and_catalog_contract_is_bound():
     first = build_semantic_batch(rows, catalog)
     second = build_semantic_batch(rows, dict(catalog))
     assert first == second
+    assert len(first["entity_identity"]) == 1
+    assert len(first["entity_identity"][0]["occupied"]) == SEMANTIC_ENTITY_SLOTS
+    assert first["entity_identity"][0]["unit_uuids"][0] == "unit-board-0"
+    assert first["entity_identity"][0]["unit_uuids"][28] == "unit-bench-0"
 
     contract = build_semantic_state_checkpoint_contract(catalog)
     validate_semantic_state_checkpoint_contract(contract, catalog)
@@ -792,6 +802,83 @@ def test_semantic_batch_reuses_catalog_and_trait_hash_work_within_batch(monkeypa
     assert trait_hash_inputs.count(b"TraitB") == 2
 
 
+def test_entity_identity_projection_tracks_physical_units_and_shop_offer_revisions_without_changing_v8():
+    catalog = {"TFT_TestChampion": 17}
+    row = _metadata()
+    player = row["native_player_state"]
+    player["shop"][0] = _unit(True, "TFT_TestChampion", 1, 3)
+    player["shop"][0]["uuid"] = "unit-shop-0"
+    player["shop_offer_revisions"] = [4, 0, 0, 0, 0]
+
+    projected = project_native_player_state(row, catalog)
+    identities = projected["entity_identity"]
+    assert len(identities["occupied"]) == SEMANTIC_ENTITY_SLOTS
+    assert len(identities["unit_uuids"]) == SEMANTIC_ENTITY_SLOTS
+    assert identities["occupied"][0] is True
+    assert identities["unit_uuids"][0] == "unit-board-0"
+    assert identities["occupied"][28] is True
+    assert identities["unit_uuids"][28] == "unit-bench-0"
+    assert identities["occupied"][37] is True
+    assert identities["unit_uuids"][37] == "unit-shop-0"
+    assert identities["shop_offer_revisions"][0] == 4
+
+    # Identity metadata is deliberately not a v8 policy feature or hash input.
+    baseline = _metadata()
+    baseline_projection = project_native_player_state(baseline, catalog)
+    changed_identity = _metadata()
+    changed_identity["native_player_state"]["board"][0]["uuid"] = "replacement-unit"
+    changed_identity["native_player_state"]["bench"][0]["uuid"] = "replacement-bench"
+    changed_projection = project_native_player_state(changed_identity, catalog)
+    assert changed_projection["numeric"] == baseline_projection["numeric"]
+    assert changed_projection["champion_ids"] == baseline_projection["champion_ids"]
+    assert changed_projection["sha256"] == baseline_projection["sha256"]
+
+    changed_shop = _metadata()
+    changed_shop["native_player_state"]["shop_offer_revisions"] = [9, 0, 0, 0, 0]
+    changed_shop_projection = project_native_player_state(changed_shop, catalog)
+    assert changed_shop_projection["entity_identity"]["shop_offer_revisions"][0] == 9
+    assert changed_shop_projection["sha256"] == baseline_projection["sha256"]
+
+
+def test_entity_identity_projection_rejects_duplicate_or_missing_physical_uuid():
+    catalog = {"TFT_TestChampion": 17}
+    duplicate = _metadata()
+    duplicate["native_player_state"]["bench"][0]["uuid"] = "unit-board-0"
+    with pytest.raises(ValueError, match="duplicate physical unit UUID"):
+        project_native_player_state(duplicate, catalog)
+
+    missing = _metadata()
+    missing["native_player_state"]["board"][0]["uuid"] = ""
+    with pytest.raises(ValueError, match="no physical unit UUID"):
+        project_native_player_state(missing, catalog)
+
+    empty_with_identity = _metadata()
+    empty_with_identity["native_player_state"]["board"][1]["uuid"] = "stale-unit"
+    with pytest.raises(ValueError, match="empty board\\[1\\]"):
+        project_native_player_state(empty_with_identity, catalog)
+
+
+def test_native_champion_internal_id_is_authoritative_and_catalog_checked():
+    catalog = {"TFT_TestChampion": 17}
+    row = _metadata()
+    row["native_player_state"]["board"][0]["champion_internal_id"] = 18
+    with pytest.raises(ValueError, match="diverges from the loaded catalog"):
+        project_native_player_state(row, catalog)
+
+    row = _metadata()
+    row["native_player_state"]["board"][0]["champion_internal_id"] = 17
+    projected = project_native_player_state(row, catalog)
+    assert projected["champion_ids"][0] == 18
+
+
+def test_entity_identity_projection_requires_slot_aligned_shop_revisions():
+    catalog = {"TFT_TestChampion": 17}
+    row = _metadata()
+    row["native_player_state"]["shop_offer_revisions"] = [1, 2]
+    with pytest.raises(ValueError, match="five slot-aligned"):
+        project_native_player_state(row, catalog)
+
+
 def test_native_item_numpy_views_preserve_v8_projection_and_validate_contract():
     catalog = {"TFT_TestChampion": 17}
     list_backed = _metadata()
@@ -831,3 +918,11 @@ def test_native_item_numpy_views_preserve_v8_projection_and_validate_contract():
     non_finite["item_component_features"] = values
     with pytest.raises(ValueError, match="non-finite"):
         project_native_player_state(non_finite_metadata, catalog)
+
+    out_of_range_metadata = _metadata()
+    out_of_range = np.zeros((10,), dtype=np.float32)
+    out_of_range[0] = 1.01
+    out_of_range.setflags(write=False)
+    out_of_range_metadata["native_player_state"]["item_component_features"] = out_of_range
+    with pytest.raises(ValueError, match=r"outside \[0, 1\]"):
+        project_native_player_state(out_of_range_metadata, catalog)

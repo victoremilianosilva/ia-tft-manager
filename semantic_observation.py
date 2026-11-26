@@ -796,8 +796,26 @@ def project_native_player_state(
                         )
     if not (set(copy_progress) & known_catalog_ids).issubset(observed_owned_ids):
         raise ValueError("native UnitCopyProgress contains known champions absent from board/bench")
+    # Older dict-backed evaluation fixtures predate the slot revision field.
+    # The native producer always publishes the five revisions; absent metadata
+    # therefore means a compatibility fixture with no revision history.
+    shop_offer_revisions = state.get("shop_offer_revisions", [0] * 5)
+    if (
+        not isinstance(shop_offer_revisions, Sequence)
+        or isinstance(shop_offer_revisions, (str, bytes))
+        or len(shop_offer_revisions) != 5
+    ):
+        raise ValueError("native shop_offer_revisions must contain five slot-aligned values")
+    shop_offer_revisions = [
+        _non_negative_int(value, f"shop_offer_revisions[{slot}]")
+        for slot, value in enumerate(shop_offer_revisions)
+    ]
+
     numeric = list(global_values)
     champion_ids = []
+    entity_occupied = []
+    entity_unit_uuids = []
+    observed_unit_uuids = set()
     for group_name, expected_count in (("board", 28), ("bench", 9), ("shop", 5)):
         entities = state.get(group_name)
         if not isinstance(entities, Sequence) or isinstance(entities, (str, bytes)) or len(entities) != expected_count:
@@ -808,6 +826,19 @@ def project_native_player_state(
             occupied = entity.get("occupied")
             if not isinstance(occupied, bool):
                 raise TypeError(f"native {group_name}[{slot}].occupied must be boolean")
+            unit_uuid = entity.get("uuid", "")
+            if not isinstance(unit_uuid, str):
+                raise TypeError(f"native {group_name}[{slot}].uuid must be a string")
+            if occupied:
+                if not unit_uuid:
+                    raise ValueError(f"occupied {group_name}[{slot}] has no physical unit UUID")
+                if unit_uuid in observed_unit_uuids:
+                    raise ValueError("native player snapshot contains duplicate physical unit UUIDs")
+                observed_unit_uuids.add(unit_uuid)
+            elif unit_uuid:
+                raise ValueError(f"empty {group_name}[{slot}] cannot retain a physical unit UUID")
+            entity_occupied.append(occupied)
+            entity_unit_uuids.append(unit_uuid)
             if not occupied:
                 numeric.extend([0.0] * SEMANTIC_ENTITY_FEATURES)
                 champion_ids.append(0)
@@ -829,9 +860,36 @@ def project_native_player_state(
                 or len(traits) != len(set(traits))
             ):
                 raise TypeError(f"occupied {group_name}[{slot}] requires valid items and unique trait_names")
-            internal_id = catalog.get(champion_name)
-            champion_valid = internal_id is not None
-            native_id = None if internal_id is None else int(internal_id)
+            catalog_internal_id = catalog.get(champion_name)
+            if "champion_internal_id" in entity:
+                projected_internal_id = entity.get("champion_internal_id")
+                if (
+                    isinstance(projected_internal_id, bool)
+                    or not isinstance(projected_internal_id, int)
+                    or projected_internal_id < 0
+                ):
+                    raise ValueError(
+                        f"occupied {group_name}[{slot}] has invalid native champion_internal_id"
+                    )
+                if (
+                    catalog_internal_id is not None
+                    and int(catalog_internal_id) != projected_internal_id
+                ):
+                    raise ValueError(
+                        f"native {group_name}[{slot}] champion identity diverges from the loaded catalog"
+                    )
+                # An internal ID without a matching API identity in the loaded
+                # catalog is not a usable policy identity. Keep it explicitly
+                # invalid instead of manufacturing a champion embedding.
+                native_id = (
+                    projected_internal_id if catalog_internal_id is not None else None
+                )
+            else:
+                # Dict-backed fixtures remain the compatibility/parity oracle.
+                native_id = (
+                    None if catalog_internal_id is None else int(catalog_internal_id)
+                )
+            champion_valid = native_id is not None
             native_progress = copy_progress.get(native_id, {})
             copy_equivalent = native_progress.get("owned_copy_equivalent", 0)
             upgrade_progress = native_progress.get("copies_toward_next_star", 0) / 2.0
@@ -902,7 +960,7 @@ def project_native_player_state(
                 min(opportunity[0], 100.0) / 100.0 if opportunity is not None else 0.0,
                 float(opportunity is not None),
             ])
-            champion_ids.append(0 if internal_id is None else int(internal_id) + 1)
+            champion_ids.append(0 if native_id is None else int(native_id) + 1)
 
     def read_feature_block(field, shape):
         value = state.get(field)
@@ -916,11 +974,16 @@ def project_native_player_state(
                 raise ValueError(
                     f"native semantic item field {field} has invalid native view contract"
                 )
-            if not np.isfinite(value).all():
+            # Two scalar reductions validate the complete contiguous block
+            # without allocating the temporary boolean arrays produced by
+            # isfinite()/any() for every native item matrix.
+            minimum = float(value.min())
+            maximum = float(value.max())
+            if not math.isfinite(minimum) or not math.isfinite(maximum):
                 raise ValueError(
                     f"native semantic item field {field} contains non-finite values"
                 )
-            if np.any(value < 0.0) or np.any(value > 1.0):
+            if minimum < 0.0 or maximum > 1.0:
                 raise ValueError(
                     f"native semantic item field {field} is outside [0, 1]"
                 )
@@ -1084,6 +1147,15 @@ def project_native_player_state(
     return {
         "numeric": numeric,
         "champion_ids": champion_ids,
+        # Physical slot identity is deliberately outside the v8 PPO hash/tensor.
+        # It is audit/context metadata for the typed entity contract, not a policy feature.
+        "entity_identity": {
+            # Slot index is canonical: board 0-27, bench 28-36, shop 37-41.
+            # Columnar tuples avoid 42 per-slot dictionaries per player.
+            "occupied": tuple(entity_occupied),
+            "unit_uuids": tuple(entity_unit_uuids),
+            "shop_offer_revisions": tuple(shop_offer_revisions),
+        },
         "identity": identity,
         "item_state_identity": {
             "item_components": item_components,
@@ -1132,6 +1204,9 @@ def build_semantic_batch(
         "champion_ids": [row["champion_ids"] for row in projected],
         "hashes": [row["sha256"] for row in projected],
         "identities": [row["identity"] for row in projected],
+        # Keep the 42-row physical entity projection available to downstream
+        # typed-context consumers instead of building and discarding it.
+        "entity_identity": [row["entity_identity"] for row in projected],
         "contract_id": contract["contract"]["contract_id"],
         "contract_hash": contract["sha256"],
     }

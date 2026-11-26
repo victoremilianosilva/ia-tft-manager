@@ -253,6 +253,7 @@ py::dict audit_player_snapshot_to_dict(
     const auto unit_to_dict = [](const tft::AuditUnitSnapshot& unit) {
         py::dict d;
         d["occupied"] = unit.occupied;
+        d["champion_internal_id"] = unit.champion_internal_id;
         d["champion_id"] = unit.champion_id;
         d["uuid"] = unit.uuid;
         d["star"] = unit.star;
@@ -623,6 +624,15 @@ public:
         for (const auto& event : snapshot_->combat_damage_events) validate_sequence(event.combat_sequence);
         for (const auto& event : snapshot_->combat_attack_events) validate_sequence(event.combat_sequence);
         for (const auto& event : snapshot_->combat_death_events) validate_sequence(event.combat_sequence);
+
+        // One capsule pins this immutable snapshot for every player view.
+        // Individual NumPy arrays retain the capsule as their base, so they
+        // remain valid even after this handle is released.
+        auto* pinned_owner =
+            new std::shared_ptr<const tft::AuditSnapshot>(snapshot_);
+        item_view_owner_ = py::capsule(pinned_owner, [](void* pointer) {
+            delete static_cast<std::shared_ptr<const tft::AuditSnapshot>*>(pointer);
+        });
     }
 
     py::object to_envelope_dict() const {
@@ -655,19 +665,12 @@ public:
             throw py::index_error("native snapshot player index out of range");
         }
 
-        // Each returned array owns a capsule holding a shared_ptr to this exact
-        // immutable snapshot. Views therefore outlive the handle, mapping and
-        // Engine without copying or depending on mutable wrapper state.
-        auto* pinned_owner =
-            new std::shared_ptr<const tft::AuditSnapshot>(snapshot_);
-        py::capsule owner(pinned_owner, [](void* pointer) {
-            delete static_cast<std::shared_ptr<const tft::AuditSnapshot>*>(pointer);
-        });
-
+        // Every view shares the handle's single snapshot-pinning capsule.
+        // NumPy retains its base object independently of this handle.
         return audit_player_snapshot_to_dict(
             snapshot_->players[index],
             false,
-            owner
+            item_view_owner_
         );
     }
 
@@ -798,6 +801,7 @@ public:
 
 private:
     std::shared_ptr<const tft::AuditSnapshot> snapshot_;
+    py::object item_view_owner_;
     mutable py::object frozen_snapshot_cache_;
     mutable py::object frozen_envelope_cache_;
 };
