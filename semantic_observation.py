@@ -838,6 +838,13 @@ def project_native_player_state(
             raise ValueError("native entity_champion_internal_ids violates its int32 (42,) read-only view contract")
         if not np.isfinite(typed_entity_features).all():
             raise ValueError("native entity_numeric_features contains non-finite values")
+        # Keep the native views zero-copy while avoiding NumPy scalar/row wrappers
+        # in the per-slot hot loop. A flat memoryview yields Python scalars directly.
+        typed_entity_values = memoryview(typed_entity_features).cast("B").cast("d")
+        typed_champion_values = memoryview(typed_champion_ids).cast("B").cast("i")
+    else:
+        typed_entity_values = None
+        typed_champion_values = None
     entity_slot_index = 0
     entity_unit_uuids = []
     observed_unit_uuids = set()
@@ -846,13 +853,16 @@ def project_native_player_state(
         if not isinstance(entities, Sequence) or isinstance(entities, (str, bytes)) or len(entities) != expected_count:
             raise ValueError(f"native {group_name} must contain exactly {expected_count} stable slots")
         for slot, entity in enumerate(entities):
-            typed_row = typed_entity_features[entity_slot_index] if use_typed_entities else None
-            typed_champion_id = int(typed_champion_ids[entity_slot_index]) if use_typed_entities else None
+            typed_row_offset = entity_slot_index * 11
+            typed_champion_id = (
+                typed_champion_values[entity_slot_index] if use_typed_entities else None
+            )
             if not isinstance(entity, Mapping):
                 raise TypeError(f"native {group_name}[{slot}] must be an object")
             occupied = entity.get("occupied")
             if use_typed_entities:
-                if float(typed_row[0]) not in (0.0, 1.0) or bool(typed_row[0]) != occupied:
+                typed_occupied = typed_entity_values[typed_row_offset]
+                if typed_occupied not in (0.0, 1.0) or bool(typed_occupied) != occupied:
                     raise ValueError(f"native typed occupancy diverges at {group_name}[{slot}]")
                 if occupied and entity.get("champion_internal_id") != typed_champion_id:
                     raise ValueError(f"native typed champion identity diverges at {group_name}[{slot}]")
@@ -895,29 +905,29 @@ def project_native_player_state(
                 # typed projection directly instead of rereading and comparing
                 # ten structured scalar fields for every occupied slot.
                 if not (
-                    float(typed_row[1]).is_integer()
-                    and float(typed_row[2]).is_integer()
-                    and float(typed_row[3]).is_integer()
-                    and float(typed_row[4]).is_integer()
-                    and float(typed_row[5]).is_integer()
+                    typed_entity_values[typed_row_offset + 1].is_integer()
+                    and typed_entity_values[typed_row_offset + 2].is_integer()
+                    and typed_entity_values[typed_row_offset + 3].is_integer()
+                    and typed_entity_values[typed_row_offset + 4].is_integer()
+                    and typed_entity_values[typed_row_offset + 5].is_integer()
                 ):
                     raise ValueError(
                         f"native typed entity has non-integral categorical values at {group_name}[{slot}]"
                     )
-                star = int(typed_row[1])
-                cost = int(typed_row[2])
-                item_count = int(typed_row[3])
-                trait_count = int(typed_row[4])
-                entity_role = int(typed_row[5])
+                star = int(typed_entity_values[typed_row_offset + 1])
+                cost = int(typed_entity_values[typed_row_offset + 2])
+                item_count = int(typed_entity_values[typed_row_offset + 3])
+                trait_count = int(typed_entity_values[typed_row_offset + 4])
+                entity_role = int(typed_entity_values[typed_row_offset + 5])
                 if item_count != len(items) or trait_count != len(traits):
                     raise ValueError(
                         f"native typed entity item/trait counts diverge at {group_name}[{slot}]"
                     )
-                entity_attack_damage = float(typed_row[6])
-                entity_attack_speed = float(typed_row[7])
-                entity_max_health = float(typed_row[8])
-                entity_armor = float(typed_row[9])
-                entity_magic_resist = float(typed_row[10])
+                entity_attack_damage = typed_entity_values[typed_row_offset + 6]
+                entity_attack_speed = typed_entity_values[typed_row_offset + 7]
+                entity_max_health = typed_entity_values[typed_row_offset + 8]
+                entity_armor = typed_entity_values[typed_row_offset + 9]
+                entity_magic_resist = typed_entity_values[typed_row_offset + 10]
             else:
                 # Dict-backed fixtures retain the structured snapshot path.
                 star = _non_negative_int(entity.get("star"), f"{group_name}[{slot}].star")
