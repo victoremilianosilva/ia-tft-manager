@@ -665,6 +665,15 @@ struct ActionExecutionTrace {
     bool handler_applied{false};
     // Stable machine-readable reason; never inferred from reward values.
     std::string status_reason;
+    // Causal identity inherited from the source and outcome decision snapshots.
+    std::uint64_t source_snapshot_sequence{0};
+    std::uint64_t outcome_snapshot_sequence{0};
+    std::uint64_t source_player_decision_sequence{0};
+    std::uint64_t outcome_player_decision_sequence{0};
+    std::uint32_t source_round{0};
+    std::uint32_t outcome_round{0};
+    std::uint32_t source_stage{0};
+    std::uint32_t outcome_stage{0};
 };
 
 struct StepResult {
