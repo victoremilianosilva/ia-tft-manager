@@ -322,6 +322,44 @@ def build_action_outcome_events(
         after_gold = _int(after.get("gold"), "after.gold")
         before_interest = _int(before.get("interest_if_resolved_now"), "before.interest")
         after_interest = _int(after.get("interest_if_resolved_now"), "after.interest")
+        native_transition = None
+        if "transition_observed" in trace:
+            transition_observed = trace.get("transition_observed")
+            if not isinstance(transition_observed, bool):
+                raise RuntimeError("Action trace transition_observed deve ser booleano.")
+            if transition_observed:
+                native_transition = {
+                    "action_cost": _int(trace.get("action_cost"), "trace.action_cost"),
+                    "sale_proceeds": _int(trace.get("sale_proceeds"), "trace.sale_proceeds"),
+                    "gold_before": _int(trace.get("gold_before"), "trace.gold_before"),
+                    "gold_after": _int(trace.get("gold_after"), "trace.gold_after"),
+                    "interest_before": _int(trace.get("interest_before"), "trace.interest_before"),
+                    "interest_after": _int(trace.get("interest_after"), "trace.interest_after"),
+                    "level_before": _int(trace.get("level_before"), "trace.level_before"),
+                    "level_after": _int(trace.get("level_after"), "trace.level_after"),
+                    "xp_before": _int(trace.get("xp_before"), "trace.xp_before"),
+                    "xp_after": _int(trace.get("xp_after"), "trace.xp_after"),
+                    "board_capacity_violation": trace.get("board_capacity_violation"),
+                }
+                if not isinstance(native_transition["board_capacity_violation"], bool):
+                    raise RuntimeError("Action trace board_capacity_violation inválido.")
+                expected_transition = {
+                    "gold_before": before_gold,
+                    "gold_after": after_gold,
+                    "interest_before": before_interest,
+                    "interest_after": after_interest,
+                    "level_before": _int(before.get("level"), "before.level"),
+                    "level_after": _int(after.get("level"), "after.level"),
+                    "xp_before": _int(before.get("xp"), "before.xp"),
+                    "xp_after": _int(after.get("xp"), "after.xp"),
+                }
+                for field, expected in expected_transition.items():
+                    if native_transition[field] != expected:
+                        raise RuntimeError(
+                            f"Native action transition diverge do snapshot: {field}."
+                        )
+            elif trace.get("handler_applied"):
+                raise RuntimeError("Action não processada não pode declarar handler_applied.")
         resolved = player_id in economy_resolved
         pvp_credit_overlapped = player_id in pvp_credit_players
         gold_delta = None if resolved or pvp_credit_overlapped else after_gold - before_gold
@@ -432,6 +470,8 @@ def build_action_outcome_events(
                 "effective_action": list(map(int, action)),
                 "handler_applied": applied,
                 "status_reason": str(trace.get("status_reason", "")),
+                "transition_observed": trace.get("transition_observed"),
+                "native_transition": native_transition,
             },
             "source_decision": {
                 "snapshot_sequence": before_seq,
