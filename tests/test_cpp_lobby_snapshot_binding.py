@@ -1441,3 +1441,70 @@ def test_native_item_feature_views_are_readonly_and_pin_snapshot_after_wrapper_r
         assert value.dtype == np.float32
         assert not value.flags.writeable
         assert np.isfinite(value).all()
+
+
+def test_wrapper_accepts_version_four_strategic_owner_contract():
+    native = FakeNativeLobby()
+    snapshot = native._native_state_snapshot()
+    strategic = snapshot["players"][0]["strategic_state"]
+    strategic.update({
+        "contract_version": 4,
+        "direction_composition_bound": False,
+        "direction_composition_identity": "",
+        "direction_composition_version": 0,
+        "direction_value": "",
+        "direction_confidence": 0.0,
+        "direction_lifecycle": 0,
+        "direction_evidence": [],
+        "pivot_target_direction": "",
+        "pivot_source_direction_identity": "",
+        "pivot_confidence": 0.0,
+        "pivot_lifecycle": 0,
+        "pivot_evidence": [],
+        "lineup_bridge_unit_ids": [],
+        "lineup_endgame_target_unit_ids": [],
+    })
+    identity = {
+        "engine_instance_id": f"fake-engine-{id(native)}",
+        "episode_id": 0,
+        "decision_sequence": 0,
+        "player_decision_sequences": [0] * 8,
+    }
+    copied = cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
+    assert copied["players"][0]["strategic_state"]["contract_version"] == 4
+
+
+def test_wrapper_rejects_direction_anchor_bound_to_another_composition():
+    native = FakeNativeLobby()
+    snapshot = native._native_state_snapshot()
+    strategic = snapshot["players"][0]["strategic_state"]
+    strategic.update({
+        "contract_version": 4,
+        "active_composition_valid": True,
+        "active_composition_id": "composition-current",
+        "active_composition_version": 2,
+        "direction_valid": True,
+        "direction_identity": "direction-current",
+        "direction_value": "carry",
+        "direction_composition_bound": True,
+        "direction_composition_identity": "composition-old",
+        "direction_composition_version": 1,
+        "direction_confidence": 0.8,
+        "direction_lifecycle": 2,
+        "direction_evidence": [1],
+        "pivot_target_direction": "",
+        "pivot_source_direction_identity": "",
+        "pivot_confidence": 0.0,
+        "pivot_lifecycle": 0,
+        "pivot_evidence": [],
+        "lineup_bridge_unit_ids": [],
+        "lineup_endgame_target_unit_ids": [],
+    })
+    identity = {
+        "engine_instance_id": f"fake-engine-{id(native)}",
+        "episode_id": 0,
+        "decision_sequence": 0,
+        "player_decision_sequences": [0] * 8,
+    }
+    with pytest.raises(RuntimeError, match="Proveniência/composição da direção"):
+        cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
