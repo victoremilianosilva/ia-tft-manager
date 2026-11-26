@@ -795,7 +795,7 @@ def test_semantic_batch_reuses_catalog_and_trait_hash_work_within_batch(monkeypa
 def test_native_item_numpy_views_preserve_v8_projection_and_validate_contract():
     catalog = {"TFT_TestChampion": 17}
     list_backed = _metadata()
-    expected = project_native_player_state(list_backed["native_player_state"], catalog)
+    expected = project_native_player_state(list_backed, catalog)
 
     native = _metadata()
     state = native["native_player_state"]

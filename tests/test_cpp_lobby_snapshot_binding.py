@@ -1153,6 +1153,27 @@ def test_native_snapshot_mapping_defers_combat_event_materialization():
 
 
 
+def _snapshot_values_equal(left, right):
+    """Compare snapshot values while treating NumPy views and lists as equivalent data."""
+    if isinstance(left, np.ndarray) or isinstance(right, np.ndarray):
+        try:
+            return np.array_equal(np.asarray(left), np.asarray(right), equal_nan=True)
+        except (TypeError, ValueError):
+            return False
+    if isinstance(left, dict) and isinstance(right, dict):
+        return left.keys() == right.keys() and all(
+            _snapshot_values_equal(left[key], right[key]) for key in left
+        )
+    if isinstance(left, (list, tuple)) and isinstance(right, (list, tuple)):
+        return len(left) == len(right) and all(
+            _snapshot_values_equal(a, b) for a, b in zip(left, right)
+        )
+    try:
+        return bool(left == right)
+    except (TypeError, ValueError):
+        return False
+
+
 def test_native_snapshot_handle_caches_frozen_ownership_view(monkeypatch):
     from immutable_snapshot import FrozenDict, FrozenList
 
@@ -1202,8 +1223,10 @@ def test_native_snapshot_handle_caches_frozen_ownership_view(monkeypatch):
             key: public_snapshot[key] for key in native_view
         }
         public_projection["players"] = public_players
-        assert {key: native_view[key] for key in native_view} == public_projection
-        assert list(native_players) == public_players
+        assert _snapshot_values_equal(
+            {key: native_view[key] for key in native_view}, public_projection
+        )
+        assert _snapshot_values_equal(list(native_players), public_players)
         assert player_calls == list(range(8))
 
         # The public native handle remains a complete snapshot API; only the
