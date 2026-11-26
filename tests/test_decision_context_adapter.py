@@ -1,4 +1,5 @@
 from trainer import Trainer
+import pytest
 from decision_identity import build_player_identity_envelopes
 
 
@@ -92,3 +93,26 @@ def test_action_trace_is_attached_only_to_matching_decision_context():
 
     for player_id, row in enumerate(expanded):
         assert row["decision_context"]["action_execution"] == traces[player_id]
+
+def test_action_context_rejects_boolean_contract_version():
+    expanded = Trainer._expand_lobby_snapshot_metadata(
+        [_snapshot()], players_per_lobby=8, label="decision-context"
+    )
+    traces = [
+        {
+            "contract_id": "tft.action-execution-event",
+            "contract_version": True,
+            "source_namespace": "tft.engine.action-execution",
+            "producer": "TFTEngine::step",
+            "player_id": player_id,
+            "requested_action": [6, 0, 0, 0, 0, 0],
+            "effective_action": [6, 0, 0, 0, 0, 0],
+            "handler_applied": True,
+            "status_reason": "applied",
+        }
+        for player_id in range(8)
+    ]
+    with pytest.raises(RuntimeError, match="Contrato de Action Context"):
+        Trainer._attach_native_action_traces(
+            expanded, [{"action_trace": traces}], players_per_lobby=8
+        )
