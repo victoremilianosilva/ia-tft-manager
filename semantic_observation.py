@@ -1239,11 +1239,16 @@ def project_native_player_state(
         and same_recipe_features
     ):
         item_catalog_sha256 = cached_item_catalog[2]
+        recipe_features_flat = (
+            recipe_features.tolist()
+            if isinstance(recipe_features, np.ndarray)
+            else recipe_features
+        )
     else:
         # Native recipe blocks stay as read-only views while the batch-local
-        # fingerprint cache is checked. Materialize only for the one canonical
-        # JSON serialization that establishes the digest.
-        recipe_features_for_digest = (
+        # fingerprint cache is checked. Reuse the single flat list required by
+        # the PPO numeric projection for the canonical JSON digest as well.
+        recipe_features_flat = (
             recipe_features.tolist()
             if isinstance(recipe_features, np.ndarray)
             else recipe_features
@@ -1251,7 +1256,7 @@ def project_native_player_state(
         item_catalog_sha256 = hashlib.sha256(json.dumps(
             {
                 "component_ids": item_component_catalog,
-                "recipe_features": recipe_features_for_digest,
+                "recipe_features": recipe_features_flat,
             },
             sort_keys=True, separators=(",", ":"), ensure_ascii=False,
         ).encode("utf-8")).hexdigest()
@@ -1275,11 +1280,7 @@ def project_native_player_state(
         if isinstance(inventory_features, np.ndarray)
         else inventory_features
     )
-    numeric.extend(
-        recipe_features.tolist()
-        if isinstance(recipe_features, np.ndarray)
-        else recipe_features
-    )
+    numeric.extend(recipe_features_flat)
     numeric.extend(
         inventory_target_fit.tolist()
         if isinstance(inventory_target_fit, np.ndarray)
