@@ -796,8 +796,22 @@ def project_native_player_state(
                         )
     if not (set(copy_progress) & known_catalog_ids).issubset(observed_owned_ids):
         raise ValueError("native UnitCopyProgress contains known champions absent from board/bench")
+    shop_offer_revisions = state.get("shop_offer_revisions")
+    if (
+        not isinstance(shop_offer_revisions, Sequence)
+        or isinstance(shop_offer_revisions, (str, bytes))
+        or len(shop_offer_revisions) != 5
+    ):
+        raise ValueError("native shop_offer_revisions must contain five slot-aligned values")
+    shop_offer_revisions = [
+        _non_negative_int(value, f"shop_offer_revisions[{slot}]")
+        for slot, value in enumerate(shop_offer_revisions)
+    ]
+
     numeric = list(global_values)
     champion_ids = []
+    entity_identity = []
+    observed_unit_uuids = set()
     for group_name, expected_count in (("board", 28), ("bench", 9), ("shop", 5)):
         entities = state.get(group_name)
         if not isinstance(entities, Sequence) or isinstance(entities, (str, bytes)) or len(entities) != expected_count:
@@ -808,6 +822,26 @@ def project_native_player_state(
             occupied = entity.get("occupied")
             if not isinstance(occupied, bool):
                 raise TypeError(f"native {group_name}[{slot}].occupied must be boolean")
+            unit_uuid = entity.get("uuid", "")
+            if not isinstance(unit_uuid, str):
+                raise TypeError(f"native {group_name}[{slot}].uuid must be a string")
+            if occupied:
+                if not unit_uuid:
+                    raise ValueError(f"occupied {group_name}[{slot}] has no physical unit UUID")
+                if unit_uuid in observed_unit_uuids:
+                    raise ValueError("native player snapshot contains duplicate physical unit UUIDs")
+                observed_unit_uuids.add(unit_uuid)
+            elif unit_uuid:
+                raise ValueError(f"empty {group_name}[{slot}] cannot retain a physical unit UUID")
+            entity_identity.append({
+                "location": group_name,
+                "slot": slot,
+                "occupied": occupied,
+                "unit_uuid": unit_uuid,
+                "shop_offer_revision": (
+                    shop_offer_revisions[slot] if group_name == "shop" else None
+                ),
+            })
             if not occupied:
                 numeric.extend([0.0] * SEMANTIC_ENTITY_FEATURES)
                 champion_ids.append(0)
@@ -1084,6 +1118,9 @@ def project_native_player_state(
     return {
         "numeric": numeric,
         "champion_ids": champion_ids,
+        # Physical slot identity is deliberately outside the v8 PPO hash/tensor.
+        # It is audit/context metadata for the typed entity contract, not a policy feature.
+        "entity_identity": entity_identity,
         "identity": identity,
         "item_state_identity": {
             "item_components": item_components,

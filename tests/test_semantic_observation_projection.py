@@ -28,6 +28,7 @@ def _unit(occupied=False, champion_id="", star=0, cost=0):
     return {
         "occupied": occupied,
         "champion_id": champion_id,
+        "uuid": "",
         "star": star,
         "cost": cost,
         "items": [],
@@ -95,9 +96,12 @@ def _metadata():
         "pending_anvil_option_features": [[0.0] * 11 for _ in range(9)],
     }
     player["board"][0] = _unit(True, "TFT_TestChampion", 2, 3)
+    player["board"][0]["uuid"] = "unit-board-0"
     player["board"][0]["items"] = ["ItemA"]
     player["board"][0]["trait_names"] = ["TraitA", "TraitB"]
     player["bench"][0] = _unit(True, "TFT_TestChampion", 1, 3)
+    player["bench"][0]["uuid"] = "unit-bench-0"
+    player["shop_offer_revisions"] = [0, 0, 0, 0, 0]
     player["strategic_state"] = {
         "contract_id": "tft.strategic-owner-observation",
         "contract_version": 3,
@@ -790,6 +794,63 @@ def test_semantic_batch_reuses_catalog_and_trait_hash_work_within_batch(monkeypa
     assert len(context_builds) == 2
     assert trait_hash_inputs.count(b"TraitA") == 2
     assert trait_hash_inputs.count(b"TraitB") == 2
+
+
+def test_entity_identity_projection_tracks_physical_units_and_shop_offer_revisions_without_changing_v8():
+    catalog = {"TFT_TestChampion": 17}
+    row = _metadata()
+    player = row["native_player_state"]
+    player["shop"][0] = _unit(True, "TFT_TestChampion", 1, 3)
+    player["shop"][0]["uuid"] = "unit-shop-0"
+    player["shop_offer_revisions"] = [4, 0, 0, 0, 0]
+
+    projected = project_native_player_state(row, catalog)
+    identities = projected["entity_identity"]
+    assert len(identities) == SEMANTIC_ENTITY_SLOTS
+    assert identities[0] == {
+        "location": "board", "slot": 0, "occupied": True,
+        "unit_uuid": "unit-board-0", "shop_offer_revision": None,
+    }
+    assert identities[28] == {
+        "location": "bench", "slot": 0, "occupied": True,
+        "unit_uuid": "unit-bench-0", "shop_offer_revision": None,
+    }
+    assert identities[37] == {
+        "location": "shop", "slot": 0, "occupied": True,
+        "unit_uuid": "unit-shop-0", "shop_offer_revision": 4,
+    }
+
+    # Identity metadata is deliberately not a v8 policy feature or hash input.
+    baseline = _metadata()
+    baseline_projection = project_native_player_state(baseline, catalog)
+    changed_identity = _metadata()
+    changed_identity["native_player_state"]["board"][0]["uuid"] = "replacement-unit"
+    changed_identity["native_player_state"]["bench"][0]["uuid"] = "replacement-bench"
+    changed_projection = project_native_player_state(changed_identity, catalog)
+    assert changed_projection["numeric"] == baseline_projection["numeric"]
+    assert changed_projection["champion_ids"] == baseline_projection["champion_ids"]
+    assert changed_projection["sha256"] == baseline_projection["sha256"]
+
+
+def test_entity_identity_projection_rejects_duplicate_or_missing_physical_uuid():
+    catalog = {"TFT_TestChampion": 17}
+    duplicate = _metadata()
+    duplicate["native_player_state"]["bench"][0]["uuid"] = "unit-board-0"
+    with pytest.raises(ValueError, match="duplicate physical unit UUID"):
+        project_native_player_state(duplicate, catalog)
+
+    missing = _metadata()
+    missing["native_player_state"]["board"][0]["uuid"] = ""
+    with pytest.raises(ValueError, match="no physical unit UUID"):
+        project_native_player_state(missing, catalog)
+
+
+def test_entity_identity_projection_requires_slot_aligned_shop_revisions():
+    catalog = {"TFT_TestChampion": 17}
+    row = _metadata()
+    row["native_player_state"]["shop_offer_revisions"] = [1, 2]
+    with pytest.raises(ValueError, match="five slot-aligned"):
+        project_native_player_state(row, catalog)
 
 
 def test_native_item_numpy_views_preserve_v8_projection_and_validate_contract():
