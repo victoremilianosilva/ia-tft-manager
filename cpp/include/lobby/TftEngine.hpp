@@ -657,6 +657,10 @@ struct AntiLoopMetrics {
 
 
 struct ActionExecutionTrace {
+    std::string contract_id{"tft.action-execution-event"};
+    std::uint32_t contract_version{1};
+    std::string source_namespace{"tft.engine.action-execution"};
+    std::string producer{"TFTEngine::step"};
     // Explicit owner of this trace; array position alone is not identity.
     std::int32_t player_id{-1};
     std::array<std::int32_t, kActionComponents> requested_action{};
