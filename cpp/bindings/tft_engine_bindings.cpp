@@ -58,31 +58,6 @@ py::array_t<float> readonly_float_view(
     return view;
 }
 
-template <std::size_t Rows, std::size_t Cols>
-py::array_t<double> readonly_double_view(
-    const std::array<std::array<double, Cols>, Rows>& source, py::handle owner
-) {
-    py::array_t<double> view(
-        {static_cast<py::ssize_t>(Rows), static_cast<py::ssize_t>(Cols)},
-        {static_cast<py::ssize_t>(Cols * sizeof(double)), static_cast<py::ssize_t>(sizeof(double))},
-        source.front().data(), owner
-    );
-    view.attr("setflags")(false);
-    return view;
-}
-
-template <std::size_t N>
-py::array_t<std::int32_t> readonly_int32_view(
-    const std::array<std::int32_t, N>& source, py::handle owner
-) {
-    py::array_t<std::int32_t> view(
-        {static_cast<py::ssize_t>(N)}, {static_cast<py::ssize_t>(sizeof(std::int32_t))},
-        source.data(), owner
-    );
-    view.attr("setflags")(false);
-    return view;
-}
-
 template <std::size_t N>
 py::array_t<bool> mask_1d(
     const std::array<std::uint8_t, N>& source
@@ -417,14 +392,6 @@ py::dict audit_player_snapshot_to_dict(
         p["bench"] = bench;
         p["shop"] = shop;
         p["shop_offer_revisions"] = player.shop_offer_revisions;
-        p["entity_projection_version"] = tft::AuditPlayerSnapshot::kEntityProjectionVersion;
-        if (item_view_owner.is_none()) {
-            p["entity_numeric_features"] = player.entity_numeric_features;
-            p["entity_champion_internal_ids"] = player.entity_champion_internal_ids;
-        } else {
-            p["entity_numeric_features"] = readonly_double_view(player.entity_numeric_features, item_view_owner);
-            p["entity_champion_internal_ids"] = readonly_int32_view(player.entity_champion_internal_ids, item_view_owner);
-        }
         p["item_components"] = player.item_components;
         p["item_inventory"] = player.item_inventory;
         py::list component_counts, inventory_counts, equipped_items;
@@ -492,8 +459,7 @@ py::dict audit_snapshot_to_dict(
     const tft::AuditSnapshot& snapshot,
     bool include_masks = true,
     bool include_combat_events = true,
-    bool include_players = true,
-    py::object item_view_owner = py::none()
+    bool include_players = true
 ) {
     py::dict result;
     result["contract_id"] = snapshot.contract_id;
@@ -633,7 +599,7 @@ py::dict audit_snapshot_to_dict(
     if (include_players) {
         py::list players;
         for (const auto& player : snapshot.players) {
-            players.append(audit_player_snapshot_to_dict(player, include_masks, item_view_owner));
+            players.append(audit_player_snapshot_to_dict(player, include_masks));
         }
         result["players"] = std::move(players);
     }
@@ -686,7 +652,7 @@ public:
         // Preserve the public complete-snapshot contract for existing callers.
         if (!frozen_snapshot_cache_) {
             py::object mutable_snapshot =
-                audit_snapshot_to_dict(*snapshot_, false, false, true, item_view_owner_);
+                audit_snapshot_to_dict(*snapshot_, false, false, true);
             frozen_snapshot_cache_ =
                 py::module_::import("immutable_snapshot")
                     .attr("freeze_snapshot")(mutable_snapshot);

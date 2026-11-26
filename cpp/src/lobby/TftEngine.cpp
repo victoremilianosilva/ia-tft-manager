@@ -6641,32 +6641,6 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
             target.shop[slot] = describe_unit(source.shop->get_unit(static_cast<std::int32_t>(slot)), false, slot);
             target.shop_offer_revisions[slot] = source.shop->offer_revisions()[slot];
         }
-
-        // Project the exact records already captured in this immutable snapshot.
-        const auto project_entity = [&target](const AuditUnitSnapshot& unit, std::size_t index) {
-            auto& values = target.entity_numeric_features[index];
-            values.fill(0.0);
-            target.entity_champion_internal_ids[index] = -1;
-            if (!unit.occupied) return;
-            values[0] = 1.0;
-            values[1] = static_cast<double>(unit.star);
-            values[2] = static_cast<double>(unit.cost);
-            values[3] = static_cast<double>(unit.item_ids.size());
-            values[4] = static_cast<double>(unit.trait_names.size());
-            values[5] = static_cast<double>(unit.role);
-            values[6] = unit.attack_damage;
-            values[7] = unit.attack_speed;
-            values[8] = unit.max_health;
-            values[9] = unit.armor;
-            values[10] = unit.magic_resist;
-            target.entity_champion_internal_ids[index] = unit.champion_internal_id;
-        };
-        for (std::size_t slot = 0; slot < kBoardSlots; ++slot)
-            project_entity(target.board[slot], slot);
-        for (std::size_t slot = 0; slot < kBenchSlots; ++slot)
-            project_entity(target.bench[slot], kBoardSlots + slot);
-        for (std::size_t slot = 0; slot < kShopSlots; ++slot)
-            project_entity(target.shop[slot], kBoardSlots + kBenchSlots + slot);
         if (source.item_engine) {
             target.item_components = source.item_engine->components();
             target.item_inventory = source.item_engine->inventory();

@@ -814,38 +814,6 @@ def project_native_player_state(
     numeric = list(global_values)
     champion_ids = []
     entity_occupied = []
-    typed_entity_features = state.get("entity_numeric_features")
-    typed_champion_ids = state.get("entity_champion_internal_ids")
-    use_typed_entities = typed_entity_features is not None or typed_champion_ids is not None
-    if use_typed_entities:
-        if state.get("entity_projection_version") != 1:
-            raise ValueError("native entity projection has an unsupported contract version")
-        if (
-            not isinstance(typed_entity_features, np.ndarray)
-            or typed_entity_features.dtype != np.dtype(np.float64)
-            or typed_entity_features.shape != (SEMANTIC_ENTITY_SLOTS, 11)
-            or not typed_entity_features.flags.c_contiguous
-            or typed_entity_features.flags.writeable
-        ):
-            raise ValueError("native entity_numeric_features violates its float64 (42, 11) read-only view contract")
-        if (
-            not isinstance(typed_champion_ids, np.ndarray)
-            or typed_champion_ids.dtype != np.dtype(np.int32)
-            or typed_champion_ids.shape != (SEMANTIC_ENTITY_SLOTS,)
-            or not typed_champion_ids.flags.c_contiguous
-            or typed_champion_ids.flags.writeable
-        ):
-            raise ValueError("native entity_champion_internal_ids violates its int32 (42,) read-only view contract")
-        if not np.isfinite(typed_entity_features).all():
-            raise ValueError("native entity_numeric_features contains non-finite values")
-        # Keep the native views zero-copy while avoiding NumPy scalar/row wrappers
-        # in the per-slot hot loop. A flat memoryview yields Python scalars directly.
-        typed_entity_values = memoryview(typed_entity_features).cast("B").cast("d")
-        typed_champion_values = memoryview(typed_champion_ids).cast("B").cast("i")
-    else:
-        typed_entity_values = None
-        typed_champion_values = None
-    entity_slot_index = 0
     entity_unit_uuids = []
     observed_unit_uuids = set()
     for group_name, expected_count in (("board", 28), ("bench", 9), ("shop", 5)):
@@ -853,21 +821,9 @@ def project_native_player_state(
         if not isinstance(entities, Sequence) or isinstance(entities, (str, bytes)) or len(entities) != expected_count:
             raise ValueError(f"native {group_name} must contain exactly {expected_count} stable slots")
         for slot, entity in enumerate(entities):
-            typed_row_offset = entity_slot_index * 11
-            typed_champion_id = (
-                typed_champion_values[entity_slot_index] if use_typed_entities else None
-            )
             if not isinstance(entity, Mapping):
                 raise TypeError(f"native {group_name}[{slot}] must be an object")
             occupied = entity.get("occupied")
-            if use_typed_entities:
-                typed_occupied = typed_entity_values[typed_row_offset]
-                if typed_occupied not in (0.0, 1.0) or bool(typed_occupied) != occupied:
-                    raise ValueError(f"native typed occupancy diverges at {group_name}[{slot}]")
-                if occupied and entity.get("champion_internal_id") != typed_champion_id:
-                    raise ValueError(f"native typed champion identity diverges at {group_name}[{slot}]")
-                if not occupied and typed_champion_id != -1:
-                    raise ValueError(f"empty native typed entity has a champion identity at {group_name}[{slot}]")
             if not isinstance(occupied, bool):
                 raise TypeError(f"native {group_name}[{slot}].occupied must be boolean")
             unit_uuid = entity.get("uuid", "")
@@ -883,63 +839,15 @@ def project_native_player_state(
                 raise ValueError(f"empty {group_name}[{slot}] cannot retain a physical unit UUID")
             entity_occupied.append(occupied)
             entity_unit_uuids.append(unit_uuid)
-            entity_slot_index += 1
             if not occupied:
                 numeric.extend([0.0] * SEMANTIC_ENTITY_FEATURES)
                 champion_ids.append(0)
                 continue
             champion_name = entity.get("champion_id")
+            star = _non_negative_int(entity.get("star"), f"{group_name}[{slot}].star")
+            cost = _non_negative_int(entity.get("cost"), f"{group_name}[{slot}].cost")
             items = entity.get("items")
             traits = entity.get("trait_names")
-            if (
-                not isinstance(items, list)
-                or any(not isinstance(item, str) or not item for item in items)
-                or not isinstance(traits, list)
-                or any(not isinstance(trait, str) or not trait for trait in traits)
-                or len(traits) != len(set(traits))
-            ):
-                raise TypeError(f"occupied {group_name}[{slot}] requires valid items and unique trait_names")
-            if use_typed_entities:
-                # Native numeric fields are projected from these exact immutable
-                # AuditUnitSnapshot records by the C++ producer. Consume that
-                # typed projection directly instead of rereading and comparing
-                # ten structured scalar fields for every occupied slot.
-                if not (
-                    typed_entity_values[typed_row_offset + 1].is_integer()
-                    and typed_entity_values[typed_row_offset + 2].is_integer()
-                    and typed_entity_values[typed_row_offset + 3].is_integer()
-                    and typed_entity_values[typed_row_offset + 4].is_integer()
-                    and typed_entity_values[typed_row_offset + 5].is_integer()
-                ):
-                    raise ValueError(
-                        f"native typed entity has non-integral categorical values at {group_name}[{slot}]"
-                    )
-                star = int(typed_entity_values[typed_row_offset + 1])
-                cost = int(typed_entity_values[typed_row_offset + 2])
-                item_count = int(typed_entity_values[typed_row_offset + 3])
-                trait_count = int(typed_entity_values[typed_row_offset + 4])
-                entity_role = int(typed_entity_values[typed_row_offset + 5])
-                if item_count != len(items) or trait_count != len(traits):
-                    raise ValueError(
-                        f"native typed entity item/trait counts diverge at {group_name}[{slot}]"
-                    )
-                entity_attack_damage = typed_entity_values[typed_row_offset + 6]
-                entity_attack_speed = typed_entity_values[typed_row_offset + 7]
-                entity_max_health = typed_entity_values[typed_row_offset + 8]
-                entity_armor = typed_entity_values[typed_row_offset + 9]
-                entity_magic_resist = typed_entity_values[typed_row_offset + 10]
-            else:
-                # Dict-backed fixtures retain the structured snapshot path.
-                star = _non_negative_int(entity.get("star"), f"{group_name}[{slot}].star")
-                cost = _non_negative_int(entity.get("cost"), f"{group_name}[{slot}].cost")
-                item_count = len(items)
-                trait_count = len(traits)
-                entity_role = entity.get("role", 3)
-                entity_attack_damage = entity.get("attack_damage", 0.0)
-                entity_attack_speed = entity.get("attack_speed", 0.0)
-                entity_max_health = entity.get("max_health", 0.0)
-                entity_armor = entity.get("armor", 0.0)
-                entity_magic_resist = entity.get("magic_resist", 0.0)
             if not isinstance(champion_name, str) or not champion_name:
                 raise ValueError(f"occupied {group_name}[{slot}] has no champion identity")
             if not 1 <= star <= 3 or not 1 <= cost <= 5:
@@ -954,10 +862,7 @@ def project_native_player_state(
                 raise TypeError(f"occupied {group_name}[{slot}] requires valid items and unique trait_names")
             catalog_internal_id = catalog.get(champion_name)
             if "champion_internal_id" in entity:
-                projected_internal_id = (
-                    typed_champion_id if use_typed_entities
-                    else entity.get("champion_internal_id")
-                )
+                projected_internal_id = entity.get("champion_internal_id")
                 if (
                     isinstance(projected_internal_id, bool)
                     or not isinstance(projected_internal_id, int)
@@ -992,8 +897,8 @@ def project_native_player_state(
                 1.0,
                 star / 3.0,
                 cost / 5.0,
-                min(item_count, 9) / 9.0,
-                min(trait_count, 10) / 10.0,
+                min(len(items), 9) / 9.0,
+                min(len(traits), 10) / 10.0,
                 float(champion_valid),
                 float(native_id in active_ids) if native_id is not None else 0.0,
                 float(native_id in core_ids) if native_id is not None else 0.0,
@@ -1006,14 +911,14 @@ def project_native_player_state(
             # flat item-target observation. Shop slots are not legal item targets.
             target_features = [0.0] * 17
             if group_name in ("board", "bench"):
-                role = _non_negative_int(entity_role, f"{group_name}[{slot}].role")
+                role = _non_negative_int(entity.get("role"), f"{group_name}[{slot}].role")
                 if role > 4:
                     raise ValueError(f"{group_name}[{slot}] has invalid target role")
-                attack_damage = _finite_number(entity_attack_damage, f"{group_name}[{slot}].attack_damage")
-                attack_speed = _finite_number(entity_attack_speed, f"{group_name}[{slot}].attack_speed")
-                max_health = _finite_number(entity_max_health, f"{group_name}[{slot}].max_health")
-                armor = _finite_number(entity_armor, f"{group_name}[{slot}].armor")
-                magic_resist = _finite_number(entity_magic_resist, f"{group_name}[{slot}].magic_resist")
+                attack_damage = _finite_number(entity.get("attack_damage"), f"{group_name}[{slot}].attack_damage")
+                attack_speed = _finite_number(entity.get("attack_speed"), f"{group_name}[{slot}].attack_speed")
+                max_health = _finite_number(entity.get("max_health"), f"{group_name}[{slot}].max_health")
+                armor = _finite_number(entity.get("armor"), f"{group_name}[{slot}].armor")
+                magic_resist = _finite_number(entity.get("magic_resist"), f"{group_name}[{slot}].magic_resist")
                 if min(attack_damage, attack_speed, max_health, armor, magic_resist) < 0.0:
                     raise ValueError(f"{group_name}[{slot}] has negative target profile stats")
                 on_board = group_name == "board"
@@ -1029,11 +934,9 @@ def project_native_player_state(
                 target_features[13] = min(max_health / 2000.0, 1.0)
                 target_features[14] = min(armor / 150.0, 1.0)
                 target_features[15] = min(magic_resist / 150.0, 1.0)
-                target_features[16] = min(item_count / 3.0, 1.0)
+                target_features[16] = min(len(items) / 3.0, 1.0)
             numeric.extend(target_features)
-            if trait_count != len(traits):
-                raise ValueError(f"{group_name}[{slot}] typed trait count diverges from trait memberships")
-            if trait_count > SEMANTIC_TRAIT_SLOTS:
+            if len(traits) > SEMANTIC_TRAIT_SLOTS:
                 raise ValueError(f"{group_name}[{slot}] exceeds the native trait slot limit")
             trait_ids = []
             for trait in traits:
