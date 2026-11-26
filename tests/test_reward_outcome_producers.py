@@ -289,6 +289,46 @@ def test_does_not_attribute_pvp_win_gold_credit_to_action_economy():
 
 
 
+def test_forwards_native_item_action_fact_when_available():
+    before = _snapshot(5, 10)
+    after = _snapshot(6, 11)
+    before["players"][0]["board"][0] = _unit(uuid="carrier")
+    after["players"][0]["board"][0] = _unit(uuid="carrier")
+    after["players"][0].update({
+        "last_item_action_kind": "equip_inventory_item",
+        "last_item_id": "completed-item",
+        "last_item_first_component": "",
+        "last_item_second_component": "",
+        "last_item_target_uuid": "carrier",
+        "last_item_target_slot": 0,
+        "last_item_target_on_board": True,
+        "last_item_fit": 12.5,
+        "last_item_immediate_strength": 3.0,
+        "last_item_role_alignment": 0.8,
+        "last_item_assignment_reward": 0.4,
+    })
+
+    event = build_action_outcome_events(
+        before_snapshot=before,
+        after_snapshot=after,
+        action_traces=_traces(action_type=7),
+    )[0]
+
+    assert event["action"]["native_item_action"] == {
+        "kind": "equip_inventory_item",
+        "item_id": "completed-item",
+        "first_component": "",
+        "second_component": "",
+        "target_uuid": "carrier",
+        "target_slot": 0,
+        "target_on_board": True,
+        "fit": 12.5,
+        "immediate_strength": 3.0,
+        "role_alignment": 0.8,
+        "assignment_reward": 0.4,
+    }
+
+
 def test_records_item_assignment_and_removal_by_stable_item_identity():
     before = _snapshot(5, 10)
     after = _snapshot(6, 11)
