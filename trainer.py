@@ -1580,20 +1580,10 @@ class Trainer:
                         "contract_id": semantic_batch["contract_id"],
                         "contract_hash": semantic_batch["contract_hash"],
                     }
-                for metadata, semantic_hash, semantic_identity in zip(
-                    flat_snapshot_metadata, semantic_batch["hashes"], semantic_batch["identities"]
-                ):
-                    metadata["semantic_identity"] = semantic_identity
-                    metadata["semantic_projection_hash"] = semantic_hash
-                    metadata["semantic_projection_contract_id"] = (
-                        self.semantic_state_contract["contract"]["contract_id"]
-                    )
-                    metadata["semantic_projection_contract_hash"] = (
-                        self.semantic_state_contract["sha256"]
-                    )
                 validate_semantic_batch_alignment(
                     semantic_batch, flat_snapshot_metadata, self.semantic_state_contract,
                     self.champion_id_map, reproject=False, verify_catalog=False,
+                    bind_metadata=True,
                 )
                 semantic_entities = np.asarray(
                     semantic_batch["numeric"], dtype=np.float32
@@ -1815,20 +1805,10 @@ class Trainer:
                     "contract_id": next_semantic_batch["contract_id"],
                     "contract_hash": next_semantic_batch["contract_hash"],
                 }
-                for metadata, semantic_hash, semantic_identity in zip(
-                    flat_next_snapshot_metadata, next_semantic_batch["hashes"], next_semantic_batch["identities"]
-                ):
-                    metadata["semantic_identity"] = semantic_identity
-                    metadata["semantic_projection_hash"] = semantic_hash
-                    metadata["semantic_projection_contract_id"] = (
-                        self.semantic_state_contract["contract"]["contract_id"]
-                    )
-                    metadata["semantic_projection_contract_hash"] = (
-                        self.semantic_state_contract["sha256"]
-                    )
                 validate_semantic_batch_alignment(
                     next_semantic_batch, flat_next_snapshot_metadata, self.semantic_state_contract,
                     self.champion_id_map, reproject=False, verify_catalog=False,
+                    bind_metadata=True,
                 )
                 semantic_cache = {
                     "identities": next_semantic_batch["identities"],
