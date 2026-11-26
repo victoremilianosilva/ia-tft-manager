@@ -416,6 +416,20 @@ struct AuditStrategicOwnerSnapshot {
     std::string strategic_refresh_failure_reason;
 };
 
+struct AuditBoardRelationSnapshot {
+    std::int32_t slot{-1};
+    std::int32_t row{-1};
+    std::int32_t column{-1};
+    std::int32_t role{-1};
+    std::string unit_uuid;
+    // Stable board-slot references; no duplicate UnitInstance or champion maps.
+    std::vector<std::int32_t> adjacent_slots;
+    std::vector<std::int32_t> frontline_slots_in_front;
+    std::uint32_t adjacent_occupied_count{0};
+    std::uint32_t tanks_in_front{0};
+    std::uint32_t fighters_in_front{0};
+};
+
 struct AuditPlayerSnapshot {
     std::int32_t player_id{-1};
     AuditStrategicOwnerSnapshot strategic_state{};
@@ -461,6 +475,11 @@ struct AuditPlayerSnapshot {
     std::int32_t round_interest{0};
     std::int32_t round_streak_gold{0};
     std::int32_t round_win_gold{0};
+    // Read-only relation facts over the exact board geometry and occupied slots.
+    std::string positioning_contract_id{"tft.board-position-relations"};
+    std::uint32_t positioning_contract_version{1};
+    std::string positioning_producer{"TFTEngine::get_audit_snapshot"};
+    std::vector<AuditBoardRelationSnapshot> board_relations;
     std::array<AuditUnitSnapshot, kBoardSlots> board{};
     std::array<AuditUnitSnapshot, kBenchSlots> bench{};
     std::array<AuditUnitSnapshot, kShopSlots> shop{};
