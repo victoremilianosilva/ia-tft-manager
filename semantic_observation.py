@@ -980,11 +980,16 @@ def project_native_player_state(
                 raise ValueError(
                     f"native semantic item field {field} has invalid native view contract"
                 )
-            if not np.isfinite(value).all():
+            # Two scalar reductions validate the complete contiguous block
+            # without allocating the temporary boolean arrays produced by
+            # isfinite()/any() for every native item matrix.
+            minimum = float(value.min())
+            maximum = float(value.max())
+            if not math.isfinite(minimum) or not math.isfinite(maximum):
                 raise ValueError(
                     f"native semantic item field {field} contains non-finite values"
                 )
-            if np.any(value < 0.0) or np.any(value > 1.0):
+            if minimum < 0.0 or maximum > 1.0:
                 raise ValueError(
                     f"native semantic item field {field} is outside [0, 1]"
                 )
@@ -1199,6 +1204,9 @@ def build_semantic_batch(
         "champion_ids": [row["champion_ids"] for row in projected],
         "hashes": [row["sha256"] for row in projected],
         "identities": [row["identity"] for row in projected],
+        # Keep the 42-row physical entity projection available to downstream
+        # typed-context consumers instead of building and discarding it.
+        "entity_identity": [row["entity_identity"] for row in projected],
         "contract_id": contract["contract"]["contract_id"],
         "contract_hash": contract["sha256"],
     }

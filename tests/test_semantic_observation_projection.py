@@ -400,6 +400,10 @@ def test_semantic_batch_is_deterministic_and_catalog_contract_is_bound():
     first = build_semantic_batch(rows, catalog)
     second = build_semantic_batch(rows, dict(catalog))
     assert first == second
+    assert len(first["entity_identity"]) == 1
+    assert len(first["entity_identity"][0]) == SEMANTIC_ENTITY_SLOTS
+    assert first["entity_identity"][0][0]["unit_uuid"] == "unit-board-0"
+    assert first["entity_identity"][0][28]["unit_uuid"] == "unit-bench-0"
 
     contract = build_semantic_state_checkpoint_contract(catalog)
     validate_semantic_state_checkpoint_contract(contract, catalog)
@@ -918,3 +922,11 @@ def test_native_item_numpy_views_preserve_v8_projection_and_validate_contract():
     non_finite["item_component_features"] = values
     with pytest.raises(ValueError, match="non-finite"):
         project_native_player_state(non_finite_metadata, catalog)
+
+    out_of_range_metadata = _metadata()
+    out_of_range = np.zeros((10,), dtype=np.float32)
+    out_of_range[0] = 1.01
+    out_of_range.setflags(write=False)
+    out_of_range_metadata["native_player_state"]["item_component_features"] = out_of_range
+    with pytest.raises(ValueError, match=r"outside \\[0, 1\\]"):
+        project_native_player_state(out_of_range_metadata, catalog)
