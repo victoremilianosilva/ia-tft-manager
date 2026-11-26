@@ -238,6 +238,32 @@ def build_action_outcome_events(
         if source_player_seq is None or outcome_player_seq is None or outcome_player_seq <= source_player_seq:
             raise RuntimeError(f"Sequência por jogador não avançou: {player_id}.")
 
+        trace_identity_fields = (
+            "source_snapshot_sequence", "outcome_snapshot_sequence",
+            "source_player_decision_sequence", "outcome_player_decision_sequence",
+            "source_round", "outcome_round", "source_stage", "outcome_stage",
+        )
+        trace_identity_present = [field in trace for field in trace_identity_fields]
+        if any(trace_identity_present):
+            if not all(trace_identity_present):
+                raise RuntimeError("Action trace contém identidade causal parcial.")
+            expected_identity = {
+                "source_snapshot_sequence": before_seq,
+                "outcome_snapshot_sequence": after_seq,
+                "source_player_decision_sequence": source_player_seq,
+                "outcome_player_decision_sequence": outcome_player_seq,
+                "source_round": _int(before_snapshot.get("round"), "before.round"),
+                "outcome_round": _int(after_snapshot.get("round"), "after.round"),
+                "source_stage": _int(before_snapshot.get("stage"), "before.stage"),
+                "outcome_stage": _int(after_snapshot.get("stage"), "after.stage"),
+            }
+            for field, expected in expected_identity.items():
+                observed = _int(trace.get(field), f"trace.{field}")
+                if observed != expected:
+                    raise RuntimeError(
+                        f"Action trace não corresponde à identidade causal nativa: {field}."
+                    )
+
         action = trace.get("effective_action")
         if not isinstance(action, Sequence) or len(action) < 2:
             raise RuntimeError(f"Ação efetiva ausente para player_id={player_id}.")
@@ -411,11 +437,13 @@ def build_action_outcome_events(
                 "snapshot_sequence": before_seq,
                 "player_decision_sequence": source_player_seq,
                 "round": _int(before_snapshot.get("round"), "before.round"),
+                "stage": _int(before_snapshot.get("stage"), "before.stage"),
             },
             "outcome_snapshot": {
                 "snapshot_sequence": after_seq,
                 "player_decision_sequence": outcome_player_seq,
                 "round": _int(after_snapshot.get("round"), "after.round"),
+                "stage": _int(after_snapshot.get("stage"), "after.stage"),
             },
             "facts": {
                 "selected_shop_offer": selected_offer if family == "purchase" else None,
