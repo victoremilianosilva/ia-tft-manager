@@ -891,6 +891,26 @@ def project_native_player_state(
                 ], dtype=np.float64)
                 if not np.array_equal(typed_row[1:], expected):
                     raise ValueError(f"native typed entity values diverge from snapshot record at {group_name}[{slot}]")
+                # Consume typed values after exact parity with the structured oracle.
+                star = int(typed_row[1])
+                cost = int(typed_row[2])
+                item_count = int(typed_row[3])
+                trait_count = int(typed_row[4])
+                entity_role = int(typed_row[5])
+                entity_attack_damage = float(typed_row[6])
+                entity_attack_speed = float(typed_row[7])
+                entity_max_health = float(typed_row[8])
+                entity_armor = float(typed_row[9])
+                entity_magic_resist = float(typed_row[10])
+            else:
+                item_count = len(entity.get("items", []))
+                trait_count = len(entity.get("trait_names", []))
+                entity_role = entity.get("role", 3)
+                entity_attack_damage = entity.get("attack_damage", 0.0)
+                entity_attack_speed = entity.get("attack_speed", 0.0)
+                entity_max_health = entity.get("max_health", 0.0)
+                entity_armor = entity.get("armor", 0.0)
+                entity_magic_resist = entity.get("magic_resist", 0.0)
             items = entity.get("items")
             traits = entity.get("trait_names")
             if not isinstance(champion_name, str) or not champion_name:
@@ -942,8 +962,8 @@ def project_native_player_state(
                 1.0,
                 star / 3.0,
                 cost / 5.0,
-                min(len(items), 9) / 9.0,
-                min(len(traits), 10) / 10.0,
+                min(item_count, 9) / 9.0,
+                min(trait_count, 10) / 10.0,
                 float(champion_valid),
                 float(native_id in active_ids) if native_id is not None else 0.0,
                 float(native_id in core_ids) if native_id is not None else 0.0,
@@ -956,14 +976,14 @@ def project_native_player_state(
             # flat item-target observation. Shop slots are not legal item targets.
             target_features = [0.0] * 17
             if group_name in ("board", "bench"):
-                role = _non_negative_int(entity.get("role"), f"{group_name}[{slot}].role")
+                role = _non_negative_int(entity_role, f"{group_name}[{slot}].role")
                 if role > 4:
                     raise ValueError(f"{group_name}[{slot}] has invalid target role")
-                attack_damage = _finite_number(entity.get("attack_damage"), f"{group_name}[{slot}].attack_damage")
-                attack_speed = _finite_number(entity.get("attack_speed"), f"{group_name}[{slot}].attack_speed")
-                max_health = _finite_number(entity.get("max_health"), f"{group_name}[{slot}].max_health")
-                armor = _finite_number(entity.get("armor"), f"{group_name}[{slot}].armor")
-                magic_resist = _finite_number(entity.get("magic_resist"), f"{group_name}[{slot}].magic_resist")
+                attack_damage = _finite_number(entity_attack_damage, f"{group_name}[{slot}].attack_damage")
+                attack_speed = _finite_number(entity_attack_speed, f"{group_name}[{slot}].attack_speed")
+                max_health = _finite_number(entity_max_health, f"{group_name}[{slot}].max_health")
+                armor = _finite_number(entity_armor, f"{group_name}[{slot}].armor")
+                magic_resist = _finite_number(entity_magic_resist, f"{group_name}[{slot}].magic_resist")
                 if min(attack_damage, attack_speed, max_health, armor, magic_resist) < 0.0:
                     raise ValueError(f"{group_name}[{slot}] has negative target profile stats")
                 on_board = group_name == "board"
@@ -979,9 +999,11 @@ def project_native_player_state(
                 target_features[13] = min(max_health / 2000.0, 1.0)
                 target_features[14] = min(armor / 150.0, 1.0)
                 target_features[15] = min(magic_resist / 150.0, 1.0)
-                target_features[16] = min(len(items) / 3.0, 1.0)
+                target_features[16] = min(item_count / 3.0, 1.0)
             numeric.extend(target_features)
-            if len(traits) > SEMANTIC_TRAIT_SLOTS:
+            if trait_count != len(traits):
+                raise ValueError(f"{group_name}[{slot}] typed trait count diverges from trait memberships")
+            if trait_count > SEMANTIC_TRAIT_SLOTS:
                 raise ValueError(f"{group_name}[{slot}] exceeds the native trait slot limit")
             trait_ids = []
             for trait in traits:
