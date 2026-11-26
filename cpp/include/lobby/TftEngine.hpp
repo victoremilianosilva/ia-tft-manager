@@ -370,6 +370,7 @@ struct AuditStrategicOwnerSnapshot {
     bool direction_valid{false};
     std::string direction_identity;
     std::string direction_value;
+    bool direction_composition_bound{false};
     std::string direction_composition_identity;
     std::uint64_t direction_composition_version{0};
     double direction_confidence{0.0};
