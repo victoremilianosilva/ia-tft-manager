@@ -1233,7 +1233,12 @@ def test_native_action_trace_carries_source_and_outcome_identity():
         assert trace["outcome_player_decision_sequence"] == 2
         assert trace["source_round"] == trace["outcome_round"]
         assert trace["source_stage"] == trace["outcome_stage"]
+        assert trace["transition_observed"] is True
+        assert trace["action_cost"] == 0
+        assert trace["sale_proceeds"] == 0
         event = info["action_outcome_events"][0]
+        assert event["action"]["transition_observed"] is True
+        assert event["action"]["native_transition"]["gold_before"] == event["facts"]["gold_before"]
         assert event["source_decision"]["stage"] == trace["source_stage"]
         assert event["outcome_snapshot"]["stage"] == trace["outcome_stage"]
     finally:
