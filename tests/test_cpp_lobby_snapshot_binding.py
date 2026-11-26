@@ -1236,6 +1236,7 @@ def test_native_action_trace_carries_source_and_outcome_identity():
         assert trace["transition_observed"] is True
         assert trace["action_cost"] == 0
         assert trace["sale_proceeds"] == 0
+        assert trace["unit_deltas"] == []
         event = info["action_outcome_events"][0]
         assert event["action"]["transition_observed"] is True
         assert event["action"]["native_transition"]["gold_before"] == event["facts"]["gold_before"]
