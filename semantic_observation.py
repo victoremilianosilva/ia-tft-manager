@@ -597,6 +597,11 @@ def project_native_player_state(
             or not isinstance(direction_composition_id, str)
             or (direction_composition_bound and (not direction_composition_id or direction_composition_version == 0))
             or (not direction_composition_bound and (direction_composition_id or direction_composition_version != 0))
+            or (direction_composition_bound and (
+                not active_valid
+                or direction_composition_id != strategic.get("active_composition_id")
+                or direction_composition_version != strategic.get("active_composition_version")
+            ))
             or not 0.0 <= direction_confidence <= 1.0 or direction_lifecycle > 7
             or not isinstance(direction_evidence, list)
             or any(isinstance(value, bool) or not isinstance(value, int) or not 0 <= value <= 7 for value in direction_evidence)
@@ -622,6 +627,13 @@ def project_native_player_state(
         pivot_confidence = 0.0
         pivot_lifecycle = 0
         pivot_evidence = []
+
+    if strategic_version >= 4 and pivot_valid:
+        pivot_source_version = _non_negative_int(
+            strategic.get("pivot_source_composition_version"), "pivot_source_composition_version"
+        )
+        if not active_valid or pivot_source_version != strategic.get("active_composition_version"):
+            raise ValueError("pivot candidate is not bound to the active source composition version")
 
     opportunity_rows = strategic.get("opportunity_costs")
     if not isinstance(opportunity_rows, list):
