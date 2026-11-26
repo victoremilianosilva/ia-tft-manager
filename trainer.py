@@ -563,24 +563,23 @@ class Trainer:
                 # One immutable lobby-level envelope is shared by all eight player
                 # views. Player-specific facts remain references to their frozen
                 # native player row; no lobby-wide payload is copied eight times.
-                lobby_context = freeze_snapshot({
+                lobby_context = {
                     "contract_id": "tft.decision-context.lobby",
                     "contract_version": 1,
-                    "identity": {
+                    "identity": freeze_snapshot({
                         "engine_instance_id": native_snapshot.get("engine_instance_id"),
                         "episode_id": native_snapshot.get("episode_id"),
                         "snapshot_sequence": native_snapshot.get("snapshot_sequence"),
                         "round": native_snapshot.get("round"),
                         "stage": native_snapshot.get("stage"),
                         "combat_sequence": native_snapshot.get("combat_sequence"),
-                    },
+                    }),
                     "shared_pool": native_snapshot.get("shared_pool"),
-                    "combat_damage_events": native_snapshot.get("combat_damage_events"),
-                    "combat_attack_events": native_snapshot.get("combat_attack_events"),
-                    "combat_death_events": native_snapshot.get("combat_death_events"),
-                    "economy_resolution_events": native_snapshot.get("economy_resolution_events"),
-                    "pvp_result_credit_events": native_snapshot.get("pvp_result_credit_events"),
-                })
+                    # Keep the immutable native handle as the lazy source for
+                    # shared combat/economy events; do not materialize them for
+                    # every PPO row when the current update does not consume them.
+                    "native_audit_snapshot": native_snapshot,
+                }
             else:
                 lobby_context = None
             for player_idx, player_sequence in enumerate(player_sequences):
