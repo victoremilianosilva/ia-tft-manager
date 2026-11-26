@@ -566,11 +566,10 @@ def project_native_player_state(
             raise ValueError("unit_copy_progress values are outside native ranges")
         if highest_star == 3 and toward_next != 0:
             raise ValueError("three-star units cannot have progress toward another upgrade")
-        copy_progress[champion_id] = {
-            "owned_copy_equivalent": copies,
-            "copies_toward_next_star": toward_next,
-            "highest_star": highest_star,
-        }
+        # This lookup is consumed for every occupied board/bench/shop slot.
+        # A compact tuple avoids allocating a nested dict per champion while
+        # preserving the validated values and their exact projection semantics.
+        copy_progress[champion_id] = (copies, toward_next, highest_star)
     if not core_ids.issubset(active_ids):
         raise ValueError("active core units must belong to the active composition")
     if not active_valid and (active_ids or core_ids):
@@ -1018,9 +1017,9 @@ def project_native_player_state(
                     raise ValueError(
                         f"native UnitCopyProgress is missing owned champion {champion_name}"
                     )
-            native_progress = copy_progress.get(native_id, {})
-            copy_equivalent = native_progress.get("owned_copy_equivalent", 0)
-            upgrade_progress = native_progress.get("copies_toward_next_star", 0) / 2.0
+            native_progress = copy_progress.get(native_id, (0, 0, 0))
+            copy_equivalent = native_progress[0]
+            upgrade_progress = native_progress[1] / 2.0
             numeric.extend([
                 1.0,
                 star / 3.0,
