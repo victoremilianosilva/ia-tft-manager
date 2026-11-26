@@ -494,6 +494,24 @@ py::dict audit_player_snapshot_to_dict(
         }
         p["actions_taken_this_round"] = player.actions_taken_this_round;
         p["board_move_age"] = player.board_move_age;
+        p["action_history_contract_id"] = player.action_history_contract_id;
+        p["action_history_contract_version"] = player.action_history_contract_version;
+        py::list action_history;
+        for (const auto& entry : player.recent_action_history) {
+            py::dict row;
+            row["source_snapshot_sequence"] = entry.source_snapshot_sequence;
+            row["outcome_snapshot_sequence"] = entry.outcome_snapshot_sequence;
+            row["source_player_decision_sequence"] = entry.source_player_decision_sequence;
+            row["outcome_player_decision_sequence"] = entry.outcome_player_decision_sequence;
+            row["source_round"] = entry.source_round;
+            row["outcome_round"] = entry.outcome_round;
+            row["source_stage"] = entry.source_stage;
+            row["outcome_stage"] = entry.outcome_stage;
+            row["action_type"] = entry.action_type;
+            row["handler_applied"] = entry.handler_applied;
+            action_history.append(std::move(row));
+        }
+        p["recent_action_history"] = std::move(action_history);
         p["last_item_action_kind"] = player.last_item_action_kind;
         p["last_item_id"] = player.last_item_id;
         p["last_item_first_component"] = player.last_item_first_component;
