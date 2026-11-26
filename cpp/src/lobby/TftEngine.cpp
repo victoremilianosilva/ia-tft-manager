@@ -5962,6 +5962,8 @@ StepResult TFTEngine::step(
         trace.player_id = static_cast<std::int32_t>(i);
         trace.requested_action = actions[i].values;
         trace.effective_action = effective_actions[i].values;
+        const auto shop_revisions_before =
+            impl_->player_envs[i].shop->offer_revisions();
         const bool was_overridden = trace.requested_action != trace.effective_action;
         if (impl_->player_decision_sequences[i] ==
             std::numeric_limits<std::uint64_t>::max()) {
@@ -5970,6 +5972,12 @@ StepResult TFTEngine::step(
         const auto transition = impl_->player_envs[i].step(*impl_, i, effective_actions[i]);
         trace.handler_applied = transition.action_succeeded;
         trace.transition_observed = transition.acted;
+        trace.shop_revisions_observed = transition.acted;
+        if (transition.acted) {
+            trace.shop_revisions_before = shop_revisions_before;
+            trace.shop_revisions_after =
+                impl_->player_envs[i].shop->offer_revisions();
+        }
         trace.board_capacity_violation = transition.board_capacity_violation;
         trace.action_cost = transition.action_cost;
         trace.sale_proceeds = transition.sale_proceeds;
