@@ -928,5 +928,5 @@ def test_native_item_numpy_views_preserve_v8_projection_and_validate_contract():
     out_of_range[0] = 1.01
     out_of_range.setflags(write=False)
     out_of_range_metadata["native_player_state"]["item_component_features"] = out_of_range
-    with pytest.raises(ValueError, match=r"outside \\[0, 1\\]"):
+    with pytest.raises(ValueError, match=r"outside \[0, 1\]"):
         project_native_player_state(out_of_range_metadata, catalog)
