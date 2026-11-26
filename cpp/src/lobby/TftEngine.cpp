@@ -6664,6 +6664,19 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
         target.round_win_gold = source.economy.last_round_win_gold;
         target.actions_taken_this_round = source.actions_taken_this_round;
         target.board_move_age = source.board_move_age;
+        target.recent_action_history.clear();
+        target.recent_action_history.reserve(source.action_history_count);
+        const auto history_start =
+            (source.action_history_next + kActionHistoryCapacity -
+             source.action_history_count) % kActionHistoryCapacity;
+        for (std::size_t history_index = 0;
+             history_index < source.action_history_count; ++history_index) {
+            target.recent_action_history.push_back(
+                source.action_history[
+                    (history_start + history_index) % kActionHistoryCapacity
+                ]
+            );
+        }
         target.masks = source.action_masks;
 
         auto& strategic = target.strategic_state;
