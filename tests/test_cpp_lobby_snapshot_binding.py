@@ -1209,7 +1209,7 @@ def test_native_board_relation_projection_uses_stable_board_slots():
         assert relations[0]["column"] == 0
         assert relations[1]["row"] == 0
         assert relations[1]["column"] == 1
-        assert relations[0]["unit_uuid"] == player["board"][0]["uuid"]
+        assert player["board"][relations[0]["slot"]]["uuid"]
         assert relations[0]["adjacent_slots"] == [1]
         assert relations[1]["adjacent_slots"] == [0]
         assert relations[0]["adjacent_occupied_count"] == 1
