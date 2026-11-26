@@ -922,6 +922,18 @@ def test_entity_identity_projection_requires_slot_aligned_shop_revisions():
         project_native_player_state(row, catalog)
 
 
+def test_semantic_projection_rejects_non_finite_generated_features(monkeypatch):
+    metadata = _metadata()
+    monkeypatch.setattr(
+        semantic_module,
+        "_semantic_trait_hash_id",
+        lambda _trait: float("nan"),
+    )
+
+    with pytest.raises(ValueError, match="semantic projection contains a non-finite value"):
+        project_native_player_state(metadata, {"TFT_TestChampion": 17})
+
+
 def test_native_item_numpy_views_preserve_v8_projection_and_validate_contract():
     catalog = {"TFT_TestChampion": 17}
     list_backed = _metadata()
