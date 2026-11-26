@@ -6706,21 +6706,25 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
             relation.column = static_cast<std::int32_t>(slot % PositioningEngine::cols);
             relation.role = unit.role;
             relation.unit_uuid = unit.uuid;
-            for (const int neighbor_slot : PositioningEngine::get_neighbors(
-                     static_cast<int>(slot), true)) {
-                const auto neighbor_index = static_cast<std::size_t>(neighbor_slot);
-                const auto& neighbor = target.board[neighbor_index];
-                if (!neighbor.occupied) continue;
-                ++relation.adjacent_occupied_count;
-                relation.adjacent_slots[relation.adjacent_slots_count++] = neighbor_slot;
-                const auto neighbor_row = neighbor_slot / PositioningEngine::cols;
-                if (neighbor_row < relation.row &&
-                    (neighbor.role == PositioningEngine::tank ||
-                     neighbor.role == PositioningEngine::fighter)) {
-                    relation.frontline_slots_in_front[
-                        relation.frontline_slots_in_front_count++] = neighbor_slot;
-                    if (neighbor.role == PositioningEngine::tank) ++relation.tanks_in_front;
-                    else ++relation.fighters_in_front;
+            for (int row_delta = -1; row_delta <= 1; ++row_delta) {
+                for (int column_delta = -1; column_delta <= 1; ++column_delta) {
+                    if (row_delta == 0 && column_delta == 0) continue;
+                    const int neighbor_slot = PositioningEngine::row_col_to_position(
+                        relation.row + row_delta, relation.column + column_delta);
+                    if (neighbor_slot < 0) continue;
+                    const auto& neighbor =
+                        target.board[static_cast<std::size_t>(neighbor_slot)];
+                    if (!neighbor.occupied) continue;
+                    ++relation.adjacent_occupied_count;
+                    relation.adjacent_slots[relation.adjacent_slots_count++] = neighbor_slot;
+                    if (row_delta < 0 &&
+                        (neighbor.role == PositioningEngine::tank ||
+                         neighbor.role == PositioningEngine::fighter)) {
+                        relation.frontline_slots_in_front[
+                            relation.frontline_slots_in_front_count++] = neighbor_slot;
+                        if (neighbor.role == PositioningEngine::tank) ++relation.tanks_in_front;
+                        else ++relation.fighters_in_front;
+                    }
                 }
             }
             target.board_relations.push_back(std::move(relation));
