@@ -1248,6 +1248,9 @@ def test_native_action_trace_carries_source_and_outcome_identity():
         assert event["action"]["native_shop_revisions"]["before"] == event["action"]["native_shop_revisions"]["after"]
         assert event["source_decision"]["stage"] == trace["source_stage"]
         assert event["outcome_snapshot"]["stage"] == trace["outcome_stage"]
+        lobby.reset()
+        reset_history = lobby.get_snapshot_metadata()["native_state_snapshot"]["players"][0]["recent_action_history"]
+        assert reset_history == []
     finally:
         lobby.close()
 
