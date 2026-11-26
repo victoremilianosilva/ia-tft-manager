@@ -1153,25 +1153,35 @@ def test_native_snapshot_mapping_defers_combat_event_materialization():
 
 
 
-def _snapshot_values_equal(left, right):
-    """Compare snapshot values while treating NumPy views and lists as equivalent data."""
+def _snapshot_value_mismatch(left, right, path="snapshot"):
+    """Return first differing snapshot path, treating arrays and lists as data."""
     if isinstance(left, np.ndarray) or isinstance(right, np.ndarray):
         try:
-            return np.array_equal(np.asarray(left), np.asarray(right), equal_nan=True)
+            if np.array_equal(np.asarray(left), np.asarray(right), equal_nan=True):
+                return None
         except (TypeError, ValueError):
-            return False
+            pass
+        return path
     if isinstance(left, dict) and isinstance(right, dict):
-        return left.keys() == right.keys() and all(
-            _snapshot_values_equal(left[key], right[key]) for key in left
-        )
+        if left.keys() != right.keys():
+            return path + ".keys"
+        for key in left:
+            mismatch = _snapshot_value_mismatch(left[key], right[key], path + "." + str(key))
+            if mismatch is not None:
+                return mismatch
+        return None
     if isinstance(left, (list, tuple)) and isinstance(right, (list, tuple)):
-        return len(left) == len(right) and all(
-            _snapshot_values_equal(a, b) for a, b in zip(left, right)
-        )
+        if len(left) != len(right):
+            return path + ".length"
+        for index, pair in enumerate(zip(left, right)):
+            mismatch = _snapshot_value_mismatch(pair[0], pair[1], path + "[" + str(index) + "]")
+            if mismatch is not None:
+                return mismatch
+        return None
     try:
-        return bool(left == right)
+        return None if bool(left == right) else path
     except (TypeError, ValueError):
-        return False
+        return path
 
 
 def test_native_snapshot_handle_caches_frozen_ownership_view(monkeypatch):
@@ -1223,10 +1233,12 @@ def test_native_snapshot_handle_caches_frozen_ownership_view(monkeypatch):
             key: public_snapshot[key] for key in native_view
         }
         public_projection["players"] = public_players
-        assert _snapshot_values_equal(
+        mismatch = _snapshot_value_mismatch(
             {key: native_view[key] for key in native_view}, public_projection
         )
-        assert _snapshot_values_equal(list(native_players), public_players)
+        assert mismatch is None, f"native/public snapshot mismatch at {mismatch}"
+        mismatch = _snapshot_value_mismatch(list(native_players), public_players)
+        assert mismatch is None, f"native/public player mismatch at {mismatch}"
         assert player_calls == list(range(8))
 
         # The public native handle remains a complete snapshot API; only the
