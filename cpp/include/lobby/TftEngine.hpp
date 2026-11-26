@@ -668,6 +668,18 @@ struct ActionExecutionTrace {
     std::array<std::int32_t, kActionComponents> effective_action{};
     // True only when the native action handler reports successful application.
     bool handler_applied{false};
+    bool transition_observed{false};
+    bool board_capacity_violation{false};
+    std::int32_t action_cost{0};
+    std::int32_t sale_proceeds{0};
+    std::int32_t gold_before{0};
+    std::int32_t gold_after{0};
+    std::int32_t interest_before{0};
+    std::int32_t interest_after{0};
+    std::int32_t level_before{0};
+    std::int32_t level_after{0};
+    std::int32_t xp_before{0};
+    std::int32_t xp_after{0};
     // Stable machine-readable reason; never inferred from reward values.
     std::string status_reason;
     // Causal identity inherited from the source and outcome decision snapshots.
