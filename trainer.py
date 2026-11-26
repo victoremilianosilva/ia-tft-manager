@@ -560,6 +560,29 @@ class Trainer:
                 native_players = native_snapshot.get("players")
                 if not isinstance(native_players, Sequence) or len(native_players) != players_per_lobby:
                     raise RuntimeError(f"Snapshot estruturado sem {players_per_lobby} jogadores na lobby {lobby_idx}.")
+                # One immutable lobby-level envelope is shared by all eight player
+                # views. Player-specific facts remain references to their frozen
+                # native player row; no lobby-wide payload is copied eight times.
+                lobby_context = freeze_snapshot({
+                    "contract_id": "tft.decision-context.lobby",
+                    "contract_version": 1,
+                    "identity": {
+                        "engine_instance_id": native_snapshot.get("engine_instance_id"),
+                        "episode_id": native_snapshot.get("episode_id"),
+                        "snapshot_sequence": native_snapshot.get("snapshot_sequence"),
+                        "round": native_snapshot.get("round"),
+                        "stage": native_snapshot.get("stage"),
+                        "combat_sequence": native_snapshot.get("combat_sequence"),
+                    },
+                    "shared_pool": native_snapshot.get("shared_pool"),
+                    "combat_damage_events": native_snapshot.get("combat_damage_events"),
+                    "combat_attack_events": native_snapshot.get("combat_attack_events"),
+                    "combat_death_events": native_snapshot.get("combat_death_events"),
+                    "economy_resolution_events": native_snapshot.get("economy_resolution_events"),
+                    "pvp_result_credit_events": native_snapshot.get("pvp_result_credit_events"),
+                })
+            else:
+                lobby_context = None
             for player_idx, player_sequence in enumerate(player_sequences):
                 if (
                     isinstance(player_sequence, bool)
@@ -620,6 +643,22 @@ class Trainer:
                     metadata["native_state_contract_version"] = native_contract[1]
                     metadata["native_state_producer"] = native_contract[2]
                     metadata["native_state_source_namespace"] = native_contract[3]
+                    temporal_context = {
+                        "actions_taken_this_round": frozen_player.get("actions_taken_this_round"),
+                        "board_move_age": frozen_player.get("board_move_age"),
+                    }
+                    metadata["decision_context"] = {
+                        "contract_id": "tft.decision-context.player",
+                        "contract_version": 1,
+                        "lobby": lobby_context,
+                        "player_id": player_idx,
+                        "player_decision_sequence": player_sequence,
+                        "audit_player": frozen_player,
+                        "strategic": frozen_player.get("strategic_state"),
+                        "positioning": frozen_player.get("board_relations", ()),
+                        "temporal": freeze_snapshot(temporal_context),
+                        "action_execution": None,
+                    }
                 metadata["player_decision_sequence"] = player_sequence
                 metadata["lobby_index"] = lobby_idx
                 metadata["player_id"] = player_idx
@@ -714,6 +753,26 @@ class Trainer:
                         f"Snapshot de resultado desalinhado para lobby {lobby_idx}, jogador {player_id}."
                     )
                 row["action_trace"] = dict(trace)
+                decision_context = row.get("decision_context")
+                if isinstance(decision_context, dict):
+                    # The action trace is an outcome-side fact. It is attached
+                    # only to the matching result row, never the source state.
+                    if "outcome_snapshot_sequence" in trace:
+                        if trace.get("outcome_snapshot_sequence") != row.get("decision_sequence"):
+                            raise RuntimeError(
+                                f"Trace causal não corresponde ao snapshot de resultado "
+                                f"da lobby {lobby_idx}, jogador {player_id}."
+                            )
+                        if trace.get("outcome_player_decision_sequence") != row.get("player_decision_sequence"):
+                            raise RuntimeError(
+                                f"Trace causal não corresponde à sequência do jogador "
+                                f"na lobby {lobby_idx}, jogador {player_id}."
+                            )
+                        if trace.get("source_snapshot_sequence", -1) >= trace.get("outcome_snapshot_sequence", -1):
+                            raise RuntimeError("Trace causal não avança a sequência do snapshot.")
+                        if trace.get("source_player_decision_sequence", -1) >= trace.get("outcome_player_decision_sequence", -1):
+                            raise RuntimeError("Trace causal não avança a sequência individual.")
+                    decision_context["action_execution"] = row["action_trace"]
 
         return result_snapshot_metadata
 
