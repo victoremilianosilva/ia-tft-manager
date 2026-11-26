@@ -10,12 +10,15 @@ Keep the existing `TFTEngine::get_audit_snapshot` as the single producer. A phys
 
 ## New responsibility
 
+The native audit record now carries `champion_internal_id` alongside the champion API name, populated directly from the same `UnitInstance`. The pybind mapping exposes that integer without re-deriving physical identity from a string lookup. Python checks it against the loaded catalog when that catalog entry is available; dict-backed fixtures without the native integer retain the compatibility lookup.
+
 The semantic projection emits a separate `entity_identity` sequence in canonical slot order: board 0–27, bench 0–8, shop 0–4. It validates occupied-unit UUID presence and uniqueness within the player's snapshot, rejects UUIDs on empty slots, and attaches the exact shop offer revision to each shop slot.
 
 ## Contract and invariants
 
 - Exactly 42 identity rows, aligned with the existing 45-feature entity slots.
 - Each row carries location, slot, occupancy, and physical unit UUID.
+- Native occupied unit records carry a non-negative `champion_internal_id` from `UnitInstance`; when Python has the matching catalog entry, the values must agree.
 - Shop rows carry their slot-aligned non-negative offer revision; board/bench rows carry no offer revision.
 - UUID denotes a physical unit copy, not a champion definition or player ownership relation.
 - Shop offer revision denotes the current lifecycle generation of a slot, not physical unit identity.
@@ -29,6 +32,7 @@ Adds an explicit identity result for audit and subsequent typed-context integrat
 
 ## Validation criteria
 
+- Verify native champion internal IDs are populated from the same physical UnitInstance and checked against catalog identity.
 - Verify all 42 rows and stable slot ordering.
 - Verify distinct UUIDs for repeated champion copies and across board/bench/shop.
 - Reject missing occupied UUIDs, duplicate UUIDs, UUIDs on empty slots, and malformed shop revision arrays.
