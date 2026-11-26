@@ -650,9 +650,45 @@ class Trainer:
                     metadata["native_state_contract_version"] = native_contract[1]
                     metadata["native_state_producer"] = native_contract[2]
                     metadata["native_state_source_namespace"] = native_contract[3]
+                    action_history = frozen_player.get("recent_action_history", ())
+                    history_contract_id = frozen_player.get("action_history_contract_id")
+                    history_contract_version = frozen_player.get("action_history_contract_version")
+                    if history_contract_id is not None:
+                        if (
+                            history_contract_id != "tft.player-action-history"
+                            or isinstance(history_contract_version, bool)
+                            or history_contract_version != 1
+                            or not isinstance(action_history, (list, tuple))
+                            or len(action_history) > 32
+                        ):
+                            raise RuntimeError(
+                                f"Contrato de histórico temporal inválido na lobby {lobby_idx}, "
+                                f"jogador {player_idx}."
+                            )
+                        previous_outcome_sequence = -1
+                        for history_entry in action_history:
+                            if not isinstance(history_entry, dict):
+                                raise RuntimeError("Histórico temporal contém entrada inválida.")
+                            source_sequence = history_entry.get("source_player_decision_sequence")
+                            outcome_sequence = history_entry.get("outcome_player_decision_sequence")
+                            if (
+                                isinstance(source_sequence, bool)
+                                or not isinstance(source_sequence, int)
+                                or isinstance(outcome_sequence, bool)
+                                or not isinstance(outcome_sequence, int)
+                                or source_sequence < 0
+                                or outcome_sequence <= source_sequence
+                                or outcome_sequence <= previous_outcome_sequence
+                                or outcome_sequence > player_sequence
+                            ):
+                                raise RuntimeError("Histórico temporal contém sequência causal inválida.")
+                            previous_outcome_sequence = outcome_sequence
                     temporal_context = {
                         "actions_taken_this_round": frozen_player.get("actions_taken_this_round"),
                         "board_move_age": frozen_player.get("board_move_age"),
+                        "action_history_contract_id": history_contract_id,
+                        "action_history_contract_version": history_contract_version,
+                        "recent_action_history": action_history,
                     }
                     metadata["decision_context"] = {
                         "contract_id": "tft.decision-context.player",
