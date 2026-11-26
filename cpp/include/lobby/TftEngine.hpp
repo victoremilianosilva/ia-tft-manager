@@ -374,6 +374,7 @@ struct AuditStrategicOwnerSnapshot {
     std::string direction_composition_identity;
     std::uint64_t direction_composition_version{0};
     double direction_confidence{0.0};
+    std::string direction_reason;
     std::int32_t direction_lifecycle{0};
     std::vector<std::int32_t> direction_evidence;
     std::string direction_value_for_diagnostics;
@@ -385,6 +386,7 @@ struct AuditStrategicOwnerSnapshot {
     std::string pivot_target_direction;
     std::string pivot_source_direction_identity;
     double pivot_confidence{0.0};
+    std::string pivot_reason;
     std::int32_t pivot_lifecycle{0};
     std::vector<std::int32_t> pivot_evidence;
     // Internal diagnostic for native pivot proposal production; not serialized.
