@@ -494,14 +494,24 @@ def build_action_outcome_events(
 
         native_item_action = None
         if family == "item_action" and applied and "last_item_action_kind" in after:
+            string_fields = (
+                "last_item_action_kind", "last_item_id",
+                "last_item_first_component", "last_item_second_component",
+                "last_item_target_uuid",
+            )
+            if any(not isinstance(after.get(field), str) for field in string_fields):
+                raise RuntimeError("Action Context de item contém identificador nativo inválido.")
+            target_on_board = after.get("last_item_target_on_board")
+            if not isinstance(target_on_board, bool):
+                raise RuntimeError("Action Context de item contém target_on_board inválido.")
             native_item_action = {
-                "kind": str(after.get("last_item_action_kind", "")),
-                "item_id": str(after.get("last_item_id", "")),
-                "first_component": str(after.get("last_item_first_component", "")),
-                "second_component": str(after.get("last_item_second_component", "")),
-                "target_uuid": str(after.get("last_item_target_uuid", "")),
+                "kind": after["last_item_action_kind"],
+                "item_id": after["last_item_id"],
+                "first_component": after["last_item_first_component"],
+                "second_component": after["last_item_second_component"],
+                "target_uuid": after["last_item_target_uuid"],
                 "target_slot": _int(after.get("last_item_target_slot", -1), "after.last_item_target_slot"),
-                "target_on_board": bool(after.get("last_item_target_on_board", False)),
+                "target_on_board": target_on_board,
                 "fit": _finite(after.get("last_item_fit", 0.0), "after.last_item_fit"),
                 "immediate_strength": _finite(
                     after.get("last_item_immediate_strength", 0.0),
@@ -516,7 +526,7 @@ def build_action_outcome_events(
                     "after.last_item_assignment_reward",
                 ),
             }
-            if applied and not native_item_action["kind"]:
+            if not native_item_action["kind"]:
                 raise RuntimeError("Ação de item aplicada sem fato nativo last_item_action_kind.")
 
         event = {
