@@ -814,6 +814,31 @@ def project_native_player_state(
     numeric = list(global_values)
     champion_ids = []
     entity_occupied = []
+    typed_entity_features = state.get("entity_numeric_features")
+    typed_champion_ids = state.get("entity_champion_internal_ids")
+    use_typed_entities = typed_entity_features is not None or typed_champion_ids is not None
+    if use_typed_entities:
+        if state.get("entity_projection_version") != 1:
+            raise ValueError("native entity projection has an unsupported contract version")
+        if (
+            not isinstance(typed_entity_features, np.ndarray)
+            or typed_entity_features.dtype != np.dtype(np.float64)
+            or typed_entity_features.shape != (SEMANTIC_ENTITY_SLOTS, 11)
+            or not typed_entity_features.flags.c_contiguous
+            or typed_entity_features.flags.writeable
+        ):
+            raise ValueError("native entity_numeric_features violates its float64 (42, 11) read-only view contract")
+        if (
+            not isinstance(typed_champion_ids, np.ndarray)
+            or typed_champion_ids.dtype != np.dtype(np.int32)
+            or typed_champion_ids.shape != (SEMANTIC_ENTITY_SLOTS,)
+            or not typed_champion_ids.flags.c_contiguous
+            or typed_champion_ids.flags.writeable
+        ):
+            raise ValueError("native entity_champion_internal_ids violates its int32 (42,) read-only view contract")
+        if not np.isfinite(typed_entity_features).all():
+            raise ValueError("native entity_numeric_features contains non-finite values")
+    entity_slot_index = 0
     entity_unit_uuids = []
     observed_unit_uuids = set()
     for group_name, expected_count in (("board", 28), ("bench", 9), ("shop", 5)):
@@ -821,9 +846,18 @@ def project_native_player_state(
         if not isinstance(entities, Sequence) or isinstance(entities, (str, bytes)) or len(entities) != expected_count:
             raise ValueError(f"native {group_name} must contain exactly {expected_count} stable slots")
         for slot, entity in enumerate(entities):
+            typed_row = typed_entity_features[entity_slot_index] if use_typed_entities else None
+            typed_champion_id = int(typed_champion_ids[entity_slot_index]) if use_typed_entities else None
             if not isinstance(entity, Mapping):
                 raise TypeError(f"native {group_name}[{slot}] must be an object")
             occupied = entity.get("occupied")
+            if use_typed_entities:
+                if float(typed_row[0]) not in (0.0, 1.0) or bool(typed_row[0]) != occupied:
+                    raise ValueError(f"native typed occupancy diverges at {group_name}[{slot}]")
+                if occupied and entity.get("champion_internal_id") != typed_champion_id:
+                    raise ValueError(f"native typed champion identity diverges at {group_name}[{slot}]")
+                if not occupied and typed_champion_id != -1:
+                    raise ValueError(f"empty native typed entity has a champion identity at {group_name}[{slot}]")
             if not isinstance(occupied, bool):
                 raise TypeError(f"native {group_name}[{slot}].occupied must be boolean")
             unit_uuid = entity.get("uuid", "")
@@ -839,6 +873,7 @@ def project_native_player_state(
                 raise ValueError(f"empty {group_name}[{slot}] cannot retain a physical unit UUID")
             entity_occupied.append(occupied)
             entity_unit_uuids.append(unit_uuid)
+            entity_slot_index += 1
             if not occupied:
                 numeric.extend([0.0] * SEMANTIC_ENTITY_FEATURES)
                 champion_ids.append(0)
@@ -846,6 +881,16 @@ def project_native_player_state(
             champion_name = entity.get("champion_id")
             star = _non_negative_int(entity.get("star"), f"{group_name}[{slot}].star")
             cost = _non_negative_int(entity.get("cost"), f"{group_name}[{slot}].cost")
+            if use_typed_entities:
+                expected = np.asarray([
+                    float(star), float(cost), float(len(entity.get("items", []))),
+                    float(len(entity.get("trait_names", []))), float(entity.get("role", 3)),
+                    float(entity.get("attack_damage", 0.0)), float(entity.get("attack_speed", 0.0)),
+                    float(entity.get("max_health", 0.0)), float(entity.get("armor", 0.0)),
+                    float(entity.get("magic_resist", 0.0)),
+                ], dtype=np.float64)
+                if not np.array_equal(typed_row[1:], expected):
+                    raise ValueError(f"native typed entity values diverge from snapshot record at {group_name}[{slot}]")
             items = entity.get("items")
             traits = entity.get("trait_names")
             if not isinstance(champion_name, str) or not champion_name:

@@ -879,6 +879,35 @@ def test_entity_identity_projection_requires_slot_aligned_shop_revisions():
         project_native_player_state(row, catalog)
 
 
+def test_native_typed_entity_projection_is_validated_and_preserves_v8():
+    catalog = {"TFT_TestChampion": 17}
+    row = _metadata()
+    player = row["native_player_state"]
+    features = np.zeros((SEMANTIC_ENTITY_SLOTS, 11), dtype=np.float64)
+    ids = np.full((SEMANTIC_ENTITY_SLOTS,), -1, dtype=np.int32)
+    features[0] = [1.0, 2.0, 3.0, 1.0, 2.0, 3.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    features[28] = [1.0, 1.0, 3.0, 0.0, 0.0, 3.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    ids[0] = ids[28] = 17
+    features.setflags(write=False)
+    ids.setflags(write=False)
+    player["entity_projection_version"] = 1
+    player["entity_numeric_features"] = features
+    player["entity_champion_internal_ids"] = ids
+    typed = project_native_player_state(row, catalog)
+    fallback = project_native_player_state(_metadata(), catalog)
+    assert typed["numeric"] == fallback["numeric"]
+    assert typed["champion_ids"] == fallback["champion_ids"]
+    assert typed["sha256"] == fallback["sha256"]
+
+    invalid = _metadata()
+    invalid_player = invalid["native_player_state"]
+    invalid_player["entity_projection_version"] = 1
+    invalid_player["entity_numeric_features"] = features.copy()
+    invalid_player["entity_champion_internal_ids"] = ids
+    with pytest.raises(ValueError, match="read-only view contract"):
+        project_native_player_state(invalid, catalog)
+
+
 def test_native_item_numpy_views_preserve_v8_projection_and_validate_contract():
     catalog = {"TFT_TestChampion": 17}
     list_backed = _metadata()

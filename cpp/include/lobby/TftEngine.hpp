@@ -386,6 +386,11 @@ struct AuditStrategicOwnerSnapshot {
 };
 
 struct AuditPlayerSnapshot {
+    // Snapshot-owned struct-of-arrays projection; columns are documented in the binding contract.
+    static constexpr std::size_t kEntityProjectionVersion = 1;
+    static constexpr std::size_t kEntityProjectionWidth = 11;
+    std::array<std::array<double, kEntityProjectionWidth>, kBoardSlots + kBenchSlots + kShopSlots> entity_numeric_features{};
+    std::array<std::int32_t, kBoardSlots + kBenchSlots + kShopSlots> entity_champion_internal_ids{};
     std::int32_t player_id{-1};
     AuditStrategicOwnerSnapshot strategic_state{};
     // Player survival and standing facts, correlated by the enclosing snapshot identity.
