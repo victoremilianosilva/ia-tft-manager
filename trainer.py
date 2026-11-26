@@ -657,6 +657,7 @@ class Trainer:
                         if (
                             history_contract_id != "tft.player-action-history"
                             or isinstance(history_contract_version, bool)
+                            or not isinstance(history_contract_version, int)
                             or history_contract_version != 1
                             or not isinstance(action_history, (list, tuple))
                             or len(action_history) > 32
