@@ -432,7 +432,6 @@ py::dict audit_player_snapshot_to_dict(
             row["row"] = relation.row;
             row["column"] = relation.column;
             row["role"] = relation.role;
-            row["unit_uuid"] = relation.unit_uuid;
             py::list adjacent_slots, frontline_slots_in_front;
             for (std::size_t index = 0; index < relation.adjacent_slots_count; ++index)
                 adjacent_slots.append(relation.adjacent_slots[index]);
@@ -935,10 +934,10 @@ py::dict step_to_dict(tft::StepResult step) {
     py::list action_traces;
     for (const auto& trace : step.action_traces) {
         py::dict item;
-        item["contract_id"] = trace.contract_id;
-        item["contract_version"] = trace.contract_version;
-        item["source_namespace"] = trace.source_namespace;
-        item["producer"] = trace.producer;
+        item["contract_id"] = tft::kActionExecutionEventContractId;
+        item["contract_version"] = tft::kActionExecutionEventContractVersion;
+        item["source_namespace"] = tft::kActionExecutionEventSourceNamespace;
+        item["producer"] = tft::kActionExecutionEventProducer;
         item["player_id"] = trace.player_id;
         item["requested_action"] = trace.requested_action;
         item["effective_action"] = trace.effective_action;
