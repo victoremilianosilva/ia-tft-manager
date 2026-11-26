@@ -1027,41 +1027,10 @@ class CppTFTLobbyWrapper:
                         or not isinstance(sale_restricted, bool)
                     ):
                         raise RuntimeError("unit_priorities contém evidência inválida ou duplicada.")
-                    if strategic_version >= 4:
-                        tier = row.get("tier")
-                        highest_star = row.get("highest_star")
-                        on_board = row.get("on_board")
-                        board_contribution = row.get("board_contribution")
-                        synergy_contribution = row.get("synergy_contribution")
-                        copies_by_star = row.get("copies_by_star")
-                        pool_remaining = row.get("pool_remaining")
-                        pool_known = row.get("pool_known")
-                        has_pair = row.get("has_pair")
-                        copies_needed_for_pair = row.get("copies_needed_for_pair")
-                        if (
-                            isinstance(tier, bool) or not isinstance(tier, int) or not 0 <= tier <= 6
-                            or isinstance(highest_star, bool) or not isinstance(highest_star, int) or not 1 <= highest_star <= 3
-                            or not isinstance(on_board, bool)
-                            or isinstance(board_contribution, bool) or not isinstance(board_contribution, (int, float)) or not np.isfinite(board_contribution) or not 0 <= board_contribution <= 1
-                            or isinstance(synergy_contribution, bool) or not isinstance(synergy_contribution, (int, float)) or not np.isfinite(synergy_contribution) or not 0 <= synergy_contribution <= 1
-                            or not isinstance(copies_by_star, list) or len(copies_by_star) != 4
-                            or any(isinstance(value, bool) or not isinstance(value, int) or value < 0 for value in copies_by_star)
-                            or copies_by_star[0] != 0
-                            or isinstance(pool_remaining, bool) or not isinstance(pool_remaining, int) or pool_remaining < -1
-                            or not isinstance(pool_known, bool)
-                            or (pool_known and pool_remaining < 0)
-                            or (not pool_known and pool_remaining != -1)
-                            or not isinstance(has_pair, bool)
-                            or isinstance(copies_needed_for_pair, bool) or not isinstance(copies_needed_for_pair, int) or not 0 <= copies_needed_for_pair <= 2
-                        ):
-                            raise RuntimeError("unit_priorities contém evidência de par/upgrade inválida.")
-                        for field in ("copies_owned", "copies_in_shop", "affordable_shop_copies",
-                                      "copies_toward_next_star", "copies_needed_for_next_star"):
-                            number = row.get(field)
-                            if isinstance(number, bool) or not isinstance(number, int) or number < 0:
-                                raise RuntimeError(f"unit_priorities contém valor inválido em {field}.")
-                        if not isinstance(row.get("target_unit"), bool):
-                            raise RuntimeError("unit_priorities contém target_unit inválido.")
+                    # The semantic projection is the authoritative v4 validator.
+                    # Keep this transport boundary's stable v3 identity checks here;
+                    # re-walking every v4 pair/upgrade field duplicated the full
+                    # validation immediately before projection.
                     priority_ids.add(champion_id)
             elif priority_rows or any(lineup_ids.values()):
                 raise RuntimeError("Saídas indisponíveis do planner não podem publicar prioridades ou lineup.")
