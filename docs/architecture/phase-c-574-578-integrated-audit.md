@@ -70,3 +70,22 @@ These are hypotheses, not claimed wins. The benchmark decides.
 - Audit snapshots and replay remain complete.
 - End-to-end PPO-active benchmark includes native binding, adapter, batching, rollout, GAE and optimizer; do not rely on microbenchmarks or hide work in binding/C++.
 - No issue is closed and no performance gate is declared passed until evidence exists.
+
+
+## Implementation progress on the integrated PR
+
+The following pieces have now been added to this branch; they are implementation increments, not completion claims for the five issues:
+
+- **#575 partial:** native `board_relations` rows expose occupied slot, 4x7 row/column, role, stable UUID, adjacent occupied slots, frontline slots in front, and tank/fighter counts. The projection uses the existing board geometry and raw role facts; it does not create a second board evaluator. Neighbor storage is fixed-size and the projection avoids temporary neighbor vectors.
+- **#576 partial:** `ActionExecutionTrace` is now a versioned `tft.action-execution-event` v1 with producer/source namespace and source/outcome snapshot plus per-player sequence, round and stage. The Python oracle checks that this causal envelope matches the paired snapshots. Native factual deltas are not yet replacing the Python diff producer.
+- **#578 partial:** the trainer now creates one shared lobby context reused by its eight player rows, plus a player view referencing the frozen native player subtree. Strategic and positioning blocks are exposed as direct views; temporal counters and shared economy/PvP facts are carried separately. Native action execution is attached only to the matching outcome row. The existing semantic v8 tensor remains unchanged.
+- **#577 partial:** current action traces are explicitly linked to their source/outcome decision identities; existing round counters, board-move ages, combat sequence and economy/PvP events are preserved in the context. A bounded causal history that links delayed combat outcomes to originating decisions is still outstanding; no artificial retention window or causal attribution is being invented.
+- **#574:** the existing strategic-owner v4 implementation remains intact and is consumed by the new player context.
+
+### Remaining before the integrated performance gate
+
+1. Extend native Action Context beyond execution identity: emit action-family-specific factual deltas at the execution boundary, and keep the current Python diff producer as a parity oracle until all families match.
+2. Complete the positioning field/consumer matrix and validate relation rows against existing board evaluator outputs without changing evaluator behavior.
+3. Define and implement delayed-outcome causal references only where native producer evidence can establish them; specify bounded retention and reset/auto-reset semantics before adding history storage.
+4. Complete field-to-consumer routing for trainer, rollout, masks, rewards and audit. Keep the current Policy/checkpoint interface as compatibility mode.
+5. Run CI, inspect failures, then run the PPO-active integrated benchmark. The baseline comparison remains #573-1; no gain is claimed until measured.
