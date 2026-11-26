@@ -34,6 +34,20 @@ def _snapshot():
                 "board_relations": [],
                 "actions_taken_this_round": player_id,
                 "board_move_age": [0] * 28,
+                "action_history_contract_id": "tft.player-action-history",
+                "action_history_contract_version": 1,
+                "recent_action_history": [{
+                    "source_player_decision_sequence": 10 + player_id,
+                    "outcome_player_decision_sequence": 11 + player_id,
+                    "source_snapshot_sequence": 30,
+                    "outcome_snapshot_sequence": 31,
+                    "source_round": 4,
+                    "outcome_round": 4,
+                    "source_stage": 2,
+                    "outcome_stage": 2,
+                    "action_type": 6,
+                    "handler_applied": True,
+                }],
             }
             for player_id in range(8)
         ],
@@ -63,6 +77,8 @@ def test_decision_context_shares_lobby_facts_and_keeps_player_views_separate():
         assert len(context["positioning"]) == 0
         assert context["temporal"]["actions_taken_this_round"] == player_id
         assert context["temporal"]["board_move_age"] == [0] * 28
+        assert context["temporal"]["action_history_contract_id"] == "tft.player-action-history"
+        assert context["temporal"]["recent_action_history"][0]["action_type"] == 6
         assert context["action_execution"] is None
 
 
