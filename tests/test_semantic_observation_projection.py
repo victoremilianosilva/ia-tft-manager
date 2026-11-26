@@ -1171,3 +1171,25 @@ def test_batch_projection_reuses_item_catalog_fingerprint_without_skipping_compa
     )
     assert third["item_state_identity"]["item_catalog_sha256"] != first["item_state_identity"]["item_catalog_sha256"]
     assert len(calls) == 5
+
+
+def test_semantic_batch_alignment_binds_projection_metadata_during_validation():
+    catalog = {"TFT_TestChampion": 17}
+    metadata = _metadata()
+    contract = build_semantic_state_checkpoint_contract(catalog)
+    batch = build_semantic_batch([metadata], catalog, contract=contract)
+
+    validate_semantic_batch_alignment(
+        batch,
+        [metadata],
+        contract,
+        catalog,
+        reproject=False,
+        verify_catalog=False,
+        bind_metadata=True,
+    )
+
+    assert metadata["semantic_identity"] == batch["identities"][0]
+    assert metadata["semantic_projection_hash"] == batch["hashes"][0]
+    assert metadata["semantic_projection_contract_id"] == contract["contract"]["contract_id"]
+    assert metadata["semantic_projection_contract_hash"] == contract["sha256"]
