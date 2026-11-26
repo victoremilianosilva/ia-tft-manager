@@ -1103,7 +1103,7 @@ def project_native_player_state(
     if not (set(copy_progress) & known_catalog_ids).issubset(observed_owned_ids):
         raise ValueError("native UnitCopyProgress contains known champions absent from board/bench")
 
-    def read_feature_block(field, shape):
+    def read_feature_block(field, shape, *, materialize=True):
         value = state.get(field)
         if isinstance(value, np.ndarray):
             if (
@@ -1128,10 +1128,13 @@ def project_native_player_state(
                 raise ValueError(
                     f"native semantic item field {field} is outside [0, 1]"
                 )
-            # Convert only at the canonical v8 projection boundary. Python
-            # float values preserve the float32 payload represented by the
-            # previous list-backed pybind serialization, including hash order.
-            return value.reshape(-1).tolist()
+            # Keep native blocks as read-only views until they are appended
+            # to the canonical numeric list. Materializing every block here
+            # kept several redundant list pointer arrays alive simultaneously.
+            # The recipe block is the exception: its Python list is also used
+            # by the batch-local catalog fingerprint cache below.
+            flattened = value.reshape(-1)
+            return flattened.tolist() if materialize else flattened
 
         # Dict-backed fixtures and external sequence producers retain the
         # recursive compatibility path; only native ndarray views are zero-copy.
@@ -1156,12 +1159,22 @@ def project_native_player_state(
             raise ValueError(f"native semantic item field {field} is outside [0, 1]")
         return flat
 
-    component_features = read_feature_block("item_component_features", (10,))
-    inventory_features = read_feature_block("item_inventory_features", (9, 17))
+    component_features = read_feature_block(
+        "item_component_features", (10,), materialize=False
+    )
+    inventory_features = read_feature_block(
+        "item_inventory_features", (9, 17), materialize=False
+    )
     recipe_features = read_feature_block("item_recipe_features", (100, 17))
-    inventory_target_fit = read_feature_block("item_inventory_target_fit", (9, 37))
-    recipe_target_fit = read_feature_block("item_recipe_target_fit", (100, 37))
-    anvil_option_features = read_feature_block("pending_anvil_option_features", (9, 11))
+    inventory_target_fit = read_feature_block(
+        "item_inventory_target_fit", (9, 37), materialize=False
+    )
+    recipe_target_fit = read_feature_block(
+        "item_recipe_target_fit", (100, 37), materialize=False
+    )
+    anvil_option_features = read_feature_block(
+        "pending_anvil_option_features", (9, 11), materialize=False
+    )
 
     pending_anvil = state.get("pending_anvil")
     pending_sequence = _non_negative_int(
@@ -1227,17 +1240,40 @@ def project_native_player_state(
                 list(item_component_catalog), list(recipe_features), item_catalog_sha256
             )
 
-    numeric.extend(component_features)
-    numeric.extend(inventory_features)
+    # Native ndarray views are converted one at a time at the canonical
+    # list boundary, so their temporary Python pointer arrays are released
+    # immediately instead of being retained for the rest of this projection.
+    numeric.extend(
+        component_features.tolist()
+        if isinstance(component_features, np.ndarray)
+        else component_features
+    )
+    numeric.extend(
+        inventory_features.tolist()
+        if isinstance(inventory_features, np.ndarray)
+        else inventory_features
+    )
     numeric.extend(recipe_features)
-    numeric.extend(inventory_target_fit)
-    numeric.extend(recipe_target_fit)
+    numeric.extend(
+        inventory_target_fit.tolist()
+        if isinstance(inventory_target_fit, np.ndarray)
+        else inventory_target_fit
+    )
+    numeric.extend(
+        recipe_target_fit.tolist()
+        if isinstance(recipe_target_fit, np.ndarray)
+        else recipe_target_fit
+    )
     numeric.extend([
         float(pending_anvil),
         float(pending_anvil and pending_kind == 0),
         float(pending_anvil and pending_kind == 1),
     ])
-    numeric.extend(anvil_option_features)
+    numeric.extend(
+        anvil_option_features.tolist()
+        if isinstance(anvil_option_features, np.ndarray)
+        else anvil_option_features
+    )
 
     if len(numeric) != SEMANTIC_NUMERIC_DIM or len(champion_ids) != SEMANTIC_ENTITY_SLOTS:
         raise RuntimeError("semantic projection produced an invalid tensor layout")
