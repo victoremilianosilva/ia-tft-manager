@@ -12,12 +12,13 @@ Keep the existing `TFTEngine::get_audit_snapshot` as the single producer. A phys
 
 The native audit record now carries `champion_internal_id` alongside the champion API name, populated directly from the same `UnitInstance`. The pybind mapping exposes that integer without re-deriving physical identity from a string lookup. Python checks it against the loaded catalog when that catalog entry is available; dict-backed fixtures without the native integer retain the compatibility lookup.
 
-The semantic projection emits a separate `entity_identity` sequence in canonical slot order: board 0–27, bench 0–8, shop 0–4. It validates occupied-unit UUID presence and uniqueness within the player's snapshot, rejects UUIDs on empty slots, and attaches the exact shop offer revision to each shop slot. `build_semantic_batch` now exposes this projection as a per-player `entity_identity` collection, so the 42-row projection is retained for downstream typed-context consumers instead of being built and discarded.
+The semantic projection emits a compact, columnar `entity_identity` value. Its 42-element `occupied` and `unit_uuids` tuples use canonical indices: board 0–27, bench 28–36, shop 37–41. The five `shop_offer_revisions` are kept slot-aligned with shop indices 37–41. Location and local slot are derived from the canonical index rather than repeated in every row. It validates occupied-unit UUID presence and uniqueness within the player's snapshot and rejects UUIDs on empty slots. `build_semantic_batch` exposes the per-player projection for downstream typed-context consumers.
 
 ## Contract and invariants
 
-- Exactly 42 identity rows, aligned with the existing 45-feature entity slots.
-- Each row carries location, slot, occupancy, and physical unit UUID.
+- Exactly 42 slot-aligned occupancy values and physical UUIDs, aligned with the existing 45-feature entity slots.
+- Canonical index determines location/slot: board 0–27, bench 28–36, shop 37–41.
+- Exactly five shop offer revisions, aligned with shop indices 37–41.
 - Native occupied unit records carry a non-negative `champion_internal_id` from `UnitInstance`; when Python has the matching catalog entry, the values must agree.
 - Shop rows carry their slot-aligned non-negative offer revision; board/bench rows carry no offer revision.
 - UUID denotes a physical unit copy, not a champion definition or player ownership relation.
@@ -33,7 +34,7 @@ Adds an explicit identity result for audit and subsequent typed-context integrat
 ## Validation criteria
 
 - Verify native champion internal IDs are populated from the same physical UnitInstance and checked against catalog identity.
-- Verify all 42 rows and stable slot ordering, including propagation through `build_semantic_batch`.
+- Verify all 42 compact identity entries and stable slot ordering, including propagation through `build_semantic_batch`.
 - Verify distinct UUIDs for repeated champion copies and across board/bench/shop.
 - Reject missing occupied UUIDs, duplicate UUIDs, UUIDs on empty slots, and malformed shop revision arrays.
 - Change UUIDs/revisions and prove v8 numeric features, champion IDs, and hash remain unchanged.

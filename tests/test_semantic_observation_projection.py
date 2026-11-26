@@ -401,9 +401,9 @@ def test_semantic_batch_is_deterministic_and_catalog_contract_is_bound():
     second = build_semantic_batch(rows, dict(catalog))
     assert first == second
     assert len(first["entity_identity"]) == 1
-    assert len(first["entity_identity"][0]) == SEMANTIC_ENTITY_SLOTS
-    assert first["entity_identity"][0][0]["unit_uuid"] == "unit-board-0"
-    assert first["entity_identity"][0][28]["unit_uuid"] == "unit-bench-0"
+    assert len(first["entity_identity"][0]["occupied"]) == SEMANTIC_ENTITY_SLOTS
+    assert first["entity_identity"][0]["unit_uuids"][0] == "unit-board-0"
+    assert first["entity_identity"][0]["unit_uuids"][28] == "unit-bench-0"
 
     contract = build_semantic_state_checkpoint_contract(catalog)
     validate_semantic_state_checkpoint_contract(contract, catalog)
@@ -812,19 +812,15 @@ def test_entity_identity_projection_tracks_physical_units_and_shop_offer_revisio
 
     projected = project_native_player_state(row, catalog)
     identities = projected["entity_identity"]
-    assert len(identities) == SEMANTIC_ENTITY_SLOTS
-    assert identities[0] == {
-        "location": "board", "slot": 0, "occupied": True,
-        "unit_uuid": "unit-board-0", "shop_offer_revision": None,
-    }
-    assert identities[28] == {
-        "location": "bench", "slot": 0, "occupied": True,
-        "unit_uuid": "unit-bench-0", "shop_offer_revision": None,
-    }
-    assert identities[37] == {
-        "location": "shop", "slot": 0, "occupied": True,
-        "unit_uuid": "unit-shop-0", "shop_offer_revision": 4,
-    }
+    assert len(identities["occupied"]) == SEMANTIC_ENTITY_SLOTS
+    assert len(identities["unit_uuids"]) == SEMANTIC_ENTITY_SLOTS
+    assert identities["occupied"][0] is True
+    assert identities["unit_uuids"][0] == "unit-board-0"
+    assert identities["occupied"][28] is True
+    assert identities["unit_uuids"][28] == "unit-bench-0"
+    assert identities["occupied"][37] is True
+    assert identities["unit_uuids"][37] == "unit-shop-0"
+    assert identities["shop_offer_revisions"][0] == 4
 
     # Identity metadata is deliberately not a v8 policy feature or hash input.
     baseline = _metadata()
@@ -840,7 +836,7 @@ def test_entity_identity_projection_tracks_physical_units_and_shop_offer_revisio
     changed_shop = _metadata()
     changed_shop["native_player_state"]["shop_offer_revisions"] = [9, 0, 0, 0, 0]
     changed_shop_projection = project_native_player_state(changed_shop, catalog)
-    assert changed_shop_projection["entity_identity"][37]["shop_offer_revision"] == 9
+    assert changed_shop_projection["entity_identity"]["shop_offer_revisions"][0] == 9
     assert changed_shop_projection["sha256"] == baseline_projection["sha256"]
 
 

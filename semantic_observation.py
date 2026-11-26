@@ -813,7 +813,8 @@ def project_native_player_state(
 
     numeric = list(global_values)
     champion_ids = []
-    entity_identity = []
+    entity_occupied = []
+    entity_unit_uuids = []
     observed_unit_uuids = set()
     for group_name, expected_count in (("board", 28), ("bench", 9), ("shop", 5)):
         entities = state.get(group_name)
@@ -836,15 +837,8 @@ def project_native_player_state(
                 observed_unit_uuids.add(unit_uuid)
             elif unit_uuid:
                 raise ValueError(f"empty {group_name}[{slot}] cannot retain a physical unit UUID")
-            entity_identity.append({
-                "location": group_name,
-                "slot": slot,
-                "occupied": occupied,
-                "unit_uuid": unit_uuid,
-                "shop_offer_revision": (
-                    shop_offer_revisions[slot] if group_name == "shop" else None
-                ),
-            })
+            entity_occupied.append(occupied)
+            entity_unit_uuids.append(unit_uuid)
             if not occupied:
                 numeric.extend([0.0] * SEMANTIC_ENTITY_FEATURES)
                 champion_ids.append(0)
@@ -1155,7 +1149,13 @@ def project_native_player_state(
         "champion_ids": champion_ids,
         # Physical slot identity is deliberately outside the v8 PPO hash/tensor.
         # It is audit/context metadata for the typed entity contract, not a policy feature.
-        "entity_identity": entity_identity,
+        "entity_identity": {
+            # Slot index is canonical: board 0-27, bench 28-36, shop 37-41.
+            # Columnar tuples avoid 42 per-slot dictionaries per player.
+            "occupied": tuple(entity_occupied),
+            "unit_uuids": tuple(entity_unit_uuids),
+            "shop_offer_revisions": tuple(shop_offer_revisions),
+        },
         "identity": identity,
         "item_state_identity": {
             "item_components": item_components,
