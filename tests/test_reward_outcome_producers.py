@@ -156,6 +156,66 @@ def test_does_not_claim_action_gold_or_xp_delta_when_round_income_overlaps():
     assert events[0]["facts"]["xp_delta"] is None
 
 
+def test_validates_native_transition_facts_against_paired_snapshots():
+    before = _snapshot(5, 10)
+    after = _snapshot(6, 11)
+    before["stage"] = after["stage"] = 2
+    traces = _traces()
+    for trace in traces:
+        trace.update({
+            "transition_observed": True,
+            "board_capacity_violation": False,
+            "action_cost": 0,
+            "sale_proceeds": 0,
+            "gold_before": 30,
+            "gold_after": 30,
+            "interest_before": 2,
+            "interest_after": 2,
+            "level_before": 5,
+            "level_after": 5,
+            "xp_before": 2,
+            "xp_after": 2,
+        })
+
+    events = build_action_outcome_events(
+        before_snapshot=before, after_snapshot=after, action_traces=traces
+    )
+    assert events[0]["action"]["native_transition"]["gold_before"] == 30
+    assert events[0]["action"]["transition_observed"] is True
+    assert events[0]["source_decision"]["stage"] == 2
+
+
+def test_native_transition_parity_allows_round_income_after_action():
+    before = _snapshot(5, 10)
+    after = _snapshot(6, 11)
+    before["stage"] = after["stage"] = 2
+    after["economy_resolution_events"] = [{"player_id": 0}]
+    after["players"][0]["gold"] = 55
+    traces = _traces()
+    for trace in traces:
+        trace.update({
+            "transition_observed": True,
+            "board_capacity_violation": False,
+            "action_cost": 0,
+            "sale_proceeds": 0,
+            "gold_before": 30,
+            "gold_after": 30,
+            "interest_before": 2,
+            "interest_after": 2,
+            "level_before": 5,
+            "level_after": 5,
+            "xp_before": 2,
+            "xp_after": 2,
+        })
+
+    events = build_action_outcome_events(
+        before_snapshot=before, after_snapshot=after, action_traces=traces
+    )
+    assert events[0]["facts"]["economy_resolution_overlapped"] is True
+    assert events[0]["facts"]["gold_delta"] is None
+    assert events[0]["action"]["native_transition"]["gold_after"] == 30
+
+
 def test_rejects_snapshot_or_player_sequence_misalignment():
     before = _snapshot(5, 10)
     after = _snapshot(6, 10)
