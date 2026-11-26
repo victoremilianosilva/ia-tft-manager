@@ -440,6 +440,12 @@ def _build_semantic_projection_context(catalog_map: Mapping[str, int]) -> dict:
         "catalog": catalog,
         "known_catalog_ids": frozenset(catalog.values()),
         "trait_hash_cache": {},
+        # The ordered component catalog and recipe feature matrix are global
+        # catalog data repeated in every player's native snapshot. Keep their
+        # canonical fingerprint batch-local so JSON serialization/SHA-256 is
+        # performed once, while still comparing each player's payload before
+        # reusing the digest.
+        "item_catalog_fingerprint": None,
     }
 
 
@@ -1173,13 +1179,27 @@ def project_native_player_state(
     if len(item_inventory) > 9 or len(pending_options) > 9:
         raise ValueError("native item inventory/anvil options exceed their canonical slot counts")
 
-    item_catalog_sha256 = hashlib.sha256(json.dumps(
-        {
-            "component_ids": item_component_catalog,
-            "recipe_features": recipe_features,
-        },
-        sort_keys=True, separators=(",", ":"), ensure_ascii=False,
-    ).encode("utf-8")).hexdigest()
+    cached_item_catalog = projection_context.get("item_catalog_fingerprint")
+    if (
+        cached_item_catalog is not None
+        and cached_item_catalog[0] == item_component_catalog
+        and cached_item_catalog[1] == recipe_features
+    ):
+        item_catalog_sha256 = cached_item_catalog[2]
+    else:
+        item_catalog_sha256 = hashlib.sha256(json.dumps(
+            {
+                "component_ids": item_component_catalog,
+                "recipe_features": recipe_features,
+            },
+            sort_keys=True, separators=(",", ":"), ensure_ascii=False,
+        ).encode("utf-8")).hexdigest()
+        if cached_item_catalog is None:
+            # Batch-local only: never let a mutable projection cache escape
+            # through the returned PPO batch or survive a new snapshot batch.
+            projection_context["item_catalog_fingerprint"] = (
+                list(item_component_catalog), list(recipe_features), item_catalog_sha256
+            )
 
     numeric.extend(component_features)
     numeric.extend(inventory_features)
