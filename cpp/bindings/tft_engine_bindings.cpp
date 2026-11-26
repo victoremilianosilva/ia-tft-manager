@@ -289,22 +289,11 @@ py::dict audit_player_snapshot_to_dict(
         strategic_state["active_core_unit_ids"] = strategic.active_core_unit_ids;
         strategic_state["direction_valid"] = strategic.direction_valid;
         strategic_state["direction_identity"] = strategic.direction_identity;
-        strategic_state["direction_value"] = strategic.direction_value;
-        strategic_state["direction_composition_identity"] = strategic.direction_composition_identity;
-        strategic_state["direction_composition_version"] = strategic.direction_composition_version;
-        strategic_state["direction_confidence"] = strategic.direction_confidence;
-        strategic_state["direction_lifecycle"] = strategic.direction_lifecycle;
-        strategic_state["direction_evidence"] = strategic.direction_evidence;
         strategic_state["direction_selected_round"] = strategic.direction_selected_round;
         strategic_state["direction_reference_unit_ids"] = strategic.direction_reference_unit_ids;
         strategic_state["pivot_candidate_valid"] = strategic.pivot_candidate_valid;
         strategic_state["pivot_candidate_identity"] = strategic.pivot_candidate_identity;
         strategic_state["pivot_target_composition_identity"] = strategic.pivot_target_composition_identity;
-        strategic_state["pivot_target_direction"] = strategic.pivot_target_direction;
-        strategic_state["pivot_source_direction_identity"] = strategic.pivot_source_direction_identity;
-        strategic_state["pivot_confidence"] = strategic.pivot_confidence;
-        strategic_state["pivot_lifecycle"] = strategic.pivot_lifecycle;
-        strategic_state["pivot_evidence"] = strategic.pivot_evidence;
         strategic_state["pivot_source_composition_version"] = strategic.pivot_source_composition_version;
         strategic_state["pivot_reference_unit_ids"] = strategic.pivot_reference_unit_ids;
         py::list unit_copy_progress;
@@ -330,22 +319,6 @@ py::dict audit_player_snapshot_to_dict(
             row["target_star"] = priority.target_star;
             row["sale_restricted"] = priority.sale_restricted;
             row["confidence"] = priority.confidence;
-            row["tier"] = priority.tier;
-            row["copies_owned"] = priority.copies_owned;
-            row["highest_star"] = priority.highest_star;
-            row["on_board"] = priority.on_board;
-            row["board_contribution"] = priority.board_contribution;
-            row["synergy_contribution"] = priority.synergy_contribution;
-            row["copies_by_star"] = priority.copies_by_star;
-            row["copies_in_shop"] = priority.copies_in_shop;
-            row["affordable_shop_copies"] = priority.affordable_shop_copies;
-            row["copies_toward_next_star"] = priority.copies_toward_next_star;
-            row["copies_needed_for_next_star"] = priority.copies_needed_for_next_star;
-            row["pool_remaining"] = priority.pool_remaining;
-            row["pool_known"] = priority.pool_known;
-            row["target_unit"] = priority.target_unit;
-            row["has_pair"] = priority.has_pair;
-            row["copies_needed_for_pair"] = priority.copies_needed_for_pair;
             unit_priorities.append(std::move(row));
         }
         strategic_state["unit_priorities"] = std::move(unit_priorities);
@@ -366,8 +339,6 @@ py::dict audit_player_snapshot_to_dict(
         strategic_state["lineup_entry_unit_ids"] = strategic.lineup_entry_unit_ids;
         strategic_state["lineup_exit_unit_ids"] = strategic.lineup_exit_unit_ids;
         strategic_state["lineup_deferred_unit_ids"] = strategic.lineup_deferred_unit_ids;
-        strategic_state["lineup_bridge_unit_ids"] = strategic.lineup_bridge_unit_ids;
-        strategic_state["lineup_endgame_target_unit_ids"] = strategic.lineup_endgame_target_unit_ids;
         strategic_state["strategic_refresh_failed"] = strategic.strategic_refresh_failed;
         strategic_state["strategic_refresh_failure_reason"] =
             strategic.strategic_refresh_failure_reason;
