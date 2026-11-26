@@ -47,6 +47,7 @@ def _snapshot(sequence, player_sequence, round_number=4):
         "snapshot_sequence": sequence,
         "player_decision_sequences": [player_sequence] * 8,
         "round": round_number,
+        "stage": 2,
         "economy_resolution_events": [],
         "pvp_result_credit_events": [],
         "players": [_player(i) for i in range(8)],
