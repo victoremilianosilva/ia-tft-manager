@@ -1,0 +1,676 @@
+{
+  "schema_version": 1,
+  "benchmark": "tft.phase-a.full-training-profile",
+  "created_at_utc": "2026-11-26T12:12:19.753966+00:00",
+  "revision": "45198a85d405e875a7634f912c884300203e38e9",
+  "system": {
+    "platform": "Windows-10-10.0.26200-SP0",
+    "python": "3.11.9 (tags/v3.11.9:de54cf5, Apr  2 2024, 10:12:12) [MSC v.1938 64 bit (AMD64)]",
+    "processor": "AMD64 Family 23 Model 24 Stepping 1, AuthenticAMD",
+    "logical_cpu_count": 8,
+    "torch": "2.15.0+cpu",
+    "numpy": "2.4.6"
+  },
+  "configuration": {
+    "seed": 20261124,
+    "updates": 2,
+    "lobby_counts": [
+      1,
+      2,
+      4
+    ],
+    "players_per_lobby": 8,
+    "rollout_steps": 16,
+    "batch_size": 256,
+    "ppo_epochs": 4,
+    "device": "cpu",
+    "ppo_enabled": true,
+    "semantic_batch_enabled": true,
+    "lobby_execution": "sequential-current-vector-env"
+  },
+  "runs": [
+    {
+      "lobbies": 1,
+      "players": 8,
+      "initialization_ms": 13244.395,
+      "training_wall_ms": 42442.054,
+      "run_dir": "C:\\Users\\cilio\\Desktop\\Ideia louca\\ia-tft-manager\\artifacts\\573-1\\lobbies-1",
+      "timings": {
+        "binding.get_anti_loop_metrics": {
+          "calls": 32,
+          "total_ms": 1.453,
+          "mean_ms": 0.045,
+          "median_ms": 0.042,
+          "p95_ms": 0.054,
+          "p99_ms": 0.109,
+          "min_ms": 0.035,
+          "max_ms": 0.109
+        },
+        "binding.get_champion_id_map": {
+          "calls": 1,
+          "total_ms": 0.084,
+          "mean_ms": 0.084,
+          "median_ms": 0.084,
+          "p95_ms": 0.084,
+          "p99_ms": 0.084,
+          "min_ms": 0.084,
+          "max_ms": 0.084
+        },
+        "outcomes.build_factual_events": {
+          "calls": 32,
+          "total_ms": 754.08,
+          "mean_ms": 23.565,
+          "median_ms": 22.557,
+          "p95_ms": 28.466,
+          "p99_ms": 40.057,
+          "min_ms": 20.737,
+          "max_ms": 40.057
+        },
+        "policy.evaluate_actions": {
+          "calls": 10,
+          "total_ms": 463.38,
+          "mean_ms": 46.338,
+          "median_ms": 46.073,
+          "p95_ms": 51.508,
+          "p99_ms": 51.508,
+          "min_ms": 41.879,
+          "max_ms": 51.508
+        },
+        "policy.get_action": {
+          "calls": 28,
+          "total_ms": 542.381,
+          "mean_ms": 19.371,
+          "median_ms": 18.539,
+          "p95_ms": 26.114,
+          "p99_ms": 31.579,
+          "min_ms": 14.152,
+          "max_ms": 31.579
+        },
+        "policy.get_action_with_diagnostics": {
+          "calls": 4,
+          "total_ms": 158.181,
+          "mean_ms": 39.545,
+          "median_ms": 18.915,
+          "p95_ms": 103.36,
+          "p99_ms": 103.36,
+          "min_ms": 16.99,
+          "max_ms": 103.36
+        },
+        "policy.get_value": {
+          "calls": 2,
+          "total_ms": 16.828,
+          "mean_ms": 8.414,
+          "median_ms": 8.414,
+          "p95_ms": 9.085,
+          "p99_ms": 9.085,
+          "min_ms": 7.743,
+          "max_ms": 9.085
+        },
+        "ppo.compute_loss": {
+          "calls": 8,
+          "total_ms": 383.979,
+          "mean_ms": 47.997,
+          "median_ms": 47.997,
+          "p95_ms": 55.524,
+          "p99_ms": 55.524,
+          "min_ms": 42.93,
+          "max_ms": 55.524
+        },
+        "ppo.update_total": {
+          "calls": 2,
+          "total_ms": 1311.505,
+          "mean_ms": 655.753,
+          "median_ms": 655.753,
+          "p95_ms": 721.363,
+          "p99_ms": 721.363,
+          "min_ms": 590.143,
+          "max_ms": 721.363
+        },
+        "python.deepcopy": {
+          "calls": 278,
+          "total_ms": 165.516,
+          "mean_ms": 0.595,
+          "median_ms": 0.004,
+          "p95_ms": 3.89,
+          "p99_ms": 4.596,
+          "min_ms": 0.002,
+          "max_ms": 5.598
+        },
+        "rollout.add": {
+          "calls": 32,
+          "total_ms": 3143.382,
+          "mean_ms": 98.231,
+          "median_ms": 97.726,
+          "p95_ms": 109.281,
+          "p99_ms": 128.307,
+          "min_ms": 84.069,
+          "max_ms": 128.307
+        },
+        "rollout.gae": {
+          "calls": 2,
+          "total_ms": 10.283,
+          "mean_ms": 5.142,
+          "median_ms": 5.142,
+          "p95_ms": 6.619,
+          "p99_ms": 6.619,
+          "min_ms": 3.665,
+          "max_ms": 6.619
+        },
+        "semantic.build_batch": {
+          "calls": 34,
+          "total_ms": 26036.876,
+          "mean_ms": 765.79,
+          "median_ms": 765.271,
+          "p95_ms": 839.559,
+          "p99_ms": 890.345,
+          "min_ms": 703.339,
+          "max_ms": 890.345
+        },
+        "semantic.project_player": {
+          "calls": 272,
+          "total_ms": 26024.286,
+          "mean_ms": 95.678,
+          "median_ms": 93.393,
+          "p95_ms": 116.662,
+          "p99_ms": 128.539,
+          "min_ms": 78.598,
+          "max_ms": 130.224
+        },
+        "semantic.validate_alignment": {
+          "calls": 64,
+          "total_ms": 43.217,
+          "mean_ms": 0.675,
+          "median_ms": 0.643,
+          "p95_ms": 0.871,
+          "p99_ms": 0.975,
+          "min_ms": 0.537,
+          "max_ms": 1.033
+        },
+        "vector.reset_total": {
+          "calls": 2,
+          "total_ms": 391.267,
+          "mean_ms": 195.633,
+          "median_ms": 195.633,
+          "p95_ms": 222.626,
+          "p99_ms": 222.626,
+          "min_ms": 168.641,
+          "max_ms": 222.626
+        },
+        "vector.step_total": {
+          "calls": 32,
+          "total_ms": 8206.803,
+          "mean_ms": 256.463,
+          "median_ms": 246.677,
+          "p95_ms": 283.454,
+          "p99_ms": 406.398,
+          "min_ms": 211.732,
+          "max_ms": 406.398
+        },
+        "wrapper.initialize": {
+          "calls": 1,
+          "total_ms": 0.223,
+          "mean_ms": 0.223,
+          "median_ms": 0.223,
+          "p95_ms": 0.223,
+          "p99_ms": 0.223,
+          "min_ms": 0.223,
+          "max_ms": 0.223
+        },
+        "wrapper.snapshot_validation": {
+          "calls": 34,
+          "total_ms": 7221.298,
+          "mean_ms": 212.391,
+          "median_ms": 205.396,
+          "p95_ms": 235.674,
+          "p99_ms": 358.062,
+          "min_ms": 157.256,
+          "max_ms": 358.062
+        }
+      }
+    },
+    {
+      "lobbies": 2,
+      "players": 16,
+      "initialization_ms": 869.598,
+      "training_wall_ms": 80219.686,
+      "run_dir": "C:\\Users\\cilio\\Desktop\\Ideia louca\\ia-tft-manager\\artifacts\\573-1\\lobbies-2",
+      "timings": {
+        "binding.get_anti_loop_metrics": {
+          "calls": 64,
+          "total_ms": 2.535,
+          "mean_ms": 0.04,
+          "median_ms": 0.04,
+          "p95_ms": 0.058,
+          "p99_ms": 0.062,
+          "min_ms": 0.024,
+          "max_ms": 0.064
+        },
+        "binding.get_champion_id_map": {
+          "calls": 2,
+          "total_ms": 0.176,
+          "mean_ms": 0.088,
+          "median_ms": 0.088,
+          "p95_ms": 0.091,
+          "p99_ms": 0.091,
+          "min_ms": 0.086,
+          "max_ms": 0.091
+        },
+        "optimizer.step": {
+          "calls": 8,
+          "total_ms": 442.802,
+          "mean_ms": 55.35,
+          "median_ms": 57.402,
+          "p95_ms": 68.569,
+          "p99_ms": 68.569,
+          "min_ms": 40.77,
+          "max_ms": 68.569
+        },
+        "outcomes.build_factual_events": {
+          "calls": 64,
+          "total_ms": 1481.132,
+          "mean_ms": 23.143,
+          "median_ms": 21.841,
+          "p95_ms": 30.06,
+          "p99_ms": 32.513,
+          "min_ms": 20.368,
+          "max_ms": 36.589
+        },
+        "policy.evaluate_actions": {
+          "calls": 10,
+          "total_ms": 884.034,
+          "mean_ms": 88.403,
+          "median_ms": 88.18,
+          "p95_ms": 101.906,
+          "p99_ms": 101.906,
+          "min_ms": 71.381,
+          "max_ms": 101.906
+        },
+        "policy.get_action": {
+          "calls": 28,
+          "total_ms": 603.136,
+          "mean_ms": 21.541,
+          "median_ms": 22.0,
+          "p95_ms": 27.112,
+          "p99_ms": 34.024,
+          "min_ms": 15.711,
+          "max_ms": 34.024
+        },
+        "policy.get_action_with_diagnostics": {
+          "calls": 4,
+          "total_ms": 103.911,
+          "mean_ms": 25.978,
+          "median_ms": 25.849,
+          "p95_ms": 28.29,
+          "p99_ms": 28.29,
+          "min_ms": 23.923,
+          "max_ms": 28.29
+        },
+        "policy.get_value": {
+          "calls": 2,
+          "total_ms": 21.83,
+          "mean_ms": 10.915,
+          "median_ms": 10.915,
+          "p95_ms": 10.98,
+          "p99_ms": 10.98,
+          "min_ms": 10.851,
+          "max_ms": 10.98
+        },
+        "ppo.compute_loss": {
+          "calls": 8,
+          "total_ms": 699.702,
+          "mean_ms": 87.463,
+          "median_ms": 88.923,
+          "p95_ms": 96.245,
+          "p99_ms": 96.245,
+          "min_ms": 72.414,
+          "max_ms": 96.245
+        },
+        "ppo.update_total": {
+          "calls": 2,
+          "total_ms": 2147.434,
+          "mean_ms": 1073.717,
+          "median_ms": 1073.717,
+          "p95_ms": 1113.437,
+          "p99_ms": 1113.437,
+          "min_ms": 1033.997,
+          "max_ms": 1113.437
+        },
+        "python.deepcopy": {
+          "calls": 342,
+          "total_ms": 337.563,
+          "mean_ms": 0.987,
+          "median_ms": 0.007,
+          "p95_ms": 7.479,
+          "p99_ms": 8.837,
+          "min_ms": 0.002,
+          "max_ms": 20.7
+        },
+        "rollout.add": {
+          "calls": 32,
+          "total_ms": 5893.535,
+          "mean_ms": 184.173,
+          "median_ms": 179.14,
+          "p95_ms": 217.869,
+          "p99_ms": 240.24,
+          "min_ms": 155.336,
+          "max_ms": 240.24
+        },
+        "rollout.gae": {
+          "calls": 2,
+          "total_ms": 7.443,
+          "mean_ms": 3.721,
+          "median_ms": 3.721,
+          "p95_ms": 3.965,
+          "p99_ms": 3.965,
+          "min_ms": 3.478,
+          "max_ms": 3.965
+        },
+        "semantic.build_batch": {
+          "calls": 34,
+          "total_ms": 51333.047,
+          "mean_ms": 1509.795,
+          "median_ms": 1516.009,
+          "p95_ms": 1643.43,
+          "p99_ms": 1655.808,
+          "min_ms": 1398.724,
+          "max_ms": 1655.808
+        },
+        "semantic.project_player": {
+          "calls": 544,
+          "total_ms": 51311.882,
+          "mean_ms": 94.323,
+          "median_ms": 92.054,
+          "p95_ms": 113.527,
+          "p99_ms": 119.474,
+          "min_ms": 72.78,
+          "max_ms": 132.242
+        },
+        "semantic.validate_alignment": {
+          "calls": 64,
+          "total_ms": 77.473,
+          "mean_ms": 1.211,
+          "median_ms": 1.135,
+          "p95_ms": 1.69,
+          "p99_ms": 1.959,
+          "min_ms": 1.0,
+          "max_ms": 2.335
+        },
+        "vector.reset_total": {
+          "calls": 2,
+          "total_ms": 759.424,
+          "mean_ms": 379.712,
+          "median_ms": 379.712,
+          "p95_ms": 419.246,
+          "p99_ms": 419.246,
+          "min_ms": 340.177,
+          "max_ms": 419.246
+        },
+        "vector.step_total": {
+          "calls": 32,
+          "total_ms": 15735.325,
+          "mean_ms": 491.729,
+          "median_ms": 483.784,
+          "p95_ms": 573.028,
+          "p99_ms": 716.436,
+          "min_ms": 415.543,
+          "max_ms": 716.436
+        },
+        "wrapper.initialize": {
+          "calls": 2,
+          "total_ms": 0.254,
+          "mean_ms": 0.127,
+          "median_ms": 0.127,
+          "p95_ms": 0.16,
+          "p99_ms": 0.16,
+          "min_ms": 0.094,
+          "max_ms": 0.16
+        },
+        "wrapper.snapshot_validation": {
+          "calls": 68,
+          "total_ms": 13766.399,
+          "mean_ms": 202.447,
+          "median_ms": 194.213,
+          "p95_ms": 252.168,
+          "p99_ms": 334.596,
+          "min_ms": 148.443,
+          "max_ms": 382.698
+        }
+      }
+    },
+    {
+      "lobbies": 4,
+      "players": 32,
+      "initialization_ms": 1268.025,
+      "training_wall_ms": 164842.095,
+      "run_dir": "C:\\Users\\cilio\\Desktop\\Ideia louca\\ia-tft-manager\\artifacts\\573-1\\lobbies-4",
+      "timings": {
+        "binding.get_anti_loop_metrics": {
+          "calls": 128,
+          "total_ms": 4.923,
+          "mean_ms": 0.038,
+          "median_ms": 0.037,
+          "p95_ms": 0.06,
+          "p99_ms": 0.08,
+          "min_ms": 0.023,
+          "max_ms": 0.082
+        },
+        "binding.get_champion_id_map": {
+          "calls": 4,
+          "total_ms": 0.307,
+          "mean_ms": 0.077,
+          "median_ms": 0.074,
+          "p95_ms": 0.09,
+          "p99_ms": 0.09,
+          "min_ms": 0.07,
+          "max_ms": 0.09
+        },
+        "optimizer.step": {
+          "calls": 13,
+          "total_ms": 645.982,
+          "mean_ms": 49.691,
+          "median_ms": 46.457,
+          "p95_ms": 57.783,
+          "p99_ms": 69.941,
+          "min_ms": 41.579,
+          "max_ms": 69.941
+        },
+        "outcomes.build_factual_events": {
+          "calls": 128,
+          "total_ms": 3133.978,
+          "mean_ms": 24.484,
+          "median_ms": 22.741,
+          "p95_ms": 34.471,
+          "p99_ms": 42.75,
+          "min_ms": 20.292,
+          "max_ms": 44.361
+        },
+        "policy.evaluate_actions": {
+          "calls": 16,
+          "total_ms": 1528.024,
+          "mean_ms": 95.502,
+          "median_ms": 92.382,
+          "p95_ms": 103.432,
+          "p99_ms": 149.929,
+          "min_ms": 77.322,
+          "max_ms": 149.929
+        },
+        "policy.get_action": {
+          "calls": 28,
+          "total_ms": 772.723,
+          "mean_ms": 27.597,
+          "median_ms": 26.627,
+          "p95_ms": 39.515,
+          "p99_ms": 44.355,
+          "min_ms": 19.378,
+          "max_ms": 44.355
+        },
+        "policy.get_action_with_diagnostics": {
+          "calls": 4,
+          "total_ms": 126.818,
+          "mean_ms": 31.705,
+          "median_ms": 31.511,
+          "p95_ms": 41.475,
+          "p99_ms": 41.475,
+          "min_ms": 22.32,
+          "max_ms": 41.475
+        },
+        "policy.get_value": {
+          "calls": 2,
+          "total_ms": 34.803,
+          "mean_ms": 17.402,
+          "median_ms": 17.402,
+          "p95_ms": 21.53,
+          "p99_ms": 21.53,
+          "min_ms": 13.273,
+          "max_ms": 21.53
+        },
+        "ppo.compute_loss": {
+          "calls": 14,
+          "total_ms": 1364.178,
+          "mean_ms": 97.441,
+          "median_ms": 93.646,
+          "p95_ms": 105.088,
+          "p99_ms": 151.191,
+          "min_ms": 78.577,
+          "max_ms": 151.191
+        },
+        "ppo.update_total": {
+          "calls": 2,
+          "total_ms": 3706.821,
+          "mean_ms": 1853.411,
+          "median_ms": 1853.411,
+          "p95_ms": 2205.312,
+          "p99_ms": 2205.312,
+          "min_ms": 1501.51,
+          "max_ms": 2205.312
+        },
+        "python.deepcopy": {
+          "calls": 470,
+          "total_ms": 573.841,
+          "mean_ms": 1.221,
+          "median_ms": 0.531,
+          "p95_ms": 11.686,
+          "p99_ms": 13.005,
+          "min_ms": 0.003,
+          "max_ms": 26.15
+        },
+        "rollout.add": {
+          "calls": 32,
+          "total_ms": 11614.992,
+          "mean_ms": 362.969,
+          "median_ms": 363.635,
+          "p95_ms": 394.628,
+          "p99_ms": 408.924,
+          "min_ms": 323.422,
+          "max_ms": 408.924
+        },
+        "rollout.gae": {
+          "calls": 2,
+          "total_ms": 11.475,
+          "mean_ms": 5.738,
+          "median_ms": 5.738,
+          "p95_ms": 6.523,
+          "p99_ms": 6.523,
+          "min_ms": 4.952,
+          "max_ms": 6.523
+        },
+        "semantic.build_batch": {
+          "calls": 34,
+          "total_ms": 109499.393,
+          "mean_ms": 3220.57,
+          "median_ms": 3156.468,
+          "p95_ms": 3515.334,
+          "p99_ms": 4110.052,
+          "min_ms": 2938.017,
+          "max_ms": 4110.052
+        },
+        "semantic.project_player": {
+          "calls": 1088,
+          "total_ms": 109456.982,
+          "mean_ms": 100.604,
+          "median_ms": 96.956,
+          "p95_ms": 125.278,
+          "p99_ms": 160.301,
+          "min_ms": 79.017,
+          "max_ms": 316.378
+        },
+        "semantic.validate_alignment": {
+          "calls": 64,
+          "total_ms": 148.463,
+          "mean_ms": 2.32,
+          "median_ms": 2.079,
+          "p95_ms": 3.524,
+          "p99_ms": 4.204,
+          "min_ms": 1.932,
+          "max_ms": 4.442
+        },
+        "vector.reset_total": {
+          "calls": 2,
+          "total_ms": 1535.025,
+          "mean_ms": 767.512,
+          "median_ms": 767.512,
+          "p95_ms": 831.906,
+          "p99_ms": 831.906,
+          "min_ms": 703.119,
+          "max_ms": 831.906
+        },
+        "vector.step_total": {
+          "calls": 32,
+          "total_ms": 31763.713,
+          "mean_ms": 992.616,
+          "median_ms": 927.784,
+          "p95_ms": 1234.446,
+          "p99_ms": 1335.459,
+          "min_ms": 867.38,
+          "max_ms": 1335.459
+        },
+        "wrapper.initialize": {
+          "calls": 4,
+          "total_ms": 0.413,
+          "mean_ms": 0.103,
+          "median_ms": 0.084,
+          "p95_ms": 0.166,
+          "p99_ms": 0.166,
+          "min_ms": 0.079,
+          "max_ms": 0.166
+        },
+        "wrapper.snapshot_validation": {
+          "calls": 136,
+          "total_ms": 27427.196,
+          "mean_ms": 201.671,
+          "median_ms": 187.074,
+          "p95_ms": 281.881,
+          "p99_ms": 411.433,
+          "min_ms": 152.789,
+          "max_ms": 421.154
+        }
+      }
+    }
+  ],
+  "process": {
+    "wall_ms": 320597.717,
+    "cpu_ms": 462921.875,
+    "python_tracemalloc_current_bytes": 156732858,
+    "python_tracemalloc_peak_bytes": 262458195,
+    "memory_before": {
+      "rss_bytes": null,
+      "vms_bytes": null,
+      "peak_rss_platform_units": null,
+      "peak_rss_units": null
+    },
+    "memory_after": {
+      "rss_bytes": null,
+      "vms_bytes": null,
+      "peak_rss_platform_units": null,
+      "peak_rss_units": null
+    }
+  },
+  "limitations": [
+    "binding.* timings are inclusive pybind call times; internal native engine work and C++ result conversion are not separated yet",
+    "wrapper.step is inclusive and contains binding calls; do not sum inclusive timing rows",
+    "tracemalloc excludes native C++ allocations and some allocator-owned memory",
+    "RSS is process-wide and sampled before/after; use an external sampler for peak RSS over time",
+    "profiling hooks add overhead; compare revisions using the same script and configuration",
+    "each lobby-count run uses a separate fresh checkpoint/log directory"
+  ]
+}
