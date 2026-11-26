@@ -322,6 +322,8 @@ def build_action_outcome_events(
         after_gold = _int(after.get("gold"), "after.gold")
         before_interest = _int(before.get("interest_if_resolved_now"), "before.interest")
         after_interest = _int(after.get("interest_if_resolved_now"), "after.interest")
+        resolved = player_id in economy_resolved
+        pvp_credit_overlapped = player_id in pvp_credit_players
         native_transition = None
         if "transition_observed" in trace:
             transition_observed = trace.get("transition_observed")
@@ -345,14 +347,23 @@ def build_action_outcome_events(
                     raise RuntimeError("Action trace board_capacity_violation inválido.")
                 expected_transition = {
                     "gold_before": before_gold,
-                    "gold_after": after_gold,
                     "interest_before": before_interest,
-                    "interest_after": after_interest,
                     "level_before": _int(before.get("level"), "before.level"),
-                    "level_after": _int(after.get("level"), "after.level"),
                     "xp_before": _int(before.get("xp"), "before.xp"),
-                    "xp_after": _int(after.get("xp"), "after.xp"),
                 }
+                # The post-action snapshot may include later round income or PvP
+                # credit. Compare those after-values only when no delayed event
+                # overlapped the action boundary.
+                if not resolved and not pvp_credit_overlapped:
+                    expected_transition.update({
+                        "gold_after": after_gold,
+                        "interest_after": after_interest,
+                    })
+                if not resolved:
+                    expected_transition.update({
+                        "level_after": _int(after.get("level"), "after.level"),
+                        "xp_after": _int(after.get("xp"), "after.xp"),
+                    })
                 for field, expected in expected_transition.items():
                     if native_transition[field] != expected:
                         raise RuntimeError(
@@ -360,8 +371,6 @@ def build_action_outcome_events(
                         )
             elif trace.get("handler_applied"):
                 raise RuntimeError("Action não processada não pode declarar handler_applied.")
-        resolved = player_id in economy_resolved
-        pvp_credit_overlapped = player_id in pvp_credit_players
         gold_delta = None if resolved or pvp_credit_overlapped else after_gold - before_gold
         xp_delta = None if resolved else (
             _int(after.get("xp"), "after.xp") - _int(before.get("xp"), "before.xp")
