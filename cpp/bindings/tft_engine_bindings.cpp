@@ -294,6 +294,7 @@ py::dict audit_player_snapshot_to_dict(
         strategic_state["direction_composition_identity"] = strategic.direction_composition_identity;
         strategic_state["direction_composition_version"] = strategic.direction_composition_version;
         strategic_state["direction_confidence"] = strategic.direction_confidence;
+        strategic_state["direction_reason"] = strategic.direction_reason;
         strategic_state["direction_lifecycle"] = strategic.direction_lifecycle;
         strategic_state["direction_evidence"] = strategic.direction_evidence;
         strategic_state["direction_selected_round"] = strategic.direction_selected_round;
@@ -304,6 +305,7 @@ py::dict audit_player_snapshot_to_dict(
         strategic_state["pivot_target_direction"] = strategic.pivot_target_direction;
         strategic_state["pivot_source_direction_identity"] = strategic.pivot_source_direction_identity;
         strategic_state["pivot_confidence"] = strategic.pivot_confidence;
+        strategic_state["pivot_reason"] = strategic.pivot_reason;
         strategic_state["pivot_lifecycle"] = strategic.pivot_lifecycle;
         strategic_state["pivot_evidence"] = strategic.pivot_evidence;
         strategic_state["pivot_source_composition_version"] = strategic.pivot_source_composition_version;
