@@ -930,6 +930,10 @@ py::dict step_to_dict(tft::StepResult step) {
     py::list action_traces;
     for (const auto& trace : step.action_traces) {
         py::dict item;
+        item["contract_id"] = trace.contract_id;
+        item["contract_version"] = trace.contract_version;
+        item["source_namespace"] = trace.source_namespace;
+        item["producer"] = trace.producer;
         item["player_id"] = trace.player_id;
         item["requested_action"] = trace.requested_action;
         item["effective_action"] = trace.effective_action;
