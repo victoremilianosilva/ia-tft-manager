@@ -68,10 +68,16 @@ class NativeStrategicPpoContractTests(unittest.TestCase):
             with self.subTest(field=field):
                 self.assertIn(field, self.engine_header)
 
-    def test_python_adapter_validates_native_strategic_snapshot(self):
-        self.assertIn('strategic = player.get("strategic_state")', self.adapter)
-        self.assertIn('strategic.get("unit_copy_progress")', self.adapter)
+    def test_semantic_projection_owns_native_strategic_payload_validation(self):
+        # The wrapper owns snapshot identity/sequence and safe copying. Strategic
+        # payload invariants have one authoritative validator: the projection
+        # that runs for every row before the semantic batch reaches PPO.
         self.assertIn('result.get("native_state_snapshot")', self.adapter)
+        self.assertNotIn('strategic.get("unit_copy_progress")', self.adapter)
+        self.assertIn('strategic = state.get("strategic_state")', self.semantic)
+        self.assertIn('progress_rows = strategic.get("unit_copy_progress")', self.semantic)
+        self.assertIn('opportunity_rows = strategic.get("opportunity_costs")', self.semantic)
+        self.assertIn("direction/pivot anchor provenance is invalid", self.semantic)
         self.assertIn("get_audit_snapshot", self.engine)
 
     def test_semantic_projection_consumes_native_strategic_facts(self):
