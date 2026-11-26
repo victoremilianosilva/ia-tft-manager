@@ -422,6 +422,25 @@ py::dict audit_player_snapshot_to_dict(
         for (const auto& unit : player.shop) shop.append(unit_to_dict(unit));
         p["board"] = board;
         p["bench"] = bench;
+        p["positioning_contract_id"] = player.positioning_contract_id;
+        p["positioning_contract_version"] = player.positioning_contract_version;
+        p["positioning_producer"] = player.positioning_producer;
+        py::list board_relations;
+        for (const auto& relation : player.board_relations) {
+            py::dict row;
+            row["slot"] = relation.slot;
+            row["row"] = relation.row;
+            row["column"] = relation.column;
+            row["role"] = relation.role;
+            row["unit_uuid"] = relation.unit_uuid;
+            row["adjacent_slots"] = relation.adjacent_slots;
+            row["frontline_slots_in_front"] = relation.frontline_slots_in_front;
+            row["adjacent_occupied_count"] = relation.adjacent_occupied_count;
+            row["tanks_in_front"] = relation.tanks_in_front;
+            row["fighters_in_front"] = relation.fighters_in_front;
+            board_relations.append(std::move(row));
+        }
+        p["board_relations"] = std::move(board_relations);
         p["shop"] = shop;
         p["shop_offer_revisions"] = player.shop_offer_revisions;
         p["item_components"] = player.item_components;
