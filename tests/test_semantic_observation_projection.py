@@ -1185,6 +1185,65 @@ def test_batch_projection_reuses_item_catalog_fingerprint_without_skipping_compa
     assert len(calls) == 5
 
 
+def test_batch_projection_reuses_native_item_catalog_fingerprint_without_materializing_each_player(monkeypatch):
+    catalog = {"TFT_TestChampion": 17}
+    projection_context = semantic_module._build_semantic_projection_context(catalog)
+    list_backed = _metadata()
+    expected = project_native_player_state(list_backed, catalog)
+    native_rows = [_metadata(), _metadata()]
+    for metadata in native_rows:
+        state = metadata["native_player_state"]
+        for field, shape in (
+            ("item_component_features", (10,)),
+            ("item_inventory_features", (9, 17)),
+            ("item_recipe_features", (100, 17)),
+            ("item_inventory_target_fit", (9, 37)),
+            ("item_recipe_target_fit", (100, 37)),
+            ("pending_anvil_option_features", (9, 11)),
+        ):
+            values = np.asarray(state[field], dtype=np.float32).reshape(shape)
+            values.setflags(write=False)
+            state[field] = values
+
+    original_dumps = semantic_module.json.dumps
+    calls = []
+
+    def counted_dumps(*args, **kwargs):
+        calls.append(args[0])
+        return original_dumps(*args, **kwargs)
+
+    monkeypatch.setattr(semantic_module.json, "dumps", counted_dumps)
+    first = project_native_player_state(
+        native_rows[0], catalog, _projection_context=projection_context
+    )
+    second = project_native_player_state(
+        native_rows[1], catalog, _projection_context=projection_context
+    )
+
+    assert first["numeric"] == expected["numeric"]
+    assert second["numeric"] == expected["numeric"]
+    assert first["sha256"] == expected["sha256"]
+    assert second["sha256"] == expected["sha256"]
+    assert first["item_state_identity"]["item_catalog_sha256"] == second["item_state_identity"]["item_catalog_sha256"]
+    # The recipe view is compared directly for the second player: only each
+    # player's v8 digest is serialized after the first catalog fingerprint.
+    assert len(calls) == 3
+
+    changed = _metadata()
+    changed_state = changed["native_player_state"]
+    changed_recipe = np.asarray(
+        changed_state["item_recipe_features"], dtype=np.float32
+    ).reshape(100, 17)
+    changed_recipe[0, 0] = 0.5
+    changed_recipe.setflags(write=False)
+    changed_state["item_recipe_features"] = changed_recipe
+    third = project_native_player_state(
+        changed, catalog, _projection_context=projection_context
+    )
+    assert third["item_state_identity"]["item_catalog_sha256"] != first["item_state_identity"]["item_catalog_sha256"]
+    assert len(calls) == 5
+
+
 def test_semantic_batch_alignment_binds_projection_metadata_during_validation():
     catalog = {"TFT_TestChampion": 17}
     metadata = _metadata()
