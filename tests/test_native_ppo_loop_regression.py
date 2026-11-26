@@ -64,11 +64,19 @@ def test_native_mask_blocks_reverse_swap_and_executor_rejects_forced_reverse():
         assert native.set_unit_for_testing(0, True, 3, first_champion, 1)
         assert native.set_unit_for_testing(0, True, 10, second_champion, 1)
 
-        before = lobby.get_audit_snapshot()["players"][0]
+        native_snapshot_after_setup = lobby.get_audit_snapshot()
+        before = native_snapshot_after_setup["players"][0]
         before_signature = _state_signature(before)
-        # The test-only setters mutate native state outside reset/step, so no new
-        # observation/mask snapshot exists yet. Read the native mask directly for
-        # this fixture; production consumers must use the wrapper's correlated snapshot.
+        # Test-only setters mutate native state outside reset/step. Refresh the
+        # wrapper's source snapshot at the same sequence so action facts are
+        # compared against the exact state used by the native action handler.
+        lobby._last_snapshot_metadata["native_state_snapshot"] = (
+            lobby._copy_native_state_snapshot(
+                native_snapshot_after_setup, lobby._last_snapshot_metadata
+            )
+        )
+        # Read the native mask directly for this fixture; production consumers
+        # must use the wrapper's correlated snapshot.
         forward_masks = native.get_action_masks()[0]
         assert bool(forward_masks["type_mask"][4])
         assert bool(forward_masks["board_move_target_masks"][3][10]), (
