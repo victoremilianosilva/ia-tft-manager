@@ -470,6 +470,21 @@ def _build_semantic_projection_context(catalog_map: Mapping[str, int]) -> dict:
     }
 
 
+def _semantic_projection_json_dumps(payload: Mapping) -> str:
+    try:
+        return json.dumps(
+            payload,
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=False,
+            allow_nan=False,
+        )
+    except ValueError as exc:
+        if "Out of range float values" in str(exc):
+            raise ValueError("semantic projection contains a non-finite value") from exc
+        raise
+
+
 def project_native_player_state(
     metadata: Mapping,
     catalog_map: Mapping[str, int],
@@ -1226,9 +1241,6 @@ def project_native_player_state(
 
     if len(numeric) != SEMANTIC_NUMERIC_DIM or len(champion_ids) != SEMANTIC_ENTITY_SLOTS:
         raise RuntimeError("semantic projection produced an invalid tensor layout")
-    if not all(math.isfinite(value) for value in numeric):
-        raise ValueError("semantic projection contains a non-finite value")
-
     identity = {
         "engine_instance_id": metadata["engine_instance_id"],
         "episode_id": metadata["episode_id"],
@@ -1239,7 +1251,7 @@ def project_native_player_state(
         "lobby_index": metadata["lobby_index"],
     }
     digest = hashlib.sha256(
-        json.dumps(
+        _semantic_projection_json_dumps(
             {
                 "identity": identity,
                 "numeric": numeric,
@@ -1294,7 +1306,6 @@ def project_native_player_state(
                     "strategic_refresh_failure_reason": failure_reason,
                 },
             },
-            sort_keys=True, separators=(",", ":"), ensure_ascii=False,
         ).encode("utf-8")
     ).hexdigest()
     return {
