@@ -680,6 +680,9 @@ struct ActionExecutionTrace {
     std::int32_t level_after{0};
     std::int32_t xp_before{0};
     std::int32_t xp_after{0};
+    bool shop_revisions_observed{false};
+    std::array<std::uint64_t, 5> shop_revisions_before{};
+    std::array<std::uint64_t, 5> shop_revisions_after{};
     // Stable machine-readable reason; never inferred from reward values.
     std::string status_reason;
     // Causal identity inherited from the source and outcome decision snapshots.
