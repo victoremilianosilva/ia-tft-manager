@@ -6712,12 +6712,13 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
                 const auto& neighbor = target.board[neighbor_index];
                 if (!neighbor.occupied) continue;
                 ++relation.adjacent_occupied_count;
-                relation.adjacent_slots.push_back(neighbor_slot);
+                relation.adjacent_slots[relation.adjacent_slots_count++] = neighbor_slot;
                 const auto neighbor_row = neighbor_slot / PositioningEngine::cols;
                 if (neighbor_row < relation.row &&
                     (neighbor.role == PositioningEngine::tank ||
                      neighbor.role == PositioningEngine::fighter)) {
-                    relation.frontline_slots_in_front.push_back(neighbor_slot);
+                    relation.frontline_slots_in_front[
+                        relation.frontline_slots_in_front_count++] = neighbor_slot;
                     if (neighbor.role == PositioningEngine::tank) ++relation.tanks_in_front;
                     else ++relation.fighters_in_front;
                 }
