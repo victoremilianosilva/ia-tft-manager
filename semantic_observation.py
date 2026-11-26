@@ -1262,6 +1262,7 @@ def project_native_player_state(
     return {
         "numeric": numeric,
         "champion_ids": champion_ids,
+        "strategic_context_sequence": strategic_context_sequence,
         # Physical slot identity is deliberately outside the v8 PPO hash/tensor.
         # It is audit/context metadata for the typed entity contract, not a policy feature.
         "entity_identity": {
@@ -1387,6 +1388,9 @@ def build_semantic_batch(
         "champion_ids": [row["champion_ids"] for row in projected],
         "hashes": [row["sha256"] for row in projected],
         "identities": [row["identity"] for row in projected],
+        "strategic_context_sequences": [
+            row["strategic_context_sequence"] for row in projected
+        ],
         # Keep the 42-row physical entity projection available to downstream
         # typed-context consumers instead of building and discarding it.
         "entity_identity": [row["entity_identity"] for row in projected],
@@ -1411,7 +1415,14 @@ def semantic_batch_matches_snapshot_rows(
     if not isinstance(batch, Mapping) or not isinstance(expected_contract, Mapping):
         return False
     identities = batch.get("identities")
+    strategic_sequences = batch.get("strategic_context_sequences")
     if not isinstance(metadata_rows, Sequence) or isinstance(metadata_rows, (str, bytes)):
+        return False
+    if (
+        not isinstance(strategic_sequences, Sequence)
+        or isinstance(strategic_sequences, (str, bytes))
+        or len(strategic_sequences) != len(metadata_rows)
+    ):
         return False
     if not isinstance(identities, Sequence) or len(identities) != len(metadata_rows):
         return False
@@ -1424,8 +1435,26 @@ def semantic_batch_matches_snapshot_rows(
         "engine_instance_id", "episode_id", "decision_sequence",
         "player_decision_sequence", "player_id", "round", "lobby_index",
     )
-    for metadata, identity in zip(metadata_rows, identities):
+    for metadata, identity, strategic_sequence in zip(
+        metadata_rows, identities, strategic_sequences
+    ):
         if not isinstance(metadata, Mapping) or not isinstance(identity, Mapping):
+            return False
+        native_state = metadata.get("native_player_state")
+        strategic_state = (
+            native_state.get("strategic_state") if isinstance(native_state, Mapping) else None
+        )
+        actual_strategic_sequence = (
+            strategic_state.get("strategic_context_sequence")
+            if isinstance(strategic_state, Mapping) else None
+        )
+        if (
+            isinstance(strategic_sequence, bool)
+            or not isinstance(strategic_sequence, int)
+            or isinstance(actual_strategic_sequence, bool)
+            or not isinstance(actual_strategic_sequence, int)
+            or actual_strategic_sequence != strategic_sequence
+        ):
             return False
         if (
             metadata.get("native_state_contract_id") != "tft.native-state-snapshot"
