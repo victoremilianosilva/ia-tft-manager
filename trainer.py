@@ -690,6 +690,17 @@ class Trainer:
                         "action_history_contract_id": history_contract_id,
                         "action_history_contract_version": history_contract_version,
                         "recent_action_history": action_history,
+                        "delayed_outcome_join": {
+                            "contract_id": "tft.delayed-outcome-join",
+                            "contract_version": 1,
+                            "engine_instance_id": native_snapshot.get("engine_instance_id"),
+                            "episode_id": native_snapshot.get("episode_id"),
+                            "player_id": player_idx,
+                            "round": native_snapshot.get("round"),
+                            "combat_sequence": native_snapshot.get("combat_sequence"),
+                            "causal_scope": "same_player_round_context",
+                            "direct_action_attribution": False,
+                        },
                     }
                     metadata["decision_context"] = {
                         "contract_id": "tft.decision-context.player",
