@@ -909,7 +909,6 @@ def project_native_player_state(
     )
     catalog = projection_context["catalog"]
     known_catalog_ids = projection_context["known_catalog_ids"]
-    trait_hash_cache = projection_context["trait_hash_cache"]
     observed_owned_ids = set()
     # Older dict-backed evaluation fixtures predate the slot revision field.
     # The native producer always publishes the five revisions; absent metadata
