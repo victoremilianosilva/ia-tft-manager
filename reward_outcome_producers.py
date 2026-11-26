@@ -483,6 +483,77 @@ def build_action_outcome_events(
                     "to_location": current["location"],
                     "to_slot": current["slot"],
                 })
+
+        native_unit_deltas = None
+        if "unit_deltas" in trace:
+            raw_deltas = trace.get("unit_deltas")
+            if not isinstance(raw_deltas, Sequence):
+                raise RuntimeError("Action trace unit_deltas deve ser uma sequência.")
+            expected_unit_deltas = set()
+            for unit in removed:
+                expected_unit_deltas.add((
+                    "removed", unit["uuid"], unit["champion_id"],
+                    unit["location"], "", unit["slot"], -1, unit["star"], 0,
+                ))
+            for unit in added:
+                expected_unit_deltas.add((
+                    "added", unit["uuid"], unit["champion_id"],
+                    "", unit["location"], -1, unit["slot"], 0, unit["star"],
+                ))
+            for unit in moved:
+                current = after_units[unit["uuid"]]
+                previous = before_units[unit["uuid"]]
+                expected_unit_deltas.add((
+                    "moved", unit["uuid"], current["champion_id"],
+                    previous["location"], current["location"],
+                    previous["slot"], current["slot"],
+                    previous["star"], current["star"],
+                ))
+            for unit in upgrades:
+                previous = before_units[unit["uuid"]]
+                current = after_units[unit["uuid"]]
+                expected_unit_deltas.add((
+                    "upgraded", unit["uuid"], current["champion_id"],
+                    previous["location"], current["location"],
+                    previous["slot"], current["slot"],
+                    unit["star_before"], unit["star_after"],
+                ))
+            normalized_deltas = []
+            for row in raw_deltas:
+                if not isinstance(row, Mapping):
+                    raise RuntimeError("Action trace contém delta nativo de unidade inválido.")
+                kind = row.get("kind")
+                uuid = row.get("uuid")
+                champion_id = row.get("champion_id")
+                location_before = row.get("location_before")
+                location_after = row.get("location_after")
+                if any(not isinstance(value, str) for value in (
+                    kind, uuid, champion_id, location_before, location_after
+                )):
+                    raise RuntimeError("Action trace contém identidade de unidade inválida.")
+                if kind not in ("added", "removed", "moved", "upgraded") or not uuid or not champion_id:
+                    raise RuntimeError("Action trace contém tipo/identidade de delta desconhecido.")
+                normalized = (
+                    kind, uuid, champion_id, location_before, location_after,
+                    _int(row.get("slot_before"), "unit_delta.slot_before"),
+                    _int(row.get("slot_after"), "unit_delta.slot_after"),
+                    _int(row.get("star_before"), "unit_delta.star_before"),
+                    _int(row.get("star_after"), "unit_delta.star_after"),
+                )
+                normalized_deltas.append(normalized)
+            if len(normalized_deltas) != len(set(normalized_deltas)):
+                raise RuntimeError("Action trace contém deltas nativos de unidade duplicados.")
+            if set(normalized_deltas) != expected_unit_deltas:
+                raise RuntimeError("Deltas nativos de unidade divergem do oracle de snapshots.")
+            native_unit_deltas = [
+                {
+                    "kind": row[0], "uuid": row[1], "champion_id": row[2],
+                    "location_before": row[3], "location_after": row[4],
+                    "slot_before": row[5], "slot_after": row[6],
+                    "star_before": row[7], "star_after": row[8],
+                }
+                for row in normalized_deltas
+            ]
         pre_position = _finite(before.get("positioning_score", 0.0), "before.positioning_score")
         post_position = _finite(after.get("positioning_score", 0.0), "after.positioning_score")
         pre_quality = _finite(before.get("board_quality_score", 0.0), "before.board_quality_score")
@@ -548,6 +619,7 @@ def build_action_outcome_events(
                 "native_transition": native_transition,
                 "native_shop_revisions": native_shop_revisions,
                 "native_item_action": native_item_action,
+                "native_unit_deltas": native_unit_deltas,
             },
             "source_decision": {
                 "snapshot_sequence": before_seq,
