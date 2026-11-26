@@ -316,6 +316,34 @@ def build_action_outcome_events(
             for slot in range(5)
             if before_shop[slot]["revision"] != after_shop[slot]["revision"]
         ]
+        native_shop_revisions = None
+        if "shop_revisions_observed" in trace:
+            observed = trace.get("shop_revisions_observed")
+            if not isinstance(observed, bool):
+                raise RuntimeError("Action trace shop_revisions_observed inválido.")
+            if observed:
+                before_revisions = trace.get("shop_revisions_before")
+                after_revisions = trace.get("shop_revisions_after")
+                if any(
+                    not isinstance(values, Sequence) or len(values) != 5
+                    or any(isinstance(value, bool) or not isinstance(value, int) or value < 0 for value in values)
+                    for values in (before_revisions, after_revisions)
+                ):
+                    raise RuntimeError("Action trace contém revisões nativas de loja inválidas.")
+                expected_before = [row["revision"] for row in before_shop]
+                if list(before_revisions) != expected_before:
+                    raise RuntimeError("Revisões nativas pré-ação divergem do snapshot.")
+                if not resolved:
+                    expected_after = [row["revision"] for row in after_shop]
+                    if list(after_revisions) != expected_after:
+                        raise RuntimeError("Revisões nativas pós-ação divergem do snapshot.")
+                native_shop_revisions = {
+                    "before": list(before_revisions),
+                    "after": list(after_revisions),
+                    "post_action_round_refresh_overlapped": resolved,
+                }
+            elif trace.get("handler_applied"):
+                raise RuntimeError("Ação aplicada sem observação de revisões da loja.")
         selected_slot = _int(action[1], "effective_action.shop_slot", 0)
         selected_offer = before_shop[selected_slot] if 0 <= selected_slot < 5 else None
         before_gold = _int(before.get("gold"), "before.gold")
@@ -481,6 +509,7 @@ def build_action_outcome_events(
                 "status_reason": str(trace.get("status_reason", "")),
                 "transition_observed": trace.get("transition_observed"),
                 "native_transition": native_transition,
+                "native_shop_revisions": native_shop_revisions,
             },
             "source_decision": {
                 "snapshot_sequence": before_seq,
