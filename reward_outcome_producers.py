@@ -492,6 +492,33 @@ def build_action_outcome_events(
         pre_structural = _finite(before.get("board_structural_score", 0.0), "before.board_structural_score")
         post_structural = _finite(after.get("board_structural_score", 0.0), "after.board_structural_score")
 
+        native_item_action = None
+        if family == "item_action" and "last_item_action_kind" in after:
+            native_item_action = {
+                "kind": str(after.get("last_item_action_kind", "")),
+                "item_id": str(after.get("last_item_id", "")),
+                "first_component": str(after.get("last_item_first_component", "")),
+                "second_component": str(after.get("last_item_second_component", "")),
+                "target_uuid": str(after.get("last_item_target_uuid", "")),
+                "target_slot": _int(after.get("last_item_target_slot", -1), "after.last_item_target_slot"),
+                "target_on_board": bool(after.get("last_item_target_on_board", False)),
+                "fit": _finite(after.get("last_item_fit", 0.0), "after.last_item_fit"),
+                "immediate_strength": _finite(
+                    after.get("last_item_immediate_strength", 0.0),
+                    "after.last_item_immediate_strength",
+                ),
+                "role_alignment": _finite(
+                    after.get("last_item_role_alignment", 0.0),
+                    "after.last_item_role_alignment",
+                ),
+                "assignment_reward": _finite(
+                    after.get("last_item_assignment_reward", 0.0),
+                    "after.last_item_assignment_reward",
+                ),
+            }
+            if applied and not native_item_action["kind"]:
+                raise RuntimeError("Ação de item aplicada sem fato nativo last_item_action_kind.")
+
         event = {
             "contract_id": "tft.reward-action-outcome.v1",
             "contract_version": 1,
@@ -510,6 +537,7 @@ def build_action_outcome_events(
                 "transition_observed": trace.get("transition_observed"),
                 "native_transition": native_transition,
                 "native_shop_revisions": native_shop_revisions,
+                "native_item_action": native_item_action,
             },
             "source_decision": {
                 "snapshot_sequence": before_seq,
