@@ -1021,6 +1021,20 @@ def test_v4_semantic_projection_rejects_invalid_extended_priority_evidence():
     strategic["contract_version"] = 4
     strategic["planner_outputs_valid"] = True
     strategic["planner_output_sequence"] = strategic["strategic_context_sequence"]
+    strategic["direction_value"] = "reroll-carry"
+    strategic["direction_composition_bound"] = True
+    strategic["direction_composition_identity"] = "comp-a"
+    strategic["direction_composition_version"] = 3
+    strategic["direction_confidence"] = 0.9
+    strategic["direction_reason"] = "stable_core_evidence"
+    strategic["direction_lifecycle"] = 2
+    strategic["direction_evidence"] = [1, 7]
+    strategic["pivot_target_direction"] = "level-up"
+    strategic["pivot_source_direction_identity"] = "direction-a"
+    strategic["pivot_confidence"] = 0.7
+    strategic["pivot_reason"] = "alternative_has_higher_feasibility"
+    strategic["pivot_lifecycle"] = 3
+    strategic["pivot_evidence"] = [2, 5]
     strategic["unit_priorities"] = [{
         "champion_internal_id": 17,
         "intent": 1,
