@@ -79,6 +79,17 @@ def test_decision_context_shares_lobby_facts_and_keeps_player_views_separate():
         assert context["temporal"]["board_move_age"] == [0] * 28
         assert context["temporal"]["action_history_contract_id"] == "tft.player-action-history"
         assert context["temporal"]["recent_action_history"][0]["action_type"] == 6
+        assert context["temporal"]["delayed_outcome_join"] == {
+            "contract_id": "tft.delayed-outcome-join",
+            "contract_version": 1,
+            "engine_instance_id": "engine-decision-context",
+            "episode_id": 7,
+            "player_id": player_id,
+            "round": 9,
+            "combat_sequence": 12,
+            "causal_scope": "same_player_round_context",
+            "direct_action_attribution": False,
+        }
         assert context["action_execution"] is None
 
 
