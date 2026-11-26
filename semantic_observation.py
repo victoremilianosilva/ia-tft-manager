@@ -853,6 +853,7 @@ def project_native_player_state(
                     or copies_toward > 6 or copies_needed > 6
                     or isinstance(pool_remaining, bool) or not isinstance(pool_remaining, int)
                     or pool_remaining < -1 or not isinstance(pool_known, bool)
+                    or (pool_known and pool_remaining < 0)
                     or (not pool_known and pool_remaining != -1)
                     or not isinstance(target_unit, bool) or not isinstance(has_pair, bool)
                     or copies_needed_for_pair > 2
