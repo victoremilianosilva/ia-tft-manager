@@ -9,6 +9,8 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+
+import numpy as np
 from collections.abc import Mapping, Sequence
 
 SEMANTIC_STATE_CONTRACT_ID = "tft.ppo.semantic-native-state.v8"
@@ -904,9 +906,35 @@ def project_native_player_state(
 
     def read_feature_block(field, shape):
         value = state.get(field)
+        if isinstance(value, np.ndarray):
+            if (
+                value.dtype != np.dtype(np.float32)
+                or value.shape != shape
+                or not value.flags.c_contiguous
+                or value.flags.writeable
+            ):
+                raise ValueError(
+                    f"native semantic item field {field} has invalid native view contract"
+                )
+            if not np.isfinite(value).all():
+                raise ValueError(
+                    f"native semantic item field {field} contains non-finite values"
+                )
+            if np.any(value < 0.0) or np.any(value > 1.0):
+                raise ValueError(
+                    f"native semantic item field {field} is outside [0, 1]"
+                )
+            # Convert only at the canonical v8 projection boundary. Python
+            # float values preserve the float32 payload represented by the
+            # previous list-backed pybind serialization, including hash order.
+            return value.reshape(-1).tolist()
+
+        # Dict-backed fixtures and external sequence producers retain the
+        # recursive compatibility path; only native ndarray views are zero-copy.
         if not isinstance(value, Sequence) or isinstance(value, (str, bytes)):
             raise TypeError(f"native semantic item field {field} must be a sequence")
         flat = []
+
         def visit(node, depth=0):
             if depth == len(shape):
                 flat.append(_finite_number(node, field))
@@ -918,8 +946,9 @@ def project_native_player_state(
                 raise ValueError(f"native semantic item field {field} has invalid shape")
             for child in node:
                 visit(child, depth + 1)
+
         visit(value)
-        if any(value < 0.0 or value > 1.0 for value in flat):
+        if any(number < 0.0 or number > 1.0 for number in flat):
             raise ValueError(f"native semantic item field {field} is outside [0, 1]")
         return flat
 

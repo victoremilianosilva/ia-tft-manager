@@ -1,6 +1,7 @@
 """Regression tests for observation/action-mask snapshot correlation."""
 
 import copy
+from collections.abc import Mapping, Sequence
 
 import numpy as np
 import pytest
@@ -1153,6 +1154,42 @@ def test_native_snapshot_mapping_defers_combat_event_materialization():
 
 
 
+def _snapshot_value_mismatch(left, right, path="snapshot"):
+    """Return first differing snapshot path, treating arrays and lists as data."""
+    if isinstance(left, np.ndarray) or isinstance(right, np.ndarray):
+        try:
+            if np.array_equal(np.asarray(left), np.asarray(right), equal_nan=True):
+                return None
+        except (TypeError, ValueError):
+            pass
+        return path
+    if isinstance(left, Mapping) and isinstance(right, Mapping):
+        if left.keys() != right.keys():
+            return path + ".keys"
+        for key in left:
+            mismatch = _snapshot_value_mismatch(left[key], right[key], path + "." + str(key))
+            if mismatch is not None:
+                return mismatch
+        return None
+    if (
+        isinstance(left, Sequence)
+        and isinstance(right, Sequence)
+        and not isinstance(left, (str, bytes))
+        and not isinstance(right, (str, bytes))
+    ):
+        if len(left) != len(right):
+            return path + ".length"
+        for index, pair in enumerate(zip(left, right)):
+            mismatch = _snapshot_value_mismatch(pair[0], pair[1], path + "[" + str(index) + "]")
+            if mismatch is not None:
+                return mismatch
+        return None
+    try:
+        return None if bool(left == right) else path
+    except (TypeError, ValueError):
+        return path
+
+
 def test_native_snapshot_handle_caches_frozen_ownership_view(monkeypatch):
     from immutable_snapshot import FrozenDict, FrozenList
 
@@ -1202,8 +1239,12 @@ def test_native_snapshot_handle_caches_frozen_ownership_view(monkeypatch):
             key: public_snapshot[key] for key in native_view
         }
         public_projection["players"] = public_players
-        assert {key: native_view[key] for key in native_view} == public_projection
-        assert list(native_players) == public_players
+        mismatch = _snapshot_value_mismatch(
+            {key: native_view[key] for key in native_view}, public_projection
+        )
+        assert mismatch is None, f"native/public snapshot mismatch at {mismatch}"
+        mismatch = _snapshot_value_mismatch(list(native_players), public_players)
+        assert mismatch is None, f"native/public player mismatch at {mismatch}"
         assert player_calls == list(range(8))
 
         # The public native handle remains a complete snapshot API; only the
@@ -1363,3 +1404,40 @@ def test_native_frozen_list_does_not_cache_scalar_elements():
     assert view._view_cache == {}
     assert view[5] is view[5]
     assert set(view._view_cache) == {5}
+
+
+def test_native_item_feature_views_are_readonly_and_pin_snapshot_after_wrapper_release():
+    import gc
+
+    wrapper = cpp_lobby_env.CppTFTLobbyWrapper(seed=572)
+    wrapper.reset()
+    snapshot = wrapper._last_snapshot_metadata["native_state_snapshot"]
+    player = snapshot["players"][0]
+    expected_shapes = {
+        "item_component_features": (10,),
+        "item_inventory_features": (9, 17),
+        "item_recipe_features": (100, 17),
+        "item_inventory_target_fit": (9, 37),
+        "item_recipe_target_fit": (100, 37),
+        "pending_anvil_option_features": (9, 11),
+    }
+    retained = {}
+    for field, shape in expected_shapes.items():
+        value = player[field]
+        assert isinstance(value, np.ndarray)
+        assert value.dtype == np.float32
+        assert value.shape == shape
+        assert value.flags.c_contiguous
+        assert not value.flags.writeable
+        retained[field] = value
+
+    del player, snapshot
+    wrapper.close()
+    del wrapper
+    gc.collect()
+
+    for field, value in retained.items():
+        assert value.shape == expected_shapes[field]
+        assert value.dtype == np.float32
+        assert not value.flags.writeable
+        assert np.isfinite(value).all()
