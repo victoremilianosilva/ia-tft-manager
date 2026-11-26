@@ -833,6 +833,12 @@ def test_entity_identity_projection_tracks_physical_units_and_shop_offer_revisio
     assert changed_projection["champion_ids"] == baseline_projection["champion_ids"]
     assert changed_projection["sha256"] == baseline_projection["sha256"]
 
+    changed_shop = _metadata()
+    changed_shop["native_player_state"]["shop_offer_revisions"] = [9, 0, 0, 0, 0]
+    changed_shop_projection = project_native_player_state(changed_shop, catalog)
+    assert changed_shop_projection["entity_identity"][37]["shop_offer_revision"] == 9
+    assert changed_shop_projection["sha256"] == baseline_projection["sha256"]
+
 
 def test_entity_identity_projection_rejects_duplicate_or_missing_physical_uuid():
     catalog = {"TFT_TestChampion": 17}
@@ -845,6 +851,11 @@ def test_entity_identity_projection_rejects_duplicate_or_missing_physical_uuid()
     missing["native_player_state"]["board"][0]["uuid"] = ""
     with pytest.raises(ValueError, match="no physical unit UUID"):
         project_native_player_state(missing, catalog)
+
+    empty_with_identity = _metadata()
+    empty_with_identity["native_player_state"]["board"][1]["uuid"] = "stale-unit"
+    with pytest.raises(ValueError, match="empty board\\[1\\]"):
+        project_native_player_state(empty_with_identity, catalog)
 
 
 def test_native_champion_internal_id_is_authoritative_and_catalog_checked():
