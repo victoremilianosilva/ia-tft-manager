@@ -927,7 +927,10 @@ def project_native_player_state(
                 raise TypeError(f"occupied {group_name}[{slot}] requires valid items and unique trait_names")
             catalog_internal_id = catalog.get(champion_name)
             if "champion_internal_id" in entity:
-                projected_internal_id = entity.get("champion_internal_id")
+                projected_internal_id = (
+                    typed_champion_id if use_typed_entities
+                    else entity.get("champion_internal_id")
+                )
                 if (
                     isinstance(projected_internal_id, bool)
                     or not isinstance(projected_internal_id, int)
