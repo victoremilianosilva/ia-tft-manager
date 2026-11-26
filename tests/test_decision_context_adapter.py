@@ -59,7 +59,7 @@ def test_decision_context_shares_lobby_facts_and_keeps_player_views_separate():
         assert context["player_decision_sequence"] == 11 + player_id
         assert context["audit_player"] is row["native_player_state"]
         assert context["strategic"] is context["audit_player"]["strategic_state"]
-        assert context["positioning"] == ()
+        assert len(context["positioning"]) == 0
         assert context["temporal"]["actions_taken_this_round"] == player_id
         assert context["temporal"]["board_move_age"] == [0] * 28
         assert context["action_execution"] is None
