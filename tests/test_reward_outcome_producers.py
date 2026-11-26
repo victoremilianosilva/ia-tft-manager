@@ -74,6 +74,14 @@ def test_produces_factual_purchase_and_upgrade_events_without_reward_labels():
     after["players"][0]["bench"][0] = _unit(uuid="owned-a")
     after["players"][0]["gold"] = 28
     traces = _traces(action_type=0)
+    traces[0]["unit_deltas"] = [{
+        "kind": "added", "uuid": "owned-a", "champion_id": "A",
+        "location_before": "", "location_after": "bench",
+        "slot_before": -1, "slot_after": 0,
+        "star_before": 0, "star_after": 1,
+    }]
+    for trace in traces[1:]:
+        trace["unit_deltas"] = []
 
     events = build_action_outcome_events(
         before_snapshot=before, after_snapshot=after, action_traces=traces
@@ -84,6 +92,12 @@ def test_produces_factual_purchase_and_upgrade_events_without_reward_labels():
     assert event["action"]["family"] == "purchase"
     assert event["facts"]["selected_shop_offer"]["champion_id"] == "A"
     assert event["facts"]["units_added"][0]["uuid"] == "owned-a"
+    assert event["action"]["native_unit_deltas"] == [{
+        "kind": "added", "uuid": "owned-a", "champion_id": "A",
+        "location_before": "", "location_after": "bench",
+        "slot_before": -1, "slot_after": 0,
+        "star_before": 0, "star_after": 1,
+    }]
     assert event["facts"]["owned_copy_equivalent_delta"] == {"A": 1}
     assert event["reward"] is None
     assert event["reward_eligible"] is False
