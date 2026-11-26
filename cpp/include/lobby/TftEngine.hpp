@@ -423,8 +423,10 @@ struct AuditBoardRelationSnapshot {
     std::int32_t role{-1};
     std::string unit_uuid;
     // Stable board-slot references; no duplicate UnitInstance or champion maps.
-    std::vector<std::int32_t> adjacent_slots;
-    std::vector<std::int32_t> frontline_slots_in_front;
+    std::array<std::int32_t, 8> adjacent_slots{};
+    std::uint32_t adjacent_slots_count{0};
+    std::array<std::int32_t, 8> frontline_slots_in_front{};
+    std::uint32_t frontline_slots_in_front_count{0};
     std::uint32_t adjacent_occupied_count{0};
     std::uint32_t tanks_in_front{0};
     std::uint32_t fighters_in_front{0};
