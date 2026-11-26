@@ -373,6 +373,9 @@ struct TFTEngine::Impl {
         };
         std::uint64_t action_serial{0};
         std::vector<RecentPurchase> recent_purchases;
+        std::array<AuditActionDecisionReference, kActionHistoryCapacity> action_history{};
+        std::size_t action_history_next{0};
+        std::size_t action_history_count{0};
         struct ItemActionAudit {
             std::string kind;
             std::string item_id;
