@@ -879,45 +879,52 @@ def project_native_player_state(
                 champion_ids.append(0)
                 continue
             champion_name = entity.get("champion_id")
-            star = _non_negative_int(entity.get("star"), f"{group_name}[{slot}].star")
-            cost = _non_negative_int(entity.get("cost"), f"{group_name}[{slot}].cost")
-            # Read each structured field once. The native typed row is the
-            # hot-path representation; the structured record remains its parity oracle.
             items = entity.get("items")
             traits = entity.get("trait_names")
-            item_count = len(items) if isinstance(items, list) else 0
-            trait_count = len(traits) if isinstance(traits, list) else 0
-            entity_role = entity.get("role", 3)
-            entity_attack_damage = entity.get("attack_damage", 0.0)
-            entity_attack_speed = entity.get("attack_speed", 0.0)
-            entity_max_health = entity.get("max_health", 0.0)
-            entity_armor = entity.get("armor", 0.0)
-            entity_magic_resist = entity.get("magic_resist", 0.0)
+            if (
+                not isinstance(items, list)
+                or any(not isinstance(item, str) or not item for item in items)
+                or not isinstance(traits, list)
+                or any(not isinstance(trait, str) or not trait for trait in traits)
+                or len(traits) != len(set(traits))
+            ):
+                raise TypeError(f"occupied {group_name}[{slot}] requires valid items and unique trait_names")
             if use_typed_entities:
-                # Compare scalar values directly: avoid a temporary ndarray and
-                # np.array_equal allocation for every occupied slot.
-                expected = (
-                    float(star), float(cost), float(item_count), float(trait_count),
-                    float(entity_role), float(entity_attack_damage),
-                    float(entity_attack_speed), float(entity_max_health),
-                    float(entity_armor), float(entity_magic_resist),
-                )
-                for column, expected_value in enumerate(expected, start=1):
-                    if float(typed_row[column]) != expected_value:
-                        raise ValueError(
-                            f"native typed entity values diverge from snapshot record at {group_name}[{slot}]"
-                        )
-                # Consume typed values after exact parity with the structured oracle.
+                # Native numeric fields are projected from these exact immutable
+                # AuditUnitSnapshot records by the C++ producer. Consume that
+                # typed projection directly instead of rereading and comparing
+                # ten structured scalar fields for every occupied slot.
+                integer_columns = typed_row[1:6]
+                if any(not float(value).is_integer() for value in integer_columns):
+                    raise ValueError(
+                        f"native typed entity has non-integral categorical values at {group_name}[{slot}]"
+                    )
                 star = int(typed_row[1])
                 cost = int(typed_row[2])
                 item_count = int(typed_row[3])
                 trait_count = int(typed_row[4])
                 entity_role = int(typed_row[5])
+                if item_count != len(items) or trait_count != len(traits):
+                    raise ValueError(
+                        f"native typed entity item/trait counts diverge at {group_name}[{slot}]"
+                    )
                 entity_attack_damage = float(typed_row[6])
                 entity_attack_speed = float(typed_row[7])
                 entity_max_health = float(typed_row[8])
                 entity_armor = float(typed_row[9])
                 entity_magic_resist = float(typed_row[10])
+            else:
+                # Dict-backed fixtures retain the structured snapshot path.
+                star = _non_negative_int(entity.get("star"), f"{group_name}[{slot}].star")
+                cost = _non_negative_int(entity.get("cost"), f"{group_name}[{slot}].cost")
+                item_count = len(items)
+                trait_count = len(traits)
+                entity_role = entity.get("role", 3)
+                entity_attack_damage = entity.get("attack_damage", 0.0)
+                entity_attack_speed = entity.get("attack_speed", 0.0)
+                entity_max_health = entity.get("max_health", 0.0)
+                entity_armor = entity.get("armor", 0.0)
+                entity_magic_resist = entity.get("magic_resist", 0.0)
             if not isinstance(champion_name, str) or not champion_name:
                 raise ValueError(f"occupied {group_name}[{slot}] has no champion identity")
             if not 1 <= star <= 3 or not 1 <= cost <= 5:

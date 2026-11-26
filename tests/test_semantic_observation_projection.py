@@ -915,8 +915,19 @@ def test_native_typed_entity_projection_is_validated_and_preserves_v8():
     divergent_player["entity_projection_version"] = 1
     divergent_player["entity_numeric_features"] = divergent_features
     divergent_player["entity_champion_internal_ids"] = ids
-    with pytest.raises(ValueError, match="typed entity values diverge"):
-        project_native_player_state(divergent, catalog)
+    typed_numeric_source = project_native_player_state(divergent, catalog)
+    assert typed_numeric_source["sha256"] != typed["sha256"]
+
+    invalid_counts = _metadata()
+    invalid_count_player = invalid_counts["native_player_state"]
+    invalid_count_features = features.copy()
+    invalid_count_features[0, 3] += 1.0
+    invalid_count_features.setflags(write=False)
+    invalid_count_player["entity_projection_version"] = 1
+    invalid_count_player["entity_numeric_features"] = invalid_count_features
+    invalid_count_player["entity_champion_internal_ids"] = ids
+    with pytest.raises(ValueError, match="item/trait counts diverge"):
+        project_native_player_state(invalid_counts, catalog)
 
 
 def test_native_item_numpy_views_preserve_v8_projection_and_validate_contract():
