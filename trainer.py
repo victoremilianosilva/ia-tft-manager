@@ -752,6 +752,24 @@ class Trainer:
                         f"Snapshot de resultado desalinhado para lobby {lobby_idx}, jogador {player_id}."
                     )
                 row["action_trace"] = dict(trace)
+                if "contract_id" in trace:
+                    if (
+                        trace.get("contract_id") != "tft.action-execution-event"
+                        or trace.get("contract_version") != 1
+                        or trace.get("source_namespace") != "tft.engine.action-execution"
+                        or trace.get("producer") != "TFTEngine::step"
+                    ):
+                        raise RuntimeError(
+                            f"Contrato de Action Context incompatível para lobby {lobby_idx}, "
+                            f"jogador {player_id}."
+                        )
+                    causal_fields = {
+                        "source_snapshot_sequence", "outcome_snapshot_sequence",
+                        "source_player_decision_sequence", "outcome_player_decision_sequence",
+                        "source_round", "outcome_round", "source_stage", "outcome_stage",
+                    }
+                    if not causal_fields.issubset(trace):
+                        raise RuntimeError("Action execution event sem envelope causal completo.")
                 decision_context = row.get("decision_context")
                 if isinstance(decision_context, dict):
                     # The action trace is an outcome-side fact. It is attached
