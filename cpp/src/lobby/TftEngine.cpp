@@ -5956,9 +5956,44 @@ StepResult TFTEngine::step(
     std::array<std::int32_t, kPlayersPerLobby> xp_before_actions{};
     std::array<std::int32_t, kPlayersPerLobby> xp_after_actions{};
     std::array<ActionExecutionTrace, kPlayersPerLobby> action_traces{};
+    struct UnitActionState {
+        bool occupied{false};
+        std::string uuid;
+        std::string champion_id;
+        std::int32_t star{0};
+        std::string location;
+        std::int32_t slot{-1};
+    };
+    const auto capture_unit_action_state = [](const auto& player_env) {
+        std::array<UnitActionState, kBoardSlots + kBenchSlots> state{};
+        for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
+            const auto& unit = player_env.board[slot];
+            if (!unit || !unit->is_valid()) continue;
+            auto& row = state[slot];
+            row.occupied = true;
+            row.uuid = unit->uuid;
+            row.champion_id = unit->champion_id;
+            row.star = unit->star;
+            row.location = "board";
+            row.slot = static_cast<std::int32_t>(slot);
+        }
+        for (std::size_t slot = 0; slot < kBenchSlots; ++slot) {
+            const auto& unit = player_env.bench[slot];
+            if (!unit || !unit->is_valid()) continue;
+            auto& row = state[kBoardSlots + slot];
+            row.occupied = true;
+            row.uuid = unit->uuid;
+            row.champion_id = unit->champion_id;
+            row.star = unit->star;
+            row.location = "bench";
+            row.slot = static_cast<std::int32_t>(slot);
+        }
+        return state;
+    };
     std::vector<std::string> item_action_events;
     for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
         auto& trace = action_traces[i];
+        const auto units_before = capture_unit_action_state(impl_->player_envs[i]);
         trace.player_id = static_cast<std::int32_t>(i);
         trace.requested_action = actions[i].values;
         trace.effective_action = effective_actions[i].values;
@@ -5989,6 +6024,58 @@ StepResult TFTEngine::step(
         trace.level_after = transition.level_after_action;
         trace.xp_before = transition.xp_before_action;
         trace.xp_after = transition.xp_after_action;
+        if (transition.acted) {
+            const auto units_after = capture_unit_action_state(impl_->player_envs[i]);
+            trace.unit_deltas.reserve(4);
+            for (const auto& before_unit : units_before) {
+                if (!before_unit.occupied) continue;
+                const auto after_it = std::find_if(
+                    units_after.begin(), units_after.end(),
+                    [&](const UnitActionState& candidate) {
+                        return candidate.occupied && candidate.uuid == before_unit.uuid;
+                    });
+                if (after_it == units_after.end()) {
+                    trace.unit_deltas.push_back({
+                        "removed", before_unit.uuid, before_unit.champion_id,
+                        before_unit.location, "", before_unit.slot, -1,
+                        before_unit.star, 0
+                    });
+                    continue;
+                }
+                if (before_unit.location != after_it->location ||
+                    before_unit.slot != after_it->slot) {
+                    trace.unit_deltas.push_back({
+                        "moved", before_unit.uuid, before_unit.champion_id,
+                        before_unit.location, after_it->location,
+                        before_unit.slot, after_it->slot,
+                        before_unit.star, after_it->star
+                    });
+                }
+                if (before_unit.star != after_it->star) {
+                    trace.unit_deltas.push_back({
+                        "upgraded", before_unit.uuid, before_unit.champion_id,
+                        before_unit.location, after_it->location,
+                        before_unit.slot, after_it->slot,
+                        before_unit.star, after_it->star
+                    });
+                }
+            }
+            for (const auto& after_unit : units_after) {
+                if (!after_unit.occupied) continue;
+                const bool existed_before = std::any_of(
+                    units_before.begin(), units_before.end(),
+                    [&](const UnitActionState& candidate) {
+                        return candidate.occupied && candidate.uuid == after_unit.uuid;
+                    });
+                if (!existed_before) {
+                    trace.unit_deltas.push_back({
+                        "added", after_unit.uuid, after_unit.champion_id,
+                        "", after_unit.location, -1, after_unit.slot,
+                        0, after_unit.star
+                    });
+                }
+            }
+        }
         trace.status_reason = !transition.acted
             ? "not_processed"
             : (was_overridden
