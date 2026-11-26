@@ -1585,15 +1585,26 @@ class Trainer:
                     self.champion_id_map, reproject=False, verify_catalog=False,
                     bind_metadata=True,
                 )
-                semantic_entities = np.asarray(
-                    semantic_batch["numeric"], dtype=np.float32
-                )[:, SEMANTIC_GLOBAL_FEATURES:SEMANTIC_ITEM_OFFSET].reshape(
-                    -1, SEMANTIC_ENTITY_SLOTS, SEMANTIC_ENTITY_FEATURES
-                )
-                unknown_semantic_champions = int(
-                    ((semantic_entities[:, :, 0] > 0.5) &
-                     (semantic_entities[:, :, 5] < 0.5)).sum()
-                )
+                semantic_numeric_tensor = semantic_state["numeric"]
+                if semantic_numeric_tensor.device.type == "cpu":
+                    # torch.as_tensor already materialized the batch tensor.
+                    # Reuse its CPU storage instead of rebuilding the complete
+                    # 7,958-wide batch as a second NumPy allocation each step.
+                    semantic_entities = semantic_numeric_tensor.detach().numpy()[
+                        :, SEMANTIC_GLOBAL_FEATURES:SEMANTIC_ITEM_OFFSET
+                    ].reshape(-1, SEMANTIC_ENTITY_SLOTS, SEMANTIC_ENTITY_FEATURES)
+                    unknown_semantic_champions = int(
+                        ((semantic_entities[:, :, 0] > 0.5) &
+                         (semantic_entities[:, :, 5] < 0.5)).sum()
+                    )
+                else:
+                    semantic_entities = semantic_numeric_tensor[
+                        :, SEMANTIC_GLOBAL_FEATURES:SEMANTIC_ITEM_OFFSET
+                    ].reshape(-1, SEMANTIC_ENTITY_SLOTS, SEMANTIC_ENTITY_FEATURES)
+                    unknown_semantic_champions = int(
+                        ((semantic_entities[:, :, 0] > 0.5) &
+                         (semantic_entities[:, :, 5] < 0.5)).sum().item()
+                    )
                 self.writer.add_scalar(
                     "semantic/unknown_occupied_champion_slots",
                     unknown_semantic_champions,
