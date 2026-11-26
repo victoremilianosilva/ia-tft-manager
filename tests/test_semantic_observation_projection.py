@@ -333,6 +333,14 @@ def test_copy_progress_consumes_native_unit_copy_progress_without_recounting():
     assert projected["numeric"][SEMANTIC_GLOBAL_FEATURES + 11] == 1.0
 
 
+def test_projection_rejects_owned_champion_without_copy_progress():
+    row = _metadata()
+    row["native_player_state"]["strategic_state"]["unit_copy_progress"] = []
+
+    with pytest.raises(ValueError, match="UnitCopyProgress is missing owned champion"):
+        project_native_player_state(row, {"TFT_TestChampion": 17})
+
+
 def test_native_trait_identities_are_stably_hashed_and_exposed_to_policy():
     metadata = _metadata()
     metadata["native_player_state"]["board"][0]["trait_names"] = ["TraitAlpha", "TraitBeta"]
