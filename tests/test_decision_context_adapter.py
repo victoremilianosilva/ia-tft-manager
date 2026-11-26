@@ -71,6 +71,10 @@ def test_action_trace_is_attached_only_to_matching_decision_context():
     )
     traces = [
         {
+            "contract_id": "tft.action-execution-event",
+            "contract_version": 1,
+            "source_namespace": "tft.engine.action-execution",
+            "producer": "TFTEngine::step",
             "player_id": player_id,
             "requested_action": [6, 0, 0, 0, 0, 0],
             "effective_action": [6, 0, 0, 0, 0, 0],
