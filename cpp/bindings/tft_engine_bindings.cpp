@@ -433,8 +433,13 @@ py::dict audit_player_snapshot_to_dict(
             row["column"] = relation.column;
             row["role"] = relation.role;
             row["unit_uuid"] = relation.unit_uuid;
-            row["adjacent_slots"] = relation.adjacent_slots;
-            row["frontline_slots_in_front"] = relation.frontline_slots_in_front;
+            py::list adjacent_slots, frontline_slots_in_front;
+            for (std::size_t index = 0; index < relation.adjacent_slots_count; ++index)
+                adjacent_slots.append(relation.adjacent_slots[index]);
+            for (std::size_t index = 0; index < relation.frontline_slots_in_front_count; ++index)
+                frontline_slots_in_front.append(relation.frontline_slots_in_front[index]);
+            row["adjacent_slots"] = std::move(adjacent_slots);
+            row["frontline_slots_in_front"] = std::move(frontline_slots_in_front);
             row["adjacent_occupied_count"] = relation.adjacent_occupied_count;
             row["tanks_in_front"] = relation.tanks_in_front;
             row["fighters_in_front"] = relation.fighters_in_front;
