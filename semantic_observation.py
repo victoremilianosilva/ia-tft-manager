@@ -573,6 +573,7 @@ def project_native_player_state(
         raise ValueError("pivot candidate identity/version is incomplete")
     if strategic_version >= 4:
         direction_value = strategic.get("direction_value")
+        direction_composition_bound = strategic.get("direction_composition_bound")
         direction_composition_id = strategic.get("direction_composition_identity")
         direction_composition_version = _non_negative_int(
             strategic.get("direction_composition_version"), "direction_composition_version"
@@ -592,8 +593,10 @@ def project_native_player_state(
         if (
             not isinstance(direction_value, str)
             or (direction_valid and not direction_value)
+            or not isinstance(direction_composition_bound, bool)
             or not isinstance(direction_composition_id, str)
-            or (not direction_composition_id and direction_composition_version != 0)
+            or (direction_composition_bound and (not direction_composition_id or direction_composition_version == 0))
+            or (not direction_composition_bound and (direction_composition_id or direction_composition_version != 0))
             or not 0.0 <= direction_confidence <= 1.0 or direction_lifecycle > 7
             or not isinstance(direction_evidence, list)
             or any(isinstance(value, bool) or not isinstance(value, int) or not 0 <= value <= 7 for value in direction_evidence)
@@ -608,6 +611,7 @@ def project_native_player_state(
             raise ValueError("direction/pivot anchor provenance is invalid")
     else:
         direction_value = strategic.get("direction_identity", "")
+        direction_composition_bound = False
         direction_composition_id = ""
         direction_composition_version = 0
         direction_confidence = 0.0
@@ -1278,6 +1282,7 @@ def project_native_player_state(
                 "identity": strategic.get("direction_identity"),
                 "value": direction_value,
                 "selected_round": strategic.get("direction_selected_round"),
+                "composition_bound": direction_composition_bound,
                 "composition_identity": direction_composition_id,
                 "composition_version": direction_composition_version,
                 "confidence": direction_confidence,
