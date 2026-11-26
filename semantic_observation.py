@@ -1480,6 +1480,8 @@ def validate_semantic_batch_alignment(
     hashes = batch.get("hashes")
     numeric = batch.get("numeric")
     champion_ids = batch.get("champion_ids")
+    strategic_sequences = batch.get("strategic_context_sequences")
+    strategic_contexts = batch.get("strategic_context")
     expected_id = expected_contract.get("contract", {}).get("contract_id")
     expected_hash = expected_contract.get("sha256")
     if verify_catalog:
@@ -1496,7 +1498,7 @@ def validate_semantic_batch_alignment(
         raise ValueError("semantic batch contract identity/hash diverges from the active checkpoint contract")
     row_count = len(metadata_rows)
     if not all(isinstance(value, Sequence) and len(value) == row_count for value in (
-        identities, hashes, numeric, champion_ids
+        identities, hashes, numeric, champion_ids, strategic_sequences, strategic_contexts
     )):
         raise ValueError("semantic batch rows do not match native metadata row count")
     identity_fields = (
@@ -1504,9 +1506,27 @@ def validate_semantic_batch_alignment(
         "player_decision_sequence", "player_id", "round", "lobby_index",
     )
     observed_item_catalog_hashes = set()
-    for index, (metadata, identity, digest) in enumerate(zip(metadata_rows, identities, hashes)):
+    for index, (metadata, identity, digest, strategic_sequence, strategic_context) in enumerate(zip(
+        metadata_rows, identities, hashes, strategic_sequences, strategic_contexts
+    )):
         if not isinstance(metadata, Mapping) or not isinstance(identity, Mapping):
             raise TypeError(f"semantic row {index} identity/metadata must be mappings")
+        native_state = metadata.get("native_player_state")
+        strategic_state = (
+            native_state.get("strategic_state") if isinstance(native_state, Mapping) else None
+        )
+        actual_strategic_sequence = (
+            strategic_state.get("strategic_context_sequence")
+            if isinstance(strategic_state, Mapping) else None
+        )
+        if (
+            not isinstance(strategic_context, Mapping)
+            or isinstance(strategic_sequence, bool)
+            or not isinstance(strategic_sequence, int)
+            or actual_strategic_sequence != strategic_sequence
+            or strategic_context.get("strategic_context_sequence") != strategic_sequence
+        ):
+            raise ValueError(f"semantic row {index} strategic context sequence diverges from its snapshot")
         expected_identity = {field: metadata.get(field) for field in identity_fields}
         if dict(identity) != expected_identity:
             raise ValueError(f"semantic row {index} identity does not match its native snapshot")
