@@ -1223,6 +1223,10 @@ def test_native_action_trace_carries_source_and_outcome_identity():
         lobby.reset()
         _, _, _, info = lobby.step([[6, 0, 0, 0, 0, 0] for _ in range(8)])
         trace = info["action_trace"][0]
+        assert trace["contract_id"] == "tft.action-execution-event"
+        assert trace["contract_version"] == 1
+        assert trace["source_namespace"] == "tft.engine.action-execution"
+        assert trace["producer"] == "TFTEngine::step"
         assert trace["source_snapshot_sequence"] == 1
         assert trace["outcome_snapshot_sequence"] == 2
         assert trace["source_player_decision_sequence"] == 1
