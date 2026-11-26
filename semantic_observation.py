@@ -898,19 +898,6 @@ def project_native_player_state(
     known_catalog_ids = projection_context["known_catalog_ids"]
     trait_hash_cache = projection_context["trait_hash_cache"]
     observed_owned_ids = set()
-    for group_name in ("board", "bench"):
-        for entity in state[group_name]:
-            if isinstance(entity, Mapping) and entity.get("occupied") is True:
-                champion_name = entity.get("champion_id")
-                internal_id = catalog.get(champion_name)
-                if internal_id is not None:
-                    observed_owned_ids.add(int(internal_id))
-                    if int(internal_id) not in copy_progress:
-                        raise ValueError(
-                            f"native UnitCopyProgress is missing owned champion {champion_name}"
-                        )
-    if not (set(copy_progress) & known_catalog_ids).issubset(observed_owned_ids):
-        raise ValueError("native UnitCopyProgress contains known champions absent from board/bench")
     # Older dict-backed evaluation fixtures predate the slot revision field.
     # The native producer always publishes the five revisions; absent metadata
     # therefore means a compatibility fixture with no revision history.
@@ -1005,6 +992,12 @@ def project_native_player_state(
                     None if catalog_internal_id is None else int(catalog_internal_id)
                 )
             champion_valid = native_id is not None
+            if group_name in ("board", "bench") and native_id is not None:
+                observed_owned_ids.add(native_id)
+                if native_id not in copy_progress:
+                    raise ValueError(
+                        f"native UnitCopyProgress is missing owned champion {champion_name}"
+                    )
             native_progress = copy_progress.get(native_id, {})
             copy_equivalent = native_progress.get("owned_copy_equivalent", 0)
             upgrade_progress = native_progress.get("copies_toward_next_star", 0) / 2.0
@@ -1076,6 +1069,9 @@ def project_native_player_state(
                 float(opportunity is not None),
             ])
             champion_ids.append(0 if native_id is None else int(native_id) + 1)
+
+    if not (set(copy_progress) & known_catalog_ids).issubset(observed_owned_ids):
+        raise ValueError("native UnitCopyProgress contains known champions absent from board/bench")
 
     def read_feature_block(field, shape):
         value = state.get(field)
