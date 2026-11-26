@@ -6439,6 +6439,7 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
         AuditUnitSnapshot result{};
         if (!unit) return result;
         result.occupied = true;
+        result.champion_internal_id = unit->champion_internal_id;
         result.champion_id = unit->champion_id;
         result.uuid = unit->uuid;
         result.star = unit->star;

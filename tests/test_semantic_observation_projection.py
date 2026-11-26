@@ -29,6 +29,7 @@ def _unit(occupied=False, champion_id="", star=0, cost=0):
         "occupied": occupied,
         "champion_id": champion_id,
         "uuid": "",
+        "champion_internal_id": -1,
         "star": star,
         "cost": cost,
         "items": [],
@@ -97,10 +98,12 @@ def _metadata():
     }
     player["board"][0] = _unit(True, "TFT_TestChampion", 2, 3)
     player["board"][0]["uuid"] = "unit-board-0"
+    player["board"][0]["champion_internal_id"] = 17
     player["board"][0]["items"] = ["ItemA"]
     player["board"][0]["trait_names"] = ["TraitA", "TraitB"]
     player["bench"][0] = _unit(True, "TFT_TestChampion", 1, 3)
     player["bench"][0]["uuid"] = "unit-bench-0"
+    player["bench"][0]["champion_internal_id"] = 17
     player["shop_offer_revisions"] = [0, 0, 0, 0, 0]
     player["strategic_state"] = {
         "contract_id": "tft.strategic-owner-observation",
@@ -843,6 +846,19 @@ def test_entity_identity_projection_rejects_duplicate_or_missing_physical_uuid()
     missing["native_player_state"]["board"][0]["uuid"] = ""
     with pytest.raises(ValueError, match="no physical unit UUID"):
         project_native_player_state(missing, catalog)
+
+
+def test_native_champion_internal_id_is_authoritative_and_catalog_checked():
+    catalog = {"TFT_TestChampion": 17}
+    row = _metadata()
+    row["native_player_state"]["board"][0]["champion_internal_id"] = 18
+    with pytest.raises(ValueError, match="diverges from the loaded catalog"):
+        project_native_player_state(row, catalog)
+
+    row = _metadata()
+    row["native_player_state"]["board"][0]["champion_internal_id"] = 17
+    projected = project_native_player_state(row, catalog)
+    assert projected["champion_ids"][0] == 18
 
 
 def test_entity_identity_projection_requires_slot_aligned_shop_revisions():

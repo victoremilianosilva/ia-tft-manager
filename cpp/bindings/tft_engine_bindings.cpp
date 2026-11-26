@@ -253,6 +253,7 @@ py::dict audit_player_snapshot_to_dict(
     const auto unit_to_dict = [](const tft::AuditUnitSnapshot& unit) {
         py::dict d;
         d["occupied"] = unit.occupied;
+        d["champion_internal_id"] = unit.champion_internal_id;
         d["champion_id"] = unit.champion_id;
         d["uuid"] = unit.uuid;
         d["star"] = unit.star;

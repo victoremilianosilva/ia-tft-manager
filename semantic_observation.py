@@ -863,9 +863,31 @@ def project_native_player_state(
                 or len(traits) != len(set(traits))
             ):
                 raise TypeError(f"occupied {group_name}[{slot}] requires valid items and unique trait_names")
-            internal_id = catalog.get(champion_name)
-            champion_valid = internal_id is not None
-            native_id = None if internal_id is None else int(internal_id)
+            catalog_internal_id = catalog.get(champion_name)
+            if "champion_internal_id" in entity:
+                projected_internal_id = entity.get("champion_internal_id")
+                if (
+                    isinstance(projected_internal_id, bool)
+                    or not isinstance(projected_internal_id, int)
+                    or projected_internal_id < 0
+                ):
+                    raise ValueError(
+                        f"occupied {group_name}[{slot}] has invalid native champion_internal_id"
+                    )
+                if (
+                    catalog_internal_id is not None
+                    and int(catalog_internal_id) != projected_internal_id
+                ):
+                    raise ValueError(
+                        f"native {group_name}[{slot}] champion identity diverges from the loaded catalog"
+                    )
+                native_id = projected_internal_id
+            else:
+                # Dict-backed fixtures remain the compatibility/parity oracle.
+                native_id = (
+                    None if catalog_internal_id is None else int(catalog_internal_id)
+                )
+            champion_valid = native_id is not None
             native_progress = copy_progress.get(native_id, {})
             copy_equivalent = native_progress.get("owned_copy_equivalent", 0)
             upgrade_progress = native_progress.get("copies_toward_next_star", 0) / 2.0
