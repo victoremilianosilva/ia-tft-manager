@@ -894,8 +894,13 @@ def project_native_player_state(
                 # AuditUnitSnapshot records by the C++ producer. Consume that
                 # typed projection directly instead of rereading and comparing
                 # ten structured scalar fields for every occupied slot.
-                integer_columns = typed_row[1:6]
-                if any(not float(value).is_integer() for value in integer_columns):
+                if not (
+                    float(typed_row[1]).is_integer()
+                    and float(typed_row[2]).is_integer()
+                    and float(typed_row[3]).is_integer()
+                    and float(typed_row[4]).is_integer()
+                    and float(typed_row[5]).is_integer()
+                ):
                     raise ValueError(
                         f"native typed entity has non-integral categorical values at {group_name}[{slot}]"
                     )
