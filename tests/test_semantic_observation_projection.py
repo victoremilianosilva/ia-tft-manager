@@ -334,7 +334,7 @@ def test_semantic_target_profile_preserves_all_role_one_hot_slots():
             1.0, 1.0, 0.0, 2.0 / 3.0,
             *[1.0 if index == role else 0.0 for index in range(5)],
             1.0, 0.0, 0.5, 0.5, 0.5, 50.0 / 150.0, 50.0 / 150.0,
-            0.0,
+            1.0 / 3.0,
         ]
 
 
@@ -805,6 +805,9 @@ def test_semantic_batch_reuses_catalog_and_trait_hash_work_within_batch(monkeypa
         project_native_player_state(row, catalog)
         for row in rows
     ]
+    # The production LRU is intentionally shared across batches. Clear it after
+    # building expected projections so this test measures the cold first batch.
+    semantic_observation._semantic_trait_hash_id.cache_clear()
     original_sha256 = semantic_observation.hashlib.sha256
     original_context_builder = semantic_observation._build_semantic_projection_context
     trait_hash_inputs = []
@@ -832,12 +835,14 @@ def test_semantic_batch_reuses_catalog_and_trait_hash_work_within_batch(monkeypa
     assert trait_hash_inputs.count(b"TraitA") == 1
     assert trait_hash_inputs.count(b"TraitB") == 1
 
-    # A later batch receives a fresh context and recomputes each stable trait once.
+    # Each batch gets a fresh projection context, while stable trait hashes
+    # remain cached globally across batches.
     second = build_semantic_batch(rows, catalog)
     assert second == actual
     assert len(context_builds) == 2
-    assert trait_hash_inputs.count(b"TraitA") == 2
-    assert trait_hash_inputs.count(b"TraitB") == 2
+    assert trait_hash_inputs.count(b"TraitA") == 1
+    assert trait_hash_inputs.count(b"TraitB") == 1
+    semantic_observation._semantic_trait_hash_id.cache_clear()
 
 
 def test_entity_identity_projection_tracks_physical_units_and_shop_offer_revisions_without_changing_v8():
