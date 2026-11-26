@@ -24,8 +24,8 @@ The migration serializes these already-produced values. It must not recreate the
 | Domain | Native producer / owner | Existing snapshot fields | Completion required |
 |---|---|---|---|
 | Active composition | `ActiveCompositionManager` | identity, version, source sequence, unit IDs, core IDs | structured context and snapshot binding |
-| Direction | direction anchor / planner commitment | valid, identity, selected round, reference IDs | direction value, composition binding, confidence, lifecycle, evidence |
-| Pivot | pivot anchor candidate | valid, identity, target composition, source version, reference IDs | target direction, source direction identity, confidence, lifecycle, evidence |
+| Direction | direction anchor / planner commitment | valid, identity, selected round, reference IDs | direction value, composition binding, confidence, lifecycle, evidence, and rationale |
+| Pivot | pivot anchor candidate | valid, identity, target composition, source version, reference IDs | target direction, source direction identity, confidence, lifecycle, evidence, and rationale |
 | Unit priorities and relations | `UnitPriorityPlanner` | champion ID, intent, relation, priority, target star, sale restriction, confidence | tier, pair state, copies needed for pair, copies by star, upgrade progress, pool availability, board/synergy contribution |
 | Upgrade progress | `UnitCopyProgress` | owned copy equivalent, copies toward next star, highest star | preserve in structured context; validate against observed owned entities |
 | Lineup | `LineupPlanner` | selected, entries, exits, deferred IDs | bridge IDs and endgame-target IDs; outputs remain advisory |
@@ -44,7 +44,7 @@ The strategic audit contract is versioned and structured. C++ remains responsibl
 - Pair and upgrade fields come from `UnitPriorityPlanner` / `UnitCopyProgress`, not Python inference from aggregate counts.
 - Lineup, priorities, direction, and pivot are advisory context, never forced actions.
 - Missing owner results are unavailable; never encode them as measured zero or valid empty results.
-- Bind planner output to the same strategic context sequence, player, episode, round, and active composition version.
+- Bind planner output to the same strategic context sequence, player, episode, round, and active composition version. Semantic batch cache reuse must also match the strategic context sequence.
 - Opportunity-cost rows retain source, value basis, horizon, uncertainty, and forgone-candidate identity.
 - Keep semantic v8 numeric values, champion IDs, hash, PPO actions, masks, rewards, logits, sampling, and checkpoints unchanged.
 - Keep the full Audit Context and replay data; do not reduce context to current Policy consumption.
