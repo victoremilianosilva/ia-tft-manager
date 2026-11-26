@@ -926,3 +926,94 @@ def test_native_item_numpy_views_preserve_v8_projection_and_validate_contract():
     out_of_range_metadata["native_player_state"]["item_component_features"] = out_of_range
     with pytest.raises(ValueError, match=r"outside \[0, 1\]"):
         project_native_player_state(out_of_range_metadata, catalog)
+
+
+def test_v4_strategic_context_preserves_native_pair_upgrade_and_anchor_provenance_without_v8_drift():
+    legacy = _metadata()
+    legacy_strategic = legacy["native_player_state"]["strategic_state"]
+    legacy_strategic["planner_outputs_valid"] = True
+    legacy_strategic["planner_output_sequence"] = 5
+    legacy_strategic["unit_priorities"] = [{
+        "champion_internal_id": 17,
+        "intent": 1,
+        "relation": 0,
+        "priority": 80,
+        "target_star": 2,
+        "sale_restricted": False,
+        "confidence": 0.8,
+    }]
+    legacy_strategic["lineup_selected_unit_ids"] = [17]
+    legacy_projected = project_native_player_state(legacy, {"TFT_TestChampion": 17})
+
+    native = _metadata()
+    strategic = native["native_player_state"]["strategic_state"]
+    strategic["contract_version"] = 4
+    strategic["planner_outputs_valid"] = True
+    strategic["planner_output_sequence"] = 5
+    strategic["unit_priorities"] = [{
+        "champion_internal_id": 17,
+        "intent": 1,
+        "relation": 0,
+        "priority": 80,
+        "target_star": 2,
+        "sale_restricted": False,
+        "confidence": 0.8,
+        "tier": 2,
+        "copies_owned": 4,
+        "highest_star": 2,
+        "on_board": True,
+        "board_contribution": 0.75,
+        "synergy_contribution": 0.6,
+        "copies_by_star": [0, 1, 1, 0],
+        "copies_in_shop": 1,
+        "affordable_shop_copies": 1,
+        "copies_toward_next_star": 0,
+        "copies_needed_for_next_star": 2,
+        "pool_remaining": 12,
+        "pool_known": True,
+        "target_unit": True,
+        "has_pair": True,
+        "copies_needed_for_pair": 0,
+    }]
+    strategic["lineup_selected_unit_ids"] = [17]
+    strategic["lineup_bridge_unit_ids"] = []
+    strategic["lineup_endgame_target_unit_ids"] = [17]
+    strategic["direction_value"] = "reroll-carry"
+    strategic["direction_composition_identity"] = "comp-a"
+    strategic["direction_composition_version"] = 3
+    strategic["direction_confidence"] = 0.9
+    strategic["direction_lifecycle"] = 2
+    strategic["direction_evidence"] = [1, 7]
+    strategic["pivot_target_direction"] = "level-up"
+    strategic["pivot_source_direction_identity"] = "direction-a"
+    strategic["pivot_confidence"] = 0.7
+    strategic["pivot_lifecycle"] = 3
+    strategic["pivot_evidence"] = [2, 5]
+    projected = project_native_player_state(native, {"TFT_TestChampion": 17})
+
+    context = projected["strategic_context"]
+    assert context["contract_version"] == 4
+    assert context["active_composition"]["core_unit_ids"] == (17,)
+    assert context["direction"]["value"] == "reroll-carry"
+    assert context["direction"]["evidence"] == (1, 7)
+    assert context["pivot_candidate"]["target_direction"] == "level-up"
+    assert context["pivot_candidate"]["evidence"] == (2, 5)
+    priority = context["unit_priorities"][0]
+    assert priority["has_pair"] is True
+    assert priority["copies_needed_for_pair"] == 0
+    assert priority["copies_by_star"] == [0, 1, 1, 0]
+    assert context["lineup"]["endgame_target_unit_ids"] == (17,)
+    assert projected["numeric"] == legacy_projected["numeric"]
+    assert projected["champion_ids"] == legacy_projected["champion_ids"]
+    assert projected["sha256"] == legacy_projected["sha256"]
+
+
+def test_build_semantic_batch_exposes_per_player_strategic_context():
+    metadata = _metadata()
+    batch = build_semantic_batch(
+        [metadata],
+        {"TFT_TestChampion": 17},
+        contract=build_semantic_state_checkpoint_contract({"TFT_TestChampion": 17}),
+    )
+    assert len(batch["strategic_context"]) == 1
+    assert batch["strategic_context"][0]["strategic_context_sequence"] == 5

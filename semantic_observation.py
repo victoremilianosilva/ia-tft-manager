@@ -1117,10 +1117,7 @@ def project_native_player_state(
                 },
                 "strategic_owner_provenance": {
                     "contract_id": strategic.get("contract_id"),
-                    # Canonicalize the additive v4 owner transport to the v3
-                    # semantic-v8 provenance shape. Rich context is exported
-                    # separately and must not perturb the established digest.
-                    "contract_version": 3,
+                    "contract_version": strategic.get("contract_version"),
                     "strategic_context_sequence": strategic_context_sequence,
                     "active_composition_id": strategic.get("active_composition_id"),
                     "active_composition_version": strategic.get("active_composition_version"),
@@ -1134,18 +1131,7 @@ def project_native_player_state(
                     "opportunity_cost_available": opportunity_available,
                     "planner_outputs_valid": planner_valid,
                     "planner_output_sequence": planner_sequence,
-                    "unit_priorities": [
-                        {
-                            "champion_internal_id": row.get("champion_internal_id"),
-                            "intent": row.get("intent"),
-                            "relation": row.get("relation"),
-                            "priority": row.get("priority"),
-                            "target_star": row.get("target_star"),
-                            "sale_restricted": row.get("sale_restricted"),
-                            "confidence": row.get("confidence"),
-                        }
-                        for row in priority_rows
-                    ],
+                    "unit_priorities": priority_rows,
                     "lineup_selected_unit_ids": selected_ids,
                     "lineup_entry_unit_ids": entry_ids,
                     "lineup_exit_unit_ids": exit_ids,
