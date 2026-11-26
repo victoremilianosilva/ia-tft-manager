@@ -324,6 +324,20 @@ def test_native_semantic_projection_has_stable_shape_and_explicit_identity():
     assert len(projected["sha256"]) == 64
 
 
+def test_semantic_target_profile_preserves_all_role_one_hot_slots():
+    for role in range(5):
+        metadata = _metadata()
+        metadata["native_player_state"]["board"][0]["role"] = role
+        projected = project_native_player_state(metadata, {"TFT_TestChampion": 17})
+        target_start = SEMANTIC_GLOBAL_FEATURES + 12
+        assert projected["numeric"][target_start:target_start + 17] == [
+            1.0, 1.0, 0.0, 2.0 / 3.0,
+            *[1.0 if index == role else 0.0 for index in range(5)],
+            1.0, 0.0, 0.5, 0.5, 0.5, 50.0 / 150.0, 50.0 / 150.0,
+            0.0,
+        ]
+
+
 def test_copy_progress_consumes_native_unit_copy_progress_without_recounting():
     row = _metadata()
     row["native_player_state"]["strategic_state"]["unit_copy_progress"][0][
