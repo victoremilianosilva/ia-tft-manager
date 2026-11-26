@@ -1315,11 +1315,8 @@ def project_native_player_state(
                 "reference_unit_ids": tuple(sorted(pivot_ids)),
                 "evidence": tuple(pivot_evidence),
             },
-            "unit_copy_progress": tuple(
-                {"champion_internal_id": champion_id, **values}
-                for champion_id, values in sorted(copy_progress.items())
-            ),
-            "unit_priorities": tuple(dict(row) for row in priority_rows),
+            "unit_copy_progress": tuple(progress_rows),
+            "unit_priorities": tuple(priority_rows),
             "lineup": {
                 "selected_unit_ids": tuple(sorted(selected_set)),
                 "entry_unit_ids": tuple(sorted(entry_set)),
@@ -1331,7 +1328,7 @@ def project_native_player_state(
             "opportunity_cost": {
                 "available": opportunity_available,
                 "context_sequence": strategic_context_sequence,
-                "rows": tuple(dict(row) for row in opportunity_rows),
+                "rows": tuple(opportunity_rows),
             },
             "planner": {
                 "outputs_valid": planner_valid,
