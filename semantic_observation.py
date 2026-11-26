@@ -9,6 +9,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+from functools import lru_cache
 
 import numpy as np
 from collections.abc import Mapping, Sequence
@@ -41,6 +42,17 @@ SEMANTIC_ID_EMBED_DIM = 16
 SEMANTIC_TRAIT_SLOTS = 10
 SEMANTIC_TRAIT_VOCAB_SIZE = 65536
 SEMANTIC_TRAIT_EMBED_DIM = 16
+
+ 
+@lru_cache(maxsize=4096)
+def _semantic_trait_hash_id(trait: str) -> int:
+    """Return the canonical v8 trait bucket, cached across immutable snapshots."""
+    if not isinstance(trait, str) or not trait:
+        raise ValueError("semantic trait names must be non-empty strings")
+    return (
+        int.from_bytes(hashlib.sha256(trait.encode("utf-8")).digest()[:4], "big")
+        % SEMANTIC_TRAIT_VOCAB_SIZE + 1
+    )
 
 SEMANTIC_POLICY_STATE_KEYS = frozenset({
     "semantic_id_embedding.weight",
@@ -439,7 +451,8 @@ def _build_semantic_projection_context(catalog_map: Mapping[str, int]) -> dict:
     return {
         "catalog": catalog,
         "known_catalog_ids": frozenset(catalog.values()),
-        "trait_hash_cache": {},
+        # Trait IDs are pure functions of immutable catalog trait names.
+        # A bounded module-level cache reuses SHA-256 results across batches.
         # The ordered component catalog and recipe feature matrix are global
         # catalog data repeated in every player's native snapshot. Keep their
         # canonical fingerprint batch-local so JSON serialization/SHA-256 is
@@ -1048,14 +1061,7 @@ def project_native_player_state(
                 raise ValueError(f"{group_name}[{slot}] exceeds the native trait slot limit")
             trait_ids = []
             for trait in traits:
-                trait_id = trait_hash_cache.get(trait)
-                if trait_id is None:
-                    trait_id = (
-                        int.from_bytes(hashlib.sha256(trait.encode("utf-8")).digest()[:4], "big")
-                        % SEMANTIC_TRAIT_VOCAB_SIZE + 1
-                    )
-                    trait_hash_cache[trait] = trait_id
-                trait_ids.append(trait_id)
+                trait_ids.append(_semantic_trait_hash_id(trait))
             numeric.extend(float(trait_id / SEMANTIC_TRAIT_VOCAB_SIZE) for trait_id in trait_ids)
             numeric.extend([0.0] * (SEMANTIC_TRAIT_SLOTS - len(trait_ids)))
             priority = priority_by_id.get(native_id, (0, 0, 0.0, 0, False)) if native_id is not None else (0, 0, 0.0, 0, False)
