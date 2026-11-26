@@ -29,7 +29,6 @@ def _unit(occupied=False, champion_id="", star=0, cost=0):
         "occupied": occupied,
         "champion_id": champion_id,
         "uuid": "",
-        "champion_internal_id": -1,
         "star": star,
         "cost": cost,
         "items": [],
