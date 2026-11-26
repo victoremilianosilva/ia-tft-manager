@@ -1541,7 +1541,7 @@ def test_wrapper_accepts_version_four_strategic_owner_contract():
     assert copied["players"][0]["strategic_state"]["contract_version"] == 4
 
 
-def test_wrapper_rejects_direction_anchor_bound_to_another_composition():
+def test_wrapper_defers_strategic_payload_validation_to_semantic_projection():
     native = FakeNativeLobby()
     snapshot = native._native_state_snapshot()
     strategic = snapshot["players"][0]["strategic_state"]
@@ -1575,5 +1575,5 @@ def test_wrapper_rejects_direction_anchor_bound_to_another_composition():
         "decision_sequence": 0,
         "player_decision_sequences": [0] * 8,
     }
-    with pytest.raises(RuntimeError, match="Proveniência/composição da direção"):
-        cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
+    copied = cpp_lobby_env.CppTFTLobbyWrapper._copy_native_state_snapshot(snapshot, identity)
+    assert copied["players"][0]["strategic_state"]["direction_composition_identity"] == "composition-old"
