@@ -6538,19 +6538,39 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
         strategic.opportunity_cost_available = !strategic.opportunity_costs.empty();
         if (planner_runtime.planner_outputs_valid) {
             for (const auto& priority : planner_runtime.unit_priorities.units) {
-                strategic.unit_priorities.push_back({
-                    priority.champion_id,
-                    static_cast<std::int32_t>(priority.intent),
-                    static_cast<std::int32_t>(priority.relation),
-                    priority.priority,
-                    priority.target_star,
-                    priority.sale_restricted,
-                    std::isfinite(priority.confidence)
-                        ? std::clamp(priority.confidence, 0.0, 1.0) : 0.0
-                });
+                AuditUnitStrategicPrioritySnapshot row;
+                row.champion_internal_id = priority.champion_id;
+                row.intent = static_cast<std::int32_t>(priority.intent);
+                row.relation = static_cast<std::int32_t>(priority.relation);
+                row.priority = priority.priority;
+                row.target_star = priority.target_star;
+                row.sale_restricted = priority.sale_restricted;
+                row.confidence = std::isfinite(priority.confidence)
+                    ? std::clamp(priority.confidence, 0.0, 1.0) : 0.0;
+                row.tier = static_cast<std::int32_t>(priority.tier);
+                row.copies_owned = priority.copies_owned;
+                row.highest_star = priority.highest_star;
+                row.on_board = priority.on_board;
+                row.board_contribution = std::isfinite(priority.board_contribution)
+                    ? std::clamp(priority.board_contribution, 0.0, 1.0) : 0.0;
+                row.synergy_contribution = std::isfinite(priority.synergy_contribution)
+                    ? std::clamp(priority.synergy_contribution, 0.0, 1.0) : 0.0;
+                row.copies_by_star = priority.copies_by_star;
+                row.copies_in_shop = priority.copies_in_shop;
+                row.affordable_shop_copies = priority.affordable_shop_copies;
+                row.copies_toward_next_star = priority.copies_toward_next_star;
+                row.copies_needed_for_next_star = priority.copies_needed_for_next_star;
+                row.pool_remaining = priority.pool_remaining;
+                row.pool_known = priority.pool_known;
+                row.target_unit = priority.target_unit;
+                row.has_pair = priority.has_pair;
+                row.copies_needed_for_pair = priority.copies_needed_for_pair;
+                strategic.unit_priorities.push_back(std::move(row));
             }
             for (const auto& slot : planner_runtime.lineup.selected_board)
                 strategic.lineup_selected_unit_ids.push_back(slot.champion_id);
+            strategic.lineup_bridge_unit_ids = planner_runtime.lineup.bridge_ids;
+            strategic.lineup_endgame_target_unit_ids = planner_runtime.lineup.endgame_target_ids;
             strategic.lineup_entry_unit_ids = planner_runtime.lineup.entries;
             strategic.lineup_exit_unit_ids = planner_runtime.lineup.exits;
             strategic.lineup_deferred_unit_ids =
@@ -6604,6 +6624,7 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
         if (!commitment.composition_direction.empty()) {
             strategic.direction_valid = true;
             strategic.direction_identity = commitment.composition_direction;
+            strategic.direction_value = commitment.composition_direction;
             strategic.direction_selected_round = commitment.selected_round;
         }
 
@@ -6612,8 +6633,18 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
             if (anchors.direction_anchor.is_valid()) {
                 strategic.direction_valid = true;
                 strategic.direction_identity = anchors.direction_anchor.identity;
+                strategic.direction_value = anchors.direction_anchor.direction;
                 strategic.direction_value_for_diagnostics =
                     anchors.direction_anchor.direction;
+                strategic.direction_composition_identity =
+                    anchors.direction_anchor.composition_identity;
+                strategic.direction_composition_version =
+                    anchors.direction_anchor.composition_version;
+                strategic.direction_confidence = anchors.direction_anchor.confidence;
+                strategic.direction_lifecycle =
+                    static_cast<std::int32_t>(anchors.direction_anchor.lifecycle);
+                for (const auto evidence : anchors.direction_anchor.evidence)
+                    strategic.direction_evidence.push_back(static_cast<std::int32_t>(evidence));
                 strategic.direction_reference_unit_ids =
                     anchors.direction_anchor.reference_unit_ids;
             }
@@ -6622,6 +6653,14 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
                 strategic.pivot_candidate_identity = anchors.pivot_candidate.identity;
                 strategic.pivot_target_composition_identity =
                     anchors.pivot_candidate.target_composition_identity;
+                strategic.pivot_target_direction = anchors.pivot_candidate.target_direction;
+                strategic.pivot_source_direction_identity =
+                    anchors.pivot_candidate.source_direction_anchor_identity;
+                strategic.pivot_confidence = anchors.pivot_candidate.confidence;
+                strategic.pivot_lifecycle =
+                    static_cast<std::int32_t>(anchors.pivot_candidate.lifecycle);
+                for (const auto evidence : anchors.pivot_candidate.evidence)
+                    strategic.pivot_evidence.push_back(static_cast<std::int32_t>(evidence));
                 strategic.pivot_source_composition_version =
                     anchors.pivot_candidate.source_composition_version;
                 strategic.pivot_reference_unit_ids =
