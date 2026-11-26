@@ -1498,6 +1498,7 @@ def test_wrapper_rejects_direction_anchor_bound_to_another_composition():
         "pivot_target_direction": "",
         "pivot_source_direction_identity": "",
         "pivot_confidence": 0.0,
+        "pivot_reason": "",
         "pivot_lifecycle": 0,
         "pivot_evidence": [],
         "lineup_bridge_unit_ids": [],
