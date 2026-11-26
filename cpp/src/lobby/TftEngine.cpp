@@ -5905,6 +5905,10 @@ StepResult TFTEngine::step(
             "A partida ja foi encerrada. Execute reset()."
         );
     }
+    const auto source_snapshot_sequence = impl_->decision_sequence;
+    const auto source_player_decision_sequences = impl_->player_decision_sequences;
+    const auto source_round = impl_->round + 1;
+    const auto source_stage = impl_->stage;
 
     // No treinamento, um jogador só encerra suas decisões após 10 ações.
     // PASS conta como ação, mas não encerra a preparação antecipadamente.
@@ -6195,8 +6199,6 @@ StepResult TFTEngine::step(
 
     for (std::size_t i = 0; i < kPlayersPerLobby; ++i) result.action_masks[i] = impl_->player_envs[i].action_masks;
     for (std::size_t i = 0; i < kPlayersPerLobby; ++i) result.players[i] = impl_->player_envs[i].info;
-    result.action_traces = action_traces;
-
     result.lobby_done = impl_->done;
     result.engine_instance_id = impl_->engine_instance_id;
     result.episode_id = impl_->episode_id;
@@ -6209,7 +6211,17 @@ StepResult TFTEngine::step(
             throw std::overflow_error("Sequencia de decisao do jogador esgotada.");
         }
         result.player_decision_sequences[i] = ++impl_->player_decision_sequences[i];
+        auto& trace = action_traces[i];
+        trace.source_snapshot_sequence = source_snapshot_sequence;
+        trace.outcome_snapshot_sequence = result.decision_sequence;
+        trace.source_player_decision_sequence = source_player_decision_sequences[i];
+        trace.outcome_player_decision_sequence = result.player_decision_sequences[i];
+        trace.source_round = source_round;
+        trace.outcome_round = impl_->round + 1;
+        trace.source_stage = source_stage;
+        trace.outcome_stage = impl_->stage;
     }
+    result.action_traces = action_traces;
     result.round = impl_->round + 1;
     result.stage = impl_->stage;
     result.alive_players = impl_->alive_players;
