@@ -309,6 +309,8 @@ def build_action_outcome_events(
         }
         before_shop = _shop(before)
         after_shop = _shop(after)
+        resolved = player_id in economy_resolved
+        pvp_credit_overlapped = player_id in pvp_credit_players
         shop_revision_changes = [
             {"slot": slot, "before": before_shop[slot]["revision"],
              "after": after_shop[slot]["revision"],
@@ -350,8 +352,6 @@ def build_action_outcome_events(
         after_gold = _int(after.get("gold"), "after.gold")
         before_interest = _int(before.get("interest_if_resolved_now"), "before.interest")
         after_interest = _int(after.get("interest_if_resolved_now"), "after.interest")
-        resolved = player_id in economy_resolved
-        pvp_credit_overlapped = player_id in pvp_credit_players
         native_transition = None
         if "transition_observed" in trace:
             transition_observed = trace.get("transition_observed")
