@@ -6705,7 +6705,6 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
             relation.row = static_cast<std::int32_t>(slot / PositioningEngine::cols);
             relation.column = static_cast<std::int32_t>(slot % PositioningEngine::cols);
             relation.role = unit.role;
-            relation.unit_uuid = unit.uuid;
             for (int row_delta = -1; row_delta <= 1; ++row_delta) {
                 for (int column_delta = -1; column_delta <= 1; ++column_delta) {
                     if (row_delta == 0 && column_delta == 0) continue;
