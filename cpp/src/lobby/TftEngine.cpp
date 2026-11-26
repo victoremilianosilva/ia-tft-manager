@@ -6604,6 +6604,7 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
         if (!commitment.composition_direction.empty()) {
             strategic.direction_valid = true;
             strategic.direction_identity = commitment.composition_direction;
+            strategic.direction_value = commitment.composition_direction;
             strategic.direction_selected_round = commitment.selected_round;
         }
 

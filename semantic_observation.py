@@ -476,7 +476,7 @@ def project_native_player_state(
         strategic.get("contract_id") != "tft.strategic-owner-observation"
         or isinstance(strategic_version, bool)
         or not isinstance(strategic_version, int)
-        or strategic_version not in (3, 4)
+        or strategic_version != 3
         or strategic.get("producer") != "TFTEngine::get_audit_snapshot"
         or strategic.get("source_namespace") != "tft.engine.strategic-owners"
     ):
@@ -571,54 +571,6 @@ def project_native_player_state(
         or _non_negative_int(strategic.get("pivot_source_composition_version"), "pivot_source_composition_version") == 0
     ):
         raise ValueError("pivot candidate identity/version is incomplete")
-    if strategic_version >= 4:
-        direction_value = strategic.get("direction_value")
-        direction_composition_id = strategic.get("direction_composition_identity")
-        direction_composition_version = _non_negative_int(
-            strategic.get("direction_composition_version"), "direction_composition_version"
-        )
-        direction_confidence = _finite_number(
-            strategic.get("direction_confidence"), "direction_confidence"
-        )
-        direction_lifecycle = _non_negative_int(
-            strategic.get("direction_lifecycle"), "direction_lifecycle"
-        )
-        direction_evidence = strategic.get("direction_evidence")
-        pivot_target_direction = strategic.get("pivot_target_direction")
-        pivot_source_direction = strategic.get("pivot_source_direction_identity")
-        pivot_confidence = _finite_number(strategic.get("pivot_confidence"), "pivot_confidence")
-        pivot_lifecycle = _non_negative_int(strategic.get("pivot_lifecycle"), "pivot_lifecycle")
-        pivot_evidence = strategic.get("pivot_evidence")
-        if (
-            not isinstance(direction_value, str)
-            or (direction_valid and not direction_value)
-            or not isinstance(direction_composition_id, str)
-            or (not direction_composition_id and direction_composition_version != 0)
-            or not 0.0 <= direction_confidence <= 1.0 or direction_lifecycle > 7
-            or not isinstance(direction_evidence, list)
-            or any(isinstance(value, bool) or not isinstance(value, int) or not 0 <= value <= 7 for value in direction_evidence)
-            or not isinstance(pivot_target_direction, str)
-            or (pivot_valid and not pivot_target_direction)
-            or not isinstance(pivot_source_direction, str)
-            or (pivot_valid and not pivot_source_direction)
-            or not 0.0 <= pivot_confidence <= 1.0 or pivot_lifecycle > 7
-            or not isinstance(pivot_evidence, list)
-            or any(isinstance(value, bool) or not isinstance(value, int) or not 0 <= value <= 7 for value in pivot_evidence)
-        ):
-            raise ValueError("direction/pivot anchor provenance is invalid")
-    else:
-        direction_value = strategic.get("direction_identity", "")
-        direction_composition_id = ""
-        direction_composition_version = 0
-        direction_confidence = 0.0
-        direction_lifecycle = 0
-        direction_evidence = []
-        pivot_target_direction = ""
-        pivot_source_direction = ""
-        pivot_confidence = 0.0
-        pivot_lifecycle = 0
-        pivot_evidence = []
-
     opportunity_rows = strategic.get("opportunity_costs")
     if not isinstance(opportunity_rows, list):
         raise TypeError("strategic_state.opportunity_costs must be a list")
@@ -786,13 +738,9 @@ def project_native_player_state(
     entry_ids = strategic.get("lineup_entry_unit_ids")
     exit_ids = strategic.get("lineup_exit_unit_ids")
     deferred_ids = strategic.get("lineup_deferred_unit_ids")
-    bridge_ids = strategic.get("lineup_bridge_unit_ids", [])
-    endgame_target_ids = strategic.get("lineup_endgame_target_unit_ids", [])
     for field, values in (("unit_priorities", priority_rows), ("lineup_selected_unit_ids", selected_ids),
                           ("lineup_entry_unit_ids", entry_ids), ("lineup_exit_unit_ids", exit_ids),
-                          ("lineup_deferred_unit_ids", deferred_ids),
-                          ("lineup_bridge_unit_ids", bridge_ids),
-                          ("lineup_endgame_target_unit_ids", endgame_target_ids)):
+                          ("lineup_deferred_unit_ids", deferred_ids)):
         if not isinstance(values, list):
             raise TypeError(f"strategic_state.{field} must be a list")
     priority_by_id = {}
@@ -807,42 +755,9 @@ def project_native_player_state(
             intent = _non_negative_int(row.get("intent"), "unit_priority.intent")
             confidence = _finite_number(row.get("confidence"), "unit_priority.confidence")
             target_star = _non_negative_int(row.get("target_star"), "unit_priority.target_star")
-            relation = _non_negative_int(row.get("relation"), "unit_priority.relation")
             sale_restricted = row.get("sale_restricted")
-            if champion_id in priority_by_id or intent > 6 or relation > 6 or target_star > 3 or not 0.0 <= confidence <= 1.0 or not isinstance(sale_restricted, bool):
+            if champion_id in priority_by_id or intent > 6 or target_star > 3 or not 0.0 <= confidence <= 1.0 or not isinstance(sale_restricted, bool):
                 raise ValueError("unit priority row has duplicate identity or invalid values")
-            if strategic_version >= 4:
-                tier = _non_negative_int(row.get("tier"), "unit_priority.tier")
-                copies_owned = _non_negative_int(row.get("copies_owned"), "unit_priority.copies_owned")
-                highest_star = _non_negative_int(row.get("highest_star"), "unit_priority.highest_star")
-                on_board = row.get("on_board")
-                board_contribution = _finite_number(row.get("board_contribution"), "unit_priority.board_contribution")
-                synergy_contribution = _finite_number(row.get("synergy_contribution"), "unit_priority.synergy_contribution")
-                copies_by_star = row.get("copies_by_star")
-                copies_in_shop = _non_negative_int(row.get("copies_in_shop"), "unit_priority.copies_in_shop")
-                affordable_shop_copies = _non_negative_int(row.get("affordable_shop_copies"), "unit_priority.affordable_shop_copies")
-                copies_toward = _non_negative_int(row.get("copies_toward_next_star"), "unit_priority.copies_toward_next_star")
-                copies_needed = _non_negative_int(row.get("copies_needed_for_next_star"), "unit_priority.copies_needed_for_next_star")
-                pool_remaining = row.get("pool_remaining")
-                pool_known = row.get("pool_known")
-                target_unit = row.get("target_unit")
-                has_pair = row.get("has_pair")
-                copies_needed_for_pair = _non_negative_int(row.get("copies_needed_for_pair"), "unit_priority.copies_needed_for_pair")
-                if (
-                    tier > 6 or not 1 <= highest_star <= 3 or not isinstance(on_board, bool)
-                    or not 0.0 <= board_contribution <= 1.0
-                    or not 0.0 <= synergy_contribution <= 1.0
-                    or not isinstance(copies_by_star, list) or len(copies_by_star) != 4
-                    or any(isinstance(value, bool) or not isinstance(value, int) or value < 0 for value in copies_by_star)
-                    or copies_by_star[0] != 0 or any(value > 9 for value in copies_by_star)
-                    or copies_toward > 6 or copies_needed > 6
-                    or isinstance(pool_remaining, bool) or not isinstance(pool_remaining, int)
-                    or pool_remaining < -1 or not isinstance(pool_known, bool)
-                    or (not pool_known and pool_remaining != -1)
-                    or not isinstance(target_unit, bool) or not isinstance(has_pair, bool)
-                    or copies_needed_for_pair > 2
-                ):
-                    raise ValueError("unit priority extended pair/upgrade evidence is invalid")
             priority_by_id[champion_id] = (priority, intent, confidence, target_star, sale_restricted)
     elif priority_rows or selected_ids or entry_ids or exit_ids or deferred_ids:
         raise ValueError("unavailable planner outputs cannot publish priority or lineup rows")
@@ -858,8 +773,6 @@ def project_native_player_state(
     entry_set = validate_ids("lineup_entry_unit_ids", entry_ids)
     validate_ids("lineup_exit_unit_ids", exit_ids)
     deferred_set = validate_ids("lineup_deferred_unit_ids", deferred_ids)
-    bridge_set = validate_ids("lineup_bridge_unit_ids", bridge_ids)
-    endgame_target_set = validate_ids("lineup_endgame_target_unit_ids", endgame_target_ids)
     target_set = selected_set | entry_set | deferred_set
 
     projection_context = (
@@ -1243,76 +1156,6 @@ def project_native_player_state(
             "unit_uuids": tuple(entity_unit_uuids),
             "shop_offer_revisions": tuple(shop_offer_revisions),
         },
-        # Complete strategic owner context is intentionally separate from the
-        # v8 numeric tensor and digest. These are native facts/evaluations and
-        # advisory planner outputs, not forced actions.
-        "strategic_context": {
-            "contract_id": strategic.get("contract_id"),
-            "contract_version": strategic_version,
-            "source_namespace": strategic.get("source_namespace"),
-            "producer": strategic.get("producer"),
-            "episode_id": strategic.get("episode_id"),
-            "player_decision_sequence": strategic.get("player_decision_sequence"),
-            "strategic_context_sequence": strategic_context_sequence,
-            "player_id": strategic.get("player_id"),
-            "round": strategic.get("round"),
-            "active_composition": {
-                "valid": active_valid,
-                "identity": strategic.get("active_composition_id"),
-                "version": strategic.get("active_composition_version"),
-                "source_sequence": strategic.get("active_source_sequence"),
-                "unit_ids": tuple(sorted(active_ids)),
-                "core_unit_ids": tuple(sorted(core_ids)),
-            },
-            "direction": {
-                "valid": direction_valid,
-                "identity": strategic.get("direction_identity"),
-                "value": direction_value,
-                "selected_round": strategic.get("direction_selected_round"),
-                "composition_identity": direction_composition_id,
-                "composition_version": direction_composition_version,
-                "confidence": direction_confidence,
-                "lifecycle": direction_lifecycle,
-                "reference_unit_ids": tuple(sorted(direction_ids)),
-                "evidence": tuple(direction_evidence),
-            },
-            "pivot_candidate": {
-                "valid": pivot_valid,
-                "identity": strategic.get("pivot_candidate_identity"),
-                "target_direction": pivot_target_direction,
-                "target_composition_identity": strategic.get("pivot_target_composition_identity"),
-                "source_direction_identity": pivot_source_direction,
-                "source_composition_version": strategic.get("pivot_source_composition_version"),
-                "confidence": pivot_confidence,
-                "lifecycle": pivot_lifecycle,
-                "reference_unit_ids": tuple(sorted(pivot_ids)),
-                "evidence": tuple(pivot_evidence),
-            },
-            "unit_copy_progress": tuple(
-                {"champion_internal_id": champion_id, **values}
-                for champion_id, values in sorted(copy_progress.items())
-            ),
-            "unit_priorities": tuple(dict(row) for row in priority_rows),
-            "lineup": {
-                "selected_unit_ids": tuple(sorted(selected_set)),
-                "entry_unit_ids": tuple(sorted(entry_set)),
-                "exit_unit_ids": tuple(sorted(validate_ids("lineup_exit_unit_ids", exit_ids))),
-                "deferred_unit_ids": tuple(sorted(deferred_set)),
-                "bridge_unit_ids": tuple(sorted(bridge_set)),
-                "endgame_target_unit_ids": tuple(sorted(endgame_target_set)),
-            },
-            "opportunity_cost": {
-                "available": opportunity_available,
-                "context_sequence": strategic_context_sequence,
-                "rows": tuple(dict(row) for row in opportunity_rows),
-            },
-            "planner": {
-                "outputs_valid": planner_valid,
-                "output_sequence": planner_sequence,
-                "refresh_failed": strategic_failed,
-                "refresh_failure_reason": failure_reason,
-            },
-        },
         "identity": identity,
         "item_state_identity": {
             "item_components": item_components,
@@ -1364,7 +1207,6 @@ def build_semantic_batch(
         # Keep the 42-row physical entity projection available to downstream
         # typed-context consumers instead of building and discarding it.
         "entity_identity": [row["entity_identity"] for row in projected],
-        "strategic_context": [row["strategic_context"] for row in projected],
         "contract_id": contract["contract"]["contract_id"],
         "contract_hash": contract["sha256"],
     }
