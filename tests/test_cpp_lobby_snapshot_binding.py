@@ -1190,6 +1190,52 @@ def _snapshot_value_mismatch(left, right, path="snapshot"):
         return path
 
 
+def test_native_board_relation_projection_uses_stable_board_slots():
+    lobby = cpp_lobby_env.CppTFTLobbyWrapper(seed=61)
+    try:
+        lobby.reset()
+        champion = next(iter(lobby.get_champion_id_map()))
+        assert lobby._engine.set_unit_for_testing(0, True, 0, champion, 1)
+        assert lobby._engine.set_unit_for_testing(0, True, 1, champion, 1)
+
+        snapshot = lobby._engine.get_audit_snapshot()
+        player = snapshot["players"][0]
+        assert player["positioning_contract_id"] == "tft.board-position-relations"
+        assert player["positioning_contract_version"] == 1
+        assert player["positioning_producer"] == "TFTEngine::get_audit_snapshot"
+        relations = {row["slot"]: row for row in player["board_relations"]}
+        assert set(relations) == {0, 1}
+        assert relations[0]["row"] == 0
+        assert relations[0]["column"] == 0
+        assert relations[1]["row"] == 0
+        assert relations[1]["column"] == 1
+        assert relations[0]["unit_uuid"] == player["board"][0]["uuid"]
+        assert relations[0]["adjacent_slots"] == [1]
+        assert relations[1]["adjacent_slots"] == [0]
+        assert relations[0]["adjacent_occupied_count"] == 1
+    finally:
+        lobby.close()
+
+
+def test_native_action_trace_carries_source_and_outcome_identity():
+    lobby = cpp_lobby_env.CppTFTLobbyWrapper(seed=67)
+    try:
+        lobby.reset()
+        _, _, _, info = lobby.step([[6, 0, 0, 0, 0, 0] for _ in range(8)])
+        trace = info["action_trace"][0]
+        assert trace["source_snapshot_sequence"] == 1
+        assert trace["outcome_snapshot_sequence"] == 2
+        assert trace["source_player_decision_sequence"] == 1
+        assert trace["outcome_player_decision_sequence"] == 2
+        assert trace["source_round"] == trace["outcome_round"]
+        assert trace["source_stage"] == trace["outcome_stage"]
+        event = info["action_outcome_events"][0]
+        assert event["source_decision"]["stage"] == trace["source_stage"]
+        assert event["outcome_snapshot"]["stage"] == trace["outcome_stage"]
+    finally:
+        lobby.close()
+
+
 def test_native_snapshot_handle_caches_frozen_ownership_view(monkeypatch):
     from immutable_snapshot import FrozenDict, FrozenList
 
