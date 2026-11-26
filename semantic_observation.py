@@ -12,7 +12,7 @@ import math
 from functools import lru_cache
 
 import numpy as np
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping, MutableMapping, Sequence
 
 SEMANTIC_STATE_CONTRACT_ID = "tft.ppo.semantic-native-state.v8"
 SEMANTIC_STATE_CONTRACT_VERSION = 8
@@ -1526,8 +1526,9 @@ def validate_semantic_batch_alignment(
     *,
     reproject: bool = True,
     verify_catalog: bool = True,
+    bind_metadata: bool = False,
 ) -> None:
-    """Validate snapshot binding; optionally re-project only at an external trust boundary."""
+    """Validate snapshot binding; optionally bind projection metadata in the same pass."""
     if not isinstance(batch, Mapping):
         raise TypeError("semantic batch must be a mapping")
     if not isinstance(metadata_rows, Sequence) or isinstance(metadata_rows, (str, bytes)):
@@ -1594,6 +1595,13 @@ def validate_semantic_batch_alignment(
             char not in "0123456789abcdef" for char in digest
         ):
             raise ValueError(f"semantic row {index} has an invalid projection hash")
+        if bind_metadata:
+            if not isinstance(metadata, MutableMapping):
+                raise TypeError(f"semantic row {index} metadata must be mutable when binding projection identity")
+            metadata["semantic_identity"] = identity
+            metadata["semantic_projection_hash"] = digest
+            metadata["semantic_projection_contract_id"] = expected_id
+            metadata["semantic_projection_contract_hash"] = expected_hash
         if metadata.get("semantic_projection_hash") != digest:
             raise ValueError(f"semantic row {index} projection hash is not bound to its snapshot metadata")
         if metadata.get("semantic_projection_contract_id") != expected_id:
