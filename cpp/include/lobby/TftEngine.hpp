@@ -24,6 +24,10 @@ inline constexpr std::size_t kBoardSlots = 28;
 inline constexpr std::size_t kBenchSlots = 9;
 inline constexpr std::size_t kShopSlots = 5;
 inline constexpr std::size_t kActionComponents = 6;
+inline constexpr char kActionExecutionEventContractId[] = "tft.action-execution-event";
+inline constexpr std::uint32_t kActionExecutionEventContractVersion = 1;
+inline constexpr char kActionExecutionEventSourceNamespace[] = "tft.engine.action-execution";
+inline constexpr char kActionExecutionEventProducer[] = "TFTEngine::step";
 
 inline constexpr std::array<std::size_t, kActionComponents>
     kActionDims{9, 5, 9, 28, 28, 28};
@@ -421,8 +425,7 @@ struct AuditBoardRelationSnapshot {
     std::int32_t row{-1};
     std::int32_t column{-1};
     std::int32_t role{-1};
-    std::string unit_uuid;
-    // Stable board-slot references; no duplicate UnitInstance or champion maps.
+    // Stable board-slot references; UUID remains owned by AuditUnitSnapshot.
     std::array<std::int32_t, 8> adjacent_slots{};
     std::uint32_t adjacent_slots_count{0};
     std::array<std::int32_t, 8> frontline_slots_in_front{};
@@ -659,10 +662,6 @@ struct AntiLoopMetrics {
 
 
 struct ActionExecutionTrace {
-    std::string contract_id{"tft.action-execution-event"};
-    std::uint32_t contract_version{1};
-    std::string source_namespace{"tft.engine.action-execution"};
-    std::string producer{"TFTEngine::step"};
     // Explicit owner of this trace; array position alone is not identity.
     std::int32_t player_id{-1};
     std::array<std::int32_t, kActionComponents> requested_action{};
