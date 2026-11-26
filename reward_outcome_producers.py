@@ -493,7 +493,7 @@ def build_action_outcome_events(
         post_structural = _finite(after.get("board_structural_score", 0.0), "after.board_structural_score")
 
         native_item_action = None
-        if family == "item_action" and "last_item_action_kind" in after:
+        if family == "item_action" and applied and "last_item_action_kind" in after:
             native_item_action = {
                 "kind": str(after.get("last_item_action_kind", "")),
                 "item_id": str(after.get("last_item_id", "")),
