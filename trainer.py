@@ -761,9 +761,12 @@ class Trainer:
                     )
                 row["action_trace"] = dict(trace)
                 if "contract_id" in trace:
+                    trace_version = trace.get("contract_version")
                     if (
                         trace.get("contract_id") != "tft.action-execution-event"
-                        or trace.get("contract_version") != 1
+                        or isinstance(trace_version, bool)
+                        or not isinstance(trace_version, int)
+                        or trace_version != 1
                         or trace.get("source_namespace") != "tft.engine.action-execution"
                         or trace.get("producer") != "TFTEngine::step"
                     ):
@@ -778,6 +781,13 @@ class Trainer:
                     }
                     if not causal_fields.issubset(trace):
                         raise RuntimeError("Action execution event sem envelope causal completo.")
+                    if any(
+                        isinstance(trace[field], bool)
+                        or not isinstance(trace[field], int)
+                        or trace[field] < 0
+                        for field in causal_fields
+                    ):
+                        raise RuntimeError("Action execution event contém sequência temporal inválida.")
                 decision_context = row.get("decision_context")
                 if isinstance(decision_context, dict):
                     # The action trace is an outcome-side fact. It is attached
