@@ -1015,6 +1015,41 @@ def test_v4_strategic_context_preserves_native_pair_upgrade_and_anchor_provenanc
     assert projected["sha256"] == legacy_projected["sha256"]
 
 
+def test_v4_semantic_projection_rejects_invalid_extended_priority_evidence():
+    metadata = _metadata()
+    strategic = metadata["native_player_state"]["strategic_state"]
+    strategic["contract_version"] = 4
+    strategic["planner_outputs_valid"] = True
+    strategic["planner_output_sequence"] = strategic["strategic_context_sequence"]
+    strategic["unit_priorities"] = [{
+        "champion_internal_id": 17,
+        "intent": 1,
+        "relation": 0,
+        "priority": 80,
+        "target_star": 2,
+        "sale_restricted": False,
+        "confidence": 0.8,
+        "tier": 2,
+        "copies_owned": 4,
+        "highest_star": 2,
+        "on_board": True,
+        "board_contribution": 0.75,
+        "synergy_contribution": 0.6,
+        "copies_by_star": [1, 1, 1, 0],
+        "copies_in_shop": 1,
+        "affordable_shop_copies": 1,
+        "copies_toward_next_star": 0,
+        "copies_needed_for_next_star": 2,
+        "pool_remaining": 12,
+        "pool_known": True,
+        "target_unit": True,
+        "has_pair": True,
+        "copies_needed_for_pair": 0,
+    }]
+    with pytest.raises(ValueError, match="extended pair/upgrade evidence"):
+        project_native_player_state(metadata, {"TFT_TestChampion": 17})
+
+
 def test_build_semantic_batch_exposes_per_player_strategic_context():
     metadata = _metadata()
     batch = build_semantic_batch(
