@@ -907,6 +907,17 @@ def test_native_typed_entity_projection_is_validated_and_preserves_v8():
     with pytest.raises(ValueError, match="read-only view contract"):
         project_native_player_state(invalid, catalog)
 
+    divergent = _metadata()
+    divergent_player = divergent["native_player_state"]
+    divergent_features = features.copy()
+    divergent_features[0, 6] += 1.0
+    divergent_features.setflags(write=False)
+    divergent_player["entity_projection_version"] = 1
+    divergent_player["entity_numeric_features"] = divergent_features
+    divergent_player["entity_champion_internal_ids"] = ids
+    with pytest.raises(ValueError, match="typed entity values diverge"):
+        project_native_player_state(divergent, catalog)
+
 
 def test_native_item_numpy_views_preserve_v8_projection_and_validate_contract():
     catalog = {"TFT_TestChampion": 17}
