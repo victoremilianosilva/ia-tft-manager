@@ -574,11 +574,19 @@ class Trainer:
                         "stage": native_snapshot.get("stage"),
                         "combat_sequence": native_snapshot.get("combat_sequence"),
                     }),
-                    "shared_pool": native_snapshot.get("shared_pool"),
-                    # Keep the immutable native handle as the lazy source for
-                    # shared combat/economy events; do not materialize them for
-                    # every PPO row when the current update does not consume them.
-                    "native_audit_snapshot": native_snapshot,
+                    "shared_pool": freeze_snapshot(native_snapshot.get("shared_pool")),
+                    "economy_resolution_events": freeze_snapshot(
+                        native_snapshot.get("economy_resolution_events", [])
+                    ),
+                    "pvp_result_credit_events": freeze_snapshot(
+                        native_snapshot.get("pvp_result_credit_events", [])
+                    ),
+                    "combat_event_stream": {
+                        "sequence": native_snapshot.get("combat_sequence"),
+                        "damage_truncated": native_snapshot.get("combat_damage_events_truncated"),
+                        "attack_truncated": native_snapshot.get("combat_attack_events_truncated"),
+                        "death_truncated": native_snapshot.get("combat_death_events_truncated"),
+                    },
                 }
             else:
                 lobby_context = None
