@@ -796,7 +796,10 @@ def project_native_player_state(
                         )
     if not (set(copy_progress) & known_catalog_ids).issubset(observed_owned_ids):
         raise ValueError("native UnitCopyProgress contains known champions absent from board/bench")
-    shop_offer_revisions = state.get("shop_offer_revisions")
+    # Older dict-backed evaluation fixtures predate the slot revision field.
+    # The native producer always publishes the five revisions; absent metadata
+    # therefore means a compatibility fixture with no revision history.
+    shop_offer_revisions = state.get("shop_offer_revisions", [0] * 5)
     if (
         not isinstance(shop_offer_revisions, Sequence)
         or isinstance(shop_offer_revisions, (str, bytes))
@@ -881,7 +884,12 @@ def project_native_player_state(
                     raise ValueError(
                         f"native {group_name}[{slot}] champion identity diverges from the loaded catalog"
                     )
-                native_id = projected_internal_id
+                # An internal ID without a matching API identity in the loaded
+                # catalog is not a usable policy identity. Keep it explicitly
+                # invalid instead of manufacturing a champion embedding.
+                native_id = (
+                    projected_internal_id if catalog_internal_id is not None else None
+                )
             else:
                 # Dict-backed fixtures remain the compatibility/parity oracle.
                 native_id = (
@@ -958,7 +966,7 @@ def project_native_player_state(
                 min(opportunity[0], 100.0) / 100.0 if opportunity is not None else 0.0,
                 float(opportunity is not None),
             ])
-            champion_ids.append(0 if internal_id is None else int(internal_id) + 1)
+            champion_ids.append(0 if native_id is None else int(native_id) + 1)
 
     def read_feature_block(field, shape):
         value = state.get(field)
