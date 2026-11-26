@@ -957,6 +957,21 @@ py::dict step_to_dict(tft::StepResult step) {
         item["shop_revisions_observed"] = trace.shop_revisions_observed;
         item["shop_revisions_before"] = trace.shop_revisions_before;
         item["shop_revisions_after"] = trace.shop_revisions_after;
+        py::list unit_deltas;
+        for (const auto& delta : trace.unit_deltas) {
+            py::dict row;
+            row["kind"] = delta.kind;
+            row["uuid"] = delta.uuid;
+            row["champion_id"] = delta.champion_id;
+            row["location_before"] = delta.location_before;
+            row["location_after"] = delta.location_after;
+            row["slot_before"] = delta.slot_before;
+            row["slot_after"] = delta.slot_after;
+            row["star_before"] = delta.star_before;
+            row["star_after"] = delta.star_after;
+            unit_deltas.append(std::move(row));
+        }
+        item["unit_deltas"] = std::move(unit_deltas);
         item["status_reason"] = trace.status_reason;
         item["source_snapshot_sequence"] = trace.source_snapshot_sequence;
         item["outcome_snapshot_sequence"] = trace.outcome_snapshot_sequence;
