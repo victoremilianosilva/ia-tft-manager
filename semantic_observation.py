@@ -43,6 +43,14 @@ SEMANTIC_TRAIT_SLOTS = 10
 SEMANTIC_TRAIT_VOCAB_SIZE = 65536
 SEMANTIC_TRAIT_EMBED_DIM = 16
 
+# Immutable zero blocks avoid allocating fresh padding lists for every empty
+# board/bench/shop slot and every short trait list in every player projection.
+_ZERO_ENTITY_FEATURES = (0.0,) * SEMANTIC_ENTITY_FEATURES
+_ZERO_TARGET_FEATURES = (0.0,) * 17
+_ZERO_TRAIT_PADDING = {
+    count: (0.0,) * count for count in range(SEMANTIC_TRAIT_SLOTS + 1)
+}
+
  
 @lru_cache(maxsize=4096)
 def _semantic_trait_hash_id(trait: str) -> int:
@@ -954,7 +962,7 @@ def project_native_player_state(
             entity_occupied.append(occupied)
             entity_unit_uuids.append(unit_uuid)
             if not occupied:
-                numeric.extend([0.0] * SEMANTIC_ENTITY_FEATURES)
+                numeric.extend(_ZERO_ENTITY_FEATURES)
                 champion_ids.append(0)
                 continue
             champion_name = entity.get("champion_id")
@@ -1029,7 +1037,6 @@ def project_native_player_state(
             ])
             # Target profile is native catalog data, not reconstructed from the
             # flat item-target observation. Shop slots are not legal item targets.
-            target_features = [0.0] * 17
             if group_name in ("board", "bench"):
                 role = _non_negative_int(entity.get("role"), f"{group_name}[{slot}].role")
                 if role > 4:
@@ -1042,27 +1049,31 @@ def project_native_player_state(
                 if min(attack_damage, attack_speed, max_health, armor, magic_resist) < 0.0:
                     raise ValueError(f"{group_name}[{slot}] has negative target profile stats")
                 on_board = group_name == "board"
-                target_features[0] = 1.0
-                target_features[1] = float(on_board)
-                target_features[2] = float(not on_board)
-                target_features[3] = star / 3.0
-                target_features[4 + role] = 1.0
-                target_features[9] = float(on_board and slot // 7 <= 1)
-                target_features[10] = float(on_board and slot // 7 >= 2)
-                target_features[11] = min(attack_damage / 200.0, 1.0)
-                target_features[12] = min(attack_speed / 2.0, 1.0)
-                target_features[13] = min(max_health / 2000.0, 1.0)
-                target_features[14] = min(armor / 150.0, 1.0)
-                target_features[15] = min(magic_resist / 150.0, 1.0)
-                target_features[16] = min(len(items) / 3.0, 1.0)
-            numeric.extend(target_features)
+                numeric.extend((
+                    1.0, float(on_board), float(not on_board), star / 3.0,
+                    1.0 if role == 0 else 0.0,
+                    1.0 if role == 1 else 0.0,
+                    1.0 if role == 2 else 0.0,
+                    1.0 if role == 3 else 0.0,
+                    1.0 if role == 4 else 0.0,
+                    float(on_board and slot // 7 <= 1),
+                    float(on_board and slot // 7 >= 2),
+                    min(attack_damage / 200.0, 1.0),
+                    min(attack_speed / 2.0, 1.0),
+                    min(max_health / 2000.0, 1.0),
+                    min(armor / 150.0, 1.0),
+                    min(magic_resist / 150.0, 1.0),
+                    min(len(items) / 3.0, 1.0),
+                ))
+            else:
+                numeric.extend(_ZERO_TARGET_FEATURES)
             if len(traits) > SEMANTIC_TRAIT_SLOTS:
                 raise ValueError(f"{group_name}[{slot}] exceeds the native trait slot limit")
-            trait_ids = []
-            for trait in traits:
-                trait_ids.append(_semantic_trait_hash_id(trait))
-            numeric.extend(float(trait_id / SEMANTIC_TRAIT_VOCAB_SIZE) for trait_id in trait_ids)
-            numeric.extend([0.0] * (SEMANTIC_TRAIT_SLOTS - len(trait_ids)))
+            numeric.extend(
+                _semantic_trait_hash_id(trait) / SEMANTIC_TRAIT_VOCAB_SIZE
+                for trait in traits
+            )
+            numeric.extend(_ZERO_TRAIT_PADDING[SEMANTIC_TRAIT_SLOTS - len(traits)])
             priority = priority_by_id.get(native_id, (0, 0, 0.0, 0, False)) if native_id is not None else (0, 0, 0.0, 0, False)
             opportunity = opportunity_by_id.get(native_id) if native_id is not None else None
             numeric.extend([
