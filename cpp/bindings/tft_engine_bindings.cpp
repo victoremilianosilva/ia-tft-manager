@@ -290,6 +290,7 @@ py::dict audit_player_snapshot_to_dict(
         strategic_state["direction_valid"] = strategic.direction_valid;
         strategic_state["direction_identity"] = strategic.direction_identity;
         strategic_state["direction_value"] = strategic.direction_value;
+        strategic_state["direction_composition_bound"] = strategic.direction_composition_bound;
         strategic_state["direction_composition_identity"] = strategic.direction_composition_identity;
         strategic_state["direction_composition_version"] = strategic.direction_composition_version;
         strategic_state["direction_confidence"] = strategic.direction_confidence;
