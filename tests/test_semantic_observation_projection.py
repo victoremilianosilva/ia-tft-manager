@@ -347,6 +347,16 @@ def test_copy_progress_consumes_native_unit_copy_progress_without_recounting():
     assert projected["numeric"][SEMANTIC_GLOBAL_FEATURES + 11] == 1.0
 
 
+def test_semantic_batch_fails_closed_on_invalid_native_strategic_payload():
+    row = _metadata()
+    row["native_player_state"]["strategic_state"]["unit_copy_progress"][0][
+        "copies_toward_next_star"
+    ] = 3
+
+    with pytest.raises(ValueError, match="unit_copy_progress values are outside native ranges"):
+        build_semantic_batch([row], {"TFT_TestChampion": 17})
+
+
 def test_projection_rejects_owned_champion_without_copy_progress():
     row = _metadata()
     row["native_player_state"]["strategic_state"]["unit_copy_progress"] = []
