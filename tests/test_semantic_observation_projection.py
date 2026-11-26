@@ -1039,6 +1039,32 @@ def test_v4_strategic_context_preserves_native_pair_upgrade_and_anchor_provenanc
     assert projected["sha256"] == legacy_projected["sha256"]
 
 
+def test_v4_semantic_projection_rejects_direction_bound_to_stale_composition():
+    metadata = _metadata()
+    strategic = metadata["native_player_state"]["strategic_state"]
+    strategic.update({
+        "contract_version": 4,
+        "direction_value": "carry",
+        "direction_composition_bound": True,
+        "direction_composition_identity": "composition-old",
+        "direction_composition_version": 2,
+        "direction_confidence": 0.8,
+        "direction_reason": "test_reason",
+        "direction_lifecycle": 2,
+        "direction_evidence": [1],
+        "pivot_target_direction": "level-up",
+        "pivot_source_direction_identity": "direction-a",
+        "pivot_confidence": 0.7,
+        "pivot_reason": "test_reason",
+        "pivot_lifecycle": 3,
+        "pivot_evidence": [2],
+        "lineup_bridge_unit_ids": [],
+        "lineup_endgame_target_unit_ids": [],
+    })
+    with pytest.raises(ValueError, match="direction/pivot anchor provenance is invalid"):
+        project_native_player_state(metadata, {"TFT_TestChampion": 17})
+
+
 def test_v4_semantic_projection_rejects_invalid_extended_priority_evidence():
     metadata = _metadata()
     strategic = metadata["native_player_state"]["strategic_state"]
