@@ -435,6 +435,21 @@ struct AuditBoardRelationSnapshot {
     std::uint32_t fighters_in_front{0};
 };
 
+inline constexpr std::size_t kActionHistoryCapacity = 32;
+
+struct AuditActionDecisionReference {
+    std::uint64_t source_snapshot_sequence{0};
+    std::uint64_t outcome_snapshot_sequence{0};
+    std::uint64_t source_player_decision_sequence{0};
+    std::uint64_t outcome_player_decision_sequence{0};
+    std::uint32_t source_round{0};
+    std::uint32_t outcome_round{0};
+    std::uint32_t source_stage{0};
+    std::uint32_t outcome_stage{0};
+    std::int32_t action_type{6};
+    bool handler_applied{false};
+};
+
 struct AuditPlayerSnapshot {
     std::int32_t player_id{-1};
     AuditStrategicOwnerSnapshot strategic_state{};
@@ -517,6 +532,9 @@ struct AuditPlayerSnapshot {
     // Native temporal facts used by the PPO semantic global encoder.
     std::uint32_t actions_taken_this_round{0};
     std::array<std::uint32_t, kBoardSlots> board_move_age{};
+    std::string action_history_contract_id{"tft.player-action-history"};
+    std::uint32_t action_history_contract_version{1};
+    std::vector<AuditActionDecisionReference> recent_action_history;
     // Last item decision is carried by the post-action snapshot for exact
     // Viewer attribution (normal equip/craft versus forced anvil selection).
     std::string last_item_action_kind;
