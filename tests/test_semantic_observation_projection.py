@@ -716,6 +716,10 @@ def test_semantic_projection_cache_requires_exact_native_snapshot_revision():
         altered = dict(row, **{field: changed})
         assert not semantic_batch_matches_snapshot_rows(batch, [altered], contract), field
 
+    strategic_stale = _metadata()
+    strategic_stale["native_player_state"]["strategic_state"]["strategic_context_sequence"] += 1
+    assert not semantic_batch_matches_snapshot_rows(batch, [strategic_stale], contract)
+
     stale_contract = dict(contract, sha256="0" * 64)
     assert not semantic_batch_matches_snapshot_rows(batch, [row], stale_contract)
 
