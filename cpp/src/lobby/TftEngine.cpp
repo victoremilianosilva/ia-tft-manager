@@ -1283,6 +1283,9 @@ struct TFTEngine::Impl {
             player_envs[i].actions_taken_this_round = 0;
             player_envs[i].action_serial = 0;
             player_envs[i].recent_purchases.clear();
+            player_envs[i].action_history = {};
+            player_envs[i].action_history_next = 0;
+            player_envs[i].action_history_count = 0;
 
             // Impede que o histórico de uma partida anterior
             // interfira no novo episódio.
@@ -6330,6 +6333,26 @@ StepResult TFTEngine::step(
         trace.outcome_round = impl_->round + 1;
         trace.source_stage = source_stage;
         trace.outcome_stage = impl_->stage;
+
+        auto& player_env = impl_->player_envs[i];
+        auto& history_entry = player_env.action_history[player_env.action_history_next];
+        history_entry = {
+            trace.source_snapshot_sequence,
+            trace.outcome_snapshot_sequence,
+            trace.source_player_decision_sequence,
+            trace.outcome_player_decision_sequence,
+            trace.source_round,
+            trace.outcome_round,
+            trace.source_stage,
+            trace.outcome_stage,
+            trace.effective_action[0],
+            trace.handler_applied,
+        };
+        player_env.action_history_next =
+            (player_env.action_history_next + 1) % kActionHistoryCapacity;
+        player_env.action_history_count = std::min(
+            player_env.action_history_count + 1, kActionHistoryCapacity
+        );
     }
     result.action_traces = action_traces;
     result.round = impl_->round + 1;
