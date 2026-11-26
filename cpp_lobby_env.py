@@ -881,6 +881,7 @@ class CppTFTLobbyWrapper:
                 direction_version = strategic.get("direction_composition_version")
                 direction_value = strategic.get("direction_value")
                 direction_confidence = strategic.get("direction_confidence")
+                direction_reason = strategic.get("direction_reason")
                 direction_lifecycle = strategic.get("direction_lifecycle")
                 direction_evidence = strategic.get("direction_evidence")
                 if (
@@ -897,6 +898,7 @@ class CppTFTLobbyWrapper:
                     or (strategic["direction_valid"] and not direction_value)
                     or isinstance(direction_confidence, bool) or not isinstance(direction_confidence, (int, float))
                     or not np.isfinite(direction_confidence) or not 0 <= direction_confidence <= 1
+                    or not isinstance(direction_reason, str)
                     or isinstance(direction_lifecycle, bool) or not isinstance(direction_lifecycle, int) or not 0 <= direction_lifecycle <= 7
                     or not isinstance(direction_evidence, list)
                     or any(isinstance(item, bool) or not isinstance(item, int) or not 0 <= item <= 7 for item in direction_evidence)
@@ -918,6 +920,7 @@ class CppTFTLobbyWrapper:
                 pivot_target_direction = strategic.get("pivot_target_direction")
                 pivot_source_direction = strategic.get("pivot_source_direction_identity")
                 pivot_confidence = strategic.get("pivot_confidence")
+                pivot_reason = strategic.get("pivot_reason")
                 pivot_lifecycle = strategic.get("pivot_lifecycle")
                 pivot_evidence = strategic.get("pivot_evidence")
                 if (
@@ -927,6 +930,7 @@ class CppTFTLobbyWrapper:
                     or (strategic["pivot_candidate_valid"] and not pivot_source_direction)
                     or isinstance(pivot_confidence, bool) or not isinstance(pivot_confidence, (int, float))
                     or not np.isfinite(pivot_confidence) or not 0 <= pivot_confidence <= 1
+                    or not isinstance(pivot_reason, str)
                     or isinstance(pivot_lifecycle, bool) or not isinstance(pivot_lifecycle, int) or not 0 <= pivot_lifecycle <= 7
                     or not isinstance(pivot_evidence, list)
                     or any(isinstance(item, bool) or not isinstance(item, int) or not 0 <= item <= 7 for item in pivot_evidence)
