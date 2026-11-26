@@ -6636,6 +6636,8 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
                 strategic.direction_value = anchors.direction_anchor.direction;
                 strategic.direction_value_for_diagnostics =
                     anchors.direction_anchor.direction;
+                strategic.direction_composition_bound =
+                    anchors.direction_anchor.composition_bound;
                 strategic.direction_composition_identity =
                     anchors.direction_anchor.composition_identity;
                 strategic.direction_composition_version =
