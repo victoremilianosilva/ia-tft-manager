@@ -6680,6 +6680,38 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
             target.bench[slot] = describe_unit(
                 source.bench[slot] ? &*source.bench[slot] : nullptr, false, slot
             );
+
+        // Export only factual board geometry/adjacency. Tactical evaluation
+        // remains owned by BoardEvaluation; this projection adds no rules.
+        target.board_relations.clear();
+        target.board_relations.reserve(kBoardSlots);
+        for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
+            const auto& unit = target.board[slot];
+            if (!unit.occupied) continue;
+            AuditBoardRelationSnapshot relation{};
+            relation.slot = static_cast<std::int32_t>(slot);
+            relation.row = static_cast<std::int32_t>(slot / PositioningEngine::cols);
+            relation.column = static_cast<std::int32_t>(slot % PositioningEngine::cols);
+            relation.role = unit.role;
+            relation.unit_uuid = unit.uuid;
+            for (const int neighbor_slot : PositioningEngine::get_neighbors(
+                     static_cast<int>(slot), true)) {
+                const auto neighbor_index = static_cast<std::size_t>(neighbor_slot);
+                const auto& neighbor = target.board[neighbor_index];
+                if (!neighbor.occupied) continue;
+                ++relation.adjacent_occupied_count;
+                relation.adjacent_slots.push_back(neighbor_slot);
+                const auto neighbor_row = neighbor_slot / PositioningEngine::cols;
+                if (neighbor_row < relation.row &&
+                    (neighbor.role == PositioningEngine::tank ||
+                     neighbor.role == PositioningEngine::fighter)) {
+                    relation.frontline_slots_in_front.push_back(neighbor_slot);
+                    if (neighbor.role == PositioningEngine::tank) ++relation.tanks_in_front;
+                    else ++relation.fighters_in_front;
+                }
+            }
+            target.board_relations.push_back(std::move(relation));
+        }
         for (std::size_t slot = 0; slot < kShopSlots; ++slot) {
             target.shop[slot] = describe_unit(source.shop->get_unit(static_cast<std::int32_t>(slot)), false, slot);
             target.shop_offer_revisions[slot] = source.shop->offer_revisions()[slot];
