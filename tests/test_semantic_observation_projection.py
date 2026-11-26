@@ -812,20 +812,22 @@ def test_native_item_numpy_views_preserve_v8_projection_and_validate_contract():
         values.setflags(write=False)
         state[field] = values
 
-    actual = project_native_player_state(state, catalog)
+    actual = project_native_player_state(native, catalog)
     assert actual["numeric"] == expected["numeric"]
     assert actual["champion_ids"] == expected["champion_ids"]
     assert actual["sha256"] == expected["sha256"]
 
-    writable = _metadata()["native_player_state"]
+    writable_metadata = _metadata()
+    writable = writable_metadata["native_player_state"]
     writable["item_component_features"] = np.zeros((10,), dtype=np.float32)
     with pytest.raises(ValueError, match="invalid native view contract"):
-        project_native_player_state(writable, catalog)
+        project_native_player_state(writable_metadata, catalog)
 
-    non_finite = _metadata()["native_player_state"]
+    non_finite_metadata = _metadata()
+    non_finite = non_finite_metadata["native_player_state"]
     values = np.zeros((10,), dtype=np.float32)
     values[0] = np.nan
     values.setflags(write=False)
     non_finite["item_component_features"] = values
     with pytest.raises(ValueError, match="non-finite"):
-        project_native_player_state(non_finite, catalog)
+        project_native_player_state(non_finite_metadata, catalog)
