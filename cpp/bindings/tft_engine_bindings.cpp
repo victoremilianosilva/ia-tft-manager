@@ -935,6 +935,14 @@ py::dict step_to_dict(tft::StepResult step) {
         item["effective_action"] = trace.effective_action;
         item["handler_applied"] = trace.handler_applied;
         item["status_reason"] = trace.status_reason;
+        item["source_snapshot_sequence"] = trace.source_snapshot_sequence;
+        item["outcome_snapshot_sequence"] = trace.outcome_snapshot_sequence;
+        item["source_player_decision_sequence"] = trace.source_player_decision_sequence;
+        item["outcome_player_decision_sequence"] = trace.outcome_player_decision_sequence;
+        item["source_round"] = trace.source_round;
+        item["outcome_round"] = trace.outcome_round;
+        item["source_stage"] = trace.source_stage;
+        item["outcome_stage"] = trace.outcome_stage;
         action_traces.append(std::move(item));
     }
     result["action_traces"] = std::move(action_traces);
