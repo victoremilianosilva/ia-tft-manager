@@ -1185,7 +1185,7 @@ def test_batch_projection_reuses_item_catalog_fingerprint_without_skipping_compa
     assert len(calls) == 5
 
 
-def test_batch_projection_reuses_native_item_catalog_fingerprint_without_materializing_each_player(monkeypatch):
+def test_batch_projection_reuses_native_item_catalog_fingerprint_with_array_comparison(monkeypatch):
     catalog = {"TFT_TestChampion": 17}
     projection_context = semantic_module._build_semantic_projection_context(catalog)
     list_backed = _metadata()
@@ -1225,8 +1225,8 @@ def test_batch_projection_reuses_native_item_catalog_fingerprint_without_materia
     assert first["sha256"] == expected["sha256"]
     assert second["sha256"] == expected["sha256"]
     assert first["item_state_identity"]["item_catalog_sha256"] == second["item_state_identity"]["item_catalog_sha256"]
-    # The recipe view is compared directly for the second player: only each
-    # player's v8 digest is serialized after the first catalog fingerprint.
+    # The recipe view is compared with NumPy for the second player, avoiding a
+    # Python element-by-element list comparison after the first fingerprint.
     assert len(calls) == 3
 
     changed = _metadata()
