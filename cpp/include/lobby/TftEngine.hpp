@@ -324,6 +324,23 @@ struct AuditUnitStrategicPrioritySnapshot {
     std::int32_t target_star{0};
     bool sale_restricted{false};
     double confidence{0.0};
+    // Full UnitPriorityPlanner evidence; additive to the original compact row.
+    std::int32_t tier{6};
+    std::int32_t copies_owned{0};
+    std::int32_t highest_star{1};
+    bool on_board{false};
+    double board_contribution{0.0};
+    double synergy_contribution{0.0};
+    std::array<std::int32_t, 4> copies_by_star{};
+    std::int32_t copies_in_shop{0};
+    std::int32_t affordable_shop_copies{0};
+    std::int32_t copies_toward_next_star{0};
+    std::int32_t copies_needed_for_next_star{0};
+    std::int32_t pool_remaining{-1};
+    bool pool_known{false};
+    bool target_unit{false};
+    bool has_pair{false};
+    std::int32_t copies_needed_for_pair{0};
 };
 
 struct AuditUnitOpportunityCostSnapshot {
@@ -338,7 +355,7 @@ struct AuditUnitOpportunityCostSnapshot {
 
 struct AuditStrategicOwnerSnapshot {
     std::string contract_id{"tft.strategic-owner-observation"};
-    std::uint32_t contract_version{3};
+    std::uint32_t contract_version{4};
     std::string source_namespace{"tft.engine.strategic-owners"};
     std::string producer{"TFTEngine::get_audit_snapshot"};
     std::uint64_t episode_id{0};
@@ -353,13 +370,24 @@ struct AuditStrategicOwnerSnapshot {
     std::vector<std::int32_t> active_core_unit_ids;
     bool direction_valid{false};
     std::string direction_identity;
-    // Internal audit diagnostic; not part of the serialized PPO contract.
+    std::string direction_value;
+    std::string direction_composition_identity;
+    std::uint64_t direction_composition_version{0};
+    double direction_confidence{0.0};
+    std::int32_t direction_lifecycle{0};
+    std::vector<std::int32_t> direction_evidence;
+    // Retained for internal diagnostics only.
     std::string direction_value_for_diagnostics;
     std::uint32_t direction_selected_round{0};
     std::vector<std::int32_t> direction_reference_unit_ids;
     bool pivot_candidate_valid{false};
     std::string pivot_candidate_identity;
     std::string pivot_target_composition_identity;
+    std::string pivot_target_direction;
+    std::string pivot_source_direction_identity;
+    double pivot_confidence{0.0};
+    std::int32_t pivot_lifecycle{0};
+    std::vector<std::int32_t> pivot_evidence;
     // Internal diagnostic for native pivot proposal production; not serialized.
     std::string pivot_generation_diagnostic_for_diagnostics;
     std::uint64_t pivot_source_composition_version{0};
@@ -381,6 +409,8 @@ struct AuditStrategicOwnerSnapshot {
     std::vector<std::int32_t> lineup_entry_unit_ids;
     std::vector<std::int32_t> lineup_exit_unit_ids;
     std::vector<std::int32_t> lineup_deferred_unit_ids;
+    std::vector<std::int32_t> lineup_bridge_unit_ids;
+    std::vector<std::int32_t> lineup_endgame_target_unit_ids;
     bool strategic_refresh_failed{false};
     std::string strategic_refresh_failure_reason;
 };
