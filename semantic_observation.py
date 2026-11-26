@@ -1165,7 +1165,9 @@ def project_native_player_state(
     inventory_features = read_feature_block(
         "item_inventory_features", (9, 17), materialize=False
     )
-    recipe_features = read_feature_block("item_recipe_features", (100, 17))
+    recipe_features = read_feature_block(
+        "item_recipe_features", (100, 17), materialize=False
+    )
     inventory_target_fit = read_feature_block(
         "item_inventory_target_fit", (9, 37), materialize=False
     )
@@ -1219,25 +1221,45 @@ def project_native_player_state(
         raise ValueError("native item inventory/anvil options exceed their canonical slot counts")
 
     cached_item_catalog = projection_context.get("item_catalog_fingerprint")
+    cached_recipe_features = (
+        None if cached_item_catalog is None else cached_item_catalog[1]
+    )
+    if isinstance(recipe_features, np.ndarray) or isinstance(
+        cached_recipe_features, np.ndarray
+    ):
+        same_recipe_features = (
+            cached_recipe_features is not None
+            and np.array_equal(cached_recipe_features, recipe_features)
+        )
+    else:
+        same_recipe_features = cached_recipe_features == recipe_features
     if (
         cached_item_catalog is not None
         and cached_item_catalog[0] == item_component_catalog
-        and cached_item_catalog[1] == recipe_features
+        and same_recipe_features
     ):
         item_catalog_sha256 = cached_item_catalog[2]
     else:
+        # Native recipe blocks stay as read-only views while the batch-local
+        # fingerprint cache is checked. Materialize only for the one canonical
+        # JSON serialization that establishes the digest.
+        recipe_features_for_digest = (
+            recipe_features.tolist()
+            if isinstance(recipe_features, np.ndarray)
+            else recipe_features
+        )
         item_catalog_sha256 = hashlib.sha256(json.dumps(
             {
                 "component_ids": item_component_catalog,
-                "recipe_features": recipe_features,
+                "recipe_features": recipe_features_for_digest,
             },
             sort_keys=True, separators=(",", ":"), ensure_ascii=False,
         ).encode("utf-8")).hexdigest()
         if cached_item_catalog is None:
-            # Batch-local only: never let a mutable projection cache escape
-            # through the returned PPO batch or survive a new snapshot batch.
+            # Batch-local only: the native view is immutable and pinned by the
+            # snapshot handle; list-backed fixtures retain an owned list.
             projection_context["item_catalog_fingerprint"] = (
-                list(item_component_catalog), list(recipe_features), item_catalog_sha256
+                list(item_component_catalog), recipe_features, item_catalog_sha256
             )
 
     # Native ndarray views are converted one at a time at the canonical
@@ -1253,7 +1275,11 @@ def project_native_player_state(
         if isinstance(inventory_features, np.ndarray)
         else inventory_features
     )
-    numeric.extend(recipe_features)
+    numeric.extend(
+        recipe_features.tolist()
+        if isinstance(recipe_features, np.ndarray)
+        else recipe_features
+    )
     numeric.extend(
         inventory_target_fit.tolist()
         if isinstance(inventory_target_fit, np.ndarray)
