@@ -6643,6 +6643,7 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
                 strategic.direction_composition_version =
                     anchors.direction_anchor.composition_version;
                 strategic.direction_confidence = anchors.direction_anchor.confidence;
+                strategic.direction_reason = anchors.direction_anchor.reason;
                 strategic.direction_lifecycle =
                     static_cast<std::int32_t>(anchors.direction_anchor.lifecycle);
                 for (const auto evidence : anchors.direction_anchor.evidence)
@@ -6659,6 +6660,7 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
                 strategic.pivot_source_direction_identity =
                     anchors.pivot_candidate.source_direction_anchor_identity;
                 strategic.pivot_confidence = anchors.pivot_candidate.confidence;
+                strategic.pivot_reason = anchors.pivot_candidate.reason;
                 strategic.pivot_lifecycle =
                     static_cast<std::int32_t>(anchors.pivot_candidate.lifecycle);
                 for (const auto evidence : anchors.pivot_candidate.evidence)
