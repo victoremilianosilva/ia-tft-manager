@@ -1,5 +1,7 @@
 import hashlib
 
+import semantic_observation as semantic_module
+
 import numpy as np
 import pytest
 import torch
@@ -1073,3 +1075,36 @@ def test_build_semantic_batch_exposes_per_player_strategic_context():
     )
     assert len(batch["strategic_context"]) == 1
     assert batch["strategic_context"][0]["strategic_context_sequence"] == 5
+
+
+def test_batch_projection_reuses_item_catalog_fingerprint_without_skipping_comparison(monkeypatch):
+    metadata = _metadata()
+    catalog = {"Test_A": 0}
+    projection_context = semantic_module._build_semantic_projection_context(catalog)
+    original_dumps = semantic_module.json.dumps
+    calls = []
+
+    def counted_dumps(*args, **kwargs):
+        calls.append(args[0])
+        return original_dumps(*args, **kwargs)
+
+    monkeypatch.setattr(semantic_module.json, "dumps", counted_dumps)
+    first = project_native_player_state(
+        metadata, catalog, _projection_context=projection_context
+    )
+    second = project_native_player_state(
+        metadata, catalog, _projection_context=projection_context
+    )
+
+    assert first["item_state_identity"]["item_catalog_sha256"] == second["item_state_identity"]["item_catalog_sha256"]
+    # Each player still gets its own canonical v8 identity digest; only the
+    # repeated static item-catalog fingerprint serialization is reused.
+    assert len(calls) == 3
+
+    changed = _metadata()
+    changed["native_player_state"]["item_recipe_features"][0][0] = 0.5
+    third = project_native_player_state(
+        changed, catalog, _projection_context=projection_context
+    )
+    assert third["item_state_identity"]["item_catalog_sha256"] != first["item_state_identity"]["item_catalog_sha256"]
+    assert len(calls) == 5
