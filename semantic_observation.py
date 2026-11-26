@@ -1523,6 +1523,10 @@ def validate_semantic_batch_alignment(
             not isinstance(strategic_context, Mapping)
             or isinstance(strategic_sequence, bool)
             or not isinstance(strategic_sequence, int)
+            or isinstance(actual_strategic_sequence, bool)
+            or not isinstance(actual_strategic_sequence, int)
+            or isinstance(strategic_context.get("strategic_context_sequence"), bool)
+            or not isinstance(strategic_context.get("strategic_context_sequence"), int)
             or actual_strategic_sequence != strategic_sequence
             or strategic_context.get("strategic_context_sequence") != strategic_sequence
         ):
