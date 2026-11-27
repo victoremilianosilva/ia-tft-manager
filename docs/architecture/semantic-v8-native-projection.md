@@ -14,7 +14,7 @@ Champion IDs are transported separately as contiguous `int64` with shape `[lobby
 
 ## Item views and ownership
 
-The native binding exposes six named item feature blocks as read-only, C-contiguous NumPy views into the numeric carrier:
+The native binding exposes six named item feature blocks as read-only NumPy views into the numeric carrier:
 
 | Block | Shape per player |
 | --- | --- |
@@ -25,7 +25,7 @@ The native binding exposes six named item feature blocks as read-only, C-contigu
 | `recipe_target_fit` | `[100, 37]` |
 | `anvil_options` | `[9, 11]` |
 
-The `anvil_state` view has shape `[3]` per player. All views share the numeric carrier's allocation as their NumPy base. They do not allocate or copy per-block storage; retaining any view retains the carrier. The Trainer validates dtype, shape, contiguity, read-only status and shared memory before flattening lobby/player dimensions with views.
+The `anvil_state` view has shape `[3]` per player. Every block shares the numeric carrier allocation and retains it through its NumPy base owner. Because lobby/player rows are separated by the full 7958-feature row stride, these views are intentionally strided and are not globally C-contiguous. Their inner feature dimensions retain their canonical row-major strides. The Trainer validates dtype, shape, read-only status, exact strides and shared memory before flattening lobby/player dimensions; flattening must not introduce a copy.
 
 The carrier is materialized once as `float32` for the Torch-facing contract. This does not claim that CPU→device transfer is zero-copy.
 
@@ -38,7 +38,7 @@ The producer returns:
 - strategic-owner provenance;
 - semantic SHA-256 hashes.
 
-Canonical JSON uses sorted object keys, compact separators and UTF-8 strings without ASCII escaping, matching the Python reference. Shared Python/C++ fixtures cover Unicode, empty arrays, null optionals, integer limits and float formatting. The snapshot parity test additionally compares full numeric rows, champion IDs, trait IDs, semantic hashes and identities.
+Canonical JSON uses sorted object keys, compact separators and UTF-8 strings without ASCII escaping, matching the Python reference. Shared Python/C++ fixtures cover Unicode, empty arrays, null optionals, integer limits and float formatting. The snapshot parity test compares full numeric rows, champion IDs, trait IDs, semantic hashes and identities.
 
 ## Production and reference paths
 
