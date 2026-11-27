@@ -182,6 +182,10 @@ def test_lobby_batch_manager_publishes_one_versioned_contiguous_batch():
         assert step_batch.dones.shape == (2, 8)
         assert step_batch.lobby_done.shape == (2,)
         row = step_batch.lobby_result(1)
+        step_context = step_batch.native_context(1)
+        assert step_context.engine_instance_id == row["engine_instance_id"]
+        assert step_context.snapshot_sequence == row["decision_sequence"]
+        assert step_context.player_count == 8
         assert np.shares_memory(row["rewards"], step_batch.rewards)
         assert np.shares_memory(row["dones"], step_batch.dones)
     finally:
