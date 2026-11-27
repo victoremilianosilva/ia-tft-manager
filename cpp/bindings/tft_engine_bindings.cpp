@@ -1112,9 +1112,16 @@ public:
                 identity["lobby_index"] = lobby;
                 identities.append(std::move(identity));
                 py::dict physical;
-                physical["occupied"] = projected.occupied;
-                physical["unit_uuids"] = projected.unit_uuids;
-                physical["shop_offer_revisions"] = projected.shop_offer_revisions;
+                py::tuple occupied(42), unit_uuids(42), shop_revisions(5);
+                for (std::size_t slot = 0; slot < 42; ++slot) {
+                    occupied[slot] = projected.occupied[slot];
+                    unit_uuids[slot] = projected.unit_uuids[slot];
+                }
+                for (std::size_t slot = 0; slot < 5; ++slot)
+                    shop_revisions[slot] = projected.shop_offer_revisions[slot];
+                physical["occupied"] = std::move(occupied);
+                physical["unit_uuids"] = std::move(unit_uuids);
+                physical["shop_offer_revisions"] = std::move(shop_revisions);
                 entity_identity.append(std::move(physical));
                 if (item_catalog_hash.empty()) item_catalog_hash = projected.item_catalog_sha256;
                 else if (item_catalog_hash != projected.item_catalog_sha256)
