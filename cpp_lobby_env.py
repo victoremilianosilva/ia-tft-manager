@@ -164,10 +164,14 @@ class _NativeSnapshotPlayers(Sequence):
 
     def __init__(self, handle):
         self._handle = handle
+        # A snapshot handle is immutable for its entire lifetime. Cache its
+        # fixed player count instead of crossing the pybind boundary on every
+        # indexed read during semantic projection.
+        self._size = int(handle.player_count())
         self._cache = {}
 
     def __len__(self):
-        return int(self._handle.player_count())
+        return self._size
 
     def _load_player(self, index):
         # C++ returns a fresh value tree from the pinned const snapshot. The
@@ -218,6 +222,11 @@ class _NativeSnapshotMapping(Mapping):
 
     def __init__(self, handle):
         self._handle = handle
+        # Snapshot-level keys never change. Avoid rebuilding a py::list and
+        # crossing the binding boundary for each Mapping iteration/length or
+        # membership check in the trainer and validators.
+        self._keys = tuple(handle.keys())
+        self._key_set = frozenset(self._keys)
         self._base = None
         self._combat_cache = {}
         self._players = None
@@ -248,10 +257,10 @@ class _NativeSnapshotMapping(Mapping):
         return self._base_dict()[key]
 
     def __iter__(self):
-        return iter(self._handle.keys())
+        return iter(self._keys)
 
     def __len__(self):
-        return len(self._handle.keys())
+        return len(self._keys)
 
     def get(self, key, default=None):
         try:
@@ -260,10 +269,11 @@ class _NativeSnapshotMapping(Mapping):
             return default
 
     def __contains__(self, key):
-        return key in self._handle.keys()
+        return key in self._key_set
 
     def keys(self):
-        return self._handle.keys()
+        # Preserve the historical list return type without consulting C++.
+        return list(self._keys)
 
     def items(self):
         return ((key, self[key]) for key in self)
