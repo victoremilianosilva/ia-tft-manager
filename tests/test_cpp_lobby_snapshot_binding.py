@@ -1620,3 +1620,20 @@ def test_wrapper_preserves_direction_payload_for_semantic_validation():
     copied_strategic = copied["players"][0]["strategic_state"]
     assert copied_strategic["direction_composition_identity"] == "composition-old"
     assert copied_strategic["active_composition_id"] == "composition-current"
+
+
+def test_native_frozen_list_iterates_scalar_leaves_without_cache_and_caches_nested_views():
+    values = cpp_lobby_env._NativeFrozenList([
+        "sword",
+        3,
+        {"items": ["bow"]},
+    ])
+
+    assert list(values)[:2] == ["sword", 3]
+    assert values._view_cache == {}
+
+    first = list(values)[2]
+    second = values[2]
+    assert isinstance(first, cpp_lobby_env._NativeFrozenDict)
+    assert first is second
+    assert list(first["items"]) == ["bow"]
