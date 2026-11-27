@@ -121,6 +121,35 @@ def project_semantic_batch(
             raise RuntimeError(
                 f"Native semantic champion ID shape is invalid: {champion_ids.shape}"
             )
+        item_blocks = projected.get("item_blocks")
+        expected_item_shapes = {
+            "components": (numeric.shape[0], 8, 10),
+            "inventory": (numeric.shape[0], 8, 9, 17),
+            "recipes": (numeric.shape[0], 8, 100, 17),
+            "inventory_target_fit": (numeric.shape[0], 8, 9, 37),
+            "recipe_target_fit": (numeric.shape[0], 8, 100, 37),
+            "anvil_options": (numeric.shape[0], 8, 9, 11),
+            "anvil_state": (numeric.shape[0], 8, 3),
+        }
+        if not isinstance(item_blocks, Mapping) or set(item_blocks) != set(expected_item_shapes):
+            raise RuntimeError("Native semantic item block views are incomplete.")
+        for name, expected_shape in expected_item_shapes.items():
+            block = np.asarray(item_blocks[name])
+            if (
+                block.dtype != np.float32
+                or block.shape != expected_shape
+                or not block.flags.c_contiguous
+                or block.flags.writeable
+                or not np.shares_memory(block, numeric)
+            ):
+                raise RuntimeError(
+                    f"Native semantic item block {name!r} must be a readonly "
+                    "contiguous float32 view over the v8 carrier."
+                )
+            item_blocks[name] = block.reshape(
+                (numeric.shape[0] * 8,) + expected_shape[2:]
+            )
+        projected["item_blocks"] = item_blocks
         projected["numeric"] = numeric.reshape(-1, numeric.shape[-1])
         projected["champion_ids"] = champion_ids.reshape(
             -1, champion_ids.shape[-1]
