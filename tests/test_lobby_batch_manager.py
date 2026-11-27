@@ -151,6 +151,13 @@ def test_lobby_batch_manager_publishes_one_versioned_contiguous_batch():
         assert all(not slot["occupied"] for slot in context_player["board"])
         assert isinstance(native_context.trait_counts(0), list)
         assert native_context.provenance(0)["player_decision_sequence"] == reset_batch.lobby_result(0)["player_decision_sequences"][0]
+        for player_id in range(8):
+            player_context = native_context.player(player_id)
+            assert player_context["player_id"] == player_id
+            assert len(player_context["board"]) == 28
+            assert len(player_context["bench"]) == 9
+            assert len(player_context["shop"]) == 5
+            assert native_context.provenance(player_id)["player_decision_sequence"] == reset_batch.lobby_result(0)["player_decision_sequences"][player_id]
         assert native_context.pending_anvil_availability(0) == native.ContextAvailability.NOT_APPLICABLE
         del native_context
         assert retained_components.shape == (10,)
