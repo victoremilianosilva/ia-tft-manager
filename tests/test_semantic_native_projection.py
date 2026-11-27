@@ -408,8 +408,11 @@ def test_native_semantic_projection_matches_oracle_for_item_inventory_and_shop_r
 
         # Exercise inventory-backed features and the independent shop identity
         # revision without relying on a policy action to trigger loot.
-        assert native_engine.add_completed_item_for_testing(
-            0, "TFT_Item_AdaptiveHelm"
+        assert native_engine.add_item_component_for_testing(
+            0, "TFT_Item_BFSword"
+        )
+        assert native_engine.add_item_component_for_testing(
+            0, "TFT_Item_ChainVest"
         )
         assert native_engine.add_completed_item_for_testing(
             0, "TFT_Item_AdaptiveHelm"
@@ -420,6 +423,7 @@ def test_native_semantic_projection_matches_oracle_for_item_inventory_and_shop_r
         assert native_engine.set_shop_offer_for_testing(0, 0, champion_id)
         after_player = native_engine.get_audit_snapshot()["players"][0]
         assert after_player["item_inventory"]
+        assert after_player["item_components"]
         assert after_player["shop_offer_revisions"] != before_revision
 
         # Publish a fresh NativeDecisionBatch after direct authoritative test hooks.
