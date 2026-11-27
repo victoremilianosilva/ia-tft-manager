@@ -3,14 +3,23 @@ import hashlib
 import json
 
 import numpy as np
+import torch
 
 from cpp_lobby_env import CppTFTLobbyWrapper, _NativeLobbyBatchManager
 from semantic_observation import (
     build_semantic_state_checkpoint_contract,
     project_native_player_state,
+    semantic_item_state_tensors,
 )
 from trainer import Trainer
 from vector_lobby_env import LobbyVectorEnv
+
+
+def test_semantic_item_adapter_preserves_native_trait_id_tensor():
+    numeric = torch.zeros((8, 7958), dtype=torch.float32)
+    native_trait_ids = torch.arange(8 * 42 * 10, dtype=torch.long).reshape(8, 42, 10)
+    items = semantic_item_state_tensors(numeric, trait_ids=native_trait_ids)
+    assert items["trait_ids"] is native_trait_ids
 
 
 def test_semantic_hash_canonical_json_cross_language_edge_fixture():
