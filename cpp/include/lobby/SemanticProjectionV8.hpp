@@ -55,7 +55,7 @@ inline json int_json(const std::vector<std::int32_t>& values) {
 template <std::size_t R, std::size_t C>
 inline json matrix_json(const std::array<std::array<float, C>, R>& values) {
     json result = json::array();
-    for (const auto& row : values) result.push_back(row);
+    for (const auto& row : values) { json converted = json::array(); for (const auto value : row) converted.push_back(static_cast<double>(value)); result.push_back(std::move(converted)); }
     return result;
 }
 template <typename T, std::size_t N>
@@ -69,7 +69,7 @@ inline void append(std::vector<float>& out, const std::array<std::array<float, C
 inline void append(std::vector<float>& out, const std::array<float, 10>& values) {
     for (const auto value : values) out.push_back(value);
 }
-inline float unit(float value, float denominator) {
+inline float normalized_feature(float value, float denominator) {
     return std::min(value / denominator, 1.0f);
 }
 inline float nonnegative(std::int32_t value) {
@@ -251,11 +251,11 @@ inline Projection project_player(
                 target_profile[4 + role] = 1.0f;
                 target_profile[9] = on_board && slot / 7 <= 1 ? 1.0f : 0.0f;
                 target_profile[10] = on_board && slot / 7 >= 2 ? 1.0f : 0.0f;
-                target_profile[11] = unit.attack_damage <= 0.0 ? 0.0f : unit(unit.attack_damage, 200.0f);
-                target_profile[12] = unit.attack_speed <= 0.0 ? 0.0f : unit(unit.attack_speed, 2.0f);
-                target_profile[13] = unit.max_health <= 0.0 ? 0.0f : unit(unit.max_health, 2000.0f);
-                target_profile[14] = unit.armor <= 0.0 ? 0.0f : unit(unit.armor, 150.0f);
-                target_profile[15] = unit.magic_resist <= 0.0 ? 0.0f : unit(unit.magic_resist, 150.0f);
+                target_profile[11] = unit.attack_damage <= 0.0 ? 0.0f : normalized_feature(static_cast<float>(unit.attack_damage), 200.0f);
+                target_profile[12] = unit.attack_speed <= 0.0 ? 0.0f : normalized_feature(static_cast<float>(unit.attack_speed), 2.0f);
+                target_profile[13] = unit.max_health <= 0.0 ? 0.0f : normalized_feature(static_cast<float>(unit.max_health), 2000.0f);
+                target_profile[14] = unit.armor <= 0.0 ? 0.0f : normalized_feature(static_cast<float>(unit.armor), 150.0f);
+                target_profile[15] = unit.magic_resist <= 0.0 ? 0.0f : normalized_feature(static_cast<float>(unit.magic_resist), 150.0f);
                 target_profile[16] = static_cast<float>(std::min<std::size_t>(unit.item_ids.size(), 3)) / 3.0f;
             }
             append(g, target_profile);
@@ -344,7 +344,7 @@ inline Projection project_player(
     };
     json hash_payload = {
         {"identity", result.identity},
-        {"numeric", g},
+        {"numeric", [&g]() { json values = json::array(); for (const auto value : g) values.push_back(static_cast<double>(value)); return values; }()},
         {"champion_ids", result.champion_ids},
         {"item_state_identity", result.item_state_identity},
         {"strategic_owner_provenance", strategic_provenance}
