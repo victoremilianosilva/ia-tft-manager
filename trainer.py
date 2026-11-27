@@ -543,7 +543,8 @@ class Trainer:
 
     @staticmethod
     def _expand_lobby_snapshot_metadata(
-        lobby_snapshots, players_per_lobby, label, native_state_cache=None
+        lobby_snapshots, players_per_lobby, label, native_state_cache=None,
+        include_native_player_state=True,
     ):
         """Expand lobby identity while reusing immutable state for an exact native revision."""
         expanded = []
@@ -571,9 +572,16 @@ class Trainer:
                     raise RuntimeError(f"Snapshot estruturado diverge no round da lobby {lobby_idx}.")
                 if native_snapshot.get("player_decision_sequences") != player_sequences:
                     raise RuntimeError(f"Snapshot estruturado diverge nas sequências individuais da lobby {lobby_idx}.")
-                native_players = native_snapshot.get("players")
-                if not isinstance(native_players, Sequence) or len(native_players) != players_per_lobby:
-                    raise RuntimeError(f"Snapshot estruturado sem {players_per_lobby} jogadores na lobby {lobby_idx}.")
+                native_contract = (
+                    native_snapshot.get("contract_id"),
+                    native_snapshot.get("contract_version"),
+                    native_snapshot.get("producer"),
+                    native_snapshot.get("source_namespace"),
+                )
+                if include_native_player_state:
+                    native_players = native_snapshot.get("players")
+                    if not isinstance(native_players, Sequence) or len(native_players) != players_per_lobby:
+                        raise RuntimeError(f"Snapshot estruturado sem {players_per_lobby} jogadores na lobby {lobby_idx}.")
             for player_idx, player_sequence in enumerate(player_sequences):
                 if (
                     isinstance(player_sequence, bool)
@@ -586,16 +594,15 @@ class Trainer:
                 metadata = dict(snapshot)
                 metadata.pop("player_decision_sequences", None)
                 metadata.pop("native_state_snapshot", None)
+                if native_snapshot is not None:
+                    metadata["native_state_contract_id"] = native_contract[0]
+                    metadata["native_state_contract_version"] = native_contract[1]
+                    metadata["native_state_producer"] = native_contract[2]
+                    metadata["native_state_source_namespace"] = native_contract[3]
                 if native_players is not None:
                     native_player = native_players[player_idx]
                     if not isinstance(native_player, Mapping) or native_player.get("player_id") != player_idx:
                         raise RuntimeError(f"Registro estruturado desalinhado para lobby {lobby_idx}, jogador {player_idx}.")
-                    native_contract = (
-                        native_snapshot.get("contract_id"),
-                        native_snapshot.get("contract_version"),
-                        native_snapshot.get("producer"),
-                        native_snapshot.get("source_namespace"),
-                    )
                     # A native snapshot identity names one immutable revision.
                     # Result and next-observation envelopes may expose that same
                     # revision through separate Python mappings; share the frozen
@@ -630,10 +637,6 @@ class Trainer:
                         if native_state_cache is not None:
                             native_state_cache[cache_key] = (native_contract, frozen_player)
                     metadata["native_player_state"] = frozen_player
-                    metadata["native_state_contract_id"] = native_contract[0]
-                    metadata["native_state_contract_version"] = native_contract[1]
-                    metadata["native_state_producer"] = native_contract[2]
-                    metadata["native_state_source_namespace"] = native_contract[3]
                 metadata["player_decision_sequence"] = player_sequence
                 metadata["lobby_index"] = lobby_idx
                 metadata["player_id"] = player_idx
@@ -1411,6 +1414,7 @@ class Trainer:
                     lobby_snapshots,
                     self.PLAYERS_PER_LOBBY,
                     "snapshot da decisão PPO",
+                    include_native_player_state=not self.vec_env.semantic_projection_available(),
                 )
                 for metadata, observation_hash in zip(
                     flat_snapshot_metadata,
@@ -1656,6 +1660,7 @@ class Trainer:
                     self.PLAYERS_PER_LOBBY,
                     "snapshot de resultado da transição",
                     native_state_cache=transition_native_state_cache,
+                    include_native_player_state=False,
                 )
                 # Keep native action provenance beside the exact StepResult identity.
                 self._attach_native_action_traces(
@@ -1669,6 +1674,7 @@ class Trainer:
                     self.PLAYERS_PER_LOBBY,
                     "snapshot da próxima observação",
                     native_state_cache=transition_native_state_cache,
+                    include_native_player_state=not self.vec_env.semantic_projection_available(),
                 )
                 next_semantic_batch = project_semantic_batch(
                     self.vec_env, flat_next_snapshot_metadata, self.champion_id_map,
