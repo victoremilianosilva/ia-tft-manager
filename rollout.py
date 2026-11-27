@@ -1,4 +1,4 @@
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 import copy
 
 from decision_identity import validate_player_identity_envelope
