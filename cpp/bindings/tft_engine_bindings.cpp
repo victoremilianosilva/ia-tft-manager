@@ -1091,7 +1091,9 @@ public:
         std::string item_catalog_hash;
 
         for (std::size_t lobby = 0; lobby < contexts_.size(); ++lobby) {
-            auto handle = contexts_[lobby]["native_state_snapshot"].cast<NativeAuditSnapshotHandle>();
+            py::object snapshot_mapping = contexts_[lobby]["native_state_snapshot"];
+            py::object native_handle = py::getattr(snapshot_mapping, "_handle", snapshot_mapping);
+            auto handle = native_handle.cast<NativeAuditSnapshotHandle>();
             const auto& snapshot = handle.snapshot();
             for (std::size_t player = 0; player < kPlayers; ++player) {
                 auto projected = tft::semantic_v8::project_player(snapshot, lobby, player, catalog);
