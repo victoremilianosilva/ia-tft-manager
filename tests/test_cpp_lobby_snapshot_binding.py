@@ -1532,7 +1532,7 @@ def test_native_unit_view_pins_snapshot_and_materializes_fields_lazily():
 
         del snapshot
         wrapper.close()
-        del wrapper
+        wrapper = None
         gc.collect()
 
         # The view owns the capsule that pins the immutable native snapshot.
@@ -1541,7 +1541,8 @@ def test_native_unit_view_pins_snapshot_and_materializes_fields_lazily():
         with pytest.raises(TypeError, match="immutable"):
             items.append("forbidden")
     finally:
-        wrapper.close()
+        if wrapper is not None:
+            wrapper.close()
 
 
 
