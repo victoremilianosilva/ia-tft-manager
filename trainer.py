@@ -1433,14 +1433,17 @@ class Trainer:
                         "champion_ids": torch.as_tensor(
                             semantic_batch["champion_ids"], dtype=torch.long, device=self.device
                         ),
+                        "entity_identity": semantic_batch["entity_identity"],
                         "identities": semantic_batch["identities"],
                         "hashes": semantic_batch["hashes"],
                         "contract_id": semantic_batch["contract_id"],
                         "contract_hash": semantic_batch["contract_hash"],
                     }
-                for metadata, semantic_hash, semantic_identity in zip(
-                    flat_snapshot_metadata, semantic_batch["hashes"], semantic_batch["identities"]
+                for metadata, semantic_hash, semantic_identity, entity_identity in zip(
+                    flat_snapshot_metadata, semantic_batch["hashes"], semantic_batch["identities"],
+                    semantic_batch["entity_identity"],
                 ):
+                    metadata["semantic_entity_identity"] = entity_identity
                     metadata["semantic_identity"] = semantic_identity
                     metadata["semantic_projection_hash"] = semantic_hash
                     metadata["semantic_projection_contract_id"] = (
@@ -1668,14 +1671,17 @@ class Trainer:
                     "champion_ids": torch.as_tensor(
                         next_semantic_batch["champion_ids"], dtype=torch.long, device=self.device
                     ),
+                    "entity_identity": next_semantic_batch["entity_identity"],
                     "identities": next_semantic_batch["identities"],
                     "hashes": next_semantic_batch["hashes"],
                     "contract_id": next_semantic_batch["contract_id"],
                     "contract_hash": next_semantic_batch["contract_hash"],
                 }
-                for metadata, semantic_hash, semantic_identity in zip(
-                    flat_next_snapshot_metadata, next_semantic_batch["hashes"], next_semantic_batch["identities"]
+                for metadata, semantic_hash, semantic_identity, entity_identity in zip(
+                    flat_next_snapshot_metadata, next_semantic_batch["hashes"], next_semantic_batch["identities"],
+                    next_semantic_batch["entity_identity"],
                 ):
+                    metadata["semantic_entity_identity"] = entity_identity
                     metadata["semantic_identity"] = semantic_identity
                     metadata["semantic_projection_hash"] = semantic_hash
                     metadata["semantic_projection_contract_id"] = (
