@@ -1630,9 +1630,11 @@ def test_native_frozen_list_iterates_scalar_leaves_without_cache_and_caches_nest
     ])
 
     assert list(values)[:2] == ["sword", 3]
-    assert values._view_cache == {}
+    # Iteration bypasses wrapping for scalar leaves but still wraps and caches
+    # nested records, preserving the same lazy-view identity as indexed access.
+    assert set(values._view_cache) == {2}
 
-    first = list(values)[2]
+    first = values._view_cache[2]
     second = values[2]
     assert isinstance(first, cpp_lobby_env._NativeFrozenDict)
     assert first is second
