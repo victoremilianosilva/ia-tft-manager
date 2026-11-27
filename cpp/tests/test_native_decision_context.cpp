@@ -86,6 +86,21 @@ int main() {
     assert(missing_context.player_sequence_availability(4) == tft::ContextAvailability::Missing);
     assert(missing_context.strategic_availability(4) == tft::ContextAvailability::Stale);
 
+    auto empty_inventory = std::make_shared<tft::AuditSnapshot>(*snapshot);
+    empty_inventory->players[0].item_component_catalog = {"component:test"};
+    tft::NativeDecisionContext empty_context(empty_inventory);
+    assert(empty_context.item_inventory_availability(0) == tft::ContextAvailability::Empty);
+
+    auto retired_inventory = std::make_shared<tft::AuditSnapshot>(*snapshot);
+    retired_inventory->players[0].item_ownership_retired = true;
+    tft::NativeDecisionContext retired_context(retired_inventory);
+    assert(retired_context.item_inventory_availability(0) == tft::ContextAvailability::Incompatible);
+
+    auto no_catalog = std::make_shared<tft::AuditSnapshot>(*snapshot);
+    no_catalog->shared_pool.catalog_fingerprint.clear();
+    tft::NativeDecisionContext no_catalog_context(no_catalog);
+    assert(no_catalog_context.availability() == tft::ContextAvailability::Incompatible);
+
     auto partial_anvil = std::make_shared<tft::AuditSnapshot>(*snapshot);
     partial_anvil->players[0].pending_anvil = true;
     partial_anvil->players[0].pending_anvil_sequence = 4;
