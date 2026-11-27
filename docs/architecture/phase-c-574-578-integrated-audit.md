@@ -33,7 +33,7 @@ The Engine remains authoritative for game state, action legality, action executi
 - Native movement integration verifies both sides of a board swap are emitted as UUID-bound move deltas; the Python snapshot-diff producer checks native facts against the paired snapshots.
 - Action-outcome producer tests cover purchase, reroll, XP purchase, sale, positioning, item assignment/removal, round-income overlap, shop refresh overlap, PvP credit overlap, and unavailable causal attribution.
 - PPO integration and deterministic replay tests preserve semantic v8 values, champion IDs/hash, masks, rewards, dones, rollout identity and checkpoint lineage.
-- CI on the previous code head passed the strategic/economic native tests, C++ native engine workflow, and combat ownership sanitizers. The final head must pass the same full CI after the last test/documentation commit.
+- CI for code head `6059d14` passed all three required workflows: C++ native engine (including native integration, PPO training smoke, multi-seed battery and deterministic replay), strategic/economic native tests, and combat ownership sanitizers. The following commit updates documentation only; it does not change tested code.
 
 ## Invariants
 
@@ -44,6 +44,20 @@ The Engine remains authoritative for game state, action legality, action executi
 - Preserve Audit Context and replay; new context is typed metadata, not a forced action.
 - Missing information remains distinct from zero/neutral.
 - Do not invent tactical exposure or causal attribution when the native producer cannot establish it.
+
+## Performance work included (not yet benchmarked)
+
+The integrated implementation also includes low-risk hot-path changes intended to reduce transient objects and Python/native boundary work:
+
+- Batch semantic projection accumulates final columns directly instead of retaining every complete per-player projection dictionary.
+- Copy-progress projection uses compact tuples rather than one temporary dictionary per champion.
+- Semantic alignment validation can bind identity/hash/contract metadata during its existing validation pass.
+- CPU diagnostic reads reuse the PPO semantic tensor's NumPy view instead of rebuilding a duplicate array; GPU diagnostics stay on-device.
+- Native snapshot wrappers cache immutable keys and player count, expose lazy owner-pinned unit views, and initialize frozen shallow containers through built-in C-level constructors.
+- Repeated reads of nested frozen mappings reuse cached views; scalar leaves remain uncached.
+- NumPy-backed recipe fingerprints use native array comparison where possible, and semantic finite-value validation is performed by the canonical JSON serialization path.
+
+These are implementation changes and performance hypotheses only. The final PPO-active benchmark decides whether they improve end-to-end training; no speedup is claimed from CI or microbenchmarks.
 
 ## Remaining acceptance gate
 
