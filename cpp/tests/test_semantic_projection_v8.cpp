@@ -1,4 +1,5 @@
 #include <cassert>
+#include <cmath>
 #include <map>
 #include <string>
 
@@ -75,31 +76,31 @@ int main() {
     assert(projection.occupied[0]);
     assert(projection.unit_uuids[0] == "physical-unit-7");
     assert(projection.trait_ids[0][0] > 0);
-    assert(projection.numeric[76] == 1.0);  // active unit
-    assert(projection.numeric[77] == 1.0);  // active core
-    assert(projection.numeric[109] == 0.8); // native unit priority
-    assert(projection.numeric[110] == 0.5); // native priority intent
+    assert(close(projection.numeric[76], 1.0));  // active unit
+    assert(close(projection.numeric[77], 1.0));  // active core
+    assert(close(projection.numeric[109], 0.8)); // native unit priority
+    assert(close(projection.numeric[110], 0.5)); // native priority intent
 
     // Every item feature block must land at its canonical v8 carrier offset.
-    assert(projection.numeric[1960] == 0.15);
-    assert(projection.numeric[1970] == 0.25);
-    assert(projection.numeric[2123] == 0.35);
-    assert(projection.numeric[3823] == 0.45);
-    assert(projection.numeric[4156] == 0.55);
-    assert(projection.numeric[7856] == 1.0); // pending anvil
-    assert(projection.numeric[7859] == 0.65); // first anvil option
+    assert(close(projection.numeric[1960], 0.15));
+    assert(close(projection.numeric[1970], 0.25));
+    assert(close(projection.numeric[2123], 0.35));
+    assert(close(projection.numeric[3823], 0.45));
+    assert(close(projection.numeric[4156], 0.55));
+    assert(close(projection.numeric[7856], 1.0)); // pending anvil
+    assert(close(projection.numeric[7859], 0.65)); // first anvil option
 
     const auto original_hash = projection.sha256;
     auto changed = snapshot;
     changed.players[0].strategic_state.unit_priorities[0].priority = 60;
     const auto changed_projection = project_player(changed, 0, 0, catalog);
-    assert(changed_projection.numeric[109] == 0.6);
+    assert(close(changed_projection.numeric[109], 0.6));
     assert(changed_projection.sha256 != original_hash);
 
     auto changed_item = snapshot;
     changed_item.players[0].item_inventory_features[0][0] = 0.75f;
     const auto changed_item_projection = project_player(changed_item, 0, 0, catalog);
-    assert(changed_item_projection.numeric[1970] == 0.75);
+    assert(close(changed_item_projection.numeric[1970], 0.75));
     assert(changed_item_projection.sha256 != original_hash);
 
     return 0;
