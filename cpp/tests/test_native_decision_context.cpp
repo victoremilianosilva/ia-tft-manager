@@ -28,6 +28,9 @@ int main() {
     assert(context.player_count() == 8);
     assert(context.shared_pool().contract_version == 2);
     assert(context.player(7).player_id == 7);
+    assert(context.strategic_availability(0) == tft::ContextAvailability::Unknown);
+    assert(context.item_inventory_availability(0) == tft::ContextAvailability::Unknown);
+    assert(context.pending_anvil_availability(0) == tft::ContextAvailability::NotApplicable);
     const auto provenance = context.provenance(3);
     assert(provenance.episode_id == 4);
     assert(provenance.snapshot_sequence == 9);
@@ -44,6 +47,12 @@ int main() {
     try { tft::NativeDecisionContext invalid(stale); }
     catch (const std::invalid_argument&) { rejected = true; }
     assert(rejected);
+
+    auto partial_anvil = std::make_shared<tft::AuditSnapshot>(*snapshot);
+    partial_anvil->players[0].pending_anvil = true;
+    partial_anvil->players[0].pending_anvil_sequence = 4;
+    tft::NativeDecisionContext partial_context(partial_anvil);
+    assert(partial_context.pending_anvil_availability(0) == tft::ContextAvailability::Partial);
 
     auto incompatible = std::make_shared<tft::AuditSnapshot>(*snapshot);
     incompatible->contract_version = 7;
