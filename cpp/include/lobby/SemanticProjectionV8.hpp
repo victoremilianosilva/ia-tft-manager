@@ -157,7 +157,7 @@ inline Projection project_player(
     std::unordered_map<std::int32_t, AuditUnitOpportunityCostSnapshot> opportunities;
     for (const auto& row : strategic.opportunity_costs) opportunities.emplace(row.champion_internal_id, row);
 
-    std::size_t board_count = 0, bench_count = 0;
+    std::int32_t board_count = 0, bench_count = 0;
     for (const auto& unit : state.board) board_count += unit.occupied ? 1 : 0;
     for (const auto& unit : state.bench) bench_count += unit.occupied ? 1 : 0;
     const auto placement = state.placement.value_or(0);
@@ -248,7 +248,7 @@ inline Projection project_player(
                 static_cast<double>(std::min(copies, 9)) / 9.0f,
                 static_cast<double>(toward) / 2.0f
             });
-            std::array<float, 17> target_profile{};
+            std::array<double, 17> target_profile{};
             if (!shop) {
                 if (unit.role < 0 || unit.role > 4) throw std::runtime_error("semantic target role out of range");
                 const auto role = unit.role;
