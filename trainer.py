@@ -147,16 +147,7 @@ def project_semantic_batch(
             raise RuntimeError("Native semantic item block views are incomplete.")
         for name, expected_shape in expected_item_shapes.items():
             block = np.asarray(item_blocks[name])
-            expected_strides = (
-                8 * 7958 * np.dtype(np.float32).itemsize,
-                7958 * np.dtype(np.float32).itemsize,
-                *tuple(
-                    np.cumprod(
-                        (expected_shape[2:][1:] + (1,))[::-1],
-                        dtype=np.int64,
-                    )[::-1]
-                ) if len(expected_shape) > 2 else (np.dtype(np.float32).itemsize,),
-            )
+            itemsize = np.dtype(np.float32).itemsize
             if (
                 block.dtype != np.float32
                 or block.shape != expected_shape
