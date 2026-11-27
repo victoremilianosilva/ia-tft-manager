@@ -67,6 +67,33 @@ def test_native_semantic_v8_projection_matches_python_oracle_exactly():
         assert native["item_catalog_sha256"] == oracle[0]["item_state_identity"]["item_catalog_sha256"]
         assert native["contract_id"] == contract["contract"]["contract_id"]
         assert native["contract_hash"] == contract["sha256"]
+
+        # The six item tensors are independent typed views over the one
+        # contiguous v8 carrier, not copied per-block allocations.
+        item_blocks = native["item_blocks"]
+        expected_shapes = {
+            "components": (1, 8, 10),
+            "inventory": (1, 8, 9, 17),
+            "recipes": (1, 8, 100, 17),
+            "inventory_target_fit": (1, 8, 9, 37),
+            "recipe_target_fit": (1, 8, 100, 37),
+            "anvil_options": (1, 8, 9, 11),
+            "anvil_state": (1, 8, 3),
+        }
+        assert set(item_blocks) == set(expected_shapes)
+        for name, shape in expected_shapes.items():
+            block = item_blocks[name]
+            assert block.shape == shape
+            assert block.dtype == np.float32
+            assert block.flags.c_contiguous
+            assert not block.flags.writeable
+            assert np.shares_memory(block, native["numeric"])
+        # Views retain their backing allocation even if the dictionary's
+        # direct carrier reference is released.
+        retained_components = item_blocks["components"]
+        del native["numeric"]
+        assert retained_components.shape == (1, 8, 10)
+        assert np.isfinite(retained_components).all()
     finally:
         env.close()
 
