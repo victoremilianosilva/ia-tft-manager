@@ -80,6 +80,13 @@ def test_native_semantic_v8_projection_matches_python_oracle_exactly():
         np.testing.assert_array_equal(
             native["champion_ids"].reshape(8, -1), expected_champion_ids
         )
+        expected_trait_ids = np.rint(
+            expected_numeric[:, 70 + np.arange(42)[:, None] * 45 + 29 + np.arange(10)[None, :]]
+            * 65536
+        ).astype(np.int64)
+        np.testing.assert_array_equal(
+            native["trait_ids"].reshape(8, 42, 10), expected_trait_ids
+        )
         assert native["hashes"] == [row["sha256"] for row in oracle]
         assert native["identities"] == [row["identity"] for row in oracle]
         assert native["entity_identity"] == [
@@ -171,6 +178,14 @@ def test_terminal_auto_reset_next_snapshot_uses_native_semantic_projection():
         np.testing.assert_array_equal(
             native["champion_ids"].reshape(8, -1),
             np.asarray([row["champion_ids"] for row in oracle], dtype=np.int64),
+        )
+        expected_numeric = np.asarray([row["numeric"] for row in oracle], dtype=np.float32)
+        expected_trait_ids = np.rint(
+            expected_numeric[:, 70 + np.arange(42)[:, None] * 45 + 29 + np.arange(10)[None, :]]
+            * 65536
+        ).astype(np.int64)
+        np.testing.assert_array_equal(
+            native["trait_ids"].reshape(8, 42, 10), expected_trait_ids
         )
         assert native["hashes"] == [row["sha256"] for row in oracle]
         assert native["identities"] == [row["identity"] for row in oracle]
