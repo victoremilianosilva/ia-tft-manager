@@ -3382,5 +3382,32 @@
       ],
       "unmapped_destination_paths": []
     }
-  ]
+  ],
+  "native_context_transport": {
+    "api": "NativeDecisionBatch.native_context(lobby_index)",
+    "semantic_role": "control_and_structured_factual_context_transport",
+    "neural_projection": "separate semantic v8 projection; transport availability does not automatically make audit fields PPO features",
+    "identity_scopes": [
+      "lobby_shared_pool",
+      "player",
+      "physical_entity",
+      "strategic_champion_aggregate"
+    ],
+    "missingness": [
+      "complete",
+      "partial",
+      "empty",
+      "unknown",
+      "missing",
+      "stale",
+      "incompatible",
+      "not_applicable"
+    ],
+    "excluded_as_facts": [
+      "shadow recommendations",
+      "evaluator scores",
+      "diagnostic sidecars",
+      "uncommitted planner proposals"
+    ]
+  }
 }
