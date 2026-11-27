@@ -2158,7 +2158,12 @@ class Trainer:
                     )[valid_indices]
                     sample_semantic_state = {
                         "numeric": sample_semantic_numeric,
-                        "items": semantic_item_state_tensors(sample_semantic_numeric),
+                        "items": semantic_item_state_tensors(
+                            sample_semantic_numeric,
+                            trait_ids=rollout.semantic_trait_ids[:rollout.ptr].reshape(
+                                -1, rollout.semantic_entity_slots, 10
+                            )[valid_indices],
+                        ),
                         "champion_ids": rollout.semantic_champion_ids[:rollout.ptr].reshape(
                             -1, rollout.semantic_entity_slots
                         )[valid_indices],
