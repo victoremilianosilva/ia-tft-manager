@@ -829,8 +829,12 @@ py::dict semantic_projection_from_snapshot_mappings(
         static_cast<py::ssize_t>(numeric_dim)});
     py::array_t<std::int64_t> champion_ids(py::array::ShapeContainer{
         lobby_count, static_cast<py::ssize_t>(tft::kPlayersPerLobby), static_cast<py::ssize_t>(42)});
+    py::array_t<std::int64_t> trait_ids(py::array::ShapeContainer{
+        lobby_count, static_cast<py::ssize_t>(tft::kPlayersPerLobby),
+        static_cast<py::ssize_t>(42), static_cast<py::ssize_t>(10)});
     auto* numeric_data = numeric.mutable_data();
     auto* champion_data = champion_ids.mutable_data();
+    auto* trait_data = trait_ids.mutable_data();
     py::list hashes;
     py::list identities;
     py::list entity_identity;
@@ -851,6 +855,8 @@ py::dict semantic_projection_from_snapshot_mappings(
                 [](double value) { return static_cast<float>(value); });
             std::copy(projected.champion_ids.begin(), projected.champion_ids.end(),
                 champion_data + row * 42);
+            std::copy(projected.trait_ids.begin(), projected.trait_ids.end(),
+                trait_data + row * 42 * 10);
             hashes.append(projected.sha256);
 
             py::dict identity;
@@ -884,6 +890,7 @@ py::dict semantic_projection_from_snapshot_mappings(
 
     numeric.attr("setflags")(false);
     champion_ids.attr("setflags")(false);
+    trait_ids.attr("setflags")(false);
 
     // The flattened v8 carrier is the single allocation/owner. Named item
     // blocks are typed NumPy views into that carrier: no second item buffer,
@@ -936,6 +943,7 @@ py::dict semantic_projection_from_snapshot_mappings(
     result["numeric"] = numeric;
     result["item_blocks"] = std::move(item_blocks);
     result["champion_ids"] = std::move(champion_ids);
+    result["trait_ids"] = std::move(trait_ids);
     result["hashes"] = std::move(hashes);
     result["identities"] = std::move(identities);
     result["entity_identity"] = std::move(entity_identity);
