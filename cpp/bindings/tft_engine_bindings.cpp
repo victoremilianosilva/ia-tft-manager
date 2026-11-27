@@ -1072,7 +1072,7 @@ public:
             context.attr("pop")("action_masks");
 
             if (is_step) {
-                const auto copy_float_rows = [lobby, lobby_count, &context](const char* key,
+                const auto copy_float_rows = [lobby, &context](const char* key,
                         float* destination) {
                     auto source = py::array_t<float, py::array::c_style>::ensure(context[key]);
                     if (!source || source.ndim() != 1 ||
