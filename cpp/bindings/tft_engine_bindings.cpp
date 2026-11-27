@@ -1786,7 +1786,20 @@ PYBIND11_MODULE(tft_engine, module) {
         .def_property_readonly("player_count", &tft::NativeDecisionContext::player_count)
         .def("strategic_availability", &tft::NativeDecisionContext::strategic_availability)
         .def("item_inventory_availability", &tft::NativeDecisionContext::item_inventory_availability)
-        .def("pending_anvil_availability", &tft::NativeDecisionContext::pending_anvil_availability);
+        .def("pending_anvil_availability", &tft::NativeDecisionContext::pending_anvil_availability)
+        .def("trait_counts", [](const tft::NativeDecisionContext& context, std::size_t player_index) {
+            py::list result;
+            for (const auto& trait : context.trait_counts(player_index)) {
+                py::dict row;
+                row["trait_id"] = trait.trait_id;
+                row["board_count"] = trait.board_count;
+                row["bench_count"] = trait.bench_count;
+                row["board_bench_count"] = trait.board_bench_count;
+                row["item_granted_availability"] = trait.item_granted_availability;
+                result.append(std::move(row));
+            }
+            return result;
+        }, py::arg("player_index"));
 
     py::class_<NativeDecisionBatch, std::shared_ptr<NativeDecisionBatch>>(module, "NativeDecisionBatch")
         .def_property_readonly("contract_id", [](const NativeDecisionBatch&) { return "tft.native-decision-batch"; })
