@@ -49,3 +49,13 @@ The Python projector remains as a test oracle and compatibility/reference implem
 ## Compatibility
 
 The contract remains v8. Numeric feature order, normalization, champion IDs, normalized trait slots, item-state identity and semantic hash inputs are preserved. Checkpoint compatibility and the existing explicit warm-start migrations remain unchanged.
+
+## Hot-path copy and loop audit
+
+- `project_semantic_batch` receives native NumPy arrays and uses `np.asarray` with the already-canonical dtype. This is a view/reference operation for these buffers, not a dtype conversion or feature reconstruction.
+- Reshaping the contiguous numeric, champion-ID and trait-ID carriers preserves their backing allocations. The item block adapter checks exact strides and shared memory; flattening is accepted only when it remains a view.
+- The native item blocks are validated as views but are not separately copied to Torch. The Policy derives item slices from the semantic numeric tensor, so there is one CPU carrier rather than one transfer per item block.
+- `torch.as_tensor(..., device=...)` reuses the CPU allocation when the requested device is CPU and dtype already matches. When training on an accelerator, the CPU→device transfer is an intentional device transfer, not a zero-copy operation.
+- Python iteration remains for per-player identity/metadata envelopes and Rollout ownership/validation. It does not traverse board/bench/shop slots or reconstruct item/global/entity feature values. The native C++ producer owns those loops.
+- Rollout storage intentionally copies each transition into its time-indexed owned tensors. Minibatch indexing then gathers the selected training rows. Those are temporal-storage and optimization-boundary copies, not duplicate semantic projection buffers.
+- The Python semantic projector and its scalar/list construction remain reference-oracle code for tests and compatibility fixtures; native production environments fail closed rather than entering that fallback.
