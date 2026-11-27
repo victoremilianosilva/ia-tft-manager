@@ -165,5 +165,19 @@
       "canonical_decision_eligible": false,
       "notes": "Constant hash-scope declaration; changes require a semantic identity version change."
     }
-  ]
+  ],
+  "native_decision_context_identity": {
+    "producer": "TFTEngine::get_audit_snapshot",
+    "transport": "NativeDecisionBatch.native_context(lobby_index)",
+    "identity_fields": [
+      "engine_instance_id",
+      "episode_id",
+      "snapshot_sequence",
+      "player_decision_sequences",
+      "round"
+    ],
+    "player_correlation": "strategic_state.player_id, episode_id, round and player_decision_sequence must match the enclosing AuditSnapshot",
+    "pool_correlation": "shared pool is carried once within the same immutable AuditSnapshot; catalog_fingerprint identifies the exact ordered champion catalog",
+    "stale_policy": "Reject mismatched player/episode/round/decision sequence rather than returning apparently current context."
+  }
 }
