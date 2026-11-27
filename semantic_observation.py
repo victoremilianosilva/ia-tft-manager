@@ -1285,9 +1285,14 @@ def validate_semantic_batch_alignment(
     if batch.get("contract_id") != expected_id or batch.get("contract_hash") != expected_hash:
         raise ValueError("semantic batch contract identity/hash diverges from the active checkpoint contract")
     row_count = len(metadata_rows)
-    if not all(isinstance(value, Sequence) and len(value) == row_count for value in (
-        identities, hashes, numeric, champion_ids
-    )):
+    try:
+        row_aligned = all(
+            not isinstance(value, (str, bytes)) and len(value) == row_count
+            for value in (identities, hashes, numeric, champion_ids)
+        )
+    except (TypeError, AttributeError):
+        row_aligned = False
+    if not row_aligned:
         raise ValueError("semantic batch rows do not match native metadata row count")
     identity_fields = (
         "engine_instance_id", "episode_id", "decision_sequence",
