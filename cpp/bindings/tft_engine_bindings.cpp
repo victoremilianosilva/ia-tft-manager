@@ -855,8 +855,10 @@ py::dict semantic_projection_from_snapshot_mappings(
                 [](double value) { return static_cast<float>(value); });
             std::copy(projected.champion_ids.begin(), projected.champion_ids.end(),
                 champion_data + row * 42);
-            std::copy(projected.trait_ids.begin(), projected.trait_ids.end(),
-                trait_data + row * 42 * 10);
+            for (std::size_t slot = 0; slot < 42; ++slot) {
+                std::copy(projected.trait_ids[slot].begin(), projected.trait_ids[slot].end(),
+                    trait_data + row * 42 * 10 + slot * 10);
+            }
             hashes.append(projected.sha256);
 
             py::dict identity;
