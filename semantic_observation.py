@@ -1594,7 +1594,7 @@ def semantic_batch_matches_snapshot_rows(
         if (
             metadata.get("native_state_contract_id") != "tft.native-state-snapshot"
             or metadata.get("native_state_contract_version") != 6
-            or any(metadata.get(field) != identity.get(field) for field in identity_fields)
+            or dict(identity) != {field: metadata.get(field) for field in identity_fields}
         ):
             return False
         if bind_metadata:
