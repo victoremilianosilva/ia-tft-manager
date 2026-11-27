@@ -149,7 +149,9 @@ inline Projection project_player(
     target.insert(deferred.begin(), deferred.end());
 
     std::unordered_map<std::int32_t, AuditUnitCopyProgressSnapshot> progress;
-    for (const auto& row : strategic.unit_copy_progress) progress.emplace(row.champion_internal_id, row);
+    for (const auto& row : strategic.unit_copy_progress)
+        if (!progress.emplace(row.champion_internal_id, row).second)
+            throw std::runtime_error("duplicate semantic unit copy progress identity");
     std::unordered_map<std::int32_t, AuditUnitStrategicPrioritySnapshot> priorities;
     for (const auto& row : strategic.unit_priorities) priorities.emplace(row.champion_internal_id, row);
     std::unordered_map<std::int32_t, AuditUnitOpportunityCostSnapshot> opportunities;
@@ -220,7 +222,12 @@ inline Projection project_player(
                 result.champion_ids[entity_index] = 0;
                 continue;
             }
+            if (unit.uuid.empty()) throw std::runtime_error("occupied semantic entity has no physical UUID");
+            if (unit.star < 1 || unit.star > 3 || unit.cost < 1 || unit.cost > 5)
+                throw std::runtime_error("occupied semantic entity has invalid star/cost");
             const auto found = catalog.find(unit.champion_id);
+            if (found != catalog.end() && unit.champion_internal_id >= 0 && found->second != unit.champion_internal_id)
+                throw std::runtime_error("native champion identity diverges from loaded catalog");
             const bool champion_valid = found != catalog.end() &&
                 unit.champion_internal_id >= 0 && found->second == unit.champion_internal_id;
             const auto native_id = champion_valid ? unit.champion_internal_id : -1;
@@ -293,7 +300,9 @@ inline Projection project_player(
     append(g, state.pending_anvil_option_features);
     if (g.size() != 7958) throw std::runtime_error("semantic numeric v8 dimension mismatch");
 
-    json recipe = matrix_json(state.item_recipe_features);
+    json recipe = json::array();
+    for (const auto& row : state.item_recipe_features)
+        for (const auto value : row) recipe.push_back(static_cast<double>(value));
     json catalog_payload = {
         {"component_ids", state.item_component_catalog},
         {"recipe_features", recipe}
