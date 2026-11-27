@@ -813,7 +813,8 @@ private:
 py::dict semantic_projection_from_snapshot_mappings(
     const py::sequence& snapshot_mappings,
     const py::dict& catalog_map,
-    const std::string& contract_hash
+    const std::string& contract_hash,
+    py::object batch_owner = py::none()
 ) {
     std::map<std::string, std::int32_t> catalog;
     for (const auto& entry : catalog_map) {
@@ -894,9 +895,16 @@ py::dict semantic_projection_from_snapshot_mappings(
     champion_ids.attr("setflags")(false);
     trait_ids.attr("setflags")(false);
 
-    // The flattened v8 carrier is the single allocation/owner. Named item
-    // blocks are typed NumPy views into that carrier: no second item buffer,
-    // no reconstruction, and their base keeps the carrier alive.
+    // The flattened v8 carrier is the single allocation. When projection
+    // originates from NativeDecisionBatch, the item views' base bundle pins
+    // both that carrier and the batch owner for the entire view lifetime.
+    py::object item_view_owner = numeric;
+    if (!batch_owner.is_none()) {
+        py::dict owner_bundle;
+        owner_bundle["batch"] = std::move(batch_owner);
+        owner_bundle["numeric"] = numeric;
+        item_view_owner = std::move(owner_bundle);
+    }
     constexpr py::ssize_t global_offset = 70;
     constexpr py::ssize_t entity_width = 42 * 45;
     constexpr py::ssize_t item_offset = global_offset + entity_width;
@@ -910,7 +918,7 @@ py::dict semantic_projection_from_snapshot_mappings(
         }
         py::array view(
             py::dtype::of<float>(), shape, strides,
-            numeric_data + offset, numeric
+            numeric_data + offset, item_view_owner
         );
         view.attr("setflags")(false);
         return view;
@@ -1221,7 +1229,8 @@ public:
         for (const auto& context : contexts_)
             snapshot_mappings.append(context["native_state_snapshot"]);
         return semantic_projection_from_snapshot_mappings(
-            snapshot_mappings, catalog_map, contract_hash);
+            snapshot_mappings, catalog_map, contract_hash,
+            py::cast(shared_from_this()));
     }
 
     py::dict lobby_result(std::size_t index) {
