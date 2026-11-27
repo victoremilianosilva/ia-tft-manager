@@ -105,3 +105,41 @@ def test_lobby_batch_manager_keeps_lobby_rng_and_state_independent():
     finally:
         batch.close()
         reference.close()
+
+
+
+def test_lobby_batch_manager_publishes_one_versioned_contiguous_batch():
+    manager = native.LobbyBatchManager(2, 7300)
+    try:
+        reset_batch = manager.reset(seed=8100)
+        assert isinstance(reset_batch, native.NativeDecisionBatch)
+        assert reset_batch.contract_id == "tft.native-decision-batch"
+        assert reset_batch.contract_version == 1
+        assert reset_batch.kind == "reset"
+        assert reset_batch.lobby_count == 2
+        assert reset_batch.players_per_lobby == 8
+        assert reset_batch.observations.shape[0:2] == (2, 8)
+        assert reset_batch.action_masks.shape == (2, 8, 1280)
+        assert reset_batch.observations.flags.c_contiguous
+        assert reset_batch.action_masks.flags.c_contiguous
+        assert not reset_batch.observations.flags.writeable
+        assert not reset_batch.action_masks.flags.writeable
+
+        first = reset_batch.lobby_result(0)
+        assert np.shares_memory(first["observations"], reset_batch.observations)
+        assert np.shares_memory(first["action_masks"], reset_batch.action_masks)
+
+        step_batch = manager.step(_pass_actions(2))
+        assert isinstance(step_batch, native.NativeDecisionBatch)
+        assert step_batch.kind == "step"
+        assert step_batch.rewards.shape == (2, 8)
+        assert step_batch.action_rewards.shape == (2, 8)
+        assert step_batch.combat_rewards.shape == (2, 8)
+        assert step_batch.placement_rewards.shape == (2, 8)
+        assert step_batch.dones.shape == (2, 8)
+        assert step_batch.lobby_done.shape == (2,)
+        row = step_batch.lobby_result(1)
+        assert np.shares_memory(row["rewards"], step_batch.rewards)
+        assert np.shares_memory(row["dones"], step_batch.dones)
+    finally:
+        manager.close()

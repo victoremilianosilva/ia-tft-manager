@@ -505,3 +505,26 @@ identity, missing-key defaults, recursive immutability, list slicing and
 scalar iteration. CI must pass the native snapshot binding and semantic
 projection suites. The A/B PPO benchmark must compare the same workload and
 record the exact code revision before accepting a performance claim.
+
+
+## Fase C — NativeDecisionBatch v1 (contrato agregado)
+
+O manager publica um único objeto `NativeDecisionBatch` por reset/step. A versão 1 mantém a execução sequencial e preserva o owner nativo até que todas as views derivadas sejam liberadas.
+
+### Layout numérico
+
+- `observations`: `float32[L, 8, observation_dim]`
+- `action_masks`: `bool[L, 8, 1280]`
+- `rewards`, `action_rewards`, `combat_rewards`, `placement_rewards`: `float32[L, 8]` (somente step)
+- `dones`: `bool[L, 8]` (somente step)
+- `lobby_done`: `bool[L]` (somente step)
+
+Os buffers são contíguos, somente leitura e pertencem ao objeto batch. `lobby_result(index)` oferece views compatíveis com os wrappers existentes; as views retêm o batch como owner e compartilham memória com os arrays agregados. Os campos estruturados frios (snapshot, traces, eventos e identidade) permanecem associados ao contexto da lobby, sem serem replicados por jogador.
+
+### Integração e compatibilidade
+
+`LobbyVectorEnv` valida ID/versão, cardinalidade e layout dos buffers e consome o resultado por lobby como view do batch. Managers Python usados em fixtures continuam aceitos. O contrato é independente da quantidade de workers e não contém estado de thread; a execução permanece sequencial nesta issue.
+
+### Limites conhecidos da versão 1
+
+A projeção semântica continua fora do batch e será migrada na issue #585. O contexto estruturado continua sendo materializado para compatibilidade com os wrappers atuais; sua migração para buffers tipados e offsets ocorrerá nas issues seguintes. Não se declara zero-copy para CPU→GPU: o batch oferece views CPU imutáveis, e a transferência para device permanece explícita.
