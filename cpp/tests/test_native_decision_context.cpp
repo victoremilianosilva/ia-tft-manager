@@ -70,6 +70,10 @@ int main() {
     try { (void)context.player(8); }
     catch (const std::out_of_range&) { rejected = true; }
     assert(rejected);
+    rejected = false;
+    try { (void)context.player_sequence_availability(8); }
+    catch (const std::out_of_range&) { rejected = true; }
+    assert(rejected);
 
     auto stale = std::make_shared<tft::AuditSnapshot>(*snapshot);
     stale->players[2].strategic_state.player_decision_sequence = 999;
