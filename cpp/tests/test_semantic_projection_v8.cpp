@@ -1,6 +1,7 @@
 #include <cassert>
 #include <cmath>
 #include <map>
+#include <limits>
 #include <string>
 
 #include "lobby/SemanticProjectionV8.hpp"
@@ -33,7 +34,7 @@ int main() {
     strategic.pivot_source_composition_version = 3;
     strategic.opportunity_cost_available = true;
     strategic.planner_outputs_valid = true;
-    strategic.planner_output_sequence = 6;
+    strategic.planner_output_sequence = 8;
     strategic.strategic_context_sequence = 8;
 
     auto& unit = player.board[0];
@@ -52,9 +53,12 @@ int main() {
     strategic.unit_priorities.push_back({7, 3, 1, 80, 2, false, 0.9});
     strategic.lineup_selected_unit_ids = {7};
     strategic.lineup_entry_unit_ids = {7};
-    strategic.opportunity_costs.push_back({7, 50.0, 0.1, 3, "planner", "candidate:2", "relative"});
+    strategic.opportunity_costs.push_back({7, 50.0, 0.1, 3, "same_snapshot_competing_alternative.v1", "candidate:2", "contextual_action_score.v1"});
 
-    player.item_component_catalog = {"component:test"};
+    player.item_component_catalog = {
+        "component:test", "component:1", "component:2", "component:3", "component:4",
+        "component:5", "component:6", "component:7", "component:8", "component:9"
+    };
     player.item_component_features[0] = 0.15f;
     player.item_inventory_features[0][0] = 0.25f;
     player.item_recipe_features[0][0] = 0.35f;
@@ -118,6 +122,68 @@ int main() {
     const auto changed_item_projection = project_player(changed_item, 0, 0, catalog);
     assert(close(changed_item_projection.numeric[1970], 0.75));
     assert(changed_item_projection.sha256 != original_hash);
+
+    // Missing/unknown catalog identity is represented as unknown (ID 0), not
+    // fabricated from an internal integer that is absent from the loaded catalog.
+    auto unknown = snapshot;
+    unknown.players[0].board[0].champion_id = "TFT_UnknownChampion";
+    unknown.players[0].board[0].champion_internal_id = -1;
+    unknown.players[0].strategic_state.active_unit_ids.clear();
+    unknown.players[0].strategic_state.active_core_unit_ids.clear();
+    unknown.players[0].strategic_state.direction_reference_unit_ids.clear();
+    unknown.players[0].strategic_state.pivot_reference_unit_ids.clear();
+    unknown.players[0].strategic_state.unit_copy_progress.clear();
+    unknown.players[0].strategic_state.unit_priorities.clear();
+    unknown.players[0].strategic_state.opportunity_costs.clear();
+    unknown.players[0].strategic_state.opportunity_cost_available = false;
+    unknown.players[0].strategic_state.lineup_selected_unit_ids.clear();
+    unknown.players[0].strategic_state.lineup_entry_unit_ids.clear();
+    unknown.players[0].strategic_state.planner_outputs_valid = false;
+    unknown.players[0].strategic_state.planner_output_sequence = 0;
+    const auto unknown_projection = project_player(unknown, 0, 0, catalog);
+    assert(unknown_projection.champion_ids[0] == 0);
+    assert(close(unknown_projection.numeric[70 + 5], 0.0));
+
+    // Target-profile normalization saturates at one and preserves zero as zero.
+    auto boundary = snapshot;
+    boundary.players[0].board[0].attack_damage = 500.0;
+    boundary.players[0].board[0].attack_speed = 3.0;
+    boundary.players[0].board[0].max_health = 3000.0;
+    boundary.players[0].board[0].armor = 200.0;
+    boundary.players[0].board[0].magic_resist = 200.0;
+    const auto boundary_projection = project_player(boundary, 0, 0, catalog);
+    assert(close(boundary_projection.numeric[93], 1.0));
+    assert(close(boundary_projection.numeric[94], 1.0));
+    assert(close(boundary_projection.numeric[95], 1.0));
+    assert(close(boundary_projection.numeric[96], 1.0));
+    assert(close(boundary_projection.numeric[97], 1.0));
+
+    const auto rejects = [&](AuditSnapshot invalid) {
+        try {
+            (void)project_player(invalid, 0, 0, catalog);
+        } catch (const std::runtime_error&) {
+            return true;
+        }
+        return false;
+    };
+    auto invalid_item_feature = snapshot;
+    invalid_item_feature.players[0].item_recipe_target_fit[0][0] = 1.01f;
+    assert(rejects(invalid_item_feature));
+    auto non_finite_item_feature = snapshot;
+    non_finite_item_feature.players[0].item_inventory_features[0][0] =
+        std::numeric_limits<float>::quiet_NaN();
+    assert(rejects(non_finite_item_feature));
+    auto duplicate_priority = snapshot;
+    duplicate_priority.players[0].strategic_state.unit_priorities.push_back(
+        duplicate_priority.players[0].strategic_state.unit_priorities.front());
+    assert(rejects(duplicate_priority));
+    auto unavailable_planner_with_rows = snapshot;
+    unavailable_planner_with_rows.players[0].strategic_state.planner_outputs_valid = false;
+    assert(rejects(unavailable_planner_with_rows));
+    auto invalid_anvil = snapshot;
+    invalid_anvil.players[0].pending_anvil = false;
+    invalid_anvil.players[0].pending_anvil_sequence = 5;
+    assert(rejects(invalid_anvil));
 
     return 0;
 }
