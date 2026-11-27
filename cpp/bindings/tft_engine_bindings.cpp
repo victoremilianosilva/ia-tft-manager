@@ -1101,7 +1101,15 @@ public:
                 std::copy(projected.champion_ids.begin(), projected.champion_ids.end(),
                     champion_data + row * 42);
                 hashes.append(projected.sha256);
-                identities.append(py::cast(projected.identity));
+                py::dict identity;
+                identity["engine_instance_id"] = snapshot.engine_instance_id;
+                identity["episode_id"] = snapshot.episode_id;
+                identity["decision_sequence"] = snapshot.snapshot_sequence;
+                identity["player_decision_sequence"] = snapshot.player_decision_sequences[player];
+                identity["player_id"] = snapshot.players[player].player_id;
+                identity["round"] = snapshot.round;
+                identity["lobby_index"] = lobby;
+                identities.append(std::move(identity));
                 py::dict physical;
                 physical["occupied"] = projected.occupied;
                 physical["unit_uuids"] = projected.unit_uuids;
@@ -1120,7 +1128,8 @@ public:
         result["hashes"] = std::move(hashes);
         result["identities"] = std::move(identities);
         result["entity_identity"] = std::move(entity_identity);
-        result["item_catalog_sha256"] = item_catalog_hash.empty() ? py::none() : py::cast(item_catalog_hash);
+        if (item_catalog_hash.empty()) result["item_catalog_sha256"] = py::none();
+        else result["item_catalog_sha256"] = item_catalog_hash;
         result["contract_id"] = "tft.ppo.semantic-native-state.v8";
         result["contract_hash"] = contract_hash;
         return result;
