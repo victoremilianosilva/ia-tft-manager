@@ -414,6 +414,8 @@ def test_native_semantic_projection_matches_oracle_for_item_inventory_and_shop_r
         assert after_player["item_inventory"]
         assert after_player["shop_offer_revisions"] != before_revision
 
+        # Publish a fresh NativeDecisionBatch after direct authoritative test hooks.
+        env.step([[[6, 0, 0, 0, 0, 0] for _ in range(8)]])
         snapshots = env.get_snapshot_metadata()
         catalog_map = env.envs[0].get_champion_id_map()
         contract = build_semantic_state_checkpoint_contract(catalog_map)
