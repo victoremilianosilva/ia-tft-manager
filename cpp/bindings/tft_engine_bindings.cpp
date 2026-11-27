@@ -910,12 +910,21 @@ py::dict semantic_projection_from_snapshot_mappings(
     constexpr py::ssize_t item_offset = global_offset + entity_width;
     const auto make_item_view = [&](py::ssize_t offset,
                                     std::vector<py::ssize_t> shape) {
+        if (shape.size() < 3)
+            throw std::runtime_error("semantic item view requires lobby, player and feature dimensions");
         std::vector<py::ssize_t> strides(shape.size());
         py::ssize_t stride = static_cast<py::ssize_t>(sizeof(float));
-        for (std::size_t i = shape.size(); i-- > 0;) {
+        for (std::size_t i = shape.size(); i-- > 2;) {
             strides[i] = stride;
             stride *= shape[i];
         }
+        // The numeric carrier is row-major [lobby, player, 7958]. A feature
+        // block is therefore a zero-copy strided view: each player row starts
+        // at the next full semantic row, not immediately after the prior
+        // player's slice. Claiming C-contiguity here would silently read
+        // unrelated features as the next player's item block.
+        strides[1] = static_cast<py::ssize_t>(numeric_dim * sizeof(float));
+        strides[0] = static_cast<py::ssize_t>(tft::kPlayersPerLobby * numeric_dim * sizeof(float));
         py::array view(
             py::dtype::of<float>(), shape, strides,
             numeric_data + offset, item_view_owner
