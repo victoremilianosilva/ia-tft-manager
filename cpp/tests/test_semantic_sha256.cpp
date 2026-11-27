@@ -24,9 +24,7 @@ int main() {
         {"unicode", "Akame-赤い🌸"}
     };
     const auto canonical = parity_payload.dump(-1, ' ', false);
-    assert(canonical ==
-        "{\\"empty\\":[],\\"limit\\":[-2147483648,2147483647,0.0,1.0],"
-        "\\"optional\\":null,\\"unicode\\":\\"Akame-赤い🌸\\"}");
+    assert(canonical == R"json({"empty":[],"limit":[-2147483648,2147483647,0.0,1.0],"optional":null,"unicode":"Akame-赤い🌸"})json");
     assert(sha256_hex(canonical) ==
         "2e2d30a202100fa3180341c79085abcaf66b0bd265bc933337d3e77a6819532e");
     return 0;
