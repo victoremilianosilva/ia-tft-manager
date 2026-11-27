@@ -118,12 +118,17 @@ class LobbyVectorEnv:
         self._requires_full_reset = False
         return stacked_observations
 
+    def semantic_projection_available(self):
+        """Whether the latest vector snapshot is owned by a projectable native batch."""
+        batch = self._last_native_batch
+        if batch is None or not callable(getattr(batch, "semantic_projection", None)):
+            return False
+        return not (batch.kind == "step" and bool(np.asarray(batch.lobby_done).any()))
+
     def semantic_projection(self, catalog_map, contract_hash):
         """Project the latest immutable native batch without rebuilding Python player rows."""
         batch = self._last_native_batch
-        if batch is None or not callable(getattr(batch, "semantic_projection", None)):
-            return None
-        if batch.kind == "step" and bool(np.asarray(batch.lobby_done).any()):
+        if not self.semantic_projection_available():
             return None
         return batch.semantic_projection(catalog_map, contract_hash)
 
