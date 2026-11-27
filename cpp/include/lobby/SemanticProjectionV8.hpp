@@ -29,7 +29,7 @@ inline constexpr std::size_t kTraitSlots = 10;
 inline constexpr std::uint32_t kTraitVocab = 65536;
 
 struct Projection {
-    std::vector<float> numeric;
+    std::vector<double> numeric;
     std::array<std::int64_t, kEntitySlots> champion_ids{};
     std::array<bool, kEntitySlots> occupied{};
     std::array<std::string, kEntitySlots> unit_uuids{};
@@ -59,21 +59,21 @@ inline json matrix_json(const std::array<std::array<float, C>, R>& values) {
     return result;
 }
 template <typename T, std::size_t N>
-inline void append(std::vector<float>& out, const std::array<T, N>& values) {
-    for (const auto value : values) out.push_back(static_cast<float>(value));
+inline void append(std::vector<double>& out, const std::array<T, N>& values) {
+    for (const auto value : values) out.push_back(static_cast<double>(value));
 }
 template <std::size_t R, std::size_t C>
 inline void append(std::vector<float>& out, const std::array<std::array<float, C>, R>& values) {
     for (const auto& row : values) append(out, row);
 }
 inline void append(std::vector<float>& out, const std::array<float, 10>& values) {
-    for (const auto value : values) out.push_back(value);
+    for (const auto value : values) out.push_back(static_cast<double>(value));
 }
-inline float normalized_feature(float value, float denominator) {
+inline double normalized_feature(double value, double denominator) {
     return std::min(value / denominator, 1.0f);
 }
-inline float nonnegative(std::int32_t value) {
-    return static_cast<float>(std::max(value, 0));
+inline double nonnegative(std::int32_t value) {
+    return static_cast<double>(std::max(value, 0));
 }
 inline json priority_json(const std::vector<AuditUnitStrategicPrioritySnapshot>& rows) {
     json out = json::array();
@@ -82,6 +82,7 @@ inline json priority_json(const std::vector<AuditUnitStrategicPrioritySnapshot>&
             {"champion_internal_id", row.champion_internal_id},
             {"priority", row.priority},
             {"intent", row.intent},
+            {"relation", row.relation},
             {"confidence", row.confidence},
             {"target_star", row.target_star},
             {"sale_restricted", row.sale_restricted}
@@ -162,7 +163,7 @@ inline Projection project_player(
 
     auto& g = result.numeric;
     g.reserve(7958);
-    g.push_back(static_cast<float>(state.hp / 100.0));
+    g.push_back(static_cast<double>(state.hp / 100.0));
     g.push_back(static_cast<float>(state.damage_taken / 100.0));
     g.push_back(state.alive ? 1.0f : 0.0f);
     g.push_back(nonnegative(state.wins) / 100.0f);
@@ -242,7 +243,8 @@ inline Projection project_player(
             });
             std::array<float, 17> target_profile{};
             if (!shop) {
-                const auto role = std::clamp(unit.role, 0, 4);
+                if (unit.role < 0 || unit.role > 4) throw std::runtime_error("semantic target role out of range");
+                const auto role = unit.role;
                 const bool on_board = offset == 0;
                 target_profile[0] = 1.0f;
                 target_profile[1] = on_board ? 1.0f : 0.0f;
@@ -321,11 +323,11 @@ inline Projection project_player(
         {"contract_id", strategic.contract_id},
         {"contract_version", strategic.contract_version},
         {"strategic_context_sequence", strategic.strategic_context_sequence},
-        {"active_composition_id", strategic.active_composition_id.empty() ? json(nullptr) : json(strategic.active_composition_id)},
+        {"active_composition_id", strategic.active_composition_id},
         {"active_composition_version", strategic.active_composition_version},
-        {"direction_identity", strategic.direction_identity.empty() ? json(nullptr) : json(strategic.direction_identity)},
-        {"pivot_candidate_identity", strategic.pivot_candidate_identity.empty() ? json(nullptr) : json(strategic.pivot_candidate_identity)},
-        {"pivot_target_composition_identity", strategic.pivot_target_composition_identity.empty() ? json(nullptr) : json(strategic.pivot_target_composition_identity)},
+        {"direction_identity", strategic.direction_identity},
+        {"pivot_candidate_identity", strategic.pivot_candidate_identity},
+        {"pivot_target_composition_identity", strategic.pivot_target_composition_identity},
         {"pivot_source_composition_version", strategic.pivot_source_composition_version},
         {"active_composition_valid", strategic.active_composition_valid},
         {"direction_valid", strategic.direction_valid},
@@ -344,7 +346,7 @@ inline Projection project_player(
     };
     json hash_payload = {
         {"identity", result.identity},
-        {"numeric", [&g]() { json values = json::array(); for (const auto value : g) values.push_back(static_cast<double>(value)); return values; }()},
+        {"numeric", g},
         {"champion_ids", result.champion_ids},
         {"item_state_identity", result.item_state_identity},
         {"strategic_owner_provenance", strategic_provenance}
