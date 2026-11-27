@@ -136,6 +136,125 @@ inline Projection project_player(
         strategic.source_namespace != "tft.engine.strategic-owners")
         throw std::runtime_error("unsupported strategic owner snapshot contract");
 
+    if (snapshot.engine_instance_id.empty() || snapshot.stage < 1 || snapshot.stage > 7 ||
+        snapshot.round > 50 || state.hp < 0.0 || state.hp > 100.0 || state.damage_taken < 0.0)
+        throw std::runtime_error("semantic snapshot contains invalid lobby/player facts");
+    if (state.placement && (*state.placement < 1 || *state.placement > 8))
+        throw std::runtime_error("semantic placement is outside the native lobby range");
+    if (state.opponent_id && (*state.opponent_id < 0 || *state.opponent_id >= static_cast<std::int32_t>(kPlayersPerLobby) ||
+        *state.opponent_id == state.player_id))
+        throw std::runtime_error("semantic opponent identity is outside the native lobby");
+
+    const auto validate_id_list = [](const std::vector<std::int32_t>& values, const char* field) {
+        std::unordered_set<std::int32_t> unique;
+        for (const auto value : values) {
+            if (value < 0 || !unique.insert(value).second)
+                throw std::runtime_error(std::string("invalid or duplicate semantic IDs in ") + field);
+        }
+        return unique;
+    };
+    const auto active = validate_id_list(strategic.active_unit_ids, "active_unit_ids");
+    const auto core = validate_id_list(strategic.active_core_unit_ids, "active_core_unit_ids");
+    const auto direction = validate_id_list(strategic.direction_reference_unit_ids, "direction_reference_unit_ids");
+    const auto pivot = validate_id_list(strategic.pivot_reference_unit_ids, "pivot_reference_unit_ids");
+    const auto selected = validate_id_list(strategic.lineup_selected_unit_ids, "lineup_selected_unit_ids");
+    const auto entry = validate_id_list(strategic.lineup_entry_unit_ids, "lineup_entry_unit_ids");
+    const auto exit = validate_id_list(strategic.lineup_exit_unit_ids, "lineup_exit_unit_ids");
+    const auto deferred = validate_id_list(strategic.lineup_deferred_unit_ids, "lineup_deferred_unit_ids");
+    if (!std::includes(active.begin(), active.end(), core.begin(), core.end()) ||
+        (!strategic.active_composition_valid && !active.empty()) ||
+        (!strategic.direction_valid && !direction.empty()) ||
+        (!strategic.pivot_candidate_valid && !pivot.empty()))
+        throw std::runtime_error("semantic strategic membership diverges from owner validity");
+    if (strategic.active_composition_valid &&
+        (strategic.active_composition_id.empty() || strategic.active_composition_version == 0))
+        throw std::runtime_error("semantic active composition identity/version is incomplete");
+    if (strategic.direction_valid && strategic.direction_identity.empty())
+        throw std::runtime_error("semantic direction identity is incomplete");
+    if (strategic.pivot_candidate_valid &&
+        (strategic.pivot_candidate_identity.empty() || strategic.pivot_target_composition_identity.empty() ||
+         strategic.pivot_source_composition_version == 0))
+        throw std::runtime_error("semantic pivot identity/version is incomplete");
+    if (strategic.strategic_refresh_failed != !strategic.strategic_refresh_failure_reason.empty())
+        throw std::runtime_error("semantic strategic refresh failure flag/reason mismatch");
+    if (strategic.planner_outputs_valid) {
+        if (strategic.planner_output_sequence != strategic.strategic_context_sequence)
+            throw std::runtime_error("semantic planner outputs are not bound to the strategic context sequence");
+    } else if (!strategic.unit_priorities.empty() || !selected.empty() || !entry.empty() ||
+               !exit.empty() || !deferred.empty()) {
+        throw std::runtime_error("unavailable semantic planner outputs contain priority or lineup rows");
+    }
+
+    std::unordered_map<std::int32_t, AuditUnitStrategicPrioritySnapshot> priorities;
+    for (const auto& row : strategic.unit_priorities) {
+        if (row.champion_internal_id < 0 || row.priority < 0 || row.intent < 0 || row.intent > 6 ||
+            row.target_star < 0 || row.target_star > 3 || !std::isfinite(row.confidence) ||
+            row.confidence < 0.0 || row.confidence > 1.0 ||
+            !priorities.emplace(row.champion_internal_id, row).second)
+            throw std::runtime_error("invalid or duplicate semantic unit priority");
+    }
+    std::unordered_map<std::int32_t, AuditUnitOpportunityCostSnapshot> opportunities;
+    for (const auto& row : strategic.opportunity_costs) {
+        if (row.champion_internal_id < 0 || !std::isfinite(row.value) || row.value < 0.0 ||
+            !std::isfinite(row.uncertainty) || row.uncertainty < 0.0 || row.uncertainty >= 1.0 ||
+            row.horizon_rounds == 0 || row.source != "same_snapshot_competing_alternative.v1" ||
+            (row.value_basis != "contextual_action_score.v1" &&
+             row.value_basis != "native_board_contribution.v1") ||
+            row.forgone_candidate_id.empty() ||
+            !opportunities.emplace(row.champion_internal_id, row).second)
+            throw std::runtime_error("invalid or duplicate semantic opportunity cost evidence");
+    }
+    if (strategic.opportunity_cost_available != !opportunities.empty())
+        throw std::runtime_error("semantic opportunity cost availability diverges from evidence rows");
+
+    const auto validate_feature_values = [](const auto& values, const char* field) {
+        const auto validate_one = [&](float value) {
+            if (!std::isfinite(value) || value < 0.0f || value > 1.0f)
+                throw std::runtime_error(std::string("semantic item feature outside [0, 1]: ") + field);
+        };
+        for (const auto& value : values) {
+            if constexpr (std::is_arithmetic_v<std::decay_t<decltype(value)>>) {
+                validate_one(static_cast<float>(value));
+            } else {
+                for (const auto nested : value) validate_one(static_cast<float>(nested));
+            }
+        }
+    };
+    validate_feature_values(state.item_component_features, "item_component_features");
+    validate_feature_values(state.item_inventory_features, "item_inventory_features");
+    validate_feature_values(state.item_recipe_features, "item_recipe_features");
+    validate_feature_values(state.item_inventory_target_fit, "item_inventory_target_fit");
+    validate_feature_values(state.item_recipe_target_fit, "item_recipe_target_fit");
+    validate_feature_values(state.pending_anvil_option_features, "pending_anvil_option_features");
+    const auto validate_strings = [](const std::vector<std::string>& values, const char* field) {
+        for (const auto& value : values)
+            if (value.empty()) throw std::runtime_error(std::string("empty semantic item identity in ") + field);
+    };
+    validate_strings(state.item_components, "item_components");
+    validate_strings(state.item_inventory, "item_inventory");
+    validate_strings(state.item_component_catalog, "item_component_catalog");
+    validate_strings(state.pending_anvil_options, "pending_anvil_options");
+    if (state.item_component_catalog.size() != 10 ||
+        std::set<std::string>(state.item_component_catalog.begin(), state.item_component_catalog.end()).size() != 10)
+        throw std::runtime_error("semantic item component catalog must contain ten unique ordered IDs");
+    if (state.item_inventory.size() > 9 || state.pending_anvil_options.size() > 9)
+        throw std::runtime_error("semantic item inventory/anvil options exceed canonical slots");
+    if (state.pending_anvil) {
+        if (state.pending_anvil_sequence == 0 || (state.pending_anvil_kind != 0 && state.pending_anvil_kind != 1) ||
+            state.pending_anvil_options.empty())
+            throw std::runtime_error("semantic pending anvil lacks sequence, kind or options");
+        if (state.pending_anvil_kind == 0 &&
+            std::any_of(state.pending_anvil_options.begin(), state.pending_anvil_options.end(),
+                [&](const auto& option) {
+                    return std::find(state.item_component_catalog.begin(), state.item_component_catalog.end(), option) ==
+                        state.item_component_catalog.end();
+                }))
+            throw std::runtime_error("semantic component anvil option is absent from its catalog");
+    } else if (state.pending_anvil_sequence != 0 || state.pending_anvil_kind != -1 ||
+               !state.pending_anvil_options.empty()) {
+        throw std::runtime_error("non-pending semantic anvil retains pending state");
+    }
+
     Projection result;
     result.numeric.reserve(7958);
     std::unordered_set<std::int32_t> active(strategic.active_unit_ids.begin(), strategic.active_unit_ids.end());
