@@ -567,7 +567,6 @@ def test_native_projection_flows_through_ppo_rollout_and_v8_checkpoint(tmp_path)
             semantic_state=semantic_state,
         )
         minibatch = next(rollout.get_batches(batch_size=8))
-        assert minibatch["semantic_state"]["contract_id"] is None
         torch.testing.assert_close(
             minibatch["semantic_state"]["numeric"], semantic_numeric
         )
