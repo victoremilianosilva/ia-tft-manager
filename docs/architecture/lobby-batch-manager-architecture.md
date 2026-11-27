@@ -523,7 +523,7 @@ Os buffers são contíguos, somente leitura e pertencem ao objeto batch. `lobby_
 
 ### Integração e compatibilidade
 
-`LobbyVectorEnv` valida ID/versão, cardinalidade e layout dos buffers e consome o resultado por lobby como view do batch. Managers Python usados em fixtures continuam aceitos. O contrato é independente da quantidade de workers e não contém estado de thread; a execução permanece sequencial nesta issue.
+`LobbyVectorEnv` valida ID/versão, cardinalidade e layout dos buffers e solicita cada view diretamente ao batch, sem reconstruir uma lista intermediária de dicionários por lobby. Managers Python usados em fixtures continuam aceitos. O contrato é independente da quantidade de workers e não contém estado de thread; a execução permanece sequencial nesta issue.
 
 ### Limites conhecidos da versão 1
 
