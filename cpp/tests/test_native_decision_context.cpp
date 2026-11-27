@@ -88,6 +88,9 @@ int main() {
 
     auto empty_inventory = std::make_shared<tft::AuditSnapshot>(*snapshot);
     empty_inventory->players[0].item_component_catalog = {"component:test"};
+    empty_inventory->players[0].item_components.clear();
+    empty_inventory->players[0].item_inventory.clear();
+    empty_inventory->players[0].equipped_items.clear();
     tft::NativeDecisionContext empty_context(empty_inventory);
     assert(empty_context.item_inventory_availability(0) == tft::ContextAvailability::Empty);
 
