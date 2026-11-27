@@ -72,6 +72,11 @@ int main(int argc, char** argv) {
         const auto engine_instance_before_reset = engine.engine_instance_id();
         require(identity_before_reset.engine_instance_id == engine_instance_before_reset,
                 "AuditSnapshot perdeu a identidade da instância da Engine.");
+        require(identity_before_reset.shared_pool.catalog_fingerprint.size() == 64,
+                "Snapshot do pool não publicou fingerprint SHA-256 do catálogo.");
+        require(identity_before_reset.shared_pool.catalog_fingerprint ==
+                    independent_engine.get_audit_snapshot().shared_pool.catalog_fingerprint,
+                "Catálogos idênticos produziram fingerprints diferentes.");
         require(!identity_before_reset.players[0].bench[0].uuid.empty(),
                 "Unidade inicial do banco não recebeu UUID.");
         std::unordered_set<std::string> episode_unit_ids;
