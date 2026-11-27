@@ -167,16 +167,23 @@ class _NativeUnitMapping(Mapping):
         self._cache = {}
 
     def __getitem__(self, key):
+        # Most projection reads revisit a small set of unit fields. Resolve a
+        # cached value first so the hot path performs one dictionary lookup
+        # instead of checking both the supported-key set and cache separately.
+        cached = self._cache.get(key, _MISSING_NATIVE_VIEW)
+        if cached is not _MISSING_NATIVE_VIEW:
+            return cached
         if key not in self._KEY_SET:
             raise KeyError(key)
-        if key not in self._cache:
-            self._cache[key] = _wrap_native_snapshot_value(self._view[key])
-        return self._cache[key]
+        wrapped = _wrap_native_snapshot_value(self._view[key])
+        self._cache[key] = wrapped
+        return wrapped
 
     def get(self, key, default=None):
-        if key not in self._KEY_SET:
+        try:
+            return self[key]
+        except KeyError:
             return default
-        return self[key]
 
     def __iter__(self):
         return iter(self._KEYS)
