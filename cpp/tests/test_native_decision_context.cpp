@@ -55,10 +55,14 @@ int main() {
 
     auto stale = std::make_shared<tft::AuditSnapshot>(*snapshot);
     stale->players[2].strategic_state.player_decision_sequence = 999;
-    rejected = false;
-    try { tft::NativeDecisionContext invalid(stale); }
-    catch (const std::invalid_argument&) { rejected = true; }
-    assert(rejected);
+    tft::NativeDecisionContext stale_context(stale);
+    assert(stale_context.strategic_availability(2) == tft::ContextAvailability::Stale);
+
+    auto missing_sequence = std::make_shared<tft::AuditSnapshot>(*snapshot);
+    missing_sequence->player_decision_sequences[4] = 0;
+    tft::NativeDecisionContext missing_context(missing_sequence);
+    assert(missing_context.player_sequence_availability(4) == tft::ContextAvailability::Missing);
+    assert(missing_context.strategic_availability(4) == tft::ContextAvailability::Stale);
 
     auto partial_anvil = std::make_shared<tft::AuditSnapshot>(*snapshot);
     partial_anvil->players[0].pending_anvil = true;
