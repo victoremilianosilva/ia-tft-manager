@@ -140,6 +140,87 @@ def test_native_semantic_v8_projection_matches_python_oracle_exactly():
 
 
 
+def test_native_semantic_projection_matches_oracle_after_physical_duplicate_upgrade():
+    root = Path(__file__).resolve().parents[1]
+    item_catalog = root / "data" / "itens.json"
+    manager = _NativeLobbyBatchManager(1, 7312, "", str(item_catalog))
+    native_engine = manager.engine(0)
+    env = LobbyVectorEnv(
+        [
+            lambda: CppTFTLobbyWrapper(
+                seed=7312,
+                item_catalog_path=str(item_catalog),
+                native_engine=native_engine,
+            )
+        ],
+        batch_manager=manager,
+    )
+    try:
+        env.reset(seed=87312)
+        initial = native_engine.get_audit_snapshot()
+        champion_id = initial["players"][0]["shop"][0]["champion_id"]
+        assert champion_id
+        assert native_engine.set_player_economy_for_testing(0, 20, 3, 0)
+        assert native_engine.set_unit_for_testing(0, True, 0, champion_id, 1)
+        assert native_engine.set_unit_for_testing(0, False, 0, champion_id, 1)
+        assert native_engine.set_shop_offer_for_testing(0, 0, champion_id)
+
+        before = native_engine.get_audit_snapshot()["players"][0]
+        physical_uuids = {
+            before["board"][0]["uuid"],
+            before["bench"][0]["uuid"],
+            before["shop"][0]["uuid"],
+        }
+        assert len(physical_uuids) == 3 and "" not in physical_uuids
+
+        actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        actions[0] = [0, 0, 0, 0, 0, 0]
+        env.step([actions])
+
+        after = native_engine.get_audit_snapshot()["players"][0]
+        upgraded = [
+            unit
+            for location in ("board", "bench")
+            for unit in after[location]
+            if unit["occupied"] and unit["champion_id"] == champion_id and unit["star"] == 2
+        ]
+        assert len(upgraded) == 1
+        assert upgraded[0]["uuid"] in physical_uuids
+
+        snapshots = env.get_snapshot_metadata()
+        catalog_map = env.envs[0].get_champion_id_map()
+        contract = build_semantic_state_checkpoint_contract(catalog_map)
+        native = env._last_native_batch.semantic_projection(
+            catalog_map, contract["sha256"]
+        )
+        oracle_rows = Trainer._expand_lobby_snapshot_metadata(
+            snapshots, 8, "physical duplicate semantic parity oracle"
+        )
+        oracle = [
+            project_native_player_state(row, catalog_map)
+            for row in oracle_rows
+        ]
+        expected_numeric = np.asarray(
+            [row["numeric"] for row in oracle], dtype=np.float32
+        )
+        expected_champion_ids = np.asarray(
+            [row["champion_ids"] for row in oracle], dtype=np.int64
+        )
+        np.testing.assert_array_equal(
+            native["numeric"].reshape(8, -1), expected_numeric
+        )
+        np.testing.assert_array_equal(
+            native["champion_ids"].reshape(8, -1), expected_champion_ids
+        )
+        assert native["hashes"] == [row["sha256"] for row in oracle]
+        assert native["identities"] == [row["identity"] for row in oracle]
+        assert native["entity_identity"] == [
+            row["entity_identity"] for row in oracle
+        ]
+    finally:
+        env.close()
+
+
 def test_terminal_auto_reset_next_snapshot_uses_native_semantic_projection():
     root = Path(__file__).resolve().parents[1]
     item_catalog = root / "data" / "itens.json"
