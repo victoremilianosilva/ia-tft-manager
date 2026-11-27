@@ -217,6 +217,11 @@ class RolloutBuffer:
             dtype=torch.long,
             device=self.device,
         )
+        self.semantic_trait_ids = torch.zeros(
+            (self.num_steps, self.num_envs, self.semantic_entity_slots, 10),
+            dtype=torch.long,
+            device=self.device,
+        )
 
         # ============================================================
         # GAE / RETURNS
@@ -405,6 +410,11 @@ class RolloutBuffer:
                 dtype=torch.long,
                 device=self.device,
             )
+            semantic_trait_ids = torch.zeros(
+                (self.num_envs, self.semantic_entity_slots, 10),
+                dtype=torch.long,
+                device=self.device,
+            )
         else:
             if not isinstance(semantic_state, dict):
                 raise TypeError("semantic_state must be a mapping")
@@ -445,7 +455,12 @@ class RolloutBuffer:
             item_state = semantic_state.get("items")
             if not isinstance(item_state, dict):
                 raise ValueError("semantic item/anvil tensors are required for native rollout rows")
-            expected_item_state = semantic_item_state_tensors(semantic_numeric)
+            semantic_trait_ids = self._to_tensor(
+                item_state.get("trait_ids"), dtype=torch.long
+            )
+            expected_item_state = semantic_item_state_tensors(
+                semantic_numeric, trait_ids=semantic_trait_ids
+            )
             if set(item_state) != set(expected_item_state):
                 raise ValueError("semantic item/anvil tensor fields do not match the v6 contract")
             for field, expected_value in expected_item_state.items():
@@ -463,6 +478,7 @@ class RolloutBuffer:
 
         self.semantic_numeric[self.ptr].copy_(semantic_numeric)
         self.semantic_champion_ids[self.ptr].copy_(semantic_champion_ids)
+        self.semantic_trait_ids[self.ptr].copy_(semantic_trait_ids)
 
         metadata_groups = (
             ("snapshot_metadata", snapshot_metadata),
@@ -1263,6 +1279,9 @@ class RolloutBuffer:
         flat_semantic_champion_ids = self.semantic_champion_ids[:steps].reshape(
             total_transitions, self.semantic_entity_slots
         )
+        flat_semantic_trait_ids = self.semantic_trait_ids[:steps].reshape(
+            total_transitions, self.semantic_entity_slots, 10
+        )
 
         flat_masks = {
             key: tensor[:steps].reshape(
@@ -1305,7 +1324,10 @@ class RolloutBuffer:
             semantic_numeric_batch = flat_semantic_numeric[batch_idx]
             semantic_batch = {
                 "numeric": semantic_numeric_batch,
-                "items": semantic_item_state_tensors(semantic_numeric_batch),
+                "items": semantic_item_state_tensors(
+                    semantic_numeric_batch,
+                    trait_ids=flat_semantic_trait_ids[batch_idx],
+                ),
                 "champion_ids": flat_semantic_champion_ids[batch_idx],
             }
             if batch_snapshot_metadata is not None:
