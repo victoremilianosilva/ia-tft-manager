@@ -24,6 +24,7 @@
 #include <vector>
 
 #include "lobby/ChampionCatalog.hpp"
+#include "lobby/SemanticSha256.hpp"
 #include "composition_intelligence/CompositionSourceAdapters.hpp"
 #include "composition_intelligence/StrategicContextBridge.hpp"
 #include "lobby/UnitInstanceFactory.hpp"
@@ -6425,13 +6426,23 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
     auto& pool_snapshot = snapshot.shared_pool;
     pool_snapshot.total_available = impl_->pool->total_available();
     pool_snapshot.champions.reserve(impl_->catalog->size());
+    std::string catalog_identity;
     for (const auto& champion : impl_->catalog->all()) {
         pool_snapshot.champions.push_back(AuditPoolChampionCount{
             champion.internal_id, champion.api_name, champion.cost,
             impl_->pool->initial_count(champion.internal_id),
             impl_->pool->available(champion.internal_id)
         });
+        catalog_identity += std::to_string(champion.internal_id) + ":" +
+            std::to_string(champion.cost) + ":" +
+            std::to_string(champion.api_name.size()) + ":" + champion.api_name + ":";
+        for (const auto& trait : champion.traits) {
+            catalog_identity += std::to_string(trait.size()) + ":" + trait + ":";
+        }
+        catalog_identity += ";";
     }
+    pool_snapshot.catalog_fingerprint =
+        semantic::sha256_hex(catalog_identity);
 
     const auto describe_unit = [this](
         const UnitInstance* unit, bool on_board, std::size_t slot
