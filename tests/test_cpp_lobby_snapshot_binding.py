@@ -1525,7 +1525,10 @@ def test_native_unit_view_pins_snapshot_and_materializes_fields_lazily():
         assert isinstance(unit, Mapping)
         assert isinstance(unit, cpp_lobby_env._NativeUnitMapping)
         assert unit["occupied"] is False
+        assert unit.get("occupied") is False
+        assert unit.get("missing", "fallback") == "fallback"
         assert unit["uuid"] == ""
+        assert unit.get("uuid") is unit["uuid"]
         items = unit["items"]
         assert isinstance(items, cpp_lobby_env._NativeFrozenList)
         assert list(items) == []
