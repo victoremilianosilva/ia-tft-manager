@@ -129,8 +129,19 @@ class _NativeFrozenList(FrozenList):
         return wrapped
 
     def __iter__(self):
-        for index in range(len(self)):
-            yield self[index]
+        # Unit item/trait arrays are predominantly immutable scalar leaves.
+        # Iterate the backing list directly for those values, avoiding a
+        # Python __getitem__ call and its bounds/cache checks per element.
+        # Nested records still pass through the same lazy wrapper/cache path.
+        for index, value in enumerate(list.__iter__(self)):
+            if _is_native_snapshot_scalar(value):
+                yield value
+                continue
+            cached = self._view_cache.get(index, _MISSING_NATIVE_VIEW)
+            if cached is _MISSING_NATIVE_VIEW:
+                cached = _wrap_native_snapshot_value(value)
+                self._view_cache[index] = cached
+            yield cached
 
     def __eq__(self, other):
         if isinstance(other, Sequence) and not isinstance(other, (str, bytes)):
