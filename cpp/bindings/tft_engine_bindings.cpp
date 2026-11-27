@@ -1721,10 +1721,20 @@ PYBIND11_MODULE(tft_engine, module) {
 
 
 
+    py::enum_<tft::ContextAvailability>(module, "ContextAvailability")
+        .value("COMPLETE", tft::ContextAvailability::Complete)
+        .value("PARTIAL", tft::ContextAvailability::Partial)
+        .value("EMPTY", tft::ContextAvailability::Empty)
+        .value("UNKNOWN", tft::ContextAvailability::Unknown)
+        .value("MISSING", tft::ContextAvailability::Missing)
+        .value("STALE", tft::ContextAvailability::Stale)
+        .value("INCOMPATIBLE", tft::ContextAvailability::Incompatible)
+        .value("NOT_APPLICABLE", tft::ContextAvailability::NotApplicable);
+
     py::class_<tft::NativeDecisionContext, std::shared_ptr<tft::NativeDecisionContext>>(
         module, "NativeDecisionContext")
         .def_property_readonly("availability", [](const tft::NativeDecisionContext& context) {
-            return static_cast<std::uint8_t>(context.availability());
+            return context.availability();
         })
         .def_property_readonly("engine_instance_id", [](const tft::NativeDecisionContext& context) {
             return context.snapshot().engine_instance_id;
