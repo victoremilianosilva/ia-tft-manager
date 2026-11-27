@@ -127,7 +127,7 @@ int main() {
     // fabricated from an internal integer that is absent from the loaded catalog.
     auto unknown = snapshot;
     unknown.players[0].board[0].champion_id = "TFT_UnknownChampion";
-    unknown.players[0].board[0].champion_internal_id = -1;
+    unknown.players[0].board[0].champion_internal_id = 999;
     unknown.players[0].strategic_state.active_unit_ids.clear();
     unknown.players[0].strategic_state.active_core_unit_ids.clear();
     unknown.players[0].strategic_state.direction_reference_unit_ids.clear();
