@@ -85,7 +85,10 @@ public:
     ContextAvailability availability() const noexcept {
         if (snapshot_->contract_id != "tft.native-state-snapshot" ||
             snapshot_->contract_version != 6 ||
-            snapshot_->engine_instance_id.empty()) {
+            snapshot_->engine_instance_id.empty() ||
+            snapshot_->shared_pool.contract_id != "tft.shared-champion-pool-snapshot" ||
+            snapshot_->shared_pool.contract_version != 2 ||
+            snapshot_->shared_pool.catalog_fingerprint.size() != 64) {
             return ContextAvailability::Incompatible;
         }
         return ContextAvailability::Complete;
