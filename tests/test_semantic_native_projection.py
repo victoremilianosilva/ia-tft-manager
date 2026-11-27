@@ -10,8 +10,21 @@ from semantic_observation import (
     build_semantic_state_checkpoint_contract,
     project_native_player_state,
     semantic_item_state_tensors,
+    validate_semantic_state_checkpoint_contract,
 )
-from trainer import Trainer
+from trainer import Trainer, project_semantic_batch
+from action_contract import (
+    MASK_SHAPES,
+    build_action_mask_checkpoint_contract,
+    build_critic_mask_input_checkpoint_contract,
+)
+from checkpoint_contract import (
+    build_checkpoint_lineage_contract,
+    validate_checkpoint_lineage_contract,
+)
+from policy import ACTION_DIMS, TFTPolicy
+from reward_contract import build_reward_checkpoint_contract
+from rollout import RolloutBuffer
 from vector_lobby_env import LobbyVectorEnv
 
 
@@ -478,3 +491,145 @@ def test_native_semantic_projection_matches_oracle_for_item_inventory_and_shop_r
     finally:
         env.close()
 
+
+
+def test_native_projection_flows_through_ppo_rollout_and_v8_checkpoint(tmp_path):
+    root = Path(__file__).resolve().parents[1]
+    item_catalog = root / "data" / "itens.json"
+    manager = _NativeLobbyBatchManager(1, 7350, "", str(item_catalog))
+    env = LobbyVectorEnv(
+        [
+            lambda: CppTFTLobbyWrapper(
+                seed=7350,
+                item_catalog_path=str(item_catalog),
+                native_engine=manager.engine(0),
+            )
+        ],
+        batch_manager=manager,
+    )
+    try:
+        observations = env.reset(seed=87350)
+        catalog_map = env.envs[0].get_champion_id_map()
+        semantic_contract = build_semantic_state_checkpoint_contract(catalog_map)
+        lobby_snapshots = env.get_snapshot_metadata()
+        metadata_rows = Trainer._expand_lobby_snapshot_metadata(
+            lobby_snapshots, 8, "native PPO/rollout/checkpoint integration",
+            include_native_player_state=False,
+        )
+        semantic_batch = project_semantic_batch(
+            env, metadata_rows, catalog_map, semantic_contract,
+            lobby_snapshots=lobby_snapshots,
+        )
+
+        obs = torch.as_tensor(observations.reshape(8, -1), dtype=torch.float32)
+        mask_rows = env.envs[0].get_action_masks()
+        masks = {
+            name: torch.as_tensor(
+                np.stack([row[name] for row in mask_rows]), dtype=torch.bool
+            )
+            for name in MASK_SHAPES
+        }
+        semantic_numeric = torch.from_numpy(semantic_batch["numeric"])
+        semantic_state = {
+            "numeric": semantic_numeric,
+            "items": semantic_item_state_tensors(
+                semantic_numeric,
+                trait_ids=torch.from_numpy(semantic_batch["trait_ids"]),
+            ),
+            "champion_ids": torch.from_numpy(semantic_batch["champion_ids"]),
+            "entity_identity": semantic_batch["entity_identity"],
+            "identities": semantic_batch["identities"],
+            "hashes": semantic_batch["hashes"],
+            "contract_id": semantic_batch["contract_id"],
+            "contract_hash": semantic_batch["contract_hash"],
+        }
+
+        policy = TFTPolicy(
+            obs_dim=obs.shape[-1],
+            action_dims=list(ACTION_DIMS),
+            hidden_size=32,
+            semantic_vocab_size=max(catalog_map.values()) + 2,
+            require_semantic_state=True,
+        )
+        actions, logprobs, entropy, values = policy.get_action_and_value(
+            obs, masks=masks, deterministic=True, semantic_state=semantic_state
+        )
+        assert torch.isfinite(logprobs).all()
+        assert torch.isfinite(entropy).all()
+        assert torch.isfinite(values).all()
+
+        rollout = RolloutBuffer(
+            num_steps=1, num_envs=8, obs_dim=obs.shape[-1], action_dim=6,
+            device="cpu", mask_shapes=MASK_SHAPES, require_semantic_state=True,
+        )
+        rollout.add(
+            obs, actions, logprobs, torch.zeros(8), torch.zeros(8), values, masks,
+            semantic_state=semantic_state,
+        )
+        minibatch = next(rollout.get_batches(batch_size=8))
+        assert minibatch["semantic_state"]["contract_id"] is None
+        torch.testing.assert_close(
+            minibatch["semantic_state"]["numeric"], semantic_numeric
+        )
+        torch.testing.assert_close(
+            minibatch["semantic_state"]["champion_ids"], semantic_state["champion_ids"]
+        )
+        replay_logprobs, replay_entropy, replay_values = policy.evaluate_actions(
+            minibatch["obs"], minibatch["actions"], minibatch["masks"],
+            semantic_state=minibatch["semantic_state"],
+        )
+        assert torch.isfinite(replay_logprobs).all()
+        assert torch.isfinite(replay_entropy).all()
+        assert torch.isfinite(replay_values).all()
+        optimizer = torch.optim.Adam(policy.parameters(), lr=3e-4)
+        loss = (
+            -replay_logprobs.mean()
+            + 0.5 * replay_values.square().mean()
+            - 0.01 * replay_entropy.mean()
+        )
+        optimizer.zero_grad(set_to_none=True)
+        loss.backward()
+        optimizer.step()
+
+        action_mask_contract = build_action_mask_checkpoint_contract()
+        critic_mask_contract = build_critic_mask_input_checkpoint_contract()
+        reward_contract = build_reward_checkpoint_contract()
+        lineage = build_checkpoint_lineage_contract(
+            policy.state_dict(), action_mask_contract, critic_mask_contract,
+            semantic_contract, reward_contract,
+        )
+        checkpoint_path = tmp_path / "native-semantic-v8-ppo.pt"
+        torch.save({
+            "policy": policy.state_dict(),
+            "semantic_state_contract": semantic_contract,
+            "action_mask_contract": action_mask_contract,
+            "critic_mask_input_contract": critic_mask_contract,
+            "reward_contract": reward_contract,
+            "checkpoint_contract": lineage,
+        }, checkpoint_path)
+        restored_checkpoint = torch.load(
+            checkpoint_path, map_location="cpu", weights_only=False
+        )
+        validate_semantic_state_checkpoint_contract(
+            restored_checkpoint["semantic_state_contract"], catalog_map
+        )
+        restored_policy = TFTPolicy(
+            obs_dim=obs.shape[-1],
+            action_dims=list(ACTION_DIMS),
+            hidden_size=32,
+            semantic_vocab_size=max(catalog_map.values()) + 2,
+            require_semantic_state=True,
+        )
+        restored_policy.load_state_dict(restored_checkpoint["policy"], strict=True)
+        validate_checkpoint_lineage_contract(
+            restored_checkpoint["checkpoint_contract"],
+            restored_policy.state_dict(),
+            restored_checkpoint["action_mask_contract"],
+            restored_checkpoint["critic_mask_input_contract"],
+            restored_checkpoint["semantic_state_contract"],
+            restored_checkpoint["reward_contract"],
+        )
+        for key, value in policy.state_dict().items():
+            torch.testing.assert_close(restored_policy.state_dict()[key], value)
+    finally:
+        env.close()
