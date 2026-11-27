@@ -1080,6 +1080,8 @@ public:
             {static_cast<py::ssize_t>(kPlayers), static_cast<py::ssize_t>(mask_width_)},
             {static_cast<py::ssize_t>(mask_width_ * sizeof(bool)), static_cast<py::ssize_t>(sizeof(bool))},
             action_masks_.data() + mask_offset, owner);
+        result["observations"].attr("setflags")(false);
+        result["action_masks"].attr("setflags")(false);
         if (kind_ == "step") {
             const auto float_row = [&owner, index](py::array_t<float>& values) {
                 return py::array_t<float>(
@@ -1095,6 +1097,11 @@ public:
                 {static_cast<py::ssize_t>(kPlayers)},
                 {static_cast<py::ssize_t>(sizeof(bool))},
                 dones_.data() + index * kPlayers, owner);
+            result["rewards"].attr("setflags")(false);
+            result["action_rewards"].attr("setflags")(false);
+            result["combat_rewards"].attr("setflags")(false);
+            result["placement_rewards"].attr("setflags")(false);
+            result["dones"].attr("setflags")(false);
         }
         return result;
     }
