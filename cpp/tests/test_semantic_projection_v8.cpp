@@ -78,8 +78,14 @@ int main() {
     assert(projection.trait_ids[0][0] > 0);
     assert(close(projection.numeric[76], 1.0));  // active unit
     assert(close(projection.numeric[77], 1.0));  // active core
+    assert(close(projection.numeric[78], 1.0));  // direction reference
+    assert(close(projection.numeric[79], 1.0));  // pivot reference
     assert(close(projection.numeric[109], 0.8)); // native unit priority
     assert(close(projection.numeric[110], 0.5)); // native priority intent
+    assert(close(projection.numeric[111], 1.0)); // selected lineup
+    assert(close(projection.numeric[112], 1.0)); // lineup target
+    assert(close(projection.numeric[113], 0.5)); // opportunity cost value
+    assert(close(projection.numeric[114], 1.0)); // opportunity cost available
 
     // Every item feature block must land at its canonical v8 carrier offset.
     assert(close(projection.numeric[1960], 0.15));
@@ -96,6 +102,16 @@ int main() {
     const auto changed_projection = project_player(changed, 0, 0, catalog);
     assert(close(changed_projection.numeric[109], 0.6));
     assert(changed_projection.sha256 != original_hash);
+
+    auto changed_pivot = snapshot;
+    changed_pivot.players[0].strategic_state.pivot_candidate_identity = "pivot:alternative";
+    const auto changed_pivot_projection = project_player(changed_pivot, 0, 0, catalog);
+    assert(changed_pivot_projection.sha256 != original_hash);
+
+    auto changed_direction = snapshot;
+    changed_direction.players[0].strategic_state.direction_identity = "direction:alternative";
+    const auto changed_direction_projection = project_player(changed_direction, 0, 0, catalog);
+    assert(changed_direction_projection.sha256 != original_hash);
 
     auto changed_item = snapshot;
     changed_item.players[0].item_inventory_features[0][0] = 0.75f;
