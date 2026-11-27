@@ -1786,6 +1786,7 @@ PYBIND11_MODULE(tft_engine, module) {
             return result;
         }, py::arg("player_index"))
         .def_property_readonly("player_count", &tft::NativeDecisionContext::player_count)
+        .def("player_sequence_availability", &tft::NativeDecisionContext::player_sequence_availability)
         .def("strategic_availability", &tft::NativeDecisionContext::strategic_availability)
         .def("item_inventory_availability", &tft::NativeDecisionContext::item_inventory_availability)
         .def("pending_anvil_availability", &tft::NativeDecisionContext::pending_anvil_availability)
