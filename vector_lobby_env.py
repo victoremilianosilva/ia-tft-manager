@@ -118,6 +118,21 @@ class LobbyVectorEnv:
         self._requires_full_reset = False
         return stacked_observations
 
+    def semantic_projection_supported(self):
+        """Whether the native manager can project any pinned snapshot, including auto-reset rows."""
+        return (
+            self._batch_manager is not None
+            and callable(getattr(self._batch_manager, "semantic_projection_from_snapshots", None))
+        )
+
+    def semantic_projection_from_snapshots(self, lobby_snapshots, catalog_map, contract_hash):
+        """Project a set of independently pinned lobby snapshots in one C++ call."""
+        if not self.semantic_projection_supported():
+            return None
+        return self._batch_manager.semantic_projection_from_snapshots(
+            lobby_snapshots, catalog_map, contract_hash
+        )
+
     def semantic_projection_available(self):
         """Whether the latest vector snapshot is owned by a projectable native batch."""
         batch = self._last_native_batch
