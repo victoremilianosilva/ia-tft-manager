@@ -57,6 +57,7 @@ from ppo import PPOTrainer, exponential_schedule_value
 from semantic_observation import (
     SEMANTIC_ENTITY_FEATURES,
     SEMANTIC_ENTITY_SLOTS,
+    SEMANTIC_TRAIT_SLOTS,
     SEMANTIC_GLOBAL_FEATURES,
     SEMANTIC_ITEM_OFFSET,
     build_semantic_batch,
@@ -2161,7 +2162,7 @@ class Trainer:
                         "items": semantic_item_state_tensors(
                             sample_semantic_numeric,
                             trait_ids=rollout.semantic_trait_ids[:rollout.ptr].reshape(
-                                -1, rollout.semantic_entity_slots, 10
+                                -1, rollout.semantic_entity_slots, SEMANTIC_TRAIT_SLOTS
                             )[valid_indices],
                         ),
                         "champion_ids": rollout.semantic_champion_ids[:rollout.ptr].reshape(
