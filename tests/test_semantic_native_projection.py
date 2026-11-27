@@ -128,6 +128,10 @@ def test_native_semantic_v8_projection_matches_python_oracle_exactly():
         # Views retain their backing allocation even if the dictionary's
         # direct carrier reference is released.
         retained_components = item_blocks["components"]
+        view_owner = retained_components.base
+        assert isinstance(view_owner, dict)
+        assert view_owner["batch"] is env._last_native_batch
+        assert view_owner["numeric"] is native["numeric"]
         del native["numeric"]
         assert retained_components.shape == (1, 8, 10)
         assert np.isfinite(retained_components).all()
