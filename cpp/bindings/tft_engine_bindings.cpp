@@ -806,16 +806,16 @@ private:
     mutable py::object frozen_envelope_cache_;
 };
 
-py::dict reset_to_dict(tft::ResetResult reset) {
+py::dict reset_to_dict(tft::ResetResult reset, bool include_numeric_transport = true) {
     py::dict result;
 
-    result["observations"] = observations_to_array(
-        reset.observations,
-        reset.observation_dim
-    );
-
-    result["action_masks"] =
-        masks_to_packed_array(reset.action_masks);
+    if (include_numeric_transport) {
+        result["observations"] = observations_to_array(
+            reset.observations,
+            reset.observation_dim
+        );
+        result["action_masks"] = masks_to_packed_array(reset.action_masks);
+    }
 
     result["engine_instance_id"] = reset.engine_instance_id;
     result["episode_id"] = reset.episode_id;
@@ -829,40 +829,36 @@ py::dict reset_to_dict(tft::ResetResult reset) {
     return result;
 }
 
-py::dict step_to_dict(tft::StepResult step) {
+py::dict step_to_dict(tft::StepResult step, bool include_numeric_transport = true) {
     py::dict result;
 
-    result["observations"] = observations_to_array(
-        step.observations,
-        step.observation_dim
-    );
-
-    py::array_t<float> rewards(8);
-    py::array_t<float> action_rewards(8);
-    py::array_t<float> combat_rewards(8);
-    py::array_t<float> placement_rewards(8);
-    py::array_t<bool> dones(8);
-
-    auto reward_out = rewards.mutable_unchecked<1>();
-    auto action_reward_out = action_rewards.mutable_unchecked<1>();
-    auto combat_reward_out = combat_rewards.mutable_unchecked<1>();
-    auto placement_reward_out = placement_rewards.mutable_unchecked<1>();
-    auto done_out = dones.mutable_unchecked<1>();
-
-    for (py::ssize_t i = 0; i < 8; ++i) {
-        const auto index = static_cast<std::size_t>(i);
-        reward_out(i) = step.rewards[index];
-        action_reward_out(i) = step.action_rewards[index];
-        combat_reward_out(i) = step.combat_rewards[index];
-        placement_reward_out(i) = step.placement_rewards[index];
-        done_out(i) = step.dones[index] != 0;
+    if (include_numeric_transport) {
+        result["observations"] = observations_to_array(step.observations, step.observation_dim);
+        result["action_masks"] = masks_to_packed_array(step.action_masks);
+        py::array_t<float> rewards(8);
+        py::array_t<float> action_rewards(8);
+        py::array_t<float> combat_rewards(8);
+        py::array_t<float> placement_rewards(8);
+        py::array_t<bool> dones(8);
+        auto reward_out = rewards.mutable_unchecked<1>();
+        auto action_reward_out = action_rewards.mutable_unchecked<1>();
+        auto combat_reward_out = combat_rewards.mutable_unchecked<1>();
+        auto placement_reward_out = placement_rewards.mutable_unchecked<1>();
+        auto done_out = dones.mutable_unchecked<1>();
+        for (py::ssize_t i = 0; i < 8; ++i) {
+            const auto index = static_cast<std::size_t>(i);
+            reward_out(i) = step.rewards[index];
+            action_reward_out(i) = step.action_rewards[index];
+            combat_reward_out(i) = step.combat_rewards[index];
+            placement_reward_out(i) = step.placement_rewards[index];
+            done_out(i) = step.dones[index] != 0;
+        }
+        result["rewards"] = std::move(rewards);
+        result["action_rewards"] = std::move(action_rewards);
+        result["combat_rewards"] = std::move(combat_rewards);
+        result["placement_rewards"] = std::move(placement_rewards);
+        result["dones"] = std::move(dones);
     }
-
-    result["rewards"] = std::move(rewards);
-    result["action_rewards"] = std::move(action_rewards);
-    result["combat_rewards"] = std::move(combat_rewards);
-    result["placement_rewards"] = std::move(placement_rewards);
-    result["dones"] = std::move(dones);
     result["lobby_done"] = step.lobby_done;
     result["engine_instance_id"] = step.engine_instance_id;
     result["episode_id"] = step.episode_id;
@@ -1012,100 +1008,50 @@ public:
     static constexpr std::uint32_t kContractVersion = 1;
     static constexpr std::size_t kPlayers = tft::kPlayersPerLobby;
 
-    explicit NativeDecisionBatch(std::string kind, std::vector<py::dict> results)
-        : kind_(std::move(kind)), contexts_(std::move(results)) {
-        if (contexts_.empty()) throw std::invalid_argument("NativeDecisionBatch nao pode ser vazio.");
-        const auto first_observations = py::array_t<float, py::array::c_style>::ensure(
-            contexts_.front()["observations"]);
-        const auto first_masks = py::array_t<bool, py::array::c_style>::ensure(
-            contexts_.front()["action_masks"]);
-        if (!first_observations || first_observations.ndim() != 2 ||
-            first_observations.shape(0) != static_cast<py::ssize_t>(kPlayers))
-            throw std::runtime_error("Observations invalidas no NativeDecisionBatch.");
-        if (!first_masks || first_masks.ndim() != 2 ||
-            first_masks.shape(0) != static_cast<py::ssize_t>(kPlayers))
-            throw std::runtime_error("Action masks invalidas no NativeDecisionBatch.");
-
-        observation_dim_ = static_cast<std::size_t>(first_observations.shape(1));
-        mask_width_ = static_cast<std::size_t>(first_masks.shape(1));
-        const auto lobby_count = static_cast<py::ssize_t>(contexts_.size());
-        observations_ = py::array_t<float>({lobby_count, static_cast<py::ssize_t>(kPlayers),
-            static_cast<py::ssize_t>(observation_dim_)});
-        action_masks_ = py::array_t<bool>({lobby_count, static_cast<py::ssize_t>(kPlayers),
-            static_cast<py::ssize_t>(mask_width_)});
-
-        const bool is_step = kind_ == "step";
-        if (is_step) {
-            rewards_ = py::array_t<float>({lobby_count, static_cast<py::ssize_t>(kPlayers)});
-            action_rewards_ = py::array_t<float>({lobby_count, static_cast<py::ssize_t>(kPlayers)});
-            combat_rewards_ = py::array_t<float>({lobby_count, static_cast<py::ssize_t>(kPlayers)});
-            placement_rewards_ = py::array_t<float>({lobby_count, static_cast<py::ssize_t>(kPlayers)});
-            dones_ = py::array_t<bool>({lobby_count, static_cast<py::ssize_t>(kPlayers)});
-            lobby_done_ = py::array_t<bool>(lobby_count);
+    explicit NativeDecisionBatch(std::vector<tft::ResetResult> results)
+        : kind_("reset") {
+        if (results.empty()) throw std::invalid_argument("NativeDecisionBatch nao pode ser vazio.");
+        initialize_layout(results.size(), results.front().observation_dim);
+        for (std::size_t lobby = 0; lobby < results.size(); ++lobby) {
+            auto& row = results[lobby];
+            validate_observation(row.observations, row.observation_dim);
+            std::copy(row.observations.begin(), row.observations.end(),
+                observations_.mutable_data() + lobby * kPlayers * observation_dim_);
+            copy_masks(lobby, row.action_masks);
+            contexts_.push_back(reset_to_dict(std::move(row), false));
         }
+        make_read_only();
+    }
 
-        auto* observation_out = observations_.mutable_data();
-        auto* mask_out = action_masks_.mutable_data();
-        auto* reward_out = is_step ? rewards_.mutable_data() : nullptr;
-        auto* action_reward_out = is_step ? action_rewards_.mutable_data() : nullptr;
-        auto* combat_reward_out = is_step ? combat_rewards_.mutable_data() : nullptr;
-        auto* placement_reward_out = is_step ? placement_rewards_.mutable_data() : nullptr;
-        auto* done_out = is_step ? dones_.mutable_data() : nullptr;
-        auto* lobby_done_out = is_step ? lobby_done_.mutable_data() : nullptr;
+    explicit NativeDecisionBatch(std::vector<tft::StepResult> results)
+        : kind_("step") {
+        if (results.empty()) throw std::invalid_argument("NativeDecisionBatch nao pode ser vazio.");
+        initialize_layout(results.size(), results.front().observation_dim);
+        const auto lobby_count = static_cast<py::ssize_t>(results.size());
+        rewards_ = py::array_t<float>({lobby_count, static_cast<py::ssize_t>(kPlayers)});
+        action_rewards_ = py::array_t<float>({lobby_count, static_cast<py::ssize_t>(kPlayers)});
+        combat_rewards_ = py::array_t<float>({lobby_count, static_cast<py::ssize_t>(kPlayers)});
+        placement_rewards_ = py::array_t<float>({lobby_count, static_cast<py::ssize_t>(kPlayers)});
+        dones_ = py::array_t<bool>({lobby_count, static_cast<py::ssize_t>(kPlayers)});
+        lobby_done_ = py::array_t<bool>(lobby_count);
 
-        for (std::size_t lobby = 0; lobby < contexts_.size(); ++lobby) {
-            auto& context = contexts_[lobby];
-            auto obs = py::array_t<float, py::array::c_style>::ensure(context["observations"]);
-            auto masks = py::array_t<bool, py::array::c_style>::ensure(context["action_masks"]);
-            if (!obs || obs.ndim() != 2 || obs.shape(0) != static_cast<py::ssize_t>(kPlayers) ||
-                static_cast<std::size_t>(obs.shape(1)) != observation_dim_)
-                throw std::runtime_error("Dimensoes de observations divergentes no batch.");
-            if (!masks || masks.ndim() != 2 || masks.shape(0) != static_cast<py::ssize_t>(kPlayers) ||
-                static_cast<std::size_t>(masks.shape(1)) != mask_width_)
-                throw std::runtime_error("Dimensoes de action_masks divergentes no batch.");
-
-            std::copy_n(obs.data(), kPlayers * observation_dim_,
-                observation_out + lobby * kPlayers * observation_dim_);
-            std::copy_n(masks.data(), kPlayers * mask_width_,
-                mask_out + lobby * kPlayers * mask_width_);
-            context.attr("pop")("observations");
-            context.attr("pop")("action_masks");
-
-            if (is_step) {
-                const auto copy_float_rows = [lobby, lobby_count, &context](const char* key,
-                        float* destination) {
-                    auto source = py::array_t<float, py::array::c_style>::ensure(context[key]);
-                    if (!source || source.ndim() != 1 ||
-                        source.shape(0) != static_cast<py::ssize_t>(kPlayers))
-                        throw std::runtime_error(std::string("Campo invalido no batch: ") + key);
-                    std::copy_n(source.data(), kPlayers,
-                        destination + lobby * kPlayers);
-                    context.attr("pop")(key);
-                };
-                copy_float_rows("rewards", reward_out);
-                copy_float_rows("action_rewards", action_reward_out);
-                copy_float_rows("combat_rewards", combat_reward_out);
-                copy_float_rows("placement_rewards", placement_reward_out);
-                auto dones = py::array_t<bool, py::array::c_style>::ensure(context["dones"]);
-                if (!dones || dones.ndim() != 1 ||
-                    dones.shape(0) != static_cast<py::ssize_t>(kPlayers))
-                    throw std::runtime_error("Campo invalido no batch: dones");
-                std::copy_n(dones.data(), kPlayers, done_out + lobby * kPlayers);
-                context.attr("pop")("dones");
-                lobby_done_out[lobby] = py::cast<bool>(context["lobby_done"]);
-            }
+        for (std::size_t lobby = 0; lobby < results.size(); ++lobby) {
+            auto& row = results[lobby];
+            validate_observation(row.observations, row.observation_dim);
+            std::copy(row.observations.begin(), row.observations.end(),
+                observations_.mutable_data() + lobby * kPlayers * observation_dim_);
+            copy_masks(lobby, row.action_masks);
+            const auto offset = lobby * kPlayers;
+            std::copy(row.rewards.begin(), row.rewards.end(), rewards_.mutable_data() + offset);
+            std::copy(row.action_rewards.begin(), row.action_rewards.end(), action_rewards_.mutable_data() + offset);
+            std::copy(row.combat_rewards.begin(), row.combat_rewards.end(), combat_rewards_.mutable_data() + offset);
+            std::copy(row.placement_rewards.begin(), row.placement_rewards.end(), placement_rewards_.mutable_data() + offset);
+            for (std::size_t player = 0; player < kPlayers; ++player)
+                dones_.mutable_data()[offset + player] = row.dones[player] != 0;
+            lobby_done_.mutable_data()[lobby] = row.lobby_done;
+            contexts_.push_back(step_to_dict(std::move(row), false));
         }
-
-        observations_.attr("setflags")(false);
-        action_masks_.attr("setflags")(false);
-        if (is_step) {
-            rewards_.attr("setflags")(false);
-            action_rewards_.attr("setflags")(false);
-            combat_rewards_.attr("setflags")(false);
-            placement_rewards_.attr("setflags")(false);
-            dones_.attr("setflags")(false);
-            lobby_done_.attr("setflags")(false);
-        }
+        make_read_only();
     }
 
     std::size_t size() const noexcept { return contexts_.size(); }
@@ -1127,34 +1073,101 @@ public:
         const auto owner = py::cast(shared_from_this());
         const auto obs_offset = index * kPlayers * observation_dim_;
         const auto mask_offset = index * kPlayers * mask_width_;
-        result["observations"] = py::array_t<float>(
+        auto observation_view = py::array_t<float>(
             {static_cast<py::ssize_t>(kPlayers), static_cast<py::ssize_t>(observation_dim_)},
             {static_cast<py::ssize_t>(observation_dim_ * sizeof(float)), static_cast<py::ssize_t>(sizeof(float))},
             observations_.data() + obs_offset, owner);
-        result["action_masks"] = py::array_t<bool>(
+        auto masks_view = py::array_t<bool>(
             {static_cast<py::ssize_t>(kPlayers), static_cast<py::ssize_t>(mask_width_)},
             {static_cast<py::ssize_t>(mask_width_ * sizeof(bool)), static_cast<py::ssize_t>(sizeof(bool))},
             action_masks_.data() + mask_offset, owner);
+        observation_view.attr("setflags")(false);
+        masks_view.attr("setflags")(false);
+        result["observations"] = std::move(observation_view);
+        result["action_masks"] = std::move(masks_view);
         if (kind_ == "step") {
-            const auto row_view = [&owner, index](py::array_t<float>& values) {
+            const auto float_row = [&owner, index](py::array_t<float>& values) {
                 return py::array_t<float>(
                     {static_cast<py::ssize_t>(kPlayers)},
                     {static_cast<py::ssize_t>(sizeof(float))},
                     values.data() + index * kPlayers, owner);
             };
-            result["rewards"] = row_view(rewards_);
-            result["action_rewards"] = row_view(action_rewards_);
-            result["combat_rewards"] = row_view(combat_rewards_);
-            result["placement_rewards"] = row_view(placement_rewards_);
-            result["dones"] = py::array_t<bool>(
+            auto rewards_view = float_row(rewards_);
+            auto action_rewards_view = float_row(action_rewards_);
+            auto combat_rewards_view = float_row(combat_rewards_);
+            auto placement_rewards_view = float_row(placement_rewards_);
+            auto dones_view = py::array_t<bool>(
                 {static_cast<py::ssize_t>(kPlayers)},
                 {static_cast<py::ssize_t>(sizeof(bool))},
                 dones_.data() + index * kPlayers, owner);
+            rewards_view.attr("setflags")(false);
+            action_rewards_view.attr("setflags")(false);
+            combat_rewards_view.attr("setflags")(false);
+            placement_rewards_view.attr("setflags")(false);
+            dones_view.attr("setflags")(false);
+            result["rewards"] = std::move(rewards_view);
+            result["action_rewards"] = std::move(action_rewards_view);
+            result["combat_rewards"] = std::move(combat_rewards_view);
+            result["placement_rewards"] = std::move(placement_rewards_view);
+            result["dones"] = std::move(dones_view);
         }
         return result;
     }
 
 private:
+    void initialize_layout(std::size_t lobby_count, std::size_t observation_dim) {
+        if (observation_dim == 0) throw std::runtime_error("observation_dim invalida no NativeDecisionBatch.");
+        observation_dim_ = observation_dim;
+        mask_width_ = kPackedActionMaskWidth;
+        const auto count = static_cast<py::ssize_t>(lobby_count);
+        observations_ = py::array_t<float>({count, static_cast<py::ssize_t>(kPlayers),
+            static_cast<py::ssize_t>(observation_dim_)});
+        action_masks_ = py::array_t<bool>({count, static_cast<py::ssize_t>(kPlayers),
+            static_cast<py::ssize_t>(mask_width_)});
+    }
+
+    void validate_observation(const std::vector<float>& values, std::size_t dimension) const {
+        if (dimension != observation_dim_ || values.size() != kPlayers * observation_dim_)
+            throw std::runtime_error("Dimensoes de observations divergentes no NativeDecisionBatch.");
+    }
+
+    void copy_masks(std::size_t lobby, const std::array<PlayerActionMasks, kPlayers>& masks) {
+        auto* destination = action_masks_.mutable_data() + lobby * kPlayers * mask_width_;
+        for (std::size_t player = 0; player < kPlayers; ++player) {
+            std::size_t offset = player * mask_width_;
+            const auto& source = masks[player];
+            bool* row = destination + offset;
+            offset = 0;
+            append_packed_mask(row, offset, source.type_mask);
+            append_packed_mask(row, offset, source.shop_mask);
+            append_packed_mask(row, offset, source.bench_source_mask);
+            append_packed_mask(row, offset, source.board_target_mask);
+            append_packed_mask(row, offset, source.board_source_mask);
+            append_packed_mask(row, offset, source.board_move_target_masks);
+            append_packed_mask(row, offset, source.bench_move_source_mask);
+            append_packed_mask(row, offset, source.bench_to_board_target_masks);
+            append_packed_mask(row, offset, source.item_inventory_mask);
+            append_packed_mask(row, offset, source.item_component_first_mask);
+            append_packed_mask(row, offset, source.item_component_pair_masks);
+            append_packed_mask(row, offset, source.item_target_mask);
+            if (offset != mask_width_)
+                throw std::runtime_error("Layout compactado de action masks inconsistente.");
+        }
+    }
+
+    void make_read_only() {
+        observations_.attr("setflags")(false);
+        action_masks_.attr("setflags")(false);
+        if (kind_ == "step") {
+            rewards_.attr("setflags")(false);
+            action_rewards_.attr("setflags")(false);
+            combat_rewards_.attr("setflags")(false);
+            placement_rewards_.attr("setflags")(false);
+            dones_.attr("setflags")(false);
+            lobby_done_.attr("setflags")(false);
+        }
+    }
+
     std::string kind_;
     std::vector<py::dict> contexts_;
     std::size_t observation_dim_{0};
@@ -1168,7 +1181,6 @@ private:
     py::array_t<bool> dones_;
     py::array_t<bool> lobby_done_;
 };
-
 
 // Native sequential owner of independent complete-lobby Engines.
 class NativeLobbyBatchManager {
@@ -1199,15 +1211,16 @@ public:
             if (engines_.size() - 1 > std::numeric_limits<std::uint64_t>::max() - *base_seed)
                 throw py::value_error("Offsets de seed por lobby excedem uint64.");
         }
-        std::vector<py::dict> results;
+        std::vector<tft::ResetResult> results;
         results.reserve(engines_.size());
         for (std::size_t i = 0; i < engines_.size(); ++i) {
             std::optional<std::uint64_t> lobby_seed;
             if (base_seed) lobby_seed = *base_seed + static_cast<std::uint64_t>(i);
-            results.push_back(reset_to_dict(engines_[i]->reset(lobby_seed)));
+            results.push_back(engines_[i]->reset(lobby_seed));
         }
         has_reset_ = true;
-        return std::make_shared<NativeDecisionBatch>("reset", std::move(results));
+        try { return std::make_shared<NativeDecisionBatch>(std::move(results)); }
+        catch (...) { has_reset_ = false; throw; }
     }
 
     std::shared_ptr<NativeDecisionBatch> step(const std::vector<std::vector<std::vector<std::int32_t>>>& batch_actions) {
@@ -1215,7 +1228,7 @@ public:
         if (!has_reset_) throw std::runtime_error("Execute reset() antes de step().");
         if (batch_actions.size() != engines_.size())
             throw py::value_error("actions deve conter exatamente uma entrada por lobby.");
-        std::vector<py::dict> results;
+        std::vector<tft::StepResult> results;
         results.reserve(engines_.size());
         try {
             for (std::size_t lobby = 0; lobby < engines_.size(); ++lobby) {
@@ -1229,13 +1242,14 @@ public:
                     for (std::size_t component = 0; component < tft::kActionComponents; ++component)
                         actions[player].values[component] = raw[player][component];
                 }
-                results.push_back(step_to_dict(engines_[lobby]->step(actions)));
+                results.push_back(engines_[lobby]->step(actions));
             }
         } catch (...) {
             has_reset_ = false;
             throw;
         }
-        return std::make_shared<NativeDecisionBatch>("step", std::move(results));
+        try { return std::make_shared<NativeDecisionBatch>(std::move(results)); }
+        catch (...) { has_reset_ = false; throw; }
     }
 
     TFTEngine& engine(std::size_t index) {
