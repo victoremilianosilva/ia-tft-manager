@@ -95,6 +95,7 @@ public:
     }
 
     ContextAvailability player_sequence_availability(std::size_t player_index) const {
+        (void)player(player_index);
         return snapshot_->player_decision_sequences[player_index] == 0
             ? ContextAvailability::Missing
             : ContextAvailability::Complete;
