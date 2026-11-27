@@ -68,6 +68,8 @@ int main() {
     const std::map<std::string, std::int32_t> catalog{{"TFT_TestChampion", 7}};
     const auto projection = project_player(snapshot, 0, 0, catalog);
 
+    const auto close = [](double actual, double expected) { return std::abs(actual - expected) < 1e-6; };
+
     assert(projection.numeric.size() == 7958);
     assert(projection.champion_ids[0] == 8);
     assert(projection.occupied[0]);
