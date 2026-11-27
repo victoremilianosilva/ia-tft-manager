@@ -148,14 +148,19 @@ def project_semantic_batch(
         for name, expected_shape in expected_item_shapes.items():
             block = np.asarray(item_blocks[name])
             itemsize = np.dtype(np.float32).itemsize
+            inner_shape = expected_shape[2:]
+            expected_inner_strides = tuple(
+                itemsize * int(np.prod(inner_shape[index + 1:], dtype=np.int64))
+                for index in range(len(inner_shape))
+            )
             if (
                 block.dtype != np.float32
                 or block.shape != expected_shape
                 or block.flags.writeable
                 or not np.shares_memory(block, numeric)
-                or block.strides[0] != expected_strides[0]
-                or block.strides[1] != expected_strides[1]
-                or block.strides[-1] != np.dtype(np.float32).itemsize
+                or block.strides[0] != numeric.strides[0]
+                or block.strides[1] != numeric.strides[1]
+                or block.strides[2:] != expected_inner_strides
             ):
                 raise RuntimeError(
                     f"Native semantic item block {name!r} must be a readonly "
