@@ -75,12 +75,7 @@ def project_semantic_batch(vec_env, metadata_rows, catalog_map, contract):
     """Use the owner-backed C++ batch in production; keep Python as the parity oracle."""
     native_project = getattr(vec_env, "semantic_projection", None)
     if callable(native_project):
-        try:
-            projected = native_project(catalog_map, contract["sha256"])
-        except RuntimeError:
-            # Only the terminal auto-reset boundary has mixed native snapshot
-            # ownership; its exact next rows are still checked by the Python oracle.
-            projected = None
+        projected = native_project(catalog_map, contract["sha256"])
         if projected is not None:
             numeric = np.asarray(projected["numeric"])
             champion_ids = np.asarray(projected["champion_ids"])
