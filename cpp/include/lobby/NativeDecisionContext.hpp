@@ -79,6 +79,49 @@ public:
         return ContextAvailability::Complete;
     }
 
+    ContextAvailability strategic_availability(std::size_t player_index) const {
+        const auto& state = player(player_index);
+        const auto& strategic = state.strategic_state;
+        if (strategic.player_id != state.player_id ||
+            strategic.episode_id != snapshot_->episode_id ||
+            strategic.player_decision_sequence != snapshot_->player_decision_sequences[player_index] ||
+            strategic.round != snapshot_->round) {
+            return ContextAvailability::Stale;
+        }
+        return strategic.planner_outputs_valid
+            ? ContextAvailability::Complete
+            : ContextAvailability::Unknown;
+    }
+
+    ContextAvailability item_inventory_availability(std::size_t player_index) const {
+        const auto& state = player(player_index);
+        if (state.item_ownership_retired) {
+            return ContextAvailability::Incompatible;
+        }
+        if (state.item_component_catalog.empty()) {
+            return ContextAvailability::Unknown;
+        }
+        if (state.item_components.empty() && state.item_inventory.empty() &&
+            state.equipped_items.empty()) {
+            return ContextAvailability::Empty;
+        }
+        return ContextAvailability::Complete;
+    }
+
+    ContextAvailability pending_anvil_availability(std::size_t player_index) const {
+        const auto& state = player(player_index);
+        if (!state.pending_anvil) {
+            return state.pending_anvil_sequence == 0 &&
+                state.pending_anvil_options.empty()
+                ? ContextAvailability::NotApplicable
+                : ContextAvailability::Incompatible;
+        }
+        if (state.pending_anvil_sequence == 0 || state.pending_anvil_options.empty()) {
+            return ContextAvailability::Partial;
+        }
+        return ContextAvailability::Complete;
+    }
+
 private:
     void validate_identity() const {
         if (snapshot_->contract_id != "tft.native-state-snapshot" ||
