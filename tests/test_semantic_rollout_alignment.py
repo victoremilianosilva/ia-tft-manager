@@ -56,17 +56,16 @@ def test_rollout_keeps_semantic_projection_aligned_with_each_transition():
     batch = next(buffer.get_batches(batch_size=batch_size))
     # Minibatch order is intentionally shuffled; compare identity-bound rows
     # after sorting by the first champion ID, not by their original batch slot.
-    order = torch.argsort(semantic["champion_ids"][:, 0])
-    actual = batch["semantic_state"]["champion_ids"]
-    actual = actual[torch.argsort(actual[:, 0])]
-    expected = semantic["champion_ids"][order]
+    expected_order = torch.argsort(semantic["champion_ids"][:, 0])
+    batch_order = torch.argsort(batch["semantic_state"]["champion_ids"][:, 0])
+    actual = batch["semantic_state"]["champion_ids"][batch_order]
+    expected = semantic["champion_ids"][expected_order]
     assert torch.equal(actual, expected)
-    actual_trait_ids = batch["semantic_state"]["items"]["trait_ids"]
-    expected_trait_ids = native_trait_ids[order]
+    actual_trait_ids = batch["semantic_state"]["items"]["trait_ids"][batch_order]
+    expected_trait_ids = native_trait_ids[expected_order]
     assert torch.equal(actual_trait_ids, expected_trait_ids)
-    assert torch.equal(
-        batch["semantic_state"]["numeric"], semantic["numeric"][order]
-    )
+    actual_numeric = batch["semantic_state"]["numeric"][batch_order]
+    assert torch.equal(actual_numeric, semantic["numeric"][expected_order])
 
 
 def test_rollout_rejects_semantic_projection_shape_and_non_finite_values():
