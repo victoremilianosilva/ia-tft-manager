@@ -122,7 +122,10 @@ def test_native_semantic_v8_projection_matches_python_oracle_exactly():
             block = item_blocks[name]
             assert block.shape == shape
             assert block.dtype == np.float32
-            assert block.flags.c_contiguous
+            # Player rows are separated by the full 7958-feature carrier
+            # stride; preserving that stride is required for correct zero-copy
+            # views, so these blocks are intentionally not globally contiguous.
+            assert not block.flags.c_contiguous
             assert not block.flags.writeable
             assert np.shares_memory(block, native["numeric"])
         # Verify every typed block is an exact view of its canonical v8
