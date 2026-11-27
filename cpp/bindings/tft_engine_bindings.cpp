@@ -870,7 +870,6 @@ py::dict step_to_dict(tft::StepResult step, bool include_numeric_transport = tru
     result["round"] = step.round;
     result["stage"] = step.stage;
     result["alive_players"] = step.alive_players;
-    result["action_masks"] = masks_to_packed_array(step.action_masks);
     result["players"] = player_info_to_list(step.players);
     py::list action_traces;
     for (const auto& trace : step.action_traces) {
