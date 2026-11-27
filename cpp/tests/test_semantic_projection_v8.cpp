@@ -58,7 +58,7 @@ int main() {
     strategic.opportunity_costs.push_back({7, 50.0, 0.1, 3, "same_snapshot_competing_alternative.v1", "candidate:2", "contextual_action_score.v1"});
 
     player.item_component_catalog = {
-        "component:test", "component:1", "component:2", "component:3", "component:4",
+        "item:test", "component:1", "component:2", "component:3", "component:4",
         "component:5", "component:6", "component:7", "component:8", "component:9"
     };
     player.item_component_features[0] = 0.15f;
