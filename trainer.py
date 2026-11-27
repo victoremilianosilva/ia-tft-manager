@@ -1778,9 +1778,14 @@ class Trainer:
                 next_semantic_numeric = torch.as_tensor(
                     next_semantic_batch["numeric"], dtype=torch.float32, device=self.device
                 )
+                next_native_trait_ids = torch.as_tensor(
+                    next_semantic_batch["trait_ids"], dtype=torch.long, device=self.device
+                )
                 next_semantic_state = {
                     "numeric": next_semantic_numeric,
-                    "items": semantic_item_state_tensors(next_semantic_numeric),
+                    "items": semantic_item_state_tensors(
+                        next_semantic_numeric, trait_ids=next_native_trait_ids
+                    ),
                     "champion_ids": torch.as_tensor(
                         next_semantic_batch["champion_ids"], dtype=torch.long, device=self.device
                     ),
