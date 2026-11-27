@@ -140,10 +140,18 @@ def test_lobby_batch_manager_publishes_one_versioned_contiguous_batch():
         assert native_context.engine_instance_id == reset_batch.lobby_result(0)["engine_instance_id"]
         assert native_context.shared_pool["contract_id"] == "tft.shared-champion-pool-snapshot"
         assert len(native_context.shared_pool["catalog_fingerprint"]) == 64
-        assert native_context.player(0)["player_id"] == 0
+        context_player = native_context.player(0)
+        assert context_player["player_id"] == 0
+        assert len(context_player["board"]) == 28
+        assert len(context_player["bench"]) == 9
+        assert len(context_player["shop"]) == 5
+        assert all(not slot["occupied"] for slot in context_player["board"])
         assert isinstance(native_context.trait_counts(0), list)
         assert native_context.provenance(0)["player_decision_sequence"] == reset_batch.lobby_result(0)["player_decision_sequences"][0]
         assert native_context.pending_anvil_availability(0) == native.ContextAvailability.NOT_APPLICABLE
+        second_context = reset_batch.native_context(1)
+        assert second_context.engine_instance_id != native_context.engine_instance_id
+        assert second_context.episode_id == native_context.episode_id
         assert not reset_batch.observations.flags.writeable
         assert not reset_batch.action_masks.flags.writeable
 
