@@ -1,4 +1,6 @@
 from pathlib import Path
+import hashlib
+import json
 
 import numpy as np
 
@@ -9,6 +11,25 @@ from semantic_observation import (
 )
 from trainer import Trainer
 from vector_lobby_env import LobbyVectorEnv
+
+
+def test_semantic_hash_canonical_json_cross_language_edge_fixture():
+    payload = {
+        "empty": [],
+        "limit": [-2147483648, 2147483647, 0.0, 1.0],
+        "optional": None,
+        "unicode": "Akame-赤い🌸",
+    }
+    canonical = json.dumps(
+        payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    )
+    assert canonical == (
+        '{"empty":[],"limit":[-2147483648,2147483647,0.0,1.0],'
+        '"optional":null,"unicode":"Akame-赤い🌸"}'
+    )
+    assert hashlib.sha256(canonical.encode("utf-8")).hexdigest() == (
+        "2e2d30a202100fa3180341c79085abcaf66b0bd265bc933337d3e77a6819532e"
+    )
 
 
 def test_native_semantic_v8_projection_matches_python_oracle_exactly():
