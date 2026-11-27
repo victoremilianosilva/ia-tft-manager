@@ -493,7 +493,7 @@ def test_native_semantic_projection_matches_oracle_for_item_inventory_and_shop_r
 
 
 
-def test_native_projection_flows_through_ppo_rollout_and_v8_checkpoint(tmp_path):
+def test_native_projection_flows_through_ppo_rollout_and_v8_checkpoint(tmp_path, monkeypatch):
     root = Path(__file__).resolve().parents[1]
     item_catalog = root / "data" / "itens.json"
     manager = _NativeLobbyBatchManager(1, 7350, "", str(item_catalog))
@@ -511,6 +511,11 @@ def test_native_projection_flows_through_ppo_rollout_and_v8_checkpoint(tmp_path)
         observations = env.reset(seed=87350)
         catalog_map = env.envs[0].get_champion_id_map()
         semantic_contract = build_semantic_state_checkpoint_contract(catalog_map)
+
+        def reject_python_projection(*_args, **_kwargs):
+            raise AssertionError("production native PPO must not use Python semantic reconstruction")
+
+        monkeypatch.setattr("trainer.build_semantic_batch", reject_python_projection)
         lobby_snapshots = env.get_snapshot_metadata()
         metadata_rows = Trainer._expand_lobby_snapshot_metadata(
             lobby_snapshots, 8, "native PPO/rollout/checkpoint integration",
