@@ -884,8 +884,57 @@ py::dict semantic_projection_from_snapshot_mappings(
 
     numeric.attr("setflags")(false);
     champion_ids.attr("setflags")(false);
+
+    // The flattened v8 carrier is the single allocation/owner. Named item
+    // blocks are typed NumPy views into that carrier: no second item buffer,
+    // no reconstruction, and their base keeps the carrier alive.
+    constexpr py::ssize_t global_offset = 70;
+    constexpr py::ssize_t entity_width = 42 * 45;
+    constexpr py::ssize_t item_offset = global_offset + entity_width;
+    const auto make_item_view = [&](py::ssize_t offset,
+                                    std::vector<py::ssize_t> shape) {
+        std::vector<py::ssize_t> strides(shape.size());
+        py::ssize_t stride = static_cast<py::ssize_t>(sizeof(float));
+        for (std::size_t i = shape.size(); i-- > 0;) {
+            strides[i] = stride;
+            stride *= shape[i];
+        }
+        py::array view(
+            py::dtype::of<float>(), shape, strides,
+            numeric_data + offset, numeric
+        );
+        view.attr("setflags")(false);
+        return view;
+    };
+    py::dict item_blocks;
+    py::ssize_t item_cursor = item_offset;
+    const auto add_item_block = [&](const char* name,
+                                    std::initializer_list<py::ssize_t> tail_shape,
+                                    py::ssize_t element_count) {
+        std::vector<py::ssize_t> shape{
+            lobby_count, static_cast<py::ssize_t>(tft::kPlayersPerLobby)
+        };
+        shape.insert(shape.end(), tail_shape.begin(), tail_shape.end());
+        item_blocks[name] = make_item_view(item_cursor, std::move(shape));
+        item_cursor += element_count;
+    };
+    add_item_block("components", {10}, 10);
+    add_item_block("inventory", {9, 17}, 9 * 17);
+    add_item_block("recipes", {100, 17}, 100 * 17);
+    add_item_block("inventory_target_fit", {9, 37}, 9 * 37);
+    add_item_block("recipe_target_fit", {100, 37}, 100 * 37);
+    item_cursor += 3;  // anvil state is exposed separately below
+    add_item_block("anvil_options", {9, 11}, 9 * 11);
+    if (item_cursor != static_cast<py::ssize_t>(numeric_dim))
+        throw std::runtime_error("native semantic item block offsets do not cover v8 carrier");
+    item_blocks["anvil_state"] = make_item_view(
+        item_offset + 10 + 9 * 17 + 100 * 17 + 9 * 37 + 100 * 37,
+        {lobby_count, static_cast<py::ssize_t>(tft::kPlayersPerLobby), 3}
+    );
+
     py::dict result;
-    result["numeric"] = std::move(numeric);
+    result["numeric"] = numeric;
+    result["item_blocks"] = std::move(item_blocks);
     result["champion_ids"] = std::move(champion_ids);
     result["hashes"] = std::move(hashes);
     result["identities"] = std::move(identities);
