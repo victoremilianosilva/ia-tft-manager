@@ -376,3 +376,91 @@ def test_native_semantic_projection_matches_oracle_with_equipped_item_state():
         ]
     finally:
         env.close()
+
+def test_native_semantic_projection_matches_oracle_for_item_inventory_and_shop_revision():
+    root = Path(__file__).resolve().parents[1]
+    item_catalog = root / "data" / "itens.json"
+    manager = _NativeLobbyBatchManager(1, 7314, "", str(item_catalog))
+    native_engine = manager.engine(0)
+    env = LobbyVectorEnv(
+        [
+            lambda: CppTFTLobbyWrapper(
+                seed=7314,
+                item_catalog_path=str(item_catalog),
+                native_engine=native_engine,
+            )
+        ],
+        batch_manager=manager,
+    )
+    try:
+        env.reset(seed=87314)
+        initial_snapshot = native_engine.get_audit_snapshot()["players"][0]
+        champion_id = initial_snapshot["shop"][0]["champion_id"]
+        assert champion_id
+
+        # Exercise inventory-backed features and the independent shop identity
+        # revision without relying on a policy action to trigger loot.
+        assert native_engine.add_completed_item_for_testing(
+            0, "TFT_Item_AdaptiveHelm"
+        )
+        assert native_engine.add_completed_item_for_testing(
+            0, "TFT_Item_AdaptiveHelm"
+        )
+        before_revision = list(
+            native_engine.get_audit_snapshot()["players"][0]["shop_offer_revisions"]
+        )
+        assert native_engine.set_shop_offer_for_testing(0, 0, champion_id)
+        after_player = native_engine.get_audit_snapshot()["players"][0]
+        assert after_player["item_inventory"]
+        assert after_player["shop_offer_revisions"] != before_revision
+
+        snapshots = env.get_snapshot_metadata()
+        catalog_map = env.envs[0].get_champion_id_map()
+        contract = build_semantic_state_checkpoint_contract(catalog_map)
+        native = env._last_native_batch.semantic_projection(
+            catalog_map, contract["sha256"]
+        )
+        oracle_rows = Trainer._expand_lobby_snapshot_metadata(
+            snapshots, 8, "item inventory and shop revision parity oracle"
+        )
+        oracle = [
+            project_native_player_state(row, catalog_map)
+            for row in oracle_rows
+        ]
+
+        expected_numeric = np.asarray(
+            [row["numeric"] for row in oracle], dtype=np.float32
+        )
+        np.testing.assert_array_equal(
+            native["numeric"].reshape(8, -1), expected_numeric
+        )
+        assert native["hashes"] == [row["sha256"] for row in oracle]
+        assert native["identities"] == [row["identity"] for row in oracle]
+        assert native["entity_identity"] == [
+            row["entity_identity"] for row in oracle
+        ]
+        assert native["entity_identity"][0]["shop_offer_revisions"] == tuple(
+            after_player["shop_offer_revisions"]
+        )
+
+        # Every typed item block must preserve its exact v8 region for all
+        # eight player rows, including inventory and target-fit features.
+        carrier = native["numeric"].reshape(8, -1)
+        offsets = {
+            "components": (1960, 10),
+            "inventory": (1970, 9 * 17),
+            "recipes": (2123, 100 * 17),
+            "inventory_target_fit": (3823, 9 * 37),
+            "recipe_target_fit": (4156, 100 * 37),
+            "anvil_state": (7856, 3),
+            "anvil_options": (7859, 9 * 11),
+        }
+        for name, (offset, width) in offsets.items():
+            block = native["item_blocks"][name]
+            expected = carrier[:, offset:offset + width].reshape(block.shape)
+            np.testing.assert_array_equal(block, expected)
+            assert not block.flags.writeable
+            assert np.shares_memory(block, native["numeric"])
+    finally:
+        env.close()
+
