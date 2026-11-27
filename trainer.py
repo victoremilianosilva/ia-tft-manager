@@ -74,23 +74,61 @@ from training_run_manifest import build_training_run_manifest, write_training_ru
 def project_semantic_batch(
     vec_env, metadata_rows, catalog_map, contract, lobby_snapshots=None
 ):
-    """Use the native batch or pinned reset snapshots; Python remains the oracle only."""
+    """Project from pinned native snapshots; Python projection is fixture-only.
+
+    Production vector environments must never silently fall back to rebuilding
+    semantic rows from Python player dictionaries. The C++ producer owns the
+    projection and returns contiguous buffers whose lifetime is pinned by the
+    NativeDecisionBatch / native snapshot handles.
+    """
     projected = None
     native_project = getattr(vec_env, "semantic_projection", None)
     if callable(native_project):
         projected = native_project(catalog_map, contract["sha256"])
+
     if projected is None and lobby_snapshots is not None:
         snapshot_project = getattr(vec_env, "semantic_projection_from_snapshots", None)
         if callable(snapshot_project):
             projected = snapshot_project(
                 lobby_snapshots, catalog_map, contract["sha256"]
             )
+
+    native_required = bool(
+        getattr(vec_env, "semantic_projection_supported", lambda: False)()
+    )
+    if projected is None and native_required:
+        raise RuntimeError(
+            "Native semantic v8 projection was unavailable for a production "
+            "NativeDecisionBatch; refusing the Python reconstruction fallback."
+        )
+
     if projected is not None:
         numeric = np.asarray(projected["numeric"])
         champion_ids = np.asarray(projected["champion_ids"])
+        if numeric.dtype != np.float32 or not numeric.flags.c_contiguous:
+            raise RuntimeError(
+                "Native semantic numeric buffer must be contiguous float32."
+            )
+        if champion_ids.dtype != np.int64 or not champion_ids.flags.c_contiguous:
+            raise RuntimeError(
+                "Native semantic champion ID buffer must be contiguous int64."
+            )
+        if numeric.ndim != 3 or numeric.shape[1:] != (8, 7958):
+            raise RuntimeError(
+                f"Native semantic numeric shape is invalid: {numeric.shape}"
+            )
+        if champion_ids.shape != (numeric.shape[0], 8, 42):
+            raise RuntimeError(
+                f"Native semantic champion ID shape is invalid: {champion_ids.shape}"
+            )
         projected["numeric"] = numeric.reshape(-1, numeric.shape[-1])
-        projected["champion_ids"] = champion_ids.reshape(-1, champion_ids.shape[-1])
+        projected["champion_ids"] = champion_ids.reshape(
+            -1, champion_ids.shape[-1]
+        )
         return projected
+
+    # Lightweight Python environments and isolated fixtures may still use the
+    # reference implementation. The production native manager is fail-closed.
     return build_semantic_batch(metadata_rows, catalog_map, contract=contract)
 
 
