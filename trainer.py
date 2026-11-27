@@ -1684,7 +1684,7 @@ class Trainer:
                     self.PLAYERS_PER_LOBBY,
                     "snapshot da próxima observação",
                     native_state_cache=transition_native_state_cache,
-                    include_native_player_state=not self.vec_env.semantic_projection_available(),
+                    include_native_player_state=not self.vec_env.semantic_projection_supported(),
                 )
                 next_semantic_batch = project_semantic_batch(
                     self.vec_env, flat_next_snapshot_metadata, self.champion_id_map,
