@@ -22,6 +22,10 @@ int main() {
         strategic.player_decision_sequence = snapshot->player_decision_sequences[i];
         strategic.round = snapshot->round;
     }
+    snapshot->players[0].board[0].occupied = true;
+    snapshot->players[0].board[0].trait_names = {"Trait_A", "Trait_A", "Trait_B"};
+    snapshot->players[0].bench[0].occupied = true;
+    snapshot->players[0].bench[0].trait_names = {"Trait_A", "Trait_C"};
 
     tft::NativeDecisionContext context(snapshot);
     assert(context.availability() == tft::ContextAvailability::Complete);
@@ -31,6 +35,12 @@ int main() {
     assert(context.strategic_availability(0) == tft::ContextAvailability::Unknown);
     assert(context.item_inventory_availability(0) == tft::ContextAvailability::Unknown);
     assert(context.pending_anvil_availability(0) == tft::ContextAvailability::NotApplicable);
+    const auto traits = context.trait_counts(0);
+    assert(traits.size() == 3);
+    assert(traits[0].trait_id == "Trait_A");
+    assert(traits[0].board_count == 1 && traits[0].bench_count == 1);
+    assert(traits[0].board_bench_count == 2);
+    assert(traits[0].item_granted_availability == tft::ContextAvailability::Unknown);
     const auto provenance = context.provenance(3);
     assert(provenance.episode_id == 4);
     assert(provenance.snapshot_sequence == 9);
