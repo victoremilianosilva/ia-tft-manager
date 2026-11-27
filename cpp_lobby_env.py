@@ -701,7 +701,7 @@ class CppTFTLobbyWrapper:
                 if not isinstance(units, list) or len(units) != expected_count:
                     raise RuntimeError(f"Snapshot do jogador {player_id} possui cardinalidade inválida em {field}.")
                 for slot, unit in enumerate(units):
-                    if not isinstance(unit, dict) or not isinstance(unit.get("occupied"), bool):
+                    if not isinstance(unit, Mapping) or not isinstance(unit.get("occupied"), bool):
                         raise RuntimeError(f"Registro de unidade inválido em {field}[{slot}], jogador {player_id}.")
                     trait_names = unit.get("trait_names")
                     if (
