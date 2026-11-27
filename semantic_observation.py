@@ -1531,6 +1531,8 @@ def semantic_batch_matches_snapshot_rows(
     batch: Mapping,
     metadata_rows: Sequence[Mapping],
     expected_contract: Mapping,
+    *,
+    bind_metadata: bool = False,
 ) -> bool:
     """Return whether a cached v8 projection belongs to these exact snapshot revisions.
 
@@ -1542,6 +1544,7 @@ def semantic_batch_matches_snapshot_rows(
     if not isinstance(batch, Mapping) or not isinstance(expected_contract, Mapping):
         return False
     identities = batch.get("identities")
+    hashes = batch.get("hashes")
     strategic_sequences = batch.get("strategic_context_sequences")
     if not isinstance(metadata_rows, Sequence) or isinstance(metadata_rows, (str, bytes)):
         return False
@@ -1553,18 +1556,23 @@ def semantic_batch_matches_snapshot_rows(
         return False
     if not isinstance(identities, Sequence) or len(identities) != len(metadata_rows):
         return False
-    if (
-        batch.get("contract_id") != expected_contract.get("contract", {}).get("contract_id")
-        or batch.get("contract_hash") != expected_contract.get("sha256")
+    if bind_metadata and (
+        not isinstance(hashes, Sequence)
+        or isinstance(hashes, (str, bytes))
+        or len(hashes) != len(metadata_rows)
     ):
+        return False
+    contract_id = expected_contract.get("contract", {}).get("contract_id")
+    contract_hash = expected_contract.get("sha256")
+    if batch.get("contract_id") != contract_id or batch.get("contract_hash") != contract_hash:
         return False
     identity_fields = (
         "engine_instance_id", "episode_id", "decision_sequence",
         "player_decision_sequence", "player_id", "round", "lobby_index",
     )
-    for metadata, identity, strategic_sequence in zip(
+    for index, (metadata, identity, strategic_sequence) in enumerate(zip(
         metadata_rows, identities, strategic_sequences
-    ):
+    )):
         if not isinstance(metadata, Mapping) or not isinstance(identity, Mapping):
             return False
         native_state = metadata.get("native_player_state")
@@ -1589,6 +1597,24 @@ def semantic_batch_matches_snapshot_rows(
             or any(metadata.get(field) != identity.get(field) for field in identity_fields)
         ):
             return False
+        if bind_metadata:
+            digest = hashes[index]
+            strategic_context = batch.get("strategic_context")
+            if (
+                not isinstance(digest, str)
+                or len(digest) != 64
+                or any(char not in "0123456789abcdef" for char in digest)
+                or not isinstance(strategic_context, Sequence)
+                or len(strategic_context) != len(metadata_rows)
+                or not isinstance(strategic_context[index], Mapping)
+                or strategic_context[index].get("strategic_context_sequence") != strategic_sequence
+                or isinstance(metadata, MutableMapping) is False
+            ):
+                return False
+            metadata["semantic_identity"] = identity
+            metadata["semantic_projection_hash"] = digest
+            metadata["semantic_projection_contract_id"] = contract_id
+            metadata["semantic_projection_contract_hash"] = contract_hash
     return True
 
 

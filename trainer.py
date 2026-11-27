@@ -1580,11 +1580,16 @@ class Trainer:
                         "contract_id": semantic_batch["contract_id"],
                         "contract_hash": semantic_batch["contract_hash"],
                     }
-                validate_semantic_batch_alignment(
-                    semantic_batch, flat_snapshot_metadata, self.semantic_state_contract,
-                    self.champion_id_map, reproject=False, verify_catalog=False,
+                # The cache matcher also binds projection identity in the same
+                # pass. On a cache hit this replaces a second full row-validation
+                # traversal; on a miss it validates/binds the freshly built batch.
+                if not can_reuse_semantic and not semantic_batch_matches_snapshot_rows(
+                    semantic_batch,
+                    flat_snapshot_metadata,
+                    self.semantic_state_contract,
                     bind_metadata=True,
-                )
+                ):
+                    raise ValueError("fresh semantic batch is not aligned with its native snapshot rows")
                 semantic_numeric_tensor = semantic_state["numeric"]
                 if semantic_numeric_tensor.device.type == "cpu":
                     # torch.as_tensor already materialized the batch tensor.
