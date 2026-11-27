@@ -71,17 +71,26 @@ from semantic_observation import (
 from engine_contracts import ActionType
 from training_run_manifest import build_training_run_manifest, write_training_run_manifest
 
-def project_semantic_batch(vec_env, metadata_rows, catalog_map, contract):
-    """Use the owner-backed C++ batch in production; keep Python as the parity oracle."""
+def project_semantic_batch(
+    vec_env, metadata_rows, catalog_map, contract, lobby_snapshots=None
+):
+    """Use the native batch or pinned reset snapshots; Python remains the oracle only."""
+    projected = None
     native_project = getattr(vec_env, "semantic_projection", None)
     if callable(native_project):
         projected = native_project(catalog_map, contract["sha256"])
-        if projected is not None:
-            numeric = np.asarray(projected["numeric"])
-            champion_ids = np.asarray(projected["champion_ids"])
-            projected["numeric"] = numeric.reshape(-1, numeric.shape[-1])
-            projected["champion_ids"] = champion_ids.reshape(-1, champion_ids.shape[-1])
-            return projected
+    if projected is None and lobby_snapshots is not None:
+        snapshot_project = getattr(vec_env, "semantic_projection_from_snapshots", None)
+        if callable(snapshot_project):
+            projected = snapshot_project(
+                lobby_snapshots, catalog_map, contract["sha256"]
+            )
+    if projected is not None:
+        numeric = np.asarray(projected["numeric"])
+        champion_ids = np.asarray(projected["champion_ids"])
+        projected["numeric"] = numeric.reshape(-1, numeric.shape[-1])
+        projected["champion_ids"] = champion_ids.reshape(-1, champion_ids.shape[-1])
+        return projected
     return build_semantic_batch(metadata_rows, catalog_map, contract=contract)
 
 
@@ -1414,7 +1423,7 @@ class Trainer:
                     lobby_snapshots,
                     self.PLAYERS_PER_LOBBY,
                     "snapshot da decisão PPO",
-                    include_native_player_state=not self.vec_env.semantic_projection_available(),
+                    include_native_player_state=not self.vec_env.semantic_projection_supported(),
                 )
                 for metadata, observation_hash in zip(
                     flat_snapshot_metadata,
@@ -1439,7 +1448,7 @@ class Trainer:
                 else:
                     semantic_batch = project_semantic_batch(
                         self.vec_env, flat_snapshot_metadata, self.champion_id_map,
-                        self.semantic_state_contract,
+                        self.semantic_state_contract, lobby_snapshots=lobby_snapshots,
                     )
                     semantic_numeric = torch.as_tensor(
                         semantic_batch["numeric"], dtype=torch.float32, device=self.device
@@ -1669,8 +1678,9 @@ class Trainer:
                     self.PLAYERS_PER_LOBBY,
                 )
 
+                next_lobby_snapshots = [info.get("next_snapshot") for info in infos]
                 flat_next_snapshot_metadata = self._expand_lobby_snapshot_metadata(
-                    [info.get("next_snapshot") for info in infos],
+                    next_lobby_snapshots,
                     self.PLAYERS_PER_LOBBY,
                     "snapshot da próxima observação",
                     native_state_cache=transition_native_state_cache,
@@ -1678,7 +1688,7 @@ class Trainer:
                 )
                 next_semantic_batch = project_semantic_batch(
                     self.vec_env, flat_next_snapshot_metadata, self.champion_id_map,
-                    self.semantic_state_contract,
+                    self.semantic_state_contract, lobby_snapshots=next_lobby_snapshots,
                 )
                 next_semantic_numeric = torch.as_tensor(
                     next_semantic_batch["numeric"], dtype=torch.float32, device=self.device
