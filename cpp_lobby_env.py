@@ -64,26 +64,29 @@ class _NativeFrozenDict(FrozenDict):
         self._view_cache = {}
 
     def __getitem__(self, key):
-        value = dict.__getitem__(self, key)
-        if _is_native_snapshot_scalar(value):
-            return value
+        # Repeated reads of nested snapshot records are common during semantic
+        # projection. Resolve an existing lazy view before touching the backing
+        # dict again; scalar leaves remain uncached and keep the direct path.
         cached = self._view_cache.get(key, _MISSING_NATIVE_VIEW)
         if cached is not _MISSING_NATIVE_VIEW:
             return cached
+        value = dict.__getitem__(self, key)
+        if _is_native_snapshot_scalar(value):
+            return value
         wrapped = _wrap_native_snapshot_value(value)
         self._view_cache[key] = wrapped
         return wrapped
 
     def get(self, key, default=None):
+        cached = self._view_cache.get(key, _MISSING_NATIVE_VIEW)
+        if cached is not _MISSING_NATIVE_VIEW:
+            return cached
         try:
             value = dict.__getitem__(self, key)
         except KeyError:
             return default
         if _is_native_snapshot_scalar(value):
             return value
-        cached = self._view_cache.get(key, _MISSING_NATIVE_VIEW)
-        if cached is not _MISSING_NATIVE_VIEW:
-            return cached
         wrapped = _wrap_native_snapshot_value(value)
         self._view_cache[key] = wrapped
         return wrapped
