@@ -1096,8 +1096,9 @@ public:
             for (std::size_t player = 0; player < kPlayers; ++player) {
                 auto projected = tft::semantic_v8::project_player(snapshot, lobby, player, catalog);
                 const auto row = (lobby * kPlayers + player);
-                std::copy(projected.numeric.begin(), projected.numeric.end(),
-                    numeric_data + row * numeric_dim);
+                std::transform(projected.numeric.begin(), projected.numeric.end(),
+                    numeric_data + row * numeric_dim,
+                    [](double value) { return static_cast<float>(value); });
                 std::copy(projected.champion_ids.begin(), projected.champion_ids.end(),
                     champion_data + row * 42);
                 hashes.append(projected.sha256);
