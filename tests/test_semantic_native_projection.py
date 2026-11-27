@@ -29,15 +29,22 @@ def test_native_semantic_v8_projection_matches_python_oracle_exactly():
         env.reset(seed=87310)
         catalog_map = env.envs[0].get_champion_id_map()
         contract = build_semantic_state_checkpoint_contract(catalog_map)
+        lobby_snapshots = env.get_snapshot_metadata()
         metadata_rows = Trainer._expand_lobby_snapshot_metadata(
-            env.get_snapshot_metadata(), 8, "native semantic parity test"
+            lobby_snapshots, 8, "native semantic fast-path test",
+            include_native_player_state=False,
+        )
+        assert all("native_player_state" not in row for row in metadata_rows)
+        assert all(row["native_state_contract_id"] == "tft.native-state-snapshot" for row in metadata_rows)
+        oracle_rows = Trainer._expand_lobby_snapshot_metadata(
+            lobby_snapshots, 8, "native semantic parity oracle"
         )
         native = env._last_native_batch.semantic_projection(
             catalog_map, contract["sha256"]
         )
         oracle = [
             project_native_player_state(row, catalog_map)
-            for row in metadata_rows
+            for row in oracle_rows
         ]
 
         expected_numeric = np.asarray(
