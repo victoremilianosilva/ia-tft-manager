@@ -31,6 +31,7 @@ inline constexpr std::uint32_t kTraitVocab = 65536;
 struct Projection {
     std::vector<double> numeric;
     std::array<std::int64_t, kEntitySlots> champion_ids{};
+    std::array<std::array<std::int64_t, kTraitSlots>, kEntitySlots> trait_ids{};
     std::array<bool, kEntitySlots> occupied{};
     std::array<std::string, kEntitySlots> unit_uuids{};
     std::array<std::uint64_t, kShopSlots> shop_offer_revisions{};
@@ -292,8 +293,11 @@ inline Projection project_player(
             }
             append(g, target_profile);
             if (unit.trait_names.size() > kTraitSlots) throw std::runtime_error("semantic trait slot overflow");
-            for (const auto& trait : unit.trait_names)
-                g.push_back(static_cast<double>(trait_id(trait)) / static_cast<double>(kTraitVocab));
+            for (std::size_t trait_slot = 0; trait_slot < unit.trait_names.size(); ++trait_slot) {
+                const auto id = trait_id(unit.trait_names[trait_slot]);
+                result.trait_ids[entity_index][trait_slot] = static_cast<std::int64_t>(id);
+                g.push_back(static_cast<double>(id) / static_cast<double>(kTraitVocab));
+            }
             g.insert(g.end(), kTraitSlots - unit.trait_names.size(), 0.0f);
             const auto p = priorities.find(native_id);
             const auto o = opportunities.find(native_id);
