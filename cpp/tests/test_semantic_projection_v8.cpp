@@ -23,6 +23,7 @@ int main() {
     auto& strategic = player.strategic_state;
     strategic.player_id = 0;
     strategic.episode_id = snapshot.episode_id;
+    strategic.player_decision_sequence = snapshot.player_decision_sequences[0];
     strategic.round = snapshot.round;
     strategic.active_composition_valid = true;
     strategic.active_composition_id = "composition:test";
