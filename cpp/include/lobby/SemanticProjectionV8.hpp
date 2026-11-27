@@ -275,13 +275,6 @@ inline Projection project_player(
 
     Projection result;
     result.numeric.reserve(7958);
-    std::unordered_set<std::int32_t> active(strategic.active_unit_ids.begin(), strategic.active_unit_ids.end());
-    std::unordered_set<std::int32_t> core(strategic.active_core_unit_ids.begin(), strategic.active_core_unit_ids.end());
-    std::unordered_set<std::int32_t> direction(strategic.direction_reference_unit_ids.begin(), strategic.direction_reference_unit_ids.end());
-    std::unordered_set<std::int32_t> pivot(strategic.pivot_reference_unit_ids.begin(), strategic.pivot_reference_unit_ids.end());
-    std::unordered_set<std::int32_t> selected(strategic.lineup_selected_unit_ids.begin(), strategic.lineup_selected_unit_ids.end());
-    std::unordered_set<std::int32_t> entry(strategic.lineup_entry_unit_ids.begin(), strategic.lineup_entry_unit_ids.end());
-    std::unordered_set<std::int32_t> deferred(strategic.lineup_deferred_unit_ids.begin(), strategic.lineup_deferred_unit_ids.end());
     std::unordered_set<std::int32_t> target = selected;
     target.insert(entry.begin(), entry.end());
     target.insert(deferred.begin(), deferred.end());
@@ -295,11 +288,6 @@ inline Projection project_player(
             !progress.emplace(row.champion_internal_id, row).second)
             throw std::runtime_error("invalid or duplicate semantic unit copy progress");
     }
-    std::unordered_map<std::int32_t, AuditUnitStrategicPrioritySnapshot> priorities;
-    for (const auto& row : strategic.unit_priorities) priorities.emplace(row.champion_internal_id, row);
-    std::unordered_map<std::int32_t, AuditUnitOpportunityCostSnapshot> opportunities;
-    for (const auto& row : strategic.opportunity_costs) opportunities.emplace(row.champion_internal_id, row);
-
     std::int32_t board_count = 0, bench_count = 0;
     for (const auto& unit : state.board) board_count += unit.occupied ? 1 : 0;
     for (const auto& unit : state.bench) bench_count += unit.occupied ? 1 : 0;
