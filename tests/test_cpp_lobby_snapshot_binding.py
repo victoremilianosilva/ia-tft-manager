@@ -1639,3 +1639,94 @@ def test_native_frozen_list_iterates_scalar_leaves_without_cache_and_caches_nest
     assert isinstance(first, cpp_lobby_env._NativeFrozenDict)
     assert first is second
     assert list(first["items"]) == ["bow"]
+
+
+def test_native_board_relations_cover_empty_partial_full_and_bench_states():
+    lobby = cpp_lobby_env.CppTFTLobbyWrapper(seed=73)
+    try:
+        lobby.reset()
+        champion = next(iter(lobby.get_champion_id_map()))
+
+        # Player 0: full 4x7 board. Player 1: bench-only. Player 2: empty.
+        for slot in range(28):
+            assert lobby._engine.set_unit_for_testing(0, True, slot, champion, 1)
+        assert lobby._engine.set_unit_for_testing(1, False, 0, champion, 1)
+
+        players = lobby._engine.get_audit_snapshot()["players"]
+        full = players[0]
+        relations = {row["slot"]: row for row in full["board_relations"]}
+        assert set(relations) == set(range(28))
+        assert len({unit["uuid"] for unit in full["board"]}) == 28
+
+        for slot, relation in relations.items():
+            row, column = divmod(slot, 7)
+            expected_neighbors = {
+                neighbor_row * 7 + neighbor_column
+                for neighbor_row in range(max(0, row - 1), min(4, row + 2))
+                for neighbor_column in range(max(0, column - 1), min(7, column + 2))
+                if (neighbor_row, neighbor_column) != (row, column)
+            }
+            assert (relation["row"], relation["column"]) == (row, column)
+            assert set(relation["adjacent_slots"]) == expected_neighbors
+            assert relation["adjacent_occupied_count"] == len(expected_neighbors)
+            assert all(0 <= neighbor < 28 for neighbor in relation["frontline_slots_in_front"])
+            assert all(neighbor // 7 < row for neighbor in relation["frontline_slots_in_front"])
+
+        bench_only = players[1]
+        assert bench_only["board_relations"] == []
+        assert bench_only["bench"][0]["occupied"] is True
+        assert bench_only["bench"][0]["uuid"]
+        assert players[2]["board_relations"] == []
+    finally:
+        lobby.close()
+
+
+def test_native_action_history_is_bounded_ordered_and_reset_scoped():
+    lobby = cpp_lobby_env.CppTFTLobbyWrapper(seed=79)
+    try:
+        lobby.reset()
+        native = lobby._engine
+        for player_id in range(8):
+            assert native.set_player_hp_for_testing(player_id, 1_000_000.0)
+
+        # Pair test-only state mutation with a fresh snapshot at the same
+        # published identity before the wrapper consumes the next action.
+        metadata = lobby.get_snapshot_metadata()
+        identity = {
+            "engine_instance_id": metadata["engine_instance_id"],
+            "episode_id": metadata["episode_id"],
+            "decision_sequence": metadata["decision_sequence"],
+            "player_decision_sequences": metadata["player_decision_sequences"],
+        }
+        lobby._last_snapshot_metadata["native_state_snapshot"] = (
+            lobby._copy_native_state_snapshot(native.get_audit_snapshot(), identity)
+        )
+
+        pass_actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        for _ in range(34):
+            _, _, done, info = lobby.step(pass_actions)
+            assert done is False
+
+        players = info["decision_snapshot"]["native_state_snapshot"]["players"]
+        for player in players:
+            history = player["recent_action_history"]
+            assert len(history) == 32
+            assert all(entry["action_type"] == 6 for entry in history)
+            assert all(
+                left["outcome_player_decision_sequence"]
+                < right["outcome_player_decision_sequence"]
+                for left, right in zip(history, history[1:])
+            )
+            assert history[0]["source_snapshot_sequence"] == 3
+            assert history[-1]["outcome_snapshot_sequence"] == 35
+            assert all(
+                entry["source_player_decision_sequence"] == entry["source_snapshot_sequence"]
+                and entry["outcome_player_decision_sequence"] == entry["outcome_snapshot_sequence"]
+                for entry in history
+            )
+
+        lobby.reset()
+        reset_players = lobby.get_snapshot_metadata()["native_state_snapshot"]["players"]
+        assert all(player["recent_action_history"] == [] for player in reset_players)
+    finally:
+        lobby.close()
