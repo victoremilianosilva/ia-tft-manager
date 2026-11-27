@@ -39,8 +39,16 @@ def test_lobby_batch_manager_matches_direct_engine_for_same_seed_and_actions():
         for batch, single in zip(batch_steps, direct_steps):
             np.testing.assert_array_equal(batch["observations"], single["observations"])
             np.testing.assert_array_equal(batch["rewards"], single["rewards"])
+            np.testing.assert_array_equal(batch["action_rewards"], single["action_rewards"])
+            np.testing.assert_array_equal(batch["combat_rewards"], single["combat_rewards"])
+            np.testing.assert_array_equal(batch["placement_rewards"], single["placement_rewards"])
             np.testing.assert_array_equal(batch["dones"], single["dones"])
+            np.testing.assert_array_equal(batch["action_masks"], single["action_masks"])
+            assert batch["action_traces"] == single["action_traces"]
+            assert batch["engine_instance_id"] == single["engine_instance_id"]
+            assert batch["episode_id"] == single["episode_id"]
             assert batch["decision_sequence"] == single["decision_sequence"]
+            assert batch["player_decision_sequences"] == single["player_decision_sequences"]
     finally:
         manager.close()
         for engine in direct:
@@ -128,6 +136,14 @@ def test_lobby_batch_manager_publishes_one_versioned_contiguous_batch():
         first = reset_batch.lobby_result(0)
         assert np.shares_memory(first["observations"], reset_batch.observations)
         assert np.shares_memory(first["action_masks"], reset_batch.action_masks)
+        assert not first["observations"].flags.writeable
+        assert not first["action_masks"].flags.writeable
+
+        # A lobby view owns the aggregate batch, so it remains valid after the
+        # temporary batch variable is released.
+        retained_observations = first["observations"]
+        del reset_batch
+        np.testing.assert_array_equal(retained_observations, first["observations"])
 
         step_batch = manager.step(_pass_actions(2))
         assert isinstance(step_batch, native.NativeDecisionBatch)
@@ -141,5 +157,22 @@ def test_lobby_batch_manager_publishes_one_versioned_contiguous_batch():
         row = step_batch.lobby_result(1)
         assert np.shares_memory(row["rewards"], step_batch.rewards)
         assert np.shares_memory(row["dones"], step_batch.dones)
+    finally:
+        manager.close()
+
+
+
+@pytest.mark.parametrize("lobby_count", [1, 2, 4])
+def test_native_decision_batch_shapes_scale_with_lobby_count(lobby_count):
+    manager = native.LobbyBatchManager(lobby_count, 12000)
+    try:
+        batch = manager.reset(seed=13000)
+        assert batch.observations.shape[:2] == (lobby_count, 8)
+        assert batch.action_masks.shape == (lobby_count, 8, 1280)
+        stepped = manager.step(_pass_actions(lobby_count))
+        assert stepped.observations.shape[:2] == (lobby_count, 8)
+        assert stepped.rewards.shape == (lobby_count, 8)
+        assert stepped.dones.shape == (lobby_count, 8)
+        assert [stepped.lobby_result(i)["engine_instance_id"] for i in range(lobby_count)] == manager.engine_instance_ids
     finally:
         manager.close()
