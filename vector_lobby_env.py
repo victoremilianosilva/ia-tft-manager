@@ -122,9 +122,9 @@ class LobbyVectorEnv:
         """Project the latest immutable native batch without rebuilding Python player rows."""
         batch = self._last_native_batch
         if batch is None or not callable(getattr(batch, "semantic_projection", None)):
-            raise RuntimeError("Native semantic projection is unavailable for the current vector snapshot.")
-        if bool(np.asarray(batch.lobby_done).any()) if batch.kind == "step" else False:
-            raise RuntimeError("A terminal auto-reset transition requires its separately owned next snapshots.")
+            return None
+        if batch.kind == "step" and bool(np.asarray(batch.lobby_done).any()):
+            return None
         return batch.semantic_projection(catalog_map, contract_hash)
 
     def env_method(self, method_name, *args, **kwargs):
