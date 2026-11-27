@@ -182,7 +182,7 @@ def test_native_semantic_projection_matches_oracle_after_physical_duplicate_upgr
         assert native_engine.set_player_economy_for_testing(0, 20, 3, 0)
         assert native_engine.set_unit_for_testing(0, True, 0, champion_id, 1)
         assert native_engine.set_unit_for_testing(0, False, 0, champion_id, 1)
-        assert native_engine.set_shop_offer_for_testing(0, 0, champion_id)
+        assert native_engine.set_shop_offer_for_testing(0, 0, replacement_champion_id)
 
         before = native_engine.get_audit_snapshot()["players"][0]
         physical_uuids = {
@@ -395,8 +395,16 @@ def test_native_semantic_projection_matches_oracle_for_item_inventory_and_shop_r
     try:
         env.reset(seed=87314)
         initial_snapshot = native_engine.get_audit_snapshot()["players"][0]
-        champion_id = initial_snapshot["shop"][0]["champion_id"]
-        assert champion_id
+        current_shop = initial_snapshot["shop"]
+        replacement_champion_id = next(
+            (
+                offer["champion_id"]
+                for offer in current_shop[1:]
+                if offer["champion_id"] != current_shop[0]["champion_id"]
+            ),
+            None,
+        )
+        assert replacement_champion_id
 
         # Exercise inventory-backed features and the independent shop identity
         # revision without relying on a policy action to trigger loot.
