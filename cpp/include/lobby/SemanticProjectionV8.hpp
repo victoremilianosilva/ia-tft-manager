@@ -149,9 +149,14 @@ inline Projection project_player(
     target.insert(deferred.begin(), deferred.end());
 
     std::unordered_map<std::int32_t, AuditUnitCopyProgressSnapshot> progress;
-    for (const auto& row : strategic.unit_copy_progress)
-        if (!progress.emplace(row.champion_internal_id, row).second)
-            throw std::runtime_error("duplicate semantic unit copy progress identity");
+    for (const auto& row : strategic.unit_copy_progress) {
+        if (row.champion_internal_id < 0 || row.highest_star < 1 || row.highest_star > 3 ||
+            row.owned_copy_equivalent < 1 || row.owned_copy_equivalent > 9 ||
+            row.copies_toward_next_star < 0 || row.copies_toward_next_star > 2 ||
+            (row.highest_star == 3 && row.copies_toward_next_star != 0) ||
+            !progress.emplace(row.champion_internal_id, row).second)
+            throw std::runtime_error("invalid or duplicate semantic unit copy progress");
+    }
     std::unordered_map<std::int32_t, AuditUnitStrategicPrioritySnapshot> priorities;
     for (const auto& row : strategic.unit_priorities) priorities.emplace(row.champion_internal_id, row);
     std::unordered_map<std::int32_t, AuditUnitOpportunityCostSnapshot> opportunities;
@@ -211,6 +216,8 @@ inline Projection project_player(
     g.push_back(static_cast<double>(state.board_trait_coherence_score));
     if (g.size() != kGlobalFeatures) throw std::runtime_error("semantic global v8 layout mismatch");
 
+    std::unordered_set<std::string> observed_uuids;
+    std::unordered_set<std::int32_t> observed_owned_ids;
     auto project_group = [&](const auto& units, std::size_t offset, bool shop) {
         for (std::size_t slot = 0; slot < units.size(); ++slot) {
             const auto& unit = units[slot];
@@ -218,11 +225,20 @@ inline Projection project_player(
             result.occupied[entity_index] = unit.occupied;
             result.unit_uuids[entity_index] = unit.uuid;
             if (!unit.occupied) {
+                if (!unit.uuid.empty()) throw std::runtime_error("empty semantic entity retains a physical UUID");
                 g.insert(g.end(), kEntityFeatures, 0.0f);
                 result.champion_ids[entity_index] = 0;
                 continue;
             }
             if (unit.uuid.empty()) throw std::runtime_error("occupied semantic entity has no physical UUID");
+            if (!observed_uuids.insert(unit.uuid).second)
+                throw std::runtime_error("duplicate physical UUID in semantic player slots");
+            if (unit.champion_id.empty()) throw std::runtime_error("occupied semantic entity has no champion identity");
+            if (std::any_of(unit.item_ids.begin(), unit.item_ids.end(), [](const auto& value) { return value.empty(); }) ||
+                std::any_of(unit.trait_names.begin(), unit.trait_names.end(), [](const auto& value) { return value.empty(); }))
+                throw std::runtime_error("semantic entity contains an empty item or trait identity");
+            if (std::set<std::string>(unit.trait_names.begin(), unit.trait_names.end()).size() != unit.trait_names.size())
+                throw std::runtime_error("semantic entity contains duplicate traits");
             if (unit.star < 1 || unit.star > 3 || unit.cost < 1 || unit.cost > 5)
                 throw std::runtime_error("occupied semantic entity has invalid star/cost");
             const auto found = catalog.find(unit.champion_id);
@@ -232,6 +248,11 @@ inline Projection project_player(
                 unit.champion_internal_id >= 0 && found->second == unit.champion_internal_id;
             const auto native_id = champion_valid ? unit.champion_internal_id : -1;
             const auto copy = progress.find(native_id);
+            if (!shop && native_id >= 0) {
+                observed_owned_ids.insert(native_id);
+                if (copy == progress.end())
+                    throw std::runtime_error("native UnitCopyProgress is missing an owned champion");
+            }
             const auto copies = copy == progress.end() ? 0 : copy->second.owned_copy_equivalent;
             const auto toward = copy == progress.end() ? 0 : copy->second.copies_toward_next_star;
             const auto star = std::max(unit.star, 0);
@@ -252,6 +273,8 @@ inline Projection project_player(
             if (!shop) {
                 if (unit.role < 0 || unit.role > 4) throw std::runtime_error("semantic target role out of range");
                 const auto role = unit.role;
+                if (std::min({unit.attack_damage, unit.attack_speed, unit.max_health, unit.armor, unit.magic_resist}) < 0.0)
+                    throw std::runtime_error("semantic target profile contains negative stats");
                 const bool on_board = offset == 0;
                 target_profile[0] = 1.0f;
                 target_profile[1] = on_board ? 1.0f : 0.0f;
@@ -286,6 +309,12 @@ inline Projection project_player(
     project_group(state.board, 0, false);
     project_group(state.bench, kBoardSlots, false);
     project_group(state.shop, kBoardSlots + kBenchSlots, true);
+    for (const auto& row : progress) {
+        if (catalog.end() != std::find_if(catalog.begin(), catalog.end(),
+            [&](const auto& entry) { return entry.second == row.first; }) &&
+            !observed_owned_ids.contains(row.first))
+            throw std::runtime_error("UnitCopyProgress contains a catalog champion absent from board/bench");
+    }
     for (std::size_t i = 0; i < kShopSlots; ++i)
         result.shop_offer_revisions[i] = state.shop_offer_revisions[i];
 
@@ -299,6 +328,8 @@ inline Projection project_player(
     g.push_back(state.pending_anvil && state.pending_anvil_kind == 1 ? 1.0f : 0.0f);
     append(g, state.pending_anvil_option_features);
     if (g.size() != 7958) throw std::runtime_error("semantic numeric v8 dimension mismatch");
+    if (!std::all_of(g.begin(), g.end(), [](double value) { return std::isfinite(value); }))
+        throw std::runtime_error("semantic v8 projection contains a non-finite value");
 
     json recipe = json::array();
     for (const auto& row : state.item_recipe_features)
