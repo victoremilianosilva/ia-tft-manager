@@ -147,20 +147,38 @@ def project_semantic_batch(
             raise RuntimeError("Native semantic item block views are incomplete.")
         for name, expected_shape in expected_item_shapes.items():
             block = np.asarray(item_blocks[name])
+            expected_strides = (
+                8 * 7958 * np.dtype(np.float32).itemsize,
+                7958 * np.dtype(np.float32).itemsize,
+                *tuple(
+                    np.cumprod(
+                        (expected_shape[2:][1:] + (1,))[::-1],
+                        dtype=np.int64,
+                    )[::-1]
+                ) if len(expected_shape) > 2 else (np.dtype(np.float32).itemsize,),
+            )
             if (
                 block.dtype != np.float32
                 or block.shape != expected_shape
-                or not block.flags.c_contiguous
                 or block.flags.writeable
                 or not np.shares_memory(block, numeric)
+                or block.strides[0] != expected_strides[0]
+                or block.strides[1] != expected_strides[1]
+                or block.strides[-1] != np.dtype(np.float32).itemsize
             ):
                 raise RuntimeError(
                     f"Native semantic item block {name!r} must be a readonly "
-                    "contiguous float32 view over the v8 carrier."
+                    "float32 strided view over the v8 carrier."
                 )
-            item_blocks[name] = block.reshape(
+            flattened = block.reshape(
                 (numeric.shape[0] * 8,) + expected_shape[2:]
             )
+            if not np.shares_memory(flattened, numeric):
+                raise RuntimeError(
+                    f"Native semantic item block {name!r} cannot be flattened "
+                    "without copying the v8 carrier."
+                )
+            item_blocks[name] = flattened
         projected["item_blocks"] = item_blocks
         projected["numeric"] = numeric.reshape(-1, numeric.shape[-1])
         projected["champion_ids"] = champion_ids.reshape(
