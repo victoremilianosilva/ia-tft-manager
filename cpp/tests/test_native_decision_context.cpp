@@ -12,6 +12,7 @@ int main() {
     snapshot->round = 12;
     snapshot->shared_pool.contract_id = "tft.shared-champion-pool-snapshot";
     snapshot->shared_pool.contract_version = 2;
+    snapshot->shared_pool.catalog_fingerprint = "sha256:test-catalog";
     for (std::size_t i = 0; i < tft::kPlayersPerLobby; ++i) {
         snapshot->player_decision_sequences[i] = 20 + i;
         auto& player = snapshot->players[i];
@@ -31,6 +32,7 @@ int main() {
     assert(context.availability() == tft::ContextAvailability::Complete);
     assert(context.player_count() == 8);
     assert(context.shared_pool().contract_version == 2);
+    assert(context.shared_pool().catalog_fingerprint == "sha256:test-catalog");
     assert(context.player(7).player_id == 7);
     assert(context.strategic_availability(0) == tft::ContextAvailability::Unknown);
     assert(context.item_inventory_availability(0) == tft::ContextAvailability::Unknown);
