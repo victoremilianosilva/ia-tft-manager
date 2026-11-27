@@ -1191,9 +1191,6 @@ public:
                 observations_.mutable_data() + lobby * kPlayers * observation_dim_);
             copy_masks(lobby, row.action_masks);
             contexts_.push_back(reset_to_dict(std::move(row), false));
-            native_snapshots_.push_back(
-                py::cast<NativeAuditSnapshotHandle>(
-                    contexts_.back()["native_state_snapshot"]).shared_snapshot());
         }
         make_read_only();
     }
@@ -1225,9 +1222,6 @@ public:
                 dones_.mutable_data()[offset + player] = row.dones[player] != 0;
             lobby_done_.mutable_data()[lobby] = row.lobby_done;
             contexts_.push_back(step_to_dict(std::move(row), false));
-            native_snapshots_.push_back(
-                py::cast<NativeAuditSnapshotHandle>(
-                    contexts_.back()["native_state_snapshot"]).shared_snapshot());
         }
         make_read_only();
     }
@@ -1246,9 +1240,11 @@ public:
     py::array lobby_done() const { return lobby_done_; }
 
     std::shared_ptr<tft::NativeDecisionContext> native_context(std::size_t index) const {
-        if (index >= native_snapshots_.size())
+        if (index >= contexts_.size())
             throw py::index_error("lobby index fora do NativeDecisionBatch.");
-        return std::make_shared<tft::NativeDecisionContext>(native_snapshots_[index]);
+        const auto& handle = py::cast<const NativeAuditSnapshotHandle&>(
+            contexts_[index]["native_state_snapshot"]);
+        return std::make_shared<tft::NativeDecisionContext>(handle.shared_snapshot());
     }
 
     py::dict semantic_projection(const py::dict& catalog_map, const std::string& contract_hash) {
@@ -1363,7 +1359,6 @@ private:
 
     std::string kind_;
     std::vector<py::dict> contexts_;
-    std::vector<std::shared_ptr<const tft::AuditSnapshot>> native_snapshots_;
     std::size_t observation_dim_{0};
     std::size_t mask_width_{0};
     py::array_t<float> observations_;
