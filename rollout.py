@@ -12,7 +12,10 @@ from action_contract import (
     MASK_CONTRACT_ID, MASK_CONTRACT_VERSION, MASK_CONTRACT_HASH,
     hash_mask_row,
 )
-from semantic_observation import SEMANTIC_NUMERIC_DIM, SEMANTIC_ENTITY_SLOTS, semantic_item_state_tensors
+from semantic_observation import (
+    SEMANTIC_NUMERIC_DIM, SEMANTIC_ENTITY_SLOTS, SEMANTIC_TRAIT_SLOTS,
+    semantic_item_state_tensors,
+)
 
 
 class RolloutBuffer:
@@ -218,7 +221,7 @@ class RolloutBuffer:
             device=self.device,
         )
         self.semantic_trait_ids = torch.zeros(
-            (self.num_steps, self.num_envs, self.semantic_entity_slots, 10),
+            (self.num_steps, self.num_envs, self.semantic_entity_slots, SEMANTIC_TRAIT_SLOTS),
             dtype=torch.long,
             device=self.device,
         )
@@ -411,7 +414,7 @@ class RolloutBuffer:
                 device=self.device,
             )
             semantic_trait_ids = torch.zeros(
-                (self.num_envs, self.semantic_entity_slots, 10),
+                (self.num_envs, self.semantic_entity_slots, SEMANTIC_TRAIT_SLOTS),
                 dtype=torch.long,
                 device=self.device,
             )
@@ -1280,7 +1283,7 @@ class RolloutBuffer:
             total_transitions, self.semantic_entity_slots
         )
         flat_semantic_trait_ids = self.semantic_trait_ids[:steps].reshape(
-            total_transitions, self.semantic_entity_slots, 10
+            total_transitions, self.semantic_entity_slots, SEMANTIC_TRAIT_SLOTS
         )
 
         flat_masks = {
