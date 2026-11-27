@@ -17,6 +17,7 @@ class LobbyVectorEnv:
         self.num_envs = len(self.envs)
         self._requires_full_reset = False
         self._batch_manager = batch_manager
+        self._last_native_batch = None
 
         if self.num_envs == 0:
             raise ValueError("É necessário criar pelo menos uma lobby.")
@@ -70,6 +71,7 @@ class LobbyVectorEnv:
                     if callable(invalidate):
                         invalidate()
                 native_batch = self._batch_manager.reset(seed=seed)
+                self._last_native_batch = native_batch
                 if self._validate_native_batch(native_batch):
                     observations = [
                         env._consume_reset_result(native_batch.lobby_result(index))
@@ -115,6 +117,35 @@ class LobbyVectorEnv:
 
         self._requires_full_reset = False
         return stacked_observations
+
+    def semantic_projection_supported(self):
+        """Whether the native manager can project any pinned snapshot, including auto-reset rows."""
+        return (
+            self._batch_manager is not None
+            and callable(getattr(self._batch_manager, "semantic_projection_from_snapshots", None))
+        )
+
+    def semantic_projection_from_snapshots(self, lobby_snapshots, catalog_map, contract_hash):
+        """Project a set of independently pinned lobby snapshots in one C++ call."""
+        if not self.semantic_projection_supported():
+            return None
+        return self._batch_manager.semantic_projection_from_snapshots(
+            lobby_snapshots, catalog_map, contract_hash
+        )
+
+    def semantic_projection_available(self):
+        """Whether the latest vector snapshot is owned by a projectable native batch."""
+        batch = self._last_native_batch
+        if batch is None or not callable(getattr(batch, "semantic_projection", None)):
+            return False
+        return not (batch.kind == "step" and bool(np.asarray(batch.lobby_done).any()))
+
+    def semantic_projection(self, catalog_map, contract_hash):
+        """Project the latest immutable native batch without rebuilding Python player rows."""
+        batch = self._last_native_batch
+        if not self.semantic_projection_available():
+            return None
+        return batch.semantic_projection(catalog_map, contract_hash)
 
     def env_method(self, method_name, *args, **kwargs):
         """Mantém compatibilidade com as chamadas do Trainer."""
@@ -169,6 +200,7 @@ class LobbyVectorEnv:
                     for env, lobby_actions in zip(self.envs, actions)
                 ]
                 native_batch = self._batch_manager.step([entry[0] for entry in prepared])
+                self._last_native_batch = native_batch
                 if self._validate_native_batch(native_batch):
                     step_results = [
                         env._consume_step_result(

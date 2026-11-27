@@ -1,4 +1,4 @@
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 import copy
 
 from decision_identity import validate_player_identity_envelope
@@ -12,7 +12,10 @@ from action_contract import (
     MASK_CONTRACT_ID, MASK_CONTRACT_VERSION, MASK_CONTRACT_HASH,
     hash_mask_row,
 )
-from semantic_observation import SEMANTIC_NUMERIC_DIM, SEMANTIC_ENTITY_SLOTS, semantic_item_state_tensors
+from semantic_observation import (
+    SEMANTIC_NUMERIC_DIM, SEMANTIC_ENTITY_SLOTS, SEMANTIC_TRAIT_SLOTS,
+    semantic_item_state_tensors,
+)
 
 
 class RolloutBuffer:
@@ -217,6 +220,11 @@ class RolloutBuffer:
             dtype=torch.long,
             device=self.device,
         )
+        self.semantic_trait_ids = torch.zeros(
+            (self.num_steps, self.num_envs, self.semantic_entity_slots, SEMANTIC_TRAIT_SLOTS),
+            dtype=torch.long,
+            device=self.device,
+        )
 
         # ============================================================
         # GAE / RETURNS
@@ -405,9 +413,38 @@ class RolloutBuffer:
                 dtype=torch.long,
                 device=self.device,
             )
+            semantic_trait_ids = torch.zeros(
+                (self.num_envs, self.semantic_entity_slots, SEMANTIC_TRAIT_SLOTS),
+                dtype=torch.long,
+                device=self.device,
+            )
         else:
             if not isinstance(semantic_state, dict):
                 raise TypeError("semantic_state must be a mapping")
+            semantic_entity_identity = semantic_state.get("entity_identity")
+            if semantic_entity_identity is not None:
+                if not isinstance(semantic_entity_identity, Sequence) or len(semantic_entity_identity) != self.num_envs:
+                    raise ValueError("semantic entity identity must contain one row per rollout agent")
+                for row_index, identity in enumerate(semantic_entity_identity):
+                    if not isinstance(identity, Mapping):
+                        raise TypeError(f"semantic entity identity row {row_index} must be a mapping")
+                    occupied = identity.get("occupied")
+                    unit_uuids = identity.get("unit_uuids")
+                    shop_revisions = identity.get("shop_offer_revisions")
+                    if (
+                        not isinstance(occupied, Sequence) or len(occupied) != self.semantic_entity_slots
+                        or any(not isinstance(value, bool) for value in occupied)
+                        or not isinstance(unit_uuids, Sequence) or len(unit_uuids) != self.semantic_entity_slots
+                        or any(not isinstance(value, str) for value in unit_uuids)
+                        or not isinstance(shop_revisions, Sequence) or len(shop_revisions) != 5
+                        or any(type(value) is not int or value < 0 for value in shop_revisions)
+                    ):
+                        raise ValueError(f"semantic entity identity row {row_index} has invalid slot-aligned fields")
+                    nonempty_uuids = [value for value in unit_uuids if value]
+                    if len(nonempty_uuids) != len(set(nonempty_uuids)):
+                        raise ValueError(f"semantic entity identity row {row_index} contains duplicate physical UUIDs")
+                    if any(occupied[index] != bool(unit_uuids[index]) for index in range(self.semantic_entity_slots)):
+                        raise ValueError(f"semantic entity identity row {row_index} occupancy/UUID mismatch")
             semantic_numeric = self._to_tensor(semantic_state.get("numeric"), dtype=torch.float32)
             semantic_champion_ids = self._to_tensor(semantic_state.get("champion_ids"), dtype=torch.long)
             if tuple(semantic_numeric.shape) != (self.num_envs, self.semantic_numeric_dim):
@@ -421,7 +458,12 @@ class RolloutBuffer:
             item_state = semantic_state.get("items")
             if not isinstance(item_state, dict):
                 raise ValueError("semantic item/anvil tensors are required for native rollout rows")
-            expected_item_state = semantic_item_state_tensors(semantic_numeric)
+            semantic_trait_ids = self._to_tensor(
+                item_state.get("trait_ids"), dtype=torch.long
+            )
+            expected_item_state = semantic_item_state_tensors(
+                semantic_numeric, trait_ids=semantic_trait_ids
+            )
             if set(item_state) != set(expected_item_state):
                 raise ValueError("semantic item/anvil tensor fields do not match the v6 contract")
             for field, expected_value in expected_item_state.items():
@@ -439,6 +481,7 @@ class RolloutBuffer:
 
         self.semantic_numeric[self.ptr].copy_(semantic_numeric)
         self.semantic_champion_ids[self.ptr].copy_(semantic_champion_ids)
+        self.semantic_trait_ids[self.ptr].copy_(semantic_trait_ids)
 
         metadata_groups = (
             ("snapshot_metadata", snapshot_metadata),
@@ -686,6 +729,12 @@ class RolloutBuffer:
                     raise ValueError("Transição identificada exige semantic_state nativo.")
                 semantic_identities = semantic_state.get("identities")
                 semantic_hashes = semantic_state.get("hashes")
+                semantic_entity_identity = semantic_state.get("entity_identity")
+                if (
+                    not isinstance(semantic_entity_identity, Sequence)
+                    or len(semantic_entity_identity) != self.num_envs
+                ):
+                    raise ValueError("Semantic state does not contain physical entity identity per transition.")
                 contract_hash = semantic_state.get("contract_hash")
                 if (
                     semantic_state.get("contract_id") != "tft.ppo.semantic-native-state.v8"
@@ -714,6 +763,10 @@ class RolloutBuffer:
                     ):
                         raise ValueError(
                             f"Semantic identity diverge do snapshot na transição {index}."
+                        )
+                    if metadata.get("semantic_entity_identity") != semantic_entity_identity[index]:
+                        raise ValueError(
+                            f"Physical entity identity diverges from the snapshot at transition {index}."
                         )
                     digest = semantic_hashes[index]
                     if (
@@ -1229,6 +1282,9 @@ class RolloutBuffer:
         flat_semantic_champion_ids = self.semantic_champion_ids[:steps].reshape(
             total_transitions, self.semantic_entity_slots
         )
+        flat_semantic_trait_ids = self.semantic_trait_ids[:steps].reshape(
+            total_transitions, self.semantic_entity_slots, SEMANTIC_TRAIT_SLOTS
+        )
 
         flat_masks = {
             key: tensor[:steps].reshape(
@@ -1271,12 +1327,18 @@ class RolloutBuffer:
             semantic_numeric_batch = flat_semantic_numeric[batch_idx]
             semantic_batch = {
                 "numeric": semantic_numeric_batch,
-                "items": semantic_item_state_tensors(semantic_numeric_batch),
+                "items": semantic_item_state_tensors(
+                    semantic_numeric_batch,
+                    trait_ids=flat_semantic_trait_ids[batch_idx],
+                ),
                 "champion_ids": flat_semantic_champion_ids[batch_idx],
             }
             if batch_snapshot_metadata is not None:
                 semantic_batch["identities"] = [
                     row.get("semantic_identity") for row in batch_snapshot_metadata
+                ]
+                semantic_batch["entity_identity"] = [
+                    row.get("semantic_entity_identity") for row in batch_snapshot_metadata
                 ]
                 semantic_batch["hashes"] = [
                     row.get("semantic_projection_hash") for row in batch_snapshot_metadata

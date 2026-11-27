@@ -57,6 +57,7 @@ from ppo import PPOTrainer, exponential_schedule_value
 from semantic_observation import (
     SEMANTIC_ENTITY_FEATURES,
     SEMANTIC_ENTITY_SLOTS,
+    SEMANTIC_TRAIT_SLOTS,
     SEMANTIC_GLOBAL_FEATURES,
     SEMANTIC_ITEM_OFFSET,
     build_semantic_batch,
@@ -70,6 +71,122 @@ from semantic_observation import (
 
 from engine_contracts import ActionType
 from training_run_manifest import build_training_run_manifest, write_training_run_manifest
+
+def project_semantic_batch(
+    vec_env, metadata_rows, catalog_map, contract, lobby_snapshots=None
+):
+    """Project from pinned native snapshots; Python projection is fixture-only.
+
+    Production vector environments must never silently fall back to rebuilding
+    semantic rows from Python player dictionaries. The C++ producer owns the
+    projection and returns contiguous buffers whose lifetime is pinned by the
+    NativeDecisionBatch / native snapshot handles.
+    """
+    projected = None
+    native_project = getattr(vec_env, "semantic_projection", None)
+    if callable(native_project):
+        projected = native_project(catalog_map, contract["sha256"])
+
+    if projected is None and lobby_snapshots is not None:
+        snapshot_project = getattr(vec_env, "semantic_projection_from_snapshots", None)
+        if callable(snapshot_project):
+            projected = snapshot_project(
+                lobby_snapshots, catalog_map, contract["sha256"]
+            )
+
+    native_required = bool(
+        getattr(vec_env, "semantic_projection_supported", lambda: False)()
+    )
+    if projected is None and native_required:
+        raise RuntimeError(
+            "Native semantic v8 projection was unavailable for a production "
+            "NativeDecisionBatch; refusing the Python reconstruction fallback."
+        )
+
+    if projected is not None:
+        numeric = np.asarray(projected["numeric"])
+        champion_ids = np.asarray(projected["champion_ids"])
+        if numeric.dtype != np.float32 or not numeric.flags.c_contiguous:
+            raise RuntimeError(
+                "Native semantic numeric buffer must be contiguous float32."
+            )
+        if champion_ids.dtype != np.int64 or not champion_ids.flags.c_contiguous:
+            raise RuntimeError(
+                "Native semantic champion ID buffer must be contiguous int64."
+            )
+        if numeric.ndim != 3 or numeric.shape[1:] != (8, 7958):
+            raise RuntimeError(
+                f"Native semantic numeric shape is invalid: {numeric.shape}"
+            )
+        if champion_ids.shape != (numeric.shape[0], 8, 42):
+            raise RuntimeError(
+                f"Native semantic champion ID shape is invalid: {champion_ids.shape}"
+            )
+        trait_ids = np.asarray(projected.get("trait_ids"))
+        if (
+            trait_ids.dtype != np.int64
+            or trait_ids.shape != (numeric.shape[0], 8, 42, 10)
+            or not trait_ids.flags.c_contiguous
+            or trait_ids.flags.writeable
+        ):
+            raise RuntimeError(
+                "Native semantic trait IDs must be readonly contiguous int64 "
+                "with shape [lobby, 8, 42, 10]."
+            )
+        item_blocks = projected.get("item_blocks")
+        expected_item_shapes = {
+            "components": (numeric.shape[0], 8, 10),
+            "inventory": (numeric.shape[0], 8, 9, 17),
+            "recipes": (numeric.shape[0], 8, 100, 17),
+            "inventory_target_fit": (numeric.shape[0], 8, 9, 37),
+            "recipe_target_fit": (numeric.shape[0], 8, 100, 37),
+            "anvil_options": (numeric.shape[0], 8, 9, 11),
+            "anvil_state": (numeric.shape[0], 8, 3),
+        }
+        if not isinstance(item_blocks, Mapping) or set(item_blocks) != set(expected_item_shapes):
+            raise RuntimeError("Native semantic item block views are incomplete.")
+        for name, expected_shape in expected_item_shapes.items():
+            block = np.asarray(item_blocks[name])
+            itemsize = np.dtype(np.float32).itemsize
+            inner_shape = expected_shape[2:]
+            expected_inner_strides = tuple(
+                itemsize * int(np.prod(inner_shape[index + 1:], dtype=np.int64))
+                for index in range(len(inner_shape))
+            )
+            if (
+                block.dtype != np.float32
+                or block.shape != expected_shape
+                or block.flags.writeable
+                or not np.shares_memory(block, numeric)
+                or block.strides[0] != numeric.strides[0]
+                or block.strides[1] != numeric.strides[1]
+                or block.strides[2:] != expected_inner_strides
+            ):
+                raise RuntimeError(
+                    f"Native semantic item block {name!r} must be a readonly "
+                    "float32 strided view over the v8 carrier."
+                )
+            flattened = block.reshape(
+                (numeric.shape[0] * 8,) + expected_shape[2:]
+            )
+            if not np.shares_memory(flattened, numeric):
+                raise RuntimeError(
+                    f"Native semantic item block {name!r} cannot be flattened "
+                    "without copying the v8 carrier."
+                )
+            item_blocks[name] = flattened
+        projected["item_blocks"] = item_blocks
+        projected["numeric"] = numeric.reshape(-1, numeric.shape[-1])
+        projected["champion_ids"] = champion_ids.reshape(
+            -1, champion_ids.shape[-1]
+        )
+        projected["trait_ids"] = trait_ids.reshape(-1, 42, 10)
+        return projected
+
+    # Lightweight Python environments and isolated fixtures may still use the
+    # reference implementation. The production native manager is fail-closed.
+    return build_semantic_batch(metadata_rows, catalog_map, contract=contract)
+
 
 def slice_batch_structure(value, selection):
     """Slice every tensor leaf in a nested semantic batch structure."""
@@ -529,7 +646,8 @@ class Trainer:
 
     @staticmethod
     def _expand_lobby_snapshot_metadata(
-        lobby_snapshots, players_per_lobby, label, native_state_cache=None
+        lobby_snapshots, players_per_lobby, label, native_state_cache=None,
+        include_native_player_state=True,
     ):
         """Expand lobby identity while reusing immutable state for an exact native revision."""
         expanded = []
@@ -557,9 +675,16 @@ class Trainer:
                     raise RuntimeError(f"Snapshot estruturado diverge no round da lobby {lobby_idx}.")
                 if native_snapshot.get("player_decision_sequences") != player_sequences:
                     raise RuntimeError(f"Snapshot estruturado diverge nas sequências individuais da lobby {lobby_idx}.")
-                native_players = native_snapshot.get("players")
-                if not isinstance(native_players, Sequence) or len(native_players) != players_per_lobby:
-                    raise RuntimeError(f"Snapshot estruturado sem {players_per_lobby} jogadores na lobby {lobby_idx}.")
+                native_contract = (
+                    native_snapshot.get("contract_id"),
+                    native_snapshot.get("contract_version"),
+                    native_snapshot.get("producer"),
+                    native_snapshot.get("source_namespace"),
+                )
+                if include_native_player_state:
+                    native_players = native_snapshot.get("players")
+                    if not isinstance(native_players, Sequence) or len(native_players) != players_per_lobby:
+                        raise RuntimeError(f"Snapshot estruturado sem {players_per_lobby} jogadores na lobby {lobby_idx}.")
             for player_idx, player_sequence in enumerate(player_sequences):
                 if (
                     isinstance(player_sequence, bool)
@@ -572,16 +697,15 @@ class Trainer:
                 metadata = dict(snapshot)
                 metadata.pop("player_decision_sequences", None)
                 metadata.pop("native_state_snapshot", None)
+                if native_snapshot is not None:
+                    metadata["native_state_contract_id"] = native_contract[0]
+                    metadata["native_state_contract_version"] = native_contract[1]
+                    metadata["native_state_producer"] = native_contract[2]
+                    metadata["native_state_source_namespace"] = native_contract[3]
                 if native_players is not None:
                     native_player = native_players[player_idx]
                     if not isinstance(native_player, Mapping) or native_player.get("player_id") != player_idx:
                         raise RuntimeError(f"Registro estruturado desalinhado para lobby {lobby_idx}, jogador {player_idx}.")
-                    native_contract = (
-                        native_snapshot.get("contract_id"),
-                        native_snapshot.get("contract_version"),
-                        native_snapshot.get("producer"),
-                        native_snapshot.get("source_namespace"),
-                    )
                     # A native snapshot identity names one immutable revision.
                     # Result and next-observation envelopes may expose that same
                     # revision through separate Python mappings; share the frozen
@@ -616,10 +740,6 @@ class Trainer:
                         if native_state_cache is not None:
                             native_state_cache[cache_key] = (native_contract, frozen_player)
                     metadata["native_player_state"] = frozen_player
-                    metadata["native_state_contract_id"] = native_contract[0]
-                    metadata["native_state_contract_version"] = native_contract[1]
-                    metadata["native_state_producer"] = native_contract[2]
-                    metadata["native_state_source_namespace"] = native_contract[3]
                 metadata["player_decision_sequence"] = player_sequence
                 metadata["lobby_index"] = lobby_idx
                 metadata["player_id"] = player_idx
@@ -1397,6 +1517,7 @@ class Trainer:
                     lobby_snapshots,
                     self.PLAYERS_PER_LOBBY,
                     "snapshot da decisão PPO",
+                    include_native_player_state=not self.vec_env.semantic_projection_supported(),
                 )
                 for metadata, observation_hash in zip(
                     flat_snapshot_metadata,
@@ -1419,28 +1540,36 @@ class Trainer:
                     semantic_batch = semantic_cache["batch"]
                     semantic_state = semantic_cache["state"]
                 else:
-                    semantic_batch = build_semantic_batch(
-                        flat_snapshot_metadata,
-                        self.champion_id_map,
-                        contract=self.semantic_state_contract,
+                    semantic_batch = project_semantic_batch(
+                        self.vec_env, flat_snapshot_metadata, self.champion_id_map,
+                        self.semantic_state_contract, lobby_snapshots=lobby_snapshots,
                     )
                     semantic_numeric = torch.as_tensor(
                         semantic_batch["numeric"], dtype=torch.float32, device=self.device
                     )
+                    native_trait_ids = torch.as_tensor(
+                        semantic_batch["trait_ids"], dtype=torch.long, device=self.device
+                    )
+                    semantic_items = semantic_item_state_tensors(
+                        semantic_numeric, trait_ids=native_trait_ids
+                    )
                     semantic_state = {
                         "numeric": semantic_numeric,
-                        "items": semantic_item_state_tensors(semantic_numeric),
+                        "items": semantic_items,
                         "champion_ids": torch.as_tensor(
                             semantic_batch["champion_ids"], dtype=torch.long, device=self.device
                         ),
+                        "entity_identity": semantic_batch["entity_identity"],
                         "identities": semantic_batch["identities"],
                         "hashes": semantic_batch["hashes"],
                         "contract_id": semantic_batch["contract_id"],
                         "contract_hash": semantic_batch["contract_hash"],
                     }
-                for metadata, semantic_hash, semantic_identity in zip(
-                    flat_snapshot_metadata, semantic_batch["hashes"], semantic_batch["identities"]
+                for metadata, semantic_hash, semantic_identity, entity_identity in zip(
+                    flat_snapshot_metadata, semantic_batch["hashes"], semantic_batch["identities"],
+                    semantic_batch["entity_identity"],
                 ):
+                    metadata["semantic_entity_identity"] = entity_identity
                     metadata["semantic_identity"] = semantic_identity
                     metadata["semantic_projection_hash"] = semantic_hash
                     metadata["semantic_projection_contract_id"] = (
@@ -1640,6 +1769,7 @@ class Trainer:
                     self.PLAYERS_PER_LOBBY,
                     "snapshot de resultado da transição",
                     native_state_cache=transition_native_state_cache,
+                    include_native_player_state=False,
                 )
                 # Keep native action provenance beside the exact StepResult identity.
                 self._attach_native_action_traces(
@@ -1648,34 +1778,43 @@ class Trainer:
                     self.PLAYERS_PER_LOBBY,
                 )
 
+                next_lobby_snapshots = [info.get("next_snapshot") for info in infos]
                 flat_next_snapshot_metadata = self._expand_lobby_snapshot_metadata(
-                    [info.get("next_snapshot") for info in infos],
+                    next_lobby_snapshots,
                     self.PLAYERS_PER_LOBBY,
                     "snapshot da próxima observação",
                     native_state_cache=transition_native_state_cache,
+                    include_native_player_state=not self.vec_env.semantic_projection_supported(),
                 )
-                next_semantic_batch = build_semantic_batch(
-                    flat_next_snapshot_metadata,
-                    self.champion_id_map,
-                    contract=self.semantic_state_contract,
+                next_semantic_batch = project_semantic_batch(
+                    self.vec_env, flat_next_snapshot_metadata, self.champion_id_map,
+                    self.semantic_state_contract, lobby_snapshots=next_lobby_snapshots,
                 )
                 next_semantic_numeric = torch.as_tensor(
                     next_semantic_batch["numeric"], dtype=torch.float32, device=self.device
                 )
+                next_native_trait_ids = torch.as_tensor(
+                    next_semantic_batch["trait_ids"], dtype=torch.long, device=self.device
+                )
                 next_semantic_state = {
                     "numeric": next_semantic_numeric,
-                    "items": semantic_item_state_tensors(next_semantic_numeric),
+                    "items": semantic_item_state_tensors(
+                        next_semantic_numeric, trait_ids=next_native_trait_ids
+                    ),
                     "champion_ids": torch.as_tensor(
                         next_semantic_batch["champion_ids"], dtype=torch.long, device=self.device
                     ),
+                    "entity_identity": next_semantic_batch["entity_identity"],
                     "identities": next_semantic_batch["identities"],
                     "hashes": next_semantic_batch["hashes"],
                     "contract_id": next_semantic_batch["contract_id"],
                     "contract_hash": next_semantic_batch["contract_hash"],
                 }
-                for metadata, semantic_hash, semantic_identity in zip(
-                    flat_next_snapshot_metadata, next_semantic_batch["hashes"], next_semantic_batch["identities"]
+                for metadata, semantic_hash, semantic_identity, entity_identity in zip(
+                    flat_next_snapshot_metadata, next_semantic_batch["hashes"], next_semantic_batch["identities"],
+                    next_semantic_batch["entity_identity"],
                 ):
+                    metadata["semantic_entity_identity"] = entity_identity
                     metadata["semantic_identity"] = semantic_identity
                     metadata["semantic_projection_hash"] = semantic_hash
                     metadata["semantic_projection_contract_id"] = (
@@ -2034,7 +2173,12 @@ class Trainer:
                     )[valid_indices]
                     sample_semantic_state = {
                         "numeric": sample_semantic_numeric,
-                        "items": semantic_item_state_tensors(sample_semantic_numeric),
+                        "items": semantic_item_state_tensors(
+                            sample_semantic_numeric,
+                            trait_ids=rollout.semantic_trait_ids[:rollout.ptr].reshape(
+                                -1, rollout.semantic_entity_slots, SEMANTIC_TRAIT_SLOTS
+                            )[valid_indices],
+                        ),
                         "champion_ids": rollout.semantic_champion_ids[:rollout.ptr].reshape(
                             -1, rollout.semantic_entity_slots
                         )[valid_indices],

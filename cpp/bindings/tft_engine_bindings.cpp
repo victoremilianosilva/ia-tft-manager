@@ -15,6 +15,7 @@
 #include <pybind11/stl.h>
 
 #include "lobby/TftEngine.hpp"
+#include "lobby/SemanticProjectionV8.hpp"
 #include "strategy/PositioningEngine.hpp"
 #include "reward/RewardManager.hpp"
 #include "combat/CombatProfileEngine.hpp"
@@ -799,12 +800,178 @@ public:
         throw py::key_error(field);
     }
 
+public:
+    const tft::AuditSnapshot& snapshot() const noexcept { return *snapshot_; }
+
 private:
     std::shared_ptr<const tft::AuditSnapshot> snapshot_;
     py::object item_view_owner_;
     mutable py::object frozen_snapshot_cache_;
     mutable py::object frozen_envelope_cache_;
 };
+
+py::dict semantic_projection_from_snapshot_mappings(
+    const py::sequence& snapshot_mappings,
+    const py::dict& catalog_map,
+    const std::string& contract_hash,
+    py::object batch_owner = py::none()
+) {
+    std::map<std::string, std::int32_t> catalog;
+    for (const auto& entry : catalog_map) {
+        const auto name = py::cast<std::string>(entry.first);
+        const auto id = py::cast<std::int32_t>(entry.second);
+        catalog.emplace(name, id);
+    }
+
+    constexpr std::size_t numeric_dim = 7958;
+    const auto lobby_count = static_cast<py::ssize_t>(py::len(snapshot_mappings));
+    if (lobby_count <= 0) throw py::value_error("semantic projection requires at least one native snapshot");
+    py::array_t<float> numeric({lobby_count, static_cast<py::ssize_t>(tft::kPlayersPerLobby),
+        static_cast<py::ssize_t>(numeric_dim)});
+    py::array_t<std::int64_t> champion_ids(py::array::ShapeContainer{
+        lobby_count, static_cast<py::ssize_t>(tft::kPlayersPerLobby), static_cast<py::ssize_t>(42)});
+    py::array_t<std::int64_t> trait_ids(py::array::ShapeContainer{
+        lobby_count, static_cast<py::ssize_t>(tft::kPlayersPerLobby),
+        static_cast<py::ssize_t>(42), static_cast<py::ssize_t>(10)});
+    auto* numeric_data = numeric.mutable_data();
+    auto* champion_data = champion_ids.mutable_data();
+    auto* trait_data = trait_ids.mutable_data();
+    py::list hashes;
+    py::list identities;
+    py::list entity_identity;
+    std::string item_catalog_hash;
+
+    for (py::ssize_t lobby_index = 0; lobby_index < lobby_count; ++lobby_index) {
+        py::object snapshot_mapping =
+            py::reinterpret_borrow<py::object>(snapshot_mappings[lobby_index]);
+        py::object native_handle = py::getattr(snapshot_mapping, "_handle", snapshot_mapping);
+        auto handle = native_handle.cast<NativeAuditSnapshotHandle>();
+        const auto& snapshot = handle.snapshot();
+        for (std::size_t player = 0; player < tft::kPlayersPerLobby; ++player) {
+            auto projected = tft::semantic_v8::project_player(
+                snapshot, static_cast<std::size_t>(lobby_index), player, catalog);
+            const auto row = static_cast<std::size_t>(lobby_index) * tft::kPlayersPerLobby + player;
+            std::transform(projected.numeric.begin(), projected.numeric.end(),
+                numeric_data + row * numeric_dim,
+                [](double value) { return static_cast<float>(value); });
+            std::copy(projected.champion_ids.begin(), projected.champion_ids.end(),
+                champion_data + row * 42);
+            for (std::size_t slot = 0; slot < 42; ++slot) {
+                std::copy(projected.trait_ids[slot].begin(), projected.trait_ids[slot].end(),
+                    trait_data + row * 42 * 10 + slot * 10);
+            }
+            hashes.append(projected.sha256);
+
+            py::dict identity;
+            identity["engine_instance_id"] = snapshot.engine_instance_id;
+            identity["episode_id"] = snapshot.episode_id;
+            identity["decision_sequence"] = snapshot.snapshot_sequence;
+            identity["player_decision_sequence"] = snapshot.player_decision_sequences[player];
+            identity["player_id"] = snapshot.players[player].player_id;
+            identity["round"] = snapshot.round;
+            identity["lobby_index"] = lobby_index;
+            identities.append(std::move(identity));
+
+            py::dict physical;
+            py::tuple occupied(42), unit_uuids(42), shop_revisions(5);
+            for (std::size_t slot = 0; slot < 42; ++slot) {
+                occupied[slot] = projected.occupied[slot];
+                unit_uuids[slot] = projected.unit_uuids[slot];
+            }
+            for (std::size_t slot = 0; slot < 5; ++slot)
+                shop_revisions[slot] = projected.shop_offer_revisions[slot];
+            physical["occupied"] = std::move(occupied);
+            physical["unit_uuids"] = std::move(unit_uuids);
+            physical["shop_offer_revisions"] = std::move(shop_revisions);
+            entity_identity.append(std::move(physical));
+
+            if (item_catalog_hash.empty()) item_catalog_hash = projected.item_catalog_sha256;
+            else if (item_catalog_hash != projected.item_catalog_sha256)
+                throw std::runtime_error("native players disagree on item catalog fingerprint");
+        }
+    }
+
+    numeric.attr("setflags")(false);
+    champion_ids.attr("setflags")(false);
+    trait_ids.attr("setflags")(false);
+
+    // The flattened v8 carrier is the single allocation. When projection
+    // originates from NativeDecisionBatch, the item views' base bundle pins
+    // both that carrier and the batch owner for the entire view lifetime.
+    py::object item_view_owner = numeric;
+    if (!batch_owner.is_none()) {
+        py::dict owner_bundle;
+        owner_bundle["batch"] = std::move(batch_owner);
+        owner_bundle["numeric"] = numeric;
+        item_view_owner = std::move(owner_bundle);
+    }
+    constexpr py::ssize_t global_offset = 70;
+    constexpr py::ssize_t entity_width = 42 * 45;
+    constexpr py::ssize_t item_offset = global_offset + entity_width;
+    const auto make_item_view = [&](py::ssize_t offset,
+                                    std::vector<py::ssize_t> shape) {
+        if (shape.size() < 3)
+            throw std::runtime_error("semantic item view requires lobby, player and feature dimensions");
+        std::vector<py::ssize_t> strides(shape.size());
+        py::ssize_t stride = static_cast<py::ssize_t>(sizeof(float));
+        for (std::size_t i = shape.size(); i-- > 2;) {
+            strides[i] = stride;
+            stride *= shape[i];
+        }
+        // The numeric carrier is row-major [lobby, player, 7958]. A feature
+        // block is therefore a zero-copy strided view: each player row starts
+        // at the next full semantic row, not immediately after the prior
+        // player's slice. Claiming C-contiguity here would silently read
+        // unrelated features as the next player's item block.
+        strides[1] = static_cast<py::ssize_t>(numeric_dim * sizeof(float));
+        strides[0] = static_cast<py::ssize_t>(tft::kPlayersPerLobby * numeric_dim * sizeof(float));
+        py::array view(
+            py::dtype::of<float>(), shape, strides,
+            numeric_data + offset, item_view_owner
+        );
+        view.attr("setflags")(false);
+        return view;
+    };
+    py::dict item_blocks;
+    py::ssize_t item_cursor = item_offset;
+    const auto add_item_block = [&](const char* name,
+                                    std::initializer_list<py::ssize_t> tail_shape,
+                                    py::ssize_t element_count) {
+        std::vector<py::ssize_t> shape{
+            lobby_count, static_cast<py::ssize_t>(tft::kPlayersPerLobby)
+        };
+        shape.insert(shape.end(), tail_shape.begin(), tail_shape.end());
+        item_blocks[name] = make_item_view(item_cursor, std::move(shape));
+        item_cursor += element_count;
+    };
+    add_item_block("components", {10}, 10);
+    add_item_block("inventory", {9, 17}, 9 * 17);
+    add_item_block("recipes", {100, 17}, 100 * 17);
+    add_item_block("inventory_target_fit", {9, 37}, 9 * 37);
+    add_item_block("recipe_target_fit", {100, 37}, 100 * 37);
+    item_cursor += 3;  // anvil state is exposed separately below
+    add_item_block("anvil_options", {9, 11}, 9 * 11);
+    if (item_cursor != static_cast<py::ssize_t>(numeric_dim))
+        throw std::runtime_error("native semantic item block offsets do not cover v8 carrier");
+    item_blocks["anvil_state"] = make_item_view(
+        item_offset + 10 + 9 * 17 + 100 * 17 + 9 * 37 + 100 * 37,
+        {lobby_count, static_cast<py::ssize_t>(tft::kPlayersPerLobby), 3}
+    );
+
+    py::dict result;
+    result["numeric"] = numeric;
+    result["item_blocks"] = std::move(item_blocks);
+    result["champion_ids"] = std::move(champion_ids);
+    result["trait_ids"] = std::move(trait_ids);
+    result["hashes"] = std::move(hashes);
+    result["identities"] = std::move(identities);
+    result["entity_identity"] = std::move(entity_identity);
+    if (item_catalog_hash.empty()) result["item_catalog_sha256"] = py::none();
+    else result["item_catalog_sha256"] = item_catalog_hash;
+    result["contract_id"] = "tft.ppo.semantic-native-state.v8";
+    result["contract_hash"] = contract_hash;
+    return result;
+}
 
 py::dict reset_to_dict(tft::ResetResult reset, bool include_numeric_transport = true) {
     py::dict result;
@@ -1066,6 +1233,15 @@ public:
     py::array dones() const { return dones_; }
     py::array lobby_done() const { return lobby_done_; }
 
+    py::dict semantic_projection(const py::dict& catalog_map, const std::string& contract_hash) {
+        py::list snapshot_mappings;
+        for (const auto& context : contexts_)
+            snapshot_mappings.append(context["native_state_snapshot"]);
+        return semantic_projection_from_snapshot_mappings(
+            snapshot_mappings, catalog_map, contract_hash,
+            py::cast(shared_from_this()));
+    }
+
     py::dict lobby_result(std::size_t index) {
         if (index >= contexts_.size()) throw py::index_error("lobby index fora do NativeDecisionBatch.");
         py::dict result = contexts_[index];
@@ -1249,6 +1425,25 @@ public:
         }
         try { return std::make_shared<NativeDecisionBatch>(std::move(results)); }
         catch (...) { has_reset_ = false; throw; }
+    }
+
+    py::dict semantic_projection_from_snapshots(
+        const py::sequence& lobby_envelopes,
+        const py::dict& catalog_map,
+        const std::string& contract_hash
+    ) const {
+        py::list snapshot_mappings;
+        for (py::ssize_t lobby = 0; lobby < py::len(lobby_envelopes); ++lobby) {
+            py::object envelope = py::reinterpret_borrow<py::object>(lobby_envelopes[lobby]);
+            if (!py::isinstance<py::dict>(envelope))
+                throw py::type_error("each semantic lobby snapshot must be a mapping");
+            py::dict row = py::reinterpret_borrow<py::dict>(envelope);
+            if (!row.contains("native_state_snapshot"))
+                throw py::value_error("lobby snapshot is missing native_state_snapshot");
+            snapshot_mappings.append(row["native_state_snapshot"]);
+        }
+        return semantic_projection_from_snapshot_mappings(
+            snapshot_mappings, catalog_map, contract_hash);
     }
 
     TFTEngine& engine(std::size_t index) {
@@ -1525,6 +1720,7 @@ PYBIND11_MODULE(tft_engine, module) {
         .def_property_readonly("dones", &NativeDecisionBatch::dones)
         .def_property_readonly("lobby_done", &NativeDecisionBatch::lobby_done)
         .def("lobby_result", &NativeDecisionBatch::lobby_result, py::arg("index"))
+        .def("semantic_projection", &NativeDecisionBatch::semantic_projection, py::arg("catalog_map"), py::arg("contract_hash"))
         .def("__len__", &NativeDecisionBatch::size)
         .def("__getitem__", &NativeDecisionBatch::lobby_result);
 
@@ -1535,6 +1731,8 @@ PYBIND11_MODULE(tft_engine, module) {
         .def("reset", &NativeLobbyBatchManager::reset, py::arg("seed") = py::none())
         .def("engine", &NativeLobbyBatchManager::engine, py::arg("index"), py::return_value_policy::reference_internal)
         .def("step", &NativeLobbyBatchManager::step, py::arg("actions"))
+        .def("semantic_projection_from_snapshots", &NativeLobbyBatchManager::semantic_projection_from_snapshots,
+            py::arg("lobby_snapshots"), py::arg("catalog_map"), py::arg("contract_hash"))
         .def_property_readonly("lobby_count", &NativeLobbyBatchManager::lobby_count)
         .def_property_readonly("engine_instance_ids", &NativeLobbyBatchManager::engine_instance_ids)
         .def("close", &NativeLobbyBatchManager::close);

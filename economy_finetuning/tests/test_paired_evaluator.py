@@ -271,7 +271,13 @@ class PairedEvaluatorTests(unittest.TestCase):
         self.assertEqual(next_state[3]["decision_sequence"], 11)
         self.assertEqual(len(decision[3]["mask_snapshot_hash"]), 64)
 
+        entity_identity = {
+            "occupied": tuple([False] * SEMANTIC_ENTITY_SLOTS),
+            "unit_uuids": tuple([""] * SEMANTIC_ENTITY_SLOTS),
+            "shop_offer_revisions": (0, 0, 0, 0, 0),
+        }
         for row in decision:
+            row["semantic_entity_identity"] = entity_identity
             row["semantic_identity"] = {
                 key: row[key] for key in (
                     "engine_instance_id", "episode_id", "decision_sequence",
@@ -287,6 +293,7 @@ class PairedEvaluatorTests(unittest.TestCase):
             "numeric": numeric,
             "items": semantic_item_state_tensors(numeric),
             "champion_ids": torch.zeros((8, SEMANTIC_ENTITY_SLOTS), dtype=torch.long),
+            "entity_identity": [entity_identity] * 8,
             "identities": [row["semantic_identity"] for row in decision],
             "hashes": ["a" * 64] * 8,
             "contract_id": SEMANTIC_STATE_CONTRACT_ID,

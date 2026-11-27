@@ -287,6 +287,17 @@ include(CTest)
 
 if(BUILD_TESTING)
 
+    add_executable(test_semantic_sha256 tests/test_semantic_sha256.cpp)
+    configure_tft_module(test_semantic_sha256)
+    target_link_libraries(test_semantic_sha256 PRIVATE nlohmann_json::nlohmann_json)
+    add_test(NAME semantic_sha256 COMMAND test_semantic_sha256)
+
+    add_executable(test_semantic_projection_v8 tests/test_semantic_projection_v8.cpp)
+    configure_tft_module(test_semantic_projection_v8)
+    target_link_libraries(test_semantic_projection_v8 PRIVATE nlohmann_json::nlohmann_json)
+    enable_tft_test_assertions(test_semantic_projection_v8)
+    add_test(NAME semantic_projection_v8 COMMAND test_semantic_projection_v8)
+
     # -----------------------------------------------------
     # Composition Intelligence (isolated shadow foundation)
     # -----------------------------------------------------
