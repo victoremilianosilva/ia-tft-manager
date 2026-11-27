@@ -13,6 +13,8 @@ int main() {
     snapshot->shared_pool.contract_id = "tft.shared-champion-pool-snapshot";
     snapshot->shared_pool.contract_version = 2;
     snapshot->shared_pool.catalog_fingerprint = "sha256:test-catalog";
+    snapshot->shared_pool.champions.push_back({7, "TFT_Test", 2, 25, 11});
+    snapshot->shared_pool.total_available = 11;
     for (std::size_t i = 0; i < tft::kPlayersPerLobby; ++i) {
         snapshot->player_decision_sequences[i] = 20 + i;
         auto& player = snapshot->players[i];
@@ -25,6 +27,13 @@ int main() {
     }
     snapshot->players[0].board[0].occupied = true;
     snapshot->players[0].board[0].trait_names = {"Trait_A", "Trait_A", "Trait_B"};
+    snapshot->players[0].board[0].uuid = "physical-board-copy";
+    snapshot->players[0].gold = 37;
+    snapshot->players[0].level = 6;
+    snapshot->players[0].xp = 8;
+    snapshot->players[0].shop_offer_revisions[0] = 19;
+    snapshot->players[0].item_inventory = {"TFT_Item_Test"};
+    snapshot->players[0].equipped_items.push_back({"physical-board-copy", "board", 0, "TFT_Item_Test"});
     snapshot->players[0].bench[0].occupied = true;
     snapshot->players[0].bench[0].trait_names = {"Trait_A", "Trait_C"};
 
@@ -33,7 +42,14 @@ int main() {
     assert(context.player_count() == 8);
     assert(context.shared_pool().contract_version == 2);
     assert(context.shared_pool().catalog_fingerprint == "sha256:test-catalog");
+    assert(context.shared_pool().total_available == 11);
+    assert(context.shared_pool().champions.front().available_count == 11);
     assert(context.player(7).player_id == 7);
+    assert(context.player(0).gold == 37 && context.player(0).level == 6);
+    assert(context.player(0).board[0].uuid == "physical-board-copy");
+    assert(context.player(0).shop_offer_revisions[0] == 19);
+    assert(context.player(0).item_inventory.front() == "TFT_Item_Test");
+    assert(context.player(0).equipped_items.front().unit_uuid == "physical-board-copy");
     assert(context.strategic_availability(0) == tft::ContextAvailability::Unknown);
     assert(context.item_inventory_availability(0) == tft::ContextAvailability::Unknown);
     assert(context.pending_anvil_availability(0) == tft::ContextAvailability::NotApplicable);
