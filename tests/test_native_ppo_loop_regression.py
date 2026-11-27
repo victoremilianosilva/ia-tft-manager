@@ -66,6 +66,8 @@ def test_native_mask_blocks_reverse_swap_and_executor_rejects_forced_reverse():
 
         native_snapshot_after_setup = lobby.get_audit_snapshot()
         before = native_snapshot_after_setup["players"][0]
+        first_uuid = before["board"][3]["uuid"]
+        second_uuid = before["board"][10]["uuid"]
         before_signature = _state_signature(before)
         # Test-only setters mutate native state outside reset/step. Refresh the
         # wrapper's source snapshot at the same sequence so action facts are
@@ -85,7 +87,18 @@ def test_native_mask_blocks_reverse_swap_and_executor_rejects_forced_reverse():
 
         actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
         actions[0] = _move_action(3, 10)
-        lobby.step(actions)
+        _, _, _, forward_info = lobby.step(actions)
+
+        native_deltas = {
+            row["uuid"]: row
+            for row in forward_info["action_trace"][0]["unit_deltas"]
+        }
+        assert native_deltas[first_uuid]["kind"] == "moved"
+        assert native_deltas[first_uuid]["slot_before"] == 3
+        assert native_deltas[first_uuid]["slot_after"] == 10
+        assert native_deltas[second_uuid]["kind"] == "moved"
+        assert native_deltas[second_uuid]["slot_before"] == 10
+        assert native_deltas[second_uuid]["slot_after"] == 3
 
         after_forward = lobby.get_audit_snapshot()["players"][0]
         assert _state_signature(after_forward) != before_signature, (
