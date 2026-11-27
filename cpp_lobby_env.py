@@ -57,11 +57,11 @@ class _NativeFrozenDict(FrozenDict):
     """Shallow, recursively read-only view over one native-owned record."""
 
     def __init__(self, values=()):
-        dict.__init__(self)
+        # Populate the shallow backing dict in CPython's C implementation.
+        # The previous Python-level loop crossed the interpreter once per
+        # snapshot field even though the source is already a materialized dict.
+        dict.__init__(self, values)
         self._view_cache = {}
-        source = values.items() if isinstance(values, Mapping) else values
-        for key, value in source:
-            dict.__setitem__(self, key, value)
 
     def __getitem__(self, key):
         value = dict.__getitem__(self, key)
@@ -106,10 +106,10 @@ class _NativeFrozenList(FrozenList):
     """Shallow, recursively read-only list view over native-owned values."""
 
     def __init__(self, values=()):
-        list.__init__(self)
+        # Copy the already-materialized native sequence in one C-level pass
+        # instead of issuing one Python list.append call per snapshot value.
+        list.__init__(self, values)
         self._view_cache = {}
-        for value in values:
-            list.append(self, value)
 
     def __getitem__(self, index):
         if isinstance(index, slice):
