@@ -277,6 +277,18 @@ else()
 
 
 
+    # NativeDecisionContext: immutable typed view over one correlated snapshot.
+    add_executable(
+        test_native_decision_context
+        tests/test_native_decision_context.cpp
+    )
+    configure_tft_module(test_native_decision_context)
+    enable_tft_test_assertions(test_native_decision_context)
+    add_test(
+        NAME native_decision_context
+        COMMAND test_native_decision_context
+    )
+
 endif()
 
 # =========================================================
