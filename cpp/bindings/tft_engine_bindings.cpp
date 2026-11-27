@@ -1768,8 +1768,9 @@ PYBIND11_MODULE(tft_engine, module) {
             result["champions"] = std::move(champions);
             return result;
         })
-        .def("player", [](const tft::NativeDecisionContext& context, std::size_t index) {
-            return audit_player_snapshot_to_dict(context.player(index), false);
+        .def("player", [](std::shared_ptr<tft::NativeDecisionContext> context, std::size_t index) {
+            const auto owner = py::cast(context);
+            return audit_player_snapshot_to_dict(context->player(index), false, owner);
         }, py::arg("index"))
         .def("provenance", [](const tft::NativeDecisionContext& context, std::size_t index) {
             const auto source = context.provenance(index);
