@@ -109,10 +109,15 @@ def test_rollout_replay_keeps_semantic_identity_and_hash_with_the_same_row():
         "player_id": 0, "round": 1, "lobby_index": 0,
     }
     digest = "a" * 64
+    entity_identity = {
+        "occupied": tuple([False] * SEMANTIC_ENTITY_SLOTS),
+        "unit_uuids": tuple([""] * SEMANTIC_ENTITY_SLOTS),
+        "shop_offer_revisions": (0, 0, 0, 0, 0),
+    }
     decision = dict(identity)
     decision.update({
         "semantic_identity": identity,
-        "semantic_entity_identity": semantic["entity_identity"][0],
+        "semantic_entity_identity": entity_identity,
         "semantic_projection_hash": digest,
         "semantic_projection_contract_id": "tft.ppo.semantic-native-state.v8",
         "semantic_projection_contract_hash": "b" * 64,
@@ -140,11 +145,7 @@ def test_rollout_replay_keeps_semantic_identity_and_hash_with_the_same_row():
         "numeric": semantic_numeric,
         "items": semantic_item_state_tensors(semantic_numeric),
         "champion_ids": torch.zeros((1, SEMANTIC_ENTITY_SLOTS), dtype=torch.long),
-        "entity_identity": [{
-            "occupied": tuple([False] * SEMANTIC_ENTITY_SLOTS),
-            "unit_uuids": tuple([""] * SEMANTIC_ENTITY_SLOTS),
-            "shop_offer_revisions": (0, 0, 0, 0, 0),
-        }],
+        "entity_identity": [entity_identity],
         "identities": [identity], "hashes": [digest],
         "contract_id": "tft.ppo.semantic-native-state.v8",
         "contract_hash": "b" * 64,
