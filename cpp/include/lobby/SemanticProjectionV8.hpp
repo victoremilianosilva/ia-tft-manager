@@ -63,14 +63,14 @@ inline void append(std::vector<double>& out, const std::array<T, N>& values) {
     for (const auto value : values) out.push_back(static_cast<double>(value));
 }
 template <std::size_t R, std::size_t C>
-inline void append(std::vector<float>& out, const std::array<std::array<float, C>, R>& values) {
+inline void append(std::vector<double>& out, const std::array<std::array<float, C>, R>& values) {
     for (const auto& row : values) append(out, row);
 }
-inline void append(std::vector<float>& out, const std::array<float, 10>& values) {
+inline void append(std::vector<double>& out, const std::array<float, 10>& values) {
     for (const auto value : values) out.push_back(static_cast<double>(value));
 }
 inline double normalized_feature(double value, double denominator) {
-    return std::min(value / denominator, 1.0f);
+    return std::min(value / denominator, 1.0);
 }
 inline double nonnegative(std::int32_t value) {
     return static_cast<double>(std::max(value, 0));
@@ -164,7 +164,7 @@ inline Projection project_player(
     auto& g = result.numeric;
     g.reserve(7958);
     g.push_back(static_cast<double>(state.hp / 100.0));
-    g.push_back(static_cast<float>(state.damage_taken / 100.0));
+    g.push_back(static_cast<double>(state.damage_taken / 100.0));
     g.push_back(state.alive ? 1.0f : 0.0f);
     g.push_back(nonnegative(state.wins) / 100.0f);
     g.push_back(nonnegative(state.losses) / 100.0f);
@@ -175,38 +175,38 @@ inline Projection project_player(
     g.push_back(nonnegative(state.loss_streak) / 10.0f);
     g.push_back(nonnegative(state.gold_before_interest) / 200.0f);
     g.push_back(nonnegative(state.interest_if_resolved_now) / 5.0f);
-    g.push_back(state.placement ? static_cast<float>(placement) / 8.0f : 0.0f);
+    g.push_back(state.placement ? static_cast<double>(placement) / 8.0f : 0.0f);
     g.push_back(state.placement ? 1.0f : 0.0f);
     g.push_back(state.opponent_id ? 1.0f : 0.0f);
-    g.push_back(static_cast<float>(snapshot.stage) / 7.0f);
-    g.push_back(static_cast<float>(snapshot.round) / 50.0f);
+    g.push_back(static_cast<double>(snapshot.stage) / 7.0f);
+    g.push_back(static_cast<double>(snapshot.round) / 50.0f);
     g.push_back(strategic.active_composition_valid ? 1.0f : 0.0f);
     g.push_back(strategic.direction_valid ? 1.0f : 0.0f);
     g.push_back(strategic.pivot_candidate_valid ? 1.0f : 0.0f);
     g.push_back(strategic.opportunity_cost_available ? 1.0f : 0.0f);
-    g.push_back(static_cast<float>(std::min<std::size_t>(level > board_count ? level - board_count : 0, 9)) / 9.0f);
-    g.push_back(static_cast<float>(9 - bench_count) / 9.0f);
-    g.push_back(static_cast<float>(std::min<std::uint32_t>(state.actions_taken_this_round, 10)) / 10.0f);
+    g.push_back(static_cast<double>(std::min<std::size_t>(level > board_count ? level - board_count : 0, 9)) / 9.0f);
+    g.push_back(static_cast<double>(9 - bench_count) / 9.0f);
+    g.push_back(static_cast<double>(std::min<std::uint32_t>(state.actions_taken_this_round, 10)) / 10.0f);
     for (const auto age : state.board_move_age)
-        g.push_back(static_cast<float>(std::min<std::uint32_t>(age, 10)) / 10.0f);
+        g.push_back(static_cast<double>(std::min<std::uint32_t>(age, 10)) / 10.0f);
     g.push_back(strategic.planner_outputs_valid ? 1.0f : 0.0f);
     g.push_back(strategic.strategic_refresh_failed ? 1.0f : 0.0f);
-    g.push_back(static_cast<float>(state.board_quality_score));
-    g.push_back(static_cast<float>(state.board_positional_score));
-    g.push_back(static_cast<float>(state.board_structural_score));
-    g.push_back(static_cast<float>(state.board_exposed_carries) / 9.0f);
-    g.push_back(static_cast<float>(state.board_frontline_count) / 9.0f);
-    g.push_back(static_cast<float>(state.board_isolated_frontline_count) / 9.0f);
-    g.push_back(static_cast<float>(state.board_important_bench_units_unplayed) / 9.0f);
-    g.push_back(static_cast<float>(state.board_frontline_lane_count) / 7.0f);
-    g.push_back(static_cast<float>(state.board_exposed_main_carries) / 9.0f);
-    g.push_back(static_cast<float>(state.board_fragile_frontline_count) / 9.0f);
-    g.push_back(static_cast<float>(state.board_missing_frontline_count) / 9.0f);
-    g.push_back(static_cast<float>(state.board_missing_backline_count) / 9.0f);
-    g.push_back(static_cast<float>(state.board_active_trait_count) / 28.0f);
-    g.push_back(static_cast<float>(state.board_strategic_fit_score));
-    g.push_back(static_cast<float>(state.board_unit_quality_score));
-    g.push_back(static_cast<float>(state.board_trait_coherence_score));
+    g.push_back(static_cast<double>(state.board_quality_score));
+    g.push_back(static_cast<double>(state.board_positional_score));
+    g.push_back(static_cast<double>(state.board_structural_score));
+    g.push_back(static_cast<double>(state.board_exposed_carries) / 9.0f);
+    g.push_back(static_cast<double>(state.board_frontline_count) / 9.0f);
+    g.push_back(static_cast<double>(state.board_isolated_frontline_count) / 9.0f);
+    g.push_back(static_cast<double>(state.board_important_bench_units_unplayed) / 9.0f);
+    g.push_back(static_cast<double>(state.board_frontline_lane_count) / 7.0f);
+    g.push_back(static_cast<double>(state.board_exposed_main_carries) / 9.0f);
+    g.push_back(static_cast<double>(state.board_fragile_frontline_count) / 9.0f);
+    g.push_back(static_cast<double>(state.board_missing_frontline_count) / 9.0f);
+    g.push_back(static_cast<double>(state.board_missing_backline_count) / 9.0f);
+    g.push_back(static_cast<double>(state.board_active_trait_count) / 28.0f);
+    g.push_back(static_cast<double>(state.board_strategic_fit_score));
+    g.push_back(static_cast<double>(state.board_unit_quality_score));
+    g.push_back(static_cast<double>(state.board_trait_coherence_score));
     if (g.size() != kGlobalFeatures) throw std::runtime_error("semantic global v8 layout mismatch");
 
     auto project_group = [&](const auto& units, std::size_t offset, bool shop) {
@@ -230,16 +230,16 @@ inline Projection project_player(
             const auto star = std::max(unit.star, 0);
             const auto cost = std::max(unit.cost, 0);
             g.insert(g.end(), {
-                1.0f, static_cast<float>(star) / 3.0f, static_cast<float>(cost) / 5.0f,
-                static_cast<float>(std::min<std::size_t>(unit.item_ids.size(), 9)) / 9.0f,
-                static_cast<float>(std::min<std::size_t>(unit.trait_names.size(), 10)) / 10.0f,
+                1.0f, static_cast<double>(star) / 3.0f, static_cast<double>(cost) / 5.0f,
+                static_cast<double>(std::min<std::size_t>(unit.item_ids.size(), 9)) / 9.0f,
+                static_cast<double>(std::min<std::size_t>(unit.trait_names.size(), 10)) / 10.0f,
                 champion_valid ? 1.0f : 0.0f,
                 native_id >= 0 && active.contains(native_id) ? 1.0f : 0.0f,
                 native_id >= 0 && core.contains(native_id) ? 1.0f : 0.0f,
                 native_id >= 0 && direction.contains(native_id) ? 1.0f : 0.0f,
                 native_id >= 0 && pivot.contains(native_id) ? 1.0f : 0.0f,
-                static_cast<float>(std::min(copies, 9)) / 9.0f,
-                static_cast<float>(toward) / 2.0f
+                static_cast<double>(std::min(copies, 9)) / 9.0f,
+                static_cast<double>(toward) / 2.0f
             });
             std::array<float, 17> target_profile{};
             if (!shop) {
@@ -249,29 +249,29 @@ inline Projection project_player(
                 target_profile[0] = 1.0f;
                 target_profile[1] = on_board ? 1.0f : 0.0f;
                 target_profile[2] = on_board ? 0.0f : 1.0f;
-                target_profile[3] = static_cast<float>(star) / 3.0f;
+                target_profile[3] = static_cast<double>(star) / 3.0f;
                 target_profile[4 + role] = 1.0f;
                 target_profile[9] = on_board && slot / 7 <= 1 ? 1.0f : 0.0f;
                 target_profile[10] = on_board && slot / 7 >= 2 ? 1.0f : 0.0f;
-                target_profile[11] = unit.attack_damage <= 0.0 ? 0.0f : normalized_feature(static_cast<float>(unit.attack_damage), 200.0f);
-                target_profile[12] = unit.attack_speed <= 0.0 ? 0.0f : normalized_feature(static_cast<float>(unit.attack_speed), 2.0f);
-                target_profile[13] = unit.max_health <= 0.0 ? 0.0f : normalized_feature(static_cast<float>(unit.max_health), 2000.0f);
-                target_profile[14] = unit.armor <= 0.0 ? 0.0f : normalized_feature(static_cast<float>(unit.armor), 150.0f);
-                target_profile[15] = unit.magic_resist <= 0.0 ? 0.0f : normalized_feature(static_cast<float>(unit.magic_resist), 150.0f);
-                target_profile[16] = static_cast<float>(std::min<std::size_t>(unit.item_ids.size(), 3)) / 3.0f;
+                target_profile[11] = unit.attack_damage <= 0.0 ? 0.0f : normalized_feature(static_cast<double>(unit.attack_damage), 200.0f);
+                target_profile[12] = unit.attack_speed <= 0.0 ? 0.0f : normalized_feature(static_cast<double>(unit.attack_speed), 2.0f);
+                target_profile[13] = unit.max_health <= 0.0 ? 0.0f : normalized_feature(static_cast<double>(unit.max_health), 2000.0f);
+                target_profile[14] = unit.armor <= 0.0 ? 0.0f : normalized_feature(static_cast<double>(unit.armor), 150.0f);
+                target_profile[15] = unit.magic_resist <= 0.0 ? 0.0f : normalized_feature(static_cast<double>(unit.magic_resist), 150.0f);
+                target_profile[16] = static_cast<double>(std::min<std::size_t>(unit.item_ids.size(), 3)) / 3.0f;
             }
             append(g, target_profile);
             if (unit.trait_names.size() > kTraitSlots) throw std::runtime_error("semantic trait slot overflow");
             for (const auto& trait : unit.trait_names)
-                g.push_back(static_cast<float>(trait_id(trait)) / static_cast<float>(kTraitVocab));
+                g.push_back(static_cast<double>(trait_id(trait)) / static_cast<double>(kTraitVocab));
             g.insert(g.end(), kTraitSlots - unit.trait_names.size(), 0.0f);
             const auto p = priorities.find(native_id);
             const auto o = opportunities.find(native_id);
-            g.push_back(p == priorities.end() ? 0.0f : static_cast<float>(std::min(p->second.priority, 100)) / 100.0f);
-            g.push_back(p == priorities.end() ? 0.0f : static_cast<float>(p->second.intent) / 6.0f);
+            g.push_back(p == priorities.end() ? 0.0f : static_cast<double>(std::min(p->second.priority, 100)) / 100.0f);
+            g.push_back(p == priorities.end() ? 0.0f : static_cast<double>(p->second.intent) / 6.0f);
             g.push_back(native_id >= 0 && selected.contains(native_id) ? 1.0f : 0.0f);
             g.push_back(native_id >= 0 && target.contains(native_id) ? 1.0f : 0.0f);
-            g.push_back(o == opportunities.end() ? 0.0f : static_cast<float>(std::min(o->second.value, 100.0)) / 100.0f);
+            g.push_back(o == opportunities.end() ? 0.0f : static_cast<double>(std::min(o->second.value, 100.0)) / 100.0f);
             g.push_back(o == opportunities.end() ? 0.0f : 1.0f);
             result.champion_ids[entity_index] = native_id < 0 ? 0 : static_cast<std::int64_t>(native_id) + 1;
         }
