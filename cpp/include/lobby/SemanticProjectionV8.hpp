@@ -9,6 +9,7 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -161,7 +162,7 @@ inline Projection project_player(
     const auto entry = validate_id_list(strategic.lineup_entry_unit_ids, "lineup_entry_unit_ids");
     const auto exit = validate_id_list(strategic.lineup_exit_unit_ids, "lineup_exit_unit_ids");
     const auto deferred = validate_id_list(strategic.lineup_deferred_unit_ids, "lineup_deferred_unit_ids");
-    if (!std::includes(active.begin(), active.end(), core.begin(), core.end()) ||
+    if (!std::all_of(core.begin(), core.end(), [&](const auto id) { return active.contains(id); }) ||
         (!strategic.active_composition_valid && !active.empty()) ||
         (!strategic.direction_valid && !direction.empty()) ||
         (!strategic.pivot_candidate_valid && !pivot.empty()))
