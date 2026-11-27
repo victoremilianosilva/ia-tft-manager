@@ -41,7 +41,11 @@ for _build_dir in reversed(_CPP_BUILD_DIRS):
         sys.path.insert(0, str(_build_dir))
 
 try:
-    from tft_engine import TFTLobby as _NativeTFTLobby, LobbyBatchManager as _NativeLobbyBatchManager
+    from tft_engine import (
+    TFTLobby as _NativeTFTLobby,
+    LobbyBatchManager as _NativeLobbyBatchManager,
+    NativeAuditUnitView as _NativeAuditUnitView,
+)
 except ImportError as exc:
     raise ImportError(
         "Não foi possível importar tft_engine. "
@@ -147,7 +151,52 @@ def _is_native_snapshot_scalar(value):
     return value is None or isinstance(value, (str, bytes, int, float, bool))
 
 
+class _NativeUnitMapping(Mapping):
+    """Lazy, read-only Mapping over one unit in a pinned native snapshot."""
+
+    _KEYS = (
+        "occupied", "champion_internal_id", "champion_id", "uuid",
+        "star", "cost", "items", "trait_names", "role",
+        "attack_damage", "attack_speed", "max_health", "armor",
+        "magic_resist",
+    )
+    _KEY_SET = frozenset(_KEYS)
+
+    def __init__(self, view):
+        self._view = view
+        self._cache = {}
+
+    def __getitem__(self, key):
+        if key not in self._KEY_SET:
+            raise KeyError(key)
+        if key not in self._cache:
+            self._cache[key] = _wrap_native_snapshot_value(self._view[key])
+        return self._cache[key]
+
+    def get(self, key, default=None):
+        if key not in self._KEY_SET:
+            return default
+        return self[key]
+
+    def __iter__(self):
+        return iter(self._KEYS)
+
+    def __len__(self):
+        return len(self._KEYS)
+
+    def keys(self):
+        return self._KEYS
+
+    def __deepcopy__(self, memo):
+        memo[id(self)] = self
+        return self
+
+
 def _wrap_native_snapshot_value(value):
+    if isinstance(value, _NativeUnitMapping):
+        return value
+    if isinstance(value, _NativeAuditUnitView):
+        return _NativeUnitMapping(value)
     if isinstance(value, (_NativeFrozenDict, _NativeFrozenList)):
         return value
     if isinstance(value, Mapping):

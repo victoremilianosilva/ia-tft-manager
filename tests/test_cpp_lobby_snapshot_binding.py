@@ -1289,6 +1289,11 @@ def test_native_snapshot_handle_caches_frozen_ownership_view(monkeypatch):
         first_player = native_players[0]
         assert isinstance(first_player, FrozenDict)
         assert isinstance(first_player["board"], FrozenList)
+        first_native_unit = first_player["board"][0]
+        assert isinstance(first_native_unit, cpp_lobby_env._NativeUnitMapping)
+        assert isinstance(first_native_unit, Mapping)
+        assert first_native_unit is first_player["board"][0]
+        assert first_native_unit["occupied"] is False
         assert player_calls == [0]
         assert native_players[0] is first_player
         assert player_calls == [0]
@@ -1506,6 +1511,38 @@ def test_native_item_feature_views_are_readonly_and_pin_snapshot_after_wrapper_r
         assert value.dtype == np.float32
         assert not value.flags.writeable
         assert np.isfinite(value).all()
+
+
+
+def test_native_unit_view_pins_snapshot_and_materializes_fields_lazily():
+    import gc
+
+    wrapper = cpp_lobby_env.CppTFTLobbyWrapper(seed=579)
+    try:
+        wrapper.reset()
+        snapshot = wrapper._last_snapshot_metadata["native_state_snapshot"]
+        unit = snapshot["players"][0]["board"][0]
+        assert isinstance(unit, Mapping)
+        assert isinstance(unit, cpp_lobby_env._NativeUnitMapping)
+        assert unit["occupied"] is False
+        assert unit["uuid"] == ""
+        items = unit["items"]
+        assert isinstance(items, cpp_lobby_env._NativeFrozenList)
+        assert list(items) == []
+
+        del snapshot
+        wrapper.close()
+        del wrapper
+        gc.collect()
+
+        # The view owns the capsule that pins the immutable native snapshot.
+        assert unit["champion_internal_id"] == -1
+        assert unit["trait_names"] == []
+        with pytest.raises(TypeError, match="immutable"):
+            items.append("forbidden")
+    finally:
+        wrapper.close()
+
 
 
 def test_wrapper_accepts_version_four_strategic_owner_contract():

@@ -245,6 +245,65 @@ py::list player_info_to_list(const Players& players) {
     return result;
 }
 
+class NativeAuditUnitView {
+public:
+    NativeAuditUnitView(const tft::AuditUnitSnapshot* unit, py::object owner)
+        : unit_(unit), owner_(std::move(owner)) {
+        if (unit_ == nullptr || owner_.is_none()) {
+            throw std::invalid_argument("Native audit unit view requires a pinned snapshot owner.");
+        }
+    }
+
+    py::list keys() const {
+        py::list result;
+        for (const char* field : {
+            "occupied", "champion_internal_id", "champion_id", "uuid",
+            "star", "cost", "items", "trait_names", "role",
+            "attack_damage", "attack_speed", "max_health", "armor",
+            "magic_resist"
+        }) {
+            result.append(field);
+        }
+        return result;
+    }
+
+    py::object get(const std::string& field, py::object default_value = py::none()) const {
+        if (field == "occupied") return py::bool_(unit_->occupied);
+        if (field == "champion_internal_id") return py::int_(unit_->champion_internal_id);
+        if (field == "champion_id") return py::str(unit_->champion_id);
+        if (field == "uuid") return py::str(unit_->uuid);
+        if (field == "star") return py::int_(unit_->star);
+        if (field == "cost") return py::int_(unit_->cost);
+        if (field == "items") return py::cast(unit_->item_ids);
+        if (field == "trait_names") return py::cast(unit_->trait_names);
+        if (field == "role") return py::int_(unit_->role);
+        if (field == "attack_damage") return py::float_(unit_->attack_damage);
+        if (field == "attack_speed") return py::float_(unit_->attack_speed);
+        if (field == "max_health") return py::float_(unit_->max_health);
+        if (field == "armor") return py::float_(unit_->armor);
+        if (field == "magic_resist") return py::float_(unit_->magic_resist);
+        return default_value;
+    }
+
+    py::object item(const std::string& field) const {
+        static const std::array<const char*, 14> fields{{
+            "occupied", "champion_internal_id", "champion_id", "uuid",
+            "star", "cost", "items", "trait_names", "role",
+            "attack_damage", "attack_speed", "max_health", "armor",
+            "magic_resist"
+        }};
+        for (const auto* candidate : fields) {
+            if (field == candidate) return get(field);
+        }
+        throw py::key_error(field);
+    }
+
+private:
+    const tft::AuditUnitSnapshot* unit_;
+    // Keeps the immutable AuditSnapshot alive for the lifetime of this view.
+    py::object owner_;
+};
+
 py::dict audit_player_snapshot_to_dict(
     const tft::AuditPlayerSnapshot& player,
     bool include_masks = true,
@@ -267,6 +326,12 @@ py::dict audit_player_snapshot_to_dict(
         d["armor"] = unit.armor;
         d["magic_resist"] = unit.magic_resist;
         return d;
+    };
+    const auto unit_to_value = [&](const tft::AuditUnitSnapshot& unit) -> py::object {
+        if (!item_view_owner.is_none()) {
+            return py::cast(NativeAuditUnitView(&unit, item_view_owner));
+        }
+        return unit_to_dict(unit);
     };
     py::dict p;
         p["player_id"] = player.player_id;
@@ -417,9 +482,9 @@ py::dict audit_player_snapshot_to_dict(
         p["round_streak_gold"] = player.round_streak_gold;
         p["round_win_gold"] = player.round_win_gold;
         py::list board, bench, shop;
-        for (const auto& unit : player.board) board.append(unit_to_dict(unit));
-        for (const auto& unit : player.bench) bench.append(unit_to_dict(unit));
-        for (const auto& unit : player.shop) shop.append(unit_to_dict(unit));
+        for (const auto& unit : player.board) board.append(unit_to_value(unit));
+        for (const auto& unit : player.bench) bench.append(unit_to_value(unit));
+        for (const auto& unit : player.shop) shop.append(unit_to_value(unit));
         p["board"] = board;
         p["bench"] = bench;
         p["positioning_contract_id"] = player.positioning_contract_id;
@@ -1285,6 +1350,12 @@ PYBIND11_MODULE(tft_engine, module) {
     // reset -> step -> máscaras/diagnósticos de treino -> close.
     // Estado interno, hooks de fixture e consultas de implementação não
     // atravessam a fronteira Python/C++.
+    py::class_<NativeAuditUnitView>(module, "NativeAuditUnitView")
+        .def("keys", &NativeAuditUnitView::keys)
+        .def("get", &NativeAuditUnitView::get,
+             py::arg("field"), py::arg("default_value") = py::none())
+        .def("__getitem__", &NativeAuditUnitView::item);
+
     py::class_<NativeAuditSnapshotHandle>(module, "NativeAuditSnapshotHandle")
         .def("to_dict", &NativeAuditSnapshotHandle::to_dict)
         .def("to_envelope_dict", &NativeAuditSnapshotHandle::to_envelope_dict)
