@@ -585,6 +585,7 @@ py::dict audit_snapshot_to_dict(
     pool_dict["contract_id"] = pool.contract_id;
     pool_dict["contract_version"] = pool.contract_version;
     pool_dict["producer"] = pool.producer;
+    pool_dict["catalog_fingerprint"] = pool.catalog_fingerprint;
     pool_dict["total_available"] = pool.total_available;
     py::list pool_champions;
     for (const auto& champion : pool.champions) {
@@ -1754,6 +1755,7 @@ PYBIND11_MODULE(tft_engine, module) {
             result["contract_id"] = pool.contract_id;
             result["contract_version"] = pool.contract_version;
             result["producer"] = pool.producer;
+            result["catalog_fingerprint"] = pool.catalog_fingerprint;
             result["total_available"] = pool.total_available;
             py::list champions;
             for (const auto& champion : pool.champions) {
