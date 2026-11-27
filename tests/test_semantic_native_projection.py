@@ -285,3 +285,75 @@ def test_terminal_auto_reset_next_snapshot_uses_native_semantic_projection():
         assert native["identities"] == [row["identity"] for row in oracle]
     finally:
         env.close()
+
+def test_native_semantic_projection_matches_oracle_with_equipped_item_state():
+    root = Path(__file__).resolve().parents[1]
+    item_catalog = root / "data" / "itens.json"
+    manager = _NativeLobbyBatchManager(1, 7313, "", str(item_catalog))
+    native_engine = manager.engine(0)
+    env = LobbyVectorEnv(
+        [
+            lambda: CppTFTLobbyWrapper(
+                seed=7313,
+                item_catalog_path=str(item_catalog),
+                native_engine=native_engine,
+            )
+        ],
+        batch_manager=manager,
+    )
+    try:
+        env.reset(seed=87313)
+        before = native_engine.get_audit_snapshot()["players"][0]
+        starter_slot = next(
+            (slot for slot, unit in enumerate(before["bench"]) if unit["occupied"]),
+            None,
+        )
+        assert starter_slot is not None
+        starter_uuid = before["bench"][starter_slot]["uuid"]
+        assert starter_uuid
+
+        item_id = "TFT_Item_AdaptiveHelm"
+        assert native_engine.add_completed_item_for_testing(0, item_id)
+        actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        actions[0] = [7, 0, 28 + starter_slot, 0, 0, 0]
+        env.step([actions])
+
+        after = native_engine.get_audit_snapshot()["players"][0]
+        assert after["item_inventory"] == []
+        assert any(
+            row["unit_uuid"] == starter_uuid and row["catalog_id"] == item_id
+            for row in after["equipped_items"]
+        )
+
+        snapshots = env.get_snapshot_metadata()
+        catalog_map = env.envs[0].get_champion_id_map()
+        contract = build_semantic_state_checkpoint_contract(catalog_map)
+        native = env._last_native_batch.semantic_projection(
+            catalog_map, contract["sha256"]
+        )
+        oracle_rows = Trainer._expand_lobby_snapshot_metadata(
+            snapshots, 8, "equipped-item semantic parity oracle"
+        )
+        oracle = [
+            project_native_player_state(row, catalog_map)
+            for row in oracle_rows
+        ]
+        expected_numeric = np.asarray(
+            [row["numeric"] for row in oracle], dtype=np.float32
+        )
+        expected_champion_ids = np.asarray(
+            [row["champion_ids"] for row in oracle], dtype=np.int64
+        )
+        np.testing.assert_array_equal(
+            native["numeric"].reshape(8, -1), expected_numeric
+        )
+        np.testing.assert_array_equal(
+            native["champion_ids"].reshape(8, -1), expected_champion_ids
+        )
+        assert native["hashes"] == [row["sha256"] for row in oracle]
+        assert native["identities"] == [row["identity"] for row in oracle]
+        assert native["entity_identity"] == [
+            row["entity_identity"] for row in oracle
+        ]
+    finally:
+        env.close()
