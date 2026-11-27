@@ -125,6 +125,22 @@ def test_native_semantic_v8_projection_matches_python_oracle_exactly():
             assert block.flags.c_contiguous
             assert not block.flags.writeable
             assert np.shares_memory(block, native["numeric"])
+        # Verify every typed block is an exact view of its canonical v8
+        # numeric carrier region, not merely a correctly-shaped alias.
+        item_offsets = {
+            "components": (1960, 10),
+            "inventory": (1970, 9 * 17),
+            "recipes": (2123, 100 * 17),
+            "inventory_target_fit": (3823, 9 * 37),
+            "recipe_target_fit": (4156, 100 * 37),
+            "anvil_state": (7856, 3),
+            "anvil_options": (7859, 9 * 11),
+        }
+        carrier = native["numeric"].reshape(8, -1)
+        for name, (offset, width) in item_offsets.items():
+            expected = carrier[:, offset:offset + width].reshape(item_blocks[name].shape)
+            np.testing.assert_array_equal(item_blocks[name], expected)
+
         # Views retain their backing allocation even if the dictionary's
         # direct carrier reference is released.
         retained_components = item_blocks["components"]
