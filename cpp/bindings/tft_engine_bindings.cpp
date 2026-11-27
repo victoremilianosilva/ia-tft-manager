@@ -1082,7 +1082,7 @@ public:
         const auto lobby_count = static_cast<py::ssize_t>(contexts_.size());
         py::array_t<float> numeric({lobby_count, static_cast<py::ssize_t>(kPlayers),
             static_cast<py::ssize_t>(numeric_dim)});
-        py::array_t<std::int64_t> champion_ids({lobby_count, static_cast<py::ssize_t>(kPlayers), 42});
+        py::array_t<std::int64_t> champion_ids(py::array::ShapeContainer{lobby_count, static_cast<py::ssize_t>(kPlayers), static_cast<py::ssize_t>(42)});
         auto* numeric_data = numeric.mutable_data();
         auto* champion_data = champion_ids.mutable_data();
         py::list hashes;
