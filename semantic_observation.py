@@ -72,8 +72,8 @@ def validate_semantic_policy_state_dict(state_dict: Mapping) -> None:
         )
 
 
-def semantic_item_state_tensors(numeric):
-    """Expose named item/anvil tensors from the identity-bound semantic row."""
+def semantic_item_state_tensors(numeric, trait_ids=None):
+    """Expose item/anvil views and native categorical trait IDs from a v8 batch."""
     if not isinstance(numeric, __import__("torch").Tensor):
         raise TypeError("semantic numeric input must be a torch tensor")
     if numeric.ndim != 2 or numeric.shape[-1] != SEMANTIC_NUMERIC_DIM:
@@ -107,18 +107,27 @@ def semantic_item_state_tensors(numeric):
     entity_numeric = numeric[:, SEMANTIC_ENTITY_OFFSET:SEMANTIC_ITEM_OFFSET].reshape(
         batch, SEMANTIC_ENTITY_SLOTS, SEMANTIC_ENTITY_FEATURES
     )
-    raw_trait_ids = (
-        entity_numeric[:, :, 29:29 + SEMANTIC_TRAIT_SLOTS]
-        * SEMANTIC_TRAIT_VOCAB_SIZE
-    )
-    if (
-        not torch.isfinite(raw_trait_ids).all()
-        or (raw_trait_ids < 0).any()
-        or (raw_trait_ids > SEMANTIC_TRAIT_VOCAB_SIZE).any()
-        or not torch.allclose(raw_trait_ids, raw_trait_ids.round(), atol=1e-4, rtol=0.0)
+    if trait_ids is None:
+        raw_trait_ids = (
+            entity_numeric[:, :, 29:29 + SEMANTIC_TRAIT_SLOTS]
+            * SEMANTIC_TRAIT_VOCAB_SIZE
+        )
+        if (
+            not torch.isfinite(raw_trait_ids).all()
+            or (raw_trait_ids < 0).any()
+            or (raw_trait_ids > SEMANTIC_TRAIT_VOCAB_SIZE).any()
+            or not torch.allclose(raw_trait_ids, raw_trait_ids.round(), atol=1e-4, rtol=0.0)
+        ):
+            raise ValueError("semantic trait hash IDs are outside the canonical integer vocabulary")
+        trait_ids = raw_trait_ids.round().long()
+    elif (
+        not isinstance(trait_ids, torch.Tensor)
+        or trait_ids.dtype != torch.long
+        or trait_ids.shape != (batch, SEMANTIC_ENTITY_SLOTS, SEMANTIC_TRAIT_SLOTS)
+        or (trait_ids < 0).any()
+        or (trait_ids > SEMANTIC_TRAIT_VOCAB_SIZE).any()
     ):
-        raise ValueError("semantic trait hash IDs are outside the canonical integer vocabulary")
-    trait_ids = raw_trait_ids.round().long()
+        raise ValueError("native semantic trait ID tensor has an incompatible v8 shape or value")
     return {
         "trait_ids": trait_ids,
         "components": components,
