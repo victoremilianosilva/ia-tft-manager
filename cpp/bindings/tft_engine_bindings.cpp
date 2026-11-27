@@ -810,6 +810,93 @@ private:
     mutable py::object frozen_envelope_cache_;
 };
 
+py::dict semantic_projection_from_snapshot_mappings(
+    const py::sequence& snapshot_mappings,
+    const py::dict& catalog_map,
+    const std::string& contract_hash
+) {
+    std::map<std::string, std::int32_t> catalog;
+    for (const auto& entry : catalog_map) {
+        const auto name = py::cast<std::string>(entry.first);
+        const auto id = py::cast<std::int32_t>(entry.second);
+        catalog.emplace(name, id);
+    }
+
+    constexpr std::size_t numeric_dim = 7958;
+    const auto lobby_count = static_cast<py::ssize_t>(py::len(snapshot_mappings));
+    if (lobby_count <= 0) throw py::value_error("semantic projection requires at least one native snapshot");
+    py::array_t<float> numeric({lobby_count, static_cast<py::ssize_t>(tft::kPlayersPerLobby),
+        static_cast<py::ssize_t>(numeric_dim)});
+    py::array_t<std::int64_t> champion_ids(py::array::ShapeContainer{
+        lobby_count, static_cast<py::ssize_t>(tft::kPlayersPerLobby), static_cast<py::ssize_t>(42)});
+    auto* numeric_data = numeric.mutable_data();
+    auto* champion_data = champion_ids.mutable_data();
+    py::list hashes;
+    py::list identities;
+    py::list entity_identity;
+    std::string item_catalog_hash;
+
+    for (py::ssize_t lobby_index = 0; lobby_index < lobby_count; ++lobby_index) {
+        py::object snapshot_mapping =
+            py::reinterpret_borrow<py::object>(snapshot_mappings[lobby_index]);
+        py::object native_handle = py::getattr(snapshot_mapping, "_handle", snapshot_mapping);
+        auto handle = native_handle.cast<NativeAuditSnapshotHandle>();
+        const auto& snapshot = handle.snapshot();
+        for (std::size_t player = 0; player < tft::kPlayersPerLobby; ++player) {
+            auto projected = tft::semantic_v8::project_player(
+                snapshot, static_cast<std::size_t>(lobby_index), player, catalog);
+            const auto row = static_cast<std::size_t>(lobby_index) * tft::kPlayersPerLobby + player;
+            std::transform(projected.numeric.begin(), projected.numeric.end(),
+                numeric_data + row * numeric_dim,
+                [](double value) { return static_cast<float>(value); });
+            std::copy(projected.champion_ids.begin(), projected.champion_ids.end(),
+                champion_data + row * 42);
+            hashes.append(projected.sha256);
+
+            py::dict identity;
+            identity["engine_instance_id"] = snapshot.engine_instance_id;
+            identity["episode_id"] = snapshot.episode_id;
+            identity["decision_sequence"] = snapshot.snapshot_sequence;
+            identity["player_decision_sequence"] = snapshot.player_decision_sequences[player];
+            identity["player_id"] = snapshot.players[player].player_id;
+            identity["round"] = snapshot.round;
+            identity["lobby_index"] = lobby_index;
+            identities.append(std::move(identity));
+
+            py::dict physical;
+            py::tuple occupied(42), unit_uuids(42), shop_revisions(5);
+            for (std::size_t slot = 0; slot < 42; ++slot) {
+                occupied[slot] = projected.occupied[slot];
+                unit_uuids[slot] = projected.unit_uuids[slot];
+            }
+            for (std::size_t slot = 0; slot < 5; ++slot)
+                shop_revisions[slot] = projected.shop_offer_revisions[slot];
+            physical["occupied"] = std::move(occupied);
+            physical["unit_uuids"] = std::move(unit_uuids);
+            physical["shop_offer_revisions"] = std::move(shop_revisions);
+            entity_identity.append(std::move(physical));
+
+            if (item_catalog_hash.empty()) item_catalog_hash = projected.item_catalog_sha256;
+            else if (item_catalog_hash != projected.item_catalog_sha256)
+                throw std::runtime_error("native players disagree on item catalog fingerprint");
+        }
+    }
+
+    numeric.attr("setflags")(false);
+    champion_ids.attr("setflags")(false);
+    py::dict result;
+    result["numeric"] = std::move(numeric);
+    result["champion_ids"] = std::move(champion_ids);
+    result["hashes"] = std::move(hashes);
+    result["identities"] = std::move(identities);
+    result["entity_identity"] = std::move(entity_identity);
+    if (item_catalog_hash.empty()) result["item_catalog_sha256"] = py::none();
+    else result["item_catalog_sha256"] = item_catalog_hash;
+    result["contract_id"] = "tft.ppo.semantic-native-state.v8";
+    result["contract_hash"] = contract_hash;
+    return result;
+}
+
 py::dict reset_to_dict(tft::ResetResult reset, bool include_numeric_transport = true) {
     py::dict result;
 
@@ -1071,78 +1158,11 @@ public:
     py::array lobby_done() const { return lobby_done_; }
 
     py::dict semantic_projection(const py::dict& catalog_map, const std::string& contract_hash) {
-        std::map<std::string, std::int32_t> catalog;
-        for (const auto& entry : catalog_map) {
-            const auto name = py::cast<std::string>(entry.first);
-            const auto id = py::cast<std::int32_t>(entry.second);
-            catalog.emplace(name, id);
-        }
-
-        constexpr std::size_t numeric_dim = 7958;
-        const auto lobby_count = static_cast<py::ssize_t>(contexts_.size());
-        py::array_t<float> numeric({lobby_count, static_cast<py::ssize_t>(kPlayers),
-            static_cast<py::ssize_t>(numeric_dim)});
-        py::array_t<std::int64_t> champion_ids(py::array::ShapeContainer{lobby_count, static_cast<py::ssize_t>(kPlayers), static_cast<py::ssize_t>(42)});
-        auto* numeric_data = numeric.mutable_data();
-        auto* champion_data = champion_ids.mutable_data();
-        py::list hashes;
-        py::list identities;
-        py::list entity_identity;
-        std::string item_catalog_hash;
-
-        for (std::size_t lobby = 0; lobby < contexts_.size(); ++lobby) {
-            py::object snapshot_mapping = contexts_[lobby]["native_state_snapshot"];
-            py::object native_handle = py::getattr(snapshot_mapping, "_handle", snapshot_mapping);
-            auto handle = native_handle.cast<NativeAuditSnapshotHandle>();
-            const auto& snapshot = handle.snapshot();
-            for (std::size_t player = 0; player < kPlayers; ++player) {
-                auto projected = tft::semantic_v8::project_player(snapshot, lobby, player, catalog);
-                const auto row = (lobby * kPlayers + player);
-                std::transform(projected.numeric.begin(), projected.numeric.end(),
-                    numeric_data + row * numeric_dim,
-                    [](double value) { return static_cast<float>(value); });
-                std::copy(projected.champion_ids.begin(), projected.champion_ids.end(),
-                    champion_data + row * 42);
-                hashes.append(projected.sha256);
-                py::dict identity;
-                identity["engine_instance_id"] = snapshot.engine_instance_id;
-                identity["episode_id"] = snapshot.episode_id;
-                identity["decision_sequence"] = snapshot.snapshot_sequence;
-                identity["player_decision_sequence"] = snapshot.player_decision_sequences[player];
-                identity["player_id"] = snapshot.players[player].player_id;
-                identity["round"] = snapshot.round;
-                identity["lobby_index"] = lobby;
-                identities.append(std::move(identity));
-                py::dict physical;
-                py::tuple occupied(42), unit_uuids(42), shop_revisions(5);
-                for (std::size_t slot = 0; slot < 42; ++slot) {
-                    occupied[slot] = projected.occupied[slot];
-                    unit_uuids[slot] = projected.unit_uuids[slot];
-                }
-                for (std::size_t slot = 0; slot < 5; ++slot)
-                    shop_revisions[slot] = projected.shop_offer_revisions[slot];
-                physical["occupied"] = std::move(occupied);
-                physical["unit_uuids"] = std::move(unit_uuids);
-                physical["shop_offer_revisions"] = std::move(shop_revisions);
-                entity_identity.append(std::move(physical));
-                if (item_catalog_hash.empty()) item_catalog_hash = projected.item_catalog_sha256;
-                else if (item_catalog_hash != projected.item_catalog_sha256)
-                    throw std::runtime_error("native players disagree on item catalog fingerprint");
-            }
-        }
-        numeric.attr("setflags")(false);
-        champion_ids.attr("setflags")(false);
-        py::dict result;
-        result["numeric"] = std::move(numeric);
-        result["champion_ids"] = std::move(champion_ids);
-        result["hashes"] = std::move(hashes);
-        result["identities"] = std::move(identities);
-        result["entity_identity"] = std::move(entity_identity);
-        if (item_catalog_hash.empty()) result["item_catalog_sha256"] = py::none();
-        else result["item_catalog_sha256"] = item_catalog_hash;
-        result["contract_id"] = "tft.ppo.semantic-native-state.v8";
-        result["contract_hash"] = contract_hash;
-        return result;
+        py::list snapshot_mappings;
+        for (const auto& context : contexts_)
+            snapshot_mappings.append(context["native_state_snapshot"]);
+        return semantic_projection_from_snapshot_mappings(
+            snapshot_mappings, catalog_map, contract_hash);
     }
 
     py::dict lobby_result(std::size_t index) {
