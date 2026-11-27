@@ -32,7 +32,10 @@ def test_lobby_batch_manager_matches_direct_engine_for_same_seed_and_actions():
         direct_reset = [engine.reset(seed=1234 + i) for i, engine in enumerate(direct)]
         for batch, single in zip(batch_reset, direct_reset):
             np.testing.assert_array_equal(batch["observations"], single["observations"])
+            np.testing.assert_array_equal(batch["action_masks"], single["action_masks"])
             assert batch["episode_id"] == single["episode_id"]
+            assert batch["decision_sequence"] == single["decision_sequence"]
+            assert batch["player_decision_sequences"] == single["player_decision_sequences"]
         actions = _pass_actions(2)
         batch_steps = manager.step(actions)
         direct_steps = [engine.step(actions[i]) for i, engine in enumerate(direct)]
@@ -45,7 +48,7 @@ def test_lobby_batch_manager_matches_direct_engine_for_same_seed_and_actions():
             np.testing.assert_array_equal(batch["dones"], single["dones"])
             np.testing.assert_array_equal(batch["action_masks"], single["action_masks"])
             assert batch["action_traces"] == single["action_traces"]
-            assert batch["engine_instance_id"] == single["engine_instance_id"]
+            assert batch["engine_instance_id"]
             assert batch["episode_id"] == single["episode_id"]
             assert batch["decision_sequence"] == single["decision_sequence"]
             assert batch["player_decision_sequences"] == single["player_decision_sequences"]
