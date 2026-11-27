@@ -1532,9 +1532,11 @@ class Trainer:
                     semantic_numeric = torch.as_tensor(
                         semantic_batch["numeric"], dtype=torch.float32, device=self.device
                     )
-                    semantic_items = semantic_item_state_tensors(semantic_numeric)
-                    semantic_items["trait_ids"] = torch.as_tensor(
+                    native_trait_ids = torch.as_tensor(
                         semantic_batch["trait_ids"], dtype=torch.long, device=self.device
+                    )
+                    semantic_items = semantic_item_state_tensors(
+                        semantic_numeric, trait_ids=native_trait_ids
                     )
                     semantic_state = {
                         "numeric": semantic_numeric,
