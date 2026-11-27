@@ -71,6 +71,25 @@ from semantic_observation import (
 from engine_contracts import ActionType
 from training_run_manifest import build_training_run_manifest, write_training_run_manifest
 
+def project_semantic_batch(vec_env, metadata_rows, catalog_map, contract):
+    """Use the owner-backed C++ batch in production; keep Python as the parity oracle."""
+    native_project = getattr(vec_env, "semantic_projection", None)
+    if callable(native_project):
+        try:
+            projected = native_project(catalog_map, contract["sha256"])
+        except RuntimeError:
+            # Only the terminal auto-reset boundary has mixed native snapshot
+            # ownership; its exact next rows are still checked by the Python oracle.
+            projected = None
+        if projected is not None:
+            numeric = np.asarray(projected["numeric"])
+            champion_ids = np.asarray(projected["champion_ids"])
+            projected["numeric"] = numeric.reshape(-1, numeric.shape[-1])
+            projected["champion_ids"] = champion_ids.reshape(-1, champion_ids.shape[-1])
+            return projected
+    return build_semantic_batch(metadata_rows, catalog_map, contract=contract)
+
+
 def slice_batch_structure(value, selection):
     """Slice every tensor leaf in a nested semantic batch structure."""
     if isinstance(value, dict):
@@ -1419,10 +1438,9 @@ class Trainer:
                     semantic_batch = semantic_cache["batch"]
                     semantic_state = semantic_cache["state"]
                 else:
-                    semantic_batch = build_semantic_batch(
-                        flat_snapshot_metadata,
-                        self.champion_id_map,
-                        contract=self.semantic_state_contract,
+                    semantic_batch = project_semantic_batch(
+                        self.vec_env, flat_snapshot_metadata, self.champion_id_map,
+                        self.semantic_state_contract,
                     )
                     semantic_numeric = torch.as_tensor(
                         semantic_batch["numeric"], dtype=torch.float32, device=self.device
@@ -1657,10 +1675,9 @@ class Trainer:
                     "snapshot da próxima observação",
                     native_state_cache=transition_native_state_cache,
                 )
-                next_semantic_batch = build_semantic_batch(
-                    flat_next_snapshot_metadata,
-                    self.champion_id_map,
-                    contract=self.semantic_state_contract,
+                next_semantic_batch = project_semantic_batch(
+                    self.vec_env, flat_next_snapshot_metadata, self.champion_id_map,
+                    self.semantic_state_contract,
                 )
                 next_semantic_numeric = torch.as_tensor(
                     next_semantic_batch["numeric"], dtype=torch.float32, device=self.device
