@@ -33,6 +33,7 @@ int main() {
     snapshot->players[0].xp = 8;
     snapshot->players[0].shop_offer_revisions[0] = 19;
     snapshot->players[0].item_inventory = {"TFT_Item_Test"};
+    snapshot->players[0].item_component_catalog = {"component:test"};
     snapshot->players[0].equipped_items.push_back({"physical-board-copy", "board", 0, "TFT_Item_Test"});
     snapshot->players[0].bench[0].occupied = true;
     snapshot->players[0].bench[0].trait_names = {"Trait_A", "Trait_C"};
@@ -51,7 +52,8 @@ int main() {
     assert(context.player(0).item_inventory.front() == "TFT_Item_Test");
     assert(context.player(0).equipped_items.front().unit_uuid == "physical-board-copy");
     assert(context.strategic_availability(0) == tft::ContextAvailability::Unknown);
-    assert(context.item_inventory_availability(0) == tft::ContextAvailability::Unknown);
+    assert(context.item_inventory_availability(0) == tft::ContextAvailability::Complete);
+    assert(context.item_inventory_availability(1) == tft::ContextAvailability::Unknown);
     assert(context.pending_anvil_availability(0) == tft::ContextAvailability::NotApplicable);
     const auto traits = context.trait_counts(0);
     assert(traits.size() == 3);
