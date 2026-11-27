@@ -5,6 +5,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <map>
+#include <unordered_set>
 #include <stdexcept>
 #include <string>
 
@@ -21,6 +23,16 @@ enum class ContextAvailability : std::uint8_t {
     Stale,
     Incompatible,
     NotApplicable
+};
+
+struct NativeTraitCount {
+    std::string trait_id;
+    std::uint32_t board_count{0};
+    std::uint32_t bench_count{0};
+    std::uint32_t board_bench_count{0};
+    // AuditUnitSnapshot::trait_names is static catalog membership. The current
+    // Engine does not publish item-granted trait ownership as a separate fact.
+    ContextAvailability item_granted_availability{ContextAvailability::Unknown};
 };
 
 struct ContextProvenance {
@@ -120,6 +132,37 @@ public:
             return ContextAvailability::Partial;
         }
         return ContextAvailability::Complete;
+    }
+
+    std::vector<NativeTraitCount> trait_counts(std::size_t player_index) const {
+        const auto& state = player(player_index);
+        struct Counts { std::uint32_t board{0}; std::uint32_t bench{0}; };
+        std::map<std::string, Counts> counts;
+        const auto accumulate = [&counts](
+            const auto& slots, bool on_board
+        ) {
+            for (const auto& unit : slots) {
+                if (!unit.occupied) continue;
+                std::unordered_set<std::string> unique_traits;
+                for (const auto& trait : unit.trait_names) {
+                    if (trait.empty() || !unique_traits.insert(trait).second) continue;
+                    auto& value = counts[trait];
+                    if (on_board) ++value.board;
+                    else ++value.bench;
+                }
+            }
+        };
+        accumulate(state.board, true);
+        accumulate(state.bench, false);
+        std::vector<NativeTraitCount> result;
+        result.reserve(counts.size());
+        for (const auto& [trait, value] : counts) {
+            result.push_back(NativeTraitCount{
+                trait, value.board, value.bench, value.board + value.bench,
+                ContextAvailability::Unknown
+            });
+        }
+        return result;
     }
 
 private:
