@@ -184,9 +184,6 @@ class _NativeUnitMapping(Mapping):
     def __len__(self):
         return len(self._KEYS)
 
-    def keys(self):
-        return self._KEYS
-
     def __deepcopy__(self, memo):
         memo[id(self)] = self
         return self
