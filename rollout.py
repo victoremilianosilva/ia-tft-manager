@@ -408,6 +408,30 @@ class RolloutBuffer:
         else:
             if not isinstance(semantic_state, dict):
                 raise TypeError("semantic_state must be a mapping")
+            semantic_entity_identity = semantic_state.get("entity_identity")
+            if semantic_entity_identity is not None:
+                if not isinstance(semantic_entity_identity, Sequence) or len(semantic_entity_identity) != self.num_envs:
+                    raise ValueError("semantic entity identity must contain one row per rollout agent")
+                for row_index, identity in enumerate(semantic_entity_identity):
+                    if not isinstance(identity, Mapping):
+                        raise TypeError(f"semantic entity identity row {row_index} must be a mapping")
+                    occupied = identity.get("occupied")
+                    unit_uuids = identity.get("unit_uuids")
+                    shop_revisions = identity.get("shop_offer_revisions")
+                    if (
+                        not isinstance(occupied, Sequence) or len(occupied) != self.semantic_entity_slots
+                        or any(not isinstance(value, bool) for value in occupied)
+                        or not isinstance(unit_uuids, Sequence) or len(unit_uuids) != self.semantic_entity_slots
+                        or any(not isinstance(value, str) for value in unit_uuids)
+                        or not isinstance(shop_revisions, Sequence) or len(shop_revisions) != 5
+                        or any(type(value) is not int or value < 0 for value in shop_revisions)
+                    ):
+                        raise ValueError(f"semantic entity identity row {row_index} has invalid slot-aligned fields")
+                    nonempty_uuids = [value for value in unit_uuids if value]
+                    if len(nonempty_uuids) != len(set(nonempty_uuids)):
+                        raise ValueError(f"semantic entity identity row {row_index} contains duplicate physical UUIDs")
+                    if any(occupied[index] != bool(unit_uuids[index]) for index in range(self.semantic_entity_slots)):
+                        raise ValueError(f"semantic entity identity row {row_index} occupancy/UUID mismatch")
             semantic_numeric = self._to_tensor(semantic_state.get("numeric"), dtype=torch.float32)
             semantic_champion_ids = self._to_tensor(semantic_state.get("champion_ids"), dtype=torch.long)
             if tuple(semantic_numeric.shape) != (self.num_envs, self.semantic_numeric_dim):
@@ -686,6 +710,12 @@ class RolloutBuffer:
                     raise ValueError("Transição identificada exige semantic_state nativo.")
                 semantic_identities = semantic_state.get("identities")
                 semantic_hashes = semantic_state.get("hashes")
+                semantic_entity_identity = semantic_state.get("entity_identity")
+                if (
+                    not isinstance(semantic_entity_identity, Sequence)
+                    or len(semantic_entity_identity) != self.num_envs
+                ):
+                    raise ValueError("Semantic state does not contain physical entity identity per transition.")
                 contract_hash = semantic_state.get("contract_hash")
                 if (
                     semantic_state.get("contract_id") != "tft.ppo.semantic-native-state.v8"
@@ -714,6 +744,10 @@ class RolloutBuffer:
                     ):
                         raise ValueError(
                             f"Semantic identity diverge do snapshot na transição {index}."
+                        )
+                    if metadata.get("semantic_entity_identity") != semantic_entity_identity[index]:
+                        raise ValueError(
+                            f"Physical entity identity diverges from the snapshot at transition {index}."
                         )
                     digest = semantic_hashes[index]
                     if (
@@ -1277,6 +1311,9 @@ class RolloutBuffer:
             if batch_snapshot_metadata is not None:
                 semantic_batch["identities"] = [
                     row.get("semantic_identity") for row in batch_snapshot_metadata
+                ]
+                semantic_batch["entity_identity"] = [
+                    row.get("semantic_entity_identity") for row in batch_snapshot_metadata
                 ]
                 semantic_batch["hashes"] = [
                     row.get("semantic_projection_hash") for row in batch_snapshot_metadata
