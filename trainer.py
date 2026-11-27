@@ -121,6 +121,17 @@ def project_semantic_batch(
             raise RuntimeError(
                 f"Native semantic champion ID shape is invalid: {champion_ids.shape}"
             )
+        trait_ids = np.asarray(projected.get("trait_ids"))
+        if (
+            trait_ids.dtype != np.int64
+            or trait_ids.shape != (numeric.shape[0], 8, 42, 10)
+            or not trait_ids.flags.c_contiguous
+            or trait_ids.flags.writeable
+        ):
+            raise RuntimeError(
+                "Native semantic trait IDs must be readonly contiguous int64 "
+                "with shape [lobby, 8, 42, 10]."
+            )
         item_blocks = projected.get("item_blocks")
         expected_item_shapes = {
             "components": (numeric.shape[0], 8, 10),
@@ -154,6 +165,7 @@ def project_semantic_batch(
         projected["champion_ids"] = champion_ids.reshape(
             -1, champion_ids.shape[-1]
         )
+        projected["trait_ids"] = trait_ids.reshape(-1, 42, 10)
         return projected
 
     # Lightweight Python environments and isolated fixtures may still use the
@@ -1520,9 +1532,13 @@ class Trainer:
                     semantic_numeric = torch.as_tensor(
                         semantic_batch["numeric"], dtype=torch.float32, device=self.device
                     )
+                    semantic_items = semantic_item_state_tensors(semantic_numeric)
+                    semantic_items["trait_ids"] = torch.as_tensor(
+                        semantic_batch["trait_ids"], dtype=torch.long, device=self.device
+                    )
                     semantic_state = {
                         "numeric": semantic_numeric,
-                        "items": semantic_item_state_tensors(semantic_numeric),
+                        "items": semantic_items,
                         "champion_ids": torch.as_tensor(
                             semantic_batch["champion_ids"], dtype=torch.long, device=self.device
                         ),
