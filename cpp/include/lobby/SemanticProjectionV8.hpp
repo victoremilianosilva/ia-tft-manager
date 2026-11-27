@@ -138,8 +138,25 @@ inline Projection project_player(
         throw std::runtime_error("unsupported strategic owner snapshot contract");
 
     if (snapshot.engine_instance_id.empty() || snapshot.stage < 1 || snapshot.stage > 7 ||
-        snapshot.round > 50 || state.hp < 0.0 || state.hp > 100.0 || state.damage_taken < 0.0)
-        throw std::runtime_error("semantic snapshot contains invalid lobby/player facts");
+        snapshot.round > 50 || state.hp < 0.0 || state.hp > 100.0 || state.damage_taken < 0.0 ||
+        strategic.episode_id != snapshot.episode_id ||
+        strategic.player_decision_sequence != snapshot.player_decision_sequences[player_index] ||
+        strategic.round != snapshot.round)
+        throw std::runtime_error("semantic snapshot contains invalid or misaligned lobby/player facts");
+    if (state.wins < 0 || state.losses < 0 || state.gold < 0 || state.level < 0 || state.xp < 0 ||
+        state.win_streak < 0 || state.loss_streak < 0 || state.gold_before_interest < 0 ||
+        state.interest_if_resolved_now < 0 || state.board_exposed_carries < 0 ||
+        state.board_frontline_count < 0 || state.board_isolated_frontline_count < 0 ||
+        state.board_important_bench_units_unplayed < 0 || state.board_frontline_lane_count < 0 ||
+        state.board_exposed_main_carries < 0 || state.board_fragile_frontline_count < 0 ||
+        state.board_missing_frontline_count < 0 || state.board_missing_backline_count < 0 ||
+        state.board_active_trait_count < 0 || state.board_exposed_carries > 28 ||
+        state.board_frontline_count > 28 || state.board_isolated_frontline_count > 28 ||
+        state.board_important_bench_units_unplayed > 9 || state.board_frontline_lane_count > 7 ||
+        state.board_exposed_main_carries > 28 || state.board_fragile_frontline_count > 28 ||
+        state.board_missing_frontline_count > 28 || state.board_missing_backline_count > 28 ||
+        state.board_active_trait_count > 28)
+        throw std::runtime_error("semantic snapshot counters are outside native ranges");
     if (state.placement && (*state.placement < 1 || *state.placement > 8))
         throw std::runtime_error("semantic placement is outside the native lobby range");
     if (state.opponent_id && (*state.opponent_id < 0 || *state.opponent_id >= static_cast<std::int32_t>(kPlayersPerLobby) ||
