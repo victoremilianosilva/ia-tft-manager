@@ -1350,6 +1350,25 @@ public:
         catch (...) { has_reset_ = false; throw; }
     }
 
+    py::dict semantic_projection_from_snapshots(
+        const py::sequence& lobby_envelopes,
+        const py::dict& catalog_map,
+        const std::string& contract_hash
+    ) const {
+        py::list snapshot_mappings;
+        for (py::ssize_t lobby = 0; lobby < py::len(lobby_envelopes); ++lobby) {
+            py::object envelope = py::reinterpret_borrow<py::object>(lobby_envelopes[lobby]);
+            if (!py::isinstance<py::dict>(envelope))
+                throw py::type_error("each semantic lobby snapshot must be a mapping");
+            py::dict row = py::reinterpret_borrow<py::dict>(envelope);
+            if (!row.contains("native_state_snapshot"))
+                throw py::value_error("lobby snapshot is missing native_state_snapshot");
+            snapshot_mappings.append(row["native_state_snapshot"]);
+        }
+        return semantic_projection_from_snapshot_mappings(
+            snapshot_mappings, catalog_map, contract_hash);
+    }
+
     TFTEngine& engine(std::size_t index) {
         ensure_open();
         if (index >= engines_.size()) throw py::index_error("lobby index fora do intervalo.");
@@ -1635,6 +1654,8 @@ PYBIND11_MODULE(tft_engine, module) {
         .def("reset", &NativeLobbyBatchManager::reset, py::arg("seed") = py::none())
         .def("engine", &NativeLobbyBatchManager::engine, py::arg("index"), py::return_value_policy::reference_internal)
         .def("step", &NativeLobbyBatchManager::step, py::arg("actions"))
+        .def("semantic_projection_from_snapshots", &NativeLobbyBatchManager::semantic_projection_from_snapshots,
+            py::arg("lobby_snapshots"), py::arg("catalog_map"), py::arg("contract_hash"))
         .def_property_readonly("lobby_count", &NativeLobbyBatchManager::lobby_count)
         .def_property_readonly("engine_instance_ids", &NativeLobbyBatchManager::engine_instance_ids)
         .def("close", &NativeLobbyBatchManager::close);
