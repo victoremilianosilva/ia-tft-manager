@@ -16,6 +16,7 @@
 
 #include "lobby/TftEngine.hpp"
 #include "lobby/SemanticProjectionV8.hpp"
+#include "lobby/NativeDecisionContext.hpp"
 #include "strategy/PositioningEngine.hpp"
 #include "reward/RewardManager.hpp"
 #include "combat/CombatProfileEngine.hpp"
@@ -679,6 +680,10 @@ public:
         return snapshot_->players.size();
     }
 
+    std::shared_ptr<const tft::AuditSnapshot> shared_snapshot() const noexcept {
+        return snapshot_;
+    }
+
     py::list keys() const {
         static constexpr const char* fields[] = {
             "contract_id",
@@ -1185,6 +1190,9 @@ public:
                 observations_.mutable_data() + lobby * kPlayers * observation_dim_);
             copy_masks(lobby, row.action_masks);
             contexts_.push_back(reset_to_dict(std::move(row), false));
+            native_snapshots_.push_back(
+                py::cast<NativeAuditSnapshotHandle>(
+                    contexts_.back()["native_state_snapshot"]).shared_snapshot());
         }
         make_read_only();
     }
@@ -1216,6 +1224,9 @@ public:
                 dones_.mutable_data()[offset + player] = row.dones[player] != 0;
             lobby_done_.mutable_data()[lobby] = row.lobby_done;
             contexts_.push_back(step_to_dict(std::move(row), false));
+            native_snapshots_.push_back(
+                py::cast<NativeAuditSnapshotHandle>(
+                    contexts_.back()["native_state_snapshot"]).shared_snapshot());
         }
         make_read_only();
     }
@@ -1232,6 +1243,12 @@ public:
     py::array placement_rewards() const { return placement_rewards_; }
     py::array dones() const { return dones_; }
     py::array lobby_done() const { return lobby_done_; }
+
+    std::shared_ptr<tft::NativeDecisionContext> native_context(std::size_t index) const {
+        if (index >= native_snapshots_.size())
+            throw py::index_error("lobby index fora do NativeDecisionBatch.");
+        return std::make_shared<tft::NativeDecisionContext>(native_snapshots_[index]);
+    }
 
     py::dict semantic_projection(const py::dict& catalog_map, const std::string& contract_hash) {
         py::list snapshot_mappings;
@@ -1345,6 +1362,7 @@ private:
 
     std::string kind_;
     std::vector<py::dict> contexts_;
+    std::vector<std::shared_ptr<const tft::AuditSnapshot>> native_snapshots_;
     std::size_t observation_dim_{0};
     std::size_t mask_width_{0};
     py::array_t<float> observations_;
@@ -1703,6 +1721,62 @@ PYBIND11_MODULE(tft_engine, module) {
 
 
 
+    py::class_<tft::NativeDecisionContext, std::shared_ptr<tft::NativeDecisionContext>>(
+        module, "NativeDecisionContext")
+        .def_property_readonly("availability", [](const tft::NativeDecisionContext& context) {
+            return static_cast<std::uint8_t>(context.availability());
+        })
+        .def_property_readonly("engine_instance_id", [](const tft::NativeDecisionContext& context) {
+            return context.snapshot().engine_instance_id;
+        })
+        .def_property_readonly("episode_id", [](const tft::NativeDecisionContext& context) {
+            return context.snapshot().episode_id;
+        })
+        .def_property_readonly("snapshot_sequence", [](const tft::NativeDecisionContext& context) {
+            return context.snapshot().snapshot_sequence;
+        })
+        .def_property_readonly("round", [](const tft::NativeDecisionContext& context) {
+            return context.snapshot().round;
+        })
+        .def_property_readonly("shared_pool", [](const tft::NativeDecisionContext& context) {
+            const auto& pool = context.shared_pool();
+            py::dict result;
+            result["contract_id"] = pool.contract_id;
+            result["contract_version"] = pool.contract_version;
+            result["producer"] = pool.producer;
+            result["total_available"] = pool.total_available;
+            py::list champions;
+            for (const auto& champion : pool.champions) {
+                py::dict row;
+                row["champion_internal_id"] = champion.champion_internal_id;
+                row["champion_id"] = champion.champion_id;
+                row["cost"] = champion.cost;
+                row["initial_count"] = champion.initial_count;
+                row["available_count"] = champion.available_count;
+                champions.append(std::move(row));
+            }
+            result["champions"] = std::move(champions);
+            return result;
+        })
+        .def("player", [](const tft::NativeDecisionContext& context, std::size_t index) {
+            return audit_player_snapshot_to_dict(context.player(index), false);
+        }, py::arg("index"))
+        .def("provenance", [](const tft::NativeDecisionContext& context, std::size_t index) {
+            const auto source = context.provenance(index);
+            py::dict result;
+            result["producer"] = source.producer;
+            result["source_namespace"] = source.source_namespace;
+            result["contract_version"] = source.contract_version;
+            result["episode_id"] = source.episode_id;
+            result["snapshot_sequence"] = source.snapshot_sequence;
+            result["player_decision_sequence"] = source.player_decision_sequence;
+            return result;
+        }, py::arg("player_index"))
+        .def_property_readonly("player_count", &tft::NativeDecisionContext::player_count)
+        .def("strategic_availability", &tft::NativeDecisionContext::strategic_availability)
+        .def("item_inventory_availability", &tft::NativeDecisionContext::item_inventory_availability)
+        .def("pending_anvil_availability", &tft::NativeDecisionContext::pending_anvil_availability);
+
     py::class_<NativeDecisionBatch, std::shared_ptr<NativeDecisionBatch>>(module, "NativeDecisionBatch")
         .def_property_readonly("contract_id", [](const NativeDecisionBatch&) { return "tft.native-decision-batch"; })
         .def_property_readonly("contract_version", [](const NativeDecisionBatch&) { return NativeDecisionBatch::kContractVersion; })
@@ -1721,6 +1795,7 @@ PYBIND11_MODULE(tft_engine, module) {
         .def_property_readonly("lobby_done", &NativeDecisionBatch::lobby_done)
         .def("lobby_result", &NativeDecisionBatch::lobby_result, py::arg("index"))
         .def("semantic_projection", &NativeDecisionBatch::semantic_projection, py::arg("catalog_map"), py::arg("contract_hash"))
+        .def("native_context", &NativeDecisionBatch::native_context, py::arg("lobby_index"))
         .def("__len__", &NativeDecisionBatch::size)
         .def("__getitem__", &NativeDecisionBatch::lobby_result);
 
