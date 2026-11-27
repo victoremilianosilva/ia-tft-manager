@@ -1027,5 +1027,50 @@
       "source": "active_native_direction.completed_traits",
       "reason": "The current builder aliases completed traits into core traits without proving semantic equivalence. The canonical schema represents completed_traits once; core_traits is excluded until an independent authoritative definition exists."
     }
-  ]
+  ],
+  "native_decision_context_transport": {
+    "status": "implemented_in_native_batch_binding_pending_full_issue_validation",
+    "producer": "TFTEngine::get_audit_snapshot",
+    "transport": "NativeDecisionBatch.native_context(lobby_index)",
+    "owner": "shared_ptr<const AuditSnapshot> retained by NativeAuditSnapshotHandle and NativeDecisionBatch",
+    "shared_scope": [
+      "shared_pool.total_available",
+      "shared_pool.champions",
+      "shared_pool.catalog_fingerprint"
+    ],
+    "player_scope": [
+      "lifecycle",
+      "placement",
+      "opponent",
+      "economy",
+      "board[28]",
+      "bench[9]",
+      "shop[5]",
+      "shop_offer_revisions",
+      "item inventory",
+      "equipped items",
+      "pending anvil",
+      "strategic owner snapshot"
+    ],
+    "trait_scope": [
+      "board_count",
+      "bench_count",
+      "board_bench_count"
+    ],
+    "availability": [
+      "complete",
+      "partial",
+      "empty",
+      "unknown",
+      "missing",
+      "stale",
+      "incompatible",
+      "not_applicable"
+    ],
+    "explicit_unknowns": [
+      "item-granted trait ownership",
+      "fields without an authoritative runtime producer"
+    ],
+    "invariant": "No shadow proposal, diagnostic sidecar, projected income, calibrated pressure/confidence or synthetic item/anvil identity is promoted to factual context."
+  }
 }
