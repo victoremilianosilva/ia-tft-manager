@@ -91,6 +91,12 @@ public:
         return ContextAvailability::Complete;
     }
 
+    ContextAvailability player_sequence_availability(std::size_t player_index) const {
+        return snapshot_->player_decision_sequences[player_index] == 0
+            ? ContextAvailability::Missing
+            : ContextAvailability::Complete;
+    }
+
     ContextAvailability strategic_availability(std::size_t player_index) const {
         const auto& state = player(player_index);
         const auto& strategic = state.strategic_state;
@@ -183,16 +189,9 @@ private:
             if (state.player_id != static_cast<std::int32_t>(i)) {
                 throw std::invalid_argument("Native decision context player ordering mismatch");
             }
-            if (snapshot_->player_decision_sequences[i] == 0) {
-                throw std::invalid_argument("Native decision context player sequence is missing");
-            }
-            const auto& strategic = state.strategic_state;
-            if (strategic.player_id != state.player_id ||
-                strategic.episode_id != snapshot_->episode_id ||
-                strategic.player_decision_sequence != snapshot_->player_decision_sequences[i] ||
-                strategic.round != snapshot_->round) {
-                throw std::invalid_argument("Native strategic context is not correlated to decision snapshot");
-            }
+            // Player sequence and strategic-owner correlation are surfaced as
+            // field availability below; do not erase a stale/missing record by
+            // failing the whole immutable lobby context.
         }
     }
 
