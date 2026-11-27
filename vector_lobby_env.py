@@ -21,6 +21,30 @@ class LobbyVectorEnv:
         if self.num_envs == 0:
             raise ValueError("É necessário criar pelo menos uma lobby.")
 
+    def _validate_native_batch(self, native_batch):
+        """Validate the single native batch without rebuilding a list of lobby dicts."""
+        contract_id = getattr(native_batch, "contract_id", None)
+        if contract_id is None:
+            # Keep Python fixture managers usable; production C++ always returns v1.
+            return False
+        if contract_id != "tft.native-decision-batch":
+            raise RuntimeError(f"Contrato nativo desconhecido: {contract_id!r}")
+        if int(native_batch.contract_version) != 1:
+            raise RuntimeError(
+                f"Versao NativeDecisionBatch nao suportada: {native_batch.contract_version}"
+            )
+        if int(native_batch.lobby_count) != self.num_envs:
+            raise RuntimeError("NativeDecisionBatch retornou quantidade incorreta de lobbies.")
+        observations = np.asarray(native_batch.observations)
+        masks = np.asarray(native_batch.action_masks)
+        if observations.ndim != 3 or observations.shape[:2] != (self.num_envs, self.PLAYERS_PER_LOBBY):
+            raise RuntimeError(f"Shape de observations do NativeDecisionBatch invalido: {observations.shape}")
+        if masks.ndim != 3 or masks.shape[:2] != (self.num_envs, self.PLAYERS_PER_LOBBY):
+            raise RuntimeError(f"Shape de action_masks do NativeDecisionBatch invalido: {masks.shape}")
+        if not observations.flags.c_contiguous or not masks.flags.c_contiguous:
+            raise RuntimeError("Buffers numericos do NativeDecisionBatch devem ser contiguos.")
+        return True
+
     def _invalidate_all_wrapper_snapshots(self):
         for env in self.envs:
             invalidate = getattr(env, "_invalidate_current_snapshot", None)
@@ -45,13 +69,19 @@ class LobbyVectorEnv:
                     invalidate = getattr(env, "_invalidate_current_snapshot", None)
                     if callable(invalidate):
                         invalidate()
-                native_results = self._batch_manager.reset(seed=seed)
-                if len(native_results) != self.num_envs:
-                    raise RuntimeError("LobbyBatchManager retornou quantidade incorreta de resets.")
-                observations = [
-                    env._consume_reset_result(result)
-                    for env, result in zip(self.envs, native_results)
-                ]
+                native_batch = self._batch_manager.reset(seed=seed)
+                if self._validate_native_batch(native_batch):
+                    observations = [
+                        env._consume_reset_result(native_batch.lobby_result(index))
+                        for index, env in enumerate(self.envs)
+                    ]
+                else:
+                    if len(native_batch) != self.num_envs:
+                        raise RuntimeError("LobbyBatchManager retornou quantidade incorreta de resets.")
+                    observations = [
+                        env._consume_reset_result(result)
+                        for env, result in zip(self.envs, native_batch)
+                    ]
             else:
                 for lobby_index, env in enumerate(self.envs):
                     if seed is None:
@@ -138,13 +168,21 @@ class LobbyVectorEnv:
                     env._prepare_batch_step(lobby_actions)
                     for env, lobby_actions in zip(self.envs, actions)
                 ]
-                native_results = self._batch_manager.step([entry[0] for entry in prepared])
-                if len(native_results) != self.num_envs:
-                    raise RuntimeError("LobbyBatchManager retornou quantidade incorreta de steps.")
-                step_results = [
-                    env._consume_step_result(result, prepared[index][1])
-                    for index, (env, result) in enumerate(zip(self.envs, native_results))
-                ]
+                native_batch = self._batch_manager.step([entry[0] for entry in prepared])
+                if self._validate_native_batch(native_batch):
+                    step_results = [
+                        env._consume_step_result(
+                            native_batch.lobby_result(index), prepared[index][1]
+                        )
+                        for index, env in enumerate(self.envs)
+                    ]
+                else:
+                    if len(native_batch) != self.num_envs:
+                        raise RuntimeError("LobbyBatchManager retornou quantidade incorreta de steps.")
+                    step_results = [
+                        env._consume_step_result(result, prepared[index][1])
+                        for index, (env, result) in enumerate(zip(self.envs, native_batch))
+                    ]
             else:
                 step_results = [
                     env.step(lobby_actions)

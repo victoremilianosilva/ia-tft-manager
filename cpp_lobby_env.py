@@ -1008,7 +1008,7 @@ class CppTFTLobbyWrapper:
         if native_snapshot is not None and not isinstance(native_snapshot, Mapping):
             native_snapshot = _NativeSnapshotMapping(native_snapshot)
             result["native_state_snapshot"] = native_snapshot
-        self._last_dones.fill(False)
+        self._last_dones = np.zeros(self.PLAYERS_PER_LOBBY, dtype=np.bool_)
         self._players = [
             SimpleNamespace(player_id=i, alive=True, eliminated=False)
             for i in range(self.PLAYERS_PER_LOBBY)
@@ -1039,7 +1039,7 @@ class CppTFTLobbyWrapper:
         """Prevent consumers from reusing masks/metadata after a reset attempt."""
         self._last_action_masks = None
         self._last_snapshot_metadata = None
-        self._last_dones.fill(False)
+        self._last_dones = np.zeros(self.PLAYERS_PER_LOBBY, dtype=np.bool_)
 
     def reset(self, seed: int | None = None):
         self._invalidate_current_snapshot()

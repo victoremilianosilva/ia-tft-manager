@@ -32,15 +32,26 @@ def test_lobby_batch_manager_matches_direct_engine_for_same_seed_and_actions():
         direct_reset = [engine.reset(seed=1234 + i) for i, engine in enumerate(direct)]
         for batch, single in zip(batch_reset, direct_reset):
             np.testing.assert_array_equal(batch["observations"], single["observations"])
+            np.testing.assert_array_equal(batch["action_masks"], single["action_masks"])
             assert batch["episode_id"] == single["episode_id"]
+            assert batch["decision_sequence"] == single["decision_sequence"]
+            assert batch["player_decision_sequences"] == single["player_decision_sequences"]
         actions = _pass_actions(2)
         batch_steps = manager.step(actions)
         direct_steps = [engine.step(actions[i]) for i, engine in enumerate(direct)]
         for batch, single in zip(batch_steps, direct_steps):
             np.testing.assert_array_equal(batch["observations"], single["observations"])
             np.testing.assert_array_equal(batch["rewards"], single["rewards"])
+            np.testing.assert_array_equal(batch["action_rewards"], single["action_rewards"])
+            np.testing.assert_array_equal(batch["combat_rewards"], single["combat_rewards"])
+            np.testing.assert_array_equal(batch["placement_rewards"], single["placement_rewards"])
             np.testing.assert_array_equal(batch["dones"], single["dones"])
+            np.testing.assert_array_equal(batch["action_masks"], single["action_masks"])
+            assert batch["action_traces"] == single["action_traces"]
+            assert batch["engine_instance_id"]
+            assert batch["episode_id"] == single["episode_id"]
             assert batch["decision_sequence"] == single["decision_sequence"]
+            assert batch["player_decision_sequences"] == single["player_decision_sequences"]
     finally:
         manager.close()
         for engine in direct:
@@ -105,3 +116,66 @@ def test_lobby_batch_manager_keeps_lobby_rng_and_state_independent():
     finally:
         batch.close()
         reference.close()
+
+
+
+def test_lobby_batch_manager_publishes_one_versioned_contiguous_batch():
+    manager = native.LobbyBatchManager(2, 7300)
+    try:
+        reset_batch = manager.reset(seed=8100)
+        assert isinstance(reset_batch, native.NativeDecisionBatch)
+        assert reset_batch.contract_id == "tft.native-decision-batch"
+        assert reset_batch.contract_version == 1
+        assert reset_batch.kind == "reset"
+        assert reset_batch.lobby_count == 2
+        assert reset_batch.players_per_lobby == 8
+        assert reset_batch.observations.shape[0:2] == (2, 8)
+        assert reset_batch.action_masks.shape == (2, 8, 1280)
+        assert reset_batch.observations.flags.c_contiguous
+        assert reset_batch.action_masks.flags.c_contiguous
+        assert not reset_batch.observations.flags.writeable
+        assert not reset_batch.action_masks.flags.writeable
+
+        first = reset_batch.lobby_result(0)
+        assert np.shares_memory(first["observations"], reset_batch.observations)
+        assert np.shares_memory(first["action_masks"], reset_batch.action_masks)
+        assert not first["observations"].flags.writeable
+        assert not first["action_masks"].flags.writeable
+
+        # A lobby view owns the aggregate batch, so it remains valid after the
+        # temporary batch variable is released.
+        retained_observations = first["observations"]
+        del reset_batch
+        np.testing.assert_array_equal(retained_observations, first["observations"])
+
+        step_batch = manager.step(_pass_actions(2))
+        assert isinstance(step_batch, native.NativeDecisionBatch)
+        assert step_batch.kind == "step"
+        assert step_batch.rewards.shape == (2, 8)
+        assert step_batch.action_rewards.shape == (2, 8)
+        assert step_batch.combat_rewards.shape == (2, 8)
+        assert step_batch.placement_rewards.shape == (2, 8)
+        assert step_batch.dones.shape == (2, 8)
+        assert step_batch.lobby_done.shape == (2,)
+        row = step_batch.lobby_result(1)
+        assert np.shares_memory(row["rewards"], step_batch.rewards)
+        assert np.shares_memory(row["dones"], step_batch.dones)
+    finally:
+        manager.close()
+
+
+
+@pytest.mark.parametrize("lobby_count", [1, 2, 4])
+def test_native_decision_batch_shapes_scale_with_lobby_count(lobby_count):
+    manager = native.LobbyBatchManager(lobby_count, 12000)
+    try:
+        batch = manager.reset(seed=13000)
+        assert batch.observations.shape[:2] == (lobby_count, 8)
+        assert batch.action_masks.shape == (lobby_count, 8, 1280)
+        stepped = manager.step(_pass_actions(lobby_count))
+        assert stepped.observations.shape[:2] == (lobby_count, 8)
+        assert stepped.rewards.shape == (lobby_count, 8)
+        assert stepped.dones.shape == (lobby_count, 8)
+        assert [stepped.lobby_result(i)["engine_instance_id"] for i in range(lobby_count)] == manager.engine_instance_ids
+    finally:
+        manager.close()
