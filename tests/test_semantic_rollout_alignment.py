@@ -26,9 +26,16 @@ def test_rollout_keeps_semantic_projection_aligned_with_each_transition():
     }
     masks["type_mask"][:, 6] = True
     semantic_numeric = torch.zeros((batch_size, SEMANTIC_NUMERIC_DIM), dtype=torch.float32)
+    native_trait_ids = torch.zeros(
+        (batch_size, SEMANTIC_ENTITY_SLOTS, 10), dtype=torch.long
+    )
+    native_trait_ids[:, 0, 0] = torch.tensor([1234, 4321])
+    semantic_numeric[:, 70 + 29] = native_trait_ids[:, 0, 0].float() / 65536.0
     semantic = {
         "numeric": semantic_numeric,
-        "items": semantic_item_state_tensors(semantic_numeric),
+        "items": semantic_item_state_tensors(
+            semantic_numeric, trait_ids=native_trait_ids
+        ),
         "champion_ids": torch.arange(
             batch_size * SEMANTIC_ENTITY_SLOTS, dtype=torch.long
         ).reshape(batch_size, SEMANTIC_ENTITY_SLOTS),
@@ -53,6 +60,9 @@ def test_rollout_keeps_semantic_projection_aligned_with_each_transition():
     actual = actual[torch.argsort(actual[:, 0])]
     expected = semantic["champion_ids"][torch.argsort(semantic["champion_ids"][:, 0])]
     assert torch.equal(actual, expected)
+    actual_trait_ids = batch["semantic_state"]["items"]["trait_ids"]
+    expected_trait_ids = native_trait_ids[torch.argsort(semantic["champion_ids"][:, 0])]
+    assert torch.equal(actual_trait_ids, expected_trait_ids)
     assert torch.equal(batch["semantic_state"]["numeric"], semantic["numeric"])
 
 
