@@ -7208,6 +7208,20 @@ bool TFTEngine::grant_item_component(
     return true;
 }
 
+bool TFTEngine::grant_component_anvil_for_testing(
+    std::int32_t player_id, std::vector<std::string> options
+) {
+    if (!impl_) throw std::runtime_error("TFTEngine nao possui estado interno.");
+    impl_->ensure_open();
+    if (player_id < 0 || static_cast<std::size_t>(player_id) >= kPlayersPerLobby)
+        return false;
+    auto& player = impl_->player_envs[static_cast<std::size_t>(player_id)];
+    if (!player.item_engine || !player.item_engine->grant_component_anvil(std::move(options)))
+        return false;
+    impl_->refresh_masks(static_cast<std::size_t>(player_id));
+    return true;
+}
+
 bool TFTEngine::grant_completed_item(
     std::int32_t player_id, const std::string& item_id
 ) {
