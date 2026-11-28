@@ -25,6 +25,9 @@ def test_native_lobby_adapter_executes_a_step():
         assert len(info["players"]) == 8
         assert info["round"] >= 1
         assert info["lobby_done"] is done
+        assert info["action_context"]["contract_id"] == "tft.engine.action-context"
+        assert info["action_context"]["contract_version"] == 1
+        assert info["action_context"]["action_masks"].shape == (8, 1280)
         assert len(info["action_outcome_events"]) == 8
         for player_id, event in enumerate(info["action_outcome_events"]):
             assert event["contract_id"] == "tft.engine.action-outcome-event"
