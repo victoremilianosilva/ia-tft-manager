@@ -425,6 +425,13 @@ struct TFTEngine::Impl {
             event.player_sequence = player_decision_sequences[static_cast<std::size_t>(event.player_id)];
         }
         temporal_history.push_back(std::move(event));
+        const auto current_round = round + 1;
+        const auto old_size = temporal_history.size();
+        temporal_history.erase(std::remove_if(temporal_history.begin(), temporal_history.end(),
+            [current_round](const TemporalEvent& retained) {
+                return retained.round > 0 && retained.round + 8 < current_round;
+            }), temporal_history.end());
+        if (temporal_history.size() != old_size) temporal_history_truncated = true;
         if (temporal_history.size() > kTemporalHistoryCapacity) {
             temporal_history_truncated = true;
             temporal_history.erase(temporal_history.begin(),
