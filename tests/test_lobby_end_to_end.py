@@ -234,3 +234,25 @@ def test_native_action_event_reports_auto_merge_and_all_consumed_unit_uuids():
         assert len(set(event["affected_unit_uuids"])) == 3
     finally:
         lobby.close()
+
+
+def test_native_action_event_reports_eliminated_player_pass_only_transition():
+    lobby = CppTFTLobbyWrapper(seed=131)
+    try:
+        lobby.reset(seed=131)
+        assert lobby._engine.set_player_alive_for_testing(0, False)
+        masks = lobby._engine.get_action_masks()[0]
+        assert masks["type_mask"][6] == 1
+        assert sum(masks["type_mask"]) == 1
+        assert masks["shop_mask"][0] == 1
+        actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        _, _, _, info = lobby.step(actions)
+        event = info["action_outcome_events"][0]
+        assert event["action_family"] == "pass"
+        assert event["mask_permitted"] is True
+        assert event["preflight_accepted"] is True
+        assert event["handler_applied"] is False
+        assert event["status_reason"] == "player_eliminated"
+        assert event["decision_advanced"] is True
+    finally:
+        lobby.close()
