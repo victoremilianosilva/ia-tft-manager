@@ -6018,21 +6018,21 @@ StepResult TFTEngine::step(
             case 3:
                 outcome.action_family = "deploy";
                 if (effective[2] >= 0 && static_cast<std::size_t>(effective[2]) < player_env.bench.size() && player_env.bench[effective[2]])
-                    outcome.affected_unit_uuids.push_back(player_env.bench[effective[2]]->uuid);
+                    outcome.candidate_unit_uuids.push_back(player_env.bench[effective[2]]->uuid);
                 if (effective[3] >= 0 && static_cast<std::size_t>(effective[3]) < player_env.board.size() && player_env.board[effective[3]])
-                    outcome.affected_unit_uuids.push_back(player_env.board[effective[3]]->uuid);
+                    outcome.candidate_unit_uuids.push_back(player_env.board[effective[3]]->uuid);
                 break;
             case 4:
                 outcome.action_family = "positioning";
                 if (effective[4] >= 0 && static_cast<std::size_t>(effective[4]) < player_env.board.size() && player_env.board[effective[4]])
-                    outcome.affected_unit_uuids.push_back(player_env.board[effective[4]]->uuid);
+                    outcome.candidate_unit_uuids.push_back(player_env.board[effective[4]]->uuid);
                 if (effective[5] >= 0 && static_cast<std::size_t>(effective[5]) < player_env.board.size() && player_env.board[effective[5]])
-                    outcome.affected_unit_uuids.push_back(player_env.board[effective[5]]->uuid);
+                    outcome.candidate_unit_uuids.push_back(player_env.board[effective[5]]->uuid);
                 break;
             case 5:
                 outcome.action_family = "sale";
                 if (effective[2] >= 0 && static_cast<std::size_t>(effective[2]) < player_env.bench.size() && player_env.bench[effective[2]])
-                    outcome.affected_unit_uuids.push_back(player_env.bench[effective[2]]->uuid);
+                    outcome.candidate_unit_uuids.push_back(player_env.bench[effective[2]]->uuid);
                 break;
             case 6: outcome.action_family = "pass"; break;
             case 7:
@@ -6041,11 +6041,11 @@ StepResult TFTEngine::step(
                 const auto target = effective[0] == 7 ? effective[2] : effective[3];
                 if (target >= 0) {
                     if (static_cast<std::size_t>(target) < player_env.board.size() && player_env.board[target])
-                        outcome.affected_unit_uuids.push_back(player_env.board[target]->uuid);
+                        outcome.candidate_unit_uuids.push_back(player_env.board[target]->uuid);
                     else {
                         const auto bench_slot = static_cast<std::size_t>(target) - kBoardSlots;
                         if (bench_slot < player_env.bench.size() && player_env.bench[bench_slot])
-                            outcome.affected_unit_uuids.push_back(player_env.bench[bench_slot]->uuid);
+                            outcome.candidate_unit_uuids.push_back(player_env.bench[bench_slot]->uuid);
                     }
                 }
                 break;
