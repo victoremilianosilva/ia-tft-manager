@@ -5953,6 +5953,7 @@ StepResult TFTEngine::step(
     std::array<std::int32_t, kPlayersPerLobby> xp_before_actions{};
     std::array<std::int32_t, kPlayersPerLobby> xp_after_actions{};
     std::array<ActionExecutionTrace, kPlayersPerLobby> action_traces{};
+    std::array<ActionOutcomeEvent, kPlayersPerLobby> action_outcomes{};
     std::vector<std::string> item_action_events;
     for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
         auto& trace = action_traces[i];
@@ -5964,13 +5965,85 @@ StepResult TFTEngine::step(
             std::numeric_limits<std::uint64_t>::max()) {
             throw std::overflow_error("Sequencia temporal do jogador esgotada.");
         }
-        const auto transition = impl_->player_envs[i].step(*impl_, i, effective_actions[i]);
+        auto& player_env = impl_->player_envs[i];
+        const auto& effective = effective_actions[i].values;
+        ActionOutcomeEvent outcome;
+        outcome.engine_instance_id = impl_->engine_instance_id;
+        outcome.episode_id = impl_->episode_id;
+        outcome.player_id = static_cast<std::int32_t>(i);
+        outcome.source_player_decision_sequence = impl_->player_decision_sequences[i];
+        outcome.outcome_player_decision_sequence = impl_->player_decision_sequences[i] + 1;
+        outcome.event_sequence = static_cast<std::uint64_t>(i);
+        outcome.action_type = effective[0];
+        outcome.requested_action = actions[i].values;
+        outcome.effective_action = effective;
+        switch (effective[0]) {
+            case 0: {
+                outcome.action_family = "purchase";
+                if (player_env.shop) {
+                    const auto* offer = player_env.shop->get_unit(effective[1]);
+                    if (offer) outcome.catalog_champion_id = offer->champion_internal_id;
+                }
+                break;
+            }
+            case 1: outcome.action_family = "reroll"; break;
+            case 2: outcome.action_family = "xp_purchase"; break;
+            case 3:
+                outcome.action_family = "deploy";
+                if (effective[2] >= 0 && static_cast<std::size_t>(effective[2]) < player_env.bench.size() && player_env.bench[effective[2]])
+                    outcome.affected_unit_uuids.push_back(player_env.bench[effective[2]]->uuid);
+                if (effective[3] >= 0 && static_cast<std::size_t>(effective[3]) < player_env.board.size() && player_env.board[effective[3]])
+                    outcome.affected_unit_uuids.push_back(player_env.board[effective[3]]->uuid);
+                break;
+            case 4:
+                outcome.action_family = "positioning";
+                if (effective[4] >= 0 && static_cast<std::size_t>(effective[4]) < player_env.board.size() && player_env.board[effective[4]])
+                    outcome.affected_unit_uuids.push_back(player_env.board[effective[4]]->uuid);
+                if (effective[5] >= 0 && static_cast<std::size_t>(effective[5]) < player_env.board.size() && player_env.board[effective[5]])
+                    outcome.affected_unit_uuids.push_back(player_env.board[effective[5]]->uuid);
+                break;
+            case 5:
+                outcome.action_family = "sale";
+                if (effective[2] >= 0 && static_cast<std::size_t>(effective[2]) < player_env.bench.size() && player_env.bench[effective[2]])
+                    outcome.affected_unit_uuids.push_back(player_env.bench[effective[2]]->uuid);
+                break;
+            case 6: outcome.action_family = "pass"; break;
+            case 7:
+            case 8: {
+                outcome.action_family = "item_action";
+                const auto target = effective[0] == 7 ? effective[2] : effective[3];
+                if (target >= 0) {
+                    if (static_cast<std::size_t>(target) < player_env.board.size() && player_env.board[target])
+                        outcome.affected_unit_uuids.push_back(player_env.board[target]->uuid);
+                    else {
+                        const auto bench_slot = static_cast<std::size_t>(target) - kBoardSlots;
+                        if (bench_slot < player_env.bench.size() && player_env.bench[bench_slot])
+                            outcome.affected_unit_uuids.push_back(player_env.bench[bench_slot]->uuid);
+                    }
+                }
+                break;
+            }
+            default: outcome.action_family = "unknown"; break;
+        }
+        const auto transition = player_env.step(*impl_, i, effective_actions[i]);
         trace.handler_applied = transition.action_succeeded;
         trace.status_reason = !transition.acted
             ? "not_processed"
             : (was_overridden
                 ? (transition.action_succeeded ? "overridden_and_applied" : "overridden_not_applied")
                 : (transition.action_succeeded ? "applied" : "not_applied_by_action_handler"));
+        outcome.handler_applied = transition.action_succeeded;
+        outcome.status_reason = trace.status_reason;
+        outcome.gold_before = transition.gold_before_action;
+        outcome.gold_after = transition.gold_after_action;
+        outcome.gold_delta = transition.gold_after_action - transition.gold_before_action;
+        outcome.xp_before = transition.xp_before_action;
+        outcome.xp_after = transition.xp_after_action;
+        outcome.level_before = transition.level_before_action;
+        outcome.level_after = transition.level_after_action;
+        outcome.action_cost = transition.action_cost;
+        outcome.sale_proceeds = transition.sale_proceeds;
+        action_outcomes[i] = std::move(outcome);
         if (!transition.acted) {
             continue;
         }
@@ -6197,6 +6270,7 @@ StepResult TFTEngine::step(
     for (std::size_t i = 0; i < kPlayersPerLobby; ++i) result.action_masks[i] = impl_->player_envs[i].action_masks;
     for (std::size_t i = 0; i < kPlayersPerLobby; ++i) result.players[i] = impl_->player_envs[i].info;
     result.action_traces = action_traces;
+    result.action_outcome_events = action_outcomes;
 
     result.lobby_done = impl_->done;
     result.engine_instance_id = impl_->engine_instance_id;
