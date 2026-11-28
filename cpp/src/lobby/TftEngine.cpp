@@ -6802,6 +6802,8 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
     snapshot.round = impl_->round + 1;
     snapshot.stage = impl_->stage;
     snapshot.finished = impl_->done;
+    snapshot.temporal_history_complete = !impl_->temporal_history_truncated;
+    snapshot.temporal_events = impl_->temporal_history;
     snapshot.combat_sequence = impl_->combat_sequence;
     snapshot.combat_damage_events_truncated = impl_->combat_damage_events_truncated;
     snapshot.combat_damage_events = impl_->last_combat_damage_events;
@@ -6962,6 +6964,40 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
         target.actions_taken_this_round = source.actions_taken_this_round;
         target.board_move_age = source.board_move_age;
         target.masks = source.action_masks;
+
+        const auto& anti_loop_history = source.anti_loop.history();
+        auto& anti_loop_projection = target.anti_loop_history;
+        anti_loop_projection.current_round = anti_loop_history.current_round;
+        anti_loop_projection.state_window_rounds = anti_loop_history.state_window_rounds;
+        anti_loop_projection.position_history_hashes.reserve(anti_loop_history.position_history.size());
+        for (const auto& signature : anti_loop_history.position_history)
+            anti_loop_projection.position_history_hashes.push_back(
+                static_cast<std::uint64_t>(decision::PositionSignatureHash{}(signature)));
+        const auto project_move = [](const decision::MoveRecord& move) {
+            AntiLoopMoveSnapshot row;
+            row.move_type = move.move_type;
+            row.source = move.source;
+            row.target = move.target;
+            if (move.unit && move.unit->uuid) row.unit_uuid = *move.unit->uuid;
+            if (move.displaced_unit && move.displaced_unit->uuid)
+                row.displaced_unit_uuid = *move.displaced_unit->uuid;
+            return row;
+        };
+        anti_loop_projection.move_history.reserve(anti_loop_history.move_history.size());
+        for (const auto& move : anti_loop_history.move_history)
+            anti_loop_projection.move_history.push_back(project_move(move));
+        anti_loop_projection.blocked_moves.reserve(anti_loop_history.blocked_moves.size());
+        for (const auto& blocked : anti_loop_history.blocked_moves)
+            anti_loop_projection.blocked_moves.push_back(project_move(blocked.move));
+        anti_loop_projection.state_visit_hashes.reserve(anti_loop_history.state_visits.size());
+        anti_loop_projection.state_visit_counts.reserve(anti_loop_history.state_visits.size());
+        anti_loop_projection.state_visit_rounds.reserve(anti_loop_history.state_visits.size());
+        for (const auto& visit : anti_loop_history.state_visits) {
+            anti_loop_projection.state_visit_hashes.push_back(
+                static_cast<std::uint64_t>(decision::PositionSignatureHash{}(visit.signature)));
+            anti_loop_projection.state_visit_counts.push_back(visit.visits);
+            anti_loop_projection.state_visit_rounds.push_back(visit.last_seen_round);
+        }
 
         auto& strategic = target.strategic_state;
         strategic.episode_id = impl_->episode_id;
