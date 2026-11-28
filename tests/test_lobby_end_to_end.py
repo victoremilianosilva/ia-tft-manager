@@ -106,3 +106,30 @@ def test_native_action_event_covers_item_craft_handler():
         assert event["affected_unit_uuids"]
     finally:
         lobby.close()
+
+
+def test_native_preflight_rejection_is_a_factual_event_without_state_advance():
+    lobby = CppTFTLobbyWrapper(seed=126)
+    try:
+        lobby.reset(seed=126)
+        before = lobby._engine.get_audit_snapshot()["snapshot_sequence"]
+        actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        actions[0] = [0, 99, 0, 0, 0, 0]
+
+        with pytest.raises(ValueError, match="Native action preflight rejected") as rejected:
+            lobby.step(actions)
+
+        context = rejected.value.action_context
+        assert context["contract_id"] == "tft.engine.action-context"
+        assert context["rejected"] is True
+        assert context["decision_advanced"] is False
+        events = context["events"]
+        assert len(events) == 8
+        assert events[0]["mask_permitted"] is False
+        assert events[0]["handler_applied"] is False
+        assert events[0]["decision_advanced"] is False
+        assert events[0]["status_reason"]
+        assert events[1]["mask_permitted"] is True
+        assert lobby._engine.get_audit_snapshot()["snapshot_sequence"] == before
+    finally:
+        lobby.close()
