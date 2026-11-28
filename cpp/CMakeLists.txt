@@ -277,6 +277,16 @@ else()
 
 
 
+endif()
+
+# =========================================================
+# Testes nativos
+# =========================================================
+
+include(CTest)
+
+if(BUILD_TESTING)
+
     # NativeDecisionContext: immutable typed view over one correlated snapshot.
     add_executable(
         test_native_decision_context
@@ -299,16 +309,6 @@ else()
         NAME native_spatial_context
         COMMAND test_native_spatial_context
     )
-
-endif()
-
-# =========================================================
-# Testes nativos
-# =========================================================
-
-include(CTest)
-
-if(BUILD_TESTING)
 
     add_executable(test_semantic_sha256 tests/test_semantic_sha256.cpp)
     configure_tft_module(test_semantic_sha256)
