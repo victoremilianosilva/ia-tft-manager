@@ -161,14 +161,20 @@ class RewardAuditLedger:
             player_sequence = int(source_player_sequences[player_id])
             if player_sequence < 0 or outcome_player_sequence <= player_sequence:
                 raise RuntimeError(f"Sequência pré/pós-ação inválida para player_id={player_id}.")
+            expected_action_event_id = (
+                f"{engine_id}/episode/{episode_id}/decision/{player_sequence}/player/{player_id}/action"
+            )
             if (
                 int(action_event.get("source_player_decision_sequence", -1)) != player_sequence
                 or int(action_event.get("outcome_player_decision_sequence", -1)) != outcome_player_sequence
-                or not str(action_event.get("event_id", "")).strip()
-                or not isinstance(action_event.get("mask_permitted"), bool)
+                or action_event.get("event_id") != expected_action_event_id
+                or action_event.get("mask_permitted") is not True
                 or not isinstance(action_event.get("handler_applied"), bool)
                 or not isinstance(action_event.get("status_reason"), str)
                 or not action_event.get("status_reason", "").strip()
+                or action_event.get("requested_action") != trace.get("requested_action")
+                or action_event.get("effective_action") != trace.get("effective_action")
+                or action_event.get("normalized_action") != action_event.get("requested_action")
             ):
                 raise RuntimeError(f"ActionOutcomeEvent desalinhado ou incompleto para player_id={player_id}.")
             event_id = str(action_event["event_id"])
