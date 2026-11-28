@@ -419,9 +419,13 @@ def test_native_temporal_history_links_delayed_economy_and_resets_by_episode():
         source_action_ids = {event["event_id"] for event in first_info["temporal_events"]
                              if event["event_type"] == "action_outcome"}
         assert all(event["delayed"] for event in delayed)
-        assert all(event["causal_event_id"] in source_action_ids for event in delayed)
+        player_zero_income = [event for event in delayed if event["player_id"] == 0]
+        other_income = [event for event in delayed if event["player_id"] != 0]
+        assert len(player_zero_income) == 1
+        assert player_zero_income[0]["causal_event_id"] in source_action_ids
+        assert all(not event["causal_event_id"] for event in other_income)
         assert all(event["source_player_decision_sequence"] <
-                   event["observed_player_decision_sequence"] for event in delayed)
+                   event["observed_player_decision_sequence"] for event in player_zero_income)
 
         old_episode = last_info["decision_snapshot"]["episode_id"]
         lobby.reset(seed=902)
