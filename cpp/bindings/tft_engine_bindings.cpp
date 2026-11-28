@@ -1753,6 +1753,10 @@ PYBIND11_MODULE(tft_engine, module) {
         .def_property_readonly("columns", &tft::NativeSpatialContext::columns)
         .def_property_readonly("availability", &tft::NativeSpatialContext::availability)
         .def_property_readonly("player_index", &tft::NativeSpatialContext::player_index)
+        .def_property_readonly("engine_instance_id", &tft::NativeSpatialContext::engine_instance_id)
+        .def_property_readonly("episode_id", &tft::NativeSpatialContext::episode_id)
+        .def_property_readonly("snapshot_sequence", &tft::NativeSpatialContext::snapshot_sequence)
+        .def_property_readonly("player_decision_sequence", &tft::NativeSpatialContext::player_decision_sequence)
         .def("row_buffer", [](std::shared_ptr<tft::NativeSpatialContext> context) {
             const auto& values = context->row_buffer();
             py::array_t<std::int32_t> result({28}, {static_cast<py::ssize_t>(sizeof(std::int32_t))},
@@ -1796,6 +1800,11 @@ PYBIND11_MODULE(tft_engine, module) {
         })
         .def_property_readonly("champion_ids", [](const tft::NativeSpatialContext& context) {
             py::list result; for (const auto& value : context.champion_id_buffer()) result.append(value);
+            return result;
+        })
+        .def_property_readonly("unit_traits", [](const tft::NativeSpatialContext& context) {
+            py::list result;
+            for (const auto& traits : context.trait_buffer()) result.append(py::cast(traits));
             return result;
         })
         .def_property_readonly("relations", [](const tft::NativeSpatialContext& context) {
