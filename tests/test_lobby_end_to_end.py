@@ -288,3 +288,51 @@ def test_native_action_event_reports_eliminated_player_pass_only_transition():
         assert event["decision_advanced"] is True
     finally:
         lobby.close()
+
+
+def test_native_action_event_oracle_parity_for_deployment_and_sale():
+    lobby = CppTFTLobbyWrapper(seed=133)
+    try:
+        lobby.reset(seed=133)
+        _buy_first_shop_unit(lobby)
+        masks = lobby.get_packed_action_masks_for_training()
+        source_slots = np.flatnonzero(masks[0, 863:872])
+        assert source_slots.size
+        source = int(source_slots[0])
+        targets = np.flatnonzero(masks[0, 872 + source * 28:872 + (source + 1) * 28])
+        assert targets.size
+        actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        actions[0] = [3, 0, source, int(targets[0]), 0, 0]
+        before_snapshot = lobby._engine.get_audit_snapshot()
+        _, _, _, deployed = lobby.step(actions)
+        _assert_action_events_match_oracle(deployed, before_snapshot)
+        assert deployed["action_outcome_events"][0]["action_family"] == "deploy"
+
+        masks = lobby.get_packed_action_masks_for_training()
+        bench_slots = np.flatnonzero(masks[0, 14:23])
+        assert bench_slots.size
+        actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        actions[0] = [5, 0, int(bench_slots[0]), 0, 0, 0]
+        before_snapshot = lobby._engine.get_audit_snapshot()
+        _, _, _, sold = lobby.step(actions)
+        _assert_action_events_match_oracle(sold, before_snapshot)
+        assert sold["action_outcome_events"][0]["action_family"] == "sale"
+    finally:
+        lobby.close()
+
+
+@pytest.mark.parametrize(("action_type", "family"), [(1, "reroll"), (2, "xp_purchase")])
+def test_native_action_event_oracle_parity_for_economic_actions(action_type, family):
+    lobby = CppTFTLobbyWrapper(seed=134 + action_type)
+    try:
+        lobby.reset(seed=134 + action_type)
+        masks = lobby.get_packed_action_masks_for_training()
+        assert bool(masks[0, action_type])
+        actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        actions[0] = [action_type, 0, 0, 0, 0, 0]
+        before_snapshot = lobby._engine.get_audit_snapshot()
+        _, _, _, info = lobby.step(actions)
+        _assert_action_events_match_oracle(info, before_snapshot)
+        assert info["action_outcome_events"][0]["action_family"] == family
+    finally:
+        lobby.close()
