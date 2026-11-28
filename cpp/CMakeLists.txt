@@ -289,6 +289,17 @@ else()
         COMMAND test_native_decision_context
     )
 
+    add_executable(
+        test_native_spatial_context
+        tests/test_native_spatial_context.cpp
+    )
+    configure_tft_module(test_native_spatial_context)
+    enable_tft_test_assertions(test_native_spatial_context)
+    add_test(
+        NAME native_spatial_context
+        COMMAND test_native_spatial_context
+    )
+
 endif()
 
 # =========================================================
