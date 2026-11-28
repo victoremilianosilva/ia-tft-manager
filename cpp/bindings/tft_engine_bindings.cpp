@@ -1808,6 +1808,8 @@ PYBIND11_MODULE(tft_engine, module) {
         .def("set_unit_for_testing", &TFTEngine::set_unit_for_testing,
              py::arg("player_id"), py::arg("on_board"), py::arg("slot"),
              py::arg("champion_api_name"), py::arg("star") = 1)
+        .def("set_shop_offer_for_testing", &TFTEngine::set_shop_offer_for_testing,
+             py::arg("player_id"), py::arg("slot"), py::arg("champion_api_name"))
         .def("grant_item_component", &TFTEngine::grant_item_component,
              py::arg("player_id"), py::arg("component_id"))
         .def("grant_completed_item", &TFTEngine::grant_completed_item,
