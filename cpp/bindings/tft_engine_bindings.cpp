@@ -551,6 +551,7 @@ py::dict audit_snapshot_to_dict(
         temporal_events.append(std::move(row));
     }
     result["temporal_events"] = std::move(temporal_events);
+    result["temporal_causal_anchor_ids"] = snapshot.temporal_causal_anchor_ids;
     result["combat_damage_events_truncated"] = snapshot.combat_damage_events_truncated;
     result["combat_attack_events_truncated"] = snapshot.combat_attack_events_truncated;
     result["combat_death_events_truncated"] = snapshot.combat_death_events_truncated;
@@ -779,6 +780,7 @@ public:
             "temporal_retention_events",
             "temporal_history_complete",
             "temporal_events",
+            "temporal_causal_anchor_ids",
             "combat_damage_events_truncated",
             "combat_attack_events_truncated",
             "combat_death_events_truncated",
