@@ -321,7 +321,7 @@ def test_rollout_rejects_action_trace_that_differs_from_ppo_action():
             "status_reason": "applied",
         },
     }
-    next_state = {key: value for key, value in result.items() if key != "action_trace"}
+    next_state = {key: value for key, value in result.items() if key not in ("action_trace", "action_outcome_event")}
 
     with pytest.raises(ValueError, match="Ação PPO diverge"):
         buffer.add(
@@ -384,6 +384,19 @@ def _add_rollout_with_action_trace_for_validation(action_trace):
         "engine_instance_id": "engine-A", "episode_id": 4,
         "decision_sequence": 22, "player_decision_sequence": 22, "player_id": 0, "lobby_index": 0,
         "action_trace": {"player_id": 0, **action_trace},
+        "action_outcome_event": {
+            "contract_id": "tft.engine.action-outcome-event",
+            "contract_version": 1,
+            "event_id": "engine-A/episode/4/decision/21/player/0/action",
+            "engine_instance_id": "engine-A", "episode_id": 4, "player_id": 0,
+            "source_player_decision_sequence": 21,
+            "outcome_player_decision_sequence": 22,
+            "requested_action": action_trace.get("requested_action"),
+            "normalized_action": action_trace.get("requested_action"),
+            "effective_action": action_trace.get("effective_action"),
+            "mask_permitted": True, "handler_applied": action_trace.get("handler_applied"),
+            "status_reason": action_trace.get("status_reason"),
+        },
     }
     next_state = {key: value for key, value in result.items() if key != "action_trace"}
     buffer.add(
