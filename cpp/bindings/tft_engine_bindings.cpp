@@ -1079,6 +1079,7 @@ py::dict step_to_dict(tft::StepResult step, bool include_numeric_transport = tru
         item["normalized_action"] = event.normalized_action;
         item["effective_action"] = event.effective_action;
         item["mask_permitted"] = event.mask_permitted;
+        item["preflight_accepted"] = event.preflight_accepted;
         item["handler_applied"] = event.handler_applied;
         item["decision_advanced"] = event.decision_advanced;
         item["status_reason"] = event.status_reason;
@@ -1743,6 +1744,7 @@ PYBIND11_MODULE(tft_engine, module) {
                     item["normalized_action"] = event.normalized_action;
                     item["effective_action"] = event.effective_action;
                     item["mask_permitted"] = event.mask_permitted;
+        item["preflight_accepted"] = event.preflight_accepted;
                     item["handler_applied"] = event.handler_applied;
                     item["decision_advanced"] = event.decision_advanced;
                     item["status_reason"] = event.status_reason;
