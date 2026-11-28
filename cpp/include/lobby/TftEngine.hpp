@@ -652,6 +652,7 @@ struct ActionOutcomeEvent {
     std::int32_t level_after{0};
     std::int32_t action_cost{0};
     std::int32_t sale_proceeds{0};
+    bool auto_merge{false};
 };
 
 struct StepResult {
