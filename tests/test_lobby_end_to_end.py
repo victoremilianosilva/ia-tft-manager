@@ -170,7 +170,9 @@ def test_native_action_event_reports_capacity_noop_without_fabricated_effect():
         # The board has reached level capacity; moving the bench unit to an
         # empty slot is structurally valid but produces an explicit no-op.
         actions[0] = [3, 0, 0, 1, 0, 0]
+        before_snapshot = lobby._engine.get_audit_snapshot()
         _, _, _, info = lobby.step(actions)
+        _assert_action_events_match_oracle(info, before_snapshot)
         event = info["action_outcome_events"][0]
         assert event["mask_permitted"] is False
         assert event["preflight_accepted"] is True
@@ -198,7 +200,9 @@ def test_native_action_event_tracks_both_entities_in_board_swap():
 
         actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
         actions[0] = [4, 0, 0, 0, int(sources[0]), int(destinations[0])]
+        before_snapshot = lobby._engine.get_audit_snapshot()
         _, _, _, info = lobby.step(actions)
+        _assert_action_events_match_oracle(info, before_snapshot)
         event = info["action_outcome_events"][0]
         assert event["action_family"] == "positioning"
         assert event["handler_applied"] is True
