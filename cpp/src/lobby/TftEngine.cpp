@@ -404,6 +404,32 @@ struct TFTEngine::Impl {
     std::uint64_t decision_sequence{0};
     // Independent monotonic namespace for each player's published decision row.
     std::array<std::uint64_t, kPlayersPerLobby> player_decision_sequences{};
+    static constexpr std::size_t kTemporalHistoryCapacity = 256;
+    std::uint64_t temporal_event_sequence{0};
+    std::vector<TemporalEvent> temporal_history;
+    std::array<std::string, kPlayersPerLobby> latest_action_event_ids{};
+    std::array<std::uint32_t, kPlayersPerLobby> latest_action_event_rounds{};
+
+    void append_temporal_event(TemporalEvent event) {
+        event.engine_instance_id = engine_instance_id;
+        event.episode_id = episode_id;
+        event.global_sequence = ++temporal_event_sequence;
+        if (event.event_id.empty()) {
+            event.event_id = engine_instance_id + "/episode/" +
+                std::to_string(episode_id) + "/temporal/" +
+                std::to_string(event.global_sequence);
+        }
+        if (event.player_id >= 0 &&
+            static_cast<std::size_t>(event.player_id) < kPlayersPerLobby) {
+            event.player_sequence = player_decision_sequences[static_cast<std::size_t>(event.player_id)];
+        }
+        temporal_history.push_back(std::move(event));
+        if (temporal_history.size() > kTemporalHistoryCapacity) {
+            temporal_history.erase(temporal_history.begin(),
+                temporal_history.begin() + static_cast<std::ptrdiff_t>(
+                    temporal_history.size() - kTemporalHistoryCapacity));
+        }
+    }
     std::mt19937_64 matchmaking_rng{0};
     std::set<std::uint64_t> previous_matchups;
 
@@ -5897,6 +5923,10 @@ ResetResult TFTEngine::reset(
     }
 
     ++impl_->episode_id;
+    impl_->temporal_event_sequence = 0;
+    impl_->temporal_history.clear();
+    impl_->latest_action_event_ids.fill(std::string{});
+    impl_->latest_action_event_rounds.fill(0);
     for (auto& cache : impl_->strategic_item_fit_caches)
         if (cache) cache->clear();
     impl_->composition_intelligence_players =
