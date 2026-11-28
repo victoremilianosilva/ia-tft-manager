@@ -157,6 +157,13 @@ def test_lobby_vector_batch_parity_includes_reward_provenance_and_action_events(
             all_temporal_ids.update(temporal_ids)
             assert all(event["engine_instance_id"] == batch_info["step_result_snapshot"]["engine_instance_id"]
                        for event in batch_info["temporal_events"])
+            native_context = batch_info["action_context"]["native_decision_context"]
+            assert len(native_context.temporal_events) == len(
+                batch_info["step_result_snapshot"]["native_state_snapshot"]["temporal_events"]
+            )
+            assert native_context.temporal_causal_anchor_ids(0) is not None
+            assert native_context.anti_loop_history(0)["contract_id"] == "tft.engine.anti-loop-history"
+            assert native_context.temporal_history_availability is not None
             assert _without_instance_identifiers(batch_info["reward_audit"]["player_rewards"]) == _without_instance_identifiers(single_info["reward_audit"]["player_rewards"])
     finally:
         batch.close()
