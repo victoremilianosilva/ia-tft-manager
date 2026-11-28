@@ -551,7 +551,8 @@ class CppTFTLobbyWrapper:
                 or isinstance(temporal_contract_version, bool) or temporal_contract_version != 1
                 or isinstance(temporal_retention, bool) or temporal_retention != 256
                 or not isinstance(temporal_complete, bool)
-                or not isinstance(temporal_rows, list)
+                or not isinstance(temporal_rows, Sequence)
+                or isinstance(temporal_rows, (str, bytes))
                 or len(temporal_rows) > temporal_retention
             ):
                 raise RuntimeError("Snapshot estruturado contém contrato temporal inválido.")
@@ -593,10 +594,10 @@ class CppTFTLobbyWrapper:
                     ):
                         raise RuntimeError("TemporalEvent possui referência causal inválida.")
             anchor_rows = value.get("temporal_causal_anchor_ids")
-            if not isinstance(anchor_rows, (list, tuple)) or len(anchor_rows) != cls.PLAYERS_PER_LOBBY:
+            if not isinstance(anchor_rows, Sequence) or isinstance(anchor_rows, (str, bytes)) or len(anchor_rows) != cls.PLAYERS_PER_LOBBY:
                 raise RuntimeError("Snapshot temporal sem causal anchors por jogador.")
             for player_id, anchors in enumerate(anchor_rows):
-                if not isinstance(anchors, (list, tuple)) or len(anchors) != 2:
+                if not isinstance(anchors, Sequence) or isinstance(anchors, (str, bytes)) or len(anchors) != 2:
                     raise RuntimeError(f"Causal anchors inválidos para jogador {player_id}.")
                 for anchor in anchors:
                     if (
