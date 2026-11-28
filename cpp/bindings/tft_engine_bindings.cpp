@@ -1356,7 +1356,29 @@ public:
             result["placement_rewards"] = std::move(placement_rewards_view);
             result["dones"] = std::move(dones_view);
         }
+        py::dict action_context;
+        action_context["contract_id"] = "tft.engine.action-context";
+        action_context["contract_version"] = 1;
+        action_context["engine_instance_id"] = result["engine_instance_id"];
+        action_context["episode_id"] = result["episode_id"];
+        action_context["decision_sequence"] = result["decision_sequence"];
+        action_context["player_decision_sequences"] = result["player_decision_sequences"];
+        action_context["action_mask_contract_id"] = "tft.action-masks.packed";
+        action_context["action_mask_contract_version"] = 1;
+        action_context["action_mask_layout"] = "type,shop,bench_source,board_target,board_source,board_move_target,bench_move_source,bench_to_board_target,item_inventory,item_component_first,item_component_pair,item_target";
+        action_context["action_masks"] = result["action_masks"];
+        action_context["native_state_snapshot"] = result["native_state_snapshot"];
+        if (kind_ == "step") {
+            action_context["action_traces"] = result["action_traces"];
+            action_context["action_outcome_events"] = result["action_outcome_events"];
+        }
+        result["action_context"] = std::move(action_context);
         return result;
+    }
+
+    py::dict action_context(std::size_t index) {
+        const auto row = lobby_result(index);
+        return py::cast<py::dict>(row["action_context"]);
     }
 
 private:
@@ -1974,6 +1996,7 @@ PYBIND11_MODULE(tft_engine, module) {
         .def_property_readonly("dones", &NativeDecisionBatch::dones)
         .def_property_readonly("lobby_done", &NativeDecisionBatch::lobby_done)
         .def("lobby_result", &NativeDecisionBatch::lobby_result, py::arg("index"))
+        .def("action_context", &NativeDecisionBatch::action_context, py::arg("lobby_index"))
         .def("semantic_projection", &NativeDecisionBatch::semantic_projection, py::arg("catalog_map"), py::arg("contract_hash"))
         .def("native_context", &NativeDecisionBatch::native_context, py::arg("lobby_index"))
         .def("native_spatial_context", &NativeDecisionBatch::native_spatial_context,
