@@ -796,8 +796,13 @@ class Trainer:
                 raise RuntimeError(
                     f"Lobby {lobby_idx} não forneceu {players_per_lobby} registros nativos de execução de ação."
                 )
+            action_events = info.get("action_outcome_events")
+            if not isinstance(action_events, list) or len(action_events) != players_per_lobby:
+                raise RuntimeError(
+                    f"Lobby {lobby_idx} não forneceu {players_per_lobby} ActionOutcomeEvent nativos."
+                )
             start = lobby_idx * players_per_lobby
-            for player_id, trace in enumerate(traces):
+            for player_id, (trace, action_event) in enumerate(zip(traces, action_events)):
                 if not isinstance(trace, dict) or not {
                     "player_id", "requested_action", "effective_action",
                     "handler_applied", "status_reason",
@@ -833,7 +838,27 @@ class Trainer:
                     raise RuntimeError(
                         f"Snapshot de resultado desalinhado para lobby {lobby_idx}, jogador {player_id}."
                     )
+                if not isinstance(action_event, dict) or not {
+                    "contract_id", "contract_version", "event_id", "engine_instance_id",
+                    "episode_id", "player_id", "outcome_player_decision_sequence",
+                    "mask_permitted", "handler_applied", "status_reason",
+                }.issubset(action_event):
+                    raise RuntimeError(
+                        f"ActionOutcomeEvent inválido para lobby {lobby_idx}, jogador {player_id}."
+                    )
+                if (
+                    action_event["contract_id"] != "tft.engine.action-outcome-event"
+                    or int(action_event["contract_version"]) != 1
+                    or action_event["engine_instance_id"] != row.get("engine_instance_id")
+                    or int(action_event["episode_id"]) != int(row.get("episode_id", -1))
+                    or int(action_event["player_id"]) != player_id
+                    or int(action_event["outcome_player_decision_sequence"]) != int(row.get("player_decision_sequence", -1))
+                ):
+                    raise RuntimeError(
+                        f"ActionOutcomeEvent desalinhado para lobby {lobby_idx}, jogador {player_id}."
+                    )
                 row["action_trace"] = dict(trace)
+                row["action_outcome_event"] = dict(action_event)
 
         return result_snapshot_metadata
 
