@@ -636,6 +636,39 @@ class RolloutBuffer:
                     raise ValueError(
                         f"result_snapshot_metadata[{index}].action_trace.status_reason deve ser texto não vazio."
                     )
+                action_event = result.get("action_outcome_event")
+                if not isinstance(action_event, dict):
+                    raise ValueError(
+                        f"result_snapshot_metadata[{index}].action_outcome_event é obrigatório para transições identificadas."
+                    )
+                if (
+                    action_event.get("contract_id") != "tft.engine.action-outcome-event"
+                    or action_event.get("contract_version") != 1
+                    or action_event.get("engine_instance_id") != decision["engine_instance_id"]
+                    or action_event.get("episode_id") != decision["episode_id"]
+                    or action_event.get("player_id") != decision["player_id"]
+                    or action_event.get("outcome_player_decision_sequence") != result["player_decision_sequence"]
+                    or not isinstance(action_event.get("event_id"), str)
+                    or not action_event.get("event_id", "").strip()
+                    or action_event.get("mask_permitted") is not True
+                    or not isinstance(action_event.get("handler_applied"), bool)
+                    or not isinstance(action_event.get("status_reason"), str)
+                    or not action_event.get("status_reason", "").strip()
+                ):
+                    raise ValueError(
+                        f"result_snapshot_metadata[{index}].action_outcome_event possui contrato/identidade inválidos."
+                    )
+                event_requested = action_event.get("requested_action")
+                event_normalized = action_event.get("normalized_action")
+                event_effective = action_event.get("effective_action")
+                if (
+                    event_requested != action_trace.get("requested_action")
+                    or event_normalized != event_requested
+                    or event_effective != action_trace.get("effective_action")
+                ):
+                    raise ValueError(
+                        f"result_snapshot_metadata[{index}].action_outcome_event diverge do trace de execução."
+                    )
                 if result["decision_sequence"] <= decision["decision_sequence"]:
                     raise ValueError(f"Sequência do resultado não avança na transição {index}.")
                 if next_state["episode_id"] == result["episode_id"]:
