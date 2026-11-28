@@ -279,3 +279,28 @@ def test_native_decision_batch_publishes_versioned_action_context_and_events():
                 assert event["source_player_decision_sequence"] + 1 == event["outcome_player_decision_sequence"]
     finally:
         manager.close()
+
+
+def test_native_action_event_records_purchase_candidate_and_affected_uuid():
+    manager = native.LobbyBatchManager(1, 9300)
+    try:
+        reset = manager.reset(seed=9400)
+        masks = reset.lobby_result(0)["action_masks"]
+        assert masks.shape == (8, 1280)
+        assert bool(masks[0, 0])
+        legal_shop_slots = np.flatnonzero(masks[0, 9:14])
+        assert legal_shop_slots.size > 0
+
+        actions = _pass_actions(1)
+        actions[0][0] = [0, int(legal_shop_slots[0]), 0, 0, 0, 0]
+        step = manager.step(actions)
+        event = step.lobby_result(0)["action_outcome_events"][0]
+
+        assert event["action_family"] == "purchase"
+        assert event["action_type"] == 0
+        assert event["handler_applied"] is True
+        assert event["catalog_champion_id"] >= 0
+        assert event["affected_unit_uuids"]
+        assert len(event["affected_unit_uuids"]) == len(set(event["affected_unit_uuids"]))
+    finally:
+        manager.close()
