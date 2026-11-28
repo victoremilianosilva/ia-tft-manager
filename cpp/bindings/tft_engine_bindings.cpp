@@ -1812,6 +1812,8 @@ PYBIND11_MODULE(tft_engine, module) {
              py::arg("player_id"), py::arg("component_id"))
         .def("grant_completed_item", &TFTEngine::grant_completed_item,
              py::arg("player_id"), py::arg("item_id"))
+        .def("grant_component_anvil_for_testing", &TFTEngine::grant_component_anvil_for_testing,
+             py::arg("player_id"), py::arg("options"))
         .def("add_item_component_for_testing", &TFTEngine::add_item_component_for_testing,
              py::arg("player_id"), py::arg("component_id"))
         .def("add_completed_item_for_testing", &TFTEngine::add_completed_item_for_testing,
