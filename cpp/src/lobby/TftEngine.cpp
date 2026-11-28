@@ -6284,6 +6284,7 @@ StepResult TFTEngine::step(
         action_outcomes[i] = std::move(outcome);
         TemporalEvent action_event;
         action_event.event_type = "action_outcome";
+        action_event.event_id = action_outcomes[i].event_id;
         action_event.scope = "player";
         action_event.player_id = static_cast<std::int32_t>(i);
         action_event.round = impl_->round + 1;
