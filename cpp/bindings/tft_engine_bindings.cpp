@@ -2116,6 +2116,81 @@ PYBIND11_MODULE(tft_engine, module) {
             return result;
         }, py::arg("player_index"))
         .def_property_readonly("player_count", &tft::NativeDecisionContext::player_count)
+        .def_property_readonly("temporal_history_availability", &tft::NativeDecisionContext::temporal_history_availability)
+        .def_property_readonly("temporal_events", [](const tft::NativeDecisionContext& context) {
+            py::list result;
+            for (const auto& event : context.temporal_events()) {
+                py::dict row;
+                row["contract_id"] = event.contract_id;
+                row["contract_version"] = event.contract_version;
+                row["event_id"] = event.event_id;
+                row["event_type"] = event.event_type;
+                row["scope"] = event.scope;
+                row["engine_instance_id"] = event.engine_instance_id;
+                row["episode_id"] = event.episode_id;
+                row["global_sequence"] = event.global_sequence;
+                row["player_sequence"] = event.player_sequence;
+                row["player_id"] = event.player_id;
+                row["round"] = event.round;
+                row["stage"] = event.stage;
+                row["causal_event_id"] = event.causal_event_id;
+                row["source_player_decision_sequence"] = event.source_player_decision_sequence;
+                row["observed_player_decision_sequence"] = event.observed_player_decision_sequence;
+                row["fact_source"] = event.fact_source;
+                row["transition_kind"] = event.transition_kind;
+                row["identity_before"] = event.identity_before;
+                row["identity_after"] = event.identity_after;
+                row["unit_uuid"] = event.unit_uuid;
+                row["related_unit_uuid"] = event.related_unit_uuid;
+                row["resource"] = event.resource;
+                row["delta"] = event.delta;
+                row["value_before"] = event.value_before;
+                row["value_after"] = event.value_after;
+                row["delayed"] = event.delayed;
+                result.append(std::move(row));
+            }
+            return result;
+        })
+        .def("temporal_causal_anchor_ids", [](const tft::NativeDecisionContext& context, std::size_t player_index) {
+            return context.temporal_causal_anchor_ids(player_index);
+        }, py::arg("player_index"))
+        .def("anti_loop_history_availability", &tft::NativeDecisionContext::anti_loop_history_availability)
+        .def("anti_loop_history", [](const tft::NativeDecisionContext& context, std::size_t player_index) {
+            const auto& history = context.anti_loop_history(player_index);
+            py::dict result;
+            result["contract_id"] = history.contract_id;
+            result["contract_version"] = history.contract_version;
+            result["current_round"] = history.current_round;
+            result["state_window_rounds"] = history.state_window_rounds;
+            result["position_history_hashes"] = history.position_history_hashes;
+            result["state_visit_hashes"] = history.state_visit_hashes;
+            result["state_visit_counts"] = history.state_visit_counts;
+            result["state_visit_rounds"] = history.state_visit_rounds;
+            result["state_visit_repeated"] = history.state_visit_repeated;
+            py::list moves;
+            for (const auto& move : history.move_history) {
+                py::dict row;
+                row["move_type"] = move.move_type;
+                row["source"] = move.source;
+                row["target"] = move.target;
+                row["unit_uuid"] = move.unit_uuid;
+                row["displaced_unit_uuid"] = move.displaced_unit_uuid;
+                moves.append(std::move(row));
+            }
+            result["move_history"] = std::move(moves);
+            py::list blocked;
+            for (const auto& move : history.blocked_moves) {
+                py::dict row;
+                row["move_type"] = move.move_type;
+                row["source"] = move.source;
+                row["target"] = move.target;
+                row["unit_uuid"] = move.unit_uuid;
+                row["displaced_unit_uuid"] = move.displaced_unit_uuid;
+                blocked.append(std::move(row));
+            }
+            result["blocked_moves"] = std::move(blocked);
+            return result;
+        }, py::arg("player_index"))
         .def("player_sequence_availability", &tft::NativeDecisionContext::player_sequence_availability)
         .def("strategic_availability", &tft::NativeDecisionContext::strategic_availability)
         .def("item_inventory_availability", &tft::NativeDecisionContext::item_inventory_availability)
