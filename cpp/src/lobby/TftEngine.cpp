@@ -6036,6 +6036,7 @@ std::array<ActionOutcomeEvent, kPlayersPerLobby> TFTEngine::validate_actions(
             event.status_reason = "preflight_rejected";
             event.status_detail = error.what();
         }
+        event.execution_status = event.preflight_accepted ? "not_executed" : "rejected";
     }
     return events;
 }
@@ -6209,6 +6210,11 @@ StepResult TFTEngine::step(
         outcome.sale_proceeds = transition.sale_proceeds;
         outcome.auto_merge = transition.auto_merge;
         outcome.affected_unit_uuids = transition.affected_unit_uuids;
+        outcome.execution_status = transition.action_succeeded
+            ? "applied"
+            : (!transition.affected_unit_uuids.empty()
+                ? "partial"
+                : (trace.status_reason == "player_eliminated" ? "not_processed" : "no_effect"));
         outcome.item_action_kind = player_env.last_item_action.kind;
         outcome.item_id = player_env.last_item_action.item_id;
         outcome.first_component_id = player_env.last_item_action.first_component;
