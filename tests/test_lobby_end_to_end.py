@@ -130,6 +130,7 @@ def test_native_preflight_rejection_is_a_factual_event_without_state_advance():
         assert events[0]["preflight_accepted"] is False
         assert events[0]["handler_applied"] is False
         assert events[0]["decision_advanced"] is False
+        assert events[0]["execution_status"] == "rejected"
         assert events[0]["status_reason"]
         assert events[1]["mask_permitted"] is True
         assert lobby._engine.get_audit_snapshot()["snapshot_sequence"] == before
@@ -158,6 +159,7 @@ def test_native_action_event_reports_capacity_noop_without_fabricated_effect():
         assert event["preflight_accepted"] is True
         assert event["handler_applied"] is False
         assert event["status_reason"] == "board_capacity_limit"
+        assert event["execution_status"] == "no_effect"
         assert event["candidate_unit_uuids"]
         assert event["affected_unit_uuids"] == []
     finally:
@@ -207,6 +209,7 @@ def test_native_action_event_covers_anvil_choice_without_unit_target():
         event = info["action_outcome_events"][0]
         assert event["action_family"] == "item_action"
         assert event["item_action_kind"] == "anvil_component_choice"
+        assert event["execution_status"] == "applied"
         assert event["item_id"] == "TFT_Item_ChainVest"
         assert event["handler_applied"] is True
         assert event["affected_unit_uuids"] == []
@@ -230,6 +233,7 @@ def test_native_action_event_reports_auto_merge_and_all_consumed_unit_uuids():
         assert event["action_family"] == "purchase"
         assert event["handler_applied"] is True
         assert event["auto_merge"] is True
+        assert event["execution_status"] == "applied"
         assert len(event["affected_unit_uuids"]) == 3
         assert len(set(event["affected_unit_uuids"])) == 3
     finally:
@@ -253,6 +257,7 @@ def test_native_action_event_reports_eliminated_player_pass_only_transition():
         assert event["preflight_accepted"] is True
         assert event["handler_applied"] is False
         assert event["status_reason"] == "player_eliminated"
+        assert event["execution_status"] == "not_processed"
         assert event["decision_advanced"] is True
     finally:
         lobby.close()
