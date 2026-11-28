@@ -7284,24 +7284,6 @@ bool TFTEngine::set_player_economy_for_testing(
     return true;
 }
 
-bool TFTEngine::set_shop_offer_for_testing(
-    std::int32_t player_id, std::int32_t slot,
-    const std::string& champion_api_name
-) {
-    if (!impl_) throw std::runtime_error("TFTEngine nao possui estado interno.");
-    impl_->ensure_open();
-    if (player_id < 0 || static_cast<std::size_t>(player_id) >= kPlayersPerLobby ||
-        slot < 0 || static_cast<std::size_t>(slot) >= kShopSlots)
-        return false;
-    const auto* definition = impl_->catalog->find_by_api_name(champion_api_name);
-    if (!definition) return false;
-    auto& player = impl_->player_envs[static_cast<std::size_t>(player_id)];
-    auto unit = impl_->unit_factory->create(definition->internal_id);
-    if (!player.shop->set_offer_for_testing(slot, std::move(unit))) return false;
-    impl_->refresh_masks(static_cast<std::size_t>(player_id));
-    return true;
-}
-
 bool TFTEngine::set_next_shop_roll_for_testing(
     std::int32_t player_id,
     const std::vector<std::string>& champion_api_names
