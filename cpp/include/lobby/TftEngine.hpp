@@ -643,6 +643,7 @@ struct ActionOutcomeEvent {
     bool preflight_accepted{false};
     bool handler_applied{false};
     bool decision_advanced{false};
+    std::string execution_status;
     std::string status_reason;
     std::string status_detail;
     std::vector<std::string> candidate_unit_uuids;
