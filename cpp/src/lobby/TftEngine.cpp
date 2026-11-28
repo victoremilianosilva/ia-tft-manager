@@ -1390,6 +1390,53 @@ struct TFTEngine::Impl {
 
     // Preflight sem efeitos colaterais: valida a ação selecionada contra
     // o estado atual antes que qualquer jogador seja processado.
+    bool action_mask_permitted(std::size_t player_id, const PlayerAction& action) const {
+        if (player_id >= kPlayersPerLobby) return false;
+        const auto& values = action.values;
+        const auto type = values[0];
+        if (type < 0 || static_cast<std::size_t>(type) >= player_envs[player_id].action_masks.type_mask.size())
+            return false;
+        const auto& masks = player_envs[player_id].action_masks;
+        if (!masks.type_mask[static_cast<std::size_t>(type)]) return false;
+        const auto in_range = [](std::int32_t value, std::size_t size) {
+            return value >= 0 && static_cast<std::size_t>(value) < size;
+        };
+        switch (type) {
+            case 0:
+                return in_range(values[1], kShopSlots) && masks.shop_mask[values[1]];
+            case 1:
+            case 2:
+            case 6:
+                return true;
+            case 3:
+                return in_range(values[2], kBenchSlots) && in_range(values[3], kBoardSlots) &&
+                    masks.bench_to_board_target_masks[static_cast<std::size_t>(values[2]) * kBoardSlots +
+                        static_cast<std::size_t>(values[3])];
+            case 4:
+                return in_range(values[4], kBoardSlots) && in_range(values[5], kBoardSlots) &&
+                    masks.board_move_target_masks[static_cast<std::size_t>(values[4]) * kBoardSlots +
+                        static_cast<std::size_t>(values[5])];
+            case 5:
+                return in_range(values[2], kBenchSlots) && masks.bench_source_mask[values[2]];
+            case 7: {
+                if (!in_range(values[1], kItemInventorySlots)) return false;
+                const auto* pending_anvil = player_envs[player_id].item_engine
+                    ? player_envs[player_id].item_engine->pending_anvil() : nullptr;
+                const auto target = pending_anvil ? 0 : values[2];
+                return masks.item_inventory_mask[values[1]] && in_range(target, kItemTargetSlots) &&
+                    masks.item_target_mask[target];
+            }
+            case 8:
+                return in_range(values[1], kItemComponentSlots) &&
+                    in_range(values[2], kItemComponentSlots) &&
+                    in_range(values[3], kItemTargetSlots) &&
+                    masks.item_component_pair_masks[static_cast<std::size_t>(values[1]) * kItemComponentSlots +
+                        static_cast<std::size_t>(values[2])] && masks.item_target_mask[values[3]];
+            default:
+                return false;
+        }
+    }
+
     void validate_action_against_masks(
         std::size_t player_index,
         const PlayerAction& action
