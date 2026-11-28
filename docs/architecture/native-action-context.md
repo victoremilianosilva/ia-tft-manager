@@ -15,7 +15,7 @@ The action boundary is published by the C++ Engine as part of the same
 - `tft.engine.action-outcome-event` version 1 is emitted by the native step
   boundary for each player, carrying engine/episode/player identity,
   source/outcome decision sequences, requested/normalized/effective action,
-  preflight mask permission, handler result/reason, candidate and actually
+  exact mask-bit permission, separate preflight acceptance, handler result/reason, candidate and actually
   affected physical unit UUIDs, catalog references, auto-merge facts and
   action-economy/XP/level deltas.
 - Item actions additionally publish the native item handler kind, item ID and
@@ -45,8 +45,10 @@ event beside the exact transition metadata.
 A malformed batch or action rejected by native preflight still raises before
 any player action is executed. The wrapper attaches the eight native preflight
 reports to the exception's `action_context`; rejected reports carry
-`mask_permitted=false`, `decision_advanced=false`, a stable rejection code and
-a diagnostic detail. They are never recorded as completed rollout transitions.
+`preflight_accepted=false`, `decision_advanced=false`, a stable rejection code
+and a diagnostic detail. A capacity/anti-loop no-op may have
+`mask_permitted=false` while `preflight_accepted=true`: the Engine deliberately
+accepts that penalized attempt without claiming it was a legal mask candidate. They are never recorded as completed rollout transitions.
 The event's `handler_applied` and `status_reason` describe handler execution,
 not causal reward eligibility. Candidate references describe the entities
 addressed by the selected action; affected references are emitted by the
