@@ -448,6 +448,15 @@ py::dict audit_player_snapshot_to_dict(
         anti_loop["current_round"] = player.anti_loop_history.current_round;
         anti_loop["state_window_rounds"] = player.anti_loop_history.state_window_rounds;
         anti_loop["position_history_hashes"] = player.anti_loop_history.position_history_hashes;
+        py::list position_history;
+        for (const auto& position : player.anti_loop_history.position_history) {
+            py::dict row;
+            row["board_unit_identities"] = position.board_unit_identities;
+            row["bench_unit_identities"] = position.bench_unit_identities;
+            row["fingerprint"] = position.fingerprint;
+            position_history.append(std::move(row));
+        }
+        anti_loop["position_history"] = std::move(position_history);
         anti_loop["state_visit_hashes"] = player.anti_loop_history.state_visit_hashes;
         anti_loop["state_visit_counts"] = player.anti_loop_history.state_visit_counts;
         anti_loop["state_visit_rounds"] = player.anti_loop_history.state_visit_rounds;
@@ -2163,6 +2172,15 @@ PYBIND11_MODULE(tft_engine, module) {
             result["current_round"] = history.current_round;
             result["state_window_rounds"] = history.state_window_rounds;
             result["position_history_hashes"] = history.position_history_hashes;
+            py::list positions;
+            for (const auto& position : history.position_history) {
+                py::dict row;
+                row["board_unit_identities"] = position.board_unit_identities;
+                row["bench_unit_identities"] = position.bench_unit_identities;
+                row["fingerprint"] = position.fingerprint;
+                positions.append(std::move(row));
+            }
+            result["position_history"] = std::move(positions);
             result["state_visit_hashes"] = history.state_visit_hashes;
             result["state_visit_counts"] = history.state_visit_counts;
             result["state_visit_rounds"] = history.state_visit_rounds;
