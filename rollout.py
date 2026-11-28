@@ -664,6 +664,20 @@ class RolloutBuffer:
                         raise ValueError(
                             f"result_snapshot_metadata[{index}].action_outcome_event possui contrato/identidade inválidos."
                         )
+                    affected_entities = action_event.get("affected_unit_uuids")
+                    if not isinstance(affected_entities, (list, tuple)):
+                        raise ValueError(
+                            f"result_snapshot_metadata[{index}].action_outcome_event possui referências inválidas."
+                        )
+                    expected_execution_status = (
+                        "applied" if action_event["handler_applied"] else
+                        ("not_processed" if action_event["status_reason"] == "player_eliminated" else
+                         ("partial" if len(affected_entities) else "no_effect"))
+                    )
+                    if action_event["execution_status"] != expected_execution_status:
+                        raise ValueError(
+                            f"result_snapshot_metadata[{index}].action_outcome_event possui status de execução inconsistente."
+                        )
                     event_requested = action_event.get("requested_action")
                     event_normalized = action_event.get("normalized_action")
                     event_effective = action_event.get("effective_action")
