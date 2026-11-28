@@ -6,6 +6,20 @@ from cpp_lobby_env import CppTFTLobbyWrapper
 from reward_outcome_producers import build_action_outcome_events
 
 
+def _assert_action_events_match_oracle(info, before_snapshot):
+    oracle_events = build_action_outcome_events(
+        before_snapshot=before_snapshot,
+        after_snapshot=info["decision_snapshot"]["native_state_snapshot"],
+        action_traces=info["action_trace"],
+    )
+    assert len(oracle_events) == len(info["action_outcome_events"]) == 8
+    for native_event, oracle_event in zip(info["action_outcome_events"], oracle_events):
+        assert native_event["action_type"] == oracle_event["action"]["type"]
+        assert native_event["action_family"] == oracle_event["action"]["family"]
+        assert native_event["handler_applied"] == oracle_event["action"]["handler_applied"]
+        assert native_event["status_reason"] == oracle_event["action"]["status_reason"]
+
+
 def test_native_lobby_adapter_executes_a_step():
     lobby = CppTFTLobbyWrapper(seed=123)
 
