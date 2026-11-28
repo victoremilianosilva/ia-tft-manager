@@ -300,8 +300,9 @@ def test_native_decision_batch_publishes_versioned_action_context_and_events():
 def test_native_action_event_records_purchase_candidate_and_affected_uuid():
     manager = native.LobbyBatchManager(1, 9300)
     try:
-        reset = manager.reset(seed=9400)
-        masks = reset.lobby_result(0)["action_masks"]
+        manager.reset(seed=9400)
+        assert manager.engine(0).set_player_economy_for_testing(0, 10, 2, 0)
+        masks = manager.engine(0).get_action_masks()
         assert masks.shape == (8, 1280)
         assert bool(masks[0, 0])
         legal_shop_slots = np.flatnonzero(masks[0, 9:14])
