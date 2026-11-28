@@ -26,6 +26,10 @@ public:
  std::uint32_t columns() const noexcept{return columns_;}
  ContextAvailability availability() const noexcept{return availability_;}
  std::size_t player_index() const noexcept{return player_index_;}
+ const std::string& engine_instance_id() const noexcept{return snapshot_->engine_instance_id;}
+ std::uint64_t episode_id() const noexcept{return snapshot_->episode_id;}
+ std::uint64_t snapshot_sequence() const noexcept{return snapshot_->snapshot_sequence;}
+ std::uint64_t player_decision_sequence() const noexcept{return snapshot_->player_decision_sequences[player_index_];}
  const std::array<std::int32_t,kBoardSlots>& row_buffer() const noexcept{return rows_buffer_;}
  const std::array<std::int32_t,kBoardSlots>& column_buffer() const noexcept{return columns_buffer_;}
  const std::array<std::uint8_t,kBoardSlots>& occupancy_buffer() const noexcept{return occupancy_buffer_;}
@@ -34,6 +38,7 @@ public:
  const std::array<std::array<float,5>,kBoardSlots>& stats_buffer() const noexcept{return stats_buffer_;}
  const std::array<std::string,kBoardSlots>& uuid_buffer() const noexcept{return uuid_buffer_;}
  const std::array<std::string,kBoardSlots>& champion_id_buffer() const noexcept{return champion_id_buffer_;}
+ const std::array<std::vector<std::string>,kBoardSlots>& trait_buffer() const noexcept{return trait_buffer_;}
  const std::vector<NativeSpatialRelation>& relations() const noexcept{return relations_;}
  const AuditPlayerSnapshot& metrics() const noexcept{return snapshot_->players[player_index_];}
 private:
@@ -48,7 +53,7 @@ private:
    const auto& u=p.board[s]; rows_buffer_[s]=static_cast<std::int32_t>(s/columns_);
    columns_buffer_[s]=static_cast<std::int32_t>(s%columns_); occupancy_buffer_[s]=u.occupied?1:0;
    catalog_id_buffer_[s]=u.champion_internal_id; role_buffer_[s]=u.occupied?u.role:-1;
-   uuid_buffer_[s]=u.uuid; champion_id_buffer_[s]=u.champion_id;
+   uuid_buffer_[s]=u.uuid; champion_id_buffer_[s]=u.champion_id; trait_buffer_[s]=u.trait_names;
    stats_buffer_[s]={static_cast<float>(u.attack_damage),static_cast<float>(u.attack_speed),
     static_cast<float>(u.max_health),static_cast<float>(u.armor),static_cast<float>(u.magic_resist)};
   }
@@ -77,6 +82,7 @@ private:
  std::array<std::uint8_t,kBoardSlots> occupancy_buffer_{};
  std::array<std::array<float,5>,kBoardSlots> stats_buffer_{};
  std::array<std::string,kBoardSlots> uuid_buffer_{},champion_id_buffer_{};
+ std::array<std::vector<std::string>,kBoardSlots> trait_buffer_{};
  std::vector<NativeSpatialRelation> relations_;
 };
 }
