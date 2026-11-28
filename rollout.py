@@ -570,6 +570,7 @@ class RolloutBuffer:
                     "O rollout não pode misturar linhas com e sem envelope canônico de identidade."
                 )
     
+            temporal_seen_updates = {}
             for index, (decision, result, next_state) in enumerate(zip(
                 normalized_groups["snapshot_metadata"],
                 normalized_groups["result_snapshot_metadata"],
