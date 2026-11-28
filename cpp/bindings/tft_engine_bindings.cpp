@@ -442,6 +442,38 @@ py::dict audit_player_snapshot_to_dict(
         }
         p["actions_taken_this_round"] = player.actions_taken_this_round;
         p["board_move_age"] = player.board_move_age;
+        py::dict anti_loop;
+        anti_loop["contract_id"] = player.anti_loop_history.contract_id;
+        anti_loop["contract_version"] = player.anti_loop_history.contract_version;
+        anti_loop["current_round"] = player.anti_loop_history.current_round;
+        anti_loop["state_window_rounds"] = player.anti_loop_history.state_window_rounds;
+        anti_loop["position_history_hashes"] = player.anti_loop_history.position_history_hashes;
+        anti_loop["state_visit_hashes"] = player.anti_loop_history.state_visit_hashes;
+        anti_loop["state_visit_counts"] = player.anti_loop_history.state_visit_counts;
+        anti_loop["state_visit_rounds"] = player.anti_loop_history.state_visit_rounds;
+        py::list move_history;
+        for (const auto& move : player.anti_loop_history.move_history) {
+            py::dict row;
+            row["move_type"] = move.move_type;
+            row["source"] = move.source;
+            row["target"] = move.target;
+            row["unit_uuid"] = move.unit_uuid;
+            row["displaced_unit_uuid"] = move.displaced_unit_uuid;
+            move_history.append(std::move(row));
+        }
+        anti_loop["move_history"] = std::move(move_history);
+        py::list blocked_moves;
+        for (const auto& move : player.anti_loop_history.blocked_moves) {
+            py::dict row;
+            row["move_type"] = move.move_type;
+            row["source"] = move.source;
+            row["target"] = move.target;
+            row["unit_uuid"] = move.unit_uuid;
+            row["displaced_unit_uuid"] = move.displaced_unit_uuid;
+            blocked_moves.append(std::move(row));
+        }
+        anti_loop["blocked_moves"] = std::move(blocked_moves);
+        p["anti_loop_history"] = std::move(anti_loop);
         p["last_item_action_kind"] = player.last_item_action_kind;
         p["last_item_id"] = player.last_item_id;
         p["last_item_first_component"] = player.last_item_first_component;
@@ -482,6 +514,39 @@ py::dict audit_snapshot_to_dict(
     result["stage"] = snapshot.stage;
     result["finished"] = snapshot.finished;
     result["combat_sequence"] = snapshot.combat_sequence;
+    result["temporal_contract_id"] = snapshot.temporal_contract_id;
+    result["temporal_contract_version"] = snapshot.temporal_contract_version;
+    result["temporal_retention_events"] = snapshot.temporal_retention_events;
+    result["temporal_history_complete"] = snapshot.temporal_history_complete;
+    py::list temporal_events;
+    for (const auto& event : snapshot.temporal_events) {
+        py::dict row;
+        row["contract_id"] = event.contract_id;
+        row["contract_version"] = event.contract_version;
+        row["event_id"] = event.event_id;
+        row["event_type"] = event.event_type;
+        row["scope"] = event.scope;
+        row["engine_instance_id"] = event.engine_instance_id;
+        row["episode_id"] = event.episode_id;
+        row["global_sequence"] = event.global_sequence;
+        row["player_sequence"] = event.player_sequence;
+        row["player_id"] = event.player_id;
+        row["round"] = event.round;
+        row["stage"] = event.stage;
+        row["causal_event_id"] = event.causal_event_id;
+        row["source_player_decision_sequence"] = event.source_player_decision_sequence;
+        row["observed_player_decision_sequence"] = event.observed_player_decision_sequence;
+        row["fact_source"] = event.fact_source;
+        row["unit_uuid"] = event.unit_uuid;
+        row["related_unit_uuid"] = event.related_unit_uuid;
+        row["resource"] = event.resource;
+        row["delta"] = event.delta;
+        row["value_before"] = event.value_before;
+        row["value_after"] = event.value_after;
+        row["delayed"] = event.delayed;
+        temporal_events.append(std::move(row));
+    }
+    result["temporal_events"] = std::move(temporal_events);
     result["combat_damage_events_truncated"] = snapshot.combat_damage_events_truncated;
     result["combat_attack_events_truncated"] = snapshot.combat_attack_events_truncated;
     result["combat_death_events_truncated"] = snapshot.combat_death_events_truncated;
@@ -705,6 +770,11 @@ public:
             "stage",
             "finished",
             "combat_sequence",
+            "temporal_contract_id",
+            "temporal_contract_version",
+            "temporal_retention_events",
+            "temporal_history_complete",
+            "temporal_events",
             "combat_damage_events_truncated",
             "combat_attack_events_truncated",
             "combat_death_events_truncated",
