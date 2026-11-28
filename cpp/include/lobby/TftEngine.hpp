@@ -524,13 +524,23 @@ struct TemporalEvent {
     bool delayed{false};
 };
 
+struct AntiLoopMoveSnapshot {
+    std::string move_type;
+    std::int32_t source{-1};
+    std::int32_t target{-1};
+    std::string unit_uuid;
+    std::string displaced_unit_uuid;
+};
+
 struct AntiLoopHistorySnapshot {
     std::string contract_id{"tft.engine.anti-loop-history"};
     std::uint32_t contract_version{1};
     std::uint32_t current_round{0};
     std::uint32_t state_window_rounds{0};
-    std::vector<decision::MoveRecord> move_history;
-    std::vector<decision::MoveRecord> blocked_moves;
+    std::vector<std::uint64_t> position_history_hashes;
+    std::vector<AntiLoopMoveSnapshot> move_history;
+    std::vector<AntiLoopMoveSnapshot> blocked_moves;
+    std::vector<std::uint64_t> state_visit_hashes;
     std::vector<std::uint32_t> state_visit_counts;
     std::vector<std::uint32_t> state_visit_rounds;
 };
