@@ -399,11 +399,12 @@ struct AntiLoopHistorySnapshot {
     std::uint32_t contract_version{1};
     std::uint32_t current_round{0};
     std::uint32_t state_window_rounds{0};
-    std::vector<std::uint64_t> position_history_hashes;
+    std::vector<std::string> position_history_hashes;
     std::vector<AntiLoopMoveSnapshot> move_history;
     std::vector<AntiLoopMoveSnapshot> blocked_moves;
-    std::vector<std::uint64_t> state_visit_hashes;
+    std::vector<std::string> state_visit_hashes;
     std::vector<std::uint32_t> state_visit_counts;
+    std::vector<bool> state_visit_repeated;
     std::vector<std::uint32_t> state_visit_rounds;
 };
 
