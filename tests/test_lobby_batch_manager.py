@@ -134,6 +134,7 @@ def test_lobby_batch_manager_publishes_one_versioned_contiguous_batch():
         assert reset_batch.observations.flags.c_contiguous
         assert reset_batch.action_masks.flags.c_contiguous
         native_context = reset_batch.native_context(0)
+        first_engine_instance_id = native_context.engine_instance_id
         assert isinstance(native_context, native.NativeDecisionContext)
         assert native_context.availability == native.ContextAvailability.COMPLETE
         assert native_context.player_count == 8
@@ -162,7 +163,7 @@ def test_lobby_batch_manager_publishes_one_versioned_contiguous_batch():
         del native_context
         assert retained_components.shape == (10,)
         second_context = reset_batch.native_context(1)
-        assert second_context.engine_instance_id != native_context.engine_instance_id
+        assert second_context.engine_instance_id != first_engine_instance_id
         assert second_context.episode_id == native_context.episode_id
         assert not reset_batch.observations.flags.writeable
         assert not reset_batch.action_masks.flags.writeable
