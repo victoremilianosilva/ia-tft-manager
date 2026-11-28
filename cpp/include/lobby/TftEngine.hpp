@@ -394,12 +394,19 @@ struct AntiLoopMoveSnapshot {
     std::string displaced_unit_uuid;
 };
 
+struct AntiLoopPositionSnapshot {
+    std::array<std::string, kBoardSlots> board_unit_identities{};
+    std::array<std::string, kBenchSlots> bench_unit_identities{};
+    std::string fingerprint;
+};
+
 struct AntiLoopHistorySnapshot {
     std::string contract_id{"tft.engine.anti-loop-history"};
     std::uint32_t contract_version{1};
     std::uint32_t current_round{0};
     std::uint32_t state_window_rounds{0};
     std::vector<std::string> position_history_hashes;
+    std::vector<AntiLoopPositionSnapshot> position_history;
     std::vector<AntiLoopMoveSnapshot> move_history;
     std::vector<AntiLoopMoveSnapshot> blocked_moves;
     std::vector<std::string> state_visit_hashes;
