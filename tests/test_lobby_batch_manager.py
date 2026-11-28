@@ -159,6 +159,11 @@ def test_lobby_batch_manager_publishes_one_versioned_contiguous_batch():
         assert spatial.contract_version == 1
         assert spatial.geometry_id == "tft.board-grid.rectangular-4x7"
         assert spatial.geometry_version == 1
+        assert spatial.engine_instance_id == native_context.engine_instance_id
+        assert spatial.episode_id == native_context.episode_id
+        assert spatial.snapshot_sequence == native_context.snapshot_sequence
+        assert spatial.player_decision_sequence == native_context.provenance(0)["player_decision_sequence"]
+        assert len(spatial.unit_traits) == 28
         assert spatial.rows == 4 and spatial.columns == 7
         assert spatial.availability == native.ContextAvailability.COMPLETE
         assert spatial.row_buffer().shape == (28,)
