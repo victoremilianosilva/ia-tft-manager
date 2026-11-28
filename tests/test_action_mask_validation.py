@@ -202,3 +202,23 @@ def test_empty_action_type_mask_fails_closed(trainer):
         trainer._flatten_masks(gym_masks)
 
 
+
+
+def test_packed_native_masks_share_one_tensor_storage(trainer):
+    from cpp_lobby_env import CppTFTLobbyWrapper
+
+    packed = np.zeros((Trainer.PLAYERS_PER_LOBBY, 1280), dtype=np.bool_)
+    for player_idx in range(Trainer.PLAYERS_PER_LOBBY):
+        packed[player_idx, 0] = True  # BUY is legal in this fixture.
+        packed[player_idx, 9] = True  # First shop slot.
+        packed[player_idx, 14] = True  # First bench source sentinel.
+        packed[player_idx, 23] = True  # First board target sentinel.
+        packed[player_idx, 51] = True  # First board source sentinel.
+        packed[player_idx, 79] = True  # First board move pair sentinel.
+        packed[player_idx, 863] = True  # First bench move source sentinel.
+        packed[player_idx, 872] = True  # First bench-to-board pair sentinel.
+
+    masks = trainer._flatten_masks([packed])
+    assert masks["type_mask"].untyped_storage().data_ptr() == masks["shop_mask"].untyped_storage().data_ptr()
+    assert masks["type_mask"].shape == (8, 9)
+    assert masks["shop_mask"].shape == (8, 5)
