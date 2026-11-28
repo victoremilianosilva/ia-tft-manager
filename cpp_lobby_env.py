@@ -723,6 +723,27 @@ class CppTFTLobbyWrapper:
                     rows = anti_loop.get(field)
                     if not isinstance(rows, Sequence) or len(rows) > limit:
                         raise RuntimeError(f"Histórico anti-loop excede limite em {field} para jogador {player_id}.")
+                positions = anti_loop.get("position_history")
+                position_hashes = anti_loop.get("position_history_hashes")
+                if (
+                    not isinstance(positions, Sequence) or isinstance(positions, (str, bytes))
+                    or not isinstance(position_hashes, Sequence)
+                    or len(positions) != len(position_hashes) or len(positions) > 20
+                ):
+                    raise RuntimeError(f"Anti-loop position history inválido para jogador {player_id}.")
+                for position, fingerprint in zip(positions, position_hashes):
+                    if not isinstance(position, Mapping):
+                        raise RuntimeError(f"Anti-loop position record inválido para jogador {player_id}.")
+                    board_identities = position.get("board_unit_identities")
+                    bench_identities = position.get("bench_unit_identities")
+                    if (
+                        not isinstance(board_identities, Sequence) or len(board_identities) != expected_slots["board"]
+                        or not isinstance(bench_identities, Sequence) or len(bench_identities) != expected_slots["bench"]
+                        or position.get("fingerprint") != fingerprint
+                    ):
+                        raise RuntimeError(f"Anti-loop position identity layout inválido para jogador {player_id}.")
+                    if any(not isinstance(identity, str) for identity in (*board_identities, *bench_identities)):
+                        raise RuntimeError(f"Anti-loop position identity inválida para jogador {player_id}.")
             if (
                 isinstance(actual_player_id, bool)
                 or not isinstance(actual_player_id, int)
