@@ -327,6 +327,7 @@ struct TFTEngine::Impl {
         std::int32_t xp_before_action{0};
         std::int32_t xp_after_action{0};
         bool auto_merge{false};
+        std::vector<std::string> affected_unit_uuids;
     };
 
     struct PlayerEnv {
@@ -4972,6 +4973,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         double reroll_new_best_fit = 0.0;
         bool bought_unit_successfully = false;
         bool bought_upgrade = false;
+        std::vector<std::string> affected_unit_uuids;
         bool purchase_was_recently_reversed = false;
         bool sale_has_legitimate_context = false;
         bool sale_bench_was_full = false;
@@ -5128,6 +5130,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                         // Auto-upgrade 3x1★ -> 2★ e 3x2★ -> 3★.
                         // O pool não muda: as cópias continuam pertencendo ao jogador.
                         auto& bought_unit = this->bench[free_slot];
+                        if (bought_unit) affected_unit_uuids.push_back(bought_unit->uuid);
                         while (bought_unit && bought_unit->star < 3) {
                             const auto champion_id = bought_unit->champion_internal_id;
                             const auto star = bought_unit->star;
@@ -5151,6 +5154,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                             for (const auto& [on_board, slot] : matches) {
                                 if (!on_board && slot == free_slot) continue;
                                 auto& consumed = on_board ? this->board[slot] : this->bench[slot];
+                                if (consumed) affected_unit_uuids.push_back(consumed->uuid);
                                 if (consumed && this->item_engine) {
                                     (void)this->item_engine->transfer_equipped_on_merge(
                                         consumed->uuid, bought_unit->uuid);
@@ -5291,6 +5295,8 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     } else {
                         const std::string moved_uuid = this->bench[source_index]
                             ? this->bench[source_index]->uuid : std::string{};
+                        if (!moved_uuid.empty()) affected_unit_uuids.push_back(moved_uuid);
+                        if (this->board[target_index]) affected_unit_uuids.push_back(this->board[target_index]->uuid);
                         for (auto& purchase : this->recent_purchases) {
                             if (!moved_uuid.empty() && purchase.uuid == moved_uuid)
                                 purchase.was_deployed = true;
@@ -5387,6 +5393,8 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                         unit_identity
                     );
 
+                    if (this->board[source_index]) affected_unit_uuids.push_back(this->board[source_index]->uuid);
+                    if (this->board[target_index]) affected_unit_uuids.push_back(this->board[target_index]->uuid);
                     if (move_type == "board_swap") {
                         std::swap(
                             this->board[source_index],
@@ -5459,6 +5467,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 }
                 const auto result = this->item_engine->apply_action(command, profiles);
                 if (!result.success) throw std::invalid_argument("Acao de item rejeitada: " + result.reason);
+                affected_unit_uuids.push_back(target_unit->uuid);
 
                 // Score the actual catalog item and selected unit after the action
                 // succeeds. Combat remains the source of truth for the long-term value.
@@ -5680,6 +5689,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                         }
                     }
                     if (returned_all_copies) {
+                        affected_unit_uuids.push_back(sold_uuid);
                         // Equipment belongs to the player, not to the unit.
                         // Return it to the bag before removing the unit so it
                         // can be equipped on another unit without loss/duplication.
@@ -5767,7 +5777,8 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             economy.level,
             old_xp,
             economy.xp,
-            bought_upgrade
+            bought_upgrade,
+            std::move(affected_unit_uuids)
         };
 }
 
@@ -6060,6 +6071,7 @@ StepResult TFTEngine::step(
         outcome.action_cost = transition.action_cost;
         outcome.sale_proceeds = transition.sale_proceeds;
         outcome.auto_merge = transition.auto_merge;
+        outcome.affected_unit_uuids = transition.affected_unit_uuids;
         outcome.item_action_kind = player_env.last_item_action.kind;
         outcome.item_id = player_env.last_item_action.item_id;
         outcome.first_component_id = player_env.last_item_action.first_component;
