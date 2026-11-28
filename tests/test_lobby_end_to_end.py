@@ -90,6 +90,7 @@ def test_native_lobby_adapter_executes_a_step():
         snapshot = info["decision_snapshot"]["native_state_snapshot"]
         assert snapshot["temporal_contract_id"] == "tft.engine.temporal-history"
         assert snapshot["temporal_contract_version"] == 1
+        assert snapshot["contract_version"] == 7
         assert snapshot["temporal_history_complete"] is True
         assert snapshot["temporal_retention_events"] == 256
         for player in snapshot["players"]:
