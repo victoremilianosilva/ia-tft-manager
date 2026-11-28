@@ -148,6 +148,35 @@ def test_rollout_replay_keeps_semantic_identity_and_hash_with_the_same_row():
             "player_id": 0, "requested_action": action, "effective_action": action,
             "handler_applied": True, "status_reason": "accepted",
         },
+        "temporal_contract_id": "tft.engine.temporal-history",
+        "temporal_contract_version": 1,
+        "temporal_history_complete": True,
+        "temporal_retention_events": 256,
+        "temporal_events": [{
+            "contract_id": "tft.engine.temporal-event",
+            "contract_version": 1,
+            "event_id": "engine-a/episode/1/decision/2/player/0/action",
+            "event_type": "action_outcome",
+            "scope": "player",
+            "engine_instance_id": "engine-a",
+            "episode_id": 1,
+            "global_sequence": 1,
+            "player_sequence": 2,
+            "player_id": 0,
+            "round": 1,
+            "stage": 1,
+            "causal_event_id": "",
+            "source_player_decision_sequence": 2,
+            "observed_player_decision_sequence": 3,
+            "fact_source": "tft.engine.action-outcome-event",
+            "unit_uuid": "",
+            "related_unit_uuid": "",
+            "resource": "gold",
+            "delta": 0,
+            "value_before": 0,
+            "value_after": 0,
+            "delayed": False,
+        }],
         "action_outcome_event": {
             "contract_id": "tft.engine.action-outcome-event",
             "contract_version": 1,
@@ -196,6 +225,10 @@ def test_rollout_replay_keeps_semantic_identity_and_hash_with_the_same_row():
     assert batch["semantic_state"]["entity_identity"] == semantic["entity_identity"]
     assert batch["semantic_state"]["hashes"] == [digest]
     assert batch["snapshot_metadata"][0]["semantic_projection_hash"] == digest
+    transition = buffer.get_transition_metadata(0, 0)
+    assert transition["result_snapshot_metadata"]["temporal_events"][0]["event_type"] == "action_outcome"
+    assert "temporal_events" not in buffer._metadata_records[0][0][1]
+    assert buffer.temporal_events[0][0][0]["event_id"] == result["action_outcome_event"]["event_id"]
 
 
 def test_production_rollout_rejects_missing_semantic_state():
