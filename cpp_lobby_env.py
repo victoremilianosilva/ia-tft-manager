@@ -540,6 +540,58 @@ class CppTFTLobbyWrapper:
             "engine_instance_id", "episode_id", "snapshot_sequence",
             "player_decision_sequence",
         }
+        temporal_contract_id = value.get("temporal_contract_id")
+        temporal_contract_version = value.get("temporal_contract_version")
+        temporal_retention = value.get("temporal_retention_events")
+        temporal_complete = value.get("temporal_history_complete")
+        temporal_rows = value.get("temporal_events")
+        if (
+            temporal_contract_id != "tft.engine.temporal-history"
+            or isinstance(temporal_contract_version, bool) or temporal_contract_version != 1
+            or isinstance(temporal_retention, bool) or temporal_retention != 256
+            or not isinstance(temporal_complete, bool)
+            or not isinstance(temporal_rows, list)
+            or len(temporal_rows) > temporal_retention
+        ):
+            raise RuntimeError("Snapshot estruturado contém contrato temporal inválido.")
+        previous_temporal_sequence = 0
+        seen_temporal_ids = set()
+        for row in temporal_rows:
+            if not isinstance(row, Mapping):
+                raise RuntimeError("Snapshot estruturado contém TemporalEvent inválido.")
+            sequence = row.get("global_sequence")
+            player_id = row.get("player_id")
+            if (
+                row.get("contract_id") != "tft.engine.temporal-event"
+                or row.get("contract_version") != 1
+                or row.get("engine_instance_id") != value.get("engine_instance_id")
+                or row.get("episode_id") != value.get("episode_id")
+                or not isinstance(row.get("event_id"), str) or not row["event_id"].strip()
+                or isinstance(sequence, bool) or not isinstance(sequence, int)
+                or sequence <= previous_temporal_sequence
+                or row.get("scope") not in ("player", "lobby")
+                or isinstance(player_id, bool) or not isinstance(player_id, int)
+                or (row.get("scope") == "player" and not 0 <= player_id < cls.PLAYERS_PER_LOBBY)
+                or (row.get("scope") == "lobby" and player_id != -1)
+                or not isinstance(row.get("delayed"), bool)
+            ):
+                raise RuntimeError("TemporalEvent possui identidade/ordenação/owner inválido.")
+            if row["event_id"] in seen_temporal_ids:
+                raise RuntimeError("Snapshot temporal contém event_id duplicado.")
+            seen_temporal_ids.add(row["event_id"])
+            previous_temporal_sequence = sequence
+            causal_id = row.get("causal_event_id", "")
+            if causal_id:
+                source_sequence = row.get("source_player_decision_sequence")
+                observed_sequence = row.get("observed_player_decision_sequence")
+                if (
+                    not isinstance(causal_id, str)
+                    or isinstance(source_sequence, bool) or not isinstance(source_sequence, int)
+                    or isinstance(observed_sequence, bool) or not isinstance(observed_sequence, int)
+                    or source_sequence >= observed_sequence
+                ):
+                    raise RuntimeError("TemporalEvent possui referência causal inválida.")
+
         parent_combat_sequence = value.get("combat_sequence")
         if (
             isinstance(parent_combat_sequence, bool)
@@ -633,6 +685,25 @@ class CppTFTLobbyWrapper:
         seen_unit_uuids = set()
         for player_id, player in enumerate(players):
             actual_player_id = player.get("player_id") if isinstance(player, dict) else None
+            anti_loop = player.get("anti_loop_history") if isinstance(player, Mapping) else None
+            if (
+                not isinstance(anti_loop, Mapping)
+                or anti_loop.get("contract_id") != "tft.engine.anti-loop-history"
+                or anti_loop.get("contract_version") != 1
+            ):
+                raise RuntimeError(f"Jogador {player_id} sem contrato tipado de histórico anti-loop.")
+            aligned_history = (
+                ("state_visit_hashes", "state_visit_counts", "state_visit_rounds"),
+            )
+            for fields in aligned_history:
+                lengths = [len(anti_loop.get(field, ())) for field in fields
+                           if isinstance(anti_loop.get(field), Sequence)]
+                if len(lengths) != len(fields) or len(set(lengths)) != 1:
+                    raise RuntimeError(f"Histórico anti-loop desalinhado para jogador {player_id}.")
+            for field, limit in (("position_history_hashes", 20), ("move_history", 20), ("blocked_moves", 10), ("state_visit_hashes", 20)):
+                rows = anti_loop.get(field)
+                if not isinstance(rows, Sequence) or len(rows) > limit:
+                    raise RuntimeError(f"Histórico anti-loop excede limite em {field} para jogador {player_id}.")
             if (
                 isinstance(actual_player_id, bool)
                 or not isinstance(actual_player_id, int)
