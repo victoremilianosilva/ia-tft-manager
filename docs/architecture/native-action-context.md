@@ -33,8 +33,12 @@ PPO targets. Delayed combat and terminal-placement rewards remain governed
 by the reward contract.
 
 The old Python snapshot-diff producer remains available as a test oracle only.
-The production adapter consumes the native event payload and fails closed if
-it is absent or its identity/sequence does not match the published decision.
+A directed end-to-end test compares its family, action type, handler result and
+status against the native event. The production adapter consumes the native
+event payload and fails closed if it is absent or its identity/sequence does
+not match the published decision. RewardAudit validates and deduplicates the
+native event ID; Rollout validates its action/identity parity and retains the
+event beside the exact transition metadata.
 
 ## Boundaries
 
