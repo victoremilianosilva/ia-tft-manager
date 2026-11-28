@@ -1184,6 +1184,27 @@ class CppTFTLobbyWrapper:
 
     def step(self, actions, *, timer_enabled: bool = False, timer_expired: bool = False):
         native_actions, source_snapshot = self._prepare_batch_step(actions)
+        preflight_events = self._engine.validate_actions(native_actions)
+        rejected = [event for event in preflight_events if not event.get("mask_permitted", False)]
+        if rejected:
+            action_context = {
+                "contract_id": "tft.engine.action-context",
+                "contract_version": 1,
+                "engine_instance_id": str(preflight_events[0]["engine_instance_id"]),
+                "episode_id": int(preflight_events[0]["episode_id"]),
+                "action_mask_contract_id": "tft.action-masks.packed",
+                "action_mask_contract_version": 1,
+                "events": [dict(event) for event in preflight_events],
+                "rejected": True,
+                "decision_advanced": False,
+            }
+            reasons = "; ".join(
+                f"player {event['player_id']}: {event['status_reason']}"
+                for event in rejected
+            )
+            error = ValueError("Native action preflight rejected the entire batch: " + reasons)
+            error.action_context = action_context
+            raise error
         result = self._engine.step(native_actions, bool(timer_enabled), bool(timer_expired))
         return self._consume_step_result(result, source_snapshot)
 
