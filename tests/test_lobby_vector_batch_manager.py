@@ -138,8 +138,11 @@ def test_lobby_vector_batch_parity_includes_reward_provenance_and_action_events(
 
         np.testing.assert_array_equal(batch_rewards, single_rewards)
         np.testing.assert_array_equal(batch_dones, single_dones)
+        engine_ids = [info["step_result_snapshot"]["engine_instance_id"] for info in batch_infos]
+        assert len(set(engine_ids)) == 2
+        all_temporal_ids = set()
         for batch_info, single_info in zip(batch_infos, single_infos):
-            for field in ("round", "stage", "lobby_done", "action_trace", "events"):
+            for field in ("round", "stage", "lobby_done", "action_trace", "events", "temporal_events"):
                 assert _without_instance_identifiers(batch_info[field]) == _without_instance_identifiers(single_info[field])
             for field in ("action_rewards", "combat_rewards", "placement_rewards"):
                 np.testing.assert_array_equal(batch_info[field], single_info[field])
@@ -148,6 +151,18 @@ def test_lobby_vector_batch_parity_includes_reward_provenance_and_action_events(
             assert batch_info["next_snapshot"]["episode_id"] == single_info["next_snapshot"]["episode_id"]
             assert batch_info["next_snapshot"]["decision_sequence"] == single_info["next_snapshot"]["decision_sequence"]
             assert _without_instance_identifiers(batch_info["action_outcome_events"]) == _without_instance_identifiers(single_info["action_outcome_events"])
+            temporal_ids = {event["event_id"] for event in batch_info["temporal_events"]}
+            assert len(temporal_ids) == len(batch_info["temporal_events"])
+            assert not (all_temporal_ids & temporal_ids)
+            all_temporal_ids.update(temporal_ids)
+            assert all(event["engine_instance_id"] == batch_info["step_result_snapshot"]["engine_instance_id"]
+                       for event in batch_info["temporal_events"])
+            native_snapshot = batch_info["step_result_snapshot"]["native_state_snapshot"]
+            assert native_snapshot["temporal_contract_id"] == "tft.engine.temporal-history"
+            assert len(native_snapshot["temporal_events"]) >= len(batch_info["temporal_events"])
+            assert len(native_snapshot["temporal_causal_anchor_ids"]) == 8
+            assert all(player["anti_loop_history"]["contract_id"] == "tft.engine.anti-loop-history"
+                       for player in native_snapshot["players"])
             assert _without_instance_identifiers(batch_info["reward_audit"]["player_rewards"]) == _without_instance_identifiers(single_info["reward_audit"]["player_rewards"])
     finally:
         batch.close()
@@ -179,6 +194,12 @@ def test_batch_terminal_autoreset_keeps_transition_and_next_episode_snapshots_se
         assert next_snapshot["snapshot_kind"] == "reset"
         assert terminal_snapshot["episode_id"] != next_snapshot["episode_id"]
         assert terminal_snapshot["decision_sequence"] > 0
+        terminal_native = terminal_snapshot["native_state_snapshot"]
+        next_native = next_snapshot["native_state_snapshot"]
+        assert terminal_native["temporal_events"]
+        assert terminal_native["temporal_contract_id"] == "tft.engine.temporal-history"
+        assert next_native["temporal_events"] == []
+        assert next_native["episode_id"] == next_snapshot["episode_id"]
         current_snapshot = env.get_snapshot_metadata()
         assert next_snapshot["decision_sequence"] == current_snapshot["decision_sequence"]
         assert next_snapshot["player_decision_sequences"] == current_snapshot["player_decision_sequences"]

@@ -647,6 +647,34 @@ def _valid_native_action_trace_rows():
             }
             for player_id in range(8)
         ],
+        "temporal_events": [
+            {
+                "contract_id": "tft.engine.temporal-event",
+                "contract_version": 1,
+                "event_id": f"engine-A/episode/4/decision/21/player/{player_id}/action",
+                "event_type": "action_outcome",
+                "scope": "player",
+                "engine_instance_id": "engine-A",
+                "episode_id": 4,
+                "global_sequence": player_id + 1,
+                "player_sequence": 21,
+                "player_id": player_id,
+                "round": 1,
+                "stage": 1,
+                "causal_event_id": "",
+                "source_player_decision_sequence": 21,
+                "observed_player_decision_sequence": 22,
+                "fact_source": "tft.engine.action-outcome-event",
+                "unit_uuid": "",
+                "related_unit_uuid": "",
+                "resource": "gold",
+                "delta": 0,
+                "value_before": 0,
+                "value_after": 0,
+                "delayed": False,
+            }
+            for player_id in range(8)
+        ],
         "action_outcome_events": [
             {
                 "contract_id": "tft.engine.action-outcome-event",

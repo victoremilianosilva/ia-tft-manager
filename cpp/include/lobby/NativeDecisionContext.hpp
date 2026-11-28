@@ -84,7 +84,10 @@ public:
 
     ContextAvailability availability() const noexcept {
         if (snapshot_->contract_id != "tft.native-state-snapshot" ||
-            snapshot_->contract_version != 6 ||
+            snapshot_->contract_version != 7 ||
+            snapshot_->temporal_contract_id != "tft.engine.temporal-history" ||
+            snapshot_->temporal_contract_version != 1 ||
+            snapshot_->temporal_events.size() > snapshot_->temporal_retention_events ||
             snapshot_->engine_instance_id.empty() ||
             snapshot_->shared_pool.contract_id != "tft.shared-champion-pool-snapshot" ||
             snapshot_->shared_pool.contract_version != 2 ||
@@ -92,6 +95,41 @@ public:
             return ContextAvailability::Incompatible;
         }
         return ContextAvailability::Complete;
+    }
+
+    ContextAvailability temporal_history_availability() const noexcept {
+        if (snapshot_->temporal_contract_id != "tft.engine.temporal-history" ||
+            snapshot_->temporal_contract_version != 1 ||
+            snapshot_->temporal_events.size() > snapshot_->temporal_retention_events) {
+            return ContextAvailability::Incompatible;
+        }
+        if (!snapshot_->temporal_history_complete) return ContextAvailability::Partial;
+        return snapshot_->temporal_events.empty()
+            ? ContextAvailability::Empty
+            : ContextAvailability::Complete;
+    }
+
+    const std::vector<TemporalEvent>& temporal_events() const noexcept {
+        return snapshot_->temporal_events;
+    }
+
+    const AntiLoopHistorySnapshot& anti_loop_history(std::size_t player_index) const {
+        return player(player_index).anti_loop_history;
+    }
+
+    ContextAvailability anti_loop_history_availability(std::size_t player_index) const {
+        const auto& history = anti_loop_history(player_index);
+        if (history.contract_id != "tft.engine.anti-loop-history" || history.contract_version != 1)
+            return ContextAvailability::Incompatible;
+        if (history.position_history_hashes.empty() && history.move_history.empty() &&
+            history.blocked_moves.empty() && history.state_visit_hashes.empty())
+            return ContextAvailability::Empty;
+        return ContextAvailability::Complete;
+    }
+
+    const std::array<std::string, 2>& temporal_causal_anchor_ids(std::size_t player_index) const {
+        (void)player(player_index);
+        return snapshot_->temporal_causal_anchor_ids[player_index];
     }
 
     ContextAvailability player_sequence_availability(std::size_t player_index) const {
@@ -178,7 +216,10 @@ public:
 private:
     void validate_identity() const {
         if (snapshot_->contract_id != "tft.native-state-snapshot" ||
-            snapshot_->contract_version != 6) {
+            snapshot_->contract_version != 7 ||
+            snapshot_->temporal_contract_id != "tft.engine.temporal-history" ||
+            snapshot_->temporal_contract_version != 1 ||
+            snapshot_->temporal_events.size() > snapshot_->temporal_retention_events) {
             throw std::invalid_argument("Unsupported native decision context contract");
         }
         if (snapshot_->engine_instance_id.empty() || snapshot_->snapshot_sequence == 0) {

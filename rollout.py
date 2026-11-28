@@ -129,6 +129,9 @@ class RolloutBuffer:
         # Compact per-transition sidecar. Each row owns one decision/result/next
         # record; equal result/next envelopes share one owned object.
         self._metadata_records = [None for _ in range(self.num_steps)]
+        # Temporal facts are scalar/compact sidecar rows, not copied snapshots.
+        self._temporal_records = [None for _ in range(self.num_steps)]
+        self._temporal_seen_by_agent = {}
 
         # ============================================================
         # DADOS PRINCIPAIS
@@ -567,6 +570,7 @@ class RolloutBuffer:
                     "O rollout não pode misturar linhas com e sem envelope canônico de identidade."
                 )
     
+            temporal_seen_updates = {}
             for index, (decision, result, next_state) in enumerate(zip(
                 normalized_groups["snapshot_metadata"],
                 normalized_groups["result_snapshot_metadata"],
@@ -689,6 +693,90 @@ class RolloutBuffer:
                         f"result_snapshot_metadata[{index}].action_outcome_event diverge do trace de execução."
                     )
 
+                temporal_contract_id = result.get("temporal_contract_id")
+                if temporal_contract_id is not None:
+                    if temporal_contract_id != "tft.engine.temporal-history" or result.get("temporal_contract_version") != 1:
+                        raise ValueError(f"Contrato temporal incompatível na transição {index}.")
+                    temporal_events = result.get("temporal_events")
+                    if not isinstance(temporal_events, (list, tuple)):
+                        raise ValueError(f"TemporalEvents ausentes na transição {index}.")
+                    previous_global_sequence = 0
+                    temporal_ids = set()
+                    action_temporal_ids = set()
+                    temporal_agent_key = (decision["engine_instance_id"], decision["player_id"])
+                    prior_episode, prior_ids = temporal_seen_updates.get(
+                        temporal_agent_key,
+                        self._temporal_seen_by_agent.get(temporal_agent_key, (decision["episode_id"], ())),
+                    )
+                    prior_temporal_ids = (
+                        tuple(prior_ids) if prior_episode == decision["episode_id"] else ()
+                    )
+                    known_temporal_ids = set(prior_temporal_ids)
+                    decision_anchors = decision.get("temporal_causal_anchor_ids", ())
+                    result_anchors = result.get("temporal_causal_anchor_ids", ())
+                    if (
+                        not isinstance(decision_anchors, (list, tuple))
+                        or not isinstance(result_anchors, (list, tuple))
+                        or any(not isinstance(anchor, str) or not anchor.strip()
+                               for anchor in (*decision_anchors, *result_anchors))
+                    ):
+                        raise ValueError(f"Causal anchors inválidos na transição {index}.")
+                    known_temporal_ids.update(decision_anchors)
+                    known_temporal_ids.update(result_anchors)
+                    for event_index, event in enumerate(temporal_events):
+                        if not isinstance(event, dict):
+                            raise TypeError(f"temporal_events[{event_index}] deve ser um dicionário.")
+                        sequence = event.get("global_sequence")
+                        if (
+                            event.get("contract_id") != "tft.engine.temporal-event"
+                            or event.get("contract_version") != 1
+                            or event.get("engine_instance_id") != decision["engine_instance_id"]
+                            or event.get("episode_id") != decision["episode_id"]
+                            or not isinstance(event.get("event_id"), str) or not event["event_id"].strip()
+                            or not isinstance(event.get("event_type"), str) or not event["event_type"].strip()
+                            or isinstance(sequence, bool) or not isinstance(sequence, int)
+                            or sequence <= previous_global_sequence
+                            or event.get("scope") not in ("player", "lobby")
+                            or not isinstance(event.get("delayed"), bool)
+                        ):
+                            raise ValueError(f"TemporalEvent inválido/fora de ordem na transição {index}, evento {event_index}.")
+                        if event["event_id"] in temporal_ids or event["event_id"] in known_temporal_ids:
+                            raise ValueError(f"TemporalEvent duplicado na transição/episódio {index}.")
+                        causal_event_id = event.get("causal_event_id", "")
+                        if causal_event_id and causal_event_id not in known_temporal_ids and causal_event_id not in temporal_ids:
+                            raise ValueError(f"TemporalEvent sem evento causal previamente observado na transição {index}.")
+                        temporal_ids.add(event["event_id"])
+                        previous_global_sequence = sequence
+                        if event.get("event_type") == "action_outcome":
+                            action_temporal_ids.add(event["event_id"])
+                        event_player = event.get("player_id")
+                        if event.get("scope") == "player" and event_player != decision["player_id"]:
+                            raise ValueError(f"TemporalEvent cruzou jogadores na transição {index}.")
+                        if event.get("scope") == "lobby" and event_player != -1:
+                            raise ValueError(f"TemporalEvent de lobby possui owner inválido na transição {index}.")
+                        if event.get("delayed") and event.get("causal_event_id"):
+                            source_sequence = event.get("source_player_decision_sequence")
+                            observed_sequence = event.get("observed_player_decision_sequence")
+                            if (
+                                isinstance(source_sequence, bool) or not isinstance(source_sequence, int)
+                                or isinstance(observed_sequence, bool) or not isinstance(observed_sequence, int)
+                                or source_sequence >= observed_sequence
+                            ):
+                                raise ValueError(f"Referência causal temporal inválida na transição {index}.")
+                    if action_event["event_id"] not in action_temporal_ids:
+                        raise ValueError(f"ActionOutcomeEvent sem referência no histórico temporal da transição {index}.")
+                    ordered_temporal_ids = list(prior_temporal_ids)
+                    for anchor in (*decision_anchors, *result_anchors):
+                        if anchor not in ordered_temporal_ids:
+                            ordered_temporal_ids.append(anchor)
+                    for event in temporal_events:
+                        if event["event_id"] not in ordered_temporal_ids:
+                            ordered_temporal_ids.append(event["event_id"])
+                    # The producer retains at most 256 facts. Mirror that bound
+                    # in the cross-step validator instead of growing per episode.
+                    temporal_seen_updates[temporal_agent_key] = (
+                        decision["episode_id"], tuple(ordered_temporal_ids[-256:])
+                    )
                 if result["decision_sequence"] <= decision["decision_sequence"]:
                     raise ValueError(f"Sequência do resultado não avança na transição {index}.")
                 if next_state["episode_id"] == result["episode_id"]:
@@ -834,7 +922,14 @@ class RolloutBuffer:
                             f"Semantic projection hash/contract diverge do snapshot na transição {index}."
                         )
 
+        temporal_records = None
         if all(supplied_groups):
+            temporal_records = []
+            for row in normalized_groups["result_snapshot_metadata"]:
+                # Move the incremental temporal stream to its own compact sidecar.
+                # It is copied once, never once per decision/result/next envelope.
+                events = row.pop("temporal_events", [])
+                temporal_records.append(tuple(dict(event) for event in events))
             # Intern equal result/next envelopes before ownership transfer so
             # the redundant payload is never deep-copied in the first place.
             source_results = normalized_groups["result_snapshot_metadata"]
@@ -853,8 +948,10 @@ class RolloutBuffer:
             self._metadata_records[self.ptr] = list(zip(
                 owned_decisions, owned_results, owned_next
             ))
+            self._temporal_records[self.ptr] = temporal_records
         else:
             self._metadata_records[self.ptr] = None
+            self._temporal_records[self.ptr] = None
 
         # ============================================================
         # SALVAR
@@ -922,6 +1019,11 @@ class RolloutBuffer:
 
             self.masks[key][self.ptr].copy_(mask_tensor)
 
+        # Commit cross-step causal state only after the whole transition,
+        # including masks and tensors, has passed validation and storage.
+        for agent_key, temporal_state in temporal_seen_updates.items():
+            self._temporal_seen_by_agent[agent_key] = temporal_state
+
         # ============================================================
         # PRÓXIMO PASSO
         # ============================================================
@@ -934,14 +1036,24 @@ class RolloutBuffer:
                 for rows in self._metadata_records]
 
     @property
-    def result_snapshot_metadata(self):
-        return [None if rows is None else copy.deepcopy([row[1] for row in rows])
-                for rows in self._metadata_records]
-
-    @property
     def next_snapshot_metadata(self):
         return [None if rows is None else copy.deepcopy([row[2] for row in rows])
                 for rows in self._metadata_records]
+
+    @property
+    def temporal_events(self):
+        return [None if rows is None else copy.deepcopy([list(events) for events in rows])
+                for rows in self._temporal_records]
+
+    @property
+    def result_snapshot_metadata(self):
+        result = [None if rows is None else copy.deepcopy([row[1] for row in rows])
+                  for rows in self._metadata_records]
+        for step_index, rows in enumerate(result):
+            if rows is not None and self._temporal_records[step_index] is not None:
+                for env_index, row in enumerate(rows):
+                    row["temporal_events"] = list(self._temporal_records[step_index][env_index])
+        return result
 
     def get_transition_metadata(self, step_index, env_index):
         """Recover full audit envelopes for one transition (read-only by contract)."""
@@ -953,9 +1065,13 @@ class RolloutBuffer:
         if rows is None:
             return None
         decision, result, next_state = rows[env_index]
+        temporal_rows = self._temporal_records[step_index]
         return copy.deepcopy({
             "snapshot_metadata": decision,
-            "result_snapshot_metadata": result,
+            "result_snapshot_metadata": {
+                **result,
+                "temporal_events": list(temporal_rows[env_index]) if temporal_rows is not None else [],
+            },
             "next_snapshot_metadata": next_state,
         })
 
@@ -1363,6 +1479,7 @@ class RolloutBuffer:
             batch_snapshot_metadata = None
             batch_result_metadata = None
             batch_next_metadata = None
+            batch_temporal_events = None
             if include_metadata:
                 # Decode flattened indices once, only for explicit diagnostic
                 # consumers. The PPO hot path does not need native envelopes.
@@ -1377,6 +1494,11 @@ class RolloutBuffer:
                 batch_snapshot_metadata = tuple(row[0] for row in metadata_rows)
                 batch_result_metadata = tuple(row[1] for row in metadata_rows)
                 batch_next_metadata = tuple(row[2] for row in metadata_rows)
+                batch_temporal_events = tuple(
+                    self._temporal_records[step_index][env_index]
+                    if self._temporal_records[step_index] is not None else ()
+                    for step_index, env_index in metadata_indices
+                )
             semantic_numeric_batch = flat_semantic_numeric[batch_idx]
             semantic_batch = {
                 "numeric": semantic_numeric_batch,
@@ -1424,6 +1546,7 @@ class RolloutBuffer:
                 "snapshot_metadata": batch_snapshot_metadata,
                 "result_snapshot_metadata": batch_result_metadata,
                 "next_snapshot_metadata": batch_next_metadata,
+                "temporal_events": batch_temporal_events,
             }
 
     @staticmethod
@@ -1480,6 +1603,8 @@ class RolloutBuffer:
 
         for index in range(self.ptr):
             self._metadata_records[index] = None
+            self._temporal_records[index] = None
+        self._temporal_seen_by_agent.clear()
         self.ptr = 0
 
         # ------------------------------------------------------------

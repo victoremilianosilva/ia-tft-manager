@@ -702,6 +702,21 @@ class Trainer:
                     metadata["native_state_contract_version"] = native_contract[1]
                     metadata["native_state_producer"] = native_contract[2]
                     metadata["native_state_source_namespace"] = native_contract[3]
+                    metadata["temporal_contract_id"] = native_snapshot.get("temporal_contract_id")
+                    metadata["temporal_contract_version"] = native_snapshot.get("temporal_contract_version")
+                    metadata["temporal_history_complete"] = native_snapshot.get("temporal_history_complete")
+                    metadata["temporal_retention_events"] = native_snapshot.get("temporal_retention_events")
+                    if metadata["temporal_contract_id"] == "tft.engine.temporal-history":
+                        anchor_rows = native_snapshot.get("temporal_causal_anchor_ids")
+                        if not isinstance(anchor_rows, Sequence) or len(anchor_rows) != players_per_lobby:
+                            raise RuntimeError(f"Snapshot temporal sem causal anchors para lobby {lobby_idx}.")
+                        anchors = anchor_rows[player_idx]
+                        if (
+                            not isinstance(anchors, Sequence) or isinstance(anchors, (str, bytes)) or len(anchors) != 2
+                            or any(not isinstance(value, str) or (value and not value.strip()) for value in anchors)
+                        ):
+                            raise RuntimeError(f"Causal anchors inválidos para lobby {lobby_idx}, jogador {player_idx}.")
+                        metadata["temporal_causal_anchor_ids"] = tuple(value for value in anchors if value)
                 if native_players is not None:
                     native_player = native_players[player_idx]
                     if not isinstance(native_player, Mapping) or native_player.get("player_id") != player_idx:
@@ -801,6 +816,22 @@ class Trainer:
                 raise RuntimeError(
                     f"Lobby {lobby_idx} não forneceu {players_per_lobby} ActionOutcomeEvent nativos."
                 )
+            temporal_events = info.get("temporal_events")
+            decision_snapshot = info.get("decision_snapshot")
+            native_snapshot = (
+                decision_snapshot.get("native_state_snapshot")
+                if isinstance(decision_snapshot, Mapping) else None
+            )
+            temporal_required = (
+                isinstance(native_snapshot, Mapping)
+                and native_snapshot.get("temporal_contract_id") == "tft.engine.temporal-history"
+            )
+            if temporal_events is None and not temporal_required:
+                temporal_events = []  # Non-native test/oracle environments have no temporal producer.
+            if not isinstance(temporal_events, list):
+                raise RuntimeError(
+                    f"Lobby {lobby_idx} não forneceu o fluxo temporal nativo do StepResult."
+                )
             start = lobby_idx * players_per_lobby
             for player_id, (trace, action_event) in enumerate(zip(traces, action_events)):
                 if not isinstance(trace, dict) or not {
@@ -863,6 +894,16 @@ class Trainer:
                     )
                 row["action_trace"] = dict(trace)
                 row["action_outcome_event"] = dict(action_event)
+                # Each PPO row owns only its player's temporal facts; the single
+                # lobby-scoped event is assigned to player 0 to avoid 8x duplication.
+                row["temporal_events"] = [
+                    dict(event) for event in temporal_events
+                    if isinstance(event, Mapping)
+                    and (
+                        event.get("player_id") == player_id
+                        or (event.get("scope") == "lobby" and player_id == 0)
+                    )
+                ]
 
         return result_snapshot_metadata
 

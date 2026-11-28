@@ -176,11 +176,11 @@ def build_action_outcome_events(
     for snapshot in (before_snapshot, after_snapshot):
         if (
             snapshot.get("contract_id") != "tft.native-state-snapshot"
-            or _int(snapshot.get("contract_version"), "snapshot.contract_version") != 6
+            or _int(snapshot.get("contract_version"), "snapshot.contract_version") != 7
             or snapshot.get("source_namespace") != "tft.engine.observation-snapshot"
             or snapshot.get("producer") != "TFTEngine::get_audit_snapshot"
         ):
-            raise RuntimeError("Snapshot pré/pós-ação não pertence ao contrato nativo v6.")
+            raise RuntimeError("Snapshot pré/pós-ação não pertence ao contrato nativo v7.")
     for field in ("engine_instance_id", "episode_id"):
         if before_snapshot.get(field) != after_snapshot.get(field):
             raise RuntimeError(f"Snapshots pré/pós-ação divergem em {field}.")

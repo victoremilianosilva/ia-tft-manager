@@ -404,6 +404,47 @@ struct TFTEngine::Impl {
     std::uint64_t decision_sequence{0};
     // Independent monotonic namespace for each player's published decision row.
     std::array<std::uint64_t, kPlayersPerLobby> player_decision_sequences{};
+    static constexpr std::size_t kTemporalHistoryCapacity = 256;
+    std::uint64_t temporal_event_sequence{0};
+    bool temporal_history_truncated{false};
+    std::vector<TemporalEvent> temporal_history;
+    std::array<std::string, kPlayersPerLobby> latest_board_action_event_ids{};
+    std::array<std::string, kPlayersPerLobby> latest_economic_action_event_ids{};
+    std::array<std::uint64_t, kPlayersPerLobby> latest_board_action_sequences{};
+    std::array<std::uint64_t, kPlayersPerLobby> latest_economic_action_sequences{};
+    std::array<std::uint32_t, kPlayersPerLobby> latest_board_action_rounds{};
+    std::array<std::uint32_t, kPlayersPerLobby> latest_economic_action_rounds{};
+
+    void append_temporal_event(TemporalEvent event) {
+        event.engine_instance_id = engine_instance_id;
+        event.episode_id = episode_id;
+        if (temporal_event_sequence == std::numeric_limits<std::uint64_t>::max())
+            throw std::overflow_error("Sequencia do historico temporal esgotada.");
+        event.global_sequence = ++temporal_event_sequence;
+        if (event.event_id.empty()) {
+            event.event_id = engine_instance_id + "/episode/" +
+                std::to_string(episode_id) + "/temporal/" +
+                std::to_string(event.global_sequence);
+        }
+        if (event.player_id >= 0 &&
+            static_cast<std::size_t>(event.player_id) < kPlayersPerLobby) {
+            event.player_sequence = player_decision_sequences[static_cast<std::size_t>(event.player_id)];
+        }
+        temporal_history.push_back(std::move(event));
+        const auto current_round = round + 1;
+        const auto old_size = temporal_history.size();
+        temporal_history.erase(std::remove_if(temporal_history.begin(), temporal_history.end(),
+            [current_round](const TemporalEvent& retained) {
+                return retained.round > 0 && current_round >= retained.round && current_round - retained.round >= 8;
+            }), temporal_history.end());
+        if (temporal_history.size() != old_size) temporal_history_truncated = true;
+        if (temporal_history.size() > kTemporalHistoryCapacity) {
+            temporal_history_truncated = true;
+            temporal_history.erase(temporal_history.begin(),
+                temporal_history.begin() + static_cast<std::ptrdiff_t>(
+                    temporal_history.size() - kTemporalHistoryCapacity));
+        }
+    }
     std::mt19937_64 matchmaking_rng{0};
     std::set<std::uint64_t> previous_matchups;
 
@@ -4794,6 +4835,7 @@ struct TFTEngine::Impl {
                 for (const auto& damage_event : combat.damage_events) {
                     if (last_combat_damage_events.size() >= kCombatDamageAuditLimit) {
                         combat_damage_events_truncated = true;
+        temporal_history_truncated = true;
                         break;
                     }
                     AuditCombatDamageEvent audit_event{};
@@ -4827,6 +4869,7 @@ struct TFTEngine::Impl {
                 for (const auto& attack_event : combat.attack_events) {
                     if (last_combat_attack_events.size() >= kCombatTypedEventAuditLimit) {
                         combat_attack_events_truncated = true;
+        temporal_history_truncated = true;
                         break;
                     }
                     AuditCombatAttackEvent audit_event{};
@@ -4852,6 +4895,7 @@ struct TFTEngine::Impl {
                 for (const auto& death_event : combat.death_events) {
                     if (last_combat_death_events.size() >= kCombatTypedEventAuditLimit) {
                         combat_death_events_truncated = true;
+        temporal_history_truncated = true;
                         break;
                     }
                     AuditCombatDeathEvent audit_event{};
@@ -5897,6 +5941,15 @@ ResetResult TFTEngine::reset(
     }
 
     ++impl_->episode_id;
+    impl_->temporal_event_sequence = 0;
+    impl_->temporal_history_truncated = false;
+    impl_->temporal_history.clear();
+    impl_->latest_board_action_event_ids.fill(std::string{});
+    impl_->latest_economic_action_event_ids.fill(std::string{});
+    impl_->latest_board_action_sequences.fill(0);
+    impl_->latest_economic_action_sequences.fill(0);
+    impl_->latest_board_action_rounds.fill(0);
+    impl_->latest_economic_action_rounds.fill(0);
     for (auto& cache : impl_->strategic_item_fit_caches)
         if (cache) cache->clear();
     impl_->composition_intelligence_players =
@@ -6073,6 +6126,8 @@ StepResult TFTEngine::step(
         );
     }
 
+    const auto temporal_sequence_before_step = impl_->temporal_event_sequence;
+
     // No treinamento, um jogador só encerra suas decisões após 10 ações.
     // PASS conta como ação, mas não encerra a preparação antecipadamente.
     // No viewer, o temporizador controla a fase e o limite de ações fica desativado.
@@ -6120,6 +6175,19 @@ StepResult TFTEngine::step(
     std::array<std::int32_t, kPlayersPerLobby> xp_after_actions{};
     std::array<ActionExecutionTrace, kPlayersPerLobby> action_traces{};
     std::array<ActionOutcomeEvent, kPlayersPerLobby> action_outcomes{};
+    std::array<bool, kPlayersPerLobby> alive_before_step{};
+    std::array<float, kPlayersPerLobby> hp_before_step{};
+    std::array<std::string, kPlayersPerLobby> composition_before_step{};
+    std::array<std::uint64_t, kPlayersPerLobby> composition_version_before_step{};
+    for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+        alive_before_step[i] = impl_->player_envs[i].info.alive;
+        hp_before_step[i] = impl_->player_envs[i].info.hp;
+        const auto active = impl_->composition_intelligence_players[i].active.current();
+        if (active) {
+            composition_before_step[i] = active->candidate.composition_id;
+            composition_version_before_step[i] = active->version;
+        }
+    }
     std::vector<std::string> item_action_events;
     for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
         auto& trace = action_traces[i];
@@ -6243,6 +6311,97 @@ StepResult TFTEngine::step(
         outcome.first_component_id = player_env.last_item_action.first_component;
         outcome.second_component_id = player_env.last_item_action.second_component;
         action_outcomes[i] = std::move(outcome);
+        TemporalEvent action_event;
+        action_event.event_type = "action_outcome";
+        action_event.event_id = action_outcomes[i].event_id;
+        action_event.scope = "player";
+        action_event.player_id = static_cast<std::int32_t>(i);
+        action_event.round = impl_->round + 1;
+        action_event.stage = impl_->stage;
+        action_event.source_player_decision_sequence = action_outcomes[i].source_player_decision_sequence;
+        action_event.observed_player_decision_sequence = action_outcomes[i].outcome_player_decision_sequence;
+        action_event.fact_source = action_outcomes[i].contract_id;
+        action_event.resource = "gold";
+        action_event.value_before = action_outcomes[i].gold_before;
+        action_event.value_after = action_outcomes[i].gold_after;
+        action_event.delta = action_outcomes[i].gold_delta;
+        if (!action_outcomes[i].affected_unit_uuids.empty())
+            action_event.unit_uuid = action_outcomes[i].affected_unit_uuids.front();
+        impl_->append_temporal_event(std::move(action_event));
+        const auto& emitted_action_event = impl_->temporal_history.back();
+        const auto action_round = impl_->round + 1;
+        if (action_outcomes[i].handler_applied &&
+            !action_outcomes[i].affected_unit_uuids.empty()) {
+            impl_->latest_board_action_event_ids[i] = emitted_action_event.event_id;
+            impl_->latest_board_action_sequences[i] = action_outcomes[i].source_player_decision_sequence;
+            impl_->latest_board_action_rounds[i] = action_round;
+        }
+        if (action_outcomes[i].handler_applied &&
+            (action_outcomes[i].gold_delta != 0 ||
+             action_outcomes[i].xp_after != action_outcomes[i].xp_before ||
+             action_outcomes[i].level_after != action_outcomes[i].level_before)) {
+            impl_->latest_economic_action_event_ids[i] = emitted_action_event.event_id;
+            impl_->latest_economic_action_sequences[i] = action_outcomes[i].source_player_decision_sequence;
+            impl_->latest_economic_action_rounds[i] = action_round;
+        }
+        if (action_outcomes[i].handler_applied) {
+        for (const auto& uuid : action_outcomes[i].affected_unit_uuids) {
+            TemporalEvent unit_event;
+            unit_event.event_type = "unit_transition";
+            unit_event.scope = "player";
+            unit_event.player_id = static_cast<std::int32_t>(i);
+            unit_event.round = action_round;
+            unit_event.stage = impl_->stage;
+            unit_event.causal_event_id = action_outcomes[i].event_id;
+            unit_event.source_player_decision_sequence = action_outcomes[i].source_player_decision_sequence;
+            unit_event.observed_player_decision_sequence = action_outcomes[i].outcome_player_decision_sequence;
+            unit_event.fact_source = "TFTEngine::PlayerEnv::step";
+            unit_event.transition_kind = action_outcomes[i].action_family;
+            unit_event.unit_uuid = uuid;
+            impl_->append_temporal_event(std::move(unit_event));
+        }
+        if (!action_outcomes[i].item_action_kind.empty()) {
+            TemporalEvent item_event;
+            item_event.event_type = "item_transition";
+            item_event.scope = "player";
+            item_event.player_id = static_cast<std::int32_t>(i);
+            item_event.round = action_round;
+            item_event.stage = impl_->stage;
+            item_event.causal_event_id = action_outcomes[i].event_id;
+            item_event.source_player_decision_sequence = action_outcomes[i].source_player_decision_sequence;
+            item_event.observed_player_decision_sequence = action_outcomes[i].outcome_player_decision_sequence;
+            item_event.fact_source = "ItemEngine";
+            item_event.transition_kind = action_outcomes[i].item_action_kind;
+            item_event.resource = action_outcomes[i].item_id;
+            if (!action_outcomes[i].affected_unit_uuids.empty())
+                item_event.unit_uuid = action_outcomes[i].affected_unit_uuids.front();
+            impl_->append_temporal_event(std::move(item_event));
+        }
+        }
+        const auto append_resource_transition = [&](const std::string& resource,
+            std::int64_t before, std::int64_t after) {
+            if (before == after) return;
+            TemporalEvent resource_event;
+            resource_event.event_type = "resource_transition";
+            resource_event.scope = "player";
+            resource_event.player_id = static_cast<std::int32_t>(i);
+            resource_event.round = action_round;
+            resource_event.stage = impl_->stage;
+            resource_event.causal_event_id = action_outcomes[i].event_id;
+            resource_event.source_player_decision_sequence = action_outcomes[i].source_player_decision_sequence;
+            resource_event.observed_player_decision_sequence = action_outcomes[i].outcome_player_decision_sequence;
+            resource_event.fact_source = "TFTEngine::PlayerEnv::step";
+            resource_event.resource = resource;
+            resource_event.value_before = before;
+            resource_event.value_after = after;
+            resource_event.delta = after - before;
+            impl_->append_temporal_event(std::move(resource_event));
+        };
+        if (action_outcomes[i].handler_applied) {
+            append_resource_transition("gold", action_outcomes[i].gold_before, action_outcomes[i].gold_after);
+            append_resource_transition("xp", action_outcomes[i].xp_before, action_outcomes[i].xp_after);
+            append_resource_transition("level", action_outcomes[i].level_before, action_outcomes[i].level_after);
+        }
         if (!transition.acted) {
             continue;
         }
@@ -6449,6 +6608,136 @@ StepResult TFTEngine::step(
         }
     }
 
+    // Publish delayed factual consequences only after their native producers
+    // have completed. They point to the latest same-round action for the affected
+    // player; they never become PPO labels or inferred future predictions.
+    const auto append_delayed_fact = [&](const std::string& type, std::int32_t player_id,
+        const std::string& fact_source, const std::string& unit_uuid,
+        const std::string& related_uuid, const std::string& resource,
+        std::int64_t before, std::int64_t after, bool economic_cause = false) {
+        TemporalEvent event;
+        event.event_type = type;
+        const bool has_player_owner = player_id >= 0 &&
+            static_cast<std::size_t>(player_id) < kPlayersPerLobby;
+        event.scope = has_player_owner ? "player" : "lobby";
+        event.player_id = has_player_owner ? player_id : -1;
+        event.round = (round_resolved && impl_->round > 0) ? impl_->round : impl_->round + 1;
+        event.stage = impl_->stage;
+        event.fact_source = fact_source;
+        event.unit_uuid = unit_uuid;
+        event.related_unit_uuid = related_uuid;
+        event.resource = resource;
+        event.value_before = before;
+        event.value_after = after;
+        event.delta = after - before;
+        event.delayed = true;
+        if (player_id >= 0 && static_cast<std::size_t>(player_id) < kPlayersPerLobby) {
+            const auto p = static_cast<std::size_t>(player_id);
+            const auto consequence_round = (round_resolved && impl_->round > 0)
+                ? impl_->round : impl_->round + 1;
+            const auto& causal_id = economic_cause
+                ? impl_->latest_economic_action_event_ids[p]
+                : impl_->latest_board_action_event_ids[p];
+            const auto causal_round = economic_cause
+                ? impl_->latest_economic_action_rounds[p]
+                : impl_->latest_board_action_rounds[p];
+            const auto causal_sequence = economic_cause
+                ? impl_->latest_economic_action_sequences[p]
+                : impl_->latest_board_action_sequences[p];
+            if (causal_round == consequence_round && !causal_id.empty()) {
+                event.causal_event_id = causal_id;
+                event.source_player_decision_sequence = causal_sequence;
+            }
+            event.observed_player_decision_sequence = impl_->player_decision_sequences[p] + 1;
+        }
+        impl_->append_temporal_event(std::move(event));
+    };
+    if (round_resolved) {
+    for (const auto& event : impl_->last_combat_damage_events) {
+        append_delayed_fact("combat_damage", event.target_player_id, "CombatEngine",
+            event.target_unit_uuid, event.source_unit_uuid, "health", 0,
+            -static_cast<std::int64_t>(std::llround(event.final_damage)));
+    }
+    for (const auto& event : impl_->last_combat_attack_events) {
+        append_delayed_fact("combat_attack", event.source_player_id, "CombatEngine",
+            event.source_unit_uuid, event.target_unit_uuid, "damage", 0,
+            static_cast<std::int64_t>(std::llround(event.damage)));
+    }
+    for (const auto& event : impl_->last_combat_death_events) {
+        append_delayed_fact("combat_death", event.unit_player_id, "CombatEngine",
+            event.unit_uuid, event.killer_unit_uuid, "unit_alive", 1, 0);
+    }
+    for (const auto& event : impl_->last_economy_resolution_events) {
+        append_delayed_fact("economy_resolution", event.player_id, event.producer,
+            {}, {}, "gold", event.old_gold, event.new_gold, true);
+        if (event.old_level != event.new_level)
+            append_delayed_fact("level_transition", event.player_id, event.producer,
+                {}, {}, "level", event.old_level, event.new_level, true);
+    }
+    for (const auto& event : impl_->last_pvp_result_credit_events) {
+        append_delayed_fact("pvp_result_credit", event.winner_player_id, event.producer,
+            {}, {}, "gold", event.gold_before_credit, event.gold_after_credit);
+    }
+    for (std::size_t player = 0; player < kPlayersPerLobby; ++player) {
+        const auto hp_after = impl_->player_envs[player].info.hp;
+        if (std::abs(hp_after - hp_before_step[player]) > 0.001f) {
+            append_delayed_fact("player_health_transition", static_cast<std::int32_t>(player),
+                "TFTEngine::resolve_combats", {}, {}, "hp",
+                static_cast<std::int64_t>(std::llround(hp_before_step[player])),
+                static_cast<std::int64_t>(std::llround(hp_after)));
+        }
+        if (alive_before_step[player] && !impl_->player_envs[player].info.alive) {
+            append_delayed_fact("player_elimination", static_cast<std::int32_t>(player),
+                "TFTEngine::resolve_combats", {}, {}, "alive", 1, 0);
+            impl_->player_envs[player].anti_loop.reset();
+            impl_->latest_board_action_event_ids[player].clear();
+            impl_->latest_economic_action_event_ids[player].clear();
+            impl_->latest_board_action_sequences[player] = 0;
+            impl_->latest_economic_action_sequences[player] = 0;
+            impl_->latest_board_action_rounds[player] = 0;
+            impl_->latest_economic_action_rounds[player] = 0;
+        }
+    }
+        const auto resolved_round = (impl_->round > 0) ? impl_->round : impl_->round + 1;
+        for (std::size_t player = 0; player < kPlayersPerLobby; ++player) {
+            const auto active = impl_->composition_intelligence_players[player].active.current();
+            const std::string composition_after = active ? active->candidate.composition_id : std::string{};
+            const std::uint64_t composition_version_after = active ? active->version : 0;
+            if (composition_before_step[player] != composition_after ||
+                composition_version_before_step[player] != composition_version_after) {
+                TemporalEvent composition_event;
+                composition_event.event_type = "composition_transition";
+                composition_event.scope = "player";
+                composition_event.player_id = static_cast<std::int32_t>(player);
+                composition_event.round = resolved_round;
+                composition_event.stage = impl_->stage;
+                composition_event.fact_source = "ActiveCompositionManager";
+                composition_event.transition_kind = "active_composition";
+                composition_event.identity_before = composition_before_step[player];
+                composition_event.identity_after = composition_after;
+                composition_event.value_before = static_cast<std::int64_t>(composition_version_before_step[player]);
+                composition_event.value_after = static_cast<std::int64_t>(composition_version_after);
+                composition_event.delayed = true;
+                if (impl_->latest_board_action_rounds[player] == resolved_round &&
+                    !impl_->latest_board_action_event_ids[player].empty()) {
+                    composition_event.causal_event_id = impl_->latest_board_action_event_ids[player];
+                    composition_event.source_player_decision_sequence = impl_->latest_board_action_sequences[player];
+                    composition_event.observed_player_decision_sequence = impl_->player_decision_sequences[player] + 1;
+                }
+                impl_->append_temporal_event(std::move(composition_event));
+            }
+        }
+        TemporalEvent event;
+        event.event_type = "round_transition";
+        event.scope = "lobby";
+        event.player_id = -1;
+        event.round = impl_->round + 1;
+        event.stage = impl_->stage;
+        event.fact_source = "TFTEngine::step";
+        event.delayed = true;
+        impl_->append_temporal_event(std::move(event));
+    }
+
     // ========================================================
     // RESULTADO
     // ========================================================
@@ -6488,6 +6777,10 @@ StepResult TFTEngine::step(
     result.stage = impl_->stage;
     result.alive_players = impl_->alive_players;
     result.native_state_snapshot = get_audit_snapshot();
+    for (const auto& event : impl_->temporal_history) {
+        if (event.global_sequence > temporal_sequence_before_step)
+            result.temporal_events.push_back(event);
+    }
 
     result.events.emplace_back(
         "Acoes de loja, economia, venda e movimentacao "
@@ -6687,6 +6980,12 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
     snapshot.round = impl_->round + 1;
     snapshot.stage = impl_->stage;
     snapshot.finished = impl_->done;
+    snapshot.temporal_history_complete = !impl_->temporal_history_truncated;
+    snapshot.temporal_events = impl_->temporal_history;
+    for (std::size_t player = 0; player < kPlayersPerLobby; ++player) {
+        snapshot.temporal_causal_anchor_ids[player][0] = impl_->latest_board_action_event_ids[player];
+        snapshot.temporal_causal_anchor_ids[player][1] = impl_->latest_economic_action_event_ids[player];
+    }
     snapshot.combat_sequence = impl_->combat_sequence;
     snapshot.combat_damage_events_truncated = impl_->combat_damage_events_truncated;
     snapshot.combat_damage_events = impl_->last_combat_damage_events;
@@ -6847,6 +7146,66 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
         target.actions_taken_this_round = source.actions_taken_this_round;
         target.board_move_age = source.board_move_age;
         target.masks = source.action_masks;
+
+        const auto& anti_loop_history = source.anti_loop.history();
+        auto& anti_loop_projection = target.anti_loop_history;
+        anti_loop_projection.current_round = anti_loop_history.current_round;
+        anti_loop_projection.state_window_rounds = anti_loop_history.state_window_rounds;
+        const auto identity_json = [](const std::optional<decision::UnitIdentity>& identity) {
+            if (!identity) return nlohmann::json(nullptr);
+            nlohmann::json value;
+            value["uuid"] = identity->uuid ? nlohmann::json(*identity->uuid) : nlohmann::json(nullptr);
+            value["id"] = identity->id ? nlohmann::json(*identity->id) : nlohmann::json(nullptr);
+            value["textual_id"] = identity->textual_id ? nlohmann::json(*identity->textual_id) : nlohmann::json(nullptr);
+            value["star"] = identity->star;
+            return value;
+        };
+        const auto signature_fingerprint = [&](const decision::PositionSignature& signature) {
+            nlohmann::json value;
+            value["board"] = nlohmann::json::array();
+            value["bench"] = nlohmann::json::array();
+            for (const auto& identity : signature.board) value["board"].push_back(identity_json(identity));
+            for (const auto& identity : signature.bench) value["bench"].push_back(identity_json(identity));
+            return semantic::sha256_hex(value.dump(-1, ' ', false));
+        };
+        anti_loop_projection.position_history_hashes.reserve(anti_loop_history.position_history.size());
+        anti_loop_projection.position_history.reserve(anti_loop_history.position_history.size());
+        for (const auto& signature : anti_loop_history.position_history) {
+            AntiLoopPositionSnapshot position;
+            position.fingerprint = signature_fingerprint(signature);
+            for (std::size_t slot = 0; slot < signature.board.size(); ++slot)
+                position.board_unit_identities[slot] = identity_json(signature.board[slot]).dump(-1, ' ', false);
+            for (std::size_t slot = 0; slot < signature.bench.size(); ++slot)
+                position.bench_unit_identities[slot] = identity_json(signature.bench[slot]).dump(-1, ' ', false);
+            anti_loop_projection.position_history_hashes.push_back(position.fingerprint);
+            anti_loop_projection.position_history.push_back(std::move(position));
+        }
+        const auto project_move = [](const decision::MoveRecord& move) {
+            AntiLoopMoveSnapshot row;
+            row.move_type = move.move_type;
+            row.source = move.source;
+            row.target = move.target;
+            if (move.unit && move.unit->uuid) row.unit_uuid = *move.unit->uuid;
+            if (move.displaced_unit && move.displaced_unit->uuid)
+                row.displaced_unit_uuid = *move.displaced_unit->uuid;
+            return row;
+        };
+        anti_loop_projection.move_history.reserve(anti_loop_history.move_history.size());
+        for (const auto& move : anti_loop_history.move_history)
+            anti_loop_projection.move_history.push_back(project_move(move));
+        anti_loop_projection.blocked_moves.reserve(anti_loop_history.blocked_moves.size());
+        for (const auto& blocked : anti_loop_history.blocked_moves)
+            anti_loop_projection.blocked_moves.push_back(project_move(blocked.move));
+        anti_loop_projection.state_visit_hashes.reserve(anti_loop_history.state_visits.size());
+        anti_loop_projection.state_visit_counts.reserve(anti_loop_history.state_visits.size());
+        anti_loop_projection.state_visit_rounds.reserve(anti_loop_history.state_visits.size());
+        anti_loop_projection.state_visit_repeated.reserve(anti_loop_history.state_visits.size());
+        for (const auto& visit : anti_loop_history.state_visits) {
+            anti_loop_projection.state_visit_hashes.push_back(signature_fingerprint(visit.signature));
+            anti_loop_projection.state_visit_counts.push_back(visit.visits);
+            anti_loop_projection.state_visit_rounds.push_back(visit.last_seen_round);
+            anti_loop_projection.state_visit_repeated.push_back(visit.repeated);
+        }
 
         auto& strategic = target.strategic_state;
         strategic.episode_id = impl_->episode_id;
@@ -7812,6 +8171,16 @@ void TFTEngine::close() noexcept {
     }
 
     impl_->closed = true;
+    for (auto& player : impl_->player_envs) player.anti_loop.reset();
+    impl_->temporal_history.clear();
+    impl_->temporal_event_sequence = 0;
+    impl_->temporal_history_truncated = false;
+    impl_->latest_board_action_event_ids.fill(std::string{});
+    impl_->latest_economic_action_event_ids.fill(std::string{});
+    impl_->latest_board_action_sequences.fill(0);
+    impl_->latest_economic_action_sequences.fill(0);
+    impl_->latest_board_action_rounds.fill(0);
+    impl_->latest_economic_action_rounds.fill(0);
 }
 
 } // namespace tft

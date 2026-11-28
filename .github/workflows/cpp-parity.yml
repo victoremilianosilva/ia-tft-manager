@@ -168,6 +168,41 @@ jobs:
           print("Native PPO multi-seed battery produced two independently identified checkpoints.")
           PY
 
+      - name: Profile temporal history with PPO active
+        if: github.event_name == 'pull_request' && github.head_ref == 'native-decision-batch/589-temporal-history'
+        env:
+          PYTHONPATH: ${{ github.workspace }}/cpp/build/bin:${{ github.workspace }}
+          REQUIRE_CPP_ENGINE: "1"
+          TFT_OPGG_DISABLE_REFRESH: "1"
+          TFT_TRAIN_SEED: "589"
+          TFT_NUM_LOBBIES: "1"
+          TFT_TOTAL_UPDATES: "1"
+          TFT_ROLLOUT_STEPS: "4"
+          TFT_PPO_BATCH_SIZE: "32"
+          TFT_PPO_EPOCHS: "1"
+        run: |
+          output_dir="${RUNNER_TEMP}/native-temporal-profile"
+          python scripts/profile_training_pipeline.py --output-dir "$output_dir" --report "$output_dir/phase-a-profile.json" --seed 589 --updates 1 --lobbies 1 --rollout-steps 4 --batch-size 32 --ppo-epochs 1
+          python - "$output_dir/phase-a-profile.json" <<'PY'
+          import json
+          import pathlib
+          import sys
+          report = json.loads(pathlib.Path(sys.argv[1]).read_text(encoding="utf-8"))
+          assert report["configuration"]["ppo_enabled"] is True
+          timings = report["runs"][0]["timings"]
+          for metric in ("rollout.add", "rollout.gae", "ppo.update_total", "ppo.compute_loss", "optimizer.step", "semantic.project_player"):
+              assert timings[metric]["calls"] > 0, f"missing active PPO profile metric: {metric}"
+          print("PPO temporal-path profile validated:", sorted(timings))
+          PY
+
+      - name: Upload native temporal PPO profile
+        if: always() && github.event_name == 'pull_request' && github.head_ref == 'native-decision-batch/589-temporal-history'
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-temporal-ppo-profile
+          path: ${{ runner.temp }}/native-temporal-profile/phase-a-profile.json
+          if-no-files-found: warn
+
       - name: Collect deterministic strategic replay artifact
         if: always()
         run: |

@@ -442,6 +442,48 @@ py::dict audit_player_snapshot_to_dict(
         }
         p["actions_taken_this_round"] = player.actions_taken_this_round;
         p["board_move_age"] = player.board_move_age;
+        py::dict anti_loop;
+        anti_loop["contract_id"] = player.anti_loop_history.contract_id;
+        anti_loop["contract_version"] = player.anti_loop_history.contract_version;
+        anti_loop["current_round"] = player.anti_loop_history.current_round;
+        anti_loop["state_window_rounds"] = player.anti_loop_history.state_window_rounds;
+        anti_loop["position_history_hashes"] = player.anti_loop_history.position_history_hashes;
+        py::list position_history;
+        for (const auto& position : player.anti_loop_history.position_history) {
+            py::dict row;
+            row["board_unit_identities"] = position.board_unit_identities;
+            row["bench_unit_identities"] = position.bench_unit_identities;
+            row["fingerprint"] = position.fingerprint;
+            position_history.append(std::move(row));
+        }
+        anti_loop["position_history"] = std::move(position_history);
+        anti_loop["state_visit_hashes"] = player.anti_loop_history.state_visit_hashes;
+        anti_loop["state_visit_counts"] = player.anti_loop_history.state_visit_counts;
+        anti_loop["state_visit_rounds"] = player.anti_loop_history.state_visit_rounds;
+        anti_loop["state_visit_repeated"] = player.anti_loop_history.state_visit_repeated;
+        py::list move_history;
+        for (const auto& move : player.anti_loop_history.move_history) {
+            py::dict row;
+            row["move_type"] = move.move_type;
+            row["source"] = move.source;
+            row["target"] = move.target;
+            row["unit_uuid"] = move.unit_uuid;
+            row["displaced_unit_uuid"] = move.displaced_unit_uuid;
+            move_history.append(std::move(row));
+        }
+        anti_loop["move_history"] = std::move(move_history);
+        py::list blocked_moves;
+        for (const auto& move : player.anti_loop_history.blocked_moves) {
+            py::dict row;
+            row["move_type"] = move.move_type;
+            row["source"] = move.source;
+            row["target"] = move.target;
+            row["unit_uuid"] = move.unit_uuid;
+            row["displaced_unit_uuid"] = move.displaced_unit_uuid;
+            blocked_moves.append(std::move(row));
+        }
+        anti_loop["blocked_moves"] = std::move(blocked_moves);
+        p["anti_loop_history"] = std::move(anti_loop);
         p["last_item_action_kind"] = player.last_item_action_kind;
         p["last_item_id"] = player.last_item_id;
         p["last_item_first_component"] = player.last_item_first_component;
@@ -482,6 +524,43 @@ py::dict audit_snapshot_to_dict(
     result["stage"] = snapshot.stage;
     result["finished"] = snapshot.finished;
     result["combat_sequence"] = snapshot.combat_sequence;
+    result["temporal_contract_id"] = snapshot.temporal_contract_id;
+    result["temporal_contract_version"] = snapshot.temporal_contract_version;
+    result["temporal_retention_events"] = snapshot.temporal_retention_events;
+    result["temporal_history_complete"] = snapshot.temporal_history_complete;
+    py::list temporal_events;
+    for (const auto& event : snapshot.temporal_events) {
+        py::dict row;
+        row["contract_id"] = event.contract_id;
+        row["contract_version"] = event.contract_version;
+        row["event_id"] = event.event_id;
+        row["event_type"] = event.event_type;
+        row["scope"] = event.scope;
+        row["engine_instance_id"] = event.engine_instance_id;
+        row["episode_id"] = event.episode_id;
+        row["global_sequence"] = event.global_sequence;
+        row["player_sequence"] = event.player_sequence;
+        row["player_id"] = event.player_id;
+        row["round"] = event.round;
+        row["stage"] = event.stage;
+        row["causal_event_id"] = event.causal_event_id;
+        row["source_player_decision_sequence"] = event.source_player_decision_sequence;
+        row["observed_player_decision_sequence"] = event.observed_player_decision_sequence;
+        row["fact_source"] = event.fact_source;
+        row["transition_kind"] = event.transition_kind;
+        row["identity_before"] = event.identity_before;
+        row["identity_after"] = event.identity_after;
+        row["unit_uuid"] = event.unit_uuid;
+        row["related_unit_uuid"] = event.related_unit_uuid;
+        row["resource"] = event.resource;
+        row["delta"] = event.delta;
+        row["value_before"] = event.value_before;
+        row["value_after"] = event.value_after;
+        row["delayed"] = event.delayed;
+        temporal_events.append(std::move(row));
+    }
+    result["temporal_events"] = std::move(temporal_events);
+    result["temporal_causal_anchor_ids"] = snapshot.temporal_causal_anchor_ids;
     result["combat_damage_events_truncated"] = snapshot.combat_damage_events_truncated;
     result["combat_attack_events_truncated"] = snapshot.combat_attack_events_truncated;
     result["combat_death_events_truncated"] = snapshot.combat_death_events_truncated;
@@ -705,6 +784,12 @@ public:
             "stage",
             "finished",
             "combat_sequence",
+            "temporal_contract_id",
+            "temporal_contract_version",
+            "temporal_retention_events",
+            "temporal_history_complete",
+            "temporal_events",
+            "temporal_causal_anchor_ids",
             "combat_damage_events_truncated",
             "combat_attack_events_truncated",
             "combat_death_events_truncated",
@@ -1105,6 +1190,38 @@ py::dict step_to_dict(tft::StepResult step, bool include_numeric_transport = tru
         action_outcome_events.append(std::move(item));
     }
     result["action_outcome_events"] = std::move(action_outcome_events);
+    py::list temporal_events;
+    for (const auto& event : step.temporal_events) {
+        py::dict row;
+        row["contract_id"] = event.contract_id;
+        row["contract_version"] = event.contract_version;
+        row["event_id"] = event.event_id;
+        row["event_type"] = event.event_type;
+        row["scope"] = event.scope;
+        row["engine_instance_id"] = event.engine_instance_id;
+        row["episode_id"] = event.episode_id;
+        row["global_sequence"] = event.global_sequence;
+        row["player_sequence"] = event.player_sequence;
+        row["player_id"] = event.player_id;
+        row["round"] = event.round;
+        row["stage"] = event.stage;
+        row["causal_event_id"] = event.causal_event_id;
+        row["source_player_decision_sequence"] = event.source_player_decision_sequence;
+        row["observed_player_decision_sequence"] = event.observed_player_decision_sequence;
+        row["fact_source"] = event.fact_source;
+        row["transition_kind"] = event.transition_kind;
+        row["identity_before"] = event.identity_before;
+        row["identity_after"] = event.identity_after;
+        row["unit_uuid"] = event.unit_uuid;
+        row["related_unit_uuid"] = event.related_unit_uuid;
+        row["resource"] = event.resource;
+        row["delta"] = event.delta;
+        row["value_before"] = event.value_before;
+        row["value_after"] = event.value_after;
+        row["delayed"] = event.delayed;
+        temporal_events.append(std::move(row));
+    }
+    result["temporal_events"] = std::move(temporal_events);
     result["events"] = step.events;
 
     return result;
@@ -1376,6 +1493,7 @@ public:
         if (kind_ == "step") {
             action_context["action_traces"] = result["action_traces"];
             action_context["action_outcome_events"] = result["action_outcome_events"];
+            action_context["temporal_events"] = result["temporal_events"];
             action_context["native_decision_context"] = native_context(index);
         }
         result["action_context"] = std::move(action_context);
@@ -2007,6 +2125,90 @@ PYBIND11_MODULE(tft_engine, module) {
             return result;
         }, py::arg("player_index"))
         .def_property_readonly("player_count", &tft::NativeDecisionContext::player_count)
+        .def_property_readonly("temporal_history_availability", &tft::NativeDecisionContext::temporal_history_availability)
+        .def_property_readonly("temporal_events", [](const tft::NativeDecisionContext& context) {
+            py::list result;
+            for (const auto& event : context.temporal_events()) {
+                py::dict row;
+                row["contract_id"] = event.contract_id;
+                row["contract_version"] = event.contract_version;
+                row["event_id"] = event.event_id;
+                row["event_type"] = event.event_type;
+                row["scope"] = event.scope;
+                row["engine_instance_id"] = event.engine_instance_id;
+                row["episode_id"] = event.episode_id;
+                row["global_sequence"] = event.global_sequence;
+                row["player_sequence"] = event.player_sequence;
+                row["player_id"] = event.player_id;
+                row["round"] = event.round;
+                row["stage"] = event.stage;
+                row["causal_event_id"] = event.causal_event_id;
+                row["source_player_decision_sequence"] = event.source_player_decision_sequence;
+                row["observed_player_decision_sequence"] = event.observed_player_decision_sequence;
+                row["fact_source"] = event.fact_source;
+                row["transition_kind"] = event.transition_kind;
+                row["identity_before"] = event.identity_before;
+                row["identity_after"] = event.identity_after;
+                row["unit_uuid"] = event.unit_uuid;
+                row["related_unit_uuid"] = event.related_unit_uuid;
+                row["resource"] = event.resource;
+                row["delta"] = event.delta;
+                row["value_before"] = event.value_before;
+                row["value_after"] = event.value_after;
+                row["delayed"] = event.delayed;
+                result.append(std::move(row));
+            }
+            return result;
+        })
+        .def("temporal_causal_anchor_ids", [](const tft::NativeDecisionContext& context, std::size_t player_index) {
+            return context.temporal_causal_anchor_ids(player_index);
+        }, py::arg("player_index"))
+        .def("anti_loop_history_availability", &tft::NativeDecisionContext::anti_loop_history_availability)
+        .def("anti_loop_history", [](const tft::NativeDecisionContext& context, std::size_t player_index) {
+            const auto& history = context.anti_loop_history(player_index);
+            py::dict result;
+            result["contract_id"] = history.contract_id;
+            result["contract_version"] = history.contract_version;
+            result["current_round"] = history.current_round;
+            result["state_window_rounds"] = history.state_window_rounds;
+            result["position_history_hashes"] = history.position_history_hashes;
+            py::list positions;
+            for (const auto& position : history.position_history) {
+                py::dict row;
+                row["board_unit_identities"] = position.board_unit_identities;
+                row["bench_unit_identities"] = position.bench_unit_identities;
+                row["fingerprint"] = position.fingerprint;
+                positions.append(std::move(row));
+            }
+            result["position_history"] = std::move(positions);
+            result["state_visit_hashes"] = history.state_visit_hashes;
+            result["state_visit_counts"] = history.state_visit_counts;
+            result["state_visit_rounds"] = history.state_visit_rounds;
+            result["state_visit_repeated"] = history.state_visit_repeated;
+            py::list moves;
+            for (const auto& move : history.move_history) {
+                py::dict row;
+                row["move_type"] = move.move_type;
+                row["source"] = move.source;
+                row["target"] = move.target;
+                row["unit_uuid"] = move.unit_uuid;
+                row["displaced_unit_uuid"] = move.displaced_unit_uuid;
+                moves.append(std::move(row));
+            }
+            result["move_history"] = std::move(moves);
+            py::list blocked;
+            for (const auto& move : history.blocked_moves) {
+                py::dict row;
+                row["move_type"] = move.move_type;
+                row["source"] = move.source;
+                row["target"] = move.target;
+                row["unit_uuid"] = move.unit_uuid;
+                row["displaced_unit_uuid"] = move.displaced_unit_uuid;
+                blocked.append(std::move(row));
+            }
+            result["blocked_moves"] = std::move(blocked);
+            return result;
+        }, py::arg("player_index"))
         .def("player_sequence_availability", &tft::NativeDecisionContext::player_sequence_availability)
         .def("strategic_availability", &tft::NativeDecisionContext::strategic_availability)
         .def("item_inventory_availability", &tft::NativeDecisionContext::item_inventory_availability)

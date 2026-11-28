@@ -78,6 +78,32 @@ def test_native_lobby_adapter_executes_a_step():
         assert info["action_context"]["action_masks"].shape == (8, 1280)
         assert not info["action_context"]["action_masks"].flags.writeable
         assert len(info["action_outcome_events"]) == 8
+        assert info["action_context"]["temporal_events"] == info["temporal_events"]
+        assert len(info["temporal_events"]) == 8
+        temporal_sequences = [event["global_sequence"] for event in info["temporal_events"]]
+        assert temporal_sequences == sorted(set(temporal_sequences))
+        action_temporal = {
+            event["event_id"] for event in info["temporal_events"]
+            if event["event_type"] == "action_outcome"
+        }
+        assert {event["event_id"] for event in info["action_outcome_events"]} == action_temporal
+        snapshot = info["decision_snapshot"]["native_state_snapshot"]
+        assert snapshot["temporal_contract_id"] == "tft.engine.temporal-history"
+        assert snapshot["temporal_contract_version"] == 1
+        assert snapshot["contract_version"] == 7
+        assert snapshot["temporal_history_complete"] is True
+        assert snapshot["temporal_retention_events"] == 256
+        for player in snapshot["players"]:
+            history = player["anti_loop_history"]
+            assert history["contract_id"] == "tft.engine.anti-loop-history"
+            assert len(history["state_visit_hashes"]) == len(history["state_visit_counts"])
+            assert len(history["state_visit_hashes"]) == len(history["state_visit_rounds"])
+            assert len(history["state_visit_hashes"]) == len(history["state_visit_repeated"])
+            assert len(history["position_history"]) == len(history["position_history_hashes"])
+            for position, fingerprint in zip(history["position_history"], history["position_history_hashes"]):
+                assert position["fingerprint"] == fingerprint
+                assert len(position["board_unit_identities"]) == 28
+                assert len(position["bench_unit_identities"]) == 9
         _assert_action_events_match_oracle(info, source_snapshot)
         for player_id, event in enumerate(info["action_outcome_events"]):
             assert event["contract_id"] == "tft.engine.action-outcome-event"
@@ -101,6 +127,17 @@ def _buy_first_shop_unit(lobby):
     before_snapshot = lobby._engine.get_audit_snapshot()
     _, _, _, info = lobby.step(actions)
     _assert_action_events_match_oracle(info, before_snapshot)
+    purchase = info["action_outcome_events"][0]
+    unit_transitions = [event for event in info["temporal_events"]
+                        if event["event_type"] == "unit_transition" and event["player_id"] == 0]
+    assert {event["unit_uuid"] for event in unit_transitions} == set(purchase["affected_unit_uuids"])
+    gold_transitions = [event for event in info["temporal_events"]
+                        if event["event_type"] == "resource_transition"
+                        and event["player_id"] == 0 and event["resource"] == "gold"]
+    assert len(gold_transitions) == 1
+    assert gold_transitions[0]["delta"] == purchase["gold_delta"]
+    assert gold_transitions[0]["value_before"] == purchase["gold_before"]
+    assert gold_transitions[0]["value_after"] == purchase["gold_after"]
     return info
 
 
@@ -124,6 +161,11 @@ def test_native_action_event_covers_item_equip_handler():
         assert event["action_family"] == "item_action"
         assert event["item_action_kind"] == "equip_inventory_item"
         assert event["item_id"] == "TFT_Item_AdaptiveHelm"
+        item_transition = next(row for row in info["temporal_events"] if row["event_type"] == "item_transition")
+        assert item_transition["causal_event_id"] == event["event_id"]
+        assert item_transition["transition_kind"] == event["item_action_kind"]
+        assert item_transition["resource"] == event["item_id"]
+        assert item_transition["unit_uuid"] in event["affected_unit_uuids"]
         assert event["affected_unit_uuids"]
     finally:
         lobby.close()
@@ -153,6 +195,10 @@ def test_native_action_event_covers_item_craft_handler():
         assert event["first_component_id"] == "TFT_Item_BFSword"
         assert event["second_component_id"] == "TFT_Item_ChainVest"
         assert event["item_id"]
+        item_transition = next(row for row in info["temporal_events"] if row["event_type"] == "item_transition")
+        assert item_transition["causal_event_id"] == event["event_id"]
+        assert item_transition["transition_kind"] == event["item_action_kind"]
+        assert item_transition["resource"] == event["item_id"]
         assert event["affected_unit_uuids"]
     finally:
         lobby.close()
@@ -378,5 +424,70 @@ def test_native_action_event_oracle_parity_for_economic_actions(action_type, fam
             assert len(event["candidate_unit_uuids"]) == 5
         else:
             assert event["candidate_unit_uuids"] == []
+    finally:
+        lobby.close()
+
+
+def test_native_temporal_history_links_delayed_economy_and_resets_by_episode():
+    lobby = CppTFTLobbyWrapper(seed=901)
+    try:
+        lobby.reset(seed=901)
+        # A real purchase creates a board/economy source event. The next nine
+        # PASS decisions must not overwrite that causal anchor.
+        first_info = _buy_first_shop_unit(lobby)
+        last_info = None
+        actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        for _ in range(9):
+            _, _, _, last_info = lobby.step(actions)
+        assert last_info is not None
+        delayed = [event for event in last_info["temporal_events"]
+                   if event["event_type"] == "economy_resolution"]
+        assert delayed
+        source_action_ids = {event["event_id"] for event in first_info["temporal_events"]
+                             if event["event_type"] == "action_outcome"}
+        assert all(event["delayed"] for event in delayed)
+        player_zero_income = [event for event in delayed if event["player_id"] == 0]
+        other_income = [event for event in delayed if event["player_id"] != 0]
+        assert len(player_zero_income) == 1
+        assert player_zero_income[0]["causal_event_id"] in source_action_ids
+        assert all(not event["causal_event_id"] for event in other_income)
+        assert all(event["source_player_decision_sequence"] <
+                   event["observed_player_decision_sequence"] for event in player_zero_income)
+        assert any(event["event_type"] == "round_transition" and event["scope"] == "lobby"
+                   for event in last_info["temporal_events"])
+
+        old_episode = last_info["decision_snapshot"]["episode_id"]
+        lobby.reset(seed=902)
+        reset_snapshot = lobby._engine.get_audit_snapshot()
+        assert reset_snapshot["episode_id"] == old_episode + 1
+        assert reset_snapshot["temporal_events"] == []
+        assert reset_snapshot["temporal_history_complete"] is True
+    finally:
+        lobby.close()
+
+
+def test_native_temporal_history_is_bounded_and_expires_old_rounds():
+    lobby = CppTFTLobbyWrapper(seed=904)
+    try:
+        lobby.reset(seed=904)
+        for player_id in range(8):
+            assert lobby._engine.set_player_hp_for_testing(player_id, 10000.0)
+        actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        last_info = None
+        for _ in range(90):
+            _, _, done, last_info = lobby.step(actions)
+            if done:
+                break
+        assert last_info is not None
+        snapshot = last_info["decision_snapshot"]["native_state_snapshot"]
+        history = snapshot["temporal_events"]
+        assert len(history) <= snapshot["temporal_retention_events"] == 256
+        assert snapshot["temporal_history_complete"] is False
+        assert history
+        latest_round = max(event["round"] for event in history)
+        assert min(event["round"] for event in history) >= latest_round - 7
+        assert [event["global_sequence"] for event in history] == sorted(
+            event["global_sequence"] for event in history
+        )
     finally:
         lobby.close()

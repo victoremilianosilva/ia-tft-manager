@@ -911,7 +911,7 @@ def test_engine_instance_identity_is_distinct_from_seed_and_episode():
         for reset in (first_reset, second_reset):
             structured = reset["native_state_snapshot"]
             assert structured["contract_id"] == "tft.native-state-snapshot"
-            assert structured["contract_version"] == 6
+            assert structured["contract_version"] == 7
             assert structured["source_namespace"] == "tft.engine.observation-snapshot"
             assert structured["engine_instance_id"] == reset["engine_instance_id"]
             assert structured["episode_id"] == reset["episode_id"]
@@ -1011,13 +1011,13 @@ def test_elimination_retires_item_ownership_in_native_snapshot():
         engine.close()
 
 
-def test_native_snapshot_v6_exposes_unit_traits_and_board_evaluation():
+def test_native_snapshot_v7_exposes_unit_traits_and_board_evaluation():
     engine = TFTLobby(seed=20261119)
     try:
         reset = engine.reset()
         snapshot = reset["native_state_snapshot"]
         assert snapshot["contract_id"] == "tft.native-state-snapshot"
-        assert snapshot["contract_version"] == 6
+        assert snapshot["contract_version"] == 7
         assert snapshot["board_geometry_id"] == "tft.board-grid.rectangular-4x7"
         assert snapshot["board_geometry_version"] == 1
         assert snapshot["board_rows"] == 4
