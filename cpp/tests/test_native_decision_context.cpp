@@ -15,6 +15,17 @@ int main() {
     snapshot->shared_pool.catalog_fingerprint = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
     snapshot->shared_pool.champions.push_back({7, "TFT_Test", 2, 25, 11});
     snapshot->shared_pool.total_available = 11;
+    tft::TemporalEvent temporal_event;
+    temporal_event.event_id = "engine:586/episode/4/temporal/1";
+    temporal_event.event_type = "action_outcome";
+    temporal_event.engine_instance_id = snapshot->engine_instance_id;
+    temporal_event.episode_id = snapshot->episode_id;
+    temporal_event.global_sequence = 1;
+    temporal_event.player_id = 0;
+    temporal_event.round = 12;
+    snapshot->temporal_events.push_back(temporal_event);
+    snapshot->temporal_causal_anchor_ids[0][0] = temporal_event.event_id;
+    snapshot->players[0].anti_loop_history.position_history_hashes.push_back("position-sha256");
     for (std::size_t i = 0; i < tft::kPlayersPerLobby; ++i) {
         snapshot->player_decision_sequences[i] = 20 + i;
         auto& player = snapshot->players[i];
@@ -40,6 +51,13 @@ int main() {
 
     tft::NativeDecisionContext context(snapshot);
     assert(context.availability() == tft::ContextAvailability::Complete);
+    assert(context.temporal_history_availability() == tft::ContextAvailability::Complete);
+    assert(context.temporal_events().size() == 1);
+    assert(context.temporal_events().front().event_id == temporal_event.event_id);
+    assert(context.temporal_causal_anchor_ids(0)[0] == temporal_event.event_id);
+    assert(context.anti_loop_history_availability(0) == tft::ContextAvailability::Complete);
+    assert(context.anti_loop_history(0).position_history_hashes.front() == "position-sha256");
+    assert(context.anti_loop_history_availability(1) == tft::ContextAvailability::Empty);
     assert(context.player_count() == 8);
     assert(context.shared_pool().contract_version == 2);
     assert(context.shared_pool().catalog_fingerprint == "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
@@ -110,8 +128,13 @@ int main() {
     tft::NativeDecisionContext partial_context(partial_anvil);
     assert(partial_context.pending_anvil_availability(0) == tft::ContextAvailability::Partial);
 
+    auto partial_temporal = std::make_shared<tft::AuditSnapshot>(*snapshot);
+    partial_temporal->temporal_history_complete = false;
+    tft::NativeDecisionContext partial_temporal_context(partial_temporal);
+    assert(partial_temporal_context.temporal_history_availability() == tft::ContextAvailability::Partial);
+
     auto incompatible = std::make_shared<tft::AuditSnapshot>(*snapshot);
-    incompatible->contract_version = 7;
+    incompatible->contract_version = 8;
     rejected = false;
     try { tft::NativeDecisionContext invalid(incompatible); }
     catch (const std::invalid_argument&) { rejected = true; }
