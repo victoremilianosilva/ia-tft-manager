@@ -194,11 +194,11 @@ def test_reused_action_array_matches_tensor_conversion_path(trainer):
     )
 
 
-def test_empty_action_type_mask_without_liveness_fails_closed(trainer):
+def test_empty_action_type_mask_fails_closed(trainer):
     gym_masks = create_valid_masks()
     gym_masks[0][2]["type_mask"] = np.zeros(9, dtype=np.float32)
 
-    with pytest.raises(RuntimeError, match="estado de vida"):
+    with pytest.raises(RuntimeError, match="contrato nativo deve publicar PASS"):
         trainer._flatten_masks(gym_masks)
 
 
