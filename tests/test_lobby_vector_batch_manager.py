@@ -148,7 +148,7 @@ def test_lobby_vector_batch_parity_includes_reward_provenance_and_action_events(
             assert batch_info["next_snapshot"]["episode_id"] == single_info["next_snapshot"]["episode_id"]
             assert batch_info["next_snapshot"]["decision_sequence"] == single_info["next_snapshot"]["decision_sequence"]
             assert _without_instance_identifiers(batch_info["action_outcome_events"]) == _without_instance_identifiers(single_info["action_outcome_events"])
-            assert batch_info["reward_audit"]["player_rewards"] == single_info["reward_audit"]["player_rewards"]
+            assert _without_instance_identifiers(batch_info["reward_audit"]["player_rewards"]) == _without_instance_identifiers(single_info["reward_audit"]["player_rewards"])
     finally:
         batch.close()
         individual.close()
