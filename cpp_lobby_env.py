@@ -1184,28 +1184,39 @@ class CppTFTLobbyWrapper:
 
     def step(self, actions, *, timer_enabled: bool = False, timer_expired: bool = False):
         native_actions, source_snapshot = self._prepare_batch_step(actions)
-        preflight_events = self._engine.validate_actions(native_actions)
-        rejected = [event for event in preflight_events if not event.get("mask_permitted", False)]
-        if rejected:
-            action_context = {
-                "contract_id": "tft.engine.action-context",
-                "contract_version": 1,
-                "engine_instance_id": str(preflight_events[0]["engine_instance_id"]),
-                "episode_id": int(preflight_events[0]["episode_id"]),
-                "action_mask_contract_id": "tft.action-masks.packed",
-                "action_mask_contract_version": 1,
-                "events": [dict(event) for event in preflight_events],
-                "rejected": True,
-                "decision_advanced": False,
-            }
-            reasons = "; ".join(
-                f"player {event['player_id']}: {event.get('status_detail') or event['status_reason']}"
-                for event in rejected
-            )
-            error = ValueError("Native action preflight rejected the entire batch: " + reasons)
-            error.action_context = action_context
-            raise error
-        result = self._engine.step(native_actions, bool(timer_enabled), bool(timer_expired))
+        try:
+            result = self._engine.step(native_actions, bool(timer_enabled), bool(timer_expired))
+        except ValueError as error:
+            # Native step preflight is atomic. Only attach rejection reports if
+            # the Engine confirms no decision sequence advanced.
+            try:
+                current_sequence = int(self._engine.get_audit_snapshot()["snapshot_sequence"])
+                source_sequence = int(source_snapshot["decision_sequence"])
+                if current_sequence == source_sequence:
+                    preflight_events = self._engine.validate_actions(native_actions)
+                    rejected = [event for event in preflight_events if not event.get("mask_permitted", False)]
+                    if rejected:
+                        error.action_context = {
+                            "contract_id": "tft.engine.action-context",
+                            "contract_version": 1,
+                            "engine_instance_id": str(preflight_events[0]["engine_instance_id"]),
+                            "episode_id": int(preflight_events[0]["episode_id"]),
+                            "action_mask_contract_id": "tft.action-masks.packed",
+                            "action_mask_contract_version": 1,
+                            "events": [dict(event) for event in preflight_events],
+                            "rejected": True,
+                            "decision_advanced": False,
+                        }
+                        error.args = (
+                            "Native action preflight rejected the entire batch: " + "; ".join(
+                                f"player {event['player_id']}: {event.get('status_detail') or event['status_reason']}"
+                                for event in rejected
+                            ),
+                        )
+            except Exception:
+                # Preserve the original native exception if diagnostics fail.
+                pass
+            raise
         return self._consume_step_result(result, source_snapshot)
 
     def adapt_opgg_compositions(self, catalog):
