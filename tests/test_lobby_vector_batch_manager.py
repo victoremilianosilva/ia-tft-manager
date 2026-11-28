@@ -16,7 +16,7 @@ def _without_instance_identifiers(value):
         return {
             key: _without_instance_identifiers(item)
             for key, item in value.items()
-            if key not in {"engine_instance_id", "event_id"}
+            if key not in {"engine_instance_id", "event_id", "candidate_unit_uuids", "affected_unit_uuids"}
         }
     if isinstance(value, list):
         return [_without_instance_identifiers(item) for item in value]
