@@ -93,8 +93,8 @@ def test_native_lobby_adapter_executes_a_step():
 
 def _buy_first_shop_unit(lobby):
     assert lobby._engine.set_player_economy_for_testing(0, 10, 2, 0)
-    masks = lobby.get_packed_action_masks_for_training()
-    legal_slots = np.flatnonzero(masks[0, 9:14])
+    masks = lobby._engine.get_action_masks()[0]
+    legal_slots = np.flatnonzero(masks["shop_mask"])
     assert legal_slots.size
     actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
     actions[0] = [0, int(legal_slots[0]), 0, 0, 0, 0]
@@ -365,8 +365,8 @@ def test_native_action_event_oracle_parity_for_economic_actions(action_type, fam
     try:
         lobby.reset(seed=134 + action_type)
         assert lobby._engine.set_player_economy_for_testing(0, 10, 5, 0)
-        masks = lobby.get_packed_action_masks_for_training()
-        assert bool(masks[0, action_type])
+        masks = lobby._engine.get_action_masks()[0]
+        assert bool(masks["type_mask"][action_type])
         actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
         actions[0] = [action_type, 0, 0, 0, 0, 0]
         before_snapshot = lobby._engine.get_audit_snapshot()
