@@ -5984,7 +5984,8 @@ std::array<ActionOutcomeEvent, kPlayersPerLobby> TFTEngine::validate_actions(
             event.mask_permitted = true;
             event.status_reason = "preflight_accepted";
         } catch (const std::exception& error) {
-            event.status_reason = error.what();
+            event.status_reason = "preflight_rejected";
+            event.status_detail = error.what();
         }
     }
     return events;
