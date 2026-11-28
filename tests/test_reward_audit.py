@@ -19,6 +19,30 @@ def _inputs(*, action=None, combat=None, placement=None, combat_sequence=4,
         }
         for player_id in range(8)
     ]
+    source_sequence = decision_sequence - 1
+    action_events = [
+        {
+            "contract_id": "tft.engine.action-outcome-event",
+            "contract_version": 1,
+            "event_id": f"engine-test/episode/{episode_id}/decision/{source_sequence}/player/{player_id}/action",
+            "engine_instance_id": "engine-test",
+            "episode_id": episode_id,
+            "player_id": player_id,
+            "source_player_decision_sequence": source_sequence,
+            "outcome_player_decision_sequence": decision_sequence,
+            "requested_action": [6, 0, 0, 0, 0, 0],
+            "normalized_action": [6, 0, 0, 0, 0, 0],
+            "effective_action": [6, 0, 0, 0, 0, 0],
+            "mask_permitted": True,
+            "preflight_accepted": True,
+            "handler_applied": True,
+            "decision_advanced": True,
+            "execution_status": "applied",
+            "affected_unit_uuids": [],
+            "status_reason": "applied",
+        }
+        for player_id in range(8)
+    ]
     players = [
         {
             "player_id": player_id,
@@ -26,7 +50,6 @@ def _inputs(*, action=None, combat=None, placement=None, combat_sequence=4,
         }
         for player_id in range(8)
     ]
-    source_sequence = decision_sequence - 1
     source_player_sequences = [source_sequence] * 8
     source_metadata = {
         "engine_instance_id": "engine-test",
@@ -64,6 +87,7 @@ def _inputs(*, action=None, combat=None, placement=None, combat_sequence=4,
         "combat_rewards": combat,
         "placement_rewards": placement,
         "action_traces": traces,
+        "action_outcome_events": action_events,
         "players": players,
         "decision_snapshot": metadata,
         "source_decision_snapshot": source_metadata,
@@ -93,6 +117,8 @@ def test_reward_audit_records_action_trace_and_authoritative_delayed_outcomes():
     assert first["outcome_player_decision_sequence"] == 10
     assert first["action_decision"]["source_snapshot_sequence"] == 9
     assert first["action_decision"]["reward"] == 0.0
+    assert first["action_decision"]["source"] == "native_action_outcome_event"
+    assert first["action_decision"]["event"]["contract_id"] == "tft.engine.action-outcome-event"
     assert first["combat_outcome"]["source"] == "native_pvp_resolution"
     assert first["combat_outcome"]["combat_sequence"] == 4
     assert first["terminal_placement"] is None
@@ -191,3 +217,24 @@ def test_reward_audit_rejects_misaligned_source_decision_snapshot():
 
     with pytest.raises(RuntimeError, match="pré-ação sem identidade nativa"):
         _build(ledger, values)
+
+
+def test_reward_audit_rejects_action_event_with_misaligned_sequence():
+    ledger = RewardAuditLedger()
+    ledger.reset("engine-test", 2)
+    values = _inputs()
+    values["action_outcome_events"][4]["source_player_decision_sequence"] = 99
+
+    with pytest.raises(RuntimeError, match="desalinhado ou incompleto"):
+        _build(ledger, values)
+
+
+def test_reward_audit_deduplicates_native_action_events():
+    ledger = RewardAuditLedger()
+    ledger.reset("engine-test", 2)
+    values = _inputs()
+    _build(ledger, values)
+    repeated = _inputs()
+
+    with pytest.raises(RuntimeError, match="ActionOutcomeEvent repetido"):
+        _build(ledger, repeated)

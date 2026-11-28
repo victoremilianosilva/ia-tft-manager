@@ -620,6 +620,51 @@ struct ActionExecutionTrace {
     std::string status_reason;
 };
 
+// One factual action result emitted by the native handler. This is an audit
+// event, not a reward/label and never influences PPO targets.
+struct ActionOutcomeEvent {
+    std::string contract_id{"tft.engine.action-outcome-event"};
+    std::uint32_t contract_version{1};
+    std::string event_id;
+    std::string engine_instance_id;
+    std::uint64_t episode_id{0};
+    std::int32_t player_id{-1};
+    std::uint64_t source_player_decision_sequence{0};
+    std::uint64_t outcome_player_decision_sequence{0};
+    std::uint64_t event_sequence{0};
+    std::int32_t action_type{-1};
+    std::string action_family;
+    std::array<std::int32_t, kActionComponents> requested_action{};
+    // At this native boundary the adapter has already converted the caller's
+    // action into the canonical six-integer action representation.
+    std::array<std::int32_t, kActionComponents> normalized_action{};
+    std::array<std::int32_t, kActionComponents> effective_action{};
+    bool mask_permitted{false};
+    bool preflight_accepted{false};
+    bool handler_applied{false};
+    bool decision_advanced{false};
+    std::string execution_status;
+    std::string status_reason;
+    std::string status_detail;
+    std::vector<std::string> candidate_unit_uuids;
+    std::vector<std::string> affected_unit_uuids;
+    std::int32_t catalog_champion_id{-1};
+    std::string item_action_kind;
+    std::string item_id;
+    std::string first_component_id;
+    std::string second_component_id;
+    std::int32_t gold_before{0};
+    std::int32_t gold_after{0};
+    std::int32_t gold_delta{0};
+    std::int32_t xp_before{0};
+    std::int32_t xp_after{0};
+    std::int32_t level_before{0};
+    std::int32_t level_after{0};
+    std::int32_t action_cost{0};
+    std::int32_t sale_proceeds{0};
+    bool auto_merge{false};
+};
+
 struct StepResult {
     std::string engine_instance_id;
     // Row-major: (8, observation_dim).
@@ -639,6 +684,7 @@ struct StepResult {
     std::array<PlayerInfo, kPlayersPerLobby> players{};
     // Per-player trace linking caller input to Engine-normalized and applied action.
     std::array<ActionExecutionTrace, kPlayersPerLobby> action_traces{};
+    std::array<ActionOutcomeEvent, kPlayersPerLobby> action_outcome_events{};
 
     bool lobby_done{false};
     std::uint64_t episode_id{0};
@@ -700,6 +746,11 @@ public:
         bool timer_enabled = false,
         bool timer_expired = false
     );
+    // Side-effect-free preflight report. Rejections are factual validation
+    // events and do not advance any player decision sequence.
+    std::array<ActionOutcomeEvent, kPlayersPerLobby> validate_actions(
+        const std::array<PlayerAction, kPlayersPerLobby>& actions
+    );
 
     std::array<PlayerActionMasks, kPlayersPerLobby>
     get_action_masks() const;
@@ -749,13 +800,13 @@ public:
     // Event hooks for the authoritative loot/armory source; these are not policy actions.
     bool grant_item_component(std::int32_t player_id, const std::string& component_id);
     bool grant_completed_item(std::int32_t player_id, const std::string& item_id);
+    bool grant_component_anvil_for_testing(std::int32_t player_id, std::vector<std::string> options);
     bool add_item_component_for_testing(
         std::int32_t player_id, const std::string& component_id
     );
     bool add_completed_item_for_testing(
         std::int32_t player_id, const std::string& item_id
     );
-    bool set_player_alive_for_testing(std::int32_t player_id, bool alive);
     bool set_player_hp_for_testing(std::int32_t player_id, float hp);
     bool set_player_economy_for_testing(
         std::int32_t player_id, std::int32_t gold,
@@ -765,6 +816,7 @@ public:
         std::int32_t player_id, std::int32_t slot,
         const std::string& champion_api_name
     );
+    bool set_player_alive_for_testing(std::int32_t player_id, bool alive);
     bool set_next_shop_roll_for_testing(
         std::int32_t player_id,
         const std::vector<std::string>& champion_api_names

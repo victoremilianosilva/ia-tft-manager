@@ -199,6 +199,11 @@ class FakeNativeLobby:
             "placement_rewards": np.zeros(8, dtype=np.float32),
             "dones": np.zeros(8, dtype=np.bool_),
             "action_masks": make_masks(2),
+            "action_context_contract_id": "tft.engine.action-context",
+            "action_context_contract_version": 1,
+            "action_mask_contract_id": "tft.action-masks.packed",
+            "action_mask_contract_version": 1,
+            "action_mask_layout": "type,shop,bench_source,board_target,board_source,board_move_target,bench_move_source,bench_to_board_target,item_inventory,item_component_first,item_component_pair,item_target",
             "engine_instance_id": f"fake-engine-{id(self)}",
             "episode_id": self.episode_id,
             "decision_sequence": self.decision_sequence,
@@ -218,6 +223,49 @@ class FakeNativeLobby:
                     "effective_action": [6, 0, 0, 0, 0, 0],
                     "handler_applied": True,
                     "status_reason": "applied",
+                }
+                for player_id in range(8)
+            ],
+            "action_outcome_events": [
+                {
+                    "contract_id": "tft.engine.action-outcome-event",
+                    "contract_version": 1,
+                    "event_id": f"fake-engine-{id(self)}/episode/{self.episode_id}/decision/{self.decision_sequence - 1}/player/{player_id}/action",
+                    "engine_instance_id": f"fake-engine-{id(self)}",
+                    "episode_id": self.episode_id,
+                    "player_id": player_id,
+                    "source_player_decision_sequence": self.player_decision_sequences[player_id] - 1,
+                    "outcome_player_decision_sequence": self.player_decision_sequences[player_id],
+                    "event_sequence": player_id,
+                    "action_type": 6,
+                    "action_family": "pass",
+                    "requested_action": [6, 0, 0, 0, 0, 0],
+                    "normalized_action": [6, 0, 0, 0, 0, 0],
+                    "effective_action": [6, 0, 0, 0, 0, 0],
+                    "mask_permitted": True,
+                    "preflight_accepted": True,
+                    "handler_applied": True,
+                    "decision_advanced": True,
+                    "execution_status": "applied",
+                    "status_reason": "applied",
+                    "status_detail": "",
+                    "candidate_unit_uuids": [],
+                    "affected_unit_uuids": [],
+                    "catalog_champion_id": -1,
+                    "item_action_kind": "",
+                    "item_id": "",
+                    "first_component_id": "",
+                    "second_component_id": "",
+                    "gold_before": 0,
+                    "gold_after": 0,
+                    "gold_delta": 0,
+                    "xp_before": 0,
+                    "xp_after": 0,
+                    "level_before": 5,
+                    "level_after": 5,
+                    "action_cost": 0,
+                    "sale_proceeds": 0,
+                    "auto_merge": False,
                 }
                 for player_id in range(8)
             ],
@@ -406,11 +454,11 @@ def test_step_masks_are_taken_from_same_native_snapshot(monkeypatch):
         assert all(not mask["type_mask"][8] for mask in masks)
         assert len(info["action_trace"]) == 8
         assert len(info["action_outcome_events"]) == 8
-        assert info["action_outcome_events"][0]["contract_id"] == "tft.reward-action-outcome.v1"
-        assert info["action_outcome_events"][0]["action"]["family"] == "pass"
-        assert info["action_outcome_events"][0]["source_decision"]["snapshot_sequence"] == 1
-        assert info["action_outcome_events"][0]["outcome_snapshot"]["snapshot_sequence"] == 2
-        assert info["action_outcome_events"][0]["reward"] is None
+        assert info["action_outcome_events"][0]["contract_id"] == "tft.engine.action-outcome-event"
+        assert info["action_outcome_events"][0]["action_family"] == "pass"
+        assert info["action_outcome_events"][0]["source_player_decision_sequence"] == 1
+        assert info["action_outcome_events"][0]["outcome_player_decision_sequence"] == 2
+        assert info["reward_audit"]["player_rewards"][0]["action_decision"]["event"] == info["action_outcome_events"][0]
         assert info["reward_audit"]["contract_id"] == "tft.ppo.reward-audit.v1"
         assert info["reward_audit"]["decision_sequence"] == 2
         assert info["reward_audit"]["player_rewards"][0]["components"] == {
@@ -561,20 +609,6 @@ def test_failed_reset_invalidates_previous_snapshot_and_masks(monkeypatch):
             lobby.get_action_masks()
         with pytest.raises(RuntimeError, match="Execute reset"):
             lobby.get_snapshot_metadata()
-    finally:
-        lobby.close()
-
-
-def test_player_liveness_exposes_latest_wrapper_state(monkeypatch):
-    monkeypatch.setattr(cpp_lobby_env, "_NativeTFTLobby", FakeNativeLobby)
-    lobby = cpp_lobby_env.CppTFTLobbyWrapper(seed=7)
-
-    try:
-        lobby.reset()
-        assert lobby.get_player_liveness() == [True] * 8
-
-        lobby._players[3].alive = False
-        assert lobby.get_player_liveness() == [True, True, True, False, True, True, True, True]
     finally:
         lobby.close()
 
@@ -1101,8 +1135,8 @@ def test_published_step_snapshot_isolated_and_source_survives_later_steps(monkey
             [[6, 0, 0, 0, 0, 0] for _ in range(8)]
         )
         second_event = second_info["action_outcome_events"][0]
-        assert second_event["source_decision"]["snapshot_sequence"] == 2
-        assert second_event["outcome_snapshot"]["snapshot_sequence"] == 3
+        assert second_event["source_player_decision_sequence"] == 2
+        assert second_event["outcome_player_decision_sequence"] == 3
         assert second_info["decision_snapshot"]["decision_sequence"] == 3
         assert second_info["reward_audit"]["decision_sequence"] == 3
     finally:

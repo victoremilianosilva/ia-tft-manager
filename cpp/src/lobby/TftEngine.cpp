@@ -326,6 +326,9 @@ struct TFTEngine::Impl {
         std::int32_t level_after_action{0};
         std::int32_t xp_before_action{0};
         std::int32_t xp_after_action{0};
+        bool auto_merge{false};
+        std::vector<std::string> affected_unit_uuids;
+        std::string status_reason;
     };
 
     struct PlayerEnv {
@@ -1117,8 +1120,20 @@ struct TFTEngine::Impl {
             batch.board_target_mask;
         current.board_source_mask =
             batch.board_source_mask;
+        for (std::size_t source = 0; source < kBoardSlots; ++source) {
+            for (std::size_t target = 0; target < kBoardSlots; ++target) {
+                current.board_move_target_masks[source * kBoardSlots + target] =
+                    batch.board_move_target_masks[source][target];
+            }
+        }
         current.bench_move_source_mask =
             batch.bench_move_source_mask;
+        for (std::size_t source = 0; source < kBenchSlots; ++source) {
+            for (std::size_t target = 0; target < kBoardSlots; ++target) {
+                current.bench_to_board_target_masks[source * kBoardSlots + target] =
+                    batch.bench_to_board_target_masks[source][target];
+            }
+        }
 
         // Item masks are generated from the exact per-player ItemEngine state.
         auto& player = player_envs[player_index];
@@ -1205,6 +1220,20 @@ struct TFTEngine::Impl {
                     source * kBoardSlots + target
                 ] = batch.bench_to_board_target_masks[source][target];
             }
+        }
+
+        // Eliminated players receive the exact transport-safe PASS mask from
+        // the Engine. The Trainer must not infer liveness and synthesize masks.
+        if (!player.info.alive) {
+            current = PlayerActionMasks{};
+            current.type_mask[6] = 1;
+            current.shop_mask[0] = 1;
+            current.bench_source_mask[0] = 1;
+            current.board_target_mask[0] = 1;
+            current.board_source_mask[0] = 1;
+            current.bench_move_source_mask[0] = 1;
+            current.board_move_target_masks[0] = 1;
+            current.bench_to_board_target_masks[0] = 1;
         }
     }
 
@@ -1373,6 +1402,53 @@ struct TFTEngine::Impl {
 
     // Preflight sem efeitos colaterais: valida a ação selecionada contra
     // o estado atual antes que qualquer jogador seja processado.
+    bool action_mask_permitted(std::size_t player_id, const PlayerAction& action) const {
+        if (player_id >= kPlayersPerLobby) return false;
+        const auto& values = action.values;
+        const auto type = values[0];
+        if (type < 0 || static_cast<std::size_t>(type) >= player_envs[player_id].action_masks.type_mask.size())
+            return false;
+        const auto& masks = player_envs[player_id].action_masks;
+        if (!masks.type_mask[static_cast<std::size_t>(type)]) return false;
+        const auto in_range = [](std::int32_t value, std::size_t size) {
+            return value >= 0 && static_cast<std::size_t>(value) < size;
+        };
+        switch (type) {
+            case 0:
+                return in_range(values[1], kShopSlots) && masks.shop_mask[values[1]];
+            case 1:
+            case 2:
+            case 6:
+                return true;
+            case 3:
+                return in_range(values[2], kBenchSlots) && in_range(values[3], kBoardSlots) &&
+                    masks.bench_to_board_target_masks[static_cast<std::size_t>(values[2]) * kBoardSlots +
+                        static_cast<std::size_t>(values[3])];
+            case 4:
+                return in_range(values[4], kBoardSlots) && in_range(values[5], kBoardSlots) &&
+                    masks.board_move_target_masks[static_cast<std::size_t>(values[4]) * kBoardSlots +
+                        static_cast<std::size_t>(values[5])];
+            case 5:
+                return in_range(values[2], kBenchSlots) && masks.bench_source_mask[values[2]];
+            case 7: {
+                if (!in_range(values[1], masks.item_inventory_mask.size())) return false;
+                const auto* pending_anvil = player_envs[player_id].item_engine
+                    ? player_envs[player_id].item_engine->pending_anvil() : nullptr;
+                const auto target = pending_anvil ? 0 : values[2];
+                return masks.item_inventory_mask[values[1]] && in_range(target, masks.item_target_mask.size()) &&
+                    masks.item_target_mask[target];
+            }
+            case 8:
+                return in_range(values[1], masks.item_component_first_mask.size()) &&
+                    in_range(values[2], masks.item_component_first_mask.size()) &&
+                    in_range(values[3], masks.item_target_mask.size()) &&
+                    masks.item_component_pair_masks[static_cast<std::size_t>(values[1]) * masks.item_component_first_mask.size() +
+                        static_cast<std::size_t>(values[2])] && masks.item_target_mask[values[3]];
+            default:
+                return false;
+        }
+    }
+
     void validate_action_against_masks(
         std::size_t player_index,
         const PlayerAction& action
@@ -4957,6 +5033,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         double reroll_new_best_fit = 0.0;
         bool bought_unit_successfully = false;
         bool bought_upgrade = false;
+        std::vector<std::string> affected_unit_uuids;
         bool purchase_was_recently_reversed = false;
         bool sale_has_legitimate_context = false;
         bool sale_bench_was_full = false;
@@ -5073,7 +5150,9 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
 
         if (!this->info.alive) {
             lobby.refresh_masks(player_id);
-            return PlayerTransition{0.0f, false};
+            PlayerTransition transition{};
+            transition.status_reason = "player_eliminated";
+            return transition;
         }
 
         if (type == 0) {
@@ -5113,6 +5192,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                         // Auto-upgrade 3x1★ -> 2★ e 3x2★ -> 3★.
                         // O pool não muda: as cópias continuam pertencendo ao jogador.
                         auto& bought_unit = this->bench[free_slot];
+                        if (bought_unit) affected_unit_uuids.push_back(bought_unit->uuid);
                         while (bought_unit && bought_unit->star < 3) {
                             const auto champion_id = bought_unit->champion_internal_id;
                             const auto star = bought_unit->star;
@@ -5136,6 +5216,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                             for (const auto& [on_board, slot] : matches) {
                                 if (!on_board && slot == free_slot) continue;
                                 auto& consumed = on_board ? this->board[slot] : this->bench[slot];
+                                if (consumed) affected_unit_uuids.push_back(consumed->uuid);
                                 if (consumed && this->item_engine) {
                                     (void)this->item_engine->transfer_equipped_on_merge(
                                         consumed->uuid, bought_unit->uuid);
@@ -5276,6 +5357,8 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     } else {
                         const std::string moved_uuid = this->bench[source_index]
                             ? this->bench[source_index]->uuid : std::string{};
+                        if (!moved_uuid.empty()) affected_unit_uuids.push_back(moved_uuid);
+                        if (this->board[target_index]) affected_unit_uuids.push_back(this->board[target_index]->uuid);
                         for (auto& purchase : this->recent_purchases) {
                             if (!moved_uuid.empty() && purchase.uuid == moved_uuid)
                                 purchase.was_deployed = true;
@@ -5372,6 +5455,8 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                         unit_identity
                     );
 
+                    if (this->board[source_index]) affected_unit_uuids.push_back(this->board[source_index]->uuid);
+                    if (this->board[target_index]) affected_unit_uuids.push_back(this->board[target_index]->uuid);
                     if (move_type == "board_swap") {
                         std::swap(
                             this->board[source_index],
@@ -5444,6 +5529,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 }
                 const auto result = this->item_engine->apply_action(command, profiles);
                 if (!result.success) throw std::invalid_argument("Acao de item rejeitada: " + result.reason);
+                affected_unit_uuids.push_back(target_unit->uuid);
 
                 // Score the actual catalog item and selected unit after the action
                 // succeeds. Combat remains the source of truth for the long-term value.
@@ -5665,6 +5751,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                         }
                     }
                     if (returned_all_copies) {
+                        affected_unit_uuids.push_back(sold_uuid);
                         // Equipment belongs to the player, not to the unit.
                         // Return it to the bag before removing the unit so it
                         // can be equipped on another unit without loss/duplication.
@@ -5737,6 +5824,18 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             ? 0 : std::max<std::int32_t>(0, old_gold - economy.gold);
         const auto actual_sale_proceeds = type == 5
             ? std::max<std::int32_t>(0, economy.gold - old_gold) : 0;
+        std::string status_reason = "applied";
+        if (!success) {
+            if (board_capacity_violation) status_reason = "board_capacity_limit";
+            else if (anti_loop_blocked) status_reason = "anti_loop_blocked";
+            else if (type == 0) status_reason = "purchase_not_completed";
+            else if (type == 1) status_reason = "reroll_not_applied";
+            else if (type == 2) status_reason = "xp_purchase_not_applied";
+            else if (type == 3) status_reason = "deployment_not_applied";
+            else if (type == 4) status_reason = "positioning_not_applied";
+            else if (type == 5) status_reason = "sale_not_completed";
+            else status_reason = "handler_no_effect";
+        }
         return PlayerTransition{
             static_cast<float>(action_reward),
             true,
@@ -5751,7 +5850,10 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             old_level,
             economy.level,
             old_xp,
-            economy.xp
+            economy.xp,
+            bought_upgrade,
+            std::move(affected_unit_uuids),
+            std::move(status_reason)
         };
 }
 
@@ -5888,6 +5990,70 @@ ResetResult TFTEngine::reset(
 // STEP
 // ============================================================
 
+std::array<ActionOutcomeEvent, kPlayersPerLobby> TFTEngine::validate_actions(
+    const std::array<PlayerAction, kPlayersPerLobby>& actions
+) {
+    if (!impl_) throw std::runtime_error("TFTEngine nao possui estado interno.");
+    impl_->ensure_open();
+
+    auto effective_actions = actions;
+    for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+        const auto* pending_anvil = impl_->player_envs[i].item_engine
+            ? impl_->player_envs[i].item_engine->pending_anvil() : nullptr;
+        if (impl_->round_finished[i] && pending_anvil == nullptr)
+            effective_actions[i].values = {6, 0, 0, 0, 0, 0};
+    }
+
+    std::array<ActionOutcomeEvent, kPlayersPerLobby> events{};
+    for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+        auto& event = events[i];
+        event.engine_instance_id = impl_->engine_instance_id;
+        event.episode_id = impl_->episode_id;
+        event.player_id = static_cast<std::int32_t>(i);
+        event.source_player_decision_sequence = impl_->player_decision_sequences[i];
+        event.outcome_player_decision_sequence = impl_->player_decision_sequences[i];
+        event.event_sequence = static_cast<std::uint64_t>(i);
+        event.event_id = impl_->engine_instance_id + "/episode/" +
+            std::to_string(impl_->episode_id) + "/decision/" +
+            std::to_string(impl_->player_decision_sequences[i]) + "/player/" +
+            std::to_string(i) + "/preflight";
+        event.requested_action = actions[i].values;
+        event.normalized_action = actions[i].values;
+        event.effective_action = effective_actions[i].values;
+        event.action_type = effective_actions[i].values[0];
+        switch (event.action_type) {
+            case 0: event.action_family = "purchase"; break;
+            case 1: event.action_family = "reroll"; break;
+            case 2: event.action_family = "xp_purchase"; break;
+            case 3: event.action_family = "deploy"; break;
+            case 4: event.action_family = "positioning"; break;
+            case 5: event.action_family = "sale"; break;
+            case 6: event.action_family = "pass"; break;
+            case 7:
+            case 8: event.action_family = "item_action"; break;
+            default: event.action_family = "unknown"; break;
+        }
+        event.mask_permitted = false;
+        event.preflight_accepted = false;
+        event.handler_applied = false;
+        event.decision_advanced = false;
+        try {
+            if (impl_->done) throw std::invalid_argument("lobby_finished");
+            impl_->validate_action(effective_actions[i]);
+            event.mask_permitted = impl_->action_mask_permitted(i, effective_actions[i]);
+            impl_->validate_action_against_masks(i, effective_actions[i]);
+            event.preflight_accepted = true;
+            event.status_reason = "preflight_accepted";
+        } catch (const std::exception& error) {
+            event.status_reason = "preflight_rejected";
+            event.status_detail = error.what();
+        }
+        event.execution_status = event.preflight_accepted ? "not_executed" : "rejected";
+    }
+    return events;
+}
+
+
 StepResult TFTEngine::step(
     const std::array<PlayerAction, kPlayersPerLobby>& actions,
     bool timer_enabled,
@@ -5953,6 +6119,7 @@ StepResult TFTEngine::step(
     std::array<std::int32_t, kPlayersPerLobby> xp_before_actions{};
     std::array<std::int32_t, kPlayersPerLobby> xp_after_actions{};
     std::array<ActionExecutionTrace, kPlayersPerLobby> action_traces{};
+    std::array<ActionOutcomeEvent, kPlayersPerLobby> action_outcomes{};
     std::vector<std::string> item_action_events;
     for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
         auto& trace = action_traces[i];
@@ -5964,13 +6131,118 @@ StepResult TFTEngine::step(
             std::numeric_limits<std::uint64_t>::max()) {
             throw std::overflow_error("Sequencia temporal do jogador esgotada.");
         }
-        const auto transition = impl_->player_envs[i].step(*impl_, i, effective_actions[i]);
+        auto& player_env = impl_->player_envs[i];
+        const auto& effective = effective_actions[i].values;
+        ActionOutcomeEvent outcome;
+        outcome.engine_instance_id = impl_->engine_instance_id;
+        outcome.episode_id = impl_->episode_id;
+        outcome.event_id = impl_->engine_instance_id + "/episode/" +
+            std::to_string(impl_->episode_id) + "/decision/" +
+            std::to_string(impl_->player_decision_sequences[i]) + "/player/" +
+            std::to_string(i) + "/action";
+        outcome.player_id = static_cast<std::int32_t>(i);
+        outcome.source_player_decision_sequence = impl_->player_decision_sequences[i];
+        outcome.outcome_player_decision_sequence = impl_->player_decision_sequences[i] + 1;
+        outcome.event_sequence = static_cast<std::uint64_t>(i);
+        outcome.action_type = effective[0];
+        outcome.requested_action = actions[i].values;
+        outcome.normalized_action = actions[i].values;
+        outcome.effective_action = effective;
+        outcome.mask_permitted = impl_->action_mask_permitted(i, effective_actions[i]);
+        outcome.preflight_accepted = true; // both native preflight passes completed for the entire batch
+        outcome.decision_advanced = true;
+        switch (effective[0]) {
+            case 0: {
+                outcome.action_family = "purchase";
+                if (player_env.shop) {
+                    const auto* offer = player_env.shop->get_unit(effective[1]);
+                    if (offer) {
+                        outcome.catalog_champion_id = offer->champion_internal_id;
+                        outcome.candidate_unit_uuids.push_back(offer->uuid);
+                    }
+                }
+                break;
+            }
+            case 1:
+                outcome.action_family = "reroll";
+                if (player_env.shop) {
+                    for (std::size_t slot = 0; slot < kShopSlots; ++slot) {
+                        const auto* offer = player_env.shop->get_unit(static_cast<std::int32_t>(slot));
+                        if (offer) outcome.candidate_unit_uuids.push_back(offer->uuid);
+                    }
+                }
+                break;
+            case 2: outcome.action_family = "xp_purchase"; break;
+            case 3:
+                outcome.action_family = "deploy";
+                if (effective[2] >= 0 && static_cast<std::size_t>(effective[2]) < player_env.bench.size() && player_env.bench[effective[2]])
+                    outcome.candidate_unit_uuids.push_back(player_env.bench[effective[2]]->uuid);
+                if (effective[3] >= 0 && static_cast<std::size_t>(effective[3]) < player_env.board.size() && player_env.board[effective[3]])
+                    outcome.candidate_unit_uuids.push_back(player_env.board[effective[3]]->uuid);
+                break;
+            case 4:
+                outcome.action_family = "positioning";
+                if (effective[4] >= 0 && static_cast<std::size_t>(effective[4]) < player_env.board.size() && player_env.board[effective[4]])
+                    outcome.candidate_unit_uuids.push_back(player_env.board[effective[4]]->uuid);
+                if (effective[5] >= 0 && static_cast<std::size_t>(effective[5]) < player_env.board.size() && player_env.board[effective[5]])
+                    outcome.candidate_unit_uuids.push_back(player_env.board[effective[5]]->uuid);
+                break;
+            case 5:
+                outcome.action_family = "sale";
+                if (effective[2] >= 0 && static_cast<std::size_t>(effective[2]) < player_env.bench.size() && player_env.bench[effective[2]])
+                    outcome.candidate_unit_uuids.push_back(player_env.bench[effective[2]]->uuid);
+                break;
+            case 6: outcome.action_family = "pass"; break;
+            case 7:
+            case 8: {
+                outcome.action_family = "item_action";
+                const bool pending_anvil = effective[0] == 7 && player_env.item_engine && player_env.item_engine->has_pending_anvil();
+                const auto target = effective[0] == 7 ? effective[2] : effective[3];
+                if (!pending_anvil && target >= 0) {
+                    if (static_cast<std::size_t>(target) < player_env.board.size() && player_env.board[target])
+                        outcome.candidate_unit_uuids.push_back(player_env.board[target]->uuid);
+                    else {
+                        const auto bench_slot = static_cast<std::size_t>(target) - kBoardSlots;
+                        if (bench_slot < player_env.bench.size() && player_env.bench[bench_slot])
+                            outcome.candidate_unit_uuids.push_back(player_env.bench[bench_slot]->uuid);
+                    }
+                }
+                break;
+            }
+            default: outcome.action_family = "unknown"; break;
+        }
+        const auto transition = player_env.step(*impl_, i, effective_actions[i]);
         trace.handler_applied = transition.action_succeeded;
         trace.status_reason = !transition.acted
-            ? "not_processed"
+            ? (transition.status_reason.empty() ? "not_processed" : transition.status_reason)
             : (was_overridden
                 ? (transition.action_succeeded ? "overridden_and_applied" : "overridden_not_applied")
-                : (transition.action_succeeded ? "applied" : "not_applied_by_action_handler"));
+                : (transition.status_reason.empty()
+                    ? (transition.action_succeeded ? "applied" : "not_applied_by_action_handler")
+                    : transition.status_reason));
+        outcome.handler_applied = transition.action_succeeded;
+        outcome.status_reason = trace.status_reason;
+        outcome.gold_before = transition.gold_before_action;
+        outcome.gold_after = transition.gold_after_action;
+        outcome.gold_delta = transition.gold_after_action - transition.gold_before_action;
+        outcome.xp_before = transition.xp_before_action;
+        outcome.xp_after = transition.xp_after_action;
+        outcome.level_before = transition.level_before_action;
+        outcome.level_after = transition.level_after_action;
+        outcome.action_cost = transition.action_cost;
+        outcome.sale_proceeds = transition.sale_proceeds;
+        outcome.auto_merge = transition.auto_merge;
+        outcome.affected_unit_uuids = transition.affected_unit_uuids;
+        outcome.execution_status = transition.action_succeeded
+            ? "applied"
+            : (!transition.affected_unit_uuids.empty()
+                ? "partial"
+                : (trace.status_reason == "player_eliminated" ? "not_processed" : "no_effect"));
+        outcome.item_action_kind = player_env.last_item_action.kind;
+        outcome.item_id = player_env.last_item_action.item_id;
+        outcome.first_component_id = player_env.last_item_action.first_component;
+        outcome.second_component_id = player_env.last_item_action.second_component;
+        action_outcomes[i] = std::move(outcome);
         if (!transition.acted) {
             continue;
         }
@@ -6197,6 +6469,7 @@ StepResult TFTEngine::step(
     for (std::size_t i = 0; i < kPlayersPerLobby; ++i) result.action_masks[i] = impl_->player_envs[i].action_masks;
     for (std::size_t i = 0; i < kPlayersPerLobby; ++i) result.players[i] = impl_->player_envs[i].info;
     result.action_traces = action_traces;
+    result.action_outcome_events = action_outcomes;
 
     result.lobby_done = impl_->done;
     result.engine_instance_id = impl_->engine_instance_id;
@@ -6958,6 +7231,25 @@ CombatTeam TFTEngine::get_combat_team_for_testing(
     return output;
 }
 
+bool TFTEngine::set_shop_offer_for_testing(
+    std::int32_t player_id, std::int32_t slot,
+    const std::string& champion_api_name
+) {
+    if (!impl_) throw std::runtime_error("TFTEngine nao possui estado interno.");
+    impl_->ensure_open();
+    if (player_id < 0 || static_cast<std::size_t>(player_id) >= kPlayersPerLobby ||
+        slot < 0 || static_cast<std::size_t>(slot) >= kShopSlots)
+        return false;
+    const auto* definition = impl_->catalog->find_by_api_name(champion_api_name);
+    if (!definition) return false;
+    auto& player = impl_->player_envs[static_cast<std::size_t>(player_id)];
+    if (!player.shop) return false;
+    auto unit = impl_->unit_factory->create(definition->internal_id);
+    if (!player.shop->set_offer_for_testing(slot, std::move(unit))) return false;
+    impl_->refresh_masks(static_cast<std::size_t>(player_id));
+    return true;
+}
+
 bool TFTEngine::set_unit_items_for_testing(
     std::int32_t player_id,
     bool on_board,
@@ -7014,6 +7306,20 @@ bool TFTEngine::grant_item_component(
     return true;
 }
 
+bool TFTEngine::grant_component_anvil_for_testing(
+    std::int32_t player_id, std::vector<std::string> options
+) {
+    if (!impl_) throw std::runtime_error("TFTEngine nao possui estado interno.");
+    impl_->ensure_open();
+    if (player_id < 0 || static_cast<std::size_t>(player_id) >= kPlayersPerLobby)
+        return false;
+    auto& player = impl_->player_envs[static_cast<std::size_t>(player_id)];
+    if (!player.item_engine || !player.item_engine->grant_component_anvil(std::move(options)))
+        return false;
+    impl_->refresh_masks(static_cast<std::size_t>(player_id));
+    return true;
+}
+
 bool TFTEngine::grant_completed_item(
     std::int32_t player_id, const std::string& item_id
 ) {
@@ -7053,24 +7359,6 @@ bool TFTEngine::set_player_economy_for_testing(
     player.economy.gold = gold;
     player.economy.level = level;
     player.economy.xp = xp;
-    impl_->refresh_masks(static_cast<std::size_t>(player_id));
-    return true;
-}
-
-bool TFTEngine::set_shop_offer_for_testing(
-    std::int32_t player_id, std::int32_t slot,
-    const std::string& champion_api_name
-) {
-    if (!impl_) throw std::runtime_error("TFTEngine nao possui estado interno.");
-    impl_->ensure_open();
-    if (player_id < 0 || static_cast<std::size_t>(player_id) >= kPlayersPerLobby ||
-        slot < 0 || static_cast<std::size_t>(slot) >= kShopSlots)
-        return false;
-    const auto* definition = impl_->catalog->find_by_api_name(champion_api_name);
-    if (!definition) return false;
-    auto& player = impl_->player_envs[static_cast<std::size_t>(player_id)];
-    auto unit = impl_->unit_factory->create(definition->internal_id);
-    if (!player.shop->set_offer_for_testing(slot, std::move(unit))) return false;
     impl_->refresh_masks(static_cast<std::size_t>(player_id));
     return true;
 }

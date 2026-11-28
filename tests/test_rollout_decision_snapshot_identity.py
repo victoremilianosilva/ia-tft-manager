@@ -66,6 +66,29 @@ class FakeIdentityEnv:
                     }
                     for player_id in range(8)
                 ],
+                "action_outcome_events": [
+                    {
+                        "contract_id": "tft.engine.action-outcome-event",
+                        "contract_version": 1,
+                        "event_id": f"engine-A/episode/{self.episode_id}/decision/{self.player_decision_sequences[player_id] - 1}/player/{player_id}/action",
+                        "engine_instance_id": "engine-A",
+                        "episode_id": self.episode_id,
+                        "player_id": player_id,
+                        "source_player_decision_sequence": self.player_decision_sequences[player_id] - 1,
+                        "outcome_player_decision_sequence": self.player_decision_sequences[player_id],
+                        "requested_action": [6, 0, 0, 0, 0, 0],
+                        "normalized_action": [6, 0, 0, 0, 0, 0],
+                        "effective_action": [6, 0, 0, 0, 0, 0],
+                        "mask_permitted": True,
+                        "preflight_accepted": True,
+                        "handler_applied": True,
+                        "decision_advanced": True,
+                        "execution_status": "applied",
+                        "affected_unit_uuids": [],
+                        "status_reason": "applied",
+                    }
+                    for player_id in range(8)
+                ],
             },
         )
 
@@ -143,6 +166,26 @@ def test_rollout_buffer_preserves_per_agent_snapshot_identity():
                 "requested_action": [6, 0, 0, 0, 0, 0],
                 "effective_action": [6, 0, 0, 0, 0, 0],
                 "handler_applied": True,
+                "status_reason": "applied",
+            },
+            "action_outcome_event": {
+                "contract_id": "tft.engine.action-outcome-event",
+                "contract_version": 1,
+                "event_id": f"engine-A/episode/{item['episode_id']}/decision/12/player/{item['player_id']}/action",
+                "engine_instance_id": item["engine_instance_id"],
+                "episode_id": item["episode_id"],
+                "player_id": item["player_id"],
+                "source_player_decision_sequence": 12,
+                "outcome_player_decision_sequence": 13,
+                "requested_action": [6, 0, 0, 0, 0, 0],
+                "normalized_action": [6, 0, 0, 0, 0, 0],
+                "effective_action": [6, 0, 0, 0, 0, 0],
+                "mask_permitted": True,
+                "preflight_accepted": True,
+                "handler_applied": True,
+                "decision_advanced": True,
+                "execution_status": "applied",
+                "affected_unit_uuids": [],
                 "status_reason": "applied",
             },
         }
@@ -233,6 +276,19 @@ def test_rollout_buffer_preserves_terminal_result_and_new_episode_identity():
             "effective_action": [0, 0, 0, 0, 0, 0],
             "handler_applied": False, "status_reason": "rejected",
         },
+        "action_outcome_event": {
+            "contract_id": "tft.engine.action-outcome-event",
+            "contract_version": 1,
+            "event_id": "engine-A/episode/4/decision/21/player/0/action",
+            "engine_instance_id": "engine-A", "episode_id": 4, "player_id": 0,
+            "source_player_decision_sequence": 21, "outcome_player_decision_sequence": 22,
+            "requested_action": [0, 0, 0, 0, 0, 0],
+            "normalized_action": [0, 0, 0, 0, 0, 0],
+            "effective_action": [0, 0, 0, 0, 0, 0],
+            "mask_permitted": True, "preflight_accepted": True, "handler_applied": False,
+            "decision_advanced": True, "execution_status": "no_effect",
+            "affected_unit_uuids": [], "status_reason": "rejected",
+        },
     }
     next_state = {
         "engine_instance_id": "engine-A", "episode_id": 5,
@@ -321,7 +377,7 @@ def test_rollout_rejects_action_trace_that_differs_from_ppo_action():
             "status_reason": "applied",
         },
     }
-    next_state = {key: value for key, value in result.items() if key != "action_trace"}
+    next_state = {key: value for key, value in result.items() if key not in ("action_trace", "action_outcome_event")}
 
     with pytest.raises(ValueError, match="Ação PPO diverge"):
         buffer.add(
@@ -384,6 +440,22 @@ def _add_rollout_with_action_trace_for_validation(action_trace):
         "engine_instance_id": "engine-A", "episode_id": 4,
         "decision_sequence": 22, "player_decision_sequence": 22, "player_id": 0, "lobby_index": 0,
         "action_trace": {"player_id": 0, **action_trace},
+        "action_outcome_event": {
+            "contract_id": "tft.engine.action-outcome-event",
+            "contract_version": 1,
+            "event_id": "engine-A/episode/4/decision/21/player/0/action",
+            "engine_instance_id": "engine-A", "episode_id": 4, "player_id": 0,
+            "source_player_decision_sequence": 21,
+            "outcome_player_decision_sequence": 22,
+            "requested_action": action_trace.get("requested_action"),
+            "normalized_action": action_trace.get("requested_action"),
+            "effective_action": action_trace.get("effective_action"),
+            "mask_permitted": True, "preflight_accepted": True, "handler_applied": action_trace.get("handler_applied"),
+            "decision_advanced": True,
+            "execution_status": "applied",
+            "affected_unit_uuids": [],
+            "status_reason": action_trace.get("status_reason"),
+        },
     }
     next_state = {key: value for key, value in result.items() if key != "action_trace"}
     buffer.add(
@@ -574,10 +646,33 @@ def _valid_native_action_trace_rows():
                 "status_reason": "pass",
             }
             for player_id in range(8)
-        ]
+        ],
+        "action_outcome_events": [
+            {
+                "contract_id": "tft.engine.action-outcome-event",
+                "contract_version": 1,
+                "event_id": f"engine-A/episode/4/decision/21/player/{player_id}/action",
+                "engine_instance_id": "engine-A",
+                "episode_id": 4,
+                "player_id": player_id,
+                "outcome_player_decision_sequence": 22,
+                "mask_permitted": True,
+                "preflight_accepted": True,
+                "handler_applied": True,
+                "decision_advanced": True,
+                "execution_status": "applied",
+                "affected_unit_uuids": [],
+                "status_reason": "applied",
+            }
+            for player_id in range(8)
+        ],
     }]
     result_metadata = [
-        {"lobby_index": 0, "player_id": player_id}
+        {
+            "lobby_index": 0, "player_id": player_id,
+            "engine_instance_id": "engine-A", "episode_id": 4,
+            "player_decision_sequence": 22,
+        }
         for player_id in range(8)
     ]
     return result_metadata, infos
@@ -683,6 +778,19 @@ def test_rollout_metadata_isolated_on_store_and_shared_read_only_in_batches():
         "engine_instance_id": "engine-A", "episode_id": 4,
         "decision_sequence": 22, "player_decision_sequence": 22, "player_id": 0, "lobby_index": 0,
         "action_trace": trace,
+        "action_outcome_event": {
+            "contract_id": "tft.engine.action-outcome-event",
+            "contract_version": 1,
+            "event_id": "engine-A/episode/4/decision/21/player/0/action",
+            "engine_instance_id": "engine-A", "episode_id": 4, "player_id": 0,
+            "source_player_decision_sequence": 21, "outcome_player_decision_sequence": 22,
+            "requested_action": [6, 0, 0, 0, 0, 0],
+            "normalized_action": [6, 0, 0, 0, 0, 0],
+            "effective_action": [6, 0, 0, 0, 0, 0],
+            "mask_permitted": True, "preflight_accepted": True, "handler_applied": True,
+            "decision_advanced": True, "execution_status": "applied",
+            "affected_unit_uuids": [], "status_reason": "applied",
+        },
     }
     next_state = dict(result)
 
@@ -899,10 +1007,7 @@ def test_trainer_flattens_packed_action_masks_to_contract_tensors():
     packed[:, 0] = True
     packed[:, 9] = True
 
-    packed_flattened = trainer._flatten_masks(
-        [packed],
-        lobby_player_alive=[[True] * 8],
-    )
+    packed_flattened = trainer._flatten_masks([packed])
 
     legacy_players = [dict() for _ in range(8)]
     offset = 0
@@ -914,10 +1019,7 @@ def test_trainer_flattens_packed_action_masks_to_contract_tensors():
             ].reshape(shape).copy()
         offset += width
 
-    legacy_flattened = trainer._flatten_masks(
-        [legacy_players],
-        lobby_player_alive=[[True] * 8],
-    )
+    legacy_flattened = trainer._flatten_masks([legacy_players])
 
     assert offset == 1280
     assert set(packed_flattened) == set(Trainer.MASK_SHAPES)

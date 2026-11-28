@@ -1005,6 +1005,11 @@ py::dict reset_to_dict(tft::ResetResult reset, bool include_numeric_transport = 
 
 py::dict step_to_dict(tft::StepResult step, bool include_numeric_transport = true) {
     py::dict result;
+    result["action_context_contract_id"] = "tft.engine.action-context";
+    result["action_context_contract_version"] = 1;
+    result["action_mask_contract_id"] = "tft.action-masks.packed";
+    result["action_mask_contract_version"] = 1;
+    result["action_mask_layout"] = "type,shop,bench_source,board_target,board_source,board_move_target,bench_move_source,bench_to_board_target,item_inventory,item_component_first,item_component_pair,item_target";
 
     if (include_numeric_transport) {
         result["observations"] = observations_to_array(step.observations, step.observation_dim);
@@ -1056,6 +1061,50 @@ py::dict step_to_dict(tft::StepResult step, bool include_numeric_transport = tru
         action_traces.append(std::move(item));
     }
     result["action_traces"] = std::move(action_traces);
+    py::list action_outcome_events;
+    for (const auto& event : step.action_outcome_events) {
+        py::dict item;
+        item["contract_id"] = event.contract_id;
+        item["contract_version"] = event.contract_version;
+        item["event_id"] = event.event_id;
+        item["engine_instance_id"] = event.engine_instance_id;
+        item["episode_id"] = event.episode_id;
+        item["player_id"] = event.player_id;
+        item["source_player_decision_sequence"] = event.source_player_decision_sequence;
+        item["outcome_player_decision_sequence"] = event.outcome_player_decision_sequence;
+        item["event_sequence"] = event.event_sequence;
+        item["action_type"] = event.action_type;
+        item["action_family"] = event.action_family;
+        item["requested_action"] = event.requested_action;
+        item["normalized_action"] = event.normalized_action;
+        item["effective_action"] = event.effective_action;
+        item["mask_permitted"] = event.mask_permitted;
+        item["preflight_accepted"] = event.preflight_accepted;
+        item["handler_applied"] = event.handler_applied;
+        item["decision_advanced"] = event.decision_advanced;
+        item["execution_status"] = event.execution_status;
+        item["status_reason"] = event.status_reason;
+        item["status_detail"] = event.status_detail;
+        item["candidate_unit_uuids"] = event.candidate_unit_uuids;
+        item["affected_unit_uuids"] = event.affected_unit_uuids;
+        item["catalog_champion_id"] = event.catalog_champion_id;
+        item["item_action_kind"] = event.item_action_kind;
+        item["item_id"] = event.item_id;
+        item["first_component_id"] = event.first_component_id;
+        item["second_component_id"] = event.second_component_id;
+        item["gold_before"] = event.gold_before;
+        item["gold_after"] = event.gold_after;
+        item["gold_delta"] = event.gold_delta;
+        item["xp_before"] = event.xp_before;
+        item["xp_after"] = event.xp_after;
+        item["level_before"] = event.level_before;
+        item["level_after"] = event.level_after;
+        item["action_cost"] = event.action_cost;
+        item["sale_proceeds"] = event.sale_proceeds;
+        item["auto_merge"] = event.auto_merge;
+        action_outcome_events.append(std::move(item));
+    }
+    result["action_outcome_events"] = std::move(action_outcome_events);
     result["events"] = step.events;
 
     return result;
@@ -1312,7 +1361,30 @@ public:
             result["placement_rewards"] = std::move(placement_rewards_view);
             result["dones"] = std::move(dones_view);
         }
+        py::dict action_context;
+        action_context["contract_id"] = "tft.engine.action-context";
+        action_context["contract_version"] = 1;
+        action_context["engine_instance_id"] = result["engine_instance_id"];
+        action_context["episode_id"] = result["episode_id"];
+        action_context["decision_sequence"] = result["decision_sequence"];
+        action_context["player_decision_sequences"] = result["player_decision_sequences"];
+        action_context["action_mask_contract_id"] = "tft.action-masks.packed";
+        action_context["action_mask_contract_version"] = 1;
+        action_context["action_mask_layout"] = "type,shop,bench_source,board_target,board_source,board_move_target,bench_move_source,bench_to_board_target,item_inventory,item_component_first,item_component_pair,item_target";
+        action_context["action_masks"] = result["action_masks"];
+        action_context["native_state_snapshot"] = result["native_state_snapshot"];
+        if (kind_ == "step") {
+            action_context["action_traces"] = result["action_traces"];
+            action_context["action_outcome_events"] = result["action_outcome_events"];
+            action_context["native_decision_context"] = native_context(index);
+        }
+        result["action_context"] = std::move(action_context);
         return result;
+    }
+
+    py::dict action_context(std::size_t index) {
+        const auto row = lobby_result(index);
+        return py::cast<py::dict>(row["action_context"]);
     }
 
 private:
@@ -1643,6 +1715,49 @@ PYBIND11_MODULE(tft_engine, module) {
             py::arg("timer_enabled") = false,
             py::arg("timer_expired") = false
         )
+        .def(
+            "validate_actions",
+            [](TFTEngine& self, const std::vector<std::vector<std::int32_t>>& raw_actions) {
+                if (raw_actions.size() != tft::kPlayersPerLobby)
+                    throw py::value_error("actions deve conter 8 jogadores.");
+                std::array<tft::PlayerAction, tft::kPlayersPerLobby> actions{};
+                for (std::size_t player = 0; player < tft::kPlayersPerLobby; ++player) {
+                    if (raw_actions[player].size() != tft::kActionComponents)
+                        throw py::value_error("Cada acao deve conter 6 componentes.");
+                    for (std::size_t component = 0; component < tft::kActionComponents; ++component)
+                        actions[player].values[component] = raw_actions[player][component];
+                }
+                const auto events = self.validate_actions(actions);
+                py::list result;
+                for (const auto& event : events) {
+                    py::dict item;
+                    item["contract_id"] = event.contract_id;
+                    item["contract_version"] = event.contract_version;
+                    item["event_id"] = event.event_id;
+                    item["engine_instance_id"] = event.engine_instance_id;
+                    item["episode_id"] = event.episode_id;
+                    item["player_id"] = event.player_id;
+                    item["source_player_decision_sequence"] = event.source_player_decision_sequence;
+                    item["outcome_player_decision_sequence"] = event.outcome_player_decision_sequence;
+                    item["event_sequence"] = event.event_sequence;
+                    item["action_type"] = event.action_type;
+                    item["action_family"] = event.action_family;
+                    item["requested_action"] = event.requested_action;
+                    item["normalized_action"] = event.normalized_action;
+                    item["effective_action"] = event.effective_action;
+                    item["mask_permitted"] = event.mask_permitted;
+        item["preflight_accepted"] = event.preflight_accepted;
+                    item["handler_applied"] = event.handler_applied;
+                    item["decision_advanced"] = event.decision_advanced;
+        item["execution_status"] = event.execution_status;
+                    item["status_reason"] = event.status_reason;
+        item["status_detail"] = event.status_detail;
+                    result.append(std::move(item));
+                }
+                return result;
+            },
+            py::arg("actions")
+        )
         .def_property_readonly(
             "engine_instance_id",
             &TFTEngine::engine_instance_id
@@ -1702,6 +1817,8 @@ PYBIND11_MODULE(tft_engine, module) {
              py::arg("player_id"), py::arg("component_id"))
         .def("grant_completed_item", &TFTEngine::grant_completed_item,
              py::arg("player_id"), py::arg("item_id"))
+        .def("grant_component_anvil_for_testing", &TFTEngine::grant_component_anvil_for_testing,
+             py::arg("player_id"), py::arg("options"))
         .def("add_item_component_for_testing", &TFTEngine::add_item_component_for_testing,
              py::arg("player_id"), py::arg("component_id"))
         .def("add_completed_item_for_testing", &TFTEngine::add_completed_item_for_testing,
@@ -1916,6 +2033,11 @@ PYBIND11_MODULE(tft_engine, module) {
         .def_property_readonly("players_per_lobby", [](const NativeDecisionBatch&) { return NativeDecisionBatch::kPlayers; })
         .def_property_readonly("observation_dim", &NativeDecisionBatch::observation_dim)
         .def_property_readonly("action_mask_width", &NativeDecisionBatch::mask_width)
+        .def_property_readonly("action_context_contract_id", [](const NativeDecisionBatch&) { return "tft.engine.action-context"; })
+        .def_property_readonly("action_context_contract_version", [](const NativeDecisionBatch&) { return 1; })
+        .def_property_readonly("action_mask_contract_id", [](const NativeDecisionBatch&) { return "tft.action-masks.packed"; })
+        .def_property_readonly("action_mask_contract_version", [](const NativeDecisionBatch&) { return 1; })
+        .def_property_readonly("action_mask_layout", [](const NativeDecisionBatch&) { return "type,shop,bench_source,board_target,board_source,board_move_target,bench_move_source,bench_to_board_target,item_inventory,item_component_first,item_component_pair,item_target"; })
         .def_property_readonly("observations", &NativeDecisionBatch::observations)
         .def_property_readonly("action_masks", &NativeDecisionBatch::action_masks)
         .def_property_readonly("rewards", &NativeDecisionBatch::rewards)
@@ -1925,6 +2047,7 @@ PYBIND11_MODULE(tft_engine, module) {
         .def_property_readonly("dones", &NativeDecisionBatch::dones)
         .def_property_readonly("lobby_done", &NativeDecisionBatch::lobby_done)
         .def("lobby_result", &NativeDecisionBatch::lobby_result, py::arg("index"))
+        .def("action_context", &NativeDecisionBatch::action_context, py::arg("lobby_index"))
         .def("semantic_projection", &NativeDecisionBatch::semantic_projection, py::arg("catalog_map"), py::arg("contract_hash"))
         .def("native_context", &NativeDecisionBatch::native_context, py::arg("lobby_index"))
         .def("native_spatial_context", &NativeDecisionBatch::native_spatial_context,

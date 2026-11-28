@@ -20,7 +20,6 @@ import numpy as np
 
 from decision_identity import build_player_identity_envelopes
 from reward_audit import RewardAuditLedger
-from reward_outcome_producers import build_action_outcome_events
 from immutable_snapshot import FrozenDict, FrozenList, freeze_snapshot
 
 _REPO_ROOT = Path(__file__).resolve().parent
@@ -1120,23 +1119,54 @@ class CppTFTLobbyWrapper:
             raise RuntimeError(
                 "Não há snapshot nativo pré-ação para atribuir consequências factuais."
             )
-        action_outcome_events = build_action_outcome_events(
-            before_snapshot=source_decision_snapshot["native_state_snapshot"],
-            after_snapshot=self._last_snapshot_metadata["native_state_snapshot"],
-            action_traces=action_traces,
-        )
+        # The Engine emits factual outcomes at the action handler boundary.
+        # Production must not reconstruct them by diffing generic snapshots.
+        action_outcome_events = result.get("action_outcome_events")
+        if not isinstance(action_outcome_events, (list, tuple)) or len(action_outcome_events) != self.PLAYERS_PER_LOBBY:
+            raise RuntimeError("Native StepResult sem os oito ActionOutcomeEvent esperados.")
+        for player_id, event in enumerate(action_outcome_events):
+            if not isinstance(event, Mapping):
+                raise RuntimeError(f"ActionOutcomeEvent inválido para player_id={player_id}.")
+            if (
+                event.get("contract_id") != "tft.engine.action-outcome-event"
+                or int(event.get("contract_version", 0)) != 1
+                or event.get("engine_instance_id") != self._last_snapshot_metadata["engine_instance_id"]
+                or int(event.get("episode_id", -1)) != self._last_snapshot_metadata["episode_id"]
+                or int(event.get("player_id", -1)) != player_id
+                or int(event.get("outcome_player_decision_sequence", -1)) != self._last_snapshot_metadata["player_decision_sequences"][player_id]
+            ):
+                raise RuntimeError(f"ActionOutcomeEvent sem identidade/sequência alinhada para player_id={player_id}.")
+        action_outcome_events = [dict(event) for event in action_outcome_events]
         reward_audit = self._reward_audit_ledger.build_record(
             rewards=rewards,
             action_rewards=action_rewards,
             combat_rewards=combat_rewards,
             placement_rewards=placement_rewards,
             action_traces=action_traces,
+            action_outcome_events=action_outcome_events,
             players=player_info,
             decision_snapshot=self._last_snapshot_metadata,
             source_decision_snapshot=source_decision_snapshot,
         )
+        action_context = {
+            "contract_id": str(result.get("action_context_contract_id", "")),
+            "contract_version": int(result.get("action_context_contract_version", 0)),
+            "engine_instance_id": self._last_snapshot_metadata["engine_instance_id"],
+            "episode_id": self._last_snapshot_metadata["episode_id"],
+            "decision_sequence": self._last_snapshot_metadata["decision_sequence"],
+            "player_decision_sequences": list(self._last_snapshot_metadata["player_decision_sequences"]),
+            "action_mask_contract_id": str(result.get("action_mask_contract_id", "")),
+            "action_mask_contract_version": int(result.get("action_mask_contract_version", 0)),
+            "action_mask_layout": str(result.get("action_mask_layout", "")),
+            "action_masks": self._last_action_masks,
+            "action_traces": action_traces,
+            "action_outcome_events": action_outcome_events,
+        }
+        if action_context["contract_id"] != "tft.engine.action-context" or action_context["contract_version"] != 1:
+            raise RuntimeError("Native ActionContext ausente ou incompatível.")
         info = {
             "players": player_info,
+            "action_context": action_context,
             "action_trace": action_traces,
             "decision_snapshot": copy.deepcopy(self._last_snapshot_metadata),
             "round": int(result.get("round", 0)),
@@ -1154,7 +1184,39 @@ class CppTFTLobbyWrapper:
 
     def step(self, actions, *, timer_enabled: bool = False, timer_expired: bool = False):
         native_actions, source_snapshot = self._prepare_batch_step(actions)
-        result = self._engine.step(native_actions, bool(timer_enabled), bool(timer_expired))
+        try:
+            result = self._engine.step(native_actions, bool(timer_enabled), bool(timer_expired))
+        except ValueError as error:
+            # Native step preflight is atomic. Only attach rejection reports if
+            # the Engine confirms no decision sequence advanced.
+            try:
+                current_sequence = int(self._engine.get_audit_snapshot()["snapshot_sequence"])
+                source_sequence = int(source_snapshot["decision_sequence"])
+                if current_sequence == source_sequence:
+                    preflight_events = self._engine.validate_actions(native_actions)
+                    rejected = [event for event in preflight_events if not event.get("preflight_accepted", False)]
+                    if rejected:
+                        error.action_context = {
+                            "contract_id": "tft.engine.action-context",
+                            "contract_version": 1,
+                            "engine_instance_id": str(preflight_events[0]["engine_instance_id"]),
+                            "episode_id": int(preflight_events[0]["episode_id"]),
+                            "action_mask_contract_id": "tft.action-masks.packed",
+                            "action_mask_contract_version": 1,
+                            "events": [dict(event) for event in preflight_events],
+                            "rejected": True,
+                            "decision_advanced": False,
+                        }
+                        error.args = (
+                            "Native action preflight rejected the entire batch: " + "; ".join(
+                                f"player {event['player_id']}: {event.get('status_detail') or event['status_reason']}"
+                                for event in rejected
+                            ),
+                        )
+            except Exception:
+                # Preserve the original native exception if diagnostics fail.
+                pass
+            raise
         return self._consume_step_result(result, source_snapshot)
 
     def adapt_opgg_compositions(self, catalog):
@@ -1177,6 +1239,7 @@ class CppTFTLobbyWrapper:
                     "Buffer compacto de action masks inválido: "
                     f"dtype={masks.dtype}, shape={masks.shape}, esperado bool{expected}."
                 )
+            masks.flags.writeable = False
             return masks
         # Keep legacy fixtures/adapters supported through the structured path.
         cls._copy_action_masks(masks)
@@ -1310,12 +1373,6 @@ class CppTFTLobbyWrapper:
         if self._last_snapshot_metadata is None:
             raise RuntimeError("Execute reset() antes de solicitar snapshot metadata.")
         return copy.deepcopy(self._last_snapshot_metadata)
-
-    def get_player_liveness(self):
-        """Return authoritative per-player alive flags from the latest native result."""
-        if len(self._players) != self.PLAYERS_PER_LOBBY:
-            raise RuntimeError("Estado de jogadores incompleto; execute reset().")
-        return [bool(player.alive) for player in self._players]
 
     def get_anti_loop_metrics(self):
         return dict(self._engine.get_anti_loop_metrics())

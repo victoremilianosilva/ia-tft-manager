@@ -240,3 +240,196 @@ def test_native_decision_batch_shapes_scale_with_lobby_count(lobby_count):
         assert [stepped.lobby_result(i)["engine_instance_id"] for i in range(lobby_count)] == manager.engine_instance_ids
     finally:
         manager.close()
+
+
+def test_native_decision_batch_publishes_versioned_action_context_and_events():
+    manager = native.LobbyBatchManager(2, 9100)
+    try:
+        manager.reset(seed=9200)
+        batch = manager.step(_pass_actions(2))
+        assert batch.action_context_contract_id == "tft.engine.action-context"
+        assert batch.action_context_contract_version == 1
+        assert batch.action_mask_contract_id == "tft.action-masks.packed"
+        assert batch.action_mask_contract_version == 1
+        assert batch.action_mask_layout.startswith("type,shop,bench_source")
+        assert batch.action_masks.shape == (2, 8, 1280)
+        assert batch.action_masks.flags.c_contiguous
+        assert not batch.action_masks.flags.writeable
+
+        action_context = batch.action_context(0)
+        assert action_context["contract_id"] == "tft.engine.action-context"
+        assert action_context["contract_version"] == 1
+        native_context = action_context["native_decision_context"]
+        assert native_context.engine_instance_id == action_context["engine_instance_id"]
+        assert native_context.episode_id == action_context["episode_id"]
+        assert native_context.snapshot_sequence == action_context["decision_sequence"]
+        assert np.shares_memory(action_context["action_masks"], batch.action_masks)
+        assert not action_context["action_masks"].flags.writeable
+        assert len(action_context["action_outcome_events"]) == 8
+
+        for lobby_index in range(2):
+            row = batch.lobby_result(lobby_index)
+            assert row["action_context"]["contract_id"] == "tft.engine.action-context"
+            assert row["action_context_contract_id"] == "tft.engine.action-context"
+            assert row["action_context_contract_version"] == 1
+            assert row["action_mask_contract_id"] == "tft.action-masks.packed"
+            assert row["action_mask_contract_version"] == 1
+            events = row["action_outcome_events"]
+            assert len(events) == 8
+            for player_id, event in enumerate(events):
+                assert event["contract_id"] == "tft.engine.action-outcome-event"
+                assert event["contract_version"] == 1
+                assert event["engine_instance_id"] == row["engine_instance_id"]
+                assert event["episode_id"] == row["episode_id"]
+                assert event["player_id"] == player_id
+                assert event["action_family"] == "pass"
+                assert event["effective_action"] == [6, 0, 0, 0, 0, 0]
+                assert event["mask_permitted"] is True
+                assert event["preflight_accepted"] is True
+                assert event["normalized_action"] == event["requested_action"]
+                assert event["handler_applied"] is True
+                assert event["execution_status"] == "applied"
+                assert event["status_reason"] == "applied"
+                assert event["auto_merge"] is False
+                assert event["outcome_player_decision_sequence"] == row["player_decision_sequences"][player_id]
+                assert event["source_player_decision_sequence"] + 1 == event["outcome_player_decision_sequence"]
+    finally:
+        manager.close()
+
+
+def test_native_action_event_records_purchase_candidate_and_affected_uuid():
+    manager = native.LobbyBatchManager(1, 9300)
+    try:
+        manager.reset(seed=9400)
+        assert manager.engine(0).set_player_economy_for_testing(0, 10, 2, 0)
+        masks = manager.engine(0).get_action_masks()
+        assert bool(masks[0]["type_mask"][0])
+        legal_shop_slots = np.flatnonzero(masks[0]["shop_mask"])
+        assert legal_shop_slots.size > 0
+
+        actions = _pass_actions(1)
+        actions[0][0] = [0, int(legal_shop_slots[0]), 0, 0, 0, 0]
+        step = manager.step(actions)
+        event = step.lobby_result(0)["action_outcome_events"][0]
+
+        assert event["action_family"] == "purchase"
+        assert event["action_type"] == 0
+        assert event["mask_permitted"] is True
+        assert event["preflight_accepted"] is True
+        assert event["normalized_action"] == event["requested_action"]
+        assert event["handler_applied"] is True
+        assert event["execution_status"] == "applied"
+        assert event["catalog_champion_id"] >= 0
+        assert event["affected_unit_uuids"]
+        assert len(event["affected_unit_uuids"]) == len(set(event["affected_unit_uuids"]))
+    finally:
+        manager.close()
+
+@pytest.mark.parametrize(
+    ("action_type", "family"),
+    [(1, "reroll"), (2, "xp_purchase")],
+)
+def test_native_action_events_cover_economic_action_families(action_type, family):
+    manager = native.LobbyBatchManager(1, 9500 + action_type)
+    try:
+        reset = manager.reset(seed=9600 + action_type)
+        assert manager.engine(0).set_player_economy_for_testing(0, 10, 5, 0)
+        masks = manager.engine(0).get_action_masks()[0]
+        assert bool(masks["type_mask"][action_type]), f"action type {action_type} should be legal with 10 gold"
+
+        actions = _pass_actions(1)
+        actions[0][0] = [action_type, 0, 0, 0, 0, 0]
+        step = manager.step(actions)
+        event = step.lobby_result(0)["action_outcome_events"][0]
+
+        assert event["action_family"] == family
+        assert event["mask_permitted"] is True
+        assert event["preflight_accepted"] is True
+        assert event["handler_applied"] is True
+        assert event["gold_delta"] < 0
+        assert event["action_cost"] > 0
+    finally:
+        manager.close()
+
+
+def _buy_one_unit(manager):
+    manager.reset(seed=9700)
+    assert manager.engine(0).set_player_economy_for_testing(0, 10, 2, 0)
+    masks = manager.engine(0).get_action_masks()
+    shop_slots = np.flatnonzero(masks[0]["shop_mask"])
+    assert bool(masks[0]["type_mask"][0]) and shop_slots.size
+    actions = _pass_actions(1)
+    actions[0][0] = [0, int(shop_slots[0]), 0, 0, 0, 0]
+    return manager.step(actions)
+
+
+def test_native_action_event_covers_bench_to_board_deployment():
+    manager = native.LobbyBatchManager(1, 9800)
+    try:
+        bought = _buy_one_unit(manager)
+        masks = bought.lobby_result(0)["action_masks"]
+        assert bool(masks[0, 3])
+        source_slots = np.flatnonzero(masks[0, 863:872])
+        assert source_slots.size
+        source = int(source_slots[0])
+        targets = np.flatnonzero(masks[0, 872 + source * 28:872 + (source + 1) * 28])
+        assert targets.size
+        actions = _pass_actions(1)
+        actions[0][0] = [3, 0, source, int(targets[0]), 0, 0]
+        step = manager.step(actions)
+        event = step.lobby_result(0)["action_outcome_events"][0]
+        assert event["action_family"] == "deploy"
+        assert event["handler_applied"] is True
+        assert event["candidate_unit_uuids"]
+        assert event["affected_unit_uuids"]
+    finally:
+        manager.close()
+
+
+def test_native_action_event_covers_board_positioning():
+    manager = native.LobbyBatchManager(1, 9900)
+    try:
+        bought = _buy_one_unit(manager)
+        masks = bought.lobby_result(0)["action_masks"]
+        source_slots = np.flatnonzero(masks[0, 863:872])
+        source = int(source_slots[0])
+        targets = np.flatnonzero(masks[0, 872 + source * 28:872 + (source + 1) * 28])
+        actions = _pass_actions(1)
+        actions[0][0] = [3, 0, source, int(targets[0]), 0, 0]
+        deployed = manager.step(actions)
+        masks = deployed.lobby_result(0)["action_masks"]
+        assert bool(masks[0, 4])
+        board_moves = masks[0, 79:863].reshape(28, 28)
+        sources, destinations = np.where(board_moves)
+        assert sources.size
+        actions = _pass_actions(1)
+        actions[0][0] = [4, 0, 0, 0, int(sources[0]), int(destinations[0])]
+        step = manager.step(actions)
+        event = step.lobby_result(0)["action_outcome_events"][0]
+        assert event["action_family"] == "positioning"
+        assert event["handler_applied"] is True
+        assert event["candidate_unit_uuids"]
+        assert event["affected_unit_uuids"]
+    finally:
+        manager.close()
+
+
+def test_native_action_event_covers_bench_sale():
+    manager = native.LobbyBatchManager(1, 10000)
+    try:
+        bought = _buy_one_unit(manager)
+        masks = bought.lobby_result(0)["action_masks"]
+        assert bool(masks[0, 5])
+        bench_slots = np.flatnonzero(masks[0, 14:23])
+        assert bench_slots.size
+        actions = _pass_actions(1)
+        actions[0][0] = [5, 0, int(bench_slots[0]), 0, 0, 0]
+        step = manager.step(actions)
+        event = step.lobby_result(0)["action_outcome_events"][0]
+        assert event["action_family"] == "sale"
+        assert event["handler_applied"] is True
+        assert event["candidate_unit_uuids"]
+        assert event["affected_unit_uuids"]
+        assert event["sale_proceeds"] > 0
+    finally:
+        manager.close()

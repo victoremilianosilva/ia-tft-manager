@@ -150,38 +150,12 @@ def test_rejects_wrong_number_of_players(trainer):
     with pytest.raises(ValueError, match="jogadores"):
         trainer._flatten_masks(gym_masks)
 
-def test_empty_action_types_receive_pass_fallback_only_for_eliminated_agents(trainer):
+def test_empty_action_type_mask_is_rejected_without_python_liveness_fallback(trainer):
     gym_masks = create_valid_masks()
-    for player_idx in (0, 3, 7):
-        gym_masks[0][player_idx]["type_mask"] = np.zeros(9, dtype=np.float32)
+    gym_masks[0][3]["type_mask"] = np.zeros(9, dtype=np.float32)
 
-    alive = [[True, True, True, False, True, True, True, False]]
-    # Player 0 is still alive and has no legal type: this must fail closed.
-    with pytest.raises(RuntimeError, match="jogador\\(es\\) ativo\\(s\\)"):
-        trainer._flatten_masks(gym_masks, lobby_player_alive=alive)
-
-    alive[0][0] = False
-    masks = trainer._flatten_masks(gym_masks, lobby_player_alive=alive)
-
-    for player_idx in (0, 3, 7):
-        expected_types = torch.zeros(9, dtype=torch.bool)
-        expected_types[6] = True
-        assert torch.equal(masks["type_mask"][player_idx], expected_types)
-
-        for key in ("shop_mask", "bench_source_mask", "board_target_mask", "board_source_mask"):
-            expected = torch.zeros_like(masks[key][player_idx])
-            expected[0] = True
-            assert torch.equal(masks[key][player_idx], expected)
-
-        expected_moves = torch.zeros_like(masks["board_move_target_masks"][player_idx])
-        expected_moves[0, 0] = True
-        assert torch.equal(masks["board_move_target_masks"][player_idx], expected_moves)
-
-    # Agents with legal action types must remain unchanged.
-    assert torch.equal(
-        masks["type_mask"][1],
-        torch.tensor(gym_masks[0][1]["type_mask"], dtype=torch.bool),
-    )
+    with pytest.raises(RuntimeError, match="contrato nativo deve publicar PASS"):
+        trainer._flatten_masks(gym_masks)
 
 
 def test_boolean_masks_are_accepted_without_changing_values(trainer):
@@ -220,17 +194,58 @@ def test_reused_action_array_matches_tensor_conversion_path(trainer):
     )
 
 
-def test_empty_action_type_mask_without_liveness_fails_closed(trainer):
+def test_empty_action_type_mask_fails_closed(trainer):
     gym_masks = create_valid_masks()
     gym_masks[0][2]["type_mask"] = np.zeros(9, dtype=np.float32)
 
-    with pytest.raises(RuntimeError, match="estado de vida"):
+    with pytest.raises(RuntimeError, match="contrato nativo deve publicar PASS"):
         trainer._flatten_masks(gym_masks)
 
 
-def test_empty_action_type_mask_requires_complete_liveness_snapshot(trainer):
-    gym_masks = create_valid_masks()
-    gym_masks[0][2]["type_mask"] = np.zeros(9, dtype=np.float32)
 
-    with pytest.raises(ValueError, match="estados de vida"):
-        trainer._flatten_masks(gym_masks, lobby_player_alive=[[True, True]])
+
+def test_packed_native_masks_share_one_tensor_storage(trainer):
+    from cpp_lobby_env import CppTFTLobbyWrapper
+
+    packed = np.zeros((Trainer.PLAYERS_PER_LOBBY, 1280), dtype=np.bool_)
+    for player_idx in range(Trainer.PLAYERS_PER_LOBBY):
+        packed[player_idx, 0] = True  # BUY is legal in this fixture.
+        packed[player_idx, 9] = True  # First shop slot.
+        packed[player_idx, 14] = True  # First bench source sentinel.
+        packed[player_idx, 23] = True  # First board target sentinel.
+        packed[player_idx, 51] = True  # First board source sentinel.
+        packed[player_idx, 79] = True  # First board move pair sentinel.
+        packed[player_idx, 863] = True  # First bench move source sentinel.
+        packed[player_idx, 872] = True  # First bench-to-board pair sentinel.
+
+    masks = trainer._flatten_masks([packed])
+    assert masks["type_mask"].untyped_storage().data_ptr() == masks["shop_mask"].untyped_storage().data_ptr()
+    assert masks["type_mask"].shape == (8, 9)
+    assert masks["shop_mask"].shape == (8, 5)
+
+
+def test_native_packed_masks_match_structured_compatibility_path(trainer):
+    from cpp_lobby_env import CppTFTLobbyWrapper
+
+    lobby = CppTFTLobbyWrapper(seed=132)
+    try:
+        lobby.reset(seed=132)
+        structured = lobby._engine.get_action_masks()
+        packed = lobby.get_packed_action_masks_for_training()
+        expected_players = CppTFTLobbyWrapper._copy_action_masks(structured)
+        expected_packed = np.stack([
+            np.concatenate([
+                np.asarray(expected_players[player_id][key], dtype=np.bool_).reshape(-1)
+                for key, _shape in CppTFTLobbyWrapper._PACKED_ACTION_MASK_LAYOUT
+            ])
+            for player_id in range(CppTFTLobbyWrapper.PLAYERS_PER_LOBBY)
+        ])
+        np.testing.assert_array_equal(packed, expected_packed)
+
+        packed_views = trainer._flatten_masks([packed])
+        compatibility_views = trainer._flatten_masks([structured])
+        assert packed_views.keys() == compatibility_views.keys()
+        for key in packed_views:
+            assert torch.equal(packed_views[key], compatibility_views[key]), key
+    finally:
+        lobby.close()
