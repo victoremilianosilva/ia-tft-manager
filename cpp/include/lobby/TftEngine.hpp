@@ -816,6 +816,7 @@ public:
         std::int32_t player_id, std::int32_t slot,
         const std::string& champion_api_name
     );
+    bool set_player_alive_for_testing(std::int32_t player_id, bool alive);
     bool set_next_shop_roll_for_testing(
         std::int32_t player_id,
         const std::vector<std::string>& champion_api_names
