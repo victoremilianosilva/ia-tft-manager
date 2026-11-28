@@ -982,15 +982,8 @@ class Trainer:
                 ...
             }
 
-        ============================================================
-        ⚠️ JOGADOR MORTO
-        ============================================================
-
-        Jogadores eliminados recebem PASS quando a Engine publica uma
-        type_mask vazia. Uma máscara vazia para jogador ainda ativo é erro
-        de contrato e nunca pode ser convertida silenciosamente em PASS.
-
-        PASS = ActionType.PASS = 6
+        A Engine é a autoridade das máscaras, inclusive para jogadores
+        eliminados (PASS-only). O Trainer apenas valida e converte buffers.
         """
 
         flat_masks = {}
