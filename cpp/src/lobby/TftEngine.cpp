@@ -6966,15 +6966,9 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
     snapshot.finished = impl_->done;
     snapshot.temporal_history_complete = !impl_->temporal_history_truncated;
     snapshot.temporal_events = impl_->temporal_history;
-    const auto retained_anchor = [&](const std::string& event_id) {
-        if (event_id.empty()) return std::string{};
-        const auto found = std::find_if(impl_->temporal_history.begin(), impl_->temporal_history.end(),
-            [&](const TemporalEvent& event) { return event.event_id == event_id; });
-        return found == impl_->temporal_history.end() ? std::string{} : event_id;
-    };
     for (std::size_t player = 0; player < kPlayersPerLobby; ++player) {
-        snapshot.temporal_causal_anchor_ids[player][0] = retained_anchor(impl_->latest_board_action_event_ids[player]);
-        snapshot.temporal_causal_anchor_ids[player][1] = retained_anchor(impl_->latest_economic_action_event_ids[player]);
+        snapshot.temporal_causal_anchor_ids[player][0] = impl_->latest_board_action_event_ids[player];
+        snapshot.temporal_causal_anchor_ids[player][1] = impl_->latest_economic_action_event_ids[player];
     }
     snapshot.combat_sequence = impl_->combat_sequence;
     snapshot.combat_damage_events_truncated = impl_->combat_damage_events_truncated;
