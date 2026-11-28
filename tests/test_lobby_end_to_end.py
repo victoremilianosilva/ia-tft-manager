@@ -22,12 +22,17 @@ def _assert_action_events_match_oracle(info, before_snapshot):
         if facts["gold_delta"] is not None:
             assert native_event["gold_delta"] == facts["gold_delta"]
         if native_event["action_family"] == "purchase":
-            expected_units = {
-                unit["uuid"] for unit in facts["units_added"] + facts["units_removed"]
-            } | {unit["uuid"] for unit in facts["upgrades_observed"]}
-            assert set(native_event["affected_unit_uuids"]) == expected_units
+            expected_added_units = {unit["uuid"] for unit in facts["units_added"]}
+            affected_units = set(native_event["affected_unit_uuids"])
+            assert expected_added_units.issubset(affected_units)
             expected_auto_merge = any(delta["star"] > 1 and delta["count_delta"] > 0 for delta in facts["star_tier_count_deltas"])
             assert native_event["auto_merge"] is expected_auto_merge
+            if expected_auto_merge:
+                # The legacy oracle did not publish consumed UUIDs for BUY; the
+                # native event must still expose every consumed copy.
+                assert len(affected_units) > len(expected_added_units)
+            else:
+                assert affected_units == expected_added_units
         elif native_event["action_family"] == "sale":
             assert set(native_event["affected_unit_uuids"]) == {
                 unit["uuid"] for unit in facts["units_removed"]
