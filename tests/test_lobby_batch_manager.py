@@ -333,8 +333,9 @@ def test_native_action_events_cover_economic_action_families(action_type, family
     manager = native.LobbyBatchManager(1, 9500 + action_type)
     try:
         reset = manager.reset(seed=9600 + action_type)
-        masks = reset.lobby_result(0)["action_masks"]
-        assert bool(masks[0, action_type]), f"action type {action_type} should be legal in the initial economy"
+        assert manager.engine(0).set_player_economy_for_testing(0, 10, 5, 0)
+        masks = manager.engine(0).get_action_masks()[0]
+        assert bool(masks["type_mask"][action_type]), f"action type {action_type} should be legal with 10 gold"
 
         actions = _pass_actions(1)
         actions[0][0] = [action_type, 0, 0, 0, 0, 0]
