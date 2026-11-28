@@ -1078,6 +1078,7 @@ py::dict step_to_dict(tft::StepResult step, bool include_numeric_transport = tru
         item["effective_action"] = event.effective_action;
         item["handler_applied"] = event.handler_applied;
         item["status_reason"] = event.status_reason;
+        item["candidate_unit_uuids"] = event.candidate_unit_uuids;
         item["affected_unit_uuids"] = event.affected_unit_uuids;
         item["catalog_champion_id"] = event.catalog_champion_id;
         item["item_action_kind"] = event.item_action_kind;
