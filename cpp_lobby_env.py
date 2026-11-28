@@ -436,11 +436,14 @@ class CppTFTLobbyWrapper:
         if not isinstance(value, Mapping):
             raise RuntimeError("Snapshot nativo estruturado ausente ou inválido.")
         version = value.get("contract_version")
+        expected_snapshot_version = (
+            7 if value.get("temporal_contract_id") == "tft.engine.temporal-history" else 6
+        )
         if (
             value.get("contract_id") != "tft.native-state-snapshot"
             or isinstance(version, bool)
             or not isinstance(version, int)
-            or version != 6
+            or version != expected_snapshot_version
         ):
             raise RuntimeError("Versão/identidade do contrato de snapshot estruturado incompatível.")
         geometry_version = value.get("board_geometry_version")
