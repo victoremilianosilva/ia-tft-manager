@@ -37,6 +37,7 @@ def _inputs(*, action=None, combat=None, placement=None, combat_sequence=4,
             "preflight_accepted": True,
             "handler_applied": True,
             "decision_advanced": True,
+            "execution_status": "applied",
             "status_reason": "applied",
         }
         for player_id in range(8)
