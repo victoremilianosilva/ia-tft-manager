@@ -169,7 +169,7 @@ class RewardAuditLedger:
                 or int(action_event.get("outcome_player_decision_sequence", -1)) != outcome_player_sequence
                 or action_event.get("event_id") != expected_action_event_id
                 or not isinstance(action_event.get("mask_permitted"), bool)
-                        or action_event.get("preflight_accepted") is not True
+                or action_event.get("preflight_accepted") is not True
                 or action_event.get("decision_advanced") is not True
                 or not isinstance(action_event.get("handler_applied"), bool)
                 or not isinstance(action_event.get("status_reason"), str)
