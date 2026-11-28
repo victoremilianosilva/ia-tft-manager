@@ -395,6 +395,7 @@ def _add_rollout_with_action_trace_for_validation(action_trace):
             "normalized_action": action_trace.get("requested_action"),
             "effective_action": action_trace.get("effective_action"),
             "mask_permitted": True, "handler_applied": action_trace.get("handler_applied"),
+            "decision_advanced": True,
             "status_reason": action_trace.get("status_reason"),
         },
     }
@@ -599,6 +600,7 @@ def _valid_native_action_trace_rows():
                 "outcome_player_decision_sequence": 22,
                 "mask_permitted": True,
                 "handler_applied": True,
+                "decision_advanced": True,
                 "status_reason": "applied",
             }
             for player_id in range(8)
