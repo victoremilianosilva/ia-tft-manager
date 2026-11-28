@@ -1246,6 +1246,10 @@ class CppTFTLobbyWrapper:
                 or isinstance(sequence, bool) or not isinstance(sequence, int)
                 or sequence <= previous_temporal_sequence
                 or event.get("scope") not in ("player", "lobby")
+                or isinstance(event.get("player_id"), bool)
+                or not isinstance(event.get("player_id"), int)
+                or (event.get("scope") == "player" and not 0 <= event["player_id"] < self.PLAYERS_PER_LOBBY)
+                or (event.get("scope") == "lobby" and event["player_id"] != -1)
                 or not isinstance(event.get("delayed"), bool)
             ):
                 raise RuntimeError("TemporalEvent possui contrato, identidade ou ordenação inválidos.")
