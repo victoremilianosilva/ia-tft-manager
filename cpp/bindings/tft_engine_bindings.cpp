@@ -1056,6 +1056,37 @@ py::dict step_to_dict(tft::StepResult step, bool include_numeric_transport = tru
         action_traces.append(std::move(item));
     }
     result["action_traces"] = std::move(action_traces);
+    py::list action_outcome_events;
+    for (const auto& event : step.action_outcome_events) {
+        py::dict item;
+        item["contract_id"] = event.contract_id;
+        item["contract_version"] = event.contract_version;
+        item["engine_instance_id"] = event.engine_instance_id;
+        item["episode_id"] = event.episode_id;
+        item["player_id"] = event.player_id;
+        item["source_player_decision_sequence"] = event.source_player_decision_sequence;
+        item["outcome_player_decision_sequence"] = event.outcome_player_decision_sequence;
+        item["event_sequence"] = event.event_sequence;
+        item["action_type"] = event.action_type;
+        item["action_family"] = event.action_family;
+        item["requested_action"] = event.requested_action;
+        item["effective_action"] = event.effective_action;
+        item["handler_applied"] = event.handler_applied;
+        item["status_reason"] = event.status_reason;
+        item["affected_unit_uuids"] = event.affected_unit_uuids;
+        item["catalog_champion_id"] = event.catalog_champion_id;
+        item["gold_before"] = event.gold_before;
+        item["gold_after"] = event.gold_after;
+        item["gold_delta"] = event.gold_delta;
+        item["xp_before"] = event.xp_before;
+        item["xp_after"] = event.xp_after;
+        item["level_before"] = event.level_before;
+        item["level_after"] = event.level_after;
+        item["action_cost"] = event.action_cost;
+        item["sale_proceeds"] = event.sale_proceeds;
+        action_outcome_events.append(std::move(item));
+    }
+    result["action_outcome_events"] = std::move(action_outcome_events);
     result["events"] = step.events;
 
     return result;
