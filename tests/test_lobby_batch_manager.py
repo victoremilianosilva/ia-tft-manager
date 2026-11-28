@@ -247,6 +247,8 @@ def test_native_decision_batch_publishes_versioned_action_context_and_events():
     try:
         manager.reset(seed=9200)
         batch = manager.step(_pass_actions(2))
+        assert batch.action_context_contract_id == "tft.engine.action-context"
+        assert batch.action_context_contract_version == 1
         assert batch.action_mask_contract_id == "tft.action-masks.packed"
         assert batch.action_mask_contract_version == 1
         assert batch.action_mask_layout.startswith("type,shop,bench_source")
@@ -256,6 +258,10 @@ def test_native_decision_batch_publishes_versioned_action_context_and_events():
 
         for lobby_index in range(2):
             row = batch.lobby_result(lobby_index)
+            assert row["action_context_contract_id"] == "tft.engine.action-context"
+            assert row["action_context_contract_version"] == 1
+            assert row["action_mask_contract_id"] == "tft.action-masks.packed"
+            assert row["action_mask_contract_version"] == 1
             events = row["action_outcome_events"]
             assert len(events) == 8
             for player_id, event in enumerate(events):
