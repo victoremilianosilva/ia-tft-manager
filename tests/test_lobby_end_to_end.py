@@ -30,6 +30,7 @@ def test_native_lobby_adapter_executes_a_step():
         assert info["action_context"]["contract_id"] == "tft.engine.action-context"
         assert info["action_context"]["contract_version"] == 1
         assert info["action_context"]["action_masks"].shape == (8, 1280)
+        assert not info["action_context"]["action_masks"].flags.writeable
         assert len(info["action_outcome_events"]) == 8
         oracle_events = build_action_outcome_events(
             before_snapshot=source_snapshot,
