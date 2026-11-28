@@ -191,6 +191,7 @@ def test_native_action_event_reports_capacity_noop_without_fabricated_effect():
     try:
         lobby.reset(seed=127)
         champion_api_name = next(iter(lobby._engine.get_champion_id_map()))
+        assert lobby._engine.set_player_economy_for_testing(0, 0, 1, 0)
         assert lobby._engine.set_unit_for_testing(0, True, 0, champion_api_name)
         assert lobby._engine.set_unit_for_testing(0, False, 0, champion_api_name)
         masks = lobby._engine.get_action_masks()[0]
@@ -361,6 +362,7 @@ def test_native_action_event_oracle_parity_for_economic_actions(action_type, fam
     lobby = CppTFTLobbyWrapper(seed=134 + action_type)
     try:
         lobby.reset(seed=134 + action_type)
+        assert lobby._engine.set_player_economy_for_testing(0, 10, 5, 0)
         masks = lobby.get_packed_action_masks_for_training()
         assert bool(masks[0, action_type])
         actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
