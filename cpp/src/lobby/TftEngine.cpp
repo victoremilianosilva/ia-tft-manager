@@ -6540,7 +6540,9 @@ StepResult TFTEngine::step(
         event.delayed = true;
         if (player_id >= 0 && static_cast<std::size_t>(player_id) < kPlayersPerLobby) {
             const auto p = static_cast<std::size_t>(player_id);
-            if (impl_->latest_action_event_rounds[p] == impl_->round + 1) {
+            const auto consequence_round = (round_resolved && impl_->round > 0)
+                ? impl_->round : impl_->round + 1;
+            if (impl_->latest_action_event_rounds[p] == consequence_round) {
                 event.causal_event_id = impl_->latest_action_event_ids[p];
                 event.source_player_decision_sequence = impl_->player_decision_sequences[p];
             }
