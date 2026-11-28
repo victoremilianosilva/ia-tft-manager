@@ -6548,10 +6548,11 @@ StepResult TFTEngine::step(
         }
         impl_->append_temporal_event(std::move(event));
     };
+    if (round_resolved) {
     for (const auto& event : impl_->last_combat_damage_events) {
         append_delayed_fact("combat_damage", event.target_player_id, "CombatEngine",
             event.target_unit_uuid, event.source_unit_uuid, "health", 0,
-            static_cast<std::int64_t>(std::llround(event.final_damage)));
+            -static_cast<std::int64_t>(std::llround(event.final_damage)));
     }
     for (const auto& event : impl_->last_combat_death_events) {
         append_delayed_fact("combat_death", event.unit_player_id, "CombatEngine",
@@ -6574,7 +6575,6 @@ StepResult TFTEngine::step(
                 "TFTEngine::resolve_combats", {}, {}, "alive", 1, 0);
         }
     }
-    if (round_resolved) {
         TemporalEvent event;
         event.event_type = "round_transition";
         event.scope = "lobby";
