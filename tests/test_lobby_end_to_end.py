@@ -368,6 +368,11 @@ def test_native_action_event_oracle_parity_for_economic_actions(action_type, fam
         before_snapshot = lobby._engine.get_audit_snapshot()
         _, _, _, info = lobby.step(actions)
         _assert_action_events_match_oracle(info, before_snapshot)
-        assert info["action_outcome_events"][0]["action_family"] == family
+        event = info["action_outcome_events"][0]
+        assert event["action_family"] == family
+        if action_type == 1:
+            assert len(event["candidate_unit_uuids"]) == 5
+        else:
+            assert event["candidate_unit_uuids"] == []
     finally:
         lobby.close()
