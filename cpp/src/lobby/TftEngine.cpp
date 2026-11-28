@@ -7127,10 +7127,26 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
         auto& anti_loop_projection = target.anti_loop_history;
         anti_loop_projection.current_round = anti_loop_history.current_round;
         anti_loop_projection.state_window_rounds = anti_loop_history.state_window_rounds;
+        const auto signature_fingerprint = [](const decision::PositionSignature& signature) {
+            const auto identity_json = [](const std::optional<decision::UnitIdentity>& identity) {
+                if (!identity) return nlohmann::json(nullptr);
+                nlohmann::json value;
+                value["uuid"] = identity->uuid ? nlohmann::json(*identity->uuid) : nlohmann::json(nullptr);
+                value["id"] = identity->id ? nlohmann::json(*identity->id) : nlohmann::json(nullptr);
+                value["textual_id"] = identity->textual_id ? nlohmann::json(*identity->textual_id) : nlohmann::json(nullptr);
+                value["star"] = identity->star;
+                return value;
+            };
+            nlohmann::json value;
+            value["board"] = nlohmann::json::array();
+            value["bench"] = nlohmann::json::array();
+            for (const auto& identity : signature.board) value["board"].push_back(identity_json(identity));
+            for (const auto& identity : signature.bench) value["bench"].push_back(identity_json(identity));
+            return semantic::sha256_hex(value.dump(-1, ' ', false));
+        };
         anti_loop_projection.position_history_hashes.reserve(anti_loop_history.position_history.size());
         for (const auto& signature : anti_loop_history.position_history)
-            anti_loop_projection.position_history_hashes.push_back(
-                static_cast<std::uint64_t>(decision::PositionSignatureHash{}(signature)));
+            anti_loop_projection.position_history_hashes.push_back(signature_fingerprint(signature));
         const auto project_move = [](const decision::MoveRecord& move) {
             AntiLoopMoveSnapshot row;
             row.move_type = move.move_type;
@@ -7150,11 +7166,12 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
         anti_loop_projection.state_visit_hashes.reserve(anti_loop_history.state_visits.size());
         anti_loop_projection.state_visit_counts.reserve(anti_loop_history.state_visits.size());
         anti_loop_projection.state_visit_rounds.reserve(anti_loop_history.state_visits.size());
+        anti_loop_projection.state_visit_repeated.reserve(anti_loop_history.state_visits.size());
         for (const auto& visit : anti_loop_history.state_visits) {
-            anti_loop_projection.state_visit_hashes.push_back(
-                static_cast<std::uint64_t>(decision::PositionSignatureHash{}(visit.signature)));
+            anti_loop_projection.state_visit_hashes.push_back(signature_fingerprint(visit.signature));
             anti_loop_projection.state_visit_counts.push_back(visit.visits);
             anti_loop_projection.state_visit_rounds.push_back(visit.last_seen_round);
+            anti_loop_projection.state_visit_repeated.push_back(visit.repeated);
         }
 
         auto& strategic = target.strategic_state;
