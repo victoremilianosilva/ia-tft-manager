@@ -6333,6 +6333,62 @@ StepResult TFTEngine::step(
             impl_->latest_economic_action_sequences[i] = action_outcomes[i].source_player_decision_sequence;
             impl_->latest_economic_action_rounds[i] = action_round;
         }
+        for (const auto& uuid : action_outcomes[i].affected_unit_uuids) {
+            TemporalEvent unit_event;
+            unit_event.event_type = "unit_transition";
+            unit_event.scope = "player";
+            unit_event.player_id = static_cast<std::int32_t>(i);
+            unit_event.round = action_round;
+            unit_event.stage = impl_->stage;
+            unit_event.causal_event_id = action_outcomes[i].event_id;
+            unit_event.source_player_decision_sequence = action_outcomes[i].source_player_decision_sequence;
+            unit_event.observed_player_decision_sequence = action_outcomes[i].outcome_player_decision_sequence;
+            unit_event.fact_source = "TFTEngine::PlayerEnv::step";
+            unit_event.transition_kind = action_outcomes[i].action_family;
+            unit_event.unit_uuid = uuid;
+            impl_->append_temporal_event(std::move(unit_event));
+        }
+        if (!action_outcomes[i].item_action_kind.empty()) {
+            TemporalEvent item_event;
+            item_event.event_type = "item_transition";
+            item_event.scope = "player";
+            item_event.player_id = static_cast<std::int32_t>(i);
+            item_event.round = action_round;
+            item_event.stage = impl_->stage;
+            item_event.causal_event_id = action_outcomes[i].event_id;
+            item_event.source_player_decision_sequence = action_outcomes[i].source_player_decision_sequence;
+            item_event.observed_player_decision_sequence = action_outcomes[i].outcome_player_decision_sequence;
+            item_event.fact_source = "ItemEngine";
+            item_event.transition_kind = action_outcomes[i].item_action_kind;
+            item_event.resource = action_outcomes[i].item_id;
+            if (!action_outcomes[i].affected_unit_uuids.empty())
+                item_event.unit_uuid = action_outcomes[i].affected_unit_uuids.front();
+            impl_->append_temporal_event(std::move(item_event));
+        }
+        const auto append_resource_transition = [&](const std::string& resource,
+            std::int64_t before, std::int64_t after) {
+            if (before == after) return;
+            TemporalEvent resource_event;
+            resource_event.event_type = "resource_transition";
+            resource_event.scope = "player";
+            resource_event.player_id = static_cast<std::int32_t>(i);
+            resource_event.round = action_round;
+            resource_event.stage = impl_->stage;
+            resource_event.causal_event_id = action_outcomes[i].event_id;
+            resource_event.source_player_decision_sequence = action_outcomes[i].source_player_decision_sequence;
+            resource_event.observed_player_decision_sequence = action_outcomes[i].outcome_player_decision_sequence;
+            resource_event.fact_source = "TFTEngine::PlayerEnv::step";
+            resource_event.resource = resource;
+            resource_event.value_before = before;
+            resource_event.value_after = after;
+            resource_event.delta = after - before;
+            impl_->append_temporal_event(std::move(resource_event));
+        };
+        if (action_outcomes[i].handler_applied) {
+            append_resource_transition("gold", action_outcomes[i].gold_before, action_outcomes[i].gold_after);
+            append_resource_transition("xp", action_outcomes[i].xp_before, action_outcomes[i].xp_after);
+            append_resource_transition("level", action_outcomes[i].level_before, action_outcomes[i].level_after);
+        }
         if (!transition.acted) {
             continue;
         }
