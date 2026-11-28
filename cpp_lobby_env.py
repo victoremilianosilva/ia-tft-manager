@@ -1137,6 +1137,49 @@ class CppTFTLobbyWrapper:
             ):
                 raise RuntimeError(f"ActionOutcomeEvent sem identidade/sequência alinhada para player_id={player_id}.")
         action_outcome_events = [dict(event) for event in action_outcome_events]
+        temporal_events = result.get("temporal_events")
+        if not isinstance(temporal_events, (list, tuple)):
+            raise RuntimeError("Native StepResult sem o fluxo temporal incremental.")
+        previous_temporal_sequence = 0
+        temporal_ids = set()
+        for event in temporal_events:
+            if not isinstance(event, Mapping):
+                raise RuntimeError("TemporalEvent nativo inválido.")
+            sequence = event.get("global_sequence")
+            if (
+                event.get("contract_id") != "tft.engine.temporal-event"
+                or event.get("contract_version") != 1
+                or event.get("engine_instance_id") != self._last_snapshot_metadata["engine_instance_id"]
+                or event.get("episode_id") != self._last_snapshot_metadata["episode_id"]
+                or not isinstance(event.get("event_id"), str) or not event["event_id"].strip()
+                or not isinstance(event.get("event_type"), str) or not event["event_type"].strip()
+                or isinstance(sequence, bool) or not isinstance(sequence, int)
+                or sequence <= previous_temporal_sequence
+                or event.get("scope") not in ("player", "lobby")
+                or not isinstance(event.get("delayed"), bool)
+            ):
+                raise RuntimeError("TemporalEvent possui contrato, identidade ou ordenação inválidos.")
+            if event["event_id"] in temporal_ids:
+                raise RuntimeError("TemporalEvent duplicado no mesmo StepResult.")
+            temporal_ids.add(event["event_id"])
+            previous_temporal_sequence = sequence
+            if event["delayed"] and event.get("causal_event_id"):
+                source_sequence = event.get("source_player_decision_sequence")
+                observed_sequence = event.get("observed_player_decision_sequence")
+                if (
+                    isinstance(source_sequence, bool) or not isinstance(source_sequence, int)
+                    or isinstance(observed_sequence, bool) or not isinstance(observed_sequence, int)
+                    or source_sequence >= observed_sequence
+                ):
+                    raise RuntimeError("TemporalEvent atrasado possui referência causal sem sequência válida.")
+        temporal_events = [dict(event) for event in temporal_events]
+        action_temporal_ids = {
+            event["event_id"] for event in temporal_events
+            if event.get("event_type") == "action_outcome"
+        }
+        expected_action_ids = {event["event_id"] for event in action_outcome_events}
+        if not expected_action_ids.issubset(action_temporal_ids):
+            raise RuntimeError("Temporal history não contém os ActionOutcomeEvent da transição.")
         reward_audit = self._reward_audit_ledger.build_record(
             rewards=rewards,
             action_rewards=action_rewards,
@@ -1161,6 +1204,7 @@ class CppTFTLobbyWrapper:
             "action_masks": self._last_action_masks,
             "action_traces": action_traces,
             "action_outcome_events": action_outcome_events,
+            "temporal_events": temporal_events,
         }
         if action_context["contract_id"] != "tft.engine.action-context" or action_context["contract_version"] != 1:
             raise RuntimeError("Native ActionContext ausente ou incompatível.")
@@ -1179,6 +1223,7 @@ class CppTFTLobbyWrapper:
             "placement_rewards": placement_rewards,
             "reward_audit": reward_audit,
             "action_outcome_events": action_outcome_events,
+            "temporal_events": temporal_events,
         }
         return observations, rewards, bool(result.get("lobby_done", False)), info
 
