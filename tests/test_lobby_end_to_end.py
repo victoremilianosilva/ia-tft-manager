@@ -210,3 +210,25 @@ def test_native_action_event_covers_anvil_choice_without_unit_target():
         assert event["affected_unit_uuids"] == []
     finally:
         lobby.close()
+
+
+def test_native_action_event_reports_auto_merge_and_all_consumed_unit_uuids():
+    lobby = CppTFTLobbyWrapper(seed=130)
+    try:
+        lobby.reset(seed=130)
+        champion_api_name = next(iter(lobby._engine.get_champion_id_map()))
+        assert lobby._engine.set_unit_for_testing(0, False, 0, champion_api_name)
+        assert lobby._engine.set_unit_for_testing(0, False, 1, champion_api_name)
+        assert lobby._engine.set_shop_offer_for_testing(0, 0, champion_api_name)
+
+        actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        actions[0] = [0, 0, 0, 0, 0, 0]
+        _, _, _, info = lobby.step(actions)
+        event = info["action_outcome_events"][0]
+        assert event["action_family"] == "purchase"
+        assert event["handler_applied"] is True
+        assert event["auto_merge"] is True
+        assert len(event["affected_unit_uuids"]) == 3
+        assert len(set(event["affected_unit_uuids"])) == 3
+    finally:
+        lobby.close()
