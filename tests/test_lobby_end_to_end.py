@@ -85,7 +85,9 @@ def test_native_action_event_covers_item_equip_handler():
 
         actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
         actions[0] = [7, int(inventory_slots[0]), int(target_slots[0]), 0, 0, 0]
+        before_snapshot = lobby._engine.get_audit_snapshot()
         _, _, _, info = lobby.step(actions)
+        _assert_action_events_match_oracle(info, before_snapshot)
         event = info["action_outcome_events"][0]
         assert event["action_family"] == "item_action"
         assert event["item_action_kind"] == "equip_inventory_item"
@@ -110,7 +112,9 @@ def test_native_action_event_covers_item_craft_handler():
 
         actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
         actions[0] = [8, int(first[0]), int(second[0]), int(target_slots[0]), 0, 0]
+        before_snapshot = lobby._engine.get_audit_snapshot()
         _, _, _, info = lobby.step(actions)
+        _assert_action_events_match_oracle(info, before_snapshot)
         event = info["action_outcome_events"][0]
         assert event["action_family"] == "item_action"
         assert event["item_action_kind"] == "craft_and_equip"
