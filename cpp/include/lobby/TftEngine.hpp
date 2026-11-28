@@ -560,7 +560,7 @@ struct AuditSnapshot {
     // seeds let a fresh PPO rollout validate delayed references across buffers.
     std::array<std::array<std::string, 2>, kPlayersPerLobby> temporal_causal_anchor_ids{};
     std::string contract_id{"tft.native-state-snapshot"};
-    std::uint32_t contract_version{6};
+    std::uint32_t contract_version{7};
     // Current native board-slot geometry: rectangular 4x7, not canonical hex.
     std::string board_geometry_id{"tft.board-grid.rectangular-4x7"};
     std::uint32_t board_geometry_version{1};
