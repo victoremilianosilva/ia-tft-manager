@@ -149,7 +149,7 @@ def _type_probabilities(policy, observations, masks, semantic_state):
         return torch.softmax(logits, dim=-1).cpu().numpy()
 
 
-def _rollout_snapshot_metadata(semantic_state, next_semantic_state, masks, action_traces):
+def _rollout_snapshot_metadata(semantic_state, next_semantic_state, masks, action_traces, action_outcome_events):
     """Bind one fine-tuning transition to its native decision/result/next snapshots."""
     decision_rows = semantic_state.get("snapshot_metadata")
     next_rows = next_semantic_state.get("snapshot_metadata")
@@ -157,6 +157,7 @@ def _rollout_snapshot_metadata(semantic_state, next_semantic_state, masks, actio
         not isinstance(decision_rows, list) or len(decision_rows) != 8
         or not isinstance(next_rows, list) or len(next_rows) != 8
         or not isinstance(action_traces, (list, tuple)) or len(action_traces) != 8
+        or not isinstance(action_outcome_events, (list, tuple)) or len(action_outcome_events) != 8
     ):
         raise RuntimeError("Fine-tuning requires eight aligned native semantic/action-trace rows.")
 
@@ -172,8 +173,8 @@ def _rollout_snapshot_metadata(semantic_state, next_semantic_state, masks, actio
         "mask_contract_version": MASK_CONTRACT_VERSION,
         "mask_contract_hash": MASK_CONTRACT_HASH,
     }
-    for player_id, (decision, next_row, trace, mask_hash) in enumerate(
-        zip(decision_rows, next_rows, action_traces, mask_hashes)
+    for player_id, (decision, next_row, trace, event, mask_hash) in enumerate(
+        zip(decision_rows, next_rows, action_traces, action_outcome_events, mask_hashes)
     ):
         decision_row = dict(decision)
         decision_row.update(contract_fields)
@@ -181,8 +182,17 @@ def _rollout_snapshot_metadata(semantic_state, next_semantic_state, masks, actio
         decision_row["mask_snapshot_hash_algorithm"] = MASK_SNAPSHOT_HASH_ALGORITHM
         result_row = dict(next_row)
         result_row["action_trace"] = dict(trace)
+        result_row["action_outcome_event"] = dict(event)
         if result_row["action_trace"].get("player_id") != player_id:
             raise RuntimeError("Native action trace is not aligned with its player row.")
+        if (
+            result_row["action_outcome_event"].get("player_id") != player_id
+            or result_row["action_outcome_event"].get("engine_instance_id") != decision_row.get("engine_instance_id")
+            or result_row["action_outcome_event"].get("episode_id") != decision_row.get("episode_id")
+            or result_row["action_outcome_event"].get("source_player_decision_sequence") != decision_row.get("player_decision_sequence")
+            or result_row["action_outcome_event"].get("outcome_player_decision_sequence") != result_row.get("player_decision_sequence")
+        ):
+            raise RuntimeError("Native ActionOutcomeEvent is not aligned with its decision/result player row.")
         decision_metadata.append(decision_row)
         result_metadata.append(result_row)
         next_metadata.append(dict(next_row))
@@ -459,6 +469,7 @@ def run(args):
                 ) = _rollout_snapshot_metadata(
                     semantic_state, next_semantic_state_for_transition, masks,
                     info.get("action_trace", []),
+                    info.get("action_outcome_events", []),
                 )
                 rewards = np.asarray(rewards, dtype=np.float32) + np.asarray(shaped_rewards, dtype=np.float32)
                 episode_reward += rewards
