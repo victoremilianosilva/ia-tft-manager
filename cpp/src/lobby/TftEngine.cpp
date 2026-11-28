@@ -6144,11 +6144,22 @@ StepResult TFTEngine::step(
                 outcome.action_family = "purchase";
                 if (player_env.shop) {
                     const auto* offer = player_env.shop->get_unit(effective[1]);
-                    if (offer) outcome.catalog_champion_id = offer->champion_internal_id;
+                    if (offer) {
+                        outcome.catalog_champion_id = offer->champion_internal_id;
+                        outcome.candidate_unit_uuids.push_back(offer->uuid);
+                    }
                 }
                 break;
             }
-            case 1: outcome.action_family = "reroll"; break;
+            case 1:
+                outcome.action_family = "reroll";
+                if (player_env.shop) {
+                    for (std::size_t slot = 0; slot < kShopSlots; ++slot) {
+                        const auto* offer = player_env.shop->get_unit(static_cast<std::int32_t>(slot));
+                        if (offer) outcome.candidate_unit_uuids.push_back(offer->uuid);
+                    }
+                }
+                break;
             case 2: outcome.action_family = "xp_purchase"; break;
             case 3:
                 outcome.action_family = "deploy";
