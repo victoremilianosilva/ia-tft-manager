@@ -841,7 +841,7 @@ class Trainer:
                 if not isinstance(action_event, dict) or not {
                     "contract_id", "contract_version", "event_id", "engine_instance_id",
                     "episode_id", "player_id", "outcome_player_decision_sequence",
-                    "mask_permitted", "preflight_accepted", "handler_applied", "decision_advanced", "status_reason",
+                    "mask_permitted", "preflight_accepted", "handler_applied", "decision_advanced", "execution_status", "status_reason",
                 }.issubset(action_event):
                     raise RuntimeError(
                         f"ActionOutcomeEvent inválido para lobby {lobby_idx}, jogador {player_id}."
@@ -855,6 +855,8 @@ class Trainer:
                     or int(action_event["outcome_player_decision_sequence"]) != int(row.get("player_decision_sequence", -1))
                     or action_event["preflight_accepted"] is not True
                     or action_event["decision_advanced"] is not True
+                    or not isinstance(action_event["execution_status"], str)
+                    or not action_event["execution_status"].strip()
                 ):
                     raise RuntimeError(
                         f"ActionOutcomeEvent desalinhado para lobby {lobby_idx}, jogador {player_id}."
