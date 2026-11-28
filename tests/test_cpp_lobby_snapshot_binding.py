@@ -454,11 +454,11 @@ def test_step_masks_are_taken_from_same_native_snapshot(monkeypatch):
         assert all(not mask["type_mask"][8] for mask in masks)
         assert len(info["action_trace"]) == 8
         assert len(info["action_outcome_events"]) == 8
-        assert info["action_outcome_events"][0]["contract_id"] == "tft.reward-action-outcome.v1"
-        assert info["action_outcome_events"][0]["action"]["family"] == "pass"
-        assert info["action_outcome_events"][0]["source_decision"]["snapshot_sequence"] == 1
-        assert info["action_outcome_events"][0]["outcome_snapshot"]["snapshot_sequence"] == 2
-        assert info["action_outcome_events"][0]["reward"] is None
+        assert info["action_outcome_events"][0]["contract_id"] == "tft.engine.action-outcome-event"
+        assert info["action_outcome_events"][0]["action_family"] == "pass"
+        assert info["action_outcome_events"][0]["source_player_decision_sequence"] == 1
+        assert info["action_outcome_events"][0]["outcome_player_decision_sequence"] == 2
+        assert info["reward_audit"]["player_rewards"][0]["action_decision"]["event"] == info["action_outcome_events"][0]
         assert info["reward_audit"]["contract_id"] == "tft.ppo.reward-audit.v1"
         assert info["reward_audit"]["decision_sequence"] == 2
         assert info["reward_audit"]["player_rewards"][0]["components"] == {
@@ -1135,8 +1135,8 @@ def test_published_step_snapshot_isolated_and_source_survives_later_steps(monkey
             [[6, 0, 0, 0, 0, 0] for _ in range(8)]
         )
         second_event = second_info["action_outcome_events"][0]
-        assert second_event["source_decision"]["snapshot_sequence"] == 2
-        assert second_event["outcome_snapshot"]["snapshot_sequence"] == 3
+        assert second_event["source_player_decision_sequence"] == 2
+        assert second_event["outcome_player_decision_sequence"] == 3
         assert second_info["decision_snapshot"]["decision_sequence"] == 3
         assert second_info["reward_audit"]["decision_sequence"] == 3
     finally:
