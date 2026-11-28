@@ -7151,16 +7151,16 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
         auto& anti_loop_projection = target.anti_loop_history;
         anti_loop_projection.current_round = anti_loop_history.current_round;
         anti_loop_projection.state_window_rounds = anti_loop_history.state_window_rounds;
-        const auto signature_fingerprint = [](const decision::PositionSignature& signature) {
-            const auto identity_json = [](const std::optional<decision::UnitIdentity>& identity) {
-                if (!identity) return nlohmann::json(nullptr);
-                nlohmann::json value;
-                value["uuid"] = identity->uuid ? nlohmann::json(*identity->uuid) : nlohmann::json(nullptr);
-                value["id"] = identity->id ? nlohmann::json(*identity->id) : nlohmann::json(nullptr);
-                value["textual_id"] = identity->textual_id ? nlohmann::json(*identity->textual_id) : nlohmann::json(nullptr);
-                value["star"] = identity->star;
-                return value;
-            };
+        const auto identity_json = [](const std::optional<decision::UnitIdentity>& identity) {
+            if (!identity) return nlohmann::json(nullptr);
+            nlohmann::json value;
+            value["uuid"] = identity->uuid ? nlohmann::json(*identity->uuid) : nlohmann::json(nullptr);
+            value["id"] = identity->id ? nlohmann::json(*identity->id) : nlohmann::json(nullptr);
+            value["textual_id"] = identity->textual_id ? nlohmann::json(*identity->textual_id) : nlohmann::json(nullptr);
+            value["star"] = identity->star;
+            return value;
+        };
+        const auto signature_fingerprint = [&](const decision::PositionSignature& signature) {
             nlohmann::json value;
             value["board"] = nlohmann::json::array();
             value["bench"] = nlohmann::json::array();
@@ -7169,8 +7169,17 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
             return semantic::sha256_hex(value.dump(-1, ' ', false));
         };
         anti_loop_projection.position_history_hashes.reserve(anti_loop_history.position_history.size());
-        for (const auto& signature : anti_loop_history.position_history)
-            anti_loop_projection.position_history_hashes.push_back(signature_fingerprint(signature));
+        anti_loop_projection.position_history.reserve(anti_loop_history.position_history.size());
+        for (const auto& signature : anti_loop_history.position_history) {
+            AntiLoopPositionSnapshot position;
+            position.fingerprint = signature_fingerprint(signature);
+            for (std::size_t slot = 0; slot < signature.board.size(); ++slot)
+                position.board_unit_identities[slot] = identity_json(signature.board[slot]).dump(-1, ' ', false);
+            for (std::size_t slot = 0; slot < signature.bench.size(); ++slot)
+                position.bench_unit_identities[slot] = identity_json(signature.bench[slot]).dump(-1, ' ', false);
+            anti_loop_projection.position_history_hashes.push_back(position.fingerprint);
+            anti_loop_projection.position_history.push_back(std::move(position));
+        }
         const auto project_move = [](const decision::MoveRecord& move) {
             AntiLoopMoveSnapshot row;
             row.move_type = move.move_type;
