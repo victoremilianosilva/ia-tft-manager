@@ -17,7 +17,8 @@ The action boundary is published by the C++ Engine as part of the same
   source/outcome decision sequences, requested/normalized/effective action,
   exact mask-bit permission, separate preflight acceptance, handler result/reason, candidate and actually
   affected physical unit UUIDs, catalog references, auto-merge facts and
-  action-economy/XP/level deltas.
+  action-economy/XP/level deltas and explicit execution status (`applied`,
+  `partial`, `no_effect`, `not_processed`, `not_executed`, `rejected`).
 - Item actions additionally publish the native item handler kind, item ID and
   component IDs. Champion IDs remain catalog references, never copy identity.
 
