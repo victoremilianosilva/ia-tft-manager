@@ -952,7 +952,6 @@ class Trainer:
     def _flatten_masks(
         self,
         gym_masks,
-        lobby_player_alive=None,
     ):
         """
         Converte as máscaras:
@@ -1088,73 +1087,16 @@ class Trainer:
                     device=self.device,
                 )
 
-        # ============================================================
-        # ☠️ CORREÇÃO DE JOGADORES MORTOS
-        # ============================================================
-
-        type_mask = flat_masks[
-            "type_mask"
-        ]
-
+        # The native Engine publishes PASS-only masks for eliminated players.
+        # Python never synthesizes legality or consults a second liveness channel.
+        type_mask = flat_masks["type_mask"]
         invalid_agents = ~type_mask.any(dim=1)
-
         if bool(invalid_agents.any()):
-            if lobby_player_alive is None:
-                raise RuntimeError(
-                    "A Engine publicou type_mask vazia, mas o estado de "
-                    "vida dos jogadores não foi fornecido; fallback PASS "
-                    "não pode ser inferido."
-                )
-            if len(lobby_player_alive) != self.num_envs:
-                raise ValueError(
-                    "Quantidade de lobbies no estado de vida "
-                    f"({len(lobby_player_alive)}) != num_envs ({self.num_envs})."
-                )
-
-            alive_rows = []
-            for lobby_idx, players_alive in enumerate(lobby_player_alive):
-                if len(players_alive) != self.PLAYERS_PER_LOBBY:
-                    raise ValueError(
-                        f"Lobby {lobby_idx} possui {len(players_alive)} "
-                        "estados de vida; eram esperados "
-                        f"{self.PLAYERS_PER_LOBBY}."
-                    )
-                alive_rows.extend(bool(value) for value in players_alive)
-
-            alive_agents = torch.as_tensor(
-                alive_rows, dtype=torch.bool, device=self.device
+            indices = torch.nonzero(invalid_agents, as_tuple=False).flatten().tolist()
+            raise RuntimeError(
+                "A Engine publicou type_mask vazia para jogador(es) "
+                f"{indices}; o contrato nativo deve publicar PASS para eliminados."
             )
-            invalid_active_agents = invalid_agents & alive_agents
-            if bool(invalid_active_agents.any()):
-                indices = torch.nonzero(
-                    invalid_active_agents, as_tuple=False
-                ).flatten().tolist()
-                raise RuntimeError(
-                    "A Engine publicou type_mask vazia para jogador(es) "
-                    f"ativo(s): {indices}. Nenhuma ação substituta será "
-                    "fabricada; verifique o produtor nativo de masks."
-                )
-
-            eliminated_agents = invalid_agents & ~alive_agents
-            # PASS is a transport-safe no-op only for players explicitly
-            # reported as eliminated by the authoritative lobby state.
-            type_mask[eliminated_agents] = False
-            type_mask[eliminated_agents, int(ActionType.PASS)] = True
-
-            flat_masks["shop_mask"][eliminated_agents] = False
-            flat_masks["shop_mask"][eliminated_agents, 0] = True
-
-            flat_masks["bench_source_mask"][eliminated_agents] = False
-            flat_masks["bench_source_mask"][eliminated_agents, 0] = True
-
-            flat_masks["board_target_mask"][eliminated_agents] = False
-            flat_masks["board_target_mask"][eliminated_agents, 0] = True
-
-            flat_masks["board_source_mask"][eliminated_agents] = False
-            flat_masks["board_source_mask"][eliminated_agents, 0] = True
-
-            flat_masks["board_move_target_masks"][eliminated_agents] = False
-            flat_masks["board_move_target_masks"][eliminated_agents, 0, 0] = True
 
         return flat_masks
 
@@ -1603,13 +1545,7 @@ class Trainer:
                     )
                 )
 
-                lobby_player_alive = self.vec_env.env_method(
-                    "get_player_liveness"
-                )
-                masks = self._flatten_masks(
-                    gym_masks,
-                    lobby_player_alive=lobby_player_alive,
-                )
+                masks = self._flatten_masks(gym_masks)
 
                 # Hash the exact post-ablation masks consumed by Actor and
                 # persisted with this action; each player has an independent payload.
@@ -2083,13 +2019,7 @@ class Trainer:
                 )
             )
 
-            lobby_player_alive = self.vec_env.env_method(
-                "get_player_liveness"
-            )
-            next_masks = self._flatten_masks(
-                gym_masks,
-                lobby_player_alive=lobby_player_alive,
-            )
+            next_masks = self._flatten_masks(gym_masks)
 
             with torch.no_grad():
 
