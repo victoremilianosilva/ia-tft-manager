@@ -3,6 +3,7 @@
 
 #include "combat/CombatInput.hpp"
 #include "items/ItemActionContract.hpp"
+#include "decision/AntiLoopEngine.hpp"
 
 #include <array>
 #include <cstddef>
@@ -476,6 +477,7 @@ struct AuditPlayerSnapshot {
     double last_item_role_alignment{0.0};
     double last_item_assignment_reward{0.0};
     PlayerActionMasks masks{};
+    AntiLoopHistorySnapshot anti_loop_history{};
 };
 
 struct AuditPoolChampionCount {
@@ -496,8 +498,50 @@ struct AuditSharedPoolSnapshot {
     std::int64_t total_available{0};
     std::vector<AuditPoolChampionCount> champions;
 };
+struct TemporalEvent {
+    std::string contract_id{"tft.engine.temporal-event"};
+    std::uint32_t contract_version{1};
+    std::string event_id;
+    std::string event_type;
+    std::string scope{"player"};
+    std::string engine_instance_id;
+    std::uint64_t episode_id{0};
+    std::uint64_t global_sequence{0};
+    std::uint64_t player_sequence{0};
+    std::int32_t player_id{-1};
+    std::uint32_t round{0};
+    std::uint32_t stage{0};
+    std::string causal_event_id;
+    std::uint64_t source_player_decision_sequence{0};
+    std::uint64_t observed_player_decision_sequence{0};
+    std::string fact_source;
+    std::string unit_uuid;
+    std::string related_unit_uuid;
+    std::string resource;
+    std::int64_t delta{0};
+    std::int64_t value_before{0};
+    std::int64_t value_after{0};
+    bool delayed{false};
+};
+
+struct AntiLoopHistorySnapshot {
+    std::string contract_id{"tft.engine.anti-loop-history"};
+    std::uint32_t contract_version{1};
+    std::uint32_t current_round{0};
+    std::uint32_t state_window_rounds{0};
+    std::vector<decision::MoveRecord> move_history;
+    std::vector<decision::MoveRecord> blocked_moves;
+    std::vector<std::uint32_t> state_visit_counts;
+    std::vector<std::uint32_t> state_visit_rounds;
+};
+
 struct AuditSnapshot {
     AuditSharedPoolSnapshot shared_pool;
+    std::string temporal_contract_id{"tft.engine.temporal-history"};
+    std::uint32_t temporal_contract_version{1};
+    std::uint32_t temporal_retention_events{256};
+    bool temporal_history_complete{true};
+    std::vector<TemporalEvent> temporal_events;
     std::string contract_id{"tft.native-state-snapshot"};
     std::uint32_t contract_version{6};
     // Current native board-slot geometry: rectangular 4x7, not canonical hex.
@@ -685,6 +729,7 @@ struct StepResult {
     // Per-player trace linking caller input to Engine-normalized and applied action.
     std::array<ActionExecutionTrace, kPlayersPerLobby> action_traces{};
     std::array<ActionOutcomeEvent, kPlayersPerLobby> action_outcome_events{};
+    std::vector<TemporalEvent> temporal_events;
 
     bool lobby_done{false};
     std::uint64_t episode_id{0};
