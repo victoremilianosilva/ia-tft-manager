@@ -6022,13 +6022,15 @@ std::array<ActionOutcomeEvent, kPlayersPerLobby> TFTEngine::validate_actions(
             default: event.action_family = "unknown"; break;
         }
         event.mask_permitted = false;
+        event.preflight_accepted = false;
         event.handler_applied = false;
         event.decision_advanced = false;
         try {
             if (impl_->done) throw std::invalid_argument("lobby_finished");
             impl_->validate_action(effective_actions[i]);
+            event.mask_permitted = impl_->action_mask_permitted(i, effective_actions[i]);
             impl_->validate_action_against_masks(i, effective_actions[i]);
-            event.mask_permitted = true;
+            event.preflight_accepted = true;
             event.status_reason = "preflight_accepted";
         } catch (const std::exception& error) {
             event.status_reason = "preflight_rejected";
@@ -6133,7 +6135,8 @@ StepResult TFTEngine::step(
         outcome.requested_action = actions[i].values;
         outcome.normalized_action = actions[i].values;
         outcome.effective_action = effective;
-        outcome.mask_permitted = true; // both native preflight passes completed for the entire batch
+        outcome.mask_permitted = impl_->action_mask_permitted(i, effective_actions[i]);
+        outcome.preflight_accepted = true; // both native preflight passes completed for the entire batch
         outcome.decision_advanced = true;
         switch (effective[0]) {
             case 0: {
