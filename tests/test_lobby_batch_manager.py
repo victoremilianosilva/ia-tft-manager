@@ -303,9 +303,8 @@ def test_native_action_event_records_purchase_candidate_and_affected_uuid():
         manager.reset(seed=9400)
         assert manager.engine(0).set_player_economy_for_testing(0, 10, 2, 0)
         masks = manager.engine(0).get_action_masks()
-        assert masks.shape == (8, 1280)
-        assert bool(masks[0, 0])
-        legal_shop_slots = np.flatnonzero(masks[0, 9:14])
+        assert bool(masks[0]["type_mask"][0])
+        legal_shop_slots = np.flatnonzero(masks[0]["shop_mask"])
         assert legal_shop_slots.size > 0
 
         actions = _pass_actions(1)
@@ -357,8 +356,8 @@ def _buy_one_unit(manager):
     manager.reset(seed=9700)
     assert manager.engine(0).set_player_economy_for_testing(0, 10, 2, 0)
     masks = manager.engine(0).get_action_masks()
-    shop_slots = np.flatnonzero(masks[0, 9:14])
-    assert bool(masks[0, 0]) and shop_slots.size
+    shop_slots = np.flatnonzero(masks[0]["shop_mask"])
+    assert bool(masks[0]["type_mask"][0]) and shop_slots.size
     actions = _pass_actions(1)
     actions[0][0] = [0, int(shop_slots[0]), 0, 0, 0, 0]
     return manager.step(actions)
