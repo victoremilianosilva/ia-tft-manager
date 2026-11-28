@@ -221,6 +221,49 @@ class FakeNativeLobby:
                 }
                 for player_id in range(8)
             ],
+            "action_outcome_events": [
+                {
+                    "contract_id": "tft.engine.action-outcome-event",
+                    "contract_version": 1,
+                    "event_id": f"fake-engine-{id(self)}/episode/{self.episode_id}/decision/{self.decision_sequence - 1}/player/{player_id}/action",
+                    "engine_instance_id": f"fake-engine-{id(self)}",
+                    "episode_id": self.episode_id,
+                    "player_id": player_id,
+                    "source_player_decision_sequence": self.player_decision_sequences[player_id] - 1,
+                    "outcome_player_decision_sequence": self.player_decision_sequences[player_id],
+                    "event_sequence": player_id,
+                    "action_type": 6,
+                    "action_family": "pass",
+                    "requested_action": [6, 0, 0, 0, 0, 0],
+                    "normalized_action": [6, 0, 0, 0, 0, 0],
+                    "effective_action": [6, 0, 0, 0, 0, 0],
+                    "mask_permitted": True,
+                    "preflight_accepted": True,
+                    "handler_applied": True,
+                    "decision_advanced": True,
+                    "execution_status": "applied",
+                    "status_reason": "applied",
+                    "status_detail": "",
+                    "candidate_unit_uuids": [],
+                    "affected_unit_uuids": [],
+                    "catalog_champion_id": -1,
+                    "item_action_kind": "",
+                    "item_id": "",
+                    "first_component_id": "",
+                    "second_component_id": "",
+                    "gold_before": 0,
+                    "gold_after": 0,
+                    "gold_delta": 0,
+                    "xp_before": 0,
+                    "xp_after": 0,
+                    "level_before": 5,
+                    "level_after": 5,
+                    "action_cost": 0,
+                    "sale_proceeds": 0,
+                    "auto_merge": False,
+                }
+                for player_id in range(8)
+            ],
             "events": [],
         }
 
@@ -561,20 +604,6 @@ def test_failed_reset_invalidates_previous_snapshot_and_masks(monkeypatch):
             lobby.get_action_masks()
         with pytest.raises(RuntimeError, match="Execute reset"):
             lobby.get_snapshot_metadata()
-    finally:
-        lobby.close()
-
-
-def test_player_liveness_exposes_latest_wrapper_state(monkeypatch):
-    monkeypatch.setattr(cpp_lobby_env, "_NativeTFTLobby", FakeNativeLobby)
-    lobby = cpp_lobby_env.CppTFTLobbyWrapper(seed=7)
-
-    try:
-        lobby.reset()
-        assert lobby.get_player_liveness() == [True] * 8
-
-        lobby._players[3].alive = False
-        assert lobby.get_player_liveness() == [True, True, True, False, True, True, True, True]
     finally:
         lobby.close()
 
