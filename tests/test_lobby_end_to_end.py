@@ -99,6 +99,11 @@ def test_native_lobby_adapter_executes_a_step():
             assert len(history["state_visit_hashes"]) == len(history["state_visit_counts"])
             assert len(history["state_visit_hashes"]) == len(history["state_visit_rounds"])
             assert len(history["state_visit_hashes"]) == len(history["state_visit_repeated"])
+            assert len(history["position_history"]) == len(history["position_history_hashes"])
+            for position, fingerprint in zip(history["position_history"], history["position_history_hashes"]):
+                assert position["fingerprint"] == fingerprint
+                assert len(position["board_unit_identities"]) == 28
+                assert len(position["bench_unit_identities"]) == 9
         _assert_action_events_match_oracle(info, source_snapshot)
         for player_id, event in enumerate(info["action_outcome_events"]):
             assert event["contract_id"] == "tft.engine.action-outcome-event"
