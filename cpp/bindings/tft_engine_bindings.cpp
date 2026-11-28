@@ -1093,6 +1093,7 @@ py::dict step_to_dict(tft::StepResult step, bool include_numeric_transport = tru
         item["level_after"] = event.level_after;
         item["action_cost"] = event.action_cost;
         item["sale_proceeds"] = event.sale_proceeds;
+        item["auto_merge"] = event.auto_merge;
         action_outcome_events.append(std::move(item));
     }
     result["action_outcome_events"] = std::move(action_outcome_events);
