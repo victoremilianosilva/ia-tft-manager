@@ -2,6 +2,7 @@
 import numpy as np
 
 from cpp_lobby_env import CppTFTLobbyWrapper
+from reward_outcome_producers import build_action_outcome_events
 
 
 def test_native_lobby_adapter_executes_a_step():
@@ -14,6 +15,7 @@ def test_native_lobby_adapter_executes_a_step():
         assert np.isfinite(observations).all()
 
         # Todos os agentes passam; as regras e a resolução permanecem em C++.
+        source_snapshot = lobby.get_snapshot_metadata()["native_state_snapshot"]
         actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
         next_observations, rewards, done, info = lobby.step(actions)
 
@@ -29,11 +31,18 @@ def test_native_lobby_adapter_executes_a_step():
         assert info["action_context"]["contract_version"] == 1
         assert info["action_context"]["action_masks"].shape == (8, 1280)
         assert len(info["action_outcome_events"]) == 8
-        for player_id, event in enumerate(info["action_outcome_events"]):
+        oracle_events = build_action_outcome_events(
+            before_snapshot=source_snapshot,
+            after_snapshot=info["decision_snapshot"]["native_state_snapshot"],
+            action_traces=info["action_trace"],
+        )
+        for player_id, (event, oracle) in enumerate(zip(info["action_outcome_events"], oracle_events)):
             assert event["contract_id"] == "tft.engine.action-outcome-event"
             assert event["player_id"] == player_id
-            assert event["action_family"] == "pass"
-            assert event["handler_applied"] is True
+            assert event["action_family"] == oracle["action"]["family"] == "pass"
+            assert event["action_type"] == oracle["action"]["type"] == 6
+            assert event["handler_applied"] == oracle["action"]["handler_applied"] is True
+            assert event["status_reason"] == oracle["action"]["status_reason"]
             assert event["outcome_player_decision_sequence"] == info["decision_snapshot"]["player_decision_sequences"][player_id]
     finally:
         lobby.close()
