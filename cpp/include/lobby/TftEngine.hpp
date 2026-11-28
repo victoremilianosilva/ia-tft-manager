@@ -634,7 +634,11 @@ struct ActionOutcomeEvent {
     std::int32_t action_type{-1};
     std::string action_family;
     std::array<std::int32_t, kActionComponents> requested_action{};
+    // At this native boundary the adapter has already converted the caller's
+    // action into the canonical six-integer action representation.
+    std::array<std::int32_t, kActionComponents> normalized_action{};
     std::array<std::int32_t, kActionComponents> effective_action{};
+    bool mask_permitted{false};
     bool handler_applied{false};
     std::string status_reason;
     std::vector<std::string> candidate_unit_uuids;
