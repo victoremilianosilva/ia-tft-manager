@@ -1199,7 +1199,7 @@ class CppTFTLobbyWrapper:
                 "decision_advanced": False,
             }
             reasons = "; ".join(
-                f"player {event['player_id']}: {event['status_reason']}"
+                f"player {event['player_id']}: {event.get('status_detail') or event['status_reason']}"
                 for event in rejected
             )
             error = ValueError("Native action preflight rejected the entire batch: " + reasons)
