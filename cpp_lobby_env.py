@@ -1147,8 +1147,25 @@ class CppTFTLobbyWrapper:
             decision_snapshot=self._last_snapshot_metadata,
             source_decision_snapshot=source_decision_snapshot,
         )
+        action_context = {
+            "contract_id": str(result.get("action_context_contract_id", "")),
+            "contract_version": int(result.get("action_context_contract_version", 0)),
+            "engine_instance_id": self._last_snapshot_metadata["engine_instance_id"],
+            "episode_id": self._last_snapshot_metadata["episode_id"],
+            "decision_sequence": self._last_snapshot_metadata["decision_sequence"],
+            "player_decision_sequences": list(self._last_snapshot_metadata["player_decision_sequences"]),
+            "action_mask_contract_id": str(result.get("action_mask_contract_id", "")),
+            "action_mask_contract_version": int(result.get("action_mask_contract_version", 0)),
+            "action_mask_layout": str(result.get("action_mask_layout", "")),
+            "action_masks": self._last_action_masks,
+            "action_traces": action_traces,
+            "action_outcome_events": action_outcome_events,
+        }
+        if action_context["contract_id"] != "tft.engine.action-context" or action_context["contract_version"] != 1:
+            raise RuntimeError("Native ActionContext ausente ou incompatível.")
         info = {
             "players": player_info,
+            "action_context": action_context,
             "action_trace": action_traces,
             "decision_snapshot": copy.deepcopy(self._last_snapshot_metadata),
             "round": int(result.get("round", 0)),
