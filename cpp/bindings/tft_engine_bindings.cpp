@@ -1082,6 +1082,7 @@ py::dict step_to_dict(tft::StepResult step, bool include_numeric_transport = tru
         item["handler_applied"] = event.handler_applied;
         item["decision_advanced"] = event.decision_advanced;
         item["status_reason"] = event.status_reason;
+        item["status_detail"] = event.status_detail;
         item["candidate_unit_uuids"] = event.candidate_unit_uuids;
         item["affected_unit_uuids"] = event.affected_unit_uuids;
         item["catalog_champion_id"] = event.catalog_champion_id;
@@ -1745,6 +1746,7 @@ PYBIND11_MODULE(tft_engine, module) {
                     item["handler_applied"] = event.handler_applied;
                     item["decision_advanced"] = event.decision_advanced;
                     item["status_reason"] = event.status_reason;
+        item["status_detail"] = event.status_detail;
                     result.append(std::move(item));
                 }
                 return result;
