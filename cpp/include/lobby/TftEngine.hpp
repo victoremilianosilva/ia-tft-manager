@@ -489,6 +489,9 @@ struct AuditSharedPoolSnapshot {
     std::string contract_id{"tft.shared-champion-pool-snapshot"};
     std::uint32_t contract_version{2};
     std::string producer{"UnitPool::available"};
+    // SHA-256 of the ordered champion catalog identity (internal ID, API name,
+    // cost and static trait membership) used by this pool snapshot.
+    std::string catalog_fingerprint;
     // Correlation identity and source namespace are inherited from AuditSnapshot.
     std::int64_t total_available{0};
     std::vector<AuditPoolChampionCount> champions;

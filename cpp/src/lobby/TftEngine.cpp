@@ -24,6 +24,7 @@
 #include <vector>
 
 #include "lobby/ChampionCatalog.hpp"
+#include "lobby/SemanticSha256.hpp"
 #include "composition_intelligence/CompositionSourceAdapters.hpp"
 #include "composition_intelligence/StrategicContextBridge.hpp"
 #include "lobby/UnitInstanceFactory.hpp"
@@ -6425,13 +6426,66 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
     auto& pool_snapshot = snapshot.shared_pool;
     pool_snapshot.total_available = impl_->pool->total_available();
     pool_snapshot.champions.reserve(impl_->catalog->size());
+    nlohmann::json catalog_identity = nlohmann::json::array();
     for (const auto& champion : impl_->catalog->all()) {
         pool_snapshot.champions.push_back(AuditPoolChampionCount{
             champion.internal_id, champion.api_name, champion.cost,
             impl_->pool->initial_count(champion.internal_id),
             impl_->pool->available(champion.internal_id)
         });
+        nlohmann::json row;
+        row["internal_id"] = champion.internal_id;
+        row["api_name"] = champion.api_name;
+        row["character_name"] = champion.character_name;
+        row["name"] = champion.name;
+        row["cost"] = champion.cost;
+        row["role"] = champion.role;
+        row["role_name"] = champion.role_name;
+        row["traits"] = champion.traits;
+        row["stats"] = {
+            {"max_hp", champion.stats.max_hp},
+            {"attack_damage", champion.stats.attack_damage},
+            {"attack_speed", champion.stats.attack_speed},
+            {"armor", champion.stats.armor},
+            {"magic_resist", champion.stats.magic_resist},
+            {"attack_range", champion.stats.attack_range}
+        };
+        row["combat_profile"] = {
+            {"role", champion.combat_profile.role},
+            {"role_name", champion.combat_profile.role_name},
+            {"frontline", champion.combat_profile.frontline},
+            {"backline", champion.combat_profile.backline},
+            {"is_tank", champion.combat_profile.is_tank},
+            {"is_carry", champion.combat_profile.is_carry},
+            {"is_support", champion.combat_profile.is_support},
+            {"is_fighter", champion.combat_profile.is_fighter},
+            {"is_assassin", champion.combat_profile.is_assassin},
+            {"attack_range", champion.combat_profile.attack_range},
+            {"attack_speed", champion.combat_profile.attack_speed},
+            {"attack_damage", champion.combat_profile.attack_damage},
+            {"armor", champion.combat_profile.armor},
+            {"magic_resist", champion.combat_profile.magic_resist},
+            {"max_hp", champion.combat_profile.max_hp},
+            {"max_mana", champion.combat_profile.max_mana}
+        };
+        row["ability"] = {
+            {"name", champion.ability.name},
+            {"description", champion.ability.description},
+            {"icon", champion.ability.icon}
+        };
+        row["ability"]["variables"] = nlohmann::json::array();
+        for (const auto& variable : champion.ability.variables) {
+            row["ability"]["variables"].push_back({
+                {"name", variable.name}, {"values", variable.values}
+            });
+        }
+        row["icon"] = champion.icon;
+        row["square_icon"] = champion.square_icon;
+        row["tile_icon"] = champion.tile_icon;
+        catalog_identity.push_back(std::move(row));
     }
+    pool_snapshot.catalog_fingerprint =
+        semantic::sha256_hex(catalog_identity.dump(-1, ' ', false));
 
     const auto describe_unit = [this](
         const UnitInstance* unit, bool on_board, std::size_t slot
