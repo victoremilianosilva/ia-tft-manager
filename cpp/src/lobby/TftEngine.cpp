@@ -6030,10 +6030,6 @@ ResetResult TFTEngine::reset(
         result.player_decision_sequences[i] = ++impl_->player_decision_sequences[i];
     }
     result.native_state_snapshot = get_audit_snapshot();
-    for (const auto& event : impl_->temporal_history) {
-        if (event.global_sequence > temporal_sequence_before_step)
-            result.temporal_events.push_back(event);
-    }
 
     return result;
 }
@@ -6761,6 +6757,10 @@ StepResult TFTEngine::step(
     result.stage = impl_->stage;
     result.alive_players = impl_->alive_players;
     result.native_state_snapshot = get_audit_snapshot();
+    for (const auto& event : impl_->temporal_history) {
+        if (event.global_sequence > temporal_sequence_before_step)
+            result.temporal_events.push_back(event);
+    }
 
     result.events.emplace_back(
         "Acoes de loja, economia, venda e movimentacao "
