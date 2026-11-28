@@ -232,7 +232,14 @@ def test_native_packed_masks_match_structured_compatibility_path(trainer):
         lobby.reset(seed=132)
         structured = lobby._engine.get_action_masks()
         packed = lobby.get_packed_action_masks_for_training()
-        expected_packed = CppTFTLobbyWrapper._copy_action_masks(structured)
+        expected_players = CppTFTLobbyWrapper._copy_action_masks(structured)
+        expected_packed = np.stack([
+            np.concatenate([
+                np.asarray(expected_players[player_id][key], dtype=np.bool_).reshape(-1)
+                for key, _shape in CppTFTLobbyWrapper._PACKED_ACTION_MASK_LAYOUT
+            ])
+            for player_id in range(CppTFTLobbyWrapper.PLAYERS_PER_LOBBY)
+        ])
         np.testing.assert_array_equal(packed, expected_packed)
 
         packed_views = trainer._flatten_masks([packed])
