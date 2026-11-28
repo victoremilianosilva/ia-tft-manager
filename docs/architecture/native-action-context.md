@@ -43,8 +43,12 @@ event beside the exact transition metadata.
 ## Boundaries
 
 A malformed batch or action rejected by native preflight still raises before
-any player action is executed; it is not represented as a successful step
-event. The event's `handler_applied` and `status_reason` describe handler
-execution, not causal reward eligibility. Candidate references describe the entities addressed by the selected action;
-affected references are emitted by the handler only when an effect actually
-occurred. Champion IDs are catalog references and are never used as copy IDs.
+any player action is executed. The wrapper attaches the eight native preflight
+reports to the exception's `action_context`; rejected reports carry
+`mask_permitted=false`, `decision_advanced=false`, a stable rejection code and
+a diagnostic detail. They are never recorded as completed rollout transitions.
+The event's `handler_applied` and `status_reason` describe handler execution,
+not causal reward eligibility. Candidate references describe the entities
+addressed by the selected action; affected references are emitted by the
+handler only when an effect actually occurred. Champion IDs are catalog
+references and are never used as copy IDs.
