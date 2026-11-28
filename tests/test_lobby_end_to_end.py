@@ -159,3 +159,29 @@ def test_native_action_event_reports_capacity_noop_without_fabricated_effect():
         assert event["affected_unit_uuids"] == []
     finally:
         lobby.close()
+
+
+def test_native_action_event_tracks_both_entities_in_board_swap():
+    lobby = CppTFTLobbyWrapper(seed=128)
+    try:
+        lobby.reset(seed=128)
+        champion_names = list(lobby._engine.get_champion_id_map())
+        assert len(champion_names) >= 2
+        assert lobby._engine.set_unit_for_testing(0, True, 0, champion_names[0])
+        assert lobby._engine.set_unit_for_testing(0, True, 1, champion_names[1])
+        masks = lobby._engine.get_action_masks()[0]
+        move_matrix = np.asarray(masks["board_move_target_masks"]).reshape(28, 28)
+        sources, destinations = np.where(move_matrix)
+        assert sources.size
+
+        actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        actions[0] = [4, 0, 0, 0, int(sources[0]), int(destinations[0])]
+        _, _, _, info = lobby.step(actions)
+        event = info["action_outcome_events"][0]
+        assert event["action_family"] == "positioning"
+        assert event["handler_applied"] is True
+        assert len(event["candidate_unit_uuids"]) == 2
+        assert len(event["affected_unit_uuids"]) == 2
+        assert len(set(event["affected_unit_uuids"])) == 2
+    finally:
+        lobby.close()
