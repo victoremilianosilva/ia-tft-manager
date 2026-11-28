@@ -326,6 +326,7 @@ struct TFTEngine::Impl {
         std::int32_t level_after_action{0};
         std::int32_t xp_before_action{0};
         std::int32_t xp_after_action{0};
+        bool auto_merge{false};
     };
 
     struct PlayerEnv {
@@ -5765,7 +5766,8 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             old_level,
             economy.level,
             old_xp,
-            economy.xp
+            economy.xp,
+            bought_upgrade
         };
 }
 
@@ -6057,6 +6059,7 @@ StepResult TFTEngine::step(
         outcome.level_after = transition.level_after_action;
         outcome.action_cost = transition.action_cost;
         outcome.sale_proceeds = transition.sale_proceeds;
+        outcome.auto_merge = transition.auto_merge;
         outcome.item_action_kind = player_env.last_item_action.kind;
         outcome.item_id = player_env.last_item_action.item_id;
         outcome.first_component_id = player_env.last_item_action.first_component;
