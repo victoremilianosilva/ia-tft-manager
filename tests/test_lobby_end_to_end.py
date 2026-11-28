@@ -18,6 +18,31 @@ def _assert_action_events_match_oracle(info, before_snapshot):
         assert native_event["action_family"] == oracle_event["action"]["family"]
         assert native_event["handler_applied"] == oracle_event["action"]["handler_applied"]
         assert native_event["status_reason"] == oracle_event["action"]["status_reason"]
+        facts = oracle_event["facts"]
+        if facts["gold_delta"] is not None:
+            assert native_event["gold_delta"] == facts["gold_delta"]
+        if native_event["action_family"] == "purchase":
+            expected_units = {
+                unit["uuid"] for unit in facts["units_added"] + facts["units_removed"]
+            } | {unit["uuid"] for unit in facts["upgrades_observed"]}
+            assert set(native_event["affected_unit_uuids"]) == expected_units
+            assert native_event["auto_merge"] is bool(facts["upgrades_observed"])
+        elif native_event["action_family"] == "sale":
+            assert set(native_event["affected_unit_uuids"]) == {
+                unit["uuid"] for unit in facts["units_removed"]
+            }
+            assert native_event["sale_proceeds"] == max(0, facts["gold_delta"] or 0)
+        elif native_event["action_family"] in ("deploy", "positioning"):
+            assert set(native_event["affected_unit_uuids"]) == {
+                move["uuid"] for move in facts["board_unit_moves"]
+            }
+        elif native_event["action_family"] == "item_action":
+            assert set(native_event["affected_unit_uuids"]) == {
+                change["unit_uuid"] for change in facts["item_assignment_changes"]
+            }
+        elif native_event["action_family"] == "xp_purchase":
+            assert native_event["xp_after"] - native_event["xp_before"] == facts["xp_delta"]
+            assert native_event["level_after"] - native_event["level_before"] == facts["level_delta"]
 
 
 def test_native_lobby_adapter_executes_a_step():
