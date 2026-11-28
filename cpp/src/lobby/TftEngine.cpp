@@ -6176,10 +6176,12 @@ StepResult TFTEngine::step(
     std::array<ActionExecutionTrace, kPlayersPerLobby> action_traces{};
     std::array<ActionOutcomeEvent, kPlayersPerLobby> action_outcomes{};
     std::array<bool, kPlayersPerLobby> alive_before_step{};
+    std::array<float, kPlayersPerLobby> hp_before_step{};
     std::array<std::string, kPlayersPerLobby> composition_before_step{};
     std::array<std::uint64_t, kPlayersPerLobby> composition_version_before_step{};
     for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
         alive_before_step[i] = impl_->player_envs[i].info.alive;
+        hp_before_step[i] = impl_->player_envs[i].info.hp;
         const auto active = impl_->composition_intelligence_players[i].active.current();
         if (active) {
             composition_before_step[i] = active->candidate.composition_id;
@@ -6677,6 +6679,13 @@ StepResult TFTEngine::step(
             {}, {}, "gold", event.gold_before_credit, event.gold_after_credit);
     }
     for (std::size_t player = 0; player < kPlayersPerLobby; ++player) {
+        const auto hp_after = impl_->player_envs[player].info.hp;
+        if (std::abs(hp_after - hp_before_step[player]) > 0.001f) {
+            append_delayed_fact("player_health_transition", static_cast<std::int32_t>(player),
+                "TFTEngine::resolve_combats", {}, {}, "hp",
+                static_cast<std::int64_t>(std::llround(hp_before_step[player])),
+                static_cast<std::int64_t>(std::llround(hp_after)));
+        }
         if (alive_before_step[player] && !impl_->player_envs[player].info.alive) {
             append_delayed_fact("player_elimination", static_cast<std::int32_t>(player),
                 "TFTEngine::resolve_combats", {}, {}, "alive", 1, 0);
