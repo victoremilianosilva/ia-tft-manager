@@ -1194,7 +1194,7 @@ class CppTFTLobbyWrapper:
                 source_sequence = int(source_snapshot["decision_sequence"])
                 if current_sequence == source_sequence:
                     preflight_events = self._engine.validate_actions(native_actions)
-                    rejected = [event for event in preflight_events if not event.get("mask_permitted", False)]
+                    rejected = [event for event in preflight_events if not event.get("preflight_accepted", False)]
                     if rejected:
                         error.action_context = {
                             "contract_id": "tft.engine.action-context",
