@@ -240,3 +240,35 @@ def test_native_decision_batch_shapes_scale_with_lobby_count(lobby_count):
         assert [stepped.lobby_result(i)["engine_instance_id"] for i in range(lobby_count)] == manager.engine_instance_ids
     finally:
         manager.close()
+
+
+def test_native_decision_batch_publishes_versioned_action_context_and_events():
+    manager = native.LobbyBatchManager(2, 9100)
+    try:
+        manager.reset(seed=9200)
+        batch = manager.step(_pass_actions(2))
+        assert batch.action_mask_contract_id == "tft.action-masks.packed"
+        assert batch.action_mask_contract_version == 1
+        assert batch.action_mask_layout.startswith("type,shop,bench_source")
+        assert batch.action_masks.shape == (2, 8, 1280)
+        assert batch.action_masks.flags.c_contiguous
+        assert not batch.action_masks.flags.writeable
+
+        for lobby_index in range(2):
+            row = batch.lobby_result(lobby_index)
+            events = row["action_outcome_events"]
+            assert len(events) == 8
+            for player_id, event in enumerate(events):
+                assert event["contract_id"] == "tft.engine.action-outcome-event"
+                assert event["contract_version"] == 1
+                assert event["engine_instance_id"] == row["engine_instance_id"]
+                assert event["episode_id"] == row["episode_id"]
+                assert event["player_id"] == player_id
+                assert event["action_family"] == "pass"
+                assert event["effective_action"] == [6, 0, 0, 0, 0, 0]
+                assert event["handler_applied"] is True
+                assert event["status_reason"] == "applied"
+                assert event["outcome_player_decision_sequence"] == row["player_decision_sequences"][player_id]
+                assert event["source_player_decision_sequence"] + 1 == event["outcome_player_decision_sequence"]
+    finally:
+        manager.close()
