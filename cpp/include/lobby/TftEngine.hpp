@@ -798,6 +798,7 @@ public:
     // Event hooks for the authoritative loot/armory source; these are not policy actions.
     bool grant_item_component(std::int32_t player_id, const std::string& component_id);
     bool grant_completed_item(std::int32_t player_id, const std::string& item_id);
+    bool grant_component_anvil_for_testing(std::int32_t player_id, std::vector<std::string> options);
     bool add_item_component_for_testing(
         std::int32_t player_id, const std::string& component_id
     );
