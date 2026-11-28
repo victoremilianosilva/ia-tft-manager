@@ -574,10 +574,29 @@ def _valid_native_action_trace_rows():
                 "status_reason": "pass",
             }
             for player_id in range(8)
-        ]
+        ],
+        "action_outcome_events": [
+            {
+                "contract_id": "tft.engine.action-outcome-event",
+                "contract_version": 1,
+                "event_id": f"engine-A/episode/4/decision/21/player/{player_id}/action",
+                "engine_instance_id": "engine-A",
+                "episode_id": 4,
+                "player_id": player_id,
+                "outcome_player_decision_sequence": 22,
+                "mask_permitted": True,
+                "handler_applied": True,
+                "status_reason": "applied",
+            }
+            for player_id in range(8)
+        ],
     }]
     result_metadata = [
-        {"lobby_index": 0, "player_id": player_id}
+        {
+            "lobby_index": 0, "player_id": player_id,
+            "engine_instance_id": "engine-A", "episode_id": 4,
+            "player_decision_sequence": 22,
+        }
         for player_id in range(8)
     ]
     return result_metadata, infos
