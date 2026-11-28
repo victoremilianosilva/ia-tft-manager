@@ -120,6 +120,11 @@ def _buy_first_shop_unit(lobby):
     before_snapshot = lobby._engine.get_audit_snapshot()
     _, _, _, info = lobby.step(actions)
     _assert_action_events_match_oracle(info, before_snapshot)
+    assert any(event["event_type"] == "unit_transition" and event["player_id"] == 0
+               for event in info["temporal_events"])
+    assert any(event["event_type"] == "resource_transition"
+               and event["player_id"] == 0 and event["resource"] == "gold"
+               for event in info["temporal_events"])
     return info
 
 
