@@ -1066,6 +1066,7 @@ py::dict step_to_dict(tft::StepResult step, bool include_numeric_transport = tru
         py::dict item;
         item["contract_id"] = event.contract_id;
         item["contract_version"] = event.contract_version;
+        item["event_id"] = event.event_id;
         item["engine_instance_id"] = event.engine_instance_id;
         item["episode_id"] = event.episode_id;
         item["player_id"] = event.player_id;
