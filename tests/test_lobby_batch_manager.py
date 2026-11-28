@@ -288,6 +288,7 @@ def test_native_decision_batch_publishes_versioned_action_context_and_events():
                 assert event["preflight_accepted"] is True
                 assert event["normalized_action"] == event["requested_action"]
                 assert event["handler_applied"] is True
+                assert event["execution_status"] == "applied"
                 assert event["status_reason"] == "applied"
                 assert event["auto_merge"] is False
                 assert event["outcome_player_decision_sequence"] == row["player_decision_sequences"][player_id]
@@ -317,6 +318,7 @@ def test_native_action_event_records_purchase_candidate_and_affected_uuid():
         assert event["preflight_accepted"] is True
         assert event["normalized_action"] == event["requested_action"]
         assert event["handler_applied"] is True
+        assert event["execution_status"] == "applied"
         assert event["catalog_champion_id"] >= 0
         assert event["affected_unit_uuids"]
         assert len(event["affected_unit_uuids"]) == len(set(event["affected_unit_uuids"]))
