@@ -1120,12 +1120,20 @@ struct TFTEngine::Impl {
             batch.board_target_mask;
         current.board_source_mask =
             batch.board_source_mask;
-        current.board_move_target_masks =
-            batch.board_move_target_masks;
+        for (std::size_t source = 0; source < kBoardSlots; ++source) {
+            for (std::size_t target = 0; target < kBoardSlots; ++target) {
+                current.board_move_target_masks[source * kBoardSlots + target] =
+                    batch.board_move_target_masks[source][target];
+            }
+        }
         current.bench_move_source_mask =
             batch.bench_move_source_mask;
-        current.bench_to_board_target_masks =
-            batch.bench_to_board_target_masks;
+        for (std::size_t source = 0; source < kBenchSlots; ++source) {
+            for (std::size_t target = 0; target < kBoardSlots; ++target) {
+                current.bench_to_board_target_masks[source * kBoardSlots + target] =
+                    batch.bench_to_board_target_masks[source][target];
+            }
+        }
 
         // Item masks are generated from the exact per-player ItemEngine state.
         auto& player = player_envs[player_index];
