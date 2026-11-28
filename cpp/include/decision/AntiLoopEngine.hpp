@@ -150,6 +150,8 @@ public:
     ) const;
 
     [[nodiscard]] AntiLoopStateSummary get_state() const;
+    // Read-only bounded records for the temporal context projection.
+    [[nodiscard]] const AntiLoopHistory& history() const noexcept { return history_; }
 
     [[nodiscard]] ExecutionMetrics get_metrics() const;
 
