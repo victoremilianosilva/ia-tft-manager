@@ -695,7 +695,7 @@ class CppTFTLobbyWrapper:
                 ):
                     raise RuntimeError(f"Jogador {player_id} sem contrato tipado de histórico anti-loop.")
                 aligned_history = (
-                    ("state_visit_hashes", "state_visit_counts", "state_visit_rounds"),
+                    ("state_visit_hashes", "state_visit_counts", "state_visit_rounds", "state_visit_repeated"),
                 )
                 for fields in aligned_history:
                     lengths = [len(anti_loop.get(field, ())) for field in fields
