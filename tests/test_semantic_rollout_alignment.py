@@ -128,6 +128,7 @@ def test_rollout_replay_keeps_semantic_identity_and_hash_with_the_same_row():
     }
     decision = dict(identity)
     decision.update({
+        "temporal_causal_anchor_ids": ("old-action-event",),
         "semantic_identity": identity,
         "semantic_entity_identity": entity_identity,
         "semantic_projection_hash": digest,
@@ -176,6 +177,33 @@ def test_rollout_replay_keeps_semantic_identity_and_hash_with_the_same_row():
             "value_before": 0,
             "value_after": 0,
             "delayed": False,
+        }, {
+            "contract_id": "tft.engine.temporal-event",
+            "contract_version": 1,
+            "event_id": "engine-a/episode/1/temporal/old-delayed",
+            "event_type": "economy_resolution",
+            "scope": "player",
+            "engine_instance_id": "engine-a",
+            "episode_id": 1,
+            "global_sequence": 2,
+            "player_sequence": 2,
+            "player_id": 0,
+            "round": 1,
+            "stage": 1,
+            "causal_event_id": "old-action-event",
+            "source_player_decision_sequence": 1,
+            "observed_player_decision_sequence": 3,
+            "fact_source": "EconomyEngine::resolve_round",
+            "transition_kind": "",
+            "identity_before": "",
+            "identity_after": "",
+            "unit_uuid": "",
+            "related_unit_uuid": "",
+            "resource": "gold",
+            "delta": 5,
+            "value_before": 10,
+            "value_after": 15,
+            "delayed": True,
         }],
         "action_outcome_event": {
             "contract_id": "tft.engine.action-outcome-event",
@@ -228,6 +256,7 @@ def test_rollout_replay_keeps_semantic_identity_and_hash_with_the_same_row():
     assert batch["temporal_events"][0][0]["event_type"] == "action_outcome"
     transition = buffer.get_transition_metadata(0, 0)
     assert transition["result_snapshot_metadata"]["temporal_events"][0]["event_type"] == "action_outcome"
+    assert transition["result_snapshot_metadata"]["temporal_events"][1]["causal_event_id"] == "old-action-event"
     assert "temporal_events" not in buffer._metadata_records[0][0][1]
     assert buffer.temporal_events[0][0][0]["event_id"] == result["action_outcome_event"]["event_id"]
 
