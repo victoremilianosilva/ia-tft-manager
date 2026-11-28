@@ -97,6 +97,7 @@ def test_native_lobby_adapter_executes_a_step():
             assert history["contract_id"] == "tft.engine.anti-loop-history"
             assert len(history["state_visit_hashes"]) == len(history["state_visit_counts"])
             assert len(history["state_visit_hashes"]) == len(history["state_visit_rounds"])
+            assert len(history["state_visit_hashes"]) == len(history["state_visit_repeated"])
         _assert_action_events_match_oracle(info, source_snapshot)
         for player_id, event in enumerate(info["action_outcome_events"]):
             assert event["contract_id"] == "tft.engine.action-outcome-event"
