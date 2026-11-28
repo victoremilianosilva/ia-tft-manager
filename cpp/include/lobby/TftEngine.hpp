@@ -640,6 +640,7 @@ struct ActionOutcomeEvent {
     std::array<std::int32_t, kActionComponents> normalized_action{};
     std::array<std::int32_t, kActionComponents> effective_action{};
     bool mask_permitted{false};
+    bool preflight_accepted{false};
     bool handler_applied{false};
     bool decision_advanced{false};
     std::string status_reason;
