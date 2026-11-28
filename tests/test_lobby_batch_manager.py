@@ -256,8 +256,16 @@ def test_native_decision_batch_publishes_versioned_action_context_and_events():
         assert batch.action_masks.flags.c_contiguous
         assert not batch.action_masks.flags.writeable
 
+        action_context = batch.action_context(0)
+        assert action_context["contract_id"] == "tft.engine.action-context"
+        assert action_context["contract_version"] == 1
+        assert np.shares_memory(action_context["action_masks"], batch.action_masks)
+        assert not action_context["action_masks"].flags.writeable
+        assert len(action_context["action_outcome_events"]) == 8
+
         for lobby_index in range(2):
             row = batch.lobby_result(lobby_index)
+            assert row["action_context"]["contract_id"] == "tft.engine.action-context"
             assert row["action_context_contract_id"] == "tft.engine.action-context"
             assert row["action_context_contract_version"] == 1
             assert row["action_mask_contract_id"] == "tft.action-masks.packed"
