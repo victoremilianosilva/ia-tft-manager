@@ -1799,7 +1799,8 @@ PYBIND11_MODULE(tft_engine, module) {
             return result;
         })
         .def_property_readonly("relations", [](const tft::NativeSpatialContext& context) {
-            py::array_t<std::int32_t> result({static_cast<py::ssize_t>(context.relations().size()), 3});
+            py::array_t<std::int32_t> result(py::array::ShapeContainer{
+                static_cast<py::ssize_t>(context.relations().size()), static_cast<py::ssize_t>(3)});
             auto out = result.mutable_unchecked<2>();
             for (std::size_t i = 0; i < context.relations().size(); ++i) {
                 const auto& relation = context.relations()[i];
