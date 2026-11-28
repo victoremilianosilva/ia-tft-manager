@@ -1175,6 +1175,35 @@ py::dict step_to_dict(tft::StepResult step, bool include_numeric_transport = tru
         action_outcome_events.append(std::move(item));
     }
     result["action_outcome_events"] = std::move(action_outcome_events);
+    py::list temporal_events;
+    for (const auto& event : step.temporal_events) {
+        py::dict row;
+        row["contract_id"] = event.contract_id;
+        row["contract_version"] = event.contract_version;
+        row["event_id"] = event.event_id;
+        row["event_type"] = event.event_type;
+        row["scope"] = event.scope;
+        row["engine_instance_id"] = event.engine_instance_id;
+        row["episode_id"] = event.episode_id;
+        row["global_sequence"] = event.global_sequence;
+        row["player_sequence"] = event.player_sequence;
+        row["player_id"] = event.player_id;
+        row["round"] = event.round;
+        row["stage"] = event.stage;
+        row["causal_event_id"] = event.causal_event_id;
+        row["source_player_decision_sequence"] = event.source_player_decision_sequence;
+        row["observed_player_decision_sequence"] = event.observed_player_decision_sequence;
+        row["fact_source"] = event.fact_source;
+        row["unit_uuid"] = event.unit_uuid;
+        row["related_unit_uuid"] = event.related_unit_uuid;
+        row["resource"] = event.resource;
+        row["delta"] = event.delta;
+        row["value_before"] = event.value_before;
+        row["value_after"] = event.value_after;
+        row["delayed"] = event.delayed;
+        temporal_events.append(std::move(row));
+    }
+    result["temporal_events"] = std::move(temporal_events);
     result["events"] = step.events;
 
     return result;
