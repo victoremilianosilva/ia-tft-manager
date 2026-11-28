@@ -1005,6 +1005,11 @@ py::dict reset_to_dict(tft::ResetResult reset, bool include_numeric_transport = 
 
 py::dict step_to_dict(tft::StepResult step, bool include_numeric_transport = true) {
     py::dict result;
+    result["action_context_contract_id"] = "tft.engine.action-context";
+    result["action_context_contract_version"] = 1;
+    result["action_mask_contract_id"] = "tft.action-masks.packed";
+    result["action_mask_contract_version"] = 1;
+    result["action_mask_layout"] = "type,shop,bench_source,board_target,board_source,board_move_target,bench_move_source,bench_to_board_target,item_inventory,item_component_first,item_component_pair,item_target";
 
     if (include_numeric_transport) {
         result["observations"] = observations_to_array(step.observations, step.observation_dim);
@@ -1951,6 +1956,8 @@ PYBIND11_MODULE(tft_engine, module) {
         .def_property_readonly("players_per_lobby", [](const NativeDecisionBatch&) { return NativeDecisionBatch::kPlayers; })
         .def_property_readonly("observation_dim", &NativeDecisionBatch::observation_dim)
         .def_property_readonly("action_mask_width", &NativeDecisionBatch::mask_width)
+        .def_property_readonly("action_context_contract_id", [](const NativeDecisionBatch&) { return "tft.engine.action-context"; })
+        .def_property_readonly("action_context_contract_version", [](const NativeDecisionBatch&) { return 1; })
         .def_property_readonly("action_mask_contract_id", [](const NativeDecisionBatch&) { return "tft.action-masks.packed"; })
         .def_property_readonly("action_mask_contract_version", [](const NativeDecisionBatch&) { return 1; })
         .def_property_readonly("action_mask_layout", [](const NativeDecisionBatch&) { return "type,shop,bench_source,board_target,board_source,board_move_target,bench_move_source,bench_to_board_target,item_inventory,item_component_first,item_component_pair,item_target"; })
