@@ -272,6 +272,8 @@ def test_native_decision_batch_publishes_versioned_action_context_and_events():
                 assert event["player_id"] == player_id
                 assert event["action_family"] == "pass"
                 assert event["effective_action"] == [6, 0, 0, 0, 0, 0]
+                assert event["mask_permitted"] is True
+                assert event["normalized_action"] == event["requested_action"]
                 assert event["handler_applied"] is True
                 assert event["status_reason"] == "applied"
                 assert event["auto_merge"] is False
@@ -298,6 +300,8 @@ def test_native_action_event_records_purchase_candidate_and_affected_uuid():
 
         assert event["action_family"] == "purchase"
         assert event["action_type"] == 0
+        assert event["mask_permitted"] is True
+        assert event["normalized_action"] == event["requested_action"]
         assert event["handler_applied"] is True
         assert event["catalog_champion_id"] >= 0
         assert event["affected_unit_uuids"]
