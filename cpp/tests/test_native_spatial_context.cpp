@@ -3,7 +3,7 @@
 #include "lobby/NativeSpatialContext.hpp"
 int main(){
  auto s=std::make_shared<tft::AuditSnapshot>(); auto& p=s->players[0];
- auto& a=p.board[1];a.occupied=true;a.uuid="tank-a";a.champion_internal_id=10;a.role=0;a.attack_damage=40;
+ auto& a=p.board[1];a.occupied=true;a.uuid="tank-a";a.champion_internal_id=10;a.role=0;a.attack_damage=40;a.trait_names={"Frontline","Trait_A"};
  auto& b=p.board[8];b.occupied=true;b.uuid="carry-b";b.champion_internal_id=11;b.role=1;
  auto& c=p.board[9];c.occupied=true;c.uuid="carry-c";c.champion_internal_id=11;c.role=1;
  tft::NativeSpatialContext x(s,0);assert(x.availability()==tft::ContextAvailability::Complete);
