@@ -1419,18 +1419,18 @@ struct TFTEngine::Impl {
             case 5:
                 return in_range(values[2], kBenchSlots) && masks.bench_source_mask[values[2]];
             case 7: {
-                if (!in_range(values[1], kItemInventorySlots)) return false;
+                if (!in_range(values[1], masks.item_inventory_mask.size())) return false;
                 const auto* pending_anvil = player_envs[player_id].item_engine
                     ? player_envs[player_id].item_engine->pending_anvil() : nullptr;
                 const auto target = pending_anvil ? 0 : values[2];
-                return masks.item_inventory_mask[values[1]] && in_range(target, kItemTargetSlots) &&
+                return masks.item_inventory_mask[values[1]] && in_range(target, masks.item_target_mask.size()) &&
                     masks.item_target_mask[target];
             }
             case 8:
-                return in_range(values[1], kItemComponentSlots) &&
-                    in_range(values[2], kItemComponentSlots) &&
-                    in_range(values[3], kItemTargetSlots) &&
-                    masks.item_component_pair_masks[static_cast<std::size_t>(values[1]) * kItemComponentSlots +
+                return in_range(values[1], masks.item_component_first_mask.size()) &&
+                    in_range(values[2], masks.item_component_first_mask.size()) &&
+                    in_range(values[3], masks.item_target_mask.size()) &&
+                    masks.item_component_pair_masks[static_cast<std::size_t>(values[1]) * masks.item_component_first_mask.size() +
                         static_cast<std::size_t>(values[2])] && masks.item_target_mask[values[3]];
             default:
                 return false;
