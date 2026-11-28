@@ -35,6 +35,7 @@ def _inputs(*, action=None, combat=None, placement=None, combat_sequence=4,
             "effective_action": [6, 0, 0, 0, 0, 0],
             "mask_permitted": True,
             "handler_applied": True,
+            "decision_advanced": True,
             "status_reason": "applied",
         }
         for player_id in range(8)
