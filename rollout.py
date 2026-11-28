@@ -1000,7 +1000,7 @@ class RolloutBuffer:
 
     @property
     def temporal_events(self):
-        return [None if rows is None else [list(events) for events in rows]
+        return [None if rows is None else copy.deepcopy([list(events) for events in rows])
                 for rows in self._temporal_records]
 
     @property
@@ -1554,6 +1554,7 @@ class RolloutBuffer:
 
         for index in range(self.ptr):
             self._metadata_records[index] = None
+            self._temporal_records[index] = None
         self.ptr = 0
 
         # ------------------------------------------------------------
