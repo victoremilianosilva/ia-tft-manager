@@ -643,6 +643,7 @@ struct ActionOutcomeEvent {
     bool handler_applied{false};
     bool decision_advanced{false};
     std::string status_reason;
+    std::string status_detail;
     std::vector<std::string> candidate_unit_uuids;
     std::vector<std::string> affected_unit_uuids;
     std::int32_t catalog_champion_id{-1};
