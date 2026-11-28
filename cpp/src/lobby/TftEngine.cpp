@@ -5931,6 +5931,66 @@ ResetResult TFTEngine::reset(
 // STEP
 // ============================================================
 
+std::array<ActionOutcomeEvent, kPlayersPerLobby> TFTEngine::validate_actions(
+    const std::array<PlayerAction, kPlayersPerLobby>& actions
+) {
+    if (!impl_) throw std::runtime_error("TFTEngine nao possui estado interno.");
+    impl_->ensure_open();
+
+    auto effective_actions = actions;
+    for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+        const auto* pending_anvil = impl_->player_envs[i].item_engine
+            ? impl_->player_envs[i].item_engine->pending_anvil() : nullptr;
+        if (impl_->round_finished[i] && pending_anvil == nullptr)
+            effective_actions[i].values = {6, 0, 0, 0, 0, 0};
+    }
+
+    std::array<ActionOutcomeEvent, kPlayersPerLobby> events{};
+    for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+        auto& event = events[i];
+        event.engine_instance_id = impl_->engine_instance_id;
+        event.episode_id = impl_->episode_id;
+        event.player_id = static_cast<std::int32_t>(i);
+        event.source_player_decision_sequence = impl_->player_decision_sequences[i];
+        event.outcome_player_decision_sequence = impl_->player_decision_sequences[i];
+        event.event_sequence = static_cast<std::uint64_t>(i);
+        event.event_id = impl_->engine_instance_id + "/episode/" +
+            std::to_string(impl_->episode_id) + "/decision/" +
+            std::to_string(impl_->player_decision_sequences[i]) + "/player/" +
+            std::to_string(i) + "/preflight";
+        event.requested_action = actions[i].values;
+        event.normalized_action = actions[i].values;
+        event.effective_action = effective_actions[i].values;
+        event.action_type = effective_actions[i].values[0];
+        switch (event.action_type) {
+            case 0: event.action_family = "purchase"; break;
+            case 1: event.action_family = "reroll"; break;
+            case 2: event.action_family = "xp_purchase"; break;
+            case 3: event.action_family = "deploy"; break;
+            case 4: event.action_family = "positioning"; break;
+            case 5: event.action_family = "sale"; break;
+            case 6: event.action_family = "pass"; break;
+            case 7:
+            case 8: event.action_family = "item_action"; break;
+            default: event.action_family = "unknown"; break;
+        }
+        event.mask_permitted = false;
+        event.handler_applied = false;
+        event.decision_advanced = false;
+        try {
+            if (impl_->done) throw std::invalid_argument("lobby_finished");
+            impl_->validate_action(effective_actions[i]);
+            impl_->validate_action_against_masks(i, effective_actions[i]);
+            event.mask_permitted = true;
+            event.status_reason = "preflight_accepted";
+        } catch (const std::exception& error) {
+            event.status_reason = error.what();
+        }
+    }
+    return events;
+}
+
+
 StepResult TFTEngine::step(
     const std::array<PlayerAction, kPlayersPerLobby>& actions,
     bool timer_enabled,
@@ -6026,6 +6086,7 @@ StepResult TFTEngine::step(
         outcome.normalized_action = actions[i].values;
         outcome.effective_action = effective;
         outcome.mask_permitted = true; // both native preflight passes completed for the entire batch
+        outcome.decision_advanced = true;
         switch (effective[0]) {
             case 0: {
                 outcome.action_family = "purchase";
