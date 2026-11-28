@@ -6003,7 +6003,9 @@ StepResult TFTEngine::step(
         outcome.event_sequence = static_cast<std::uint64_t>(i);
         outcome.action_type = effective[0];
         outcome.requested_action = actions[i].values;
+        outcome.normalized_action = actions[i].values;
         outcome.effective_action = effective;
+        outcome.mask_permitted = true; // both native preflight passes completed for the entire batch
         switch (effective[0]) {
             case 0: {
                 outcome.action_family = "purchase";
