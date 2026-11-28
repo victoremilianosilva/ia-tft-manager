@@ -133,3 +133,29 @@ def test_native_preflight_rejection_is_a_factual_event_without_state_advance():
         assert lobby._engine.get_audit_snapshot()["snapshot_sequence"] == before
     finally:
         lobby.close()
+
+
+def test_native_action_event_reports_capacity_noop_without_fabricated_effect():
+    lobby = CppTFTLobbyWrapper(seed=127)
+    try:
+        lobby.reset(seed=127)
+        champion_api_name = next(iter(lobby._engine.get_champion_id_map()))
+        assert lobby._engine.set_unit_for_testing(0, True, 0, champion_api_name)
+        assert lobby._engine.set_unit_for_testing(0, False, 0, champion_api_name)
+        masks = lobby._engine.get_action_masks()[0]
+        assert masks["type_mask"][3] == 1
+        assert masks["bench_move_source_mask"][0] == 1
+
+        actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        # The board has reached level capacity; moving the bench unit to an
+        # empty slot is structurally valid but produces an explicit no-op.
+        actions[0] = [3, 0, 0, 1, 0, 0]
+        _, _, _, info = lobby.step(actions)
+        event = info["action_outcome_events"][0]
+        assert event["mask_permitted"] is True
+        assert event["handler_applied"] is False
+        assert event["status_reason"] == "board_capacity_limit"
+        assert event["candidate_unit_uuids"]
+        assert event["affected_unit_uuids"] == []
+    finally:
+        lobby.close()
