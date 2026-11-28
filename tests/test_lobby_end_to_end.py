@@ -290,6 +290,8 @@ def test_native_action_event_reports_auto_merge_and_all_consumed_unit_uuids():
         assert event["handler_applied"] is True
         assert event["auto_merge"] is True
         assert event["execution_status"] == "applied"
+        assert len(event["candidate_unit_uuids"]) == 1
+        assert event["candidate_unit_uuids"][0] in event["affected_unit_uuids"]
         assert len(event["affected_unit_uuids"]) == 3
         assert len(set(event["affected_unit_uuids"])) == 3
     finally:
