@@ -1143,6 +1143,7 @@ class CppTFTLobbyWrapper:
             combat_rewards=combat_rewards,
             placement_rewards=placement_rewards,
             action_traces=action_traces,
+            action_outcome_events=action_outcome_events,
             players=player_info,
             decision_snapshot=self._last_snapshot_metadata,
             source_decision_snapshot=source_decision_snapshot,
