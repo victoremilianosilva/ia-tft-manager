@@ -6606,6 +6606,13 @@ StepResult TFTEngine::step(
         if (alive_before_step[player] && !impl_->player_envs[player].info.alive) {
             append_delayed_fact("player_elimination", static_cast<std::int32_t>(player),
                 "TFTEngine::resolve_combats", {}, {}, "alive", 1, 0);
+            impl_->player_envs[player].anti_loop.reset();
+            impl_->latest_board_action_event_ids[player].clear();
+            impl_->latest_economic_action_event_ids[player].clear();
+            impl_->latest_board_action_sequences[player] = 0;
+            impl_->latest_economic_action_sequences[player] = 0;
+            impl_->latest_board_action_rounds[player] = 0;
+            impl_->latest_economic_action_rounds[player] = 0;
         }
     }
         TemporalEvent event;
@@ -8018,6 +8025,15 @@ void TFTEngine::close() noexcept {
     }
 
     impl_->closed = true;
+    impl_->temporal_history.clear();
+    impl_->temporal_event_sequence = 0;
+    impl_->temporal_history_truncated = false;
+    impl_->latest_board_action_event_ids.fill(std::string{});
+    impl_->latest_economic_action_event_ids.fill(std::string{});
+    impl_->latest_board_action_sequences.fill(0);
+    impl_->latest_economic_action_sequences.fill(0);
+    impl_->latest_board_action_rounds.fill(0);
+    impl_->latest_economic_action_rounds.fill(0);
 }
 
 } // namespace tft
