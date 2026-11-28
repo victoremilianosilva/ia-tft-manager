@@ -1,5 +1,6 @@
 """Smoke test da interface Python fina sobre a lobby nativa C++."""
 import numpy as np
+import pytest
 
 from cpp_lobby_env import CppTFTLobbyWrapper
 from reward_outcome_producers import build_action_outcome_events
