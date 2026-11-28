@@ -4,7 +4,7 @@
 
 `TFTEngine::Impl` owns one bounded temporal stream per Engine instance and episode. It is separate from `AuditSnapshot`: snapshots remain point-in-time audit projections, while the temporal stream contains incremental facts emitted by their native producers. The stream is not a reward source, PPO target, prediction, or substitute for action masks.
 
-The public contract is `tft.engine.temporal-history` v1. Individual records use `tft.engine.temporal-event` v1.
+The audit snapshot envelope is `tft.native-state-snapshot` v7. Its temporal contract is `tft.engine.temporal-history` v1, with individual records using `tft.engine.temporal-event` v1. `NativeDecisionContext` exposes temporal availability, retained records, anti-loop history, and the compact per-player causal anchors.
 
 ## Event envelope
 
@@ -39,6 +39,6 @@ Each player snapshot exposes a typed, bounded `anti_loop_history` projection: po
 
 ## Rollout ownership
 
-Trainer attaches only player-owned events to each player row; the lobby boundary event is assigned once to player 0 to avoid eightfold duplication. Rollout validates event contract, identity, ordering, owner isolation, action-event linkage, and causal sequence ordering. The incremental event records are stored once in a compact sidecar, not repeated inside decision/result/next snapshot metadata. The result and next observation retain distinct identity, including terminal result versus post-auto-reset observation.
+Trainer attaches only player-owned events to each player row; the lobby boundary event is assigned once to player 0 to avoid eightfold duplication. Rollout validates event contract, identity, ordering, owner isolation, action-event linkage, and causal sequence ordering. The incremental event records are stored once in a compact sidecar, not repeated inside decision/result/next snapshot metadata. Compact latest board/economy anchor IDs are included in the native snapshot so a new RolloutBuffer can validate delayed references that cross PPO buffer boundaries; truncated history is explicitly marked partial. The result and next observation retain distinct identity, including terminal result versus post-auto-reset observation.
 
 The numeric PPO tensors, GAE, action masks, rewards, and checkpoint formats are unchanged by this audit/context stream.
