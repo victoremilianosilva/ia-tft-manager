@@ -556,6 +556,9 @@ struct AuditSnapshot {
     std::uint32_t temporal_retention_events{256};
     bool temporal_history_complete{true};
     std::vector<TemporalEvent> temporal_events;
+    // Latest same-episode board/economy action anchors per player; compact
+    // seeds let a fresh PPO rollout validate delayed references across buffers.
+    std::array<std::array<std::string, 2>, kPlayersPerLobby> temporal_causal_anchor_ids{};
     std::string contract_id{"tft.native-state-snapshot"};
     std::uint32_t contract_version{6};
     // Current native board-slot geometry: rectangular 4x7, not canonical hex.
