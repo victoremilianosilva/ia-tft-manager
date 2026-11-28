@@ -1207,6 +1207,7 @@ class CppTFTLobbyWrapper:
                     "Buffer compacto de action masks inválido: "
                     f"dtype={masks.dtype}, shape={masks.shape}, esperado bool{expected}."
                 )
+            masks.flags.writeable = False
             return masks
         # Keep legacy fixtures/adapters supported through the structured path.
         cls._copy_action_masks(masks)
