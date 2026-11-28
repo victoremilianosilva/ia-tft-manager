@@ -783,7 +783,6 @@ public:
         const std::string& champion_api_name,
         std::int32_t star = 1
     );
-    bool set_shop_offer_for_testing(std::int32_t player_id, std::int32_t slot, const std::string& champion_api_name);
     // Deterministic fixture hook for combat/equipment regression tests only.
     bool set_unit_items_for_testing(
         std::int32_t player_id,
