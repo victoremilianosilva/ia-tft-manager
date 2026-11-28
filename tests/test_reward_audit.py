@@ -19,6 +19,7 @@ def _inputs(*, action=None, combat=None, placement=None, combat_sequence=4,
         }
         for player_id in range(8)
     ]
+    source_sequence = decision_sequence - 1
     action_events = [
         {
             "contract_id": "tft.engine.action-outcome-event",
@@ -42,7 +43,6 @@ def _inputs(*, action=None, combat=None, placement=None, combat_sequence=4,
         }
         for player_id in range(8)
     ]
-    source_sequence = decision_sequence - 1
     source_player_sequences = [source_sequence] * 8
     source_metadata = {
         "engine_instance_id": "engine-test",
