@@ -536,6 +536,9 @@ struct TemporalEvent {
     std::uint64_t source_player_decision_sequence{0};
     std::uint64_t observed_player_decision_sequence{0};
     std::string fact_source;
+    std::string transition_kind;
+    std::string identity_before;
+    std::string identity_after;
     std::string unit_uuid;
     std::string related_unit_uuid;
     std::string resource;
