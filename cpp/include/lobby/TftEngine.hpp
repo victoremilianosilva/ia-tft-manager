@@ -620,6 +620,36 @@ struct ActionExecutionTrace {
     std::string status_reason;
 };
 
+// One factual action result emitted by the native handler. This is an audit
+// event, not a reward/label and never influences PPO targets.
+struct ActionOutcomeEvent {
+    std::string contract_id{"tft.engine.action-outcome-event"};
+    std::uint32_t contract_version{1};
+    std::string engine_instance_id;
+    std::uint64_t episode_id{0};
+    std::int32_t player_id{-1};
+    std::uint64_t source_player_decision_sequence{0};
+    std::uint64_t outcome_player_decision_sequence{0};
+    std::uint64_t event_sequence{0};
+    std::int32_t action_type{-1};
+    std::string action_family;
+    std::array<std::int32_t, kActionComponents> requested_action{};
+    std::array<std::int32_t, kActionComponents> effective_action{};
+    bool handler_applied{false};
+    std::string status_reason;
+    std::vector<std::string> affected_unit_uuids;
+    std::int32_t catalog_champion_id{-1};
+    std::int32_t gold_before{0};
+    std::int32_t gold_after{0};
+    std::int32_t gold_delta{0};
+    std::int32_t xp_before{0};
+    std::int32_t xp_after{0};
+    std::int32_t level_before{0};
+    std::int32_t level_after{0};
+    std::int32_t action_cost{0};
+    std::int32_t sale_proceeds{0};
+};
+
 struct StepResult {
     std::string engine_instance_id;
     // Row-major: (8, observation_dim).
@@ -639,6 +669,7 @@ struct StepResult {
     std::array<PlayerInfo, kPlayersPerLobby> players{};
     // Per-player trace linking caller input to Engine-normalized and applied action.
     std::array<ActionExecutionTrace, kPlayersPerLobby> action_traces{};
+    std::array<ActionOutcomeEvent, kPlayersPerLobby> action_outcome_events{};
 
     bool lobby_done{false};
     std::uint64_t episode_id{0};
