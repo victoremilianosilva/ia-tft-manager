@@ -7221,6 +7221,18 @@ bool TFTEngine::set_shop_offer_for_testing(
     return true;
 }
 
+bool TFTEngine::set_player_alive_for_testing(std::int32_t player_id, bool alive) {
+    if (!impl_) throw std::runtime_error("TFTEngine nao possui estado interno.");
+    impl_->ensure_open();
+    if (player_id < 0 || static_cast<std::size_t>(player_id) >= kPlayersPerLobby)
+        return false;
+    auto& player = impl_->player_envs[static_cast<std::size_t>(player_id)];
+    player.info.alive = alive;
+    player.info.eliminated = !alive;
+    impl_->refresh_masks(static_cast<std::size_t>(player_id));
+    return true;
+}
+
 bool TFTEngine::set_unit_items_for_testing(
     std::int32_t player_id,
     bool on_board,
