@@ -309,6 +309,15 @@ def test_native_action_event_oracle_parity_for_deployment_and_sale():
         assert deployed["action_outcome_events"][0]["action_family"] == "deploy"
 
         masks = lobby.get_packed_action_masks_for_training()
+        shop_slots = np.flatnonzero(masks[0, 9:14])
+        assert shop_slots.size
+        actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        actions[0] = [0, int(shop_slots[0]), 0, 0, 0, 0]
+        before_snapshot = lobby._engine.get_audit_snapshot()
+        _, _, _, bought_again = lobby.step(actions)
+        _assert_action_events_match_oracle(bought_again, before_snapshot)
+
+        masks = lobby.get_packed_action_masks_for_training()
         bench_slots = np.flatnonzero(masks[0, 14:23])
         assert bench_slots.size
         actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
