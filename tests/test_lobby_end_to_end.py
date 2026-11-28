@@ -78,6 +78,25 @@ def test_native_lobby_adapter_executes_a_step():
         assert info["action_context"]["action_masks"].shape == (8, 1280)
         assert not info["action_context"]["action_masks"].flags.writeable
         assert len(info["action_outcome_events"]) == 8
+        assert info["action_context"]["temporal_events"] == info["temporal_events"]
+        assert len(info["temporal_events"]) == 8
+        temporal_sequences = [event["global_sequence"] for event in info["temporal_events"]]
+        assert temporal_sequences == sorted(set(temporal_sequences))
+        action_temporal = {
+            event["event_id"] for event in info["temporal_events"]
+            if event["event_type"] == "action_outcome"
+        }
+        assert {event["event_id"] for event in info["action_outcome_events"]} == action_temporal
+        snapshot = info["decision_snapshot"]["native_state_snapshot"]
+        assert snapshot["temporal_contract_id"] == "tft.engine.temporal-history"
+        assert snapshot["temporal_contract_version"] == 1
+        assert snapshot["temporal_history_complete"] is True
+        assert snapshot["temporal_retention_events"] == 256
+        for player in snapshot["players"]:
+            history = player["anti_loop_history"]
+            assert history["contract_id"] == "tft.engine.anti-loop-history"
+            assert len(history["state_visit_hashes"]) == len(history["state_visit_counts"])
+            assert len(history["state_visit_hashes"]) == len(history["state_visit_rounds"])
         _assert_action_events_match_oracle(info, source_snapshot)
         for player_id, event in enumerate(info["action_outcome_events"]):
             assert event["contract_id"] == "tft.engine.action-outcome-event"
@@ -378,5 +397,34 @@ def test_native_action_event_oracle_parity_for_economic_actions(action_type, fam
             assert len(event["candidate_unit_uuids"]) == 5
         else:
             assert event["candidate_unit_uuids"] == []
+    finally:
+        lobby.close()
+
+
+def test_native_temporal_history_links_delayed_economy_and_resets_by_episode():
+    lobby = CppTFTLobbyWrapper(seed=901)
+    try:
+        lobby.reset(seed=901)
+        last_info = None
+        actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        for _ in range(10):
+            _, _, _, last_info = lobby.step(actions)
+        assert last_info is not None
+        delayed = [event for event in last_info["temporal_events"]
+                   if event["event_type"] == "economy_resolution"]
+        assert delayed
+        action_ids = {event["event_id"] for event in last_info["temporal_events"]
+                      if event["event_type"] == "action_outcome"}
+        assert all(event["delayed"] for event in delayed)
+        assert all(event["causal_event_id"] in action_ids for event in delayed)
+        assert all(event["source_player_decision_sequence"] <
+                   event["observed_player_decision_sequence"] for event in delayed)
+
+        old_episode = last_info["decision_snapshot"]["episode_id"]
+        lobby.reset(seed=902)
+        reset_snapshot = lobby._engine.get_audit_snapshot()
+        assert reset_snapshot["episode_id"] == old_episode + 1
+        assert reset_snapshot["temporal_events"] == []
+        assert reset_snapshot["temporal_history_complete"] is True
     finally:
         lobby.close()
