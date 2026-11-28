@@ -1,0 +1,44 @@
+# Native ActionContext v1
+
+The action boundary is published by the C++ Engine as part of the same
+`NativeDecisionBatch` decision snapshot.
+
+## Contracts
+
+- `tft.engine.action-context` version 1 identifies the per-step action context.
+- `tft.action-masks.packed` version 1 defines the canonical boolean mask layout.
+- The packed mask buffer is contiguous with shape `[lobbies, 8, 1280]` and is
+  exposed read-only by `NativeDecisionBatch.action_masks`.
+- Layout order is: type, shop, bench source, board target, board source,
+  board move target, bench move source, bench-to-board target, item inventory,
+  item component first, item component pair, item target.
+- `tft.engine.action-outcome-event` version 1 is emitted by the native step
+  boundary for each player, carrying engine/episode/player identity,
+  source/outcome decision sequences, requested/effective action, handler
+  result, affected physical unit UUIDs when directly addressable, and
+  action-economy deltas.
+- Item actions additionally publish the native item handler kind, item ID and
+  component IDs. Champion IDs remain catalog references, never copy identity.
+
+## Authority and semantics
+
+The Engine remains the only authority for legal masks. Eliminated players
+receive a PASS-only mask from `refresh_masks`; the Trainer validates masks
+and does not query player liveness or synthesize PASS.
+
+PPO remains responsible for logits, sampling and selecting the action.
+Action events are factual audit data and are not reward shaping, labels or
+PPO targets. Delayed combat and terminal-placement rewards remain governed
+by the reward contract.
+
+The old Python snapshot-diff producer remains available as a test oracle only.
+The production adapter consumes the native event payload and fails closed if
+it is absent or its identity/sequence does not match the published decision.
+
+## Boundaries
+
+A malformed batch or action rejected by native preflight still raises before
+any player action is executed; it is not represented as a successful step
+event. The event's `handler_applied` and `status_reason` describe handler
+execution, not causal reward eligibility. UUID references are emitted only
+when the affected entity is directly addressable at the handler boundary.
