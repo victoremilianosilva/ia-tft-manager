@@ -281,6 +281,8 @@ def test_native_decision_batch_publishes_versioned_action_context_and_events():
                 assert event["action_family"] == "pass"
                 assert event["effective_action"] == [6, 0, 0, 0, 0, 0]
                 assert event["mask_permitted"] is True
+        assert event["preflight_accepted"] is True
+                assert event["preflight_accepted"] is True
                 assert event["normalized_action"] == event["requested_action"]
                 assert event["handler_applied"] is True
                 assert event["status_reason"] == "applied"
