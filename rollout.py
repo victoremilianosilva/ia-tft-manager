@@ -677,17 +677,17 @@ class RolloutBuffer:
                     raise ValueError(
                         f"result_snapshot_metadata[{index}].action_outcome_event possui status de execução inconsistente."
                     )
-                    event_requested = action_event.get("requested_action")
-                    event_normalized = action_event.get("normalized_action")
-                    event_effective = action_event.get("effective_action")
-                    if (
-                        event_requested != action_trace.get("requested_action")
-                        or event_normalized != event_requested
-                        or event_effective != action_trace.get("effective_action")
-                    ):
-                        raise ValueError(
-                            f"result_snapshot_metadata[{index}].action_outcome_event diverge do trace de execução."
-                        )
+                event_requested = action_event.get("requested_action")
+                event_normalized = action_event.get("normalized_action")
+                event_effective = action_event.get("effective_action")
+                if (
+                    event_requested != action_trace.get("requested_action")
+                    or event_normalized != event_requested
+                    or event_effective != action_trace.get("effective_action")
+                ):
+                    raise ValueError(
+                        f"result_snapshot_metadata[{index}].action_outcome_event diverge do trace de execução."
+                    )
 
                 if result["decision_sequence"] <= decision["decision_sequence"]:
                     raise ValueError(f"Sequência do resultado não avança na transição {index}.")
