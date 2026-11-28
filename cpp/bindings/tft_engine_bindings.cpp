@@ -451,6 +451,7 @@ py::dict audit_player_snapshot_to_dict(
         anti_loop["state_visit_hashes"] = player.anti_loop_history.state_visit_hashes;
         anti_loop["state_visit_counts"] = player.anti_loop_history.state_visit_counts;
         anti_loop["state_visit_rounds"] = player.anti_loop_history.state_visit_rounds;
+        anti_loop["state_visit_repeated"] = player.anti_loop_history.state_visit_repeated;
         py::list move_history;
         for (const auto& move : player.anti_loop_history.move_history) {
             py::dict row;
