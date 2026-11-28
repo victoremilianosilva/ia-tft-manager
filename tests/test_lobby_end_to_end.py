@@ -127,6 +127,7 @@ def test_native_preflight_rejection_is_a_factual_event_without_state_advance():
         events = context["events"]
         assert len(events) == 8
         assert events[0]["mask_permitted"] is False
+        assert events[0]["preflight_accepted"] is False
         assert events[0]["handler_applied"] is False
         assert events[0]["decision_advanced"] is False
         assert events[0]["status_reason"]
@@ -153,7 +154,8 @@ def test_native_action_event_reports_capacity_noop_without_fabricated_effect():
         actions[0] = [3, 0, 0, 1, 0, 0]
         _, _, _, info = lobby.step(actions)
         event = info["action_outcome_events"][0]
-        assert event["mask_permitted"] is True
+        assert event["mask_permitted"] is False
+        assert event["preflight_accepted"] is True
         assert event["handler_applied"] is False
         assert event["status_reason"] == "board_capacity_limit"
         assert event["candidate_unit_uuids"]
