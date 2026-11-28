@@ -26,7 +26,8 @@ def _assert_action_events_match_oracle(info, before_snapshot):
                 unit["uuid"] for unit in facts["units_added"] + facts["units_removed"]
             } | {unit["uuid"] for unit in facts["upgrades_observed"]}
             assert set(native_event["affected_unit_uuids"]) == expected_units
-            assert native_event["auto_merge"] is bool(facts["upgrades_observed"])
+            expected_auto_merge = any(delta["star"] > 1 and delta["count_delta"] > 0 for delta in facts["star_tier_count_deltas"])
+            assert native_event["auto_merge"] is expected_auto_merge
         elif native_event["action_family"] == "sale":
             assert set(native_event["affected_unit_uuids"]) == {
                 unit["uuid"] for unit in facts["units_removed"]
