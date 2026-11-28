@@ -6175,8 +6175,16 @@ StepResult TFTEngine::step(
     std::array<ActionExecutionTrace, kPlayersPerLobby> action_traces{};
     std::array<ActionOutcomeEvent, kPlayersPerLobby> action_outcomes{};
     std::array<bool, kPlayersPerLobby> alive_before_step{};
-    for (std::size_t i = 0; i < kPlayersPerLobby; ++i)
+    std::array<std::string, kPlayersPerLobby> composition_before_step{};
+    std::array<std::uint64_t, kPlayersPerLobby> composition_version_before_step{};
+    for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
         alive_before_step[i] = impl_->player_envs[i].info.alive;
+        const auto active = impl_->composition_intelligence_players[i].active.current();
+        if (active) {
+            composition_before_step[i] = active->candidate.composition_id;
+            composition_version_before_step[i] = active->version;
+        }
+    }
     std::vector<std::string> item_action_events;
     for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
         auto& trace = action_traces[i];
@@ -6643,6 +6651,11 @@ StepResult TFTEngine::step(
             event.target_unit_uuid, event.source_unit_uuid, "health", 0,
             -static_cast<std::int64_t>(std::llround(event.final_damage)));
     }
+    for (const auto& event : impl_->last_combat_attack_events) {
+        append_delayed_fact("combat_attack", event.source_player_id, "CombatEngine",
+            event.source_unit_uuid, event.target_unit_uuid, "damage", 0,
+            static_cast<std::int64_t>(std::llround(event.damage)));
+    }
     for (const auto& event : impl_->last_combat_death_events) {
         append_delayed_fact("combat_death", event.unit_player_id, "CombatEngine",
             event.unit_uuid, event.killer_unit_uuid, "unit_alive", 1, 0);
@@ -6671,6 +6684,33 @@ StepResult TFTEngine::step(
             impl_->latest_economic_action_rounds[player] = 0;
         }
     }
+        const auto resolved_round = (impl_->round > 0) ? impl_->round : impl_->round + 1;
+        for (std::size_t player = 0; player < kPlayersPerLobby; ++player) {
+            const auto active = impl_->composition_intelligence_players[player].active.current();
+            const std::string composition_after = active ? active->candidate.composition_id : std::string{};
+            const std::uint64_t composition_version_after = active ? active->version : 0;
+            if (composition_before_step[player] != composition_after ||
+                composition_version_before_step[player] != composition_version_after) {
+                TemporalEvent composition_event;
+                composition_event.event_type = "composition_transition";
+                composition_event.scope = "player";
+                composition_event.player_id = static_cast<std::int32_t>(player);
+                composition_event.round = resolved_round;
+                composition_event.stage = impl_->stage;
+                composition_event.fact_source = "ActiveCompositionManager";
+                composition_event.transition_kind = "active_composition";
+                composition_event.identity_before = composition_before_step[player];
+                composition_event.identity_after = composition_after;
+                composition_event.delayed = true;
+                if (impl_->latest_board_action_rounds[player] == resolved_round &&
+                    !impl_->latest_board_action_event_ids[player].empty()) {
+                    composition_event.causal_event_id = impl_->latest_board_action_event_ids[player];
+                    composition_event.source_player_decision_sequence = impl_->latest_board_action_sequences[player];
+                    composition_event.observed_player_decision_sequence = impl_->player_decision_sequences[player] + 1;
+                }
+                impl_->append_temporal_event(std::move(composition_event));
+            }
+        }
         TemporalEvent event;
         event.event_type = "round_transition";
         event.scope = "lobby";
