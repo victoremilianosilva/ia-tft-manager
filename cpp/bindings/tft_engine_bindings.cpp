@@ -1475,6 +1475,7 @@ public:
         if (kind_ == "step") {
             action_context["action_traces"] = result["action_traces"];
             action_context["action_outcome_events"] = result["action_outcome_events"];
+            action_context["temporal_events"] = result["temporal_events"];
             action_context["native_decision_context"] = native_context(index);
         }
         result["action_context"] = std::move(action_context);
