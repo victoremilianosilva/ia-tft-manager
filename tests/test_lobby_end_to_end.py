@@ -186,3 +186,27 @@ def test_native_action_event_tracks_both_entities_in_board_swap():
         assert len(set(event["affected_unit_uuids"])) == 2
     finally:
         lobby.close()
+
+
+def test_native_action_event_covers_anvil_choice_without_unit_target():
+    lobby = CppTFTLobbyWrapper(seed=129)
+    try:
+        lobby.reset(seed=129)
+        assert lobby._engine.grant_component_anvil_for_testing(
+            0, ["TFT_Item_BFSword", "TFT_Item_ChainVest"]
+        )
+        masks = lobby._engine.get_action_masks()[0]
+        assert masks["type_mask"][7] == 1
+        options = np.flatnonzero(masks["item_inventory_mask"])
+        assert options.size == 2
+        actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        actions[0] = [7, int(options[1]), 0, 0, 0, 0]
+        _, _, _, info = lobby.step(actions)
+        event = info["action_outcome_events"][0]
+        assert event["action_family"] == "item_action"
+        assert event["item_action_kind"] == "anvil_component_choice"
+        assert event["item_id"] == "TFT_Item_ChainVest"
+        assert event["handler_applied"] is True
+        assert event["affected_unit_uuids"] == []
+    finally:
+        lobby.close()
