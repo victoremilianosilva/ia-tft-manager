@@ -256,11 +256,35 @@ class PairedEvaluatorTests(unittest.TestCase):
             for i in range(8)
         ]
 
+        events = [
+            {
+                "contract_id": "tft.engine.action-outcome-event",
+                "contract_version": 1,
+                "event_id": f"engine-a/episode/7/decision/{20 + i}/player/{i}/action",
+                "engine_instance_id": "engine-a",
+                "episode_id": 7,
+                "player_id": i,
+                "source_player_decision_sequence": 20 + i,
+                "outcome_player_decision_sequence": 21 + i,
+                "requested_action": [6, 0, 0, 0, 0, 0],
+                "normalized_action": [6, 0, 0, 0, 0, 0],
+                "effective_action": [6, 0, 0, 0, 0, 0],
+                "mask_permitted": True,
+                "preflight_accepted": True,
+                "handler_applied": True,
+                "decision_advanced": True,
+                "execution_status": "applied",
+                "affected_unit_uuids": [],
+                "status_reason": "accepted",
+            }
+            for i in range(8)
+        ]
         decision, result, next_state = _rollout_snapshot_metadata(
             {"snapshot_metadata": decision_rows},
             {"snapshot_metadata": next_rows},
             masks,
             traces,
+            events,
         )
 
         self.assertEqual(len(decision), 8)
@@ -268,6 +292,7 @@ class PairedEvaluatorTests(unittest.TestCase):
         self.assertEqual(len(next_state), 8)
         self.assertEqual(decision[3]["player_id"], 3)
         self.assertEqual(result[3]["action_trace"]["player_id"], 3)
+        self.assertEqual(result[3]["action_outcome_event"]["player_id"], 3)
         self.assertEqual(next_state[3]["decision_sequence"], 11)
         self.assertEqual(len(decision[3]["mask_snapshot_hash"]), 64)
 
