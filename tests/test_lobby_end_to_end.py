@@ -47,3 +47,62 @@ def test_native_lobby_adapter_executes_a_step():
             assert event["outcome_player_decision_sequence"] == info["decision_snapshot"]["player_decision_sequences"][player_id]
     finally:
         lobby.close()
+
+
+def _buy_first_shop_unit(lobby):
+    masks = lobby.get_packed_action_masks_for_training()
+    legal_slots = np.flatnonzero(masks[0, 9:14])
+    assert legal_slots.size
+    actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+    actions[0] = [0, int(legal_slots[0]), 0, 0, 0, 0]
+    lobby.step(actions)
+
+
+def test_native_action_event_covers_item_equip_handler():
+    lobby = CppTFTLobbyWrapper(seed=124)
+    try:
+        lobby.reset(seed=124)
+        _buy_first_shop_unit(lobby)
+        assert lobby.grant_completed_item(0, "TFT_Item_AdaptiveHelm")
+        masks = lobby.get_packed_action_masks_for_training()
+        inventory_slots = np.flatnonzero(masks[0, 1124:1133])
+        target_slots = np.flatnonzero(masks[0, 1243:1280])
+        assert inventory_slots.size and target_slots.size
+
+        actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        actions[0] = [7, int(inventory_slots[0]), int(target_slots[0]), 0, 0, 0]
+        _, _, _, info = lobby.step(actions)
+        event = info["action_outcome_events"][0]
+        assert event["action_family"] == "item_action"
+        assert event["item_action_kind"] == "equip_inventory_item"
+        assert event["item_id"] == "TFT_Item_AdaptiveHelm"
+        assert event["affected_unit_uuids"]
+    finally:
+        lobby.close()
+
+
+def test_native_action_event_covers_item_craft_handler():
+    lobby = CppTFTLobbyWrapper(seed=125)
+    try:
+        lobby.reset(seed=125)
+        _buy_first_shop_unit(lobby)
+        assert lobby.grant_item_component(0, "TFT_Item_BFSword")
+        assert lobby.grant_item_component(0, "TFT_Item_ChainVest")
+        masks = lobby.get_packed_action_masks_for_training()
+        pair_masks = masks[0, 1143:1243].reshape(10, 10)
+        first, second = np.where(pair_masks)
+        target_slots = np.flatnonzero(masks[0, 1243:1280])
+        assert first.size and target_slots.size
+
+        actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        actions[0] = [8, int(first[0]), int(second[0]), int(target_slots[0]), 0, 0]
+        _, _, _, info = lobby.step(actions)
+        event = info["action_outcome_events"][0]
+        assert event["action_family"] == "item_action"
+        assert event["item_action_kind"] == "craft_and_equip"
+        assert event["first_component_id"] == "TFT_Item_BFSword"
+        assert event["second_component_id"] == "TFT_Item_ChainVest"
+        assert event["item_id"]
+        assert event["affected_unit_uuids"]
+    finally:
+        lobby.close()
