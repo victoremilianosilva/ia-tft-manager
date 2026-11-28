@@ -435,7 +435,7 @@ struct TFTEngine::Impl {
         const auto old_size = temporal_history.size();
         temporal_history.erase(std::remove_if(temporal_history.begin(), temporal_history.end(),
             [current_round](const TemporalEvent& retained) {
-                return retained.round > 0 && retained.round + 8 < current_round;
+                return retained.round > 0 && current_round >= retained.round && current_round - retained.round >= 8;
             }), temporal_history.end());
         if (temporal_history.size() != old_size) temporal_history_truncated = true;
         if (temporal_history.size() > kTemporalHistoryCapacity) {
@@ -4835,6 +4835,7 @@ struct TFTEngine::Impl {
                 for (const auto& damage_event : combat.damage_events) {
                     if (last_combat_damage_events.size() >= kCombatDamageAuditLimit) {
                         combat_damage_events_truncated = true;
+        temporal_history_truncated = true;
                         break;
                     }
                     AuditCombatDamageEvent audit_event{};
@@ -4868,6 +4869,7 @@ struct TFTEngine::Impl {
                 for (const auto& attack_event : combat.attack_events) {
                     if (last_combat_attack_events.size() >= kCombatTypedEventAuditLimit) {
                         combat_attack_events_truncated = true;
+        temporal_history_truncated = true;
                         break;
                     }
                     AuditCombatAttackEvent audit_event{};
@@ -4893,6 +4895,7 @@ struct TFTEngine::Impl {
                 for (const auto& death_event : combat.death_events) {
                     if (last_combat_death_events.size() >= kCombatTypedEventAuditLimit) {
                         combat_death_events_truncated = true;
+        temporal_history_truncated = true;
                         break;
                     }
                     AuditCombatDeathEvent audit_event{};
@@ -6701,6 +6704,8 @@ StepResult TFTEngine::step(
                 composition_event.transition_kind = "active_composition";
                 composition_event.identity_before = composition_before_step[player];
                 composition_event.identity_after = composition_after;
+                composition_event.value_before = static_cast<std::int64_t>(composition_version_before_step[player]);
+                composition_event.value_after = static_cast<std::int64_t>(composition_version_after);
                 composition_event.delayed = true;
                 if (impl_->latest_board_action_rounds[player] == resolved_round &&
                     !impl_->latest_board_action_event_ids[player].empty()) {
