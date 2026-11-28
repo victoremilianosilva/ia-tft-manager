@@ -225,6 +225,7 @@ def test_rollout_replay_keeps_semantic_identity_and_hash_with_the_same_row():
     assert batch["semantic_state"]["entity_identity"] == semantic["entity_identity"]
     assert batch["semantic_state"]["hashes"] == [digest]
     assert batch["snapshot_metadata"][0]["semantic_projection_hash"] == digest
+    assert batch["temporal_events"][0][0]["event_type"] == "action_outcome"
     transition = buffer.get_transition_metadata(0, 0)
     assert transition["result_snapshot_metadata"]["temporal_events"][0]["event_type"] == "action_outcome"
     assert "temporal_events" not in buffer._metadata_records[0][0][1]
