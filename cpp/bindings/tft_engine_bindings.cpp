@@ -1828,6 +1828,8 @@ PYBIND11_MODULE(tft_engine, module) {
              py::arg("player_id"), py::arg("gold"), py::arg("level"), py::arg("xp"))
         .def("set_shop_offer_for_testing", &TFTEngine::set_shop_offer_for_testing,
              py::arg("player_id"), py::arg("slot"), py::arg("champion_api_name"))
+        .def("set_player_alive_for_testing", &TFTEngine::set_player_alive_for_testing,
+             py::arg("player_id"), py::arg("alive"))
         .def("set_next_shop_roll_for_testing", &TFTEngine::set_next_shop_roll_for_testing,
              py::arg("player_id"), py::arg("champion_api_names"))
         .def("pool_available", &TFTEngine::pool_available, py::arg("champion_internal_id"))
