@@ -6013,6 +6013,10 @@ StepResult TFTEngine::step(
         ActionOutcomeEvent outcome;
         outcome.engine_instance_id = impl_->engine_instance_id;
         outcome.episode_id = impl_->episode_id;
+        outcome.event_id = impl_->engine_instance_id + "/episode/" +
+            std::to_string(impl_->episode_id) + "/decision/" +
+            std::to_string(impl_->player_decision_sequences[i]) + "/player/" +
+            std::to_string(i) + "/action";
         outcome.player_id = static_cast<std::int32_t>(i);
         outcome.source_player_decision_sequence = impl_->player_decision_sequences[i];
         outcome.outcome_player_decision_sequence = impl_->player_decision_sequences[i] + 1;
