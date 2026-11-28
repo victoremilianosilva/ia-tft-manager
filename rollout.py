@@ -898,9 +898,6 @@ class RolloutBuffer:
                             f"Semantic projection hash/contract diverge do snapshot na transição {index}."
                         )
 
-        for agent_key, temporal_state in temporal_seen_updates.items():
-            self._temporal_seen_by_agent[agent_key] = temporal_state
-
         temporal_records = None
         if all(supplied_groups):
             temporal_records = []
@@ -997,6 +994,11 @@ class RolloutBuffer:
                 )
 
             self.masks[key][self.ptr].copy_(mask_tensor)
+
+        # Commit cross-step causal state only after the whole transition,
+        # including masks and tensors, has passed validation and storage.
+        for agent_key, temporal_state in temporal_seen_updates.items():
+            self._temporal_seen_by_agent[agent_key] = temporal_state
 
         # ============================================================
         # PRÓXIMO PASSO
