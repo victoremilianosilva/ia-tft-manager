@@ -938,10 +938,7 @@ def test_trainer_flattens_packed_action_masks_to_contract_tensors():
     packed[:, 0] = True
     packed[:, 9] = True
 
-    packed_flattened = trainer._flatten_masks(
-        [packed],
-        lobby_player_alive=[[True] * 8],
-    )
+    packed_flattened = trainer._flatten_masks([packed])
 
     legacy_players = [dict() for _ in range(8)]
     offset = 0
@@ -953,10 +950,7 @@ def test_trainer_flattens_packed_action_masks_to_contract_tensors():
             ].reshape(shape).copy()
         offset += width
 
-    legacy_flattened = trainer._flatten_masks(
-        [legacy_players],
-        lobby_player_alive=[[True] * 8],
-    )
+    legacy_flattened = trainer._flatten_masks([legacy_players])
 
     assert offset == 1280
     assert set(packed_flattened) == set(Trainer.MASK_SHAPES)
