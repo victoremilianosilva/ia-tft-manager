@@ -66,6 +66,26 @@ class FakeIdentityEnv:
                     }
                     for player_id in range(8)
                 ],
+                "action_outcome_events": [
+                    {
+                        "contract_id": "tft.engine.action-outcome-event",
+                        "contract_version": 1,
+                        "event_id": f"engine-A/episode/{self.episode_id}/decision/{self.player_decision_sequences[player_id] - 1}/player/{player_id}/action",
+                        "engine_instance_id": "engine-A",
+                        "episode_id": self.episode_id,
+                        "player_id": player_id,
+                        "source_player_decision_sequence": self.player_decision_sequences[player_id] - 1,
+                        "outcome_player_decision_sequence": self.player_decision_sequences[player_id],
+                        "mask_permitted": True,
+                        "preflight_accepted": True,
+                        "handler_applied": True,
+                        "decision_advanced": True,
+                        "execution_status": "applied",
+                        "affected_unit_uuids": [],
+                        "status_reason": "applied",
+                    }
+                    for player_id in range(8)
+                ],
             },
         )
 
