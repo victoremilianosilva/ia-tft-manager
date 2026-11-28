@@ -269,6 +269,34 @@ class FakeNativeLobby:
                 }
                 for player_id in range(8)
             ],
+            "temporal_events": [
+                {
+                    "contract_id": "tft.engine.temporal-event",
+                    "contract_version": 1,
+                    "event_id": f"fake-engine-{id(self)}/episode/{self.episode_id}/decision/{self.decision_sequence - 1}/player/{player_id}/action",
+                    "event_type": "action_outcome",
+                    "scope": "player",
+                    "engine_instance_id": f"fake-engine-{id(self)}",
+                    "episode_id": self.episode_id,
+                    "global_sequence": player_id + 1,
+                    "player_sequence": self.player_decision_sequences[player_id] - 1,
+                    "player_id": player_id,
+                    "round": 3,
+                    "stage": 2,
+                    "causal_event_id": "",
+                    "source_player_decision_sequence": self.player_decision_sequences[player_id] - 1,
+                    "observed_player_decision_sequence": self.player_decision_sequences[player_id],
+                    "fact_source": "tft.engine.action-outcome-event",
+                    "unit_uuid": "",
+                    "related_unit_uuid": "",
+                    "resource": "gold",
+                    "delta": 0,
+                    "value_before": 0,
+                    "value_after": 0,
+                    "delayed": False,
+                }
+                for player_id in range(8)
+            ],
             "events": [],
         }
 
