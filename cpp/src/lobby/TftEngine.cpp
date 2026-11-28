@@ -6342,6 +6342,7 @@ StepResult TFTEngine::step(
             impl_->latest_economic_action_sequences[i] = action_outcomes[i].source_player_decision_sequence;
             impl_->latest_economic_action_rounds[i] = action_round;
         }
+        if (action_outcomes[i].handler_applied) {
         for (const auto& uuid : action_outcomes[i].affected_unit_uuids) {
             TemporalEvent unit_event;
             unit_event.event_type = "unit_transition";
@@ -6373,6 +6374,7 @@ StepResult TFTEngine::step(
             if (!action_outcomes[i].affected_unit_uuids.empty())
                 item_event.unit_uuid = action_outcomes[i].affected_unit_uuids.front();
             impl_->append_temporal_event(std::move(item_event));
+        }
         }
         const auto append_resource_transition = [&](const std::string& resource,
             std::int64_t before, std::int64_t after) {
