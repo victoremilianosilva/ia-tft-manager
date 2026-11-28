@@ -274,6 +274,7 @@ def test_native_decision_batch_publishes_versioned_action_context_and_events():
                 assert event["effective_action"] == [6, 0, 0, 0, 0, 0]
                 assert event["handler_applied"] is True
                 assert event["status_reason"] == "applied"
+                assert event["auto_merge"] is False
                 assert event["outcome_player_decision_sequence"] == row["player_decision_sequences"][player_id]
                 assert event["source_player_decision_sequence"] + 1 == event["outcome_player_decision_sequence"]
     finally:
