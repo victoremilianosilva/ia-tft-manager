@@ -1082,6 +1082,7 @@ py::dict step_to_dict(tft::StepResult step, bool include_numeric_transport = tru
         item["preflight_accepted"] = event.preflight_accepted;
         item["handler_applied"] = event.handler_applied;
         item["decision_advanced"] = event.decision_advanced;
+        item["execution_status"] = event.execution_status;
         item["status_reason"] = event.status_reason;
         item["status_detail"] = event.status_detail;
         item["candidate_unit_uuids"] = event.candidate_unit_uuids;
@@ -1748,6 +1749,7 @@ PYBIND11_MODULE(tft_engine, module) {
         item["preflight_accepted"] = event.preflight_accepted;
                     item["handler_applied"] = event.handler_applied;
                     item["decision_advanced"] = event.decision_advanced;
+        item["execution_status"] = event.execution_status;
                     item["status_reason"] = event.status_reason;
         item["status_detail"] = event.status_detail;
                     result.append(std::move(item));
