@@ -6166,6 +6166,9 @@ StepResult TFTEngine::step(
     std::array<std::int32_t, kPlayersPerLobby> xp_after_actions{};
     std::array<ActionExecutionTrace, kPlayersPerLobby> action_traces{};
     std::array<ActionOutcomeEvent, kPlayersPerLobby> action_outcomes{};
+    std::array<bool, kPlayersPerLobby> alive_before_step{};
+    for (std::size_t i = 0; i < kPlayersPerLobby; ++i)
+        alive_before_step[i] = impl_->player_envs[i].info.alive;
     std::vector<std::string> item_action_events;
     for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
         auto& trace = action_traces[i];
@@ -6564,6 +6567,12 @@ StepResult TFTEngine::step(
     for (const auto& event : impl_->last_pvp_result_credit_events) {
         append_delayed_fact("pvp_result_credit", event.winner_player_id, event.producer,
             {}, {}, "gold", event.gold_before_credit, event.gold_after_credit);
+    }
+    for (std::size_t player = 0; player < kPlayersPerLobby; ++player) {
+        if (alive_before_step[player] && !impl_->player_envs[player].info.alive) {
+            append_delayed_fact("player_elimination", static_cast<std::int32_t>(player),
+                "TFTEngine::resolve_combats", {}, {}, "alive", 1, 0);
+        }
     }
     if (round_resolved) {
         TemporalEvent event;
