@@ -1323,12 +1323,6 @@ class CppTFTLobbyWrapper:
             raise RuntimeError("Execute reset() antes de solicitar snapshot metadata.")
         return copy.deepcopy(self._last_snapshot_metadata)
 
-    def get_player_liveness(self):
-        """Return authoritative per-player alive flags from the latest native result."""
-        if len(self._players) != self.PLAYERS_PER_LOBBY:
-            raise RuntimeError("Estado de jogadores incompleto; execute reset().")
-        return [bool(player.alive) for player in self._players]
-
     def get_anti_loop_metrics(self):
         return dict(self._engine.get_anti_loop_metrics())
 
