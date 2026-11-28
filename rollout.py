@@ -1437,6 +1437,7 @@ class RolloutBuffer:
             batch_snapshot_metadata = None
             batch_result_metadata = None
             batch_next_metadata = None
+            batch_temporal_events = None
             if include_metadata:
                 # Decode flattened indices once, only for explicit diagnostic
                 # consumers. The PPO hot path does not need native envelopes.
@@ -1451,6 +1452,11 @@ class RolloutBuffer:
                 batch_snapshot_metadata = tuple(row[0] for row in metadata_rows)
                 batch_result_metadata = tuple(row[1] for row in metadata_rows)
                 batch_next_metadata = tuple(row[2] for row in metadata_rows)
+                batch_temporal_events = tuple(
+                    self._temporal_records[step_index][env_index]
+                    if self._temporal_records[step_index] is not None else ()
+                    for step_index, env_index in metadata_indices
+                )
             semantic_numeric_batch = flat_semantic_numeric[batch_idx]
             semantic_batch = {
                 "numeric": semantic_numeric_batch,
@@ -1498,6 +1504,7 @@ class RolloutBuffer:
                 "snapshot_metadata": batch_snapshot_metadata,
                 "result_snapshot_metadata": batch_result_metadata,
                 "next_snapshot_metadata": batch_next_metadata,
+                "temporal_events": batch_temporal_events,
             }
 
     @staticmethod
