@@ -259,6 +259,10 @@ def test_native_decision_batch_publishes_versioned_action_context_and_events():
         action_context = batch.action_context(0)
         assert action_context["contract_id"] == "tft.engine.action-context"
         assert action_context["contract_version"] == 1
+        native_context = action_context["native_decision_context"]
+        assert native_context.engine_instance_id == action_context["engine_instance_id"]
+        assert native_context.episode_id == action_context["episode_id"]
+        assert native_context.snapshot_sequence == action_context["decision_sequence"]
         assert np.shares_memory(action_context["action_masks"], batch.action_masks)
         assert not action_context["action_masks"].flags.writeable
         assert len(action_context["action_outcome_events"]) == 8
