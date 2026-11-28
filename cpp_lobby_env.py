@@ -592,6 +592,15 @@ class CppTFTLobbyWrapper:
                         or source_sequence >= observed_sequence
                     ):
                         raise RuntimeError("TemporalEvent possui referência causal inválida.")
+            anchor_rows = value.get("temporal_causal_anchor_ids")
+            if not isinstance(anchor_rows, (list, tuple)) or len(anchor_rows) != cls.PLAYERS_PER_LOBBY:
+                raise RuntimeError("Snapshot temporal sem causal anchors por jogador.")
+            for player_id, anchors in enumerate(anchor_rows):
+                if not isinstance(anchors, (list, tuple)) or len(anchors) != 2:
+                    raise RuntimeError(f"Causal anchors inválidos para jogador {player_id}.")
+                for anchor in anchors:
+                    if anchor and (not isinstance(anchor, str) or anchor not in seen_temporal_ids):
+                        raise RuntimeError(f"Causal anchor não existe no histórico retido do jogador {player_id}.")
 
         parent_combat_sequence = value.get("combat_sequence")
         if (
