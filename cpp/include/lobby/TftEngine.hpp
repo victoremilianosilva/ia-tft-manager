@@ -625,6 +625,7 @@ struct ActionExecutionTrace {
 struct ActionOutcomeEvent {
     std::string contract_id{"tft.engine.action-outcome-event"};
     std::uint32_t contract_version{1};
+    std::string event_id;
     std::string engine_instance_id;
     std::uint64_t episode_id{0};
     std::int32_t player_id{-1};
