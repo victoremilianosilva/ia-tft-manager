@@ -702,7 +702,7 @@ class CppTFTLobbyWrapper:
                                if isinstance(anti_loop.get(field), Sequence)]
                     if len(lengths) != len(fields) or len(set(lengths)) != 1:
                         raise RuntimeError(f"Histórico anti-loop desalinhado para jogador {player_id}.")
-                for field, limit in (("position_history_hashes", 20), ("move_history", 20), ("blocked_moves", 10), ("state_visit_hashes", 20)):
+                for field, limit in (("position_history_hashes", 20), ("move_history", 20), ("blocked_moves", 10), ("state_visit_hashes", 96)):
                     rows = anti_loop.get(field)
                     if not isinstance(rows, Sequence) or len(rows) > limit:
                         raise RuntimeError(f"Histórico anti-loop excede limite em {field} para jogador {player_id}.")
