@@ -226,7 +226,9 @@ def test_native_action_event_covers_anvil_choice_without_unit_target():
         assert options.size == 2
         actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
         actions[0] = [7, int(options[1]), 0, 0, 0, 0]
+        before_snapshot = lobby._engine.get_audit_snapshot()
         _, _, _, info = lobby.step(actions)
+        _assert_action_events_match_oracle(info, before_snapshot)
         event = info["action_outcome_events"][0]
         assert event["action_family"] == "item_action"
         assert event["item_action_kind"] == "anvil_component_choice"
@@ -249,7 +251,9 @@ def test_native_action_event_reports_auto_merge_and_all_consumed_unit_uuids():
 
         actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
         actions[0] = [0, 0, 0, 0, 0, 0]
+        before_snapshot = lobby._engine.get_audit_snapshot()
         _, _, _, info = lobby.step(actions)
+        _assert_action_events_match_oracle(info, before_snapshot)
         event = info["action_outcome_events"][0]
         assert event["action_family"] == "purchase"
         assert event["handler_applied"] is True
@@ -271,7 +275,9 @@ def test_native_action_event_reports_eliminated_player_pass_only_transition():
         assert sum(masks["type_mask"]) == 1
         assert masks["shop_mask"][0] == 1
         actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        before_snapshot = lobby._engine.get_audit_snapshot()
         _, _, _, info = lobby.step(actions)
+        _assert_action_events_match_oracle(info, before_snapshot)
         event = info["action_outcome_events"][0]
         assert event["action_family"] == "pass"
         assert event["mask_permitted"] is True
