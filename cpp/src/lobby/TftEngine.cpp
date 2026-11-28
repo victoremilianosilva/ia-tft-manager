@@ -6015,7 +6015,10 @@ ResetResult TFTEngine::reset(
         result.player_decision_sequences[i] = ++impl_->player_decision_sequences[i];
     }
     result.native_state_snapshot = get_audit_snapshot();
-    result.temporal_events = impl_->temporal_history;
+    for (const auto& event : impl_->temporal_history) {
+        if (event.global_sequence > temporal_sequence_before_step)
+            result.temporal_events.push_back(event);
+    }
 
     return result;
 }
@@ -6106,6 +6109,8 @@ StepResult TFTEngine::step(
             "A partida ja foi encerrada. Execute reset()."
         );
     }
+
+    const auto temporal_sequence_before_step = impl_->temporal_event_sequence;
 
     // No treinamento, um jogador só encerra suas decisões após 10 ações.
     // PASS conta como ação, mas não encerra a preparação antecipadamente.
@@ -6512,7 +6517,7 @@ StepResult TFTEngine::step(
         event.event_type = type;
         event.scope = "player";
         event.player_id = player_id;
-        event.round = impl_->round + 1;
+        event.round = (round_resolved && impl_->round > 0) ? impl_->round : impl_->round + 1;
         event.stage = impl_->stage;
         event.fact_source = fact_source;
         event.unit_uuid = unit_uuid;
