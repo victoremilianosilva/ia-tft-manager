@@ -6038,8 +6038,9 @@ StepResult TFTEngine::step(
             case 7:
             case 8: {
                 outcome.action_family = "item_action";
+                const bool pending_anvil = effective[0] == 7 && player_env.item_engine && player_env.item_engine->has_pending_anvil();
                 const auto target = effective[0] == 7 ? effective[2] : effective[3];
-                if (target >= 0) {
+                if (!pending_anvil && target >= 0) {
                     if (static_cast<std::size_t>(target) < player_env.board.size() && player_env.board[target])
                         outcome.candidate_unit_uuids.push_back(player_env.board[target]->uuid);
                     else {
