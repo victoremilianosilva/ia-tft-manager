@@ -459,3 +459,30 @@ def test_native_temporal_history_links_delayed_economy_and_resets_by_episode():
         assert reset_snapshot["temporal_history_complete"] is True
     finally:
         lobby.close()
+
+
+def test_native_temporal_history_is_bounded_and_expires_old_rounds():
+    lobby = CppTFTLobbyWrapper(seed=904)
+    try:
+        lobby.reset(seed=904)
+        for player_id in range(8):
+            assert lobby._engine.set_player_hp_for_testing(player_id, 10000.0)
+        actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        last_info = None
+        for _ in range(90):
+            _, _, done, last_info = lobby.step(actions)
+            if done:
+                break
+        assert last_info is not None
+        snapshot = last_info["decision_snapshot"]["native_state_snapshot"]
+        history = snapshot["temporal_events"]
+        assert len(history) <= snapshot["temporal_retention_events"] == 256
+        assert snapshot["temporal_history_complete"] is False
+        assert history
+        latest_round = max(event["round"] for event in history)
+        assert min(event["round"] for event in history) >= latest_round - 7
+        assert [event["global_sequence"] for event in history] == sorted(
+            event["global_sequence"] for event in history
+        )
+    finally:
+        lobby.close()
