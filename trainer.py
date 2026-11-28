@@ -706,6 +706,17 @@ class Trainer:
                     metadata["temporal_contract_version"] = native_snapshot.get("temporal_contract_version")
                     metadata["temporal_history_complete"] = native_snapshot.get("temporal_history_complete")
                     metadata["temporal_retention_events"] = native_snapshot.get("temporal_retention_events")
+                    if metadata["temporal_contract_id"] == "tft.engine.temporal-history":
+                        anchor_rows = native_snapshot.get("temporal_causal_anchor_ids")
+                        if not isinstance(anchor_rows, Sequence) or len(anchor_rows) != players_per_lobby:
+                            raise RuntimeError(f"Snapshot temporal sem causal anchors para lobby {lobby_idx}.")
+                        anchors = anchor_rows[player_idx]
+                        if (
+                            not isinstance(anchors, Sequence) or len(anchors) != 2
+                            or any(value and (not isinstance(value, str) or not value.strip()) for value in anchors)
+                        ):
+                            raise RuntimeError(f"Causal anchors inválidos para lobby {lobby_idx}, jogador {player_idx}.")
+                        metadata["temporal_causal_anchor_ids"] = tuple(value for value in anchors if value)
                 if native_players is not None:
                     native_player = native_players[player_idx]
                     if not isinstance(native_player, Mapping) or native_player.get("player_id") != player_idx:
