@@ -64,9 +64,9 @@ def test_native_action_event_covers_item_equip_handler():
         lobby.reset(seed=124)
         _buy_first_shop_unit(lobby)
         assert lobby.grant_completed_item(0, "TFT_Item_AdaptiveHelm")
-        masks = lobby.get_packed_action_masks_for_training()
-        inventory_slots = np.flatnonzero(masks[0, 1124:1133])
-        target_slots = np.flatnonzero(masks[0, 1243:1280])
+        masks = lobby._engine.get_action_masks()
+        inventory_slots = np.flatnonzero(masks[0]["item_inventory_mask"])
+        target_slots = np.flatnonzero(masks[0]["item_target_mask"])
         assert inventory_slots.size and target_slots.size
 
         actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
@@ -88,10 +88,10 @@ def test_native_action_event_covers_item_craft_handler():
         _buy_first_shop_unit(lobby)
         assert lobby.grant_item_component(0, "TFT_Item_BFSword")
         assert lobby.grant_item_component(0, "TFT_Item_ChainVest")
-        masks = lobby.get_packed_action_masks_for_training()
-        pair_masks = masks[0, 1143:1243].reshape(10, 10)
+        masks = lobby._engine.get_action_masks()
+        pair_masks = np.asarray(masks[0]["item_component_pair_masks"])
         first, second = np.where(pair_masks)
-        target_slots = np.flatnonzero(masks[0, 1243:1280])
+        target_slots = np.flatnonzero(masks[0]["item_target_mask"])
         assert first.size and target_slots.size
 
         actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
