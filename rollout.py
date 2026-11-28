@@ -638,9 +638,9 @@ class RolloutBuffer:
                     )
                 action_event = result.get("action_outcome_event")
                 if action_event is not None:
-                        if not isinstance(action_event, dict):
+                    if not isinstance(action_event, dict):
                         raise ValueError(
-                            f"result_snapshot_metadata[{index}].action_outcome_event é obrigatório para transições identificadas."
+                            f"result_snapshot_metadata[{index}].action_outcome_event deve ser um dicionário."
                         )
                     if (
                         action_event.get("contract_id") != "tft.engine.action-outcome-event"
@@ -648,6 +648,7 @@ class RolloutBuffer:
                         or action_event.get("engine_instance_id") != decision["engine_instance_id"]
                         or action_event.get("episode_id") != decision["episode_id"]
                         or action_event.get("player_id") != decision["player_id"]
+                        or action_event.get("source_player_decision_sequence") != decision["player_decision_sequence"]
                         or action_event.get("outcome_player_decision_sequence") != result["player_decision_sequence"]
                         or not isinstance(action_event.get("event_id"), str)
                         or not action_event.get("event_id", "").strip()
@@ -670,7 +671,7 @@ class RolloutBuffer:
                         raise ValueError(
                             f"result_snapshot_metadata[{index}].action_outcome_event diverge do trace de execução."
                         )
-    
+
                 if result["decision_sequence"] <= decision["decision_sequence"]:
                     raise ValueError(f"Sequência do resultado não avança na transição {index}.")
                 if next_state["episode_id"] == result["episode_id"]:
