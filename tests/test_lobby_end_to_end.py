@@ -30,7 +30,7 @@ def test_native_lobby_adapter_executes_a_step():
         assert np.isfinite(observations).all()
 
         # Todos os agentes passam; as regras e a resolução permanecem em C++.
-        source_snapshot = lobby.get_snapshot_metadata()["native_state_snapshot"]
+        source_snapshot = lobby._engine.get_audit_snapshot()
         actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
         next_observations, rewards, done, info = lobby.step(actions)
 
@@ -47,18 +47,14 @@ def test_native_lobby_adapter_executes_a_step():
         assert info["action_context"]["action_masks"].shape == (8, 1280)
         assert not info["action_context"]["action_masks"].flags.writeable
         assert len(info["action_outcome_events"]) == 8
-        oracle_events = build_action_outcome_events(
-            before_snapshot=source_snapshot,
-            after_snapshot=info["decision_snapshot"]["native_state_snapshot"],
-            action_traces=info["action_trace"],
-        )
-        for player_id, (event, oracle) in enumerate(zip(info["action_outcome_events"], oracle_events)):
+        _assert_action_events_match_oracle(info, source_snapshot)
+        for player_id, event in enumerate(info["action_outcome_events"]):
             assert event["contract_id"] == "tft.engine.action-outcome-event"
             assert event["player_id"] == player_id
-            assert event["action_family"] == oracle["action"]["family"] == "pass"
-            assert event["action_type"] == oracle["action"]["type"] == 6
-            assert event["handler_applied"] == oracle["action"]["handler_applied"] is True
-            assert event["status_reason"] == oracle["action"]["status_reason"]
+            assert event["action_family"] == "pass"
+            assert event["action_type"] == 6
+            assert event["handler_applied"] is True
+            assert event["status_reason"] == "applied"
             assert event["outcome_player_decision_sequence"] == info["decision_snapshot"]["player_decision_sequences"][player_id]
     finally:
         lobby.close()
@@ -70,7 +66,10 @@ def _buy_first_shop_unit(lobby):
     assert legal_slots.size
     actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
     actions[0] = [0, int(legal_slots[0]), 0, 0, 0, 0]
-    lobby.step(actions)
+    before_snapshot = lobby._engine.get_audit_snapshot()
+    _, _, _, info = lobby.step(actions)
+    _assert_action_events_match_oracle(info, before_snapshot)
+    return info
 
 
 def test_native_action_event_covers_item_equip_handler():
