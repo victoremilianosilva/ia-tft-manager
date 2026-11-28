@@ -122,11 +122,17 @@ def _buy_first_shop_unit(lobby):
     before_snapshot = lobby._engine.get_audit_snapshot()
     _, _, _, info = lobby.step(actions)
     _assert_action_events_match_oracle(info, before_snapshot)
-    assert any(event["event_type"] == "unit_transition" and event["player_id"] == 0
-               for event in info["temporal_events"])
-    assert any(event["event_type"] == "resource_transition"
-               and event["player_id"] == 0 and event["resource"] == "gold"
-               for event in info["temporal_events"])
+    purchase = info["action_outcome_events"][0]
+    unit_transitions = [event for event in info["temporal_events"]
+                        if event["event_type"] == "unit_transition" and event["player_id"] == 0]
+    assert {event["unit_uuid"] for event in unit_transitions} == set(purchase["affected_unit_uuids"])
+    gold_transitions = [event for event in info["temporal_events"]
+                        if event["event_type"] == "resource_transition"
+                        and event["player_id"] == 0 and event["resource"] == "gold"]
+    assert len(gold_transitions) == 1
+    assert gold_transitions[0]["delta"] == purchase["gold_delta"]
+    assert gold_transitions[0]["value_before"] == purchase["gold_before"]
+    assert gold_transitions[0]["value_after"] == purchase["gold_after"]
     return info
 
 
@@ -150,6 +156,11 @@ def test_native_action_event_covers_item_equip_handler():
         assert event["action_family"] == "item_action"
         assert event["item_action_kind"] == "equip_inventory_item"
         assert event["item_id"] == "TFT_Item_AdaptiveHelm"
+        item_transition = next(row for row in info["temporal_events"] if row["event_type"] == "item_transition")
+        assert item_transition["causal_event_id"] == event["event_id"]
+        assert item_transition["transition_kind"] == event["item_action_kind"]
+        assert item_transition["resource"] == event["item_id"]
+        assert item_transition["unit_uuid"] in event["affected_unit_uuids"]
         assert event["affected_unit_uuids"]
     finally:
         lobby.close()
@@ -179,6 +190,10 @@ def test_native_action_event_covers_item_craft_handler():
         assert event["first_component_id"] == "TFT_Item_BFSword"
         assert event["second_component_id"] == "TFT_Item_ChainVest"
         assert event["item_id"]
+        item_transition = next(row for row in info["temporal_events"] if row["event_type"] == "item_transition")
+        assert item_transition["causal_event_id"] == event["event_id"]
+        assert item_transition["transition_kind"] == event["item_action_kind"]
+        assert item_transition["resource"] == event["item_id"]
         assert event["affected_unit_uuids"]
     finally:
         lobby.close()
@@ -433,6 +448,8 @@ def test_native_temporal_history_links_delayed_economy_and_resets_by_episode():
         assert all(not event["causal_event_id"] for event in other_income)
         assert all(event["source_player_decision_sequence"] <
                    event["observed_player_decision_sequence"] for event in player_zero_income)
+        assert any(event["event_type"] == "round_transition" and event["scope"] == "lobby"
+                   for event in last_info["temporal_events"])
 
         old_episode = last_info["decision_snapshot"]["episode_id"]
         lobby.reset(seed=902)
