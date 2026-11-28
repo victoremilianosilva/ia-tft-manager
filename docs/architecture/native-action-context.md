@@ -14,9 +14,10 @@ The action boundary is published by the C++ Engine as part of the same
   item component first, item component pair, item target.
 - `tft.engine.action-outcome-event` version 1 is emitted by the native step
   boundary for each player, carrying engine/episode/player identity,
-  source/outcome decision sequences, requested/effective action, handler
-  result, affected physical unit UUIDs when directly addressable, and
-  action-economy deltas.
+  source/outcome decision sequences, requested/normalized/effective action,
+  preflight mask permission, handler result/reason, candidate and actually
+  affected physical unit UUIDs, catalog references, auto-merge facts and
+  action-economy/XP/level deltas.
 - Item actions additionally publish the native item handler kind, item ID and
   component IDs. Champion IDs remain catalog references, never copy identity.
 
@@ -40,5 +41,6 @@ it is absent or its identity/sequence does not match the published decision.
 A malformed batch or action rejected by native preflight still raises before
 any player action is executed; it is not represented as a successful step
 event. The event's `handler_applied` and `status_reason` describe handler
-execution, not causal reward eligibility. UUID references are emitted only
-when the affected entity is directly addressable at the handler boundary.
+execution, not causal reward eligibility. Candidate references describe the entities addressed by the selected action;
+affected references are emitted by the handler only when an effect actually
+occurred. Champion IDs are catalog references and are never used as copy IDs.
