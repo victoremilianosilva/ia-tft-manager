@@ -406,6 +406,7 @@ struct TFTEngine::Impl {
     std::array<std::uint64_t, kPlayersPerLobby> player_decision_sequences{};
     static constexpr std::size_t kTemporalHistoryCapacity = 256;
     std::uint64_t temporal_event_sequence{0};
+    bool temporal_history_truncated{false};
     std::vector<TemporalEvent> temporal_history;
     std::array<std::string, kPlayersPerLobby> latest_action_event_ids{};
     std::array<std::uint32_t, kPlayersPerLobby> latest_action_event_rounds{};
@@ -425,6 +426,7 @@ struct TFTEngine::Impl {
         }
         temporal_history.push_back(std::move(event));
         if (temporal_history.size() > kTemporalHistoryCapacity) {
+            temporal_history_truncated = true;
             temporal_history.erase(temporal_history.begin(),
                 temporal_history.begin() + static_cast<std::ptrdiff_t>(
                     temporal_history.size() - kTemporalHistoryCapacity));
@@ -5924,6 +5926,7 @@ ResetResult TFTEngine::reset(
 
     ++impl_->episode_id;
     impl_->temporal_event_sequence = 0;
+    impl_->temporal_history_truncated = false;
     impl_->temporal_history.clear();
     impl_->latest_action_event_ids.fill(std::string{});
     impl_->latest_action_event_rounds.fill(0);
@@ -6012,6 +6015,7 @@ ResetResult TFTEngine::reset(
         result.player_decision_sequences[i] = ++impl_->player_decision_sequences[i];
     }
     result.native_state_snapshot = get_audit_snapshot();
+    result.temporal_events = impl_->temporal_history;
 
     return result;
 }
@@ -6273,6 +6277,24 @@ StepResult TFTEngine::step(
         outcome.first_component_id = player_env.last_item_action.first_component;
         outcome.second_component_id = player_env.last_item_action.second_component;
         action_outcomes[i] = std::move(outcome);
+        TemporalEvent action_event;
+        action_event.event_type = "action_outcome";
+        action_event.scope = "player";
+        action_event.player_id = static_cast<std::int32_t>(i);
+        action_event.round = impl_->round + 1;
+        action_event.stage = impl_->stage;
+        action_event.source_player_decision_sequence = action_outcomes[i].source_player_decision_sequence;
+        action_event.observed_player_decision_sequence = action_outcomes[i].outcome_player_decision_sequence;
+        action_event.fact_source = action_outcomes[i].contract_id;
+        action_event.resource = "gold";
+        action_event.value_before = action_outcomes[i].gold_before;
+        action_event.value_after = action_outcomes[i].gold_after;
+        action_event.delta = action_outcomes[i].gold_delta;
+        if (!action_outcomes[i].affected_unit_uuids.empty())
+            action_event.unit_uuid = action_outcomes[i].affected_unit_uuids.front();
+        impl_->append_temporal_event(std::move(action_event));
+        impl_->latest_action_event_ids[i] = impl_->temporal_history.back().event_id;
+        impl_->latest_action_event_rounds[i] = impl_->round + 1;
         if (!transition.acted) {
             continue;
         }
@@ -6477,6 +6499,69 @@ StepResult TFTEngine::step(
             }
             impl_->reset_round_completion();
         }
+    }
+
+    // Publish delayed factual consequences only after their native producers
+    // have completed. They point to the latest same-round action for the affected
+    // player; they never become PPO labels or inferred future predictions.
+    const auto append_delayed_fact = [&](const std::string& type, std::int32_t player_id,
+        const std::string& fact_source, const std::string& unit_uuid,
+        const std::string& related_uuid, const std::string& resource,
+        std::int64_t before, std::int64_t after) {
+        TemporalEvent event;
+        event.event_type = type;
+        event.scope = "player";
+        event.player_id = player_id;
+        event.round = impl_->round + 1;
+        event.stage = impl_->stage;
+        event.fact_source = fact_source;
+        event.unit_uuid = unit_uuid;
+        event.related_unit_uuid = related_uuid;
+        event.resource = resource;
+        event.value_before = before;
+        event.value_after = after;
+        event.delta = after - before;
+        event.delayed = true;
+        if (player_id >= 0 && static_cast<std::size_t>(player_id) < kPlayersPerLobby) {
+            const auto p = static_cast<std::size_t>(player_id);
+            if (impl_->latest_action_event_rounds[p] == impl_->round + 1) {
+                event.causal_event_id = impl_->latest_action_event_ids[p];
+                event.source_player_decision_sequence = impl_->player_decision_sequences[p];
+            }
+            event.observed_player_decision_sequence = impl_->player_decision_sequences[p] + 1;
+        }
+        impl_->append_temporal_event(std::move(event));
+    };
+    for (const auto& event : impl_->last_combat_damage_events) {
+        append_delayed_fact("combat_damage", event.target_player_id, "CombatEngine",
+            event.target_unit_uuid, event.source_unit_uuid, "health", 0,
+            static_cast<std::int64_t>(std::llround(event.final_damage)));
+    }
+    for (const auto& event : impl_->last_combat_death_events) {
+        append_delayed_fact("combat_death", event.unit_player_id, "CombatEngine",
+            event.unit_uuid, event.killer_unit_uuid, "unit_alive", 1, 0);
+    }
+    for (const auto& event : impl_->last_economy_resolution_events) {
+        append_delayed_fact("economy_resolution", event.player_id, event.producer,
+            {}, {}, "gold", event.old_gold, event.new_gold);
+        if (event.old_level != event.new_level)
+            append_delayed_fact("level_transition", event.player_id, event.producer,
+                {}, {}, "level", event.old_level, event.new_level);
+    }
+    for (const auto& event : impl_->last_pvp_result_credit_events) {
+        append_delayed_fact("pvp_result_credit", event.winner_player_id, event.producer,
+            {}, {}, "gold", event.gold_before_credit, event.gold_after_credit);
+    }
+    if (round_resolved) {
+        TemporalEvent event;
+        event.event_type = "round_transition";
+        event.scope = "lobby";
+        event.player_id = -1;
+        event.round = impl_->round + 1;
+        event.stage = impl_->stage;
+        event.fact_source = "TFTEngine::step";
+        event.delayed = true;
+        impl_->append_temporal_event(std::move(event));
     }
 
     // ========================================================
