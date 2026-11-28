@@ -222,3 +222,23 @@ def test_packed_native_masks_share_one_tensor_storage(trainer):
     assert masks["type_mask"].untyped_storage().data_ptr() == masks["shop_mask"].untyped_storage().data_ptr()
     assert masks["type_mask"].shape == (8, 9)
     assert masks["shop_mask"].shape == (8, 5)
+
+
+def test_native_packed_masks_match_structured_compatibility_path(trainer):
+    from cpp_lobby_env import CppTFTLobbyWrapper
+
+    lobby = CppTFTLobbyWrapper(seed=132)
+    try:
+        lobby.reset(seed=132)
+        structured = lobby._engine.get_action_masks()
+        packed = lobby.get_packed_action_masks_for_training()
+        expected_packed = CppTFTLobbyWrapper._copy_action_masks(structured)
+        np.testing.assert_array_equal(packed, expected_packed)
+
+        packed_views = trainer._flatten_masks([packed])
+        compatibility_views = trainer._flatten_masks([structured])
+        assert packed_views.keys() == compatibility_views.keys()
+        for key in packed_views:
+            assert torch.equal(packed_views[key], compatibility_views[key]), key
+    finally:
+        lobby.close()
