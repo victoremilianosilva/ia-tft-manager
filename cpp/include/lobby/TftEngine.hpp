@@ -641,6 +641,7 @@ struct ActionOutcomeEvent {
     std::array<std::int32_t, kActionComponents> effective_action{};
     bool mask_permitted{false};
     bool handler_applied{false};
+    bool decision_advanced{false};
     std::string status_reason;
     std::vector<std::string> candidate_unit_uuids;
     std::vector<std::string> affected_unit_uuids;
@@ -741,6 +742,11 @@ public:
         const std::array<PlayerAction, kPlayersPerLobby>& actions,
         bool timer_enabled = false,
         bool timer_expired = false
+    );
+    // Side-effect-free preflight report. Rejections are factual validation
+    // events and do not advance any player decision sequence.
+    std::array<ActionOutcomeEvent, kPlayersPerLobby> validate_actions(
+        const std::array<PlayerAction, kPlayersPerLobby>& actions
     );
 
     std::array<PlayerActionMasks, kPlayersPerLobby>
