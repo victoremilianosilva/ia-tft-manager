@@ -702,6 +702,10 @@ class Trainer:
                     metadata["native_state_contract_version"] = native_contract[1]
                     metadata["native_state_producer"] = native_contract[2]
                     metadata["native_state_source_namespace"] = native_contract[3]
+                    metadata["temporal_contract_id"] = native_snapshot.get("temporal_contract_id")
+                    metadata["temporal_contract_version"] = native_snapshot.get("temporal_contract_version")
+                    metadata["temporal_history_complete"] = native_snapshot.get("temporal_history_complete")
+                    metadata["temporal_retention_events"] = native_snapshot.get("temporal_retention_events")
                 if native_players is not None:
                     native_player = native_players[player_idx]
                     if not isinstance(native_player, Mapping) or native_player.get("player_id") != player_idx:
