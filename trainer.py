@@ -1023,19 +1023,17 @@ class Trainer:
                     )
                 packed_rows.append(lobby_buffer)
             packed = np.concatenate(packed_rows, axis=0)
+            # Transfer the packed contract once. Each policy head receives a
+            # strided tensor view over this one storage instead of a new copy.
+            packed_tensor = torch.as_tensor(
+                packed, dtype=torch.bool, device=self.device
+            )
             flat_masks = {}
             offset = 0
             for key, shape in self.MASK_SHAPES.items():
                 width = int(np.prod(shape))
-                field = packed[:, offset:offset + width].reshape(
+                flat_masks[key] = packed_tensor[:, offset:offset + width].view(
                     self.num_envs * self.PLAYERS_PER_LOBBY, *shape
-                )
-                # One explicit conversion/copy per field preserves the
-                # contiguous tensor contract expected by policy operations.
-                flat_masks[key] = torch.as_tensor(
-                    np.array(field, dtype=np.bool_, order="C", copy=True),
-                    dtype=torch.bool,
-                    device=self.device,
                 )
                 offset += width
             if offset != CppTFTLobbyWrapper._PACKED_ACTION_MASK_WIDTH:
