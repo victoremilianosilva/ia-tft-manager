@@ -639,6 +639,10 @@ struct ActionOutcomeEvent {
     std::string status_reason;
     std::vector<std::string> affected_unit_uuids;
     std::int32_t catalog_champion_id{-1};
+    std::string item_action_kind;
+    std::string item_id;
+    std::string first_component_id;
+    std::string second_component_id;
     std::int32_t gold_before{0};
     std::int32_t gold_after{0};
     std::int32_t gold_delta{0};
