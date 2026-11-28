@@ -1206,6 +1206,20 @@ struct TFTEngine::Impl {
                 ] = batch.bench_to_board_target_masks[source][target];
             }
         }
+
+        // Eliminated players receive the exact transport-safe PASS mask from
+        // the Engine. The Trainer must not infer liveness and synthesize masks.
+        if (!player.info.alive) {
+            current = PlayerActionMasks{};
+            current.type_mask[6] = 1;
+            current.shop_mask[0] = 1;
+            current.bench_source_mask[0] = 1;
+            current.board_target_mask[0] = 1;
+            current.board_source_mask[0] = 1;
+            current.bench_move_source_mask[0] = 1;
+            current.board_move_target_masks[0] = 1;
+            current.bench_to_board_target_masks[0] = 1;
+        }
     }
 
     // ========================================================
