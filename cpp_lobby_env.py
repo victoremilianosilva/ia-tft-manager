@@ -20,7 +20,6 @@ import numpy as np
 
 from decision_identity import build_player_identity_envelopes
 from reward_audit import RewardAuditLedger
-from reward_outcome_producers import build_action_outcome_events
 from immutable_snapshot import FrozenDict, FrozenList, freeze_snapshot
 
 _REPO_ROOT = Path(__file__).resolve().parent
@@ -1120,11 +1119,24 @@ class CppTFTLobbyWrapper:
             raise RuntimeError(
                 "Não há snapshot nativo pré-ação para atribuir consequências factuais."
             )
-        action_outcome_events = build_action_outcome_events(
-            before_snapshot=source_decision_snapshot["native_state_snapshot"],
-            after_snapshot=self._last_snapshot_metadata["native_state_snapshot"],
-            action_traces=action_traces,
-        )
+        # The Engine emits factual outcomes at the action handler boundary.
+        # Production must not reconstruct them by diffing generic snapshots.
+        action_outcome_events = result.get("action_outcome_events")
+        if not isinstance(action_outcome_events, (list, tuple)) or len(action_outcome_events) != self.PLAYERS_PER_LOBBY:
+            raise RuntimeError("Native StepResult sem os oito ActionOutcomeEvent esperados.")
+        for player_id, event in enumerate(action_outcome_events):
+            if not isinstance(event, Mapping):
+                raise RuntimeError(f"ActionOutcomeEvent inválido para player_id={player_id}.")
+            if (
+                event.get("contract_id") != "tft.engine.action-outcome-event"
+                or int(event.get("contract_version", 0)) != 1
+                or event.get("engine_instance_id") != self._last_snapshot_metadata["engine_instance_id"]
+                or int(event.get("episode_id", -1)) != self._last_snapshot_metadata["episode_id"]
+                or int(event.get("player_id", -1)) != player_id
+                or int(event.get("outcome_player_decision_sequence", -1)) != self._last_snapshot_metadata["player_decision_sequences"][player_id]
+            ):
+                raise RuntimeError(f"ActionOutcomeEvent sem identidade/sequência alinhada para player_id={player_id}.")
+        action_outcome_events = [dict(event) for event in action_outcome_events]
         reward_audit = self._reward_audit_ledger.build_record(
             rewards=rewards,
             action_rewards=action_rewards,
