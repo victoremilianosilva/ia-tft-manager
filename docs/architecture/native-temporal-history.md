@@ -12,13 +12,14 @@ Every event carries Engine/episode identity, a strictly increasing Engine-global
 
 Current producers:
 - `action_outcome`: the exact native `ActionOutcomeEvent` emitted by the action handler. Its event ID is reused, not reconstructed.
-- `combat_damage` and `combat_death`: facts emitted by CombatEngine; health deltas are negative damage, not predicted damage.
-- `economy_resolution` and `level_transition`: EconomyEngine resolution facts.
-- `pvp_result_credit`: EconomyEngine credit fact.
+- `unit_transition`, `item_transition`, and `resource_transition`: handler-produced unit UUID, item assignment, gold, XP, and level changes.
+- `combat_attack`, `combat_damage`, and `combat_death`: facts emitted by CombatEngine; health-loss deltas are negative damage, not predicted damage.
+- `economy_resolution`, `level_transition`, and `pvp_result_credit`: EconomyEngine resolution/credit facts.
+- `composition_transition`: active-composition identity/version changes emitted by ActiveCompositionManager.
 - `player_elimination`: the transition to eliminated state.
 - `round_transition`: lobby-scoped round boundary.
 
-A consequence points to the latest same-round action event for the affected player where such a producer-owned relation exists. This is an explicit attribution anchor, not a claim that one action alone caused a multi-unit combat outcome. Events without a defensible source retain an empty causal reference. No damage/pressure forecasts or inferred future outcomes are emitted.
+Combat/composition consequences link only to a same-round board-changing action with affected unit identities. Economy consequences link only to a same-round action with a factual gold/XP/level delta. PASS and unrelated actions do not overwrite those anchors. These are explicit attribution links, not claims that one action alone caused a multi-unit combat outcome. Events without a defensible source retain an empty causal reference. No damage/pressure forecasts or inferred future outcomes are emitted.
 
 ## Ordering, retention, and lifecycle
 
