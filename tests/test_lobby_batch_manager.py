@@ -281,7 +281,6 @@ def test_native_decision_batch_publishes_versioned_action_context_and_events():
                 assert event["action_family"] == "pass"
                 assert event["effective_action"] == [6, 0, 0, 0, 0, 0]
                 assert event["mask_permitted"] is True
-        assert event["preflight_accepted"] is True
                 assert event["preflight_accepted"] is True
                 assert event["normalized_action"] == event["requested_action"]
                 assert event["handler_applied"] is True
@@ -311,6 +310,7 @@ def test_native_action_event_records_purchase_candidate_and_affected_uuid():
         assert event["action_family"] == "purchase"
         assert event["action_type"] == 0
         assert event["mask_permitted"] is True
+        assert event["preflight_accepted"] is True
         assert event["normalized_action"] == event["requested_action"]
         assert event["handler_applied"] is True
         assert event["catalog_champion_id"] >= 0
@@ -337,6 +337,7 @@ def test_native_action_events_cover_economic_action_families(action_type, family
 
         assert event["action_family"] == family
         assert event["mask_permitted"] is True
+        assert event["preflight_accepted"] is True
         assert event["handler_applied"] is True
         assert event["gold_delta"] < 0
         assert event["action_cost"] > 0
