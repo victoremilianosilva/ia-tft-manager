@@ -708,12 +708,17 @@ class RolloutBuffer:
                         self._temporal_seen_by_agent.get(temporal_agent_key, (decision["episode_id"], set())),
                     )
                     known_temporal_ids = set(prior_ids) if prior_episode == decision["episode_id"] else set()
-                    causal_anchors = decision.get("temporal_causal_anchor_ids", ())
-                    if not isinstance(causal_anchors, (list, tuple)) or any(
-                        not isinstance(anchor, str) or not anchor.strip() for anchor in causal_anchors
+                    decision_anchors = decision.get("temporal_causal_anchor_ids", ())
+                    result_anchors = result.get("temporal_causal_anchor_ids", ())
+                    if (
+                        not isinstance(decision_anchors, (list, tuple))
+                        or not isinstance(result_anchors, (list, tuple))
+                        or any(not isinstance(anchor, str) or not anchor.strip()
+                               for anchor in (*decision_anchors, *result_anchors))
                     ):
-                        raise ValueError(f"Causal anchors inválidos na decisão da transição {index}.")
-                    known_temporal_ids.update(causal_anchors)
+                        raise ValueError(f"Causal anchors inválidos na transição {index}.")
+                    known_temporal_ids.update(decision_anchors)
+                    known_temporal_ids.update(result_anchors)
                     for event_index, event in enumerate(temporal_events):
                         if not isinstance(event, dict):
                             raise TypeError(f"temporal_events[{event_index}] deve ser um dicionário.")
