@@ -801,6 +801,11 @@ class Trainer:
                 raise RuntimeError(
                     f"Lobby {lobby_idx} não forneceu {players_per_lobby} ActionOutcomeEvent nativos."
                 )
+            temporal_events = info.get("temporal_events")
+            if not isinstance(temporal_events, list):
+                raise RuntimeError(
+                    f"Lobby {lobby_idx} não forneceu o fluxo temporal nativo do StepResult."
+                )
             start = lobby_idx * players_per_lobby
             for player_id, (trace, action_event) in enumerate(zip(traces, action_events)):
                 if not isinstance(trace, dict) or not {
@@ -863,6 +868,16 @@ class Trainer:
                     )
                 row["action_trace"] = dict(trace)
                 row["action_outcome_event"] = dict(action_event)
+                # Each PPO row owns only its player's temporal facts; the single
+                # lobby-scoped event is assigned to player 0 to avoid 8x duplication.
+                row["temporal_events"] = [
+                    dict(event) for event in temporal_events
+                    if isinstance(event, Mapping)
+                    and (
+                        event.get("player_id") == player_id
+                        or (event.get("scope") == "lobby" and player_id == 0)
+                    )
+                ]
 
         return result_snapshot_metadata
 
