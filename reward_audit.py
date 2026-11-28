@@ -58,6 +58,7 @@ class RewardAuditLedger:
         combat_rewards: Any,
         placement_rewards: Any,
         action_traces: Sequence[Mapping[str, Any]],
+        action_outcome_events: Sequence[Mapping[str, Any]],
         players: Sequence[Mapping[str, Any]],
         decision_snapshot: Mapping[str, Any],
         source_decision_snapshot: Mapping[str, Any],
@@ -116,6 +117,8 @@ class RewardAuditLedger:
             raise RuntimeError("Sequências do snapshot pré-ação estão desalinhadas.")
         if not isinstance(action_traces, Sequence) or len(action_traces) != _PLAYERS_PER_LOBBY:
             raise RuntimeError("Action traces incompletos para reward audit.")
+        if not isinstance(action_outcome_events, Sequence) or len(action_outcome_events) != _PLAYERS_PER_LOBBY:
+            raise RuntimeError("ActionOutcomeEvent nativo incompleto para reward audit.")
         if not isinstance(players, Sequence) or len(players) != _PLAYERS_PER_LOBBY:
             raise RuntimeError("Player facts incompletos para reward audit.")
 
@@ -138,15 +141,40 @@ class RewardAuditLedger:
 
         for player_id in range(_PLAYERS_PER_LOBBY):
             trace = action_traces[player_id]
+            action_event = action_outcome_events[player_id]
             player = players[player_id]
             if not isinstance(trace, Mapping) or int(trace.get("player_id", -1)) != player_id:
                 raise RuntimeError(f"Action trace desalinhado para player_id={player_id}.")
             if not isinstance(player, Mapping) or int(player.get("player_id", -1)) != player_id:
                 raise RuntimeError(f"Player facts desalinhados para player_id={player_id}.")
+            if not isinstance(action_event, Mapping):
+                raise RuntimeError(f"ActionOutcomeEvent inválido para player_id={player_id}.")
+            if (
+                action_event.get("contract_id") != "tft.engine.action-outcome-event"
+                or int(action_event.get("contract_version", 0)) != 1
+                or action_event.get("engine_instance_id") != engine_id
+                or int(action_event.get("episode_id", -1)) != episode_id
+                or int(action_event.get("player_id", -1)) != player_id
+            ):
+                raise RuntimeError(f"ActionOutcomeEvent sem identidade nativa para player_id={player_id}.")
             outcome_player_sequence = int(player_sequences[player_id])
             player_sequence = int(source_player_sequences[player_id])
             if player_sequence < 0 or outcome_player_sequence <= player_sequence:
                 raise RuntimeError(f"Sequência pré/pós-ação inválida para player_id={player_id}.")
+            if (
+                int(action_event.get("source_player_decision_sequence", -1)) != player_sequence
+                or int(action_event.get("outcome_player_decision_sequence", -1)) != outcome_player_sequence
+                or not str(action_event.get("event_id", "")).strip()
+                or not isinstance(action_event.get("mask_permitted"), bool)
+                or not isinstance(action_event.get("handler_applied"), bool)
+                or not isinstance(action_event.get("status_reason"), str)
+                or not action_event.get("status_reason", "").strip()
+            ):
+                raise RuntimeError(f"ActionOutcomeEvent desalinhado ou incompleto para player_id={player_id}.")
+            event_id = str(action_event["event_id"])
+            if event_id in self._seen_outcome_event_ids:
+                raise RuntimeError("Reward audit detectou ActionOutcomeEvent repetido: " + event_id)
+            pending_event_ids.append(event_id)
 
             combat_value = float(combat[player_id])
             placement_value = float(placement[player_id])
@@ -194,7 +222,8 @@ class RewardAuditLedger:
                 "player_decision_sequence": player_sequence,
                 "outcome_player_decision_sequence": outcome_player_sequence,
                 "action_decision": {
-                    "source": "native_action_execution_trace",
+                    "source": "native_action_outcome_event",
+                    "event": dict(action_event),
                     "source_snapshot_sequence": source_sequence,
                     "player_decision_sequence": player_sequence,
                     "outcome_snapshot_sequence": decision_sequence,
