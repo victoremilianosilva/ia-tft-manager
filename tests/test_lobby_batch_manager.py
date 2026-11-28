@@ -354,8 +354,9 @@ def test_native_action_events_cover_economic_action_families(action_type, family
 
 
 def _buy_one_unit(manager):
-    reset = manager.reset(seed=9700)
-    masks = reset.lobby_result(0)["action_masks"]
+    manager.reset(seed=9700)
+    assert manager.engine(0).set_player_economy_for_testing(0, 10, 2, 0)
+    masks = manager.engine(0).get_action_masks()
     shop_slots = np.flatnonzero(masks[0, 9:14])
     assert bool(masks[0, 0]) and shop_slots.size
     actions = _pass_actions(1)
