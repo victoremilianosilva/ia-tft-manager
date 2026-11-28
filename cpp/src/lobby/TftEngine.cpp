@@ -6057,6 +6057,10 @@ StepResult TFTEngine::step(
         outcome.level_after = transition.level_after_action;
         outcome.action_cost = transition.action_cost;
         outcome.sale_proceeds = transition.sale_proceeds;
+        outcome.item_action_kind = player_env.last_item_action.kind;
+        outcome.item_id = player_env.last_item_action.item_id;
+        outcome.first_component_id = player_env.last_item_action.first_component;
+        outcome.second_component_id = player_env.last_item_action.second_component;
         action_outcomes[i] = std::move(outcome);
         if (!transition.acted) {
             continue;
