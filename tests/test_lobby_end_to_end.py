@@ -405,18 +405,21 @@ def test_native_temporal_history_links_delayed_economy_and_resets_by_episode():
     lobby = CppTFTLobbyWrapper(seed=901)
     try:
         lobby.reset(seed=901)
+        # A real purchase creates a board/economy source event. The next nine
+        # PASS decisions must not overwrite that causal anchor.
+        first_info = _buy_first_shop_unit(lobby)
         last_info = None
         actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
-        for _ in range(10):
+        for _ in range(9):
             _, _, _, last_info = lobby.step(actions)
         assert last_info is not None
         delayed = [event for event in last_info["temporal_events"]
                    if event["event_type"] == "economy_resolution"]
         assert delayed
-        action_ids = {event["event_id"] for event in last_info["temporal_events"]
-                      if event["event_type"] == "action_outcome"}
+        source_action_ids = {event["event_id"] for event in first_info["temporal_events"]
+                             if event["event_type"] == "action_outcome"}
         assert all(event["delayed"] for event in delayed)
-        assert all(event["causal_event_id"] in action_ids for event in delayed)
+        assert all(event["causal_event_id"] in source_action_ids for event in delayed)
         assert all(event["source_player_decision_sequence"] <
                    event["observed_player_decision_sequence"] for event in delayed)
 
