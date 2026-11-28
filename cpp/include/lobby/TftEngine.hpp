@@ -637,6 +637,7 @@ struct ActionOutcomeEvent {
     std::array<std::int32_t, kActionComponents> effective_action{};
     bool handler_applied{false};
     std::string status_reason;
+    std::vector<std::string> candidate_unit_uuids;
     std::vector<std::string> affected_unit_uuids;
     std::int32_t catalog_champion_id{-1};
     std::string item_action_kind;
