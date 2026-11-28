@@ -188,6 +188,12 @@ def test_batch_terminal_autoreset_keeps_transition_and_next_episode_snapshots_se
         assert next_snapshot["snapshot_kind"] == "reset"
         assert terminal_snapshot["episode_id"] != next_snapshot["episode_id"]
         assert terminal_snapshot["decision_sequence"] > 0
+        terminal_native = terminal_snapshot["native_state_snapshot"]
+        next_native = next_snapshot["native_state_snapshot"]
+        assert terminal_native["temporal_events"]
+        assert terminal_native["temporal_contract_id"] == "tft.engine.temporal-history"
+        assert next_native["temporal_events"] == []
+        assert next_native["episode_id"] == next_snapshot["episode_id"]
         current_snapshot = env.get_snapshot_metadata()
         assert next_snapshot["decision_sequence"] == current_snapshot["decision_sequence"]
         assert next_snapshot["player_decision_sequences"] == current_snapshot["player_decision_sequences"]
