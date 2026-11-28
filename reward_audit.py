@@ -181,6 +181,16 @@ class RewardAuditLedger:
                 or action_event.get("normalized_action") != action_event.get("requested_action")
             ):
                 raise RuntimeError(f"ActionOutcomeEvent desalinhado ou incompleto para player_id={player_id}.")
+            affected_entities = action_event.get("affected_unit_uuids")
+            if not isinstance(affected_entities, Sequence) or isinstance(affected_entities, (str, bytes)):
+                raise RuntimeError(f"ActionOutcomeEvent sem referências de entidade válidas para player_id={player_id}.")
+            expected_execution_status = (
+                "applied" if action_event["handler_applied"] else
+                ("not_processed" if action_event["status_reason"] == "player_eliminated" else
+                 ("partial" if len(affected_entities) else "no_effect"))
+            )
+            if action_event["execution_status"] != expected_execution_status:
+                raise RuntimeError(f"Status de execução inconsistente para player_id={player_id}.")
             event_id = str(action_event["event_id"])
             if event_id in self._seen_outcome_event_ids:
                 raise RuntimeError("Reward audit detectou ActionOutcomeEvent repetido: " + event_id)
