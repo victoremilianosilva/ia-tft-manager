@@ -328,6 +328,7 @@ struct TFTEngine::Impl {
         std::int32_t xp_after_action{0};
         bool auto_merge{false};
         std::vector<std::string> affected_unit_uuids;
+        std::string status_reason;
     };
 
     struct PlayerEnv {
@@ -5090,7 +5091,9 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
 
         if (!this->info.alive) {
             lobby.refresh_masks(player_id);
-            return PlayerTransition{0.0f, false};
+            PlayerTransition transition{};
+            transition.status_reason = "player_eliminated";
+            return transition;
         }
 
         if (type == 0) {
@@ -5762,6 +5765,18 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             ? 0 : std::max<std::int32_t>(0, old_gold - economy.gold);
         const auto actual_sale_proceeds = type == 5
             ? std::max<std::int32_t>(0, economy.gold - old_gold) : 0;
+        std::string status_reason = "applied";
+        if (!success) {
+            if (board_capacity_violation) status_reason = "board_capacity_limit";
+            else if (anti_loop_blocked) status_reason = "anti_loop_blocked";
+            else if (type == 0) status_reason = "purchase_not_completed";
+            else if (type == 1) status_reason = "reroll_not_applied";
+            else if (type == 2) status_reason = "xp_purchase_not_applied";
+            else if (type == 3) status_reason = "deployment_not_applied";
+            else if (type == 4) status_reason = "positioning_not_applied";
+            else if (type == 5) status_reason = "sale_not_completed";
+            else status_reason = "handler_no_effect";
+        }
         return PlayerTransition{
             static_cast<float>(action_reward),
             true,
@@ -5778,7 +5793,8 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             old_xp,
             economy.xp,
             bought_upgrade,
-            std::move(affected_unit_uuids)
+            std::move(affected_unit_uuids),
+            std::move(status_reason)
         };
 }
 
@@ -6058,10 +6074,12 @@ StepResult TFTEngine::step(
         const auto transition = player_env.step(*impl_, i, effective_actions[i]);
         trace.handler_applied = transition.action_succeeded;
         trace.status_reason = !transition.acted
-            ? "not_processed"
+            ? (transition.status_reason.empty() ? "not_processed" : transition.status_reason)
             : (was_overridden
                 ? (transition.action_succeeded ? "overridden_and_applied" : "overridden_not_applied")
-                : (transition.action_succeeded ? "applied" : "not_applied_by_action_handler"));
+                : (transition.status_reason.empty()
+                    ? (transition.action_succeeded ? "applied" : "not_applied_by_action_handler")
+                    : transition.status_reason));
         outcome.handler_applied = transition.action_succeeded;
         outcome.status_reason = trace.status_reason;
         outcome.gold_before = transition.gold_before_action;
