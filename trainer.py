@@ -817,6 +817,17 @@ class Trainer:
                     f"Lobby {lobby_idx} não forneceu {players_per_lobby} ActionOutcomeEvent nativos."
                 )
             temporal_events = info.get("temporal_events")
+            decision_snapshot = info.get("decision_snapshot")
+            native_snapshot = (
+                decision_snapshot.get("native_state_snapshot")
+                if isinstance(decision_snapshot, Mapping) else None
+            )
+            temporal_required = (
+                isinstance(native_snapshot, Mapping)
+                and native_snapshot.get("temporal_contract_id") == "tft.engine.temporal-history"
+            )
+            if temporal_events is None and not temporal_required:
+                temporal_events = []  # Non-native test/oracle environments have no temporal producer.
             if not isinstance(temporal_events, list):
                 raise RuntimeError(
                     f"Lobby {lobby_idx} não forneceu o fluxo temporal nativo do StepResult."
