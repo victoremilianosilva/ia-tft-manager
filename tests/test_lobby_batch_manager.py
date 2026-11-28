@@ -316,3 +316,27 @@ def test_native_action_event_records_purchase_candidate_and_affected_uuid():
         assert len(event["affected_unit_uuids"]) == len(set(event["affected_unit_uuids"]))
     finally:
         manager.close()
+
+@pytest.mark.parametrize(
+    ("action_type", "family"),
+    [(1, "reroll"), (2, "xp_purchase")],
+)
+def test_native_action_events_cover_economic_action_families(action_type, family):
+    manager = native.LobbyBatchManager(1, 9500 + action_type)
+    try:
+        reset = manager.reset(seed=9600 + action_type)
+        masks = reset.lobby_result(0)["action_masks"]
+        assert bool(masks[0, action_type]), f"action type {action_type} should be legal in the initial economy"
+
+        actions = _pass_actions(1)
+        actions[0][0] = [action_type, 0, 0, 0, 0, 0]
+        step = manager.step(actions)
+        event = step.lobby_result(0)["action_outcome_events"][0]
+
+        assert event["action_family"] == family
+        assert event["mask_permitted"] is True
+        assert event["handler_applied"] is True
+        assert event["gold_delta"] < 0
+        assert event["action_cost"] > 0
+    finally:
+        manager.close()
