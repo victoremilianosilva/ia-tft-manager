@@ -171,6 +171,8 @@ class RewardAuditLedger:
                 or not isinstance(action_event.get("mask_permitted"), bool)
                 or action_event.get("preflight_accepted") is not True
                 or action_event.get("decision_advanced") is not True
+                or not isinstance(action_event.get("execution_status"), str)
+                or not action_event.get("execution_status", "").strip()
                 or not isinstance(action_event.get("handler_applied"), bool)
                 or not isinstance(action_event.get("status_reason"), str)
                 or not action_event.get("status_reason", "").strip()
