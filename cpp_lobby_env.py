@@ -599,8 +599,12 @@ class CppTFTLobbyWrapper:
                 if not isinstance(anchors, (list, tuple)) or len(anchors) != 2:
                     raise RuntimeError(f"Causal anchors inválidos para jogador {player_id}.")
                 for anchor in anchors:
-                    if anchor and (not isinstance(anchor, str) or anchor not in seen_temporal_ids):
-                        raise RuntimeError(f"Causal anchor não existe no histórico retido do jogador {player_id}.")
+                    if (
+                        anchor and not isinstance(anchor, str)
+                    ) or (
+                        temporal_complete and anchor and anchor not in seen_temporal_ids
+                    ):
+                        raise RuntimeError(f"Causal anchor inválido para jogador {player_id}.")
 
         parent_combat_sequence = value.get("combat_sequence")
         if (
@@ -1264,9 +1268,13 @@ class CppTFTLobbyWrapper:
             event.get("event_id") for event in retained_temporal_rows
             if isinstance(event, Mapping)
         }
+        temporal_complete = bool(
+            retained_snapshot.get("temporal_history_complete", True)
+            if isinstance(retained_snapshot, Mapping) else True
+        )
         for event in temporal_events:
             causal_id = event.get("causal_event_id")
-            if causal_id and causal_id not in retained_temporal_ids:
+            if causal_id and causal_id not in retained_temporal_ids and temporal_complete:
                 raise RuntimeError("TemporalEvent referencia causa ausente do histórico retido da Engine.")
         action_temporal_ids = {
             event["event_id"] for event in temporal_events
