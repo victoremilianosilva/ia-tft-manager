@@ -806,7 +806,6 @@ public:
     bool add_completed_item_for_testing(
         std::int32_t player_id, const std::string& item_id
     );
-    bool set_player_alive_for_testing(std::int32_t player_id, bool alive);
     bool set_player_hp_for_testing(std::int32_t player_id, float hp);
     bool set_player_economy_for_testing(
         std::int32_t player_id, std::int32_t gold,
