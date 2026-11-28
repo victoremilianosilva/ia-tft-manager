@@ -131,6 +131,7 @@ class RolloutBuffer:
         self._metadata_records = [None for _ in range(self.num_steps)]
         # Temporal facts are scalar/compact sidecar rows, not copied snapshots.
         self._temporal_records = [None for _ in range(self.num_steps)]
+        self._temporal_seen_by_agent = {}
 
         # ============================================================
         # DADOS PRINCIPAIS
@@ -701,6 +702,12 @@ class RolloutBuffer:
                     previous_global_sequence = 0
                     temporal_ids = set()
                     action_temporal_ids = set()
+                    temporal_agent_key = (decision["engine_instance_id"], decision["player_id"])
+                    prior_episode, prior_ids = temporal_seen_updates.get(
+                        temporal_agent_key,
+                        self._temporal_seen_by_agent.get(temporal_agent_key, (decision["episode_id"], set())),
+                    )
+                    known_temporal_ids = set(prior_ids) if prior_episode == decision["episode_id"] else set()
                     for event_index, event in enumerate(temporal_events):
                         if not isinstance(event, dict):
                             raise TypeError(f"temporal_events[{event_index}] deve ser um dicionário.")
@@ -718,8 +725,11 @@ class RolloutBuffer:
                             or not isinstance(event.get("delayed"), bool)
                         ):
                             raise ValueError(f"TemporalEvent inválido/fora de ordem na transição {index}, evento {event_index}.")
-                        if event["event_id"] in temporal_ids:
-                            raise ValueError(f"TemporalEvent duplicado na transição {index}.")
+                        if event["event_id"] in temporal_ids or event["event_id"] in known_temporal_ids:
+                            raise ValueError(f"TemporalEvent duplicado na transição/episódio {index}.")
+                        causal_event_id = event.get("causal_event_id", "")
+                        if causal_event_id and causal_event_id not in known_temporal_ids and causal_event_id not in temporal_ids:
+                            raise ValueError(f"TemporalEvent sem evento causal previamente observado na transição {index}.")
                         temporal_ids.add(event["event_id"])
                         previous_global_sequence = sequence
                         if event.get("event_type") == "action_outcome":
@@ -740,6 +750,9 @@ class RolloutBuffer:
                                 raise ValueError(f"Referência causal temporal inválida na transição {index}.")
                     if action_event["event_id"] not in action_temporal_ids:
                         raise ValueError(f"ActionOutcomeEvent sem referência no histórico temporal da transição {index}.")
+                    temporal_seen_updates[temporal_agent_key] = (
+                        decision["episode_id"], known_temporal_ids.union(temporal_ids)
+                    )
                 if result["decision_sequence"] <= decision["decision_sequence"]:
                     raise ValueError(f"Sequência do resultado não avança na transição {index}.")
                 if next_state["episode_id"] == result["episode_id"]:
@@ -884,6 +897,9 @@ class RolloutBuffer:
                         raise ValueError(
                             f"Semantic projection hash/contract diverge do snapshot na transição {index}."
                         )
+
+        for agent_key, temporal_state in temporal_seen_updates.items():
+            self._temporal_seen_by_agent[agent_key] = temporal_state
 
         temporal_records = None
         if all(supplied_groups):
@@ -1562,6 +1578,7 @@ class RolloutBuffer:
         for index in range(self.ptr):
             self._metadata_records[index] = None
             self._temporal_records[index] = None
+        self._temporal_seen_by_agent.clear()
         self.ptr = 0
 
         # ------------------------------------------------------------
