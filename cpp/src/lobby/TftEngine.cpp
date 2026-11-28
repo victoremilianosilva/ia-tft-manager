@@ -408,8 +408,12 @@ struct TFTEngine::Impl {
     std::uint64_t temporal_event_sequence{0};
     bool temporal_history_truncated{false};
     std::vector<TemporalEvent> temporal_history;
-    std::array<std::string, kPlayersPerLobby> latest_action_event_ids{};
-    std::array<std::uint32_t, kPlayersPerLobby> latest_action_event_rounds{};
+    std::array<std::string, kPlayersPerLobby> latest_board_action_event_ids{};
+    std::array<std::string, kPlayersPerLobby> latest_economic_action_event_ids{};
+    std::array<std::uint64_t, kPlayersPerLobby> latest_board_action_sequences{};
+    std::array<std::uint64_t, kPlayersPerLobby> latest_economic_action_sequences{};
+    std::array<std::uint32_t, kPlayersPerLobby> latest_board_action_rounds{};
+    std::array<std::uint32_t, kPlayersPerLobby> latest_economic_action_rounds{};
 
     void append_temporal_event(TemporalEvent event) {
         event.engine_instance_id = engine_instance_id;
@@ -5935,8 +5939,12 @@ ResetResult TFTEngine::reset(
     impl_->temporal_event_sequence = 0;
     impl_->temporal_history_truncated = false;
     impl_->temporal_history.clear();
-    impl_->latest_action_event_ids.fill(std::string{});
-    impl_->latest_action_event_rounds.fill(0);
+    impl_->latest_board_action_event_ids.fill(std::string{});
+    impl_->latest_economic_action_event_ids.fill(std::string{});
+    impl_->latest_board_action_sequences.fill(0);
+    impl_->latest_economic_action_sequences.fill(0);
+    impl_->latest_board_action_rounds.fill(0);
+    impl_->latest_economic_action_rounds.fill(0);
     for (auto& cache : impl_->strategic_item_fit_caches)
         if (cache) cache->clear();
     impl_->composition_intelligence_players =
@@ -6309,8 +6317,22 @@ StepResult TFTEngine::step(
         if (!action_outcomes[i].affected_unit_uuids.empty())
             action_event.unit_uuid = action_outcomes[i].affected_unit_uuids.front();
         impl_->append_temporal_event(std::move(action_event));
-        impl_->latest_action_event_ids[i] = impl_->temporal_history.back().event_id;
-        impl_->latest_action_event_rounds[i] = impl_->round + 1;
+        const auto& emitted_action_event = impl_->temporal_history.back();
+        const auto action_round = impl_->round + 1;
+        if (action_outcomes[i].handler_applied &&
+            !action_outcomes[i].affected_unit_uuids.empty()) {
+            impl_->latest_board_action_event_ids[i] = emitted_action_event.event_id;
+            impl_->latest_board_action_sequences[i] = action_outcomes[i].source_player_decision_sequence;
+            impl_->latest_board_action_rounds[i] = action_round;
+        }
+        if (action_outcomes[i].handler_applied &&
+            (action_outcomes[i].gold_delta != 0 ||
+             action_outcomes[i].xp_after != action_outcomes[i].xp_before ||
+             action_outcomes[i].level_after != action_outcomes[i].level_before)) {
+            impl_->latest_economic_action_event_ids[i] = emitted_action_event.event_id;
+            impl_->latest_economic_action_sequences[i] = action_outcomes[i].source_player_decision_sequence;
+            impl_->latest_economic_action_rounds[i] = action_round;
+        }
         if (!transition.acted) {
             continue;
         }
@@ -6523,7 +6545,7 @@ StepResult TFTEngine::step(
     const auto append_delayed_fact = [&](const std::string& type, std::int32_t player_id,
         const std::string& fact_source, const std::string& unit_uuid,
         const std::string& related_uuid, const std::string& resource,
-        std::int64_t before, std::int64_t after) {
+        std::int64_t before, std::int64_t after, bool economic_cause = false) {
         TemporalEvent event;
         event.event_type = type;
         event.scope = "player";
@@ -6542,9 +6564,18 @@ StepResult TFTEngine::step(
             const auto p = static_cast<std::size_t>(player_id);
             const auto consequence_round = (round_resolved && impl_->round > 0)
                 ? impl_->round : impl_->round + 1;
-            if (impl_->latest_action_event_rounds[p] == consequence_round) {
-                event.causal_event_id = impl_->latest_action_event_ids[p];
-                event.source_player_decision_sequence = impl_->player_decision_sequences[p];
+            const auto& causal_id = economic_cause
+                ? impl_->latest_economic_action_event_ids[p]
+                : impl_->latest_board_action_event_ids[p];
+            const auto causal_round = economic_cause
+                ? impl_->latest_economic_action_rounds[p]
+                : impl_->latest_board_action_rounds[p];
+            const auto causal_sequence = economic_cause
+                ? impl_->latest_economic_action_sequences[p]
+                : impl_->latest_board_action_sequences[p];
+            if (causal_round == consequence_round && !causal_id.empty()) {
+                event.causal_event_id = causal_id;
+                event.source_player_decision_sequence = causal_sequence;
             }
             event.observed_player_decision_sequence = impl_->player_decision_sequences[p] + 1;
         }
@@ -6562,10 +6593,10 @@ StepResult TFTEngine::step(
     }
     for (const auto& event : impl_->last_economy_resolution_events) {
         append_delayed_fact("economy_resolution", event.player_id, event.producer,
-            {}, {}, "gold", event.old_gold, event.new_gold);
+            {}, {}, "gold", event.old_gold, event.new_gold, true);
         if (event.old_level != event.new_level)
             append_delayed_fact("level_transition", event.player_id, event.producer,
-                {}, {}, "level", event.old_level, event.new_level);
+                {}, {}, "level", event.old_level, event.new_level, true);
     }
     for (const auto& event : impl_->last_pvp_result_credit_events) {
         append_delayed_fact("pvp_result_credit", event.winner_player_id, event.producer,
