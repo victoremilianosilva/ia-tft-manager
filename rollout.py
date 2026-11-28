@@ -705,9 +705,12 @@ class RolloutBuffer:
                     temporal_agent_key = (decision["engine_instance_id"], decision["player_id"])
                     prior_episode, prior_ids = temporal_seen_updates.get(
                         temporal_agent_key,
-                        self._temporal_seen_by_agent.get(temporal_agent_key, (decision["episode_id"], set())),
+                        self._temporal_seen_by_agent.get(temporal_agent_key, (decision["episode_id"], ())),
                     )
-                    known_temporal_ids = set(prior_ids) if prior_episode == decision["episode_id"] else set()
+                    prior_temporal_ids = (
+                        tuple(prior_ids) if prior_episode == decision["episode_id"] else ()
+                    )
+                    known_temporal_ids = set(prior_temporal_ids)
                     decision_anchors = decision.get("temporal_causal_anchor_ids", ())
                     result_anchors = result.get("temporal_causal_anchor_ids", ())
                     if (
@@ -761,8 +764,17 @@ class RolloutBuffer:
                                 raise ValueError(f"Referência causal temporal inválida na transição {index}.")
                     if action_event["event_id"] not in action_temporal_ids:
                         raise ValueError(f"ActionOutcomeEvent sem referência no histórico temporal da transição {index}.")
+                    ordered_temporal_ids = list(prior_temporal_ids)
+                    for anchor in (*decision_anchors, *result_anchors):
+                        if anchor not in ordered_temporal_ids:
+                            ordered_temporal_ids.append(anchor)
+                    for event in temporal_events:
+                        if event["event_id"] not in ordered_temporal_ids:
+                            ordered_temporal_ids.append(event["event_id"])
+                    # The producer retains at most 256 facts. Mirror that bound
+                    # in the cross-step validator instead of growing per episode.
                     temporal_seen_updates[temporal_agent_key] = (
-                        decision["episode_id"], known_temporal_ids.union(temporal_ids)
+                        decision["episode_id"], tuple(ordered_temporal_ids[-256:])
                     )
                 if result["decision_sequence"] <= decision["decision_sequence"]:
                     raise ValueError(f"Sequência do resultado não avança na transição {index}.")
