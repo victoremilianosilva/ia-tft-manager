@@ -230,8 +230,7 @@ def test_reward_audit_deduplicates_native_action_events():
     ledger.reset("engine-test", 2)
     values = _inputs()
     _build(ledger, values)
-    repeated = _inputs(decision_sequence=11)
-    repeated["action_outcome_events"][0]["event_id"] = values["action_outcome_events"][0]["event_id"]
+    repeated = _inputs()
 
     with pytest.raises(RuntimeError, match="ActionOutcomeEvent repetido"):
         _build(ledger, repeated)
