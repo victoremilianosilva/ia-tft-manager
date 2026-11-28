@@ -396,6 +396,7 @@ def _add_rollout_with_action_trace_for_validation(action_trace):
             "effective_action": action_trace.get("effective_action"),
             "mask_permitted": True, "preflight_accepted": True, "handler_applied": action_trace.get("handler_applied"),
             "decision_advanced": True,
+            "execution_status": "applied",
             "status_reason": action_trace.get("status_reason"),
         },
     }
@@ -602,6 +603,7 @@ def _valid_native_action_trace_rows():
                 "preflight_accepted": True,
                 "handler_applied": True,
                 "decision_advanced": True,
+                "execution_status": "applied",
                 "status_reason": "applied",
             }
             for player_id in range(8)
