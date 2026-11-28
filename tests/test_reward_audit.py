@@ -38,6 +38,7 @@ def _inputs(*, action=None, combat=None, placement=None, combat_sequence=4,
             "handler_applied": True,
             "decision_advanced": True,
             "execution_status": "applied",
+            "affected_unit_uuids": [],
             "status_reason": "applied",
         }
         for player_id in range(8)
