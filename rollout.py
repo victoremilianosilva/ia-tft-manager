@@ -637,12 +637,11 @@ class RolloutBuffer:
                         f"result_snapshot_metadata[{index}].action_trace.status_reason deve ser texto não vazio."
                     )
                 action_event = result.get("action_outcome_event")
-                if action_event is not None:
-                    if not isinstance(action_event, dict):
-                        raise ValueError(
-                            f"result_snapshot_metadata[{index}].action_outcome_event deve ser um dicionário."
-                        )
-                    if (
+                if not isinstance(action_event, dict):
+                    raise ValueError(
+                        f"result_snapshot_metadata[{index}].action_outcome_event é obrigatório e deve ser um dicionário."
+                    )
+                if (
                         action_event.get("contract_id") != "tft.engine.action-outcome-event"
                         or action_event.get("contract_version") != 1
                         or action_event.get("engine_instance_id") != decision["engine_instance_id"]
