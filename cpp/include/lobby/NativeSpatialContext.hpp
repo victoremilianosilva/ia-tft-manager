@@ -72,7 +72,7 @@ private:
  std::shared_ptr<const AuditSnapshot> snapshot_; std::size_t player_index_{0};
  std::string geometry_id_; std::uint32_t geometry_version_{0},rows_{0},columns_{0};
  ContextAvailability availability_{ContextAvailability::Unknown};
- std::array<std::int32_t,kBoardSlots> rows_buffer_{},column_dummy_{};
+ std::array<std::int32_t,kBoardSlots> rows_buffer_{};
  std::array<std::int32_t,kBoardSlots> columns_buffer_{},catalog_id_buffer_{},role_buffer_{};
  std::array<std::uint8_t,kBoardSlots> occupancy_buffer_{};
  std::array<std::array<float,5>,kBoardSlots> stats_buffer_{};
