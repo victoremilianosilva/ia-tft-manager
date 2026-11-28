@@ -418,6 +418,8 @@ struct TFTEngine::Impl {
     void append_temporal_event(TemporalEvent event) {
         event.engine_instance_id = engine_instance_id;
         event.episode_id = episode_id;
+        if (temporal_event_sequence == std::numeric_limits<std::uint64_t>::max())
+            throw std::overflow_error("Sequencia do historico temporal esgotada.");
         event.global_sequence = ++temporal_event_sequence;
         if (event.event_id.empty()) {
             event.event_id = engine_instance_id + "/episode/" +
@@ -6608,8 +6610,10 @@ StepResult TFTEngine::step(
         std::int64_t before, std::int64_t after, bool economic_cause = false) {
         TemporalEvent event;
         event.event_type = type;
-        event.scope = "player";
-        event.player_id = player_id;
+        const bool has_player_owner = player_id >= 0 &&
+            static_cast<std::size_t>(player_id) < kPlayersPerLobby;
+        event.scope = has_player_owner ? "player" : "lobby";
+        event.player_id = has_player_owner ? player_id : -1;
         event.round = (round_resolved && impl_->round > 0) ? impl_->round : impl_->round + 1;
         event.stage = impl_->stage;
         event.fact_source = fact_source;
