@@ -17,6 +17,7 @@
 #include "lobby/TftEngine.hpp"
 #include "lobby/SemanticProjectionV8.hpp"
 #include "lobby/NativeDecisionContext.hpp"
+#include "lobby/NativeSpatialContext.hpp"
 #include "strategy/PositioningEngine.hpp"
 #include "reward/RewardManager.hpp"
 #include "combat/CombatProfileEngine.hpp"
@@ -1247,6 +1248,17 @@ public:
         return std::make_shared<tft::NativeDecisionContext>(handle.shared_snapshot());
     }
 
+    std::shared_ptr<tft::NativeSpatialContext> native_spatial_context(
+        std::size_t lobby_index, std::size_t player_index
+    ) const {
+        if (lobby_index >= contexts_.size())
+            throw py::index_error("lobby index fora do NativeDecisionBatch.");
+        const auto& handle = py::cast<const NativeAuditSnapshotHandle&>(
+            contexts_[lobby_index]["native_state_snapshot"]);
+        return std::make_shared<tft::NativeSpatialContext>(
+            handle.shared_snapshot(), player_index);
+    }
+
     py::dict semantic_projection(const py::dict& catalog_map, const std::string& contract_hash) {
         py::list snapshot_mappings;
         for (const auto& context : contexts_)
@@ -1727,6 +1739,103 @@ PYBIND11_MODULE(tft_engine, module) {
         .value("INCOMPATIBLE", tft::ContextAvailability::Incompatible)
         .value("NOT_APPLICABLE", tft::ContextAvailability::NotApplicable);
 
+    py::class_<tft::NativeSpatialContext, std::shared_ptr<tft::NativeSpatialContext>>(
+        module, "NativeSpatialContext")
+        .def_property_readonly("contract_id", [](const tft::NativeSpatialContext&) {
+            return tft::NativeSpatialContext::kContractId;
+        })
+        .def_property_readonly("contract_version", [](const tft::NativeSpatialContext&) {
+            return tft::NativeSpatialContext::kContractVersion;
+        })
+        .def_property_readonly("geometry_id", &tft::NativeSpatialContext::geometry_id)
+        .def_property_readonly("geometry_version", &tft::NativeSpatialContext::geometry_version)
+        .def_property_readonly("rows", &tft::NativeSpatialContext::rows)
+        .def_property_readonly("columns", &tft::NativeSpatialContext::columns)
+        .def_property_readonly("availability", &tft::NativeSpatialContext::availability)
+        .def_property_readonly("player_index", &tft::NativeSpatialContext::player_index)
+        .def_property_readonly("engine_instance_id", &tft::NativeSpatialContext::engine_instance_id)
+        .def_property_readonly("episode_id", &tft::NativeSpatialContext::episode_id)
+        .def_property_readonly("snapshot_sequence", &tft::NativeSpatialContext::snapshot_sequence)
+        .def_property_readonly("player_decision_sequence", &tft::NativeSpatialContext::player_decision_sequence)
+        .def("row_buffer", [](std::shared_ptr<tft::NativeSpatialContext> context) {
+            const auto& values = context->row_buffer();
+            py::array_t<std::int32_t> result({28}, {static_cast<py::ssize_t>(sizeof(std::int32_t))},
+                values.data(), py::cast(context));
+            result.attr("setflags")(false); return result;
+        })
+        .def("column_buffer", [](std::shared_ptr<tft::NativeSpatialContext> context) {
+            const auto& values = context->column_buffer();
+            py::array_t<std::int32_t> result({28}, {static_cast<py::ssize_t>(sizeof(std::int32_t))},
+                values.data(), py::cast(context));
+            result.attr("setflags")(false); return result;
+        })
+        .def("occupancy_buffer", [](std::shared_ptr<tft::NativeSpatialContext> context) {
+            const auto& values = context->occupancy_buffer();
+            py::array_t<std::uint8_t> result({28}, {static_cast<py::ssize_t>(sizeof(std::uint8_t))},
+                values.data(), py::cast(context));
+            result.attr("setflags")(false); return result;
+        })
+        .def("catalog_id_buffer", [](std::shared_ptr<tft::NativeSpatialContext> context) {
+            const auto& values = context->catalog_id_buffer();
+            py::array_t<std::int32_t> result({28}, {static_cast<py::ssize_t>(sizeof(std::int32_t))},
+                values.data(), py::cast(context));
+            result.attr("setflags")(false); return result;
+        })
+        .def("role_buffer", [](std::shared_ptr<tft::NativeSpatialContext> context) {
+            const auto& values = context->role_buffer();
+            py::array_t<std::int32_t> result({28}, {static_cast<py::ssize_t>(sizeof(std::int32_t))},
+                values.data(), py::cast(context));
+            result.attr("setflags")(false); return result;
+        })
+        .def("stats_buffer", [](std::shared_ptr<tft::NativeSpatialContext> context) {
+            const auto& values = context->stats_buffer();
+            py::array_t<float> result({28, 5},
+                {static_cast<py::ssize_t>(5 * sizeof(float)), static_cast<py::ssize_t>(sizeof(float))},
+                values.front().data(), py::cast(context));
+            result.attr("setflags")(false); return result;
+        })
+        .def_property_readonly("unit_uuids", [](const tft::NativeSpatialContext& context) {
+            py::list result; for (const auto& value : context.uuid_buffer()) result.append(value);
+            return result;
+        })
+        .def_property_readonly("champion_ids", [](const tft::NativeSpatialContext& context) {
+            py::list result; for (const auto& value : context.champion_id_buffer()) result.append(value);
+            return result;
+        })
+        .def_property_readonly("unit_traits", [](const tft::NativeSpatialContext& context) {
+            py::list result;
+            for (const auto& traits : context.trait_buffer()) result.append(py::cast(traits));
+            return result;
+        })
+        .def_property_readonly("relations", [](const tft::NativeSpatialContext& context) {
+            py::array_t<std::int32_t> result(py::array::ShapeContainer{
+                static_cast<py::ssize_t>(context.relations().size()), static_cast<py::ssize_t>(3)});
+            auto out = result.mutable_unchecked<2>();
+            for (std::size_t i = 0; i < context.relations().size(); ++i) {
+                const auto& relation = context.relations()[i];
+                out(static_cast<py::ssize_t>(i), 0) = relation.source_slot;
+                out(static_cast<py::ssize_t>(i), 1) = relation.target_slot;
+                out(static_cast<py::ssize_t>(i), 2) = static_cast<std::int32_t>(relation.kind);
+            }
+            result.attr("setflags")(false); return result;
+        })
+        .def_property_readonly("board_metrics", [](const tft::NativeSpatialContext& context) {
+            const auto& p = context.metrics(); py::dict result;
+            result["quality"] = p.board_quality_score;
+            result["positional"] = p.board_positional_score;
+            result["structural"] = p.board_structural_score;
+            result["quality_delta"] = p.board_quality_delta;
+            result["exposed_carries"] = p.board_exposed_carries;
+            result["frontline_count"] = p.board_frontline_count;
+            result["isolated_frontline_count"] = p.board_isolated_frontline_count;
+            result["frontline_lane_count"] = p.board_frontline_lane_count;
+            result["exposed_main_carries"] = p.board_exposed_main_carries;
+            result["fragile_frontline_count"] = p.board_fragile_frontline_count;
+            result["missing_frontline_count"] = p.board_missing_frontline_count;
+            result["missing_backline_count"] = p.board_missing_backline_count;
+            return result;
+        });
+
     py::class_<tft::NativeDecisionContext, std::shared_ptr<tft::NativeDecisionContext>>(
         module, "NativeDecisionContext")
         .def_property_readonly("availability", [](const tft::NativeDecisionContext& context) {
@@ -1818,6 +1927,8 @@ PYBIND11_MODULE(tft_engine, module) {
         .def("lobby_result", &NativeDecisionBatch::lobby_result, py::arg("index"))
         .def("semantic_projection", &NativeDecisionBatch::semantic_projection, py::arg("catalog_map"), py::arg("contract_hash"))
         .def("native_context", &NativeDecisionBatch::native_context, py::arg("lobby_index"))
+        .def("native_spatial_context", &NativeDecisionBatch::native_spatial_context,
+             py::arg("lobby_index"), py::arg("player_index"))
         .def("__len__", &NativeDecisionBatch::size)
         .def("__getitem__", &NativeDecisionBatch::lobby_result);
 

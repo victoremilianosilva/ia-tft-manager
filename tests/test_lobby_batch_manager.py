@@ -153,6 +153,30 @@ def test_lobby_batch_manager_publishes_one_versioned_contiguous_batch():
         assert all(not slot["occupied"] for slot in context_player["board"])
         assert isinstance(native_context.trait_counts(0), list)
         assert native_context.provenance(0)["player_decision_sequence"] == reset_batch.lobby_result(0)["player_decision_sequences"][0]
+        spatial = reset_batch.native_spatial_context(0, 0)
+        assert isinstance(spatial, native.NativeSpatialContext)
+        assert spatial.contract_id == "tft.native-spatial-context"
+        assert spatial.contract_version == 1
+        assert spatial.geometry_id == "tft.board-grid.rectangular-4x7"
+        assert spatial.geometry_version == 1
+        assert spatial.engine_instance_id == native_context.engine_instance_id
+        assert spatial.episode_id == native_context.episode_id
+        assert spatial.snapshot_sequence == native_context.snapshot_sequence
+        assert spatial.player_decision_sequence == native_context.provenance(0)["player_decision_sequence"]
+        assert len(spatial.unit_traits) == 28
+        assert spatial.rows == 4 and spatial.columns == 7
+        assert spatial.availability == native.ContextAvailability.COMPLETE
+        assert spatial.row_buffer().shape == (28,)
+        assert spatial.column_buffer().shape == (28,)
+        assert spatial.occupancy_buffer().shape == (28,)
+        assert spatial.catalog_id_buffer().shape == (28,)
+        assert spatial.role_buffer().shape == (28,)
+        assert spatial.stats_buffer().shape == (28, 5)
+        assert spatial.relations.shape[1] == 3
+        assert not spatial.row_buffer().flags.writeable
+        assert not spatial.stats_buffer().flags.writeable
+        assert len(spatial.unit_uuids) == 28
+        assert spatial.board_metrics["quality"] == native_context.player(0)["board_quality_score"]
         for player_id in range(8):
             player_context = native_context.player(player_id)
             assert player_context["player_id"] == player_id
