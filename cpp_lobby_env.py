@@ -1246,6 +1246,19 @@ class CppTFTLobbyWrapper:
                 ):
                     raise RuntimeError("TemporalEvent atrasado possui referência causal sem sequência válida.")
         temporal_events = [dict(event) for event in temporal_events]
+        retained_snapshot = self._last_snapshot_metadata.get("native_state_snapshot")
+        retained_temporal_rows = (
+            retained_snapshot.get("temporal_events", [])
+            if isinstance(retained_snapshot, Mapping) else []
+        )
+        retained_temporal_ids = {
+            event.get("event_id") for event in retained_temporal_rows
+            if isinstance(event, Mapping)
+        }
+        for event in temporal_events:
+            causal_id = event.get("causal_event_id")
+            if causal_id and causal_id not in retained_temporal_ids:
+                raise RuntimeError("TemporalEvent referencia causa ausente do histórico retido da Engine.")
         action_temporal_ids = {
             event["event_id"] for event in temporal_events
             if event.get("event_type") == "action_outcome"
