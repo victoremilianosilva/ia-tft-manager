@@ -8162,6 +8162,7 @@ void TFTEngine::close() noexcept {
     }
 
     impl_->closed = true;
+    for (auto& player : impl_->player_envs) player.anti_loop.reset();
     impl_->temporal_history.clear();
     impl_->temporal_event_sequence = 0;
     impl_->temporal_history_truncated = false;
