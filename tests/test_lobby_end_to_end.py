@@ -92,6 +92,7 @@ def test_native_lobby_adapter_executes_a_step():
 
 
 def _buy_first_shop_unit(lobby):
+    assert lobby._engine.set_player_economy_for_testing(0, 10, 2, 0)
     masks = lobby.get_packed_action_masks_for_training()
     legal_slots = np.flatnonzero(masks[0, 9:14])
     assert legal_slots.size
@@ -276,6 +277,7 @@ def test_native_action_event_reports_auto_merge_and_all_consumed_unit_uuids():
     lobby = CppTFTLobbyWrapper(seed=130)
     try:
         lobby.reset(seed=130)
+        assert lobby._engine.set_player_economy_for_testing(0, 10, 2, 0)
         champion_api_name = next(iter(lobby._engine.get_champion_id_map()))
         assert lobby._engine.set_unit_for_testing(0, False, 0, champion_api_name)
         assert lobby._engine.set_unit_for_testing(0, False, 1, champion_api_name)
