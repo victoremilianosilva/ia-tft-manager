@@ -712,8 +712,8 @@ class Trainer:
                             raise RuntimeError(f"Snapshot temporal sem causal anchors para lobby {lobby_idx}.")
                         anchors = anchor_rows[player_idx]
                         if (
-                            not isinstance(anchors, Sequence) or len(anchors) != 2
-                            or any(value and (not isinstance(value, str) or not value.strip()) for value in anchors)
+                            not isinstance(anchors, Sequence) or isinstance(anchors, (str, bytes)) or len(anchors) != 2
+                            or any(not isinstance(value, str) or (value and not value.strip()) for value in anchors)
                         ):
                             raise RuntimeError(f"Causal anchors inválidos para lobby {lobby_idx}, jogador {player_idx}.")
                         metadata["temporal_causal_anchor_ids"] = tuple(value for value in anchors if value)
