@@ -470,7 +470,7 @@ def project_native_player_state(
         raise ValueError("semantic projection requires Engine identity")
     for field in ("episode_id", "decision_sequence", "player_decision_sequence", "lobby_index"):
         _non_negative_int(metadata.get(field), f"metadata.{field}")
-    if metadata.get("native_state_contract_id") != "tft.native-state-snapshot" or metadata.get("native_state_contract_version") != 6:
+    if metadata.get("native_state_contract_id") != "tft.native-state-snapshot" or metadata.get("native_state_contract_version") != 7:
         raise ValueError("unsupported native state snapshot contract")
     if metadata.get("native_state_producer") != "TFTEngine::get_audit_snapshot":
         raise ValueError("unexpected native state producer")
