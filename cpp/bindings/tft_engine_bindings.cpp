@@ -1080,6 +1080,7 @@ py::dict step_to_dict(tft::StepResult step, bool include_numeric_transport = tru
         item["effective_action"] = event.effective_action;
         item["mask_permitted"] = event.mask_permitted;
         item["handler_applied"] = event.handler_applied;
+        item["decision_advanced"] = event.decision_advanced;
         item["status_reason"] = event.status_reason;
         item["candidate_unit_uuids"] = event.candidate_unit_uuids;
         item["affected_unit_uuids"] = event.affected_unit_uuids;
@@ -1709,6 +1710,46 @@ PYBIND11_MODULE(tft_engine, module) {
             py::arg("actions"),
             py::arg("timer_enabled") = false,
             py::arg("timer_expired") = false
+        )
+        .def(
+            "validate_actions",
+            [](TFTEngine& self, const std::vector<std::vector<std::int32_t>>& raw_actions) {
+                if (raw_actions.size() != tft::kPlayersPerLobby)
+                    throw py::value_error("actions deve conter 8 jogadores.");
+                std::array<tft::PlayerAction, tft::kPlayersPerLobby> actions{};
+                for (std::size_t player = 0; player < tft::kPlayersPerLobby; ++player) {
+                    if (raw_actions[player].size() != tft::kActionComponents)
+                        throw py::value_error("Cada acao deve conter 6 componentes.");
+                    for (std::size_t component = 0; component < tft::kActionComponents; ++component)
+                        actions[player].values[component] = raw_actions[player][component];
+                }
+                const auto events = self.validate_actions(actions);
+                py::list result;
+                for (const auto& event : events) {
+                    py::dict item;
+                    item["contract_id"] = event.contract_id;
+                    item["contract_version"] = event.contract_version;
+                    item["event_id"] = event.event_id;
+                    item["engine_instance_id"] = event.engine_instance_id;
+                    item["episode_id"] = event.episode_id;
+                    item["player_id"] = event.player_id;
+                    item["source_player_decision_sequence"] = event.source_player_decision_sequence;
+                    item["outcome_player_decision_sequence"] = event.outcome_player_decision_sequence;
+                    item["event_sequence"] = event.event_sequence;
+                    item["action_type"] = event.action_type;
+                    item["action_family"] = event.action_family;
+                    item["requested_action"] = event.requested_action;
+                    item["normalized_action"] = event.normalized_action;
+                    item["effective_action"] = event.effective_action;
+                    item["mask_permitted"] = event.mask_permitted;
+                    item["handler_applied"] = event.handler_applied;
+                    item["decision_advanced"] = event.decision_advanced;
+                    item["status_reason"] = event.status_reason;
+                    result.append(std::move(item));
+                }
+                return result;
+            },
+            py::arg("actions")
         )
         .def_property_readonly(
             "engine_instance_id",
